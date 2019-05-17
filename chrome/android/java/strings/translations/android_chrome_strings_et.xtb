@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">MIDI-seadm. täieliku juht. lub.</translation>
 <translation id="1449080968331948513">Andmemahu säästja uus nimetus on lihtsustatud režiim</translation>
 <translation id="145097072038377568">Android-seadetes välja lülitatud</translation>
+<translation id="146329143005354472">Lisa jaotisesse Minu rakendused</translation>
 <translation id="1477626028522505441">Faili <ph name="FILE_NAME" /> allalaadimine ebaõnnestus serveriprobleemide tõttu.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{(ja veel 1)}other{(ja veel #)}}</translation>
 <translation id="1501480321619201731">Kustuta grupp</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Sait</translation>
 <translation id="2874939134665556319">Eelmine lugu</translation>
 <translation id="2876369937070532032">Saadab mõnede teie külastatud lehtede URL-id Google'ile, kui teie turvalisus ohtu satub</translation>
-<translation id="2876764156902388290">Chrome kasutab selle lehe kuvamiseks vähem andmeid</translation>
 <translation id="2888126860611144412">Teave Chrome'i kohta</translation>
 <translation id="2891154217021530873">Peata lehe laadimine</translation>
 <translation id="2893180576842394309">Google võib kasutada teie ajalugu otsingu ja muude Google'i teenuste isikupärastamiseks</translation>

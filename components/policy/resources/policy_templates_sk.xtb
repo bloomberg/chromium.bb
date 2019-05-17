@@ -391,7 +391,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Upozornenie: Neodporúča sa delegovať ovládanie verzie systému <ph name="PRODUCT_OS_NAME" /> verejnej aplikácii, pretože môže zariadeniu zabrániť získavať aktualizácie softvéru a kritické opravy chýb zabezpečenia. Delegovanie ovládania verzie systému <ph name="PRODUCT_OS_NAME" /> môže používateľov vystaviť riziku.</translation>
 <translation id="1675002386741412210">Podporované na:</translation>
-<translation id="1689963000958717134">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre všetkých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Umožňuje konfigurovať dostupnosť a správanie funkcií aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Jednotlivé nastavenia môžete určiť vo vlastnostiach JSON:
@@ -952,16 +951,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak je toto nastavenie zakázané, webové stránky nebudú môcť používať jazyk JavaScript a používateľ toto nastavenie nebude môcť zmeniť.
 
       Ak toto pravidlo ponecháte nenastavené, webové stránky budú môcť používať jazyk JavaScript, ale používateľ bude môcť toto nastavenie zmeniť.</translation>
-<translation id="2747157663401642394">Konfiguruje nastavenia správy rozšírení pre <ph name="PRODUCT_NAME" />.
-
-          Toto pravidlo ovláda viaceré nastavenia, ako aj nastavenia ovládané existujúcimi pravidlami týkajúcimi sa rozšírení. Ak nastavíte obe, toto pravidlo prepíše všetky staré pravidlá.
-
-          Toto pravidlo namapuje identifikátor rozšírenia alebo webovú adresu aktualizácie na svoju konfiguráciu. Keď bude mať k dispozícii identifikátor rozšírenia, konfigurácia sa použije iba pre ním určené rozšírenie. Pre špeciálny identifikátor <ph name="DEFAULT_SCOPE" /> môžete nastaviť predvolenú konfiguráciu, ktorá sa použije pre všetky rozšírenia, pre ktoré ste v rámci tohto pravidla nenastavili vlastnú konfiguráciu. Keď bude mať k dispozícii webovú adresu aktualizácie, konfigurácia sa použije pre všetky rozšírenia s presnou webovou adresou aktualizácie stanovenou v manifeste tohto rozšírenia tak, ako je to uvedené na <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          V prípade inštancií systému Windows nepripojených k doméne <ph name="MS_AD_NAME" /> sa vynucuje inštalácia iba aplikácií a rozšírení uvedených v Internetovom obchode Chrome.
-
-          Úplný popis možných nastavení a štruktúry tohto pravidla nájdete na https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Obmedzenie rozsahu miestnych portov UDP používaných rozhraním WebRTC</translation>
 <translation id="2757054304033424106">Typy rozšírení/aplikácií, ktorých inštalácia je povolená</translation>
 <translation id="2758084448533744848">Umožňuje špecifikovať časové pásmo, ktoré sa bude presadzovať v zariadení. Keď nastavíte toto pravidlo, používatelia nemôžu v zariadení špecifikované časové pásmo prepísať. Ak poskytnete neplatnú hodnotu, toto pravidlo sa aktivuje s časovým pásmom GMT. Ak poskytnete prázdny reťazec, toto pravidlo sa bude ignorovať.
@@ -1196,7 +1185,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       <ph name="PRINTER_AUTOCONF" /> je boolovský príznak označujúci, či sa má tlačiareň nastaviť pomocou štandardu IPP Everywhere. Tento príznak podporuje prehliadač <ph name="PRODUCT_OS_NAME" /> od verzie 76 (vrátane nej).
 
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> by mal obsahovať názov tlačiarne alebo pravidlo <ph name="PRINTER_AUTOCONF" /> by malo byť nastavené na hodnotu true. Tlačiarne s vlastníctvami aj bez nich budú ignorované.
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> by mal obsahovať názov tlačiarne alebo pravidlo <ph name="PRINTER_AUTOCONF" /> by malo byť nastavené na hodnotu true. Tlačiarne s nastavenými vlastnosťami aj bez nich budú ignorované.
 
       Nastavenie tlačiarne sa dokončí pri prvom použití.  Súbory PPD sa stiahnu až pri použití tlačiarne.  Často používané súbory PPD sa následne uložia do vyrovnávacej pamäte.
 
@@ -1626,7 +1615,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="3915395663995367577">Webová adresa súboru PAC servera proxy</translation>
 <translation id="3920892052017026701">Nastavte vlastnú hodnotu začatia nabíjania batérie v percentách.
 
-          Batéria sa začne nabíjať, keď dosiahne vlastnú hodnotu nabíjania batérie.
+          Batéria sa začne nabíjať, keď dosiahne vlastnú hodnotu nabitia.
 
           Parameter DeviceBatteryChargeCustomStartCharging musí byť menší ako DeviceBatteryChargeCustomStopCharging.
 
@@ -1661,7 +1650,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Ak je toto pravidlo nastavené na hodnotu true alebo je ponechané bez nastavenia, používatelia si pri registrácii OS Chrome budú môcť uplatniť ponuky.
 
       Ak je toto pravidlo nastavené na hodnotu false, používatelia si nebudú môcť uplatniť ponuky.</translation>
-<translation id="4008233182078913897">Umožňuje určiť zoznam aplikácií a rozšírení, ktoré sa inštalujú potichu bez interakcie používateľa a používateľ ich nemôže odinštalovať ani zakázať. Všetky povolenia vyžadované aplikáciami alebo rozšíreniami sú bezpodmienečne udelené bez interakcie s používateľom, a to vrátane všetkých ďalších povolení vyžiadaných budúcimi verziami daných aplikácií alebo rozšírení. 
+<translation id="4008233182078913897">Umožňuje určiť zoznam aplikácií a rozšírení, ktoré sa inštalujú potichu bez interakcie s používateľom a používateľ ich nemôže odinštalovať ani zakázať. Všetky povolenia vyžadované aplikáciami alebo rozšíreniami sú bezpodmienečne udelené bez interakcie s používateľom, a to vrátane všetkých ďalších povolení vyžiadaných budúcimi verziami daných aplikácií alebo rozšírení. 
 Ďalej sa udeľujú povolenia pre rozhrania API rozšírení enterprise.deviceAttributes a enterprise.platformKeys. (Tieto dve rozhrania sú k dispozícii iba pre aplikácie alebo rozšírenia, ktorých inštalácia bola vynútená.)
 
           Toto pravidlo má prednosť v prípade potenciálneho konfliktu s pravidlom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ak je z tohto zoznamu odstránená aplikácia alebo rozšírenie, ktorého inštalácia bola v minulosti vynútená, <ph name="PRODUCT_NAME" /> ich automaticky odinštaluje.
@@ -1726,30 +1715,6 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Toto pravidlo sa vzťahuje iba na používateľov, ktorí sa prihlásia pomocou SAML.</translation>
 <translation id="4105989332710272578">Zakázať vynucovanie pravidla transparentnosti certifikátov pre zoznam webových adries</translation>
 <translation id="4121350739760194865">Zabraňuje tomu, aby sa propagácie aplikácií zobrazovali na stránke Nová karta</translation>
-<translation id="4125606414556046117">Toto pravidlo umožňuje nakonfigurovať obrázok tapety, ktorá sa používateľovi zobrazuje na pracovnej ploche a na pozadí prihlasovacej obrazovky. Pravidlo nastavíte určením webovej adresy, z ktorej môže <ph name="PRODUCT_OS_NAME" /> stiahnuť daný obrázok tapety, a určením kryptografickej hodnoty hash, pomocou ktorej sa overí integrita stiahnutého súboru. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 16 MB. Webová adresa musí byť prístupná bez overenia.
-
-      Obrázok tapety sa stiahne a uloží do vyrovnávacej pamäte. Pri každej zmene webovej adresy alebo hašovania sa znova stiahne.
-
-      Toto pravidlo je potrebné zadať ako reťazec, ktorý udáva webovú adresu a hašovanie vo formáte JSON, a to podľa nasledujúcej schémy:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Webová adresa, na ktorej je možné obrázok tapety stiahnuť.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hodnota hašovania SHA-256 obrázka tapety.",
-            "type": "string"
-          }
-        }
-      }
-
-      Keď je pravidlo nastavené, <ph name="PRODUCT_OS_NAME" /> obrázok tapety stiahne a použije.
-
-      Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
-
-      Ak toto pravidlo nenastavíte, používatelia si budú môcť vybrať obrázok na pracovnej ploche a na pozadí prihlasovacej obrazovky.</translation>
 <translation id="412697421478384751">Povoliť používateľom nastaviť slabé kódy PIN na uzamknutej obrazovke</translation>
 <translation id="4138655880188755661">Časový limit</translation>
 <translation id="4144164749344898721">Toto pravidlo ovláda viaceré nastavenia pre stratégiu správy spotreby energie, keď je používateľ nečinný.
@@ -2522,7 +2487,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="5630352020869108293">Obnoviť poslednú reláciu</translation>
 <translation id="5643906875497889108">Ovláda typy aplikácií a rozšírení, ktoré je možné nainštalovať. Tiež obmedzuje prístup k spúšťaniu.
 
-          Týmto nastavením pridáte do zoznamu povolených položiek povolené typy rozšírení a aplikácií, ktoré je možné nainštalovať v aplikácii <ph name="PRODUCT_NAME" />, a hostiteľov, s ktorými je možné interagovať. Daná hodnota je zoznam týchto reťazcov: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
+          Týmto nastavením pridáte do zoznamu povolených položiek povolené typy rozšírení a aplikácií, ktoré je možné nainštalovať v aplikácii <ph name="PRODUCT_NAME" />, a hostiteľov, s ktorými je možné interagovať. Hodnotou je napríklad zoznam týchto reťazcov: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
 
           Upozorňujeme, že toto pravidlo má vplyv aj na rozšírenia a aplikácie, ktorých inštalácia bude presadená prostredníctvom pravidla ExtensionInstallForcelist.
 
@@ -2694,53 +2659,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
       Ak toto pravidlo nastavené nie je alebo je nastavené na hodnotu False, príkazy na tlač spustia obrazovku ukážky tlače.</translation>
 <translation id="6022948604095165524">Akcia pri spustení</translation>
-<translation id="6023030044732320798">Určuje skupinu pravidiel, ktoré budú postúpené na spustenie ARC. Hodnota musí mať platný formát JSON.
-
-      Pomocou tohto pravidla je možné konfigurovať, ktoré aplikácie pre Android sa automaticky nainštalujú do zariadenia:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identifikátor aplikácie pre Android, napr. „com.google.android.gm“ pre Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Určí spôsob inštalácie aplikácie. OPTIONAL (VOLITEĽNÁ): Aplikácia sa nenainštaluje automaticky, ale môže ju nainštalovať používateľ. Ide o predvolené nastavenie, ak pravidlo nie je určené. PRELOAD (PREDINŠTALOVANÁ): Aplikácia sa nainštaluje automaticky, ale používateľ ju môže odinštalovať. FORCE_INSTALLED (VYNÚTENE NAINŠTALOVANÁ): Aplikácia sa nainštaluje automaticky a používateľ ju nemôže odinštalovať. BLOCKED (BLOKOVANÁ): Aplikácia je blokovaná a nedá sa nainštalovať. Ak bola aplikácia nainštalovaná v rámci predchádzajúceho pravidla, odinštaluje sa.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Pravidlo na udeľovanie žiadostí o povolenie aplikáciám. PERMISSION_POLICY_UNSPECIFIED (PRAVIDLO POVOLENÍ NIE JE URČENÉ): Pravidlo nie je určené. Ak pre povolenie na akejkoľvek úrovni nie je určené žiadne pravidlo, predvolene sa použije nastavenie PROMPT (VYZVAŤ). PROMPT (VYZVAŤ): Používateľ bude vyzvaný udeliť povolenie. GRANT (UDELIŤ): Povolenie bude udelené automaticky. DENY (ZAMIETNUŤ): Povolenie bude automaticky zamietnuté.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Konfiguračný objekt JSON špecifický pre aplikáciu s nastavenými pármi kľúč-hodnota, napr. „"managedConfiguration": { "kľúč": hodnota, "kľúč": hodnota }“. Kľúče sú definované v manifeste aplikácie.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Ak chcete pripnúť aplikácie do spúšťača, pozrite si pravidlo PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Webová adresa dynamického vyhľadávania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="603410445099326293">Parametre pre webovú adresu návrhov, ktorá používa metódu POST</translation>
 <translation id="6034341625190551415">Ovláda typy účtov verejných relácií a verejných terminálov.</translation>
@@ -3088,37 +3006,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Ak toto pravidlo nastavíte na hodnotu False, vstavaný klient DNS sa nepoužije nikdy.
 
       Ak toto pravidlo nenastavíte, v systémoch MacOS, Android (keď nie sú povolené súkromné DNS ani VPN) a ChromeOS bude predvolene povolený vstavaný klient DNS, a používatelia budú môcť ovládať používanie vstavaného klienta DNS pomocou úprav na chrome://flags alebo určením príznaku v príkazovom riadku.</translation>
-<translation id="6838056959556423778">Umožňuje prepísať pravidlá výberu predvolenej tlačiarne v prehliadači <ph name="PRODUCT_NAME" />.
-
-      Určuje pravidlá výberu predvolenej tlačiarne v prehliadači <ph name="PRODUCT_NAME" /> pri prvom použití funkcie tlače s určitým profilom.
-
-      Keď toto pravidlo nastavíte, <ph name="PRODUCT_NAME" /> sa pokúsi nájsť tlačiareň zodpovedajúcu všetkým špecifikovaným atribútom a vyberie ju ako predvolenú. Vyberie sa prvá tlačiareň zodpovedajúca tomuto pravidlu. Ak sa nájde tlačiareň, ktorá nie je jedinečná zhoda, môžete vybrať akúkoľvek zodpovedajúcu tlačiareň (v závislosti od poradia, v ktorom boli tlačiarne objavené).
-
-      Ak toto pravidlo nenastavíte alebo sa v rámci časového limitu nenájde zodpovedajúca tlačiareň, obnoví sa predvolené nastavenie vstavanej tlačiarne PDF alebo sa nevyberie žiadna tlačiareň (ak tlačiareň PDF nie je k dispozícii).
-
-      Hodnota sa analyzuje ako objekt JSON, a to podľa nasledujúcej schémy:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Či obmedziť vyhľadávanie zodpovedajúcej tlačiarne na konkrétnu skupinu tlačiarní.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regulárny výraz na priradenie identifikátora tlačiarne.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulárny výraz na priradenie zobrazovaného názvu tlačiarne.",
-            "type": "string"
-          }
-        }
-      }
-
-      Tlačiarne pripojené do služby <ph name="CLOUD_PRINT_NAME" /> sa považujú za <ph name="PRINTER_TYPE_CLOUD" />, ostatné tlačiarne sú označené ako <ph name="PRINTER_TYPE_LOCAL" />.
-      Ak vynecháte určité pole, budú mu zodpovedať všetky príslušné hodnoty. Ak napríklad nešpecifikujete pripojenie, nástroj Print Preview spustí hľadanie všetkých druhov tlačiarní – miestnych aj v cloude.
-      Vzory bežných výrazov musia zodpovedať syntaxi JavaScript RegExp a vo všetkých zodpovedajúcich výrazoch sa rozlišujú veľké a malé písmená.</translation>
 <translation id="6843296367238757293">Podpora tohto pravidla bola ukončená. Neodporúča sa používať. Ďalšie informácie nájdete na https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Toto pravidlo bolo odstránené v systéme <ph name="PRODUCT_NAME" /> verzie 68 a nahradené pravidlom <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Toto pravidlo je vo verzii M66 deaktivované a odstránené, pretože sa používalo iba na interné testovanie a predstavuje bezpečnostné riziko.
@@ -4274,30 +4161,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Toto pravidlo sa vzťahuje iba na používateľov, ktorých totožnosť bola overená pomocou štandardu SAML.
 
       Hodnota tohto pravidla by mala byť určená v sekundách.</translation>
-<translation id="9027787254195333560">Toto pravidlo umožňuje konfigurovať obrázok avatara, ktorý na prihlasovacej obrazovke predstavuje používateľa. Pravidlo vytvoríte zadaním webovej adresy, z ktorej môže <ph name="PRODUCT_OS_NAME" /> stiahnuť obrázok avatara a kryptografické hašovanie, ktoré slúži na overenie integrity stiahnutého obsahu. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 512 kB. Webová adresa musí byť prístupná bez overenia.
-
-      Obrázok avatara sa stiahne a uloží do vyrovnávacej pamäte. Pri každej zmene webovej adresy alebo hašovania sa znova stiahne.
-
-      Toto pravidlo je potrebné zadať ako reťazec, ktorý udáva webovú adresu a hašovanie vo formáte JSON, a to podľa nasledujúcej schémy:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Webová adresa, z ktorej je možné obrázok avatara stiahnuť.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hašovanie SHA-256 obrázka avatara.",
-            "type": "string"
-          }
-        }
-      }
-
-      Keď je pravidlo nastavené, <ph name="PRODUCT_OS_NAME" /> obrázok avatara stiahne a použije.
-
-      Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
-
-      Ak pravidlo nenastavíte, používatelia si budú môcť zvoliť obrázok avatara, ktorý ich bude predstavovať na prihlasovacej obrazovke.</translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
 <translation id="9038058011835642205">Umožňuje špecifikovať zoznam webov, ktoré sa inštalujú potichu bez interakcie s používateľom a ktoré používateľ nemôže odinštalovať ani deaktivovať.
 
@@ -4310,7 +4173,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
 
       Hodnota tohto pravidla sa udáva v milisekundách. Namiesto hodnôt mimo rozsahu od 30 sekúnd do 24 hodín sa použijú príslušné krajné hodnoty tohto rozsahu.</translation>
-<translation id="9042911395677044526">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre jednotlivých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Toto pravidlo ovláda, či bude zariadenie aktualizované na zostavu s rýchlou opravou.
 
       Ak nastavíte hodnotu pravidla na token, ktorý mapuje na zostavu s rýchlou opravou, zariadenie bude aktualizované na zodpovedajúcu zostavu s rýchlou opravou (ak danú aktualizáciu neblokuje iné pravidlo).
@@ -4390,17 +4252,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ak toto pravidlo nastavíte na hodnotu false, položka Hlavičky a päty nebude vybraná v dialógovom okne ukážky tlače a používateľ to nemôže zmeniť.
 
       Ak ho nastavíte na hodnotu true, položka Hlavičky a päty je vybraná v dialógovom okne ukážky tlače a používateľ to nemôže zmeniť.</translation>
-<translation id="9213347477683611358">Slúži na konfiguráciu obrázku tapety na úrovni zariadenia, ktorý sa bude zobrazovať na obrazovke prihlásenia, ak sa do zariadenia zatiaľ neprihlásil žiadny používateľ. Pravidlo nastavíte určením webovej adresy, z ktorej môže zariadenie so systémom Chrome OS stiahnuť daný obrázok tapety, a určením kryptografickej hodnoty hash, pomocou ktorej sa overí integrita stiahnutého súboru. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 16 MB. Webová adresa musí byť prístupná bez overenia totožnosti. Obrázok tapety sa stiahne a uloží do vyrovnávacej pamäte. Obrázok sa stiahne znova v prípade, že sa zmení webová adresa alebo hodnota hash.
-
-      Toto pravidlo je potrebné zadať ako reťazec, ktorý udáva webovú adresu a hodnotu hash vo formáte JSON. Príklad:
-      {
-        "url": "https://example.com/tapeta_zariadenia.jpg",
-        "hash": "hashukazkovejtapety"
-      }
-
-      Ak je pravidlo tapety zariadenia nastavené, zariadenie so systémom Chrome OS stiahne obrázok tapety a použije ho na obrazovke prihlásenia, ak sa do zariadenia zatiaľ neprihlásil žiadny používateľ. Po prihlásení sa použije pravidlo pre tapetu príslušného používateľa.
-
-      Ak pravidlo tapety zariadenia nie je nastavené, zobrazený obrázok závisí od pravidla tapety používateľa (ak je nastavené).</translation>
 <translation id="9217154963008402249">Frekvencia odosielania sledovacích sieťových paketov</translation>
 <translation id="922540222991413931">Konfigurácia zdrojov inštalácie rozšírenia, aplikácie a skriptov používateľa</translation>
 <translation id="924557436754151212">Import uložených hesiel z predvoleného prehliadača pri prvom spustení</translation>

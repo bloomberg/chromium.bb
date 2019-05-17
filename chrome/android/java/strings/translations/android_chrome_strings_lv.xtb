@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Pilnīga MIDI ierīču pārvaldība</translation>
 <translation id="1449080968331948513">Datu lietojuma samazinātājs tagad tiek saukts par vienkāršoto režīmu</translation>
 <translation id="145097072038377568">Izslēgts Android iestatījumos</translation>
+<translation id="146329143005354472">Pievienot sadaļai Manas lietotnes</translation>
 <translation id="1477626028522505441">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo radās servera problēmas.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (un vēl 1)}zero{ (un vēl #)}one{ (un vēl #)}other{ (un vēl #)}}</translation>
 <translation id="1501480321619201731">Dzēst grupu</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Vietne</translation>
 <translation id="2874939134665556319">Iepriekšējais ieraksts</translation>
 <translation id="2876369937070532032">Nosūta Google serveriem dažu apmeklēto lapu vietrāžus URL, ja jūsu drošība ir apdraudēta</translation>
-<translation id="2876764156902388290">Chrome izmanto mazāk datu, lai parādītu jums šo lapu.</translation>
 <translation id="2888126860611144412">Par Chrome</translation>
 <translation id="2891154217021530873">Pārtraukt lapas ielādi</translation>
 <translation id="2893180576842394309">Google var izmantot jūsu vēsturi, lai personalizētu Meklēšanu un citus Google pakalpojumus.</translation>

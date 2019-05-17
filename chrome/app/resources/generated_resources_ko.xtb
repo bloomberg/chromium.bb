@@ -338,6 +338,7 @@
     <ph name="LINK_START" />프록시 설정<ph name="LINK_END" />을 조정하세요.</translation>
 <translation id="1512210426710821809">이 작업을 실행취소하려면 <ph name="IDS_SHORT_PRODUCT_OS_NAME" />을(를) 다시 설치해야 합니다</translation>
 <translation id="151501797353681931">Safari에서 가져온 북마크</translation>
+<translation id="1515163294334130951">실행</translation>
 <translation id="1521442365706402292">인증서 관리</translation>
 <translation id="152234381334907219">저장되지 않음</translation>
 <translation id="1524430321211440688">키보드</translation>
@@ -440,6 +441,7 @@
 <translation id="167160931442925455">가장 크게</translation>
 <translation id="1673137583248014546"><ph name="URL" />에서 보안 키 제조업체와 모델을 확인하려고 합니다.</translation>
 <translation id="1679068421605151609">개발자 도구</translation>
+<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="167983332380191032">관리 서비스에서 HTTP 오류를 전송했습니다.</translation>
 <translation id="1680849702532889074">Linux 애플리케이션을 설치하는 중에 오류가 발생했습니다.</translation>
 <translation id="16815041330799488">사이트에서 클립보드에 복사된 텍스트 및 이미지를 확인하도록 허용하지 않음</translation>
@@ -963,7 +965,6 @@
 <translation id="2496180316473517155">인터넷 사용 기록</translation>
 <translation id="2497229222757901769">마우스 속도</translation>
 <translation id="2497852260688568942">관리자가 동기화를 사용 중지했습니다.</translation>
-<translation id="249819058197909513">이 앱에 대해 다시 경고하지 않음</translation>
 <translation id="2498539833203011245">최소화</translation>
 <translation id="2498765460639677199">크게</translation>
 <translation id="2499747912851752301">비밀번호를 내보내는 중...</translation>
@@ -1051,7 +1052,6 @@
 <translation id="2630681426381349926">Wi-Fi에 연결하여 시작</translation>
 <translation id="2631120081682787498">이 탭을 닫으시겠습니까?</translation>
 <translation id="2631498379019108537">실행기에 입력 옵션 표시</translation>
-<translation id="2633199387167390344"><ph name="NAME" />에서 <ph name="USAGE" />MB의 디스크 공간을 사용하고 있습니다.</translation>
 <translation id="2633212996805280240">'<ph name="EXTENSION_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" />에서 설치를 완료하지 못했지만 디스크 이미지에서 계속 실행됩니다.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1397,7 +1397,6 @@
 <translation id="3157931365184549694">복구</translation>
 <translation id="3158033540161634471">지문 설정</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />](하드웨어에 백업됨)</translation>
-<translation id="316125635462764134">앱 제거</translation>
 <translation id="3161522574479303604">모든 언어</translation>
 <translation id="3163201441334626963">공급업체 <ph name="VENDOR_ID" />의 알 수 없는 제품 <ph name="PRODUCT_ID" /></translation>
 <translation id="3165390001037658081">일부 이동통신사는 이 기능을 차단할 수도 있습니다.</translation>
@@ -1898,6 +1897,7 @@
 <translation id="3916445069167113093">이 형식의 파일은 컴퓨터를 손상시킬 수 있습니다. 그래도 <ph name="FILE_NAME" />을(를) 다운로드하시겠습니까?</translation>
 <translation id="3918972485393593704">Google에 세부정보 신고</translation>
 <translation id="3919145445993746351">어느 컴퓨터에서나 내 확장 프로그램을 사용하려면 동기화를 사용 설정하세요.</translation>
+<translation id="391999873395511996">가상 머신을 다운로드하고 있습니다.</translation>
 <translation id="3920504717067627103">인증서 정책</translation>
 <translation id="392089482157167418">ChromeVox(음성 피드백) 사용</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1949,7 +1949,6 @@
 <translation id="3983586614702900908">알 수 없는 공급업체의 기기</translation>
 <translation id="3984159763196946143">데모 모드를 시작할 수 없음</translation>
 <translation id="3984431586879874039">이 사이트에서 보안 키를 보도록 허용할까요?</translation>
-<translation id="3987348946546879621">데이터를 절약했습니다</translation>
 <translation id="3987938432087324095">죄송합니다. 인식하지 못했습니다.</translation>
 <translation id="3988996860813292272">시간대 선택</translation>
 <translation id="399179161741278232">가져온 북마크</translation>
@@ -1980,7 +1979,6 @@
 <translation id="4037889604535939429">사용자 수정</translation>
 <translation id="4042264909745389898">Google Chrome OS 이용약관</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{페이지 나가기}other{페이지 나가기}}</translation>
-<translation id="404299405565920089">앱 및 웹사이트에서 로그인한 모든 Google 계정을 여기에서 관리할 수 있습니다. 사용자가 허가한 앱 및 웹사이트는 정상적으로 작동하기 위해 필요한 계정 정보에 액세스할 수 있습니다.</translation>
 <translation id="4044612648082411741">인증서 비밀번호를 입력하세요.</translation>
 <translation id="404493185430269859">기본 검색엔진</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
@@ -2093,7 +2091,6 @@
 <translation id="4242533952199664413">설정 열기</translation>
 <translation id="4242577469625748426">기기에 정책 설정을 설치하지 못함: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">스타일러스 앱 더보기</translation>
-<translation id="424546999567421758">디스크 사용률이 높음</translation>
 <translation id="424726838611654458">항상 Adobe Reader에서 열기</translation>
 <translation id="4247901771970415646"><ph name="USERNAME" />과(와) 동기화할 수 없음</translation>
 <translation id="4249248555939881673">네트워크 연결 대기 중...</translation>
@@ -2201,7 +2198,6 @@
 <translation id="4421932782753506458">복실이</translation>
 <translation id="4422347585044846479">이 페이지에 대한 북마크 편집</translation>
 <translation id="4423376891418188461">설정 복원</translation>
-<translation id="4423482519432579560">맞춤법 검사(&amp;S)</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />님, 관리자가 비밀번호 변경을 요청했습니다.</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4430369329743628066">북마크 추가됨</translation>
@@ -2661,8 +2657,6 @@
 <translation id="5187295959347858724">이제 <ph name="SHORT_PRODUCT_NAME" />에 로그인되었으며 북마크와 방문기록, 기타 설정이 내 Google 계정과 동기화됩니다.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" />(<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" />에서 여러 파일을 다운로드하려고 합니다.</translation>
-<translation id="5192316339598592690">계정 간에 빠르게 전환하고 한 번에 앱과 웹사이트에 로그인하세요.
-    앱 및 사이트에서 Google 계정 정보 중 일부를 사용할 권한을 요청할 수 있습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">기기를 파워워시한 후 다시 시도해 주세요.</translation>
 <translation id="5204967432542742771">비밀번호 입력</translation>
 <translation id="5206215183583316675">'<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
@@ -3341,7 +3335,6 @@
 <translation id="622537739776246443">프로필이 삭제됩니다</translation>
 <translation id="6225475702458870625">데이터 연결을 <ph name="PHONE_NAME" />에서 사용할 수 있습니다.</translation>
 <translation id="6226777517901268232">비공개 키 파일(선택사항)</translation>
-<translation id="6228516488918914827">페이지가 빠르게 로드됩니다</translation>
 <translation id="6228691855869374890">이 사이트는 MIDI 기기를 완전히 제어할 수 있습니다.</translation>
 <translation id="6229890768313448549">Google Play 서비스 약관을 로드할 수 없습니다. 다시 시도해 주세요.</translation>
 <translation id="6231881193380278751">검색어 매개변수를 URL에 추가하여 다음 페이지를 자동으로 새로고침하세요. chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3546,7 +3539,6 @@
 <translation id="6545665334409411530">반복 속도</translation>
 <translation id="6545834809683560467">예상 검색어 서비스를 사용하여 검색주소창 또는 앱 런처 검색창에 입력되는 검색어 및 URL을 더 빠르게 완성</translation>
 <translation id="6545867563032584178">Mac 시스템 환경설정에서 마이크가 사용 중지되었습니다</translation>
-<translation id="6547316139431024316">이 확장 프로그램에 대해 다시 경고하지 않음</translation>
 <translation id="6547354035488017500">최소 512MB의 저장 공간을 확보하지 않으면 기기가 응답하지 않을 것입니다. 저장 공간을 확보하려면 기기에서 파일을 삭제하세요.</translation>
 <translation id="6550675742724504774">옵션</translation>
 <translation id="6551508934388063976">명령어가 없습니다. 컨트롤 키와 N을 눌러 새 창을 여세요.</translation>
@@ -4677,7 +4669,6 @@
 <translation id="827097179112817503">홈 버튼 표시</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{북마크 1개가 삭제됨}other{북마크 #개가 삭제됨}}</translation>
 <translation id="8272443605911821513">'추가 도구' 메뉴에서 확장 프로그램을 클릭하여 확장 프로그램을 관리할 수 있습니다.</translation>
-<translation id="8272966760965438857">한곳에서 Google 계정을 관리하세요</translation>
 <translation id="8274332263553132018">파일 전송</translation>
 <translation id="8274924778568117936">업데이트가 완료될 때까지 <ph name="DEVICE_TYPE" />을(를) 끄거나 닫지 마세요. 설치가 완료되면 <ph name="DEVICE_TYPE" />이(가) 다시 시작됩니다.</translation>
 <translation id="8275038454117074363">가져오기</translation>

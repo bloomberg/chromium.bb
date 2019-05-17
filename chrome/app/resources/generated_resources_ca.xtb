@@ -338,6 +338,7 @@
     servidor intermediari, ajusteu la <ph name="LINK_START" />configuració del servidor intermediari<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">L'única manera de desfer aquesta acció és tornar a instal·lar <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importat de Safari</translation>
+<translation id="1515163294334130951">Inicia</translation>
 <translation id="1521442365706402292">Administra certificats</translation>
 <translation id="152234381334907219">Contrasenyes que no es desen mai</translation>
 <translation id="1524430321211440688">Teclat</translation>
@@ -440,6 +441,7 @@
 <translation id="167160931442925455">Volum màxim</translation>
 <translation id="1673137583248014546"><ph name="URL" /> vol veure la marca i el model de la teva clau de seguretat</translation>
 <translation id="1679068421605151609">Eines per a desenvolupadors</translation>
+<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="167983332380191032">El servei de gestió ha enviat un error d'HTTP.</translation>
 <translation id="1680849702532889074">S'ha produït un error en instal·lar l'aplicació per a Linux.</translation>
 <translation id="16815041330799488">No permetis que els llocs web vegin el text i les imatges copiats al porta-retalls</translation>
@@ -486,6 +488,7 @@
 <translation id="1744060673522309905">No es pot connectar el dispositiu al domini. Comprova que no hagis superat el nombre de dispositius que hi pots afegir.</translation>
 <translation id="1744108098763830590">pàgina en segon pla</translation>
 <translation id="1745520510852184940">Fes-ho sempre</translation>
+<translation id="1746402432151920942">Identificador de contingut multimèdia protegit</translation>
 <translation id="175196451752279553">T&amp;orna a obrir la pestanya tancada</translation>
 <translation id="1753905327828125965">Els més visitats</translation>
 <translation id="1756681705074952506">Mètode d'introducció de text</translation>
@@ -543,6 +546,7 @@
 <translation id="1830550083491357902">Sessió no iniciada</translation>
 <translation id="1832511806131704864">Canvi de telèfon actualitzat</translation>
 <translation id="1834503245783133039">Error en la baixada: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Dispositius MIDI</translation>
 <translation id="1838374766361614909">Esborra la cerca</translation>
 <translation id="1841545962859478868">És possible que l'administrador del dispositiu supervisi el següent:</translation>
 <translation id="1841616161104323629">Falta el registre del dispositiu.</translation>
@@ -786,6 +790,7 @@
 <translation id="2220529011494928058">Informa d'un problema</translation>
 <translation id="2220572644011485463">PIN o contrasenya</translation>
 <translation id="2224444042887712269">Aquesta configuració pertany a <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Esdeveniments d'accessibilitat</translation>
 <translation id="2224551243087462610">Edita el nom de la carpeta</translation>
 <translation id="2226449515541314767">S'ha impedit que aquest lloc tingui control total dels dispositius MIDI.</translation>
 <translation id="2226720438730111184">Indica'ns el problema</translation>
@@ -962,7 +967,6 @@
 <translation id="2496180316473517155">Historial de navegació</translation>
 <translation id="2497229222757901769">Velocitat del ratolí</translation>
 <translation id="2497852260688568942">L'administrador ha desactivat la sincronització</translation>
-<translation id="249819058197909513">No em tornis a avisar per a aquesta aplicació</translation>
 <translation id="2498539833203011245">Minimitza</translation>
 <translation id="2498765460639677199">Enorme</translation>
 <translation id="2499747912851752301">S'estan exportant les contrasenyes...</translation>
@@ -1049,7 +1053,6 @@
 <translation id="2630681426381349926">Connecteu-vos a la xarxa Wi-Fi per començar</translation>
 <translation id="2631120081682787498">Confirmes que vols tancar aquesta pestanya?</translation>
 <translation id="2631498379019108537">Mostra opcions d'introducció al prestatge</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> està utilitzant <ph name="USAGE" /> MB d'espai de disc.</translation>
 <translation id="2633212996805280240">Voleu eliminar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> no ha pogut completar la instal·lació, però es continuarà executant des de la imatge de disc.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1393,7 +1396,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3157931365184549694">Restaura</translation>
 <translation id="3158033540161634471">Configura l'empremta digital</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (emmagatzemat en maquinari)</translation>
-<translation id="316125635462764134">Suprimeix l'aplicació</translation>
 <translation id="3161522574479303604">Tots els idiomes</translation>
 <translation id="3163201441334626963">Producte desconegut <ph name="PRODUCT_ID" /> del proveïdor <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Alguns operadors de telefonia mòbil poden bloquejar aquesta funció.</translation>
@@ -1893,6 +1895,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3916445069167113093">Aquest tipus de fitxer pot malmetre el vostre equip. Voleu mantenir <ph name="FILE_NAME" /> igualment?</translation>
 <translation id="3918972485393593704">Informa dels detalls a Google</translation>
 <translation id="3919145445993746351">Per accedir a les extensions des de tots els ordinadors, activa la sincronització</translation>
+<translation id="391999873395511996">S'està baixant la màquina virtual.</translation>
 <translation id="3920504717067627103">Normes de certificats</translation>
 <translation id="392089482157167418">Activa ChromeVox (comentaris de veu)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1943,7 +1946,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3983586614702900908">dispositius d'un proveïdor desconegut</translation>
 <translation id="3984159763196946143">No s'ha pogut iniciar el mode de demostració</translation>
 <translation id="3984431586879874039">Vols permetre que aquest lloc web vegi la teva clau de seguretat?</translation>
-<translation id="3987348946546879621">Dades estalviades</translation>
 <translation id="3987938432087324095">No ho he entès.</translation>
 <translation id="3988996860813292272">Selecciona la zona horària</translation>
 <translation id="399179161741278232">Importats</translation>
@@ -1974,7 +1976,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4037889604535939429">Edita la persona</translation>
 <translation id="4042264909745389898">Condicions de Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Surt de la pàgina}other{Surt de les pàgines}}</translation>
-<translation id="404299405565920089">Aquí pots gestionar tots els teus Comptes de Google amb la sessió iniciada en aplicacions i llocs web. Les aplicacions i els llocs web que tinguin el teu permís podran accedir a la informació del compte que necessitin per funcionar correctament.</translation>
 <translation id="4044612648082411741">Introdueix la contrasenya del certificat</translation>
 <translation id="404493185430269859">Motor de cerca predeterminat</translation>
 <translation id="4046123991198612571">Pista següent</translation>
@@ -2089,7 +2090,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4242533952199664413">Obre la configuració</translation>
 <translation id="4242577469625748426">No s'ha pogut instal·lar la configuració de la política al dispositiu: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Cerca més aplicacions de llapis òptic</translation>
-<translation id="424546999567421758">Ús de disc elevat detectat</translation>
 <translation id="424726838611654458">Obre sempre a Adobe Reader</translation>
 <translation id="4247901771970415646">No es pot sincronitzar amb <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">S'està esperant la connexió de xarxa...</translation>
@@ -2197,7 +2197,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4421932782753506458">Gatet</translation>
 <translation id="4422347585044846479">Editeu l'adreça d'interès d'aquesta pàgina</translation>
 <translation id="4423376891418188461">Restaura la configuració</translation>
-<translation id="4423482519432579560">&amp;Corrector ortogràfic</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, l'administrador necessita que canviïs la contrasenya.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4430369329743628066">S'ha afegit a les adreces d'interès</translation>
@@ -2657,8 +2656,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="5187295959347858724">Ara teniu la sessió iniciada a <ph name="SHORT_PRODUCT_NAME" />. Les vostres adreces d'interès, l'historial i altres opcions de configuració s'estan sincronitzant amb el vostre compte de Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vol baixar diversos fitxers</translation>
-<translation id="5192316339598592690">Canvia de compte ràpidament i inicia la sessió en aplicacions i llocs web a la vegada.
-    Pot ser que les aplicacions i els llocs web et demanin permís per utilitzar part de la teva informació del Compte de Google. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Fes un Powerwash del dispositiu i torna-ho a provar.</translation>
 <translation id="5204967432542742771">Escriviu la contrasenya</translation>
 <translation id="5206215183583316675">Vols suprimir "<ph name="CERTIFICATE_NAME" />"?</translation>
@@ -3339,7 +3336,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="622537739776246443">El perfil se suprimirà</translation>
 <translation id="6225475702458870625">Connexió de dades disponible des del teu <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Fitxer de clau privada (opcional)</translation>
-<translation id="6228516488918914827">S'ha carregat una pàgina més ràpidament</translation>
 <translation id="6228691855869374890">Aquest lloc té un control complet dels dispositius MIDI.</translation>
 <translation id="6229890768313448549">Les Condicions del servei de Google Play no es poden carregar. Torna-ho a provar.</translation>
 <translation id="6231881193380278751">Afegiu un paràmetre de consulta a l'URL per actualitzar la pàgina de manera automàtica: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3544,7 +3540,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6545665334409411530">Freqüència de repetició</translation>
 <translation id="6545834809683560467">Utilitza un servei de predicció per completar fàcilment les cerques i els URL introduïts a la barra d'adreces o al quadre de cerca del menú d'aplicacions.</translation>
 <translation id="6545867563032584178">El micròfon està desactivat a les preferències del sistema de Mac</translation>
-<translation id="6547316139431024316">No em tornis a avisar per a aquesta extensió</translation>
 <translation id="6547354035488017500">Si no alliberes almenys 512 MB d'espai, el dispositiu deixarà de respondre. Per fer-ho, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="6550675742724504774">Opcions</translation>
 <translation id="6551508934388063976">L'ordre no està disponible. Premeu Ctrl + N per obrir una finestra nova.</translation>
@@ -4672,7 +4667,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="827097179112817503">Mostra el botó Pàgina d'inici</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{S'ha suprimit 1 adreça d'interès}other{S'han suprimit # adreces d'interès}}</translation>
 <translation id="8272443605911821513">Per gestionar les extensions, feu clic a Extensions al menú Més eines.</translation>
-<translation id="8272966760965438857">Gestiona els teus Comptes de Google des d'un sol lloc</translation>
 <translation id="8274332263553132018">Emet el fitxer</translation>
 <translation id="8274924778568117936">No apaguis ni tanquis el dispositiu <ph name="DEVICE_TYPE" /> fins que l'actualització no hagi finalitzat. <ph name="DEVICE_TYPE" /> es reiniciarà un cop finalitzi la instal·lació.</translation>
 <translation id="8275038454117074363">Importa</translation>

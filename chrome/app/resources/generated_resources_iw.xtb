@@ -335,6 +335,7 @@
 <translation id="1510785804673676069">‏אם אתה משתמש בשרת proxy, בדוק את הגדרות שרת ה-proxy או צור קשר עם מנהל הרשת כדי לוודא ששרת ה-proxy פועל. אם אינך סבור שעליך להשתמש בשרת proxy, שנה את <ph name="LINK_START" />הגדרות שרת ה-proxy שלך<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">הדרך היחידה לבטל את הפעולה זו היא להתקין מחדש את <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">‏יובא מ-Safari</translation>
+<translation id="1515163294334130951">הפעל</translation>
 <translation id="1521442365706402292">נהל אישורים</translation>
 <translation id="152234381334907219">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1524430321211440688">מקלדת</translation>
@@ -437,6 +438,7 @@
 <translation id="167160931442925455">עוצמת הקול הגבוהה ביותר</translation>
 <translation id="1673137583248014546">האתר <ph name="URL" /> מבקש לראות את היצרן והדגם של מפתח האבטחה שלך</translation>
 <translation id="1679068421605151609">כלים עבור מפתחים</translation>
+<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="167983332380191032">‏שירות הניהול שלח שגיאת HTTP.</translation>
 <translation id="1680849702532889074">‏קרתה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
 <translation id="16815041330799488">אין להתיר לאתרים לגשת לטקסט ותמונות שהועתקו ללוח</translation>
@@ -960,7 +962,6 @@
 <translation id="2496180316473517155">היסטוריית גלישה</translation>
 <translation id="2497229222757901769">מהירות עכבר</translation>
 <translation id="2497852260688568942">מנהל המערכת שלך השבית את הסנכרון</translation>
-<translation id="249819058197909513">אל תציג שוב אזהרה עבור היישום הזה</translation>
 <translation id="2498539833203011245">מזער</translation>
 <translation id="2498765460639677199">ענק</translation>
 <translation id="2499747912851752301">מייצא סיסמאות...</translation>
@@ -1048,7 +1049,6 @@
 <translation id="2630681426381349926">‏התחבר ל-Wi-Fi כדי להתחיל</translation>
 <translation id="2631120081682787498">לסגור את הכרטיסייה הזו?</translation>
 <translation id="2631498379019108537">הצג אפשרויות קלט במדף</translation>
-<translation id="2633199387167390344">‏<ph name="NAME" /> משתמש ב-‎<ph name="USAGE" /> MB מנפח הדיסק.</translation>
 <translation id="2633212996805280240">להסיר את "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> לא הצליח להשלים את ההתקנה, אך ימשיך לפעול מתמונת הדיסק שלו.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1302,7 +1302,7 @@
 <translation id="3012917896646559015">יש ליצור קשר עם יצרן החומרה באופן מיידי כדי לשלוח את המחשב לתיקון.</translation>
 <translation id="3013291976881901233">‏התקני MIDI</translation>
 <translation id="3015639418649705390">הפעלה מחדש עכשיו</translation>
-<translation id="3016329696181678353">לא ניתן להגדיר את <ph name="PRINTER_NAME" /> באופן אוטומטי. יש לציין פרטי מדפסת מתקדמים.</translation>
+<translation id="3016329696181678353">לא ניתן להגדיר את <ph name="PRINTER_NAME" /> באופן אוטומטי. יש לקבוע את ההגדרות המתקדמות של המדפסת.</translation>
 <translation id="3016641847947582299">הרכיב עודכן</translation>
 <translation id="3016780570757425217">לדעת מה המיקום שלך</translation>
 <translation id="3020183492814296499">קיצורים</translation>
@@ -1394,7 +1394,6 @@
 <translation id="3157931365184549694">שחזר</translation>
 <translation id="3158033540161634471">הגדרת טביעת האצבע</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (בגיבוי חומרה)</translation>
-<translation id="316125635462764134">הסר יישום</translation>
 <translation id="3161522574479303604">כל השפות</translation>
 <translation id="3163201441334626963">מוצר לא ידוע <ph name="PRODUCT_ID" /> מהספק <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">ייתכן שספקים מסוימים חוסמים את התכונה הזו.</translation>
@@ -1895,6 +1894,7 @@
 <translation id="3916445069167113093">סוג קובץ זה עלול לגרום נזק למחשב שלך. האם ברצונך לשמור את <ph name="FILE_NAME" /> בכל מקרה?</translation>
 <translation id="3918972485393593704">‏שליחת הפרטים אל Google</translation>
 <translation id="3919145445993746351">כדי לקבל גישה אל התוספים שלך בכל המחשבים שברשותך, יש להפעיל את הסנכרון</translation>
+<translation id="391999873395511996">מתבצעת הורדה של המכונה הווירטואלית.</translation>
 <translation id="3920504717067627103">מדיניות אישורים </translation>
 <translation id="392089482157167418">‏הפעל את ChromeVox (משוב קולי)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1946,7 +1946,6 @@
 <translation id="3983586614702900908">מכשירים מספק לא ידוע</translation>
 <translation id="3984159763196946143">לא ניתן היה להתחיל מצב הדגמה</translation>
 <translation id="3984431586879874039">האם לאפשר לאתר לראות את מפתח האבטחה שלך?</translation>
-<translation id="3987348946546879621">נתונים נחסכו</translation>
 <translation id="3987938432087324095">זה לא היה ברור.</translation>
 <translation id="3988996860813292272">בחר אזור זמן</translation>
 <translation id="399179161741278232">מיובאות</translation>
@@ -1977,7 +1976,6 @@
 <translation id="4037889604535939429">עריכת פרטי משתמש</translation>
 <translation id="4042264909745389898">‏תנאים של Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{יציאה מהדף}two{יציאה מהדפים}many{יציאה מהדפים}other{יציאה מהדפים}}</translation>
-<translation id="404299405565920089">‏כאן אפשר לנהל את כל חשבונות Google שלך שעמם נכנסת אל אפליקציות ואתרים. אפליקציות ואתרים שהענקת להם הרשאה יכולים לגשת אל פרטי החשבון הנחוצים לתפקוד שלהם.</translation>
 <translation id="4044612648082411741">הזן את סיסמת האישור</translation>
 <translation id="404493185430269859">מנוע החיפוש המוגדר כברירת מחדל</translation>
 <translation id="4046123991198612571">הרצועה הבאה</translation>
@@ -2092,7 +2090,6 @@
 <translation id="4242533952199664413">פתח את 'הגדרות'</translation>
 <translation id="4242577469625748426">התקנת הגדרות המדיניות במכשיר: <ph name="VALIDATION_ERROR" /> נכשלה.</translation>
 <translation id="4244238649050961491">חפש עוד אפליקציות לשימוש בסטיילוס</translation>
-<translation id="424546999567421758">אותר שימוש בכמות גדולה מנפח הדיסק</translation>
 <translation id="424726838611654458">‏פתח תמיד ב-Adobe Reader</translation>
 <translation id="4247901771970415646">לא ניתן לסנכרן עם <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">תיכף נתחבר לרשת…</translation>
@@ -2200,7 +2197,6 @@
 <translation id="4421932782753506458">לקיק</translation>
 <translation id="4422347585044846479">ערוך סימניה עבור דף זה</translation>
 <translation id="4423376891418188461">שחזר הגדרות</translation>
-<translation id="4423482519432579560">&amp;בדיקת איות</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, מנהל המערכת מבקש ממך לשנות את הסיסמה שלך.</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="4430369329743628066">הסימנייה נוספה</translation>
@@ -2660,8 +2656,6 @@
 <translation id="5187295959347858724">‏נכנסת ל-<ph name="SHORT_PRODUCT_NAME" />. הסימניות, ההיסטוריה והגדרות אחרות שלך מסתנכרנות עם חשבון Google שלך.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> ‏(<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> רוצה להוריד מספר קבצים</translation>
-<translation id="5192316339598592690">‏ניתן להחליף חשבונות במהירות ולהיכנס לאפליקציות ולאתרים מרובים בבת אחת.
-    אפליקציות ואתרים יכולים לבקש ממך הרשאה להשתמש בחלק מפרטי חשבון Google שלך. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">‏אפשר לבצע Powerwash במכשיר ולנסות שוב.</translation>
 <translation id="5204967432542742771">הזן סיסמה</translation>
 <translation id="5206215183583316675">האם למחוק את "<ph name="CERTIFICATE_NAME" />"?</translation>
@@ -3340,7 +3334,6 @@
 <translation id="622537739776246443">הפרופיל יימחק</translation>
 <translation id="6225475702458870625">יש חיבור נתונים זמין ב-<ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">קובץ מפתח פרטי (אופציונלי)</translation>
-<translation id="6228516488918914827">נטען דף מהיר יותר</translation>
 <translation id="6228691855869374890">‏לאתר זה יש שליטה מלאה על מכשירי MIDI.</translation>
 <translation id="6229890768313448549">‏לא ניתן לטעון את התנאים וההגבלות של Google Play. נסה שוב.</translation>
 <translation id="6231881193380278751">‏הוסף פרמטר שאילתה בכתובת האתר כדי לרענן את הדף באופן אוטומטי: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3545,7 +3538,6 @@
 <translation id="6545665334409411530">שיעור חזרה</translation>
 <translation id="6545834809683560467">‏שימוש בשירות חיזויים כדי להשלים חיפושים וכתובות URL שמזינים בשורת כתובת האתר או בתיבת החיפוש של מרכז האפליקציות</translation>
 <translation id="6545867563032584178">‏המיקרופון מושבת בהעדפות המערכת של Mac</translation>
-<translation id="6547316139431024316">אל תציג שוב אזהרה עבור התוסף הזה</translation>
 <translation id="6547354035488017500">‏עליך לפנות ‎512 MB לפחות משטח האחסון במכשיר, אחרת הוא יפסיק להגיב. כדי לפנות שטח אחסון, מחק קבצים מאחסון המכשיר.</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6551508934388063976">‏הפקודה לא זמינה. הקש על Control-N לפתיחת חלון חדש.</translation>
@@ -4675,7 +4667,6 @@
 <translation id="827097179112817503">הצג את לחצן 'דף הבית'</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{סימניה אחת נמחקה}two{# סימניות נמחקו}many{# סימניות נמחקו}other{# סימניות נמחקו}}</translation>
 <translation id="8272443605911821513">נהל את התוספים שלך על ידי לחיצה על 'תוספים' בתפריט 'כלים נוספים'.</translation>
-<translation id="8272966760965438857">‏יש לך אפשרות לנהל את כל חשבונות Google במקום אחד</translation>
 <translation id="8274332263553132018">העברת קובץ</translation>
 <translation id="8274924778568117936">אל תכבה או תסגור את ה-<ph name="DEVICE_TYPE" /> לפני סיום העדכון. ה-<ph name="DEVICE_TYPE" /> יופעל מחדש באופן אוטומטי בסיום ההתקנה.</translation>
 <translation id="8275038454117074363">ייבוא</translation>

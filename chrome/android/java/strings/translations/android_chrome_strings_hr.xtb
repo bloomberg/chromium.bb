@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Omogući potpuni nadzor za MIDI</translation>
 <translation id="1449080968331948513">Ušteda podataka sada je u Jednostavnom načinu</translation>
 <translation id="145097072038377568">Isključeno u postavkama Androida</translation>
+<translation id="146329143005354472">Dodaj u Moje aplikacije</translation>
 <translation id="1477626028522505441">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog poteškoća s poslužiteljem.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ još 1)}one{ (+ još #)}few{ (+ još #)}other{ (+ još #)}}</translation>
 <translation id="1501480321619201731">Izbriši grupu</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Web lokacija</translation>
 <translation id="2874939134665556319">Prethodna pjesma</translation>
 <translation id="2876369937070532032">Googleu šalje URL-ove nekih stranica koje posjećujete kada je ugrožena vaša sigurnost</translation>
-<translation id="2876764156902388290">Chrome koristi manje podataka za prikaz ove stranice</translation>
 <translation id="2888126860611144412">O Chromeu</translation>
 <translation id="2891154217021530873">Zaustavljanje učitavanja stranice</translation>
 <translation id="2893180576842394309">Google može upotrebljavati vašu povijest za prilagodbu Pretraživanja i drugih Googleovih usluga</translation>

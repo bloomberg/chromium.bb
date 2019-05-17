@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Полный доступ к управлению MIDI-устройствами</translation>
 <translation id="1449080968331948513">Функция "Экономия трафика" теперь называется "Упрощенный режим".</translation>
 <translation id="145097072038377568">Отключено в настройках Android</translation>
+<translation id="146329143005354472">Добавить в "Мои приложения"</translation>
 <translation id="1477626028522505441">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неполадок на сервере.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (и ещё 1)}one{ (и ещё #)}few{ (и ещё #)}many{ (и ещё #)}other{ (и ещё #)}}</translation>
 <translation id="1501480321619201731">Удалить группу</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Предыдущий трек</translation>
 <translation id="2876369937070532032">При угрозе безопасности отправлять в Google URL некоторых страниц, которые вы открываете</translation>
-<translation id="2876764156902388290">Для отображения этой страницы Chrome расходует меньше трафика</translation>
 <translation id="2888126860611144412">О браузере Chrome</translation>
 <translation id="2891154217021530873">Остановить загрузку страницы</translation>
 <translation id="2893180576842394309">Google может использовать вашу историю, чтобы персонализировать Поиск и другие сервисы.</translation>

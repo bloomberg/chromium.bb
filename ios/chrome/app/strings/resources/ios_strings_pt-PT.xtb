@@ -273,6 +273,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ativar a sincronização</translation>
+<translation id="5234764350956374838">Ignorar</translation>
 <translation id="5244474230056479698">A sincronizar com <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Cancelar sincronização</translation>
 <translation id="5271549068863921519">Guardar palavra-passe</translation>
@@ -312,6 +313,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="5938160824633642847">O dispositivo está quase cheio. Liberte espaço e tente novamente.</translation>
 <translation id="5948291296578561264">Isto permite-lhe guardar fotos na sua biblioteca de fotos.</translation>
 <translation id="5955891643922670672">Ver a versão offline</translation>
+<translation id="5957613098218939406">Mais opções</translation>
 <translation id="5964480694698977962">Criar novo separador de navegação anónima</translation>
 <translation id="5965679971710331625">Tem sessão iniciada</translation>
 <translation id="5979837087407522202">Pesquisar palavras-passe</translation>

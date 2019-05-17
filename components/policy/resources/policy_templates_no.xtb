@@ -399,7 +399,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Advarsel: Det er ikke anbefalt å delegere kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen til en kioskapp, siden dette kan hindre enheten i å motta programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen delegeres, kan brukerne bli utsatt for risiko.</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
-<translation id="1689963000958717134">Tillater skyving av nettverkskonfigurasjon for alle brukere av en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjonen er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Konfigurerer tilgjengeligheten og funksjonaliteten for oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
 
       Enkeltinnstillinger kan angis i JSON-egenskaper:
@@ -761,7 +760,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Hvis denne regelen er angitt, brukes modus for batterilading hvis enheten støtter det.
 
-          Hvis denne regelen ikke er angitt, men enheten støtter regelen, brukes standard modus for batterilading og kan ikke endres av brukeren.
+          Hvis denne regelen ikke er angitt, men enheten støtter regelen, brukes standard modus for batterilading, og dette kan ikke endres av brukeren.
 
           Merk: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> overstyrer denne regelen hvis førstnevnte er angitt.</translation>
 <translation id="237494535617297575">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får vise varsler. Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller av brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
@@ -949,16 +948,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
      Hvis denne innstillingen er deaktivert, kan ikke nettsidene bruke JavaScript og brukeren kan ikke endre innstillingen.
 
       Hvis denne innstillingen er aktivert eller ikke angitt, kan nettsider bruke JavaScript, men brukeren kan endre innstillingen.</translation>
-<translation id="2747157663401642394">Konfigurerer innstillinger for administrering av utvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne regelen styrer flere innstillinger, inkludert innstillinger som styres av eksisterende regler knyttet til utvidelser. Denne regelen overstyrer eventuelle eldre regler hvis begge er angitt.
-
-          Denne regelen tilordner konfigurasjonen en utvidelses-ID eller en oppdateringsnettadresse. Med en utvidelses-ID blir konfigurasjonen kun brukt for den bestemte utvidelsen. En standardkonfigurering kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som gjelder for alle utvidelser uten tilpasset konfigurering i denne regelen. Med en oppdateringsnettadresse brukes konfigureringen for alle utvidelser med den nøyaktige oppdateringsnettadressen som står oppført i manifestet til denne utvidelsen, som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          For Windows-forekomster som ikke er tilknyttet noe <ph name="MS_AD_NAME" />-domene, begrenses administratorinstallering til apper og utvidelser oppført i Chrome Nettmarked.
-
-          For å se en fullstendig beskrivelse av mulige innstillinger og strukturen for denne regelen, gå til https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Begrens området for lokale UDP-porter som brukes av WebRTC</translation>
 <translation id="2757054304033424106">Utvidelser og apper som kan installeres</translation>
 <translation id="2758084448533744848">Spesifiserer en tidssone som enheten tvinges til å bruke. Når denne regelen er angitt, kan ikke brukere av enheten overstyre den spesifiserte tidssonen. Hvis en ugyldig verdi angis, aktiveres regelen likevel og bruker «GMT» i stedet. Hvis en tom streng angis, ignoreres regelen.
@@ -1664,7 +1653,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
          Vær oppmerksom på at kildekoden for utvidelsene kan endres av brukere via utviklerverktøy (noe som potensielt kan føre til at utvidelsene ikke fungerer). Hvis dette kan bli et problem, bør du angi regelen <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en oppdateringsadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. Oppdateringsadressen skal være til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at oppdateringsadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi oppdateringsadressen i <ph name="PRODUCT_NAME" />-versjoner opptil og inkludert 67.
+          Hvert av elementene i listen er en streng som inneholder en utvidelses-ID og eventuelt (valgfritt) en oppdateringsadresse, atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn du for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus. Oppdateringsadressen skal være til et oppdateringsmanifest i XML-format, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC1" />. Oppdateringsadressen for Chrome Nettmarked brukes som standard (og for øyeblikket er den «https://clients2.google.com/service/update2/crx»). Vær oppmerksom på at oppdateringsadressen som angis i denne regelen, bare brukes for den første installasjonen. Påfølgende oppdateringer av utvidelsen bruker oppdateringsadressen som er beskrevet i utvidelsens manifest. Vær også oppmerksom på at det var uttrykkelig påkrevd å angi oppdateringsadressen i <ph name="PRODUCT_NAME" />-versjoner til og med 67.
 
           For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE" /> utvidelsen med ID-en <ph name="EXTENSION_ID_SAMPLE" /> fra den oppdateringsadressen som er standard for Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om verter for utvidelser.
 
@@ -1720,30 +1709,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne regelen påvirker bare brukere som autentiserer via SAML.</translation>
 <translation id="4105989332710272578">Slå av tvungen sertifikatåpenhet for en liste med nettadresser</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
-<translation id="4125606414556046117">Med denne regelen kan du konfigurere bakgrunnsbildet som vises på skrivebordet og på brukernes påloggingssider. Du angir denne innstillingen ved å spesifisere hvilken nettadresse <ph name="PRODUCT_OS_NAME" /> kan laste ned bakgrunnsbildet fra, og en kryptografisk hash som brukes til å bekrefte at ingen har tuklet med nedlastingen. Bildet må være i JPEG-format og ikke større enn 16 MB. Nettadressen må være tilgjengelig uten krav om autentisering.
-
-      Bakgrunnsbildet blir lastet ned og bufret. Det lastes ned på nytt hver gang nettadressen eller hashen endres.
-
-      Du må spesifisere denne innstillingen som en streng med nettadressen og hashen i JSON-format – i samsvar med denne malen:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Nettadressen bakgrunnsbildet kan lastes ned fra.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "SHA-256-hashen for bakgrunnsbildet.",
-            "type": "string"
-          }
-        }
-      }
-
-      Hvis denne regelen er angitt, blir bakgrunnsbildet lastet ned og brukt i <ph name="PRODUCT_OS_NAME" />.
-
-      Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
-
-      Hvis denne regelen ikke er angitt, kan brukerne selv velge hvilket bakgrunnsbilde de vil bruke for skrivebordet og påloggingsskjermen.</translation>
 <translation id="412697421478384751">Gjør det mulig for brukere å angi svake PIN-koder for låseskjermen</translation>
 <translation id="4138655880188755661">Tidsgrense</translation>
 <translation id="4144164749344898721">Denne regelen kontrollerer flere innstillinger for strømstyring når brukeren er inaktiv.
@@ -2525,7 +2490,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Hvis denne innstillingen ikke er konfigurert, legges det ingen begrensninger på godkjente app- og utvidelsestyper.
 
-          Bruk av flere utvidelses-ID-er atskilt med komma støttes ikke før versjon 75 og blir hoppet over. Resten av regelen fortsetter å gjelde.</translation>
+          Bruk av flere utvidelses-ID-er atskilt med komma støttes ikke og ignoreres før versjon 75. Resten av regelen fortsetter å gjelde.</translation>
 <translation id="5645779841392247734">Tillat informasjonskapsler på disse nettstedene</translation>
 <translation id="5689430183304951538">Standard sidestørrelse for utskrift</translation>
 <translation id="5693469654327063861">Tillat dataoverføring</translation>
@@ -2689,53 +2654,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne innstillingen ikke angis, eller angis som feil, kommer utskriftskommandoene til å utløse forhåndsvisningsskjermen for utskrifter.</translation>
 <translation id="6022948604095165524">Handling ved oppstart</translation>
-<translation id="6023030044732320798">Angir et sett med regler som overleveres til ARC-kjøringen. Verdien må være gyldig JSON.
-
-      Denne regelen kan brukes til å konfigurere hvilke Android-apper som installeres automatisk på enheten:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Android app-identifikator, for eksempel "com.google.android.gm" for Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Spesifiserer hvordan en app skal installeres. OPTIONAL: Appen installeres ikke automatisk, men brukeren kan installere den. Denne brukes som standard hvis regelen ikke er angitt. PRELOAD: Appen installeres automatisk, men brukeren kan avinstallere den. FORCE_INSTALLED: Appen installeres automatisk, og brukeren kan ikke avinstallere den. BLOCKED: Appen blokkeres og kan ikke installeres. Hvis appen ble installert under en annen regel, blir den avinstallert.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Regel for å gi tillatelser til apper på forespørsel. PERMISSION_POLICY_UNSPECIFIED: Ingen regel er angitt. Hvis ingen regel er angitt for en tillatelse på noe nivå, brukes funksjonaliteten for `PROMPT` som standard. PROMPT: Spør brukeren om å gi tillatelse. GRANT: Gi tillatelse automatisk. DENY: Avvis tillatelse automatisk.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Appspesifikt JSON-konfigureringsobjekt med et sett med nøkkelverdi-par, for eksempel '"managedConfiguration": { "nøkkel1": verdi1, "nøkkel2": verdi2}'. Nøklene er definert i appmanifestet.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      For å feste apper til appoversikten, se PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="603410445099326293">Parametere for forslagsnettadressser som bruker POST</translation>
 <translation id="6034341625190551415">Kontrollerer typer kioskkontoer og offentlige økter.</translation>
@@ -2864,9 +2782,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
         Hvis regler står på listen og det oppstår konflikt mellom to kilder med samme omfang og nivå, blir verdiene slått sammen til en ny regelliste.
 
-        Hvis regler står på listen og det oppstår konflikt mellom to kilder som dessuten har ulikt omfang eller nivå, brukes reglene med høyest prioritet.
+        Hvis en regel står på listen og det oppstår konflikt mellom to kilder som dessuten har ulikt omfang eller nivå, brukes regelen som har høyest prioritet.
 
-        Hvis regler ikke står på listen og det oppstår konflikt mellom kilder, omfang eller nivåer, brukes reglene med høyest prioritet.</translation>
+        Hvis en regel ikke står på listen og det oppstår konflikt mellom kilder, omfang eller nivå, brukes regelen som har høyest prioritet.</translation>
 <translation id="6258193603492867656">Angir om den genererte Kerberos-SPN-en skal inneholde en ikke-standard port.
 
           Hvis du aktiverer denne innstillingen, og en ikke-standard port (dvs. en annen port enn 80 eller 443) oppgis, omfattes den av den genererte Kerberos-SPN-en.
@@ -3090,38 +3008,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne regelen er satt til «false» (usann), brukes aldri den innebygde DNS-klienten.
 
       Hvis denne regelen ikke angis, blir den innebygde DNS-klienten slått på som standard på MacOS, Android (når verken Privat DNS eller VPN er slått på) og ChromeOS, og brukerne kan endre om den innebygde DNS-klienten skal brukes eller ikke, ved å endre chrome://flags eller spesifisere et flagg i kommandolinjen.</translation>
-<translation id="6838056959556423778">Overstyrer reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />.
-
-      Denne regelen fastsetter reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />, noe som skjer den første gangen utskriftsfunksjonen brukes med en profil.
-
-      Når denne regelen er angitt, prøver <ph name="PRODUCT_NAME" /> å finne en skriver som har alle de spesifiserte attributtene, og velger den som standardskriver. Den første skriveren som blir funnet og som samsvarer med regelen, blir valgt. Hvis flere skrivere har alle de spesifiserte attributtene, velges en av dem vilkårlig, avhengig av rekkefølgen de oppdages i.
-
-      Hvis denne regelen ikke er angitt, eller hvis det ikke blir funnet noen skriver som har alle attributtene, innen operasjonen blir tidsavbrutt, blir den innebygde PDF-skriveren valgt. Hvis PDF-skriveren ikke er tilgjengelig, blir det ikke valgt noen skriver.
-
-      Verdien parses som et JSON-objekt i henhold til følgende oppsett:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Om søket etter den samsvarende skriveren skal begrenses til et spesifikt sett med skrivere.",
-            "type": "string" {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Et regulært uttrykk som samsvarer med skriverens ID.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Et regulært uttrykk som samsvarer med skriverens visningsnavn.",
-            "type": "string"
-          }
-        }
-      }
-
-      Skrivere som kobles til <ph name="CLOUD_PRINT_NAME" />, anses for å være <ph name="PRINTER_TYPE_CLOUD" />. Resten av skriverne klassifiseres som <ph name="PRINTER_TYPE_LOCAL" />.
-      Hvis du hopper over et felt, gjelder alle verdier. Det vil si at hvis du for eksempel ikke spesifiserer tilkoblingsmulighetene, søker forhåndsvisningen av utskrift etter alle slags skrivere – både lokale og i skyen.
-      Mønstrene for regulære uttrykk må følge JavaScript RegExp-syntaksen, og treffene skiller mellom store og små bokstaver.</translation>
 <translation id="6843296367238757293">Denne regelen er avviklet. Vi anbefaler å ikke bruke den. Les mer på https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Denne regelen ble fjernet i <ph name="PRODUCT_NAME" /> 68 og erstattet av <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Denne regelen er avviklet og fjernet i M66, fordi den bare ble brukt til intern testing og er en sikkerhetsrisiko.
@@ -4254,30 +4140,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne regelen påvirker bare brukere som autentiserer seg via SAML.
 
       Regelverdien skal angis i sekunder.</translation>
-<translation id="9027787254195333560">Med denne regelen kan du konfigurere hvilket brukerbilde som representerer brukeren på påloggingsskjermen. Du angir denne regelen ved å spesifisere nettadressen <ph name="PRODUCT_OS_NAME" /> kan laste ned brukerbildet fra, og en kryptografisk hash som brukes til å bekrefte at ingen har tuklet med nedlastingen. Bildet må være i JPEG-format og ikke større enn 512 kB. Nettadressen må være tilgjengelig uten krav om autentisering.
-
-      Brukerbildet blir lastet ned og bufret. Det lastes ned på nytt hver gang nettadressen eller hashen endres.
-
-      Du må spesifisere denne innstillingen som en streng med nettadressen og hashen i JSON-format – i samsvar med denne malen:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Nettadressen brukerbildet kan lastes ned fra.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "SHA-256-hashen for brukerbildet.",
-            "type": "string"
-          }
-        }
-      }
-
-      Hvis denne regelen er angitt, blir brukerbildet lastet ned og brukt i <ph name="PRODUCT_OS_NAME" />.
-
-      Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
-
-      Hvis denne innstillingen ikke er angitt, kan brukerne velge sine egne brukerbilder for påloggingskjermen.</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9038058011835642205">Spesifiserer en liste over nettsteder som installeres stille (uten brukerinteraksjon) og ikke kan avinstalleres eller deaktiveres av brukeren.
 
@@ -4290,7 +4152,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
 
       Verdien for denne regelen skal angis i millisekunder. Verdien må være mellom 30 sekunder og 24 timer.</translation>
-<translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Denne regelen styrer om enheten skal oppdateres til en hurtigfiks-delversjon.
 
       Hvis regelverdien er satt til et token som tilsvarer en hurtigfiks-delversjon, oppdateres enheten til den tilsvarende hurtigfiks-delversjonen hvis ikke oppdateringen blokkeres av en annen regel.
@@ -4370,17 +4231,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «false» (usant), velges ikke topp- og bunntekst i dialogboksen for forhåndsvisning av utskrifter, og brukeren kan ikke endre dette.
 
       Hvis denne regelen er angitt som «true» (sant), velges topp- og bunntekst i dialogboksen for forhåndsvisning av utskrifter, og brukeren kan ikke endre dette.</translation>
-<translation id="9213347477683611358">Konfigurer bakgrunnsbildet som vises på påloggingsskjermen, på enhentsnivå hvis ingen brukere har logget på enheten ennå. Regelen angis ved å spesifisere nettadressen hvor Chrome OS-enheten kan laste ned bakgrunnsbildet, og dessuten en kryptografisk hash-verdi som brukes til bekrefte nedlastingens integritet. Bildet må være i JPEG-format, og filstørrelsen kan ikke overskride 16 MB. Nettadressen må være tilgjengelig uten autentisering. Bakgrunnsbildet lastes ned og bufres. Det lastes ned på nytt hvis nettadressen eller hash-verdien endres.
-
-      Regelen skal spesifiseres som en streng der nettadressen og hash-verdien skrives i JSON-format, for eksempel
-      {
-        «url»: "https://example.com/device_wallpaper.jpg",
-        «hash»: "examplewallpaperhash"
-      }
-
-      Hvis regelen for enhetsbakgrunn ikke angis, laster Chrome OS ned og bruker bakgrunnsbildet på påloggingsskjermen hvis ingen brukere har logget på enheten ennå. Når en bruker logger på, blir den aktuelle brukerens bakgrunnsregler tatt i bruk.
-
-      Hvis regelen for enhetsbakgrunn ikke angis, bestemmer brukerens bakgrunnsregler hva som vises – såfremt brukerens bakgrunnsregler er angitt.</translation>
 <translation id="9217154963008402249">Frekvensen for nettverkspakker for overvåking</translation>
 <translation id="922540222991413931">Konfigurering av installeringskilder for utvidelser, programmer og brukerskript</translation>
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>

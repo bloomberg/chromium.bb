@@ -402,7 +402,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Avertisment: nu se recomandă să delegi controlul asupra versiunii <ph name="PRODUCT_OS_NAME" /> unei aplicații chioșc, deoarece dispozitivul poate fi împiedicat să primească actualizări de software și remedieri importante de securitate. Dacă delegi controlul asupra versiunii <ph name="PRODUCT_OS_NAME" />, este posibil să pui în pericol utilizatorii.</translation>
 <translation id="1675002386741412210">Acceptat de:</translation>
-<translation id="1689963000958717134">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru toți utilizatorii unui dispozitiv <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, așa cum este acesta definit de formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Configurează disponibilitatea și comportamentul funcției de actualizare a firmware-ului <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Setările individuale pot fi specificate în proprietățile JSON:
@@ -943,16 +942,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această setare este dezactivată, paginile web nu pot utiliza JavaScript, iar utilizatorii nu pot modifica această setare.
 
       Dacă această setare este activată sau nu este configurată, paginile web pot utiliza JavaScript, dar utilizatorul poate schimba această setare.</translation>
-<translation id="2747157663401642394">Configurează setările de gestionare a extensiilor pentru <ph name="PRODUCT_NAME" />.
-
-          Această politică stabilește mai multe setări, inclusiv pe cele controlate de eventualele politici existente privind extensiile. Politica va anula toate politicile vechi dacă ambele sunt setate.
-
-          Această politică asociază un ID de extensie sau o adresă URL de actualizare la configurația sa. În cazul unui ID de extensie, configurația va fi aplicată numai pentru extensia specificată. O configurație prestabilită poate fi setată pentru ID-ul special <ph name="DEFAULT_SCOPE" />, care se va aplica pentru toate extensiile care nu au o configurație personalizată setată în această politică. În cazul unei adrese URL de actualizare, configurația se va aplica pentru toate extensiile cu adresa URL de actualizare exactă specificată în manifestul acestei extensii, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Pentru copiile Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea automată este limitată la aplicațiile și extensiile afișate în Magazinul web Chrome.
-
-          Pentru o descriere completă a setărilor posibile și a structurii acestei politici, accesează https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Restricționează intervalul de porturi UDP locale folosite de WebRTC</translation>
 <translation id="2757054304033424106">Tipuri de extensii/aplicații a căror instalare este permisă</translation>
 <translation id="2758084448533744848">Specifică fusul orar care va fi folosit pentru dispozitiv. Când această politică este setată, utilizatorii de pe dispozitiv nu pot modifica fusul orar specificat. Dacă este furnizată o valoare nevalidă, politica este totuși activată folosind „GMT”. Dacă este furnizat un șir gol, politica este ignorată.
@@ -978,7 +967,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
 
-          Dacă politica nu este setată, valoarea prestabilită este Fals pentru dispozitivele gestionate.</translation>
+          Dacă politica nu este setată, valoarea prestabilită este False pentru dispozitivele gestionate.</translation>
 <translation id="2787173078141616821">Raportează informații despre starea Android</translation>
 <translation id="2799297758492717491">Permite redarea automată a conținutului media pentru o listă albă cu șabloane de adrese URL</translation>
 <translation id="2801155097555584385">Setează în procente valoarea personalizată la care bateria începe să se încarce</translation>
@@ -1179,7 +1168,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Această politică permite administratorilor să ofere utilizatorilor configurații ale
       imprimantelor.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe un computer client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă <ph name="PRODUCT_NAME" /> compatibilă. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător imprimantei. Mai multe informații sunt disponibile la https://support.google.com/chrome?p=noncloudprint.
 
@@ -1645,25 +1634,25 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este activată sau nu este configurată, utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
       Dacă politica nu este activată, utilizatorii nu vor putea valorifica oferte.</translation>
-<translation id="4008233182078913897">Specifică o listă de aplicații și extensii instalate în fundal,
-          fără intervenția utilizatorului și care nu pot fi dezinstalate sau
-          dezactivate de acesta. Toate permisiunile solicitate de
-          aplicații/extensii sunt acordate în mod prestabilit, fără intervenția utilizatorului,
-          inclusiv orice permisiune suplimentară solicitată de viitoarele versiuni ale
-          aplicației/extensiei. În plus, permisiunile sunt acordate pentru
-          API-urile extensiei
-          enterprise.deviceAttributes și enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care
-          nu sunt instalate forțat.)
+<translation id="4008233182078913897">Specifică o listă de aplicații și extensii care sunt instalate în fundal,
+          fără intervenția utilizatorului, și care nu pot fi dezinstalate sau
+          dezactivate de utilizator. Toate permisiunile solicitate de
+          aplicații/extensii sunt acordate implicit, fără intervenția utilizatorului,
+          inclusiv orice permisiune suplimentară solicitată de versiunile ulterioare ale
+          aplicației/extensiei. Mai mult, sunt acordate permisiuni pentru
+          API-urile extensiilor enterprise.deviceAttributes și
+          enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care
+          nu sunt instalate automat.)
 
-          Această politică are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate crea conflicte. Dacă o aplicație sau o extensie care a fost instalată forțat anterior este eliminată din listă, aceasta este dezinstalată automat de <ph name="PRODUCT_NAME" />.
+          Politica are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate fi în conflict. Dacă o aplicație sau extensie care a fost instalată automat anterior este eliminată din listă, este dezinstalată automat de <ph name="PRODUCT_NAME" />.
 
-          Pentru instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea forțată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
+          Pentru exemplarele de Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea automată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
 
-          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Developer Tools (ceea ce poate face extensia nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Developer Tools (ceea ce poate face ca extensia să fie nefuncțională). Dacă acest aspect creează probleme, politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> trebuie să fie setată.
 
-          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul extensiei este un șir alcătuit din 32 de litere și se găsește, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că specificarea explicită a adresei URL de „actualizare” era obligatorie în versiunile <ph name="PRODUCT_NAME" /> de până la 67, inclusiv.
+          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul de extensie este un șir alcătuit din 32 de litere găsit, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că indicarea explicită a adresei URL de „actualizare” era obligatorie în versiunea 67 de <ph name="PRODUCT_NAME" /> și versiunile anterioare.
 
-          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează aplicația <ph name="EXTENSION_ID_SAMPLE" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează <ph name="LINK_TO_EXTENSION_DOC2" />.
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează extensia cu ID-ul <ph name="EXTENSION_ID_SAMPLE" /> de la adresa de „actualizare” standard a Magazinului web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Dacă politica nu este setată, nicio aplicație sau extensie nu va fi instalată automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.
 
@@ -1715,30 +1704,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Această politică afectează doar utilizatorii care se autentifică prin SAML.</translation>
 <translation id="4105989332710272578">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de adrese URL</translation>
 <translation id="4121350739760194865">Împiedicați promoțiile aplicațiilor să apară în pagina Filă nouă</translation>
-<translation id="4125606414556046117">Cu această politică poți configura imaginea de fundal care se afișează pe desktop și pe fundalul ecranului de conectare pentru utilizator. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea de fundal și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea acesteia nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare.
-
-      Imaginea de fundal este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori adresa URL sau codul hash se modifică.
-
-      Politica trebuie să fie specificată ca șir ce exprimă adresa URL și codul hash în format JSON, în conformitate cu următoarea schemă:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Adresa URL de la care imaginea de fundal poate fi descărcată.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Codul hash SHA-256 al imaginii de fundal.",
-            "type": "string"
-          }
-        }
-      }
-
-      Dacă politica este configurată, <ph name="PRODUCT_OS_NAME" /> va descărca și va folosi imaginea de fundal.
-
-      Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
-
-      Dacă politica nu este configurată, utilizatorul poate alege imaginea de afișat pe desktop și pe fundalul ecranului de conectare.</translation>
 <translation id="412697421478384751">Permite utilizatorilor să seteze coduri PIN slabe pentru ecranul de blocare</translation>
 <translation id="4138655880188755661">Limita de timp</translation>
 <translation id="4144164749344898721">Această politică controlează mai multe setări pentru strategia de gestionare a consumului de energie atunci când utilizatorul devine inactiv.
@@ -2162,7 +2127,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5124368997194894978">Activează pornirea pe c.a. (curent alternativ)</translation>
 <translation id="5131211790949066746">Activează îmbinarea politicilor din listă privind extensiile instalate: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> și <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Dacă activezi această setare, valorile pentru politica platformei dispozitivului, politica în cloud a dispozitivului și politica platformei utilizatorului sunt îmbinate într-o listă și folosite ca întreg, fără a mai folosi numai valorile din sursa cu cea mai mare prioritate.
+      Dacă activezi această setare, valorile pentru politica platformei dispozitivului, politica privind serviciile cloud a dispozitivului și politica platformei utilizatorului sunt îmbinate într-o listă și folosite ca întreg, fără a mai folosi numai valorile din sursa cu cea mai mare prioritate.
 
       Dacă dezactivezi această setare sau nu o configurezi, sunt luate numai intrările în listă din sursa cu cea mai mare prioritate, iar toate celelalte surse sunt afișate drept conflicte, dar sunt ignorate.</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
@@ -2499,7 +2464,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Setarea trece pe lista albă tipurile permise de extensii/aplicații care pot fi instalate în <ph name="PRODUCT_NAME" /> și gazdele cu care pot interacționa. Valoarea este o listă de șiruri și fiecare dintre acestea ar trebui să fie una dintre următoarele: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Consultă documentația privind extensiile pentru <ph name="PRODUCT_NAME" /> pentru mai multe informații despre aceste tipuri.
 
-          Reține că această politică se aplică și extensiilor și aplicațiilor care vor fi instalate forțat prin ExtensionInstallForcelist.
+          Reține că această politică se aplică și extensiilor și aplicațiilor care vor fi instalate automat prin ExtensionInstallForcelist.
 
           Dacă setarea este configurată, extensiile/aplicațiile care au un tip ce nu se află pe listă nu vor fi instalate.
 
@@ -2621,10 +2586,10 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5898486742390981550">Când sunt conectați mai mulți utilizatori, numai utilizatorul principal poate folosi aplicațiile Android.</translation>
 <translation id="5901427587865226597">Numai printare duplex</translation>
 <translation id="5903898512448364160">
-      Când politica este activată, politica în cloud are prioritate dacă este în conflict cu politica platformei.
-      Când politica este dezactivată sau nu este configurată, politica platformei are prioritate dacă este în conflict cu politica în cloud.
+      Când politica este activată, politica privind serviciile cloud are prioritate dacă este în conflict cu politica platformei.
+      Când politica este dezactivată sau nu este configurată, politica platformei are prioritate dacă este în conflict cu politica privind serviciile cloud.
 
-      Politica este disponibilă numai ca politică obligatorie a platformei dispozitivului și stabilește numai politicile în cloud privind aria de acoperire a dispozitivului.
+      Politica este disponibilă numai ca politică obligatorie a platformei dispozitivului și stabilește numai politicile privind serviciile cloud ale domeniului dispozitivului.
       </translation>
 <translation id="5905473632148429217">Activează verificările OCSP/CRL online</translation>
 <translation id="5906199912611534122">Permite activarea sau dezactivarea limitării rețelei.
@@ -2667,53 +2632,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică nu este configurată sau este dezactivată, comenzile de printare declanșează ecranul de previzualizare înainte de printare.</translation>
 <translation id="6022948604095165524">Acțiune la pornire</translation>
-<translation id="6023030044732320798">Specifică un set de politici care vor fi trimise în procesul ARC. Valoarea trebuie să fie un fișier JSON valid.
-
-      Această politică poate fi folosită pentru a configura ce aplicații Android sunt instalate automat pe dispozitiv:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identificatorul aplicației Android, de ex., „com.google.android.gmˮ pentru Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Specifică modul în care este instalată aplicația. OPTIONAL: aplicația nu este instalată automat, dar utilizatorul poate să o instaleze. Aceasta este opțiunea prestabilită, dacă politica nu este specificată. PRELOAD: aplicația este instalată automat, dar utilizatorul poate să o dezinstaleze. FORCE_INSTALLED: aplicația este instalată automat și utilizatorul nu o poate dezinstala. BLOCKED: aplicația este blocată și nu poate fi instalată. Dacă aplicația a fost instalată conform unei politici anterioare, va fi dezinstalată.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Politica pentru acordarea solicitărilor de permisiune aplicațiilor. PERMISSION_POLICY_UNSPECIFIED: politica nu este specificată. Dacă nu este specificată nicio politică pentru o permisiune la niciun nivel, comportamentul „PROMPT” este folosit în mod prestabilit. PROMPT: solicită unui utilizator să acorde o permisiune. GRANT: acordă automat o permisiune. DENY: refuză automat o permisiune.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Obiect de configurare JSON specific aplicației cu un set de perechi cheie-valoare, de ex., „"managedConfiguration": { "key1": value1, "key2": value2 }”. Cheile sunt definite în manifestul aplicației.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Pentru a fixa aplicațiile în lansator, consultă PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Adresa URL instant a furnizorului de căutare prestabilit</translation>
 <translation id="603410445099326293">Parametrii pentru adresa URL a sugestiei care utilizează POST</translation>
 <translation id="6034341625190551415">Controlează sesiunile publice și tipurile de cont kiosk.</translation>
@@ -3061,37 +2979,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică este dezactivată, clientul DNS integrat nu va fi utilizat niciodată.
 
       Dacă această politică nu este configurată, clientul DNS integrat va fi activat în mod implicit pe MacOS, Android (când nu este activat nici DNS privat, nici VPN) și ChromeOS, iar utilizatorii vor putea alege dacă se utilizează clientul DNS integrat, modificând chrome://flags sau specificând un semnalizator în linia de comandă.</translation>
-<translation id="6838056959556423778">Modifică regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />.
-
-      Această politică stabilește regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />, acțiune care are loc atunci când funcția de printare este folosită pentru prima dată cu un profil.
-
-      Dacă politica este configurată, <ph name="PRODUCT_NAME" /> va încerca să găsească o imprimantă care corespunde cu toate atributele specificate și o va selecta ca imprimantă prestabilită. Se va selecta prima imprimantă conformă cu politica; dacă mai multe imprimante sunt conforme cu politica, oricare dintre acestea poate fi selectată, în funcție de ordinea în care sunt descoperite.
-
-      Dacă politica nu este configurată sau nu se găsește nicio imprimantă conformă cu politica în timpul limită, imprimanta prestabilită va fi imprimanta PDF încorporată sau, când imprimanta PDF nu este disponibilă, nu se va selecta nicio imprimantă.
-
-      Valoarea este analizată ca obiect JSON, în conformitate cu următoarea schemă:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Dacă se limitează căutarea la un anumit grup de imprimante.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Expresie regulată pentru ID-ul imprimantei.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Expresie regulată pentru numele afișat al imprimantei.",
-            "type": "string"
-          }
-        }
-      }
-
-      Imprimantele conectate la <ph name="CLOUD_PRINT_NAME" /> intră în categoria <ph name="PRINTER_TYPE_CLOUD" />, iar restul imprimantelor sunt clasificate ca <ph name="PRINTER_TYPE_LOCAL" />.
-      Dacă un câmp nu este completat, toate valorile coincid. De exemplu, dacă nu este specificată conectivitatea, Vizualizarea înainte de printare va iniția descoperirea tuturor tipurilor de imprimante, locale și din cloud.
-      Șabloanele expresiei regulate trebuie să respecte sintaxa RegExp JavaScript, iar valorile care coincid disting între scrierea cu majuscule și minuscule.</translation>
 <translation id="6843296367238757293">Această politică este învechită. Nu se recomandă folosirea ei. Citește mai multe la https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Această politică a fost eliminată în <ph name="PRODUCT_NAME" /> 68 și înlocuită cu <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Această politică este învechită și eliminată din M66, deoarece a fost folosită doar pentru testare internă și reprezintă un risc de securitate.
@@ -3166,9 +3053,9 @@ Atunci când ecranul este pe cale să se întunece, modelul inteligent de reduce
 Dacă politica este setată la True sau nu este setată, modelul inteligent de reducere a luminozității va fi activat și va putea extinde timpul până la întunecarea ecranului. Dacă politica este setată la False, modelul inteligent de reducere a luminozității nu va influența întunecarea ecranului.</translation>
 <translation id="6967394885063085697">Activează politica de gestionare a alimentării privind modul de încărcare avansată a bateriei.
 
-          Folosind modul de încărcare avansată a bateriei, utilizatorul poate să maximizeze durata de viață a bateriei. În modul de încărcare avansată a bateriei, sistemul va folosi algoritmul de încărcare standard și alte tehnici în timpul orelor nelucrătoare pentru a maximiza durata de viață a bateriei. În timpul orelor de lucru se folosește încărcarea expres. Cu încărcarea expres, bateria poate fi încărcată mai rapid și, astfel, bateria este încărcată complet mai repede. Pentru fiecare zi, orele la care sistemul va fi folosit cel mai intens sunt indicate de ora de începere și de durată.
+          Folosind modul de încărcare avansată a bateriei, utilizatorul poate să maximizeze durata de viață a bateriei. În modul de încărcare avansată a bateriei, sistemul va folosi algoritmul de încărcare standard și alte tehnici când dispozitivul nu este activ pentru a maximiza durata de viață a bateriei. Când dispozitivul este activ, se folosește încărcarea expres. Cu încărcarea expres, bateria poate fi încărcată mai rapid și, astfel, bateria este încărcată complet mai repede. Pentru fiecare zi, orele la care sistemul va fi folosit cel mai intens sunt indicate de ora de începere și de durată.
 
-          Dacă politica este activată și DeviceAdvancedBatteryChargeModeDayConfig este setată, modul de încărcare avansată a bateriei va fi activat întotdeauna dacă este acceptat de dispozitiv.
+          Dacă politica este activată și valoarea DeviceAdvancedBatteryChargeModeDayConfig este setată, modul de încărcare avansată a bateriei va fi activat întotdeauna dacă este acceptat de dispozitiv.
 
           Dacă politica este dezactivată, modul de încărcare avansată a bateriei va fi dezactivat întotdeauna.
 
@@ -4212,30 +4099,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Politica afectează numai utilizatorii care s-au autentificat folosind SAML.
 
       Valoarea politicii trebuie specificată în milisecunde.</translation>
-<translation id="9027787254195333560">Cu această politică poți configura imaginea avatar a utilizatorului pe ecranul de conectare. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea avatar și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar mărimea sa nu trebuie să depășească 512 KB. Adresa URL trebuie să poată fi accesată fără autentificare.
-
-      Imaginea avatar este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori adresa URL sau codul hash se modifică.
-
-      Politica trebuie să fie specificată ca șir ce exprimă adresa URL și codul hash în format JSON, în conformitate cu următoarea schemă:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Adresa URL de la care imaginea cu avatarul poate fi descărcată.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Codul hash SHA-256 al imaginii avatar.",
-            "type": "string"
-          }
-        }
-      }
-
-      Dacă această politică este setată, <ph name="PRODUCT_OS_NAME" /> va descărca și va folosi imaginea avatar.
-
-      Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
-
-      Dacă politica nu este setată, utilizatorul poate alege imaginea avatar care îl reprezintă pe ecranul de conectare.</translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9038058011835642205">Specifică o listă cu site-uri care sunt instalate în fundal, fără intervenția utilizatorului, și care nu pot fi dezinstalate sau dezactivate de utilizator.
 
@@ -4248,7 +4111,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
 
       Valoarea politicii trebuie specificată în milisecunde. Valorile variază între 30 de secunde și 24 de ore.</translation>
-<translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Politica stabilește dacă este necesar ca dispozitivul să fie actualizat la o versiune de Quick Fix.
 
       Dacă valoarea politicii este setată la un indicativ care corespunde unei versiuni de Quick Fix, dispozitivul va fi actualizat la versiunea corespunzătoare dacă actualizarea nu este blocată de altă politică.
@@ -4321,17 +4183,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Dacă politica este dezactivată, opțiunea „Anteturi și subsoluri” nu este selectată în dialogul de previzualizare înainte de printare, iar utilizatorul nu o poate schimba.
 
       Dacă politica este activată, opțiunea „Anteturi și subsoluri” este selectată în dialogul de previzualizare înainte de printare, iar utilizatorul nu o poate schimba.</translation>
-<translation id="9213347477683611358">Configurează imaginea de fundal la nivel de dispozitiv afișată pe ecranul de conectare, dacă încă nu s-a conectat niciun utilizator pe dispozitiv. Politica se configurează prin specificarea adresei URL de la care dispozitivul cu sistemul de operare Chrome poate descărca imaginea de fundal și a unui cod hash criptografic folosit pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea fișierului nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare. Imaginea de fundal este descărcată și stocată în memoria cache. Aceasta va fi descărcată din nou, ori de câte ori adresa URL sau codul hash se modifică.
-
-      Politica trebuie să fie specificată ca șir ce exprimă adresa URL și codul hash în format JSON, de ex.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Dacă politica privind imaginea de fundal a dispozitivului este configurată, dispozitivul cu sistemul de operare Chrome va descărca și va folosi imaginea de fundal pe ecranul de conectare, dacă încă nu s-a conectat niciun utilizator pe dispozitiv. După ce un utilizator se conectează, se aplică politica acestuia privind imaginea de fundal.
-
-      Dacă politica privind imaginea de fundal a dispozitivului nu este configurată, politica utilizatorului privind imaginea de fundal decide ce se afișează, dacă aceasta este configurată.</translation>
 <translation id="9217154963008402249">Frecvența pachetelor de monitorizare din rețea</translation>
 <translation id="922540222991413931">Configurați sursele pentru instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
 <translation id="924557436754151212">Importați parolele salvate din browserul prestabilit, la prima rulare</translation>

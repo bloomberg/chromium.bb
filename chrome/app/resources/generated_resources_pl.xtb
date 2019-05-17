@@ -338,6 +338,7 @@
     być używany, zmień <ph name="LINK_START" />jego ustawienia<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">Jedynym sposobem cofnięcia tej czynności jest ponowna instalacja systemu <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Zaimportowane z przeglądarki Safari</translation>
+<translation id="1515163294334130951">Uruchom</translation>
 <translation id="1521442365706402292">Zarządzaj certyfikatami</translation>
 <translation id="152234381334907219">Nigdy nie zapisane</translation>
 <translation id="1524430321211440688">Klawiatura</translation>
@@ -440,6 +441,7 @@
 <translation id="167160931442925455">Najgłośniej</translation>
 <translation id="1673137583248014546"><ph name="URL" /> chce odczytać markę i model Twojego klucza bezpieczeństwa</translation>
 <translation id="1679068421605151609">Narzędzia dla deweloperów</translation>
+<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="167983332380191032">Usługa zarządzania wysłała błędny kod HTTP.</translation>
 <translation id="1680849702532889074">Podczas instalowania aplikacji na Linuksa wystąpił błąd.</translation>
 <translation id="16815041330799488">Nie zezwalaj stronom na dostęp do tekstu i obrazów skopiowanych do schowka</translation>
@@ -486,6 +488,7 @@
 <translation id="1744060673522309905">Nie można dołączyć urządzenia do domeny. Upewnij się, że nie została przekroczona dozwolona liczba urządzeń.</translation>
 <translation id="1744108098763830590">strona w tle</translation>
 <translation id="1745520510852184940">Tłumacz zawsze</translation>
+<translation id="1746402432151920942">Identyfikator chronionych treści multimedialnych</translation>
 <translation id="175196451752279553">Prz&amp;ywróć zamkniętą kartę</translation>
 <translation id="1753905327828125965">Najczęstsze</translation>
 <translation id="1756681705074952506">Sposób wprowadzania tekstu</translation>
@@ -543,6 +546,7 @@
 <translation id="1830550083491357902">Niezalogowany</translation>
 <translation id="1832511806131704864">Zmiana telefonu została zapisana</translation>
 <translation id="1834503245783133039">Nie udało się pobrać: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Urządzenia MIDI</translation>
 <translation id="1838374766361614909">Wyczyść wyszukiwanie</translation>
 <translation id="1841545962859478868">Administrator urządzenia może monitorować te zdarzenia:</translation>
 <translation id="1841616161104323629">Brak rekordu urządzenia.</translation>
@@ -786,6 +790,7 @@
 <translation id="2220529011494928058">Zgłoś problem</translation>
 <translation id="2220572644011485463">Kod PIN lub hasło</translation>
 <translation id="2224444042887712269">To ustawienie należy do <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Zdarzenia związane z ułatwieniami dostępu</translation>
 <translation id="2224551243087462610">Edytuj nazwę folderu</translation>
 <translation id="2226449515541314767">Pełny dostęp do sterowania urządzeniami MIDI został dla tej witryny zablokowany.</translation>
 <translation id="2226720438730111184">Powiedz nam, co się dzieje</translation>
@@ -963,7 +968,6 @@
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="2497229222757901769">Szybkość myszy</translation>
 <translation id="2497852260688568942">Synchronizację wyłączył administrator</translation>
-<translation id="249819058197909513">Nie pokazuj już ostrzeżeń dla tej aplikacji</translation>
 <translation id="2498539833203011245">Zminimalizuj</translation>
 <translation id="2498765460639677199">Ogromny</translation>
 <translation id="2499747912851752301">Eksportuję hasła…</translation>
@@ -1051,7 +1055,6 @@
 <translation id="2630681426381349926">Połącz się z Wi-Fi, aby rozpocząć</translation>
 <translation id="2631120081682787498">Czy na pewno chcesz zamknąć tę kartę?</translation>
 <translation id="2631498379019108537">Pokaż opcje wprowadzania na półce</translation>
-<translation id="2633199387167390344">Aplikacja <ph name="NAME" /> używa <ph name="USAGE" /> MB na dysku.</translation>
 <translation id="2633212996805280240">Usunąć „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="263325223718984101">Nie można ukończyć instalacji produktu <ph name="PRODUCT_NAME" />. Będzie on nadal uruchamiany z obrazu dysku.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1397,7 +1400,6 @@
 <translation id="3157931365184549694">Przywróć</translation>
 <translation id="3158033540161634471">Skonfiguruj swój odcisk palca</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (obsługiwany sprzętowo)</translation>
-<translation id="316125635462764134">Usuń aplikację</translation>
 <translation id="3161522574479303604">Wszystkie języki</translation>
 <translation id="3163201441334626963">Nieznany produkt <ph name="PRODUCT_ID" />, którego producent to <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Niektórzy operatorzy mogą blokować tę funkcję.</translation>
@@ -1898,6 +1900,7 @@
 <translation id="3916445069167113093">Pliki tego typu mogą wyrządzić szkody na komputerze. Czy chcesz mimo tego zachować plik <ph name="FILE_NAME" />?</translation>
 <translation id="3918972485393593704">Przesyłaj do Google szczegółowe informacje</translation>
 <translation id="3919145445993746351">Aby korzystać z rozszerzeń na wszystkich swoich komputerach, włącz synchronizację</translation>
+<translation id="391999873395511996">Pobieram maszynę wirtualną.</translation>
 <translation id="3920504717067627103">Zasady certyfikatu</translation>
 <translation id="392089482157167418">Włącz ChromeVox (potwierdzenia głosowe)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1949,7 +1952,6 @@
 <translation id="3983586614702900908">urządzenia od nieznanego dostawcy</translation>
 <translation id="3984159763196946143">Nie udało się uruchomić trybu demonstracyjnego</translation>
 <translation id="3984431586879874039">Zezwolić tej stronie na odczytywanie danych klucza bezpieczeństwa?</translation>
-<translation id="3987348946546879621">Zmniejszono zużycie danych</translation>
 <translation id="3987938432087324095">Nie rozumiem.</translation>
 <translation id="3988996860813292272">Wybierz strefę czasową</translation>
 <translation id="399179161741278232">Zaimportowane</translation>
@@ -1980,7 +1982,6 @@
 <translation id="4037889604535939429">Edytuj dane osoby</translation>
 <translation id="4042264909745389898">Warunki korzystania z systemu operacyjnego Google Chrome</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Zamknij stronę}few{Zamknij strony}many{Zamknij strony}other{Zamknij strony}}</translation>
-<translation id="404299405565920089">W tym miejscu możesz zarządzać wszystkimi kontami Google, na które logujesz się na stronach i w aplikacjach. Aplikacje i strony mające Twoje pozwolenie mogą korzystać z informacji o koncie, których potrzebują do prawidłowego działania.</translation>
 <translation id="4044612648082411741">Podaj hasło certyfikatu</translation>
 <translation id="404493185430269859">Domyślna wyszukiwarka</translation>
 <translation id="4046123991198612571">Następny utwór</translation>
@@ -2095,7 +2096,6 @@
 <translation id="4242533952199664413">Otwórz ustawienia</translation>
 <translation id="4242577469625748426">Instalacja ustawień zasad na urządzeniu nie powiodła się: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Znajdź więcej aplikacji dla rysika</translation>
-<translation id="424546999567421758">Wykryto wysokie użycie dysku</translation>
 <translation id="424726838611654458">Zawsze otwieraj w Adobe Reader</translation>
 <translation id="4247901771970415646">Nie można zsynchronizować z <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Czekam na połączenie z siecią...</translation>
@@ -2203,7 +2203,6 @@
 <translation id="4421932782753506458">Puszysty</translation>
 <translation id="4422347585044846479">Edytuj zakładkę tej strony</translation>
 <translation id="4423376891418188461">Przywróć ustawienia</translation>
-<translation id="4423482519432579560">&amp;Sprawdzanie pisowni</translation>
 <translation id="442397852638519243">Twój administrator (<ph name="USER_NAME" />) prosi Cię o zmianę Twojego hasła.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4430369329743628066">Dodano zakładkę</translation>
@@ -2663,8 +2662,6 @@
 <translation id="5187295959347858724">Jesteś zalogowany(a) do <ph name="SHORT_PRODUCT_NAME" />. Twoje zakładki, historia i inne ustawienia są synchronizowane z Twoim kontem Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> chce pobrać wiele plików</translation>
-<translation id="5192316339598592690">Możesz szybko przełączać konta i logować się w wielu aplikacjach i witrynach jednocześnie.
-    Aplikacje i witryny mogą prosić Cię o pozwolenie na użycie niektórych informacji dotyczących Twojego konta Google. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Wykonaj Powerwash urządzenia i spróbuj jeszcze raz.</translation>
 <translation id="5204967432542742771">Wpisz hasło</translation>
 <translation id="5206215183583316675">Usunąć „<ph name="CERTIFICATE_NAME" />”?</translation>
@@ -3343,7 +3340,6 @@
 <translation id="622537739776246443">Profil zostanie usunięty</translation>
 <translation id="6225475702458870625">Połączenie transmisji danych jest dostępne z telefonu <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Plik klucza prywatnego (opcjonalnie)</translation>
-<translation id="6228516488918914827">Wczytano szybszą stronę</translation>
 <translation id="6228691855869374890">Ta witryna ma pełny dostęp do sterowania urządzeniami MIDI.</translation>
 <translation id="6229890768313448549">Nie można wczytać Warunków korzystania z usługi Google Play. Spróbuj ponownie.</translation>
 <translation id="6231881193380278751">Dodaj parametr zapytania do URL-a, by strona odświeżała się automatycznie: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3548,7 +3544,6 @@
 <translation id="6545665334409411530">Szybkość powtarzania</translation>
 <translation id="6545834809683560467">Używaj podpowiedzi, by uzupełniać zapytania i adresy URL wpisywane na pasku adresu lub w polu wyszukiwania menu z aplikacjami</translation>
 <translation id="6545867563032584178">Mikrofon jest wyłączony w Preferencjach systemowych Maca</translation>
-<translation id="6547316139431024316">Nie pokazuj już ostrzeżeń dla tego rozszerzenia</translation>
 <translation id="6547354035488017500">Zwolnij co najmniej 512 MB miejsca. W przeciwnym razie urządzenie przestanie odpowiadać. Aby zwolnić miejsce, usuń pliki z pamięci urządzenia.</translation>
 <translation id="6550675742724504774">Opcje</translation>
 <translation id="6551508934388063976">Polecenie jest niedostępne. Naciśnij control+N, by otworzyć nowe okno.</translation>
@@ -4679,7 +4674,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="827097179112817503">Pokaż przycisk strony głównej</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Usunięto 1 zakładkę}few{Usunięto # zakładki}many{Usunięto # zakładek}other{Usunięto # zakładki}}</translation>
 <translation id="8272443605911821513">Aby zarządzać zainstalowanymi rozszerzeniami, kliknij Rozszerzenia w menu Więcej narzędzi.</translation>
-<translation id="8272966760965438857">Zarządzaj swoimi kontami Google w jednym miejscu</translation>
 <translation id="8274332263553132018">Prześlij plik</translation>
 <translation id="8274924778568117936">Nie wyłączaj ani nie zamykaj urządzenia <ph name="DEVICE_TYPE" /> do momentu ukończenia aktualizacji. Po zakończeniu instalacji <ph name="DEVICE_TYPE" /> uruchomi się ponownie.</translation>
 <translation id="8275038454117074363">Importuj</translation>

@@ -335,6 +335,7 @@
 <translation id="1510785804673676069">Hvis du bruker en mellomtjener, må du sjekke mellomtjenerinnstillingene eller ta kontakt med nettverksadministratoren for å kontrollere at mellomtjeneren fungerer. Hvis du ikke vil bruke en mellomtjener, kan du endre <ph name="LINK_START" />mellomtjenerinnstillingene<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">Den eneste måten du kan angre dette på, er å installere <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> på nytt</translation>
 <translation id="151501797353681931">Importert fra Safari</translation>
+<translation id="1515163294334130951">Start</translation>
 <translation id="1521442365706402292">Administrer sertifikater</translation>
 <translation id="152234381334907219">Aldri lagret</translation>
 <translation id="1524430321211440688">Tastatur</translation>
@@ -437,6 +438,7 @@
 <translation id="167160931442925455">Høyest</translation>
 <translation id="1673137583248014546"><ph name="URL" /> ber om å se merket og modellen til sikkerhetsnøkkelen din</translation>
 <translation id="1679068421605151609">Utviklerverktøy</translation>
+<translation id="1679806121152819234">VM for programtillegg</translation>
 <translation id="167983332380191032">Administrasjonstjenesten sendte en HTTP-feil.</translation>
 <translation id="1680849702532889074">Det oppsto en feil under installasjon av Linux-programmet ditt.</translation>
 <translation id="16815041330799488">Ikke la nettsteder se tekst og bilder som er kopiert til utklippstavlen</translation>
@@ -960,7 +962,6 @@
 <translation id="2496180316473517155">Nettleserlogg</translation>
 <translation id="2497229222757901769">Musehastighet</translation>
 <translation id="2497852260688568942">Administratoren din har slått av synkronisering</translation>
-<translation id="249819058197909513">Ikke advar om denne appen igjen</translation>
 <translation id="2498539833203011245">Minimer</translation>
 <translation id="2498765460639677199">Kjempestor</translation>
 <translation id="2499747912851752301">Eksporterer passordene …</translation>
@@ -1047,7 +1048,6 @@
 <translation id="2630681426381349926">Koble til Wi-Fi for å begynne</translation>
 <translation id="2631120081682787498">Er du sikker på at du vil lukke denne fanen?</translation>
 <translation id="2631498379019108537">Vis inndataalternativer i hyllen</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> bruker <ph name="USAGE" /> MB lagringsplass.</translation>
 <translation id="2633212996805280240">Vil du fjerne «<ph name="EXTENSION_NAME" />»?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> kan ikke fullføre installeringen, men vil fortsette å kjøre fra diskavbildningen.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1393,7 +1393,6 @@
 <translation id="3157931365184549694">Gjenopprett</translation>
 <translation id="3158033540161634471">Konfigurer fingeravtrykket ditt</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (maskinvarestøttet)</translation>
-<translation id="316125635462764134">Fjern appen</translation>
 <translation id="3161522574479303604">Alle språk</translation>
 <translation id="3163201441334626963">Ukjent produkt, <ph name="PRODUCT_ID" />, fra leverandøren <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Det kan hende at enkelte operatører blokkerer denne funksjonen.</translation>
@@ -1893,6 +1892,7 @@
 <translation id="3916445069167113093">Denne filtypen kan skade datamaskinen. Ønsker du å beholde <ph name="FILE_NAME" /> likevel?</translation>
 <translation id="3918972485393593704">Rapportér detaljer til Google</translation>
 <translation id="3919145445993746351">For å få utvidelsene dine på alle datamaskinene dine, slå på synkronisering</translation>
+<translation id="391999873395511996">Laster ned den virtuelle maskinen</translation>
 <translation id="3920504717067627103">Administratorinnstillinger for sertifikater</translation>
 <translation id="392089482157167418">Slå på ChromeVox (taletilbakemelding)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1942,7 +1942,6 @@
 <translation id="3983586614702900908">enheter fra en ukjent leverandør</translation>
 <translation id="3984159763196946143">Kan ikke starte demomodus</translation>
 <translation id="3984431586879874039">Vil du la dette nettstedet se sikkerhetsnøkkelen din?</translation>
-<translation id="3987348946546879621">Dataforbruk redusert</translation>
 <translation id="3987938432087324095">Det fikk jeg ikke med meg.</translation>
 <translation id="3988996860813292272">Velg tidssone</translation>
 <translation id="399179161741278232">Importert</translation>
@@ -1973,7 +1972,6 @@
 <translation id="4037889604535939429">Endre person</translation>
 <translation id="4042264909745389898">Vilkår for Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Lukk siden}other{Lukk sidene}}</translation>
-<translation id="404299405565920089">Her kan du administrere alle Google-kontoer du er logget på via apper og nettsteder. Apper og nettsteder du gir tillatelse, får tilgang til kontoinformasjonen de trenger for å fungere som de skal.</translation>
 <translation id="4044612648082411741">Angi sertifikatpassordet ditt</translation>
 <translation id="404493185430269859">Standard søkemotor</translation>
 <translation id="4046123991198612571">Neste spor</translation>
@@ -2088,7 +2086,6 @@
 <translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="4242577469625748426">Kunne ikke installere angivelse av innstillinger på enheten: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Finn flere pekepennapper</translation>
-<translation id="424546999567421758">Høyt forbruk av lagringsplass oppdaget</translation>
 <translation id="424726838611654458">Åpne alltid i Adobe Reader</translation>
 <translation id="4247901771970415646">Kan ikke synkronisere med <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Venter på nettverkstilkobling …</translation>
@@ -2196,7 +2193,6 @@
 <translation id="4421932782753506458">Pus</translation>
 <translation id="4422347585044846479">Rediger bokmerket for denne siden</translation>
 <translation id="4423376891418188461">Gjenopprett innstillingene</translation>
-<translation id="4423482519432579560">&amp;Stavekontroll</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, administratoren din krever at du endrer passord.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4430369329743628066">Bokmerke lagt til</translation>
@@ -2656,8 +2652,6 @@
 <translation id="5187295959347858724">Du er nå pålogget <ph name="SHORT_PRODUCT_NAME" />. Bokmerkene, loggen og de andre innstillingene dine blir synkronisert med Google-kontoen din.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ber om å laste ned flere filer</translation>
-<translation id="5192316339598592690">Bytt konto raskt, og logg på både apper og nettsteder samtidig.
-    Apper og nettsteder kan be om tillatelse til å bruke noe av informasjonen fra Google-kontoen din. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Utfør Powerwash på enheten, og prøv på nytt.</translation>
 <translation id="5204967432542742771">Skriv inn passordet</translation>
 <translation id="5206215183583316675">Vil du slette «<ph name="CERTIFICATE_NAME" />»?</translation>
@@ -3336,7 +3330,6 @@
 <translation id="622537739776246443">Profilen blir slettet</translation>
 <translation id="6225475702458870625">En datatilkobling er tilgjengelig fra <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Privat nøkkelfil (valgfritt)</translation>
-<translation id="6228516488918914827">Raskere side er lastet inn</translation>
 <translation id="6228691855869374890">Dette nettstedet har full kontroll over MIDI-enheter.</translation>
 <translation id="6229890768313448549">Vilkårene for bruk av Google Play kan ikke lastes inn. Prøv på nytt.</translation>
 <translation id="6231881193380278751">Legg til en forespørselsparameter i nettadressen for å laste inn siden på nytt automatisk: chrome://device-log/?refresh=&lt;sek&gt;</translation>
@@ -3541,7 +3534,6 @@
 <translation id="6545665334409411530">Gjentakelsesfrekvens</translation>
 <translation id="6545834809683560467">Bruk en forslagstjeneste for å fullføre søk og nettadresser som skrives inn i adressefeltet eller søkefeltet i appvelgeren</translation>
 <translation id="6545867563032584178">Mikrofonen er slått av i Mac-systemvalgene</translation>
-<translation id="6547316139431024316">Ikke advar om denne utvidelsen igjen</translation>
 <translation id="6547354035488017500">Frigjør minst 512 MB lagringsplass for å unngå at enheten slutter å reagere. For å frigjøre plass, slett filer fra enhetslagringen.</translation>
 <translation id="6550675742724504774">Alternativer</translation>
 <translation id="6551508934388063976">Kommandoen er utilgjengelig. Trykk på control-N for å åpne et nytt vindu.</translation>
@@ -4670,7 +4662,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="827097179112817503">Vis startsideknapp</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bokmerke er slettet}other{# bokmerker er slettet}}</translation>
 <translation id="8272443605911821513">Administrer utvidelsene dine ved å klikke på Utvidelser i Flere verktøy-menyen.</translation>
-<translation id="8272966760965438857">Administrer Google-kontoene dine på ett sted</translation>
 <translation id="8274332263553132018">Cast en fil</translation>
 <translation id="8274924778568117936">Du må ikke slå av eller lukke <ph name="DEVICE_TYPE" />-enheten din før oppdateringen er ferdig. <ph name="DEVICE_TYPE" />-enheten starter på nytt når installasjonen er ferdig.</translation>
 <translation id="8275038454117074363">Importer</translation>

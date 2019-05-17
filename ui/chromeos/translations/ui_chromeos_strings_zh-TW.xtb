@@ -62,7 +62,7 @@
 <translation id="164969095109328410">Chrome 裝置</translation>
 <translation id="1665611772925418501">無法修改檔案。</translation>
 <translation id="1673103856845176271">基於安全理由，你無法存取檔案。</translation>
-<translation id="1679806121152819234">外掛程式 VM</translation>
+<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1722487484194605434">正在壓縮 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
 <translation id="174173592514158117">顯示所有 Play 資料夾</translation>
@@ -263,6 +263,7 @@
 <translation id="421017592316736757">你必須連上網路才能存取這個檔案。</translation>
 <translation id="4212740939091998969">名稱為「<ph name="FOLDER_NAME" />」的資料夾已經存在，請選擇其他名稱。</translation>
 <translation id="4215448920900139318">正在備份 <ph name="FILE_COUNT" /></translation>
+<translation id="4242533952199664413">開啟設定</translation>
 <translation id="426015154560005552">阿拉伯文鍵盤</translation>
 <translation id="4261901459838235729">Google 簡報</translation>
 <translation id="4290535918735525311">已與 Linux 共用 1 個資料夾</translation>

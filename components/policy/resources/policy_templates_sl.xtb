@@ -417,7 +417,6 @@
 
       Opozorilo: ni priporočljivo, da nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /> dodelite aplikaciji za kiosk, saj tako naprava morda ne bo prejemala posodobitev programske opreme in nujnih varnostnih popravkov. Če dodelite nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" />, so uporabniki morda ogroženi.</translation>
 <translation id="1675002386741412210">Na voljo podpora za:</translation>
-<translation id="1689963000958717134">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja za vse uporabnike, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisano na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Konfigurira razpoložljivost in delovanje funkcije posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Posamezne nastavitve je mogoče določiti v lastnostih datoteke JSON:
@@ -978,16 +977,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev onemogočena, spletne strani ne morejo uporabljati JavaScripta in uporabnik te vrednosti ne more spremeniti.
 
       Če je ta nastavitev omogočena ali ni nastavljena, lahko spletne strani uporabljajo JavaScript, toda uporabnik lahko to nastavitev spremeni.</translation>
-<translation id="2747157663401642394">Konfigurira nastavitve upravljanja razširitev za <ph name="PRODUCT_NAME" />.
-
-          Ta pravilnik nadzira več nastavitev, vključno z nastavitvami, ki jih nadzirajo kateri koli obstoječi pravilniki, povezani z razširitvami. Ta pravilnik preglasi vse morebitne starejše pravilnike, če so nastavljeni oboji.
-
-          Ta pravilnik preslika ID razširitve ali URL za posodobitev v svojo konfiguracijo. Konfiguracija z ID-jem razširitve bo uporabljena samo za določeno razširitev. Za posebni ID <ph name="DEFAULT_SCOPE" /> je mogoče nastaviti privzeto konfiguracijo, ki se bo uporabila za vse razširitve, ki v tem pravilniku nimajo nastavljene konfiguracije po meri. Konfiguracija z URL-jem za posodobitev bo uporabljena za vse razširitve s točno določenim URL-jem za posodobitev, navedenim v manifestu te razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Za primerke sistema Windows, ki niso pridruženi v domeno <ph name="MS_AD_NAME" />, je vsiljeno nameščanje omejeno na aplikacije in razširitve, navedene v Spletni trgovini Chrome.
-
-          Celoten opis mogočih nastavitev in struktura tega pravilnika sta na voljo na https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Omejitev obsega lokalnih vrat UDP, ki jih uporablja tehnologija WebRTC</translation>
 <translation id="2757054304033424106">Vrste razširitev/aplikacij, katerih namestitev je dovoljena</translation>
 <translation id="2758084448533744848">Določa uveljavljen časovni pas, ki se uporablja za napravo. Če je ta pravilnik nastavljen, uporabniki v napravi ne morejo preglasiti določenega časovnega pasu. Če je vnesena neveljavna vrednost, je pravilnik kljub temu aktiviran s časovnim pasom »GMT«. Če je naveden prazen niz, je pravilnik prezrt.
@@ -1760,30 +1749,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Ta pravilnik vpliva samo na uporabnike, katerih pristnost se preverja z uporabo SAML-ja.</translation>
 <translation id="4105989332710272578">Onemogočanje uveljavljanja pravilnika o preglednosti potrdila za seznam URL-jev</translation>
 <translation id="4121350739760194865">Onemogoči prikaz oglasov za aplikacije na novem zavihku s povezavami.</translation>
-<translation id="4125606414556046117">S tem pravilnikom lahko nastavite sliko za ozadje, prikazano na namizju in na prijavni strani za uporabnika. Pravilnik se nastavi tako, da navedete URL, s katerega lahko <ph name="PRODUCT_OS_NAME" /> prenese sliko za ozadje, in kriptografsko zgoščeno vrednost, ki se uporabi za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti.
-
-      Slika za ozadje se prenese in predpomni. Če se spremeni URL ali zgoščena vrednost, se znova prenese.
-
-      Pravilnik mora biti naveden kot niz, ki izraža URL in zgoščeno vrednost v obliki JSON, skladno s to shemo:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL, s katerega se lahko prenese slika za ozadje.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Zgoščena vrednost SHA-256 slike za ozadje.",
-            "type": "string"
-          }
-        }
-      }
-
-      Če je ta pravilnik nastavljen, <ph name="PRODUCT_OS_NAME" /> prenese in uporabi sliko za ozadje.
-
-      Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
-
-      Če tega pravilnika ne nastavite, lahko uporabnik izbere sliko, ki bo prikazana na namizju in v ozadju zaslona za prijavo.</translation>
 <translation id="412697421478384751">Omogoči uporabnikom nastavitev šibkih kod PIN za kodo PIN za zaklenjen zaslon.</translation>
 <translation id="4138655880188755661">Časovna omejitev</translation>
 <translation id="4144164749344898721">Ta pravilnik nadzira različne nastavitve za strategijo upravljanja energije, ko uporabnik postane nedejaven.
@@ -2745,53 +2710,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen ali je nastavljen na »false«, ukazi za tiskanje sprožijo zaslon za predogled tiskanja.</translation>
 <translation id="6022948604095165524">Dejanje ob zagonu</translation>
-<translation id="6023030044732320798">Določa nabor pravilnikov, ki bodo posredovani izvajalniku ARC. Vrednost mora biti veljavna datoteka JSON.
-
-      S tem pravilnikom je mogoče konfigurirati, katere aplikacije za Android so samodejno nameščene v tej napravi:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identifikator aplikacij za Android, npr. "com.google.android.gm" za Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Določa način namestitve aplikacije. OPTIONAL: aplikacija ni samodejno nameščena, vendar jo uporabnik lahko namesti. Če ta pravilnik ni določen, je to privzeta vrednost. PRELOAD: aplikacija je samodejno nameščena, vendar jo uporabnik lahko odstrani. FORCE_INSTALLED: aplikacija je samodejno nameščena in uporabnik je ne more odstraniti. BLOCKED: aplikacija je blokirana in je ni mogoče namestiti. Če je bila aplikacija nameščena s prejšnjim pravilnikom, bo odstranjena.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Pravilnik za odobritev dovoljenja za aplikacije. PERMISSION_POLICY_UNSPECIFIED: pravilnik ni določen. Če za dovoljenje na kateri koli ravni ni določen noben pravilnik, potem je privzeto uporabljeno vedenje »PROMPT«. PROMPT: poziv za uporabnika, da odobri dovoljenje. GRANT: samodejno odobreno dovoljenje. DENY: samodejno zavrnjeno dovoljenje.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Konfiguracijski objekt JSON za posamezno aplikacijo z naborom parov ključa (key) in vrednosti (value), npr. '"managedConfiguration": »{ "key1": value1, "key2": value2 }«. Ključi so definirani v manifestu aplikacije.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Če želite pripeti aplikacije v zaganjalnik, si oglejte PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Privzeti URL iskalnika za dinamično iskanje</translation>
 <translation id="603410445099326293">Parametri za URL predloga, ki uporablja POST</translation>
 <translation id="6034341625190551415">Nadzira vrste računov za javne seje in kiosk.</translation>
@@ -3145,37 +3063,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik nastavljen na »false«, vgrajeni odjemalec DNS ne bo uporabljen.
 
       Če ta pravilnik ni nastavljen, bo vgrajeni odjemalec DNS privzeto omogočen v sistemih macOS, Android (če nista omogočena zasebni strežnik DNS in VPN) in OS Chrome, uporabniki pa bodo lahko spreminjali, ali naj se uporablja vgrajeni odjemalec DNS tako, da bodo uredili stran chrome://flags ali določili zastavico v ukazni vrstici.</translation>
-<translation id="6838056959556423778">Preglasi pravila za izbiro privzetega tiskalnika za <ph name="PRODUCT_NAME" />.
-
-      Ta pravilnik določa pravila za izbiro privzetega tiskalnika v brskalniku <ph name="PRODUCT_NAME" />, do česar pride, ko je funkcija tiskanja prvič uporabljena s profilom.
-
-      Če je ta pravilnik nastavljen, <ph name="PRODUCT_NAME" /> poskusi poiskati tiskalnik, ki se ujema z vsemi določenimi atributi, in ga izbere kot privzetega. Izbran je prvi tiskalnik, ki se ujema s pravilnikom. V primeru neenoličnega ujemanja je lahko izbran kateri koli tiskalnik, ki se ujema, odvisno od vrstnega reda odkrivanja tiskalnikov.
-
-      Če ta pravilnik ni nastavljen ali v časovni omejitvi ni najden tiskalnik, ki se ujema, je privzeti tiskalnik vgrajeni tiskalnik PDF. Če ta ni na voljo, ni izbran noben tiskalnik.
-
-      Vrednost je razčlenjena kot predmet JSON skladno s to shemo:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Ali naj se iskanje tiskalnika, ki se ujema, omeji na določeno skupino tiskalnikov.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regularni izraz, ki se ujema z ID-jem tiskalnika.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regularni izraz, ki se ujema s prikaznim imenom tiskalnika.",
-            "type": "string"
-          }
-        }
-      }
-
-      Tiskalniki, povezani v storitev <ph name="CLOUD_PRINT_NAME" />, se obravnavajo kot »<ph name="PRINTER_TYPE_CLOUD" />«, drugi tiskalniki pa so razvrščeni kot »<ph name="PRINTER_TYPE_LOCAL" />«.
-      Če izpustite polje, se ujemajo vse vrednosti. Če na primer ne določite povezave, predogled tiskanja začne odkrivanje vseh vrst tiskalnikov – lokalnih in v oblaku.
-      Vzorci regularnega izraza morajo upoštevati sintakso JavaScript RegExp in pri ujemanjih se razlikuje med malimi in velikimi črkami.</translation>
 <translation id="6843296367238757293">Ta pravilnik je zastarel. Njegovo uporabo odsvetujemo. Preberite več na https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Ta pravilnik je bil odstranjen v izdelku <ph name="PRODUCT_NAME" /> in ga je zamenjal pravilnik <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ta pravilnik je zastarel in smo ga v M66 odstranili, ker se je uporabljal samo za interno preskušanje in predstavlja varnostno tveganje.
@@ -4348,30 +4235,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Ta pravilnik vpliva samo na uporabnike, katerih pristnost je bila preverjena s SAML-jem.
 
       Vrednost za pravilnik mora biti izražena v sekundah.</translation>
-<translation id="9027787254195333560">S tem pravilnikom lahko nastavite sliko avatarja, ki na zaslonu za prijavo predstavlja uporabnika. Pravilnik se nastavi z določitvijo URL-ja, s katerega lahko operacijski sistem <ph name="PRODUCT_OS_NAME" />prenese sliko za avatar in kriptografsko zgoščeno vrednost za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 512 KB. URL mora biti dostopen brez preverjanja pristnosti.
-
-      Slika za avatar se prenese in shrani v predpomnilnik. Če se spremeni URL ali zgoščena vrednost, se znova prenese.
-
-      Pravilnik mora biti naveden kot niz, ki izraža URL in zgoščeno vrednost v obliki JSON, skladno s to shemo:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL, s katerega se lahko prenese slika za avatar.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Zgoščena vrednost SHA-256 slike za avatar.",
-            "type": "string"
-          }
-        }
-      }
-
-      Če je ta pravilnik nastavljen, <ph name="PRODUCT_OS_NAME" /> prenese in uporabi sliko za avatar.
-
-      Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
-
-      Če tega pravilnika ne nastavite, lahko uporabnik izbere sliko za avatar, ki ga predstavlja na zaslonu za prijavo.</translation>
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
 <translation id="9038058011835642205">Določa seznam spletnih mest, ki so nameščene brez obveščanja in poseganja uporabnika ter jih uporabnik ne more odmestiti ali onemogočiti.
 
@@ -4384,7 +4247,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
 
       Vrednost pravilnika mora biti navedena v milisekundah. Vrednosti so v obsegu od 30 sekund do 24 ur.</translation>
-<translation id="9042911395677044526">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja glede na uporabnika, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisane na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Ta pravilnik nadzira, ali naj bo naprava posodobljena na delovno različico Quick Fixa.
 
       Če je vrednost pravilnika nastavljena na žeton, ki preslika v delovno različico Quick Fixa, bo naprava posodobljena na ustrezno delovno različico Quick Fixa, če posodobitve ne blokira drug pravilnik.
@@ -4464,17 +4326,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če je pravilnik onemogočen, možnost za glave in noge v pogovornem oknu za predogled tiskanja ni izbrana in uporabnik tega ne more spremeniti.
 
       Če je pravilnik omogočen, je možnost za glave in noge v pogovornem oknu za predogled tiskanja izbrana in uporabnik tega ne more spremeniti.</translation>
-<translation id="9213347477683611358">Konfiguriranje slike za ozadje na ravni naprave, ki je prikazana na zaslonu za prijavo, če ni v napravi prijavljen še noben uporabnik. Pravilnik se nastavi z določanjem URL-ja, s katerega lahko naprava OS Chrome prenese sliko za ozadje, in kriptografske razpršilne vrednosti za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti. Slika za ozadje se prenese in shrani v predpomnilnik. Ob vsaki spremembi URL-ja ali razpršilne vrednosti se znova prenese.
-
-      Pravilnik mora biti določen kot niz, ki izraža URL in razpršilno vrednost v obliki JSON, npr.
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Če je pravilnik za ozadje v napravi nastavljen, naprava OS Chrome prenese in uporabi sliko za ozadje na zaslonu za prijavo, kadar ni v napravi prijavljen še noben uporabnik. Ko se prijavi uporabnik, se aktivira pravilnik za ozadje uporabnika.
-
-      Če pravilnik za ozadje v napravi ni nastavljen, se odločitev, kaj prikazati, določi na podlagi pravilnika za ozadje uporabnika, kadar je tak pravilnik nastavljen.</translation>
 <translation id="9217154963008402249">Pogostost omrežnih paketov za spremljanje</translation>
 <translation id="922540222991413931">Konfiguriranje virov za namestitev razširitev, aplikacij in uporabniških skriptov</translation>
 <translation id="924557436754151212">Uvoz shranjenih gesel privzetega brskalnika pri prvem zagonu</translation>

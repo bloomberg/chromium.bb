@@ -381,7 +381,6 @@
 
       警告：建议您不要委托自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本，因为这可能会阻止相应设备接收软件更新和重要的安全修补程序。委托 <ph name="PRODUCT_OS_NAME" />版本控制可能会将用户置于风险之中。</translation>
 <translation id="1675002386741412210">支持的环境：</translation>
-<translation id="1689963000958717134">允许将推送网络配置应用于安装了 <ph name="PRODUCT_OS_NAME" />的设备的所有用户。网络配置为 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
 <translation id="1704516734140344991">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新功能的可用性和行为。
 
       各项具体设置可在 JSON 属性中进行指定：
@@ -905,16 +904,6 @@
       如果停用此设置，网页就无法使用 JavaScript，用户也无法更改该设置。
 
       如果启用或不设定此设置，网页就可以使用 JavaScript，但用户可以更改该设置。</translation>
-<translation id="2747157663401642394">为 <ph name="PRODUCT_NAME" /> 配置扩展程序管理设置。
-
-          此政策可控制多项设置，其中包括由任何与扩展程序相关的现有政策控制的设置。此政策会覆盖所有旧版政策（如果同时设置了此政策和旧版政策）。
-
-          此政策可将某个扩展程序 ID 或某个更新网址映射至相应配置。对于扩展程序 ID，相应配置只会应用于所指定的扩展程序。您可为特殊 ID<ph name="DEFAULT_SCOPE" />设定默认配置，该配置将会应用于未在此政策中设定自定义配置的所有扩展程序。对于更新网址，相应配置将会应用于具有在此扩展程序的清单中注明的确切更新网址的所有扩展程序（如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述）。
-
-          对于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，强制安装仅限于 Chrome 网上应用店中列出的应用和扩展程序。
-
-          若想全面了解此政策的可能设置和结构，请访问 https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">限制 WebRTC 使用的本地 UDP 端口的范围</translation>
 <translation id="2757054304033424106">允许安装的扩展程序/应用的类型</translation>
 <translation id="2758084448533744848">指定要强制该设备采用的时区。如果设置了此政策，该设备的用户将无法覆盖指定的时区。如果提供了无效值，系统仍会启用此政策，但会改用“GMT”时区。如果提供了空字符串，系统将忽略此政策。
@@ -1135,9 +1124,9 @@
       无论是否设置此政策或如何设置此政策，用户都无法更改 WPAD 优化设置。</translation>
 <translation id="3071839057966069710">配置打印机列表。
 
-      通过此政策，管理员可为他们的用户提供打印机配置。
+      通过此政策，管理员可为用户提供打印机配置。
 
-      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均为自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可以帮助最终用户轻松识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户的计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
+      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均为自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可以帮助最终用户轻松识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
 
       “<ph name="PRINTER_EFFECTIVE_MODEL" />”必须与代表 <ph name="PRODUCT_NAME" />支持的打印机的某个字符串匹配。该字符串将用于识别和为打印机安装相应的 PPD。如需了解详情，请访问：https://support.google.com/chrome?p=noncloudprint。
 
@@ -1145,7 +1134,7 @@
 
       要么 <ph name="PRINTER_EFFECTIVE_MODEL" /> 应该包含打印机的名称，要么 <ph name="PRINTER_AUTOCONF" /> 应该设置为 true。具有这两种属性或者不具有任一属性的打印机将会被忽略。
 
-      打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统则会缓存经常使用的 PPD。
+      打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统会缓存经常使用的 PPD。
 
       此政策对用户能否在某设备上配置打印机没有影响。它旨在对各个用户的打印机配置起到补充作用。
 
@@ -1655,30 +1644,6 @@
       此政策仅会影响那些使用 SAML 验证身份的用户。</translation>
 <translation id="4105989332710272578">对于指定的一系列网址，不强制要求必须符合证书透明度政策</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用宣传信息</translation>
-<translation id="4125606414556046117">通过此政策，您可以指定要在用户的桌面和登录屏幕背景中显示的壁纸图片。要设置此政策，请指定可供 <ph name="PRODUCT_OS_NAME" />下载相应壁纸图片的网址，并指定用于验证下载内容是否完整的加密哈希值。图片必须是 JPEG 格式，且大小不得超过 16MB。网址必须可直接访问，而无需进行任何身份验证。
-
-      系统会下载并缓存相应的壁纸图片。只要网址或哈希值有任何变化，系统都会重新下载相应的壁纸图片。
-
-      在设置此政策时，应按照以下范本，采用以 JSON 格式表示网址和哈希值的字符串形式来指定：
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "可供下载相应壁纸图片的网址。",
-            "type": "string"
-          },
-          "hash": {
-            "description": "相应壁纸图片的 SHA-256 哈希值。",
-            "type": "string"
-          }
-        }
-      }
-
-      如果设置了此政策，<ph name="PRODUCT_OS_NAME" />将下载并使用相应的壁纸图片。
-
-      如果您设置了此政策，用户将无法更改或替换此政策。
-
-      如果未设置此政策，用户将可以自行选择要在桌面和登录屏幕背景中显示的图片。</translation>
 <translation id="412697421478384751">允许用户设置安全性较低的锁定屏幕 PIN 码</translation>
 <translation id="4138655880188755661">时限</translation>
 <translation id="4144164749344898721">此政策用于控制设备闲置时电源管理策略中的多项相关设置。
@@ -2585,53 +2550,6 @@
 
       如果此策略未设置或设置为 False，打印命令将触发打印预览屏幕。</translation>
 <translation id="6022948604095165524">启动时的操作</translation>
-<translation id="6023030044732320798">指定要向 ARC 运行时传递的一系列政策。相应值必须是有效的 JSON。
-
-      此政策可用于配置哪些 Android 应用会在设备上自动安装：
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Android 应用标识符，例如“com.google.android.gm”是 Gmail 的标识符",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "指定相应应用的安装方式。OPTIONAL：系统不会自动安装该应用，但用户可以安装它。如果未指定此政策，这即是默认设置。PRELOAD：系统会自动安装该应用，但用户可以卸载它。FORCE_INSTALLED：系统会自动安装该应用，且用户无法卸载它。BLOCKED：该应用已被屏蔽且无法安装。如果系统已根据之前的政策安装了该应用，则会将其卸载。",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "此政策用于向应用授予所请求的权限。PERMISSION_POLICY_UNSPECIFIED：未指定此政策。如果在任何等级都未针对相应权限指定政策，系统便会默认使用“PROMPT”行为。PROMPT：提示用户授予相应权限。GRANT：自动授予相应权限。DENY：自动拒绝授予相应权限。",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "包含一系列键值对的应用专用型 JSON 配置对象，例如“"managedConfiguration": { "key1": value1, "key2": value2 }”。这些键是在应用清单中定义的。",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      要将应用固定到启动器上，请参阅 PinnedLauncherApps。</translation>
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
 <translation id="603410445099326293">在使用 POST 的建议网址中所需的参数</translation>
 <translation id="6034341625190551415">控制公用自助终端和自助服务终端帐号类型。</translation>
@@ -2967,36 +2885,6 @@
       如果此政策设为 False，系统将永远不会使用内置 DNS 客户端。
 
       如果此政策未设置，那么在 MacOS、Android（当私人 DNS 和 VPN 均未启用时）和 ChromeOS 中，内置 DNS 客户端将会默认处于启用状态，并且用户将能够通过修改 chrome://flags 或指定命令行标记来更改是否使用内置 DNS 客户端。</translation>
-<translation id="6838056959556423778">替换 <ph name="PRODUCT_NAME" /> 默认打印机选择规则。
-      此政策用于确定：当用户以相应个人资料首次在 <ph name="PRODUCT_NAME" /> 中使用打印功能时，系统会遵循什么样的规则来选择默认打印机。
-
-      如果此政策已设置，<ph name="PRODUCT_NAME" /> 会尝试找到一台与所有指定属性都相符的打印机，并会将其选为默认打印机。系统会选择所找到的第一台与此政策相符的打印机（如果找到了多台相符的打印机，则可能会选择其中任一台，具体取决于找到这些打印机的顺序）。
-
-      如果此政策未设置，或在规定的时限内未找到相符的打印机，系统便会选择内置的 PDF 打印机作为默认打印机；如果没有 PDF 打印机，则不会选择任何打印机。
-
-      系统会按照以下范本将此政策的值作为 JSON 对象进行解析：
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "是否要将相符打印机的搜索范围限定为一组特定的打印机。",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "用于匹配打印机 ID 的正则表达式。",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "用于匹配打印机显示名的正则表达式。",
-            "type": "string"
-          }
-        }
-      }
-
-      连接到 <ph name="CLOUD_PRINT_NAME" />的打印机会被视为<ph name="PRINTER_TYPE_CLOUD" />打印机，其余打印机则会归类为<ph name="PRINTER_TYPE_LOCAL" />打印机。
-      如果未在某个字段中输入值，则意味着所有打印机都符合此项属性。例如，如果不指定网络连接状态，那么当进行打印预览时，系统将会查找所有类型的打印机（本地打印机和云端打印机）。
-      正则表达式的格式必须遵循 JavaScript RegExp 语法，并在匹配时区分大小写。</translation>
 <translation id="6843296367238757293">此政策已被弃用。建议您改用其他政策。如需了解详情，请访问 https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">此政策已在 <ph name="PRODUCT_NAME" /> 68 中移除，并已由 <ph name="ARC_GLS_POLICY_NAME" /> 取代。</translation>
 <translation id="6856743875250214792">我们已在 M66 中弃用并移除了此政策，因为它仅用于内部测试且存在安全隐患。
@@ -4085,30 +3973,6 @@
       此政策仅影响使用 SAML 验证身份的用户。
 
       此政策的值应以秒为单位。</translation>
-<translation id="9027787254195333560">通过此政策，您可以配置用于在登录屏幕上代表用户的头像图片。要设置此政策，请指定一个可供 <ph name="PRODUCT_OS_NAME" />下载头像图片的网址，并指定一个用于验证下载内容是否完整的加密哈希值。图片必须是 JPEG 格式，且大小不得超过 512KB。网址必须可直接访问，而无需进行任何身份验证。
-
-      系统会下载并缓存相应的头像图片。只要网址或哈希值有任何变化，系统都会重新下载相应的头像图片。
-
-      在设置此政策时，应按照以下范本，采用以 JSON 格式表示网址和哈希值的字符串形式来指定：
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "可供下载相应头像图片的网址。",
-            "type": "string"
-          },
-          "hash": {
-            "description": "相应头像图片的 SHA-256 哈希值。",
-            "type": "string"
-          }
-        }
-      }
-
-      如果设置了此政策，<ph name="PRODUCT_OS_NAME" />将下载并使用相应的头像图片。
-
-      如果您设置了此政策，用户将无法更改或替换此政策。
-
-      如果未设置此政策，则用户可以自行选择在登录屏幕上代表自己的头像图片。</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
 <translation id="9038058011835642205">以列表形式指定一系列无需用户干预即会静默安装且无法由用户卸载或停用的网站。
 
@@ -4121,7 +3985,6 @@
       如果您设置了此政策，用户将无法更改或替换此政策。
 
       该政策值应该以毫秒为单位。值的范围限定在 30 秒到 24 小时之间。</translation>
-<translation id="9042911395677044526">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
 <translation id="9050853837490399534">此政策用于控制相应设备是否应该更新至 Quick Fix Build。
 
       如果此政策的值设为与 Quick Fix Build 对应的令牌，那么只要更新未被其他政策阻止，该设备就会更新至相应的 Quick Fix Build。
@@ -4192,17 +4055,6 @@
       如果此政策设为 false，系统将不会在打印预览对话框内选中“页眉和页脚”，并且用户将无法更改此设置。
 
       如果此政策设为 true，系统会在打印预览对话框内选中“页眉和页脚”，并且用户将无法更改此设置。</translation>
-<translation id="9213347477683611358">配置在无任何用户登录设备的情况下显示在登录屏幕上的设备级壁纸图片。要设置此政策，请指定可供 Chrome 操作系统设备下载相应壁纸图片的网址，并指定用于验证下载内容是否完整的加密哈希值。图片必须是 JPEG 格式，且大小不得超过 16MB。网址必须可供直接访问，而无需进行任何身份验证。系统会下载并缓存相应的壁纸图片。网址或哈希值只要有任何变化，系统即会重新下载壁纸图片。
-
-      指定此政策时，请使用 JSON 格式的字符串来表示网址和哈希值，例如：
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      设置该设备壁纸政策后，如果还没有任何用户登录设备，Chrome 操作系统设备将下载并使用显示在登录屏幕上的壁纸图片。一旦用户登录设备，用户的壁纸政策就会生效。
-
-      如果该设备壁纸政策未设置，则由用户的壁纸政策（如果已设置用户的壁纸政策）来决定要显示的图片。</translation>
 <translation id="9217154963008402249">发送监控网络数据包的频率</translation>
 <translation id="922540222991413931">配置扩展程序、应用和用户脚本安装源</translation>
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>

@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Dovolitev popolnega nadzora nad napravami MIDI</translation>
 <translation id="1449080968331948513">Funkcija »Varčevanje s podatki« se zdaj imenuje »Lahki način«.</translation>
 <translation id="145097072038377568">Izklopljeno v nastavitvah za Android</translation>
+<translation id="146329143005354472">Dodaj v Moje aplikacije</translation>
 <translation id="1477626028522505441">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi težav s strežnikom.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (in še 1)}one{ (in še #)}two{ (in še #)}few{ (in še #)}other{ (in še #)}}</translation>
 <translation id="1501480321619201731">Izbriši skupino</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Spletno mesto</translation>
 <translation id="2874939134665556319">Prejšnja skladba</translation>
 <translation id="2876369937070532032">Googlu pošlje URL-je nekaterih strani, ki jih obiščete, kadar je ogrožena vaša varnost</translation>
-<translation id="2876764156902388290">Chrome uporablja manj podatkov za prikaz te strani</translation>
 <translation id="2888126860611144412">O brskalniku Chrome</translation>
 <translation id="2891154217021530873">Ustavi nalaganje strani</translation>
 <translation id="2893180576842394309">Google lahko vašo zgodovino uporabi za prilagajanje Iskanja Google in drugih Googlovih storitev</translation>
@@ -1061,7 +1061,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8788968922598763114">Vnovično odpiranje nazadnje zaprtega zavihka</translation>
 <translation id="8801436777607969138">Preprečevanje JavaScripta za določeno spletno mesto.</translation>
 <translation id="8812260976093120287">Na nekaterih spletnih mestih je mogoče plačevati z zgoraj navedenimi podprtimi aplikacijami v napravi.</translation>
-<translation id="8816026460808729765">Preprečevanje spletnim mestom dostop do tipal</translation>
+<translation id="8816026460808729765">Preprečevanje spletnim mestom dostopa do tipal</translation>
 <translation id="8816439037877937734">Aplikacija <ph name="APP_NAME" /> se bo odprla v Chromu. Če nadaljujete, se strinjate s Chromovimi <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> ter <ph name="BEGIN_LINK3" />obvestilom o zasebnosti za Google Račune, upravljane s Family Linkom<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="8833831881926404480">Spletno mesto souporablja vaš zaslon.</translation>

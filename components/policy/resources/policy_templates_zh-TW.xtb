@@ -403,7 +403,6 @@
 
       警告：我們不建議將對 <ph name="PRODUCT_OS_NAME" /> 版本的控制權委派給資訊站應用程式，因為這可能導致裝置無法接收軟體更新，且無法修正重大的安全性問題。委派 <ph name="PRODUCT_OS_NAME" /> 版本的控制權可能讓使用者面臨風險。</translation>
 <translation id="1675002386741412210">支援環境：</translation>
-<translation id="1689963000958717134">允許將網路設定按照使用者套用至已安裝 <ph name="PRODUCT_OS_NAME" /> 的裝置。該網路設定是由「開放網路設定」格式 (請參閱：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="1704516734140344991">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能的可用性和行為。
 
       你可以在 JSON 屬性中指定個別設定：
@@ -946,16 +945,6 @@
       如果這項設定已停用，所有的網頁都無法使用 JavaScript，使用者也無法變更這項設定。
 
       如果這項設定已啟用或並未指定，網頁就能使用 JavaScript，但使用者可以變更這項設定。</translation>
-<translation id="2747157663401642394">配置 <ph name="PRODUCT_NAME" /> 的擴充功能管理設定。
-
-          這項政策可控管多項設定，包括由任何現有擴充功能相關政策控管的設定。這項政策將覆寫任何舊版政策的設定 (如果兩個都有設定的話)。
-
-          這項政策可將擴充功能 ID 或更新網址對應到其設定中。如果你指定了擴充功能 ID，系統就只會將設定套用到指定的擴充功能。你可以指定特殊 ID <ph name="DEFAULT_SCOPE" /> 的預設設定，所有未透過這項政策自訂設定的擴充功能一律會套用預設設定。如果你指定了更新網址，系統會根據這個擴充功能資訊清單提供的確切更新網址 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)，將設定套用至所有擴充功能。
-
-          如果是尚未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，系統只會針對 Chrome 線上應用程式商店中的應用程式和擴充功能執行強制安裝作業。
-
-          如需本政策可用設定和結構的完整說明，請造訪 https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">限制 WebRTC 所使用的本機 UDP 通訊埠範圍</translation>
 <translation id="2757054304033424106">允許安裝的擴充功能/應用程式類型</translation>
 <translation id="2758084448533744848">指定這部裝置要使用的強制時區。設定這項政策後，裝置上的使用者將無法覆寫指定時區。如果提供了無效值，這項政策仍會啟用，但改採「GMT」時區。如果提供了空白字串，系統會忽略這項政策。
@@ -982,7 +971,7 @@
           如果未設定這項政策，受管理裝置上的預設值為 False。</translation>
 <translation id="2787173078141616821">回報 Android 狀態的相關資訊</translation>
 <translation id="2799297758492717491">允許符合網址模式許可清單的網頁自動播放媒體</translation>
-<translation id="2801155097555584385">自訂電池開始充電的值 (以百分比為單位)</translation>
+<translation id="2801155097555584385">自訂電池開始充電值 (以百分比表示)</translation>
 <translation id="2801230735743888564">允許使用者在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。
 
       如果將這項政策設為 False，使用者將無法在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。如果將這項政策設為 True，使用者就可以玩這個遊戲。如果未設定這項政策，使用者將無法在已註冊的 Chrome 作業系統中玩恐龍復活節彩蛋遊戲，但可以在其他環境下玩這個遊戲。</translation>
@@ -1175,7 +1164,7 @@
 
       這項政策可讓管理員為使用者提供印表機設定。
 
-      「<ph name="PRINTER_DISPLAY_NAME" />」和「<ph name="PRINTER_DESCRIPTION" />」可填入形式不拘的自訂字串，方便使用者選取印表機。「<ph name="PRINTER_MANUFACTURER" />」和「<ph name="PRINTER_MODEL" />」可讓使用者輕鬆識別印表機，兩者分別代表印表機的製造商和型號。<ph name="PRINTER_URI" /> 必須是可透過用戶端電腦連接的位址，包括 <ph name="URI_SCHEME" />、<ph name="URI_PORT" /> 和 <ph name="URI_QUEUE" />。<ph name="PRINTER_UUID" /> 為選填欄位。如有提供這項資訊，系統會用來刪除重複的 <ph name="ZEROCONF_DISCOVERY" /> 部印表機。
+      「<ph name="PRINTER_DISPLAY_NAME" />」和「<ph name="PRINTER_DESCRIPTION" />」可填入形式不拘的自訂字串，方便使用者選取印表機。「<ph name="PRINTER_MANUFACTURER" />」和「<ph name="PRINTER_MODEL" />」可讓使用者輕鬆識別印表機，兩者分別代表印表機的製造商和型號。<ph name="PRINTER_URI" /> 必須是可透過用戶端電腦連線的位址，包括 <ph name="URI_SCHEME" />、<ph name="URI_PORT" /> 和 <ph name="URI_QUEUE" />。<ph name="PRINTER_UUID" /> 為選填欄位。如有提供這項資訊，系統會用來刪除重複的 <ph name="ZEROCONF_DISCOVERY" /> 印表機。
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> 必須與其中一個代表 <ph name="PRODUCT_NAME" />支援的印表機字串相符。系統會利用這個字串找出並安裝印表機適用的 PPD。詳情請參閱 https://support.google.com/chrome?p=noncloudprint。
 
@@ -1597,7 +1586,7 @@
 
           如果你設為 False 或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
-<translation id="3920892052017026701">自訂開始充電的值 (以百分比為單位)。
+<translation id="3920892052017026701">自訂開始充電的值 (以百分比表示)。
 
           電池電量耗用到自訂的開始充電值時，就會開始充電。
 
@@ -1628,7 +1617,7 @@
       如果將這項政策設為 True 或未設定這項政策，使用者將可透過註冊 Chrome 作業系統來兌換優惠。
 
       如果將這項政策設為 False，使用者將無法兌換優惠。</translation>
-<translation id="4008233182078913897">指定要以無訊息方式 (使用者無需操作) 安裝的應用程式和擴充功能清單；使用者無法解除安裝或停用這些應用程式和擴充功能。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限(這兩個 API 不適用於非強制安裝的應用程式/擴充功能)。
+<translation id="4008233182078913897">指定要以無訊息方式 (使用者無需操作) 安裝的應用程式和擴充功能清單；使用者無法解除安裝或停用這些應用程式和擴充功能。系統會直接授予這些應用程式/擴充功能要求的所有權限 (使用者無需操作)，包括日後新版應用程式/擴充功能要求的任何其他權限。此外，系統會授予 enterprise.deviceAttributes 和 enterprise.platformKeys 擴充功能 API 的權限。(這兩個 API 不適用於非強制安裝的應用程式/擴充功能)。
 
           這項政策的優先順序高於可能發生衝突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策。如果從這份清單移除先前強制安裝的應用程式或擴充功能，<ph name="PRODUCT_NAME" /> 就會自動將其解除安裝。
 
@@ -1690,30 +1679,6 @@
       這項政策只會影響透過 SAML 進行驗證的使用者。</translation>
 <translation id="4105989332710272578">不針對列出的網址強制執行憑證透明化政策</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
-<translation id="4125606414556046117">這項政策可讓你為使用者設定桌面和登入畫面背景所顯示的桌布圖片。如要設定這項政策，請指定可供 <ph name="PRODUCT_OS_NAME" />下載桌布圖片的網址，以及用於驗證下載內容完整性的加密編譯雜湊碼。圖片必須為 JPEG 格式，且大小不得超過 16MB。網址必須未設定任何驗證機制，可直接存取。
-
-      系統會下載並快取桌布圖片。只要網址或雜湊碼一有變更，系統就會重新下載圖片。
-
-      這項政策的值應為一組字串，以 JSON 格式指定網址和雜湊碼，並遵循下方結構：
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "可下載桌布圖片的網址。",
-            "type": "string"
-          },
-          "hash": {
-            "description": "桌布圖片的 SHA-256 雜湊值。",
-            "type": "string"
-          }
-        }
-      }
-
-      如果設定這項政策，<ph name="PRODUCT_OS_NAME" />將下載並使用桌布圖片。
-
-      設定這項政策後，使用者將無法變更或覆寫政策。
-
-      如果不設定這項政策，使用者可自行選擇桌面和登入畫面背景的顯示圖片。</translation>
 <translation id="412697421478384751">允許使用者設定強度不足的螢幕鎖定 PIN 碼</translation>
 <translation id="4138655880188755661">時間限制</translation>
 <translation id="4144164749344898721">當使用者處於閒置狀態時，系統可根據這項政策來控管電源管理策略的各項相關設定。
@@ -2626,53 +2591,6 @@
 
       如果你停用這項政策或將其設為 False，列印指令就會啟動列印預覽畫面。</translation>
 <translation id="6022948604095165524">起始動作</translation>
-<translation id="6023030044732320798">指定要遞交至 ARC 執行階段的一系列政策。政策值必須是有效的 JSON。
-
-      這項政策可用於指定要自動在裝置上安裝哪些 Android 應用程式：
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Android 應用程式 ID，例如：Gmail 的應用程式 ID 為「com.google.android.gm」",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "指定應用程式的安裝方式。OPTIONAL：系統不會自動安裝應用程式，但使用者可以自行安裝。如果未指定這項政策，則此為預設安裝方式。PRELOAD：系統會自動安裝應用程式，但使用者可以解除安裝。FORCE_INSTALLED：系統會自動安裝應用程式，且使用者無法解除安裝。BLOCKED：應用程式遭到封鎖且無法安裝。如果應用程式是依據先前政策所安裝，系統將解除安裝該應用程式。",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "設定政策來授予應用程式所要求的權限。PERMISSION_POLICY_UNSPECIFIED：未指定政策。如果未針對任何層級的權限指定政策，則將使用「PROMPT」做為預設行為。PROMPT：提示使用者授予權限。GRANT：自動授予權限。DENY：自動拒絕授予權限。",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "應用程式專屬的 JSON 設定物件及一個鍵/值組合，例如「"managedConfiguration": { "key1": value1, "key2": value2 }」。應用程式的資訊清單中會定義這些鍵。",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      如要將應用程式固定在啟動器中，請參閱 PinnedLauncherApps。</translation>
 <translation id="602728333950205286">預設搜尋引擎互動智慧搜尋網址</translation>
 <translation id="603410445099326293">使用 POST 的建議網址參數</translation>
 <translation id="6034341625190551415">控管公開工作階段和資訊站帳戶類型。</translation>
@@ -3007,37 +2925,6 @@
       如果你將這項政策設為 False，系統就一律不會使用內建 DNS 用戶端。
 
       如未設定這項政策，根據預設，系統會為 MacOS、Android (當私人 DNS 和 VPN 皆未啟用) 和 Chrome 作業系統啟用內建 DNS 用戶端；使用者可以透過編輯 chrome://flags 或指定命令列標記，自行決定是否要使用內建 DNS 用戶端。</translation>
-<translation id="6838056959556423778">覆寫 <ph name="PRODUCT_NAME" /> 預設印表機選取規則。
-
-      這項政策可讓你決定在 <ph name="PRODUCT_NAME" /> 中首次透過設定檔使用列印功能時，選取預設印表機的規則。
-
-      如果設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試尋找符合所有指定屬性的印表機，並選取該印表機做為預設印表機。採用非唯一比對機制時，凡是相符的印表機皆可供選取 (取決於找到的順序)，因此一旦找到符合政策的印表機，系統就會直接選取。
-
-      如果未設定這項政策，或是在逾時期間找不到相符的印表機，系統會以內建的 PDF 印表機做為預設印表機，或者不選取任何印表機 (如果沒有 PDF 印表機的話)。
-
-      系統會以 JSON 物件形式剖析政策值，架構如下：
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "是否僅限在特定的印表機範圍內搜尋相符的印表機。",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "用於比對印表機 ID 的規則運算式。",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "用於比對印表機顯示名稱的規則運算式。",
-            "type": "string"
-          }
-        }
-      }
-
-      已連上 <ph name="CLOUD_PRINT_NAME" /> 的印表機屬於「<ph name="PRINTER_TYPE_CLOUD" />」類型，其他印表機則是「<ph name="PRINTER_TYPE_LOCAL" />」類型。
-      省略欄位表示不對值設限。舉例來說，如果未指定連線，系統會在執行列印預覽作業時尋找所有類型的印表機 (包括 local 和 cloud)。
-      規則運算式模式必須符合 JavaScript RegExp 語法，且比對機制需區分大小寫。</translation>
 <translation id="6843296367238757293">這項政策已遭到淘汰，因此不建議你使用此政策。詳情請參閱 https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">這項政策已在 <ph name="PRODUCT_NAME" /> 68 中遭到移除，並已由 <ph name="ARC_GLS_POLICY_NAME" /> 取代。</translation>
 <translation id="6856743875250214792">這項政策僅供內部測試，而且有安全性方面的問題，因此 M66 已淘汰並移除這項政策。
@@ -4017,7 +3904,7 @@
       如果停用這項設定或不予設定，則密碼保護服務會將使用者傳送到 https://myaccounts.google.com 以變更密碼。
       這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="8798099450830957504">預設</translation>
-<translation id="8800453707696044281">自訂電池停止充電的值 (以百分比為單位)</translation>
+<translation id="8800453707696044281">自訂電池停止充電值 (以百分比表示)</translation>
 <translation id="8801680448782904838">透過通知建議或要求使用者重新啟動瀏覽器或裝置</translation>
 <translation id="8818173863808665831">回報裝置的地理位置。
 
@@ -4131,30 +4018,6 @@
       這項政策只會影響採用 SAML 進行驗證的使用者。
 
       指定政策值時，請以秒為單位進行設定。</translation>
-<translation id="9027787254195333560">這項政策可讓你設定使用者的登入畫面顯示圖片。如要設定這項政策，請指定顯示圖片網址讓 <ph name="PRODUCT_OS_NAME" />進行下載，並指定用於驗證下載內容完整性的加密編譯雜湊值。圖片必須是 JPEG 格式，且大小不得超過 512kB。網址必須未設定任何驗證機制，可直接存取。
-
-      系統會下載並快取顯示圖片。只要網址或雜湊碼一有變更，系統就會重新下載圖片。
-      
-這項政策的值應為一組字串，以 JSON 格式指定網址和雜湊碼，並遵循下方結構：
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "可下載顯示圖片的網址",
-            "type": "string"
-          },
-          "hash": {
-            "description": "顯示圖片的 SHA-256 雜湊值",
-            "type": "string"
-          }
-        }
-      }
-
-      如果設定這項政策，<ph name="PRODUCT_OS_NAME" />將下載並使用顯示圖片。
-
-      設定這項政策後，使用者將無法變更或覆寫政策。
-
-      如果不設定這項政策，使用者可以選擇登入畫面的使用者顯示圖片。</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9038058011835642205">指定要以無訊息方式 (使用者無需操作) 安裝的網站清單；使用者無法解除安裝或停用這些網站。
 
@@ -4167,7 +4030,6 @@
       設定這項政策後，使用者將無法變更或覆寫政策。
 
       指定政策值時需以毫秒為單位。該值必須介於 30 秒至 24 小時之間。</translation>
-<translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="9050853837490399534">這項政策可控管是否要將裝置更新為「快速修復版本」。
 
       如果將政策值設為對應至快速修復版本的符記，且其他政策未封鎖更新，則裝置會更新為相應的快速修復版本。
@@ -4240,17 +4102,6 @@
       如果將這項政策設為 false，列印對話方塊中的「頁首及頁尾」選項會預設為停用，且使用者無法變更這項設定。
 
       如果將這項政策設為 true，列印對話方塊中的「頁首及頁尾」選項會預設為啟用，且使用者無法變更這項設定。</translation>
-<translation id="9213347477683611358">設定還沒有任何使用者登入裝置時，登入畫面顯示的裝置層級桌布圖片。如要設定這項政策，請指定 Chrome 作業系統裝置可下載桌布圖片的網址，以及用於驗證下載完整性的加密編譯雜湊值。圖片必須為 JPEG 格式，且大小不得超過 16MB。網址則必須可供直接存取，不必經過任何驗證。系統會下載並快取桌布圖片，每當網址或雜湊值有所變更即重新下載。
-
-      指定政策時，請使用 JSON 格式的字串來表示網址和雜湊值。範例如下：
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      設定這項裝置桌布政策後，如果還沒有任何使用者登入裝置，Chrome 作業系統裝置將下載並使用桌布圖片 (顯示在登入畫面)。一旦使用者登入裝置，使用者的桌布政策就會生效。
-
-      如果未設定這項裝置桌布政策，則會由使用者的桌布政策 (如有設定) 決定要顯示的圖片。</translation>
 <translation id="9217154963008402249">監控網路封包的傳送頻率</translation>
 <translation id="922540222991413931">設定擴充功能、應用程式和使用者指令碼安裝來源</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>

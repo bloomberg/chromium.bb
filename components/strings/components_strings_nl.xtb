@@ -405,7 +405,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> op <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Betaling annuleren</translation>
 <translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
-<translation id="321912867715453276">Waarschuwing: Er zijn meerdere bronnen aanwezig voor het beleid, maar de waarden zijn gelijk.</translation>
 <translation id="3225919329040284222">De server heeft een certificaat gepresenteerd dat niet overeenkomt met de ingebouwde verwachtingen. Deze verwachtingen zijn opgenomen voor bepaalde websites om je te beschermen.</translation>
 <translation id="3226128629678568754">Klik op de knop 'Opnieuw laden' om de gegevens opnieuw te verzenden die nodig zijn om de pagina te laden.</translation>
 <translation id="3227137524299004712">Microfoon</translation>
@@ -543,7 +542,6 @@
 <translation id="397105322502079400">Berekenen...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> wordt geblokkeerd</translation>
 <translation id="3987940399970879459">Minder dan 1 MB</translation>
-<translation id="4008849406247176967">Waarschuwing: Er zijn meerdere bronnen met conflicterende waarden aanwezig voor dit beleid.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webpagina in de buurt}other{# webpagina's in de buurt}}</translation>
 <translation id="4030383055268325496">&amp;Toevoegen ongedaan maken</translation>
 <translation id="4032320456957708163">Je browser wordt beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -680,7 +678,6 @@
 <translation id="4738601419177586157">Zoeksuggestie: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Wachtwoorden beheren…</translation>
 <translation id="4744603770635761495">Uitvoerbaar pad</translation>
-<translation id="4746351372139058112">Berichten</translation>
 <translation id="4750917950439032686">Je gegevens (zoals wachtwoorden of creditcardnummers) zijn privé wanneer ze worden verzonden naar deze site.</translation>
 <translation id="4756388243121344051">Gesc&amp;hiedenis</translation>
 <translation id="4758311279753947758">Contactgegevens toevoegen</translation>
@@ -1106,7 +1103,6 @@
 <translation id="7220786058474068424">Verwerken</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">De volgende website bevat malware</translation>
-<translation id="724766306220616965">Waarschuwingen, conflict</translation>
 <translation id="724975217298816891">Geef de vervaldatum en CVC-code voor <ph name="CREDIT_CARD" /> op om je creditcardgegevens te updaten. Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site.</translation>
 <translation id="7251437084390964440">De netwerkconfiguratie voldoet niet aan de ONC-standaard. Delen van de configuratie worden mogelijk niet geïmporteerd.
 Aanvullende informatie:
@@ -1404,6 +1400,7 @@ Aanvullende informatie:
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
 <translation id="8903921497873541725">Inzoomen</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Google-account</translation>
 <translation id="8931333241327730545">Wil je deze pas opslaan in je Google-account?</translation>
 <translation id="8932102934695377596">Je klok loopt achter</translation>
 <translation id="893332455753468063">Naam toevoegen</translation>

@@ -408,7 +408,6 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
 
       Ostrzeżenie: delegowanie kontroli nad tym, w jakiej wersji ma być używany system <ph name="PRODUCT_OS_NAME" />, do aplikacji kiosku nie jest zalecane, ponieważ w rezultacie urządzenie może nie otrzymywać aktualizacji oprogramowania ani bardzo ważnych poprawek zabezpieczeń. Delegowanie kontroli nad tym, w jakiej wersji ma być używany system <ph name="PRODUCT_OS_NAME" />, może narazić użytkowników na niebezpieczeństwo.</translation>
 <translation id="1675002386741412210">Obsługiwana przez:</translation>
-<translation id="1689963000958717134">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla wszystkich użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Konfiguruje dostępność i zachowanie funkcji aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Poszczególne ustawienia można określić we właściwościach JSON:
@@ -947,16 +946,6 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
       Jeśli to ustawienie zostanie wyłączone, strony nie będą mogły używać JavaScriptu, a użytkownik nie będzie mógł zmienić tego ustawienia.
 
       Jeśli to ustawienie będzie włączone lub nieustawione, strony będą mogły używać JavaScriptu, ale użytkownik będzie mógł zmienić to ustawienie.</translation>
-<translation id="2747157663401642394">Konfiguruje ustawienia zarządzania rozszerzeniami w: <ph name="PRODUCT_NAME" />.
-
-          Ta zasada kontroluje wiele ustawień, w tym te kontrolowane przez dotychczasowe zasady związane z rozszerzeniami. Ta zasada zastąpi wszystkie wcześniejsze skonfigurowane zasady.
-
-          Ta zasada mapuje w swojej konfiguracji identyfikator rozszerzenia lub URL aktualizacji. W przypadku identyfikatora rozszerzenia konfiguracja będzie stosowana tylko do oznaczonego nim rozszerzenia. W przypadku rozszerzeń, które nie mają osobnej konfiguracji ustawionej w tej zasadzie, można stosować konfigurację domyślną, określając identyfikator specjalny <ph name="DEFAULT_SCOPE" />. W przypadku adresu URL aktualizacji konfiguracja będzie obowiązywać we wszystkich rozszerzeniach zawierających w swoich plikach manifestu ten konkretny URL aktualizacji, zgodnie z opisem tutaj: <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          W przypadku instancji systemu Windows, które nie są połączone z domeną <ph name="MS_AD_NAME" />, wymuszonej instalacji będą podlegać tylko aplikacje i rozszerzenia z Chrome Web Store.
-
-          Pełny opis struktury tej zasady i możliwych ustawień można znaleźć na https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Ograniczanie zakresu lokalnych portów UDP używanych przez WebRTC</translation>
 <translation id="2757054304033424106">Typy rozszerzeń/aplikacji, które można instalować</translation>
 <translation id="2758084448533744848">Określa strefę czasową, której użycie zostało wymuszone na urządzeniu. Jeśli ustawisz tę zasadę, użytkownicy urządzenia nie będą mogli zmieniać określonej strefy czasowej. Jeśli podasz nieprawidłową wartość, zasada zostanie aktywowana z ustawieniem „GMT”. Jeśli podasz pusty ciąg znaków, zasada będzie ignorowana.
@@ -1182,11 +1171,11 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 
       <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> to dowolny tekst, który ma ułatwić wybranie drukarki. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> ułatwiają użytkownikom identyfikację drukarki. Oznaczają producenta i model drukarki. <ph name="PRINTER_URI" /> to adres, który powinien być dostępny z komputera klienckiego, zawierający te składniki: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. Opcjonalny składnik to <ph name="PRINTER_UUID" />. Jeśli jest podany, umożliwia usunięcie duplikatów drukarek <ph name="ZEROCONF_DISCOVERY" />.
 
-      Ciąg znaków <ph name="PRINTER_EFFECTIVE_MODEL" /> musi być zgodny z jednym z ciągów oznaczających drukarkę współpracującą z <ph name="PRODUCT_NAME" />. Zostanie on użyty do zidentyfikowania oraz zainstalowania pliku PPD odpowiedniego dla drukarki. Więcej informacji znajdziesz na https://support.google.com/chrome?p=noncloudprint.
+      Ciąg znaków <ph name="PRINTER_EFFECTIVE_MODEL" /> musi być zgodny z jednym z ciągów oznaczających drukarkę współpracującą z <ph name="PRODUCT_NAME" />. Zostanie on użyty do zidentyfikowania oraz zainstalowania pliku PPD odpowiedniego dla drukarki. Więcej informacji znajdziesz na stronie https://support.google.com/chrome?p=noncloudprint.
 
       <ph name="PRINTER_AUTOCONF" /> to flaga wartości logicznej, która określa, czy do konfiguracji drukarki ma zostać użyty standard IPP Everywhere. Ta flaga działa w <ph name="PRODUCT_OS_NAME" /> w wersji 76 i nowszych.
 
-      Musi zostać spełniony jeden z dwóch warunków: <ph name="PRINTER_EFFECTIVE_MODEL" /> musi zawierać nazwę drukarki lub ustawienie <ph name="PRINTER_AUTOCONF" /> musi mieć wartość Prawda. Drukarki z obydwiema tymi właściwościami lub nieposiadające żadnej z nich będą ignorowane.
+      Musi zostać spełniony jeden z dwóch warunków: <ph name="PRINTER_EFFECTIVE_MODEL" /> musi zawierać nazwę drukarki lub ustawienie <ph name="PRINTER_AUTOCONF" /> musi mieć wartość Prawda. Drukarki spełniające oba te warunki lub niespełniające żadnego z nich będą ignorowane.
 
       Konfiguracja drukarki jest wykonywana podczas jej pierwszego użycia.  Pliki PPD nie są pobierane przed użyciem drukarki.  Później często używane pliki PPD są przechowywane w pamięci podręcznej.
 
@@ -1410,7 +1399,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
       Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsAllowed” (wartość 1), narzędzia dla deweloperów i konsola JavaScript są dostępne we wszystkich kontekstach, również w kontekście rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
       Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), narzędzia dla deweloperów są niedostępne i nie można badać elementów na stronach. Wyłączone będą wszystkie skróty klawiszowe oraz pozycje menu i menu kontekstowego, które otwierają narzędzia dla deweloperów i konsolę JavaScript.</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
-<translation id="3550875587920006460">Umożliwia ustawienie niestandardowego harmonogramu sprawdzania dostępności aktualizacji. Dotyczy to wszystkich użytkowników oraz wszystkich interfejsów na urządzeniu. Po ustawieniu zasady urządzenie sprawdza dostępność aktualizacji zgodnie z harmonogramem. Aby anulować kolejne zaplanowane sprawdzanie dostępności aktualizacji, musisz usunąć tę zasadę.</translation>
+<translation id="3550875587920006460">Umożliwia ustawienie niestandardowego harmonogramu sprawdzania dostępności aktualizacji. Dotyczy to wszystkich użytkowników oraz wszystkich interfejsów na urządzeniu. Po skonfigurowaniu zasady urządzenie sprawdza dostępność aktualizacji zgodnie z harmonogramem. Aby anulować kolejne zaplanowane sprawdzanie dostępności aktualizacji, musisz usunąć tę zasadę.</translation>
 <translation id="355118380775352753">Witryny otwierane w alternatywnej przeglądarce</translation>
 <translation id="3554984410014457319">Zezwól Asystentowi Google nasłuchiwać wyrażenia aktywującego obsługę komend głosowych</translation>
 <translation id="356579196325389849">Użytkownicy mogą skonfigurować kanał wersji Chrome OS</translation>
@@ -1642,21 +1631,21 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli wykorzystywać oferty przy rejestracji systemu operacyjnego Chrome.
 
       Jeśli ustawisz tu wartość fałsz, użytkownicy nie będą mogli wykorzystywać ofert.</translation>
-<translation id="4008233182078913897">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować ani wyłączyć. Aplikacje/rozszerzenia bez interakcji z użytkownikiem otrzymają wszystkie uprawnienia, o które proszą, w tym wszelkie dodatkowe uprawnienia, o które będą prosić przyszłe ich wersje. Otrzymają też uprawnienia do interfejsów API dla rozszerzeń enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa interfejsy API nie są dostępne dla aplikacji/rozszerzeń, których instalacja nie jest wymuszana).
+<translation id="4008233182078913897">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować ani wyłączyć. Aplikacje/rozszerzenia otrzymają bez interakcji z użytkownikiem wszystkie uprawnienia, o które proszą, w tym wszelkie dodatkowe uprawnienia, o które będą prosić ich przyszłe wersje. Otrzymają też uprawnienia do interfejsów API dla rozszerzeń enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa interfejsy API są niedostępne w przypadku aplikacji/rozszerzeń, których instalacja nie jest wymuszana).
 
-Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacja lub rozszerzenie, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
+Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacje lub rozszerzenia, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
 
 W przypadku systemów Windows niepodłączonych do domeny <ph name="MS_AD_NAME" /> wymuszona instalacja jest ograniczona do aplikacji i rozszerzeń dostępnych w Chrome Web Store.
 
-Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli stanowi to problem, skonfiguruj zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem na <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest URL aktualizacji Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
+Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie adres URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. Adres URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem na <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest adres URL „aktualizacji” Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: adres URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL „aktualizacji” wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
 
-Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje rozszerzenie o identyfikatorze <ph name="EXTENSION_ID_SAMPLE" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
+Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje rozszerzenie o identyfikatorze <ph name="EXTENSION_ID_SAMPLE" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na stronie <ph name="LINK_TO_EXTENSION_DOC2" />.
 
-Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.
+Jeśli ta zasada nie jest skonfigurowana, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.
 
-Uwaga: ta zasada nie jest stosowana do trybu incognito.</translation>
+Uwaga: ta zasada nie ma zastosowania do trybu incognito.</translation>
 <translation id="4008507541867797979">Gdy ta zasada ma wartość prawda lub jest nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać istniejących użytkowników na ekranie logowania i umożliwiać wybranie jednego z nich.
 
       Gdy zasada ma wartość fałsz, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać istniejących użytkowników na ekranie logowania. Wyświetlony zostanie normalny ekran logowania (umożliwiający wpisanie adresu e-mail i hasła lub numeru telefonu użytkownika) lub ekran SAML (jeśli jest włączony przy użyciu zasady <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), chyba że skonfigurowana jest sesja zarządzania – w takim przypadku wyświetlane będą tylko konta z sesją zarządzaną i będzie można wybrać jedno z nich.
@@ -1706,30 +1695,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Ta zasada ma wpływ tylko na użytkowników uwierzytelniających się za pomocą SAML.</translation>
 <translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
-<translation id="4125606414556046117">Ta zasada umożliwia skonfigurowanie obrazu tapety, który użytkownik widzi na pulpicie i na ekranie logowania Zasadę konfiguruje się przez podanie adresu URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz tapety, oraz hasha kryptograficznego służącego do weryfikacji integralności pobranego pliku. Obraz musi mieć format JPEG i nie może być większy niż 16 MB. URL musi być dostępny bez uwierzytelniania.
-
-      Obraz tapety jest pobierany i przechowywany w pamięci podręcznej. Zostanie pobrany ponownie po każdej zmianie adresu URL lub hasha.
-
-      Zasada musi być podana w postaci ciągu w formacie JSON zawierającego URL i hash, zgodnie z tym schematem:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Adres URL, z którego można pobrać obraz tapety.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Skrót SHA-256 obrazu tapety.",
-            "type": "string"
-          }
-        }
-      }
-
-Jeśli ta zasada jest skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie pobierać obraz tapety i go używać.
-
-      Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
-
-      Jeśli zasada pozostanie nieskonfigurowana, użytkownicy będą mogli samodzielnie wybierać obrazy wyświetlane na pulpicie i jako tło na ekranie logowania.</translation>
 <translation id="412697421478384751">Zezwalaj użytkownikom na ustawianie słabych kodów PIN blokady ekranu</translation>
 <translation id="4138655880188755661">Limit czasu</translation>
 <translation id="4144164749344898721">Ta zasada określa szereg ustawień strategii zarządzania energią, która jest stosowana, gdy użytkownik jest nieaktywny.
@@ -1759,7 +1724,7 @@ Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działan
 <translation id="4150201353443180367">Wyświetlacz</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
 <translation id="4157594634940419685">Zezwalaj na dostęp do natywnych drukarek CUPS</translation>
-<translation id="4160962198980004898">Źródło adresu MAC urządzenia zadokowanego</translation>
+<translation id="4160962198980004898">Źródło adresu MAC zadokowanego urządzenia</translation>
 <translation id="4163705126749612234">Służy do konfigurowania wymaganych nazw domen klientów, które będą stosowane do klientów dostępu zdalnego. Blokuje też użytkownikom możliwość zmiany tych nazw.
 
           Jeśli ta zasada jest włączona, z hostem mogą się łączyć tylko klienty ze wskazanych domen.
@@ -2605,10 +2570,10 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 <translation id="5898486742390981550">Gdy zalogowanych jest wielu użytkowników, tylko główny użytkownik może używać aplikacji na Androida.</translation>
 <translation id="5901427587865226597">Tylko drukowanie dwustronne</translation>
 <translation id="5903898512448364160">
-      Po wybraniu dla tej zasady wartości Prawda zasady dotyczące chmury mają pierwszeństwo przed zasadami dotyczącymi platformy, gdy z nimi kolidują.
-      Jeśli ta zasada ma wartość Fałsz lub nie jest skonfigurowana, zasady dotyczące platformy mają pierwszeństwo przed zasadami dotyczącymi chmury, gdy z nimi kolidują.
+      Po wybraniu dla tej zasady wartości Prawda zasady chmury mają pierwszeństwo przed zasadami platformy, gdy z nimi kolidują.
+      Jeśli ta zasada ma wartość Fałsz lub nie jest skonfigurowana, zasady platformy mają pierwszeństwo przed zasadami chmury, gdy z nimi kolidują.
 
-      Ta zasada jest dostępna tylko jako obowiązkowa zasada platformy komputera i ma zastosowanie wyłącznie do zasad dotyczących chmury obejmujących cały komputer.
+      Ta zasada jest dostępna tylko jako obowiązkowa zasada platformy komputera i ma wpływ wyłącznie na zasady chmury, które obejmują cały komputer.
       </translation>
 <translation id="5905473632148429217">Włącz sprawdzanie OCSP/CRL online</translation>
 <translation id="5906199912611534122">Umożliwia włączenie lub wyłączenie ograniczenia przepustowości sieci.
@@ -2651,53 +2616,6 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 
       Jeśli ta opcja będzie nieustawiona lub wyłączona, polecenia wydruku będą wyświetlać ekran podglądu.</translation>
 <translation id="6022948604095165524">Działanie po uruchomieniu</translation>
-<translation id="6023030044732320798">Określa zestaw zasad przesyłany do środowiska wykonawczego ARC. Wartość musi być prawidłowym kodem JSON.
-
-      Za pomocą tej zasady można wskazać aplikacje na Androida, które mają być automatycznie instalowane na urządzeniu:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "identyfikator aplikacji na Androida, np. "com.google.android.gm" w przypadku Gmaila",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Określa sposób instalowania aplikacji. OPTIONAL: aplikacja nie jest instalowana automatycznie, ale użytkownik może ją zainstalować. To ustawienie domyślne, gdy ta zasada nie jest skonfigurowana. PRELOAD: aplikacja jest instalowana automatycznie, ale użytkownik może ją odinstalować. FORCE_INSTALLED: aplikacja jest instalowana automatycznie i użytkownik nie może jej odinstalować. BLOCKED: aplikacja jest zablokowana i nie można jej zainstalować. Jeśli aplikacja została zainstalowana podczas obowiązywania wcześniejszej zasady, zostanie odinstalowana.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Zasada przyznawania uprawnień aplikacjom. PERMISSION_POLICY_UNSPECIFIED: zasada nie jest określona. Jeśli uprawnienie nie ma zasady na żadnym poziomie, domyślnie stosowane jest zachowanie PROMPT. PROMPT: użytkownik jest proszony o przyznanie uprawnień. GRANT: automatyczne przyznanie uprawnień. DENY: automatyczna odmowa uprawnień.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Obiekt JSON z konfiguracją specyficzną dla danej aplikacji w postaci par klucz-wartość, np. '"managedConfiguration": { "klucz1": wartość1, "klucz2": wartość2 }'. Klucze są zdefiniowane w manifeście aplikacji.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Przypinanie aplikacji do menu startowego, zobacz PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
 <translation id="603410445099326293">Parametry dla sugerowania URL-i używających POST</translation>
 <translation id="6034341625190551415">Kontroluje sesje publiczne i rodzaje kont kiosku.</translation>
@@ -3045,37 +2963,6 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       Jeśli dla tej zasady wybrane jest ustawienie Fałsz, wbudowany klient DNS nigdy nie będzie używany.
 
       Jeśli ta zasada jest nieskonfigurowana, wbudowany klient DNS będzie domyślnie włączony w MacOS, Androidzie (jeśli nie włączono ani prywatnego serwera DNS, ani sieci VPN) i Chrome OS. Poza tym użytkownicy będą mogli włączać i wyłączać wbudowanego klienta DNS na stronie chrome://flags lub za pomocą flagi wiersza poleceń.</translation>
-<translation id="6838056959556423778">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
-
-      Ta zasada określa reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />. Ma to miejsce podczas pierwszego użycia funkcji drukowania w danym profilu.
-
-      Gdy ta zasada jest skonfigurowana, <ph name="PRODUCT_NAME" /> spróbuje znaleźć drukarkę odpowiadającą wszystkim określonym atrybutom, a następnie wybierze ją jako domyślną. Wybierana jest pierwsza znaleziona drukarka, która odpowiada atrybutom. Jeśli jest kilka drukarek odpowiadających atrybutom, wybrana może być dowolna z nich – znaczenie ma tutaj kolejność ich wykrycia.
-
-      Jeśli zasada nie jest skonfigurowana lub drukarka odpowiadająca atrybutom nie zostanie znaleziona w przeznaczonym na to czasie, jako domyślna wybierana jest wbudowana drukarka PDF, a jeśli nie jest ona dostępna, drukarka domyślna nie jest wybierana.
-
-      Wartość musi być obiektem JSON o następującym schemacie:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Czy ograniczyć wyszukiwanie do określonego zbioru drukarek.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Wyrażenie regularne określające identyfikator drukarki.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Wyrażenie regularne określające wyświetlaną nazwę drukarki.",
-            "type": "string"
-          }
-        }
-      }
-
-      Typ <ph name="PRINTER_TYPE_CLOUD" /> to drukarki połączone z <ph name="CLOUD_PRINT_NAME" />, pozostałe to typ <ph name="PRINTER_TYPE_LOCAL" />.
-      Pominięcie któregoś pola oznacza, że brane są pod uwagę wszystkie wartości, np. jeśli nie określisz typu połączenia, funkcja podglądu wydruku zacznie wykrywać wszystkie rodzaje drukarek – lokalne i w chmurze.
-      Wyrażenia regularne muszą mieć składnię JavaScript RegExp. Rozróżniana jest wielkość liter.</translation>
 <translation id="6843296367238757293">Ta zasada jest wycofana. Nie zalecamy jej używania. Więcej informacji: https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Ta zasada została usunięta w <ph name="PRODUCT_NAME" /> 68 i zastąpiona zasadą <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ta zasada została wycofana i usunięta w M66, ponieważ była używana tylko do testów wewnętrznych i obniżała bezpieczeństwo.
@@ -4203,30 +4090,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Ta zasada dotyczy tylko użytkowników, którzy uwierzytelnili się za pomocą SAML.
 
       Wartość zasady należy podać w sekundach.</translation>
-<translation id="9027787254195333560">Ta zasada pozwala wskazać obraz awatara, który oznacza użytkownika na ekranie logowania. Aby ją skonfigurować, podaj URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz awatara, oraz hash kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 512 KB. URL musi być dostępny bez uwierzytelniania.
-
-      Po pobraniu obraz awatara jest zapisywany w pamięci podręcznej. Zostanie pobrany ponownie po każdej zmianie adresu URL lub hasha.
-
-      Zasada musi być podana w postaci ciągu w formacie JSON zawierającego URL i hash, zgodnie z tym schematem:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL, z którego można pobrać obraz awatara.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hash SHA-256 obrazu awatara.",
-            "type": "string"
-          }
-        }
-      }
-
-Po skonfigurowaniu tej zasady <ph name="PRODUCT_OS_NAME" /> pobiera obraz awatara i korzysta z niego.
-
-      Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
-
-      Jeśli zasada pozostanie nieskonfigurowana, użytkownik może wybrać obraz awatara, który będzie oznaczał go na ekranie logowania.</translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9038058011835642205">Służy do określenia listy witryn, które są instalowane dyskretnie (bez interakcji z użytkownikiem) i których użytkownik nie może odinstalować ani wyłączyć.
 
@@ -4239,7 +4102,6 @@ Po skonfigurowaniu tej zasady <ph name="PRODUCT_OS_NAME" /> pobiera obraz awatar
       Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
 
       Wartość ustawienia tej zasady należy podać w milisekundach. Dozwolone są wartości od 30 sekund do 24 godzin.</translation>
-<translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Ta zasada określa, czy urządzenie ma zostać zaktualizowane pod kątem kompilacji Quick Fix.
 
       Jeśli jako wartość zasady zostanie ustawiony token mapujący kompilację Quick Fix, urządzenie zostanie zaktualizowane pod kątem odpowiedniej kompilacji Quick Fix, chyba że inna zasada zablokuje aktualizację.
@@ -4310,17 +4172,6 @@ Po skonfigurowaniu tej zasady <ph name="PRODUCT_OS_NAME" /> pobiera obraz awatar
       Jeśli zasada ma wartość fałsz, opcja „Nagłówki i stopki” jest wyłączona w oknie podglądu wydruku, a użytkownik nie może jej zmienić.
 
       Jeśli zasada ma wartość prawda, opcja „Nagłówki i stopki” jest włączona w oknie podglądu wydruku, a użytkownik nie może jej zmienić.</translation>
-<translation id="9213347477683611358">Skonfiguruj tapetę na poziomie urządzenia wyświetlaną na ekranie logowania, jeśli żaden użytkownik nie jest jeszcze zalogowany na urządzeniu. Aby ustawić tę zasadę, podaj adres URL, z którego urządzenie z Chrome OS może pobrać tapetę, a także skrót kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 16 MB. URL musi być dostępny bez żadnego uwierzytelniania. Po pobraniu tapeta jest zapisywana w pamięci podręcznej. Gdy URL lub skrót się zmieni, pobieranie jest powtarzane.
-
-      Zasadę należy zdefiniować jako ciąg znaków w formacie JSON zawierający URL i skrót, zgodnie z tym schematem:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "przykladowyskrottapety"
-      }
-
-      Jeśli zasada tapety urządzenia jest ustawiona, urządzenie z Chrome OS pobiera tapetę i wyświetla ją na ekranie logowania, gdy żaden użytkownik nie jest jeszcze zalogowany na urządzeniu. Gdy użytkownik się zaloguje, zaczyna działać zasada tapety tego użytkownika.
-
-      Jeśli zasada tapety na urządzeniu nie jest ustawiona, o wyświetlaniu tapety decyduje zasada tapety użytkownika (jeśli jest ustawiona).</translation>
 <translation id="9217154963008402249">Częstotliwość pakietów sieciowych monitorowania</translation>
 <translation id="922540222991413931">Konfiguruj źródła instalacji rozszerzeń, aplikacji i skryptów użytkownika</translation>
 <translation id="924557436754151212">Importuj zapisane hasła z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>

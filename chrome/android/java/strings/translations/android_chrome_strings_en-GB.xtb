@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Allow full control of MIDI devices</translation>
 <translation id="1449080968331948513">Data Saver is now Lite mode</translation>
 <translation id="145097072038377568">Turned off in Android Settings</translation>
+<translation id="146329143005354472">Add to My apps</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 more)}other{ (+ # more)}}</translation>
 <translation id="1501480321619201731">Delete group</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Previous track</translation>
 <translation id="2876369937070532032">Sends URLs of some pages that you visit to Google, when your security is at risk</translation>
-<translation id="2876764156902388290">Chrome is using less data to show you this page</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2891154217021530873">Stop page loading</translation>
 <translation id="2893180576842394309">Google may use your history to personalise Search and other Google services</translation>

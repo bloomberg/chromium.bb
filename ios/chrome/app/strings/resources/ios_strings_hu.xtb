@@ -273,6 +273,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5190835502935405962">Könyvjelzősáv</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Szinkronizálás bekapcsolása</translation>
+<translation id="5234764350956374838">Elvetés</translation>
 <translation id="5244474230056479698">Szinkronizálás a következővel: <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Szinkronizálás megszakítása</translation>
 <translation id="5271549068863921519">Jelszó mentése</translation>
@@ -312,6 +313,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="5938160824633642847">Az eszköz tárhelye majdnem megtelt. Szabadítson fel helyet, és próbálja újra.</translation>
 <translation id="5948291296578561264">Segítségével fotókat menthet a fotótárba.</translation>
 <translation id="5955891643922670672">Offline verzió</translation>
+<translation id="5957613098218939406">További lehetőségek</translation>
 <translation id="5964480694698977962">Új inkognitólap létrehozása.</translation>
 <translation id="5965679971710331625">Sikeresen bejelentkezett</translation>
 <translation id="5979837087407522202">Jelszavak keresése</translation>

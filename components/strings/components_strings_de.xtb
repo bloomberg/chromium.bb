@@ -365,7 +365,7 @@
 <translation id="2948083400971632585">Sie können alle für eine Verbindung konfigurierten Proxys auf der Seite "Einstellungen" deaktivieren.</translation>
 <translation id="2955913368246107853">Suchleiste schließen</translation>
 <translation id="2969319727213777354">Zum Herstellen einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Google Chrome diese Zertifikate nicht bestätigen.</translation>
-<translation id="2970515157925768593">Kann Ihre Geräte- und Kontoeinrichtung remote ändern.</translation>
+<translation id="2970515157925768593">Ihre Geräte- und Kontoeinrichtung remote ändern.</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, aktuell ausgewählt. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Daten löschen</translation>
@@ -408,7 +408,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> auf <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Zahlung abbrechen</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
-<translation id="321912867715453276">Warnung: Für die Richtlinie sind mehrere Quelle vorhanden, aber die Werte sind dieselben.</translation>
 <translation id="3225919329040284222">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten.</translation>
 <translation id="3226128629678568754">Klicken Sie auf die Schaltfläche zum erneuten Laden, um die für das Laden der Seite erforderlichen Daten noch einmal zu senden.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -546,7 +545,6 @@
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
 <translation id="3987940399970879459">Weniger als 1 MB</translation>
-<translation id="4008849406247176967">Warnung: Für diese Richtlinie sind mehrere Quellen mit in Konflikt stehenden Werten vorhanden.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Webseite in der Nähe}other{# Webseiten in der Nähe}}</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="4032320456957708163">Ihr Browser wird von <ph name="ENROLLMENT_DOMAIN" /> verwaltet</translation>
@@ -683,7 +681,6 @@
 <translation id="4738601419177586157">Suchvorschlag: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Passwörter verwalten…</translation>
 <translation id="4744603770635761495">Ausführbarer Pfad</translation>
-<translation id="4746351372139058112">Nachrichten</translation>
 <translation id="4750917950439032686">Ihre Daten wie Passwörter oder Kreditkartennummern sind privat, wenn Sie sie an diese Website senden.</translation>
 <translation id="4756388243121344051">&amp;Verlauf</translation>
 <translation id="4758311279753947758">Kontaktdaten hinzufügen</translation>
@@ -715,7 +712,7 @@
 <translation id="4926159001844873046">Auf <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
-<translation id="4945672369594656571">Legt fest, wie mit Ihren Geräte- und Kontodaten verfahren wird. Google verarbeitet Ihre Geräte- und Kontodaten ausschließlich nach Vorgabe durch Ihren Geräte- und Kontomanager und allein zu dem von Ihrem Geräte- und Kontomanager festgelegten Zweck.</translation>
+<translation id="4945672369594656571">Festlegen, wie mit Ihren Geräte- und Kontodaten verfahren wird. Google verarbeitet Ihre Geräte- und Kontodaten ausschließlich nach Vorgabe durch Ihren Geräte- und Kontomanager und allein zu dem von Ihrem Geräte- und Kontomanager festgelegten Zweck.</translation>
 <translation id="4950898438188848926">Schaltfläche zum Wechseln von Tabs, Eingabetaste drücken, um zum offenen Tab "<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />" zu wechseln</translation>
 <translation id="495170559598752135">Aktionen</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -729,7 +726,7 @@
 <translation id="5017554619425969104">Von Ihnen kopierter Text</translation>
 <translation id="5018422839182700155">Diese Seite kann nicht geöffnet werden</translation>
 <translation id="5019198164206649151">Sicherungsspeicher ist fehlerhaft.</translation>
-<translation id="5020154601324912079">Legt fest, wie mit Ihren Gerätedaten verfahren wird. Google verarbeitet Ihre Gerätedaten ausschließlich nach Vorgabe durch Ihren Gerätemanager und allein zu dem von Ihrem Gerätemanager festgelegten Zweck.</translation>
+<translation id="5020154601324912079">Festlegen, wie mit Ihren Gerätedaten verfahren wird. Google verarbeitet Ihre Gerätedaten ausschließlich nach Vorgabe durch Ihren Gerätemanager und allein zu dem von Ihrem Gerätemanager festgelegten Zweck.</translation>
 <translation id="5023310440958281426">Informieren Sie sich über die von Ihrem Administrator festgelegten Richtlinien.</translation>
 <translation id="5029568752722684782">Kopie löschen</translation>
 <translation id="503069730517007720">Für "<ph name="SOFTWARE_NAME" />" ist ein Stammzertifikat erforderlich, das nicht installiert ist. Ihr IT-Administrator sollte die Konfigurationsanweisungen für "<ph name="SOFTWARE_NAME" />" lesen, um das Problem zu beheben. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -888,7 +885,7 @@
 <translation id="5838278095973806738">Sie sollten keine vertraulichen Informationen wie Passwörter oder Kreditkartennummern auf dieser Website eingeben, da sie von Angreifern gestohlen werden könnten.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5863847714970149516">Auf der nächsten Seite wird möglicherweise versucht, Ihnen etwas in Rechnung zu stellen</translation>
-<translation id="5865951947699094510">Kann Ihre Kontoeinrichtung remote ändern.</translation>
+<translation id="5865951947699094510">Ihre Kontoeinrichtung remote ändern.</translation>
 <translation id="5866257070973731571">Telefonnummer hinzufügen</translation>
 <translation id="5869405914158311789">Die Website ist nicht erreichbar</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
@@ -1110,7 +1107,6 @@
 <translation id="7220786058474068424">Verarbeitung läuft</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Malware auf nachfolgender Website</translation>
-<translation id="724766306220616965">Warnmeldungen, Konflikte</translation>
 <translation id="724975217298816891">Geben Sie das Gültigkeitsdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
 <translation id="7251437084390964440">Die Netzwerkkonfiguration entspricht nicht dem ONC-Standard. Die Konfiguration wird unter Umständen nicht vollständig importiert.
 Weitere Details:
@@ -1151,7 +1147,7 @@ Weitere Details:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Passwörter verwalten…</translation>
 <translation id="7419106976560586862">Profilpfad</translation>
-<translation id="7424427397225027541">Legt fest, wie mit Ihren Kontodaten verfahren wird. Google verarbeitet Ihre Kontodaten ausschließlich nach Vorgabe durch Ihren Kontomanager und allein zu dem von Ihrem Kontomanager festgelegten Zweck.</translation>
+<translation id="7424427397225027541">Festlegen, wie mit Ihren Kontodaten verfahren wird. Google verarbeitet Ihre Kontodaten ausschließlich nach Vorgabe durch Ihren Kontomanager und allein zu dem von Ihrem Kontomanager festgelegten Zweck.</translation>
 <translation id="7437289804838430631">Kontaktdaten hinzufügen</translation>
 <translation id="7440140511386898319">Verfügbare Offline-Inhalte</translation>
 <translation id="7441627299479586546">Falsche(r) Nutzername/Domain der Richtlinie</translation>
@@ -1409,6 +1405,7 @@ Weitere Details:
 <translation id="8891727572606052622">Ungültiger Proxymodus</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Google-Konto</translation>
 <translation id="8931333241327730545">Möchten Sie diese Karte in Ihrem Google-Konto speichern?</translation>
 <translation id="8932102934695377596">Ihre Uhr geht nach</translation>
 <translation id="893332455753468063">Namen hinzufügen</translation>

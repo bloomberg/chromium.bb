@@ -385,7 +385,6 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 
       Upozornění: Delegovat řízení verze systému <ph name="PRODUCT_OS_NAME" /> na terminálovou aplikaci se nedoporučuje, neboť to zařízení může zabránit v přijímání aktualizací softwaru a kritických oprav zabezpečení. Delegování řízení verze systému <ph name="PRODUCT_OS_NAME" /> by uživatele mohlo vystavit riziku.</translation>
 <translation id="1675002386741412210">Podpora:</translation>
-<translation id="1689963000958717134">Umožňuje přenést nastavení sítě, která se budou používat pro všechny uživatele zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1704516734140344991">Slouží ke konfiguraci dostupnosti a chování funkce aktualizace firmwaru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Jednotlivá nastavení lze zadat ve vlastnostech objektu JSON:
@@ -936,16 +935,6 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
       Pokud je toto nastavení deaktivováno, webové stránky nemohou spouštět kód JavaScript a uživatel nemůže toto nastavení změnit.
 
       Pokud je toto nastavení aktivováno nebo není nastaveno na konkrétní hodnotu, webové stránky mohou spouštět kód JavaScript, ale uživatel může toto nastavení změnit.</translation>
-<translation id="2747157663401642394">Konfiguruje nastavení správy rozšíření prohlížeče <ph name="PRODUCT_NAME" />.
-
-          Tato zásada řídí několik nastavení, včetně nastavení nakonfigurovaných pomocí existujících zásad pro rozšíření. Pokud je tato zásada nastavená, přepíše všechny starší nastavené zásady.
-
-          Tato zásada mapuje ID nebo adresu URL pro aktualizaci rozšíření na jeho konfiguraci. Pokud je definováno ID rozšíření, použije se konfigurace pouze pro konkrétní rozšíření. Pomocí zvláštního ID <ph name="DEFAULT_SCOPE" /> lze nastavit výchozí konfiguraci. Tato konfigurace se použije pro všechna rozšíření, která v této zásadě nemají nastavenou vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, použije se konfigurace pro všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          U instancí systému Windows, které nejsou připojené k doméně <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
-
-          Úplný popis možných nastavení a struktury této zásady najdete na stránce https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
-          </translation>
 <translation id="2753637905605932878">Omezit rozsah místních portů UDP používaných rozhraním WebRTC</translation>
 <translation id="2757054304033424106">Typy rozšíření nebo aplikací, které mohou být nainstalovány</translation>
 <translation id="2758084448533744848">Udává časové pásmo, jehož použití se má v zařízení vynutit. Když je tato zásada nastavená, uživatelé na zařízení zadané časové pásmo nemohou přepsat. Pokud zadáte neplatnou hodnotu, bude zásada aktivována s použitím hodnoty „GMT“. Pokud zadáte prázdný řetězec, bude tato zásada ignorována.
@@ -1176,9 +1165,9 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
 
       <ph name="PRINTER_AUTOCONF" /> je logický příznak, který udává, zda se má k nastavení tiskárny použít technologie IPP Everywhere. Tento příznak je podporován ve verzi 76 a novějších verzích systému <ph name="PRODUCT_OS_NAME" />.
 
-      Je vyžadováno, aby buď pole <ph name="PRINTER_EFFECTIVE_MODEL" /> obsahovalo název tiskárny, nebo byl příznak <ph name="PRINTER_AUTOCONF" /> nastavený na hodnotu true. Tiskárny s oběma těmito nastaveními nebo bez žádného z nich budou ignorovány.
+      Pole <ph name="PRINTER_EFFECTIVE_MODEL" /> musí obsahovat název tiskárny, nebo je třeba nastavit příznak <ph name="PRINTER_AUTOCONF" /> na hodnotu true. Tiskárny s oběma těmito nastaveními nebo bez žádného z nich budou ignorovány.
 
-      Nastavení tiskárny se dokončí při jejím prvním použití.  Soubory PPD se stáhnou až při použití tiskárny.  Často používané soubory PPD budou následně uloženy do mezipaměti.
+      Nastavení tiskárny se dokončí při prvním použití.  Soubory PPD se stáhnou až při použití tiskárny.  Často používané soubory PPD budou následně uloženy do mezipaměti.
 
       Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních.  Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.
 
@@ -1247,7 +1236,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
 <translation id="3220624000494482595">Je-li terminálová aplikace aplikace Android, nebude mít nad verzí systému <ph name="PRODUCT_OS_NAME" /> kontrolu ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Vzory adres URL, ze kterých je možné instalovat rozšíření, aplikace a uživatelské skripty</translation>
 <translation id="3240609035816615922">Zásada přístupu ke konfiguraci tiskáren.</translation>
-<translation id="3240655340884151271">Adresa MAC rozhraní NIC vestavěného v doku</translation>
+<translation id="3240655340884151271">Adresa MAC síťové karty vestavěné v doku</translation>
 <translation id="3243309373265599239">Udává dobu nečinnosti uživatele, po které bude při napájení ze sítě snížen jas obrazovky.
 
           Pokud je tato zásada nastavena hodnotu větší než nula, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> sníží jas obrazovku.
@@ -1634,19 +1623,19 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
       Pokud je tato zásada nastavena na hodnotu true nebo ponechána bez nastavení, uživatelé budou moci při registraci systému Chrome OS uplatňovat zvláštní nabídky.
 
       Pokud je tato zásada nastavena na hodnotu false, uživatelé zvláštní nabídky nebudou moci uplatnit.</translation>
-<translation id="4008233182078913897">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělována také oprávnění k používání těchto rozhraní API pro rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API jsou k dispozici pouze u aplikací/rozšíření, jejichž instalace je vynucena.)
+<translation id="4008233182078913897">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělena oprávnění těmto rozhraním API rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API nejsou k dispozici aplikacím/rozšířením, jejichž instalace není vynucena.)
 
-Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
+          Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
 
-U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
+U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
 
-Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+          Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
+          Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Pro následné aktualizace rozšíření se použije adresa URL pro aktualizaci uvedená v manifestu rozšíření. Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
 
-Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje rozšíření s ID <ph name="EXTENSION_ID_SAMPLE" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje rozšíření s ID <ph name="EXTENSION_ID_SAMPLE" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
 
-Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.
+Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.
 
 Tato zásada se nevztahuje na anonymní režim.</translation>
 <translation id="4008507541867797979">Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, bude <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce ukazovat existující uživatele a umožní vybrat si z nich.
@@ -1698,30 +1687,6 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
       Tato zásada má vliv pouze na uživatele, kteří používají ověření pomocí technologie SAML.</translation>
 <translation id="4105989332710272578">Deaktivovat vynucování zásad Certificate Transparency pro seznam adres URL</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
-<translation id="4125606414556046117">Tato zásada umožňuje nakonfigurovat obrázek tapety, který se zobrazuje na ploše a na pozadí přihlašovací obrazovky daného uživatele. Zásadu nastavíte zadáním adresy URL, ze které může <ph name="PRODUCT_OS_NAME" /> obrázek tapety stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 16 MB. Adresa URL musí být přístupná bez ověření.
-
-      Obrázek tapety se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se stáhne znovu.
-
-      Tuto zásadu je třeba zadat jako řetězec, který udává adresu URL a hodnotu hash ve formátu JSON, a to podle následujícího schématu:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Adresa URL, ze které lze obrázek tapety stáhnout.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hodnota hash SHA-256 obrázku tapety.",
-            "type": "string"
-          }
-        }
-      }
-
-      Pokud je tato zásada nastavená, systém <ph name="PRODUCT_OS_NAME" /> obrázek tapety stáhne a použije.
-
-      Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
-
-      Pokud je tato zásada ponechána nenastavená, uživatel si může zvolit, jaký obrázek bude mít zobrazený na ploše a na pozadí přihlašovací obrazovky.</translation>
 <translation id="412697421478384751">Povolit uživatelům nastavovat slabé kódy PIN pro odemknutí obrazovky</translation>
 <translation id="4138655880188755661">Časový limit</translation>
 <translation id="4144164749344898721">Tato zásada udává několik nastavení strategie řízení spotřeby pro případ, že uživatel přestane být aktivní.
@@ -2546,7 +2511,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
 <translation id="5765780083710877561">Popis:</translation>
 <translation id="5770738360657678870">Verze pro vývojáře (mohou být nestabilní)</translation>
 <translation id="5774856474228476867">Adresa URL vyhledávání výchozího poskytovatele vyhledávání</translation>
-<translation id="5775235485119094648">Nabít baterii, když je v určitém rozmezí.</translation>
+<translation id="5775235485119094648">Nabíjet baterii, když je v určitém rozmezí.</translation>
 <translation id="5776485039795852974">Dotázat se vždy, když se webové stránky snaží zobrazit oznámení na ploše</translation>
 <translation id="5781412041848781654">Určuje knihovnu GSSAPI, která bude použita pro ověření v protokolu HTTP. Nastavit lze buď pouze název knihovny, nebo celou cestu.
 
@@ -2653,7 +2618,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 <translation id="5950205771952201658">Vzhledem k tomu, že online kontroly zamítnutých certifikátů nepřinášejí žádné efektivní bezpečnostní výhody a také snadno selhávají, jsou v prohlížeči <ph name="PRODUCT_NAME" /> verze 19 a vyšší ve výchozím nastavení deaktivovány. Nastavíte-li tuto zásadu na hodnotu True, obnoví se předchozí chování a budou prováděny online kontroly OCSP/CRL.
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nebude u verzí <ph name="PRODUCT_NAME" /> 19 a novějších provádět online kontroly zamítnutých certifikátů.</translation>
-<translation id="5961137303188584693">Adresa MAC rozhraní NIC vestavěného v zařízení</translation>
+<translation id="5961137303188584693">Adresa MAC síťové karty vestavěné v zařízení</translation>
 <translation id="5966615072639944554">Rozšíření, která mohou používat rozhraní API vzdáleného ověření identity</translation>
 <translation id="5983708779415553259">Výchozí chování pro stránky, které nejsou součástí žádného obsahového balíčku</translation>
 <translation id="5997543603646547632">Ve výchozím nastavení použít 24hodinový formát</translation>
@@ -2664,53 +2629,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, příkaz tisku zobrazí obrazovku s náhledem tisku.</translation>
 <translation id="6022948604095165524">Akce při spuštění</translation>
-<translation id="6023030044732320798">Určuje sadu zásad, které budou předány běhovému prostředí ARC. Hodnota musí být platný objekt JSON.
-
-      Pomocí této zásady lze nakonfigurovat, které aplikace Android budou v zařízení automaticky nainstalovány:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identifikátor aplikace Android, například „com.google.android.gm“ pro Gmail.",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Udává typ instalace aplikace. OPTIONAL: Aplikace není nainstalována automaticky, ale uživatel ji může nainstalovat. Toto je výchozí nastavení, pokud tato zásada není zadána. PRELOAD: Aplikace je automaticky nainstalována, ale uživatel ji může odinstalovat. FORCE_INSTALLED: Aplikace je automaticky nainstalována a uživatel ji nemůže odinstalovat. BLOCKED: Aplikace je blokována a nelze ji nainstalovat. Pokud byla na základě předchozí zásady nainstalována, odinstaluje se.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Zásada k udělování žádostí o oprávnění aplikacím. PERMISSION_POLICY_UNSPECIFIED: Zásada není zadána. Pokud pro oprávnění není zadána žádná zásada na žádné úrovni, použije se ve výchozím nastavení chování PROMPT. PROMPT: Vyzvat uživatele k udělení oprávnění. GRANT: Automaticky oprávnění udělit. DENY: Automaticky oprávnění zamítnout.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Konfigurační objekt JSON specifický pro aplikaci tvořený sadou párů klíč–hodnota, například "managedConfiguration": { "key1": value1, "key2": value2 }. Klíče jsou definovány v manifestu aplikace.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Chcete-li aplikace připnout ke spouštěči, vyhledejte zásadu PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Adresa URL dynamického vyhledávání výchozího poskytovatele vyhledávání</translation>
 <translation id="603410445099326293">Parametry pro adresu URL návrhu, která používá metodu POST</translation>
 <translation id="6034341625190551415">Ovládá typy účtů veřejných relací a veřejných terminálů</translation>
@@ -3050,37 +2968,6 @@ Pokud je tato zásada nastavená na hodnotu true, použije se integrovaný klien
       Pokud je tato zásada nastavená na hodnotu false, integrovaný klient DNS se nikdy nepoužije.
 
       Pokud tato zásada není nastavená, integrovaný klient DNS bude v systémech MacOS, Android (když není zapnutá funkce Soukromé DNS ani VPN) a ChromeOS ve výchozím nastavení zapnutý a uživatelé jeho používání budou moci změnit úpravou příznaku chrome://flags nebo zadáním příznaku příkazového řádku.</translation>
-<translation id="6838056959556423778">Přepíše v prohlížeči <ph name="PRODUCT_NAME" /> pravidla výběru výchozí tiskárny.
-
-      Tato zásada určuje pravidla pro výběr výchozí tiskárny v prohlížeči <ph name="PRODUCT_NAME" />, který se provede při prvním použití funkce tisku v profilu.
-
-      Je-li tato zásada nastavena, <ph name="PRODUCT_NAME" /> se pokusí najít tiskárnu, která odpovídá všem zadaným atributům, a vybrat ji jako výchozí. Bude vybrána první tiskárna, která tuto zásadu splňuje. Pokud zásadě odpovídá více tiskáren, může být v závislosti na tom, v jakém pořadí jsou tiskárny objeveny, vybrána kterákoliv z nich.
-
-      Pokud tato zásada není nastavena nebo do vypršení časového limitu odpovídající tiskárna není nalezena, vybere se integrovaná virtuální tiskárna na vytváření souborů PDF. Pokud tiskárna na vytváření souborů PDF není k dispozici, nebude vybrána žádná tiskárna.
-
-      Hodnota se analyzuje jako objekt JSON odpovídající následujícímu schématu:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Informace o tom, zda má být vyhledávání odpovídající tiskárny omezeno na konkrétní množinu tiskáren.",
-            "type": "string"
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regulární výraz, kterému musí odpovídat ID tiskárny.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulární výraz, kterému musí odpovídat zobrazovaný název tiskárny.",
-            "type": "string"
-          }
-        }
-      }
-
-      Tiskárny připojené ke službě <ph name="CLOUD_PRINT_NAME" /> jsou považovány za cloudové („<ph name="PRINTER_TYPE_CLOUD" />“), ostatní jsou klasifikovány jako místní („<ph name="PRINTER_TYPE_LOCAL" />“).
-      Vynechání pole znamená, že v něm budou vyhovovat všechny hodnoty. Pokud například nezadáte způsob připojení, při náhledu tisku se spustí vyhledávání všech typů tiskáren: místních i cloudových.
-      Regulární výrazy musejí odpovídat syntaxi objektů RegExp jazyka JavaScript a při vyhledávání shod se rozlišují velká a malá písmena.</translation>
 <translation id="6843296367238757293">Podpora této zásady byla ukončena. Doporučujeme nepoužívat ji. Další informace najdete na stránce https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Tato zásada byla ve verzi 68 prohlížeče <ph name="PRODUCT_NAME" /> odstraněna a nahrazena zásadou <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Tato zásada je zastaralá a ve verzi M66 byla odstraněna, protože byla používána pouze k internímu testování a představovala bezpečnostní ohrožení.
@@ -4204,30 +4091,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
       Tato zásada má vliv pouze na uživatele, kteří provedli ověření pomocí technologie SAML.
 
       Hodnota zásady se zadává v sekundách.</translation>
-<translation id="9027787254195333560">Tato zásada umožňuje nakonfigurovat obrázek avatara, který na přihlašovací obrazovce představuje uživatele. Zásadu nastavíte zadáním adresy URL, ze které systém <ph name="PRODUCT_OS_NAME" /> může obrázek avatara stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 512 kB. Adresa URL musí být přístupná bez ověření.
-
-      Obrázek avatara se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se stáhne znovu.
-
-      Tuto zásadu je třeba zadat jako řetězec, který udává adresu URL a hodnotu hash ve formátu JSON, a to podle následujícího schématu:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Adresa URL, ze které lze obrázek avatara stáhnout",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hodnota hash SHA-256 obrázku avatara",
-            "type": "string"
-          }
-        }
-      }
-
-      Pokud tuto zásadu nastavíte, systém <ph name="PRODUCT_OS_NAME" /> obrázek avatara stáhne a použije.
-
-      Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
-
-      Pokud zásadu nenastavíte, uživatel bude moci sám zvolit, jaký obrázek avatara jej bude na přihlašovací obrazovce představovat.</translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="9038058011835642205">Určuje seznam webových stránek, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat.
 
@@ -4240,7 +4103,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
       Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
 
       Hodnota této zásady se zadává v milisekundách. Místo hodnot mimo rozsah od 30 sekund do 24 hodin se použijí příslušné krajní hodnoty tohoto rozsahu.</translation>
-<translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9050853837490399534">Tato zásada určuje, zda se má zařízení aktualizovat na sestavení Quick Fix Build.
 
       Pokud je hodnota zásady nastavená na token, který je namapován k sestavení Quick Fix Build, aktualizuje se zařízení na odpovídající sestavení Quick Fix Build (jestliže aktualizaci neblokuje jiná zásada).
@@ -4318,17 +4180,6 @@ Pokud zásada není nastavena, uživatel se může rozhodnout, zda záhlaví a 
 Pokud je nastavena na false, možnost Záhlaví a zápatí není v dialogovém okně náhledu tisku vybrána a uživatel to nemůže změnit.
 
 Pokud je nastavena na true, možnost Záhlaví a zápatí je v dialogovém okně náhledu tisku vybrána a uživatel to nemůže změnit.</translation>
-<translation id="9213347477683611358">Slouží ke konfiguraci obrázku tapety na úrovni zařízení, který se bude zobrazovat na přihlašovací obrazovce, pokud se do zařízení dosud nepřihlásil žádný uživatel. Zásadu nastavíte zadáním adresy URL, ze které může zařízení se systémem Chrome OS obrázek tapety stáhnout, a kryptografické hodnoty hash k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 16 MB. Adresa URL musí být přístupná bez ověření. Obrázek tapety se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se obrázek stáhne znovu.
-
-      Tuto zásadu je třeba zadat jako řetězec, který udává adresu URL a hodnotu hash ve formátu JSON. Příklad:
-      {
-        "url": "https://example.com/tapeta_zarizeni.jpg",
-        "hash": "hashukazkovetapety"
-      }
-
-      Pokud je zásada tapety zařízení nastavena, zařízení se systémem Chrome OS stáhne obrázek tapety a použije jej na přihlašovací obrazovce, pokud se do zařízení dosud nepřihlásil žádný uživatel. Po přihlášení se použije zásada pro tapetu příslušného uživatele.
-
-      Pokud zásada tapety zařízení není nastavena, zobrazený obrázek závisí na zásadě tapety uživatele (pokud je nastavena).</translation>
 <translation id="9217154963008402249">Frekvence odesílání sledovacích síťových paketů</translation>
 <translation id="922540222991413931">Konfigurovat zdroje instalací rozšíření, aplikací a uživatelských skriptů</translation>
 <translation id="924557436754151212">Importování uložených hesel z výchozího prohlížeče při prvním spuštění</translation>

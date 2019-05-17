@@ -416,7 +416,6 @@
 
       Amaran: Anda tidak disyorkan supaya menugaskan kawalan versi <ph name="PRODUCT_OS_NAME" /> kepada apl kios kerana tindakan ini boleh menghalang peranti daripada menerima kemas kini perisian dan pembetulan keselamatan kritikal. Tindakan menugaskan kawalan versi <ph name="PRODUCT_OS_NAME" /> boleh menyebabkan pengguna terdedah kepada risiko.</translation>
 <translation id="1675002386741412210">Disokong pada:</translation>
-<translation id="1689963000958717134">Membenarkan penolakan konfigurasi rangkaian digunakan untuk semua pengguna peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Mengkonfigurasikan ketersediaan dan gelagat kefungsian kemas kini perisian tegar <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Tetapan individu boleh ditentukan dalam sifat JSON:
@@ -974,16 +973,6 @@
       Jika tetapan ini dilumpuhkan, halaman web tidak dapat menggunakan JavaScript dan pengguna tidak boleh mengubah tetapan tersebut.
 
       Jika tetapan ini didayakan atau tidak ditetapkan, halaman web boleh menggunakan JavaScript tetapi pengguna boleh mengubah tetapan tersebut.</translation>
-<translation id="2747157663401642394">Mengkonfigurasikan tetapan pengurusan sambungan untuk <ph name="PRODUCT_NAME" />.
-
-          Dasar ini mengawal berbilang tetapan, termasuk tetapan yang dikawal oleh sebarang dasar yang sedia ada berkaitan sambungan. Dasar ini akan membatalkan mana-mana dasar lama jika kedua-dua dasar ditetapkan.
-
-          Dasar ini memetakan ID sambungan atau URL kemas kini pada konfigurasi dasar. Dengan ID sambungan, konfigurasi akan digunakan pada sambungan yang ditentukan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas <ph name="DEFAULT_SCOPE" />, yang akan digunakan pada semua sambungan yang tidak ditetapkan konfigurasi tersuai dalam dasar ini. Dengan URL kemas kini, konfigurasi akan digunakan pada semua sambungan dengan URL kemas kini tepat seperti yang dinyatakan dalam manifes sambungan ini, seperti yang diperihalkan di <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Untuk tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />, pemasangan paksa adalah terhad kepada apl dan sambungan yang disenaraikan di Gedung Web Chrome.
-
-          Untuk mendapatkan perihalan penuh tentang tetapan dan struktur berkemungkinan dasar ini, sila lawati https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Hadkan julat port UDP setempat yang digunakan oleh WebRTC</translation>
 <translation id="2757054304033424106">Jenis sambungan/apl yang boleh dipasang</translation>
 <translation id="2758084448533744848">Menentukan zon waktu yang dikuatkuasakan, yang akan digunakan untuk peranti. Apabila dasar ini ditetapkan, pengguna pada peranti tidak boleh membatalkan zon waktu yang ditetapkan. Jika nilai tidak sah diberikan, dasar ini masih diaktifkan menggunakan "GMT". Jika rentetan kosong diberikan, dasar ini akan diabaikan.
@@ -1212,11 +1201,11 @@
       Dasar ini membolehkan pentadbir menyediakan konfigurasi pencetak untuk
       pengguna mereka.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan berbentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> berfungsi untuk memudahkan pengenalpastian pencetak oleh pengguna akhir. Maklumat ini mewakili pengeluar dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dihubungi daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" />dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> tidak diwajibkan. Jika disediakan, maklumat ini digunakan untuk membantu menyahpendua pencetak <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan berbentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> berfungsi untuk memudahkan pengenalpastian pencetak oleh pengguna akhir. Maklumat ini mewakili pengeluar dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dihubungi daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" />dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> tidak diwajibkan. Jika disediakan, maklumat ini digunakan untuk membantu pentadbir menyahpendua pencetak <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> mestilah sepadan dengan satu daripada rentetan yang mewakili pencetak yang menyokong <ph name="PRODUCT_NAME" />. Rentetan akan digunakan untuk mengenal pasti dan memasang PPD yang bersesuaian untuk pencetak tersebut. Maklumat lanjut boleh didapati di https://support.google.com/chrome?p=noncloudprint.
 
-      <ph name="PRINTER_AUTOCONF" /> ialah bendera boolean yang menunjukkan sama ada IPP Everywhere harus digunakan untuk memnyediakan pencetak. Bendera ini disokong pada <ph name="PRODUCT_OS_NAME" /> versi 76 ke atas.
+      <ph name="PRINTER_AUTOCONF" /> ialah bendera boolean yang menunjukkan sama ada IPP Everywhere harus digunakan untuk menyediakan pencetak. Bendera ini disokong pada <ph name="PRODUCT_OS_NAME" /> versi 76 ke atas.
 
       Sama ada <ph name="PRINTER_EFFECTIVE_MODEL" /> harus mengandungi nama pencetak atau <ph name="PRINTER_AUTOCONF" /> harus ditetapkan kepada benar. Pencetak yang mempunyai kedua-dua sifat atau tiada mana-mana sifat akan diabaikan.
 
@@ -1755,30 +1744,6 @@
       Dasar ini mempengaruhi pengguna yang membuat pengesahan menggunakan SAML sahaja.</translation>
 <translation id="4105989332710272578">Lumpuhkan penguatkuasaan Ketelusan Sijil untuk senarai URL</translation>
 <translation id="4121350739760194865">Elakkan promosi apl daripada muncul pada halaman tab baharu</translation>
-<translation id="4125606414556046117">Dasar ini membolehkan anda mengkonfigurasi imej kertas dinding yang dipaparkan pada desktop dan pada latar belakang skrin log masuk untuk pengguna. Dasar ini ditetapkan dengan menyatakan URL tempat <ph name="PRODUCT_OS_NAME" /> boleh memuat turun imej kertas dinding dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah menggunakan format JPEG dan saiz fail tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan.
-
-      Imej kertas dinding dimuat turun dan dicache. Imej akan dimuat turun semula apabila URL atau cincangan berubah.
-
-      Dasar ini harus dinyatakan sebagai rentetan yang menyampaikan URL dan cincangan dalam format JSON yang mematuhi skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL tempat imej kertas dinding boleh dimuat turun.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Cincangan SHA-256 imej kertas dinding.",
-            "type": "string"
-          }
-        }
-      }
-
-      Jika dasar ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan memuat turun dan menggunakan imej kertas dinding.
-
-      Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih imej yang akan dipaparkan pada desktop dan pada latar belakang skrin log masuk.</translation>
 <translation id="412697421478384751">Benarkan pengguna menetapkan PIN yang lemah bagi PIN kunci skrin</translation>
 <translation id="4138655880188755661">Had Masa</translation>
 <translation id="4144164749344898721">Dasar ini mengawal berbilang tetapan untuk strategi pengurusan kuasa apabila pengguna melahu.
@@ -2738,53 +2703,6 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, arahan cetakan akan mencetuskan skrin pratonton cetakan.</translation>
 <translation id="6022948604095165524">Tindakan semasa permulaan</translation>
-<translation id="6023030044732320798">Menentukan set dasar yang akan diserahkan kepada waktu jalan ARC. Nilainya mestilah JSON sah.
-
-      Dasar ini boleh digunakan untuk mengkonfigurasikan apl Android yang akan dipasang secara automatik pada peranti:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Pengecam apl Android, mis. "com.google.android.gm" untuk Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Menentukan cara apl dipasang. OPTIONAL: Apl tidak dipasang secara automatik, tetapi pengguna boleh memasangnya. Ini ialah nilai lalai jika dasar ini tidak ditentukan. PRELOAD: Apl dipasang secara automatik, tetapi pengguna boleh menyahpasangnya. FORCE_INSTALLED: Apl dipasang secara automatik dan pengguna tidak boleh menyahpasangnya. BLOCKED: Apl disekat dan tidak boleh dipasang. Jika apl dipasang di bawah dasar sebelumnya, apl itu akan dinyahpasang.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Dasar untuk meluluskan permintaan kebenaran apl. PERMISSION_POLICY_UNSPECIFIED: Dasar tidak ditentukan. Jika tiada dasar ditentukan untuk kebenaran pada mana-mana tahap, maka tingkah laku `PROMPT` digunakan secara lalai. PROMPT: Menggesa pengguna supaya memberikan kebenaran. GRANT: Berikan kebenaran secara automatik. DENY: Nafikan kebenaran seara automatik.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Objek konfigurasi JSON khusus apl dengan set pasangan kunci dan nilai, mis. '"managedConfiguration": { "key1": value1, "key2": value2 }'. Kunci ditakrifkan dalam manifes apl.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Untuk menyematkan apl pada pelancar, lihat PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL semerta pembekal carian lalai</translation>
 <translation id="603410445099326293">Parameter untuk URL cadangan yang menggunakan POST</translation>
 <translation id="6034341625190551415">Mengawal jenis akaun sesi awam dan kios.</translation>
@@ -3138,37 +3056,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini ditetapkan kepada palsu, pelanggan DNS terbina dalam tidak akan digunakan.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, pelanggan DNS terbina dalam akan didayakan secara lalai pada OS Mac, Android (apabila DNS Peribadi dan VPN dilumpuhkan) dan OS Chrome, dan pengguna akan dapat menukar sama ada pelanggan DNS terbina dalam digunakan dengan mengedit chrome://flags atau menetapkan bendera baris perintah.</translation>
-<translation id="6838056959556423778">Membatalkan peraturan pilihan pencetak lalai <ph name="PRODUCT_NAME" />.
-
-      Dasar ini menentukan peraturan untuk memilih pencetak lalai dalam <ph name="PRODUCT_NAME" /> yang berlaku apabila fungsi cetak mula-mula digunakan dengan sesuatu profil.
-
-      Apabila dasar ini ditetapkan, <ph name="PRODUCT_NAME" /> akan cuba mencari pencetak yang sepadan dengan semua atribut yang dinyatakan dan memilihnya sebagai pencetak lalai. Pencetak pertama yang ditemui sepadan dengan dasar akan dipilih. Sekiranya tiada padanan yang unik, sebarang pencetak yang sepadan boleh dipilih, bergantung pada tertib pencetak itu ditemui.
-
-      Jika dasar ini tidak ditetapkan atau pencetak yang sepadan tidak ditemui sehingga tamat masa, pencetak PDF terbina dalam akan dipilih sebagai pencetak lalai atau apabila pencetak PDF tidak tersedia, tiada pencetak dipilih akan digunakan sebagai plilihan lalai.
-
-      Nilai akan dihuraikan sebagai objek JSON yang mematuhi skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Pencetak yang disambungkan ke <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, pencetak yang selebihnya diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
-      Apabila medan tidak dimasukkan, bermakna semua nilai sepadan, contohnya, tidak menentukan sambungan akan menyebabkan Pratonton Cetakan memulakan penemuan semua jenis pencetak, setempat dan awan.
-      Pola ungkapan biasa mesti mematuhi sintaks RegExp JavaScript dan padanan bersifat sensitif huruf.</translation>
 <translation id="6843296367238757293">Dasar ini telah ditamatkan. Penggunaannya tidak digalakkan. Baca lebih lanjut di https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Dasar ini telah dialih keluar dalam <ph name="PRODUCT_NAME" /> 68 dan digantikan oleh <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Dasar ini ditamatkan dan dialih keluar dalam M66, kerana digunakan untuk ujian dalaman sahaja dan merupakan liabiliti keselamatan.
@@ -4344,30 +4231,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Dasar ini mempengaruhi pengguna yang membuat pengesahan menggunakan SAML sahaja.
 
       Nilai dasar harus dinyatakan dalam saat.</translation>
-<translation id="9027787254195333560">Dasar ini membolehkan anda mengkonfigurasi imej avatar yang mewakili pengguna pada skrin log masuk. Dasar ini ditetapkan dengan menyatakan URL tempat <ph name="PRODUCT_OS_NAME" /> boleh memuat turun imej avatar dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah menggunakan format JPEG dan saiz imej tidak boleh melebihi 512kB. URL mestilah boleh diakses tanpa sebarang pengesahan.
-
-      Imej avatar dimuat turun dan dicache. Imej akan dimuat turun semula apabila URL atau cincangan berubah.
-
-      Dasar ini harus dinyatakan sebagai rentetan yang menyampaikan URL dan cincangan dalam format JSON yang mematuhi skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL tempat imej avatar boleh dimuat turun.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Cincangan SHA-256 imej avatar.",
-            "type": "string"
-          }
-        }
-      }
-
-      Jika dasar ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan memuat turun dan menggunakan imej avatar.
-
-      Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih imej avatar yang mewakili mereka pada skrin log masuk.</translation>
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9038058011835642205">Menentukan senarai tapak web yang dipasang secara senyap tanpa interaksi pengguna dan tapak web tersebut tidak boleh dinyahpasang atau dilumpuhkan oleh pengguna.
 
@@ -4380,7 +4243,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
 
       Nilai dasar harus dinyatakan dalam milisaat. Nilai dihadkan kepada julat selama 30 saat hingga 24 jam.</translation>
-<translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Dasar ini mengawal sama ada peranti harus dikemas kini kepada Quick Fix Build.
 
       Jika nilai dasar ditetapkan kepada token yang dipetakan kepada Quick Fix Build, peranti akan dikemas kini kepada Quick Fix Build yang sepadan jika kemas kini tidak disekat oleh dasar lain.
@@ -4460,17 +4322,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika dasar ini ditetapkan kepada palsu, 'Pengepala dan pengaki' tidak dipilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.
 
       Jika dasar ditetapkan kepada benar, 'Pengepala dan pengaki' dipilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.</translation>
-<translation id="9213347477683611358">Mengkonfigurasikan imej kertas dinding tahap peranti yang dipaparkan pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Dasar ini ditetapkan dengan menentukan URL tempat peranti OS Chrome boleh memuat turun imej kertas dinding itu dan cincangan kriptografi digunakan untuk mengesahkan integriti muat turun itu. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan. Imej kertas dinding dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.
-
-      Dasar ini hendaklah ditetapkan sebagai rentetan yang menyatakan URL dan cincangan dalam format JSON, mis.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Jika dasar kertas dinding peranti ditetapkan, peranti OS Chrome akan memuat turun dan menggunakan imej kertas dinding pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Sebaik sahaja pengguna log masuk, dasar kertas dinding pengguna akan berkuat kuasa.
-
-      Jika dasar kertas dinding peranti dibiarkan tidak ditetapkan dan jika dasar kertas dinding pengguna ditetapkan, dasar kertas dinding pengguna akan menentukan item yang perlu dipaparkan.</translation>
 <translation id="9217154963008402249">Kekerapan pemantauan bingkisan rangkaian</translation>
 <translation id="922540222991413931">Konfigurasi sambungan, apl dan sumber pemasangan skrip pengguna</translation>
 <translation id="924557436754151212">Import kata laluan yang disimpan daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>

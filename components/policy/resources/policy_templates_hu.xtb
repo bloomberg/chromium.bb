@@ -412,7 +412,6 @@
 
       Figyelem: Nem ajánlott átadni a <ph name="PRODUCT_OS_NAME" /> verziójának ellenőrzését semmilyen kioszkalkalmazásnak, ez ugyanis megakadályozhatja az eszközt abban, hogy fogadja a szoftverfrissítéseket és a kritikus biztonsági javításokat. A <ph name="PRODUCT_OS_NAME" />-verzió ellenőrzésének átadása kockázatot jelenthet a felhasználók számára.</translation>
 <translation id="1675002386741412210">Támogatott a következőkön:</translation>
-<translation id="1689963000958717134">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását a(z) <ph name="PRODUCT_OS_NAME" />-eszköz minden felhasználójára. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">A <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware-frissítési funkció rendelkezésre állását és viselkedését konfigurálja.
 
       Egyedi beállítások JSON-tulajdonságokban adhatók meg:
@@ -953,16 +952,6 @@
       Ha ez a beállítás ki van kapcsolva, akkor a weboldalak nem használhatnak JavaScriptet, és a felhasználó nem módosíthatja a beállítást.
 
       Ha be van kapcsolva vagy nincs beállítva, akkor a weboldalak használhatnak JavaScriptet, ám a felhasználó módosíthatja a beállítást.</translation>
-<translation id="2747157663401642394">A <ph name="PRODUCT_NAME" /> bővítménykezelési beállításait konfigurálja.
-
-          Ez a házirend több beállítást is szabályoz, köztük a bővítményekkel kapcsolatos meglévő házirendek beállításait. Ha régebbi házirend is be van állítva, ez a házirend felülbírálja.
-
-          A házirend bővítményazonosítót vagy frissítési URL-t társít a konfigurációjához. Bővítményazonosító esetén csak a megadott bővítményre lesz érvényes a konfiguráció. A <ph name="DEFAULT_SCOPE" /> különleges azonosítóhoz be lehet állítani alapértelmezett konfigurációt, amely az összes olyan bővítményre érvényes lesz, melyhez nincs beállítva egyéni konfiguráció ebben a házirendben. Frissítési URL esetén a konfiguráció érvényes lesz az összes olyan bővítményre, melynek manifestfájljában meghatározott frissítési URL pontosan egyezik az ebben a bővítményben meghatározott URL-lel (részletes leírás: <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          <ph name="MS_AD_NAME" />-domainhez nem csatlakozó Windows-példányok esetén a kényszerített telepítés lehetősége a Chrome Internetes áruházban megtalálható alkalmazásokra és bővítményekre korlátozódik.
-
-          A házirend lehetséges beállításainak és felépítésének teljes leírását a következő weboldalon tekintheti meg: https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
-          </translation>
 <translation id="2753637905605932878">A WebRTC által használt helyi UDP-porttartományok korlátozása</translation>
 <translation id="2757054304033424106">Telepíthető bővítmény-/alkalmazástípusok</translation>
 <translation id="2758084448533744848">Az eszközön kötelezően használandó időzóna meghatározására szolgál. Ha a házirend aktív, az eszköz felhasználói nem bírálhatják felül a beállított időzónát. A házirend érvénytelen érték esetén is aktív; ebben az esetben a GMT időzónát alkalmazza. Üres érték esetén a házirend nem lép működésbe.
@@ -1720,30 +1709,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ez a házirend csak azokra a felhasználókra érvényes, akik SAML-alapú hitelesítést használnak.</translation>
 <translation id="4105989332710272578">A tanúsítványok átláthatósága keretrendszer végrehajtásának kikapcsolása az URL-ek egy listájánál</translation>
 <translation id="4121350739760194865">Megakadályozza az alkalmazáspromóciók megjelenését az új lap oldalon</translation>
-<translation id="4125606414556046117">Ez a házirend lehetővé teszi az asztalon és a felhasználó bejelentkező képernyőjén lévő háttérkép konfigurálását. A házirend annak az URL-nek a megadásával állítható be, ahonnan a <ph name="PRODUCT_OS_NAME" /> letöltheti a háttérképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG-formátumban kell lennie, mérete pedig nem haladhatja meg a 16 MB-ot. Az URL-nek hitelesítés nélkül is hozzáférhetőnek kell lennie.
-
-      A letöltés után a háttérkép a gyorsítótárba kerül. Ha az URL vagy a hash megváltozik, a rendszer újra letölti a háttérképet.
-
-      A házirendet olyan karakterláncként kell megadni, amely JSON-formátumban fejezi ki az URL-t és a hash-értéket, valamint megfelel a következő sémának:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Az URL, ahonnan a háttérkép letölthető.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "A háttérkép SHA-256-os hash-értéke.",
-            "type": "string"
-          }
-        }
-      }
-
-      Ha a házirend be van állítva, a <ph name="PRODUCT_OS_NAME" /> letölti és használja a háttérképet.
-
-      Ha beállítja ezt a házirendet, a felhasználó nem módosíthatja vagy bírálhatja felül.
-
-      Ha nem állítja be a házirendet, a felhasználó kiválaszthatja, hogy milyen háttérkép jelenjen meg az asztalon és a bejelentkezési képernyőn.</translation>
 <translation id="412697421478384751">Annak engedélyezése, hogy a felhasználók gyenge PIN-kódot adjanak meg a lezárási képernyő PIN-kódjaként.</translation>
 <translation id="4138655880188755661">Időkorlát</translation>
 <translation id="4144164749344898721">Ez a házirend többféle, energiagazdálkodási stratégiával kapcsolatos beállítást vezérel arra vonatkozóan, amikor a felhasználó tétlenné válik.
@@ -2668,53 +2633,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha az irányelv nincs beállítva, vagy az értéke hamis, akkor a nyomtatási parancsok a nyomtatási előnézet képernyőt aktiválják.</translation>
 <translation id="6022948604095165524">Művelet indításkor</translation>
-<translation id="6023030044732320798">Meghatározza az ARC futási időnek átadandó házirendek készletét. Az értéknek érvényes JSON-értéknek kell lennie.
-
-      Az irányelv használható annak meghatározására, hogy milyen Android-alkalmazások települjenek automatikusan az eszközre:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Android-alkalmazásazonosító, pl. "com.google.android.gm" a Gmail esetében",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Meghatározza az alkalmazás telepítésének módját. OPTIONAL: Az alkalmazás telepítése nem történik meg automatikusan, de a felhasználó elvégezheti. Ez az alapértelmezés, ha nincs meghatározva a házirend. PRELOAD: Az alkalmazás automatikusan települ, de a felhasználó eltávolíthatja. FORCE_INSTALLED: Az alkalmazás automatikusan települ, a felhasználó nem távolíthatja el. BLOCKED: Az alkalmazás le van tiltva, és nem telepíthető. Ha az alkalmazás másik házirend értelmében telepítve lett, le lesz törölve.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Ezzel a házirenddel engedélykérelmeket lehet megadni az alkalmazásoknak. PERMISSION_POLICY_UNSPECIFIED: A házirend nincs meghatározva. Ha semelyik engedélyen nincs beállítva házirend, akkor alapértelmezés szerint a rendszer a PROMPT viselkedést használja. PROMPT: A felhasználó felkérése engedély megadására. GRANT: Engedély automatikus megadása. DENY: Engedély automatikus elutasítása.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Alkalmazásspecifikus JSON-konfigurációs objektum kulcsértékpár-készlettel, pl. '"managedConfiguration": { "key1": value1, "key2": value2 }'. A kulcsok az alkalmazás jegyzékében vannak meghatározva.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Ha alkalmazást szeretne rögzíteni az indítóra, keresse meg a PinnedLauncherApps házirendet.</translation>
 <translation id="602728333950205286">Alapértelmezett keresési szolgáltató azonnali URL-je</translation>
 <translation id="603410445099326293">Paraméterek POST metódust használó javasolt URL-hez</translation>
 <translation id="6034341625190551415">A nyilvános munkamenetű és kioszk típusú fiókok szabályozására szolgál.</translation>
@@ -3062,37 +2980,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha az irányelv hamis értékre van beállítva, a rendszer soha nem használja a beépített DNS-ügyfelet.
 
       Ha az irányelv nincs beállítva, a beépített DNS-ügyfél alapértelmezés szerint engedélyezve lesz MacOS, Android (ha sem a privát DNS, sem a VPN nincs aktiválva) és Chrome OS rendszereken, és a felhasználók a chrome://flags szerkesztésével vagy egy parancssori jelző megadásával módosíthatják, hogy a beépített DNS-ügyfél legyen-e használatban.</translation>
-<translation id="6838056959556423778">Felülbírálja a <ph name="PRODUCT_NAME" /> alapértelmezett nyomtatókiválasztási szabályait.
-
-      Ez a házirend határozza meg az alapértelmezett nyomtató kiválasztására vonatkozó szabályokat a nyomtatás funkció adott profillal történő első használatakor a böngészőben (<ph name="PRODUCT_NAME" />).
-
-      Ha a házirend be van állítva, a böngésző (<ph name="PRODUCT_NAME" />) megpróbál olyan nyomtatót találni, amely megfelel a megadott tulajdonságok mindegyikének, majd kijelöli alapértelmezett nyomtatónak. A házirendnek megfelelő első nyomtatót választja ki, ha pedig nincs egyedi egyezés, akkor a nyomtatók felfedezésének sorrendjétől függően bármilyen egyező nyomtatót kiválaszthat.
-
-      Ha a házirend nincs beállítva, vagy ha az időkereten belül nem talál megfelelő nyomtatót, akkor az alapértelmezett nyomtató a beépített PDF-nyomtató lesz, illetve ha az nem áll rendelkezésre, akkor nem lesz nyomtató kiválasztva.
-
-      Az érték elemzése JSON-objektumként, a következő sémának megfelelően történik:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Kell-e korlátozni az egyező nyomtatók keresését a nyomtatók egy adott készletére.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "A nyomtató azonosítójával egyező reguláris kifejezés.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "A nyomtató megjelenített nevével egyező reguláris kifejezés.",
-            "type": "string"
-          }
-        }
-      }
-
-      A(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatáshoz tartozó nyomtatók besorolása a böngészőben <ph name="PRINTER_TYPE_CLOUD" />, míg az összes többié <ph name="PRINTER_TYPE_LOCAL" />.
-      Egy adott mező üresen hagyása azt jelenti, hogy az összes érték egyezésnek számít. Ha például nincs megadva a csatlakoztathatóság, akkor a nyomtatási előnézet az összes nyomtatófajta (helyi és felhőben lévő) felfedezését megkezdi.
-      A reguláris kifejezések mintái a JavaScript RegExp szintaxist követik, és megkülönböztetik a kis- és nagybetűket.</translation>
 <translation id="6843296367238757293">Ez a házirend megszűnt. Nem javasoljuk a használatát. További információ: https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Ez a házirend el lett távolítva a <ph name="PRODUCT_NAME" /> 68-os verziójában, és a következő lépett a helyébe: <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ez a házirend elavult, és eltávolítottuk az M66 verzióban, mert csak belső tesztelésre használtuk, és biztonsági kockázatot jelent.
@@ -4233,30 +4120,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ez a házirend csak azokra a felhasználókra vonatkozik, akik SAML használatával hitelesítik magukat.
 
       A házirend értékét másodpercben kell megadni.</translation>
-<translation id="9027787254195333560">Ez a házirend lehetővé teszi a felhasználó bejelentkezési képernyőn megjelenő avatarképének konfigurálását. A házirend annak az URL-nek a megadásával állítható be, ahonnan a <ph name="PRODUCT_OS_NAME" /> letöltheti az avatarképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG-formátumban kell lennie, mérete pedig nem haladhatja meg az 512 kB-ot. Az URL-nek hitelesítés nélkül is hozzáférhetőnek kell lennie.
-
-      A letöltés után az avatarkép a gyorsítótárba kerül. Ha az URL vagy a hash megváltozik, a rendszer újra letölti az avatarképet.
-
-      A házirendet olyan karakterláncként kell megadni, amely JSON-formátumban fejezi ki az URL-t és a hash-értéket, valamint megfelel a következő sémának:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Az URL, ahonnan az avatarkép letölthető.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Az avatarkép SHA-256-os hash-értéke.",
-            "type": "string"
-          }
-        }
-      }
-
-      Ha a házirend be van állítva, a <ph name="PRODUCT_OS_NAME" /> letölti és felhasználja az avatarképet.
-
-      Ha beállítja ezt a házirendet, a felhasználó nem módosíthatja vagy bírálhatja felül.
-
-      Ha nem állítja be a házirendet, a felhasználó kiválaszthatja, hogy milyen avatarkép jelenjen meg a fiókjához a bejelentkezési képernyőn.</translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9038058011835642205">Megadja azon webhelyek listáját, amelyek telepítése a háttérben, felhasználói interakció nélkül történik, és amelyeket a felhasználó nem távolíthat el vagy tilthat le.
 
@@ -4269,7 +4132,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha beállítja ezt a házirendet, a felhasználó nem módosíthatja vagy bírálhatja felül.
 
       A házirend értékét ezredmásodpercben kell megadni. Az érték 30 másodperc és 24 óra közé eshet.</translation>
-<translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Ez a házirend vezérli az eszköz Quick Fix Buildre való frissítését.
 
       Ha a házirend értéke olyan tokenre van állítva, amely megfeleltethető egy Quick Fix Buildnek, akkor az eszköz frissül a kapcsolódó Quick Fix Buildre, feltéve, hogy a frissítést nem akadályozza másik házirend.
@@ -4342,17 +4204,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha a házirend beállítása hamis, akkor a „Fejlécek és láblécek” beállítás nincs bejelölve a nyomtatási előnézet párbeszédpanelén, és a felhasználó ezt nem módosíthatja.
 
       Ha a házirend beállítása igaz, akkor a „Fejlécek és láblécek” beállítás be van jelölve a nyomtatási előnézet párbeszédpanelén, és a felhasználó ezt nem módosíthatja.</translation>
-<translation id="9213347477683611358">Beállítja az eszközszintű háttérképet, amely akkor jelenik meg a bejelentkezési képernyőn, ha még nem jelentkezett be felhasználó az eszközre. Az irányelv annak az URL-nek a megadásával állítható be, ahonnan a Chrome OS-eszköz letöltheti a háttérképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG formátumban kell lennie, mérete pedig nem haladhatja meg a 16 MB-ot. Az URL-nek hitelesítés nélkül is elérhetőnek kell lennie. A letöltés után a háttérkép a gyorsítótárba kerül. A rendszer az URL vagy a hash-érték változása esetén minden esetben újból letölti a képet.
-
-      Az irányelvet olyan karakterláncként kell megadni, amely JSON formátumban fejezi ki az URL-t és a hash-értéket, például:
-      {
-        „url”: „https://example.com/eszkoz_hatterkep.jpg”,
-        „hash”: „examplewallpaperhash”
-      }
-
-      Ha az eszköz háttérképekre vonatkozó irányelve van beállítva, a Chrome OS-eszköz letölti és felhasználja a háttérképet a bejelentkezési képernyőn, ha még nem jelentkezett be felhasználó az eszközre. A felhasználó bejelentkezése után a felhasználó háttérképekre vonatkozó irányelve lép érvénybe.
-
-      Ha az eszköz háttérképekre vonatkozó irányelve nincs beállítva, a felhasználó háttérképekre vonatkozó irányelvén múlik, hogy mi jelenik meg, ha a felhasználó háttérképekre vonatkozó irányelve van beállítva.</translation>
 <translation id="9217154963008402249">Az ellenőrző hálózati csomagok gyakorisága</translation>
 <translation id="922540222991413931">Bővítmény-, alkalmazás- és felhasználói szkripttelepítési források konfigurálása</translation>
 <translation id="924557436754151212">Mentett jelszavak importálása az alapértelmezett böngészőből az első indításkor</translation>

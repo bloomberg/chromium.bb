@@ -416,7 +416,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> на <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Анулиране на плащането</translation>
 <translation id="3207960819495026254">С отметка</translation>
-<translation id="321912867715453276">Предупреждение: Съществува повече от един източник за правилото, но стойностите са едни и същи.</translation>
 <translation id="3225919329040284222">Сървърът предостави сертификат, който не съответства на вградените очаквания. Те са включени за определени уебсайтове с голяма степен на сигурност, за да ви предпазим.</translation>
 <translation id="3226128629678568754">Натиснете бутона за презареждане, за да изпратите отново данните, необходими за отварянето на страницата.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
@@ -556,7 +555,6 @@
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3973234410852337861">Хостът <ph name="HOST_NAME" /> е блокиран</translation>
 <translation id="3987940399970879459">По-малко от 1 МБ</translation>
-<translation id="4008849406247176967">Предупреждение: Съществува повече от един източник с несъвместими стойности за това правило!</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 уеб страница в близост}other{# уеб страници в близост}}</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
 <translation id="4032320456957708163">Браузърът ви се управлява от <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -693,7 +691,6 @@
 <translation id="4738601419177586157">Предложение за търсене на „<ph name="TEXT" />“</translation>
 <translation id="4742407542027196863">Управление на паролите…</translation>
 <translation id="4744603770635761495">Път към изпълнимия файл</translation>
-<translation id="4746351372139058112">Messages</translation>
 <translation id="4750917950439032686">Информацията ви (например пароли или номера на кредитни карти) е частна, когато се изпраща до този сайт.</translation>
 <translation id="4756388243121344051">&amp;История</translation>
 <translation id="4758311279753947758">Добавяне на информация за връзка</translation>
@@ -1123,7 +1120,6 @@
 <translation id="7220786058474068424">Обработва се</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">На хоризонта се задава сайт със злонамерен софтуер</translation>
-<translation id="724766306220616965">Предупреждения, несъвместимост</translation>
 <translation id="724975217298816891">Въведете датата на валидност и кода за проверка за <ph name="CREDIT_CARD" />, за да актуализирате данните за картата си. След като я потвърдите, те ще бъдат споделени с този сайт.</translation>
 <translation id="7251437084390964440">Конфигурацията на мрежата не спазва стандарта на ONC. Възможно е части от нея да не са импортирани.
 Допълнителни подробности:
@@ -1421,6 +1417,7 @@
 <translation id="8891727572606052622">Невалиден режим на прокси сървъра.</translation>
 <translation id="8903921497873541725">Увеличаване на мащаба</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Профил в Google</translation>
 <translation id="8931333241327730545">Искате ли да запазите тази карта в профила си в Google?</translation>
 <translation id="8932102934695377596">Часовникът ви е назад</translation>
 <translation id="893332455753468063">Добавяне на име</translation>

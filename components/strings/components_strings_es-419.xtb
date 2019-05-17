@@ -373,7 +373,7 @@
 <translation id="2948083400971632585">Puedes inhabilitar los servidores proxy configurados para una conexión desde la página de configuración.</translation>
 <translation id="2955913368246107853">Cerrar la barra de búsqueda</translation>
 <translation id="2969319727213777354">Para establecer una conexión segura, el reloj se debe configurar correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Google Chrome no puede verificar estos certificados.</translation>
-<translation id="2970515157925768593">Puedes cambiar la configuración de tu cuenta y dispositivo de forma remota</translation>
+<translation id="2970515157925768593">Puedes cambiar la configuración de tu cuenta y dispositivo de forma remota.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="2977665033722899841">Fila <ph name="ROW_NAME" /> seleccionada. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Borrar datos</translation>
@@ -417,7 +417,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> en <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Cancelar pago</translation>
 <translation id="3207960819495026254">Agregada a favoritos</translation>
-<translation id="321912867715453276">Advertencia: Hay más de una fuente para esta política, pero los valores son los mismos.</translation>
 <translation id="3225919329040284222">El servidor mostró un certificado que no coincide con lo esperado. Estas expectativas se incluyen en determinados sitios web con un alto nivel de seguridad para garantizar tu protección.</translation>
 <translation id="3226128629678568754">Presiona el botón para volver a cargar y, de ese modo, enviar nuevamente los datos necesarios para cargar la página.</translation>
 <translation id="3227137524299004712">Micrófono</translation>
@@ -557,7 +556,6 @@
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3973234410852337861">Se bloqueó <ph name="HOST_NAME" /></translation>
 <translation id="3987940399970879459">Menos de 1 MB</translation>
-<translation id="4008849406247176967">Advertencia: Hay más de una fuente con valores en conflicto para esta política.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 página web cercana}other{# páginas web cercanas}}</translation>
 <translation id="4030383055268325496">&amp;Deshacer Agregar</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> administra tu navegador</translation>
@@ -694,7 +692,6 @@
 <translation id="4738601419177586157">Sugerencia de búsqueda: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Administrar contraseñas…</translation>
 <translation id="4744603770635761495">Ruta ejecutable</translation>
-<translation id="4746351372139058112">Mensajes</translation>
 <translation id="4750917950439032686">Tu información (p. ej., contraseñas o números de tarjetas de crédito) es privada cuando se envía a este sitio.</translation>
 <translation id="4756388243121344051">&amp;Historial</translation>
 <translation id="4758311279753947758">Agregar información de contacto</translation>
@@ -740,7 +737,7 @@
 <translation id="5017554619425969104">Texto que copiaste</translation>
 <translation id="5018422839182700155">No se puede abrir esta página</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
-<translation id="5020154601324912079">Controla la forma en que administran los datos de tu dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu dispositivo y solo para los fines que se indiquen.</translation>
+<translation id="5020154601324912079">Controla la forma en que se administran los datos de tu dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu dispositivo y solo para los fines que se indiquen.</translation>
 <translation id="5023310440958281426">Revisa las políticas del administrador.</translation>
 <translation id="5029568752722684782">Borrar la copia</translation>
 <translation id="503069730517007720">Se requiere un certificado raíz para "<ph name="SOFTWARE_NAME" />", pero no está instalado. Tu administrador de IT debe analizar las instrucciones de configuración de "<ph name="SOFTWARE_NAME" />" para corregir este problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -1124,7 +1121,6 @@
 <translation id="7220786058474068424">Procesando</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Este sitio web contiene software malicioso</translation>
-<translation id="724766306220616965">Advertencias, Conflicto</translation>
 <translation id="724975217298816891">Ingresa la fecha de vencimiento y el CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar sus datos. Después de confirmarla, los datos de tu tarjeta se compartirán con este sitio.</translation>
 <translation id="7251437084390964440">La configuración de red no cumple con el estándar ONC. Es posible que no se importen algunas partes de la configuración.
 Detalles adicionales:
@@ -1423,6 +1419,7 @@ Detalles adicionales:
 <translation id="8891727572606052622">Modo proxy no válido</translation>
 <translation id="8903921497873541725">Acercar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Cuenta de Google</translation>
 <translation id="8931333241327730545">¿Quieres guardar esta tarjeta en tu cuenta de Google?</translation>
 <translation id="8932102934695377596">El reloj está atrasado</translation>
 <translation id="893332455753468063">Agregar nombre</translation>

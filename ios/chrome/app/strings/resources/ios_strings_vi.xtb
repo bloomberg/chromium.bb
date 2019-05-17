@@ -273,6 +273,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Bật đồng bộ hóa</translation>
+<translation id="5234764350956374838">Loại bỏ</translation>
 <translation id="5244474230056479698">Đang đồng bộ hóa với <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Hủy đồng bộ hóa</translation>
 <translation id="5271549068863921519">Lưu mật khẩu</translation>
@@ -312,6 +313,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5938160824633642847">Thiết bị của bạn gần hết không gian lưu trữ. Hãy giải phóng dung lượng và thử lại.</translation>
 <translation id="5948291296578561264">Điều này cho phép bạn lưu ảnh vào thư viện ảnh của mình.</translation>
 <translation id="5955891643922670672">Đang xem phiên bản ngoại tuyến</translation>
+<translation id="5957613098218939406">Tùy chọn khác</translation>
 <translation id="5964480694698977962">Tạo tab ẩn danh mới.</translation>
 <translation id="5965679971710331625">Bạn đã đăng nhập</translation>
 <translation id="5979837087407522202">Tìm kiếm mật khẩu</translation>
@@ -411,7 +413,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7272437679830969316">Không thể xác minh danh tính của bạn. Chưa sao chép mật khẩu.</translation>
 <translation id="7285236536143823449">CÓ, TÔI ĐỒNG Ý</translation>
 <translation id="7291368939935408496">Đang chuẩn bị mật khẩu...</translation>
-<translation id="7293171162284876153">Để bắt đầu đồng bộ hóa, hãy bật tùy chọn "Đồng bộ hóa dữ liệu Chrome".</translation>
+<translation id="7293171162284876153">Để bắt đầu đồng bộ hóa, hãy bật tùy chọn "Đồng bộ hóa dữ liệu của bạn trên Chrome".</translation>
 <translation id="7336264872878993241">Đã tải xuống <ph name="PERCENT" /> phần trăm</translation>
 <translation id="7346909386216857016">Ok</translation>
 <translation id="7348502496356775519">Đánh dấu trang</translation>

@@ -416,7 +416,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> v strežniku <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Prekliči plačilo</translation>
 <translation id="3207960819495026254">Dodano med zaznamke</translation>
-<translation id="321912867715453276">Opozorilo: Za pravilnik je več virov, vendar so vrednosti enake.</translation>
 <translation id="3225919329040284222">Strežnik je poslal potrdilo, ki se ne ujema z vgrajenimi pričakovanji. Ta pričakovanja so zaradi vaše varnosti vključena za nekatera strogo zavarovana spletna mesta.</translation>
 <translation id="3226128629678568754">Pritisnite gumb za vnovično nalaganje, da znova pošljete podatke za nalaganje strani.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -556,7 +555,6 @@
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3973234410852337861">Spletno mesto <ph name="HOST_NAME" /> je blokirano</translation>
 <translation id="3987940399970879459">Manj kot 1 MB</translation>
-<translation id="4008849406247176967">Opozorilo: Za ta pravilnik je več virov z navzkrižnimi vrednostmi.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 spletna stran v bližini}one{# spletna stran v bližini}two{# spletni strani v bližini}few{# spletne strani v bližini}other{# spletnih strani v bližini}}</translation>
 <translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
 <translation id="4032320456957708163">Brskalnik upravlja domena <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -693,7 +691,6 @@
 <translation id="4738601419177586157">Predlog za iskanje poizvedbe <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Upravljaj gesla …</translation>
 <translation id="4744603770635761495">Pot do izvedljive datoteke</translation>
-<translation id="4746351372139058112">Sporočila</translation>
 <translation id="4750917950439032686">Vaši podatki (npr. gesla ali številke kreditnih kartic) so zasebni, kadar so poslani temu spletnemu mestu.</translation>
 <translation id="4756388243121344051">&amp;Zgodovina</translation>
 <translation id="4758311279753947758">Dodaj podatke za stik</translation>
@@ -1123,7 +1120,6 @@
 <translation id="7220786058474068424">Obdelovanje</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Spletno mesto z zlonamerno programsko opremo</translation>
-<translation id="724766306220616965">Opozorila, navzkrižje</translation>
 <translation id="724975217298816891">Vnesite datum poteka in CVC za <ph name="CREDIT_CARD" />, da posodobite podatke o kartici. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kartici.</translation>
 <translation id="7251437084390964440">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.
 Dodatne podrobnosti:
@@ -1421,6 +1417,7 @@ Dodatne podrobnosti:
 <translation id="8891727572606052622">Neveljaven način strežnika proxy.</translation>
 <translation id="8903921497873541725">Povečaj</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Google Račun</translation>
 <translation id="8931333241327730545">Ali želite to kartico shraniti v Google Račun?</translation>
 <translation id="8932102934695377596">Ura zaostaja</translation>
 <translation id="893332455753468063">Dodajanje imena</translation>

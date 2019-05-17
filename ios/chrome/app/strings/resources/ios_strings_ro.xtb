@@ -273,6 +273,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activează sincronizarea</translation>
+<translation id="5234764350956374838">Închide</translation>
 <translation id="5244474230056479698">Se sincronizează cu <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Anulează sincronizarea</translation>
 <translation id="5271549068863921519">Salvează parola</translation>
@@ -294,7 +295,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5659593005791499971">Adresă de e-mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versiunea <ph name="PRODUCT_VERSION" /></translation>
-<translation id="5711039611392265845">Pentru mai multe setări privind confidențialitatea, securitatea și colectarea datelor, consultă <ph name="BEGIN_LINK" />Sincronizarea și Serviciile Google<ph name="END_LINK" />.</translation>
+<translation id="5711039611392265845">Pentru mai multe setări privind confidențialitatea, securitatea și colectarea datelor, consultă <ph name="BEGIN_LINK" />Sincronizarea și serviciile Google<ph name="END_LINK" /></translation>
 <translation id="5728700505257787410">A apărut o problemă de conectare la cont.</translation>
 <translation id="5737974891429562743">Datele de conectare la cont sunt învechite. Actualizează pentru a începe sincronizarea.</translation>
 <translation id="5738887413654608789">Astfel, poți descoperi pagini web relevante în funcție de lucrurile din jurul tău.</translation>
@@ -312,6 +313,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5938160824633642847">Dispozitivul este aproape plin. Eliberează spațiu și încearcă din nou.</translation>
 <translation id="5948291296578561264">Astfel, poți să salvezi fotografiile în fototecă.</translation>
 <translation id="5955891643922670672">Se afișează versiunea offline</translation>
+<translation id="5957613098218939406">Mai multe opțiuni</translation>
 <translation id="5964480694698977962">Creează o filă incognito nouă.</translation>
 <translation id="5965679971710331625">Te-ai conectat</translation>
 <translation id="5979837087407522202">Caută parole</translation>

@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Autoriser le contrôle complet des appareils MIDI</translation>
 <translation id="1449080968331948513">L'économiseur de données est passé en mode simplifié</translation>
 <translation id="145097072038377568">Désactivée dans les paramètres Android</translation>
+<translation id="146329143005354472">Ajouter à mes applications</translation>
 <translation id="1477626028522505441">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de problèmes liés au serveur.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 autre)}one{ (+ # autre)}other{ (+ # autres)}}</translation>
 <translation id="1501480321619201731">Supprimer le groupe</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Piste précédente</translation>
 <translation id="2876369937070532032">Envoyer à Google les URL des pages que vous consultez présentant un risque pour votre sécurité</translation>
-<translation id="2876764156902388290">Chrome utilise moins de données pour afficher cette page</translation>
 <translation id="2888126860611144412">À propos de Chrome</translation>
 <translation id="2891154217021530873">Arrêter le chargement de la page</translation>
 <translation id="2893180576842394309">Google peut utiliser votre historique pour personnaliser la recherche et d'autres services Google</translation>

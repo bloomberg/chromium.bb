@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Разр. на пълния контрол над MIDI</translation>
 <translation id="1449080968331948513">„Икономия на данни“ вече е „олекотен режим“</translation>
 <translation id="145097072038377568">Изключено от настройките на Android</translation>
+<translation id="146329143005354472">Добавяне към „Моите приложения“</translation>
 <translation id="1477626028522505441">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради проблеми в сървъра.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ още 1)}other{ (+ още #)}}</translation>
 <translation id="1501480321619201731">Изтриване на групата</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Предишен запис</translation>
 <translation id="2876369937070532032">Когато сигурността ви е застрашена, изпраща до Google URL адресите на някои от страниците, които посещавате.</translation>
-<translation id="2876764156902388290">Chrome използва по-малко данни, за да ви покаже тази страница</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
 <translation id="2891154217021530873">Спиране на зареждането на страницата</translation>
 <translation id="2893180576842394309">Възможно е да използваме историята ви, за да персонализираме търсенето и други услуги на Google</translation>

@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Payagan ganap na kontrol sa MIDI device</translation>
 <translation id="1449080968331948513">Ang Data Saver ay tinatawag na ngayong Lite mode</translation>
 <translation id="145097072038377568">Naka-off sa Mga Setting ng Android</translation>
+<translation id="146329143005354472">Idagdag sa Aking mga app</translation>
 <translation id="1477626028522505441">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga isyu sa server.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 pa)}one{ (+ # pa)}other{ (+ # pa)}}</translation>
 <translation id="1501480321619201731">I-delete ang pangkat</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Nakaraang track</translation>
 <translation id="2876369937070532032">Ipadala ang mga URL ng ilang page na binibisita mo sa Google kapag nanganganib ang iyong seguridad</translation>
-<translation id="2876764156902388290">Gumagamit ang Chrome ng mas kaunting data upang ipakita sa iyo ang page na ito</translation>
 <translation id="2888126860611144412">Tungkol sa Chrome</translation>
 <translation id="2891154217021530873">Ihinto ang pag-load ng page</translation>
 <translation id="2893180576842394309">Maaaring gamitin ng Google ang iyong history para i-personalize ang Search at iba pang serbisyo ng Google</translation>

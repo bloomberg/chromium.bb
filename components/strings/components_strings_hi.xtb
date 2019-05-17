@@ -414,7 +414,6 @@
 <translation id="3195213714973468956"><ph name="SERVER_NAME" /> पर <ph name="PRINTER_NAME" /></translation>
 <translation id="320323717674993345">भुगतान रद्द करें</translation>
 <translation id="3207960819495026254">बुकमार्क किया गया</translation>
-<translation id="321912867715453276">चेतावनीः इस नीति के लिए, एक से ज़्यादा स्रोत मौजूद हैं, लेकिन इनके मान एक जैसे हैं.</translation>
 <translation id="3225919329040284222">सर्वर द्वारा कोई प्रमाणपत्र प्रस्‍तुत किया गया, जो बिल्‍ट-इन अपेक्षाओं से मिलान नहीं करता. इन अपेक्षाओं को आपकी सुरक्षा करने के लिए कुछ, उच्‍च-सुरक्षा वेबसाइटों के लिए शामिल किया गया है.</translation>
 <translation id="3226128629678568754">पेज को लोड करने के लिए ज़रूरी डेटा फिर सबमिट करने के लिए 'फिर लोड करें' बटन दबाएं.</translation>
 <translation id="3227137524299004712">माइक्रोफ़ोन</translation>
@@ -554,7 +553,6 @@
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> को ब्लॉक किया गया है</translation>
 <translation id="3987940399970879459">एक एमबी से कम</translation>
-<translation id="4008849406247176967">चेतावनीः इस नीति के लिए एक-दूसरे से अलग मानों वाले एक से ज़्यादा स्रोत मौजूद हैं!</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{आस-पास 1 वेब पेज है}one{आस-पास # वेब पेज हैं}other{आस-पास # वेब पेज हैं}}</translation>
 <translation id="4030383055268325496">&amp;जोड़ना वापस लाएं</translation>
 <translation id="4032320456957708163">आपके ब्राउज़र को <ph name="ENROLLMENT_DOMAIN" /> प्रबंधित करता है</translation>
@@ -691,7 +689,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> खोज सुझाव</translation>
 <translation id="4742407542027196863">पासवर्ड प्रबंधित करें…</translation>
 <translation id="4744603770635761495">निष्पादित किए जाने वाले पाथ</translation>
-<translation id="4746351372139058112">संदेश</translation>
 <translation id="4750917950439032686">आपकी जानकारी (जैसे- पासवर्ड या क्रेडिट कार्ड नंबर वगैरह) जब इस साइट पर भेजी जाती है, तब वह निजी होती है.</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
 <translation id="4758311279753947758">संपर्क जानकारी जोड़ें</translation>
@@ -880,7 +877,7 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{अपने Google खाते में कार्ड सेव करें}one{अपने Google खाते में कार्ड सेव करें}other{अपने Google खाते में कार्ड सेव करें}}</translation>
 <translation id="5763042198335101085">मान्य ईमेल पता डालें</translation>
 <translation id="5765072501007116331">वितरण के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
-<translation id="5778550464785688721">MIDI डिवाइस पूर्ण नियंत्रण</translation>
+<translation id="5778550464785688721">MIDI डिवाइस पूरा नियंत्रण</translation>
 <translation id="578305955206182703">ऐंबर</translation>
 <translation id="57838592816432529">म्यूट करें</translation>
 <translation id="5784606427469807560">आपके कार्ड की पुष्टि करते समय समस्‍या हुई. अपना इंटरनेट कनेक्‍शन जांचें और फिर से कोशिश करें.</translation>
@@ -918,7 +915,7 @@
 <translation id="598637245381783098">भुगतान ऐप्लिकेशन नहीं खुल सका</translation>
 <translation id="5988826871883769516">आपके डिवाइस का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता है.</translation>
 <translation id="5989320800837274978">न तो कोई फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और न ही कोई .pac स्क्रिप्ट URL साफ़ तौर पर बताया गया है.</translation>
-<translation id="5990559369517809815">सर्वर से किए गए अनुरोधों को एक्‍सटेंशन द्वारा अवरुद्ध कर दिया गया है.</translation>
+<translation id="5990559369517809815">सर्वर से किए गए अनुरोधों को एक्‍सटेंशन द्वारा ब्लॉक कर दिया गया है.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">वर्ष</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{पेज 1}one{पेज #}other{पेज #}}</translation>
@@ -1121,7 +1118,6 @@
 <translation id="7220786058474068424">संसाधित हो रहा है</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">साइट में आगे मैलवेयर हैं</translation>
-<translation id="724766306220616965">चेतावनियां, विरोध</translation>
 <translation id="724975217298816891">अपने कार्ड विवरण अपडेट करने के लिए <ph name="CREDIT_CARD" /> के खत्म होने की तारीख और कार्ड वेरीफ़िकेशन कोड (सीवीसी) डालें. आपकी ओर से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ शेयर किए जाएंगे.</translation>
 <translation id="7251437084390964440">नेटवर्क कॉन्फ़िगरेशन ONC मानक के मुताबिक नहीं है. हो सकता है कि कॉन्फ़िगरेशन के कुछ हिस्से नहीं लाए गए हों.
 ज़्यादा जानकारी:
@@ -1420,6 +1416,7 @@
 <translation id="8891727572606052622">अमान्य प्रॉक्सी मोड.</translation>
 <translation id="8903921497873541725">ज़ूम इन करें</translation>
 <translation id="890485472659500557">इंजीनियरिंग-सी</translation>
+<translation id="8912362522468806198">Google खाता</translation>
 <translation id="8931333241327730545">क्या आप इस कार्ड को अपने Google खाते में सेव करना चाहते हैं?</translation>
 <translation id="8932102934695377596">आपकी घड़ी पीछे है</translation>
 <translation id="893332455753468063">नाम जोड़ें</translation>

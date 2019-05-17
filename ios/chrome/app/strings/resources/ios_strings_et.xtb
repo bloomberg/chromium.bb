@@ -273,6 +273,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5190835502935405962">Järjehoidjariba</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Sünkroonimise lubamine</translation>
+<translation id="5234764350956374838">Loobu</translation>
 <translation id="5244474230056479698">Sünkroonimine aadressiga <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Tühista sünkroonimine</translation>
 <translation id="5271549068863921519">Salvesta parool</translation>
@@ -312,6 +313,7 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="5938160824633642847">Seade on peaaegu täis. Vabastage ruumi ja proovige uuesti.</translation>
 <translation id="5948291296578561264">See võimaldab teil salvestada fotod fotokogusse.</translation>
 <translation id="5955891643922670672">Kuvatakse võrguühenduseta versioon</translation>
+<translation id="5957613098218939406">Rohkem valikuid</translation>
 <translation id="5964480694698977962">Loo uus inkognito vaheleht.</translation>
 <translation id="5965679971710331625">Olete sisse logitud</translation>
 <translation id="5979837087407522202">Otsi paroole</translation>

@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">MIDI ডিভাইসগুলির পূর্ণ নিয়ন্ত্রণের অনুমতি দিন</translation>
 <translation id="1449080968331948513">ডেটা সেভার এখন লাইট মোড হয়ে গেছে</translation>
 <translation id="145097072038377568">Android সেটিংসে বন্ধ করা অাছে</translation>
+<translation id="146329143005354472">আমার অ্যাপে যোগ করুন</translation>
 <translation id="1477626028522505441">সার্ভার সমস্যার কারণে <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ আরও ১টি)}one{ (+ আরও #টি)}other{ (+ আরও #টি)}}</translation>
 <translation id="1501480321619201731">আইটেমের গ্রুপ মুছুন</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">সাইট</translation>
 <translation id="2874939134665556319">পূর্ববর্তী ট্র্যাক</translation>
 <translation id="2876369937070532032">নিরাপত্তা সংক্রান্ত কোনও ঝুঁকি থাকলে, আপনার দেখা কিছু পৃষ্ঠার ইউআরএল Google-কে পাঠায়</translation>
-<translation id="2876764156902388290">Chrome আপনাকে এই পৃষ্ঠাটি দেখানোর জন্য কম ডেটা ব্যবহার করছে</translation>
 <translation id="2888126860611144412">Chrome সম্বন্ধে</translation>
 <translation id="2891154217021530873">পৃষ্ঠা লোড করা বন্ধ করুন</translation>
 <translation id="2893180576842394309">সার্চ এবং অন্যান্য Google পরিষেবাকে আপনার মতো করে সাজিয়ে নিতে Google আপনার ইতিহাস ব্যবহার করতে পারে</translation>

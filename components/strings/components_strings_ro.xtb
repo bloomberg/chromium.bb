@@ -416,7 +416,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> pe <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Anulează plata</translation>
 <translation id="3207960819495026254">Marcată</translation>
-<translation id="321912867715453276">Avertisment: Este prezentă mai mult de o sursă pentru politică, dar valorile sunt identice.</translation>
 <translation id="3225919329040284222">Serverul a prezentat un certificat care nu se potrivește cu așteptările încorporate. Aceste așteptări sunt incluse pentru anumite site-uri web, cu un grad sporit de securitate, pentru a vă proteja.</translation>
 <translation id="3226128629678568754">Apăsați butonul de reîncărcare pentru a retrimite datele necesare pentru încărcarea paginii.</translation>
 <translation id="3227137524299004712">Microfon</translation>
@@ -556,7 +555,6 @@
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> este blocat</translation>
 <translation id="3987940399970879459">Mai puțin de 1 MB</translation>
-<translation id="4008849406247176967">Avertisment: Pentru această politică este prezentă mai mult de o sursă cu valori în conflict!</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 pagină web în apropiere}few{# pagini web în apropiere}other{# de pagini web în apropiere}}</translation>
 <translation id="4030383055268325496">&amp;Anulați adăugarea</translation>
 <translation id="4032320456957708163">Browserul este gestionat de <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -567,7 +565,7 @@
 <translation id="4072486802667267160">A apărut o eroare la procesarea comenzii. Încearcă din nou.</translation>
 <translation id="4075732493274867456">Clientul și serverul nu acceptă o versiune a protocolului SSL sau o suită de codificare obișnuită.</translation>
 <translation id="4079302484614802869">Configurația pentru proxy este setată să utilizeze o adresă URL pentru scripturi .pac, și nu servere proxy fixe.</translation>
-<translation id="4082393374666368382">Setări - Administrator</translation>
+<translation id="4082393374666368382">Setări – Administrator</translation>
 <translation id="4092411512356034591">Accesezi <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Urmează un site înșelător</translation>
 <translation id="4103249731201008433">Numărul de serie al gadgetului este nevalid</translation>
@@ -693,7 +691,6 @@
 <translation id="4738601419177586157">Sugestie de căutare <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Gestionează parolele…</translation>
 <translation id="4744603770635761495">Cale executabilă</translation>
-<translation id="4746351372139058112">Mesaje</translation>
 <translation id="4750917950439032686">Informațiile tale (de exemplu, parolele și numerele cardurilor de credit) sunt private când sunt trimise la acest site.</translation>
 <translation id="4756388243121344051">&amp;Istoric</translation>
 <translation id="4758311279753947758">Adaugă informații de contact</translation>
@@ -1123,7 +1120,6 @@
 <translation id="7220786058474068424">Se procesează</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Site-ul pe care urmează să îl accesezi conține programe malware</translation>
-<translation id="724766306220616965">Avertismente, Conflict</translation>
 <translation id="724975217298816891">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" />, pentru a actualiza detaliile cardului. După ce confirmi, acest site va avea acces la detaliile cardului tău.</translation>
 <translation id="7251437084390964440">Configurația rețelei nu respectă standardul ONC. Este posibil ca anumite părți ale configurației să nu fie importate.
 Detalii suplimentare:
@@ -1422,6 +1418,7 @@ Detalii suplimentare:
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="8903921497873541725">Mărește</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Contul Google</translation>
 <translation id="8931333241327730545">Dorești să salvezi acest card în Contul Google?</translation>
 <translation id="8932102934695377596">Ora este setată în trecut</translation>
 <translation id="893332455753468063">Adaugă un nume</translation>

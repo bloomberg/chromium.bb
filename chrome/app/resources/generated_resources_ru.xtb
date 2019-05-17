@@ -337,6 +337,7 @@
     В противном случае измените <ph name="LINK_START" />настройки прокси-сервера<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">Чтобы отменить это действие, необходимо переустановить <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">Импортированные из Safari</translation>
+<translation id="1515163294334130951">Запустить</translation>
 <translation id="1521442365706402292">Настроить сертификаты</translation>
 <translation id="152234381334907219">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1524430321211440688">Клавиатура</translation>
@@ -439,6 +440,7 @@
 <translation id="167160931442925455">Максимальная громкость</translation>
 <translation id="1673137583248014546">Сайт <ph name="URL" /> запрашивает доступ к производителю и модели вашего Электронного ключа</translation>
 <translation id="1679068421605151609">Инструменты разработчика</translation>
+<translation id="1679806121152819234">Плагин ВМ</translation>
 <translation id="167983332380191032">От сервиса управления получен недействительный код HTTP.</translation>
 <translation id="1680849702532889074">В процессе установки приложения для Linux произошла ошибка.</translation>
 <translation id="16815041330799488">Не предоставлять сайтам доступ к тексту и изображениям, скопированным в буфер обмена</translation>
@@ -961,7 +963,6 @@
 <translation id="2496180316473517155">История браузера</translation>
 <translation id="2497229222757901769">Скорость указателя (для мыши)</translation>
 <translation id="2497852260688568942">Ваш администратор отключил синхронизацию</translation>
-<translation id="249819058197909513">Больше не показывать для этого приложения</translation>
 <translation id="2498539833203011245">Свернуть</translation>
 <translation id="2498765460639677199">Огромный</translation>
 <translation id="2499747912851752301">Экспорт паролей…</translation>
@@ -1051,7 +1052,6 @@
 <translation id="2630681426381349926">Подключение к сети Wi-Fi</translation>
 <translation id="2631120081682787498">Закрыть эту вкладку?</translation>
 <translation id="2631498379019108537">Показывать параметры ввода на панели запуска</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> использует <ph name="USAGE" /> МБ дискового пространства.</translation>
 <translation id="2633212996805280240">Удалить "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> не может завершить установку, однако продолжит работу со своего образа на диске.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1397,7 +1397,6 @@
 <translation id="3157931365184549694">Восстановить</translation>
 <translation id="3158033540161634471">Добавьте отпечаток пальца</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> (<ph name="ISSUED_TO" />). Поддерживается аппаратным обеспечением.</translation>
-<translation id="316125635462764134">Удалить приложение</translation>
 <translation id="3161522574479303604">Все языки</translation>
 <translation id="3163201441334626963">Неизвестный продукт <ph name="PRODUCT_ID" /> от поставщика <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Некоторые операторы могут блокировать эту функцию.</translation>
@@ -1898,6 +1897,7 @@
 <translation id="3916445069167113093">Файл этого типа может нанести вред компьютеру. Все равно сохранить <ph name="FILE_NAME" />?</translation>
 <translation id="3918972485393593704">Отправить данные в Google</translation>
 <translation id="3919145445993746351">Чтобы автоматически установить расширения на всех своих компьютерах, включите синхронизацию.</translation>
+<translation id="391999873395511996">Скачивание виртуальной машины…</translation>
 <translation id="3920504717067627103">Политики сертификатов</translation>
 <translation id="392089482157167418">Включить ChromeVox (голосовое сопровождение)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1949,7 +1949,6 @@
 <translation id="3983586614702900908">устройства от неизвестного поставщика</translation>
 <translation id="3984159763196946143">Не удалось запустить демонстрационный режим</translation>
 <translation id="3984431586879874039">Разрешить этому сайту просматривать данные вашего электронного ключа?</translation>
-<translation id="3987348946546879621">Версия для предпросмотра</translation>
 <translation id="3987938432087324095">Извините, не слышно.</translation>
 <translation id="3988996860813292272">Выбор часового пояса</translation>
 <translation id="399179161741278232">Выполнен импорт</translation>
@@ -1980,7 +1979,6 @@
 <translation id="4037889604535939429">Сменить пользователя</translation>
 <translation id="4042264909745389898">Условия использования Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Закрыть страницу}one{Закрыть страницы}few{Закрыть страницы}many{Закрыть страницы}other{Закрыть страницы}}</translation>
-<translation id="404299405565920089">Здесь можно управлять всеми аккаунтами Google, в которые вы вошли в приложениях и на сайтах. Некоторым сервисам для корректной работы требуется разрешение на доступ к данным аккаунта.</translation>
 <translation id="4044612648082411741">Введите пароль сертификата</translation>
 <translation id="404493185430269859">Поисковая система по умолчанию</translation>
 <translation id="4046123991198612571">Следующий трек</translation>
@@ -2095,7 +2093,6 @@
 <translation id="4242533952199664413">Открыть настройки</translation>
 <translation id="4242577469625748426">Не удалось применить к устройству настройки политики: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Другие приложения для стилуса</translation>
-<translation id="424546999567421758">Большая нагрузка на диск</translation>
 <translation id="424726838611654458">Всегда открывать в Adobe Reader</translation>
 <translation id="4247901771970415646">Не удалось синхронизироваться с аккаунтом <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Ожидается подключение к сети...</translation>
@@ -2203,7 +2200,6 @@
 <translation id="4421932782753506458">Пушистик</translation>
 <translation id="4422347585044846479">Изменить эту закладку</translation>
 <translation id="4423376891418188461">Восстановить настройки</translation>
-<translation id="4423482519432579560">&amp;Проверка правописания</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, администратор просит вас сменить пароль.</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="4430369329743628066">Закладка добавлена</translation>
@@ -2663,8 +2659,6 @@
 <translation id="5187295959347858724">Вы вошли в <ph name="SHORT_PRODUCT_NAME" />. Ваши закладки, история и другие настройки синхронизируются с аккаунтом Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> хочет скачать несколько файлов</translation>
-<translation id="5192316339598592690">Быстро переключайтесь между аккаунтами и выполняйте вход сразу на нескольких сайтах и в разных приложениях.
-    Приложения и сайты могут запрашивать разрешение на использование некоторых ваших данных из аккаунта Google. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Сбросьте настройки устройства и повторите попытку.</translation>
 <translation id="5204967432542742771">Введите пароль</translation>
 <translation id="5206215183583316675">Удалить "<ph name="CERTIFICATE_NAME" />"?</translation>
@@ -3343,7 +3337,6 @@
 <translation id="622537739776246443">Профиль будет удален</translation>
 <translation id="6225475702458870625">Интернет-подключение доступно через <ph name="PHONE_NAME" />.</translation>
 <translation id="6226777517901268232">Файл секретного ключа (необязательно)</translation>
-<translation id="6228516488918914827">Загружена версия страницы для предпросмотра</translation>
 <translation id="6228691855869374890">Этот сайт имеет полный контроль над устройствами MIDI.</translation>
 <translation id="6229890768313448549">Не удалось скачать Условия использования Google Play. Повторите попытку.</translation>
 <translation id="6231881193380278751">Добавьте в URL параметр запроса для автоматического обновления страницы: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3548,7 +3541,6 @@
 <translation id="6545665334409411530">Скорость повтора</translation>
 <translation id="6545834809683560467">Показывать подсказки при вводе поисковых запросов и URL</translation>
 <translation id="6545867563032584178">Микрофон отключен в системных настройках macOS</translation>
-<translation id="6547316139431024316">Больше не показывать для этого расширения</translation>
 <translation id="6547354035488017500">Чтобы устройство работало, требуется как минимум 512 МБ свободного пространства. Рекомендуем удалить файлы, хранящиеся на устройстве.</translation>
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="6551508934388063976">Команда недоступна. Нажмите Ctrl + N, чтобы открыть новое окно.</translation>
@@ -4678,7 +4670,6 @@
 <translation id="827097179112817503">Показывать кнопку "Главная страница"</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Удалена 1 закладка.}one{Удалена # закладка.}few{Удалено # закладки.}many{Удалено # закладок.}other{Удалено # закладки.}}</translation>
 <translation id="8272443605911821513">Управляйте расширениями в соответствующем разделе в меню дополнительных инструментов.</translation>
-<translation id="8272966760965438857">Централизованно управляйте своими аккаунтами Google</translation>
 <translation id="8274332263553132018">Файл для трансляции</translation>
 <translation id="8274924778568117936">Не выключайте и не закрывайте <ph name="DEVICE_TYPE" />, выполняется обновление. После завершения установки <ph name="DEVICE_TYPE" /> перезагрузится.</translation>
 <translation id="8275038454117074363">Импорт</translation>

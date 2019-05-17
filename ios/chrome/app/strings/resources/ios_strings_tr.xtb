@@ -273,6 +273,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5190835502935405962">Yer İşareti Çubuğu</translation>
 <translation id="5197255632782567636">İnternet</translation>
 <translation id="5228579091201413441">Senkronizasyonu etkinleştir</translation>
+<translation id="5234764350956374838">Kapat</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> hesabıyla senkronize ediliyor</translation>
 <translation id="5245322853195994030">Senkronizasyonu iptal et</translation>
 <translation id="5271549068863921519">Şifreyi kaydet</translation>
@@ -312,6 +313,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="5938160824633642847">Cihazınızın depolama alanı dolmak üzere. Yer boşaltın ve tekrar deneyin.</translation>
 <translation id="5948291296578561264">Böylece, fotoğrafları fotoğraf kitaplığınıza kaydedebilirsiniz.</translation>
 <translation id="5955891643922670672">Çevrimdışı Sürüm Gösteriliyor</translation>
+<translation id="5957613098218939406">Diğer Seçenekler</translation>
 <translation id="5964480694698977962">Yeni gizli sekme oluştur.</translation>
 <translation id="5965679971710331625">Oturum açtınız</translation>
 <translation id="5979837087407522202">Şifrelerde Ara</translation>
@@ -411,7 +413,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7272437679830969316">Kimliğiniz doğrulanamıyor. Şifre kopyalanmadı.</translation>
 <translation id="7285236536143823449">EVET, İSTİYORUM</translation>
 <translation id="7291368939935408496">Şifreler Hazırlanıyor...</translation>
-<translation id="7293171162284876153">Senkronizasyonu başlatmak için "Chrome verilerinizi senkronize edin" ayarını etkinleştirin.</translation>
+<translation id="7293171162284876153">Senkronizasyonu başlatmak için "Chrome verilerimi senkronize et" ayarını etkinleştirin.</translation>
 <translation id="7336264872878993241">Yüzde <ph name="PERCENT" /> indirildi</translation>
 <translation id="7346909386216857016">Tamam, anladım</translation>
 <translation id="7348502496356775519">Yer işareti koy</translation>

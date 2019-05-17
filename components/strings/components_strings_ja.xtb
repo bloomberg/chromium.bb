@@ -408,7 +408,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" />（<ph name="SERVER_NAME" /> 上）</translation>
 <translation id="320323717674993345">支払いをキャンセル</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
-<translation id="321912867715453276">警告: ポリシーに複数のソースがありますが、値は同一です。</translation>
 <translation id="3225919329040284222">サーバーの提示した証明書が、組み込まれている想定の証明書と一致しません。これらの想定の証明書は、ユーザー保護のため、特定の安全性の高いウェブサイトについて用意されています。</translation>
 <translation id="3226128629678568754">ページの読み込みに必要なデータを再送信するには、再読み込みボタンを押してください。</translation>
 <translation id="3227137524299004712">マイク</translation>
@@ -548,7 +547,6 @@
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> はブロックされています</translation>
 <translation id="3987940399970879459">1 MB 未満</translation>
-<translation id="4008849406247176967">警告: このポリシーには、値が競合する複数のソースがあります。</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 件の近くのウェブページ}other{# 件の近くのウェブページ}}</translation>
 <translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
 <translation id="4032320456957708163">ご使用のブラウザは <ph name="ENROLLMENT_DOMAIN" /> によって管理されています</translation>
@@ -685,7 +683,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> の検索候補</translation>
 <translation id="4742407542027196863">パスワードを管理…</translation>
 <translation id="4744603770635761495">実行ファイルのパス</translation>
-<translation id="4746351372139058112">メッセージ</translation>
 <translation id="4750917950439032686">お客様がこのサイトに送信した情報（パスワード、クレジット カード番号など）が第三者に見られることはありません。</translation>
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4758311279753947758">連絡先情報を追加</translation>
@@ -1112,7 +1109,6 @@
 <translation id="7220786058474068424">処理しています</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />、<ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">アクセス先のサイトで不正なソフトウェアを検出しました</translation>
-<translation id="724766306220616965">警告、競合</translation>
 <translation id="724975217298816891">カードの詳細を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>
 <translation id="7251437084390964440">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。
 詳細:
@@ -1411,6 +1407,7 @@
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="8903921497873541725">拡大する</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8931333241327730545">このカードを Google アカウントに保存しますか？</translation>
 <translation id="8932102934695377596">時計が遅れています</translation>
 <translation id="893332455753468063">名前の追加</translation>

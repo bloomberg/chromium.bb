@@ -415,7 +415,6 @@
 
       Babala: Hindi inirerekomenda ang pagtatalaga ng kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" /> sa isang kiosk app dahil maaari nitong pigilan ang pagtanggap ng device ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa peligro ang mga user kung magtatalaga ng kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="1675002386741412210">Suportado sa:</translation>
-<translation id="1689963000958717134">Nagbibigay-daan na malapat sa lahat ng user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang string na naka-format sa JSON tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Kino-configure ang availability at gawi ng functionality ng pag-update sa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware.
 
       Matutukoy ang mga indibidwal na setting sa mga JSON property:
@@ -976,16 +975,6 @@
       Kung hindi pinagana ang setting na ito, hindi makakagamit ng JavaScript ang mga web page at hindi mababago ng user ang setting na iyon.
 
       Kung pinagana o hindi nakatakda ang setting na ito, makakagamit ng JavaScript ang mga web page ngunit mababago ng user ang setting na iyon.</translation>
-<translation id="2747157663401642394">Kino-configure ang mga setting ng pamamahala ng extension para sa <ph name="PRODUCT_NAME" />.
-
-          Kinokontrol ng patakarang ito ang maraming setting, kabilang ang mga setting na kinokontrol ng anumang kasalukuyang patakarang nauugnay sa extension. Io-override ng patakarang ito ang anumang patakaran ng legacy kung parehong naitakda.
-
-          Nagmamapa ang patakarang ito ng extension ID o ng URL ng update sa configuration nito. Gamit ang isang extension ID, ilalapat ang configuration sa tinukoy na extension lang. Puwedeng itakda ang isang default na configuration para sa espesyal na ID <ph name="DEFAULT_SCOPE" /> na ilalapat sa lahat ng extension na walang nakatakdang custom na configuration sa patakarang ito. Gamit ang isang URL ng update, ilalapat ang configuration sa lahat ng extension na may eksaktong URL ng update na nakasaad sa manifest ng extension na ito, gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Para sa mga instance ng Windows na hindi kasama sa isang domain ng <ph name="MS_AD_NAME" />, nililimitahan ang sapilitang pag-install sa mga app at extension na nakalista sa Chrome Web Store.
-
-          Para sa kumpletong paglalarawan ng mga posibleng setting at istruktura ng patakarang ito, bumisita sa https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Paghigpitan ang hanay ng mga lokal na UDP port na ginagamit ng WebRTC</translation>
 <translation id="2757054304033424106">Mga uri ng mga extension/apps na pinapayagang ma-install</translation>
 <translation id="2758084448533744848">Tinutukoy ang ipinatupad na timezone na gagamitin para sa device. Kapag naitakda na ang patakarang ito, hindi maaaring i-override ng mga user sa device ang tinukoy na timezone. Kung may ibinigay na invalid na value, ia-activate pa rin ang patakarang ito gamit ang "GMT" sa halip. Kung may ibinigay na walang lamang string, binabalewala ang patakaran.
@@ -1214,7 +1203,7 @@
       Nagbibigay-daan ang patakarang ito sa mga administrator na magbigay ng mga configuration ng printer para sa
       kanilang mga user.
 
-      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free form ns string na puwedeng i-customize para sa mas madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagtukoy ng printer ng mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na mapupuntahan mula sa isang client na computer kabilang ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />. Kung ibibigay, gagamitin ito para makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
+      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free form na string na puwedeng i-customize para sa mas madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagtukoy ng printer ng mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na mapupuntahan mula sa isang client na computer kabilang ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />. Kung ibibigay, gagamitin ito para makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
 
       Tumutugma dapat ang <ph name="PRINTER_EFFECTIVE_MODEL" /> sa isa sa mga string na kumakatawan sa printer na sinusuportahan ng <ph name="PRODUCT_NAME" />. Gagamitin ang string para tukuyin at i-install ang naaangkop na PPD para sa printer. Makakahanap ng higit pang impormasyon sa https://support.google.com/chrome?p=noncloudprint.
 
@@ -1757,30 +1746,6 @@
       Maaapektuhan lang ng patakarang ito ang mga user na nao-authenticate gamit ang SAML.</translation>
 <translation id="4105989332710272578">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng mga URL</translation>
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
-<translation id="4125606414556046117">Nagbibigay-daan sa iyo ang patakarang itong i-configure ang larawan sa wallpaper na ipinapakita sa desktop at sa background ng screen sa pag-log in para sa user. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan mada-download ng <ph name="PRODUCT_OS_NAME" /> ang larawan sa wallpaper at isang cryptographic na hash na ginagamit para i-verify ang integridad ng download. Dapat ay nasa format na JPEG ang larawan at hindi dapat lumampas sa 16MB ang laki ng file nito. Dapat ay accessible ang URL nang walang anumang pag-authenticate.
-
-      Dina-download at kina-cache ang larawan sa wallpaper. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.
-
-      Dapat tukuyin ang patakaran bilang string na nagsasaad sa URL at hash sa format na JSON, at umaayon sa sumusunod na schema:
-      {
-        "uri": "object",
-        "mga property": {
-          "url": {
-            "paglalarawan": "Ang URL kung saan mada-download ang larawan sa wallpaper.",
-            "uri": "string"
-          },
-          "hash": {
-            "paglalarawan": "Ang SHA-256 hash ng larawan sa wallpaper.",
-            "uri": "string"
-          }
-        }
-      }
-
-      Kung itatakda ang patakarang ito, ida-download at gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang larawan sa wallpaper.
-
-      Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
-
-      Kung hahayaang hindi nakatakda ang patakaran, puwedeng pumili ang user ng larawang ipapakita sa desktop at sa background ng screen sa pag-log in.</translation>
 <translation id="412697421478384751">I-enable ang mga user na magtakda ng madadaling hulaang PIN para sa PIN ng lock screen</translation>
 <translation id="4138655880188755661">Limitasyon sa Oras</translation>
 <translation id="4144164749344898721">Kinokontrol ng patakarang ito ang maraming setting para sa diskarte ng pamamahala sa power kapag naging idle ang user.
@@ -2736,53 +2701,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi nakatakda ang patakarang ito o nakatakda sa false, iti-trigger ng mga command sa pag-print ang screen ng preview sa pag-print.</translation>
 <translation id="6022948604095165524">Pagkilos sa startup</translation>
-<translation id="6023030044732320798">Tumutukoy ng hanay ng mga patakarang ipapasa sa runtime ng ARC. Dapat ay valid na JSON ang value.
-
-      Magagamit ang patakarang ito upang i-configure kung aling mga Android app ang awtomatikong ii-install sa device:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identifier ng Android app, hal., "com.google.android.gm" para sa Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Tumutukoy sa kung paano ii-install ang isang app. OPTIONAL: Hindi awtomatikong ii-install ang app, ngunit maaari itong i-install ng user. Ito ang default kung hindi tutukuyin ang patakarang ito. PRELOAD: Awtomatikong ii-install ang app, ngunit maaari itong i-uninstall ng user. FORCE_INSTALLED: Awtomatikong ii-install ang app at hindi ito maaaring i-uninstall ng user. BLOCKED: Naka-block ang app at hindi maaaring i-install. Kung na-install ang app alinsunod sa dating patakaran, maa-uninstall ito.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Patakaran sa pagbibigay ng mga kahilingan sa pahintulot sa mga app. PERMISSION_POLICY_UNSPECIFIED: Hindi tinukoy ang patakaran. Kung walang tutukuying patakaran para sa isang pahintulot sa anumang antas, gagamitin bilang default ang `PROMPT` na gawi. PROMPT: Nagpa-prompt sa user na magbigay ng pahintulot. GRANT: Awtomatikong nagbibigay ng pahintulot. DENY: Awtomatikong hindi nagbibigay ng pahintulot.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Partikular sa app na object ng configuration ng JSON na may hanay ng mga key-value na pares, hal., '"managedConfiguration": { "key1": value1, "key2": value2 }'. Tinutukoy ang mga key sa manifest ng app.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Upang mag-pin ng mga app sa launcher, tingnan ang PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
 <translation id="603410445099326293">Mga parameter para sa URL ng mungkahi na ginagamit ang POST</translation>
 <translation id="6034341625190551415">Nagkokontrol sa pampublikong session at mga uri ng account ng kiosk.</translation>
@@ -3136,37 +3054,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung itatakda sa false ang patakarang ito, hindi kailanman gagamitin ang built-in na DNS client.
 
       Kung iiwang hindi nakatakda ang patakarang ito, mae-enable bilang default ang built-in na DNS client sa MacOS, Android (kapag hindi naka-enable ang Private DNS at VPN), at ChromeOS, at magagawa ng mga user na baguhin kung gagamitin ang built-in na DNS client sa pamamagitan ng pag-edit ng chrome://flags o pagtukoy ng command-line flag.</translation>
-<translation id="6838056959556423778">Ino-override ang mga default na panuntunan sa pagpili ng printer ng <ph name="PRODUCT_NAME" />.
-
-      Tinutukoy ng patakarang ito ang mga panuntunan para sa pagpili sa default na printer sa <ph name="PRODUCT_NAME" /> na magaganap sa unang beses na gagamitin ang function na pag-print sa pamamagitan ng isang profile.
-
-      Kapag nakatakda ang patakarang ito, tatangkain ng <ph name="PRODUCT_NAME" /> na maghanap ng printer na tumutugma sa lahat ng natukoy na attribute, at pipiliin ito bilang default na printer. Pipiliin ang unang printer na mahahanap na tumutugma sa patakaran, kung may hindi natatanging pagtutugma, maaaring piliin ang anumang tumutugmang printer, depende sa pagkakasunud-sunod ng pagtuklas sa mga printer.
-
-      Kung hindi nakatakda ang patakarang ito o walang mahahanap na tumutugmang printer sa panahon ng timeout, magde-default ang printer sa naka-built in na PDF printer o walang napiling printer, kapag hindi available ang PDF printer.
-
-      Naka-parse ang value bilang JSON object na sumusunod sa schema sa ibaba:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Kung lilimitahan o hindi ang paghahanap sa tumutugmang printer sa isang partikular na set ng mga printer.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Karaniwang expression para magtugma ng printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Karaniwang expression para magtugma ng display name ng printer .",
-            "type": "string"
-          }
-        }
-      }
-
-      Ang mga printer na nakakonekta sa <ph name="CLOUD_PRINT_NAME" /> ay itinuturing na <ph name="PRINTER_TYPE_CLOUD" />, ang iba pang printer ay kabilang sa klasipikasyong <ph name="PRINTER_TYPE_LOCAL" />.
-      Nangangahulugan ang pag-aalis ng field na ang lahat ng tugma ng value, halimbawa, na hindi tumutukoy ng pagkakakonekta ay magdudulot sa Print Preview na simulan ang pagtuklas ng lahat ng uri ng printer, lokal, at cloud.
-      Dapat sumunod ang mga pattern ng regular na expression sa JavaScript RegExp syntax at case sensistive ang mga tugma.</translation>
 <translation id="6843296367238757293">Hindi na ginagamit ang patakarang ito. Hindi hinihikayat ang paggamit nito. Magbasa pa sa https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Inalis ang patakarang ito sa <ph name="PRODUCT_NAME" /> 68 at pinalitan ito ng <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Hindi na ginagamit at tinanggal na ang patakarang ito sa M66, dahil ginamit lang ito para sa internal na pagsubok at isa itong sagutin sa seguridad.
@@ -4341,30 +4228,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Naaapektuhan lang ng patakarang ito ang mga user na nag-authenticate gamit ang SAML.
 
       Dapat ay nakasaad ang value ng patakaran sa pamamagitan ng segundo.</translation>
-<translation id="9027787254195333560">Nagbibigay-daan sa iyo ang patakarang ito na i-configure ang larawan ng avatar na kumakatawan sa user sa screen sa pag-log in. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan mada-download ng <ph name="PRODUCT_OS_NAME" /> ang larawan ng avatar at isang cryptographic na hash na ginagamit para i-verify ang integridad ng download. Dapat ay nasa format na JPEG ang larawan, hindi dapat lumampas sa 512kB ang laki nito. Dapat ay accessible ang URL nang walang anumang pag-authenticate.
-
-      Dina-download at kina-cache ang larawan ng avatar. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.
-
-      Dapat tukuyin ang patakaran bilang string na nagsasaad sa URL at hash sa format na JSON, at umaayon sa sumusunod na schema:
-      {
-        "uri": "object",
-        "mga property": {
-          "url": {
-            "paglalarawan": "Ang URL kung saan mada-download ang larawan ng avatar.",
-            "uri": "string"
-          },
-          "hash": {
-            "paglalarawan": "Ang SHA-256 hash ng larawan ng avatar.",
-            "uri": "string"
-          }
-        }
-      }
-
-      Kung itatakda ang patakarang ito, ida-download at gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang larawan ng avatar.
-
-      Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
-
-      Kung hahayaang hindi nakatakda ang patakaran, puwedeng piliin ng user ang larawan ng avatar na kumakatawan sa kanya sa screen sa pag-log in.</translation>
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
 <translation id="9038058011835642205">Tumutukoy ng listahan ng mga website na na-install nang silent, nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o madi-disable ng user.
 
@@ -4377,7 +4240,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
 
       Dapat isaad ang value ng patakaran gamit ang millisecond. Papanatilihin ang mga value sa hanay na 30 segundo hanggang 24 na oras.</translation>
-<translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Kinokontrol ng patakarang ito kung dapat i-update o hindi ang device sa isang Quick Fix Build.
 
       Kung ang value ng patakaran ay naitakda sa token na nagmamapa sa isang Quick Fix Build, ia-update ang device sa kaukulang Quick Fix Build kung ang update ay hindi na-block ng isa pang patakaran.
@@ -4457,17 +4319,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung nakatakda sa false ang patakaran, hindi napili ang 'Mga header at footer' sa dialog ng preview ng pag-print, at hindi ito mababago ng user.
 
       Kung nakatakda sa true ang patakaran, napili ang 'Mga header at footer' sa dialog ng preview ng pag-print, at hindi ito mababago ng user.</translation>
-<translation id="9213347477683611358">Nagko-configure ng larawan ng wallpaper sa device na ipinapakita sa screen ng pag-login kung wala pang naka-sign in na user sa device. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan maaaring i-download ng Chrome OS device ang larawan ng wallpaper at isang cryptographic hash na ginagamit upang i-verify ang integridad ng pag-download. Dapat ay nasa format na JPEG ang larawan, at hindi dapat lumampas ang laki ng file sa 16MB. Dapat ay naa-access ang URL nang walang anumang pag-authenticate. Na-download at na-cache ang larawan ng wallpaper. Ida-download itong muli sa tuwing magbabago ang URL o ang hash.
-
-      Dapat ay tukuyin ang patakaran bilang isang string na nagpapakita ng URL at hash sa format na JSON, hal.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Kung nakatakda ang patakaran sa wallpaper ng device, ida-download at gagamitin ng Chrome OS device ang larawan ng wallpaper sa screen ng pag-login kung wala pang naka-sign in na user sa device. Kapag naka-login na ang user, ilalapat na ang patakaran sa wallpaper ng user.
-
-      Kung hindi nakatakda ang patakaran sa wallpaper ng device, ang patakaran sa wallpaper ng user ang magpapasya kung ano ang ipapakita kung nakatakda na ang patakaran sa wallpaper ng user.</translation>
 <translation id="9217154963008402249">Dalas ng mga sinusubaybayang network packet</translation>
 <translation id="922540222991413931">Mag-configure ng mga pinagmulan ng pag-install ng extension, app, at script ng user</translation>
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>

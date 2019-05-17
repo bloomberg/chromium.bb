@@ -397,7 +397,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Peringatan: Sebaiknya jangan mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> ke aplikasi kios karena tindakan tersebut dapat mencegah perangkat dari menerima update software dan perbaikan keamanan penting. Mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> dapat menimbulkan risiko terhadap pengguna.</translation>
 <translation id="1675002386741412210">Didukung di:</translation>
-<translation id="1689963000958717134">Memungkinkan konfigurasi jaringan dorong untuk diterapkan pada semua pengguna perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang dideskripsikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Mengonfigurasi ketersediaan dan perilaku fungsionalitas update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Setiap setelan dapat ditentukan dalam properti JSON:
@@ -447,7 +446,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika kebijakan diaktifkan, pengguna harus memilih untuk mengikuti perilaku default, yaitu setiap situs akan dijalankan dalam prosesnya sendiri.
       Jika kebijakan ini dinonaktifkan atau tidak dikonfigurasikan, pengguna akan dapat mengubah setelan ini (misalnya, menggunakan entri "Nonaktifkan isolasi situs" di chrome://flags).
       </translation>
-<translation id="1767673020408652620">Aktifkan fitur Rekomendasi Aplikasi pada Status Nol Kotak Penelusuran</translation>
+<translation id="1767673020408652620">Aktifkan fitur Rekomendasi Aplikasi pada Status Kosong Kotak Penelusuran</translation>
 <translation id="1781356041596378058">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Developer. Jika Anda menyetel kebijakan ini ke false atau tidak menyetel kebijakan ini, pengguna dapat mengakses Opsi Developer dengan menge-tap tujuh kali nomor versi di aplikasi setelan Android.</translation>
 <translation id="1793346220873697538">Nonaktifkan pencetakan PIN secara default</translation>
 <translation id="1797233582739332495">Tampilkan permintaan berulang kepada pengguna yang menunjukkan bahwa peluncuran ulang diperlukan</translation>
@@ -935,16 +934,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika setelan ini dinonaktifkan, halaman web tidak dapat menggunakan JavaScript dan pengguna tidak dapat mengubah setelan ini.
 
       Jika setelan ini diaktifkan atau tidak disetel, halaman web dapat menggunakan JavaScript, namun pengguna dapat mengubah setelan tersebut.</translation>
-<translation id="2747157663401642394">Mengonfigurasi setelan pengelolaan ekstensi untuk <ph name="PRODUCT_NAME" />.
-
-          Kebijakan ini mengontrol beberapa setelan, termasuk setelan yang dikontrol oleh kebijakan terkait ekstensi yang ada. Kebijakan ini akan mengganti kebijakan yang lama jika keduanya tidak disetel.
-
-          Kebijakan ini memetakan ID ekstensi atau URL update ke konfigurasinya. Dengan ID ekstensi, konfigurasi hanya akan diterapkan ke ekstensi tertentu. Konfigurasi default dapat disetel untuk ID khusus <ph name="DEFAULT_SCOPE" />, yang akan diterapkan ke semua ekstensi yang tidak memiliki konfigurasi kustom yang disetel di kebijakan ini. Dengan URL update, konfigurasi akan diterapkan ke semua ekstensi dengan URL update yang sama persis yang ditetapkan di manifes ekstensi ini, seperti yang dijelaskan di <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan otomatis dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Web Store.
-
-          Untuk mengetahui deskripsi lengkap terkait kemungkinan setelan dan struktur kebijakan ini, harap kunjungi https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Membatasi rentang port UDP lokal yang digunakan oleh WebRTC</translation>
 <translation id="2757054304033424106">Ketik ekstensi/aplikasi yang diizinkan untuk dipasang</translation>
 <translation id="2758084448533744848">Menentukan zona waktu yang diterapkan untuk digunakan di perangkat. Jika kebijakan ini disetel, pengguna di perangkat tidak dapat mengganti zona waktu yang ditentukan. Jika nilai yang tidak valid diberikan, kebijakan tetap diaktifkan menggunakan "GMT". Jika string kosong diberikan, kebijakan diabaikan.
@@ -962,11 +951,11 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
-<translation id="2783078941107212091">Aktifkan fitur Rekomendasi Aplikasi pada Status Nol kotak penelusuran di peluncur.
+<translation id="2783078941107212091">Aktifkan fitur Rekomendasi Aplikasi pada Status Kosong kotak penelusuran di peluncur.
 
-          Jika kebijakan ini ditetapkan ke true, Rekomendasi Aplikasi dapat muncul dalam penelusuran dengan status nol.
+          Jika kebijakan ini ditetapkan ke true, Rekomendasi Aplikasi dapat muncul dalam penelusuran dengan status kosong.
 
-          Jika kebijakan ini ditetapkan ke false, Rekomendasi Aplikasi tidak akan muncul dalam penelusuran dengan status nol.
+          Jika kebijakan ini ditetapkan ke false, Rekomendasi Aplikasi tidak akan muncul dalam penelusuran dengan status kosong.
 
           Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
 
@@ -1635,20 +1624,19 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           dinonaktifkan oleh pengguna. Semua izin yang diminta oleh
           aplikasi/ekstensi diberikan secara implisit, tanpa interaksi pengguna,
           termasuk izin tambahan apa pun yang diminta oleh versi berikutnya dari
-          aplikasi/ekstensi tersebut. Selain itu, izin diberikan untuk API ekstensi
-          enterprise.deviceAttributes dan enterprise.platformKeys.
-           (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang
-          tidak diinstal otomatis.)
+          aplikasi/ekstensi tersebut. Selain itu, izin diberikan untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys.
+          (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang
+          tidak diinstal paksa.)
 
-          Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bentrok. Jika aplikasi atau ekstensi yang sebelumnya diinstal otomatis telah dihapus dari daftar ini, aplikasi/ekstensi tersebut akan otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
+          Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bentrok. Jika aplikasi atau ekstensi yang sebelumnya diinstal paksa telah dihapus dari daftar ini, aplikasi/ekstensi tersebut akan otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
 
-          Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan otomatis dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Web Store.
+          Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan paksa dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Web Store.
 
-          Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui Developer Tools (namun berpotensi membuat ekstensi tidak berfungsi lagi). Jika hal ini menjadi masalah, kebijakan <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> sebaiknya diterapkan.
+          Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui Developer Tools (namun berpotensi membuat ekstensi tidak berfungsi lagi). Jika hal ini menjadi masalah, kebijakan <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> sebaiknya ditetapkan.
 
           Setiap item daftar kebijakan merupakan string yang memuat ID ekstensi dan, terkadang, URL "update" yang dipisahkan titik koma (<ph name="SEMICOLON" />). ID ekstensi adalah string 32 huruf yang ditemukan misalnya di <ph name="CHROME_EXTENSIONS_LINK" /> saat dalam mode developer. URL "update", jika ditentukan, semestinya mengarah ke dokumen XML Manifes Update seperti yang dijelaskan di <ph name="LINK_TO_EXTENSION_DOC1" />. Secara default, URL update Chrome Web Store digunakan (yang saat ini adalah "https://clients2.google.com/service/update2/crx"). Perhatikan bahwa URL "update" yang ditetapkan dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan dalam manifes ekstensi. Perhatikan juga bahwa penetapan URL "update" secara eksplisit diwajibkan pada versi <ph name="PRODUCT_NAME" /> hingga dan termasuk 67.
 
-          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> menginstal ekstensi dengan id <ph name="EXTENSION_ID_SAMPLE" /> dari URL "update" Chrome Web Store standar. Untuk mendapatkan informasi selengkapnya tentang ekstensi hosting, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> menginstal aplikasi <ph name="EXTENSION_ID_SAMPLE" /> dari URL "update" Chrome Web Store standar. Untuk mendapatkan informasi selengkapnya tentang ekstensi hosting, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Jika kebijakan ini tidak ditetapkan, tidak ada aplikasi atau ekstensi yang otomatis diinstal dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.
 
@@ -1700,30 +1688,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Kebijakan ini hanya memengaruhi pengguna yang melakukan autentikasi menggunakan SAML.</translation>
 <translation id="4105989332710272578">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar URL</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di halaman tab baru</translation>
-<translation id="4125606414556046117">Kebijakan ini memungkinkan Anda mengonfigurasi gambar wallpaper yang ditampilkan di desktop dan di latar belakang layar login untuk pengguna. Kebijakan ini ditetapkan dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME" /> dapat mendownload gambar wallpaper dan hash kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukurannya tidak boleh lebih dari 16 MB. URL harus dapat diakses tanpa autentikasi apa pun.
-
-      Gambar wallpaper akan didownload dan disimpan di cache. Gambar akan didownload ulang setiap kali URL atau hash berubah.
-
-      Kebijakan ini harus ditentukan sebagai string yang menunjukkan URL dan hash dalam format JSON, yang sesuai dengan skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL tempat gambar wallpaper dapat didownload.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hash SHA-256 dari gambar wallpaper.",
-            "type": "string"
-          }
-        }
-      }
-
-      Jika kebijakan ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan mendownload dan menggunakan gambar wallpaper.
-
-      Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
-
-      Jika kebijakan ini tidak ditetapkan, pengguna dapat memilih gambar yang akan ditampilkan di desktop dan di latar belakang layar login.</translation>
 <translation id="412697421478384751">Izinkan pengguna menyetel PIN lemah untuk PIN layar kunci</translation>
 <translation id="4138655880188755661">Batas Waktu</translation>
 <translation id="4144164749344898721">Kebijakan ini mengontrol beberapa setelan untuk strategi pengelolaan daya saat pengguna menganggur.
@@ -2596,8 +2560,8 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5898486742390981550">Ketika beberapa pengguna masuk, hanya pengguna utama yang dapat menggunakan aplikasi Android.</translation>
 <translation id="5901427587865226597">Khusus pencetakan dupleks</translation>
 <translation id="5903898512448364160">
-      Jika kebijakan ini ditetapkan ke True, kebijakan cloud akan lebih diutamakan jika terjadi bentrok dengan kebijakan platform.
-      Jika kebijakan ini ditetapkan ke False atau tidak dikonfigurasi, kebijakan platform akan lebih diutamakan jika terjadi bentrok dengan kebijakan cloud.
+      Jika kebijakan ini ditetapkan ke true, kebijakan cloud akan lebih diutamakan jika terjadi bentrok dengan kebijakan platform.
+      Jika kebijakan ini ditetapkan ke false atau tidak dikonfigurasi, kebijakan platform akan lebih diutamakan jika terjadi bentrok dengan kebijakan cloud.
 
       Kebijakan ini hanya tersedia sebagai kebijakan platform perangkat wajib dan hanya akan memengaruhi kebijakan cloud lingkup perangkat.
       </translation>
@@ -2642,59 +2606,12 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini tidak disetel atau disetel ke salah, perintah cetak memicu layar pratinjau cetak.</translation>
 <translation id="6022948604095165524">Tindakan saat permulaan</translation>
-<translation id="6023030044732320798">Menentukan kumpulan kebijakan yang akan diteruskan ke ARC runtime. Nilainya harus JSON yang valid.
-
-      Kebijakan ini dapat digunakan untuk mengonfigurasi aplikasi Android mana yang dapat diinstal secara otomatis di perangkat: 
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "ID aplikasi Android, misalnya "com.google.android.gm" untuk Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Menentukan cara aplikasi diinstal. OPTIONAL: Aplikasi tersebut tidak diinstal secara otomatis, namun pengguna dapat menginstalnya. Ini merupakan default jika kebijakan tidak ditentukan. PRELOAD: Aplikasi diinstal secara otomatis, namun pengguna dapat meng-uninstalnya. FORCE_INSTALLED: Aplikasi diinstal secara otoamtis dan pengguna tidak dapat meng-uninstalnya. BLOCKED: Aplikasi diblokir dan tidak dapat diinstal. Jika aplikasi diinstal saat menggunakan kebijakan sebelumnya, aplikasi akan di-uninstal".,
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Kebijakan untuk memberi permintaan izin ke aplikasi. PERMISSION_POLICY_UNSPECIFIED: Kebijakan tidak ditentukan. Jika tidak ada kebijakan yang ditentukan untuk izin pada tingkat apa pun, perilaku `PROMPT` akan digunakan secara default. PROMPT: Meminta pengguna untuk memberi izin. GRANT: Memberi izin secara otomatis. DENY: Menolak izin secara otomatis".,
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Objek konfigurasi JSON khusus aplikasi dengan kumpulan pasangan kunci-nilai, misalnya '"managedConfiguration": { "key1": value1, "key2": value2 }'. Kunci ditentukan dalam manifes aplikasi".,
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Untuk menyematkan aplikasi ke peluncur, lihat PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL sekejap penyedia penelusuran default</translation>
 <translation id="603410445099326293">Parameter untuk URL yang disarankan yang menggunakan POST</translation>
 <translation id="6034341625190551415">Mengontrol sesi publik dan jenis akun kios.</translation>
 <translation id="6034603289689965535">Mengizinkan halaman menampilkan pop-up saat kontennya dibuka</translation>
 <translation id="6036523166753287175">Mengaktifkan firewall traversal dari host akses jarak jauh</translation>
-<translation id="605475635122964053">Membatasi mode pencetakan PIN. Kebijakan yang tidak disetel dianggap sebagai tidak ada batasan. Jika mode ini tidak tersedia, kebijakan ini akan diabaikan. Perhatikan bahwa fitur pencetakan PIN diaktifkan hanya untuk printer yang menggunakan salah satu dari protokol IPPS, USB, atau IPP-over-USB </translation>
+<translation id="605475635122964053">Membatasi mode pencetakan PIN. Kebijakan yang tidak disetel dianggap sebagai tidak ada batasan. Jika mode ini tidak tersedia, kebijakan ini akan diabaikan. Perhatikan bahwa fitur pencetakan PIN hanya diaktifkan untuk printer yang menggunakan salah satu dari protokol IPPS, USB, atau IPP-over-USB. </translation>
 <translation id="6070667616071269965">Tata letak keyboard layar login perangkat</translation>
 <translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan desktop</translation>
 <translation id="6074964551275531965">Setel periode waktu untuk notifikasi update</translation>
@@ -3014,37 +2931,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini disetel ke false, klien DNS built-in tidak akan pernah digunakan.
 
       Jika kebijakan ini dibiarkan tidak disetel, klien DNS built-in akan diaktifkan secara default di MacOS, Android (saat DNS Pribadi atau VPN tidak diaktifkan), serta ChromeOS, dan pengguna akan dapat mengubah apakah klien DNS built-in digunakan atau tidak dengan mengedit chrome://flags atau menentukan tanda baris perintah.</translation>
-<translation id="6838056959556423778">Mengganti aturan pemilihan printer default <ph name="PRODUCT_NAME" />.
-
-      Kebijakan ini menentukan aturan untuk memilih printer default di <ph name="PRODUCT_NAME" /> yang terjadi saat fungsi cetak digunakan dengan profil untuk pertama kalinya.
-
-      Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan mencoba menemukan printer yang sesuai dengan semua atribut yang ditentukan dan memilihnya sebagai printer default. Printer pertama yang ditemukan dan sesuai dengan kebijakan akan dipilih, jika ada printer non unik yang cocok maka printer tersebut dapat dipilih, bergantung pada urutan printer yang ditemukan.
-
-      Jika kebijakan ini tidak disetel atau printer yang sesuai tidak ditemukan selama waktu tunggu, printer PDF yang terpasang akan dipilih sebagai printer default, atau tidak ada printer yang dipilih jika printer PDF tidak tersedia.
-
-      Nilai tersebut diuraikan sebagai objek JSON, sesuai dengan skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Perlu tidaknya pembatasan penelusuran printer yang sesuai untuk kumpulan printer tertentu.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Ekspresi reguler untuk mencocokkan ID printer.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Ekspresi reguler untuk mencocokkan nama tampilan printer.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printer yang tersambung ke <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, printer lainnya akan diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
-      Jika Anda menghapus satu bidang berarti semua nilai yang sesuai, misalnya, tidak menentukan konektivitas akan menyebabkan Pratinjau Cetak mulai mencari semua jenis printer, lokal, dan cloud.
-      Pola ekspresi reguler harus mengikuti sintaksis JavaScript RegExp, dan hasil yang sesuai peka huruf besar/kecil.</translation>
 <translation id="6843296367238757293">Kebijakan ini tidak digunakan lagi. Penggunaannya tidak disarankan. Baca selengkapnya di https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Kebijakan ini dihapus dalam <ph name="PRODUCT_NAME" /> 68 dan digantikan oleh <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Kebijakan ini tidak digunakan lagi dan dihapus di M66, karena hanya digunakan untuk uji coba internal dan merupakan beban keamanan.
@@ -4150,30 +4036,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Kebijakan ini hanya memengaruhi pengguna yang menjalankan autentikasi menggunakan SAML.
 
       Nilai kebijakan harus ditentukan dalam detik.</translation>
-<translation id="9027787254195333560">Kebijakan ini memungkinkan Anda mengonfigurasi gambar avatar yang mewakili pengguna di layar login. Kebijakan ini ditetapkan dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME" /> dapat mendownload gambar avatar dan hash kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukurannya tidak boleh lebih dari 512 kB. URL harus dapat diakses tanpa autentikasi apa pun.
-
-      Gambar avatar didownload dan disimpan di cache. Gambar akan didownload ulang setiap kali URL atau hash berubah.
-
-      Kebijakan ini harus ditentukan sebagai string yang menunjukkan URL dan hash dalam format JSON, yang sesuai dengan skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL tempat gambar avatar dapat didownload.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hash SHA-256 gambar avatar.",
-            "type": "string"
-          }
-        }
-      }
-
-      Jika kebijakan ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan mendownload dan menggunakan gambar avatar.
-
-      Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
-
-      Jika kebijakan ini tidak ditetapkan, pengguna dapat memilih gambar avatar yang mewakili dirinya di layar login.</translation>
 <translation id="9035964157729712237">ID Ekstensi yang dikeluarkan dari daftar hitam</translation>
 <translation id="9038058011835642205">Menetapkan daftar situs yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna.
 
@@ -4186,7 +4048,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
 
       Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci ke rentang 30 detik hingga 24 jam.</translation>
-<translation id="9042911395677044526">Memungkinkan konfigurasi jaringan dorongan untuk diterapkan per pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang diuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Kebijakan ini mengontrol apakah perangkat harus diupdate ke Quick Fix Build atau tidak.
 
       Jika nilai kebijakan ditetapkan ke token yang dipetakan ke Quick Fix Build, perangkat akan diupdate ke Quick Fix Build yang sesuai jika update tidak diblokir oleh kebijakan lain.
@@ -4259,17 +4120,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan disetel ke false, 'Header dan footer' tidak dipilih dalam dialog pratinjau cetak, dan pengguna tidak dapat mengubahnya.
 
       Jika kebijakan disetel ke true, 'Header dan footer' dipilih dalam dialog pratinjau cetak, dan pengguna tidak dapat mengubahnya.</translation>
-<translation id="9213347477683611358">Mengonfigurasi gambar wallpaper tingkat perangkat yang ditampilkan di layar login jika belum ada pengguna yang login ke perangkat. Kebijakan ini disetel dengan menetapkan URL tempat perangkat Chrome OS dapat mendownload gambar wallpaper dan potongan kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukuran filenya tidak boleh melebihi 16MB. URL harus dapat diakses tanpa autentikasi apa pun. Gambar wallpaper akan didownload dan disimpan dalam cache. Gambar ini akan didownload jika URL atau potongan berubah.
-
-      Kebijakan ini harus ditetapkan sebagai string yang mengekspresikan URL dan potongan dalam format JSON, misalnya:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Jika kebijakan wallpaper perangkat disetel dan belum ada pengguna yang login ke perangkat, perangkat Chrome OS akan mendownload dan menggunakan gambar wallpaper pada layar login. Setelah pengguna login, kebijakan wallpaper pengguna akan diterapkan.
-
-      Jika kebijakan wallpaper tidak disetel namun kebijakan wallpaper pengguna disetel, kebijakan wallpaper pengguna akan menentukan gambar yang akan ditampilkan.</translation>
 <translation id="9217154963008402249">Frekuensi paket jaringan pemantauan</translation>
 <translation id="922540222991413931">Konfigurasi sumber pemasangan skrip pengguna, aplikasi, dan ekstensi</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>

@@ -409,7 +409,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> serverī <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Atcelt maksājumu</translation>
 <translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
-<translation id="321912867715453276">Brīdinājums! Šai politikai ir vairāk nekā viens avots, bet vērtības ir vienādas.</translation>
 <translation id="3225919329040284222">Serveris uzrādīja sertifikātu, kas neatbilst iebūvētajām cerībām. Šīs cerības ir ietvertas konkrētām, augstas drošības vietnēm, lai aizsargātu jūs.</translation>
 <translation id="3226128629678568754">Nospiediet atkārtotas ielādes pogu, lai atkārtoti iesniegtu datus, kas nepieciešami lapas ielādei.</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
@@ -548,7 +547,6 @@
 <translation id="397105322502079400">Aprēķina...</translation>
 <translation id="3973234410852337861">Vietne <ph name="HOST_NAME" /> ir bloķēta</translation>
 <translation id="3987940399970879459">Mazāk nekā 1 MB</translation>
-<translation id="4008849406247176967">Brīdinājums! Šai politikai pastāv vairāk nekā viens avots ar pretrunīgām vērtībām!</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Tuvumā ir 1 tīmekļa lapa}zero{Tuvumā ir # tīmekļa lapas}one{Tuvumā ir # tīmekļa lapa}other{Tuvumā ir # tīmekļa lapas}}</translation>
 <translation id="4030383055268325496">&amp;Atsaukt pievienošanu</translation>
 <translation id="4032320456957708163">Jūsu pārlūku pārvalda <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -685,7 +683,6 @@
 <translation id="4738601419177586157">Meklēšanas ieteikums vaicājumam “<ph name="TEXT" />”</translation>
 <translation id="4742407542027196863">Pārvaldīt paroles…</translation>
 <translation id="4744603770635761495">Izpildāms ceļš</translation>
-<translation id="4746351372139058112">Messages</translation>
 <translation id="4750917950439032686">Jūsu informācija (piemēram, paroles vai kredītkaršu numuri) ir privāta, kad tā tiek nosūtīta uz šo vietni.</translation>
 <translation id="4756388243121344051">Vēsture</translation>
 <translation id="4758311279753947758">Pievienot kontaktinformāciju</translation>
@@ -1112,7 +1109,6 @@
 <translation id="7220786058474068424">Notiek apstrāde</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Vietnē ir ļaunprātīga programmatūra</translation>
-<translation id="724766306220616965">Brīdinājumi, sarežģījumi</translation>
 <translation id="724975217298816891">Lai atjauninātu kartes informāciju, ievadiet kredītkartes <ph name="CREDIT_CARD" /> derīguma termiņu un CVC. Pēc apstiprināšanas kartes informācija tiks kopīgota ar šo vietni.</translation>
 <translation id="7251437084390964440">Tīkla konfigurācija neatbilst standartam ONC. Iespējams, konfigurācijas daļas netiks importētas.
 Papildu informācija:
@@ -1411,6 +1407,7 @@ Papildu informācija:
 <translation id="8891727572606052622">Nederīgs starpniekservera režīms.</translation>
 <translation id="8903921497873541725">Tuvināt</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Google konts</translation>
 <translation id="8931333241327730545">Vai vēlaties saglabāt šo karti savā Google kontā?</translation>
 <translation id="8932102934695377596">Norādītais laiks ir pārāk tālu pagātnē</translation>
 <translation id="893332455753468063">Vārda pievienošana</translation>

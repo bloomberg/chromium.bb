@@ -335,6 +335,7 @@
 <translation id="1510785804673676069">В случай че използвате прокси сървър, проверете настройките му или се свържете със системния си администратор, за да се уверите, че сървърът работи. Ако смятате, че не трябва да ползвате прокси сървър, коригирайте <ph name="LINK_START" />съответните настройки<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">Единственият начин да отмените това е да инсталирате отново <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Импортирани от Safari</translation>
+<translation id="1515163294334130951">Стартиране</translation>
 <translation id="1521442365706402292">Управление на сертификати</translation>
 <translation id="152234381334907219">Незапазвани никога</translation>
 <translation id="1524430321211440688">Клавиатура</translation>
@@ -437,6 +438,7 @@
 <translation id="167160931442925455">Най-силно</translation>
 <translation id="1673137583248014546"><ph name="URL" /> иска да разбере марката и модела на ключа ви за сигурност</translation>
 <translation id="1679068421605151609">Инструменти за програмисти</translation>
+<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="167983332380191032">Услугата за управление изпрати HTTP грешка.</translation>
 <translation id="1680849702532889074">Възникна грешка при инсталирането на приложението за Linux.</translation>
 <translation id="16815041330799488">Забраняване на сайтовете да преглеждат текста и изображенията, копирани в буферната памет</translation>
@@ -960,7 +962,6 @@
 <translation id="2496180316473517155">История на сърфирането</translation>
 <translation id="2497229222757901769">Скорост на мишката</translation>
 <translation id="2497852260688568942">Синхронизирането е деактивирано от администратора ви</translation>
-<translation id="249819058197909513">Без повторно предупреждение за това приложение</translation>
 <translation id="2498539833203011245">Намаляване</translation>
 <translation id="2498765460639677199">Огромен</translation>
 <translation id="2499747912851752301">Паролите се експортират...</translation>
@@ -1048,7 +1049,6 @@
 <translation id="2630681426381349926">Свържете се с Wi-Fi, за да започнете</translation>
 <translation id="2631120081682787498">Наистина ли искате да затворите този раздел?</translation>
 <translation id="2631498379019108537">Опциите за въвеждане да се показват в лавицата</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> използва <ph name="USAGE" /> МБ място на диска.</translation>
 <translation id="2633212996805280240">Да се премахне ли „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> не успя да завърши инсталацията, но ще продължи да работи от образа си на диска.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1394,7 +1394,6 @@
 <translation id="3157931365184549694">Възстановяване</translation>
 <translation id="3158033540161634471">Настройте отпечатъка си</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (с хардуерно съхраняване)</translation>
-<translation id="316125635462764134">Премахване на приложението</translation>
 <translation id="3161522574479303604">Всички езици</translation>
 <translation id="3163201441334626963">Неизвестен продукт <ph name="PRODUCT_ID" /> от доставчик <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Някои оператори може да блокират тази функция.</translation>
@@ -1897,6 +1896,7 @@
 <translation id="3916445069167113093">Този тип файл може да навреди на компютъра ви. Искате ли да запазите „<ph name="FILE_NAME" />“ въпреки това?</translation>
 <translation id="3918972485393593704">Изпращане на подробностите до Google</translation>
 <translation id="3919145445993746351">За да получите разширенията си на всичките си компютри, включете синхронизирането</translation>
+<translation id="391999873395511996">Виртуалната машина се изтегля.</translation>
 <translation id="3920504717067627103">Правила за сертификата</translation>
 <translation id="392089482157167418">Активиране на ChromeVox (обратна връзка с говор)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1948,7 +1948,6 @@
 <translation id="3983586614702900908">устройства от неизвестен доставчик</translation>
 <translation id="3984159763196946143">Демонстрационният режим не можа да стартира</translation>
 <translation id="3984431586879874039">Да се разреши ли на сайта достъп до данни за ключа ви за сигурност?</translation>
-<translation id="3987348946546879621">Спестихте данни</translation>
 <translation id="3987938432087324095">За съжаление, не разбрахме това.</translation>
 <translation id="3988996860813292272">Избиране на часова зона</translation>
 <translation id="399179161741278232">Импортирани</translation>
@@ -1979,7 +1978,6 @@
 <translation id="4037889604535939429">Редактиране на подстраницата за човека</translation>
 <translation id="4042264909745389898">Общи условия на Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Изход от страницата}other{Изход от страниците}}</translation>
-<translation id="404299405565920089">Оттук можете да управлявате всички профили в Google, в които сте влезли от приложения и уебсайтове. Приложенията и сайтовете, на които сте дали разрешение, имат достъп до информацията за профила, която им е необходима, за да работят правилно.</translation>
 <translation id="4044612648082411741">Въведете паролата си за сертификата</translation>
 <translation id="404493185430269859">Основна търсеща машина</translation>
 <translation id="4046123991198612571">Следващ запис</translation>
@@ -2094,7 +2092,6 @@
 <translation id="4242533952199664413">Отваряне на настройките</translation>
 <translation id="4242577469625748426">Настройките за правила не бяха инсталирани успешно на устройството: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Намиране на още приложения за писалка</translation>
-<translation id="424546999567421758">Установено е използване на много място на диска</translation>
 <translation id="424726838611654458">Отваряне винаги в Adobe Reader</translation>
 <translation id="4247901771970415646">Не може да се синхронизира с/ъс <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Изчаква се връзка с мрежата...</translation>
@@ -2202,7 +2199,6 @@
 <translation id="4421932782753506458">Пухчо</translation>
 <translation id="4422347585044846479">Редактиране на отметката за тази страница</translation>
 <translation id="4423376891418188461">Възстановяване на настройките</translation>
-<translation id="4423482519432579560">&amp;Проверка на правописа</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, администраторът ви изисква да промените паролата си.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4430369329743628066">Отметката бе добавена</translation>
@@ -2662,8 +2658,6 @@
 <translation id="5187295959347858724">Вече влязохте в <ph name="SHORT_PRODUCT_NAME" />. Вашите отметки, история и други настройки се синхронизират с профила ви в Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> иска да изтегли няколко файла</translation>
-<translation id="5192316339598592690">Превключвайте бързо между профилите си и влизайте еднократно в различни приложения и уебсайтове.
-    Приложенията и сайтовете могат да искат от вас разрешение да използват част от информацията в профила ви в Google. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Моля, извършете Powerwash на устройството и опитайте отново.</translation>
 <translation id="5204967432542742771">Въведете парола</translation>
 <translation id="5206215183583316675">Да се изтрие ли „<ph name="CERTIFICATE_NAME" />“?</translation>
@@ -3343,7 +3337,6 @@
 <translation id="622537739776246443">Потребителският профил ще бъде изтрит</translation>
 <translation id="6225475702458870625">От устройството ви <ph name="PHONE_NAME" /> е налице връзка за пренос на данни</translation>
 <translation id="6226777517901268232">Файл с частен ключ (незадължително)</translation>
-<translation id="6228516488918914827">Заредена е по-бърза страница</translation>
 <translation id="6228691855869374890">Този сайт има пълен контрол над MIDI устройствата.</translation>
 <translation id="6229890768313448549">Общите условия на Google Play не могат да се заредят. Моля, опитайте отново.</translation>
 <translation id="6231881193380278751">За да се опреснява страницата автоматично, добавете към URL адреса параметър на заявката: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3548,7 +3541,6 @@
 <translation id="6545665334409411530">Честота на повтаряне</translation>
 <translation id="6545834809683560467">Използване на услуга за предвиждания за помощ при завършването на заявките за търсене и URL адресите, въвеждани в адресната лента или в полето за търсене в стартовия панел за приложения</translation>
 <translation id="6545867563032584178">Микрофонът е изключен в системните предпочитания за Mac</translation>
-<translation id="6547316139431024316">Без повторно предупреждение за това разширение</translation>
 <translation id="6547354035488017500">Освободете поне 512 МБ място или устройството ви ще спре да реагира. За целта изтрийте файлове от хранилището му.</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6551508934388063976">Командата не е налице. Натиснете „control-N“, за да отворите нов прозорец.</translation>
@@ -4679,7 +4671,6 @@
 <translation id="827097179112817503">Показване на бутона за начална страница</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Изтрихте 1 отметка}other{Изтрихте # отметки}}</translation>
 <translation id="8272443605911821513">Управлявайте разширенията си, като кликнете върху „Разширения“ в менюто „Още инструменти“.</translation>
-<translation id="8272966760965438857">Управлявайте профилите си в Google от едно място</translation>
 <translation id="8274332263553132018">Предаване на файл</translation>
 <translation id="8274924778568117936">Не изключвайте, нито затваряйте устройството си <ph name="DEVICE_TYPE" />, докато актуализирането не завърши. <ph name="DEVICE_TYPE" /> ще се рестартира след завършване на инсталирането.</translation>
 <translation id="8275038454117074363">Импортиране</translation>

@@ -62,7 +62,7 @@
 <translation id="164969095109328410">Chrome-Gerät</translation>
 <translation id="1665611772925418501">Die Datei konnte nicht geändert werden.</translation>
 <translation id="1673103856845176271">Auf die Datei konnte aus Sicherheitsgründen nicht zugegriffen werden.</translation>
-<translation id="1679806121152819234">VM-Plug-in</translation>
+<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="169515659049020177">Umschalttaste</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> Elemente werden gezippt...</translation>
 <translation id="174173592514158117">Alle Google Play-Ordner anzeigen</translation>
@@ -263,6 +263,7 @@
 <translation id="421017592316736757">Sie müssen online sein, um auf diese Datei zugreifen zu können.</translation>
 <translation id="4212740939091998969">Es existiert bereits ein Ordner mit dem Namen "<ph name="FOLDER_NAME" />". Wählen Sie bitte einen anderen Namen aus.</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> werden gesichert</translation>
+<translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="426015154560005552">Arabische Tastatur</translation>
 <translation id="4261901459838235729">Google-Präsentation</translation>
 <translation id="4290535918735525311">1 Ordner für Linux freigegeben</translation>

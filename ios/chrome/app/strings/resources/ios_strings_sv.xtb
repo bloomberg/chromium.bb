@@ -273,6 +273,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Aktivera synkronisering</translation>
+<translation id="5234764350956374838">Ta bort permanent</translation>
 <translation id="5244474230056479698">Synkroniseras med <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Avbryt synkronisering</translation>
 <translation id="5271549068863921519">Spara lösenord</translation>
@@ -312,6 +313,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="5938160824633642847">Det finns nästan ingen plats kvar på enheten. Frigör utrymme och försök igen.</translation>
 <translation id="5948291296578561264">Gör så att du kan spara foton i fotobiblioteket.</translation>
 <translation id="5955891643922670672">Offlineversionen visas</translation>
+<translation id="5957613098218939406">Fler alternativ</translation>
 <translation id="5964480694698977962">Skapa en ny inkognitoflik.</translation>
 <translation id="5965679971710331625">Du är inloggad</translation>
 <translation id="5979837087407522202">Sök efter lösenord</translation>

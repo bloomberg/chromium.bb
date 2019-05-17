@@ -273,6 +273,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
+<translation id="5234764350956374838">Omet</translation>
 <translation id="5244474230056479698">S'està sincronitzant amb <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Cancel·la la sincronització</translation>
 <translation id="5271549068863921519">Desa la contrasenya</translation>
@@ -312,6 +313,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5938160824633642847">El dispositiu està gairebé ple. Allibera espai i torna-ho a provar.</translation>
 <translation id="5948291296578561264">Et permet desar fotos a la biblioteca de fotos.</translation>
 <translation id="5955891643922670672">Se n'està mostrant la versió sense connexió</translation>
+<translation id="5957613098218939406">Més opcions</translation>
 <translation id="5964480694698977962">Crea una pestanya d'incògnit nova.</translation>
 <translation id="5965679971710331625">Tens la sessió iniciada</translation>
 <translation id="5979837087407522202">Cerca contrasenyes</translation>

@@ -199,7 +199,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios de tu ordenador.</translation>
 <translation id="6338556085225130112">Actualizando Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
-<translation id="6468844726266617801">{0,plural, =1{Volver a iniciar Chrome en un día}other{Volver a iniciar Chrome en # días}}</translation>
+<translation id="6468844726266617801">{0,plural, =1{Vuelve a iniciar Chrome en un día}other{Vuelve a iniciar Chrome en # días}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> ‑ Google Chrome Dev</translation>
 <translation id="6566149418543181476">Actualizando Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Estás utilizando <ph name="PROFILE_EMAIL" /> para sincronizar tu contenido de Chrome. Para actualizar tus preferencias de sincronización o utilizar Chrome sin una cuenta de Google, accede a <ph name="SETTINGS_LINK" />.</translation>
@@ -271,7 +271,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un fallo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="8342675569599923794">Este archivo es peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos los derechos reservados.</translation>
-<translation id="8380166467911888159">Para corregir errores ortográficos, Chrome envía a Google el texto que escribes en los campos de texto</translation>
 <translation id="840084489713044809">Google Chrome quiere exportar tus contraseñas.</translation>
 <translation id="8406086379114794905">Ayuda a mejorar Chrome</translation>
 <translation id="8432724323949790809">Deberías reiniciar Google Chrome ahora</translation>
@@ -289,7 +288,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8669527147644353129">Ayudante de Google Chrome</translation>
 <translation id="8679801911857917785">También controla qué página se muestra al iniciar Chrome.</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>
-<translation id="8704255848199359374">Utiliza el mismo corrector ortográfico que se usa en la Búsqueda de Google. El texto que escribas en el navegador se enviará a Google. Puedes cambiar esta opción en los ajustes.</translation>
 <translation id="873133009373065397">Google Chrome no puede determinar ni establecer el navegador predeterminado</translation>
 <translation id="8736674169840206667">Tu administrador pide que reinicies Chrome para aplicar una actualización</translation>
 <translation id="8788264404293392165">La UI de Chrome OS se muestra en este idioma</translation>

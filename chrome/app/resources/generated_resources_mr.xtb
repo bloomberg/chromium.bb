@@ -338,6 +338,7 @@
         तुमच्या <ph name="LINK_START" />प्रॉक्सी सेटिंग्ज<ph name="LINK_END" /> अॅडजस्ट करा.</translation>
 <translation id="1512210426710821809">हे पहिल्यासारखे करण्‍याचा एकमेव मार्ग म्‍हणजे <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> पुन्हा इन्‍स्‍टॉल करणे.</translation>
 <translation id="151501797353681931">Safari मधून इंपोर्ट केलेले</translation>
+<translation id="1515163294334130951">लाँच करा</translation>
 <translation id="1521442365706402292">प्रमाणपत्रे व्यवस्थापित करा</translation>
 <translation id="152234381334907219">कधीही सेव्ह न केलेले</translation>
 <translation id="1524430321211440688">कीबोर्ड</translation>
@@ -439,6 +440,7 @@
 <translation id="167160931442925455">सर्वात मोठा आवाज</translation>
 <translation id="1673137583248014546"><ph name="URL" /> ला तुमच्या सिक्युरिटी कीची निर्मिती आणि मॉडेल पहायचा आहे</translation>
 <translation id="1679068421605151609">डेव्हलपर टूल</translation>
+<translation id="1679806121152819234">VM प्लग-इन</translation>
 <translation id="167983332380191032">व्यवस्थापन सेवेने HTTP एरर पाठवली.</translation>
 <translation id="1680849702532889074">तुमच्या Linux ॲप्लिकेशनच्या इंस्टॉलेशन दरम्यान एरर आली.</translation>
 <translation id="16815041330799488">क्लिपबोर्डवर कॉपी केलेला मजकूर आणि इमेज पाहण्याची अनुमती साइटना देऊ नका</translation>
@@ -962,7 +964,6 @@
 <translation id="2496180316473517155">ब्राउझिंग इतिहास</translation>
 <translation id="2497229222757901769">माउस गती</translation>
 <translation id="2497852260688568942">तुमच्या अॅडमिनिस्ट्रेटरने सिंक अक्षम केले आहे</translation>
-<translation id="249819058197909513">या ॲप साठी पुन्हा चेतावणी देऊ नका</translation>
 <translation id="2498539833203011245">लहान करा</translation>
 <translation id="2498765460639677199">विशाल</translation>
 <translation id="2499747912851752301">पासवर्ड एक्सपोर्ट करत आहे...</translation>
@@ -1050,7 +1051,6 @@
 <translation id="2630681426381349926">सुरुवात करण्यासाठी वाय-फाय वर कनेक्ट करा</translation>
 <translation id="2631120081682787498">तुम्हाला नक्की हा टॅब बंद करायचा आहे का?</translation>
 <translation id="2631498379019108537">शेल्फ मधील इनपुट पर्याय दर्शवा</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> <ph name="USAGE" /> MB डिस्क स्थान वापरत आहे.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" काढून टाकायचे?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> इंस्टॉलेशन पूर्ण करू शकत नाही, परंतु ते त्याच्या डिस्क इमेजवरून चालत राहील.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1396,7 +1396,6 @@
 <translation id="3157931365184549694">पुनर्संचयित करा</translation>
 <translation id="3158033540161634471">तुमचे फिंगरप्रिंट सेट करा</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (हार्डवेअर-बॅक्ड)</translation>
-<translation id="316125635462764134">ॲप काढून टाका</translation>
 <translation id="3161522574479303604">सर्व भाषा</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> विक्रेत्याकडील <ph name="PRODUCT_ID" /> अज्ञात उत्पादन</translation>
 <translation id="3165390001037658081">काही वाहक हे वैशिष्ट्य अवरोधित शकतात.</translation>
@@ -1898,6 +1897,7 @@
 <translation id="3916445069167113093">या प्रकारची फाइल तुमच्या कॉंप्युटरला हानी पोहचवू शकते. तुम्ही तरीसुद्धा <ph name="FILE_NAME" /> ठेवू इच्छिता?</translation>
 <translation id="3918972485393593704">Googleला तपशील द्या</translation>
 <translation id="3919145445993746351">तुमच्या सर्व कॉंप्युटरवर एक्स्टेंशन मिळवण्यासाठी, सिंक सुरू करा</translation>
+<translation id="391999873395511996">व्हर्च्युअल मशीन डाउनलोड करत आहे.</translation>
 <translation id="3920504717067627103">सर्टिफिकेट धोरणे</translation>
 <translation id="392089482157167418">ChromeVox (वाचिक फीडबॅक) सुरू करा</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1949,7 +1949,6 @@
 <translation id="3983586614702900908">अज्ञात विक्रेत्याकडील डिव्हाइसेस</translation>
 <translation id="3984159763196946143">डेमो मोड सुरू करता आला नाही</translation>
 <translation id="3984431586879874039">या साइटला तुमची सिक्युरिटी की पाहण्याची अनुमती द्यायची आहे का?</translation>
-<translation id="3987348946546879621">वाचवलेला डेटा</translation>
 <translation id="3987938432087324095">क्षमस्व, ते समजले नाही.</translation>
 <translation id="3988996860813292272">टाइम झोन निवडा</translation>
 <translation id="399179161741278232">आयातीत</translation>
@@ -1980,7 +1979,6 @@
 <translation id="4037889604535939429">व्यक्ती संपादित करा</translation>
 <translation id="4042264909745389898">Google Chrome OS अटी</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{पेजमधून बाहेर या}other{पेजमधून बाहेर या}}</translation>
-<translation id="404299405565920089">अ‍ॅप्स आणि वेबसाइटवरील तुमची सर्व साइन इन केलेली Google खाती येथे व्यवस्थापित करता येतील. तुमची परवानगी असलेली अ‍ॅप्स आणि वेबसाइट त्यांना योग्यरीत्या काम करण्यासाठी आवश्यक असलेली खाते माहिती अ‍ॅक्सेस करू शकतात.</translation>
 <translation id="4044612648082411741">तुमचा सर्टिफिकेट पासवर्ड एंटर करा</translation>
 <translation id="404493185430269859">डीफॉल्ट शोध इंजिन</translation>
 <translation id="4046123991198612571">पुढील ट्रॅक</translation>
@@ -2094,7 +2092,6 @@
 <translation id="4242533952199664413">सेटिंग्ज उघडा</translation>
 <translation id="4242577469625748426">डिव्हाइसवर धोरण सेटिंग्ज इंस्टॉल करण्यात अयशस्वी: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">अधिक स्टायलस अॅप्स शोधा</translation>
-<translation id="424546999567421758">अतिशय जास्त डिस्क वापर आढळला</translation>
 <translation id="424726838611654458">Adobe Reader मध्ये नेहमी उघडा</translation>
 <translation id="4247901771970415646"><ph name="USERNAME" /> शी सिंक करू शकत नाही</translation>
 <translation id="4249248555939881673">नेटवर्क कनेक्शनची प्रतीक्षा करत आहे...</translation>
@@ -2202,7 +2199,6 @@
 <translation id="4421932782753506458">Fluffy</translation>
 <translation id="4422347585044846479">या पृष्ठासाठी बुकमार्क संपादित करा</translation>
 <translation id="4423376891418188461">सेटिंग्ज पुनर्संचयित करा</translation>
-<translation id="4423482519432579560">&amp;शब्दलेखन तपासणी</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, तुम्ही तुमचा पासवर्ड बदलणे तुमच्या अॅडमिनिस्ट्रेटरसाठी आवश्यक आहे.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4430369329743628066">बुकमार्क जोडला</translation>
@@ -2662,8 +2658,6 @@
 <translation id="5187295959347858724">तुम्ही आता <ph name="SHORT_PRODUCT_NAME" />मध्‍ये साइन इन केले आहे. तुमचे बुकमार्क, इतिहास, आणि इतर सेटिंग्ज आपल्या Google खात्यात समक्रमीत केल्या जात आहेत.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ला एकाहून अधिक फायली डाउनलोड करायच्या आहेत</translation>
-<translation id="5192316339598592690">खाती लगेच स्विच करा आणि एकाच वेळी अॅप्स आणि वेबसाइटवर साइन इन करा.
-    ॲप्‍स आणि साइट तुमच्या Google खात्याची काही माहिती वापरण्यासाठी परवानगी मागू शकतात. <ph name="LINK_BEGIN" />अधिक जाणून घ्या<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">कृपया डिव्हाइस पॉवरवॉश करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="5204967432542742771">पासवर्ड एंटर करा</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" हटवायचे?</translation>
@@ -3343,7 +3337,6 @@
 <translation id="622537739776246443">प्रोफाइल हटवली जाईल</translation>
 <translation id="6225475702458870625">आपल्या <ph name="PHONE_NAME" /> वरून डेटा कनेक्शन उपलब्ध आहे</translation>
 <translation id="6226777517901268232">खाजगी की फाईल (पर्यायी)</translation>
-<translation id="6228516488918914827">वेगाने लोड होणारे पेज लोड केले.</translation>
 <translation id="6228691855869374890">या साइटवर MIDI डिव्हाइसचे पूर्ण नियंत्रण आहे.</translation>
 <translation id="6229890768313448549">Google Play सेवा अटी लोड केल्या जाऊ शकत नाहीत. कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="6231881193380278751">पृष्ठ स्वयं-रिफ्रेश करण्यासाठी एक क्वेरी परम जोडा: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3548,7 +3541,6 @@
 <translation id="6545665334409411530">पुनरावृत्ती दर</translation>
 <translation id="6545834809683560467">अ‍ॅड्रेस बारमध्ये किंवा अ‍ॅप लाँचरमध्ये टाइप केलेले शोध आणि URL पूर्ण करण्यात मदतीसाठी पूर्वानुमान सेवा वापरा</translation>
 <translation id="6545867563032584178">Mac सिस्टम प्राधान्ये मधील मायक्रोफोन बंद केला आहे</translation>
-<translation id="6547316139431024316">या एक्स्टेंशनसाठी पुन्हा चेतावणी देऊ नका</translation>
 <translation id="6547354035488017500">किमान ५१२ MB स्थान मोकळे करा किंवा तुमचे डिव्हाइस अप्रतिसादात्मक बनेल. स्थान मोकळे करण्‍यासाठी, डिव्हाइस स्टोरेजमधून फायली हटवा.</translation>
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="6551508934388063976">कमांड अनुपलब्ध. एक नवीन विंडो उघडण्यासाठी control-N दाबा.</translation>
@@ -4677,7 +4669,6 @@
 <translation id="827097179112817503">होम बटण दर्शवा</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 बुकमार्क हटवला}other{# बुकमार्क हटवले}}</translation>
 <translation id="8272443605911821513">"अधिक साधने" मेनूमधील विस्तार क्लिक करून तुमचे विस्तार व्यवस्थापित करा.</translation>
-<translation id="8272966760965438857">तुमची Google खाती एका ठिकाणी व्यवस्थापित करा</translation>
 <translation id="8274332263553132018">फाइल कास्ट करा</translation>
 <translation id="8274924778568117936">अपडेट पूर्ण होईपर्यंत तुमचे <ph name="DEVICE_TYPE" /> बंद करू नका. इंस्‍टॉलेशन पूर्ण झाल्‍यानंतर तुमचे <ph name="DEVICE_TYPE" /> पुन्‍हा सुरू हाेईल .</translation>
 <translation id="8275038454117074363">इंपोर्ट</translation>

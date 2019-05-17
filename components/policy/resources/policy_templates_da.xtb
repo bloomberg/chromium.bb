@@ -399,7 +399,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       Advarsel! Det frarådes at delegere kontrol over <ph name="PRODUCT_OS_NAME" />-versionen til en terminalapp, da det kan forhindre enheden i at modtage softwareopdateringer og kritiske sikkerhedsrettelser. Delegering af kontrol over <ph name="PRODUCT_OS_NAME" />-versionen kan udgøre en sikkerhedsrisiko for brugerne.</translation>
 <translation id="1675002386741412210">Understøttes på:</translation>
-<translation id="1689963000958717134">Tillader, at netværkskonfigurationen gøres gældende for alle brugere af en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, som er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Konfigurerer tilgængeligheden og adfærden for funktionen til opdatering af <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware.
 
       Individuelle indstillinger kan angives i JSON-egenskaber:
@@ -449,7 +448,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
       Hvis politikken er aktiveret, kan brugerne ikke fravælge standardadfærden, hvor hvert website kører i sin egen proces.
       Hvis politikken ikke er angivet eller er deaktiveret, kan brugeren ændre denne indstilling (f.eks. ved at bruge posten "Deaktiver isolering af website" i chrome://flags).
       </translation>
-<translation id="1767673020408652620">Aktivér appanbefaling ved nultilstand i søgefeltet.</translation>
+<translation id="1767673020408652620">Aktivér appanbefaling ved nultilstand i søgefeltet</translation>
 <translation id="1781356041596378058">Denne politik styrer også adgangen til Indstillinger for udviklere i Android. Hvis du angiver denne politik til Sand, kan brugerne ikke få adgang til Indstillinger for udviklere. Hvis du angiver denne politik til Falsk eller ikke angiver den, kan brugerne få adgang til Indstillinger for udviklere ved at trykke syv gange på build-nummeret i Android-appen Indstillinger.</translation>
 <translation id="1793346220873697538">Deaktiver udskrivning med pinkode som standard</translation>
 <translation id="1797233582739332495">Vis brugeren en fast meddelelse, som indikerer, at en genstart er påkrævet</translation>
@@ -937,16 +936,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne indstilling er deaktiveret, kan websider ikke anvende JavaScript, og brugeren kan ikke ændre denne indstilling.
 
       Hvis denne indstilling er deaktiveret eller ikke angivet, kan websider anvende JavaScript, men brugeren kan ændre denne indstilling.</translation>
-<translation id="2747157663401642394">Konfigurerer indstillinger for administration af udvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne politik styrer flere indstillinger, herunder indstillinger, der styres af eksisterende politikker vedrørende udvidelser. Denne politik tilsidesætter eventuelle ældre politikker, hvis begge er konfigureret.
-
-          Denne politik knytter et udvidelses-id eller en opdateringswebadresse til dens konfiguration. Med et udvidelses-id anvendes konfigurationen udelukkende på den angivne udvidelse. Der kan angives en standardkonfiguration for det særlige id <ph name="DEFAULT_SCOPE" />, som gælder for alle udvidelser, hvor der ikke er angivet en standardkonfiguration i denne politik. Med en opdateringswebadresse anvendes konfigurationen på alle udvidelser, hvor den nøjagtige opdateringswebadresse er angivet i denne udvidelses manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Fjerninstallation er begrænset til apps og udvidelser, der er angivet i Chrome Webshop, for Windows-forekomster, som ikke er knyttet til et <ph name="MS_AD_NAME" />-domæne.
-
-          Du kan få en komplet beskrivelse af mulige indstillinger og mulig struktur for denne politik på https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Begræns antallet af lokale UDP-porte, der bruges af WebRTC</translation>
 <translation id="2757054304033424106">Typer af udvidelser/apps, der må installeres</translation>
 <translation id="2758084448533744848">Angiver den tidszone, der skal gælde for enheden. Når politikken er konfigureret, kan brugerne på enheden ikke tilsidesætte den angivne tidszone. Hvis der angives en ugyldig værdi, aktiveres politikken med "GMT" i stedet. Hvis der angives en tom streng, ignoreres politikken.
@@ -1185,7 +1174,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Politikken påvirker ikke, om brugerne kan konfigurere printere på individuelle enheder.  Den er beregnet til at fungere som supplement til den enkelte brugers konfiguration af printere.
 
-      Politikken understøtter udvidelse af <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-enhedsnavnet eller en af dets understrenge på enheder, der administreres med Active Directory. Hvis enhedsnavnet f.eks. er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> af de fire tegn, der kommer efter den sjette position, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Bemærk, at positionen er nulbaseret.
+      Politikken understøtter udvidelse af <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-enhedsnavnet eller en af dets understrenge på enheder, der administreres med Active Directory. Hvis enhedsnavnet f.eks. er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> af de fire tegn, der kommer efter den sjette position, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Bemærk, at positionen er nulbaseret.
       </translation>
 <translation id="3072045631333522102">Pauseskærm, som skal bruges på loginskærmen i detailtilstand</translation>
 <translation id="3072847235228302527">Konfigurer servicevilkårene for en enhedslokal konto</translation>
@@ -1706,30 +1695,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Politikken berører kun brugere, der godkender via SAML.</translation>
 <translation id="4105989332710272578">Deaktiver håndhævelse af Certifikatsgennemsigtighed for en række webadresser</translation>
 <translation id="4121350739760194865">Undgå, at appkampagner vises på ny fane-siden</translation>
-<translation id="4125606414556046117">Denne politik giver dig mulighed for at konfigurere det baggrundsbillede, der er vist på brugerens skrivebord og loginskærm. Politikken konfigureres ved at angive den webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade baggrundsbilledet og en kryptografisk hash-værdi, der bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og størrelsen må ikke overstige 16 MB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
-
-      Baggrundsbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.
-
-      Politikken skal angives som en streng, der udtrykker webadressen og hash-værdien i JSON-format i overensstemmelse med følgende skema:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Den webadresse, hvorfra baggrundsbilledet kan downloades.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "SHA-256-hash-værdien for baggrundsbilledet.",
-            "type": "string"
-          }
-        }
-      }
-
-      Hvis denne politik er konfigureret, downloader og anvender <ph name="PRODUCT_OS_NAME" /> baggrundsbilledet.
-
-      Hvis du konfigurerer denne politik, kan brugerne ikke ændre eller tilsidesætte den.
-
-      Hvis politikken ikke er konfigureret, kan brugeren vælge et baggrundsbillede, der skal vises på skrivebordet og på loginskærmen.</translation>
 <translation id="412697421478384751">Giv brugerne mulighed for at konfigurere svage pinkoder som pinkoder til låseskærmen</translation>
 <translation id="4138655880188755661">Tidsgrænse</translation>
 <translation id="4144164749344898721">Denne politik styrer flere indstillinger for strømstyringsstrategien, når brugeren bliver inaktiv.
@@ -2646,59 +2611,12 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis denne politik ikke er indstillet eller er indstillet til falsk, aktiverer udskriftskommandoer skærmen Vis udskrift.</translation>
 <translation id="6022948604095165524">Handling ved opstart</translation>
-<translation id="6023030044732320798">Angiver en række politikker, der overgives til ARC-kørselstiden. Værdien skal være en gyldig JSON.
-
-      Denne politik kan bruges til at konfigurere, hvilke Android-apps der automatisk installeres på enheden:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Id for Android-app, f.eks. "com.google.android.gm" for Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Specificerer, hvordan en app installeres. OPTIONAL: Appen installeres ikke automatisk, men brugeren kan installere den. Dette er standarden, hvis denne politik ikke er angivet. PRELOAD: Appen installeres automatisk, men brugeren kan afinstallere den. FORCE_INSTALLED: Appen installeres automatisk, og brugeren kan ikke afinstallere den. BLOCKED: Appen er blokeret og kan ikke installeres. Hvis appen er blevet installeret i overensstemmelse med en tidligere politik, afinstalleres den.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Politik for godkendelse af appanmodninger om tilladelse. PERMISSION_POLICY_UNSPECIFIED: Politikken er ikke angivet. Hvis der ikke er angivet en politik for en tilladelse på noget niveau, bruges funktionsmåden 'PROMPT' som standard. PROMPT: Brugeren anmodes om at give tilladelse. GRANT: Giv automatisk tilladelse. DENY: Afvis automatisk at give tilladelse.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "App-specifik JSON-konfigurationsobjekt med en række nøgleværdipar, f.eks. '"managedConfiguration": { "nøgle1": værdi1, "nøgle2": værdi2 }'. Nøglerne er defineret i appens manifest",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Se PinnedLauncherApps, hvis du vil fastgøre apps til Appliste.</translation>
 <translation id="602728333950205286">Direkte webadresse til standardsøgemaskinen</translation>
 <translation id="603410445099326293">Parametre for forslagswebadresser, som anvender POST</translation>
 <translation id="6034341625190551415">Styrer offentlige kontotyper og terminalkontotyper.</translation>
 <translation id="6034603289689965535">Tillader, at en side viser pop op-vinduer under indlæsning</translation>
 <translation id="6036523166753287175">Aktiver gennemgang af firewall fra vært for fjernadgang</translation>
-<translation id="605475635122964053">Begrænser tilstanden for udskrivning med pinkode. En politik uden konfiguration behandles som ingen begrænsning. Hvis tilstanden ikke er tilgængelig, ignoreres politikken. Bemærk! Funktionen til udskrivning med pinkode kun er aktiveret for printere, som anvender en af protokollerne IPPS, USB eller IPP-over-USB </translation>
+<translation id="605475635122964053">Begrænser tilstanden for udskrivning med pinkode. En politik uden konfiguration behandles som ingen begrænsning. Hvis tilstanden ikke er tilgængelig, ignoreres politikken. Bemærk! Funktionen til udskrivning med pinkode er kun aktiveret for printere, som anvender en af protokollerne IPPS, USB eller IPP-over-USB </translation>
 <translation id="6070667616071269965">Tastaturlayouts for loginskærme på enheder</translation>
 <translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsunderretninger</translation>
 <translation id="6074964551275531965">Angiv tidsrummet for notifikationer om opdateringer</translation>
@@ -3040,37 +2958,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik er angivet som falsk, bruges den indbyggede DNS-klient aldrig.
 
       Hvis denne politik ikke er angivet, aktiveres den indbyggede DNS-klient som standard i MacOS, Android (når hverken Privat DNS eller VPN er aktiveret) og ChromeOS, og brugerne kan ændre, om den indbyggede DNS-klient bruges, ved at redigere chrome://flags eller angive et kommandolinjeflag.</translation>
-<translation id="6838056959556423778">Tilsidesætter regler for valg af standardprinter i <ph name="PRODUCT_NAME" />.
-
-      Denne politik fastlægger reglerne for valg af standardprinter i <ph name="PRODUCT_NAME" />, som vælges, første gang udskrivningsfunktionen anvendes fra en profil.
-
-      Når denne politik er indstillet, forsøger <ph name="PRODUCT_NAME" /> at finde en printer, der har alle de angivne attributter, og vælge den som standardprinter. Den først fundne printer, der stemmer overens med politikken, vælges. Hvis der er flere match, kan enhver printer vælges ud fra den rækkefølge, som printerne blev fundet i.
-
-      Hvis denne politik ikke indstilles, eller hvis der ikke findes nogen printer, som stemmer overens med politikken, inden timeouten udløber, vælges en indbygget PDF-printer som standard. Hvis der ikke er nogen tilgængelig PDF-printer, vælges der ikke nogen printer.
-
-      Værdien parses som et JSON-objekt i overensstemmelse med følgende skema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Om søgningen efter en printer, der opfylder attributten, skal begrænses til en specifik gruppe printere.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regulært udtryk, som matcher printer-id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulært udtryk, som matcher printerens viste navn.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printere, der er forbundet til <ph name="CLOUD_PRINT_NAME" />, klassificeres som <ph name="PRINTER_TYPE_CLOUD" />, mens de øvrige printere klassificeres som <ph name="PRINTER_TYPE_LOCAL" />.
-      Hvis et felt udelades, matcher alle værdier. Hvis du f.eks. ikke specificerer forbindelsen, vil et tryk på Vis udskrift starte en søgning efter alle typer printere – både lokalt og i skyen.
-      Almindelige søgemønstre skal overholde JavaScript RegExp-syntaksen, og der skelnes mellem store og små bogstaver.</translation>
 <translation id="6843296367238757293">Denne politik er forældet. Det anbefales ikke at bruge den. Læs mere på https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Denne politik er blevet fjernet i <ph name="PRODUCT_NAME" /> 68 og erstattet af <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Denne politik er forældet og fjernet i M66, da den kun blev brugt til interne test, og den er til fare for sikkerheden.
@@ -4193,30 +4080,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Denne politik berører kun brugere, som er godkendt ved hjælp af SAML.
 
       Politikkens værdi skal angives i sekunder.</translation>
-<translation id="9027787254195333560">Denne politik giver dig mulighed for at konfigurere det avatarbillede, der repræsenterer brugeren på loginskærmen. Politikken konfigureres ved at angive den webadresse, hvor <ph name="PRODUCT_OS_NAME" /> kan downloade avatarbilledet og en kryptografisk hash-værdi, som bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og dets størrelse må ikke overstige 512 kB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
-
-      Avatarbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.
-
-      Politikken skal angives som en streng, der udtrykker webadressen og hash-værdien i JSON-format i overensstemmelse med følgende skema:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Den webadresse, hvorfra avatarbilledet kan downloades.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "SHA-256-hash-værdien for avatarbilledet.",
-            "type": "string"
-          }
-        }
-      }
-
-      Hvis denne politik er konfigureret, downloader og anvender <ph name="PRODUCT_OS_NAME" /> avatarbilledet.
-
-      Hvis du konfigurerer denne politik, kan brugerne ikke ændre eller tilsidesætte den.
-
-      Hvis politikken ikke er konfigureret, kan brugerne vælge et avatarbillede, der repræsenterer dem på loginskærmen.</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9038058011835642205">Angiver en liste over websites, der installeres i baggrunden uden brugerinteraktion, og som ikke kan afinstalleres eller deaktiveres af brugeren.
 
@@ -4229,7 +4092,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Hvis du konfigurerer denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
       Politikkens værdi skal angives i millisekunder. Værdierne skal ligge inden for et interval på mellem 30 sekunder og 24 timer.</translation>
-<translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Denne politik styrer, om enheden skal opdateres til en Quick Fix Build.
 
       Hvis værdien for politikken er angivet som et token, der er tilknyttet en Quick Fix Build, opdateres enheden til den tilsvarende Quick Fix Build, hvis opdateringen ikke blokeres af en anden politik.
@@ -4302,17 +4164,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Hvis politikken er angivet som Falsk, er "Sidehoveder og sidefødder" ikke markeret i dialogboksen Vis udskrift, og brugeren kan ikke ændre den.
 
       Hvis politikken er angivet som Sand, er "Sidehoveder og sidefødder" markeret i dialogboksen Vis udskrift, og brugeren kan ikke ændre det.</translation>
-<translation id="9213347477683611358">Konfigurer baggrundsbillede på enhedsniveau, der vises på loginskærmen, hvis der ikke er nogen bruger, der er logget ind på enheden. Politikken angives ved at angive den webadresse, som Chrome OS-enheden kan downloade baggrundsbilledet fra, samt et kryptografisk hash, der bruges til at bekræfte downloadens integritet. Billedet skal være i JPEG-format, og filstørrelsen må ikke overskride 16 MB. Webadressen skal være tilgængelig uden godkendelse. Baggrundsbilledet downloades og gemmes i cachen. Det downloades på ny, hver gang webadressen eller hashet ændres.
-
-      Politikken bør angives som en streng, der viser webadressen og hashet i JSON-format, f.eks.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Hvis baggrundsbilledepolitikken for enheden er angivet, downloader og bruger Chrome OS baggrundsbilledet på loginskærmen, hvis der ikke er nogen bruger, der er logget ind på enheden endnu. Når brugeren logger ind, starter brugerens baggrundsbilledepolitik.
-
-      Hvis enhedens baggrundsbilledepolitik ikke angives, bestemmer brugerens baggrundsbilledepolitik, hvad der skal vises, hvis brugerens baggrundsbilledepolitik er angivet.</translation>
 <translation id="9217154963008402249">Hyppighed for netværkspakker til overvågning</translation>
 <translation id="922540222991413931">Konfigurer udvidelser, apps og installationskilder til brugerscripts</translation>
 <translation id="924557436754151212">Importer gemte adgangskoder fra standardbrowser på første visning</translation>

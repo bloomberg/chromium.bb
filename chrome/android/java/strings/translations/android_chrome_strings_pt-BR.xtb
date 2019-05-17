@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Permitir controle total de dispositivos MIDI</translation>
 <translation id="1449080968331948513">A Economia de dados está no Modo Lite agora</translation>
 <translation id="145097072038377568">Desativada nas configurações do Android</translation>
+<translation id="146329143005354472">Adicionar a "Meus apps"</translation>
 <translation id="1477626028522505441">Falha no download do arquivo <ph name="FILE_NAME" /> devido a problemas de servidor.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (e mais 1)}one{ (e mais #)}other{ (e mais #)}}</translation>
 <translation id="1501480321619201731">Excluir grupo</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Faixa anterior</translation>
 <translation id="2876369937070532032">Quando há risco de segurança, envia para o Google os URLs de algumas páginas que você visita</translation>
-<translation id="2876764156902388290">O Chrome está usando menos dados para mostrar esta página</translation>
 <translation id="2888126860611144412">Sobre o Google Chrome</translation>
 <translation id="2891154217021530873">Para de carregar a página</translation>
 <translation id="2893180576842394309">O Google pode usar seu histórico para personalizar a Pesquisa e outros serviços que ele oferece</translation>

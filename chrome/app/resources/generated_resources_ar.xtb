@@ -338,6 +338,7 @@
         خادم وكيل، فعليك بتعديل <ph name="LINK_START" />إعدادات الخادم الوكيل<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">الوسيلة الوحيدة للتراجع عن هذا الإجراء هي إعادة تثبيت <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">‏تم الاستيراد من Safari</translation>
+<translation id="1515163294334130951">تشغيل</translation>
 <translation id="1521442365706402292">تنظيم الشهادات</translation>
 <translation id="152234381334907219">المواقع التي لن تحفظ كلمات المرور أبدًا</translation>
 <translation id="1524430321211440688">لوحة المفاتيح</translation>
@@ -440,6 +441,7 @@
 <translation id="167160931442925455">المستوى الأعلى</translation>
 <translation id="1673137583248014546">يريد <ph name="URL" /> الاطّلاع على العلامة التجارية لمفتاح الأمان وطرازه.</translation>
 <translation id="1679068421605151609">أدوات مطوّري البرامج</translation>
+<translation id="1679806121152819234">‏الجهاز الافتراضي (VM) للمكوّن الإضافي</translation>
 <translation id="167983332380191032">‏أرسلت خدمة الإدارة خطأ HTTP.</translation>
 <translation id="1680849702532889074">‏لقد حدث خطأ أثناء تثبيت تطبيق Linux.</translation>
 <translation id="16815041330799488">عدم السماح لمواقع الويب بالاطّلاع على النصوص والصور التي تم نسخها إلى الحافظة</translation>
@@ -486,6 +488,7 @@
 <translation id="1744060673522309905">يتعذَّر ضم الجهاز إلى النطاق. يُرجى التأكُّد من أنك لم تتجاوز عدد الأجهزة التي يمكنك إضافتها.</translation>
 <translation id="1744108098763830590">صفحة الخلفية</translation>
 <translation id="1745520510852184940">أجرِ ذلك دائمًا</translation>
+<translation id="1746402432151920942">معرّف الوسائط المحمية</translation>
 <translation id="175196451752279553">إ&amp;عادة فتح علامة التبويب المغلقة</translation>
 <translation id="1753905327828125965">الأكثر زيارة</translation>
 <translation id="1756681705074952506">أسلوب الإدخال</translation>
@@ -543,6 +546,7 @@
 <translation id="1830550083491357902">لم يتم تسجيل الدخول</translation>
 <translation id="1832511806131704864">تم تحديث تغيير الهاتف</translation>
 <translation id="1834503245783133039">تعذّر التنزيل: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">‏أجهزة MIDI</translation>
 <translation id="1838374766361614909">محو البحث</translation>
 <translation id="1841545962859478868">قد يراقب مشرف الجهاز ما يلي:</translation>
 <translation id="1841616161104323629">سجِلّ الجهاز مفقود.</translation>
@@ -786,6 +790,7 @@
 <translation id="2220529011494928058">الإبلاغ عن مشكلة</translation>
 <translation id="2220572644011485463">رقم التعريف الشخصي أو كلمة المرور</translation>
 <translation id="2224444042887712269">ينتمي هذا الإعداد إلى <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">أحداث إمكانية الوصول</translation>
 <translation id="2224551243087462610">تعديل اسم المجلد</translation>
 <translation id="2226449515541314767">‏تم حظر هذا الموقع من التحكم تحكمًا كاملاً في أجهزة MIDI.</translation>
 <translation id="2226720438730111184">أخبرنا بما يحدث</translation>
@@ -963,7 +968,6 @@
 <translation id="2496180316473517155">سجلّ التصفّح</translation>
 <translation id="2497229222757901769">سرعة الماوس</translation>
 <translation id="2497852260688568942">تم إيقاف المزامنة من قِبل المشرف</translation>
-<translation id="249819058197909513">لا أريد التحذير مرة أخرى بشأن هذا التطبيق</translation>
 <translation id="2498539833203011245">تصغير</translation>
 <translation id="2498765460639677199">ضخم</translation>
 <translation id="2499747912851752301">جارٍ تصدير كلمات المرور...</translation>
@@ -1050,7 +1054,6 @@
 <translation id="2630681426381349926">‏الاتصال بشبكة Wi-Fi للبدء</translation>
 <translation id="2631120081682787498">هل تريد حقًا إغلاق علامة التبويب هذه؟</translation>
 <translation id="2631498379019108537">إظهار خيارات الإدخال في الرف</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> يستخدم <ph name="USAGE" /> ميغابايت من مساحة القرص.</translation>
 <translation id="2633212996805280240">هل تريد إزالة "<ph name="EXTENSION_NAME" />"؟</translation>
 <translation id="263325223718984101">تعذر على <ph name="PRODUCT_NAME" /> إكمال التثبيت، ولكن ستتم متابعة تشغيله من صورته على القرص.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1396,7 +1399,6 @@
 <translation id="3157931365184549694">استعادة</translation>
 <translation id="3158033540161634471">إعداد بصمة الإصبع</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (مستندة إلى الأجهزة)</translation>
-<translation id="316125635462764134">إزالة التطبيق</translation>
 <translation id="3161522574479303604">كل اللغات</translation>
 <translation id="3163201441334626963">المنتج غير معروف <ph name="PRODUCT_ID" /> من المورّد‬ <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">قد يحظر بعض مشغلي شبكات الجوّال هذه الميزة.</translation>
@@ -1896,6 +1898,7 @@
 <translation id="3916445069167113093">هذا النوع من الملفات قد يلحق الضرر بالكمبيوتر. هل تريد الاحتفاظ بـ <ph name="FILE_NAME" /> على أيّ حال؟</translation>
 <translation id="3918972485393593704">‏إبلاغ Google بالتفاصيل</translation>
 <translation id="3919145445993746351">للحصول على الإضافات على جميع أجهزة الكمبيوتر، يُرجى تفعيل المزامنة</translation>
+<translation id="391999873395511996">جارٍ تنزيل الآلة الافتراضية.</translation>
 <translation id="3920504717067627103">سياسات الشهادة</translation>
 <translation id="392089482157167418">‏تفعيل ChromeVox (التعليقات المنطوقة)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1944,7 +1947,6 @@
 <translation id="3983586614702900908">أجهزة من مورد غير معروف</translation>
 <translation id="3984159763196946143">تعذَّر بدء الوضع التجريبي</translation>
 <translation id="3984431586879874039">هل تريد السماح لهذا الموقع الإلكتروني بالاطّلاع على مفتاح الأمان؟</translation>
-<translation id="3987348946546879621">البيانات المحفوظة</translation>
 <translation id="3987938432087324095">عذرًا، لم يتم التعرف على ذلك.</translation>
 <translation id="3988996860813292272">تحديد منطقة زمنية</translation>
 <translation id="399179161741278232">المستوردة</translation>
@@ -1975,7 +1977,6 @@
 <translation id="4037889604535939429">تعديل الشخص</translation>
 <translation id="4042264909745389898">‏بنود نظام التشغيل Google Chrome</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{الخروج من الصفحة}zero{الخروج من صفحة}two{الخروج من الصفحتين}few{الخروج من صفحات}many{الخروج من صفحة}other{الخروج من صفحة}}</translation>
-<translation id="404299405565920089">‏يمكن إدارة جميع حساباتك على Google التي تمّ تسجيل الدخول إليها من التطبيقات والمواقع الإلكترونية هنا. يمكن للتطبيقات والمواقع الإلكترونية التي حصلت على إذن منك الوصول إلى معلومات الحساب التي تحتاج إليها للعمل بشكلٍ صحيح.</translation>
 <translation id="4044612648082411741">إدخال كلمة المرور للشهادة</translation>
 <translation id="404493185430269859">محرك البحث التلقائي</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
@@ -2090,7 +2091,6 @@
 <translation id="4242533952199664413">فتح الإعدادات</translation>
 <translation id="4242577469625748426">تعذّر تثبيت إعدادات السياسة على الجهاز: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">العثور على المزيد من تطبيقات قلم الشاشة</translation>
-<translation id="424546999567421758">تم اكتشاف استخدام مرتفع للقرص</translation>
 <translation id="424726838611654458">‏الفتح دائمًا باستخدام Adobe Reader</translation>
 <translation id="4247901771970415646">تتعذّر المزامنة مع <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">في انتظار الاتصال بالشبكة...</translation>
@@ -2198,7 +2198,6 @@
 <translation id="4421932782753506458">الانتفاش</translation>
 <translation id="4422347585044846479">تعديل إشارة هذه الصفحة</translation>
 <translation id="4423376891418188461">استعادة الإعدادات</translation>
-<translation id="4423482519432579560">ال&amp;تدقيق الإملائي</translation>
 <translation id="442397852638519243">يا <ph name="USER_NAME" />، يطلب منك مشرفك تغيير كلمة المرور.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
 <translation id="4430369329743628066">تمت إضافة إشارة</translation>
@@ -2658,8 +2657,6 @@
 <translation id="5187295959347858724">‏لقد سجّلت الدخول إلى <ph name="SHORT_PRODUCT_NAME" />. تتم الآن مزامنة الإشارات المرجعية والسجلّ والإعدادات الأخرى مع حسابك على Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422">يريد <ph name="ORIGIN" /> تنزيل ملفات متعددة.</translation>
-<translation id="5192316339598592690">‏يمكنك التبديل بين الحسابات بسرعة وتسجيل الدخول إلى التطبيقات ومواقع الويب دفعة واحدة.
-    يمكن أن تطالبك التطبيقات والمواقع الإلكترونية بالحصول على إذن لاستخدام بعض معلومات حسابك على Google. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">‏يُرجى إجراء powerwash للجهاز وإعادة المحاولة.</translation>
 <translation id="5204967432542742771">إدخال كلمة المرور</translation>
 <translation id="5206215183583316675">هل تريد حذف "<ph name="CERTIFICATE_NAME" />"؟</translation>
@@ -3339,7 +3336,6 @@
 <translation id="622537739776246443">سيتم حذف الملف الشخصي</translation>
 <translation id="6225475702458870625">اتصال البيانات متاح من جهاز <ph name="PHONE_NAME" /> التابع لك</translation>
 <translation id="6226777517901268232">ملف مفتاح خاص (اختياري)</translation>
-<translation id="6228516488918914827">تم تحميل الصفحة بشكل أسرع.</translation>
 <translation id="6228691855869374890">‏يتضمن هذا الموقع إمكانية تحكم شامل في أجهزة MIDI.</translation>
 <translation id="6229890768313448549">‏لا يمكن تحميل بنود خدمة Google Play. يُرجى إعادة المحاولة.</translation>
 <translation id="6231881193380278751">‏أضف معلمة طلب بحث في عنوان URL لإجراء تحديث تلقائي لصفحة: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3544,7 +3540,6 @@
 <translation id="6545665334409411530">معدل التكرار</translation>
 <translation id="6545834809683560467">‏يمكنك استخدام خدمة التوقع لمساعدتك في إكمال عبارات البحث وعناوين URL التي تكتبها في شريط العناوين أو في مربع بحث تطبيقات Launcher</translation>
 <translation id="6545867563032584178">‏تم إيقاف الميكروفون في إعدادات نظام Mac المفضلة</translation>
-<translation id="6547316139431024316">لا أريد التحذير مرة أخرى بشأن هذه الإضافة</translation>
 <translation id="6547354035488017500">احرص على تفريغ مساحة قدرها 512 ميغابايت على الأقل أو سيصبح جهازك غير مستجيب. لتفريغ مساحة، يمكنك حذف الملفات من مساحة تخزين الجهاز.</translation>
 <translation id="6550675742724504774">خيارات</translation>
 <translation id="6551508934388063976">‏الأمر غير متوفر. اضغط على control-N لفتح نافذة جديدة.</translation>
@@ -4498,7 +4493,7 @@
 احتفظ بملف المفتاح في مكان آمن، حيث ستحتاج إليه لإنشاء إصدارات جديدة من إضافتك.</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{إغلاق علامة تبويب واحدة}zero{إغلاق علامات التبويب}two{إغلاق علامتيِّ التبويب}few{إغلاق علامات التبويب}many{إغلاق علامات التبويب}other{إغلاق علامات التبويب}}</translation>
-<translation id="8002274832045662704">إعداد الطابعة المتقدِّمة</translation>
+<translation id="8002274832045662704">إعدادات الطابعة المتقدِّمة</translation>
 <translation id="8004582292198964060">المتصفّح</translation>
 <translation id="8005600846065423578">السماح دائمًا لـ <ph name="HOST" /> بالاطلاع على الحافظة</translation>
 <translation id="8008356846765065031">تم قطع الاتصال بالإنترنت. يُرجى التحقق من الاتصال بالإنترنت.</translation>
@@ -4675,7 +4670,6 @@
 <translation id="827097179112817503">عرض زر الصفحة الرئيسية</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{تم حذف إشارة مرجعية واحدة}zero{تم حذف # إشارة مرجعية}two{تم حذف إشارتين مرجعيتين (#)}few{تم حذف # إشارات مرجعية}many{تم حذف # إشارةً مرجعيةً}other{تم حذف # إشارة مرجعية}}</translation>
 <translation id="8272443605911821513">يمكنك إدارة الإضافات من خلال النقر على "الإضافات" في قائمة "المزيد من الأدوات".</translation>
-<translation id="8272966760965438857">‏إدارة حساباتك على Google في مكان واحد</translation>
 <translation id="8274332263553132018">إرسال الملف</translation>
 <translation id="8274924778568117936">لا توقف تشغيل جهاز <ph name="DEVICE_TYPE" /> أو تُغلقه لحين الانتهاء من التحديث. ستتم إعادة تشغيل جهاز <ph name="DEVICE_TYPE" /> بعد اكتمال التثبيت.</translation>
 <translation id="8275038454117074363">الاستيراد</translation>

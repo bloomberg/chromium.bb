@@ -60,7 +60,6 @@
 <translation id="2908441821576996758">請輸入以逗號分隔的電子郵件地址清單。</translation>
 <translation id="2940813599313844715">物件</translation>
 <translation id="2942448076852699108">醒目顯示的內容</translation>
-<translation id="2983835398644161987">離開子母畫面</translation>
 <translation id="3040011195152428237">連結</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">欄位內容不完整或日期無效，請輸入有效的值。</translation>
@@ -80,7 +79,6 @@
 <translation id="3822383571486410024">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前使用字元數：<ph name="CURRENT_LENGTH" />)。</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN" />」後面的部分不應包含「<ph name="INVALIDCHARACTER" />」符號。</translation>
 <translation id="3846214748874656680">結束全螢幕</translation>
-<translation id="3904511540324382638">離開子母畫面</translation>
 <translation id="3920932319529768807">結論</translation>
 <translation id="3924558731517983934">應用程式</translation>
 <translation id="3944740393230681990">序言</translation>
@@ -151,7 +149,7 @@
 <translation id="6166809985690652833">後記</translation>
 <translation id="6209276755895393898">圖片內容似乎是：<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">詞彙解釋</translation>
-<translation id="628938136236500310">正在以子母畫面模式播放影片</translation>
+<translation id="6310801910862476708">離開子母畫面</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
 <translation id="6443871981718447451">顯示隱藏式輔助字幕選單</translation>

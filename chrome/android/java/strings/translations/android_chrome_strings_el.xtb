@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Να επιτρέπεται πλήρης έλεγχος σε MIDI</translation>
 <translation id="1449080968331948513">Η Εξοικονόμηση δεδομένων βρίσκεται πλέον σε λειτουργία Lite</translation>
 <translation id="145097072038377568">Έχει απενεργοποιηθεί στις Ρυθμίσεις Android</translation>
+<translation id="146329143005354472">Προσθήκη στη λίστα Οι εφαρμογές μου</translation>
 <translation id="1477626028522505441">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στον διακομιστή.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 ακόμη)}other{ (+ # ακόμη)}}</translation>
 <translation id="1501480321619201731">Διαγραφή ομάδας</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Ιστότοπος</translation>
 <translation id="2874939134665556319">Προηγούμενο κομμάτι</translation>
 <translation id="2876369937070532032">Στέλνει URL από ορισμένες σελίδες που επισκέπτεστε στο Google, όταν η ασφάλειά σας βρίσκεται σε κίνδυνο</translation>
-<translation id="2876764156902388290">Το Chrome χρησιμοποιεί λιγότερα δεδομένα για να εμφανίσει αυτήν τη σελίδα</translation>
 <translation id="2888126860611144412">Σχετικά με το Chrome</translation>
 <translation id="2891154217021530873">Διακοπή φόρτωσης σελίδας</translation>
 <translation id="2893180576842394309">Η Google μπορεί να χρησιμοποιήσει το ιστορικό σας για την εξατομίκευση της Αναζήτησης και άλλων υπηρεσιών Google</translation>

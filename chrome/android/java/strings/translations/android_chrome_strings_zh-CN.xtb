@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">允许全面控制 MIDI 设备</translation>
 <translation id="1449080968331948513">流量节省程序现处于精简模式</translation>
 <translation id="145097072038377568">已在 Android 设置中停用</translation>
+<translation id="146329143005354472">添加到“我的应用”</translation>
 <translation id="1477626028522505441">未能成功下载 <ph name="FILE_NAME" />，因为服务器出现了问题。</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{（以及另外 1 项）}other{（以及另外 # 项）}}</translation>
 <translation id="1501480321619201731">删除群组</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">网站</translation>
 <translation id="2874939134665556319">上一曲</translation>
 <translation id="2876369937070532032">当您面临安全风险时，将您所访问的部分网页的网址发送给 Google</translation>
-<translation id="2876764156902388290">Chrome 向您显示此网页时消耗的数据流量更少</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
 <translation id="2891154217021530873">停止加载网页</translation>
 <translation id="2893180576842394309">Google 可能会利用您的历史记录为您提供个性化的 Google 搜索和其他 Google 服务</translation>
@@ -862,9 +862,9 @@
 <translation id="7359002509206457351">查询付款方式</translation>
 <translation id="7365126855094612066">在此会话期间，该网站将能够：
 • 为您的环境创建一个 3D 地图
-• 跟踪相机动作
+• 跟踪相机运动
 
-该网站未获得相机的使用权限。只有您可以看到该相机拍摄的图像。</translation>
+该网站不会获得相机的使用权限。只有您可以看到该相机拍摄的图像。</translation>
 <translation id="7375125077091615385">类型：</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">网址</translation>

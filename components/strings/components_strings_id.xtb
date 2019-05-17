@@ -416,7 +416,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> di <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Batalkan Pembayaran</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
-<translation id="321912867715453276">Peringatan: Ada beberapa sumber yang nilainya sama untuk kebijakan ini.</translation>
 <translation id="3225919329040284222">Server menunjukkan sertifikat yang tidak sesuai dengan harapan terpasang. Harapan ini disertakan untuk situs web tertentu dengan keamanan tinggi guna melindungi Anda.</translation>
 <translation id="3226128629678568754">Tekan tombol muat ulang untuk mengirimkan lagi data yang dibutuhkan untuk memuat halaman ini.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -555,7 +554,6 @@
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> diblokir.</translation>
 <translation id="3987940399970879459">Kurang dari 1 MB</translation>
-<translation id="4008849406247176967">Peringatan: Ada beberapa sumber dengan nilai yang bertentangan untuk kebijakan ini!</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 halaman web di sekitar}other{# halaman web di sekitar}}</translation>
 <translation id="4030383055268325496">&amp;Urungkan penambahan</translation>
 <translation id="4032320456957708163">Browser Anda dikelola oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -692,7 +690,6 @@
 <translation id="4738601419177586157">Saran penelusuran <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Kelola sandi...</translation>
 <translation id="4744603770635761495">Jalur Yang Dapat Dijalankan</translation>
-<translation id="4746351372139058112">Pesan</translation>
 <translation id="4750917950439032686">Informasi Anda (misalnya, sandi atau nomor kartu kredit) bersifat pribadi saat dikirimkan ke situs ini.</translation>
 <translation id="4756388243121344051">&amp;Riwayat</translation>
 <translation id="4758311279753947758">Tambahkan info kontak</translation>
@@ -1122,7 +1119,6 @@
 <translation id="7220786058474068424">Dalam proses</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Situs yang akan dibuka berisi software perusak</translation>
-<translation id="724766306220616965">Peringatan, Bentrok</translation>
 <translation id="724975217298816891">Masukkan tanggal habis masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna memperbarui detail kartu. Setelah mengonfirmasi, detail kartu Anda akan dibagikan dengan situs ini.</translation>
 <translation id="7251437084390964440">Konfigurasi jaringan tidak mematuhi standar ONC. Sebagian konfigurasi mungkin tidak diimpor. Detail tambahan: <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
@@ -1416,6 +1412,7 @@
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="8903921497873541725">Perbesar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Akun Google</translation>
 <translation id="8931333241327730545">Ingin menyimpan kartu ini ke Akun Google Anda?</translation>
 <translation id="8932102934695377596">Setelan waktu Anda terlalu lambat</translation>
 <translation id="893332455753468063">Tambahkan Nama</translation>

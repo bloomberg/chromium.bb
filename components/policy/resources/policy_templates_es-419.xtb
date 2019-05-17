@@ -410,7 +410,6 @@
 
       Advertencia: No se recomienda delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> a una Aplicación de kiosko ya que puede evitar que el dispositivo reciba actualizaciones de software y correcciones de seguridad críticas. Delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> puede poner en riesgo a los usuarios.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
-<translation id="1689963000958717134">Permite aplicar la configuración de red a todos los usuarios de un dispositivo <ph name="PRODUCT_OS_NAME" />. La configuración de red es una cadena escrita en formato JSON, como se define en el formato Open Network Configuration que se describe en <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1704516734140344991">Configura la disponibilidad y el comportamiento de la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Se pueden especificar opciones de configuración particulares en las propiedades de JSON:
@@ -942,16 +941,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta configuración está inhabilitada, las páginas web no podrán usar JavaScript y el usuario no podrá cambiar esa configuración.
 
       Si esta configuración está habilitada o no está establecida, las páginas web podrán usar JavaScript pero el usuario podrá cambiar esa configuración.</translation>
-<translation id="2747157663401642394">Establece la configuración de la administración de extensiones para <ph name="PRODUCT_NAME" />.
-
-          Esta política controla varias opciones de configuración, incluida la configuración regida por políticas existentes relacionadas con extensiones. Esta política anulará cualquier política heredada si se configuran ambas.
-
-          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Con un ID de extensión, la configuración se aplicará a la extensión especificada únicamente. Es posible establecer una configuración predeterminada para el ID especial <ph name="DEFAULT_SCOPE" />, que se aplicará a todas las extensiones que no tengan una configuración personalizada en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la URL de actualización exacta establecida en el manifiesto de esta extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Para las instancias de Windows que no están unidas a un dominio de <ph name="MS_AD_NAME" />, solo se pueden instalar de manera automática las apps y extensiones que aparecen en Chrome Web Store.
-
-          Para obtener una descripción completa de las opciones de configuración posibles y la estructura de esta política, visita https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Restringir el intervalo de puertos UDP locales que usa WebRTC</translation>
 <translation id="2757054304033424106">Tipos de extensiones o aplicaciones que se pueden instalar</translation>
 <translation id="2758084448533744848">Especifica la zona horaria que se aplicará en el dispositivo. Cuando se configura esta política, los usuarios del dispositivo no pueden anular la zona horaria especificada. Si se proporciona un valor no válido, la política se activará de todas formas, pero con la zona horaria "GMT". Si se proporciona una string vacía, se ignorará la política.
@@ -1197,7 +1186,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3077183141551274418">Habilitar o inhabilitar los ciclos de vida de las pestañas</translation>
 <translation id="3079417254871857650">Especifica la acción que debe realizarse cuando se creó el directorio principal del usuario con la encriptación ecryptfs.
 
-      Si configuras esta política como "DisallowArc", se inhabilitarán las apps de Android para el usuario y no se realizará la migración de la encriptación ecryptfs a ext4. Si el directorio principal ya cuenta con la encriptación ext4, no se inhabilitarán las apps de Android.
+      Si configuras esta política como "DisallowArc", se inhabilitarán las apps de Android para el usuario, y no se realizará la migración de la encriptación ecryptfs a ext4. Si el directorio principal ya cuenta con la encriptación ext4, no se inhabilitarán las apps de Android.
 
       Si configuras esta política como "Migrate", los directorios principales con la encriptación ecryptfs se migrarán automáticamente a la encriptación ext4 cuando el usuario acceda, sin solicitarle permiso.
 
@@ -1515,7 +1504,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3826475866868158882">Se habilitaron los Servicios de ubicación de Google</translation>
 <translation id="3831054243924627613">Esta política controla el estado inicial de la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
 
-      Si no se configura o se establece como <ph name="BR_DISABLED" />, se inhabilitará la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
+      Si no se configura o se establece como <ph name="BR_DISABLED" />, se inhabilitará esa funcionalidad de Android.
 
       Si esta política se establece como <ph name="BR_ENABLED" />, se habilitará la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
 
@@ -1711,30 +1700,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Esta política solo afecta a los usuarios que realizan la autenticación con SAML.</translation>
 <translation id="4105989332710272578">Inhabilitar la aplicación del Certificado de transparencia para una lista de URL</translation>
 <translation id="4121350739760194865">Impedir que aparezcan las promociones de aplicaciones en la página de la nueva pestaña</translation>
-<translation id="4125606414556046117">Esta política te permite configurar la imagen del fondo de pantalla del escritorio y de la pantalla de acceso del usuario. Para configurarla, indica la dirección URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen del fondo de pantalla y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG y pesar 16 MB como máximo. Se debe poder acceder a la dirección URL sin autenticación previa.
-
-      La imagen del fondo de pantalla se descarga y queda almacenada en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
-
-      La política debe indicarse como una cadena que expresa la dirección URL y el hash en formato JSON, y según el siguiente esquema:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Dirección URL desde la cual se puede descargar la imagen del fondo de pantalla",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hash SHA-256 de la imagen del fondo de pantalla",
-            "type": "string"
-          }
-        }
-      }
-
-      Si se configura esta política, <ph name="PRODUCT_OS_NAME" /> descargará y utilizará la imagen del fondo de pantalla.
-
-      Si configuras esta política, los usuarios no podrán modificarla ni anularla.
-
-      Si no se configura esta política, los usuarios podrán elegir la imagen del fondo de pantalla del escritorio y de la pantalla de acceso.</translation>
 <translation id="412697421478384751">Permitir que los usuarios establezcan PIN no seguros para la pantalla bloqueada</translation>
 <translation id="4138655880188755661">Límite de tiempo</translation>
 <translation id="4144164749344898721">Esta política controla distintas configuraciones de la estrategia de administración de energía cuando el usuario está inactivo.
@@ -2478,7 +2443,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5643906875497889108">Controla los tipos de extensiones o apps que se pueden instalar y limita el acceso al tiempo de ejecución.
 
-          Esta configuración incluye en la lista blanca los tipos de extensiones o apps permitidos que se pueden instalar en <ph name="PRODUCT_NAME" /> y los hosts con los que pueden interactuar. El valor es una lista con las siguientes strings: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, consulta la documentación de extensiones de <ph name="PRODUCT_NAME" />.
+          Esta configuración incluye en la lista blanca los tipos de extensiones o apps permitidos que se pueden instalar en <ph name="PRODUCT_NAME" /> y los hosts con los que pueden interactuar. El valor es una lista con los siguientes strings: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, consulta la documentación de extensiones de <ph name="PRODUCT_NAME" />.
 
           Ten en cuenta que esta política también afecta las extensiones y apps que se instalan de forma automática mediante la política ExtensionInstallForcelist.
 
@@ -2649,59 +2614,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si esta política no se establece o se inhabilita, los comandos de impresión muestran la pantalla de vista previa de impresión.</translation>
 <translation id="6022948604095165524">Acción al iniciar</translation>
-<translation id="6023030044732320798">Especifica el conjunto de políticas que se enviará al tiempo de ejecución de ARC. El valor debe ser un formato JSON válido.
-
-      Esta política se puede usar para configurar qué apps de Android se instalan de forma automática:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identificador de app de Android, p. ej., "com.google.android.gm" para Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Especifica cómo se instala una app. OPTIONAL: La app no se instala de forma automática, pero el usuario puede instalarla. Esta es la configuración predeterminada si no se especifica esta política. PRELOAD: La app se instala de forma automática, pero el usuario puede desinstalarla. FORCE_INSTALLED: La app se instala de forma automática, y el usuario no puede desinstalarla. BLOCKED: La app está bloqueada o no se puede instalar. Si la app se instaló con una política anterior, se desinstalará.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Política de otorgamiento de permisos para las apps que lo soliciten. PERMISSION_POLICY_UNSPECIFIED: La política no se especifica. Si no se especifica ninguna política para un permiso en cualquier nivel, se usa el comportamiento "PROMPT" de forma predeterminada. PROMPT: Solicita al usuario que otorgue un permiso. GRANT: Otorga un permiso de forma automática. DENY: Deniega un permiso de forma automática.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Objeto de configuración JSON específico de apps con un conjunto de pares clave-valor, p. ej. '"managedConfiguration": { "key1": value1, "key2": value2 }'. Las claves se definen en el manifiesto de la app.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Para fijar apps al Launcher, consulta PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL instantánea del proveedor de búsqueda predeterminado</translation>
 <translation id="603410445099326293">Parámetros para URL de sugerencia que utiliza POST</translation>
 <translation id="6034341625190551415">Controla la sesión pública y los tipos de cuenta del kiosko.</translation>
 <translation id="6034603289689965535">Permite que una página muestre ventanas emergentes durante su descarga</translation>
 <translation id="6036523166753287175">Habilitar el cruce seguro de firewall desde hosts de acceso remoto</translation>
-<translation id="605475635122964053">Restringe el modo de impresión con PIN. Si no se configura la política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión de PIN solo se habilitará para impresoras que usen uno de los protocolos IPPS, USB o IPP-over-USB </translation>
+<translation id="605475635122964053">Restringe el modo de impresión con PIN. Si no se configura la política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión con PIN solo se habilitará para impresoras que usen uno de los protocolos IPPS, USB o IPP-over-USB </translation>
 <translation id="6070667616071269965">Diseños de teclado de la pantalla de acceso del dispositivo</translation>
 <translation id="6074963268421707432">No permitir que los sitios muestren notificaciones de escritorio.</translation>
 <translation id="6074964551275531965">Establecer el período para las notificaciones de actualización</translation>
@@ -3043,37 +2961,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece como falsa, no se utilizará el cliente DNS integrado.
 
       Si no se establece, se habilitará el cliente DNS integrado de forma predeterminada en MacOS, el Sistema operativo Chrome y Android (cuando no están habilitados el DNS privado ni la VPN). Además, los usuarios podrán decidir si se utiliza el cliente DNS integrado al editar chrome://flags o al especificar una marca de línea de comandos.</translation>
-<translation id="6838056959556423778">Anula las reglas predeterminadas de selección de impresora de <ph name="PRODUCT_NAME" />.
-
-      Esta política determina las reglas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" />, que sucede la primera vez que se usa la función de impresión con un perfil.
-
-      Cuando se establezca esta política, <ph name="PRODUCT_NAME" /> buscará una impresora que cuente con todos los atributos especificados. Selecciónala como impresora predeterminada. Se elige la primera impresora que coincida con la política. En el caso de que haya más de una coincidencia, se puede seleccionar cualquier impresora encontrada, en función del orden en el que se encontraron.
-
-      Si no se establece esta política o no se encuentra ninguna impresora que coincida dentro del tiempo de espera, se selecciona como predeterminada la impresora PDF integrada o, en caso de que no esté disponible, no se selecciona ninguna.
-
-      El valor se analiza como un objeto JSON, de acuerdo al siguiente esquema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Limitar la búsqueda de la impresora a un grupo específico.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Expresión regular que coincida con el ID de la impresora.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Expresión regular que coincida con el nombre comercial de la impresora.",
-            "type": "string"
-          }
-        }
-      }
-
-      Las impresoras conectadas a <ph name="CLOUD_PRINT_NAME" /> se consideran <ph name="PRINTER_TYPE_CLOUD" />; el resto de las impresoras se clasifican como <ph name="PRINTER_TYPE_LOCAL" />.
-      Si se omite un campo, todos los valores se consideran coincidentes. Por ejemplo, si no se especifica la conectividad, la Vista previa de impresión iniciará la búsqueda de todo tipo de impresoras, ya sea locales o en la nube.
-      Los patrones de expresión regulares deben seguir la sintaxis de JavaScript RegExp, y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="6843296367238757293">Esta política es obsoleta, por lo que no se recomienda su uso. Obtén más información en https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">En la versión 68 de <ph name="PRODUCT_NAME" />, se quitó esta política y se reemplazó por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Esta política dejó de estar disponible y se quitó de M66 porque se usó solo para realizar pruebas internas y representa un riesgo para la seguridad.
@@ -3224,7 +3111,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si no estableces esta política, los usuarios podrán decidir si quieren que sea necesaria una contraseña para volver a activar el dispositivo o no.</translation>
 <translation id="7107148737865880402">Habilita la política de administración de la energía para el uso compartido de energía con USB.
 
-          Ciertos dispositivos tienen un puerto USB específico, marcado con un ícono de rayo o de batería, que se puede usar para cargar dispositivos como teléfonos móviles con la batería del sistema. Esta política afecta el comportamiento de carga de este puerto mientras el sistema está apagado o en suspensión. Esta política no afecta los demás puertos USB ni el comportamiento de carga cuando el sistema está activado.
+          Ciertos dispositivos tienen un puerto USB específico, marcado con un ícono de rayo o de batería, que se puede usar para cargar dispositivos, como teléfonos móviles, con la batería del sistema. Esta política afecta el comportamiento de carga de este puerto mientras el sistema está apagado o en suspensión. Esta política no afecta los demás puertos USB ni el comportamiento de carga cuando el sistema está activado.
 
           En ese caso, el puerto USB siempre proporcionará energía.
 
@@ -4224,30 +4111,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política solo afecta a los usuarios autenticados mediante SAML.
 
       El valor de la política debe especificarse en segundos.</translation>
-<translation id="9027787254195333560">Esta política permite configurar la imagen de avatar que identifica al usuario en la pantalla de acceso. Para configurarla, indica la URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen de avatar y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG y no pesar más de 512 kB. Se debe poder acceder a la dirección URL sin autenticación previa.
-
-      La imagen de avatar se descarga y queda almacenada en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
-
-      La política debe indicarse como una cadena que expresa la dirección URL y el hash en formato JSON, y según el siguiente esquema:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Dirección URL desde la cual se puede descargar la imagen de avatar",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hash SHA-256 de la imagen de avatar",
-            "type": "string"
-          }
-        }
-      }
-
-      Si se configura esta política, <ph name="PRODUCT_OS_NAME" /> descargará y utilizará la imagen de avatar.
-
-      Si configuras esta política, los usuarios no podrán modificarla ni anularla.
-
-      Si no se configura esta política, los usuarios podrán elegir la imagen de avatar que los identifique en la pantalla de acceso.</translation>
 <translation id="9035964157729712237">Identificaciones de extensión para excluir de la lista negra</translation>
 <translation id="9038058011835642205">Especifica una lista de sitios web instalados de manera silenciosa, sin interacción del usuario y que este no puede desinstalar ni inhabilitar.
 
@@ -4260,7 +4123,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si configuras esta política, los usuarios no podrán modificarla ni anularla.
 
       El valor de la política debe especificarse en milisegundos. Los valores están fijados en un intervalo de entre 30 segundos y 24 horas.</translation>
-<translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> por usuario. La configuración de red es una cadena escrita en formato JSON, como la define el formato Open Network Configuration que se describe en <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9050853837490399534">Esta política controla si se debe actualizar el dispositivo a una versión de corrección rápida.
 
       Si se establece el valor de esta política en un token que se mapee a una versión de corrección rápida, se actualizará el dispositivo a la versión de corrección rápida correspondiente en caso de que otra política no haya bloqueado la actualización.
@@ -4333,17 +4195,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece como falsa, no aparecerá seleccionada la opción "Encabezados y pies de página" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.
 
       Si se establece como verdadera, aparecerá seleccionada la opción "Encabezados y pies de página" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.</translation>
-<translation id="9213347477683611358">Si aún ningún usuario accedió a su cuenta en el dispositivo, configura una imagen de fondo de pantalla en el dispositivo que se muestre en la pantalla de acceso. Para establecer la política, especifica la URL correspondiente a la imagen de fondo de pantalla para que el dispositivo con el Sistema operativo Chrome pueda descargarla y un hash criptográfico para verificar la integridad de la descarga. La imagen debe estar en formato JPEG y el tamaño no debe superar los 16 MB. El acceso a la URL no debe requerir autenticación. La imagen de fondo de pantalla se descarga y almacena en caché. Si la URL o el hash cambian, la imagen se volverá a descargar.
-
-      La política debe especificarse como una string que contenga la URL y el hash en formato JSON, p. ej.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Si se establece la política de fondo de pantalla del dispositivo, el dispositivo con el Sistema operativo Chrome descargará y usará la imagen de fondo de pantalla en la pantalla de acceso si aún ningún usuario accedió a su cuenta en el dispositivo. Una vez que el usuario acceda a su cuenta, se habilita la política de fondo de pantalla del usuario.
-
-      Si no se establece la política de fondo de pantalla del dispositivo, la política de fondo de pantalla del usuario, en caso de establecerse, decide lo que se muestra.</translation>
 <translation id="9217154963008402249">Frecuencia de envío de paquetes de red de control</translation>
 <translation id="922540222991413931">Configurar fuentes de instalación de secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas del navegador predeterminado en la primera ejecución</translation>

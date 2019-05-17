@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">MIDI ഉപകരണങ്ങളുടെ പൂർണ്ണ നിയന്ത്രണം അനുവദിക്കുക</translation>
 <translation id="1449080968331948513">ഡാറ്റ സേവർ ഇപ്പോൾ ലൈറ്റ് മോഡ് ആണ്</translation>
 <translation id="145097072038377568">Android ക്രമീകരണത്തിൽ ഓഫാക്കിയിരിക്കുന്നു</translation>
+<translation id="146329143005354472">എൻ്റെ ആപ്പുകളിലേക്ക് ചേർക്കുക</translation>
 <translation id="1477626028522505441">സെർവർ പ്രശ്‌നങ്ങൾ കാരണം <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ ഒരെണ്ണം കൂടി)}other{ (+ # എണ്ണം കൂടി)}}</translation>
 <translation id="1501480321619201731">ഗ്രൂപ്പ് ഇല്ലാതാക്കൂ</translation>
@@ -95,6 +96,7 @@
 <translation id="1671236975893690980">ഡൗൺലോഡ് തീർച്ചപ്പെടുത്തിയിട്ടില്ല...</translation>
 <translation id="1672586136351118594">വീണ്ടും കാണിക്കരുത്</translation>
 <translation id="1692118695553449118">സമന്വയം ഓണാണ്</translation>
+<translation id="169515064810179024">ചലന സെൻസറുകൾ ആക്‌സസ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="1717218214683051432">ചലന സെൻസറുകൾ</translation>
 <translation id="1718835860248848330">കഴിഞ്ഞ മണിക്കൂര്‍‌</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> അപ്‌ഡേറ്റ് ചെയ്‌തു</translation>
@@ -246,6 +248,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> സെക്കൻഡ് ശേഷിക്കുന്നു</translation>
 <translation id="2779651927720337254">പരാജയപ്പെട്ടു</translation>
 <translation id="2781151931089541271">ഒരു സെക്കൻഡ് ശേഷിക്കുന്നു</translation>
+<translation id="2801022321632964776">Chrome-ൻ്റെ ഏറ്റവും പുതിയ പതിപ്പിൽ നിങ്ങളുടെ ഭാഷ ലഭ്യമാക്കാൻ അപ്‌ഡേറ്റ് ചെയ്യൂ</translation>
 <translation id="2810645512293415242">ഡാറ്റ ലാഭിക്കുന്നതിനും വേഗത്തിൽ ലോഡ് ചെയ്യുന്നതിനുമായി ലളിതവൽക്കരിച്ചിരിക്കുന്ന പേജ്.</translation>
 <translation id="281504910091592009">നിങ്ങളുടെ <ph name="BEGIN_LINK" />Google അക്കൗണ്ടിൽ<ph name="END_LINK" /> സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, മാനേജ് ചെയ്യുക</translation>
 <translation id="2818669890320396765">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, സൈൻ ഇൻ ചെയ്‌ത് സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
@@ -256,7 +259,6 @@
 <translation id="2870560284913253234">സൈറ്റ്</translation>
 <translation id="2874939134665556319">മുമ്പത്തെ ട്രാക്ക്</translation>
 <translation id="2876369937070532032">നിങ്ങളുടെ സുരക്ഷ അപകടത്തിലാകുമ്പോൾ നിങ്ങൾ സന്ദർശിക്കുന്ന ചില പേജുകളുടെ URL-കൾ Google-ലേക്ക് അയയ്ക്കുന്നു</translation>
-<translation id="2876764156902388290">ഈ പേജ് കാണിക്കുന്നതിന് Chrome കുറച്ച് ഡാറ്റയാണ് ഉപയോഗിക്കുന്നത്</translation>
 <translation id="2888126860611144412">Chrome-നെ കുറിച്ച്</translation>
 <translation id="2891154217021530873">പേജ് ലോഡുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="2893180576842394309">തിരയലും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ Google നിങ്ങളുടെ ചരിത്രം ഉപയോഗിച്ചേക്കാം</translation>
@@ -306,6 +308,7 @@
 <translation id="3259831549858767975">പേജിൽ എല്ലാം ചെറുതായി നൽകുക</translation>
 <translation id="3269093882174072735">ചിത്രം ലോഡ് ചെയ്യുക</translation>
 <translation id="3269956123044984603">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ ലഭിക്കാൻ, Android അക്കൗണ്ട് ക്രമീകരണത്തിൽ "ഡാറ്റ സ്വയം സമന്വയിപ്പിക്കുക" ഓണാക്കുക.</translation>
+<translation id="3277252321222022663">സെൻസറുകൾ ആക്‌സസ് ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശ ചെയ്യുന്നത്)</translation>
 <translation id="3282568296779691940">Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="3288003805934695103">പേജ് റീലോഡുചെയ്യുന്നു</translation>
 <translation id="32895400574683172">അറിയിപ്പുകൾ അനുവദിച്ചിരിക്കുന്നു</translation>
@@ -540,6 +543,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">അനുവദിക്കൂ</translation>
 <translation id="5040262127954254034">സ്വകാര്യത</translation>
+<translation id="5048398596102334565">നിങ്ങളുടെ ചലന സെൻസറുകൾ ആക്‌സസ് ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശ ചെയ്യുന്നത്)</translation>
 <translation id="5063480226653192405">ഉപയോഗം</translation>
 <translation id="5073204694187207510">പൂർണ്ണസ്ക്രീൻ ഗ്രിഡ് മറയ്ക്കുക</translation>
 <translation id="5082793167783849073">ഒരു ഗ്രൂപ്പ് സൃഷ്‌ടിച്ചുകൊണ്ട്, വേഗത്തിൽ പേജുകൾ താരതമ്യം ചെയ്യൂ. ആരംഭിക്കാൻ ഒരു ലിങ്ക് സ്‌പർശിച്ച് പിടിക്കുക.</translation>
@@ -729,6 +733,7 @@
 <translation id="6406506848690869874">Sync</translation>
 <translation id="641643625718530986">പ്രിന്‍റ് ചെയ്യുക…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ഡൗൺലോഡ് ചെയ്‌തു</translation>
+<translation id="6427112570124116297">വെബ് വിവർത്തനം ചെയ്യുക</translation>
 <translation id="6433501201775827830">നിങ്ങളുടെ തിരയൽ യന്ത്രം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6437478888915024427">പേജ് വിവരം</translation>
 <translation id="6441734959916820584">പേര് വളരെ വലുതാണ്</translation>
@@ -841,6 +846,7 @@
 <translation id="7189598951263744875">പങ്കിടുക...</translation>
 <translation id="7191430249889272776">ടാബ് പശ്ചാത്തലത്തിൽ തുറന്നു.</translation>
 <translation id="723171743924126238">ചിത്രങ്ങൾ തിരഞ്ഞെടുക്കുക</translation>
+<translation id="7233236755231902816">നിങ്ങളുടെ ഭാഷയിൽ വെബ് കാണാൻ Chrome-ൻ്റെ ഏറ്റവും പുതിയ പതിപ്പ് നേടൂ</translation>
 <translation id="7243308994586599757">സ്‌ക്രീനിന്റെ ചുവടെ ഓപ്‌ഷനുകൾ ലഭ്യമാണ്</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> എണ്ണം തിരഞ്ഞെടുത്തു</translation>
 <translation id="7253272406652746122">നിങ്ങളുടെ ഉപകരണത്തിലെ ക്രമീകരണം ആപ്പിലെ, 'അക്കൗണ്ടുകൾ' എന്ന പേജിൽ നിന്ന് ഒരു Google അക്കൗണ്ട് ചേർക്കുക.</translation>
@@ -895,7 +901,7 @@
 <translation id="756809126120519699">Chrome ഡാറ്റ മായ്‌ച്ചു</translation>
 <translation id="757524316907819857">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ഫയൽ ഡൗൺലോഡ് ചെയ്‌തു}other{<ph name="FILES_DOWNLOADED_MANY" /> ഫയലുകൾ ഡൗൺലോഡ് ചെയ്‌തു}}</translation>
-<translation id="7588219262685291874">ഉപകരണത്തിന്റെ ബാറ്ററി ലാഭിക്കൽ ഓണായിരിക്കുമ്പോൾ ഇരുണ്ട തീം ഓണാക്കുക</translation>
+<translation id="7588219262685291874">ഉപകരണത്തിൻ്റെ ബാറ്ററി ലാഭിക്കൽ ഓണായിരിക്കുമ്പോൾ ഇരുണ്ട തീം ഓണാക്കുക</translation>
 <translation id="7589445247086920869">നിലവിലെ തിരയൽ യന്ത്രത്തിന് ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="7593557518625677601">Chrome സമന്വയം ആരംഭിക്കാൻ Android ക്രമീകരണം തുറന്ന് Android സിസ്‌റ്റം സമന്വയിപ്പിക്കൽ വീണ്ടും പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="7596558890252710462">ഓപ്പറേറ്റിംഗ് സിസ്റ്റം</translation>
@@ -911,7 +917,7 @@
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7665369617277396874">അക്കൗണ്ട് ചേർക്കുക</translation>
-<translation id="766587987807204883">ഇവിടെ ദൃശ്യമാകുന്ന ലേഖനങ്ങൾ, നിങ്ങൾ ഓഫ്‌ലൈൻ ആകുന്ന സമയത്ത് പോലും വായിക്കാം</translation>
+<translation id="766587987807204883">ഇവിടെ ദൃശ്യമാകുന്ന ലേഖനങ്ങൾ നിങ്ങൾ ഓഫ്‌ലൈൻ ആകുന്ന സമയത്ത് പോലും വായിക്കാം</translation>
 <translation id="7682724950699840886">ഈ നുറുങ്ങുകൾ പരീക്ഷിക്കൂ: നിങ്ങളുടെ ഉപകരണത്തിൽ ആവശ്യമായ ഇടം ഉണ്ടെന്ന് ഉറപ്പാക്കി, വീണ്ടും എക്‌സ്‌പോർട്ട് ചെയ്യാൻ ശ്രമിക്കുക.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> ആപ്പിൽ ഇമെയിൽ സൃഷ്‌ടിക്കുക</translation>
 <translation id="7704317875155739195">സ്വമേധയാ പൂർത്തിയാക്കുന്ന തിരയലുകളും URL-കളും</translation>
@@ -997,6 +1003,7 @@
 <translation id="8310344678080805313">സ്റ്റാൻഡേർഡ് ടാബുകൾ</translation>
 <translation id="8313455859591948645">ആരംഭ പേജ് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ഡൊമെയ്‌നും കൂടുതൽ സൈറ്റുകളും</translation>
+<translation id="8327155640814342956">മികച്ച ബ്രൗസിംഗ് അനുഭവത്തിന് Chrome അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ വിവർത്തനം ചെയ്യില്ല</translation>
 <translation id="8349013245300336738">ഉപയോഗിച്ച ഡാറ്റയുടെ അളവിനനുസരിച്ച് അടുക്കുക</translation>
 <translation id="8372893542064058268">ഒരു പ്രത്യേക സൈറ്റിന് വേണ്ടി പശ്ചാത്തലം സമന്വയിപ്പിക്കൽ അനുവദിക്കുക.</translation>
@@ -1054,6 +1061,7 @@
 <translation id="8788968922598763114">അവസാനം അടച്ച ടാബ് വീണ്ടും തുറക്കുക</translation>
 <translation id="8801436777607969138">ഒരു നിർദ്ദിഷ്‌ട സൈറ്റിനായി JavaScript ബ്ലോക്ക് ചെയ്യുക.</translation>
 <translation id="8812260976093120287">ചില വെബ്‌സൈറ്റുകളിൽ, നിങ്ങളുടെ ഉപകരണത്തിൽ ഉപയോഗിക്കാവുന്നതും മുകളിൽ പറഞ്ഞിരിക്കുന്നതുമായ പേയ്‌മെന്റ് ആപ്പുകൾ വഴി പണമടയ്‌ക്കാം.</translation>
+<translation id="8816026460808729765">സെൻസറുകൾ ആക്‌സസ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome-ൽ തുറക്കും. തുടരുന്നതിലൂടെ, നിങ്ങൾ Chrome-ന്റെ <ph name="BEGIN_LINK1" />സേവന നിബന്ധനകളും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />സ്വകാര്യതാ അറിയിപ്പും<ph name="END_LINK2" /> <ph name="BEGIN_LINK3" />Family Link ഉപയോഗിച്ച് മാനേജ് ചെയ്യപ്പെടുന്ന Google അക്കൗണ്ടുകളുടെ സ്വകാര്യതാ അറിയിപ്പും<ph name="END_LINK3" /> അംഗീകരിക്കുന്നു.</translation>
 <translation id="8820817407110198400">ബുക്ക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="8833831881926404480">ഒരു സൈറ്റ് നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നു</translation>

@@ -335,6 +335,7 @@
 <translation id="1510785804673676069">如果您使用的是代理服务器，请检查您的代理设置，或与网络管理员核实代理服务器是否运转正常。如果您认为自己使用的不是代理服务器，请调整您的<ph name="LINK_START" />代理设置<ph name="LINK_END" />。</translation>
 <translation id="1512210426710821809">要想撤消此操作，唯一的方法是重新安装 <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">从 Safari 中导入</translation>
+<translation id="1515163294334130951">启动</translation>
 <translation id="1521442365706402292">管理证书</translation>
 <translation id="152234381334907219">一律不保存</translation>
 <translation id="1524430321211440688">键盘</translation>
@@ -437,6 +438,7 @@
 <translation id="167160931442925455">最大音量</translation>
 <translation id="1673137583248014546"><ph name="URL" /> 想查看您的安全密钥的品牌和型号</translation>
 <translation id="1679068421605151609">开发者工具</translation>
+<translation id="1679806121152819234">插件虚拟机</translation>
 <translation id="167983332380191032">管理服务向您发送了一项 HTTP 错误。</translation>
 <translation id="1680849702532889074">安装 Linux 应用时出错。</translation>
 <translation id="16815041330799488">不允许网站查看复制到剪贴板的文字和图片</translation>
@@ -483,6 +485,7 @@
 <translation id="1744060673522309905">无法将此设备加入到该网域中。请确保您未超出可添加的设备数量上限。</translation>
 <translation id="1744108098763830590">背景页</translation>
 <translation id="1745520510852184940">一律进行此翻译</translation>
+<translation id="1746402432151920942">受保护的媒体标识符</translation>
 <translation id="175196451752279553">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="1753905327828125965">常去网站</translation>
 <translation id="1756681705074952506">输入法</translation>
@@ -540,6 +543,7 @@
 <translation id="1830550083491357902">未登录</translation>
 <translation id="1832511806131704864">配对手机已更新</translation>
 <translation id="1834503245783133039">未能成功下载“<ph name="FILE_NAME" />”</translation>
+<translation id="1834583737373831634">MIDI 设备</translation>
 <translation id="1838374766361614909">清除搜索字词</translation>
 <translation id="1841545962859478868">此设备的管理员可能会监控以下各项：</translation>
 <translation id="1841616161104323629">找不到设备记录。</translation>
@@ -705,7 +709,7 @@
 <translation id="2120297377148151361">活动和互动行为</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{将这个标签页取消静音}other{将这些标签页取消静音}}</translation>
 <translation id="2121825465123208577">调整大小</translation>
-<translation id="2122305276694332719">自动连接至隐藏的网络会造成其他人能查看您的设备和一些网络设置，因此我们建议不要这样做。</translation>
+<translation id="2122305276694332719">自动连接至隐藏的网络会导致其他人能查看您的设备和一些网络设置，因此我们建议不要这样做。</translation>
 <translation id="2124930039827422115">{1,plural, =1{已有一位用户给出了 <ph name="AVERAGE_RATING" /> 的评分。}other{已有 # 位用户给出评分，平均评分为 <ph name="AVERAGE_RATING" />。}}</translation>
 <translation id="2126167708562367080">您的管理员已停用同步。</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
@@ -783,6 +787,7 @@
 <translation id="2220529011494928058">报告问题</translation>
 <translation id="2220572644011485463">PIN 码或密码</translation>
 <translation id="2224444042887712269">此设置属于<ph name="OWNER_EMAIL" />。</translation>
+<translation id="2224471211857467033">无障碍功能事件</translation>
 <translation id="2224551243087462610">修改文件夹名</translation>
 <translation id="2226449515541314767">已禁止该网站完全控制 MIDI 设备。</translation>
 <translation id="2226720438730111184">告诉我们所发生的情况</translation>
@@ -959,7 +964,6 @@
 <translation id="2496180316473517155">浏览记录</translation>
 <translation id="2497229222757901769">鼠标速度</translation>
 <translation id="2497852260688568942">您的管理员已停用同步</translation>
-<translation id="249819058197909513">不再为此应用发出此警告</translation>
 <translation id="2498539833203011245">最小化</translation>
 <translation id="2498765460639677199">最大</translation>
 <translation id="2499747912851752301">正在导出密码…</translation>
@@ -1046,7 +1050,6 @@
 <translation id="2630681426381349926">连接到 Wi-Fi 才能开始</translation>
 <translation id="2631120081682787498">确定要关闭此标签页吗？</translation>
 <translation id="2631498379019108537">在任务栏中显示输入法选项</translation>
-<translation id="2633199387167390344"><ph name="NAME" />占用了<ph name="USAGE" /> MB的磁盘空间。</translation>
 <translation id="2633212996805280240">要删除“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" />无法完成安装，但是会通过其磁盘映像继续运行。</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1392,7 +1395,6 @@
 <translation id="3157931365184549694">恢复</translation>
 <translation id="3158033540161634471">设置指纹</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]（由硬件支持）</translation>
-<translation id="316125635462764134">卸载应用</translation>
 <translation id="3161522574479303604">所有语言</translation>
 <translation id="3163201441334626963">来自供应商 <ph name="VENDOR_ID" /> 的未知产品 <ph name="PRODUCT_ID" /></translation>
 <translation id="3165390001037658081">有些运营商可能会屏蔽此功能。</translation>
@@ -1891,6 +1893,7 @@
 <translation id="3916445069167113093">此类型的文件可能会损害您的计算机。您仍然要保留 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="3918972485393593704">向 Google 报告详细信息</translation>
 <translation id="3919145445993746351">若想在您的所有计算机上使用您的扩展程序，请开启同步功能</translation>
+<translation id="391999873395511996">正在下载虚拟机。</translation>
 <translation id="3920504717067627103">证书政策</translation>
 <translation id="392089482157167418">启用 ChromeVox（语音反馈）</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1941,7 +1944,6 @@
 <translation id="3983586614702900908">来自未知供应商的设备</translation>
 <translation id="3984159763196946143">无法启动演示模式</translation>
 <translation id="3984431586879874039">允许此网站查看您的安全密钥？</translation>
-<translation id="3987348946546879621">节省了数据流量</translation>
 <translation id="3987938432087324095">抱歉，没听清。</translation>
 <translation id="3988996860813292272">选择时区</translation>
 <translation id="399179161741278232">已导入</translation>
@@ -1972,7 +1974,6 @@
 <translation id="4037889604535939429">修改联系人</translation>
 <translation id="4042264909745389898">Google Chrome 操作系统条款</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{退出网页}other{退出网页}}</translation>
-<translation id="404299405565920089">您可在此处集中管理您的已通过应用和网站登录的所有 Google 帐号。已获得您的授权的应用和网站可访问其所需的帐号信息以正常运行。</translation>
 <translation id="4044612648082411741">输入您的证书密码</translation>
 <translation id="404493185430269859">默认搜索引擎</translation>
 <translation id="4046123991198612571">下一曲</translation>
@@ -2087,7 +2088,6 @@
 <translation id="4242533952199664413">打开“设置”</translation>
 <translation id="4242577469625748426">无法在设备上安装策略设置：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">查找更多触控笔应用</translation>
-<translation id="424546999567421758">检测到磁盘占用量非常高</translation>
 <translation id="424726838611654458">始终用Adobe Reader打开</translation>
 <translation id="4247901771970415646">无法同步到“<ph name="USERNAME" />”</translation>
 <translation id="4249248555939881673">正在等待建立网络连接…</translation>
@@ -2195,7 +2195,6 @@
 <translation id="4421932782753506458">猫咪</translation>
 <translation id="4422347585044846479">修改此页的书签</translation>
 <translation id="4423376891418188461">还原设置</translation>
-<translation id="4423482519432579560">拼写检查(&amp;S)</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />，您的管理员要求您更改密码。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4430369329743628066">已添加书签</translation>
@@ -2655,8 +2654,6 @@
 <translation id="5187295959347858724">您现在已登录 <ph name="SHORT_PRODUCT_NAME" />。系统正在将您的书签、浏览记录和其他设置与您的 Google 帐号同步。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想下载多个文件</translation>
-<translation id="5192316339598592690">快速切换帐号并同时登录所有相关应用和网站。
-    应用和网站可能会向您请求权限，以便使用您的某些 Google 帐号信息。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">请对此设备执行 Powerwash，然后重试。</translation>
 <translation id="5204967432542742771">输入密码</translation>
 <translation id="5206215183583316675">要删除“<ph name="CERTIFICATE_NAME" />”吗？</translation>
@@ -3335,7 +3332,6 @@
 <translation id="622537739776246443">个人资料将被删除</translation>
 <translation id="6225475702458870625">可通过您的<ph name="PHONE_NAME" />使用数据网络连接</translation>
 <translation id="6226777517901268232">私钥文件（选填）</translation>
-<translation id="6228516488918914827">页面加载速度更快了</translation>
 <translation id="6228691855869374890">此网站可完全控制 MIDI 设备。</translation>
 <translation id="6229890768313448549">无法加载《Google Play 服务条款》。请重试。</translation>
 <translation id="6231881193380278751">在网址中添加查询参数可自动刷新相应网页：chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3540,7 +3536,6 @@
 <translation id="6545665334409411530">重复速度</translation>
 <translation id="6545834809683560467">在地址栏或应用启动器搜索框中输入搜索字词和网址时，借助联想查询服务自动补齐相关内容</translation>
 <translation id="6545867563032584178">已在 Mac 系统偏好设置中关闭麦克风</translation>
-<translation id="6547316139431024316">不再为此扩展程序发出此警告</translation>
 <translation id="6547354035488017500">请至少释放 512 MB 的空间，否则您的设备将无响应。要释放空间，请将文件从设备存储空间中删除。</translation>
 <translation id="6550675742724504774">选项</translation>
 <translation id="6551508934388063976">无法使用命令。请按 Ctrl+N 打开一个新窗口。</translation>
@@ -4668,7 +4663,6 @@
 <translation id="827097179112817503">显示“主页”按钮</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{已删除 1 个书签}other{已删除 # 个书签}}</translation>
 <translation id="8272443605911821513">点击“更多工具”菜单中的“扩展程序”，可以管理您的扩展程序。</translation>
-<translation id="8272966760965438857">在一个位置集中管理您的 Google 帐号</translation>
 <translation id="8274332263553132018">投射文件</translation>
 <translation id="8274924778568117936">在完成更新之前，请勿关闭您的 <ph name="DEVICE_TYPE" />。您的 <ph name="DEVICE_TYPE" /> 将会于安装完毕后重启。</translation>
 <translation id="8275038454117074363">导入</translation>

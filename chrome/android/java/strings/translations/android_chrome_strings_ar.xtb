@@ -24,7 +24,7 @@
 <translation id="1175310183703641346">‏لن تتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى مع حسابك على Google بعد الآن.</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
 <translation id="1181037720776840403">إزالة</translation>
-<translation id="1188239144602654184">إدخال الواقع المعزّز</translation>
+<translation id="1188239144602654184">إطلاق الواقع المعزّز</translation>
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
 <translation id="119944043368869598">محو الكل</translation>
 <translation id="1201402288615127009">التالي</translation>
@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">‏السماح بالتحكم الكامل لأجهزة MIDI</translation>
 <translation id="1449080968331948513">يُشار إلى ميزة "توفير البيانات" الآن باسم "الوضع البسيط"</translation>
 <translation id="145097072038377568">‏تم إيقافه في إعدادات Android.</translation>
+<translation id="146329143005354472">إضافة إلى "تطبيقاتي"</translation>
 <translation id="1477626028522505441">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب مشاكل بالخادم.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (أكثر من عنصر واحد آخر)}zero{ (أكثر من # عناصر أخرى)}two{ (أكثر من عنصرين (#) آخرين)}few{ (أكثر من # عناصر أخرى)}many{ (أكثر من # عنصرًا آخر)}other{ (أكثر من # عنصر آخر)}}</translation>
 <translation id="1501480321619201731">حذف مجموعة</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2874939134665556319">المقطع الصوتي السابق</translation>
 <translation id="2876369937070532032">‏يتم إرسال عناوين URL لبعض الصفحات التي تزورها إلى Google، عندما يكون أمانك في خطر</translation>
-<translation id="2876764156902388290">‏يستخدم Chrome بيانات أقل لعرض هذه الصفحة لك</translation>
 <translation id="2888126860611144412">‏لمحة عن Chrome</translation>
 <translation id="2891154217021530873">إيقاف تحميل الصفحة</translation>
 <translation id="2893180576842394309">‏قد تستخدم Google سجلّك لتخصيص البحث وخدمات Google الأخرى.</translation>

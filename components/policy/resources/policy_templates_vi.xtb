@@ -417,7 +417,6 @@
 
       Cảnh báo: Không nên ủy quyền kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> cho ứng dụng kiosk vì điều này có thể khiến thiết bị không thể nhận được các bản cập nhật phần mềm và các bản vá bảo mật tối quan trọng. Việc ủy quyền kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> có thể khiến người dùng gặp rủi ro.</translation>
 <translation id="1675002386741412210">Hỗ trợ trên:</translation>
-<translation id="1689963000958717134">Cho phép áp dụng cấu hình mạng cho tất cả người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Định cấu hình tính sẵn sàng và hành vi của chức năng cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Bạn chỉ có thể chỉ định từng tùy chọn cài đặt trong thuộc tính JSON:
@@ -971,16 +970,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này tắt, các trang web không thể sử dụng JavaScript và người dùng không thể thay đổi cài đặt đó.
 
       Nếu cài đặt này bật hoặc không được thiết lập, các trang web có thể sử dụng JavaScript nhưng người dùng có thể thay đổi cài đặt đó.</translation>
-<translation id="2747157663401642394">Định cấu hình các tùy chọn cài đặt quản lý tiện ích cho <ph name="PRODUCT_NAME" />.
-
-          Chính sách này kiểm soát nhiều tùy chọn cài đặt, bao gồm cả những tùy chọn cài đặt chịu sự kiểm soát của các chính sách hiện có liên quan đến tiện ích. Chính sách này sẽ ghi đè bất cứ chính sách cũ nào nếu bạn đặt cả hai.
-
-          Chính sách này liên kết một mã tiện ích hoặc một URL cập nhật với cấu hình tương ứng. Với mã tiện ích, cấu hình sẽ chỉ áp dụng cho tiện ích đã chỉ định. Bạn có thể đặt cấu hình mặc định cho mã đặc biệt <ph name="DEFAULT_SCOPE" />. Cấu hình này sẽ được áp dụng cho tất cả tiện ích chưa đặt cấu hình tùy chỉnh trong chính sách này. Với URL cập nhật, cấu hình sẽ được áp dụng cho tất cả tiện ích có URL cập nhật chính xác nêu trong tệp kê khai của tiện ích này, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Đối với các phiên bản Windows không liên kết với miền <ph name="MS_AD_NAME" />, việc cài đặt bắt buộc chỉ giới hạn ở các ứng dụng và tiện ích có trong Cửa hàng Chrome trực tuyến.
-
-          Để xem phần mô tả đầy đủ về các tùy chọn cài đặt có thể có và cấu trúc của chính sách này, vui lòng truy cập vào https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Hạn chế phạm vi của cổng UDP cục bộ do WebRTC sử dụng</translation>
 <translation id="2757054304033424106">Các loại tiện ích/ứng dụng được phép cài đặt</translation>
 <translation id="2758084448533744848">Chỉ định múi giờ bắt buộc để sử dụng cho thiết bị. Khi bạn đặt chính sách này, thì người dùng không thể ghi đè múi giờ đã chỉ định trên thiết bị. Nếu bạn chỉ định một giá trị không hợp lệ, thì chính sách này vẫn sẽ được kích hoạt bằng "GMT". Nếu bạn chỉ định một chuỗi trống, thì chính sách này sẽ bị bỏ qua.
@@ -1752,30 +1741,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chính sách này chỉ ảnh hưởng đến người dùng xác thực bằng cách sử dụng SAML.</translation>
 <translation id="4105989332710272578">Tắt buộc thực thi Tính minh bạch của chứng chỉ cho danh sách URL</translation>
 <translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
-<translation id="4125606414556046117">Chính sách này cho phép bạn định cấu hình hình nền hiển thị trên màn hình và trên nền màn hình đăng nhập cho người dùng. Bạn đặt chính sách này bằng cách chỉ định URL mà từ đó <ph name="PRODUCT_OS_NAME" /> có thể tải hình nền xuống và dùng hàm băm mật mã để xác minh tính toàn vẹn của hình nền tải xuống. Hình ảnh phải ở định dạng JPEG, kích thước tệp không được vượt quá 16 MB. URL phải truy cập được mà không cần xác thực.
-
-      Hình nền được tải xuống và lưu vào bộ nhớ đệm. Hình nền sẽ được tải xuống lại bất cứ khi nào URL hoặc hàm băm thay đổi.
-
-      Bạn nên chỉ định chính sách này dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON, tuân theo giản đồ sau:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL mà từ đó có thể tải hình nền xuống.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hàm băm SHA-256 của hình nền.",
-            "type": "string"
-          }
-        }
-      }
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ tải xuống và sử dụng hình nền.
-
-      Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
-
-      Nếu bạn không đặt chính sách này, người dùng có thể chọn hình ảnh để hiển thị trên màn hình và trên nền màn hình đăng nhập.</translation>
 <translation id="412697421478384751">Cho phép người dùng đặt mã PIN yếu cho mã PIN màn hình khóa.</translation>
 <translation id="4138655880188755661">Giới hạn thời gian</translation>
 <translation id="4144164749344898721">Chính sách này kiểm soát nhiều tùy chọn cài đặt cho chiến lược quản lý nguồn khi người dùng ở chế độ không sử dụng.
@@ -2098,7 +2063,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="487460824085252184">Tự động di chuyển, không cần yêu cầu sự chấp thuận của người dùng.</translation>
 <translation id="4874982543810021567">Chặn WebUSB trên các trang web này</translation>
 <translation id="4876805738539874299">Đã bật phiên bản SSL tối đa</translation>
-<translation id="4887274746092315609">Cho phép người dùng SAML đổi mật khẩu của một trang ngay trong phiên đăng nhập</translation>
+<translation id="4887274746092315609">Cho phép một trang để người dùng SAML có thể đổi mật khẩu ngay trong phiên đăng nhập</translation>
 <translation id="4897928009230106190">Chỉ định tham số được dùng khi thực hiện tìm kiếm theo đề xuất với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên, tham số đó sẽ được thay thế bằng dữ liệu cụm từ tìm kiếm thực.
 
           Chính sách này là tùy chọn. Nếu không đặt, yêu cầu tìm kiếm theo đề xuất sẽ được gửi bằng phương thức GET.
@@ -2731,53 +2696,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
        Nếu chính sách này không được đặt hoặc bị đặt thành sai, lệnh in sẽ chạy màn hình chế độ xem trước bản in.</translation>
 <translation id="6022948604095165524">Tác vụ khi khởi động</translation>
-<translation id="6023030044732320798">Chỉ định một nhóm chính sách sẽ được chuyển giao cho thư viện thời gian chạy ARC. Giá trị phải là định dạng JSON hợp lệ.
-
-      Chính sách này có thể dùng để định cấu hình ứng dụng Android nào sẽ được tự động cài đặt trên thiết bị:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Giá trị nhận dạng ứng dụng Android, ví dụ: "com.google.android.gm" cho Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Chỉ định cách cài đặt ứng dụng. OPTIONAL: Ứng dụng không được cài đặt tự động, nhưng người dùng có thể tự cài đặt. Đây là cài đặt mặc định nếu không chỉ định chính sách này. PRELOAD: Ứng dụng được cài đặt tự động, nhưng người dùng có thể gỡ cài đặt. FORCE_INSTALLED: Ứng dụng được cài đặt tự động và người dùng không thể gỡ cài đặt. BLOCKED: Ứng dụng bị chặn và không thể cài đặt. Nếu ứng dụng đã được cài đặt theo một chính sách trước đây thì nó sẽ bị gỡ cài đặt.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Chính sách yêu cầu cấp quyền cho ứng dụng. PERMISSION_POLICY_UNSPECIFIED: Không chỉ định chính sách. Nếu không có chính sách cấp quyền ở cấp nào, hành vi `PROMPT` sẽ được áp dụng theo mặc định. PROMPT: Nhắc người dùng cấp quyền. GRANT: Tự động cấp quyền. DENY: Tự động từ chối quyền.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Đối tượng cấu hình JSON riêng cho ứng dụng, chứa một tập hợp các cặp khóa-giá trị, ví dụ: '"managedConfiguration": { "key1": value1, "key2": value2 }'. Các khóa được định nghĩa trong trong tệp kê khai của ứng dụng.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Để ghim ứng dụng vào trình khởi chạy, hãy xem PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL instant của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="603410445099326293">Tham số cho URL đề xuất sử dụng POST</translation>
 <translation id="6034341625190551415">Kiểm soát phiên công khai và loại tài khoản kiosk.</translation>
@@ -3130,37 +3048,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn đặt chính sách này thành false, thì ứng dụng DNS tích hợp sẽ không bao giờ được sử dụng.
 
       Nếu bạn không đặt chính sách này, thì ứng dụng DNS tích hợp sẽ được bật theo mặc định trên MacOS, Android (khi cả VPN lẫn DNS riêng đều không được bật) và ChromeOS, đồng thời người dùng sẽ có thể thay đổi tùy chọn có sử dụng ứng dụng DNS tích hợp hay không bằng cách chỉnh sửa chrome://flags hoặc chỉ định một cờ dòng lệnh.</translation>
-<translation id="6838056959556423778">Ghi đè các quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />.
-
-      Chính sách này xác định quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />. Điều này xảy ra vào lần đầu chức năng in được sử dụng với một cấu hình.
-
-      Khi bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố tìm một máy in khớp với tất cả các thuộc tính đã chỉ định và chọn thiết bị đó làm máy in mặc định. Máy in đầu tiên được tìm thấy phù hợp với chính sách sẽ được chọn, trong trường hợp kết quả trùng khớp không phải duy nhất, thì có thể chọn bất kỳ máy in trùng khớp nào tùy thuộc vào thứ tự mà máy in được tìm thấy.
-
-      Nếu bạn chưa đặt chính sách này hoặc không tìm thấy máy in trùng khớp trong khoảng thời gian chờ thì máy in sẽ được đặt mặc định thành máy in PDF tích hợp hoặc không có máy in nào được chọn khi không có máy in PDF.
-
-      Giá trị này được phân tích cú pháp dưới dạng đối tượng JSON, tuân theo giản đồ sau đây:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Máy in đã kết nối với <ph name="CLOUD_PRINT_NAME" /> được coi là <ph name="PRINTER_TYPE_CLOUD" />, các máy in còn lại được phân loại là <ph name="PRINTER_TYPE_LOCAL" />.
-      Bỏ qua một trường nghĩa là tất cả các giá trị trùng khớp, chẳng hạn như không chỉ rõ hoạt động kết nối, sẽ làm cho chế độ Xem trước bản in bắt đầu tìm tất cả các loại máy in, cục bộ và trên đám mây.
-      Mẫu biểu thức thông thường phải tuân thủ cú pháp JavaScript RegExp và kết quả trùng khớp có phân biệt chữ hoa-thường.</translation>
 <translation id="6843296367238757293">Chính sách này không còn dùng nữa. Bạn không nên sử dụng chính sách này. Đọc thêm tại https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Chính sách này đã bị xóa trong <ph name="PRODUCT_NAME" /> 68 và thay thế bằng <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Chính sách này không được dùng nữa và đã bị xóa trong M66, vì chính sách này trước đây chỉ dùng để kiểm tra nội bộ và tiềm ẩn nguy cơ bảo mật.
@@ -4323,30 +4210,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Chính sách này chỉ ảnh hưởng đến người dùng đã xác thực bằng Ngôn ngữ đánh dấu xác nhận bảo mật (SAML).
 
       Bạn nên chỉ định giá trị tính bằng giây cho chính sách này.</translation>
-<translation id="9027787254195333560">Chính sách này cho phép bạn định cấu hình hình đại diện cho người dùng trên màn hình đăng nhập. Bạn đặt chính sách này bằng cách chỉ định URL mà từ đó <ph name="PRODUCT_OS_NAME" /> có thể tải xuống hình đại diện và một hàm băm mật mã dùng để xác minh tính toàn vẹn của tài nguyên đã tải xuống. Ảnh phải ở định dạng JPEG, kích thước ảnh không được vượt quá 512 kB. URL phải truy cập được mà không cần xác thực.
-
-      Hình đại diện được tải xuống và lưu vào bộ nhớ đệm. Hình nền sẽ được tải xuống lại bất cứ khi nào URL hoặc hàm băm thay đổi.
-
-      Bạn nên chỉ định chính sách này dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON, tuân theo giản đồ sau:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL mà từ đó có thể tải hình đại diện xuống.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hàm băm SHA-256 của hình đại diện.",
-            "type": "string"
-          }
-        }
-      }
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ tải xuống và sử dụng hình đại diện.
-
-      Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
-
-      Nếu bạn không đặt chính sách này, người dùng có thể chọn hình đại diện cho họ trên màn hình đăng nhập.</translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
 <translation id="9038058011835642205">Chỉ định danh sách các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
 
@@ -4359,7 +4222,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
 
       Bạn nên chỉ định giá trị tính bằng mili giây cho chính sách. Giá trị được giới hạn trong khoảng từ 30 giây đến 24 giờ.</translation>
-<translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Chính sách này kiểm soát việc có cập nhật thiết bị lên Bản dựng Quick Fix hay không.
 
       Nếu bạn đặt giá trị của chính sách thành một mã thông báo tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên Bản dựng Quick Fix tương ứng nếu không có chính sách nào khác chặn quá trình cập nhật này.
@@ -4439,17 +4301,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu đặt chính sách này thành false, thì tùy chọn 'Đầu trang và chân trang' sẽ không được chọn trong hộp thoại xem trước bản in và người dùng không thể thay đổi điều này.
 
       Nếu đặt chính sách này thành true, thì tùy chọn 'Đầu trang và chân trang' sẽ được chọn trong hộp thoại xem trước bản in và người dùng không thể thay đổi điều này.</translation>
-<translation id="9213347477683611358">Định cấu hình hình nền cấp thiết bị được hiển thị trên màn hình đăng nhập nếu chưa có người dùng nào đăng nhập vào thiết bị. Bạn có thể đặt chính sách bằng cách chỉ định URL mà từ đó thiết bị Chrome OS có thể tải xuống hình nền và sử dụng một hàm băm mật mã hóa để xác minh tính toàn vẹn của nội dung tải xuống. Hình ảnh phải ở định dạng JPEG với kích thước tệp hình ảnh không được vượt quá 16MB. URL phải truy cập được mà không cần bất kỳ hình thức xác thực nào. Hình nền được tải xuống và lưu vào bộ nhớ đệm. Hình ảnh sẽ được tải xuống lại mỗi khi URL hoặc hàm băm thay đổi.
-
-      Chính sách phải được chỉ định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON, ví dụ:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Nếu đã đặt chính sách hình nền thiết bị, thiết bị Chrome OS sẽ tải xuống và sử dụng hình nền trên màn hình đăng nhập nếu chưa có người dùng nào đăng nhập vào thiết bị. Sau khi người dùng đăng nhập, chính sách hình nền của người dùng sẽ kích hoạt.
-
-      Nếu chưa đặt chính sách hình nền thiết bị thì chính sách hình nền của người dùng sẽ quyết định nội dung hiển thị nếu đã đặt chính sách hình nền của người dùng.</translation>
 <translation id="9217154963008402249">Tần suất theo dõi gói mạng</translation>
 <translation id="922540222991413931">Định cấu hình nguồn cài đặt tiện ích, ứng dụng và tập lệnh người dùng</translation>
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>

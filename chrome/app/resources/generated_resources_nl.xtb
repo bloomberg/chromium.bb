@@ -338,6 +338,7 @@
     moet gebruiken, pas je je <ph name="LINK_START" />proxyinstellingen<ph name="LINK_END" /> aan.</translation>
 <translation id="1512210426710821809">Je kunt dit alleen ongedaan maken door <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> opnieuw te installeren</translation>
 <translation id="151501797353681931">Geïmporteerd uit Safari</translation>
+<translation id="1515163294334130951">Starten</translation>
 <translation id="1521442365706402292">Certificaten beheren</translation>
 <translation id="152234381334907219">Nooit opgeslagen</translation>
 <translation id="1524430321211440688">Toetsenbord</translation>
@@ -440,6 +441,7 @@
 <translation id="167160931442925455">Luidst</translation>
 <translation id="1673137583248014546"><ph name="URL" /> wil het merk en het model van je beveiligingssleutel bekijken</translation>
 <translation id="1679068421605151609">Ontwikkelaarstools</translation>
+<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="167983332380191032">Beheerservice heeft HTTP-fout verzonden.</translation>
 <translation id="1680849702532889074">Er is een fout opgetreden tijdens de installatie van je Linux-app.</translation>
 <translation id="16815041330799488">Niet toestaan dat sites tekst en afbeeldingen kunnen zien die naar het klembord zijn gekopieerd</translation>
@@ -963,7 +965,6 @@
 <translation id="2496180316473517155">Browsegeschiedenis</translation>
 <translation id="2497229222757901769">Snelheid muis</translation>
 <translation id="2497852260688568942">Synchronisatie is uitgeschakeld door je beheerder</translation>
-<translation id="249819058197909513">Geen waarschuwing meer weergeven voor deze app</translation>
 <translation id="2498539833203011245">Minimaliseren</translation>
 <translation id="2498765460639677199">Heel groot</translation>
 <translation id="2499747912851752301">Wachtwoorden exporteren...</translation>
@@ -1051,7 +1052,6 @@
 <translation id="2630681426381349926">Maak verbinding met wifi om te beginnen</translation>
 <translation id="2631120081682787498">Weet je zeker dat je dit tabblad wilt sluiten?</translation>
 <translation id="2631498379019108537">Invoeropties op de plank weergeven</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> gebruikt <ph name="USAGE" /> MB schijfruimte.</translation>
 <translation id="2633212996805280240">Wil je '<ph name="EXTENSION_NAME" />' verwijderen?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> kan de installatie niet voltooien, maar wordt nog steeds uitgevoerd via de schijfkopie.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1397,7 +1397,6 @@
 <translation id="3157931365184549694">Herstellen</translation>
 <translation id="3158033540161634471">Je vingerafdruk instellen</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (met hardwareondersteuning)</translation>
-<translation id="316125635462764134">App verwijderen</translation>
 <translation id="3161522574479303604">Alle talen</translation>
 <translation id="3163201441334626963">Onbekend product <ph name="PRODUCT_ID" /> van leverancier <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Sommige providers kunnen deze functie blokkeren.</translation>
@@ -1898,6 +1897,7 @@
 <translation id="3916445069167113093">Dit type bestand kan schadelijk zijn voor je computer. Wil je <ph name="FILE_NAME" /> toch behouden?</translation>
 <translation id="3918972485393593704">Details melden aan Google</translation>
 <translation id="3919145445993746351">Schakel synchronisatie in om op al je computers toegang te krijgen tot je extensies</translation>
+<translation id="391999873395511996">De virtuele machine downloaden.</translation>
 <translation id="3920504717067627103">Certificaatbeleid</translation>
 <translation id="392089482157167418">ChromeVox (gesproken feedback) inschakelen</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1949,7 +1949,6 @@
 <translation id="3983586614702900908">apparaten van een onbekende leverancier</translation>
 <translation id="3984159763196946143">Kan demomodus niet starten</translation>
 <translation id="3984431586879874039">Deze site toestaan je beveiligingssleutel te bekijken?</translation>
-<translation id="3987348946546879621">Mobiel dataverbruik bespaard</translation>
 <translation id="3987938432087324095">Sorry, dat heb ik niet verstaan.</translation>
 <translation id="3988996860813292272">Tijdzone selecteren</translation>
 <translation id="399179161741278232">Geïmporteerd</translation>
@@ -1980,7 +1979,6 @@
 <translation id="4037889604535939429">Persoon bewerken</translation>
 <translation id="4042264909745389898">Voorwaarden van Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Pagina afsluiten}other{Pagina's afsluiten}}</translation>
-<translation id="404299405565920089">Al je ingelogde Google-accounts voor apps en websites kunnen hier worden beheerd. Apps en websites die je daarvoor toestemming hebt gegeven, hebben toegang tot de accountgegevens die ze nodig hebben om goed te kunnen werken.</translation>
 <translation id="4044612648082411741">Geef je certificaatwachtwoord op</translation>
 <translation id="404493185430269859">Standaard­zoekmachine</translation>
 <translation id="4046123991198612571">Volgend nummer</translation>
@@ -2095,7 +2093,6 @@
 <translation id="4242533952199664413">Instellingen openen</translation>
 <translation id="4242577469625748426">Kan geen beleidsinstellingen op het apparaat installeren: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Meer stylus-apps zoeken</translation>
-<translation id="424546999567421758">Intensief schijfgebruik gedetecteerd</translation>
 <translation id="424726838611654458">Altijd in Adobe Reader openen</translation>
 <translation id="4247901771970415646">Kan niet synchroniseren met <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Wachten op netwerkverbinding...</translation>
@@ -2203,7 +2200,6 @@
 <translation id="4421932782753506458">Pluisje</translation>
 <translation id="4422347585044846479">Bladwijzer voor deze pagina bewerken</translation>
 <translation id="4423376891418188461">Instellingen herstellen</translation>
-<translation id="4423482519432579560">&amp;Spellingcontrole</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, de beheerder vereist dat je je wachtwoord wijzigt.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4430369329743628066">Bladwijzer toegevoegd</translation>
@@ -2663,8 +2659,6 @@
 <translation id="5187295959347858724">Je bent nu ingelogd bij <ph name="SHORT_PRODUCT_NAME" />. Je bladwijzers, geschiedenis en andere instellingen worden gesynchroniseerd met je Google-account.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> wil meerdere bestanden downloaden</translation>
-<translation id="5192316339598592690">Schakel snel tussen accounts en log in één keer in bij apps en websites.
-    Apps en sites kunnen je toestemming vragen om bepaalde Google-accountgegevens te gebruiken. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Voer een powerwash uit op het apparaat en probeer het opnieuw.</translation>
 <translation id="5204967432542742771">Wachtwoord invoeren</translation>
 <translation id="5206215183583316675"><ph name="CERTIFICATE_NAME" /> verwijderen?</translation>
@@ -3343,7 +3337,6 @@
 <translation id="622537739776246443">Profiel wordt verwijderd</translation>
 <translation id="6225475702458870625">Gegevensverbinding beschikbaar via je <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Privésleutelbestand (optioneel)</translation>
-<translation id="6228516488918914827">Pagina sneller geladen</translation>
 <translation id="6228691855869374890">Deze site heeft volledig beheer van MIDI-apparaten.</translation>
 <translation id="6229890768313448549">De Servicevoorwaarden van Google Play kunnen niet worden geladen. Probeer het opnieuw.</translation>
 <translation id="6231881193380278751">Voeg een queryparameter aan de URL toe om de pagina automatisch te laten vernieuwen: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3548,7 +3541,6 @@
 <translation id="6545665334409411530">Herhalingssnelheid</translation>
 <translation id="6545834809683560467">Een voorspellingsservice gebruiken om zoekopdrachten en URL's aan te vullen die in de adresbalk of het zoekvak van de App Launcher worden getypt</translation>
 <translation id="6545867563032584178">Microfoon is uitgeschakeld in Mac-systeemvoorkeuren</translation>
-<translation id="6547316139431024316">Geen waarschuwing meer weergeven voor deze extensie</translation>
 <translation id="6547354035488017500">Je moet minimaal 512 MB aan ruimte vrijmaken om ervoor te zorgen dat het apparaat blijft reageren. Verwijder bestanden uit de opslag van het apparaat om ruimte vrij te maken.</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6551508934388063976">Opdracht niet beschikbaar. Druk op Ctrl-N om een nieuw venster te openen.</translation>
@@ -4678,7 +4670,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="827097179112817503">Knop 'Homepage' weergeven</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bladwijzer verwijderd}other{# bladwijzers verwijderd}}</translation>
 <translation id="8272443605911821513">Beheer je extensies door op 'Extensies' te klikken in het menu 'Meer tools'.</translation>
-<translation id="8272966760965438857">Je Google-accounts op één plaats beheren</translation>
 <translation id="8274332263553132018">Bestand casten</translation>
 <translation id="8274924778568117936">Je moet je <ph name="DEVICE_TYPE" /> niet uitschakelen of sluiten totdat de update is voltooid. Je <ph name="DEVICE_TYPE" /> wordt opnieuw opgestart nadat de installatie is voltooid.</translation>
 <translation id="8275038454117074363">Importeren</translation>

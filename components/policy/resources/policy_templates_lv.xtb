@@ -405,7 +405,6 @@
 
       Brīdinājums: nav ieteicams piešķirt kioska lietotnei <ph name="PRODUCT_OS_NAME" /> versijas kontroli, jo ierīcē var netikt saņemti programmatūras atjauninājumi un kritiski drošības labojumi. <ph name="PRODUCT_OS_NAME" /> versijas kontroles deleģēšana var apdraudēt lietotājus.</translation>
 <translation id="1675002386741412210">Saderīga ar:</translation>
-<translation id="1689963000958717134">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot visiem ierīces <ph name="PRODUCT_OS_NAME" /> lietotājiem. Tīkla konfigurācija ir JSON formatēta virkne, kā tas definēts šeit aprakstītajā atvērtā tīkla konfigurācijas formātā: <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1704516734140344991">Tiek konfigurēta <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitātes pieejamība un darbība.
 
       Atsevišķus iestatījumus var norādīt JSON rekvizītos.
@@ -967,16 +966,6 @@
       Ja šis iestatījums ir atspējots, tīmekļa lapās nevar lietot valodu JavaScript un lietotājs nevar mainīt šo iestatījumu.
 
       Ja šis iestatījums ir iespējots vai nav iestatīts, tīmekļa lapās var lietot valodu JavaScript, taču lietotājs var mainīt šo iestatījumu.</translation>
-<translation id="2747157663401642394">Šī politika tiek izmantota, lai konfigurētu <ph name="PRODUCT_NAME" /> paplašinājumu pārvaldības iestatījumus.
-
-          Ar šo politiku tiek regulēti vairāki iestatījumi, tostarp iestatījumi, kas tiek regulēti esošajās ar paplašinājumiem saistītajās politikās. Ja šī politika ir iestatīta, ar to tiek ignorētas jebkādas iestatītās mantotās politikas.
-
-          Izmantojot šo politiku, paplašinājuma ID vai atjauninājuma vietrādis URL tiek kartēts tā konfigurācijā. Izmantojot paplašinājuma ID, konfigurācija tiek piemērota tikai konkrētajam paplašinājumam. Īpašajam ID “<ph name="DEFAULT_SCOPE" />” var iestatīt noklusējuma konfigurāciju, kas tiks lietota visiem paplašinājumiem, kuriem šajā politikā nav iestatīta pielāgota konfigurācija. Izmantojot atjauninājuma vietrādi URL, konfigurācija tiek lietota visiem paplašinājumiem, kuru manifestā ir norādīts konkrētais atjauninājuma vietrādis URL (kā aprakstīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Windows datoros, kas nav pievienoti <ph name="MS_AD_NAME" /> domēnam, piespiedu instalēšana attiecas tikai uz lietotnēm un paplašinājumiem, kas norādīti Chrome interneta veikalā.
-
-          Pilnu iespējamo iestatījumu un šīs politikas struktūras aprakstu skatiet tīmekļa vietnē https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">WebRTC izmantoto lokālo UDP portu diapazona ierobežošana</translation>
 <translation id="2757054304033424106">Paplašinājumu/lietotņu veidi, kurus var instalēt</translation>
 <translation id="2758084448533744848">Norāda noteikto laika joslu, kas jāizmanto ierīcē. Ja šī politika ir iestatīta, ierīces lietotāji nevar ignorēt norādīto laika joslu. Ja ir norādīta nederīga vērība, politika joprojām ir aktivizēta, izmantojot vērtību “GMT”. Ja ir norādīta tukša virkne, politika tiek ignorēta.
@@ -1743,30 +1732,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Šī politika attiecas tikai uz tiem lietotājiem, kuri autentifikācijai izmanto SAML.</translation>
 <translation id="4105989332710272578">Atspējot Certificate Transparency piemērošanu norādītajiem vietrāžiem URL</translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
-<translation id="4125606414556046117">Izmantojot šo politiku, varat konfigurēt fona tapetes attēlu, kas tiek rādīts darbvirsmā un lietotāja pieteikšanās ekrāna fonā. Politika tiek iestatīta, norādot URL, no kura <ph name="PRODUCT_OS_NAME" /> var lejupielādēt fona tapetes attēlu un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 16 MB. URL ir jābūt pieejamam bez autentifikācijas.
-
-      Fona tapetes attēls tiek lejupielādēts un saglabāts kešatmiņā. Tas tiks lejupielādēts atkārtoti, kad mainīsies URL vai jaucējkods.
-
-      Politika ir jānorāda kā virkne, kas attēlo URL un jaucējkodu JSON formātā atbilstoši tālāk minētajai shēmai.
-      {
-        “tips”: objekts,
-        “īpašības”: {
-          “url”: {
-            “apraksts”: “URL, no kura var lejupielādēt fona tapetes attēlu”,
-            “tips”: “virkne”
-          },
-          “jaucējkods”: {
-            “apraksts”: “Fona tapetes attēla SHA-256 jaucējkods.”,
-            “tips”: “virkne”
-          }
-        }
-      }
-
-      Ja šī politika ir iestatīta, <ph name="PRODUCT_OS_NAME" /> lejupielādēs un izmantos fona tapetes attēlu.
-
-      Ja iestatīsiet šo politiku, lietotāji to nevarēs mainīt vai ignorēt.
-
-      Ja šī politika netiek iestatīta, lietotājs var izvēlēties attēlu, kas tiek rādīts darbvirsmā un pieteikšanās ekrāna fonā.</translation>
 <translation id="412697421478384751">Atļauja lietotājiem iestatīt nedrošus ekrāna bloķēšanas PIN</translation>
 <translation id="4138655880188755661">Laika ierobežojums</translation>
 <translation id="4144164749344898721">Šī politika kontrolē vairākus barošanas pārvaldības iestatījumus neaktivitātes gadījumā.
@@ -2730,53 +2695,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politikas nav iestatīta vai ir izvēlēta vērtība Aplams, drukāšanas komanda aktivizēs drukas priekšskatījuma ekrānu.</translation>
 <translation id="6022948604095165524">Darbība startēšanas brīdī</translation>
-<translation id="6023030044732320798">Norāda politiku kopu, kura tiks pārsūtīta ARC izpildlaikam. Vērtībai jābūt derīgai JSON vērtībai.
-
-      Šo politiku var izmantot, lai konfigurētu, kuras Android lietotnes tiek automātiski instalētas ierīcē:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Android lietotņu identifikators, piemēram, "com.google.android.gm" pakalpojumam Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Norāda, kā lietotne tiek instalēta. OPTIONAL: lietotne netiek instalēta automātiski, taču lietotājs var to instalēt. Šis ir noklusējuma iestatījums, ja šī politika nav norādīta. PRELOAD: lietotne tiek instalēta automātiski, taču lietotājs var to atinstalēt. FORCE_INSTALLED: lietotne tiek instalēta automātiski, un lietotājs nevar to atinstalēt. BLOCKED: lietotne ir bloķēta, un to nevar instalēt. Ja lietotne tika instalēta saskaņā ar iepriekšēju politiku, tā tiks atinstalēta.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Politika atļauju pieprasījumu piešķiršanai lietotnēm. PERMISSION_POLICY_UNSPECIFIED: politika nav norādīta. Ja atļaujai nevienā līmenī nav norādīta neviena politika, pēc noklusējuma tiek izmantots iestatījums PROMPT. PROMPT: prasīt lietotājam piešķirt atļauju. GRANT: automātiski piešķirt atļauju. DENY: automātiski noraidīt atļauju.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Konkrētas lietotnes JSON konfigurācijas objekti ar atslēgas/vērtības pāru kopu, piemēram, '"managedConfiguration": { "key1": value1, "key2": value2 }'. Atslēgas ir norādītas lietotnes manifestā.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Lai piespraustu lietotnes palaišanas programmai, skatiet politiku PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Noklusējuma meklētājprogrammas dinamisko mekl. rezultātu URL</translation>
 <translation id="603410445099326293">Parametri ieteikumu meklēšanas vietrādim URL, kurā izmantota metode POST</translation>
 <translation id="6034341625190551415">Kontrolē publiskās sesijas un kioska kontu veidus.</translation>
@@ -3113,37 +3031,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šai politikai ir iestatīta vērtība “false”, iebūvētais DNS klients nekad netiek izmantots.
 
       Ja šī politika nav iestatīta, iebūvētais DNS klients tiek iespējots pēc noklusējuma sistēmā Mac OS, Android (kad nav iespējots privātais DNS vai VPN) un Chrome OS, un lietotāji var mainīt iebūvētā DNS klienta izmantošanas iestatījumu, veicot izmaiņas lapā chrome://flags vai norādot komandrindiņas karodziņu.</translation>
-<translation id="6838056959556423778">Tiek ignorētas <ph name="PRODUCT_NAME" /> noklusējuma printera atlasīšanas kārtulas.
-
-      Šī politika nosaka kārtulas, kas paredzētas noklusējuma printera atlasīšanai pārlūkā <ph name="PRODUCT_NAME" />, pirmo reizi profilā izmantojot drukāšanas funkciju.
-
-      Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME" /> mēģinās atrast printeri, kurš atbilst visiem norādītajiem atribūtiem, un atlasīt to kā noklusējuma printeri. Tiek atlasīts pirmais printeris, kurš atbilst politikai. Ja nav unikālas atbilstības, var tikt atlasīts jebkurš printeris atkarībā no tā, kādā secībā printeri tiek atrasti.
-
-      Ja šī politika nav iestatīta vai noildzes laikā nav atrasts atbilstošs printeris, kā noklusējuma vērtība tiek atlasīts iebūvētais PDF printeris. Ja PDF printeris nav pieejams, netiek atlasīts neviens printeris.
-
-      Vērtība tiek parsēta kā JSON objekts atbilstoši šai shēmai::
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Vai ierobežot atbilstoša printera meklēšanu konkrētu printeru kopā.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regulārā izteiksme, kurai ir jāatbilst printera ID.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulārā izteiksme, kurai ir jāatbilst printera rādāmajam nosaukumam.",
-            "type": "string"
-          }
-        }
-      }
-
-      Pakalpojumam <ph name="CLOUD_PRINT_NAME" /> pievienotie printeri tiek uzskatīti par “<ph name="PRINTER_TYPE_CLOUD" />”, pārējie printeri tiek klasificēti kā “<ph name="PRINTER_TYPE_LOCAL" />”.
-      Neaizpildot lauku, tam atbilst visas vērtības, piemēram, nenorādot savienojamību, drukas priekšskatījumā tiek uzsākta visu veidu printeru atklāšana — gan vietējo, gan mākoņa.
-      Regulārās izteiksmes shēmām ir jāatbilst JavaScript RegExp sintaksei, un atbilstības ir reģistrjutīgas.</translation>
 <translation id="6843296367238757293">Šī politika ir novecojusi. Nav ieteicams to lietot. Uzziniet vairāk šeit: https://support.google.com/chrome/a/answer/7643500.</translation>
 <translation id="684856667300805181">Šī politika tika noņemta <ph name="PRODUCT_NAME" /> 68 versijā, un to aizstāj politika <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ar atjauninājumu M66 šai politikai tika pārtraukts atbalsts un tā tika noņemta, jo tā tika izmantota tikai iekšējai testēšanai un apdraud drošību.
@@ -4302,30 +4189,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Šī politika attiecas tikai uz lietotājiem, kuri tika autentificēti, izmantojot SAML.
 
       Politikas vērtība ir jānorāda sekundēs.</translation>
-<translation id="9027787254195333560">Šī politika ļauj konfigurēt lietotāja iemiesojuma attēlu, kas tiek rādīts pieteikšanās ekrānā. Politika tiek iestatīta, norādot URL, no kura <ph name="PRODUCT_OS_NAME" /> var lejupielādēt iemiesojuma attēlu un šifrēšanas jaukšanu, kas tiek izmantota, lai apstiprinātu lejupielādes integritāti. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 512 KB. URL ir jābūt pieejamam bez autentifikācijas.
-
-      Iemiesojuma attēls ir lejupielādēts un saglabāts kešatmiņā. Tas tiks lejupielādēts atkārtoti, kad mainīsies URL vai jaucējkods.
-
-      Politika ir jānorāda kā virkne, kas attēlo URL un jaucējkodu JSON formātā atbilstoši tālāk minētajai shēmai.
-      {
-        “tips”: objekts,
-        “īpašības”: {
-          “url”: {
-            “apraksts”: “URL, no kura var lejupielādēt iemiesojuma attēlu”,
-            “tips”: “virkne”
-          },
-          “jaucējkods”: {
-            “apraksts”: “Iemiesojuma attēla SHA-256 jaucējkods.”,
-            “tips”: “virkne”
-          }
-        }
-      }
-
-      Ja šī politika ir iestatīta, <ph name="PRODUCT_OS_NAME" /> lejupielādēs un izmantos iemiesojuma attēlu.
-
-      Ja iestatīsiet šo politiku, lietotāji to nevarēs mainīt vai ignorēt.
-
-      Ja šī politika netiek iestatīta, lietotājs varēs izvēlēties savu iemiesojuma attēlu, ko rādīt pieteikšanās ekrānā.</translation>
 <translation id="9035964157729712237">Paplašinājumu ID numuri, kas noņemami no melnā saraksta</translation>
 <translation id="9038058011835642205">Norāda sarakstu ar vietnēm, kuras tiek instalētas neuzraudzīti (bez lietotāja iejaukšanās) un kuras lietotājs nevar atinstalēt vai atspējot.
 
@@ -4338,8 +4201,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja iestatīsiet šo politiku, lietotāji to nevarēs mainīt vai ignorēt.
 
       Politikas vērtība ir jānorāda milisekundēs. Vērtība ir jānorāda diapazonā no 30 sekundēm līdz 24 stundām.</translation>
-<translation id="9042911395677044526">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot konkrētam lietotājam <ph name="PRODUCT_OS_NAME" /> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 
-definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Šī politika kontrolē to, vai ierīci var atjaunināt, izmantojot ātrā risinājuma būvējumu.
 
       Ja kā politikas vērtība ir iestatīts marķieris, kas novirza uz ātrā risinājuma būvējumu, ierīce tiks atjaunināta, izmantojot attiecīgo ātrā risinājuma būvējumu; izņēmums ir gadījumi, kad atjaunināšanu bloķē cita politika.
@@ -4419,17 +4280,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja politika ir iestatīta kā “false”, galvenes un kājenes netiek atlasītas drukāšanas priekšskatījuma dialoglodziņā un lietotājs to nevar mainīt.
 
       Ja politika ir iestatīta kā “true”, galvenes un kājenes tiek atlasītas drukāšanas priekšskatījuma dialoglodziņā un lietotājs nevar to mainīt.</translation>
-<translation id="9213347477683611358">Konfigurējiet ierīces līmeņa fona tapetes attēlu, kas tiek rādīts pieteikšanās ekrānā, ja ierīcē vēl nav pierakstījies neviens lietotājs. Politika tiek iestatīta, norādot URL, no kura Chrome OS ierīce var lejupielādēt fona tapetes attēlu, un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam jābūt JPEG formātā, tā lielums nedrīkst pārsniegt 16 MB. Lai piekļūtu vietrādim URL, nedrīkst pieprasīt autentificēšanos. Fona tapetes attēls tiek lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts, kad tiks mainīts URL vai jaucējkods.
-
-      Politika ir jānorāda kā virkne, kurā ietverts URL un jaucējkods JSON formātā, piemēram,
-      {
-        "url": "https://example.com/ierices_fona_tapete.jpg",
-        "hash": "fonatapetesjaucejkodapiemers"
-      }
-
-      Ja ierīces fona tapetes politika būs iestatīta un neviens lietotājs vēl nebūs pierakstījies ierīcē, Chrome OS ierīce lejupielādēs un pieteikšanās ekrānā izmantos fona tapetes attēlu. Tiklīdz kāds lietotājs pieteiksies, tiks aktivizēta lietotāja fona tapetes politika.
-
-      Ja ierīces fona tapetes politika nebūs iestatīta, taču lietotāja fona tapetes politika būs iestatīta, lietotāja fona tapetes politika noteiks, kas tiks rādīts.</translation>
 <translation id="9217154963008402249">Pārraudzības tīkla pakešu biežums</translation>
 <translation id="922540222991413931">Konfigurē paplašinājumu, lietotņu un lietotāja skriptu instalēšanas avotus</translation>
 <translation id="924557436754151212">Saglabāto paroļu importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>

@@ -60,7 +60,6 @@
 <translation id="2908441821576996758">Введите адреса электронной почты через запятую.</translation>
 <translation id="2940813599313844715">объект</translation>
 <translation id="2942448076852699108">выделенный контент</translation>
-<translation id="2983835398644161987">Выйти из режима "Картинка в картинке"</translation>
 <translation id="3040011195152428237">ссылка</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> МБ</translation>
 <translation id="3075154866155599887">Введите верное значение. Поле не заполнено или введена недействительная дата.</translation>
@@ -80,7 +79,6 @@
 <translation id="3822383571486410024">Минимально допустимое количество символов: <ph name="MIN_CHARACTERS" />. Длина текста сейчас: <ph name="CURRENT_LENGTH" />.</translation>
 <translation id="383465348367842624">Часть адреса до символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Обычный режим</translation>
-<translation id="3904511540324382638">Выйти из режима "Картинка в картинке"</translation>
 <translation id="3920932319529768807">заключение</translation>
 <translation id="3924558731517983934">приложение</translation>
 <translation id="3944740393230681990">пролог</translation>
@@ -151,7 +149,7 @@
 <translation id="6166809985690652833">послесловие</translation>
 <translation id="6209276755895393898">Кажется, это "<ph name="DESCRIPTION" />"</translation>
 <translation id="6213469881011901533">словарь</translation>
-<translation id="628938136236500310">Воспроизведение в режиме "Картинка в картинке"</translation>
+<translation id="6310801910862476708">Выйти из режима "Картинка в картинке"</translation>
 <translation id="6398862346408813489">Показать панель выбора месяца</translation>
 <translation id="6404546809543547843">полоса воспроизведения</translation>
 <translation id="6443871981718447451">показать меню субтитров</translation>

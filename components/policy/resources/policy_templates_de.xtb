@@ -332,9 +332,9 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
           Wenn "DeviceDockMacAddress" ausgewählt ist oder die Richtlinie nicht festgelegt wurde, wird die eingetragene Dock-MAC-Adresse des Geräts verwendet.
 
-          Ist "DeviceNicMacAddress" festgelegt, dann wird die MAC-Adresse des NIC (Netzwerkschnittstellencontrollers) des Geräts verwendet.
+          Ist "DeviceNicMacAddress" festgelegt, dann wird die MAC-Adresse der NIC (Netzwerkkarte) des Geräts verwendet.
 
-          Ist "DockNicMacAddress" ausgewählt, dann wird die MAC-Adresse des Dock-NIC verwendet.
+          Ist "DockNicMacAddress" ausgewählt, dann wird die MAC-Adresse der Dock-NIC verwendet.
 
           Diese Einstellung kann vom Nutzer nicht geändert werden.</translation>
 <translation id="1507957856411744193">Wenn diese Richtlinie auf "true" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> eine Verbindung zu Übertragungsgeräten unter allen IP-Adressen her, nicht nur zu jenen unter privaten RFC1918- oder RFC4193-Adressen.
@@ -411,7 +411,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Achtung: Es wird nicht empfohlen, die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version einer Kiosk-App zu überlassen, da das Gerät dann unter Umständen Softwareupdates und wichtige Sicherheitspatches nicht erhält. Wird die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version abgegeben, besteht eventuell ein Risiko für die Nutzer.</translation>
 <translation id="1675002386741412210">Unterstützt von:</translation>
-<translation id="1689963000958717134">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration für alle Nutzer eines <ph name="PRODUCT_OS_NAME" />-Geräts. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL" /> entspricht.</translation>
 <translation id="1704516734140344991">Hiermit werden Verfügbarkeit und Verhalten der Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfiguriert.
 
       Einzelne Einstellungen können in den JSON-Eigenschaften festgelegt werden:
@@ -955,16 +954,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wird diese Einstellung deaktiviert, können Webseiten kein JavaScript verwenden und der Nutzer kann diese Einstellung nicht ändern.
 
       Ist diese Einstellung aktiviert oder nicht definiert, können Webseiten JavaScript verwenden, wobei der Nutzer diese Einstellung jedoch ändern kann.</translation>
-<translation id="2747157663401642394">Konfiguriert Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />.
-
-          Mit dieser Richtlinie werden verschiedene Einstellungen gesteuert, darunter Einstellungen, die von anderen auf Erweiterungen bezogenen Richtlinien geregelt werden. Durch diese Richtlinie werden ältere Richtlinien überschrieben, wenn beide konfiguriert sind.
-
-          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID "<ph name="DEFAULT_SCOPE" />" festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine benutzerdefinierte Konfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
-
-          Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
-
-          Eine vollständige Beschreibung möglicher Einstellungen und des Aufbaus dieser Richtlinie finden Sie unter https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Den von WebRTC verwendeten Bereich lokaler UDP-Ports einschränken</translation>
 <translation id="2757054304033424106">Typen von Erweiterungen bzw. Apps, die installiert werden können</translation>
 <translation id="2758084448533744848">Gibt die erzwungene Zeitzone an, die für das Gerät verwendet wird. Wenn diese Richtlinie konfiguriert ist, können Nutzer die festgelegte Zeitzone auf dem Gerät nicht überschreiben. Ist ein ungültiger Wert angegeben, wird die Richtlinie stattdessen mithilfe von "GMT" aktiviert. Wird ein leerer String angegeben, wird die Richtlinie ignoriert.
@@ -1067,7 +1056,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wenn Sie diese Einstellung deaktivieren oder keinen Wert festlegen, wird für die Druckvorschau der zuletzt genutzte Drucker als Standarddrucker verwendet.
 
       Ist diese Einstellung aktiviert, wird für die Druckvorschau der Standarddrucker des Betriebssystems als Standarddrucker ausgewählt.</translation>
-<translation id="285627849510728211">Legt die Tageskonfiguration für den erweiterten Akkulademodus fest</translation>
+<translation id="285627849510728211">Tageskonfiguration für den erweiterten Akkulademodus festlegen</translation>
 <translation id="2856674246949497058">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Außerdem sollten Sie während des Vorgangs einen Powerwash durchführen.</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2873651257716068683">Dadurch wird die standardmäßige Druckseitengröße überschrieben. Wenn die Seitengröße nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
@@ -1184,11 +1173,11 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
       Ist diese Richtlinie auf "false" gesetzt, ist die WPAD-Optimierung deaktiviert, sodass <ph name="PRODUCT_NAME" /> länger auf DNS-basierte WPAD-Server warten muss. Wenn die Richtlinie aktiviert oder nicht festgelegt ist, ist die WPAD-Optimierung aktiviert.
 
       Unabhängig davon, ob und wie die Richtlinie festgelegt ist, kann die WPAD-Optimierung nicht von Nutzern verändert werden.</translation>
-<translation id="3071839057966069710">Es wird eine Liste der Drucker konfiguriert.
+<translation id="3071839057966069710">Hiermit wird eine Liste von Druckern konfiguriert.
 
       Mit dieser Richtlinie können Administratoren den Nutzern Druckerkonfigurationen zur Verfügung stellen.
 
-      "<ph name="PRINTER_DISPLAY_NAME" />" und "<ph name="PRINTER_DESCRIPTION" />" sind Freiform-Strings, die für eine einfachere Druckerauswahl angepasst werden können. "<ph name="PRINTER_MANUFACTURER" />" und "<ph name="PRINTER_MODEL" />" dienen der vereinfachten Druckererkennung durch die Endnutzer. Sie geben den Hersteller und das Modell des Druckers an. Bei "<ph name="PRINTER_URI" />" sollte es sich um eine Adresse, einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" /> handeln, auf die über einen Client-Computer zugegriffen werden kann. Die <ph name="PRINTER_UUID" /> ist optional. Bei Angabe wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
+      "<ph name="PRINTER_DISPLAY_NAME" />" und "<ph name="PRINTER_DESCRIPTION" />" sind Freiform-Strings, die für eine einfachere Druckerauswahl angepasst werden können. Mit "<ph name="PRINTER_MANUFACTURER" />" und "<ph name="PRINTER_MODEL" />" können Endnutzer einen Drucker leichter erkennen. Sie geben den Hersteller und das Modell des Druckers an. Bei "<ph name="PRINTER_URI" />" sollte es sich um eine Adresse einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" /> handeln, auf die über einen Client-Computer zugegriffen werden kann. Die <ph name="PRINTER_UUID" /> ist optional. Ist sie angegeben, wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
 
       "<ph name="PRINTER_EFFECTIVE_MODEL" />" muss mit einem der Strings übereinstimmen, die einen von <ph name="PRODUCT_NAME" /> unterstützten Drucker angeben. Der String wird zur Ermittlung und Installation der korrekten PPD für den Drucker verwendet. Weitere Informationen finden Sie unter https://support.google.com/chrome?p=noncloudprint.
 
@@ -1261,7 +1250,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="3220624000494482595">Wenn die Kiosk-App eine Android-App ist, hat sie keine Kontrolle über die <ph name="PRODUCT_OS_NAME" />-Version, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="3240609035816615922">Richtlinie für den Zugriff auf die Konfiguration von Druckern.</translation>
-<translation id="3240655340884151271">MAC-Adresse der im Dock verbauten Netzwerkkarte</translation>
+<translation id="3240655340884151271">MAC-Adresse der im Dock verbauten NIC</translation>
 <translation id="3243309373265599239">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb abgedunkelt wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abdunkelt.
@@ -1285,7 +1274,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
        Ist diese Einstellung deaktiviert, können Nutzer den Proxy nicht aktivieren und der Computer darf seine Drucker nicht für <ph name="CLOUD_PRINT_NAME" /> freigeben.</translation>
 <translation id="3312206664202507568">Aktiviert eine Seite auf "chrome://password-change", auf der SAML-Nutzer ihre SAML-Passwörter bei laufender Sitzung ändern können. Hierdurch wird dafür gesorgt, dass das SAML-Passwort und das Passwort für den Sperrbildschirm des Geräts synchronisiert bleiben.
 
-      Außerdem ermöglicht diese Richtlinie Benachrichtigungen, mit denen SAML-Nutzer gewarnt werden, wenn ihre SAML-Passwörter bald ablaufen. Auf diese Weise können sie das Problem sofort dadurch beheben, dass sie bei laufender Sitzung ihr Passwort ändern.
+      Außerdem ermöglicht diese Richtlinie Benachrichtigungen, mit denen SAML-Nutzer gewarnt werden, wenn ihre SAML-Passwörter bald ablaufen. Sie können dann direkt bei laufender Sitzung ihr Passwort ändern.
       Allerdings werden diese Benachrichtigungen nur angezeigt, wenn vom SAML-Identitätsanbieter während des SAML-Anmeldeablaufs Informationen zum Ablauf des Passworts an das Gerät gesendet werden.
 
       Ist diese Richtlinie eingestellt, dann kann der Nutzer sie weder ändern noch überschreiben.</translation>
@@ -1416,7 +1405,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Wenn diese Richtlinie auf "DeveloperToolsAllowed" (Wert 1), gesetzt ist, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden. Dies gilt auch für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden.
       Wenn diese Richtlinie auf "DeveloperToolsDisallowed" (Wert 2) gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, sind deaktiviert.</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
-<translation id="3550875587920006460">Wenn diese Richtlinie konfiguriert ist, kann ein benutzerdefinierter Zeitplan zum Prüfen auf Updates festgelegt werden. Er gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Das Gerät sucht dann gemäß dem Zeitplan nach Updates. Wenn geplante Prüfungen auf Updates nicht mehr durchgeführt werden sollen, müssen Sie die Richtlinie entfernen.</translation>
+<translation id="3550875587920006460">Mit dieser Richtlinie kann ein benutzerdefinierter Zeitplan zum Prüfen auf Updates festgelegt werden. Er gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Wenn ein Zeitplan aktiviert wird, sucht das Gerät entsprechend nach Updates. Wenn geplante Prüfungen auf Updates nicht mehr durchgeführt werden sollen, muss die Richtlinie entfernt werden.</translation>
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
 <translation id="3554984410014457319">Google Assistant erlauben, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird</translation>
 <translation id="356579196325389849">Nutzer dürfen die Chrome OS-Release-Version konfigurieren</translation>
@@ -1648,17 +1637,17 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
       Wenn diese Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer Angebote über die Chrome OS-Registrierung einlösen.
 
       Ist die Richtlinie auf "False" eingestellt, können Nutzer keine Angebote einlösen.</translation>
-<translation id="4008233182078913897">Hierdurch wird eine Liste von Apps und Erweiterungen festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können. Alle von den Apps und Erweiterungen angeforderten Berechtigungen werden implizit, ohne Eingriff durch den Nutzer, gewährt. Dazu gehören auch alle weiteren Berechtigungen, die von künftigen Versionen der Apps oder Erweiterungen angefordert werden. Außerdem werden den Erweiterungs-APIs "enterprise.deviceAttributes" und "enterprise.platformKeys" Berechtigungen erteilt. Diese beiden APIs stehen bei Apps und Erweiterungen ohne erzwungene Installation nicht zur Verfügung.
+<translation id="4008233182078913897">Gibt eine Liste von Apps und Erweiterungen an, die automatisch, ohne Zutun des Nutzers, installiert werden und die nicht von ihm deinstalliert oder deaktiviert werden können. Alle von den Apps und Erweiterungen angeforderten Berechtigungen werden implizit, ohne Eingriff durch den Nutzer, gewährt. Dazu gehören auch alle weiteren Berechtigungen, die von künftigen Versionen der App oder Erweiterung angefordert werden. Außerdem werden den Erweiterungs-APIs "enterprise.deviceAttributes" und "enterprise.platformKeys" Berechtigungen erteilt. Diese beiden APIs stehen bei Apps oder Erweiterungen ohne erzwungene Installation nicht zur Verfügung.
 
-          Diese Richtlinie hat Vorrang gegenüber einer möglicherweise damit in Konflikt stehenden Richtlinie "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />". Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
+Diese Richtlinie hat Vorrang gegenüber einer möglicherweise in Konflikt stehenden Richtlinie "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />". Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
 
 Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
 
-          Beachten Sie, dass Nutzer den Quellcode jeder Erweiterung mithilfe der Entwicklertools ändern können. Danach funktioniert die entsprechende Erweiterung eventuell nicht mehr. Wenn Sie das verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
+Der Quellcode jeder Erweiterung kann mithilfe der Entwicklertools von Nutzern geändert werden. Danach funktioniert die entsprechende Erweiterung eventuell nicht mehr. Wenn Sie dies verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
 
-          Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt sind. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus in <ph name="CHROME_EXTENSIONS_LINK" /> sehen. Die Update-URL sollte, sofern festgelegt, auf ein XML-Dokument mit einem Update-Manifest verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Die in dieser Richtlinie festgelegte Update-URL wird nur für die erste Installation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde. Außerdem war die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch.
+Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt sind. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus unter <ph name="CHROME_EXTENSIONS_LINK" /> sehen. Die Update-URL sollte, sofern festgelegt, auf ein XML-Dokument mit einem Update-Manifest verweisen, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Die in dieser Richtlinie festgelegte Update-URL wird nur für die erste Installation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde. Außerdem war die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch.
 
-          Beispiel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installiert die Erweiterung mit der ID "<ph name="EXTENSION_ID_SAMPLE" />" über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosten von Erweiterungen finden Sie unter: <ph name="LINK_TO_EXTENSION_DOC2" />.
+Beispiel: "<ph name="EXTENSION_POLICY_EXAMPLE" />" installiert die Erweiterung mit der ID "<ph name="EXTENSION_ID_SAMPLE" />" über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosting von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2" />.
 
 Wenn diese Richtlinie nicht festgelegt ist, werden Apps und Erweiterungen nicht automatisch installiert und der Nutzer kann jede App oder Erweiterung in <ph name="PRODUCT_NAME" /> deinstallieren.
 
@@ -1710,30 +1699,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Diese Richtlinie wirkt sich nur auf Nutzer aus, die sich über SAML authentifizieren.</translation>
 <translation id="4105989332710272578">Erzwingung der Zertifikatstransparenz für eine Liste von URLs deaktivieren</translation>
 <translation id="4121350739760194865">App-Werbung nicht auf der "Neuer Tab"-Seite anzeigen</translation>
-<translation id="4125606414556046117">Mit dieser Richtlinie können Sie das Hintergrundbild konfigurieren, das dem Nutzer auf dem Desktop und auf dem Anmeldebildschirm angezeigt wird. Bei der Konfiguration der Richtlinie wird eine URL angegeben, über die <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild und einen kryptografischen Hash zur Verifizierung der Integrität des Downloads herunterladen kann. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 16 MB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
-
-      Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.
-
-      Die Richtlinie sollte als String mit der URL und dem Hash im JSON-Format gemäß folgendem Schema angegeben werden:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Die URL, über die das Hintergrundbild heruntergeladen werden kann.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Der SHA-256-Hash des Hintergrundbilds.",
-            "type": "string"
-          }
-        }
-      }
-
-      Wenn diese Richtlinie konfiguriert ist, wird das Hintergrundbild von <ph name="PRODUCT_OS_NAME" /> heruntergeladen und verwendet.
-
-      Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-      Ist die Richtlinie nicht konfiguriert, kann der Nutzer ein Bild auswählen, das als Hintergrund auf dem Desktop und dem Anmeldebildschirm angezeigt werden soll.</translation>
 <translation id="412697421478384751">Nutzern erlauben, schwache PINs als Sperrbildschirm-PIN festzulegen</translation>
 <translation id="4138655880188755661">Zeitlimit</translation>
 <translation id="4144164749344898721">Mit dieser Richtlinie können Sie mehrere Einstellungen zur Energieverwaltung bei Inaktivität des Nutzers festlegen.
@@ -1878,7 +1843,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4360826270668210664">Wenn diese Richtlinie konfiguriert ist, verlangt der Host für den Remotezugriff von Clients, die sich authentifizieren, ein Authentifizierungstoken von dieser URL, damit eine Verbindung aufgebaut werden kann. Diese Richtlinie muss in Verbindung mit "RemoteAccessHostTokenValidationUrl" verwendet werden.
 
           Diese Funktion ist derzeit serverseitig deaktiviert.</translation>
-<translation id="4363057787588706121">Erlaubt das Zusammenführen von Listenrichtlinien aus unterschiedlichen Quellen</translation>
+<translation id="4363057787588706121">Zusammenführen von Listenrichtlinien aus unterschiedlichen Quellen erlauben</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
 <translation id="4372704773119750918">Nutzer in Unternehmen dürfen keine Mehrfachprofile verwenden (weder als primärer, noch als sekundärer Nutzer)</translation>
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
@@ -2606,10 +2571,10 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="5898486742390981550">Wenn mehrere Nutzer angemeldet sind, kann nur der Hauptnutzer Android-Apps verwenden.</translation>
 <translation id="5901427587865226597">Nur Duplexdruck</translation>
 <translation id="5903898512448364160">
-      Ist die Richtlinie auf "true" gesetzt, hat die Cloudrichtlinie Vorrang, wenn sie mit der Plattformrichtlinie in Konflikt steht.
+      Wenn die Richtlinie auf "true" gesetzt wird, hat die Cloudrichtlinie Vorrang, wenn sie mit der Plattformrichtlinie in Konflikt steht.
       Falls die Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, hat die Plattformrichtlinie Vorrang, wenn sie mit der Cloudrichtlinie in Konflikt steht.
 
-      Diese Richtlinie ist nur als obligatorische Computer-Plattformvariante verfügbar. Sie gilt nur für Cloudrichtlinien auf Computern.
+      Diese Richtlinie ist nur als erforderliche Computer-Plattformrichtlinie verfügbar und wirkt sich lediglich auf Cloudrichtlinien auf Computern aus.
       </translation>
 <translation id="5905473632148429217">OCSP/CRL-Online-Prüfungen aktivieren</translation>
 <translation id="5906199912611534122">Ermöglicht die Aktivierung oder Deaktivierung der Netzwerkbegrenzung.
@@ -2641,7 +2606,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="5950205771952201658">Da Online-Überprüfungen zu SoftFail-Zertifikatssperren keinen wirkungsvollen Sicherheitseffekt bieten, werden sie ab <ph name="PRODUCT_NAME" />-Version 19 standardmäßig deaktiviert. Wenn Sie diese Richtlinie auf "true" setzen, wird das vorherige Verhalten wiederhergestellt und es werden online OCSP-/CRL-Prüfungen durchgeführt.
 
       Falls die Richtlinie nicht konfiguriert oder auf "false" eingestellt ist, führt <ph name="PRODUCT_NAME" /> ab <ph name="PRODUCT_NAME" />-Version 19 keine Online-Überprüfungen auf Zertifikatssperren mehr durch.</translation>
-<translation id="5961137303188584693">MAC-Adresse des im Gerät verbauten NIC</translation>
+<translation id="5961137303188584693">MAC-Adresse der im Gerät verbauten NIC</translation>
 <translation id="5966615072639944554">Erweiterungen, die die Remote Attestation API zur Bestätigung der Nutzeridentität verwenden dürfen</translation>
 <translation id="5983708779415553259">Standardverhalten für Websites, die nicht zu einem Inhaltspaket gehören</translation>
 <translation id="5997543603646547632">Standardmäßig 24-Stunden-Uhr verwenden</translation>
@@ -2652,59 +2617,12 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Wenn diese Richtlinie nicht festgelegt oder auf "false" gesetzt wurde, wird bei Druckaufträgen die Druckvorschau angezeigt.</translation>
 <translation id="6022948604095165524">Aktion beim Start</translation>
-<translation id="6023030044732320798">Gibt die Richtlinien an, die für die ARC-Laufzeit übergeben werden. Es muss ein gültiger JSON-Wert angegeben werden.
-
-      Diese Richtlinie kann verwendet werden, um zu konfigurieren, welche Android-Apps automatisch auf dem Gerät installiert werden:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Android-App-Kennzeichnung, z. B. "com.google.android.gm" für Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Gibt an, wie eine App installiert wird. OPTIONAL: Die App wird nicht automatisch installiert, der Nutzer kann sie jedoch installieren. Dies ist die Standardeinstellung, falls diese Richtlinie nicht konfiguriert wurde. PRELOAD: Die App wird automatisch installiert, aber der Nutzer kann sie deinstallieren. FORCE_INSTALLED: Die App wird automatisch installiert und der Nutzer kann sie nicht deinstallieren. BLOCKED: Die App wird blockiert und kann nicht installiert werden. Wenn die App im Rahmen einer vorherigen Richtlinie installiert wurde, wird sie deinstalliert.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Richtlinie bezüglich der Erlaubnis für Berechtigungsanfragen an Apps. PERMISSION_POLICY_UNSPECIFIED: Die Richtlinie ist nicht konfiguriert. Wenn keine Richtlinie für Berechtigungen auf allen Ebenen konfiguriert wird, wird das Verhalten 'PROMPT' standardmäßig verwendet. PROMPT: Der Nutzer wird aufgefordert, eine Erlaubnis zu erteilen. GRANT: Eine Erlaubnis wird automatisch erteilt. DENY: Eine Erlaubnis wird automatisch abgelehnt.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "App-spezifisches JSON-Konfigurationsobjekt mit einem Satz an Schlüssel/Wert-Paaren, z. B. '"managedConfiguration": { "key1": value1, "key2": value2 }'. Die Schlüssel sind im App-Manifest definiert.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Um Apps an den Launcher anzuheften, siehe "PinnedLauncherApps".</translation>
 <translation id="602728333950205286">Google Instant-URL der Standardsuchmaschine</translation>
 <translation id="603410445099326293">Parameter für URL der Vorschlagsuche, die POST verwendet</translation>
 <translation id="6034341625190551415">Legt die Typen für öffentliche Sitzungen und Kiosk-Konten fest.</translation>
 <translation id="6034603289689965535">Erlaubt einer Seite, während des Unloads Pop-ups einzublenden</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remotezugriff aktivieren</translation>
-<translation id="605475635122964053">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, wird keine Einschränkung angewendet. Wenn der Modus nicht verfügbar ist, wird diese Richtlinie ignoriert. Der PIN-Druckmodus wird nur für Drucker angewendet, die IPPS, USB oder IPP über USB verwenden. </translation>
+<translation id="605475635122964053">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, gelten keine Einschränkungen. Ist der Modus nicht verfügbar, wird diese Richtlinie ignoriert. Der PIN-Druckmodus wird nur für Drucker angewendet, die das IPPS- oder USB-Protokoll bzw. IPP über USB verwenden. </translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
 <translation id="6074964551275531965">Zeitraum für Updatebenachrichtigungen festlegen</translation>
@@ -2804,7 +2722,7 @@ Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTEN
       Wenn die Richtlinie deaktiviert ist, erfolgt kein Import der AutoFill-Formulardaten.
 
       Ist die Richtlinie nicht konfiguriert, wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
-<translation id="6221175752766085998">Lässt Zertifikate zu, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
+<translation id="6221175752766085998">Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
 <translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
 <translation id="6244210204546589761">Beim Start zu öffnende URLs</translation>
@@ -3034,37 +2952,6 @@ Wenn diese Richtlinie auf "True" gesetzt wurde, wird, falls verfügbar, der inte
       Wenn diese Richtlinie auf "False" gesetzt wurde, wird der integrierte DNS-Client nie verwendet.
 
       Wenn diese Richtlinie nicht konfiguriert ist, ist der integrierte DNS-Client unter MacOS, Android – sofern weder ein privates DNS noch ein VPN aktiviert ist – und ChromeOS standardmäßig aktiviert. Der Nutzer kann dann über die Bearbeitung von chrome://flags oder die Festlegung eines Befehlszeilen-Flags entscheiden, ob der integrierte DNS-Client verwendet wird oder nicht.</translation>
-<translation id="6838056959556423778">Überschreibt die Regeln von <ph name="PRODUCT_NAME" /> zur Auswahl des Standarddruckers.
-
-      Diese Richtlinie legt die Regeln für die Auswahl des Standarddruckers in <ph name="PRODUCT_NAME" /> fest. Diese Auswahl erfolgt, wenn in einem Profil zum ersten Mal die Druckfunktion genutzt wird.
-
-      Wenn diese Richtlinie konfiguriert ist, sucht <ph name="PRODUCT_NAME" /> einen passenden Drucker, der alle angegebenen Merkmale aufweist, und wählt diesen als Standarddrucker aus. Der erste Drucker, der die Richtlinie erfüllt, wird ausgewählt. Falls keine eindeutige Übereinstimmung gefunden wird, kann jeder übereinstimmende Drucker ausgewählt werden. Das hängt von der Reihenfolge ab, in der die Drucker gefunden werden.
-
-      Wenn diese Richtlinie nicht konfiguriert wurde oder kein passender Drucker innerhalb des Zeitlimits gefunden wird, wird als Standarddrucker der integrierte PDF-Drucker oder – falls dieser nicht verfügbar ist – gar kein Drucker ausgewählt.
-
-      Der Wert wird als JSON-Objekt gemäß dem folgenden Schema geparst:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Suche nach dem passenden Drucker auf eine bestimmte Reihe von Druckern beschränken?",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regulärer Ausdruck für Drucker-ID",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulärer Ausdruck für den angezeigten Namen des Druckers",
-            "type": "string"
-          }
-        }
-      }
-
-      Die mit <ph name="CLOUD_PRINT_NAME" /> verbundenen Drucker werden als "<ph name="PRINTER_TYPE_CLOUD" />" bezeichnet. Die anderen Drucker werden als "<ph name="PRINTER_TYPE_LOCAL" />" klassifiziert.
-      Wird ein Feld ausgelassen, bedeutet das, alle Werte stimmen überein. Beispiel: Wenn Sie keinen Wert für die Konnektivität angeben, wird die Erkennung sämtlicher Druckertypen, "local" und "cloud", über die Druckvorschau gestartet.
-      Die Muster für reguläre Ausdrücke müssen der JavaScript-RegExp-Syntax folgen und die Groß-/Kleinschreibung ist zu beachten.</translation>
 <translation id="6843296367238757293">Diese Richtlinie ist veraltet. Von ihrer Verwendung wird abgeraten. Weitere Informationen dazu finden Sie unter https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Diese Richtlinie wurde in Version 68 von <ph name="PRODUCT_NAME" /> entfernt und durch "<ph name="ARC_GLS_POLICY_NAME" />" ersetzt.</translation>
 <translation id="6856743875250214792">Diese Richtlinie ist veraltet und wurde aus M66 entfernt, da sie nur für interne Tests genutzt wurde und ein Sicherheitsrisiko darstellt.
@@ -3334,7 +3221,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="7273823081800296768">Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, kann der Nutzer beim Herstellen der Verbindung Clients und Hosts koppeln. Dadurch braucht nicht jedes Mal eine PIN eingegeben zu werden.
 
           Bei Deaktivierung dieser Einstellung ist diese Funktion nicht verfügbar.</translation>
-<translation id="7274077256421167535">Gemeinsame Stromversorgung für USB aktivieren</translation>
+<translation id="7274077256421167535">Gemeinsame Stromversorgung per USB aktivieren</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
 <translation id="7291084543582732020">Wenn Sie die Einstellung aktivieren, können Nutzer Smart Lock verwenden, wenn die Voraussetzungen für die Funktion erfüllt sind.
 
@@ -4052,7 +3939,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccounts.google.com weiter, damit sie ihr Passwort ändern können.
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
-<translation id="8800453707696044281">Legt den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs fest</translation>
+<translation id="8800453707696044281">Den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs festlegen</translation>
 <translation id="8801680448782904838">Nutzer benachrichtigen, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist</translation>
 <translation id="8818173863808665831">Meldet den Standort des Geräts.
 
@@ -4179,30 +4066,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Diese Richtlinie betrifft nur Nutzer, die sich über SAML authentifizieren.
 
       Der Wert sollte in Sekunden angegeben werden.</translation>
-<translation id="9027787254195333560">Über diese Richtlinie können Sie das Avatarbild des Nutzers für den Anmeldebildschirm konfigurieren. Zum Festlegen der Richtlinie muss die URL, über die <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunterladen kann, sowie ein kryptografischer Hash angegeben werden, um die Integrität des Downloads zu verifizieren. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 512 KB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
-
-      Das Avatarbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.
-
-      Die Richtlinie sollte als String mit der URL und dem Hash im JSON-Format gemäß folgendem Schema angegeben werden:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Die URL, über die das Avatarbild heruntergeladen werden kann.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Der SHA-256-Hash des Avatarbilds.",
-            "type": "string"
-          }
-        }
-      }
-
-      Ist diese Richtlinie konfiguriert, wird das Avatarbild von <ph name="PRODUCT_OS_NAME" /> heruntergeladen und verwendet.
-
-      Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-      Ist die Richtlinie nicht konfiguriert, kann der Nutzer sein Avatarbild für den Anmeldebildschirm selbst auswählen.</translation>
 <translation id="9035964157729712237">Aus der schwarzen Liste auszuschließende Erweiterungs-IDs</translation>
 <translation id="9038058011835642205">Hierdurch wird eine Liste von Web-Apps festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können.
 
@@ -4215,7 +4078,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
       Der Richtlinienwert sollte in Millisekunden angegeben werden. Der Wert kann zwischen 30 Sekunden und 24 Stunden liegen.</translation>
-<translation id="9042911395677044526">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration pro Nutzer für ein <ph name="PRODUCT_OS_NAME" />-Gerät. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL" /> entspricht.</translation>
 <translation id="9050853837490399534">Diese Richtlinie gibt vor, ob das Gerät auf einen Quick-Fix-Build aktualisiert werden soll.
 
       Wenn als Richtlinienwert ein Token festgelegt ist, das mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf den entsprechenden Build aktualisiert, sofern eine solche Aktualisierung nicht durch eine andere Richtlinie blockiert wird.
@@ -4289,17 +4151,6 @@ Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer entscheiden, ob die 
 Wenn die Richtlinie auf "false" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialogfeld "Druckvorschau" nicht ausgewählt und der Nutzer kann dies nicht ändern.
 
 Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialogfeld "Druckvorschau" ausgewählt und der Nutzer kann dies nicht ändern.</translation>
-<translation id="9213347477683611358">Hiermit kann das Hintergrundbild auf Geräteebene konfiguriert werden, das auf dem Anmeldebildschirm angezeigt wird, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Die Richtlinie wird konfiguriert, indem die URL, über die das Chrome OS-Gerät das Hintergrundbild herunterladen kann, und ein kryptografischer Hash, mit dem die Integrität des Downloads überprüft wird, festgelegt werden. Das Bild muss das JPEG-Format aufweisen und darf eine Dateigröße von 16 MB nicht überschreiten. Die URL muss ohne Authentifizierung zugänglich sein. Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Es wird jedes Mal neu heruntergeladen, wenn sich die URL oder der Hash ändert.
-
-      Die Richtlinie sollte als String angegeben werden, der die URL und den Hash im JSON-Format ausgibt, z. B.:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Wenn die Gerätehintergrundrichtlinie konfiguriert ist, lädt das Chrome OS-Gerät das Hintergrundbild herunter und verwendet es für den Anmeldebildschirm, sofern sich noch kein Nutzer auf dem Gerät angemeldet hat. Sobald sich der Nutzer anmeldet, wird die Hintergrundrichtlinie des Nutzers aktiviert.
-
-      Wenn die Gerätehintergrundrichtlinie nicht konfiguriert ist, wird über die Hintergrundrichtlinie des Nutzers festgelegt, was angezeigt wird, sofern die Hintergrundrichtlinie des Nutzers konfiguriert ist.</translation>
 <translation id="9217154963008402249">Häufigkeit von Kontrollnetzwerkpaketen</translation>
 <translation id="922540222991413931">Installationsquellen für Erweiterungen, Apps und Nutzerskripte konfigurieren</translation>
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>

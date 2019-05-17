@@ -273,6 +273,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Omogući sinkronizaciju</translation>
+<translation id="5234764350956374838">Odbaci</translation>
 <translation id="5244474230056479698">Sinkronizira se s računom <ph name="EMAIL" /></translation>
 <translation id="5245322853195994030">Otkaži sinkronizaciju</translation>
 <translation id="5271549068863921519">Spremi zaporku</translation>
@@ -312,6 +313,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="5938160824633642847">Uređaj je gotovo pun. Oslobodite prostor i pokušajte ponovo.</translation>
 <translation id="5948291296578561264">To vam omogućuje da spremite fotografije u zbirku fotografija.</translation>
 <translation id="5955891643922670672">Prikaz offline verzije</translation>
+<translation id="5957613098218939406">Više opcija</translation>
 <translation id="5964480694698977962">Otvori novu anonimnu karticu.</translation>
 <translation id="5965679971710331625">Prijavili ste se</translation>
 <translation id="5979837087407522202">Pretraživanje zaporki</translation>
@@ -411,7 +413,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7272437679830969316">Potvrda identiteta nije moguća. Zaporka nije kopirana.</translation>
 <translation id="7285236536143823449">DA, U REDU</translation>
 <translation id="7291368939935408496">Priprema zaporki...</translation>
-<translation id="7293171162284876153">Da biste pokrenuli sinkronizaciju, uključite "Sinkroniziraj podatke iz Chromea".</translation>
+<translation id="7293171162284876153">Da biste pokrenuli sinkronizaciju, uključite postavku "Sinkroniziraj podatke s Chromea".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> posto preuzeto</translation>
 <translation id="7346909386216857016">Dobro, shvaćam</translation>
 <translation id="7348502496356775519">Označi</translation>

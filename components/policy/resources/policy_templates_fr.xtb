@@ -415,7 +415,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Avertissement : Il est recommandé de ne pas déléguer le contrôle de la version de <ph name="PRODUCT_OS_NAME" /> à une application kiosque, car l'appareil risque de ne pas recevoir les mises à jour logicielles et les correctifs de sécurité essentiels. La délégation du contrôle de la version de <ph name="PRODUCT_OS_NAME" /> pourrait constituer un risque pour les utilisateurs.</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
-<translation id="1689963000958717134">Permet de transférer l'application de la configuration réseau à tous les utilisateurs d'un appareil fonctionnant avec <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit à l'adresse <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1704516734140344991">Configure la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Les paramètres individuels peuvent être spécifiés dans les propriétés JSON :
@@ -979,16 +978,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si vous désactivez ce paramètre, les pages Web ne peuvent pas utiliser JavaScript et l'utilisateur n'est pas en mesure de le modifier.
 
       Si vous activez ce paramètre ou si vous ne le définissez pas, les pages Web peuvent utiliser JavaScript, mais l'utilisateur n'est pas en mesure de le modifier.</translation>
-<translation id="2747157663401642394">Configure les paramètres de gestion des extensions pour <ph name="PRODUCT_NAME" />.
-
-          Cette règle contrôle plusieurs paramètres, y compris ceux contrôlés par des règles existantes associées à une extension. Le cas échéant, elle remplace les anciennes règles.
-
-          Cette règle fait correspondre un ID d'extension ou une URL de mise à jour avec sa configuration. Avec un ID d'extension, la configuration n'est appliquée qu'à l'extension spécifiée. Une configuration par défaut peut être définie pour l'ID spécial <ph name="DEFAULT_SCOPE" />, lequel s'applique à toutes les extensions pour lesquelles aucune configuration personnalisée n'est définie dans cette règle. Avec une URL de mise à jour, la configuration est appliquée à l'ensemble des extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de cette extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation d'office est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
-
-          Pour accéder à une description complète de la structure et des paramètres possibles pour cette règle, veuillez consulter la page https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
-          </translation>
 <translation id="2753637905605932878">Restreindre la portée des ports UDP locaux utilisés par WebRTC</translation>
 <translation id="2757054304033424106">Types d'extensions ou d'applications autorisés à être installés</translation>
 <translation id="2758084448533744848">Indique le fuseau horaire à utiliser sur l'appareil. Si cette règle est configurée, les utilisateurs de l'appareil ne peuvent pas remplacer le fuseau horaire spécifié. Si une valeur non valide est utilisée, la règle est toutefois activée avec le fuseau horaire "GMT". Si une chaîne vide est utilisée, cette règle est ignorée.
@@ -1755,30 +1744,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Cette règle ne concerne que les utilisateurs qui s'authentifient avec SAML.</translation>
 <translation id="4105989332710272578">Désactiver l'application des règles de transparence des certificats pour une liste d'URL</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page Nouvel onglet</translation>
-<translation id="4125606414556046117">Cette règle vous permet de configurer l'image de fond d'écran qui s'affiche sur le bureau et en arrière-plan sur l'écran de connexion de l'utilisateur. Pour la configurer, vous devez indiquer l'URL depuis laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image de fond d'écran et un hachage chiffré utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG, et sa taille ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification.
-
-      L'image de fond d'écran est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.
-
-      Cette règle doit être spécifiée sous la forme d'une chaîne qui exprime l'URL et le hachage au format JSON, conformément au format suivant :
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL depuis laquelle l'image de fond d'écran peut être téléchargée.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hachage SHA-256 de l'image de fond d'écran.",
-            "type": "string"
-          }
-        }
-      }
-
-      Si cette règle est définie, l'image de fond d'écran est téléchargée et utilisée dans <ph name="PRODUCT_OS_NAME" />.
-
-      Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
-
-      Si la règle n'est pas définie, l'utilisateur peut choisir une image à afficher sur le bureau et en arrière-plan de l'écran de connexion.</translation>
 <translation id="412697421478384751">Autoriser les utilisateurs à définir des codes ayant un niveau de sécurité faible pour le code de l'écran de verrouillage</translation>
 <translation id="4138655880188755661">Période limite</translation>
 <translation id="4144164749344898721">Cette règle contrôle plusieurs paramètres pour la stratégie de gestion de l'alimentation lorsque l'utilisateur est inactif.
@@ -2739,53 +2704,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
       Si cette règle n'est pas configurée ou si elle est définie sur "False", les commandes d'impressions génèrent un aperçu avant impression.</translation>
 <translation id="6022948604095165524">Action au démarrage</translation>
-<translation id="6023030044732320798">Indique un ensemble de règles transmises à l'exécution ARC. Un fichier JSON valide doit être spécifié.
-
-      Cette règle peut être utilisée pour configurer les applications Android automatiquement installées sur l'appareil :
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identifiant de l'application Android, p. ex. "com.google.android.gm" pour Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Indique la façon dont s'installe une application. OPTIONAL : l'application ne s'installe pas automatiquement, mais l'utilisateur peut l'installer. Il s'agit du réglage par défaut si cette règle n'est pas spécifiée. PRELOAD : l'application s'installe automatiquement, mais l'utilisateur peut la désinstaller. FORCE_INSTALLED : l'application s'installe automatiquement, et l'utilisateur ne peut pas la désinstaller. BLOCKED : l'application est bloquée et ne peut pas être installée. Si l'application a été installée dans le cadre d'une ancienne règle, elle sera désinstallée.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Règle pour répondre aux demandes d'autorisation des applications. PERMISSION_POLICY_UNSPECIFIED : règle non spécifiée. Si aucune règle n'est spécifiée pour une autorisation à quelque niveau que ce soit, le comportement `PROMPT` est utilisé par défaut. PROMPT : demander à l'utilisateur d'accorder une autorisation. GRANT : accorder automatiquement une autorisation. DENY : refuser automatiquement une autorisation.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Objet de configuration JSON propre à l'application avec un ensemble de paires clé/valeur, p. ex. '"managedConfiguration": { "key1": value1, "key2": value2 }'. Les clés sont définies dans le fichier manifeste de l'application.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Pour épingler des applications sur le lanceur d'applications, reportez-vous à PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL de recherche instantanée du moteur de recherche par défaut</translation>
 <translation id="603410445099326293">Paramètres pour l'URL de suggestion utilisant POST</translation>
 <translation id="6034341625190551415">Contrôle les types de comptes kiosque et les sessions publiques.</translation>
@@ -3139,37 +3057,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si cette règle est définie sur "False", le client DNS intégré n'est jamais utilisé.
 
       Si cette règle n'est pas configurée, le client DNS intégré est activé par défaut sur Mac OS, Android (lorsque ni le DNS privé, ni le VPN ne sont activés) et Chrome OS, et l'utilisateur peut choisir si le client DNS intégré doit être utilisé ou non, soit en modifiant chrome://flags, soit à l'aide d'un indicateur de ligne de commande.</translation>
-<translation id="6838056959556423778">Remplace les instructions de sélection de l'imprimante par défaut pour <ph name="PRODUCT_NAME" />.
-
-      Cette règle détermine les instructions de sélection de l'imprimante par défaut dans <ph name="PRODUCT_NAME" />, la première fois que la fonction d'impression est utilisée avec un profil donné.
-
-      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaie de trouver une imprimante correspondant à tous les attributs spécifiés et la définit comme imprimante par défaut. La première imprimante retenue d'après ces critères est sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles est sélectionnée (selon l'ordre dans lequel elles ont été découvertes).
-
-      Si cette règle n'est pas définie ou si aucune imprimante n'est retenue dans le délai imparti, l'imprimante par défaut est l'imprimante PDF intégrée à l'outil. Si l'imprimante PDF n'est pas disponible, aucune imprimante n'est sélectionnée.
-
-      La valeur est analysée en tant qu'objet JSON, conformément au schéma suivant :
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Pour limiter ou ne pas limiter la recherche d'une imprimante correspondant aux critères spécifiés à un groupe d'imprimantes spécifique",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Expression régulière correspondant à l'ID de l'imprimante",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Expression régulière correspondant au nom à afficher de l'imprimante",
-            "type": "string"
-          }
-        }
-      }
-
-      Les imprimantes connectées à <ph name="CLOUD_PRINT_NAME" /> sont considérées comme étant de type <ph name="PRINTER_TYPE_CLOUD" />, et les autres sont de type <ph name="PRINTER_TYPE_LOCAL" />.
-      Si vous ne renseignez pas un champ, cela signifie que toutes les valeurs seront prises en compte. Par exemple, si vous ne spécifiez pas de connectivité, l'aperçu avant impression propose toutes sortes d'imprimantes, à la fois de type "local" et "cloud".
-      Les schémas d'expressions régulières doivent suivre la syntaxe JavaScript RegExp, et les résultats sont sensibles à la casse.</translation>
 <translation id="6843296367238757293">Cette règle est obsolète. Nous vous déconseillons de l'utiliser. Pour en savoir plus, rendez-vous sur https://support.google.com/chrome/a/answer/7643500.</translation>
 <translation id="684856667300805181">Cette règle a été supprimée dans <ph name="PRODUCT_NAME" /> 68 et remplacée par <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Cette règle désormais obsolète a été supprimée dans M66, car elle servait uniquement aux tests internes et ne permettait pas de garantir la sécurité.
@@ -4327,30 +4214,6 @@ indique uniquement les imprimantes qui peuvent être choisies.
       Cette règle n'affecte que les utilisateurs qui se sont authentifiés via SAML.
 
       La valeur doit être indiquée en secondes.</translation>
-<translation id="9027787254195333560">Cette règle vous permet de configurer l'image d'avatar représentant l'utilisateur sur l'écran de connexion. Pour définir cette règle, indiquez l'URL à laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image d'avatar, ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 512 Ko. L'URL doit être accessible sans authentification.
-
-      L'image d'avatar est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.
-
-      Cette règle doit être spécifiée sous la forme d'une chaîne qui exprime l'URL et le hachage au format JSON, conformément au format suivant :
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL depuis laquelle l'image de l'avatar peut être téléchargée.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Hachage SHA-256 de l'image de l'avatar.",
-            "type": "string"
-          }
-        }
-      }
-
-      Si cette règle est définie, l'image de l'avatar est téléchargée et utilisée dans <ph name="PRODUCT_OS_NAME" />.
-
-      Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
-
-      Si la règle n'est pas définie, l'utilisateur peut choisir l'image de l'avatar qui le représente dans l'écran de connexion.</translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
 <translation id="9038058011835642205">Définit la liste des sites Web qui sont installés silencieusement, sans aucune intervention de l'utilisateur, et que ce dernier ne peut pas désinstaller ni désactiver.
 
@@ -4363,7 +4226,6 @@ indique uniquement les imprimantes qui peuvent être choisies.
       Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
 
       La valeur de la règle doit être indiquée en millisecondes. Cette valeur doit être comprise entre 30 secondes et 24 heures.</translation>
-<translation id="9042911395677044526">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit sous <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9050853837490399534">Cette règle détermine si un build Quick Fix doit être installé sur l'appareil.
 
       Si la règle est définie sur un jeton qui correspond à un build Quick Fix, l'appareil sera mis à jour avec le build Quick Fix correspondant à condition que la mise à jour ne soit pas bloquée par une autre règle.
@@ -4441,17 +4303,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
       Si la règle n'est pas définie, l'utilisateur peut décider d'imprimer les en-têtes et les pieds de page.
       Si la règle est définie sur False, "En-têtes et pieds de page" n'est pas sélectionné dans la boîte de dialogue d'aperçu avant impression et l'utilisateur ne peut pas le modifier.
       Si la règle est définie sur True, "En-têtes et pieds de page" est sélectionné dans la boîte de dialogue d'aperçu avant impression et l'utilisateur ne peut pas le modifier.</translation>
-<translation id="9213347477683611358">Configurez l'image de fond d'écran qui s'affiche sur l'écran de connexion de l'appareil si aucun utilisateur ne s'est encore connecté à celui-ci. Pour définir cette règle, indiquez l'URL à laquelle l'appareil Chrome OS peut télécharger l'image de fond d'écran ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification. L'image de fond d'écran est téléchargée et mise en cache. Elle est à nouveau téléchargée dès que l'URL ou le hachage sont modifiés.
-
-      La règle doit prendre la forme d'une chaîne indiquant l'URL et le hachage au format JSON, conformément à l'exemple suivant :
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Si la règle du fond d'écran de l'appareil est définie, l'appareil Chrome OS télécharge et utilise l'image de fond d'écran sur l'écran de connexion si personne ne s'est encore connecté à l'appareil. Dès qu'un utilisateur se connecte, la règle de fond d'écran de cet utilisateur s'applique.
-
-      Si vous ne configurez pas la règle de fond d'écran de l'appareil, et si la règle de fond d'écran de l'utilisateur est définie, cette dernière détermine le contenu à afficher.</translation>
 <translation id="9217154963008402249">Fréquence des paquets réseau de contrôle</translation>
 <translation id="922540222991413931">Configurer les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>

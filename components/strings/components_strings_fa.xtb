@@ -416,7 +416,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> در <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">لغو پرداخت</translation>
 <translation id="3207960819495026254">نشانک‌گذاری شده</translation>
-<translation id="321912867715453276">اخطار: برای این خط‌مشی، بیش از یک منبع وجود دارد، اما مقادیر آن‌ها یکسان‌ است.</translation>
 <translation id="3225919329040284222">سرور گواهی را نشان می‌دهد که با موارد پیش‌بینی‌شده داخلی مطابقت ندارد. این پیش‌بینی‌ها به‌طور حتم وب‌سایتهای دارای امنیت بالا را جهت محافظت از شما در بر می‌گیرند.</translation>
 <translation id="3226128629678568754">دکمه تازه‌سازی را فشار دهید تا داده‌های مورد نیاز برای بارگیری صفحه مجدداً ارسال شود.</translation>
 <translation id="3227137524299004712">میکروفن</translation>
@@ -556,7 +555,6 @@
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود است</translation>
 <translation id="3987940399970879459">کمتر از ۱ مگابایت</translation>
-<translation id="4008849406247176967">اخطار: برای این خط‌مشی، بیش از یک منبع حاوی مقادیر مغایر موجود است!</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ ۱ صفحه وب در این نزدیکی است}one{ # صفحه وب در این نزدیکی است}other{ # صفحه وب در این نزدیکی است}}</translation>
 <translation id="4030383055268325496">&amp;واگرد افزودن</translation>
 <translation id="4032320456957708163">مرورگرتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود</translation>
@@ -693,7 +691,6 @@
 <translation id="4738601419177586157">پیشنهاد جستجوی <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">مدیریت گذرواژه‌ها…</translation>
 <translation id="4744603770635761495">مسیر قابل اجرا</translation>
-<translation id="4746351372139058112">پیام‌ها</translation>
 <translation id="4750917950439032686">اطلاعات شما (به‌عنوان مثال، گذرواژه‌ها یا شماره‌ کارت‌های اعتباری) وقتی به این سایت ارسال می‌شوند، خصوصی هستند.</translation>
 <translation id="4756388243121344051">&amp;سابقه</translation>
 <translation id="4758311279753947758">افزودن اطلاعات تماس</translation>
@@ -1123,7 +1120,6 @@
 <translation id="7220786058474068424">درحال پردازش</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />؛ <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">این وب‌سایت بدافزار دارد</translation>
-<translation id="724766306220616965">هشدارها، تداخل</translation>
 <translation id="724975217298816891">‏برای به‌روزرسانی جزئیات کارتتان، تاریخ انقضا و CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید شدن، جزئیات کارتتان با این سایت به اشتراک گذاشته می‌شود.</translation>
 <translation id="7251437084390964440">‏پیکربندی شبکه با استاندارد ONC مطابقت ندارد. ممکن است بعضی از قسمت‌های پیکربندی وارد نشود.
 توضیحات بیشتر:
@@ -1421,6 +1417,7 @@
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="8903921497873541725">بزرگ‌نمایی</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8931333241327730545">‏می‌خواهید این کارت را در حساب Google خود ذخیره کنید؟</translation>
 <translation id="8932102934695377596">ساعت شما عقب است</translation>
 <translation id="893332455753468063">افزودن نام</translation>

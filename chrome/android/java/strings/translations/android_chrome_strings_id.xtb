@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Izinkan kontrol penuh perangkat MIDI</translation>
 <translation id="1449080968331948513">Penghemat Data sekarang menjadi Mode ringan</translation>
 <translation id="145097072038377568">Dinonaktifkan di Setelan Android</translation>
+<translation id="146329143005354472">Tambahkan ke Aplikasi saya</translation>
 <translation id="1477626028522505441">Download <ph name="FILE_NAME" /> gagal karena masalah server.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 lainnya)}other{ (+ # lainnya)}}</translation>
 <translation id="1501480321619201731">Hapus grup</translation>
@@ -132,7 +133,7 @@
 <translation id="1960290143419248813">Update Chrome tidak lagi didukung untuk versi Android ini</translation>
 <translation id="1966710179511230534">Perbarui detail ID masuk Anda.</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
-<translation id="1984705450038014246">Menyinkronkan data Chrome Anda</translation>
+<translation id="1984705450038014246">Sinkronkan data Chrome Anda</translation>
 <translation id="1984937141057606926">Diizinkan, kecuali pihak ketiga</translation>
 <translation id="1986685561493779662">Nama sudah ada</translation>
 <translation id="1987739130650180037">Tombol <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Situs</translation>
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2876369937070532032">Mengirimkan URL beberapa halaman yang Anda kunjungi ke Google, jika keamanan Anda berisiko</translation>
-<translation id="2876764156902388290">Chrome menggunakan data lebih sedikit untuk menampilkan halaman ini kepada Anda</translation>
 <translation id="2888126860611144412">Tentang Chrome</translation>
 <translation id="2891154217021530873">Hentikan pemuatan halaman</translation>
 <translation id="2893180576842394309">Google dapat menggunakan histori Anda untuk mempersonalisasi Penelusuran dan layanan Google lainnya</translation>

@@ -416,7 +416,6 @@
 
       Aviso: não é recomendado delegar o controlo da versão do <ph name="PRODUCT_OS_NAME" /> a uma aplicação de quiosque, pois tal pode impedir o dispositivo de receber atualizações de software e correções de segurança críticas. Delegar o controlo da versão do <ph name="PRODUCT_OS_NAME" /> pode colocar os utilizadores em risco.</translation>
 <translation id="1675002386741412210">Suportado em:</translation>
-<translation id="1689963000958717134">Permite que a configuração de rede seja aplicada para todos os utilizadores de um dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Configura a disponibilidade e o comportamento da funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       É possível especificar definições individuais nas propriedades de JSON:
@@ -779,7 +778,7 @@
 
           Se esta política não for definida e for suportada no dispositivo, o modo de carregamento padrão da bateria é aplicado e não pode ser alterado pelo utilizador.
 
-          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> substitui esta política, se a anterior for especificada.</translation>
+          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> substitui esta política se a anterior for especificada.</translation>
 <translation id="237494535617297575">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a apresentar notificações. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultNotificationsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="2386362615870139244">Permitir bloqueios de ativação do ecrã</translation>
 <translation id="2411817661175306360">O aviso de proteção por palavra-passe está desativado.</translation>
@@ -956,16 +955,6 @@
 
       Se a definição estiver desativada, as páginas Web não podem utilizar o JavaScript e o utilizador não pode alterá-la.
       Se a definição estiver ativada ou por definir, as páginas Web podem utilizar o JavaScript, mas o utilizador pode alterá-la.</translation>
-<translation id="2747157663401642394">Configura as definições de gestão de extensões do <ph name="PRODUCT_NAME" />.
-
-          Esta política controla várias definições, incluindo definições controladas por quaisquer políticas existentes relativas a extensões. Além disso, substitui todas as políticas antigas, caso estejam ambas definidas.
-
-          Esta política mapeia um ID de extensão ou um URL de atualização para a respetiva configuração. Com um ID de extensão, a configuração é aplicada apenas à extensão especificada. É possível definir uma configuração predefinida para o ID especial <ph name="DEFAULT_SCOPE" />, que irá aplicar-se a todas as extensões que não tenham uma configuração personalizada definida nesta política. Com um URL de atualização, a configuração é aplicada a todas as extensões com o URL de atualização exato indicado no manifesto desta extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Em instâncias do Windows que não fazem parte de um domínio <ph name="MS_AD_NAME" />, a instalação forçada está limitada a aplicações e extensões apresentadas na Web Store do Chrome.
-
-          Para obter uma descrição completa das definições possíveis e da estrutura desta política, aceda a https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Restringir o intervalo de portas UDP locais utilizadas pelo WebRTC</translation>
 <translation id="2757054304033424106">Tipos de extensões/aplicações com permissão para serem instaladas</translation>
 <translation id="2758084448533744848">Especifica o fuso horário aplicado a utilizar para o dispositivo. Quando esta política estiver definida, os utilizadores no dispositivo não podem substituir o fuso horário especificado. Se for fornecido um valor inválido, a política continua ativada e utilizará "GMT" como alternativa. Se for fornecida uma string vazia, a política é ignorada.
@@ -1221,7 +1210,7 @@
 
       Se definir esta política como uma opção que deixou de ser suportada ("AskUser" ou "AskForEcryptfsArcUsers"), então esta é processada como se tivesse selecionado "Migrate".
 
-      Esta politica não se aplica aos utilizadores de quiosque. Se esta política não for definida, o dispositivo apresentará um comportamento semelhante a "DisallowArc".</translation>
+      Esta política não se aplica aos utilizadores de quiosque. Se esta política não for definida, o dispositivo apresentará um comportamento semelhante a "DisallowArc".</translation>
 <translation id="3086995894968271156">Configura o Recetor do Cast no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Permite definir uma lista de padrões de URL que especificam os sites autorizados a apresentar imagens.
 
@@ -1533,9 +1522,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3826475866868158882">Serviços de localização da Google ativados.</translation>
 <translation id="3831054243924627613">Esta política controla o estado inicial do serviço de cópia de segurança e restauro do Android.
 
-      Quando esta política não está configurada ou está <ph name="BR_DISABLED" />, o serviço de cópia de segurança e restauro do Android está inicialmente desativado.
+      Quando esta política não está configurada ou está <ph name="BR_DISABLED" />, o serviço de cópia de segurança e restauro do Android encontra-se inicialmente desativado.
 
-      Quando esta política está definida como <ph name="BR_ENABLED" />, o serviço de cópia de segurança e restauro do Android está inicialmente ativado.
+      Quando esta política está definida como <ph name="BR_ENABLED" />, o serviço de cópia de segurança e restauro do Android encontra-se inicialmente ativado.
 
       Quando esta política está definida como <ph name="BR_UNDER_USER_CONTROL" />, é perguntado ao utilizador se pretende utilizar o serviço de cópia de segurança e restauro do Android. Se o utilizador ativar o serviço de cópia de segurança e restauro, os dados de aplicações para Android são carregados para os servidores de cópia de segurança do Android e restaurados a partir dos mesmos após a reinstalação de aplicações compatíveis.
 
@@ -1623,7 +1612,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3915395663995367577">URL para um ficheiro .pac de proxy</translation>
 <translation id="3920892052017026701">Defina o início de carregamento da bateria personalizado em percentagem.
 
-          A bateria começa a carregar quando a carga da bateria atinge o valor do início de carregamento personalizado.
+          A bateria começa a ser carregada quando a carga da bateria atinge o valor do início de carregamento personalizado.
 
           O valor DeviceBatteryChargeCustomStartCharging tem de ser inferior ao valor DeviceBatteryChargeCustomStopCharging.
 
@@ -1728,30 +1717,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Esta política afeta apenas utilizadores que fazem a autenticação através de SAML.</translation>
 <translation id="4105989332710272578">Desativar a imposição da Transparência de certificados para uma lista de URLs</translation>
 <translation id="4121350739760194865">Impedir a apresentação de promoções de aplicações na página de novo separador</translation>
-<translation id="4125606414556046117">Esta política permite-lhe configurar a imagem de fundo apresentada no ambiente de trabalho e no fundo do ecrã de início de sessão do utilizador. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem de fundo e um hash criptográfico utilizado para confirmar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 16 MB. O URL tem de ser acessível sem qualquer autenticação.
-
-      A imagem de fundo é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.
-
-      A política deve ser especificada como uma string que expresse o URL e o hash em formato JSON, em conformidade com o esquema seguinte:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "O URL a partir do qual é possível transferir a imagem de fundo.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "O hash SHA-256 da imagem de fundo.",
-            "type": "string"
-          }
-        }
-      }
-
-      Se esta política estiver definida, o <ph name="PRODUCT_OS_NAME" /> transfere e utiliza a imagem de fundo.
-
-      Se definir esta política, os utilizadores não a podem alterar nem substituir.
-
-      Se não definir a política, o utilizador pode escolher uma imagem para apresentação no ambiente de trabalho e no fundo do ecrã de início de sessão.</translation>
 <translation id="412697421478384751">Permitir aos utilizadores definirem PINs fracos para o PIN do ecrã de bloqueio</translation>
 <translation id="4138655880188755661">Limite de tempo</translation>
 <translation id="4144164749344898721">Esta política controla várias definições para a estratégia de gestão de energia quando o utilizador fica inativo.
@@ -2672,53 +2637,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não estiver definida ou estiver definida como falsa, os comandos de impressão acionam o ecrã de pré-visualização da impressão.</translation>
 <translation id="6022948604095165524">Ação no arranque</translation>
-<translation id="6023030044732320798">Especifica um conjunto de políticas que são transmitidas ao tempo de execução ARC. O valor tem de ser um formato JSON válido.
-
-      É possível utilizar esta política para configurar quais as aplicações para Android automaticamente instaladas no dispositivo:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identificador da aplicação Android, por exemplo, «com.google.android.gm» para o Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Especifica o modo de instalação de uma aplicação. OPTIONAL: a aplicação não é instalada automaticamente, mas o utilizador pode instalá-la. É a predefinição se esta política não for especificada. PRELOAD: a aplicação é instalada automaticamente, mas o utilizador pode desinstalá-la. FORCE_INSTALLED: a aplicação é instalada automaticamente e o utilizador não a pode desinstalar. BLOCKED: a aplicação está bloqueada e não pode ser instalada. Se a aplicação tiver sido instalada no âmbito de uma política anterior, é desinstalada.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Política para conceder pedidos de autorização às aplicações. PERMISSION_POLICY_UNSPECIFIED: política não especificada. Se não estiver especificada nenhuma política para uma autorização a qualquer nível, é utilizado o comportamento `PROMPT` por predefinição. PROMPT: solicite ao utilizador que conceda uma autorização. GRANT: conceda automaticamente uma autorização. DENY: recuse automaticamente uma autorização.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Objeto de configuração JSON específico da aplicação com um conjunto de pares de chave-valor, por exemplo, '"managedConfiguration": { "key1": value1, "key2": value2 }'. As chaves são definidas no manifesto da aplicação.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Para fixar aplicações ao iniciador, consulte PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL instantâneo do fornecedor de pesquisas predefinido</translation>
 <translation id="603410445099326293">Parâmetros do URL de sugestões que utilize POST</translation>
 <translation id="6034341625190551415">Controla os tipos de conta de sessão pública e quiosque.</translation>
@@ -3066,37 +2984,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como falsa, o cliente DNS incorporado nunca será utilizado.
 
       Se esta política não estiver definida, o cliente DNS incorporado será ativado por predefinição no MacOS, no Android (quando nem o DNS privado nem a VPN estiverem ativados) e no Chrome OS, e os utilizadores poderão alterar se o cliente DNS incorporado é utilizado ao editar chrome://flags ou especificar um sinalizador de linha de comandos.</translation>
-<translation id="6838056959556423778">Substitui as regras de seleção da impressora predefinida do <ph name="PRODUCT_NAME" />.
-
-      Esta política determina as regras para a seleção da impressora predefinida em <ph name="PRODUCT_NAME" /> que ocorre quando a função de impressão é utilizada com um perfil pela primeira vez.
-
-      Quando esta política está definida, o <ph name="PRODUCT_NAME" /> tenta localizar uma impressora que corresponda a todos os atributos especificados e selecioná-la como impressora predefinida. É selecionada a primeira impressora localizada que corresponda à política. Se a correspondência não for única, pode ser selecionada qualquer impressora correspondente, consoante a ordem pela qual as impressoras são detetadas.
-
-      Se esta política não estiver definida ou não for encontrada uma impressora correspondente no limite de tempo, é predefinida a impressora PDF incorporada ou não é selecionada qualquer impressora quando a impressora PDF não está disponível.
-
-      O valor é analisado como um objeto JSON em conformidade com o esquema seguinte:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Limitar ou não a pesquisa da impressora correspondente a um conjunto específico de impressoras.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Expressão regular para corresponder ao ID da impressora.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Expressão regular para corresponder ao nome a apresentar da impressora.",
-            "type": "string"
-          }
-        }
-      }
-
-      As impressoras ligadas ao <ph name="CLOUD_PRINT_NAME" /> são consideradas como <ph name="PRINTER_TYPE_CLOUD" /> e as restantes são classificadas como <ph name="PRINTER_TYPE_LOCAL" />.
-      Omitir um campo significa que todos os valores são correspondentes, por exemplo, não especificar a conetividade faz com que a Pré-visualização da impressão inicie a deteção de todos os tipos de impressoras: locais e na nuvem.
-      Os padrões da expressão regular têm de seguir a sintaxe JavaScript RegExp e as correspondências são sensíveis a maiúsculas e minúsculas.</translation>
 <translation id="6843296367238757293">Esta política foi descontinuada. A sua utilização é desaconselhada. Leia mais em https://support.google.com/chrome/a/answer/7643500.</translation>
 <translation id="684856667300805181">Esta política foi removida no <ph name="PRODUCT_NAME" /> 68 e substituída por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Esta política foi descontinuada e removida no M66, uma vez que era utilizada apenas para testes internos e representa um risco de segurança.
@@ -3171,7 +3058,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for definida ou estiver definida como verdadeira, o modelo de escurecimento inteligente será ativado para poder prolongar o tempo que precede o escurecimento do ecrã. Se estiver definida como falsa, o modelo de escurecimento inteligente não irá influenciar o escurecimento do ecrã.</translation>
 <translation id="6967394885063085697">Ative a política de gestão de energia do modo de carregamento da bateria avançado.
 
-          O modo de carregamento da bateria avançado permite que o utilizador maximize o estado da bateria. No modo de carregamento avançado o sistema utiliza um algoritmo de carregamento padrão e outras técnicas durante as horas de inatividade para maximizar o estado da bateria. Durante as horas de atividade, é utilizado o carregamento rápido. Este carregamento rápido permite carregar a bateria mais rapidamente e, consequentemente, esta fica totalmente carregada mais cedo. Em cada dia, o horário durante o qual o sistema é utilizado mais intensamente é especificado pela hora de início e pela duração.
+          O modo de carregamento da bateria avançado permite que o utilizador maximize o estado da bateria. No modo de carregamento avançado, o sistema utiliza um algoritmo de carregamento padrão e outras técnicas durante as horas de inatividade para maximizar o estado da bateria. Durante as horas de atividade, é utilizado o carregamento rápido. Este carregamento rápido permite carregar a bateria mais rapidamente e, consequentemente, esta fica totalmente carregada mais cedo. Em cada dia, o horário durante o qual o sistema é utilizado mais intensamente é especificado pela hora de início e pela duração.
 
           Se esta política for definida como verdadeira e DeviceAdvancedBatteryChargeModeDayConfig estiver definido, então o modo de carregamento avançado da bateria estará sempre ativado, se for suportado pelo dispositivo.
 
@@ -3251,9 +3138,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Quando o sistema está ativo, a porta USB fornece sempre energia.
 
-          Quando o sistema está suspenso, se esta política estiver definida como verdadeira, é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada ou se o nível de bateria for &gt; 50%. De outro modo, não é fornecida energia.
+          Quando o sistema está suspenso, se esta política estiver definida como verdadeira, é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada ou se o nível de bateria for superior a 50%. De outro modo, não é fornecida energia.
 
-          Quando o sistema está desligado, se esta política estiver definida como verdadeira, então é fornecida energia à porta USB quando o dispositivo estiver ligado à tomada. De outro modo, não é fornecida energia.
+          Quando o sistema está desligado, se esta política estiver definida como verdadeira, então será fornecida energia à porta USB quando o dispositivo estiver ligado à tomada. De outro modo, não é fornecida energia.
 
           Se esta política não for definida, então estará ativa e não poderá ser desativada pelo utilizador.</translation>
 <translation id="7115494316187648452">Determina se um processo do <ph name="PRODUCT_NAME" /> é iniciado ao iniciar sessão no SO e continua a ser executado quando a última janela do navegador é fechada, permitindo que as aplicações em segundo plano e a sessão de navegação atual permaneçam ativas, incluindo todos os cookies de sessão. O processo em segundo plano apresenta um ícone no tabuleiro do sistema e pode sempre ser fechado a partir daí.
@@ -4232,30 +4119,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Esta política apenas afeta os utilizadores que efetuaram a autenticação através de SAML.
 
       O valor da política deve ser especificado em segundos.</translation>
-<translation id="9027787254195333560">Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para validar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 512 kB. O URL tem de ser acessível sem qualquer autenticação.
-
-      A imagem do avatar é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.
-
-      A política deve ser especificada como uma string que expresse o URL e o hash em formato JSON, em conformidade com o esquema seguinte:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "O URL a partir do qual é possível transferir a imagem do avatar.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "O hash SHA-256 da imagem do avatar.",
-            "type": "string"
-          }
-        }
-      }
-
-      Se esta política estiver definida, o <ph name="PRODUCT_OS_NAME" /> transfere e utiliza a imagem do avatar.
-
-      Se definir esta política, os utilizadores não a podem alterar nem substituir.
-
-      Se não definir a política, o utilizador pode escolher a imagem do avatar que o representa no ecrã de início de sessão.</translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
 <translation id="9038058011835642205">Especifica uma lista de Websites que são instalados em silêncio, sem interação do utilizador, e que não podem ser desinstalados nem desativados por aquele.
 
@@ -4268,7 +4131,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se definir esta política, os utilizadores não a podem alterar nem substituir.
 
       O valor da política deve ser especificado em milissegundos. Os valores estão limitados a um intervalo entre 30 segundos e 24 horas.</translation>
-<translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Esta política controla se o dispositivo deve ou não ser atualizado para uma Compilação de correção rápida.
 
       Se o valor da política for definido como um token que mapeia para uma Compilação de correção rápida, o dispositivo será atualizado para a Compilação de correção rápida correspondente, caso a atualização não seja bloqueada por nenhuma outra política.
@@ -4341,17 +4203,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se a política estiver definida como falsa, os "cabeçalhos e rodapés" não são selecionados na caixa de diálogo de pré-visualização da impressão e o utilizador não pode alterar isso.
 
       Se a política estiver definida como verdadeira, os "cabeçalhos e rodapés" são selecionados na caixa de diálogo de pré-visualização da impressão e o utilizador não pode alterar isso.</translation>
-<translation id="9213347477683611358">Configure uma imagem de fundo ao nível do dispositivo mostrada no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. A política é definida ao especificar o URL a partir do qual o dispositivo com o Chrome OS pode transferir a imagem de fundo e um hash criptográfico para verificar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho do ficheiro não pode exceder 16 MB. O URL tem de ser acessível sem nenhuma autenticação. A imagem de fundo é transferida e colocada na cache. É transferida sempre que o URL ou o hash for alterado.
-
-      A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Se a política de imagem de fundo do dispositivo estiver definida, o dispositivo com o Chrome OS transfere e utiliza a imagem de fundo no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. Depois de o utilizador iniciar sessão, é aplicada a política de imagem de fundo do mesmo.
-
-      Se a política de imagem de fundo do dispositivo não estiver definida, cabe à política de imagem de fundo do utilizador decidir o que deve apresentar se estiver definida.</translation>
 <translation id="9217154963008402249">Frequência dos pacotes de monitorização de rede</translation>
 <translation id="922540222991413931">Configurar fontes de instalação de extensões, aplicações e scripts do utilizador</translation>
 <translation id="924557436754151212">Importar palavras-passe guardadas a partir do navegador predefinido na primeira execução</translation>

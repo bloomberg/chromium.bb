@@ -338,6 +338,7 @@
      servidor proxy, ajuste suas <ph name="LINK_START" />configurações de proxy<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">A única maneira de desfazer essa ação é reinstalando o <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importados do Safari</translation>
+<translation id="1515163294334130951">Iniciar</translation>
 <translation id="1521442365706402292">Gerenciar certificados</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
 <translation id="1524430321211440688">Teclado</translation>
@@ -440,6 +441,7 @@
 <translation id="167160931442925455">Volume máximo</translation>
 <translation id="1673137583248014546"><ph name="URL" /> quer ver a marca e o modelo da sua chave de segurança</translation>
 <translation id="1679068421605151609">Ferramentas do desenvolvedor</translation>
+<translation id="1679806121152819234">Plug-in VM</translation>
 <translation id="167983332380191032">O serviço de gerenciamento enviou um erro de HTTP.</translation>
 <translation id="1680849702532889074">Ocorreu um erro durante a instalação do aplicativo Linux.</translation>
 <translation id="16815041330799488">Não permitir que sites vejam textos e imagens copiados para a área de transferência</translation>
@@ -486,6 +488,7 @@
 <translation id="1744060673522309905">Não é possível vincular o dispositivo ao domínio. Verifique se você não excedeu o número de dispositivos que podem ser adicionados.</translation>
 <translation id="1744108098763830590">página de plano de fundo</translation>
 <translation id="1745520510852184940">Sempre fazer isso</translation>
+<translation id="1746402432151920942">Identificador de mídia protegida</translation>
 <translation id="175196451752279553">R&amp;eabrir guia fechada</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
 <translation id="1756681705074952506">Método de entrada</translation>
@@ -543,6 +546,7 @@
 <translation id="1830550083491357902">Desconectado</translation>
 <translation id="1832511806131704864">Atualização da alteração do smartphone</translation>
 <translation id="1834503245783133039">Falha no download: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Dispositivos MIDI</translation>
 <translation id="1838374766361614909">Limpar pesquisa</translation>
 <translation id="1841545962859478868">O administrador do dispositivo pode monitorar o seguinte:</translation>
 <translation id="1841616161104323629">Registro do dispositivo não encontrado.</translation>
@@ -786,6 +790,7 @@
 <translation id="2220529011494928058">Informar um problema</translation>
 <translation id="2220572644011485463">PIN ou senha</translation>
 <translation id="2224444042887712269">Esta configuração pertence a <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Eventos de acessibilidade</translation>
 <translation id="2224551243087462610">Editar nome da pasta</translation>
 <translation id="2226449515541314767">O controle total de dispositivos MIDI foi bloqueado neste site.</translation>
 <translation id="2226720438730111184">Conte-nos o que está acontecendo</translation>
@@ -963,7 +968,6 @@
 <translation id="2496180316473517155">Histórico de navegação</translation>
 <translation id="2497229222757901769">Velocidade do mouse</translation>
 <translation id="2497852260688568942">A sincronização foi desativada pelo administrador</translation>
-<translation id="249819058197909513">Não avisar novamente para este aplicativo</translation>
 <translation id="2498539833203011245">Minimizar</translation>
 <translation id="2498765460639677199">Enorme</translation>
 <translation id="2499747912851752301">Exportando senhas…</translation>
@@ -1051,7 +1055,6 @@
 <translation id="2630681426381349926">Conecte-se ao Wi-Fi para começar</translation>
 <translation id="2631120081682787498">Tem certeza de que quer fechar esta guia?</translation>
 <translation id="2631498379019108537">Mostrar opções de entrada na estante</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> está usando <ph name="USAGE" /> MB de espaço em disco.</translation>
 <translation id="2633212996805280240">Remover "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101">O <ph name="PRODUCT_NAME" /> não conseguiu completar a instalação, mas continuará a ser executado a partir da sua imagem de disco.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1397,7 +1400,6 @@
 <translation id="3157931365184549694">Restaurar</translation>
 <translation id="3158033540161634471">Configurar impressão digital</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (no hardware)</translation>
-<translation id="316125635462764134">Remover aplicativo</translation>
 <translation id="3161522574479303604">Todos os idiomas</translation>
 <translation id="3163201441334626963">Produto <ph name="PRODUCT_ID" /> desconhecido do fornecedor <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Algumas operadoras podem bloquear esse recurso.</translation>
@@ -1898,6 +1900,7 @@
 <translation id="3916445069167113093">Este tipo de arquivo pode danificar seu computador. Quer manter o arquivo <ph name="FILE_NAME" /> mesmo assim?</translation>
 <translation id="3918972485393593704">Informar detalhes ao Google</translation>
 <translation id="3919145445993746351">Para ver suas extensões em todos os seus computadores, ative a sincronização</translation>
+<translation id="391999873395511996">Fazendo o download da máquina virtual.</translation>
 <translation id="3920504717067627103">Diretivas de certificação</translation>
 <translation id="392089482157167418">Ativar ChromeVox (feedback falado)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1949,7 +1952,6 @@
 <translation id="3983586614702900908">dispositivos de um fornecedor desconhecido</translation>
 <translation id="3984159763196946143">Não foi possível iniciar o modo de demonstração</translation>
 <translation id="3984431586879874039">Permitir que este site veja sua chave de segurança?</translation>
-<translation id="3987348946546879621">Dados economizados</translation>
 <translation id="3987938432087324095">Não entendi.</translation>
 <translation id="3988996860813292272">Selecionar fuso horário</translation>
 <translation id="399179161741278232">Importado</translation>
@@ -1980,7 +1982,6 @@
 <translation id="4037889604535939429">Editar pessoa</translation>
 <translation id="4042264909745389898">Termos do Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Sair da página}one{Sair da página}other{Sair das páginas}}</translation>
-<translation id="404299405565920089">É possível gerenciar todas as suas Contas do Google conectadas em apps e sites aqui. Os apps e sites que têm sua permissão podem acessar as informações da conta necessárias para o funcionamento adequado.</translation>
 <translation id="4044612648082411741">Digite a senha do certificado</translation>
 <translation id="404493185430269859">Mecanismo de pesquisa padrão</translation>
 <translation id="4046123991198612571">Próxima faixa</translation>
@@ -2095,7 +2096,6 @@
 <translation id="4242533952199664413">Abrir configurações.</translation>
 <translation id="4242577469625748426">Falha ao instalar configurações da política no dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar mais apps para usar com a stylus</translation>
-<translation id="424546999567421758">Detectado alto uso de disco</translation>
 <translation id="424726838611654458">Sempre abrir com o Adobe Reader</translation>
 <translation id="4247901771970415646">Não é possível sincronizar com <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Aguardando conexão da rede...</translation>
@@ -2203,7 +2203,6 @@
 <translation id="4421932782753506458">Pelúcia</translation>
 <translation id="4422347585044846479">Editar favorito para esta página</translation>
 <translation id="4423376891418188461">Restaurar configurações</translation>
-<translation id="4423482519432579560">&amp;Correção ortográfica</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, seu administrador solicita que você altere sua senha.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4430369329743628066">Página adicionada como favorito</translation>
@@ -2663,8 +2662,6 @@
 <translation id="5187295959347858724">Você está conectado a <ph name="SHORT_PRODUCT_NAME" />. Seus favoritos, o histórico e outras configurações estão sendo sincronizados com sua Conta do Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422">Solicitação do download de vários arquivos feita por <ph name="ORIGIN" /></translation>
-<translation id="5192316339598592690">Mude de conta rapidamente e faça login em apps e sites ao mesmo tempo.
-    Apps e sites podem pedir permissão para usar algumas informações da sua Conta do Google. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Execute o Powerwash do dispositivo e tente novamente.</translation>
 <translation id="5204967432542742771">Insira a senha</translation>
 <translation id="5206215183583316675">Quer excluir "<ph name="CERTIFICATE_NAME" />"?</translation>
@@ -3345,7 +3342,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="622537739776246443">O perfil será excluído</translation>
 <translation id="6225475702458870625">Conexão de dados disponível a partir do seu <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Arquivo de chaves particulares (opcional)</translation>
-<translation id="6228516488918914827">Página carregada mais rapidamente</translation>
 <translation id="6228691855869374890">Este site tem controle total de dispositivos MIDI.</translation>
 <translation id="6229890768313448549">Não é possível carregar os Termos de Serviço do Google Play. Tente novamente.</translation>
 <translation id="6231881193380278751">Adicionar um parâmetro de consulta no URL para atualizar automaticamente a página: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3550,7 +3546,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6545665334409411530">Taxa de repetição</translation>
 <translation id="6545834809683560467">Utilizar o serviço de previsão para ajudar a completar pesquisas e URLs digitados na barra de endereço ou na caixa de pesquisa do Acesso rápido aos apps</translation>
 <translation id="6545867563032584178">O microfone está desativado nas preferências do sistema do Mac</translation>
-<translation id="6547316139431024316">Não avisar novamente para esta extensão</translation>
 <translation id="6547354035488017500">Libere pelo menos 512 MB de espaço. Caso contrário, seu dispositivo deixará de responder. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6551508934388063976">Comando não disponível. Pressione "Control-N" para abrir uma nova janela.</translation>
@@ -4681,7 +4676,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="827097179112817503">Mostrar botão "Página inicial"</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{ favorito excluído}one{# favorito excluído}other{# favoritos excluídos}}</translation>
 <translation id="8272443605911821513">Gerencie suas extensões clicando em "Extensões" no menu "Mais ferramentas".</translation>
-<translation id="8272966760965438857">Gerencie suas Contas do Google em um só lugar</translation>
 <translation id="8274332263553132018">Transmitir arquivo</translation>
 <translation id="8274924778568117936">Não desligue ou feche seu <ph name="DEVICE_TYPE" /> até que a atualização termine. O <ph name="DEVICE_TYPE" /> será reiniciado depois que a instalação for concluída.</translation>
 <translation id="8275038454117074363">Importar</translation>

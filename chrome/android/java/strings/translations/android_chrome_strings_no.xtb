@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Full kontroll over MIDI-enheter</translation>
 <translation id="1449080968331948513">Datasparing heter nå «forenklet modus»</translation>
 <translation id="145097072038377568">Slått av i Android-innstillingene</translation>
+<translation id="146329143005354472">Legg til i Mine apper</translation>
 <translation id="1477626028522505441">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av tjenerproblemer.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 til)}other{ (+ # til)}}</translation>
 <translation id="1501480321619201731">Slett gruppen</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2874939134665556319">Forrige spor</translation>
 <translation id="2876369937070532032">Sender Google nettadressene til noen av sidene du besøker, når sikkerheten din står i fare</translation>
-<translation id="2876764156902388290">Chrome bruker mindre data for å vise deg denne siden</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="2891154217021530873">Stopp innlastingen av siden</translation>
 <translation id="2893180576842394309">Google kan bruke loggen din for å gi Søk og andre Google-tjenester et personlig preg</translation>

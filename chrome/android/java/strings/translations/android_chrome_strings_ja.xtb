@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">MIDI機器のフルコントロールを許可</translation>
 <translation id="1449080968331948513">データセーバーは現在ライトモードです</translation>
 <translation id="145097072038377568">Android の設定で無効</translation>
+<translation id="146329143005354472">マイアプリに追加</translation>
 <translation id="1477626028522505441">サーバーで問題が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{（他 1 件）}other{（他 # 件）}}</translation>
 <translation id="1501480321619201731">グループを削除</translation>
@@ -95,7 +96,7 @@
 <translation id="1671236975893690980">ダウンロードを待機しています...</translation>
 <translation id="1672586136351118594">次回から表示しない</translation>
 <translation id="1692118695553449118">同期は有効です</translation>
-<translation id="169515064810179024">サイトによるモーション センターへのアクセスをブロックする</translation>
+<translation id="169515064810179024">サイトによるモーション センサーへのアクセスをブロックする</translation>
 <translation id="1717218214683051432">モーション センサー</translation>
 <translation id="1718835860248848330">1 時間以内</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" />に更新</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2874939134665556319">前のトラック</translation>
 <translation id="2876369937070532032">セキュリティ上のリスクがある場合に、アクセスした一部のページの URL を Google に送信します</translation>
-<translation id="2876764156902388290">Chrome ではデータ使用量を削減してこのページを表示しています</translation>
 <translation id="2888126860611144412">Chrome について</translation>
 <translation id="2891154217021530873">ページの読み込みを停止</translation>
 <translation id="2893180576842394309">検索やその他の Google サービスをカスタマイズするために、Google で履歴が使用されることがあります</translation>

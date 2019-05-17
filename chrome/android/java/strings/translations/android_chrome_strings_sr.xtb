@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Пуна контрола над MIDI уређајима</translation>
 <translation id="1449080968331948513">Уштеда података је сада Lite режим</translation>
 <translation id="145097072038377568">Искључено је у Android подешавањима</translation>
+<translation id="146329143005354472">Додај у Моје апликације</translation>
 <translation id="1477626028522505441">Преузимање датотеке <ph name="FILE_NAME" /> није успело због проблема на серверу.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (и још 1)}one{ (и још #)}few{ (и још #)}other{ (и још #)}}</translation>
 <translation id="1501480321619201731">Избриши групу</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Сајт</translation>
 <translation id="2874939134665556319">Претходна песма</translation>
 <translation id="2876369937070532032">Шаље URL-ове неких страница које посећујете Google-у када је безбедност угрожена</translation>
-<translation id="2876764156902388290">Chrome користи мање података за приказивање ове странице</translation>
 <translation id="2888126860611144412">О Chrome прегледачу</translation>
 <translation id="2891154217021530873">Заустави учитавање странице</translation>
 <translation id="2893180576842394309">Google може да користи историју за персонализацију Претраге и других Google услуга</translation>

@@ -338,6 +338,7 @@
 ব্যবহার করছেন, তাহলে আপনার <ph name="LINK_START" />প্রক্সি সেটিংস<ph name="LINK_END" /> অ্যাডজাস্ট করুন৷</translation>
 <translation id="1512210426710821809">এটি আগের অবস্থায় ফিরিয়ে আনার একমাত্র উপায় হল <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> আবার ইনস্টল করা।</translation>
 <translation id="151501797353681931">Safari থেকে আমদানি করা</translation>
+<translation id="1515163294334130951">লঞ্চ করুন</translation>
 <translation id="1521442365706402292">শংসাপত্রগুলি পরিচালনা করুন</translation>
 <translation id="152234381334907219">কখনও সংরক্ষিত হয়নি</translation>
 <translation id="1524430321211440688">কীবোর্ড</translation>
@@ -439,6 +440,7 @@
 <translation id="167160931442925455">অত্যন্ত বেশি আওয়াজ</translation>
 <translation id="1673137583248014546"><ph name="URL" /> আপনার নিরাপত্তা কী এবং মডেল দেখতে চায়</translation>
 <translation id="1679068421605151609">ডেভেলপার টুল</translation>
+<translation id="1679806121152819234">প্লাগ-ইন VM</translation>
 <translation id="167983332380191032">ম্যানেজমেন্ট পরিষেবা HTTP সমস্যা পাঠিয়েছে।</translation>
 <translation id="1680849702532889074">আপনার Linux অ্যাপ ইনস্টলেশনের সময় সমস্যা হয়েছে।</translation>
 <translation id="16815041330799488">ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি কোনও সাইটকে দেখার অনুমতি দেবেন না</translation>
@@ -961,7 +963,6 @@
 <translation id="2496180316473517155">ব্রাউজিং ইতিহাস</translation>
 <translation id="2497229222757901769">মাউসের গতি</translation>
 <translation id="2497852260688568942">আপনার প্রশাসকের দ্বারা সিঙ্ক অক্ষম করা হয়েছে</translation>
-<translation id="249819058197909513">এই অ্যাপ্লিকেশানটির জন্য আবার সতর্ক করবেন না</translation>
 <translation id="2498539833203011245">ছোট করুন</translation>
 <translation id="2498765460639677199">অতি বৃহত্</translation>
 <translation id="2499747912851752301">পাসওয়ার্ড এক্সপোর্ট করা হচ্ছে...</translation>
@@ -1050,7 +1051,6 @@
 <translation id="2630681426381349926">শুরু করার জন্য ওয়াই-ফাই এর সাথে সংযুক্ত হোন</translation>
 <translation id="2631120081682787498">আপনি কি এই ট্যাবটি বন্ধ করতে চান?</translation>
 <translation id="2631498379019108537">শেল্ফে ইনপুট বিকল্পগুলি দেখান</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> ডিস্কের <ph name="USAGE" /> এমবি স্থান ব্যবহার করছে৷</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" সরাবেন?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ইনস্টলেশন সম্পূর্ণ করতে পারেনি, তবে এটির ডিস্ক ইমেজ থেকে চালনা চলতে থাকবে৷</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1397,7 +1397,6 @@
 <translation id="3157931365184549694">পুনরুদ্ধার করুন</translation>
 <translation id="3158033540161634471">আপনার আঙ্গুলের ছাপ সেট-আপ করুন</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (হার্ডওয়্যার-সাহায্যপ্রাপ্ত)</translation>
-<translation id="316125635462764134">অ্যাপ্লিকেশান সরান</translation>
 <translation id="3161522574479303604">সকল ভাষা</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> বিক্রেতার থেকে অজানা পণ্য <ph name="PRODUCT_ID" /></translation>
 <translation id="3165390001037658081">কিছু পরিষেবা প্রদানকারী এই বৈশিষ্ট্যকে অবরুদ্ধ করতে পারে।</translation>
@@ -1710,7 +1709,7 @@
 <translation id="3664511988987167893">এক্সটেনশনের আইকন</translation>
 <translation id="3665589677786828986">Chrome শনাক্ত করেছে যে অন্য কোনো প্রোগ্রাম আপনার কিছু সেটিংয়ের ক্ষতি করেছে এবং সেগুলিকে তাদের মূল ডিফল্টে রিসেট করেছে।</translation>
 <translation id="3668570675727296296">ভাষা সেটিংস</translation>
-<translation id="366867565525278777">স্টোরেজের জন্য যথেষ্ট জায়গা নেই বলে ইনস্টল করা যায়নি। কমপক্ষে <ph name="INSTALL_SIZE" /> জায়গা খালি থাকা প্রয়োজন। জায়গা খালি করতে, ডিভাইসের স্টোরেজ থেকে কিছু ফাইল মুছুন।</translation>
+<translation id="366867565525278777">স্টোরেজের জায়গা নেই বলে ইনস্টল করা যায়নি। কমপক্ষে <ph name="INSTALL_SIZE" /> জায়গা খালি থাকা প্রয়োজন। জায়গা খালি করতে, ডিভাইসের স্টোরেজ থেকে কিছু ফাইল মুছুন।</translation>
 <translation id="3668801437375206837">ব্লুটুথ সমস্যাকে আরও ভালভাবে নির্ধারন করতে, Googlers তাদের ফিডব্যাক রিপোর্টের সাথে অতিরিক্ত ব্লুটুথ লগও অন্তর্ভুক্ত করতে পারে। এই বিকল্পটি বেছে নিলে PII যতখানি সম্ভব বাদ দিয়ে আপনার বর্তমান সেশন থেকে btsnoop এবং HCI লগ এই রিপোর্টে অন্তর্ভুক্ত করা হয়। শুধুমাত্র Listnr-এ Chrome OS প্রোডাক্ট গ্রুপের ম্যানেজাররা এই লগ অ্যাক্সেস করতে পারবেন। ৯০ দিন পরে লগ স্থায়ীভাবে মুছে ফেলা হবে।</translation>
 <translation id="3668823961463113931">হ্যান্ডলার</translation>
 <translation id="3670113805793654926">যেকোনও ভেন্ডর থেকে ডিভাইস</translation>
@@ -1895,6 +1894,7 @@
 <translation id="3916445069167113093"> এই প্রকারের ফাইল আপনার কম্পিউটারের ক্ষতি করতে পারে৷ আপনি কি যেকোনো ভাবে <ph name="FILE_NAME" /> রাখতে চান?</translation>
 <translation id="3918972485393593704">Google এ বিশদে অভিযোগ করুন</translation>
 <translation id="3919145445993746351">আপনার সব কম্পিউটারে এক্সটেনশন পেতে, সিঙ্ক চালু করুন</translation>
+<translation id="391999873395511996">ভার্চুয়াল মেশিন ডাউনলোড করা হচ্ছে।</translation>
 <translation id="3920504717067627103">সার্টিফিকেটের নীতিসমূহ</translation>
 <translation id="392089482157167418">ChromeVox (কথ্য প্রতিবার্তা) চালু করুন</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1945,7 +1945,6 @@
 <translation id="3983586614702900908">একটি অজানা বিক্রেতা থেকে ডিভাইসগুলি</translation>
 <translation id="3984159763196946143">ডেমো মোড শুরু করা যায়নি</translation>
 <translation id="3984431586879874039">এই সাইটকে আপনার নিরাপত্তা কী দেখতে দিতে চান?</translation>
-<translation id="3987348946546879621">ডেটা বাঁচানো হয়েছে</translation>
 <translation id="3987938432087324095">বোঝা গেল না।</translation>
 <translation id="3988996860813292272">সময় অঞ্চল বেছে নিন</translation>
 <translation id="399179161741278232">আমদানিকৃত</translation>
@@ -1976,7 +1975,6 @@
 <translation id="4037889604535939429">ব্যক্তির সম্পাদনা করুন</translation>
 <translation id="4042264909745389898">Google Chrome OS শর্তাদি</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{পৃষ্ঠাটি ছেড়ে যান}one{পৃষ্ঠাগুলি ছেড়ে যান}other{পৃষ্ঠাগুলি ছেড়ে যান}}</translation>
-<translation id="404299405565920089">অ্যাপ এবং ওয়েবসাইটে আপনার সাইন-ইন করা সমস্ত Google অ্যাকাউন্ট এখানে ম্যানেজ করা যাবে। সঠিকভাবে কাজ করার জন্য যেসব অ্যাপ এবং ওয়েবসাইটকে আপনি অ্যাকাউন্ট সংক্রান্ত তথ্য অ্যাক্সেস করার অনুমতি দিয়েছেন, সেগুলি সেই তথ্য অ্যাক্সেস করতে পারবে।</translation>
 <translation id="4044612648082411741">আপনার সার্টিফিকেটের পাসওয়ার্ড লিখুন</translation>
 <translation id="404493185430269859">ডিফল্ট সার্চ ইঞ্জিন</translation>
 <translation id="4046123991198612571">পরবর্তী ট্র্যাক</translation>
@@ -2091,7 +2089,6 @@
 <translation id="4242533952199664413">সেটিংস খুলুন</translation>
 <translation id="4242577469625748426">ডিভাইসে নীতি সেটিংস ইনস্টল করা যায়নি: <ph name="VALIDATION_ERROR" />৷</translation>
 <translation id="4244238649050961491">আরও স্টাইলাস স্টাইলাস অ্যাপ খুঁজুন</translation>
-<translation id="424546999567421758">খুব বেশি পরিমান ডিস্কের ব্যবহার শনাক্ত করা হয়েছে</translation>
 <translation id="424726838611654458">সর্বদা Adobe Reader এ খুলুন</translation>
 <translation id="4247901771970415646"><ph name="USERNAME" />-এর সাথে সিঙ্ক করা যাবে না</translation>
 <translation id="4249248555939881673">নেটওয়ার্ক সংযোগের জন্য অপেক্ষা করা হচ্ছে...</translation>
@@ -2199,7 +2196,6 @@
 <translation id="4421932782753506458">ফুঁয়োফুঁয়ো</translation>
 <translation id="4422347585044846479">এই পৃষ্ঠার বুকমার্ক সম্পাদনা করুন</translation>
 <translation id="4423376891418188461">সেটিংস পুনরুদ্ধার করুন</translation>
-<translation id="4423482519432579560">&amp;বানান পরীক্ষা</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, আপনার প্রশাসক চায় যে আপনি আপনার পাসওয়ার্ড পরিবর্তন করুন।</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4430369329743628066">বুকমার্ক যুক্ত হয়েছে</translation>
@@ -2659,8 +2655,6 @@
 <translation id="5187295959347858724">আপনি এখন <ph name="SHORT_PRODUCT_NAME" />এ সাইন-ইন করেছেন৷ আপনার বুকমার্ক, ইতিহাস এবং অন্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক করা হচ্ছে৷</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> একাধিক ফাইল ডাউনলোড করতে চায়</translation>
-<translation id="5192316339598592690">অ্যাকাউন্ট দ্রুত পাল্টান এবং অ্যাপ ও ওয়েবসাইটে একই সাথে সাইন-ইন করুন।
-    অ্যাপ ও সাইট আপনার Google অ্যাকাউন্টের কিছু তথ্য ব্যবহার করার অনুমতি চাইতে পারে। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">ডিভাইস পাওয়ারওয়াশ করে আবার চেষ্টা করুন।</translation>
 <translation id="5204967432542742771">পাসওয়ার্ড প্রবেশ করান</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" মুছবেন?</translation>
@@ -3341,7 +3335,6 @@
 <translation id="622537739776246443">প্রোফাইল মুছে ফেলা হবে</translation>
 <translation id="6225475702458870625">আপনার <ph name="PHONE_NAME" /> থেকে ডেটা সংযোগ পাওয়া যাচ্ছে</translation>
 <translation id="6226777517901268232">ব্যক্তিগত কী ফাইল (ঐচ্ছিক)</translation>
-<translation id="6228516488918914827">আরও দ্রুত পৃষ্ঠা লোড হয়েছে</translation>
 <translation id="6228691855869374890">এই সাইটির MIDI ডিভাইসগুলির উপর সম্পূর্ণ নিয়ন্ত্রণ আছে৷</translation>
 <translation id="6229890768313448549">Google Play পরিষেবার শর্তাদি লোড করা যাবে না। পুনরায় চেষ্টা করুন।</translation>
 <translation id="6231881193380278751">পৃষ্ঠাটি অটো-রিফ্রেশ করতে URL-এ কোনো কোয়েরি param যোগ করুন: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3546,7 +3539,6 @@
 <translation id="6545665334409411530">পুনরাবৃত্তির হার</translation>
 <translation id="6545834809683560467">সার্চগুলি এবং অ্যাড্রেস বারে টাইপ করা ইউআরএলগুলি অথবা অ্যাপ লঞ্চার সার্চ বাক্স সম্পূর্ণ করার বিষয়ে সহায়তা করার জন্য একটি পূর্বানুমান পরিষেবা ব্যবহার করুন</translation>
 <translation id="6545867563032584178">Mac-এর সিস্টেম অভিরুচিতে মাইক্রোফোন বন্ধ করা আছে</translation>
-<translation id="6547316139431024316">এই এক্সটেনশনটি জন্য আবার সতর্ক করবেন না</translation>
 <translation id="6547354035488017500">কমপক্ষে ৫১২ MB জায়গা ফাঁকা করুন, নাহলে আপনার ডিভাইস সাড়া দেবে না। জায়গা খালি করার জন্য, ডিভাইসের স্টোরেজ থেকে ফাইল মুছুন।</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6551508934388063976">কম্যান্ড উপলভ্য নেই৷ একটি নতুন উইন্ডো খুলতে control-N টিপুন৷</translation>
@@ -4675,7 +4667,6 @@
 <translation id="827097179112817503">হোম বোতাম দেখান</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{১টি বুকমার্ক মোছা হয়েছে}one{#টি বুকমার্ক মোছা হয়েছে}other{#টি বুকমার্ক মোছা হয়েছে}}</translation>
 <translation id="8272443605911821513">"আরও টুলগুলির মেনুতে" এক্সটেনশনগুলি ক্লিক করে আপনার এক্সটেনশনগুলি পরিচালনা করুন৷</translation>
-<translation id="8272966760965438857">এক জায়গায় আপনার সব Google অ্যাকাউন্ট ম্যানেজ করুন</translation>
 <translation id="8274332263553132018">ফাইল কাস্ট করুন</translation>
 <translation id="8274924778568117936">আপডেটটি সম্পূর্ণ না হওয়া পর্যন্ত <ph name="DEVICE_TYPE" />টি বন্ধ করবেন না। ইনস্টলেশন হয়ে গেলে <ph name="DEVICE_TYPE" />টি নিজে থেকেই রিস্টার্ট হবে।</translation>
 <translation id="8275038454117074363">আমদানি</translation>

@@ -416,7 +416,6 @@
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> na poslužitelju <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Otkaži plaćanje</translation>
 <translation id="3207960819495026254">Označeno</translation>
-<translation id="321912867715453276">Upozorenje: za to je pravilo prisutno više izvora, ali vrijednosti su iste.</translation>
 <translation id="3225919329040284222">Poslužitelj je pokazao certifikat koji ne odgovara ugrađenim očekivanjima. Ta su očekivanja uključena za određene web-lokacije s visokim stupnjem sigurnosti radi vaše zaštite.</translation>
 <translation id="3226128629678568754">Pritisnite gumb za ponovno učitavanje da biste ponovo poslali podatke koji su potrebni za učitavanje stranice.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -555,7 +554,6 @@
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> je blokiran</translation>
 <translation id="3987940399970879459">Manje od 1 MB</translation>
-<translation id="4008849406247176967">Upozorenje: za to je pravilo prisutno više izvora sa sukobljenim vrijednostima!</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web-stranica u blizini}one{# web-stranica u blizini}few{# web-stranice u blizini}other{# web-stranica u blizini}}</translation>
 <translation id="4030383055268325496">&amp;Poništi dodavanje</translation>
 <translation id="4032320456957708163">Vašim preglednikom upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -692,7 +690,6 @@
 <translation id="4738601419177586157">Prijedlog za pretraživanje <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Upravljaj zaporkama…</translation>
 <translation id="4744603770635761495">Izvršna putanja</translation>
-<translation id="4746351372139058112">Poruke</translation>
 <translation id="4750917950439032686">Vaši podaci (na primjer, zaporke i brojevi kreditnih kartica) privatni su kada se šalju na tu web-lokaciju.</translation>
 <translation id="4756388243121344051">&amp;Povijest</translation>
 <translation id="4758311279753947758">Dodaj pod. za kontakt</translation>
@@ -1122,7 +1119,6 @@
 <translation id="7220786058474068424">Obrada</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Web-lokacija pred vama sadrži zlonamjerni softver</translation>
-<translation id="724766306220616965">Upozorenja, sukob</translation>
 <translation id="724975217298816891">Unesite datum isteka i CVC za karticu <ph name="CREDIT_CARD" /> da biste ažurirali podatke o kartici. Nakon što ih potvrdite, podaci o kartici dijelit će se s ovom web-lokacijom.</translation>
 <translation id="7251437084390964440">Konfiguracija mreže nije u skladu sa standardom ONC. Dijelovi konfiguracije možda se neće uvesti.
 Dodatne pojedinosti:
@@ -1421,6 +1417,7 @@ Dodatne pojedinosti:
 <translation id="8891727572606052622">Nevažeći način proxy poslužitelja.</translation>
 <translation id="8903921497873541725">Povećaj</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8912362522468806198">Google Račun</translation>
 <translation id="8931333241327730545">Želite li spremiti tu karticu na Google račun?</translation>
 <translation id="8932102934695377596">Sat kasni</translation>
 <translation id="893332455753468063">Dodajte ime</translation>

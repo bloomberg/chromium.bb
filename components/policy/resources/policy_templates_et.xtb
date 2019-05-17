@@ -420,7 +420,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Hoiatus. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimist ei ole soovitatav üle anda kioskirakendusele, kuna see võib takistada seadmel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimise üleandmine võib kasutajad ohtu seada.</translation>
 <translation id="1675002386741412210">Toetatud:</translation>
-<translation id="1689963000958717134">Võimaldab jõustada võrgu konfigureerimise kõigile <ph name="PRODUCT_OS_NAME" /> seadme kasutajatele. Võrgu konfigureerimine on JSON-i vormingus string, mille määrab aadressil <ph name="ONC_SPEC_URL" /> kirjeldatud vorming Open Network Configuration</translation>
 <translation id="1704516734140344991">Seadistab rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivaravärskenduse funktsiooni saadavaloleku ja käitumise.
 
       JSON-i atribuutides saab määrata üksikud seaded.
@@ -982,16 +981,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui see seade keelatakse, ei saa veebilehed JavaScripti kasutada ja kasutaja ei saa seda seadet muuta.
 
       Kui see seade on lubatud või määramata, saavad veebilehed JavaScripti kasutada, kuid kasutajad saavad seda seadet muuta.</translation>
-<translation id="2747157663401642394">Seadistab rakenduse <ph name="PRODUCT_NAME" /> laienduste haldamise seaded.
-
-          Reegel juhib mitut seadet, sealhulgas seadeid, mida juhivad olemasolevad laiendustega seotud reeglid. Reegel alistab kõik pärandreeglid, kui mõlemad on määratud.
-
-          Reegel vastendab laienduse ID või värskenduse URL-i seadistusega. Laienduse ID-ga rakendatakse seadistus ainult määratud laiendusele. Spetsiaalse ID <ph name="DEFAULT_SCOPE" /> jaoks saab määrata vaikeseadistuse, mis kehtib kõikide laienduste puhul, millele ei ole reeglis määratud kohandatud seadistust. Värskenduse URL-iga rakendatakse seadistus kõikidele laiendustele, mille täpne värskenduse URL on märgitud laienduse manifesti, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Windowsi eksemplaride puhul, mis ei ole ühendatud domeeniga <ph name="MS_AD_NAME" />, saab sundinstallida vaid Chrome’i veebipoes olevaid rakendusi ja laiendusi.
-
-          Vaadake reegli võimalike seadete ja struktuuri täielikku kirjeldust: https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">WebRTC kasutatavate kohalike UDP-portide vahemiku piiramine</translation>
 <translation id="2757054304033424106">Laienduste/rakenduste tüübid, mille installimine on lubatud</translation>
 <translation id="2758084448533744848">Määrab jõustatud ajavööndi, mida seadmes kasutada. Kui see reegel on määratud, ei saa seadme kasutajad määratud ajavööndit alistada. Kui esitatakse kehtetu väärtus, siis aktiveeritakse reegel selle asemel siiski väärtusega „GMT”. Kui esitatakse tühi string, siis reeglit eiratakse.
@@ -1702,7 +1691,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
           Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust). Kui see on probleem, tuleb määrata reegel <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis aadressil <ph name="CHROME_EXTENSIONS_LINK" />. Värskenduse URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises<ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegu „https://clients2.google.com/service/update2/crx”). Pange tähele, et reeglis määratud värskenduse URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Samuti pange tähele, et selgesõnalise värskenduse URL-i määramine oli kuni rakenduse <ph name="PRODUCT_NAME" /> 67. versioonini kohustuslik.
+          Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis aadressil <ph name="CHROME_EXTENSIONS_LINK" />. Värskenduse URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegu „https://clients2.google.com/service/update2/crx”). Pange tähele, et reeglis määratud värskenduse URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Samuti pange tähele, et selgesõnalise värskenduse URL-i määramine oli kuni rakenduse <ph name="PRODUCT_NAME" /> 67. versioonini kohustuslik.
 
           Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" /> installib laienduse ID-ga <ph name="EXTENSION_ID_SAMPLE" /> standardselt Chrome'i veebipoe värskenduse URL-ilt. Lisateavet laienduste hostimise kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -1758,30 +1747,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Reegel mõjutab ainult kasutajaid, kes kasutavad autentimiseks SAML-i.</translation>
 <translation id="4105989332710272578">Sertifikaadi läbipaistvuse jõustamise keelamine URL-ide loendi jaoks</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
-<translation id="4125606414556046117">Reegel võimaldab seadistada taustapildi, mis kuvatakse kasutaja töölaual ja sisselogimisekraani taustal. Reegli seadistamiseks määrake URL, millelt <ph name="PRODUCT_OS_NAME" /> saab alla laadida taustapildi ja allalaaditava sisu terviklikkuse kinnitamiseks kasutatava krüptograafilise räsi. Pilt peab olema JPEG-vormingus ja faili maht ei tohi olla suurem kui 16 MB. URL peab olema juurdepääsetav autentimiseta.
-
-      Taustapilt laaditakse alla ja talletatakse vahemällu. URL-i või räsi muutumisel laaditakse pilt uuesti alla.
-
-      Reegel tuleb määrata stringina, mis esitab URL-i ja räsi JSON-vormingus järgmise skeemi alusel.
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": „URL, millelt laaditakse alla taustapilt.”,
-            "type": "string"
-          },
-          "hash": {
-            "description": „Taustapildi SHA-256 räsi.”,
-            "type": "string"
-          }
-        }
-      }
-
-      Kui reegel on määratud, laadib <ph name="PRODUCT_OS_NAME" /> alla taustapildi ja kasutab seda.
-
-      Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
-
-      Kui jätate reegli määramata, saab kasutaja valida töölaual ja sisselogimisekraani taustal kuvatava pildi.</translation>
 <translation id="412697421478384751">Nõrkade lukustuskuva PIN-koodide määramise lubamine</translation>
 <translation id="4138655880188755661">Ajapiirang</translation>
 <translation id="4144164749344898721">See reegel juhib mitut seadet, mis reguleerivad toitehalduse strateegiat kasutaja tegevusetuse ajal.
@@ -2740,53 +2705,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Kui reegel on määramata või keelatud, ilmub printimiskäsu sisestamisel printimise eelvaate kuva.</translation>
 <translation id="6022948604095165524">Toiming käivitamisel</translation>
-<translation id="6023030044732320798">Määrab reeglite kogumi, mis edastatakse ARC käitusajale. Väärtus peab olema sobiv JSON.
-
-      Selle reegli abil saab seadistada, millised Androidi rakendused automaatselt seadmesse installitakse:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Androidi rakenduse identifikaator, nt „com.google.android.gm” Gmaili puhul",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Määrab, kuidas rakendus installitakse. OPTIONAL: rakendust ei installita automaatselt, kuid kasutaja saab selle installida. Kui seda reeglit ei määrata, on see vaikeseade. PRELOAD: rakendus installitakse automaatselt, kuid kasutaja saab selle desinstallida. FORCE_INSTALLED: rakendus installitakse automaatselt ja kasutaja ei saa seda desinstallida. BLOCKED: rakendus on blokeeritud ja seda ei saa installida. Kui rakendus installiti eelmise reegli põhjal, siis see desinstallitakse.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Reegel rakendustele lubade taotluste andmiseks. PERMISSION_POLICY_UNSPECIFIED: reeglit pole määratud. Kui loa jaoks pole reeglit määratud mitte ühelgi tasemel, kasutatakse vaikimisi käitumist `PROMPT`. PROMPT: kasutajal palutakse luba anda. GRANT: luba antakse automaatselt. DENY: luba keelatakse automaatselt.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Rakendusepõhine JSON-i konfiguratsiooniobjekt, millel on komplekt võtmeväärtuse paare, nt '"managedConfiguration": { "key1": value1, "key2": value2 }'. Võtmed määratakse rakenduse manifestis.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Rakenduste kinnitamiseks käivitusprogrammi vaadake reeglit PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Vaikeotsingupakkuja Instant-URL</translation>
 <translation id="603410445099326293">Parameetrid POST-meetodit kasutava soovituse URL-i jaoks</translation>
 <translation id="6034341625190551415">Haldab avalikku seanssi ja kioski kontotüüpe.</translation>
@@ -3139,38 +3057,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui reegel on keelatud, siis ei kasutata sisseehitatud DNS-i klienti kunagi.
 
       Kui reegel on määramata, on sisseehitatud DNS-i klient MacOS-is, Androidis (kui nii privaatne DNS kui ka VPN ei ole lubatud) ja ChromeOS-is vaikimisi lubatud ning kasutajad saavad otsustada, kas rakendus kasutab sisseehitatud DNS-i klienti, muutes atribuuti chrome://flags või määrates käsurea lipu.</translation>
-<translation id="6838056959556423778">Alistatakse rakenduse <ph name="PRODUCT_NAME" /> vaikeprinteri valimise reeglid.
-
-      Selle reegliga määratakse reeglid rakenduses <ph name="PRODUCT_NAME" /> vaikeprinteri valimiseks, mis toimub esimesel korral, kui profiilil printimisfunktsiooni kasutatakse.
-
-      Kui reegel on määratud, üritab rakendus <ph name="PRODUCT_NAME" /> leida printeri, mis vastab kõigile määratud atribuutidele, ja valib selle vaikeprinteriks. Valitakse esimene printer, mis reeglitele vastab. Kui reeglitele vastavaid printereid on mitu, saab nende avastamise järjekorrast olenevalt valida mis tahes sobiva printeri.
-
-      Kui seda reeglit ei määrata või määratud aja jooksul ei leita reeglitele vastavat printerit, määratakse vaikimisi printeriks sisseehitatud PDF-printer. Kui PDF-printer pole saadaval, siis printerit ei valita.
-
-      Väärtus sõelutakse JSON-objektina, mis vastab järgmisele skeemile:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Kas piirata sobiva printeri otsing konkreetse printerite komplektiga?",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regulaaravaldis, mis ühtib printeri ID-ga.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulaaravaldis, mis ühtib printeri kuvatava nimega.",
-            "type": "string"
-          }
-        }
-      }
-
-      Rakendusega <ph name="CLOUD_PRINT_NAME" /> ühendatud printerid loetakse gruppi <ph name="PRINTER_TYPE_CLOUD" /> kuuluvateks, ülejäänud printerid kuuluvad gruppi <ph name="PRINTER_TYPE_LOCAL" />.
-      Välja vahelejätmine tähendab, et kõik väärtused ühtivad. Näiteks kui ühenduvust ei määrata, käivitab printimise eelvaade igat tüüpi printerite (nii kohalike kui ka pilvepõhiste printerite) otsimise.
-      Regulaaravaldise mustrid peavad järgima atribuudi JavaScript RegExp süntaksit ja vasted on tõstutundlikud.</translation>
 <translation id="6843296367238757293">Selle reegli tugi on katkestatud. Seda ei ole soovitatav kasutada Vaadake lisateavet aadressilt https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Reegel eemaldati operatsioonisüsteemist <ph name="PRODUCT_NAME" /> 68 ja see asendati reegliga <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Selle reegli tugi on katkestatud ja see on versioonist M66 eemaldatud, kuna seda kasutati ainult sisetestides ja see sisaldab turvaauku.
@@ -4344,30 +4230,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       See reegel mõjutab ainult neid kasutajad, kes kasutavad autentimiseks SAML-i.
 
       Reegli väärtus tuleb määrata sekundites.</translation>
-<translation id="9027787254195333560">Selle reegliga saate seadistada avatari pildi, mis kujutab kasutajat sisselogimisekraanil. Reegli seadistamiseks määrake URL, kust <ph name="PRODUCT_OS_NAME" /> saab alla laadida avatari pildi, ja krüptograafiline räsiväärtus, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Pilt peab olema JPEG-vormingus, mille maksimaalne maht on 512 kB. URL peab olema juurdepääsetav autentimiseta.
-
-      Avatari pilt laaditakse alla ja talletatakse vahemällu. URL-i või räsi muutumisel laaditakse pilt uuesti alla.
-
-      Reegel tuleb määrata stringina, mis esitab URL-i ja räsi JSON-vormingus järgmise skeemi alusel.
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": „URL, millelt laaditakse alla avatari pilt.”,
-            "type": "string"
-          },
-          "hash": {
-            "description": „Avatari pildi SHA-256 räsi.”,
-            "type": "string"
-          }
-        }
-      }
-
-      Kui reegel on määratud, laadib <ph name="PRODUCT_OS_NAME" /> alla avatari pildi ja kasutab seda.
-
-      Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
-
-      Kui jätate reegli määramata, saab kasutaja valida avatari pildi, mis neid sisselogimiskuval kujutab.</translation>
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
 <translation id="9038058011835642205">Määrab loendi veebisaitidest, mis installitakse märkamatult, ilma et kasutaja peaks sekkuma, ning mida kasutaja ei saa desinstallida ega keelata.
 
@@ -4380,7 +4242,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
 
       Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema vahemikus 30 sekundit kuni 24 tundi.</translation>
-<translation id="9042911395677044526">Võimaldab võrguseadistuse kasutajapõhiselt teenuse <ph name="PRODUCT_OS_NAME" /> seadmes jõustada. Võrguseadistus on JSON-i vormingus string, mille määratleb Open Network Configuration vorming, mida kirjeldatakse aadressil <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">See reegel juhib, kas seadme peaks kiirparanduse järgule värskendama või mitte.
 
       Kui reegli väärtuseks määratakse märk, mis suunab kiirparanduse järgule, värskendatakse seade vastavale kiirparanduse järgule, kui mõni teine reegel värskendust ei blokeeri.
@@ -4460,17 +4321,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui reegel on seatud väärtusele Väär, ei ole seade „Päised ja jalused” printimise eelvaate dialoogis valitud ja kasutaja ei saa seda muuta.
 
       Kui reegel on seatud väärtusele Tõene, on seade „Päised ja jalused” printimise eelvaate dialoogis valitud ja kasutaja ei saa seda muuta.</translation>
-<translation id="9213347477683611358">Seadistage seadmetasemel taustapildi kujutis, mis kuvatakse sisselogimisekraanil, kui ükski kasutaja pole veel seadmesse sisse loginud. Selle reegli määramiseks tuleb määrata URL, kust Chrome OS-i seade saab alla laadida taustapildi kujutise ja krüptograafilise räsiväärtuse, mida kasutatakse allalaadimise terviklikkuse kontrollimiseks. Kujutis peab olema JPEG-vormingus ja faili suurus ei tohi ületada 16 MB. URL peab olema autentimiseta juurdepääsetav. Taustapildi kujutis laaditakse alla ja salvestatakse vahemällu. See laaditakse uuesti alla iga kord, kui URL või räsiväärtus muutub.
-
-      Reegel tuleks määrata stringina, mis näitab URL-i ja räsiväärtust JSON-vormingus, nt
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Kui seadme taustapildi reegel on määratud, laadib Chrome OS-i seade taustapildi kujutise alla ja kasutab seda sisselogimisekraanil, kui ükski kasutaja pole veel seadmesse sisse loginud. Kui kasutaja sisse logib, rakendatakse kasutaja taustapildi reeglit.
-
-      Kui seadme taustapildi reegel on määramata, otsustab kasutaja taustapildi reegel, mida näidata, kui kasutaja taustapildi reegel on määratud.</translation>
 <translation id="9217154963008402249">Võrgupakettide jälgimise sagedus</translation>
 <translation id="922540222991413931">Seadistage laienduste, rakenduste ja kasutaja skriptide installimise allikad</translation>
 <translation id="924557436754151212">Impordi salvestatud paroolid vaikebrauserist esimesel käitamisel</translation>

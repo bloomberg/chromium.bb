@@ -402,7 +402,6 @@
 
       Upozorenje: ne preporučuje se ovlastiti kiosk aplikaciju za upravljanje verzijom proizvoda <ph name="PRODUCT_OS_NAME" /> jer uređaj tako može prestati primati ažuriranja softvera i važne sigurnosne ispravke. Davanje ovlasti za upravljanje verzijom proizvoda <ph name="PRODUCT_OS_NAME" /> korisnike može izložiti opasnosti.</translation>
 <translation id="1675002386741412210">Podržano na:</translation>
-<translation id="1689963000958717134">Omogućuje nametanje primjene mrežne konfiguracije za sve korisnike uređaja <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration", koji je opisan na stranici <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Konfigurira dostupnost i ponašanje funkcije ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme.
 
       Pojedinačne postavke mogu se navesti u JSON svojstvima:
@@ -943,16 +942,6 @@
       Ako je ova postavka onemogućena, web-stranice ne mogu upotrebljavati JavaScript i korisnik ne može promijeniti tu postavku.
 
       Ako je ova postavka omogućena ili nije postavljena, web-stranice mogu upotrebljavati JavaScript, no korisnik može promijeniti tu postavku.</translation>
-<translation id="2747157663401642394">Konfigurira postavke upravljanja proširenjima za <ph name="PRODUCT_NAME" />.
-
-          To pravilo upravlja većim brojem postavki, uključujući postavke kojima upravljaju postojeća pravila koja se odnose na proširenja. To će pravilo nadjačati sva naslijeđena pravila ako su postavljena i ona.
-
-          To pravila mapira ID proširenja ili URL za ažuriranje u svoju konfiguraciju. Uz ID proširenja konfiguracija će se primijeniti samo na navedeno proširenje. Zadana konfiguracija može se postaviti za posebni ID <ph name="DEFAULT_SCOPE" />, koji će se primjenjivati na sva proširenja za koja nije postavljena prilagođena konfiguracija u tom pravilu. Uz URL za ažuriranje konfiguracija će se primijeniti na sva proširenja s URL-om za ažuriranje navedenim u manifestu ovog proširenja, kao što je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Za instance Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />, prisilno je instaliranje ograničeno na aplikacije i proširenja navedene u Chrome web-trgovini.
-
-          Potpuni opis mogućih postavki i strukture tog pravila potražite na stranici https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Ograniči raspon lokalnih UDP priključaka kojima se koristi WebRTC</translation>
 <translation id="2757054304033424106">Vrste proširenja/aplikacija koje se smiju instalirati</translation>
 <translation id="2758084448533744848">Određuje zadanu vremensku zonu koja će se upotrebljavati za uređaj. Ako se to pravilo postavi, korisnici uređaja ne mogu nadjačati navedenu vremensku zonu. Ako se navede nevažeća vrijednost, pravilo je još uvijek aktivirano i umjesto nje upotrebljava se "GMT". Ako se navede prazan niz, pravilo se zanemaruje.
@@ -1659,7 +1648,7 @@
 
           Svaka stavka pravila niz je koji sadrži ID proširenja i URL za "ažuriranje" odvojene točkom sa zarezom (<ph name="SEMICOLON" />). ID proširenja niz je od 32 slova koji se primjerice može pronaći na <ph name="CHROME_EXTENSIONS_LINK" /> u načinu rada razvojnog programera. URL za "ažuriranje", ako se navede, treba usmjeravati na XML dokument manifesta ažuriranja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />. Prema zadanim postavkama, upotrebljava se URL za ažuriranje Chrome web-trgovine (koji je trenutačno "https://clients2.google.com/service/update2/crx"). URL za "ažuriranje" postavljen u ovom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. Napominjemo i to da je eksplicitno navođenje URL-a za "ažuriranje" bilo obavezno u verzijama preglednika <ph name="PRODUCT_NAME" /> zaključno s verzijom 67.
 
-          Na primjer, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalira proširenje s ID-om <ph name="EXTENSION_ID_SAMPLE" /> sa standardnog URL-a za "ažuriranje" Chrome web-trgovine. Više informacija o hostingu proširenja potražite ovdje: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Na primjer, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalira proširenje s ID-jem <ph name="EXTENSION_ID_SAMPLE" /> sa standardnog URL-a za "ažuriranje" Chrome web-trgovine. Više informacija o hostingu proširenja potražite ovdje: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Ako se to pravilo ne postavi, aplikacije ili proširenja neće se instalirati automatski i korisnik može deinstalirati bilo koju aplikaciju ili proširenje u pregledniku <ph name="PRODUCT_NAME" />.
 
@@ -1711,30 +1700,6 @@
       To se pravilo primjenjuje samo na korisnike koji se autentificiraju putem SAML-a.</translation>
 <translation id="4105989332710272578">Onemogući provedbu Transparentnosti certifikata za popis URL-ova</translation>
 <translation id="4121350739760194865">Sprječavanje prikaza promocija aplikacija na stranici Nova kartica</translation>
-<translation id="4125606414556046117">To pravilo omogućuje vam da konfigurirate sliku pozadine koja se prikazuje na radnoj površini i pozadini zaslona za prijavu korisnika. Pravilo se postavlja tako da se navede URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti sliku pozadine i kriptografsko hashiranje kojim se potvrđuje integritet preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije.
-
-      Slika pozadine preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili hashiranje promijene.
-
-      Pravilo se navodi kao niz koji izražava URL i hashiranje u JSON formatu prema sljedećoj shemi:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL s kojeg se može preuzeti slika pozadine.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "SHA-256 raspršivanje slike pozadine.",
-            "type": "string"
-          }
-        }
-      }
-
-      Ako se pravilo postavi, <ph name="PRODUCT_OS_NAME" /> preuzet će i upotrijebiti sliku pozadine.
-
-      Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
-
-      Ako se pravilo ne postavi, korisnik može odabrati sliku koja će se prikazivati na radnoj površini i pozadini zaslona za prijavu.</translation>
 <translation id="412697421478384751">Omogući korisnicima da postave slabe PIN-ove za zaključan zaslon</translation>
 <translation id="4138655880188755661">Vremensko ograničenje</translation>
 <translation id="4144164749344898721">To pravilo kontrolira više postavki za strategiju upravljanja napajanjem kada korisnik postane neaktivan.
@@ -2498,7 +2463,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
           Ako se postavka ne konfigurira, neće se primjenjivati ograničenja u vezi s prihvatljivim vrstama proširenja/aplikacija.
 
-          Upotreba više ID-ova odvojenih zarezima prije verzije 75 nije podržana i preskočit će se. Ostatak pravila i dalje će se primjenjivati.</translation>
+          Upotreba više ID-jeva odvojenih zarezima prije verzije 75 nije podržana i preskočit će se. Ostatak pravila i dalje će se primjenjivati.</translation>
 <translation id="5645779841392247734">Dopusti kolačiće na ovim web-lokacijama</translation>
 <translation id="5689430183304951538">Veličina stranice zadanog ispisa</translation>
 <translation id="5693469654327063861">Dopusti premještanje podataka</translation>
@@ -2660,53 +2625,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako to pravilo nije postavljeno ili je postavljeno na netočno, naredbe ispisa pokreću zaslon pretpregleda ispisa.</translation>
 <translation id="6022948604095165524">Radnja prilikom pokretanja</translation>
-<translation id="6023030044732320798">Određuje skup pravila koja će se prenijeti na vrijeme izvođenja ARC-a. Vrijednost mora biti važeći JSON.
-
-      To se pravilo može upotrijebiti da bi se konfiguriralo koje će se Android aplikacije automatski instalirati na uređaj:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identifikator Android aplikacije, na primjer "com.google.android.gm" za Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Određuje kako se aplikacija instalira. OPTIONAL: aplikacija se ne instalira automatski, ali je korisnik može instalirati. To je zadano ako se to pravilo ne odredi. PRELOAD: aplikacija se instalira automatski, no korisnik je može deinstalirati. FORCE_INSTALLED: aplikacija se instalira automatski i korisnik je ne može deinstalirati. BLOCKED: aplikacija je blokirana i ne može se instalirati. Ako je aplikacija instalirana prema nekom od prethodnih pravila, deinstalirat će se.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Pravilo za odobravanje zahtjeva za dopuštenje za aplikacije. PERMISSION_POLICY_UNSPECIFIED: pravilo nije određeno. Ako se pravilo za dopuštenje ne odredi ni na kojoj razini, ponašanje stavke "PROMPT" upotrebljava se prema zadanim postavkama. PROMPT: korisniku se postavlja pitanje žele li odobriti dopuštenje. GRANT: dopuštenje se odobrava automatski. DENY: dopuštenje se odbija automatski.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Konfiguracijski JSON objekt sa skupom parova ključ-vrijednost, na primjer '"managedConfiguration": { "key1": value1, "key2": value2 }'. Ključevi su definirani u manifestu aplikacije.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Ako želite prikvačiti aplikacije na pokretač, pogledajte PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Instant URL zadanog davatelja usluge pretraživanja</translation>
 <translation id="603410445099326293">Parametri URL-a za prijedloge koji upotrebljava POST</translation>
 <translation id="6034341625190551415">Upravlja javnom sesijom i vrstama računa za kiosk.</translation>
@@ -2751,7 +2669,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Napominjemo da to pravilo određuje stanje Googleovih usluga lokacije samo tijekom početnog postavljanja. Korisnik može kasnije u postavkama Androida uključiti ili isključiti Googleove usluge lokacije.
 
-      Napominjemo da će se to pravilo zanemariti ako se <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> postavi na <ph name="BLOCK_GEOLOCATION_SETTING" />, a Googleove usluge lokacije uvijek će biti onemogućene.</translation>
+      Napominjemo da će se to pravilo zanemariti, a Googleove usluge lokacije onemogućiti ako se <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> postavi na <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Uvijek upotrebljavaj približno otkrivanje vremenske zone</translation>
 <translation id="6145799962557135888">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju pokretati JavaScript. Ako to pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultJavaScriptSetting", ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="614662973812186053">To pravilo kontrolira i prikupljanje podataka o upotrebi i dijagnostici na Androidu.</translation>
@@ -3054,37 +2972,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se pravilo postavi na False, ugrađeni DNS klijent nikad se neće upotrebljavati.
 
       Ako se to pravilo ne postavi, ugrađeni DNS klijent bit će omogućen prema zadanim postavkama na MacOS-u, Androidu (ako nisu omogućeni ni Privatni DNS ni VPN) i OS-u Chrome, a korisnici će moći promijeniti postavku upotrebe ugrađenog DNS klijenta uređivanjem oznaka na stranici chrome://flags ili navođenjem oznake naredbenog retka.</translation>
-<translation id="6838056959556423778">Nadjačava zadana pravila za odabir pisača u proizvodu <ph name="PRODUCT_NAME" />.
-
-      Tim se pravilom daju odrednice za odabir zadanog pisača u proizvodu <ph name="PRODUCT_NAME" /> prilikom prve upotrebe funkcije ispisa na profilu.
-
-      Kada se to pravilo postavi, proizvod <ph name="PRODUCT_NAME" /> pokušat će pronaći pisač koji odgovara svim navedenim atributima i odabrati ga kao zadani. Odabire se prvi pisač koji odgovara pravilu, a u slučaju da se pronađe više odgovarajućih pisača, može se odabrati bilo koji pisač ovisno o redoslijedu njihovog otkrivanja.
-
-      Ako se to pravilo ne postavi ili se ne pronađe odgovarajući pisač u okviru vremenskog ograničenja, upotrebljavat će se ugrađeni PDF pisač ili se neće odabrati nijedan ako PDF pisač nije dostupan.
-
-      Vrijednost se raščlanjuje kao JSON objekt prema sljedećoj shemi:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Treba li se ograničiti traženje odgovarajućeg pisača na određeni skup pisača.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regularni izraz koji se treba podudarati s ID-jem pisača.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regularni izraz koji se treba podudarati sa zaslonskim nazivom pisača.",
-            "type": "string"
-          }
-        }
-      }
-
-      Pisači povezani s uslugom <ph name="CLOUD_PRINT_NAME" /> smatraju se vrstom <ph name="PRINTER_TYPE_CLOUD" />, dok su ostali pisači klasificirani kao vrsta <ph name="PRINTER_TYPE_LOCAL" />.
-      Izostavljanje polja znači da su podudarne sve vrijednosti. Na primjer, ako se ne odredi povezivanje, pregled ispisa pokrenut će otkrivanje svih vrsta pisača, kako lokalnih tako i onih u oblaku.
-      Uzorci regularnih izraza moraju slijediti sintaksu JavaScript RegExp, a u podudaranjima se razlikuju mala i velika slova.</translation>
 <translation id="6843296367238757293">Pravilo je zastarjelo. Njegova se upotreba ne preporučuje. Pročitajte više na https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">To je pravilo uklonjeno iz sustava <ph name="PRODUCT_NAME" /> 68 i zamijenjeno pravilom <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">To je pravilo zastarjelo i uklonjeno u M66 budući da se upotrebljavalo samo za interno testiranje i predstavlja sigurnosni rizik.
@@ -4205,30 +4092,6 @@ za preglednike imaju isti raspored.
       To pravilo utječe samo na korisnike koji se autentificiraju pomoću SAML-a.
 
       Vrijednost pravila navodi se u sekundama.</translation>
-<translation id="9027787254195333560">To pravilo omogućuje vam da konfigurirate sliku avatara koji predstavlja korisnika na zaslonu za prijavu. Pravilo se postavlja tako da se navede URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti sliku avatara i kriptografsko hashiranje kojim se potvrđuje integritet preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 512 KB. URL-u se mora moći pristupiti bez autentifikacije.
-
-      Slika avatara preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili hashiranje promijene.
-
-      Pravilo se navodi kao niz koji izražava URL i hashiranje u JSON formatu prema sljedećoj shemi:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "URL s kojeg se može preuzeti slika avatara.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "SHA-256 hashiranje slike avatara.",
-            "type": "string"
-          }
-        }
-      }
-
-      Ako se pravilo postavi, <ph name="PRODUCT_OS_NAME" /> preuzet će i upotrijebiti sliku avatara.
-
-      Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
-
-      Ako se pravilo ne postavi, korisnik može odabrati sliku avatara koja će ga predstavljati na zaslonu za prijavu.</translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9038058011835642205">Određuje popis web-lokacija koje se instaliraju u pozadini bez interakcije korisnika i koje korisnik ne može deinstalirati ni onemogućiti.
 
@@ -4241,7 +4104,6 @@ za preglednike imaju isti raspored.
       Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
 
       Vrijednost pravila treba se navesti u milisekundama. Vrijednosti su ograničene na raspon od 30 sekundi do 24 sata.</translation>
-<translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Pravilo određuje treba li se uređaj ažurirati na međuverziju za brzi popravak.
 
       Ako se vrijednost pravila postavi na token koji mapira na međuverziju za brzi popravak, uređaj će se ažurirati na odgovarajuću međuverziju ako ažuriranje nije blokirano drugim pravilom.
@@ -4314,17 +4176,6 @@ za preglednike imaju isti raspored.
       Ako se pravilo postavi na False, opcija "Zaglavlja i podnožja" u dijaloškom okviru pregleda ispisa nije odabrana i korisnik to ne može promijeniti.
 
       Ako se pravilo postavi na True, opcija "Zaglavlja i podnožja" u dijaloškom okviru pregleda ispisa odabrana je i korisnik to ne može promijeniti.</translation>
-<translation id="9213347477683611358">Konfigurira pozadinsku sliku koja se prikazuje na zaslonu za prijavu na razini uređaja ako na uređaju još nema prijavljenih korisnika. Pravilo se postavlja određivanjem URL-a s kojega uređaj s OS-om Chrome može preuzeti pozadinsku sliku i kriptografskog raspršivanja za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije. Pozadinska slika preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili raspršivanje promijene.
-
-      Pravilo se navodi kao niz koji izražava URL i sažetak u JSON obliku, na primjer:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Ako se postavi pravilo o pozadini uređaja, uređaj s OS-om Chrome preuzet će i upotrijebiti pozadinsku sliku na zaslonu za prijavu ako na uređaju još nema prijavljenih korisnika. Kad se korisnik prijavi, počinje se primjenjivati njegovo pravilo o pozadini.
-
-      Ako se pravilo o pozadini uređaja ne postavi, pozadinska slika odabire se na temelju korisnikovog pravila o pozadini.</translation>
 <translation id="9217154963008402249">Učestalost mrežnih paketa za praćenje</translation>
 <translation id="922540222991413931">Konfiguracija izvora instalacija proširenja, aplikacija i korisničkih skripti</translation>
 <translation id="924557436754151212">Uvoz spremljenih zaporki iz zadanog preglednika pri prvom pokretanju</translation>

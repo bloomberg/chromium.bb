@@ -60,7 +60,6 @@
 <translation id="2908441821576996758">Ange en kommaavgränsad lista med e-postadresser.</translation>
 <translation id="2940813599313844715">objekt</translation>
 <translation id="2942448076852699108">markerat innehåll</translation>
-<translation id="2983835398644161987">Avsluta bild-i-bild-läge</translation>
 <translation id="3040011195152428237">länk</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">Ange ett giltigt värde. Fältet är ofullständigt eller innehåller ett ogiltigt datum.</translation>
@@ -80,7 +79,6 @@
 <translation id="3822383571486410024">Lägg till minst <ph name="MIN_CHARACTERS" /> tecken (för närvarande har du angett <ph name="CURRENT_LENGTH" /> tecken).</translation>
 <translation id="383465348367842624">En del följt av <ph name="ATSIGN" /> får inte innehålla symbolen <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="3846214748874656680">Avsluta helskärmsläge</translation>
-<translation id="3904511540324382638">Avsluta bild-i-bild-läge</translation>
 <translation id="3920932319529768807">resultat</translation>
 <translation id="3924558731517983934">program</translation>
 <translation id="3944740393230681990">prolog</translation>
@@ -151,7 +149,7 @@
 <translation id="6166809985690652833">efterord</translation>
 <translation id="6209276755895393898">Det verkar vara: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordlista</translation>
-<translation id="628938136236500310">Spelar upp i bild-i-bild-läge</translation>
+<translation id="6310801910862476708">Avsluta bild-i-bild-läge</translation>
 <translation id="6398862346408813489">Visa panelen för val av månad</translation>
 <translation id="6404546809543547843">tidsreglage för ljud</translation>
 <translation id="6443871981718447451">visa textningsmenyn</translation>

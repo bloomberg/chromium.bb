@@ -320,7 +320,7 @@
 <translation id="1502843533062797703">Üçüncü taraf yazılımı yerleştirme engellemesini etkinleştirin</translation>
 <translation id="1504431521196476721">Uzaktan Doğrulama</translation>
 <translation id="1507382822467487898">
-          Cihaza bir yerleştirme yuvası bağlandığında MAC (medya erişim denetimi) adresi kullanılır.
+          Cihaza bir yerleştirme yuvası bağlandığında hangi MAC (medya erişim denetimi) adresinin kullanılacağını yapılandırır.
 
           Bazı cihaz modellerine bir yerleştirme yuvası bağlandığında, varsayılan olarak cihazı Ethernet ağında tanımlamak için cihazın atanmış yuvasına ait MAC adresi kullanılır. Bu politika, cihaz yuvaya yerleştirilmiş durumdayken MAC adresi kaynağının yönetici tarafından değiştirilmesine izin verir.
 
@@ -406,7 +406,6 @@
 
       Uyarı: Cihazın yazılım güncellemelerini ve kritik güvenlik düzeltmelerini almasını engelleyebileceği için <ph name="PRODUCT_OS_NAME" /> sürümünün kontrol yetkisinin bir kiosk uygulamasına verilmesi önerilmez. <ph name="PRODUCT_OS_NAME" /> sürümü kontrol yetkisinin devredilmesi, kullanıcıları risk altında bırakabilir.</translation>
 <translation id="1675002386741412210">Desteklendiği yerler:</translation>
-<translation id="1689963000958717134">Bir <ph name="PRODUCT_OS_NAME" /> cihazının tüm kullanıcıları için uygulanacak ağ yapılandırmasını iletmeye olanak sağlar. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="1704516734140344991"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme işlevinin kullanılabilirliğini ve davranışını yapılandırır.
 
       Bağımsız ayarlar JSON özelliklerinde belirtilebilir:
@@ -768,7 +767,7 @@
 <translation id="2327252517317514801">G Suite'e erişmesine izin verilen alan adlarını tanımla</translation>
 <translation id="2356878440219553005">Pil şarj modu güç yönetimi politikasını belirtir.
 
-          Pil stresi nedeniyle pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetleyin.
+          Pil stresi nedeniyle pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetler.
 
           Özel pil şarj modu seçiliyse, DeviceBatteryChargeCustomStartCharging ve DeviceBatteryChargeCustomStopCharging belirtilmelidir.
 
@@ -966,16 +965,6 @@
       Bu ayar devre dışı bırakılırsa, Web sayfaları JavaScript'i kullanamaz ve kullanıcı bu ayarı değiştiremez.
 
       Bu ayar etkinleştirilir veya ayarlanmazsa, Web sayfaları JavaScript'i kullanabilir ancak kullanıcı ilgili ayarı değiştirebilir.</translation>
-<translation id="2747157663401642394"><ph name="PRODUCT_NAME" /> için uzantı yönetimi ayarlarını yapılandırır.
-
-          Bu politika birden fazla ayarı kontrol eder. Buna, uzantılarla ilgili mevcut politikaların kontrolündeki ayarlar da dahildir. Bu politika, birlikte ayarlanmış tüm eski politikaları geçersiz kılar.
-
-          Bu politika, uzantı kimliklerini veya güncelleme URL'lerini yapılandırmalarıyla eşler. Uzantı kimliği olduğunda, yapılandırma yalnızca belirtilen uzantıya uygulanır. Özel kimlik (<ph name="DEFAULT_SCOPE" />) için varsayılan bir yapılandırma ayarlanabilir. Varsayılan yapılandırma, bu politikada ayarlanmış özel yapılandırması bulunmayan tüm uzantılara uygulanır. Güncelleme URL'si olduğunda, yapılandırma, <ph name="LINK_TO_EXTENSION_DOC1" /> sayfasında açıklandığı şekilde bu uzantının manfest'inde belirtilenle tam olarak aynı güncelleme URL'sine sahip tüm uzantılara uygulanır.
-
-          <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde zorunlu yükleme, Chrome Web Mağazası'nda listelenen uygulama ve uzantılarla sınırlıdır.
-
-          Bu politikanın olası ayarları ve yapısıyla ilgili tam açıklama için https://www.chromium.org/administrators/policy-list-3/extension-settings-full sayfasını ziyaret edin.
-          </translation>
 <translation id="2753637905605932878">WebRTC tarafından kullanılan yerel UDP bağlantı noktaları aralığını kısıtlama</translation>
 <translation id="2757054304033424106">Yüklenmesine izin verilen uzantı/uygulama türleri</translation>
 <translation id="2758084448533744848">Cihazda kullanılması zorunlu tutulan saat dilimini belirtir. Bu politika ayarlandığında cihazdaki kullanıcılar belirtilen saat dilimini geçersiz kılamazlar. Geçersiz bir değer sağlanırsa, politika yine etkinleştirilir ve bu durumda saat dilimi olarak "GMT" kullanılır. Boş dize sağlanırsa politika yoksayılır.
@@ -1302,9 +1291,9 @@
       Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar kendi Google hesaplarından kimlik doğrulama ile bulut (cloud) yazdırma proxy'sini etkinleştirebilirler.
 
       Bu ayar devre dışı bırakılırsa, kullanıcılar proxy'yi etkinleştiremezler ve makinenin, yazıcılarını <ph name="CLOUD_PRINT_NAME" /> ile paylaşmasına izin verilmez.</translation>
-<translation id="3312206664202507568">chrome://password-change konumunda, SAML kullanıcılarının oturum açmış durumdayken SAML şifrelerini değiştirmelerine izin veren ve SAML şifresi ile cihaz kilitli ekran şifresinin senkronize durumda tutulmasını sağlayan bir sayfayı etkinleştirir.
+<translation id="3312206664202507568">chrome://password-change konumunda, SAML kullanıcılarının oturum açmış durumdayken SAML şifrelerini değiştirmelerine izin veren ve SAML şifresi ile cihaz ekran kilidi şifresinin senkronize durumda tutulmasını sağlayan bir sayfayı etkinleştirir.
 
-      Bu politika ayrıca SAML kullanıcılarını SAML şifrelerinin süresinin biteceği konusunda uyaran bildirimleri etkinleştirir, böylece kullanıcılar hemen oturum içi şifre değiştirme işlemini yapabilirler.
+      Bu politika ayrıca SAML kullanıcılarını SAML şifrelerinin süresinin biteceği konusunda uyaran bildirimleri etkinleştirir, böylece kullanıcılar oturum içi şifre değiştirme işlemini hemen yapabilirler.
       Ancak bu bildirimler sadece şifre geçerliliği bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
 
       Bu politika ayarlanırsa, kullanıcı tarafından değiştirilemez veya geçersiz kılınamaz.</translation>
@@ -1391,7 +1380,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
          Bu politika Yanlış seçeneğine ayarlanır veya ayarlanmadan bırakılırsa güç yönetimi gecikmeleri ve oturum süresi sınırı oturumun başında hemen çalışmaya başlar.</translation>
 <translation id="3478024346823118645">Çıkışta kullanıcı verilerini sil</translation>
-<translation id="3480961938508521469">Pili standart bir hızda tam olarak şarj edin.</translation>
+<translation id="3480961938508521469">Pili standart bir hızda tam olarak şarj et.</translation>
 <translation id="348495353354674884">Sanal klavyeyi etkinleştir</translation>
 <translation id="3487623755010328395">
         Bu politika ayarlanırsa <ph name="PRODUCT_NAME" /> kendisini kaydetmeye çalışır ve tüm profiller için ilişkili bulut politikasını uygular.
@@ -1741,30 +1730,6 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
       Bu politika sadece SAML kullanarak kimlik doğrulaması yapan kullanıcıları etkiler.</translation>
 <translation id="4105989332710272578">Bir URL listesi için Sertifika Şeffaflığı uygulamasını devre dışı bırak</translation>
 <translation id="4121350739760194865">Uygulama tanıtımlarının yeni sekme sayfasında görünmesini önle</translation>
-<translation id="4125606414556046117">Bu politika, masaüstünde ve kullanıcı için giriş ekranı arka planında görüntülenecek duvar kağıdı resmini yapılandırmanıza olanak tanır. Politika, <ph name="PRODUCT_OS_NAME" /> sisteminin duvar kağıdı resmini indirebileceği URL ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreli bir karma belirtilerek ayarlanır. Resim JPEG biçiminde olmalı, dosya boyutu 16 MB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
-
-      Duvar kağıdı resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.
-
-      Politika, aşağıdaki şemaya uygun şekilde, URL'yi ve karmayı JSON biçiminde ifade eden bir dize olarak belirtilmelidir:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Duvar kağıdı resminin indirilebileceği URL.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Duvar kağıdı resminin SHA-256 karması.",
-            "type": "string"
-          }
-        }
-      }
-
-      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" /> duvar kağıdı resmini indirir ve kullanır.
-
-      Bu politikayı ayarlarsanız kullanıcılar bunu değiştiremez veya geçersiz kılamazlar.
-
-      Bu politika ayarlanmadan bırakılırsa kullanıcı, masaüstünde ve giriş ekranı arka planında görüntülenmek üzere bir resim seçebilir.</translation>
 <translation id="412697421478384751">Kullanıcıların kilit ekranı PIN'i için zayıf PIN'ler ayarlamasına izin ver</translation>
 <translation id="4138655880188755661">Zaman Limiti</translation>
 <translation id="4144164749344898721">Bu politika, kullanıcı işlem yapmadığında güç yönetimi stratejisiyle ilgili birden fazla ayarı kontrol eder.
@@ -2324,7 +2289,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 
       Politika ayarlanmazsa veya boş dize değerine ya da geçersiz bir bağlantı noktası aralığına ayarlanırsa, WebRTC'nin kullanılabilir herhangi bir yerel UDP bağlantı noktasını kullanmasına izin verilir.</translation>
 <translation id="5290940294294002042">Kullanıcının etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin listesini belirt</translation>
-<translation id="5306186200045823863">Symantec Corporation'ın Eski PKI Altyapısında güveni etkinleştir</translation>
+<translation id="5306186200045823863">Symantec Corporation'ın Eski PKI Altyapısına güveni etkinleştir</translation>
 <translation id="5307432759655324440">Gizli modun kullanılabilirliği</translation>
 <translation id="5318185076587284965">Uzaktan erişen ana makine tarafından geçiş sunucuları kullanılmasını etkinleştir</translation>
 <translation id="5323128137188992869"><ph name="PRODUCT_NAME" /> kullanarak içeriğin cihaza yayınlanmasına izin verin.
@@ -2606,7 +2571,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
 <translation id="5774856474228476867">Varsayılan arama sağlayıcı arama URL'si</translation>
-<translation id="5775235485119094648">Pili belirlenmiş bir aralıktayken şarj edin.</translation>
+<translation id="5775235485119094648">Pili belirlenmiş bir aralıktayken şarj et.</translation>
 <translation id="5776485039795852974">Bir site, masaüstü bildirimlerini her göstermek istediğinde sor.</translation>
 <translation id="5781412041848781654">HTTP kimlik doğrulaması için hangi GSSAPI kitaplığının kullanılacağını belirtir. Sadece bir kitaplık adı ya da tam yol ayarlayabilirsiniz.
 
@@ -2674,7 +2639,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5893553533827140852">Bu ayar etkinleştirilirse gnubby kimlik doğrulama isteklerinde uzaktan ana bilgisayar bağlantısı üzerinden proxy kullanılır.
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
-<translation id="5897913798715600338">Pili hızlı şarj teknolojisiyle şarj edin.</translation>
+<translation id="5897913798715600338">Pili hızlı şarj teknolojisiyle şarj et.</translation>
 <translation id="5898486742390981550">Birden fazla kullanıcı giriş yaptığında, yalnızca birincil kullanıcı Android uygulamalarını kullanabilir.</translation>
 <translation id="5901427587865226597">Yalnızca dupleks yazdır</translation>
 <translation id="5903898512448364160">
@@ -2723,53 +2688,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa, yazdırma komutları yazdırma önizleme ekranını tetikler.</translation>
 <translation id="6022948604095165524">Başlangıçtaki işlem</translation>
-<translation id="6023030044732320798">ARC çalışma zamanına devredilecek politika grubunu belirtir. Değer, geçerli JSON olmalıdır.
-
-      Bu politika, cihaza hangi Android uygulamalarının otomatik olarak yükleneceğini yapılandırmak için kullanılabilir:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Android uygulama tanımlayıcısı, ör. Gmail için "com.google.android.gm"",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Bir uygulamanın nasıl yüklendiğini belirtir. İSTEĞE BAĞLI: Uygulama otomatik olarak yüklenmez ancak kullanıcı uygulamayı yükleyebilir. Bu ayar, bu politika belirtilmemişse varsayılan değer olur. PRELOAD: Uygulama otomatik olarak yüklenir ancak kullanıcı yüklemesini kaldırabilir. FORCE_INSTALLED: Uygulama otomatik olarak yüklenir ve kullanıcı yüklemesini kaldıramaz. BLOCKED: Uygulama engellenir ve yüklenemez. Uygulama, önceki bir politika kapsamında yüklenmişse yüklemesi kaldırılır.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Uygulamalara izin istekleri veren politika. PERMISSION_POLICY_UNSPECIFIED: Politika belirtilmemiştir. Herhangi bir düzeyde bir izin için herhangi bir politika belirtilmemişse varsayılan olarak 'PROMPT' davranışı kullanılır. PROMPT: Kullanıcıdan izin vermesi istenir. GRANT: Bir izni otomatik olarak verir. DENY: Bir izni otomatik olarak reddeder.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Bir anahtar/değer çifti grubuna sahip uygulamaya özel JSON yapılandırma nesnesi; ör. '"managedConfiguration": { "key1": value1, "key2": value2 }'. Anahtarlar, uygulama manifest dosyasında tanımlanır.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Uygulamaları Launcher'a sabitlemek için PinnedLauncherApps politikasına bakın.</translation>
 <translation id="602728333950205286">Varsayılan arama sağlayıcı anında arama URL'si</translation>
 <translation id="603410445099326293">POST kullanan öneri URL'si parametreleri</translation>
 <translation id="6034341625190551415">Herkese açık oturum ve kiosk hesap türlerini kontrol eder.</translation>
@@ -3109,38 +3027,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika false (yanlış) değerine ayarlanırsa, dahili DNS istemcisi hiçbir zaman kullanılmaz.
 
       Bu politika ayarlanmadan bırakılırsa, dahili DNS istemcisi; MacOS, Android (Gizli DNS veya VPN etkinleştirilmediğinde) ve ChromeOS'de varsayılan olarak etkinleştirilir ve kullanıcılar, dahili DNS istemcisini chrome://flags sayfasını düzenleyerek mi yoksa bir komut satırı işareti belirterek mi kullanacaklarını değiştirebilirler.</translation>
-<translation id="6838056959556423778"><ph name="PRODUCT_NAME" /> varsayılan yazıcı seçim kurallarını geçersiz kılar.
-
-      Bu politika, <ph name="PRODUCT_NAME" /> cihazında varsayılan yazıcıyı seçmeye ilişkin kuralları belirler. Bu seçim, yazdırma işlevi bir profilde ilk kez kullanıldığında yapılır.
-
-      Bu politika ayarlandığında, <ph name="PRODUCT_NAME" /> belirtilen tüm özelliklerle eşleşen bir yazıcı bulmaya ve onu varsayılan yazıcı olarak seçmeye çalışır. Politikayla eşleştiği belirlenen ilk yazıcı seçilir; benzersiz olmayan eşleme olması durumunda, yazıcıların bulunma sırasına göre eşleşen herhangi bir yazıcı seçilebilir.
-
-      Bu politika ayarlanmazsa veya zaman aşımı süresi içinde eşleşen bir yazıcı bulunamazsa, yazıcı varsayılan olarak dahili PDF yazıcısını kullanır veya PDF yazıcısı yoksa hiçbir yazıcı seçilmez.
-
-      Değer, aşağıdaki düzene uygun şekilde JSON nesnesi olarak ayrıştırılır:
-      {
-
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description":  "Eşleşen yazıcı arama işleminin belirli bir yazıcı grubuyla sınırlı olup olmayacağını belirler.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Yazıcı kimliğiyle eşleşecek normal ifade.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Yazıcı görünen adıyla eşleşecek normal ifade.",
-            "type": "string"
-          }
-        }
-      }
-
-      <ph name="CLOUD_PRINT_NAME" /> bağlantılı yazıcılar "<ph name="PRINTER_TYPE_CLOUD" />" yazıcı sayılır, geri kalan yazıcılar "<ph name="PRINTER_TYPE_LOCAL" />" olarak sınıflandırılır.
-      Bir alanın atlanması, tüm değerlerin eşleneceği anlamına gelir. Örneğin, bağlantı belirtilmezse Baskı Önizleme'nin yerel veya buluttaki her tür yazıcının bulunması işlemini başlatmasına neden olur.
-      Normal ifade kalıpları JavaScript RegExp söz dizimine uygun olmalıdır. Eşleşmeler büyük/küçük harfe duyarlıdır.</translation>
 <translation id="6843296367238757293">Bu politika kullanımdan kaldırılmıştır. Kullanılması önerilmez. Daha fazla bilgiyi https://support.google.com/chrome/a/answer/7643500 adresinde bulabilirsiniz</translation>
 <translation id="684856667300805181">Bu politika <ph name="PRODUCT_NAME" /> 68 sürümünde kaldırılmış ve yerine <ph name="ARC_GLS_POLICY_NAME" /> kullanılmaya başlanmıştır.</translation>
 <translation id="6856743875250214792">Bu politika, yalnızca dahili test amacıyla kullanıldığı ve güvenlik engeli teşkil ettiği için M66'da kullanımdan kaldırılmıştır.
@@ -3214,7 +3100,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Ekran karartılmak üzereyken akıllı karartma modeli, ekranı karartmanın geciktirilmesinin gerekip gerekmediğini değerlendirir. Akıllı karartma modeli ekranın karartılmasını geciktirirse, ekranın karartılması için gereken süre etkili şekilde uzar. Bu durumda, ekran kapatma, ekran kilidi ve işlem yapılmadan geçen süre gecikmeleri, ekran karartma gecikmesinin başlangıçta yapılandırıldığı değerle aynı süreyi koruyacak şekilde ayarlanır. 
       Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa akıllı karartma modeli etkinleşir ve ekranı karartma süresini uzatmasına izin verilir. Bu politika False (Yanlış) değerine ayarlanırsa akıllı karartma modeli, ekran karartmayı etkilemez.</translation>
-<translation id="6967394885063085697">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştirin.
+<translation id="6967394885063085697">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştir.
 
           Gelişmiş Pil Şarj Modu, kullanıcının pil sağlığını maksimuma çıkarmasına olanak verir. Gelişmiş Şarj Modu'nda, sistem pil sağlığını maksimuma çıkarmak için mesai saatleri dışında standart şarj algoritmasını ve diğer teknikleri kullanır. Mesai saatlerinde ise bir hızlı şarj yöntemi kullanılır. Bu hızlı şarj, pilin daha hızlı şarj edilmesini sağlar; dolayısıyla pil kısa sürede tam şarj kapasitesine ulaşır. Her gün için, sistemin en yoğun şekilde kullanılacağı zaman başlangıç saati ve süre ile belirtilir.
 
@@ -3664,7 +3550,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7712109699186360774">Bir site kamera ve/veya mikrofona erişmek istediğinde her zaman sor</translation>
 <translation id="7713608076604149344">İndirme kısıtlamaları</translation>
 <translation id="7715711044277116530">Sunum modunda ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>
-<translation id="7716781462866245042">Gelişmiş pil şarj modu gün yapılandırmasını ayarlayın.
+<translation id="7716781462866245042">Gelişmiş pil şarj modu gün yapılandırmasını ayarla.
 
           Bu politika sadece DeviceAdvancedBatteryChargeModeEnabled ayarı true (doğru) seçeneğine ayarlanmışsa kullanılır.
 
@@ -4280,30 +4166,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Bu politika sadece SAML kullanarak kimlik doğrulaması yapan kullanıcıları etkiler.
 
       Politika değeri saniye olarak belirtilmelidir.</translation>
-<translation id="9027787254195333560">Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, avatar resminin <ph name="PRODUCT_OS_NAME" /> tarafından indirilebileceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
-
-      Avatar resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.
-
-      Politika, aşağıdaki şemaya uygun şekilde, URL'yi ve karmayı JSON biçiminde ifade eden bir dize olarak belirtilmelidir:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "Avatar resminin indirilebileceği URL.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "Avatar resminin SHA-256 karması.",
-            "type": "string"
-          }
-        }
-      }
-
-      Bu politika ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> avatar resmini indirir ve kullanır.
-
-      Bu politikayı ayarlarsanız kullanıcılar bunu değiştiremez veya geçersiz kılamazlar.
-
-      Bu politika ayarlanmadan bırakılırsa kullanıcı giriş ekranında kendisini temsil edecek avatar resmini seçebilir.</translation>
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9038058011835642205">Kullanıcı etkileşimi olmadan sessizce yüklenen ve yüklemesi kaldırılamayan uygulamaların bir listesini belirtir.
 
@@ -4316,7 +4178,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Bu politikayı ayarlarsanız kullanıcılar bunu değiştiremez veya geçersiz kılamazlar.
 
       Politika değeri milisaniye olarak belirtilmelidir. Değerler 30 saniye ile 24 saat arasında olabilir.</translation>
-<translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="9050853837490399534">Bu politika, cihazın bir Hızlı Düzeltme Derlemesi'ne güncellenmesinin gerekip gerekmediğini kontrol eder.
 
       Politika değeri bir Hızlı Düzeltme Derlemesi'ne eşlenen bir belirtece ayarlanırsa ve güncelleme başka bir politika tarafından engellenmemişse cihaz, ilgili Hızlı Düzeltme Derlemesi'ne güncellenir.
@@ -4397,17 +4258,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Politika false (yanlış) değerine ayarlanırsa "Üst bilgiler ve alt bilgiler" baskı önizleme iletişim kutusunda seçilmez ve kullanıcı bu değerleri değiştiremez.
 
       Politika true (doğru) değerine ayarlanırsa "Üst bilgiler ve alt bilgiler", baskı önizleme iletişim kutusunda seçilir ve kullanıcı bu değerleri değiştiremez.</translation>
-<translation id="9213347477683611358">Cihazda henüz hiçbir kullanıcı oturum açmadığında giriş ekranında gösterilen cihaz düzeyindeki duvar kağıdı resmini yapılandırın. Politikayı ayarlamak için Chrome OS cihazın, duvar kağıdı resmini hangi URL'den indireceği ve indirilen dosyanın bütünlüğünü doğrulamak için kullanılacak bir şifreleme karması belirtilmelidir. Resim JPEG biçiminde olmalı, dosya boyutu 16 MB'yi aşmamalıdır. URL'ye kimlik doğrulaması yapılmadan erişilebilmelidir. Duvar kağıdı resmi indirilip önbelleğe alınır. URL veya karma değiştiğinde yeniden indirilir.
-
-      Politika, URL'yi ve karmayı JSON biçiminde ifade eden bir dizi olarak belirtilmelidir. Örneğin:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Cihaz duvar kağıdı politikası ayarlanırsa Chrome OS cihaz, duvar kağıdı resmini indirir ve cihazda henüz hiçbir kullanıcı oturum açmamışken giriş ekranında bu resmi kullanır. Kullanıcı giriş yaptıktan sonra, kullanıcının duvar kağıdı politikası devreye girer.
-
-      Cihaz duvar kağıdı politikası ayarlanmamış ve kullanıcının duvar kağıdı politikası ayarlanmışsa neyin gösterileceğini kullanıcının duvar kağıdı politikası belirler.</translation>
 <translation id="9217154963008402249">İzleme amaçlı ağ paketlerinin sıklığı</translation>
 <translation id="922540222991413931">Uzantı, uygulama ve kullanıcı komut dosyası yükleme kaynaklarını yapılandır</translation>
 <translation id="924557436754151212">İlk çalıştırmada kayıtlı şifreleri varsayılan tarayıcıdan içe aktar</translation>

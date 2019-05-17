@@ -417,7 +417,6 @@
 
       Obs! Att delegera kontrollen över vilken version av <ph name="PRODUCT_OS_NAME" /> som används till en kioskapp rekommenderas inte, eftersom det kan leda till att uppdateringar av programvaran och viktiga säkerhetskorrigeringar inte längre görs på enheten. Om du delegerar valet av <ph name="PRODUCT_OS_NAME" />-version kan användarnas säkerhet äventyras.</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
-<translation id="1689963000958717134">Tillåter att en pushad nätverkskonfiguration används för alla användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Konfigurerar tillgängligheten och beteendet för uppdateringar av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Enskilda inställningar kan anges som JSON-egenskaper:
@@ -978,16 +977,6 @@
       Om den här inställningen är inaktiverad kan inte JavaScript användas på webbsidor och inställningen kan inte ändras av användaren.
 
       Om inställningen är aktiverad eller inte inställd kan JavaScript användas på webbsidor, men inställningen kan inte ändras av användaren.</translation>
-<translation id="2747157663401642394">Konfigurerar inställningar för hantering av tillägg i <ph name="PRODUCT_NAME" />.
-
-          Principen styr flera inställningar – även inställningar som styrs av redan befintliga principer som gäller tillägg. Den här principen åsidosätter äldre principer om båda har angetts.
-
-          Principen kopplar samman ett tilläggs-id eller en uppdateringsadress med motsvarande konfiguration. Med ett tilläggs-id tillämpas konfigurationen endast på det angivna tillägget. Det särskilda id:t <ph name="DEFAULT_SCOPE" /> kan tilldelas en standardkonfiguration, som tillämpas på alla tillägg som det inte finns någon anpassad konfiguration för i principen. Med en uppdateringsadress tillämpas konfigurationen på alla tillägg som har exakt denna uppdateringsadress angiven i sitt manifest, så som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          På Windows-domäner som inte har anslutits till en <ph name="MS_AD_NAME" />-domän kan bara appar och tillägg som finns på Chrome Web Store tvångsinstalleras.
-
-          Du hittar en fullständig beskrivning av möjliga inställningar och principens struktur på https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Låt WebRTC endast använda UDP-portar inom ett begränsat intervall</translation>
 <translation id="2757054304033424106">Typer av tillägg/appar som får installeras</translation>
 <translation id="2758084448533744848">Anger vilken tidszon som måste användas på enheten. När principen har angetts kan användarna inte åsidosätta den angivna tidszonen. Om ett ogiltigt värde har angetts för principen aktiveras den fortfarande, men får värdet GMT. Om en tom sträng har angetts ignoreras principen.
@@ -1750,30 +1739,6 @@
       Principen påverkar bara användare som autentiseras med SAML.</translation>
 <translation id="4105989332710272578">Inaktivera tillämpning av Certifikattransparens för en lista med webbadresser</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
-<translation id="4125606414556046117">Med den här principen kan du konfigurera bakgrundsbilden som visas på skrivbordet och på inloggningsskärmen för användaren. Principen anges genom att webbadressen som <ph name="PRODUCT_OS_NAME" /> kan ladda ned bakgrundsbilden från anges och att en kryptografisk hash används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och filstorleken får inte överskrida 16 MB. Det måste gå att komma åt webbadressen utan autentisering.
-
-      Bakgrundsbilden laddas ned och lagras i cacheminnet. Den laddas ned på nytt när webbadressen eller hashen ändras.
-
-      Principen ska anges som en sträng som anger webbadressen och hashen i JSON-format, enligt följande schema:
-      {
-        "typ": "objekt",
-        "egenskaper": {
-          "webbadress": {
-            "beskrivning": "Webbadressen som bakgrundsbilden kan laddas ned från.",
-            "typ": "sträng"
-          },
-          "hash": {
-            "beskrivning": "SHA-256-hashen för bakgrundsbilden.",
-            "typ": "sträng"
-          }
-        }
-      }
-
-      Om principen ställs in laddar <ph name="PRODUCT_OS_NAME" /> ned och använder bakgrundsbilden.
-
-      Om du ställer in den här principen kan användare inte ändra eller åsidosätta den.
-
-      Om principen inte anges kan användaren välja en bild som ska visas på skrivbordet och på inloggningsskärmen.</translation>
 <translation id="412697421478384751">Tillåt att användare anger en osäker pinkod till låsskärmen</translation>
 <translation id="4138655880188755661">Tidsgräns</translation>
 <translation id="4144164749344898721">Den här principen styr flera energisparinställningar när användaren är inaktiv.
@@ -2736,53 +2701,6 @@
 
       Om policyn inte tillämpas eller tillämpas felaktigt visas skärmen med förhandsgranskning av utskriften vid utskrifter.</translation>
 <translation id="6022948604095165524">Åtgärd vid start</translation>
-<translation id="6023030044732320798">Anger en uppsättning principer som överlämnas till ARC-körning. Värdet måste vara en giltig JSON.
-
-      Principen används för att konfigurera vilka Android-appar som installeras automatiskt på enheten:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "beskrivning": "Identifierare för Android-app, t.ex. "com.google.android.gm" for Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "beskrivning": "Anger hur en app installeras. OPTIONAL: Appen installeras inte automatiskt men användaren kan installera den. Detta är standardprincipen om annat inte anges. PRELOAD: Appen installeras automatiskt men användaren kan avinstallera den. FORCE_INSTALLED: Appen installeras automatiskt och användaren kan inte avinstallera den. BLOCKED: Appen blockeras och användaren kan inte installera den. Om appen installerades när en tidigare princip gällde så avinstalleras den.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "beskrivning": "Princip för att godkänna begäranden om behörighet till appar. PERMISSION_POLICY_UNSPECIFIED: Ingen princip är angiven. PROMPT är standard om ingen annan princip anges på någon nivå. PROMPT: Låt användaren ge behörighet. GRANT: Ge behörighet automatiskt. DENY: Neka behörighet automatiskt.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "beskrivning": "Appspecifikt konfigurationsobjekt för JSON med en uppsättning nyckel-värden, t.ex. '"managedConfiguration": { "key1": value1, "key2": value2 }'. Nycklarna definieras i appens manifest.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Läs mer om PinnedLauncherApps om du vill fästa appar i översikten.</translation>
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
 <translation id="603410445099326293">Parametrar för föreslagen webbadress som använder POST</translation>
 <translation id="6034341625190551415">Styr offentliga sessioner och konton för offentlig miljö.</translation>
@@ -3136,37 +3054,6 @@
       Om den här principen är inställd på Falskt används aldrig den inbyggda DNS-klienten.
 
       Om den här principen inte anges, aktiveras den inbyggda DNS-klienten som standard i MacOS, Android (om varken Privat DNS eller VPN är aktiverad) och ChromeOS, och användarna kan ändra om den inbyggda DNS-klienten används genom att ändra chrome://flags eller ange en flagga på kommandoraden.</translation>
-<translation id="6838056959556423778">Åsidosätter skrivarens standardurvalsregler för <ph name="PRODUCT_NAME" />.
-
-      Genom denna princip fastställs reglerna för valet av standardskrivare i <ph name="PRODUCT_NAME" />, vilket sker första gången som utskriftsfunktionen används av en profil.
-
-      När den här principen har ställts in försöker <ph name="PRODUCT_NAME" /> att hitta en skrivare som uppfyller alla de angivna attributen och välja denna som standardskrivare. Den första skrivare som hittas och överensstämmer med principen är den som väljs. Om matchningen inte är unik väljs en skrivare ut som uppfyller attributen efter den ordning i vilken skrivarna hittades.
-
-      Om denna princip inte har ställts in eller om ingen skrivare som uppfyller attributen hittas innan tidsfristen löper ut ställs den inbyggda PDF-skrivaren in som standardskrivare. Om ingen PDF-skrivare finns tillgänglig väljs ingen skrivare.
-
-      Värdet analyseras som ett JSON-objekt enligt följande schema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Huruvida sökningen efter en skrivare som uppfyller attributen ska begränsas till en specifik uppsättning av skrivare.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Reguljärt uttryck som ska matcha skrivar-id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Reguljärt uttryck som ska matcha skrivarens visningsnamn.",
-            "type": "string"
-          }
-        }
-      }
-
-      Skrivare som är anslutna till <ph name="CLOUD_PRINT_NAME" /> betraktas som <ph name="PRINTER_TYPE_CLOUD" /> medan övriga skrivare klassificeras som <ph name="PRINTER_TYPE_LOCAL" />.
-      Om ett fält utelämnas innebär det att alla värden anses matcha. Om till exempel anslutningen inte anges hittar förhandsgranskningen alla typer av skrivare, såväl lokala skrivare som molnskrivare.
-      Reguljära uttryck måste följa syntaxen för reguljära uttryck i JavaScript. Matchningarna är skiftlägeskänsliga.</translation>
 <translation id="6843296367238757293">Den här principen är föråldrad. Den bör inte användas. Läs mer på https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Den här principen togs bort i <ph name="PRODUCT_NAME" /> 68 och ersattes av <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Principen har fasats ut och togs bort i M66 eftersom den endast användes för interna tester och utgör en säkerhetsrisk.
@@ -4339,30 +4226,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Den här principen påverkar endast användare som verifieras via SAML.
 
       Principens värde ska anges i sekunder.</translation>
-<translation id="9027787254195333560">Med den här principen kan du konfigurera den avatarbild som representerar användaren på inloggningsskärmen. Du kan ställa in principen genom att ange en webbadress från vilken <ph name="PRODUCT_OS_NAME" /> kan ladda ned avatarbilden och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och får inte vara större än 512 kB. Det måste gå att komma åt webbadressen utan autentisering.
-
-      Avatarbilden laddas ned och cachelagras. Den laddas ned på nytt när webbadressen eller hashen ändras.
-
-      Principen ska anges som en sträng som anger webbadressen och hashen i JSON-format, enligt följande schema:
-      {
-        "typ": "objekt",
-        "egenskaper": {
-          "webbadress": {
-            "beskrivning": "Webbadressen som avatarbilden kan laddas ned från.",
-            "typ": "sträng"
-          },
-          "hash": {
-            "beskrivning": "SHA-256-hashen för avatarbilden.",
-            "typ": "sträng"
-          }
-        }
-      }
-
-      Om principen ställs in laddar <ph name="PRODUCT_OS_NAME" /> ned och använder avatarbilden.
-
-      Om du ställer in den här principen kan användare inte ändra eller åsidosätta den.
-
-      Om principen inte anges kan användaren välja en avatarbild som representerar honom eller henne på inloggningsskärmen.</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9038058011835642205">Anger en lista med webbplatser som installeras obemärkt utan att användaren gör något, och som inte kan avinstalleras eller inaktiveras av användaren.
 
@@ -4375,7 +4238,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om du ställer in den här principen kan användare inte ändra eller åsidosätta den.
 
       Principens värde ska anges i millisekunder. Värden ska anges inom ett intervall från 30 sekunder till 24 timmar.</translation>
-<translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Principen styr om enheten ska uppdateras till en Quick Fix Build.
 
       Om principens värde är inställt på en token som är mappad till en Quick Fix Build uppdateras enheten till motsvarande Quick Fix Build så länge uppdateringen inte blockeras av en annan princip.
@@ -4455,17 +4317,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om principen är inställd på falskt är alternativet Sidhuvud och sidfot avmarkerat i dialogrutan för förhandsgranskning av utskrift och användaren kan inte ändra detta.
 
       Om principen är inställd på sant är alternativet Sidhuvud och sidfot markerat i dialogrutan för förhandsgranskning av utskrift och användaren kan inte ändra detta.</translation>
-<translation id="9213347477683611358">Konfigurera den bakgrundsbild på enhetsnivå som visas på inloggningsskärmen om ingen användare har loggat in på enheten. Ange policyn genom att ange webbadressen som Chrome OS-enheten kan ladda ned bakgrundsbilden från och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och dess filstorlek får inte överskrida 16 MB. Webbadressen måste vara tillgänglig utan autentisering. Bakgrundsbilden laddas ned och lagras i cacheminnet. Den laddas ned igen varje gång webbadressen eller hashen ändras.
-
-      Policyn ska anges som en sträng som uttrycker webbadressen och hashen i JSON-format, till exempel
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Om enhetens bakgrundspolicy anges laddar Chrome OS-enheten ned och använder bakgrundsbilden på inloggningsskärmen om ingen användare har loggat in på enheten. Användarens bakgrundspolicy börjar gälla när användaren har loggat in.
-
-      Om enhetens bakgrundspolicy inte har angetts bestämmer användarens angivna bakgrundspolicy vad som ska visas.</translation>
 <translation id="9217154963008402249">Frekvens för nätverkspaket för övervakning</translation>
 <translation id="922540222991413931">Konfigurera installationskällor för tillägg, appar och användarskript</translation>
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>

@@ -263,6 +263,7 @@
 <translation id="421017592316736757">इस फ़ाइल को एक्सेस करने के लिए आपका ऑनलाइन होना ज़रूरी है.</translation>
 <translation id="4212740939091998969">"<ph name="FOLDER_NAME" />" नाम का फ़ोल्डर पहले से मौजूद है. कृपया कोई अलग नाम चुनें.</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> का बैक अप लिया जा रहा है</translation>
+<translation id="4242533952199664413">सेटिंग खोलें</translation>
 <translation id="426015154560005552">अरबी कीबोर्ड</translation>
 <translation id="4261901459838235729">Google प्रस्‍तुतिकरण</translation>
 <translation id="4290535918735525311">Linux के साथ एक फ़ोल्डर शेयर किया गया</translation>
@@ -270,7 +271,7 @@
 <translation id="4299729908419173967">ब्राज़ीलियाई</translation>
 <translation id="4309915981827077375">सामान्य जानकारी</translation>
 <translation id="4326192123064055915">कॉफ़ी</translation>
-<translation id="4336032328163998280">कॉपी बनाने का कार्य विफल रहा. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4336032328163998280">कॉपी बनाने का काम विफल रहा. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">खरबूजा</translation>
 <translation id="4372884569765913867">1x1</translation>
 <translation id="4425149324548788773">मेरी डिस्क</translation>
@@ -454,7 +455,7 @@
 <translation id="6358884629796491903">ड्रैगन</translation>
 <translation id="637062427944097960">यह फ़ाइल किसी अलग डेस्कटॉप पर खुली है. उसे देखने के लिए <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) पर जाएं.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> आइटम</translation>
-<translation id="6398765197997659313">पूर्ण स्क्रीन से बाहर निकलें</translation>
+<translation id="6398765197997659313">फ़ुल स्क्रीन से बाहर निकलें</translation>
 <translation id="642282551015776456">यह नाम कि‍सी फ़ाइल या फ़ोल्‍डर के लि‍ए उपयोग नहीं कि‍या जा सकता</translation>
 <translation id="6462109140674788769">यूनानी कीबोर्ड</translation>
 <translation id="6466492211071551451">आयरिश कीबोर्ड</translation>
@@ -644,7 +645,7 @@
 <translation id="8477649328507734757">स्पिन</translation>
 <translation id="8487700953926739672">ऑफ़लाइन उपलब्ध है</translation>
 <translation id="8521441079177373948">यूके</translation>
-<translation id="8525306231823319788">पूर्ण स्‍क्रीन</translation>
+<translation id="8525306231823319788">फ़ुल स्‍क्रीन</translation>
 <translation id="8551494947769799688">लातवियाई</translation>
 <translation id="8561206103590473338">हाथी</translation>
 <translation id="8569764466147087991">खोलने के लिए फ़ाइल को चुनें</translation>

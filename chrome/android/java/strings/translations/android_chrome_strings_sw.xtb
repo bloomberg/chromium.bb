@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">Ruhusu udhibiti kamili wa vifaa vya MIDI</translation>
 <translation id="1449080968331948513">Sasa hali ya 'Kiokoa Data' inaitwa 'Hali Nyepesi'</translation>
 <translation id="145097072038377568">Imezimwa katika Mipangilio ya Android</translation>
+<translation id="146329143005354472">Ongeza kwenye 'Programu zangu'</translation>
 <translation id="1477626028522505441">Kipakuliwa cha <ph name="FILE_NAME" /> hakijafaulu kwa sababu ya matatizo ya seva.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 zaidi)}other{ (+ # zaidi)}}</translation>
 <translation id="1501480321619201731">Futa kikundi</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">Tovuti</translation>
 <translation id="2874939134665556319">Wimbo uliotangulia</translation>
 <translation id="2876369937070532032">Hutuma kwa Google URL za baadhi ya kurasa ambazo umetembelea wakati usalama wako uko hatarini</translation>
-<translation id="2876764156902388290">Chrome inatumia kiasi kidogo cha data kukuonyesha ukurasa huu</translation>
 <translation id="2888126860611144412">Kuhusu Chrome</translation>
 <translation id="2891154217021530873">Simamisha upakiaji wa ukurasa</translation>
 <translation id="2893180576842394309">Google inaweza kutumia historia yako ili kuweka mapendeleo kwenye huduma ya Tafuta na Google na huduma nyingine za Google.</translation>
@@ -308,7 +308,7 @@
 <translation id="3259831549858767975">Fanya kila kitu kwenye ukurasa kiwe kidogo zaidi</translation>
 <translation id="3269093882174072735">Pakia picha</translation>
 <translation id="3269956123044984603">Ili upate vichupo vyako kutoka kwenye vifaa vyako vingine, washa kipengele cha "Kusawazisha data kiotomatiki" katika mipangilio ya akaunti ya Android.</translation>
-<translation id="3277252321222022663">Ruhusu tovuti zfikie vitambuzi (inapendekezwa)</translation>
+<translation id="3277252321222022663">Ruhusu tovuti zifikie vitambuzi (inapendekezwa)</translation>
 <translation id="3282568296779691940">Ingia katika Chrome</translation>
 <translation id="3288003805934695103">Kupakia upya ukurasa</translation>
 <translation id="32895400574683172">Arifa zinaruhusiwa</translation>

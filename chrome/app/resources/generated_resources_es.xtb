@@ -338,6 +338,7 @@
     usar un servidor proxy, cambia tu <ph name="LINK_START" />configuración de proxy<ph name="LINK_END" />.</translation>
 <translation id="1512210426710821809">La única forma de deshacer esta acción es volver a instalar <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importado desde Safari</translation>
+<translation id="1515163294334130951">Iniciar</translation>
 <translation id="1521442365706402292">Gestionar certificados</translation>
 <translation id="152234381334907219">Contraseñas que nunca se guardan</translation>
 <translation id="1524430321211440688">Teclado</translation>
@@ -440,6 +441,7 @@
 <translation id="167160931442925455">El más alto</translation>
 <translation id="1673137583248014546"><ph name="URL" /> quiere ver la marca y el modelo de tu llave de seguridad</translation>
 <translation id="1679068421605151609">Herramientas para desarrolladores</translation>
+<translation id="1679806121152819234">Complemento de VM</translation>
 <translation id="167983332380191032">El servicio de gestión ha enviado un error de HTTP.</translation>
 <translation id="1680849702532889074">No se ha podido instalar la aplicación de Linux.</translation>
 <translation id="16815041330799488">No permitir que los sitios web vean el texto y las imágenes que se hayan copiado en el portapapeles</translation>
@@ -486,6 +488,7 @@
 <translation id="1744060673522309905">No se puede vincular el dispositivo con el dominio. Comprueba que no hayas superado el número de dispositivos que puedes añadir.</translation>
 <translation id="1744108098763830590">página en segundo plano</translation>
 <translation id="1745520510852184940">Hacer esto siempre</translation>
+<translation id="1746402432151920942">Identificador de contenido multimedia protegido</translation>
 <translation id="175196451752279553">Volv&amp;er a abrir pestaña cerrada</translation>
 <translation id="1753905327828125965">Más visitado</translation>
 <translation id="1756681705074952506">Método de introducción</translation>
@@ -543,6 +546,7 @@
 <translation id="1830550083491357902">No has iniciado sesión.</translation>
 <translation id="1832511806131704864">Cambio de teléfono actualizado</translation>
 <translation id="1834503245783133039">No se ha podido completar la descarga: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Dispositivos MIDI</translation>
 <translation id="1838374766361614909">Borrar búsqueda</translation>
 <translation id="1841545962859478868">Es posible que el administrador del dispositivo supervise lo siguiente:</translation>
 <translation id="1841616161104323629">Falta el registro del dispositivo.</translation>
@@ -786,6 +790,7 @@
 <translation id="2220529011494928058">Notificar un problema</translation>
 <translation id="2220572644011485463">PIN o contraseña</translation>
 <translation id="2224444042887712269">Esta opción pertenece a <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Eventos de accesibilidad</translation>
 <translation id="2224551243087462610">Editar nombre de carpeta</translation>
 <translation id="2226449515541314767">Se ha bloqueado este sitio para que no tenga un control absoluto de los dispositivos MIDI.</translation>
 <translation id="2226720438730111184">Indícanos el problema</translation>
@@ -963,7 +968,6 @@
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2497229222757901769">Velocidad del ratón</translation>
 <translation id="2497852260688568942">El administrador ha inhabilitado la sincronización</translation>
-<translation id="249819058197909513">No volver a advertirme sobre esta aplicación</translation>
 <translation id="2498539833203011245">Minimizar</translation>
 <translation id="2498765460639677199">Enorme</translation>
 <translation id="2499747912851752301">Exportando contraseñas...</translation>
@@ -1051,7 +1055,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2630681426381349926">Conéctate a una red Wi-Fi para empezar</translation>
 <translation id="2631120081682787498">¿Seguro que quieres cerrar esta pestaña?</translation>
 <translation id="2631498379019108537">Mostrar opciones de entrada en la estantería</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> utiliza <ph name="USAGE" /> MB del espacio en disco.</translation>
 <translation id="2633212996805280240">¿Quieres eliminar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> no ha podido completar la instalación, pero se seguirá ejecutando desde la imagen de disco.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -1397,7 +1400,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3157931365184549694">Restaurar</translation>
 <translation id="3158033540161634471">Configura la huella digital</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (respaldado por hardware)</translation>
-<translation id="316125635462764134">Eliminar aplicación</translation>
 <translation id="3161522574479303604">Todos los idiomas</translation>
 <translation id="3163201441334626963">Producto <ph name="PRODUCT_ID" /> del proveedor <ph name="VENDOR_ID" /> desconocido</translation>
 <translation id="3165390001037658081">Es posible que algunos operadores bloqueen esta función.</translation>
@@ -1896,6 +1898,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3916445069167113093">Este tipo de archivo puede dañar tu ordenador. ¿Quieres descargar <ph name="FILE_NAME" /> de todos modos?</translation>
 <translation id="3918972485393593704">Enviar informe detallado a Google</translation>
 <translation id="3919145445993746351">Para obtener las extensiones en todos tus ordenadores, activa la sincronización</translation>
+<translation id="391999873395511996">Descargando la máquina virtual.</translation>
 <translation id="3920504717067627103">Políticas de certificados</translation>
 <translation id="392089482157167418">Habilitar ChromeVox (mensajes de voz)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -1946,7 +1949,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3983586614702900908">dispositivos de un proveedor desconocido</translation>
 <translation id="3984159763196946143">No se ha podido iniciar el modo de demostración</translation>
 <translation id="3984431586879874039">¿Quieres permitir que este sitio web vea tu llave de seguridad?</translation>
-<translation id="3987348946546879621">Se ha reducido el uso de datos</translation>
 <translation id="3987938432087324095">No he entendido nada.</translation>
 <translation id="3988996860813292272">Seleccionar la zona horaria</translation>
 <translation id="399179161741278232">Importados</translation>
@@ -1977,7 +1979,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4037889604535939429">Cambiar persona</translation>
 <translation id="4042264909745389898">Condiciones de Google Chrome OS</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Salir de la página}other{Salir de las páginas}}</translation>
-<translation id="404299405565920089">En esta página puedes gestionar todas las cuentas de Google que hayas usado para iniciar sesión en sitios web y aplicaciones. Las aplicaciones y los sitios web a los que hayas dado permiso pueden acceder a la información que necesiten de tu cuenta para funcionar correctamente.</translation>
 <translation id="4044612648082411741">Introduce la contraseña del certificado</translation>
 <translation id="404493185430269859">Motor de búsqueda predeterminado</translation>
 <translation id="4046123991198612571">Pista siguiente</translation>
@@ -2092,7 +2093,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4242533952199664413">Abrir Configuración</translation>
 <translation id="4242577469625748426">Se ha producido un error al instalar la configuración de política en el dispositivo (<ph name="VALIDATION_ERROR" />).</translation>
 <translation id="4244238649050961491">Buscar más aplicaciones para el lápiz óptico</translation>
-<translation id="424546999567421758">Se ha detectado un uso elevado del disco</translation>
 <translation id="424726838611654458">Abrir siempre en Adobe Reader</translation>
 <translation id="4247901771970415646">No se puede sincronizar con <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Esperando conexión de red...</translation>
@@ -2200,7 +2200,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4421932782753506458">Gatito</translation>
 <translation id="4422347585044846479">Editar marcador para esta página</translation>
 <translation id="4423376891418188461">Restaurar configuración</translation>
-<translation id="4423482519432579560">&amp;Corrector ortográfico</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, tu administrador solicita que cambies la contraseña.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4430369329743628066">Añadida a Marcadores</translation>
@@ -2660,8 +2659,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5187295959347858724">Has iniciado sesión en <ph name="SHORT_PRODUCT_NAME" />. Tus marcadores, tu historial y otros ajustes se están sincronizando con tu cuenta de Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> quiere descargar varios archivos</translation>
-<translation id="5192316339598592690">Cambia de cuenta rápidamente e inicia sesión en aplicaciones y sitios web al mismo tiempo.
-    Las aplicaciones y los sitios web pueden pedirte permiso para usar parte de la información de tu cuenta de Google. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Realiza un powerwash e inténtalo de nuevo.</translation>
 <translation id="5204967432542742771">Escribe tu contraseña</translation>
 <translation id="5206215183583316675">¿Quieres eliminar el certificado <ph name="CERTIFICATE_NAME" />?</translation>
@@ -3340,7 +3337,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="622537739776246443">Se eliminará el perfil</translation>
 <translation id="6225475702458870625">Conexión de datos disponible desde tu <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Archivo de clave privada (opcional)</translation>
-<translation id="6228516488918914827">Se ha cargado la página de forma más rápida</translation>
 <translation id="6228691855869374890">Este sitio tiene un control absoluto de los dispositivos MIDI.</translation>
 <translation id="6229890768313448549">Las Condiciones de Servicio de Google Play no se pueden cargar. Vuelve a intentarlo.</translation>
 <translation id="6231881193380278751">Añade un parámetro de consulta en la URL para actualizar la página automáticamente: chrome://device-log/?refresh=&lt;sec&gt;</translation>
@@ -3545,7 +3541,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6545665334409411530">Frecuencia de repetición</translation>
 <translation id="6545834809683560467">Utilizar un servicio de predicción para completar las búsquedas y las URL introducidas en la barra de direcciones o en el cuadro de búsqueda del menú de aplicaciones</translation>
 <translation id="6545867563032584178">El micrófono está desactivado en las Preferencias del Sistema de Mac</translation>
-<translation id="6547316139431024316">No volver a advertirme sobre esta extensión</translation>
 <translation id="6547354035488017500">Libera al menos 512 MB de espacio o el dispositivo no responderá. Para ello, elimina archivos del almacenamiento del dispositivo.</translation>
 <translation id="6550675742724504774">Configuración</translation>
 <translation id="6551508934388063976">El comando no está disponible. Pulsa Ctrl+N para abrir una ventana nueva.</translation>
@@ -4676,7 +4671,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="827097179112817503">Mostrar el botón de página principal</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Se ha eliminado 1 marcador}other{Se han eliminado # marcadores}}</translation>
 <translation id="8272443605911821513">Para administrar tus extensiones, haz clic en la opción Extensiones del menú Más herramientas.</translation>
-<translation id="8272966760965438857">Gestiona tus cuentas de Google en un mismo lugar</translation>
 <translation id="8274332263553132018">Enviar archivo</translation>
 <translation id="8274924778568117936">No apagues ni cierres tu <ph name="DEVICE_TYPE" /> hasta que termine de actualizarse. Tu <ph name="DEVICE_TYPE" /> se reiniciará cuando se complete la instalación.</translation>
 <translation id="8275038454117074363">Importar</translation>

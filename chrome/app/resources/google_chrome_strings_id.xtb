@@ -164,7 +164,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="5386244825306882791">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome atau menelusuri dari Omnibox.</translation>
 <translation id="5430073640787465221">File preferensi Anda rusak atau tidak valid. Google Chrome tidak dapat memulihkan setelan Anda.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome akan diluncurkan ulang sekarang}=1{Chrome akan diluncurkan ulang dalam 1 detik}other{Chrome akan diluncurkan ulang dalam # detik}}</translation>
-<translation id="5543953544073077331">Salinan Chrome lain sedang berjalan. Untuk mengupdate, tutup salinan tersebut.</translation>
+<translation id="5543953544073077331">Salinan Chrome lain sedang berjalan. Untuk menjalankan update, tutup salinan tersebut.</translation>
 <translation id="556024056938947818">Google Chrome mencoba menampilkan sandi.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chrome memblokirnya.</translation>
@@ -263,7 +263,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8290100596633877290">Aduh! Google Chrome ngadat. Luncurkan ulang sekarang?</translation>
 <translation id="8342675569599923794">File ini berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="8370517070665726704">Hak cipta <ph name="YEAR" /> Google LLC. Semua hak dilindungi undang-undang.</translation>
-<translation id="8380166467911888159">Untuk memperbaiki kesalahan ejaan, Chrome mengirimkan teks yang Anda ketik di kolom teks ke Google</translation>
 <translation id="840084489713044809">Google Chrome ingin mengekspor sandi.</translation>
 <translation id="8406086379114794905">Bantu kami membuat Chrome jadi lebih baik</translation>
 <translation id="8432724323949790809">Mulai ulang Google Chrome sekarang</translation>
@@ -281,7 +280,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome.</translation>
 <translation id="870251953148363156">Pembaruan &amp;Google Chrome</translation>
-<translation id="8704255848199359374">Tindakan ini akan menggunakan pemeriksa ejaan yang sama dengan yang digunakan di penelusuran Google. Teks yang Anda ketikkan di browser dikirim ke Google. Anda dapat mengubah perilaku ini di setelan.</translation>
 <translation id="873133009373065397">Google Chrome tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="8736674169840206667">Administrator mengharuskan Anda meluncurkan ulang Chrome untuk menerapkan update</translation>
 <translation id="8788264404293392165">Bahasa ini digunakan untuk menampilkan UI Chrome OS</translation>

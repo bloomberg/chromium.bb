@@ -352,7 +352,6 @@
 
       Advertiment: no et recomanem delegar el control de la versió de <ph name="PRODUCT_OS_NAME" /> a una aplicació de quiosc, ja que podria impedir que el dispositiu rebi actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es delega el control de la versió de <ph name="PRODUCT_OS_NAME" />, es pot posar els usuaris en perill.</translation>
 <translation id="1675002386741412210">Compatible amb:</translation>
-<translation id="1689963000958717134">Permet aplicar la configuració de la xarxa per a tots els usuaris d'un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1704516734140344991">Configura la disponibilitat i el comportament de la funcionalitat d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Les opcions de configuració individuals es poden especificar a les propietats de JSON:
@@ -850,16 +849,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si aquesta opció es desactiva, les pàgines web no podran utilitzar JavaScript i l'usuari no podrà canviar aquesta configuració.
 
       Si s'activa aquesta opció o no es defineix, les pàgines web podran fer servir JavaScript però l'usuari podrà canviar aquesta opció.</translation>
-<translation id="2747157663401642394">Configura les opcions de gestió d'extensions per a <ph name="PRODUCT_NAME" />.
-
-          Aquesta política controla diverses opcions de configuració, com ara les opcions controlades per qualsevol política actual que estigui relacionada amb extensions. Aquesta política substituirà qualsevol política anterior, si totes dues s'han configurat.
-
-          Aquesta política assigna un identificador d'extensió o un URL d'actualització a la configuració corresponent. Amb un identificador d'extensió, la configuració s'aplicarà només a l'extensió especificada. Es pot establir una configuració predeterminada per a l'identificador especial <ph name="DEFAULT_SCOPE" />, que s'aplicarà a totes les extensions que no tinguin establerta una configuració personalitzada en aquesta política. Amb un URL d'actualització, la configuració s'aplicarà a totes les extensions que tinguin el mateix URL d'actualització indicat al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          En les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />, la instal·lació forçada es limita a les aplicacions i les extensions incloses a Chrome Web Store.
-
-          Per obtenir una descripció detallada de les opcions de configuració possibles i de l'estructura d'aquesta política, ves a https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Restringeix l'interval de ports UDP locals utilitzats per WebRTC</translation>
 <translation id="2757054304033424106">Tipus d'extensions i d'aplicacions que es poden instal·lar</translation>
 <translation id="2758084448533744848">Especifica la zona horària aplicada que s'ha d'utilitzar al dispositiu. Quan s'estableix aquesta política, els usuaris del dispositiu no poden substituir la zona horària especificada. Si no es proporciona un valor vàlid, la política continuarà activa amb la zona horària GMT. Si es proporciona una cadena buida, la política s'ignorarà.
@@ -2374,54 +2363,7 @@ Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca d
 Si s'activa aquest paràmetre, <ph name="PRODUCT_NAME" /> obrirà el diàleg d'impressió del sistema en comptes de la previsualització integrada quan un usuari sol·liciti la impressió d'una pàgina.
 
 Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran que aparegui la pantalla de previsualització d'impressió.</translation>
-<translation id="6022948604095165524">Acció en iniciar</translation>
-<translation id="6023030044732320798">Especifica un conjunt de polítiques que es transferiran al temps d'execució d'ARC. El valor ha d'estar en format JSON vàlid.
-
-      Aquesta política es pot utilitzar per configurar quines aplicacions per a Android s'instal·len automàticament al dispositiu:
-
-      {
-        "type": "object",
-        "properties": {
-          "applications": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "packageName": {
-                  "description": "Identificador d'aplicacions per a Android, per exemple "com.google.android.gm" per a Gmail",
-                  "type": "string"
-                },
-                "installType": {
-                  "description": "Especifica com s'instal·la una aplicació. OPTIONAL: l'aplicació no s'instal·la automàticament, però l'usuari la pot instal·lar. És l'acció predeterminada si aquesta política no s'especifica. PRELOAD: l'aplicació s'instal·la automàticament, però l'usuari la pot desinstal·lar. FORCE_INSTALLED: l'aplicació s'instal·la automàticament i l'usuari no la pot desinstal·lar. BLOCKED: l'aplicació està bloquejada i no es pot instal·lar. Si es va instal·lar sota una política anterior, es desinstal·larà.",
-                  "type": "string",
-                  "enum": [
-                    "OPTIONAL",
-                    "PRELOAD",
-                    "FORCE_INSTALLED",
-                    "BLOCKED"
-                  ]
-                },
-                "defaultPermissionPolicy": {
-                  "description": "Política per concedir sol·licituds de permisos a les aplicacions. PERMISSION_POLICY_UNSPECIFIED: no s'ha especificat la política. Si no s'especifica cap política per concedir un permís a cap nivell, s'utilitzarà el comportament "PROMPT" de manera predeterminada. PROMPT: s'avisa l'usuari perquè concedeixi un permís. GRANT: es concedeix un permís automàticament. DENY: es rebutja un permís automàticament.",
-                  "type": "string",
-                  "enum": [
-                    "PERMISSION_POLICY_UNSPECIFIED",
-                    "PROMPT",
-                    "GRANT",
-                    "DENY"
-                  ]
-                },
-                "managedConfiguration": {
-                  "description": "Objecte de configuració de JSON específic de l'aplicació amb un conjunt de parells de valor-clau, per exemple, '"managedConfiguration": { "key1": value1, "key2": value2 }'. Les claus es defineixen al fitxer de manifest de l'aplicació.",
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-
-      Per fixar aplicacions al menú d'aplicacions, consulta la política PinnedLauncherApps.</translation>
+<translation id="6022948604095165524">Acció a l'inici</translation>
 <translation id="602728333950205286">URL instantani del proveïdor de cerca predeterminat</translation>
 <translation id="603410445099326293">Paràmetres per a l'URL suggerit que utilitza POST</translation>
 <translation id="6034341625190551415">Controla els tipus de compte de sessió pública i de quiosc.</translation>
@@ -2528,7 +2470,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6221175752766085998">Permet els certificats emesos per ancoratges de confiança locals sense l'extensió subjectAlternativeName</translation>
 <translation id="6224304369267200483">Els URL i els dominis han permès automàticament la confirmació directa de la clau de seguretat</translation>
 <translation id="6233173491898450179">Estableix el directori de baixada</translation>
-<translation id="6244210204546589761">URL que s'han d'obrir en iniciar</translation>
+<translation id="6244210204546589761">URL que s'han d'obrir a l'inici</translation>
 <translation id="6255387031094435995">Permet que les polítiques seleccionades es combinin quan procedeixin de fonts diferents i tinguin el mateix abast i nivell.
 
         Si una política és a la llista i es produeix un conflicte entre dos fonts, com que tenen el mateix abast i nivell, els valors es combinaran en una llista de polítiques nova.
@@ -2745,37 +2687,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política s'estableix en "false", no s'utilitzarà mai el client DNS integrat.
 
       Si aquesta política es deixa sense establir, el client DNS integrat s'activarà de manera predeterminada a MacOS, Android (quan no estiguin activats ni el DNS privat ni la VPN) i ChromeOS, i els usuaris podran canviar la configuració i establir si s'utilitzarà o no el client DNS integrat editant chrome://flags o especificant una marca de la línia d'ordres.</translation>
-<translation id="6838056959556423778">Substitueix les regles de selecció de la impressora predeterminada a <ph name="PRODUCT_NAME" />.
-
-      Aquesta política determina les regles per seleccionar la impressora predeterminada a <ph name="PRODUCT_NAME" /> la primera vegada que s'utilitza la funció d'imprimir amb un perfil.
-
-      Si aquesta política s'estableix, <ph name="PRODUCT_NAME" /> prova de trobar una impressora que compleixi tots els atributs especificats i la selecciona com a impressora predeterminada. Se selecciona la primera impressora detectada que compleixi la política, però, si n'hi ha més d'una, se'n pot seleccionar qualsevol en funció de l'ordre en què es detectin.
-
-      Si aquesta política no s'estableix o no es troba cap impressora adequada durant el temps d'espera, s'utilitza la impressora PDF integrada de manera predeterminada o, si no està disponible, no se'n selecciona cap.
-
-      El valor s'analitza com a objecte JSON, d'acord amb l'esquema següent:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Indica si la cerca de la impressora es limita a un grup específic d'impressores.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Expressió regular corresponent a l'identificador de la impressora.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Expressió regular corresponent al nom de visualització de la impressora.",
-            "type": "string"
-          }
-        }
-      }
-
-      Les impressores connectades a <ph name="CLOUD_PRINT_NAME" /> es consideren <ph name="PRINTER_TYPE_CLOUD" />; la resta es classifiquen com a <ph name="PRINTER_TYPE_LOCAL" />.
-      Si es deixa un camp en blanc, vol dir que tots els valors són vàlids. Si, per exemple, no s'especifica la connectivitat, la previsualització d'impressió iniciarà la detecció de tot tipus d'impressores, locals i en núvol.
-      Els patrons de les expressions regulars han de seguir la sintaxi de JavaScript RegExp i la concordança distingeix entre majúscules i minúscules.</translation>
 <translation id="6843296367238757293">Aquesta política es considera obsoleta. No es recomana fer-la servir. Més informació a https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Aquesta política s'ha suprimit a <ph name="PRODUCT_NAME" /> 68 i s'ha substituït per <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Aquesta política està obsoleta i s'ha tret d'M66, perquè només s'utilitzava per fer proves internes i és un requisit de seguretat.
@@ -3799,7 +3710,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 
       Cada element de la política inclòs a la llista és un objecte amb un membre obligatori ("url") i dos membres opcionals ("default_launch_container" i "create_desktop_shortcut"). "url" ha de ser l'URL de l'aplicació web que cal instal·lar, "launch_container" ha de ser "window" (finestra) o "tab" (pestanya) per indicar com s'obrirà l'aplicació web un cop instal·lada i "create_desktop_shortcut" ha de ser "true" si cal crear una drecera de l'escriptori a Linux i Windows. Si "default_launch_container" s'omet, l'aplicació s'obrirà en una pestanya de manera predeterminada. Independentment del valor de "default_launch_container", els usuaris poden canviar el contenidor en què s'obrirà l'aplicació. Si "create_desktop_shortcuts" s'omet, no es crearà cap drecera de l'escriptori.</translation>
 <translation id="9038839118379817310">Activa la Wi-Fi</translation>
-<translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9050853837490399534">Aquesta política controla si el dispositiu s'ha d'actualitzar o no a una compilació de correcció ràpida.
 
       Si el valor de la política s'estableix en un testimoni que s'assigna a una compilació de correcció ràpida, el dispositiu s'actualitzarà a la compilació corresponent si l'actualització no està bloquejada per una altra política.
@@ -3862,17 +3772,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
       Si la política s'estableix en "false", l'opció Capçaleres i peus de pàgina no se selecciona al quadre de diàleg de previsualització de la impressió i l'usuari no ho pot canviar.
 
       Si la política s'estableix en "true", l'opció Capçaleres i peus de pàgina se selecciona al quadre de diàleg de previsualització de la impressió i l'usuari no ho pot canviar.</translation>
-<translation id="9213347477683611358">Configura la imatge de fons de la pantalla d'inici de sessió d'un dispositiu si ningú no hi ha iniciat la sessió. Per establir la política, cal especificar l'URL que pot fer servir el dispositiu de Chrome OS per baixar la imatge i un resum criptogràfic per verificar la integritat de la baixada. La imatge ha de ser en format JPEG i no ha de superar els 16 MB. S'ha de poder accedir a l'URL sense cap tipus d'autenticació. La imatge de fons de pantalla es baixa i es desa a la memòria cau, i es tornarà a baixar si es modifica l'URL o el resum.
-
-      La política s'ha d'especificar en forma de cadena amb l'URL i el resum en format JSON. Per exemple:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Si la política de fons de pantalla del dispositiu s'estableix, el dispositiu de Chrome OS baixarà la imatge i la farà servir a la pantalla d'inici de sessió si ningú no ha iniciat la sessió. Un cop que un usuari l'hagi iniciada, la política de fons de pantalla de l'usuari s'executarà.
-
-      Si la política de fons de pantalla del dispositiu no s'estableix, la política de fons de pantalla de l'usuari determinarà el que es mostra si està establerta. </translation>
 <translation id="9217154963008402249">Freqüència dels paquets de xarxa de supervisió</translation>
 <translation id="922540222991413931">Configura fonts d'instal·lació d'extensions, d'aplicacions i de scripts d'usuari</translation>
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>

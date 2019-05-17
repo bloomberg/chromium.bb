@@ -71,6 +71,7 @@
 <translation id="1446450296470737166">‏اجازه کنترل کامل دستگاه‌های MIDI</translation>
 <translation id="1449080968331948513">اکنون نام «صرفه‌جویی داده» به «حالت ساده» تغییر کرده است</translation>
 <translation id="145097072038377568">‏در تنظیمات Android مسدود شد</translation>
+<translation id="146329143005354472">افزودن به برنامه‌های من</translation>
 <translation id="1477626028522505441">به‌دلیل مشکلاتی در سرور، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ ۱ مورد دیگر)}one{ (+ # مورد دیگر)}other{ (+ # مورد دیگر)}}</translation>
 <translation id="1501480321619201731">حذف گروه</translation>
@@ -258,7 +259,6 @@
 <translation id="2870560284913253234">سایت</translation>
 <translation id="2874939134665556319">آهنگ قبلی</translation>
 <translation id="2876369937070532032">‏اگر امنیتتان درخطر باشد، نشانی وب برخی از صفحه‌هایی را که بازدید می‌کنید به Google می‌فرستد</translation>
-<translation id="2876764156902388290">‏Chrome از داده کمتری برای نمایش این صفحه به شما استفاده می‌کند</translation>
 <translation id="2888126860611144412">‏درباره Chrome</translation>
 <translation id="2891154217021530873">توقف بارگیری صفحه</translation>
 <translation id="2893180576842394309">‏Google ممکن است از سابقه مرور شما برای شخصی کردن جستجو و سایر سرویس‌های Google استفاده کند</translation>

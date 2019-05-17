@@ -172,7 +172,7 @@
 
 നിങ്ങളുടെ ക്രമീകരണം വീണ്ടെടുക്കാൻ Google Chrome-ന് കഴിയില്ല.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome ഇപ്പോൾ വീണ്ടും സമാരംഭിക്കും}=1{Chrome ഒരു സെക്കൻഡിൽ വീണ്ടും സമാരംഭിക്കും}other{Chrome # സെക്കൻഡിൽ വീണ്ടും സമാരംഭിക്കും}}</translation>
-<translation id="5543953544073077331">Chrome-ൻ്റെ മറ്റ് പകർപ്പുകൾ റൺ ചെയ്യുന്നുണ്ട്. അപ്‌ഡേറ്റ് ചെയ്യാൻ, അവ അടയ്ക്കുക.</translation>
+<translation id="5543953544073077331">Chrome-ൻ്റെ മറ്റ് പകർപ്പുകൾ റൺ ചെയ്യുന്നു. അപ്ഡേറ്റ് ചെയ്യാൻ അവ അടയ്ക്കുക.</translation>
 <translation id="556024056938947818">Google Chrome പാസ്‌വേഡുകൾ ദൃശ്യമാക്കാൻ ശ്രമിക്കുന്നു.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> അപകടകരമാകാൻ ഇടയുള്ളതിനാൽ, Chrome ഇതിനെ ബ്ലോക്കുചെയ്‌തു.</translation>
@@ -271,7 +271,6 @@
 <translation id="8290100596633877290">ഓ! Google Chrome ക്രാഷുചെയ്തു. ഇപ്പോള്‍ വീണ്ടും സമാരംഭിക്കണോ?</translation>
 <translation id="8342675569599923794">ഈ ഫയൽ അപകടകരമായതിനാൽ Chrome ഇതിനെ ബ്ലോക്കുചെയ്‌തു.</translation>
 <translation id="8370517070665726704">പകർപ്പവകാശം <ph name="YEAR" /> Google LLC. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്‍തം.</translation>
-<translation id="8380166467911888159">അക്ഷരപ്പിശകുകൾ പരിഹരിക്കാൻ, ടെക്‌സ്‌റ്റ് ഫീൽഡുകളിൽ നിങ്ങൾ ടൈപ്പ് ചെയ്യുന്ന ടെക്‌സ്‌‌റ്റ് Chrome, Google-ന് അയയ്ക്കുന്നു</translation>
 <translation id="840084489713044809">നിങ്ങളുടെ പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യാൻ Google Chrome ആഗ്രഹിക്കുന്നു.</translation>
 <translation id="8406086379114794905">Chrome-നെ മികച്ചതാക്കാൻ സഹായിക്കുക</translation>
 <translation id="8432724323949790809">നിങ്ങൾ ഇപ്പോൾ Google Chrome റീസ്‌റ്റാർട്ട് ചെയ്യേണ്ടതുണ്ട്</translation>
@@ -289,7 +288,6 @@
 <translation id="8669527147644353129">Google Chrome സഹായി</translation>
 <translation id="8679801911857917785">നിങ്ങൾ Chrome ആരംഭിയ്ക്കുമ്പോൾ ഏത് പേജാണ് കാണിക്കേണ്ടതെന്നും അത് നിയന്ത്രിയ്ക്കുന്നു.</translation>
 <translation id="870251953148363156">&amp;Google Chrome അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
-<translation id="8704255848199359374">Google തിരയലിൽ ഉപയോഗിക്കുന്ന അതേ അക്ഷരത്തെറ്റ് പരിശോധന ഇത് ഉപയോഗിക്കുന്നു. ബ്രൗസറിൽ നിങ്ങൾ ടൈപ്പ് ചെയ്യുന്ന ടെക്‌സ്‌റ്റ് Google-ന് അയയ്ക്കുന്നു. ക്രമീകരണത്തിൽ എപ്പോഴും ഈ രീതി മാറ്റാനാകും.</translation>
 <translation id="873133009373065397">Google Chrome-ന് ഡിഫോൾട്ട് ബ്രൗസർ നിർണ്ണയിക്കാനോ സജ്ജമാക്കാനോ കഴിയില്ല</translation>
 <translation id="8736674169840206667">അപ്‌ഡേറ്റ് പ്രയോഗിക്കുന്നതിന് Chrome വീണ്ടും സമാരംഭിക്കാൻ നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ആവശ്യപ്പെടുന്നു</translation>
 <translation id="8788264404293392165">Chrome OS UI പ്രദര്‍ശിപ്പിക്കാൻ ഈ ഭാഷ ഉപയോഗിക്കുന്നു</translation>
