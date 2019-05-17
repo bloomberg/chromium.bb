@@ -209,6 +209,9 @@ extern const char kEnhancedPlaybackNotificationLearnMoreURL[];
 #endif
 
 #if defined(OS_CHROMEOS)
+// Help center URL for Chrome OS Account Manager.
+extern const char kAccountManagerLearnMoreURL[];
+
 // The URL for the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];
 

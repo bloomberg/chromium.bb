@@ -262,6 +262,9 @@ const char kEnhancedPlaybackNotificationLearnMoreURL[] =
 #endif
 
 #if defined(OS_CHROMEOS)
+const char kAccountManagerLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=google_accounts";
+
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";
 

@@ -61,7 +61,14 @@
       }
     </style>
 
-    <div class="settings-box first">$i18n{accountManagerDescription}</div>
+    <div class="settings-box first">
+      <span>
+        $i18n{accountManagerDescription}
+        <a href="$i18nRaw{accountManagerLearnMoreUrl}" target="_blank">
+          $i18n{learnMore}
+        </a>
+      </span>
+    </div>
 
     <div class="settings-box first">
       <div id="account-list-header" class="flex">

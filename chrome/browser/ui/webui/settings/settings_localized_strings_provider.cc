@@ -329,6 +329,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels));
 
 #if defined(OS_CHROMEOS)
+  html_source->AddString("accountManagerLearnMoreUrl",
+                         chrome::kAccountManagerLearnMoreURL);
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
 
