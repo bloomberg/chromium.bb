@@ -14,19 +14,19 @@
 #endif
 
 namespace {
-
 // Autolayout constants.
 const CGFloat kVerticalPadding = 13;
 const CGFloat kImageTrailingPadding = 14;
 const CGFloat kImageWidth = 30;
 const CGFloat kImageHeight = 30;
 
+// Tint color for cell's imageView when highlighted/selected.
+const int kSelectedImageViewTintColor = 0x4285F4;
+// Tint color for cell's imageView when unhighlighted/unselected.
+const int kUnselectedImageViewTintColor = 0x9AA0A6;
 }  // namespace
 
 @implementation TableViewClearBrowsingDataItem
-@synthesize checked = _checked;
-@synthesize dataTypeMask = _dataTypeMask;
-@synthesize text = _text;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -46,15 +46,28 @@ const CGFloat kImageHeight = 30;
     image = [UIImage imageNamed:self.imageName];
   }
   [cell setImage:image];
-  if (self.checkedBackgroundColor) {
-    // Overrides |styler|'s cellBackgroundColor (if set in the call to super).
-    cell.backgroundColor = self.checked ? self.checkedBackgroundColor : nil;
-  }
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
   cell.optionalTextLabel.text = self.optionalText;
-  cell.accessoryType = self.checked ? UITableViewCellAccessoryCheckmark
-                                    : UITableViewCellAccessoryNone;
+  cell.highlightedBackgroundColor = self.checkedBackgroundColor;
+  cell.checked = self.checked;
+  if (self.checked) {
+    [self setSelectedStyle:cell];
+  } else {
+    [self setUnselectedStyle:cell];
+  }
+}
+
+- (void)setSelectedStyle:(TableViewClearBrowsingDataCell*)cell {
+  cell.backgroundView.backgroundColor = self.checkedBackgroundColor;
+  cell.imageView.tintColor = UIColorFromRGB(kSelectedImageViewTintColor);
+  cell.accessoryType = UITableViewCellAccessoryCheckmark;
+}
+
+- (void)setUnselectedStyle:(TableViewClearBrowsingDataCell*)cell {
+  cell.backgroundView.backgroundColor = nil;
+  cell.imageView.tintColor = UIColorFromRGB(kUnselectedImageViewTintColor);
+  cell.accessoryType = UITableViewCellAccessoryNone;
 }
 
 @end
@@ -77,11 +90,6 @@ const CGFloat kImageHeight = 30;
 
 @implementation TableViewClearBrowsingDataCell
 
-static UIColor* const selectedStateImageViewTintColor =
-    UIColorFromRGB(0x4285F4);
-static UIColor* const unselectedStateImageViewTintColor =
-    UIColorFromRGB(0x9AA0A6);
-
 @synthesize imageView = _imageView;
 @synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
@@ -90,6 +98,7 @@ static UIColor* const unselectedStateImageViewTintColor =
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
+    self.backgroundView = [[UIView alloc] init];
     self.isAccessibilityElement = YES;
 
     _imageView = [[UIImageView alloc] init];
@@ -207,10 +216,33 @@ static UIColor* const unselectedStateImageViewTintColor =
   [super layoutSubviews];
 }
 
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-  [super setSelected:selected animated:animated];
-  self.imageView.tintColor = selected ? selectedStateImageViewTintColor
-                                      : unselectedStateImageViewTintColor;
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.highlightedBackgroundColor = nil;
+  self.backgroundView.backgroundColor = nil;
+  self.imageView.tintColor = nil;
+  self.accessoryType = UITableViewCellAccessoryNone;
+}
+
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+  [super setHighlighted:highlighted animated:animated];
+  if (self.checked)
+    return;
+  if (highlighted) {
+    [self setHighlightedStyle];
+  } else {
+    [self setUnhighlightedStyle];
+  }
+}
+
+- (void)setHighlightedStyle {
+  self.imageView.tintColor = UIColorFromRGB(kSelectedImageViewTintColor);
+  self.backgroundView.backgroundColor = self.highlightedBackgroundColor;
+}
+
+- (void)setUnhighlightedStyle {
+  self.imageView.tintColor = UIColorFromRGB(kUnselectedImageViewTintColor);
+  self.backgroundView.backgroundColor = nil;
 }
 
 - (void)setImage:(UIImage*)image {

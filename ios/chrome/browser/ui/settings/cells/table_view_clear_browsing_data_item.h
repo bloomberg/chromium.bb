@@ -18,11 +18,11 @@ enum class BrowsingDataRemoveMask;
 @property(nonatomic, copy) NSString* detailText;
 @property(nonatomic, copy) NSString* optionalText;
 
-// Whether or not the cell should show a checkmark.
+// Whether or not this item is checked.
 @property(nonatomic, assign) BOOL checked;
 
-// If not nil, specified color will be cell's backgroundColor
-// when self.checked == YES
+// Background color for the cell's backgroundView when self.checked == YES
+// Is copied to the cell's highlightedBackgroundColor
 @property(nonatomic, strong) UIColor* checkedBackgroundColor;
 
 // Mask of the data to be cleared.
@@ -43,6 +43,12 @@ enum class BrowsingDataRemoveMask;
 @property(nonatomic, strong) UILabel* textLabel;
 @property(nonatomic, strong) UILabel* detailTextLabel;
 @property(nonatomic, strong) UILabel* optionalTextLabel;
+
+// Whether or not this cell is checked.
+@property(nonatomic, assign) BOOL checked;
+
+// Background color for this cell's backgroundView when highlighted
+@property(nonatomic, strong) UIColor* highlightedBackgroundColor;
 
 - (void)setImage:(UIImage*)image;
 

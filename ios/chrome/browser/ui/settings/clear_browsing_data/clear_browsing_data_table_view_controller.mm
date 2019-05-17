@@ -164,7 +164,7 @@
   [self.dataManager restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
 
   if (IsNewClearBrowsingDataUIEnabled()) {
-    // Select those cells correspond to a checked item.
+    // Maintain selection state consistency.
     NSArray* dataTypeItems = [self.tableViewModel
         itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
     for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
@@ -187,8 +187,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
-
-  // Write the browsing data selection states back to the browser state.
+  // Write data type cell selection states back to the browser state.
   NSArray* dataTypeItems = [self.tableViewModel
       itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
   for (TableViewClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
@@ -307,7 +306,7 @@
       case ItemTypeDataTypeCache:
       case ItemTypeDataTypeSavedPasswords:
       case ItemTypeDataTypeAutofill: {
-        [self updateItemAndReconfigureCellFor:item setChecked:YES];
+        [self reconfigureCellAndUpdateItem:item toCheckedValue:YES];
         break;
       }
       default:
@@ -354,7 +353,7 @@
     case ItemTypeDataTypeCache:
     case ItemTypeDataTypeSavedPasswords:
     case ItemTypeDataTypeAutofill: {
-      [self updateItemAndReconfigureCellFor:item setChecked:NO];
+      [self reconfigureCellAndUpdateItem:item toCheckedValue:NO];
       break;
     }
     default:
@@ -504,18 +503,13 @@
   [self.actionSheetCoordinator start];
 }
 
-// Helper of |tableView:didSelectRowAtIndexPath:| and
-// |tableView:didDeselectRowAtIndexPath:| for browsing data items.
-// Sets |item|'s |checked| to |flag|, which depends on whether it's a selection
-// or a deselection, then performs updates accordingly.
-- (void)updateItemAndReconfigureCellFor:(TableViewItem*)item
-                             setChecked:(BOOL)flag {
-  if (![item isKindOfClass:[TableViewClearBrowsingDataItem class]]) {
-    return;
-  }
+// Sets |item|'s checked to |value|, then invokes cell configuration.
+- (void)reconfigureCellAndUpdateItem:(TableViewItem*)item
+                      toCheckedValue:(BOOL)value {
+  DCHECK([item isKindOfClass:[TableViewClearBrowsingDataItem class]]);
   TableViewClearBrowsingDataItem* clearBrowsingDataItem =
       base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
-  clearBrowsingDataItem.checked = flag;
+  clearBrowsingDataItem.checked = value;
   [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
 }
 
