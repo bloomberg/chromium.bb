@@ -33,11 +33,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * @private
      */
     getCurrentLanguage_: function() {
-      var languageList = loadTimeData.getValue('languageList');
-      if (languageList) {
-        var language = getSelectedValue(languageList);
-        if (language) {
-          return language;
+      const LANGUAGE_LIST_ID = 'languageList';
+      if (loadTimeData.valueExists(LANGUAGE_LIST_ID)) {
+        var languageList = loadTimeData.getValue(LANGUAGE_LIST_ID);
+        if (languageList) {
+          var language = getSelectedValue(languageList);
+          if (language) {
+            return language;
+          }
         }
       }
       return navigator.language;
