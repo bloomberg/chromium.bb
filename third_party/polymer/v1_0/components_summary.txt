@@ -220,12 +220,6 @@ Tree: v2.1.0
 Revision: fc4b85ab853f107fc8bb18ea6cda1c2e9ac5a75f
 Tree link: https://github.com/PolymerElements/paper-styles/tree/v2.1.0
 
-Name: paper-tabs
-Repository: https://github.com/PolymerElements/paper-tabs.git
-Tree: v2.0.0
-Revision: 775a9f019072a58b6a8a936f79450cd01b3b2cba
-Tree link: https://github.com/PolymerElements/paper-tabs/tree/v2.0.0
-
 Name: paper-tooltip
 Repository: https://github.com/PolymerElements/paper-tooltip.git
 Tree: v2.1.1
