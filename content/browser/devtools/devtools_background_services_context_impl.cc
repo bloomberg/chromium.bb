@@ -60,7 +60,8 @@ DevToolsBackgroundServicesContextImpl::DevToolsBackgroundServicesContextImpl(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : browser_context_(browser_context),
-      service_worker_context_(std::move(service_worker_context)) {
+      service_worker_context_(std::move(service_worker_context)),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto expiration_times =
@@ -147,7 +148,7 @@ void DevToolsBackgroundServicesContextImpl::GetLoggedBackgroundServiceEvents(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DevToolsBackgroundServicesContextImpl::
                          GetLoggedBackgroundServiceEventsOnIO,
-                     weak_ptr_factory_io_.GetWeakPtr(), service,
+                     weak_ptr_factory_.GetWeakPtr(), service,
                      std::move(callback)));
 }
 
@@ -160,7 +161,7 @@ void DevToolsBackgroundServicesContextImpl::
   service_worker_context_->GetUserDataForAllRegistrationsByKeyPrefix(
       CreateEntryKeyPrefix(service),
       base::BindOnce(&DevToolsBackgroundServicesContextImpl::DidGetUserData,
-                     weak_ptr_factory_io_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DevToolsBackgroundServicesContextImpl::DidGetUserData(
@@ -208,7 +209,7 @@ void DevToolsBackgroundServicesContextImpl::ClearLoggedBackgroundServiceEvents(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DevToolsBackgroundServicesContextImpl::
                          ClearLoggedBackgroundServiceEventsOnIO,
-                     weak_ptr_factory_io_.GetWeakPtr(), service));
+                     weak_ptr_factory_.GetWeakPtr(), service));
 }
 
 void DevToolsBackgroundServicesContextImpl::
@@ -233,7 +234,7 @@ void DevToolsBackgroundServicesContextImpl::LogBackgroundServiceEvent(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &DevToolsBackgroundServicesContextImpl::LogBackgroundServiceEventOnIO,
-          weak_ptr_factory_io_.GetWeakPtr(), service_worker_registration_id,
+          weak_ptr_factory_.GetWeakPtr(), service_worker_registration_id,
           origin, service, event_name, instance_id, event_metadata));
 }
 
@@ -256,7 +257,7 @@ void DevToolsBackgroundServicesContextImpl::LogBackgroundServiceEventOnIO(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &DevToolsBackgroundServicesContextImpl::OnRecordingTimeExpired,
-            weak_ptr_factory_ui_.GetWeakPtr(), ServiceToProtoEnum(service)));
+            weak_ptr_factory_.GetWeakPtr(), ServiceToProtoEnum(service)));
     return;
   }
 
@@ -280,7 +281,7 @@ void DevToolsBackgroundServicesContextImpl::LogBackgroundServiceEventOnIO(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &DevToolsBackgroundServicesContextImpl::NotifyEventObservers,
-          weak_ptr_factory_ui_.GetWeakPtr(), std::move(event)));
+          weak_ptr_factory_.GetWeakPtr(), std::move(event)));
 }
 
 void DevToolsBackgroundServicesContextImpl::NotifyEventObservers(

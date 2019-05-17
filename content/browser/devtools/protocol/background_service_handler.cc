@@ -22,12 +22,6 @@ devtools::proto::BackgroundService ServiceNameToEnum(
   } else if (service_name ==
              BackgroundService::ServiceNameEnum::BackgroundSync) {
     return devtools::proto::BackgroundService::BACKGROUND_SYNC;
-  } else if (service_name ==
-             BackgroundService::ServiceNameEnum::PushMessaging) {
-    return devtools::proto::BackgroundService::PUSH_MESSAGING;
-  } else if (service_name ==
-             BackgroundService::ServiceNameEnum::Notifications) {
-    return devtools::proto::BackgroundService::NOTIFICATIONS;
   }
   return devtools::proto::BackgroundService::UNKNOWN;
 }
@@ -38,10 +32,6 @@ std::string ServiceEnumToName(devtools::proto::BackgroundService service_enum) {
       return BackgroundService::ServiceNameEnum::BackgroundFetch;
     case devtools::proto::BackgroundService::BACKGROUND_SYNC:
       return BackgroundService::ServiceNameEnum::BackgroundSync;
-    case devtools::proto::BackgroundService::PUSH_MESSAGING:
-      return BackgroundService::ServiceNameEnum::PushMessaging;
-    case devtools::proto::BackgroundService::NOTIFICATIONS:
-      return BackgroundService::ServiceNameEnum::Notifications;
     default:
       NOTREACHED();
   }
