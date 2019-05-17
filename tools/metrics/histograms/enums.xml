@@ -5173,7 +5173,7 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="Open in incognito"/>
   <int value="7" label="Undo"/>
   <int value="8" label="Redo"/>
-  <int value="9" label="Open (double click/enter)"/>
+  <int value="9" label="Open bookmark or folder (deprecated)"/>
   <int value="10" label="Select all"/>
   <int value="11" label="Deselect all"/>
   <int value="12" label="Copy"/>
@@ -5185,6 +5185,8 @@ Unknown properties are collapsed to zero. -->
   <int value="18" label="Import"/>
   <int value="19" label="Export"/>
   <int value="20" label="Help center"/>
+  <int value="21" label="Open bookmark (via double-click / enter)"/>
+  <int value="22" label="Open folder (via double-click / enter)"/>
 </enum>
 
 <enum name="BookmarkManagerMenuSource">

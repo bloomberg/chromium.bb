@@ -358,11 +358,7 @@ cr.define('bookmarks', function() {
           this.openUrls_(this.expandUrls_(itemIds), command);
           break;
         case Command.OPEN:
-          const isFolder = itemIds.size == 1 &&
-              this.containsMatchingNode_(itemIds, function(node) {
-                return !node.url;
-              });
-          if (isFolder) {
+          if (this.isFolder_(itemIds)) {
             const folderId = Array.from(itemIds)[0];
             this.dispatch(
                 bookmarks.actions.selectFolder(folderId, state.nodes));
@@ -414,9 +410,8 @@ cr.define('bookmarks', function() {
         default:
           assert(false);
       }
-
-      bookmarks.util.recordEnumHistogram(
-          'BookmarkManager.CommandExecuted', command, Command.MAX_VALUE);
+      this.recordCommandHistogram_(
+          itemIds, 'BookmarkManager.CommandExecuted', command);
     },
 
     /**
@@ -433,9 +428,8 @@ cr.define('bookmarks', function() {
         if (shortcut.matchesEvent(e) && this.canExecute(command, itemIds)) {
           this.handle(command, itemIds);
 
-          bookmarks.util.recordEnumHistogram(
-              'BookmarkManager.CommandExecutedFromKeyboard', command,
-              Command.MAX_VALUE);
+          this.recordCommandHistogram_(
+              itemIds, 'BookmarkManager.CommandExecutedFromKeyboard', command);
           e.stopPropagation();
           e.preventDefault();
           return true;
@@ -579,12 +573,23 @@ cr.define('bookmarks', function() {
      * @param {!Set<string>} itemIds
      * @return {boolean} True if |itemIds| is a single bookmark (non-folder)
      *     node.
+     * @private
      */
     isSingleBookmark_: function(itemIds) {
       return itemIds.size == 1 &&
           this.containsMatchingNode_(itemIds, function(node) {
             return !!node.url;
           });
+    },
+
+    /**
+     * @param {!Set<string>} itemIds
+     * @return {boolean}
+     * @private
+     */
+    isFolder_: function(itemIds) {
+      return itemIds.size == 1 &&
+          this.containsMatchingNode_(itemIds, node => !node.url);
     },
 
     /**
@@ -722,6 +727,7 @@ cr.define('bookmarks', function() {
 
     /**
      * @param {Command} command
+     * @param {!Set<string>} itemIds
      * @return {boolean}
      * @private
      */
@@ -731,6 +737,21 @@ cr.define('bookmarks', function() {
               this.menuSource_ == MenuSource.TOOLBAR) ||
           (command == Command.DELETE &&
            (this.globalCanEdit_ || this.isSingleBookmark_(itemIds)));
+    },
+
+    /**
+     * @param {!Set<string>} itemIds
+     * @param {string} histogram
+     * @param {number} command
+     * @private
+     */
+    recordCommandHistogram_: function(itemIds, histogram, command) {
+      if (command == Command.OPEN) {
+        command = this.isFolder_(itemIds) ? Command.OPEN_FOLDER :
+                                            Command.OPEN_BOOKMARK;
+      }
+
+      bookmarks.util.recordEnumHistogram(histogram, command, Command.MAX_VALUE);
     },
 
     /**
