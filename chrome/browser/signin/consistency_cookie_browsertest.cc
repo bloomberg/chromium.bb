@@ -170,7 +170,9 @@ class ConsistencyCookieBrowserTest : public CertVerifierBrowserTest {
 
 // Tests that the ConsistencyCookieManager can set and change the cookie in HTTP
 // and javascript.
-IN_PROC_BROWSER_TEST_F(ConsistencyCookieBrowserTest, Basic) {
+// TODO(https://crbug.com/964264): Fails on some bots with error
+// net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN.
+IN_PROC_BROWSER_TEST_F(ConsistencyCookieBrowserTest, DISABLED_Basic) {
   // Check the initial value.
   CheckCookieValue(std::string(kConsistencyCookieName) + "=initial_value");
   // Change the cookie.
