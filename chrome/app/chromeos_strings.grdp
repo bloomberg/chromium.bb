@@ -3845,57 +3845,56 @@
     Password (optional)
   </message>
 
-  <!-- Strings for PluginVm -->
-  <!-- TODO(okalitova, timloh): Remove translatable flag after strings are finalized. -->
-  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the PluginVm app." translateable="false">
+  <!-- Strings for Plugin VM -->
+  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the 'Plugin VM' app.">
     Plugin VM
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    Finishing <ph name="APP_NAME">Plugin VM</ph> installation...
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE" desc="Title of the Plugin VM installer during installation.">
+    Setting up Plugin VM...
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    <ph name="APP_NAME">Plugin VM</ph> installation complete
+  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE" desc="Title of the Plugin VM installer after successful installation.">
+    Setup complete
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
-    Error installing <ph name="APP_NAME">Plugin VM</ph>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE" desc="Title of the Plugin VM installer if there was an error during installation.">
+    Could not set up Plugin VM
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE" desc="Message that informs user that PluginVm environment setting may take a while." translateable="false">
-    This process may take a few minutes.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE" desc="Text of the Plugin VM installer that informs the user that setup may take a while.">
+    This may take several minutes.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE" desc="Text of the Plugin VM installer while downloading the VM.">
     Downloading the virtual machine.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    Configuring the virtual machine. This process might take around 3 minutes.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_IMPORTING_MESSAGE" desc="Text of the Plugin VM installer while configuring the VM.">
+    Configuring the virtual machine. This may take a few minutes.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE" desc="Text of the Plugin VM installer while configuring the VM." translateable="false">
+    Configuring the virtual machine. This may take a few minutes.
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE" desc="Text of the Plugin VM installer shortly before completion." translateable="false">
     Putting on final touches...
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    Set up was successfully completed. Click on the launch button to start using <ph name="APP_NAME">Plugin VM</ph>.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE" desc="Text of the Plugin VM installer after successful installation.">
+    Click or tap Launch to use Plugin VM. In the future, you can start Plugin VM by selecting the icon in the Launcher.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
-    The <ph name="APP_NAME">Plugin VM</ph> installation failed. Please try again.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Text of the Plugin VM installer if the installation failed.">
+    An error occurred. Please try again.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although PluginVm is disabled." translateable="false">
-   Please contact your admin to enable <ph name="APP_NAME">Plugin VM</ph> on this device.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although Plugin VM is disabled.">
+   Please contact your admin to enable Plugin VM on this device.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text of the Plugin VM installer during downloading Plugin VM image, showing download progress.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE" desc="Text of the Plugin VM installer while downloading Plugin VM image, showing download progress when the full download size is not known.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2 GB</ex></ph>
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_PREPARING_TO_DOWNLOAD_MESSAGE" desc="Text shown in the PluginVm launcher that informs user that download is about to be started." translateable="false">
-    Preparing to download
-  </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_TIME_LEFT_MESSAGE" desc="Text shown in the PluginVm launcher that shows estimated time left before current installation stage ends." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_TIME_LEFT_MESSAGE" desc="Text of the Plugin VM installer that shows estimated time left before current installation stage ends.">
     <ph name="TIME_LEFT">$1<ex>30 mins</ex></ph> left
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON" desc="Label for the button in the PluginVm launcher dialog to launch PluginVm." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON" desc="Label for the button in the Plugin VM installer to launch Plugin VM after successful installation.">
     Launch
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON" desc="Label for the button in the PluginVm launcher dialog to retry PluginVm environment setting." translateable="false">
+  <message name="IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON" desc="Label for the button in the Plugin VM installer to retry installation on failure.">
     Retry
   </message>
 
