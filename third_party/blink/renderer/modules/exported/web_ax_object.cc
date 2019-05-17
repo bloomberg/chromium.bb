@@ -1231,6 +1231,13 @@ bool WebAXObject::AccessibilityIsIgnored() const {
   return private_->AccessibilityIsIgnored();
 }
 
+bool WebAXObject::AccessibilityIsIncludedInTree() const {
+  if (IsDetached())
+    return false;
+
+  return private_->AccessibilityIsIncludedInTree();
+}
+
 int WebAXObject::AriaColumnCount() const {
   if (IsDetached())
     return 0;

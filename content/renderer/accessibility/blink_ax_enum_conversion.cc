@@ -71,8 +71,7 @@ void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
   else if (o.Orientation() == blink::kWebAXOrientationHorizontal)
     dst->AddState(ax::mojom::State::kHorizontal);
 
-  if (o.IsVisited())
-    dst->AddState(ax::mojom::State::kVisited);
+  DCHECK(!o.AccessibilityIsIgnored());
 }
 
 }  // namespace content.

@@ -101,7 +101,7 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
   if (!instance_active())
     return nullptr;
 
-  ui::AXNode* parent = node_->parent();
+  ui::AXNode* parent = node_->GetUnignoredParent();
   if (parent)
     return manager_->GetFromAXNode(parent);
 
@@ -307,25 +307,26 @@ BrowserAccessibility* BrowserAccessibility::InternalDeepestLastChild() const {
 uint32_t BrowserAccessibility::InternalChildCount() const {
   if (!node_ || !manager_)
     return 0;
-  return static_cast<uint32_t>(node_->child_count());
+  return node_->GetUnignoredChildCount();
 }
 
 BrowserAccessibility* BrowserAccessibility::InternalGetChild(
     uint32_t child_index) const {
-  if (!node_ || !manager_ || child_index >= InternalChildCount())
+  if (!node_ || !manager_)
     return nullptr;
+  auto* child_node = node_->GetUnignoredChildAtIndex(child_index);
+  if (child_node)
+    return manager_->GetFromAXNode(child_node);
 
-  auto* child_node = node_->ChildAtIndex(child_index);
-  DCHECK(child_node);
-  return manager_->GetFromAXNode(child_node);
+  return nullptr;
 }
 
 BrowserAccessibility* BrowserAccessibility::InternalGetParent() const {
   if (!node_ || !manager_)
     return nullptr;
-  ui::AXNode* parent = node_->parent();
-  if (parent)
-    return manager_->GetFromAXNode(parent);
+  auto* child_node = node_->GetUnignoredParent();
+  if (child_node)
+    return manager_->GetFromAXNode(child_node);
 
   return nullptr;
 }
@@ -1389,7 +1390,7 @@ ui::AXPlatformNode* BrowserAccessibility::GetFromNodeID(int32_t id) {
 }
 
 int BrowserAccessibility::GetIndexInParent() const {
-  return node_ ? node_->index_in_parent() : -1;
+  return node_ ? node_->GetUnignoredIndexInParent() : -1;
 }
 
 gfx::AcceleratedWidget

@@ -161,7 +161,7 @@ class AXContentNodeDataSparseAttributeAdapter
 
 WebAXObject ParentObjectUnignored(WebAXObject child) {
   WebAXObject parent = child.ParentObject();
-  while (!parent.IsDetached() && parent.AccessibilityIsIgnored())
+  while (!parent.IsDetached() && !parent.AccessibilityIsIncludedInTree())
     parent = parent.ParentObject();
   return parent;
 }
@@ -488,7 +488,7 @@ WebAXObject BlinkAXTreeSource::GetParent(WebAXObject node) const {
     if (node.Equals(root()))
       return WebAXObject();
     node = node.ParentObject();
-  } while (!node.IsDetached() && node.AccessibilityIsIgnored());
+  } while (!node.IsDetached() && !node.AccessibilityIsIncludedInTree());
 
   return node;
 }

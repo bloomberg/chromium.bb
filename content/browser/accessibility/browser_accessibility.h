@@ -244,9 +244,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool instance_active() const { return node_ && manager_; }
   ui::AXNode* node() const { return node_; }
 
-  // These access the internal accessibility tree, which doesn't necessarily
-  // reflect the accessibility tree that should be exposed on each platform.
-  // Use PlatformChildCount and PlatformGetChild to implement platform
+  // These access the internal unignored accessibility tree, which doesn't
+  // necessarily reflect the accessibility tree that should be exposed on each
+  // platform. Use PlatformChildCount and PlatformGetChild to implement platform
   // accessibility APIs.
   uint32_t InternalChildCount() const;
   BrowserAccessibility* InternalGetChild(uint32_t child_index) const;

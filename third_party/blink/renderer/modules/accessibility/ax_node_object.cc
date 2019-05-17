@@ -1486,7 +1486,7 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
     for (AXObject* child : parent->Children()) {
       DCHECK(child);
       if (child->RoleValue() == ax::mojom::Role::kRadioButton &&
-          !child->AccessibilityIsIgnored()) {
+          child->AccessibilityIsIncludedInTree()) {
         radio_buttons.push_back(child);
       }
     }
@@ -2364,7 +2364,7 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
   // getting children, ensure data is not stale.
   child->ClearChildren();
 
-  if (child->AccessibilityIsIgnored()) {
+  if (!child->AccessibilityIsIncludedInTree()) {
     const auto& children = child->Children();
     wtf_size_t length = children.size();
     for (wtf_size_t i = 0; i < length; ++i)
