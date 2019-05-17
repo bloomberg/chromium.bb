@@ -116,6 +116,24 @@ Polymer({
   },
 
   /**
+   * @param {boolean} unmigrated
+   * @private
+   */
+  getAccountManagerSignedOutName_: function(unmigrated) {
+    return this.i18n(unmigrated ? 'accountManagerUnmigratedAccountName'
+                                : 'accountManagerSignedOutAccountName');
+  },
+
+  /**
+   * @param {boolean} unmigrated
+   * @private
+   */
+  getAccountManagerSignedOutLabel_: function(unmigrated) {
+    return this.i18n(unmigrated ? 'accountManagerMigrationLabel'
+                                : 'accountManagerReauthenticationLabel');
+  },
+
+  /**
    * @param {!CustomEvent<!{model: !{item: !settings.Account}}>} event
    * @private
    */

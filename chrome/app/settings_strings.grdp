@@ -3626,6 +3626,12 @@
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_SIGNED_OUT_ACCOUNT_PLACEHOLDER" desc="Placeholder text for the full name of a signed out account in Account Manager.">
       Sign in again
     </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_UNMIGRATED_ACCOUNT_PLACEHOLDER" desc="Placeholder text for the unmigrated account in Account Manager.">
+      Not updated yet
+    </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MIGRATION_LABEL" desc="Label of the migration button on Account Manager Settings page.">
+      Update account
+    </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_REAUTHENTICATION_LABEL" desc="Label of the re-authentication button on Account Manager Settings page.">
       Sign in
     </message>

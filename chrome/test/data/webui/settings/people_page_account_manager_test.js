@@ -25,6 +25,7 @@ cr.define('settings_people_page_account_manager', function() {
           accountType: 1,
           isDeviceAccount: true,
           isSignedIn: true,
+          unmigrated: false,
           fullName: 'Device Account',
           email: 'admin@domain.com',
           pic: 'data:image/png;base64,abc123',
@@ -35,6 +36,7 @@ cr.define('settings_people_page_account_manager', function() {
           accountType: 1,
           isDeviceAccount: false,
           isSignedIn: true,
+          unmigrated: false,
           fullName: 'Secondary Account 1',
           email: 'user1@example.com',
           pic: '',
@@ -44,8 +46,19 @@ cr.define('settings_people_page_account_manager', function() {
           accountType: 1,
           isDeviceAccount: false,
           isSignedIn: false,
+          unmigrated: false,
           fullName: 'Secondary Account 2',
           email: 'user2@example.com',
+          pic: '',
+        },
+        {
+          id: '1010',
+          accountType: 1,
+          isDeviceAccount: false,
+          isSignedIn: false,
+          unmigrated: true,
+          fullName: 'Secondary Account 3',
+          email: 'user3@example.com',
           pic: '',
         }
       ]);
@@ -96,6 +109,7 @@ cr.define('settings_people_page_account_manager', function() {
             accountType: 1,
             isDeviceAccount: true,
             isSignedIn: true,
+            unmigrated: false,
             fullName: 'Device Account',
             email: 'admin@domain.com',
             pic: 'data:image/png;base64,abc123',
@@ -132,8 +146,8 @@ cr.define('settings_people_page_account_manager', function() {
     test('AccountListIsPopulatedAtStartup', function() {
       return browserProxy.whenCalled('getAccounts').then(() => {
         Polymer.dom.flush();
-        // 3 accounts were added in |getAccounts()| mock above.
-        assertEquals(3, accountList.items.length);
+        // 4 accounts were added in |getAccounts()| mock above.
+        assertEquals(4, accountList.items.length);
       });
     });
 
@@ -153,6 +167,26 @@ cr.define('settings_people_page_account_manager', function() {
             .then((account_email) => {
               assertEquals('user2@example.com', account_email);
             });
+      });
+    });
+
+    test('UnauthenticatedAccountLabel', function() {
+      return browserProxy.whenCalled('getAccounts').then(() => {
+        Polymer.dom.flush();
+        assertEquals(
+            loadTimeData.getString('accountManagerReauthenticationLabel'),
+            accountManager.root.querySelectorAll('.reauth-button')[0]
+                .textContent.trim());
+      });
+    });
+
+    test('UnmigratedAccountLabel', function() {
+      return browserProxy.whenCalled('getAccounts').then(() => {
+        Polymer.dom.flush();
+        assertEquals(
+            loadTimeData.getString('accountManagerMigrationLabel'),
+            accountManager.root.querySelectorAll('.reauth-button')[1]
+                .textContent.trim());
       });
     });
 

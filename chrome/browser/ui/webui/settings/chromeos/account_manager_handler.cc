@@ -176,6 +176,8 @@ void AccountManagerUIHandler::OnGetAccounts(
                         webui::GetBitmapDataUrl(
                             default_icon.GetRepresentation(1.0f).GetBitmap()));
     }
+    account.SetBoolean("unmigrated",
+                       account_manager_->HasDummyGaiaToken(account_key));
 
     if (IsSameAccount(account_key, device_account_id)) {
       device_account = std::move(account);

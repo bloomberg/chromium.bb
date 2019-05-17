@@ -99,7 +99,7 @@
               <!-- Else, display a re-authentication message -->
               <template is="dom-if" if="[[!item.isSignedIn]]">
                 <span style="color:red">
-                  $i18n{accountManagerSignedOutAccountName}
+                  [[getAccountManagerSignedOutName_(item.unmigrated)]]
                 </span>
               </template>
 
@@ -111,7 +111,7 @@
               if="[[shouldShowReauthenticationButton_(item)]]">
             <paper-button class="reauth-button"
                 on-click="onReauthenticationTap_">
-              $i18n{accountManagerReauthenticationLabel}
+              [[getAccountManagerSignedOutLabel_(item.unmigrated)]]
             </paper-button>
           </template>
 
@@ -124,7 +124,7 @@
           <!-- Else, display a hamburger menu for removing the account -->
           <template is="dom-if" if="[[!item.isDeviceAccount]]">
             <cr-icon-button class="icon-more-vert" title="$i18n{moreActions}"
-                  on-click="onAccountActionsMenuButtonTap_"></cr-icon-button>
+                on-click="onAccountActionsMenuButtonTap_"></cr-icon-button>
           </template>
         </div>
       </template>
@@ -132,8 +132,7 @@
       <div class="clear settings-box"></div>
 
       <cr-action-menu>
-        <button class="dropdown-item"
-            on-click="onRemoveAccountTap_">
+        <button class="dropdown-item" on-click="onRemoveAccountTap_">
           $i18n{removeAccountLabel}
         </button>
       </cr-action-menu>

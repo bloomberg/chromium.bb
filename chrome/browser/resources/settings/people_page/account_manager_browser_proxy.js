@@ -16,6 +16,7 @@ cr.exportPath('settings');
  *   accountType: number,
  *   isDeviceAccount: boolean,
  *   isSignedIn: boolean,
+ *   unmigrated: boolean,
  *   fullName: string,
  *   email: string,
  *   pic: string,
