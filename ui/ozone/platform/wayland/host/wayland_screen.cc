@@ -51,7 +51,7 @@ void WaylandScreen::OnOutputMetricsChanged(uint32_t output_id,
                                            const gfx::Rect& new_bounds,
                                            float device_pixel_ratio) {
   display::Display changed_display(output_id);
-  changed_display.SetDeviceScaleFactor(device_pixel_ratio);
+  changed_display.set_device_scale_factor(device_pixel_ratio);
   changed_display.set_bounds(new_bounds);
   changed_display.set_work_area(new_bounds);
 

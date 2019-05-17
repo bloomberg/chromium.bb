@@ -228,12 +228,6 @@ Display Display::GetDefaultDisplay() {
   return Display(kDefaultDisplayId, gfx::Rect(0, 0, 1920, 1080));
 }
 
-void Display::SetDeviceScaleFactor(float scale) {
-  if (HasForceDeviceScaleFactor())
-    return;
-  device_scale_factor_ = scale;
-}
-
 int Display::RotationAsDegree() const {
   switch (rotation_) {
     case ROTATE_0:

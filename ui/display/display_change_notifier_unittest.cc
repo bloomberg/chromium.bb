@@ -412,9 +412,9 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_DSF) {
 
   std::vector<Display> old_displays, new_displays;
   old_displays.push_back(Display(1));
-  old_displays[0].SetDeviceScaleFactor(1.f);
+  old_displays[0].set_device_scale_factor(1.f);
   new_displays.push_back(Display(1));
-  new_displays[0].SetDeviceScaleFactor(2.f);
+  new_displays[0].set_device_scale_factor(2.f);
 
   change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
   EXPECT_EQ(1, observer.display_changed());
@@ -436,8 +436,8 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Multi_Displays) {
   new_displays.push_back(Display(2));
   new_displays.push_back(Display(3));
 
-  old_displays[0].SetDeviceScaleFactor(1.f);
-  new_displays[0].SetDeviceScaleFactor(2.f);
+  old_displays[0].set_device_scale_factor(1.f);
+  new_displays[0].set_device_scale_factor(2.f);
 
   old_displays[1].set_bounds(gfx::Rect(0, 0, 200, 200));
   new_displays[1].set_bounds(gfx::Rect(0, 0, 400, 400));
@@ -456,11 +456,11 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Multi_Metrics) {
 
   std::vector<Display> old_displays, new_displays;
   old_displays.push_back(Display(1, gfx::Rect(0, 0, 200, 200)));
-  old_displays[0].SetDeviceScaleFactor(1.f);
+  old_displays[0].set_device_scale_factor(1.f);
   old_displays[0].SetRotationAsDegree(0);
 
   new_displays.push_back(Display(1, gfx::Rect(100, 100, 200, 200)));
-  new_displays[0].SetDeviceScaleFactor(2.f);
+  new_displays[0].set_device_scale_factor(2.f);
   new_displays[0].SetRotationAsDegree(90);
 
   change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
