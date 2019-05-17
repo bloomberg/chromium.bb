@@ -95,7 +95,7 @@ Window* WindowTargeter::GetPriorityTargetInRootWindow(
     // Query the gesture-recognizer to find targets for touch events.
     const ui::TouchEvent& touch = *event.AsTouchEvent();
     ui::GestureConsumer* consumer =
-        root_window->env()->gesture_recognizer()->GetTouchLockedTarget(touch);
+        Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(touch);
     if (consumer)
       return static_cast<Window*>(consumer);
   }
@@ -116,7 +116,7 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
     const ui::TouchEvent& touch = *event.AsTouchEvent();
     // GetTouchLockedTarget() is handled in GetPriorityTargetInRootWindow().
     ui::GestureRecognizer* gesture_recognizer =
-        root_window->env()->gesture_recognizer();
+        Env::GetInstance()->gesture_recognizer();
     DCHECK(!gesture_recognizer->GetTouchLockedTarget(touch));
     ui::GestureConsumer* consumer = gesture_recognizer->GetTargetForLocation(
         event.location_f(), touch.source_device_id());

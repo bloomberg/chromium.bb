@@ -98,7 +98,7 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
   }
 
   WindowOcclusionTracker& GetOcclusionTracker() {
-    return *root_window()->env()->GetWindowOcclusionTracker();
+    return *Env::GetInstance()->GetWindowOcclusionTracker();
   }
 
  private:
@@ -975,7 +975,8 @@ TEST_F(WindowOcclusionTrackerTest, CustomizedWindowHasContent) {
   EXPECT_FALSE(delegate_b->is_expecting_call());
 
   // Use customized WindowHasContent callback to mark b as opaque.
-  window_b->env()->GetWindowOcclusionTracker()->set_window_has_content_callback(
+  Env* env = Env::GetInstance();
+  env->GetWindowOcclusionTracker()->set_window_has_content_callback(
       base::BindLambdaForTesting([window_b](const Window* window) -> bool {
         return window == window_b;
       }));
@@ -987,7 +988,7 @@ TEST_F(WindowOcclusionTrackerTest, CustomizedWindowHasContent) {
   EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
 
-  window_b->env()->GetWindowOcclusionTracker()->set_window_has_content_callback(
+  env->GetWindowOcclusionTracker()->set_window_has_content_callback(
       base::NullCallback());
 }
 
@@ -1647,7 +1648,7 @@ class WindowDelegateChangingWindowVisibility : public MockWindowDelegate {
 // its occlusion state changed, a DCHECK occurs.
 TEST_F(WindowOcclusionTrackerTest, OcclusionStatesDontBecomeStable) {
   test::WindowOcclusionTrackerTestApi test_api(
-      root_window()->env()->GetWindowOcclusionTracker());
+      Env::GetInstance()->GetWindowOcclusionTracker());
 
   // Create 2 superposed tracked windows.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
@@ -1876,7 +1877,7 @@ class WindowDelegateAddingAndHidingChild : public MockWindowDelegate {
 TEST_F(WindowOcclusionTrackerTest,
        HideWindowWithHiddenParentOnOcclusionChange) {
   test::WindowOcclusionTrackerTestApi test_api(
-      root_window()->env()->GetWindowOcclusionTracker());
+      Env::GetInstance()->GetWindowOcclusionTracker());
 
   auto* delegate_a = new WindowDelegateAddingAndHidingChild(this);
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());

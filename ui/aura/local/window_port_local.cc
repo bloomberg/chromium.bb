@@ -32,7 +32,7 @@ class ScopedCursorHider {
     if (!window_->IsRootWindow())
       return;
     const bool cursor_is_in_bounds = window_->GetBoundsInScreen().Contains(
-        window->env()->last_mouse_location());
+        Env::GetInstance()->last_mouse_location());
     client::CursorClient* cursor_client = client::GetCursorClient(window_);
     if (cursor_is_in_bounds && cursor_client &&
         cursor_client->IsCursorVisible()) {
@@ -73,7 +73,8 @@ WindowPortLocal::WindowPortLocal(Window* window)
 
 WindowPortLocal::~WindowPortLocal() {
   if (frame_sink_id_.is_valid()) {
-    auto* context_factory_private = window_->env()->context_factory_private();
+    auto* context_factory_private =
+        Env::GetInstance()->context_factory_private();
     auto* host_frame_sink_manager =
         context_factory_private->GetHostFrameSinkManager();
     host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
@@ -143,7 +144,7 @@ void WindowPortLocal::OnPropertyChanged(
 
 std::unique_ptr<cc::LayerTreeFrameSink>
 WindowPortLocal::CreateLayerTreeFrameSink() {
-  auto* context_factory_private = window_->env()->context_factory_private();
+  auto* context_factory_private = Env::GetInstance()->context_factory_private();
   auto* host_frame_sink_manager =
       context_factory_private->GetHostFrameSinkManager();
 
@@ -167,7 +168,7 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
 
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.gpu_memory_buffer_manager =
-      window_->env()->context_factory()->GetGpuMemoryBufferManager();
+      Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.enable_surface_synchronization = true;
@@ -232,7 +233,7 @@ bool WindowPortLocal::ShouldRestackTransientChildren() {
 }
 
 void WindowPortLocal::TrackOcclusionState() {
-  window_->env()->GetWindowOcclusionTracker()->Track(window_);
+  Env::GetInstance()->GetWindowOcclusionTracker()->Track(window_);
 }
 
 void WindowPortLocal::OnFirstSurfaceActivation(

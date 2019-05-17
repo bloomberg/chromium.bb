@@ -144,7 +144,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                                      int button_state,
                                      base::OnceClosure closure,
                                      int accelerator_state) override {
-    gfx::PointF host_location(host_->window()->env()->last_mouse_location());
+    gfx::PointF host_location(Env::GetInstance()->last_mouse_location());
     int64_t display_id = display::kInvalidDisplayId;
     if (!ScreenDIPToHostPixels(&host_location, &display_id))
       return false;

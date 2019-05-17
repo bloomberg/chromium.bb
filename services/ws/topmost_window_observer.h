@@ -11,7 +11,6 @@
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
-class Env;
 class Window;
 }
 
@@ -71,8 +70,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) TopmostWindowObserver
 
   // The topmost window (including |last_target_|) under the cursor/touch.
   aura::Window* real_topmost_ = nullptr;
-
-  aura::Env* env_;
 
   DISALLOW_COPY_AND_ASSIGN(TopmostWindowObserver);
 };

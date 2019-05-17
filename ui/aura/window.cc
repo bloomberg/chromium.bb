@@ -60,8 +60,7 @@ Window::Window(WindowDelegate* delegate, client::WindowType type)
 Window::Window(WindowDelegate* delegate,
                std::unique_ptr<WindowPort> port,
                client::WindowType type)
-    : env_(Env::GetInstance()),
-      port_owner_(std::move(port)),
+    : port_owner_(std::move(port)),
       port_(port_owner_.get()),
       host_(nullptr),
       type_(type),
@@ -153,7 +152,7 @@ void Window::Init(ui::LayerType layer_type) {
   WindowOcclusionTracker::ScopedPause pause_occlusion_tracking;
 
   if (!port_owner_) {
-    port_owner_ = env_->CreateWindowPort(this);
+    port_owner_ = Env::GetInstance()->CreateWindowPort(this);
     port_ = port_owner_.get();
   }
   SetLayer(std::make_unique<ui::Layer>(layer_type));
@@ -162,7 +161,7 @@ void Window::Init(ui::LayerType layer_type) {
   layer()->set_delegate(this);
   UpdateLayerName();
   layer()->SetFillsBoundsOpaquely(!transparent_);
-  env_->NotifyWindowInitialized(this);
+  Env::GetInstance()->NotifyWindowInitialized(this);
 }
 
 void Window::SetType(client::WindowType type) {
@@ -375,8 +374,6 @@ void Window::AddChild(Window* child) {
 
   DCHECK(layer()) << "Parent has not been Init()ed yet.";
   DCHECK(child->layer()) << "Child has not been Init()ed yt.";
-  DCHECK_EQ(env_, child->env_) << "All windows in a hierarchy must share the "
-                                  " same Env.";
   WindowObserver::HierarchyChangeParams params;
   params.target = child;
   params.new_parent = this;
@@ -1093,8 +1090,9 @@ bool Window::CleanupGestureState() {
 
   base::AutoReset<bool> in_cleanup(&cleaning_up_gesture_state_, true);
   bool state_modified = false;
-  state_modified |= env_->gesture_recognizer()->CancelActiveTouches(this);
-  state_modified |= env_->gesture_recognizer()->CleanupStateForConsumer(this);
+  Env* env = Env::GetInstance();
+  state_modified |= env->gesture_recognizer()->CancelActiveTouches(this);
+  state_modified |= env->gesture_recognizer()->CleanupStateForConsumer(this);
   // Potentially event handlers for CancelActiveTouches() within
   // CleanupGestureState may change the window hierarchy (or reorder the
   // |children_|), and therefore iterating over |children_| is not safe. Use
@@ -1307,7 +1305,7 @@ ui::EventTarget* Window::GetParentTarget() {
   if (IsRootWindow()) {
     return client::GetEventClient(this)
                ? client::GetEventClient(this)->GetToplevelEventTarget()
-               : env_;
+               : Env::GetInstance();
   }
   return parent_;
 }

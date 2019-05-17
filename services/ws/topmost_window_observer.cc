@@ -21,29 +21,27 @@ namespace ws {
 TopmostWindowObserver::TopmostWindowObserver(WindowTree* window_tree,
                                              mojom::MoveLoopSource source,
                                              aura::Window* initial_target)
-    : window_tree_(window_tree),
-      source_(source),
-      last_target_(initial_target),
-      env_(initial_target->env()) {
+    : window_tree_(window_tree), source_(source), last_target_(initial_target) {
   std::set<ui::EventType> types;
+  aura::Env* env = aura::Env::GetInstance();
   if (source == mojom::MoveLoopSource::MOUSE) {
     types.insert(ui::ET_MOUSE_MOVED);
     types.insert(ui::ET_MOUSE_DRAGGED);
-    last_location_ = env_->last_mouse_location();
+    last_location_ = env->last_mouse_location();
   } else {
     types.insert(ui::ET_TOUCH_MOVED);
     gfx::PointF point;
-    ui::GestureRecognizer* gesture_recognizer = env_->gesture_recognizer();
+    ui::GestureRecognizer* gesture_recognizer = env->gesture_recognizer();
     if (gesture_recognizer->GetLastTouchPointForTarget(last_target_, &point))
       last_location_ = gfx::Point(point.x(), point.y());
     ::wm::ConvertPointToScreen(last_target_, &last_location_);
   }
-  env_->AddEventObserver(this, env_, types);
+  env->AddEventObserver(this, env, types);
   UpdateTopmostWindows();
 }
 
 TopmostWindowObserver::~TopmostWindowObserver() {
-  env_->RemoveEventObserver(this);
+  aura::Env::GetInstance()->RemoveEventObserver(this);
   if (topmost_)
     topmost_->RemoveObserver(this);
   if (real_topmost_ && topmost_ != real_topmost_)

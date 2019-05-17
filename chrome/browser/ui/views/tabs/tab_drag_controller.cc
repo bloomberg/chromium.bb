@@ -650,7 +650,7 @@ void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
   if (!CanDetachFromTabStrip(GetContextForWindow(widget->GetNativeWindow())))
     return;
 #if defined(USE_AURA)
-  aura::Env* env = widget->GetNativeWindow()->env();
+  aura::Env* env = aura::Env::GetInstance();
   // WidgetBoundsChanged happens as a step of ending a drag, but Drag() doesn't
   // have to be called -- GetCursorScreenPoint() may return an incorrect
   // location in such case and causes a weird effect. See

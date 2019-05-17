@@ -120,14 +120,18 @@ ClientRoot::~ClientRoot() {
   display::Screen::GetScreen()->RemoveObserver(this);
 
   viz::HostFrameSinkManager* host_frame_sink_manager =
-      window_->env()->context_factory_private()->GetHostFrameSinkManager();
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
   host_frame_sink_manager->InvalidateFrameSinkId(proxy_window->frame_sink_id());
 }
 
 void ClientRoot::RegisterVizEmbeddingSupport() {
   // This function should only be called once.
   viz::HostFrameSinkManager* host_frame_sink_manager =
-      window_->env()->context_factory_private()->GetHostFrameSinkManager();
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
   viz::FrameSinkId frame_sink_id =
       ProxyWindow::GetMayBeNull(window_)->frame_sink_id();
   // This code only needs first-surface-activation for tests.
@@ -238,7 +242,9 @@ void ClientRoot::AttachChildFrameSinkId(ProxyWindow* proxy_window) {
   DCHECK(proxy_window->attached_frame_sink_id().is_valid());
   DCHECK(ProxyWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
   viz::HostFrameSinkManager* host_frame_sink_manager =
-      window_->env()->context_factory_private()->GetHostFrameSinkManager();
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
   const viz::FrameSinkId& frame_sink_id =
       proxy_window->attached_frame_sink_id();
   if (host_frame_sink_manager->IsFrameSinkIdRegistered(frame_sink_id)) {
@@ -251,7 +257,9 @@ void ClientRoot::UnattachChildFrameSinkId(ProxyWindow* proxy_window) {
   DCHECK(proxy_window->attached_frame_sink_id().is_valid());
   DCHECK(ProxyWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
   viz::HostFrameSinkManager* host_frame_sink_manager =
-      window_->env()->context_factory_private()->GetHostFrameSinkManager();
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
   const viz::FrameSinkId& root_frame_sink_id =
       ProxyWindow::GetMayBeNull(window_)->frame_sink_id();
   const viz::FrameSinkId& window_frame_sink_id =

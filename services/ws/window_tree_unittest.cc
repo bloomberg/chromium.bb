@@ -2263,7 +2263,9 @@ TEST(WindowTreeTest, AttachFrameSinkId) {
   ASSERT_TRUE(child_window);
   viz::FrameSinkId test_frame_sink_id(101, 102);
   viz::HostFrameSinkManager* host_frame_sink_manager =
-      child_window->env()->context_factory_private()->GetHostFrameSinkManager();
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
 
   // Attach a frame sink to |child_window|. This shouldn't immediately register.
   setup.window_tree_test_helper()->window_tree()->AttachFrameSinkId(

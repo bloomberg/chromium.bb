@@ -2183,7 +2183,7 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
   }
 
   if (source == mojom::MoveLoopSource::MOUSE &&
-      !window->env()->IsMouseButtonDown()) {
+      !aura::Env::GetInstance()->IsMouseButtonDown()) {
     DVLOG(1) << "PerformWindowMove failed (mouse not down)";
     window_tree_client_->OnChangeCompleted(change_id, false);
     return;

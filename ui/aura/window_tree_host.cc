@@ -114,7 +114,7 @@ void WindowTreeHost::InitHost() {
 
   UpdateRootWindowSizeInPixels();
   InitCompositor();
-  window()->env()->NotifyHostInitialized(this);
+  Env::GetInstance()->NotifyHostInitialized(this);
 }
 
 void WindowTreeHost::AddObserver(WindowTreeHostObserver* observer) {
@@ -388,8 +388,7 @@ void WindowTreeHost::CreateCompositor(
     ui::ExternalBeginFrameClient* external_begin_frame_client,
     bool are_events_in_pixels,
     const char* trace_environment_name) {
-  DCHECK(window()->env());
-  Env* env = window()->env();
+  Env* env = Env::GetInstance();
   ui::ContextFactory* context_factory = env->context_factory();
   DCHECK(context_factory);
   ui::ContextFactoryPrivate* context_factory_private =
@@ -551,7 +550,7 @@ void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
 }
 
 void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
-  if (!window()->env()->throttle_input_on_resize() || holding_pointer_moves_)
+  if (!Env::GetInstance()->throttle_input_on_resize() || holding_pointer_moves_)
     return;
   synchronization_start_time_ = base::TimeTicks::Now();
   dispatcher_->HoldPointerMoves();

@@ -62,7 +62,6 @@ enum class EventTargetingPolicy;
 
 namespace aura {
 
-class Env;
 class LayoutManager;
 class ScopedKeyboardHook;
 class WindowDelegate;
@@ -453,9 +452,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Starts occlusion state tracking.
   void TrackOcclusionState();
 
-  Env* env() { return env_; }
-  const Env* env() const { return env_; }
-
   // Notifies observers of the state of a resize loop.
   void NotifyResizeLoopStarted();
   void NotifyResizeLoopEnded();
@@ -621,10 +617,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   void RegisterFrameSinkId();
   void UnregisterFrameSinkId();
-
-  // Env this window was created with. Env::GetInstance() if a null Env was
-  // supplied.
-  Env* const env_;
 
   bool registered_frame_sink_id_ = false;
   bool disable_frame_sink_id_registration_ = false;
