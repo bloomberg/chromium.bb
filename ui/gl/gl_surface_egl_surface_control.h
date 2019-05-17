@@ -77,7 +77,6 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
 
   bool SupportsAsyncSwap() override;
   bool SupportsPlaneGpuFences() const override;
-  bool SupportsPresentationCallback() override;
   bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;

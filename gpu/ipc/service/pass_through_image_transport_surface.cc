@@ -47,7 +47,6 @@ PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
 }
 
 bool PassThroughImageTransportSurface::Initialize(gl::GLSurfaceFormat format) {
-  DCHECK(gl::GLSurfaceAdapter::SupportsPresentationCallback());
   // The surface is assumed to have already been initialized.
   return true;
 }

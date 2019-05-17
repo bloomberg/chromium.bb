@@ -716,10 +716,6 @@ void* NativeViewGLSurfaceGLX::GetHandle() {
   return reinterpret_cast<void*>(GetDrawableHandle());
 }
 
-bool NativeViewGLSurfaceGLX::SupportsPresentationCallback() {
-  return true;
-}
-
 bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
   return g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer;
 }

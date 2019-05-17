@@ -93,9 +93,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual bool IsOffscreen() = 0;
 
   // The callback is for receiving presentation feedback from |SwapBuffers|,
-  // |PostSubBuffer|, |CommitOverlayPlanes|, etc. If
-  // |SupportsPresentationCallback()| returns true, it is guarantee that the
-  // |PresentationCallback| will be called.
+  // |PostSubBuffer|, |CommitOverlayPlanes|, etc.
   // See |PresentationFeedback| for detail.
   using PresentationCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback& feedback)>;
@@ -109,13 +107,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Get the underlying platform specific surface "handle".
   virtual void* GetHandle() = 0;
-
-  // Returns whether or not the surface supports the |PresentationCallback|
-  // of |SwapBuffers|, |SwapBuffersAsync|, |SwapBuffersWithBounds|,
-  // |PostSubBuffer|, |PostSubBufferAsync|, |CommitOverlayPlanes|,
-  // |CommitOverlayPlanesAsync|, etc. If returns false, the
-  // |PresentationCallback| will never be called.
-  virtual bool SupportsPresentationCallback();
 
   // Returns whether or not the surface supports SwapBuffersWithBounds
   virtual bool SupportsSwapBuffersWithBounds();
@@ -358,7 +349,6 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void CommitOverlayPlanesAsync(
       SwapCompletionCallback completion_callback,
       PresentationCallback presentation_callback) override;
-  bool SupportsPresentationCallback() override;
   bool SupportsSwapBuffersWithBounds() override;
   bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;

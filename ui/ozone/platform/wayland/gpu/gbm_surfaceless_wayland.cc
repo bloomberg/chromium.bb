@@ -63,10 +63,6 @@ bool GbmSurfacelessWayland::IsOffscreen() {
   return false;
 }
 
-bool GbmSurfacelessWayland::SupportsPresentationCallback() {
-  return true;
-}
-
 bool GbmSurfacelessWayland::SupportsAsyncSwap() {
   return true;
 }

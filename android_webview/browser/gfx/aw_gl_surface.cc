@@ -31,10 +31,6 @@ gfx::SwapResult AwGLSurface::SwapBuffers(PresentationCallback callback) {
   return gfx::SwapResult::SWAP_ACK;
 }
 
-bool AwGLSurface::SupportsPresentationCallback() {
-  return true;
-}
-
 gfx::Size AwGLSurface::GetSize() {
   return size_;
 }

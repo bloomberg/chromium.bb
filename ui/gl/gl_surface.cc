@@ -54,10 +54,6 @@ bool GLSurface::DeferDraws() {
   return false;
 }
 
-bool GLSurface::SupportsPresentationCallback() {
-  return false;
-}
-
 bool GLSurface::SupportsSwapBuffersWithBounds() {
   return false;
 }
@@ -350,10 +346,6 @@ void GLSurfaceAdapter::CommitOverlayPlanesAsync(
     PresentationCallback presentation_callback) {
   surface_->CommitOverlayPlanesAsync(std::move(completion_callback),
                                      std::move(presentation_callback));
-}
-
-bool GLSurfaceAdapter::SupportsPresentationCallback() {
-  return surface_->SupportsPresentationCallback();
 }
 
 bool GLSurfaceAdapter::SupportsSwapBuffersWithBounds() {

@@ -115,7 +115,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   bool Initialize(GLSurfaceFormat format) override;
   bool SupportsSwapTimestamps() const override;
   void SetEnableSwapTimestamps() override;
-  bool SupportsPresentationCallback() override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,

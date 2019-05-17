@@ -298,7 +298,6 @@ void SurfacelessGlRenderer::PostRenderFrameTask(
 
 void SurfacelessGlRenderer::OnPresentation(
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(gl_surface_->SupportsPresentationCallback());
   LOG_IF(ERROR, feedback.timestamp.is_null()) << "Last frame is discarded!";
 }
 

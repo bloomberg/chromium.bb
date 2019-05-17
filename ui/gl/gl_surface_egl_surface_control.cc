@@ -318,10 +318,6 @@ bool GLSurfaceEGLSurfaceControl::SupportsPlaneGpuFences() const {
   return true;
 }
 
-bool GLSurfaceEGLSurfaceControl::SupportsPresentationCallback() {
-  return true;
-}
-
 bool GLSurfaceEGLSurfaceControl::SupportsCommitOverlayPlanes() {
   return true;
 }

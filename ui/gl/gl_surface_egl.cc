@@ -1187,10 +1187,6 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
   use_egl_timestamps_ = !supported_egl_timestamps_.empty();
 }
 
-bool NativeViewGLSurfaceEGL::SupportsPresentationCallback() {
-  return true;
-}
-
 bool NativeViewGLSurfaceEGL::InitializeNativeWindow() {
   return true;
 }

@@ -40,7 +40,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   bool IsOffscreen() override;
-  bool SupportsPresentationCallback() override;
   bool SupportsAsyncSwap() override;
   bool SupportsPostSubBuffer() override;
   gfx::SwapResult PostSubBuffer(int x,
