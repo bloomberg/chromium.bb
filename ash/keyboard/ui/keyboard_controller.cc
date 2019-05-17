@@ -80,8 +80,6 @@ bool IsAllowedStateTransition(KeyboardControllerState from,
       kAllowedStateTransition = {
           // The initial ShowKeyboard scenario
           // INITIAL -> LOADING_EXTENSION -> HIDDEN -> SHOWN.
-          {KeyboardControllerState::kUnknown,
-           KeyboardControllerState::kInitial},
           {KeyboardControllerState::kInitial,
            KeyboardControllerState::kLoadingExtension},
           {KeyboardControllerState::kLoadingExtension,
@@ -274,10 +272,9 @@ void KeyboardController::EnableKeyboard() {
 
   show_on_keyboard_window_load_ = false;
   keyboard_locked_ = false;
-  state_ = KeyboardControllerState::kUnknown;
+  DCHECK_EQ(state_, KeyboardControllerState::kInitial);
   ui_->SetController(this);
   SetContainerBehaviorInternal(mojom::ContainerType::kFullWidth);
-  ChangeState(KeyboardControllerState::kInitial);
   visual_bounds_in_root_ = gfx::Rect();
   time_of_last_blur_ = base::Time::UnixEpoch();
   UpdateInputMethodObserver();

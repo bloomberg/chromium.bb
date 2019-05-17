@@ -446,7 +446,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // the keyboard window. If not, this should be empty.
   gfx::Rect visual_bounds_in_root_;
 
-  KeyboardControllerState state_ = KeyboardControllerState::kUnknown;
+  KeyboardControllerState state_ = KeyboardControllerState::kInitial;
 
   // Keyboard configuration associated with the controller.
   mojom::KeyboardConfig keyboard_config_;
