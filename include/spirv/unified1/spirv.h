@@ -555,6 +555,10 @@ typedef enum SpvBuiltIn_ {
     SpvBuiltInHitTNV = 5332,
     SpvBuiltInHitKindNV = 5333,
     SpvBuiltInIncomingRayFlagsNV = 5351,
+    SpvBuiltInWarpsPerSMNV = 5374,
+    SpvBuiltInSMCountNV = 5375,
+    SpvBuiltInWarpIDNV = 5376,
+    SpvBuiltInSMIDNV = 5377,
     SpvBuiltInMax = 0x7fffffff,
 } SpvBuiltIn;
 
@@ -833,6 +837,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityPhysicalStorageBufferAddressesEXT = 5347,
     SpvCapabilityComputeDerivativeGroupLinearNV = 5350,
     SpvCapabilityCooperativeMatrixNV = 5357,
+    SpvCapabilityShaderSMBuiltinsNV = 5373,
     SpvCapabilitySubgroupShuffleINTEL = 5568,
     SpvCapabilitySubgroupBufferBlockIOINTEL = 5569,
     SpvCapabilitySubgroupImageBlockIOINTEL = 5570,

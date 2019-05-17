@@ -552,6 +552,10 @@ enum BuiltIn : uint
     HitTNV = 5332,
     HitKindNV = 5333,
     IncomingRayFlagsNV = 5351,
+    WarpsPerSMNV = 5374,
+    SMCountNV = 5375,
+    WarpIDNV = 5376,
+    SMIDNV = 5377,
 }
 
 enum SelectionControlShift : uint
@@ -836,6 +840,7 @@ enum Capability : uint
     PhysicalStorageBufferAddressesEXT = 5347,
     ComputeDerivativeGroupLinearNV = 5350,
     CooperativeMatrixNV = 5357,
+    ShaderSMBuiltinsNV = 5373,
     SubgroupShuffleINTEL = 5568,
     SubgroupBufferBlockIOINTEL = 5569,
     SubgroupImageBlockIOINTEL = 5570,

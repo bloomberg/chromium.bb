@@ -8383,6 +8383,30 @@
           "value" : 5351,
           "capabilities" : [ "RayTracingNV" ],
           "extensions" : [ "SPV_NV_ray_tracing" ]
+        },
+        {
+          "enumerant" : "WarpsPerSMNV",
+          "value" : 5374,
+          "capabilities" : [ "ShaderSMBuiltinsNV" ],
+          "extensions" : [ "SPV_NV_shader_sm_builtins" ]
+        },
+        {
+          "enumerant" : "SMCountNV",
+          "value" : 5375,
+          "capabilities" : [ "ShaderSMBuiltinsNV" ],
+          "extensions" : [ "SPV_NV_shader_sm_builtins" ]
+        },
+        {
+          "enumerant" : "WarpIDNV",
+          "value" : 5376,
+          "capabilities" : [ "ShaderSMBuiltinsNV" ],
+          "extensions" : [ "SPV_NV_shader_sm_builtins" ]
+        },
+        {
+          "enumerant" : "SMIDNV",
+          "value" : 5377,
+          "capabilities" : [ "ShaderSMBuiltinsNV" ],
+          "extensions" : [ "SPV_NV_shader_sm_builtins" ]
         }
       ]
     },
@@ -9281,6 +9305,13 @@
           "value" : 5357,
           "capabilities" : [ "Shader" ],
           "extensions" : [ "SPV_NV_cooperative_matrix" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "ShaderSMBuiltinsNV",
+          "value" : 5373,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_NV_shader_sm_builtins" ],
           "version" : "None"
         }
       ]
