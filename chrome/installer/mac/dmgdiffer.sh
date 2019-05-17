@@ -146,13 +146,15 @@ make_patch_fs() {
   readonly KS_VERSION_KEY="KSVersion"
   readonly KS_PRODUCT_KEY="KSProductID"
   readonly KS_CHANNEL_KEY="KSChannelID"
-  readonly VERSIONS_DIR="Contents/Versions"
+  readonly VERSIONS_DIR_NEW=\
+"Contents/Frameworks/${product_name} Framework.framework/Versions"
+  readonly VERSIONS_DIR_OLD="Contents/Versions"
   readonly BUILD_RE="^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+\$"
   readonly MIN_BUILD=434
 
-  local product_url="http://www.google.com/chrome/"
+  local product_url="https://www.google.com/chrome/"
   if [[ "${product_name}" = "Google Chrome Canary" ]]; then
-    product_url="http://tools.google.com/dlpage/chromesxs"
+    product_url="https://www.google.com/chrome/canary/"
   fi
 
   local old_app_path="${old_fs}/${APP_NAME}"
@@ -234,8 +236,21 @@ make_patch_fs() {
     name_extra=" ${new_ks_channel}"
   fi
 
-  local old_versioned_dir="${old_app_path}/${VERSIONS_DIR}/${old_app_version}"
-  local new_versioned_dir="${new_app_path}/${VERSIONS_DIR}/${new_app_version}"
+  local old_versioned_dir
+  if [[ -e "${old_app_path}/${VERSIONS_DIR_NEW}" ]]; then
+    old_versioned_dir="${old_app_path}/${VERSIONS_DIR_NEW}/${old_app_version}"
+  else
+    old_versioned_dir="${old_app_path}/${VERSIONS_DIR_OLD}/${old_app_version}"
+  fi
+
+  local new_versioned_dir
+  local layout_new
+  if [[ -e "${new_app_path}/${VERSIONS_DIR_NEW}" ]]; then
+    new_versioned_dir="${new_app_path}/${VERSIONS_DIR_NEW}/${new_app_version}"
+    layout_new="y"
+  else
+    new_versioned_dir="${new_app_path}/${VERSIONS_DIR_OLD}/${new_app_version}"
+  fi
 
   if ! cp -p "${SCRIPT_DIR}/keystone_install.sh" \
              "${patch_fs}/.keystone_install"; then
@@ -282,7 +297,7 @@ make_patch_fs() {
   # The only visible contents of the disk image will be a README file that
   # explains the image's purpose.
   local new_app_version_extra="${new_app_version}${name_extra}"
-  cat > "${patch_fs}/README.txt" << __EOF__ || \
+  cat > "${patch_fs}/README.txt" << __EOF__ ||
       (err "could not write README.txt" && exit 13)
 This disk image contains a differential updater that can update
 ${product_name} from version ${old_app_version} to ${new_app_version_extra}.
@@ -290,12 +305,21 @@ ${product_name} from version ${old_app_version} to ${new_app_version_extra}.
 This image is part of the auto-update system and is not independently
 useful.
 
-To install ${product_name}, please visit
-<${product_url}>.
+To install ${product_name}, please visit ${product_url}.
 __EOF__
 
-  local patch_versioned_dir="\
-${patch_dotpatch_dir}/version_${old_app_version}_${new_app_version}.dirpatch"
+  # version_patch_name is how keystone_install.sh distinguishes between diff
+  # updates intended to place the versioned directory in the new layout
+  # ("framework") and the old ("version").
+  local version_patch_name
+  if [[ -n "${layout_new}" ]]; then
+    version_patch_name="framework"
+  else
+    version_patch_name="version"
+  fi
+
+  local patch_versioned_dir="${patch_dotpatch_dir}/\
+${version_patch_name}_${old_app_version}_${new_app_version}.dirpatch"
 
   if ! "${DIRDIFFER}" "${old_versioned_dir}" \
                       "${new_versioned_dir}" \
@@ -308,12 +332,24 @@ ${patch_dotpatch_dir}/version_${old_app_version}_${new_app_version}.dirpatch"
   # Set DIRDIFFER_EXCLUDE to exclude the contents of the Versions directory,
   # but to include an empty Versions directory. The versioned directory was
   # already addressed in the preceding dirpatch.
-  export DIRDIFFER_EXCLUDE="/${APP_NAME_RE}/Contents/Versions/"
+  if [[ -n "${layout_new}" ]]; then
+    # Transform VERSIONS_DIR_NEW into a regular expression pattern by
+    # backslashing the dot.
+    #
+    # This exclude pattern omits the Current symbolic link, which will be fixed
+    # up after dirdiffer creates this dirpatch.
+    export DIRDIFFER_EXCLUDE=\
+"/${APP_NAME_RE}/$(echo "${VERSIONS_DIR_NEW}" | sed -e 's/\./\\./g')/"
+  else
+    # VERSIONS_DIR_OLD doesn't contain anything that a regular expression parser
+    # would misinterpret.
+    export DIRDIFFER_EXCLUDE="/${APP_NAME_RE}/${VERSIONS_DIR_OLD}/"
+  fi
 
   # Set DIRDIFFER_NO_DIFF to exclude files introduced by or modified by
   # Keystone channel and brand tagging and subsequent code signing.
-  export DIRDIFFER_NO_DIFF="\
-/${APP_NAME_RE}/Contents/\
+  export DIRDIFFER_NO_DIFF=\
+"/${APP_NAME_RE}/Contents/\
 (CodeResources|Info\\.plist|MacOS/${product_name}|_CodeSignature/.*)$"
 
   local patch_app_dir="${patch_dotpatch_dir}/application.dirpatch"
@@ -327,6 +363,14 @@ ${patch_dotpatch_dir}/version_${old_app_version}_${new_app_version}.dirpatch"
   fi
 
   unset DIRDIFFER_EXCLUDE DIRDIFFER_NO_DIFF
+
+  if [[ -n "${layout_new}" ]]; then
+    # The Current symbolic link in the framework's Versions directory was
+    # excluded by DIRDIFFER_EXCLUDE, but its presence is critical.
+    rsync --links --perms --times \
+           "${new_app_path}/${VERSIONS_DIR_NEW}/Current" \
+           "${patch_app_dir}/${VERSIONS_DIR_NEW}/Current"
+  fi
 
   echo "${product_name} ${old_app_version}-${new_app_version_extra} Update"
 }
