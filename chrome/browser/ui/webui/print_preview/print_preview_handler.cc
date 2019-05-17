@@ -281,6 +281,8 @@ const char kHeaderFooter[] = "headerFooter";
 const char kIsHeaderFooterManaged[] = "isHeaderFooterManaged";
 // Name of a dictionary field holding the cloud print URL.
 const char kCloudPrintURL[] = "cloudPrintURL";
+// Name of a dictionary field holding the signed in user accounts.
+const char kUserAccounts[] = "userAccounts";
 
 // Get the print job settings dictionary from |json_str|.
 // Returns |base::Value()| on failure.
@@ -958,6 +960,18 @@ void PrintPreviewHandler::HandleGetInitialSettings(
                                      weak_factory_.GetWeakPtr(), callback_id));
 }
 
+void PrintPreviewHandler::GetUserAccountList(base::Value* settings) {
+  base::Value account_list(base::Value::Type::LIST);
+  if (identity_manager_) {
+    const std::vector<gaia::ListedAccount>& accounts =
+        identity_manager_->GetAccountsInCookieJar().signed_in_accounts;
+    for (const gaia::ListedAccount& account : accounts) {
+      account_list.GetList().emplace_back(account.email);
+    }
+  }
+  settings->SetKey(kUserAccounts, std::move(account_list));
+}
+
 void PrintPreviewHandler::SendInitialSettings(
     const std::string& callback_id,
     const std::string& default_printer) {
@@ -1010,6 +1024,10 @@ void PrintPreviewHandler::SendInitialSettings(
   }
 
   GetNumberFormatAndMeasurementSystem(&initial_settings);
+  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
+    GetUserAccountList(&initial_settings);
+  }
+
   ResolveJavascriptCallback(base::Value(callback_id), initial_settings);
 }
 
@@ -1313,17 +1331,21 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
   DCHECK(!identity_manager_);
   Profile* profile = Profile::FromWebUI(web_ui());
+  identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
   if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
-    identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
     identity_manager_->AddObserver(this);
   }
 }
 
 void PrintPreviewHandler::UnregisterForGaiaCookieChanges() {
-  if (identity_manager_) {
+  if (!identity_manager_)
+    return;
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
     identity_manager_->RemoveObserver(this);
-    identity_manager_ = nullptr;
   }
+  identity_manager_ = nullptr;
 }
 
 void PrintPreviewHandler::BadMessageReceived() {

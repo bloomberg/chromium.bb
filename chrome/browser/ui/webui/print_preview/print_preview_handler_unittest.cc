@@ -372,6 +372,8 @@ class PrintPreviewHandlerTest : public testing::Test {
 
     ASSERT_TRUE(
         settings->FindKeyOfType("cloudPrintURL", base::Value::Type::STRING));
+    ASSERT_TRUE(
+        settings->FindKeyOfType("userAccounts", base::Value::Type::LIST));
   }
 
   IPC::TestSink& initiator_sink() {

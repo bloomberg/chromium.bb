@@ -43,7 +43,8 @@ print_preview.LocalDestinationInfo;
  *   isHeaderFooterManaged: boolean,
  *   serializedAppStateStr: ?string,
  *   serializedDefaultDestinationSelectionRulesStr: ?string,
- *   cloudPrintURL: (string | undefined)
+ *   cloudPrintURL: (string | undefined),
+ *   userAccounts: (Array<string> | undefined)
  * }}
  * @see corresponding field name definitions in print_preview_handler.cc
  */

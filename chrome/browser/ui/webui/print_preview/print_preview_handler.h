@@ -279,6 +279,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Populates |settings| according to the current locale.
   void GetNumberFormatAndMeasurementSystem(base::Value* settings);
 
+  // Populates |settings| with the list of logged in accounts.
+  void GetUserAccountList(base::Value* settings);
+
   PdfPrinterHandler* GetPdfPrinterHandler();
 
   // Called when printers are detected.
