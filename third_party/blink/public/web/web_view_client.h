@@ -183,7 +183,8 @@ class WebViewClient {
 
   // Informs the browser that the page scale has changed and/or a pinch gesture
   // has started or ended.
-  virtual void PageScaleFactorChanged(float page_scale_factor) {}
+  virtual void PageScaleFactorChanged(float page_scale_factor,
+                                      bool is_pinch_gesture_active) {}
 
   // Gestures -------------------------------------------------------------
 

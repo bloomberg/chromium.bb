@@ -2063,12 +2063,17 @@ void RenderViewImpl::ZoomLimitsChanged(double minimum_level,
                                         maximum_percent));
 }
 
-void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor) {
+void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor,
+                                            bool is_pinch_gesture_active) {
   if (!webview())
     return;
 
   Send(new ViewHostMsg_PageScaleFactorChanged(GetRoutingID(),
                                               page_scale_factor));
+  // TODO(wjmaclean): Merge this into RenderWidget's
+  // SetPageScaleFactorAndLimits().
+  GetWidget()->PageScaleFactorChanged(page_scale_factor,
+                                      is_pinch_gesture_active);
 }
 
 void RenderViewImpl::PageImportanceSignalsChanged() {

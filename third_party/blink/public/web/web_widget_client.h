@@ -259,10 +259,9 @@ class WebWidgetClient {
 
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
-  virtual void SetPageScaleStateAndLimits(float page_scale_factor,
-                                          bool is_pinch_gesture_active,
-                                          float minimum,
-                                          float maximum) {}
+  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
+                                           float minimum,
+                                           float maximum) {}
 
   // Starts an animation of the page scale to a target scale factor and scroll
   // offset.

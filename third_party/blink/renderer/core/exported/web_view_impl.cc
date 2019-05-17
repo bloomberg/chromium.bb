@@ -2023,10 +2023,8 @@ void WebViewImpl::DidAttachLocalMainFrame(WebWidgetClient* client) {
   if (does_composite_) {
     // When attaching a local main frame, set up any state on the compositor.
     AsWidget().client->SetBackgroundColor(BackgroundColor());
-    auto& viewport = GetPage()->GetVisualViewport();
-    AsWidget().client->SetPageScaleStateAndLimits(
-        viewport.Scale(), viewport.IsPinchGestureActive(),
-        MinimumPageScaleFactor(), MaximumPageScaleFactor());
+    AsWidget().client->SetPageScaleFactorAndLimits(
+        PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
   }
 }
 
@@ -2569,10 +2567,8 @@ void WebViewImpl::RefreshPageScaleFactor() {
   // so we must update those even though SetPageScaleFactor() may do the same if
   // the scale factor is changed.
   if (does_composite_) {
-    auto& viewport = GetPage()->GetVisualViewport();
-    AsWidget().client->SetPageScaleStateAndLimits(
-        viewport.Scale(), viewport.IsPinchGestureActive(),
-        MinimumPageScaleFactor(), MaximumPageScaleFactor());
+    AsWidget().client->SetPageScaleFactorAndLimits(
+        PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
   }
 }
 
@@ -2826,10 +2822,8 @@ void WebViewImpl::SendResizeEventForMainFrame() {
 
   // A resized main frame can change the page scale limits.
   if (does_composite_) {
-    auto& viewport = GetPage()->GetVisualViewport();
-    AsWidget().client->SetPageScaleStateAndLimits(
-        viewport.Scale(), viewport.IsPinchGestureActive(),
-        MinimumPageScaleFactor(), MaximumPageScaleFactor());
+    AsWidget().client->SetPageScaleFactorAndLimits(
+        PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
   }
 }
 
@@ -3096,13 +3090,14 @@ void WebViewImpl::PageScaleFactorChanged() {
   DCHECK(does_composite_);
 
   GetPageScaleConstraintsSet().SetNeedsReset(false);
-  // Set up the compositor and inform the browser of the PageScaleFactor,
-  // which is tracked per-view.
+  // Set up the compositor.
+  AsWidget().client->SetPageScaleFactorAndLimits(
+      PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
+  // Also inform the browser of the PageScaleFactor, which is tracked
+  // per-view.
   auto& viewport = GetPage()->GetVisualViewport();
-  AsWidget().client->SetPageScaleStateAndLimits(
-      viewport.Scale(), viewport.IsPinchGestureActive(),
-      MinimumPageScaleFactor(), MaximumPageScaleFactor());
-  AsView().client->PageScaleFactorChanged(viewport.Scale());
+  AsView().client->PageScaleFactorChanged(viewport.Scale(),
+                                          viewport.IsPinchGestureActive());
   dev_tools_emulator_->MainFrameScrollOrScaleChanged();
 }
 

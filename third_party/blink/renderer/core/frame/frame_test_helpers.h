@@ -205,10 +205,9 @@ class TestWebWidgetClient : public WebWidgetClient {
   void RegisterSelection(const cc::LayerSelection& selection) override;
   void SetBackgroundColor(SkColor color) override;
   void SetAllowGpuRasterization(bool allow) override;
-  void SetPageScaleStateAndLimits(float page_scale_factor,
-                                  bool is_pinch_gesture_active,
-                                  float minimum,
-                                  float maximum) override;
+  void SetPageScaleFactorAndLimits(float page_scale_factor,
+                                   float minimum,
+                                   float maximum) override;
   void InjectGestureScrollEvent(const blink::WebFloatSize& delta,
                                 blink::WebScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
