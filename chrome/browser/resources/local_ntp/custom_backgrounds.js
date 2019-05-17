@@ -241,10 +241,10 @@ customBackgrounds.setMenuVisibility = function() {
 customBackgrounds.setAttribution = function(
     attributionLine1, attributionLine2, attributionActionUrl) {
   const attributionBox = $(customBackgrounds.IDS.ATTRIBUTIONS);
-  const attr1 = document.createElement('div');
-  attr1.setAttribute('id', customBackgrounds.IDS.ATTR1);
-  const attr2 = document.createElement('div');
-  attr2.setAttribute('id', customBackgrounds.IDS.ATTR2);
+  const attr1 = document.createElement('span');
+  attr1.id = customBackgrounds.IDS.ATTR1;
+  const attr2 = document.createElement('span');
+  attr2.id = customBackgrounds.IDS.ATTR2;
 
   if (attributionLine1 !== '') {
     // Shouldn't be changed from textContent for security assurances.
@@ -272,8 +272,8 @@ customBackgrounds.setAttribution = function(
     attr.insertBefore(linkIcon, attr.firstChild);
 
     attributionBox.classList.add(customBackgrounds.CLASSES.ATTR_LINK);
+    attributionBox.href = attributionActionUrl;
     attributionBox.onclick = function() {
-      window.open(attributionActionUrl, '_blank');
       ntpApiHandle.logEvent(
           BACKGROUND_CUSTOMIZATION_LOG_TYPE.NTP_CUSTOMIZE_ATTRIBUTION_CLICKED);
     };
@@ -283,6 +283,9 @@ customBackgrounds.setAttribution = function(
 
 customBackgrounds.clearAttribution = function() {
   const attributions = $(customBackgrounds.IDS.ATTRIBUTIONS);
+  attributions.removeAttribute('href');
+  attributions.className = '';
+  attributions.style.cursor = 'none';
   while (attributions.firstChild) {
     attributions.removeChild(attributions.firstChild);
   }
