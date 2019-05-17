@@ -14,9 +14,12 @@ public final class BackgroundTaskSchedulerExternalUma {
     /**
      * Reports metrics for when a NativeBackgroundTask loads the native library.
      * @param taskId An id from {@link TaskIds}.
+     * @param serviceManagerOnlyMode Whether the task will start native in Service Manager Only Mode
+     *                              (Reduced Mode) instead of Full Browser Mode.
      */
-    public static void reportTaskStartedNative(int taskId) {
-        BackgroundTaskSchedulerUma.getInstance().reportTaskStartedNative(taskId);
+    public static void reportTaskStartedNative(int taskId, boolean serviceManagerOnlyMode) {
+        BackgroundTaskSchedulerUma.getInstance().reportTaskStartedNative(
+                taskId, serviceManagerOnlyMode);
     }
 
     /**

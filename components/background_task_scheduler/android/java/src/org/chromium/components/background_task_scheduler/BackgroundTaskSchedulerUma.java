@@ -155,9 +155,16 @@ class BackgroundTaskSchedulerUma {
     }
 
     /** Reports metrics for when a NativeBackgroundTask loads the native library. */
-    public void reportTaskStartedNative(int taskId) {
-        cacheEvent("Android.BackgroundTaskScheduler.TaskLoadedNative",
-                toUmaEnumValueFromTaskId(taskId));
+    public void reportTaskStartedNative(int taskId, boolean serviceManagerOnlyMode) {
+        int umaEnumValue = toUmaEnumValueFromTaskId(taskId);
+        cacheEvent("Android.BackgroundTaskScheduler.TaskLoadedNative", umaEnumValue);
+        if (serviceManagerOnlyMode) {
+            cacheEvent(
+                    "Android.BackgroundTaskScheduler.TaskLoadedNative.ReducedMode", umaEnumValue);
+        } else {
+            cacheEvent(
+                    "Android.BackgroundTaskScheduler.TaskLoadedNative.FullBrowser", umaEnumValue);
+        }
     }
 
     /**
