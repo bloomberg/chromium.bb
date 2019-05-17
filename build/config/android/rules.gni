@@ -189,14 +189,30 @@ if (enable_java_templates) {
   import("//build/config/sanitizers/sanitizers.gni")
   import("//tools/grit/grit_rule.gni")
 
-  # JNI target implementation. See generate_jni or generate_jar_jni for usage.
-  template("generate_jni_impl") {
+  # Declare a jni target
+  #
+  # This target generates the native jni bindings for a set of .java files.
+  #
+  # See base/android/jni_generator/jni_generator.py for more info about the
+  # format of generating JNI bindings.
+  #
+  # Variables
+  #   sources: list of .java files to generate jni for
+  #   jni_package: subdirectory path for generated bindings
+  #
+  # Example
+  #   generate_jni("foo_jni") {
+  #     sources = [
+  #       "android/java/src/org/chromium/foo/Foo.java",
+  #       "android/java/src/org/chromium/foo/FooUtil.java",
+  #     ]
+  #     jni_package = "foo"
+  #   }
+  template("generate_jni") {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
 
-    # TODO(crbug.com/963471): Change include paths to be relative to
-    # $root_gen_dir to prevent issues when moving JNI targets.
-    _base_output_dir = "${target_gen_dir}/${target_name}_"
+    _base_output_dir = "${target_gen_dir}/${target_name}"
     _package_output_dir = "${_base_output_dir}/${invoker.jni_package}"
     _jni_output_dir = "${_package_output_dir}/jni"
 
@@ -216,13 +232,16 @@ if (enable_java_templates) {
       ]
     }
 
-    _jni_target_name = "${target_name}__jni"
-    action_with_pydeps(_jni_target_name) {
-      # The sources aren't compiled so don't check their dependencies.
-      check_includes = false
+    _foreach_target_name = "${target_name}__jni_gen"
+    action_foreach_with_pydeps(_foreach_target_name) {
       script = "//base/android/jni_generator/jni_generator.py"
-      inputs = []
+      sources = invoker.sources
+      outputs = [
+        "${_jni_output_dir}/{{source_name_part}}_jni.h",
+      ]
+
       args = [
+        "--input_file={{source}}",
         "--ptr_type=long",
         "--output_dir",
         rebase_path(_jni_output_dir, root_build_dir),
@@ -230,46 +249,15 @@ if (enable_java_templates) {
         rebase_path(_jni_generator_include, _jni_output_dir),
       ]
 
-      if (defined(invoker.classes)) {
-        if (defined(invoker.jar_file)) {
-          _jar_file = invoker.jar_file
-        } else {
-          _jar_file = android_sdk_jar
-        }
-        inputs += [ _jar_file ]
-        args += [
-          "--jar_file",
-          rebase_path(_jar_file, root_build_dir),
-          "--input_files=${invoker.classes}",
-        ]
-        _input_names = invoker.classes
-        if (defined(invoker.always_mangle) && invoker.always_mangle) {
-          args += [ "--always_mangle" ]
-        }
-      } else {
-        assert(defined(invoker.sources))
-        inputs += invoker.sources
-        _rebased_sources = rebase_path(invoker.sources, root_build_dir)
-        args += [ "--input_files=$_rebased_sources" ]
-        _input_names = invoker.sources
-        if (use_hashed_jni_names) {
-          args += [ "--use_proxy_hash" ]
-        }
-        if (defined(invoker.namespace)) {
-          args += [ "-n ${invoker.namespace}" ]
-        }
+      if (use_hashed_jni_names) {
+        args += [ "--use_proxy_hash" ]
       }
-
-      outputs = []
-      foreach(_name, _input_names) {
-        _name_part = get_path_info(_name, "name")
-        outputs += [ "${_jni_output_dir}/${_name_part}_jni.h" ]
-      }
-      _rebased_outputs = rebase_path(outputs, root_build_dir)
-      args += [ "--output_files=$_rebased_outputs" ]
 
       if (enable_profiling) {
         args += [ "--enable_profiling" ]
+      }
+      if (defined(invoker.namespace)) {
+        args += [ "-n ${invoker.namespace}" ]
       }
       if (enable_jni_tracing) {
         args += [ "--enable_tracing" ]
@@ -277,7 +265,7 @@ if (enable_java_templates) {
     }
 
     config("jni_includes_${target_name}") {
-      # TODO: #includes should probably all be relative to
+      # TODO(cjhopman): #includes should probably all be relative to
       # _base_output_dir. Remove that from this config once the includes are
       # updated.
       include_dirs = [
@@ -296,35 +284,9 @@ if (enable_java_templates) {
       if (!defined(public_deps)) {
         public_deps = []
       }
-      public_deps += [ ":$_jni_target_name" ]
+      public_deps += [ ":$_foreach_target_name" ]
       public_deps += _jni_generator_include_deps
       public_configs = [ ":jni_includes_${target_name}" ]
-    }
-  }
-
-  # Declare a jni target
-  #
-  # This target generates the native jni bindings for a set of .java files.
-  #
-  # See base/android/jni_generator/jni_generator.py for more info about the
-  # format of generating JNI bindings.
-  #
-  # Variables
-  #   sources: list of .java files to generate jni for
-  #   jni_package: subdirectory path for generated bindings
-  #   namespace: Specify the namespace for the generated header file.
-  #
-  # Example
-  #   generate_jni("foo_jni") {
-  #     sources = [
-  #       "android/java/src/org/chromium/foo/Foo.java",
-  #       "android/java/src/org/chromium/foo/FooUtil.java",
-  #     ]
-  #     jni_package = "foo"
-  #   }
-  template("generate_jni") {
-    generate_jni_impl(target_name) {
-      forward_variables_from(invoker, "*")
     }
   }
 
@@ -354,8 +316,82 @@ if (enable_java_templates) {
   #     jni_package = "foo"
   #   }
   template("generate_jar_jni") {
-    generate_jni_impl(target_name) {
-      forward_variables_from(invoker, "*")
+    forward_variables_from(invoker, [ "testonly" ])
+
+    if (defined(invoker.jar_file)) {
+      _jar_file = invoker.jar_file
+    } else {
+      _jar_file = android_sdk_jar
+    }
+
+    _always_mangle = defined(invoker.always_mangle) && invoker.always_mangle
+
+    _base_output_dir = "${target_gen_dir}/${target_name}/${invoker.jni_package}"
+    _jni_output_dir = "${_base_output_dir}/jni"
+
+    if (defined(invoker.jni_generator_include)) {
+      _jni_generator_include = invoker.jni_generator_include
+    } else {
+      _jni_generator_include =
+          "//base/android/jni_generator/jni_generator_helper.h"
+    }
+
+    # TODO(cjhopman): make jni_generator.py support generating jni for multiple
+    # .class files from a .jar.
+    _jni_actions = []
+    foreach(_class, invoker.classes) {
+      _classname = get_path_info(_class, "name")
+      _jni_target_name = "${target_name}__jni_${_classname}"
+      _jni_actions += [ ":$_jni_target_name" ]
+      action_with_pydeps(_jni_target_name) {
+        # The sources aren't compiled so don't check their dependencies.
+        check_includes = false
+        script = "//base/android/jni_generator/jni_generator.py"
+        inputs = [
+          _jar_file,
+        ]
+        outputs = [
+          "${_jni_output_dir}/${_classname}_jni.h",
+        ]
+
+        args = [
+          "--jar_file",
+          rebase_path(_jar_file, root_build_dir),
+          "--input_file",
+          _class,
+          "--ptr_type=long",
+          "--output_dir",
+          rebase_path(_jni_output_dir, root_build_dir),
+          "--includes",
+          rebase_path(_jni_generator_include, _jni_output_dir),
+        ]
+
+        if (enable_profiling) {
+          args += [ "--enable_profiling" ]
+        }
+        if (enable_jni_tracing) {
+          args += [ "--enable_tracing" ]
+        }
+        if (_always_mangle) {
+          args += [ "--always_mangle" ]
+        }
+      }
+    }
+
+    config("jni_includes_${target_name}") {
+      include_dirs = [ _base_output_dir ]
+    }
+
+    group(target_name) {
+      public_deps = []
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "public_deps",
+                               "visibility",
+                             ])
+      public_deps += _jni_actions
+      public_configs = [ ":jni_includes_${target_name}" ]
     }
   }
 
