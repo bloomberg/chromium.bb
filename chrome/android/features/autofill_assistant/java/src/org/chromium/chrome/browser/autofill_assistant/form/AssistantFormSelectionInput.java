@@ -8,12 +8,11 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
+
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceList;
 
 import java.util.List;
 
@@ -39,9 +38,8 @@ class AssistantFormSelectionInput extends AssistantFormInput {
     @Override
     public View createView(Context context, ViewGroup parent) {
         ViewGroup root = (ViewGroup) LayoutInflater.from(context).inflate(
-                org.chromium.chrome.autofill_assistant.R.layout
-                        .autofill_assistant_form_selection_input,
-                parent, /* attachToRoot= */ false);
+                R.layout.autofill_assistant_form_selection_input, parent,
+                /* attachToRoot= */ false);
         TextView label = root.findViewById(org.chromium.chrome.autofill_assistant.R.id.label);
         if (mLabel.isEmpty()) {
             label.setVisibility(View.GONE);
@@ -49,44 +47,25 @@ class AssistantFormSelectionInput extends AssistantFormInput {
             label.setText(mLabel);
         }
 
-        LinearLayout container;
-        if (mAllowMultipleChoices) {
-            container = new LinearLayout(context);
-            for (int i = 0; i < mChoices.size(); i++) {
-                CheckBox checkBox = new CheckBox(context);
-                initChoiceView(container, checkBox, i);
-                checkBox.setChecked(mChoices.get(i).isInitiallySelected());
-            }
-        } else {
-            // If only one choice can be selected, we need the parent to be a RadioGroup to make
-            // sure there is always at most one selected choice.
-            RadioGroup radioGroup = new RadioGroup(context);
-            container = radioGroup;
-            for (int i = 0; i < mChoices.size(); i++) {
-                RadioButton radioButton = new RadioButton(context);
-                initChoiceView(container, radioButton, i);
+        AssistantChoiceList choiceList = root.findViewById(R.id.choice_list);
+        choiceList.setAllowMultipleChoices(mAllowMultipleChoices);
+        for (int i = 0; i < mChoices.size(); i++) {
+            AssistantFormSelectionChoice choice = mChoices.get(i);
 
-                if (mChoices.get(i).isInitiallySelected()) {
-                    // We can't use the CompoundButton#setChecked method for radio buttons as this
-                    // will not update the state of the parent RadioGroup, so we need to use the
-                    // RadioGroup#check method instead.
-                    radioGroup.check(radioButton.getId());
-                }
-            }
+            // Set the same style as Payment Request T&C.
+            TextView choiceView = new TextView(context);
+            ApiCompatibilityUtils.setTextAppearance(
+                    choiceView, org.chromium.chrome.R.style.TextAppearance_BlackCaption);
+            choiceView.setText(choice.getLabel());
+
+            int index = i; // needed for the lambda.
+            choiceList.addItem(choiceView, /* hasEditButton= */ false,
+                    (isChecked)
+                            -> mDelegate.onChoiceSelectionChanged(index, isChecked),
+                    /* itemEditedListener= */ null);
+
+            choiceList.setChecked(choiceView, choice.isInitiallySelected());
         }
-
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        root.addView(container);
         return root;
-    }
-
-    private void initChoiceView(LinearLayout container, CompoundButton view, int index) {
-        container.addView(view);
-        AssistantFormSelectionChoice choice = mChoices.get(index);
-        view.setText(choice.getLabel());
-        view.setOnCheckedChangeListener(
-                (unusedView, isChecked) -> mDelegate.onChoiceSelectionChanged(index, isChecked));
     }
 }

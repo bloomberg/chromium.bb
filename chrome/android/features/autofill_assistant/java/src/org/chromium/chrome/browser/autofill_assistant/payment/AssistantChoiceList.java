@@ -12,6 +12,8 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Space;
@@ -46,15 +48,15 @@ public class AssistantChoiceList extends GridLayout {
      * Represents a single choice with a radio button, customizable content and an edit button.
      */
     private class Item {
-        final RadioButton mRadioButton;
+        final CompoundButton mCompoundButton;
         final Callback<Boolean> mOnSelectedListener;
         final View mContent;
         final View mEditButton;
         final View mSpacer;
 
-        Item(@Nullable RadioButton radioButton, @Nullable Callback onSelectedListener, View content,
-                @Nullable View editButton, @Nullable View spacer) {
-            this.mRadioButton = radioButton;
+        Item(@Nullable CompoundButton compoundButton, @Nullable Callback onSelectedListener,
+                View content, @Nullable View editButton, @Nullable View spacer) {
+            this.mCompoundButton = compoundButton;
             this.mOnSelectedListener = onSelectedListener;
             this.mContent = content;
             this.mEditButton = editButton;
@@ -76,6 +78,7 @@ public class AssistantChoiceList extends GridLayout {
     private final int mColumnSpacing;
     private final int mAddButtonSpacing;
     private final List<Item> mItems = new ArrayList<>();
+    private boolean mAllowMultipleChoices;
     private Runnable mAddButtonListener;
 
     public AssistantChoiceList(Context context, AttributeSet attrs) {
@@ -116,6 +119,20 @@ public class AssistantChoiceList extends GridLayout {
     }
 
     /**
+     * Set whether this list allows multiple choices to be selected at the same time. This method
+     * can only be called when no items have been added, otherwise it will throw an exception.
+     */
+    public void setAllowMultipleChoices(boolean allowMultipleChoices) {
+        if (!mItems.isEmpty()) {
+            throw new UnsupportedOperationException(
+                    "Calling #setAllowMultipleChoices is not allowed when items have already been "
+                    + "added.");
+        }
+
+        mAllowMultipleChoices = allowMultipleChoices;
+    }
+
+    /**
      * Children of this container are automatically added as selectable items to the list.
      *
      * This method is automatically called by layout inflaters and xml files. In code, you usually
@@ -148,7 +165,8 @@ public class AssistantChoiceList extends GridLayout {
     public void addItem(View view, boolean hasEditButton,
             @Nullable Callback<Boolean> itemSelectedListener,
             @Nullable Runnable itemEditedListener) {
-        RadioButton radioButton = new RadioButton(getContext());
+        CompoundButton radioButton =
+                mAllowMultipleChoices ? new CheckBox(getContext()) : new RadioButton(getContext());
         // Insert at end, before the `add' button (if any).
         int viewIndex = mCanAddItems ? indexOfChild(mAddButton) : getChildCount();
         addViewInternal(radioButton, viewIndex++, createRadioButtonLayoutParams());
@@ -172,8 +190,14 @@ public class AssistantChoiceList extends GridLayout {
         }
 
         Item item = new Item(radioButton, itemSelectedListener, view, editButton, spacer);
-        radioButton.setOnClickListener(unusedView -> { setCheckedItem(view); });
-        view.setOnClickListener(unusedView -> { setCheckedItem(view); });
+
+        // When clicking a checkbox, invert its checked value. A radio button will always be
+        // selected when clicked.
+        View.OnClickListener clickListener = unusedView
+                -> setChecked(
+                        view, mAllowMultipleChoices ? !item.mCompoundButton.isChecked() : true);
+        radioButton.setOnClickListener(clickListener);
+        view.setOnClickListener(clickListener);
         mItems.add(item);
 
         // Need to adjust button margins after first item was inserted.
@@ -189,7 +213,7 @@ public class AssistantChoiceList extends GridLayout {
         for (int i = 0; i < mItems.size(); i++) {
             Item item = mItems.get(i);
             removeView(item.mContent);
-            removeView(item.mRadioButton);
+            removeView(item.mCompoundButton);
             if (item.mEditButton != null) {
                 removeView(item.mEditButton);
             }
@@ -213,17 +237,46 @@ public class AssistantChoiceList extends GridLayout {
     }
 
     /**
-     * Selects the specified item and de-selects all other items in the UI.
+     * Selects the specified item. If this choice list does not allow checking multiple choice, this
+     * will also deselect all other items.
      *
      * @param content The content view to select, as specified in |addItem|. Can be null to indicate
      * that all items should be de-selected.
      */
     public void setCheckedItem(@Nullable View content) {
-        for (int i = 0; i < mItems.size(); i++) {
-            Item item = mItems.get(i);
-            item.mRadioButton.setChecked(item.mContent == content);
-            if (item.mOnSelectedListener != null) {
-                item.mOnSelectedListener.onResult(item.mContent == content);
+        if (content == null) {
+            for (Item item : mItems) {
+                item.mCompoundButton.setChecked(false);
+                if (item.mOnSelectedListener != null) {
+                    item.mOnSelectedListener.onResult(false);
+                }
+            }
+            return;
+        }
+
+        setChecked(content, true);
+    }
+
+    /**
+     * Sets whether the specified item is checked or not. If this choice list does not allow
+     * checking multiple choice and {@code checked} is true, this will also deselect all other
+     * items.
+     *
+     * @param content The content view to (un)select, as specified in |addItem|.
+     */
+    public void setChecked(View content, boolean checked) {
+        for (Item item : mItems) {
+            boolean notifyListener = false;
+            if (item.mContent == content) {
+                item.mCompoundButton.setChecked(checked);
+                notifyListener = true;
+            } else if (checked && !mAllowMultipleChoices) {
+                item.mCompoundButton.setChecked(false);
+                notifyListener = true;
+            }
+
+            if (notifyListener && item.mOnSelectedListener != null) {
+                item.mOnSelectedListener.onResult(item.mCompoundButton.isChecked());
             }
         }
     }
