@@ -578,7 +578,11 @@ class ValidationPool(object):
     changes = [c for c in changes if IsCrosReview(c)]
 
     # Next, filter out Parallel CQ CL's that aren't delegated to us
-    changes = [c for c in changes if c.HasApproval('LCQ', ('1'))]
+    changes = [
+        c for c in changes
+        if c.project not in constants.WHITELISTED_PARALLEL_CQ_PROJECTS or
+        c.HasApproval('LCQ', ('1'))
+    ]
 
     changes_in_manifest = []
     changes_not_in_manifest = []
