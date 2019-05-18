@@ -95,11 +95,11 @@ void VSyncThreadWin::WaitForVSync() {
     }
   }
 
-  if (window_output_) {
-    window_output_->WaitForVBlank();
-  } else {
-    Sleep(static_cast<DWORD>(interval.InMilliseconds()));
-  }
+  bool wait_for_vblank_succeeded =
+      window_output_ && SUCCEEDED(window_output_->WaitForVBlank());
+
+  if (!wait_for_vblank_succeeded)
+    Sleep(static_cast<DWORD>(interval.InMillisecondsRoundedUp()));
 
   base::AutoLock auto_lock(lock_);
   DCHECK(started_);
