@@ -25,6 +25,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 
@@ -403,8 +404,9 @@ void WaylandConnection::Global(void* data,
     if (!connection->subcompositor_)
       LOG(ERROR) << "Failed to bind to wl_subcompositor global";
   } else if (!connection->shm_ && strcmp(interface, "wl_shm") == 0) {
-    connection->shm_ =
+    wl::Object<wl_shm> shm =
         wl::Bind<wl_shm>(registry, name, std::min(version, kMaxShmVersion));
+    connection->shm_ = std::make_unique<WaylandShm>(shm.release(), connection);
     if (!connection->shm_)
       LOG(ERROR) << "Failed to bind to wl_shm global";
     connection->shm_buffer_manager_ =

@@ -66,6 +66,8 @@ source_set("wayland") {
     "host/wayland_screen.h",
     "host/wayland_shared_memory_buffer_manager.cc",
     "host/wayland_shared_memory_buffer_manager.h",
+    "host/wayland_shm.cc",
+    "host/wayland_shm.h",
     "host/wayland_shm_buffer.cc",
     "host/wayland_shm_buffer.h",
     "host/wayland_touch.cc",

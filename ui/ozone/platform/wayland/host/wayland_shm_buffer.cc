@@ -8,16 +8,11 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
-
-namespace {
-
-const uint32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
-
-}  // namespace
+#include "ui/ozone/platform/wayland/host/wayland_shm.h"
 
 namespace ui {
 
-WaylandShmBuffer::WaylandShmBuffer(wl_shm* shm, const gfx::Size& size)
+WaylandShmBuffer::WaylandShmBuffer(WaylandShm* shm, const gfx::Size& size)
     : size_(size) {
   Initialize(shm);
 }
@@ -27,7 +22,7 @@ WaylandShmBuffer::WaylandShmBuffer(WaylandShmBuffer&& buffer) = default;
 WaylandShmBuffer& WaylandShmBuffer::operator=(WaylandShmBuffer&& buffer) =
     default;
 
-void WaylandShmBuffer::Initialize(wl_shm* shm) {
+void WaylandShmBuffer::Initialize(WaylandShm* shm) {
   DCHECK(shm);
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(size_.width(), size_.height());
@@ -48,18 +43,15 @@ void WaylandShmBuffer::Initialize(wl_shm* shm) {
       base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
           std::move(shared_memory_region));
 
-  wl::Object<wl_shm_pool> pool(wl_shm_create_pool(
-      shm, platform_shared_memory.GetPlatformHandle().fd, buffer_size));
-
-  auto* new_buffer = wl_shm_pool_create_buffer(
-      pool.get(), 0, size_.width(), size_.height(), stride, kShmFormat);
-  if (!new_buffer) {
+  base::subtle::ScopedFDPair fd_pair =
+      platform_shared_memory.PassPlatformHandle();
+  buffer_ = shm->CreateBuffer(std::move(fd_pair.fd), buffer_size, size_);
+  if (!buffer_) {
     shared_memory_mapping_ = base::WritableSharedMemoryMapping();
     return;
   }
 
   stride_ = stride;
-  buffer_.reset(new_buffer);
 }
 
 uint8_t* WaylandShmBuffer::GetMemory() const {

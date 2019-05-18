@@ -18,6 +18,8 @@
 
 namespace ui {
 
+class WaylandShm;
+
 // Encapsulates a Wayland SHM buffer, covering basically 2 use cases:
 // (1) Buffers created and mmap'ed locally to draw skia bitmap(s) into; and
 // (2) Buffers created using file descriptor (e.g: sent by gpu process/thread,
@@ -26,7 +28,7 @@ namespace ui {
 // wl_buffer and WritableSharedMemoryMapping (if any) instance.
 class WaylandShmBuffer {
  public:
-  WaylandShmBuffer(wl_shm* shm, const gfx::Size& size);
+  WaylandShmBuffer(WaylandShm* shm, const gfx::Size& size);
   ~WaylandShmBuffer();
 
   WaylandShmBuffer(WaylandShmBuffer&& buffer);
@@ -49,7 +51,7 @@ class WaylandShmBuffer {
   int stride() const { return stride_; }
 
  private:
-  void Initialize(wl_shm* shm);
+  void Initialize(WaylandShm* shm);
 
   gfx::Size size_;
   int stride_;

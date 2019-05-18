@@ -35,6 +35,7 @@ class WaylandShmBufferManager;
 class WaylandOutputManager;
 class WaylandWindow;
 class WaylandZwpLinuxDmabuf;
+class WaylandShm;
 
 class WaylandConnection : public PlatformEventSource,
                           public ozone::mojom::WaylandConnection,
@@ -105,7 +106,6 @@ class WaylandConnection : public PlatformEventSource,
   wl_display* display() const { return display_.get(); }
   wl_compositor* compositor() const { return compositor_.get(); }
   wl_subcompositor* subcompositor() const { return subcompositor_.get(); }
-  wl_shm* shm() const { return shm_.get(); }
   xdg_shell* shell() const { return shell_.get(); }
   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
   wl_seat* seat() const { return seat_.get(); }
@@ -151,6 +151,8 @@ class WaylandConnection : public PlatformEventSource,
   WaylandBufferManager* buffer_manager() const { return buffer_manager_.get(); }
 
   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
+
+  WaylandShm* shm() const { return shm_.get(); }
 
   // Returns bound pointer to own mojo interface.
   ozone::mojom::WaylandConnectionPtr BindInterface();
@@ -237,7 +239,6 @@ class WaylandConnection : public PlatformEventSource,
   wl::Object<wl_compositor> compositor_;
   wl::Object<wl_subcompositor> subcompositor_;
   wl::Object<wl_seat> seat_;
-  wl::Object<wl_shm> shm_;
   wl::Object<xdg_shell> shell_;
   wl::Object<zxdg_shell_v6> shell_v6_;
   wl::Object<wp_presentation> presentation_;
@@ -254,6 +255,7 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
   std::unique_ptr<WaylandShmBufferManager> shm_buffer_manager_;
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
+  std::unique_ptr<WaylandShm> shm_;
 
   // Objects that are using when GPU runs in own process.
   std::unique_ptr<WaylandBufferManager> buffer_manager_;

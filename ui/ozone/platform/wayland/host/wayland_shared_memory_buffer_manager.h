@@ -45,25 +45,8 @@ class WaylandShmBufferManager {
   bool DestroyBuffer(gfx::AcceleratedWidget widget);
 
  private:
-  // Internal representation of a shared memory buffer.
-  struct ShmBuffer {
-    ShmBuffer();
-    ShmBuffer(wl::Object<struct wl_buffer> buffer,
-              wl::Object<struct wl_shm_pool> pool);
-    ~ShmBuffer();
-
-    // A wl_buffer backed by a shared memory handle passed from the gpu process.
-    wl::Object<struct wl_buffer> shm_buffer;
-
-    // Is used to create shared memory based buffer objects.
-    wl::Object<struct wl_shm_pool> shm_pool;
-
-    DISALLOW_COPY_AND_ASSIGN(ShmBuffer);
-  };
-
   // A container of created buffers.
-  base::flat_map<gfx::AcceleratedWidget, std::unique_ptr<ShmBuffer>>
-      shm_buffers_;
+  base::flat_map<gfx::AcceleratedWidget, wl::Object<wl_buffer>> shm_buffers_;
 
   // Non-owned pointer to the main connection.
   WaylandConnection* connection_ = nullptr;

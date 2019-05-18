@@ -8,18 +8,10 @@
 
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
-
-WaylandShmBufferManager::ShmBuffer::ShmBuffer() = default;
-
-WaylandShmBufferManager::ShmBuffer::ShmBuffer(
-    wl::Object<struct wl_buffer> buffer,
-    wl::Object<struct wl_shm_pool> pool)
-    : shm_buffer(std::move(buffer)), shm_pool(std::move(pool)) {}
-
-WaylandShmBufferManager::ShmBuffer::~ShmBuffer() = default;
 
 WaylandShmBufferManager::WaylandShmBufferManager(WaylandConnection* connection)
     : connection_(connection) {}
@@ -43,20 +35,11 @@ bool WaylandShmBufferManager::CreateBufferForWidget(
   if (it != shm_buffers_.end())
     return false;
 
-  wl::Object<wl_shm_pool> pool(
-      wl_shm_create_pool(connection_->shm(), fd.get(), length));
-  if (!pool)
+  auto buffer = connection_->shm()->CreateBuffer(std::move(fd), length, size);
+  if (!buffer)
     return false;
 
-  wl::Object<wl_buffer> shm_buffer(
-      wl_shm_pool_create_buffer(pool.get(), 0, size.width(), size.height(),
-                                size.width() * 4, WL_SHM_FORMAT_ARGB8888));
-  if (!shm_buffer)
-    return false;
-
-  shm_buffers_.insert(std::make_pair(
-      widget,
-      std::make_unique<ShmBuffer>(std::move(shm_buffer), std::move(pool))));
+  shm_buffers_.insert(std::make_pair(widget, std::move(buffer)));
 
   connection_->ScheduleFlush();
   return true;
@@ -77,7 +60,7 @@ bool WaylandShmBufferManager::PresentBufferForWidget(
   wl_surface* surface = connection_->GetWindow(widget)->surface();
   wl_surface_damage(surface, damage.x(), damage.y(), damage.width(),
                     damage.height());
-  wl_surface_attach(surface, it->second->shm_buffer.get(), 0, 0);
+  wl_surface_attach(surface, it->second.get(), 0, 0);
   wl_surface_commit(surface);
   connection_->ScheduleFlush();
   return true;
