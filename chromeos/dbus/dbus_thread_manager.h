@@ -36,6 +36,7 @@ class DBusClientsBrowser;
 class DBusThreadManagerSetter;
 class DebugDaemonClient;
 class EasyUnlockClient;
+class GnubbyClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
@@ -124,6 +125,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   CrosDisksClient* GetCrosDisksClient();
   DebugDaemonClient* GetDebugDaemonClient();
   EasyUnlockClient* GetEasyUnlockClient();
+  GnubbyClient* GetGnubbyClient();
   ImageBurnerClient* GetImageBurnerClient();
   ImageLoaderClient* GetImageLoaderClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
@@ -180,6 +182,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
   void SetConciergeClient(std::unique_ptr<ConciergeClient> client);
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
   void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
+  void SetGnubbyClient(std::unique_ptr<GnubbyClient> client);
   void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
   void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
   void SetSeneschalClient(std::unique_ptr<SeneschalClient> client);

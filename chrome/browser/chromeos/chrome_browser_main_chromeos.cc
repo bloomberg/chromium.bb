@@ -104,6 +104,7 @@
 #include "chrome/browser/chromeos/startup_settings_cache.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/user_removal_manager.h"
+#include "chrome/browser/chromeos/ui/gnubby_notification.h"
 #include "chrome/browser/chromeos/ui/low_disk_notification.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
@@ -968,6 +969,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (!user_manager::UserManager::Get()->IsLoggedInAsGuest())
     low_disk_notification_ = std::make_unique<LowDiskNotification>();
 
+  gnubby_notification_ = std::make_unique<GnubbyNotification>();
+
   demo_mode_resources_remover_ = DemoModeResourcesRemover::CreateIfNeeded(
       g_browser_process->local_state());
   // Start measuring crosvm processes resource usage.
@@ -1115,6 +1118,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   dark_resume_controller_.reset();
   lock_to_single_user_manager_.reset();
   wilco_dtc_supportd_manager_.reset();
+  gnubby_notification_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

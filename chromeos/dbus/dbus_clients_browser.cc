@@ -27,6 +27,7 @@
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
+#include "chromeos/dbus/fake_gnubby_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
@@ -37,6 +38,7 @@
 #include "chromeos/dbus/fake_virtual_file_provider_client.h"
 #include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
+#include "chromeos/dbus/gnubby_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
@@ -85,6 +87,7 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   debug_daemon_client_ =
       CREATE_DBUS_CLIENT(DebugDaemonClient, use_real_clients);
   easy_unlock_client_ = CREATE_DBUS_CLIENT(EasyUnlockClient, use_real_clients);
+  gnubby_client_ = CREATE_DBUS_CLIENT(GnubbyClient, use_real_clients);
   image_burner_client_ =
       CREATE_DBUS_CLIENT(ImageBurnerClient, use_real_clients);
   image_loader_client_ =
@@ -122,6 +125,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   cros_disks_client_->Init(system_bus);
   debug_daemon_client_->Init(system_bus);
   easy_unlock_client_->Init(system_bus);
+  gnubby_client_->Init(system_bus);
   image_burner_client_->Init(system_bus);
   image_loader_client_->Init(system_bus);
   lorgnette_manager_client_->Init(system_bus);

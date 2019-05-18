@@ -23,6 +23,7 @@
 #include "chromeos/dbus/dbus_clients_browser.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
+#include "chromeos/dbus/gnubby_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
@@ -150,6 +151,10 @@ DebugDaemonClient* DBusThreadManager::GetDebugDaemonClient() {
 EasyUnlockClient* DBusThreadManager::GetEasyUnlockClient() {
   return clients_browser_ ? clients_browser_->easy_unlock_client_.get()
                           : nullptr;
+}
+
+GnubbyClient* DBusThreadManager::GetGnubbyClient() {
+  return clients_browser_ ? clients_browser_->gnubby_client_.get() : nullptr;
 }
 
 ShillDeviceClient* DBusThreadManager::GetShillDeviceClient() {
@@ -354,6 +359,12 @@ void DBusThreadManagerSetter::SetCrosDisksClient(
 void DBusThreadManagerSetter::SetDebugDaemonClient(
     std::unique_ptr<DebugDaemonClient> client) {
   DBusThreadManager::Get()->clients_browser_->debug_daemon_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetGnubbyClient(
+    std::unique_ptr<GnubbyClient> client) {
+  DBusThreadManager::Get()->clients_browser_->gnubby_client_ =
       std::move(client);
 }
 
