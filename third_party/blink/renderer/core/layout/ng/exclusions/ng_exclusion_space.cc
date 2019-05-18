@@ -228,8 +228,7 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
   bool already_exists = false;
 
   if (num_exclusions_ < exclusions_->data.size()) {
-    if (*exclusion == *exclusions_->data.at(num_exclusions_) &&
-        !exclusion->shape_data) {
+    if (*exclusion == *exclusions_->data.at(num_exclusions_)) {
       // We might be adding an exclusion seen in a previous layout pass.
       already_exists = true;
     } else {

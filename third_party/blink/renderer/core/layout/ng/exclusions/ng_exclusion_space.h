@@ -151,7 +151,11 @@ class CORE_EXPORT NGExclusionSpaceInternal {
       const NGExclusionSpaceInternal& other) const {
     DCHECK_EQ(num_exclusions_, other.num_exclusions_);
     for (wtf_size_t i = 0; i < num_exclusions_; ++i) {
-      DCHECK(*exclusions_->data.at(i) == *other.exclusions_->data.at(i));
+      const auto& exclusion = *exclusions_->data.at(i);
+      const auto& other_exclusion = *other.exclusions_->data.at(i);
+      DCHECK(exclusion.rect == other_exclusion.rect);
+      DCHECK_EQ(exclusion.type, other_exclusion.type);
+      DCHECK_EQ((bool)exclusion.shape_data, (bool)other_exclusion.shape_data);
     }
   }
 #endif
