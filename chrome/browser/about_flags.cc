@@ -1299,11 +1299,6 @@ const FeatureEntry kFeatureEntries[] = {
         kOsMac | kOsWin | kOsCrOS | kOsAndroid,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
-#if defined(OS_WIN)
-    {"enable-hdr", flag_descriptions::kEnableHDRName,
-     flag_descriptions::kEnableHDRDescription, kOsWin,
-     FEATURE_VALUE_TYPE(display::features::kHighDynamicRange)},
-#endif  // OS_WIN
 #if defined(OS_CHROMEOS)
     {
         "ash-debug-shortcuts",

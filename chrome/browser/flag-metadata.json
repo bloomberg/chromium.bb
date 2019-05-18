@@ -1119,11 +1119,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-hdr",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-hide-arc-media-notifications",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 80
