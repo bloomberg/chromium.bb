@@ -5,28 +5,51 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/fake_cws.h"
+#include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
+#include "chrome/browser/chromeos/login/test/dialog_window_waiter.h"
+#include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/network/network_state_test_helper.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+#include "ui/base/l10n/l10n_util.h"
+
+namespace em = enterprise_management;
 
 namespace chromeos {
 
 namespace {
 
+// This is a simple test app that creates an app window and immediately closes
+// it again. Webstore data json is in
+//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
+//       detail/ggaeimfdpnmlhdhpcikgoblffmkckdmn
+constexpr char kTestKioskAppId[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
+constexpr char kTestKioskAccountId[] = "enterprise-kiosk-app@localhost";
+
 constexpr char kTestUser[] = "test-user1@gmail.com";
+
 constexpr char kWifiServiceName[] = "stub_wifi";
 constexpr char kWifiNetworkName[] = "wifi-test-network";
 
@@ -216,6 +239,105 @@ IN_PROC_BROWSER_TEST_F(GuestErrorScreenTest, GuestLogin) {
   login_manager_.WaitForActiveSession();
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   EXPECT_TRUE(user_manager->IsLoggedInAsGuest());
+}
+
+class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
+ public:
+  KioskErrorScreenTest() = default;
+  ~KioskErrorScreenTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    AppLaunchController::SkipSplashWaitForTesting();
+    AppLaunchController::SetNetworkWaitForTesting(0);
+
+    fake_cws_.Init(embedded_test_server());
+    fake_cws_.SetUpdateCrx(kTestKioskAppId,
+                           base::StrCat({kTestKioskAppId, ".crx"}), "1.0.0");
+
+    AddKioskAppToDevicePolicy();
+
+    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void SetUpOnMainThread() override {
+    network_helper_ = std::make_unique<NetworkStateTestHelper>(
+        /*use_default_devices_and_services=*/false);
+
+    network_helper_->service_test()->AddService(
+        kWifiServiceName, "wifi_guid", kWifiNetworkName, shill::kTypeWifi,
+        shill::kStateOffline, /*visible=*/true);
+
+    apps_loaded_waiter_ =
+        std::make_unique<content::WindowedNotificationObserver>(
+            chrome::NOTIFICATION_KIOSK_APPS_LOADED,
+            content::NotificationService::AllSources());
+
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  void TearDownOnMainThread() override {
+    network_helper_.reset();
+    apps_loaded_waiter_.reset();
+    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
+  }
+
+ protected:
+  content::WindowedNotificationObserver* apps_loaded_waiter() {
+    return apps_loaded_waiter_.get();
+  }
+
+ private:
+  void AddKioskAppToDevicePolicy() {
+    std::unique_ptr<ScopedDevicePolicyUpdate> device_policy_update =
+        device_state_.RequestDevicePolicyUpdate();
+    em::DeviceLocalAccountsProto* const device_local_accounts =
+        device_policy_update->policy_payload()->mutable_device_local_accounts();
+
+    em::DeviceLocalAccountInfoProto* const account =
+        device_local_accounts->add_account();
+    account->set_account_id(kTestKioskAccountId);
+    account->set_type(em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_KIOSK_APP);
+    account->mutable_kiosk_app()->set_app_id(kTestKioskAppId);
+
+    device_policy_update.reset();
+
+    std::unique_ptr<ScopedUserPolicyUpdate> device_local_account_policy_update =
+        device_state_.RequestDeviceLocalAccountPolicyUpdate(
+            kTestKioskAccountId);
+    device_local_account_policy_update.reset();
+  }
+
+  std::unique_ptr<NetworkStateTestHelper> network_helper_;
+
+  std::unique_ptr<content::WindowedNotificationObserver> apps_loaded_waiter_;
+
+  FakeCWS fake_cws_;
+
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+
+  EmbeddedTestServerSetupMixin embedded_test_server_setup_{
+      &mixin_host_, embedded_test_server()};
+
+  LoginManagerMixin login_manager_{&mixin_host_, {}};
+
+  DISALLOW_COPY_AND_ASSIGN(KioskErrorScreenTest);
+};
+
+// Verify that certificate manager dialog opens.
+IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, OpenCertificateConfig) {
+  apps_loaded_waiter()->Wait();
+  EXPECT_TRUE(test::LoginScreenTester().LaunchApp(kTestKioskAppId));
+
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+
+  DialogWindowWaiter waiter(
+      l10n_util::GetStringUTF16(IDS_CERTIFICATE_MANAGER_TITLE));
+
+  test::OobeJS().ClickOnPath({"error-message-md-configure-certs-button"});
+  waiter.Wait();
 }
 
 }  // namespace chromeos

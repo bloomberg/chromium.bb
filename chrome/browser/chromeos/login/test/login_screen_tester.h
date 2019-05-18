@@ -41,6 +41,9 @@ class LoginScreenTester {
   // |previous_update_count|. Returns true on success, false on error.
   bool WaitForUiUpdate(int64_t previous_update_count);
 
+  // Starts kiosk app.
+  bool LaunchApp(const std::string& app_id);
+
  private:
   ash::mojom::LoginScreenTestApiPtr test_api_;
 

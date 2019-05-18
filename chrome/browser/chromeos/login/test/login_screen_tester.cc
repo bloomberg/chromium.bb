@@ -89,5 +89,12 @@ bool LoginScreenTester::WaitForUiUpdate(int64_t previous_update_count) {
   return success;
 }
 
+bool LoginScreenTester::LaunchApp(const std::string& app_id) {
+  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+  bool success;
+  login_screen.LaunchApp(app_id, &success);
+  return success;
+}
+
 }  // namespace test
 }  // namespace chromeos
