@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 
+#include "base/containers/span.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -33,6 +34,14 @@ class ShapeResultTest : public testing::Test {
 
   void TestCopyRangesLatin(const ShapeResult*) const;
   void TestCopyRangesArabic(const ShapeResult*) const;
+
+  // Release the ShapeResults held inside an array of ShapeResult::ShapeRange
+  // instances.
+  static void ReleaseShapeRange(base::span<ShapeResult::ShapeRange> ranges) {
+    for (auto& range : ranges) {
+      range.target->Release();
+    }
+  }
 
   ShapeResult* CreateShapeResult(TextDirection direction) const {
     return new ShapeResult(
@@ -79,6 +88,7 @@ void ShapeResultTest::TestCopyRangesLatin(const ShapeResult* result) const {
   EXPECT_TRUE(CompareResultGlyphs(glyphs[1], reference_glyphs[1], 0u, 10u));
   EXPECT_TRUE(CompareResultGlyphs(glyphs[2], reference_glyphs[2], 0u, 10u));
   EXPECT_TRUE(CompareResultGlyphs(glyphs[3], reference_glyphs[3], 0u, 8u));
+  ReleaseShapeRange(ranges);
 }
 
 void ShapeResultTest::TestCopyRangesArabic(const ShapeResult* result) const {
@@ -115,6 +125,7 @@ void ShapeResultTest::TestCopyRangesArabic(const ShapeResult* result) const {
   EXPECT_TRUE(CompareResultGlyphs(glyphs[1], reference_glyphs[1], 0u, 3u));
   EXPECT_TRUE(CompareResultGlyphs(glyphs[2], reference_glyphs[2], 0u, 3u));
   EXPECT_TRUE(CompareResultGlyphs(glyphs[3], reference_glyphs[3], 0u, 5u));
+  ReleaseShapeRange(ranges);
 }
 
 TEST_F(ShapeResultTest, CopyRangeLatin) {
@@ -189,6 +200,7 @@ TEST_F(ShapeResultTest, CopyRangeLatinMultiRunWithHoles) {
   EXPECT_TRUE(CompareResultGlyphs(glyphs[0], reference_glyphs[0], 0u, 13u));
   EXPECT_TRUE(CompareResultGlyphs(glyphs[1], reference_glyphs[1], 0u, 3u));
   EXPECT_TRUE(CompareResultGlyphs(glyphs[2], reference_glyphs[2], 0u, 6u));
+  ReleaseShapeRange(ranges);
 }
 
 TEST_F(ShapeResultTest, CopyRangeArabic) {
