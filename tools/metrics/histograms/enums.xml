@@ -14571,6 +14571,16 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="DXGI_COLOR_SPACE_YCBCR_FULL_GHLG_TOPLEFT_P2020"/>
 </enum>
 
+<enum name="DXGI_FORMAT">
+  <summary>
+    Resource data formats. Defined here:
+    https://github.com/apitrace/dxsdk/blob/master/Include/dxgiformat.h
+  </summary>
+  <int value="87" label="DXGI_FORMAT_B8G8R8A8_UNORM"/>
+  <int value="103" label="DXGI_FORMAT_NV12"/>
+  <int value="107" label="DXGI_FORMAT_YUY2"/>
+</enum>
+
 <enum name="DxgiFramePresentationMode">
   <int value="0" label="Composed"/>
   <int value="1" label="Overlay"/>

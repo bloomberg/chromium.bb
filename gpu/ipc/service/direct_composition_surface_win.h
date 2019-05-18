@@ -32,16 +32,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   using VSyncCallback =
       base::RepeatingCallback<void(base::TimeTicks, base::TimeDelta)>;
 
-  // Common overlay formats that we're interested in. Must match the
-  // OverlayFormat enum in //tools/metrics/histograms/enums.xml. Mapped to
-  // corresponding DXGI formats in DirectCompositionSurfaceWin.
-  enum class OverlayFormat {
-    kBGRA = 0,
-    kYUY2 = 1,
-    kNV12 = 2,
-    kMaxValue = kNV12
-  };
-
   struct Settings {
     bool disable_nv12_dynamic_textures = false;
     bool disable_larger_than_screen_overlays = false;
@@ -73,8 +63,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
 
   // Returns preferred overlay format set when detecting hardware overlay
   // support.
-  static OverlayFormat GetOverlayFormatUsed();
-  static DXGI_FORMAT GetOverlayDxgiFormatUsed();
+  static DXGI_FORMAT GetOverlayFormatUsed();
 
   // Returns monitor size.
   static gfx::Size GetOverlayMonitorSize();
@@ -82,8 +71,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // Returns if the given format is supported for hardware overlays.
   // Also, if |supports_scaling| is set to true, SCALING mode is supported for
   // the given format; otherwise, only DIRECT mode is supported.
-  static bool SupportsOverlayFormat(OverlayFormat format,
-                                    bool* supports_scaling);
+  static bool SupportsOverlayFormat(DXGI_FORMAT format, bool* supports_scaling);
 
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();

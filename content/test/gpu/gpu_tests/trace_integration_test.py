@@ -81,11 +81,6 @@ _SWAP_CHAIN_PRESENTATION_MODE_COMPOSITION_FAILURE = 3
 # The following is defined for Chromium testing internal use.
 _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED = -1
 
-# Pixel format enums match OverlayFormat in DirectCompositionSurfaceWin.
-_SWAP_CHAIN_PIXEL_FORMAT_BGRA = 0
-_SWAP_CHAIN_PIXEL_FORMAT_YUY2 = 1
-_SWAP_CHAIN_PIXEL_FORMAT_NV12 = 2
-
 _GET_STATISTICS_EVENT_NAME = 'GetFrameStatisticsMedia'
 _SWAP_CHAIN_PRESENT_EVENT_NAME = 'SwapChain::Present'
 
@@ -210,16 +205,6 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         os_version_name, gpu.vendor_id, gpu.device_id)
 
   @staticmethod
-  def _SwapChainPixelFormatToStr(pixel_format):
-    if pixel_format == _SWAP_CHAIN_PIXEL_FORMAT_BGRA:
-      return 'BGRA'
-    if pixel_format == _SWAP_CHAIN_PIXEL_FORMAT_YUY2:
-      return 'YUY2'
-    if pixel_format == _SWAP_CHAIN_PIXEL_FORMAT_NV12:
-      return 'NV12'
-    return str(pixel_format)
-
-  @staticmethod
   def _SwapChainPresentationModeToStr(presentation_mode):
     if presentation_mode == _SWAP_CHAIN_PRESENTATION_MODE_COMPOSED:
       return 'COMPOSED'
@@ -283,7 +268,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('Overlay bot config can not be determined')
     assert overlay_bot_config.get('direct_composition', False)
 
-    expected_pixel_format = _SWAP_CHAIN_PIXEL_FORMAT_NV12
+    expected_pixel_format = "NV12"
     supports_nv12_overlays = False
     if overlay_bot_config.get('supports_overlays', False):
       supports_yuy2_overlays = False
@@ -293,7 +278,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         supports_nv12_overlays = True
       assert supports_yuy2_overlays or supports_nv12_overlays
       if expect_yuy2 or not supports_nv12_overlays:
-        expected_pixel_format = _SWAP_CHAIN_PIXEL_FORMAT_YUY2
+        expected_pixel_format = "YUY2"
     if not supports_nv12_overlays:
       zero_copy = False
 
@@ -309,10 +294,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                   _SWAP_CHAIN_PRESENT_EVENT_NAME)
       if expected_pixel_format != detected_pixel_format:
         self.fail('SwapChain pixel format mismatch, expected %s got %s' %
-            (TraceIntegrationTest._SwapChainPixelFormatToStr(
-                 expected_pixel_format),
-             TraceIntegrationTest._SwapChainPixelFormatToStr(
-                 detected_pixel_format)))
+            (expected_pixel_format, detected_pixel_format))
       detected_zero_copy = event.args.get('ZeroCopy', None)
       if detected_zero_copy is None:
         self.fail('ZeroCopy is missing from event %s' %

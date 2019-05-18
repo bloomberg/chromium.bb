@@ -84,14 +84,13 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
     gpu_info->supports_overlays =
         DirectCompositionSurfaceWin::AreOverlaysSupported();
     bool supports_scaling = false;
-    using OverlayFormat = DirectCompositionSurfaceWin::OverlayFormat;
-    if (DirectCompositionSurfaceWin::SupportsOverlayFormat(OverlayFormat::kYUY2,
+    if (DirectCompositionSurfaceWin::SupportsOverlayFormat(DXGI_FORMAT_YUY2,
                                                            &supports_scaling)) {
       gpu_info->yuy2_overlay_support = supports_scaling
                                            ? gpu::OverlaySupport::kScaling
                                            : gpu::OverlaySupport::kDirect;
     }
-    if (DirectCompositionSurfaceWin::SupportsOverlayFormat(OverlayFormat::kNV12,
+    if (DirectCompositionSurfaceWin::SupportsOverlayFormat(DXGI_FORMAT_NV12,
                                                            &supports_scaling)) {
       gpu_info->nv12_overlay_support = supports_scaling
                                            ? gpu::OverlaySupport::kScaling
