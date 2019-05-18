@@ -19,13 +19,14 @@ struct FakeBindState;
 
 namespace internal {
 
-class CallbackBase;
-class CallbackBaseCopyable;
-
+class BaseThenAndCatchExecutor;
 class BindStateBase;
 
 template <typename Functor, typename... BoundArgs>
 struct BindState;
+
+class CallbackBase;
+class CallbackBaseCopyable;
 
 struct BindStateBaseRefCountTraits {
   static void Destruct(const BindStateBase*);
@@ -135,6 +136,8 @@ class BASE_EXPORT CallbackBase {
   void Reset();
 
  protected:
+  friend class BaseThenAndCatchExecutor;
+
   using InvokeFuncStorage = BindStateBase::InvokeFuncStorage;
 
   // Returns true if this callback equals |other|. |other| may be null.

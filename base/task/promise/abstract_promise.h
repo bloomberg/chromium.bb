@@ -46,7 +46,7 @@ enum class RejectPolicy {
 // resolved. This lets us disambiguate promises with the same resolve and reject
 // type.
 template <typename T>
-struct BASE_EXPORT Resolved {
+struct Resolved {
   using Type = T;
 
   static_assert(!std::is_same<T, NoReject>::value,
@@ -64,7 +64,7 @@ struct BASE_EXPORT Resolved {
 };
 
 template <>
-struct BASE_EXPORT Resolved<void> {
+struct Resolved<void> {
   using Type = void;
   Void value;
 };
@@ -73,7 +73,7 @@ struct BASE_EXPORT Resolved<void> {
 // rejected. This lets us disambiguate promises with the same resolve and reject
 // type.
 template <typename T>
-struct BASE_EXPORT Rejected {
+struct Rejected {
   using Type = T;
   T value;
 
@@ -93,7 +93,7 @@ struct BASE_EXPORT Rejected {
 };
 
 template <>
-struct BASE_EXPORT Rejected<void> {
+struct Rejected<void> {
   using Type = void;
   Void value;
 };
@@ -398,10 +398,6 @@ class BASE_EXPORT AbstractPromise
 #if DCHECK_IS_ON()
   void MaybeInheritChecks(AbstractPromise* source)
       EXCLUSIVE_LOCKS_REQUIRED(GetCheckedLock());
-
-  // Does nothing if this promise wasn't resolved by a promise.
-  void PassCatchResponsibilityOntoDependentsForCurriedPromise(
-      DependentList::Node* dependent_list);
 
   // Controls how we deal with unhandled rejection.
   const RejectPolicy reject_policy_;
