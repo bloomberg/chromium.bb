@@ -115,7 +115,8 @@ void ProximityAuthProfilePrefManager::SetIsEasyUnlockEnabled(
 }
 
 bool ProximityAuthProfilePrefManager::IsEasyUnlockEnabled() const {
-  return feature_state_ ==
+  return multidevice_setup_client_->GetFeatureState(
+             chromeos::multidevice_setup::mojom::Feature::kSmartLock) ==
          chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser;
 }
 
@@ -165,15 +166,6 @@ bool ProximityAuthProfilePrefManager::IsChromeOSLoginEnabled() const {
 void ProximityAuthProfilePrefManager::OnFeatureStatesChanged(
     const chromeos::multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
-  const auto it = feature_states_map.find(
-      chromeos::multidevice_setup::mojom::Feature::kSmartLock);
-  if (it == feature_states_map.end()) {
-    feature_state_ = chromeos::multidevice_setup::mojom::FeatureState::
-        kUnavailableNoVerifiedHost;
-    return;
-  }
-  feature_state_ = it->second;
-
   if (local_state_ && account_id_.is_valid())
     SyncPrefsToLocalState();
 }

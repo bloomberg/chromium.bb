@@ -89,14 +89,9 @@ class ProximityAuthProfilePrefManager
   // The account id of the current profile.
   AccountId account_id_;
 
-  // Used to determine the FeatureState of Smart Lock. See |feature_state_|.
+  // Used to determine the FeatureState of Smart Lock.
   chromeos::multidevice_setup::MultiDeviceSetupClient*
       multidevice_setup_client_ = nullptr;
-
-  // Caches feature state of Smart Lock. Populated by using
-  // |multidevice_setup_client_|.
-  chromeos::multidevice_setup::mojom::FeatureState feature_state_ = chromeos::
-      multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
 
   base::WeakPtrFactory<ProximityAuthProfilePrefManager> weak_ptr_factory_;
 

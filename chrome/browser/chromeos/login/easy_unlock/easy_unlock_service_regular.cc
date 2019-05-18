@@ -125,8 +125,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     return;
   }
 
-  if (feature_state_ !=
-      multidevice_setup::mojom::FeatureState::kEnabledByUser) {
+  if (!IsEnabled()) {
     // OnFeatureStatesChanged() will call back on this method when feature state
     // changes.
     PA_LOG(VERBOSE) << "Smart Lock is not enabled by user; aborting.";
@@ -410,19 +409,18 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
   if (!ProfileHelper::IsPrimaryProfile(profile()))
     return false;
 
-  if (feature_state_ ==
+  if (multidevice_setup_client_->GetFeatureState(
+          multidevice_setup::mojom::Feature::kSmartLock) ==
       multidevice_setup::mojom::FeatureState::kProhibitedByPolicy) {
     return false;
   }
-
-  if (!profile()->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
-    return false;
 
   return true;
 }
 
 bool EasyUnlockServiceRegular::IsEnabled() const {
-  return feature_state_ ==
+  return multidevice_setup_client_->GetFeatureState(
+             multidevice_setup::mojom::Feature::kSmartLock) ==
          multidevice_setup::mojom::FeatureState::kEnabledByUser;
 }
 
@@ -472,15 +470,6 @@ void EasyUnlockServiceRegular::OnNewDevicesSynced() {
 void EasyUnlockServiceRegular::OnFeatureStatesChanged(
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
-  const auto it =
-      feature_states_map.find(multidevice_setup::mojom::Feature::kSmartLock);
-  if (it == feature_states_map.end()) {
-    feature_state_ =
-        multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
-    return;
-  }
-
-  feature_state_ = it->second;
   LoadRemoteDevices();
   UpdateAppState();
 }
@@ -489,7 +478,7 @@ void EasyUnlockServiceRegular::ShowChromebookAddedNotification() {
   // The user may have decided to disable Smart Lock or the whole multidevice
   // suite immediately after completing setup, so ensure that Smart Lock is
   // enabled.
-  if (feature_state_ == multidevice_setup::mojom::FeatureState::kEnabledByUser)
+  if (IsEnabled())
     notification_controller_->ShowChromebookAddedNotification();
 }
 
