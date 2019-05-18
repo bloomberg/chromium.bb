@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/translate/translate_bubble_test_utils.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "components/language/core/common/language_experiments.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -194,21 +195,27 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void UpdateChildVisibilities();
 
   // Creates the 'before translate' view. Caller takes ownership of the returned
-  // view.
+  // view. Three options depending on UI selection in
+  // kUseButtonTranslateBubbleUI.
   views::View* CreateViewBeforeTranslate();
+  views::View* TabCreateViewBeforeTranslate();
 
   // Creates the 'translating' view. Caller takes ownership of the returned
-  // view.
+  // view. Three options depending on UI selection in
+  // kUseButtonTranslateBubbleUI.
   views::View* CreateViewTranslating();
 
   // Creates the 'after translate' view. Caller takes ownership of the returned
-  // view.
+  // view. Three options depending on UI selection in
+  // kUseButtonTranslateBubbleUI.
   views::View* CreateViewAfterTranslate();
 
   // Creates the 'error' view. Caller takes ownership of the returned view.
+  // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
   views::View* CreateViewError();
 
   // Creates the 'advanced' view. Caller takes ownership of the returned view.
+  // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
   views::View* CreateViewAdvanced();
 
   // Get the current always translate checkbox

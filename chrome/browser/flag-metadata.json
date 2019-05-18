@@ -2862,6 +2862,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "translate-ui-bubble-options",
+    "owners": [ "hhw", "anthonyvd", "chrome-language@google.com" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "try-supported-channel-layouts",
     "owners": [ "dalecurtis" ],
     "expiry_milestone": 76

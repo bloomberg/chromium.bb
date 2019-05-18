@@ -12,6 +12,7 @@
 
 #include "base/i18n/string_compare.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -68,7 +69,6 @@ class AdvancedViewContainer : public views::View {
  private:
   DISALLOW_COPY_AND_ASSIGN(AdvancedViewContainer);
 };
-
 }  // namespace
 
 // static
@@ -184,11 +184,30 @@ void TranslateBubbleView::Init() {
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   should_always_translate_ = model_->ShouldAlwaysTranslate();
-  before_translate_view_ = CreateViewBeforeTranslate();
-  translating_view_ = CreateViewTranslating();
-  after_translate_view_ = CreateViewAfterTranslate();
-  error_view_ = CreateViewError();
-  advanced_view_ = CreateViewAdvanced();
+
+  // Create different view based on user selection in chrome://flags.
+  language::TranslateUIBubbleModel bubble_model_ =
+      language::GetTranslateUIBubbleModel();
+  if (bubble_model_ == language::TranslateUIBubbleModel::BUTTON ||
+      bubble_model_ == language::TranslateUIBubbleModel::DEFAULT) {
+    before_translate_view_ = CreateViewBeforeTranslate();
+    translating_view_ = CreateViewTranslating();
+    after_translate_view_ = CreateViewAfterTranslate();
+    error_view_ = CreateViewError();
+    advanced_view_ = CreateViewAdvanced();
+  } else if (bubble_model_ == language::TranslateUIBubbleModel::TAB) {
+    before_translate_view_ = TabCreateViewBeforeTranslate();
+    translating_view_ = CreateViewTranslating();
+    after_translate_view_ = CreateViewAfterTranslate();
+    error_view_ = CreateViewError();
+    advanced_view_ = CreateViewAdvanced();
+  } else {  // Button
+    before_translate_view_ = CreateViewBeforeTranslate();
+    translating_view_ = CreateViewTranslating();
+    after_translate_view_ = CreateViewAfterTranslate();
+    error_view_ = CreateViewError();
+    advanced_view_ = CreateViewAdvanced();
+  }
 
   AddChildView(before_translate_view_);
   AddChildView(translating_view_);
@@ -621,6 +640,37 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     layout->AddView(accept_button.release());
   }
 
+  return view;
+}
+
+// This view is invoked before translate if "Tab" is selected under
+// flag translate-ui-bubble-options in chrome://flags.
+views::View* TranslateBubbleView::TabCreateViewBeforeTranslate() {
+  views::View* view = new views::View();
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
+
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
+  constexpr int kColumnSetId = 0;
+  views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
+  cs->AddPaddingColumn(1.0, 0);
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                views::GridLayout::kFixedSize, 0);
+
+  cs->AddPaddingColumn(
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
+                0);
+
+  layout->AddPaddingRow(
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
+
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   return view;
 }
 

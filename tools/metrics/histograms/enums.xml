@@ -32995,6 +32995,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1736075054" label="EnableFullscreenAppList:enabled"/>
   <int value="-1735643253" label="enable-display-list-2d-canvas"/>
   <int value="-1734254845" label="ash-enable-night-light"/>
+  <int value="-1732888954" label="UseButtonTranslateBubbleUI:enabled"/>
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
@@ -34981,6 +34982,7 @@ from previous Chrome versions.
   <int value="1277386636" label="QueryInOmnibox:disabled"/>
   <int value="1279584261" label="enable-carrier-switching"/>
   <int value="1280614081" label="show-overdraw-feedback"/>
+  <int value="1281471853" label="UseButtonTranslateBubbleUI:disabled"/>
   <int value="1283908088" label="ImprovedLanguageSettings:disabled"/>
   <int value="1283956865" label="force-tablet-mode"/>
   <int value="1283960113" label="disable-fixed-position-compositing"/>

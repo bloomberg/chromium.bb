@@ -1088,6 +1088,9 @@ extern const char kTraceUploadUrlChoiceTesting[];
 extern const char kTranslateForceTriggerOnEnglishName[];
 extern const char kTranslateForceTriggerOnEnglishDescription[];
 
+extern const char kTranslateBubbleUIName[];
+extern const char kTranslateBubbleUIDescription[];
+
 extern const char kTreatInsecureOriginAsSecureName[];
 extern const char kTreatInsecureOriginAsSecureDescription[];
 

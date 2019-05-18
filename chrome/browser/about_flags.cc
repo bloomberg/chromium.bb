@@ -710,6 +710,24 @@ const FeatureEntry::FeatureVariation
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
 
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
+    defined(OS_CHROMEOS)
+const FeatureEntry::FeatureParam kTranslateBubbleUIButton[] = {
+    {language::kTranslateUIBubbleKey, language::kTranslateUIBubbleButtonValue}};
+const FeatureEntry::FeatureParam kTranslateBubbleUITab[] = {
+    {language::kTranslateUIBubbleKey, language::kTranslateUIBubbleTabValue}};
+const FeatureEntry::FeatureParam kTranslateBubbleUIButtonGM2[] = {
+    {language::kTranslateUIBubbleKey,
+     language::kTranslateUIBubbleButtonGM2Value}};
+
+const FeatureEntry::FeatureVariation kTranslateBubbleUIVariations[] = {
+    {"Button", kTranslateBubbleUIButton, base::size(kTranslateBubbleUIButton),
+     nullptr},
+    {"Tab", kTranslateBubbleUITab, base::size(kTranslateBubbleUITab), nullptr},
+    {"Button_GM2", kTranslateBubbleUIButtonGM2,
+     base::size(kTranslateBubbleUIButton), nullptr}};
+#endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
+
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin0px[] = {
     {OmniboxFieldTrial::kUIVerticalMarginParam, "0"}};
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin2px[] = {
@@ -1462,6 +1480,16 @@ const FeatureEntry kFeatureEntries[] = {
                                     kTranslateForceTriggerOnEnglishVariations,
                                     "OverrideTranslateTriggerInIndia")},
 #endif  // OS_ANDROID
+
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
+    defined(OS_CHROMEOS)
+    {"translate-ui-bubble-options", flag_descriptions::kTranslateBubbleUIName,
+     flag_descriptions::kTranslateBubbleUIDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(language::kUseButtonTranslateBubbleUI,
+                                    kTranslateBubbleUIVariations,
+                                    "UseButtonTranslateBubbleUI")},
+#endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
+
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS) && !defined(OS_CHROMEOS)
     {"enable-native-notifications",
      flag_descriptions::kNotificationsNativeFlagName,
