@@ -7,11 +7,6 @@
   width: 448px;
 }
 
-#gaia-signin.full-width {
-  padding: 44px 0 0;
-  width: 562px;
-}
-
 #gaia-signin.v2 {
   height: unset;
   padding: unset;
@@ -114,8 +109,7 @@
   z-index: 1;
 }
 
-.loading #gaia-navigation,
-.full-width #gaia-navigation {
+.loading #gaia-navigation {
   color: rgba(0, 0, 0, .54);
 }
 

@@ -480,7 +480,6 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Saml flow UI expectations.
-  test::OobeJS().ExpectHasClass("full-width", {"gaia-signin"});
   test::OobeJS().ExpectVisible("saml-notice-container");
   std::string js = "$('saml-notice-message').textContent.indexOf('$Host') > -1";
   base::ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
@@ -499,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   } while (message != "\"GaiaLoaded\"");
 
   // Saml flow is gone.
-  test::OobeJS().ExpectHasNoClass("full-width", {"gaia-signin"});
+  test::OobeJS().ExpectHidden("saml-notice-container");
 }
 
 // Tests the sign-in flow when the credentials passing API is used.

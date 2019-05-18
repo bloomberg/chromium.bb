@@ -694,15 +694,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.lastBackMessageValue_ = false;
 
       // Reset SAML
-      this.classList.toggle('full-width', false);
       $('saml-notice-container').hidden = true;
       this.samlPasswordConfirmAttempt_ = 0;
 
       this.updateSigninFrameContainers_();
-
-      // Screen size could have been changed because of 'full-width' classes.
-      if (Oobe.getInstance().currentScreen === this)
-        Oobe.getInstance().updateScreenSize(this);
 
       var params = {};
       for (var i in cr.login.Authenticator.SUPPORTED_PARAMS) {
@@ -829,7 +824,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onAuthFlowChange_: function() {
       var isSAML = this.isSAML();
 
-      this.classList.toggle('full-width', isSAML);
       $('saml-notice-container').hidden = !isSAML;
       this.classList.toggle('saml', isSAML);
 
@@ -962,7 +956,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             loadTimeData.getString('fatalErrorMessageVerificationFailed'),
             loadTimeData.getString('fatalErrorTryAgainButton'));
       }
-      this.classList.toggle('full-width', false);
     },
 
     /**
