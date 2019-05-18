@@ -16,7 +16,7 @@ protocol ApiBindings {
 
     /// Should be invoked when a connecting a named MessagePort to a native
     /// bindings backend.
-    Connect(string api_name, fuchsia.web.MessagePort message_port);
+    Connect(string port_name, fuchsia.web.MessagePort message_port);
 };
 
 table ApiBinding {

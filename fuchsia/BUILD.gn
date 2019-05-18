@@ -145,5 +145,6 @@ group("gn_all") {
     "runners:cast_runner_browsertests",
     "runners:cast_runner_integration_tests",
     "runners:web_runner",
+    "//chromecast/bindings:bindings_manager_fuchsia",
   ]
 }
