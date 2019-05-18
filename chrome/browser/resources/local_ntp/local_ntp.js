@@ -84,11 +84,8 @@ const CLASSES = {
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
   // Shows a search icon in the fakebox.
   SHOW_FAKEBOX_ICON: 'show-fakebox-icon',
-  SHOW_EDIT_DIALOG: 'show',  // Displays the edit custom link dialog.
   // Applied when the fakebox placeholder text should not be hidden on focus.
   SHOW_PLACEHOLDER: 'show-placeholder',
-  HIDE_BODY_OVERFLOW: 'hidden',  // Prevents scrolling while the edit custom
-                                 // link dialog is open.
   // Applies float animations to the Most Visited notification
   FLOAT_DOWN: 'float-down',
   FLOAT_UP: 'float-up',
@@ -127,12 +124,10 @@ const IDS = {
   ERROR_NOTIFICATION_LINK: 'error-notice-link',
   ERROR_NOTIFICATION_MSG: 'error-notice-msg',
   FAKEBOX: 'fakebox',
-  FAKEBOX_CONTAINER: 'fakebox-container',
   FAKEBOX_ICON: 'fakebox-search-icon',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
   FAKEBOX_MICROPHONE: 'fakebox-microphone',
-  LOGO: 'logo',
   MOST_VISITED: 'most-visited',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CONTAINER: 'mv-notice-container',
@@ -146,18 +141,6 @@ const IDS = {
   TILES_IFRAME: 'mv-single',
   UNDO_LINK: 'mv-undo',
   USER_CONTENT: 'user-content',
-};
-
-
-/**
- * Counterpart of search_provider_logos::LogoType.
- * @enum {string}
- * @const
- */
-const LOGO_TYPE = {
-  SIMPLE: 'SIMPLE',
-  ANIMATED: 'ANIMATED',
-  INTERACTIVE: 'INTERACTIVE',
 };
 
 

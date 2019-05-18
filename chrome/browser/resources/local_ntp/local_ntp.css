@@ -575,10 +575,6 @@ html[darkmode=true] .customize-dialog::backdrop {
   width: 100%;
 }
 
-#custom-links-edit.show {
-  display: block;
-}
-
 #one-google {
   display: none;
   position: absolute;
