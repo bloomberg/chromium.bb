@@ -19,14 +19,13 @@ const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
 // Enables the network service.
 const base::Feature kNetworkService {
   "NetworkService",
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_FUCHSIA) || \
     (defined(OS_LINUX) && !defined(IS_CHROMECAST))
       base::FEATURE_ENABLED_BY_DEFAULT
-};
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
-};
 #endif
+};
 
 // Out of Blink CORS
 const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",

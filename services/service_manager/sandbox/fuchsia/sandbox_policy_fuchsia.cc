@@ -11,6 +11,8 @@
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/logger/cpp/fidl.h>
 #include <fuchsia/mediacodec/cpp/fidl.h>
+#include <fuchsia/net/cpp/fidl.h>
+#include <fuchsia/netstack/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <memory>
@@ -61,19 +63,11 @@ constexpr SandboxConfig kSandboxConfigs[] = {
         // Services directory is passed by calling SetServiceDirectory().
         base::span<const char* const>(),
 
-        // kCloneJob: context process needs to be able to spawn child processes.
-        // kProvideVulkanResources: Vulkan access is required to delegate to the
-        // GPU process. kProvideSslConfig: Context process is responsible for
-        // cert verification.
+        // kCloneJob: Allow Contexts to launch child processes.
+        // kProvideVulkanResources: Context delegates this to the GPU process.
+        // kProvideSslConfig: Context delegates this to the NetworkService.
         kCloneJob | kProvideVulkanResources | kProvideSslConfig |
             kUseServiceDirectoryOverride,
-    },
-    {
-        SANDBOX_TYPE_RENDERER,
-        base::make_span(
-            (const char* const[]){fuchsia::fonts::Provider::Name_,
-                                  fuchsia::mediacodec::CodecFactory::Name_}),
-        0,
     },
     {
         SANDBOX_TYPE_GPU,
@@ -81,6 +75,20 @@ constexpr SandboxConfig kSandboxConfigs[] = {
             fuchsia::ui::scenic::Scenic::Name_,
             fuchsia::sysmem::Allocator::Name_, "fuchsia.vulkan.loader.Loader"}),
         kProvideVulkanResources,
+    },
+    {
+        SANDBOX_TYPE_NETWORK,
+        base::make_span(
+            (const char* const[]){fuchsia::net::SocketProvider::Name_,
+                                  fuchsia::netstack::Netstack::Name_}),
+        kProvideSslConfig,
+    },
+    {
+        SANDBOX_TYPE_RENDERER,
+        base::make_span(
+            (const char* const[]){fuchsia::fonts::Provider::Name_,
+                                  fuchsia::mediacodec::CodecFactory::Name_}),
+        0,
     },
 };
 
