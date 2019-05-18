@@ -244,17 +244,15 @@ bool LayoutFlexibleBox::HasTopOverflow() const {
   EFlexDirection flex_direction = StyleRef().FlexDirection();
   if (IsHorizontalWritingMode())
     return flex_direction == EFlexDirection::kColumnReverse;
-  return flex_direction == (StyleRef().IsLeftToRightDirection()
-                                ? EFlexDirection::kRowReverse
-                                : EFlexDirection::kRow);
+  return !StyleRef().IsLeftToRightDirection() ^
+         (flex_direction == EFlexDirection::kRowReverse);
 }
 
 bool LayoutFlexibleBox::HasLeftOverflow() const {
   EFlexDirection flex_direction = StyleRef().FlexDirection();
   if (IsHorizontalWritingMode()) {
-    return flex_direction == (StyleRef().IsLeftToRightDirection()
-                                  ? EFlexDirection::kRowReverse
-                                  : EFlexDirection::kRow);
+    return !StyleRef().IsLeftToRightDirection() ^
+           (flex_direction == EFlexDirection::kRowReverse);
   }
   return flex_direction == EFlexDirection::kColumnReverse;
 }
