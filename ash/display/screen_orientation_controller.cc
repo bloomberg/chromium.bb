@@ -14,6 +14,7 @@
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -339,9 +340,8 @@ void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
 void ScreenOrientationController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
-  if (lock_info_map_.find(window) == lock_info_map_.end())
-    return;
-  ApplyLockForActiveWindow();
+  if (base::ContainsKey(lock_info_map_, window))
+    ApplyLockForActiveWindow();
 }
 
 void ScreenOrientationController::OnAccelerometerUpdated(
@@ -594,37 +594,47 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
   for (auto* window : mru_windows) {
     if (!window->TargetVisibility())
       continue;
-    for (auto& pair : lock_info_map_) {
-      if (pair.first->TargetVisibility() && window->Contains(pair.first)) {
-        if (pair.second.orientation_lock == OrientationLockType::kCurrent) {
-          // If the app requested "current" without previously
-          // specifying an orientation, use the current rotation.
-          pair.second.orientation_lock =
-              RotationToOrientation(natural_orientation_, current_rotation_);
-          LockRotationToOrientation(pair.second.orientation_lock);
-        } else {
-          const auto orientation_lock = ResolveOrientationLock(
-              pair.second.orientation_lock, user_locked_orientation_);
-          LockRotationToOrientation(orientation_lock);
-          if (pair.second.lock_completion_behavior ==
-              LockCompletionBehavior::DisableSensor) {
-            pair.second.lock_completion_behavior = LockCompletionBehavior::None;
-            pair.second.orientation_lock = orientation_lock;
-          }
-        }
-        return;
-      }
-    }
-    // The default orientation for all chrome browser/apps windows is
-    // ANY, so use the user_locked_orientation_;
-    if (window->TargetVisibility() &&
-        static_cast<AppType>(window->GetProperty(aura::client::kAppType)) !=
-            AppType::OTHERS) {
-      LockRotationToOrientation(user_locked_orientation_);
+    if (ApplyLockForWindowIfPossible(window))
       return;
+  }
+
+  LockRotationToOrientation(user_locked_orientation_);
+}
+
+bool ScreenOrientationController::ApplyLockForWindowIfPossible(
+    const aura::Window* window) {
+  for (auto& pair : lock_info_map_) {
+    const aura::Window* lock_window = pair.first;
+    LockInfo& lock_info = pair.second;
+    if (lock_window->TargetVisibility() && window->Contains(lock_window)) {
+      if (lock_info.orientation_lock == OrientationLockType::kCurrent) {
+        // If the app requested "current" without previously
+        // specifying an orientation, use the current rotation.
+        lock_info.orientation_lock =
+            RotationToOrientation(natural_orientation_, current_rotation_);
+        LockRotationToOrientation(lock_info.orientation_lock);
+      } else {
+        const auto orientation_lock = ResolveOrientationLock(
+            lock_info.orientation_lock, user_locked_orientation_);
+        LockRotationToOrientation(orientation_lock);
+        if (lock_info.lock_completion_behavior ==
+            LockCompletionBehavior::DisableSensor) {
+          lock_info.lock_completion_behavior = LockCompletionBehavior::None;
+          lock_info.orientation_lock = orientation_lock;
+        }
+      }
+      return true;
     }
   }
-  LockRotationToOrientation(user_locked_orientation_);
+
+  // The default orientation for all chrome browser/apps windows is
+  // ANY, so use the user_locked_orientation_;
+  if (static_cast<AppType>(window->GetProperty(aura::client::kAppType)) !=
+      AppType::OTHERS) {
+    LockRotationToOrientation(user_locked_orientation_);
+    return true;
+  }
+  return false;
 }
 
 bool ScreenOrientationController::IsRotationAllowedInLockedState(
