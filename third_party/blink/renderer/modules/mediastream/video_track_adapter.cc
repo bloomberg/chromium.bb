@@ -149,8 +149,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   VideoFrameResolutionAdapter(
       scoped_refptr<base::SingleThreadTaskRunner> render_message_loop,
       const VideoTrackAdapterSettings& settings,
-      base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
-          frame_dropped_cb);
+      base::WeakPtr<MediaStreamVideoSource> media_stream_video_source);
 
   // Add |frame_callback| to receive video frames on the IO-thread and
   // |settings_callback| to set track settings on the main thread.
@@ -216,8 +215,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   // registered in AddCallbacks.
   const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
 
-  base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
-      frame_dropped_cb_;
+  base::WeakPtr<MediaStreamVideoSource> media_stream_video_source_;
 
   VideoTrackAdapterSettings settings_;
   double frame_rate_;
@@ -235,10 +233,9 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
 VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> render_message_loop,
     const VideoTrackAdapterSettings& settings,
-    base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
-        frame_dropped_cb)
+    base::WeakPtr<MediaStreamVideoSource> media_stream_video_source)
     : renderer_task_runner_(render_message_loop),
-      frame_dropped_cb_(std::move(frame_dropped_cb)),
+      media_stream_video_source_(media_stream_video_source),
       settings_(settings),
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
       last_time_stamp_(base::TimeDelta::Max()),
@@ -488,17 +485,18 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::ResetFrameRate() {
 void VideoTrackAdapter::VideoFrameResolutionAdapter::
     PostFrameDroppedToMainTaskRunner(
         media::VideoCaptureFrameDropReason reason) {
-  PostCrossThreadTask(*renderer_task_runner_, FROM_HERE,
-                      CrossThreadBind(frame_dropped_cb_, reason));
+  PostCrossThreadTask(
+      *renderer_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&MediaStreamVideoSource::OnFrameDropped,
+                          media_stream_video_source_, reason));
 }
 
 VideoTrackAdapter::VideoTrackAdapter(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
-        frame_dropped_cb)
+    base::WeakPtr<MediaStreamVideoSource> media_stream_video_source)
     : io_task_runner_(io_task_runner),
+      media_stream_video_source_(media_stream_video_source),
       renderer_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      frame_dropped_cb_(std::move(frame_dropped_cb)),
       monitoring_frame_rate_(false),
       muted_state_(false),
       frame_counter_(0),
@@ -543,7 +541,7 @@ void VideoTrackAdapter::AddTrackOnIO(
   }
   if (!adapter.get()) {
     adapter = base::MakeRefCounted<VideoFrameResolutionAdapter>(
-        renderer_task_runner_, settings, frame_dropped_cb_);
+        renderer_task_runner_, settings, media_stream_video_source_);
     adapters_.push_back(adapter);
   }
 
@@ -754,9 +752,10 @@ void VideoTrackAdapter::DeliverFrameOnIO(
   if (adapters_.IsEmpty()) {
     PostCrossThreadTask(
         *renderer_task_runner_, FROM_HERE,
-        CrossThreadBind(frame_dropped_cb_,
-                        media::VideoCaptureFrameDropReason::
-                            kVideoTrackAdapterHasNoResolutionAdapters));
+        CrossThreadBindOnce(&MediaStreamVideoSource::OnFrameDropped,
+                            media_stream_video_source_,
+                            media::VideoCaptureFrameDropReason::
+                                kVideoTrackAdapterHasNoResolutionAdapters));
   }
   for (const auto& adapter : adapters_)
     adapter->DeliverFrame(frame, estimated_capture_time, is_device_rotated);
