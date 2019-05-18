@@ -2010,6 +2010,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if not isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
       return
 
+    if urlparse.urlparse(self.GetRemoteUrl()).scheme != 'https':
+      print('WARNING: Ignoring branch %s with non-https remote %s' %
+            (self._changelist.branch, self.GetRemoteUrl()))
+      return
+
     # Lazy-loader to identify Gerrit and Git hosts.
     self.GetCodereviewServer()
     git_host = self._GetGitHost()
@@ -2530,7 +2535,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       ])
       traces_to_delete = traces[:-MAX_TRACES]
       for trace in traces_to_delete:
-          os.remove(trace)
+        os.remove(trace)
     except OSError:
       print('WARNING: Failed to remove old git traces from\n'
             '  %s'

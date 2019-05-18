@@ -806,16 +806,16 @@ class TestGitCl(TestCase):
       return [((cmd, ), 'true')]
 
     calls = [((cmd, ), CERR1)]
-    if issue:
-      calls.extend([
-          ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
-      ])
     calls.extend([
         ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['git', 'config', 'remote.origin.url'],),
          'https://%s.googlesource.com/my/repo' % short_hostname),
     ])
+    if issue:
+      calls.extend([
+          ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
+      ])
     return calls
 
   @classmethod
@@ -2006,6 +2006,22 @@ class TestGitCl(TestCase):
     header = gerrit_util.CookiesAuthenticator().get_auth_header(
         'chromium.googlesource.com')
     self.assertTrue('Bearer' in header)
+
+  def test_gerrit_ensure_authenticated_non_https(self):
+    self.calls = [
+        ((['git', 'config', '--bool',
+           'gerrit.skip-ensure-authenticated'],), CERR1),
+        ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
+        ((['git', 'config', 'branch.master.remote'],), 'origin'),
+        ((['git', 'config', 'remote.origin.url'],), 'custom-scheme://repo'),
+    ]
+    self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
+              CookiesAuthenticatorMockFactory(hosts_with_creds={}))
+    cl = git_cl.Changelist(codereview='gerrit')
+    cl.branch = 'master'
+    cl.branchref = 'refs/heads/master'
+    cl.lookedup_issue = True
+    self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
   def _cmd_set_commit_gerrit_common(self, vote, notify=None):
     self.mock(git_cl.gerrit_util, 'SetReview',
