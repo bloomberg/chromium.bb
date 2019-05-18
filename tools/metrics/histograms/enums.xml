@@ -19360,6 +19360,7 @@ Called by update_net_error_codes.py.-->
   <int value="1335" label="AUTOTESTPRIVATE_GETSHELFALIGNMENT"/>
   <int value="1336" label="AUTOTESTPRIVATE_SETSHELFALIGNMENT"/>
   <int value="1337" label="BLUETOOTH_RECORDPAIRING"/>
+  <int value="1338" label="FILEMANAGERPRIVATE_SETARCSTORAGETOASTSHOWNFLAG"/>
 </enum>
 
 <enum name="ExtensionIconState">

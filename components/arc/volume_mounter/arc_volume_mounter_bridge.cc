@@ -61,6 +61,12 @@ ArcVolumeMounterBridge* ArcVolumeMounterBridge::GetForBrowserContext(
   return ArcVolumeMounterBridgeFactory::GetForBrowserContext(context);
 }
 
+// static
+ArcVolumeMounterBridge* ArcVolumeMounterBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcVolumeMounterBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
 ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),

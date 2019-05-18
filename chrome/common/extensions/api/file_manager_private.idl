@@ -1034,6 +1034,11 @@ interface Functions {
   // |changeInfo|
   static void setPreferences(PreferencesChange changeInfo);
 
+  // Sets the flag for remembering if the toast UI for ARC storage
+  // has already been shown.
+  // |callback| Completion callback with the original value of the flag.
+  static void setArcStorageToastShownFlag(BooleanCallback callback);
+
   // Performs drive content search.
   // |searchParams|
   // |callback|

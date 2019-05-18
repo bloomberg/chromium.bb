@@ -86,6 +86,21 @@ class FileManagerPrivateSetPreferencesFunction
   ResponseAction Run() override;
 };
 
+// Implements the chrome.fileManagerPrivate.setArcStorageToastShownFlag method.
+// Sets the ARC flag for the Files app and returns what was the state before
+// setting.
+class FileManagerPrivateSetArcStorageToastShownFlagFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.setArcStorageToastShownFlag",
+                             FILEMANAGERPRIVATE_SETARCSTORAGETOASTSHOWNFLAG)
+
+ protected:
+  ~FileManagerPrivateSetArcStorageToastShownFlagFunction() override = default;
+
+  ResponseAction Run() override;
+};
+
 // Implements the chrome.fileManagerPrivate.zipSelection method.
 // Creates a zip file for the selected files.
 class FileManagerPrivateInternalZipSelectionFunction
