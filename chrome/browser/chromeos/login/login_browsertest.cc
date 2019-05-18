@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/test/guest_session_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/offline_gaia_test_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
@@ -45,15 +46,9 @@ class LoginUserTest : public InProcessBrowserTest {
   }
 };
 
-class LoginGuestTest : public InProcessBrowserTest {
+class LoginGuestTest : public MixinBasedInProcessBrowserTest {
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kGuestSession);
-    command_line->AppendSwitch(::switches::kIncognito);
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "hash");
-    command_line->AppendSwitchASCII(
-        switches::kLoginUser, user_manager::GuestAccountId().GetUserEmail());
-  }
+  GuestSessionMixin guest_session_{&mixin_host_};
 };
 
 class LoginCursorTest : public InProcessBrowserTest {
