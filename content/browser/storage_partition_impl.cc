@@ -30,6 +30,7 @@
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -41,6 +42,7 @@
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -268,6 +270,18 @@ void ClearSessionStorageOnUIThread(
   dom_storage_context->GetSessionStorageUsage(base::BindOnce(
       &OnSessionStorageUsageInfo, dom_storage_context, special_storage_policy,
       origin_matcher, perform_storage_cleanup, std::move(callback)));
+}
+
+WebContents* GetWebContents(uint32_t process_id, uint32_t routing_id) {
+  if (process_id != network::mojom::kBrowserProcessId) {
+    return WebContentsImpl::FromRenderFrameHostID(process_id, routing_id);
+  }
+  return WebContents::FromFrameTreeNodeId(routing_id);
+}
+
+BrowserContext* GetBrowserContext(
+    base::WeakPtr<StoragePartitionImpl> weak_partition_ptr) {
+  return weak_partition_ptr ? weak_partition_ptr->browser_context() : nullptr;
 }
 
 }  // namespace
@@ -990,6 +1004,21 @@ void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
       permission_controller->GetPermissionStatus(
           content::PermissionType::BACKGROUND_SYNC, origin, origin) ==
       blink::mojom::PermissionStatus::GRANTED);
+}
+
+void StoragePartitionImpl::OnClearSiteData(uint32_t process_id,
+                                           int32_t routing_id,
+                                           const GURL& url,
+                                           const std::string& header_value,
+                                           int load_flags,
+                                           OnClearSiteDataCallback callback) {
+  auto browser_context_getter =
+      base::BindRepeating(GetBrowserContext, weak_factory_.GetWeakPtr());
+  auto web_contents_getter =
+      base::BindRepeating(GetWebContents, process_id, routing_id);
+  ClearSiteDataHandler::HandleHeader(browser_context_getter,
+                                     web_contents_getter, url, header_value,
+                                     load_flags, std::move(callback));
 }
 
 void StoragePartitionImpl::ClearDataImpl(

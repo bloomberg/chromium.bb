@@ -43,6 +43,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -1411,30 +1412,23 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };
 
-class ClearSiteDataNetworkServiceClient : public TestNetworkServiceClient {
+class ClearSiteDataNetworkContextClient : public mojom::NetworkContextClient {
  public:
-  explicit ClearSiteDataNetworkServiceClient(
-      mojom::NetworkServiceClientRequest request)
-      : TestNetworkServiceClient(std::move(request)) {}
-  ~ClearSiteDataNetworkServiceClient() override = default;
+  explicit ClearSiteDataNetworkContextClient(
+      mojom::NetworkContextClientRequest request)
+      : binding_(this, std::move(request)) {}
+  ~ClearSiteDataNetworkContextClient() override = default;
 
-  // Needed these two cookie overrides to avoid NOTREACHED().
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override {}
+  void OnCanSendReportingReports(
+      const std::vector<url::Origin>& origins,
+      OnCanSendReportingReportsCallback callback) override {}
 
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {}
+  void OnCanSendDomainReliabilityUpload(
+      const GURL& origin,
+      OnCanSendDomainReliabilityUploadCallback callback) override {}
 
-  void OnClearSiteData(int process_id,
-                       int routing_id,
+  void OnClearSiteData(uint32_t process_id,
+                       int32_t routing_id,
                        const GURL& url,
                        const std::string& header_value,
                        int load_flags,
@@ -1445,6 +1439,7 @@ class ClearSiteDataNetworkServiceClient : public TestNetworkServiceClient {
   }
 
   int on_clear_site_data_counter() const { return on_clear_site_data_counter_; }
+
   const std::string& last_on_clear_site_data_header_value() const {
     return last_on_clear_site_data_header_value_;
   }
@@ -1457,29 +1452,28 @@ class ClearSiteDataNetworkServiceClient : public TestNetworkServiceClient {
  private:
   int on_clear_site_data_counter_ = 0;
   std::string last_on_clear_site_data_header_value_;
+  mojo::Binding<mojom::NetworkContextClient> binding_;
 };
 
 // Check that |NetworkServiceNetworkDelegate| handles Clear-Site-Data header
-// w/ and w/o |NetworkServiceCient|.
-TEST_F(NetworkServiceNetworkDelegateTest, ClearSiteDataNetworkServiceCient) {
+// w/ and w/o |NetworkContextCient|.
+TEST_F(NetworkServiceNetworkDelegateTest, ClearSiteDataNetworkContextCient) {
   const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
   CreateNetworkContext();
 
-  // Null |NetworkServiceCient|. The request should complete without being
+  // Null |NetworkContextCient|. The request should complete without being
   // deferred.
-  EXPECT_EQ(nullptr, service()->client());
   GURL url = https_server()->GetURL("/foo");
   url = AddQuery(url, "header", kClearCookiesHeader);
   LoadURL(url);
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 
-  // With |NetworkServiceCient|. The request should go through
-  // |ClearSiteDataNetworkServiceClient| and complete.
-  mojom::NetworkServiceClientPtr client_ptr;
-  auto client_impl = std::make_unique<ClearSiteDataNetworkServiceClient>(
+  // With |NetworkContextCient|. The request should go through
+  // |ClearSiteDataNetworkContextClient| and complete.
+  mojom::NetworkContextClientPtr client_ptr;
+  auto client_impl = std::make_unique<ClearSiteDataNetworkContextClient>(
       mojo::MakeRequest(&client_ptr));
-  service()->SetClient(std::move(client_ptr),
-                       network::mojom::NetworkServiceParams::New());
+  network_context_->SetClient(std::move(client_ptr));
   url = https_server()->GetURL("/bar");
   url = AddQuery(url, "header", kClearCookiesHeader);
   EXPECT_EQ(0, client_impl->on_clear_site_data_counter());
@@ -1494,11 +1488,10 @@ TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
   const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
   CreateNetworkContext();
 
-  mojom::NetworkServiceClientPtr client_ptr;
-  auto client_impl = std::make_unique<ClearSiteDataNetworkServiceClient>(
+  mojom::NetworkContextClientPtr client_ptr;
+  auto client_impl = std::make_unique<ClearSiteDataNetworkContextClient>(
       mojo::MakeRequest(&client_ptr));
-  service()->SetClient(std::move(client_ptr),
-                       network::mojom::NetworkServiceParams::New());
+  network_context_->SetClient(std::move(client_ptr));
 
   // |passed_header_value| are only checked if |should_call_client| is true.
   const struct TestCase {

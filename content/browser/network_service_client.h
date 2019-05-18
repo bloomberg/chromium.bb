@@ -80,12 +80,6 @@ class CONTENT_EXPORT NetworkServiceClient
                       bool blocked_by_policy) override;
   void OnLoadingStateUpdate(std::vector<network::mojom::LoadInfoPtr> infos,
                             OnLoadingStateUpdateCallback callback) override;
-  void OnClearSiteData(int process_id,
-                       int routing_id,
-                       const GURL& url,
-                       const std::string& header_value,
-                       int load_flags,
-                       OnClearSiteDataCallback callback) override;
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
                        int64_t recv_bytes,
                        int64_t sent_bytes) override;

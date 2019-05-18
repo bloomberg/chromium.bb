@@ -335,20 +335,6 @@ WebContents* GetWebContents(int process_id, int routing_id) {
   return WebContents::FromFrameTreeNodeId(routing_id);
 }
 
-BrowserContext* GetBrowserContextFromIds(int process_id, int routing_id) {
-  WebContents* web_contents = GetWebContents(process_id, routing_id);
-  if (web_contents)
-    return web_contents->GetBrowserContext();
-  // Some requests such as service worker updates are not associated with
-  // a WebContents so we can't use it to obtain the BrowserContext.
-  // TODO(dullweber): Could we always use RenderProcessHost?
-  RenderProcessHost* process_host = RenderProcessHostImpl::FromID(process_id);
-  if (process_host)
-    return process_host->GetBrowserContext();
-
-  return nullptr;
-}
-
 bool IsMainFrameRequest(int process_id, int routing_id) {
   if (process_id != network::mojom::kBrowserProcessId)
     return false;
@@ -443,7 +429,7 @@ void NetworkServiceClient::OnAuthRequired(
     const net::AuthChallengeInfo& auth_info,
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
-  base::Callback<WebContents*(void)> web_contents_getter =
+  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
       base::BindRepeating(GetWebContents, process_id, routing_id);
 
   if (!web_contents_getter.Run()) {
@@ -491,7 +477,7 @@ void NetworkServiceClient::OnSSLCertificateError(
     OnSSLCertificateErrorCallback response) {
   SSLErrorDelegate* delegate =
       new SSLErrorDelegate(std::move(response));  // deletes self
-  base::Callback<WebContents*(void)> web_contents_getter =
+  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
       base::BindRepeating(GetWebContents, process_id, routing_id);
   bool is_main_frame_request = IsMainFrameRequest(process_id, routing_id);
   SSLManager::OnSSLCertificateError(
@@ -562,21 +548,6 @@ void NetworkServiceClient::OnLoadingStateUpdate(
                                                   std::move(rdh_infos));
 
   std::move(callback).Run();
-}
-
-void NetworkServiceClient::OnClearSiteData(int process_id,
-                                           int routing_id,
-                                           const GURL& url,
-                                           const std::string& header_value,
-                                           int load_flags,
-                                           OnClearSiteDataCallback callback) {
-  auto browser_context_getter =
-      base::BindRepeating(GetBrowserContextFromIds, process_id, routing_id);
-  auto web_contents_getter =
-      base::BindRepeating(GetWebContents, process_id, routing_id);
-  ClearSiteDataHandler::HandleHeader(browser_context_getter,
-                                     web_contents_getter, url, header_value,
-                                     load_flags, std::move(callback));
 }
 
 void NetworkServiceClient::OnCertDBChanged() {
