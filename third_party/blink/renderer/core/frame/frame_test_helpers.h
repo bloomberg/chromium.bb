@@ -205,9 +205,10 @@ class TestWebWidgetClient : public WebWidgetClient {
   void RegisterSelection(const cc::LayerSelection& selection) override;
   void SetBackgroundColor(SkColor color) override;
   void SetAllowGpuRasterization(bool allow) override;
-  void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                   float minimum,
-                                   float maximum) override;
+  void SetPageScaleStateAndLimits(float page_scale_factor,
+                                  bool is_pinch_gesture_active,
+                                  float minimum,
+                                  float maximum) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {
