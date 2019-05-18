@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -181,21 +181,29 @@
             </span>
           </div>
           <div class="buttons-column">
-            <label id="import-clipboard"
-                   class="row icon-button button drag-container" accesskey="v"
-                   tabindex="0"
-                   title="Import JSON from clipboard. Accepts dragged text and files as well.">
-              <i class="icon copy-icon"></i>
-              <span>Paste [<span class="accesskey">v</span>]</span>
-            </label>
-            <label id="import-file"
-                   class="row icon-button button drag-container" accesskey="m"
-                   tabindex="0"
-                   title="Upload previously downloaded responses. Accepts dragged text and files as well.">
-              <input id="import-file-input" type="file" accept=".json">
-              <i class="icon copy-icon"></i>
-              <span>Upload [<span class="accesskey">m</span>]</span>
-            </label>
+              <label id="import-clipboard"
+                     class="row icon-button button drag-container" accesskey="v"
+                     tabindex="0"
+                     title="Import JSON from clipboard. Accepts dragged text and files as well.">
+                  <i class="icon copy-icon"></i>
+                  <span>Paste [<span class="accesskey">v</span>]</span>
+              </label>
+              <label id="import-file"
+                     class="row icon-button button drag-container" accesskey="m"
+                     tabindex="0"
+                     title="Upload previously downloaded responses to load them. Accepts dragged text and files as well.">
+                  <input id="import-file-input" type="file" accept=".json">
+                  <i class="icon copy-icon"></i>
+                  <span>Upload [<span class="accesskey">m</span>]</span>
+              </label>
+              <label id="process-batch"
+                     class="row icon-button button drag-container" accesskey="b"
+                     tabindex="0"
+                     title="Upload a query batch specifier to download a batch export. Accepts dragged text and files as well.">
+                  <input id="process-batch-input" type="file" accept=".json">
+                  <i class="icon copy-icon"></i>
+                  <span>Process <span class="accesskey">b</span>atch</span>
+              </label>
           </div>
         </div>
         <div id="imported-warning" class="row" hidden>

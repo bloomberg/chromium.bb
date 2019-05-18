@@ -84,10 +84,15 @@ class OmniboxInput extends OmniboxElement {
         .addEventListener('click', this.onImportClipboard_.bind(this));
     this.$$('#import-file-input')
         .addEventListener('input', this.onImportFile_.bind(this));
+    this.$$('#process-batch-input')
+        .addEventListener('input', this.onProcessBatchFile_.bind(this));
     ['#import-clipboard', '#import-file'].forEach(query => {
       this.setupDragListeners_(this.$$(query));
       this.$$(query).addEventListener('drop', this.onImportDropped_.bind(this));
     });
+    this.setupDragListeners_(this.$$('#process-batch'));
+    this.$$('#process-batch')
+        .addEventListener('drop', this.onProcessBatchDropped_.bind(this));
   }
 
   /**
@@ -252,6 +257,11 @@ class OmniboxInput extends OmniboxElement {
   }
 
   /** @private @param {!Event} event */
+  onProcessBatchFile_(event) {
+    this.processBatchFile_(event.target.files[0]);
+  }
+
+  /** @private @param {!Event} event */
   onImportDropped_(event) {
     const dragText = event.dataTransfer.getData('Text');
     if (dragText) {
@@ -261,28 +271,62 @@ class OmniboxInput extends OmniboxElement {
     }
   }
 
+  /** @private @param {!Event} event */
+  onProcessBatchDropped_(event) {
+    const dragText = event.dataTransfer.getData('Text');
+    if (dragText) {
+      this.processBatch_(dragText);
+    } else if (event.dataTransfer.files[0]) {
+      this.processBatchFile_(event.dataTransfer.files[0]);
+    }
+  }
+
   /** @private @param {!File} file */
   importFile_(file) {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (reader.readyState === FileReader.DONE) {
-        this.import_(/** @type {string} */ (reader.result));
-      } else {
-        console.error('error importing, unable to read file:', reader.error);
-      }
-    };
-    reader.readAsText(file);
+    OmniboxInput.readFile_(file).then(this.import_.bind(this));
+  }
+
+  /** @private @param {!File} file */
+  processBatchFile_(file) {
+    OmniboxInput.readFile_(file).then(this.processBatch_.bind(this));
   }
 
   /** @private @param {string} importString */
   import_(importString) {
     try {
       const importData = JSON.parse(importString);
+      // TODO(manukh): If import fails, this UI state change shouldn't happen.
       this.$$('#imported-warning').hidden = false;
       this.dispatchEvent(new CustomEvent('import', {detail: importData}));
     } catch (error) {
       console.error('error during import, invalid json:', error);
     }
+  }
+
+  /** @private @param {string} processBatchString */
+  processBatch_(processBatchString) {
+    try {
+      const processBatchData = JSON.parse(processBatchString);
+      this.dispatchEvent(
+          new CustomEvent('process-batch', {detail: processBatchData}));
+    } catch (error) {
+      console.error('error during process batch, invalid json:', error);
+    }
+  }
+
+  /** @private @param {!File} file */
+  static readFile_(file) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.readyState === FileReader.DONE) {
+          resolve(/** @type {string} */(reader.result));
+        } else {
+          console.error('error importing, unable to read file:', reader.error);
+        }
+      };
+      reader.readAsText(file);
+    });
   }
 
   /** @return {DisplayInputs} */
