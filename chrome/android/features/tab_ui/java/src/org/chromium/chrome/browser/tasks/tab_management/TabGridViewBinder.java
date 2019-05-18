@@ -51,7 +51,6 @@ class TabGridViewBinder {
                         (int) res.getDimension(R.dimen.tab_list_selected_inset_kitkat));
                 Drawable elevationDrawable =
                         ResourcesCompat.getDrawable(res, R.drawable.popup_bg, theme);
-                holder.backgroundView.setVisibility(View.VISIBLE);
                 holder.backgroundView.setBackground(
                         item.get(TabProperties.IS_SELECTED) ? selectedDrawable : elevationDrawable);
             } else {

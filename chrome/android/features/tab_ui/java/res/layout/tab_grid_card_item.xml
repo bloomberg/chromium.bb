@@ -13,11 +13,10 @@
         android:id="@+id/background_view"
         android:background="@drawable/popup_bg"
         android:layout_margin="3dp"
-        android:visibility="gone"/>
+        android:visibility="visible"/>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:elevation="4dp"
         android:layout_gravity="center"
         android:background="@drawable/tab_grid_card_background"
         android:layout_margin="8dp">
@@ -72,7 +71,6 @@
         android:id="@+id/close_button"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:elevation="4dp"
         android:scaleType="center"
         android:layout_gravity="end"
         android:tint="@color/modern_grey_800"
