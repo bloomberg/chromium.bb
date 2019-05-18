@@ -745,11 +745,10 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       ['expected_skip'],
       ['--retry-only-retry-on-failure', '--retry-limit=3',
       '--test-name-prefix=unittest_data.integration_tests.SimpleTest.'])
-    # TODO(rmhasan): re-enable assertion after landing crrev.com/c/1594272
     # The number of browser starts include the one call to StartBrowser at the
     # beginning of the run of the test suite and for each RestartBrowser call
     # which happens after every failure
-    # self.assertEquals(self._test_state['num_browser_starts'], 6)
+    self.assertEquals(self._test_state['num_browser_starts'], 6)
 
   def testIntegrationTesttWithBrowserFailure(self):
     self._RunIntegrationTest(
