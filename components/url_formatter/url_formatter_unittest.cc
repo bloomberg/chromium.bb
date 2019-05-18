@@ -1030,6 +1030,9 @@ const IDNTestCase kIdnCases[] = {
 
     // Modifier-letter-voicing should be blocked (wwwˬtest.com).
     {"xn--wwwtest-2be.com", L"www\x02ectest.com", false},
+
+    // oĸ.com: Not a top domain, should be blocked because of Kra.
+    {"xn--o-tka.com", L"o\x0138.com", false},
 };
 
 struct AdjustOffsetCase {

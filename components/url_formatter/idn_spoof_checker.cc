@@ -490,6 +490,9 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   // Block modifier letter voicing.
   allowed_set.remove(0x2ecu);
 
+  // Block historic character Latin Kra (also blocked by Mozilla).
+  allowed_set.remove(0x0138);
+
   // No need to block U+144A (Canadian Syllabics West-Cree P) separately
   // because it's blocked from mixing with other scripts including Latin.
 
