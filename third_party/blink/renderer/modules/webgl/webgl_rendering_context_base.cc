@@ -1308,8 +1308,6 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase() {
   // context state.
   destruction_in_progress_ = true;
 
-  clearProgramCompletionQueries();
-
   // Now that the context and context group no longer hold on to the
   // objects they create, and now that the objects are eagerly finalized
   // rather than the context, there is very little useful work that this
@@ -1331,6 +1329,8 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase() {
 void WebGLRenderingContextBase::DestroyContext() {
   if (!GetDrawingBuffer())
     return;
+
+  clearProgramCompletionQueries();
 
   extensions_util_.reset();
 
