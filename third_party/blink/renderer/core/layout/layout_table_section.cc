@@ -1742,6 +1742,7 @@ unsigned LayoutTableSection::NumEffectiveColumns() const {
 LayoutTableCell* LayoutTableSection::OriginatingCellAt(
     unsigned row,
     unsigned effective_column) {
+  SECURITY_CHECK(!needs_cell_recalc_);
   if (effective_column >= NumCols(row))
     return nullptr;
   auto& grid_cell = GridCellAt(row, effective_column);
