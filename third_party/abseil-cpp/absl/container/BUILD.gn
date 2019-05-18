@@ -114,6 +114,9 @@ source_set("test_instance_tracker") {
   public = [
     "internal/test_instance_tracker.h",
   ]
+  deps = [
+    "../types:compare",
+  ]
   visibility = []
   visibility += [ "../*" ]
 }
