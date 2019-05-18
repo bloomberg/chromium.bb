@@ -970,7 +970,8 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
           screen_rect, target_bounds, top_view_inset, kHeaderHeightDp);
   // Do not set transform for drop target, set bounds instead.
   if (overview_grid_->IsDropTargetWindow(window)) {
-    window->layer()->SetBounds(gfx::ToEnclosedRect(overview_item_bounds));
+    window->SetBoundsInScreen(gfx::ToEnclosedRect(overview_item_bounds),
+                              wm::GetWindowState(window)->GetDisplay());
     window->SetTransform(gfx::Transform());
     return;
   }

@@ -409,7 +409,8 @@ void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
     scale = (1.0f - scale) * y_diff / y_full + scale;
 
   gfx::Transform transform;
-  const gfx::Rect window_bounds = dragged_window_->bounds();
+  gfx::Rect window_bounds = dragged_window_->bounds();
+  ::wm::ConvertRectToScreen(dragged_window_->parent(), &window_bounds);
   transform.Translate(
       (location_in_screen.x() - window_bounds.x()) -
           (initial_location_in_screen_.x() - window_bounds.x()) * scale,

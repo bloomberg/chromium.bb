@@ -1240,6 +1240,109 @@ TEST_F(OverviewSessionTest, RemoveDisplayWithAnimation) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+// Tests that dragging a window from the top of a display creates a drop target
+// on that display.
+TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromTop) {
+  UpdateDisplay("600x600,600x600");
+  EnterTabletMode();
+  // DisplayConfigurationObserver enables mirror mode when tablet mode is
+  // enabled. Disable mirror mode to test multiple displays.
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  base::RunLoop().RunUntilIdle();
+
+  const aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+
+  std::unique_ptr<aura::Window> primary_screen_window =
+      CreateTestWindow(gfx::Rect(0, 0, 600, 600));
+  primary_screen_window->SetProperty(aura::client::kAppType,
+                                     static_cast<int>(AppType::BROWSER));
+  ASSERT_EQ(root_windows[0], primary_screen_window->GetRootWindow());
+  std::unique_ptr<aura::Window> secondary_screen_window =
+      CreateTestWindow(gfx::Rect(600, 0, 600, 600));
+  secondary_screen_window->SetProperty(aura::client::kAppType,
+                                       static_cast<int>(AppType::BROWSER));
+  ASSERT_EQ(root_windows[1], secondary_screen_window->GetRootWindow());
+
+  ASSERT_FALSE(InOverviewSession());
+  {
+    std::unique_ptr<WindowResizer> resizer =
+        CreateWindowResizer(primary_screen_window.get(), gfx::Point(400, 0),
+                            HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+    ASSERT_TRUE(InOverviewSession());
+    EXPECT_FALSE(GetDropTarget(1));
+    ASSERT_TRUE(GetDropTarget(0));
+    EXPECT_EQ(root_windows[0], GetDropTarget(0)->root_window());
+    resizer->CompleteDrag();
+  }
+  ASSERT_FALSE(InOverviewSession());
+  {
+    std::unique_ptr<WindowResizer> resizer =
+        CreateWindowResizer(secondary_screen_window.get(), gfx::Point(400, 0),
+                            HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+    ASSERT_TRUE(InOverviewSession());
+    EXPECT_FALSE(GetDropTarget(0));
+    ASSERT_TRUE(GetDropTarget(1));
+    EXPECT_EQ(root_windows[1], GetDropTarget(1)->root_window());
+    resizer->CompleteDrag();
+  }
+  ASSERT_FALSE(InOverviewSession());
+}
+
+// Tests that dragging a window from overview creates a drop target on the same
+// display.
+TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
+  UpdateDisplay("600x600,600x600");
+  EnterTabletMode();
+  // DisplayConfigurationObserver enables mirror mode when tablet mode is
+  // enabled. Disable mirror mode to test multiple displays.
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  base::RunLoop().RunUntilIdle();
+
+  const aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+
+  std::unique_ptr<aura::Window> primary_screen_window =
+      CreateTestWindow(gfx::Rect(0, 0, 600, 600));
+  ASSERT_EQ(root_windows[0], primary_screen_window->GetRootWindow());
+  std::unique_ptr<aura::Window> secondary_screen_window =
+      CreateTestWindow(gfx::Rect(600, 0, 600, 600));
+  ASSERT_EQ(root_windows[1], secondary_screen_window->GetRootWindow());
+
+  ToggleOverview();
+  OverviewItem* primary_screen_item =
+      GetWindowItemForWindow(0, primary_screen_window.get());
+  OverviewItem* secondary_screen_item =
+      GetWindowItemForWindow(1, secondary_screen_window.get());
+
+  EXPECT_FALSE(GetDropTarget(0));
+  EXPECT_FALSE(GetDropTarget(1));
+  gfx::PointF drag_point = primary_screen_item->target_bounds().CenterPoint();
+  overview_session()->InitiateDrag(primary_screen_item, drag_point);
+  EXPECT_FALSE(GetDropTarget(0));
+  EXPECT_FALSE(GetDropTarget(1));
+  drag_point.Offset(5.f, 0.f);
+  overview_session()->Drag(primary_screen_item, drag_point);
+  EXPECT_FALSE(GetDropTarget(1));
+  ASSERT_TRUE(GetDropTarget(0));
+  EXPECT_EQ(root_windows[0], GetDropTarget(0)->root_window());
+  overview_session()->CompleteDrag(primary_screen_item, drag_point);
+  EXPECT_FALSE(GetDropTarget(0));
+  EXPECT_FALSE(GetDropTarget(1));
+  drag_point = secondary_screen_item->target_bounds().CenterPoint();
+  overview_session()->InitiateDrag(secondary_screen_item, drag_point);
+  EXPECT_FALSE(GetDropTarget(0));
+  EXPECT_FALSE(GetDropTarget(1));
+  drag_point.Offset(5.f, 0.f);
+  overview_session()->Drag(secondary_screen_item, drag_point);
+  EXPECT_FALSE(GetDropTarget(0));
+  ASSERT_TRUE(GetDropTarget(1));
+  EXPECT_EQ(root_windows[1], GetDropTarget(1)->root_window());
+  overview_session()->CompleteDrag(secondary_screen_item, drag_point);
+  EXPECT_FALSE(GetDropTarget(0));
+  EXPECT_FALSE(GetDropTarget(1));
+}
+
 namespace {
 
 // A simple window delegate that returns the specified hit-test code when

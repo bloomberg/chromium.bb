@@ -182,14 +182,17 @@ class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
 std::unique_ptr<views::Widget> CreateDropTargetWidget(
     aura::Window* dragged_window,
     bool animate) {
+  aura::Window* parent = dragged_window->parent();
+  gfx::Rect bounds = dragged_window->bounds();
+  ::wm::ConvertRectToScreen(parent, &bounds);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
-  params.parent = dragged_window->parent();
-  params.bounds = dragged_window->bounds();
+  params.parent = parent;
+  params.bounds = bounds;
   auto widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
   widget->Init(params);
@@ -581,11 +584,7 @@ void OverviewGrid::AddItem(aura::Window* window,
                            const base::flat_set<OverviewItem*>& ignored_items,
                            size_t index) {
   DCHECK(!GetOverviewItemContaining(window));
-
-  // When an overview item is dragged, this function might be called on the
-  // wrong grid. See http://crbug.com/916856.
-  if (index > window_list_.size())
-    index = 0u;
+  DCHECK_LE(index, window_list_.size());
 
   window_observer_.Add(window);
   window_state_observer_.Add(wm::GetWindowState(window));
@@ -634,27 +633,17 @@ void OverviewGrid::AddDropTargetForDraggingFromOverview(
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, /*animate=*/false,
                              /*ignored_items=*/{dragged_item}, position);
-  OverviewItem* drop_target = GetDropTarget();
-  // See the comment in RemoveDropTarget() for how |drop_target| can be null.
-  if (drop_target) {
-    // This part is necessary because |OverviewItem::OnSelectorItemDragStarted|
-    // is called on all overview items before the drop target exists among them.
-    // That is because |AddDropTargetForDraggingFromOverview| is only called for
-    // drag to snap, but |OnSelectorItemDragStarted| is called before the drag
-    // has been disambiguated between drag to close and drag to snap.
-    drop_target->OnSelectorItemDragStarted(dragged_item);
-  }
+  // This part is necessary because |OverviewItem::OnSelectorItemDragStarted| is
+  // called on all overview items before the drop target exists among them. That
+  // is because |AddDropTargetForDraggingFromOverview| is only called for drag
+  // to snap, but |OnSelectorItemDragStarted| is called before the drag has been
+  // disambiguated between drag to close and drag to snap.
+  GetDropTarget()->OnSelectorItemDragStarted(dragged_item);
 }
 
 void OverviewGrid::RemoveDropTarget() {
   DCHECK(drop_target_widget_);
-  OverviewItem* drop_target = GetDropTarget();
-  // TODO(http://crbug.com/916856): Disable tab and app dragging that doesn't
-  // happen in the primary display.
-  // The |drop_target_widget_| may be not in the same display as the dragged
-  // window/item, which will cause |drop_target| to be null.
-  if (drop_target)
-    overview_session_->RemoveItem(drop_target);
+  overview_session_->RemoveItem(GetDropTarget());
   drop_target_widget_.reset();
 }
 
