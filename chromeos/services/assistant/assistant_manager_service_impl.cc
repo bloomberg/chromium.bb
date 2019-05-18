@@ -1401,12 +1401,7 @@ void AssistantManagerServiceImpl::CacheScreenContext(
 
   // Our callback should be run only after both view hierarchy and screenshot
   // data have been cached from their respective providers.
-  auto on_done =
-      base::BarrierClosure(2, base::BindOnce(
-                                  [](CacheScreenContextCallback callback) {
-                                    std::move(callback).Run();
-                                  },
-                                  base::Passed(std::move(callback))));
+  auto on_done = base::BarrierClosure(2, std::move(callback));
 
   service_->client()->RequestAssistantStructure(
       base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantStructure,
