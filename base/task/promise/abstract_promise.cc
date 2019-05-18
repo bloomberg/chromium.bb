@@ -47,11 +47,6 @@ const AbstractPromise* AbstractPromise::FindNonCurriedAncestor() const {
 void AbstractPromise::AddAsDependentForAllPrerequisites() {
   DCHECK(prerequisites_);
 
-  // Note a curried promise will eventually get to all its children and pass
-  // them catch responsibility through AddAsDependentForAllPrerequisites,
-  // although that'll be done lazily (only once they resolve/reject, so there
-  // is a possibility the DCHECKs might be racy.
-
   for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
     node.dependent_node.dependent = this;
 
@@ -201,6 +196,20 @@ void AbstractPromise::MaybeInheritChecks(AbstractPromise* prerequisite) {
   prerequisite->passed_catch_responsibility_ = true;
 }
 
+void AbstractPromise::PassCatchResponsibilityOntoDependentsForCurriedPromise(
+    DependentList::Node* dependent_list) {
+  CheckedAutoLock lock(GetCheckedLock());
+  if (!dependent_list)
+    return;
+
+  if (IsResolvedWithPromise()) {
+    for (DependentList::Node* node = dependent_list; node;
+         node = node->next.load(std::memory_order_relaxed)) {
+      node->dependent->MaybeInheritChecks(this);
+    }
+  }
+}
+
 AbstractPromise::LocationRef::LocationRef(const Location& from_here)
     : from_here_(from_here) {}
 
@@ -344,6 +353,10 @@ void AbstractPromise::OnResolvePostReadyDependents() {
   DependentList::Node* dependent_list = dependents_.ConsumeOnceForResolve();
   dependent_list = NonThreadSafeReverseList(dependent_list);
 
+#if DCHECK_IS_ON()
+  PassCatchResponsibilityOntoDependentsForCurriedPromise(dependent_list);
+#endif
+
   // Propagate resolve to dependents.
   DependentList::Node* next;
   for (DependentList::Node* node = dependent_list; node; node = next) {
@@ -360,6 +373,10 @@ void AbstractPromise::OnResolvePostReadyDependents() {
 void AbstractPromise::OnRejectPostReadyDependents() {
   DependentList::Node* dependent_list = dependents_.ConsumeOnceForReject();
   dependent_list = NonThreadSafeReverseList(dependent_list);
+
+#if DCHECK_IS_ON()
+  PassCatchResponsibilityOntoDependentsForCurriedPromise(dependent_list);
+#endif
 
   // Propagate rejection to dependents. We always propagate rejection
   // immediately.
@@ -412,8 +429,7 @@ void AbstractPromise::OnCanceled() {
 
 void AbstractPromise::OnResolved() {
 #if DCHECK_IS_ON()
-  DCHECK(executor_can_resolve_ || IsResolvedWithPromise())
-      << from_here_.ToString();
+  DCHECK(executor_can_resolve_) << from_here_.ToString();
 #endif
   if (IsResolvedWithPromise()) {
     scoped_refptr<AbstractPromise> curried_promise =
