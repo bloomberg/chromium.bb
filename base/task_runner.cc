@@ -40,39 +40,7 @@ bool PostTaskAndReplyTaskRunner::PostTask(const Location& from_here,
   return destination_->PostTask(from_here, std::move(task));
 }
 
-// TODO(alexclarke): Remove this when TaskRunner::PostPromiseInternal becomes
-// pure virtual.
-class PromiseHolder {
- public:
-  explicit PromiseHolder(scoped_refptr<internal::AbstractPromise> promise)
-      : promise_(std::move(promise)) {}
-
-  ~PromiseHolder() {
-    // Detect if the promise was not executed and if so cancel to ensure memory
-    // is released.
-    if (promise_)
-      promise_->OnCanceled();
-  }
-
-  PromiseHolder(PromiseHolder&& other) : promise_(std::move(other.promise_)) {}
-
-  scoped_refptr<internal::AbstractPromise> Unwrap() const {
-    return std::move(promise_);
-  }
-
- private:
-  mutable scoped_refptr<internal::AbstractPromise> promise_;
-};
-
 }  // namespace
-
-template <>
-struct BindUnwrapTraits<PromiseHolder> {
-  static scoped_refptr<internal::AbstractPromise> Unwrap(
-      const PromiseHolder& o) {
-    return o.Unwrap();
-  }
-};
 
 bool TaskRunner::PostTask(const Location& from_here, OnceClosure task) {
   return PostDelayedTask(from_here, std::move(task), base::TimeDelta());
@@ -90,8 +58,7 @@ bool TaskRunner::PostPromiseInternal(
     base::TimeDelta delay) {
   return PostDelayedTask(
       promise->from_here(),
-      BindOnce(&internal::AbstractPromise::Execute, PromiseHolder(promise)),
-      delay);
+      BindOnce(&internal::AbstractPromise::Execute, std::move(promise)), delay);
 }
 
 TaskRunner::TaskRunner() = default;
