@@ -42,6 +42,7 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   static WebGLProgram* Create(WebGLRenderingContextBase*);
 
   bool LinkStatus(WebGLRenderingContextBase*);
+  void setLinkStatus(bool link_status);
 
   bool CompletionStatus(WebGLRenderingContextBase*);
 

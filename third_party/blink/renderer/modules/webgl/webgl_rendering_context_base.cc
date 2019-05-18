@@ -8210,6 +8210,11 @@ bool WebGLRenderingContextBase::checkProgramCompletionQueryAvailable(
     GLuint available;
     ContextGL()->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_AVAILABLE,
                                       &available);
+    if (available) {
+      GLuint result = 0u;
+      ContextGL()->GetQueryObjectuivEXT(id, GL_QUERY_RESULT, &result);
+      program->setLinkStatus(result);
+    }
     *completed = (available == GL_TRUE);
     return true;
   }

@@ -28,8 +28,13 @@ Overview
         glEndQueryEXT(PROGRAM_COMPLETION_QUERY_CHROMIUM);
         GLuint available = 0u;
         glGetQueryObjectuivEXT(query, GL_QUERY_RESULT_AVAILABLE, &available);
+        if (available)
+        {
+          GLuint result = 0u;
+          glGetQueryObjectuivEXT(query, GL_QUERY_RESULT, &result);
+        }
     If 'available' returns true, that's equivalent to COMPLETION_STATUS_KHR
-    returning true.
+    returning true. Then LINK_STATUS can be obtained from 'result'.
 
 New Procedures and Functions
 

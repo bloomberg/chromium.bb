@@ -2156,8 +2156,13 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
           } else {
             program_completion_query_deferred = true;
           }
+          result = 0;
+        } else {
+          GLint link_status = 0;
+          api()->glGetProgramivFn(query.program_service_id, GL_LINK_STATUS,
+                                  &link_status);
+          result = link_status;
         }
-        result = 0;
         break;
 
       default:
