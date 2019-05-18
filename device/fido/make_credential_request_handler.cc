@@ -340,8 +340,7 @@ void MakeCredentialRequestHandler::HandleResponse(
     return;
   }
 
-  const auto rp_id_hash =
-      fido_parsing_utils::CreateSHA256Hash(request_.rp.rp_id());
+  const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request_.rp.id);
 
   if (!response || response->GetRpIdHash() != rp_id_hash) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "

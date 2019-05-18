@@ -125,7 +125,7 @@ void MakeCredentialTask::StartTask() {
 CtapGetAssertionRequest MakeCredentialTask::NextSilentSignRequest() {
   DCHECK(request_.exclude_list &&
          current_credential_ < request_.exclude_list->size());
-  CtapGetAssertionRequest request(request_.rp.rp_id(),
+  CtapGetAssertionRequest request(request_.rp.id,
                                   /*client_data_json=*/"");
   request.allow_list = {{request_.exclude_list->at(current_credential_)}};
   request.user_presence_required = false;

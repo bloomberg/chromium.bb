@@ -49,7 +49,7 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
       request.attestation_preference ==
       AttestationConveyancePreference::ENTERPRISE;
   return ConstructU2fRegisterCommand(
-      fido_parsing_utils::CreateSHA256Hash(request.rp.rp_id()),
+      fido_parsing_utils::CreateSHA256Hash(request.rp.id),
       request.client_data_hash, is_invidual_attestation);
 }
 
@@ -57,7 +57,7 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
     const CtapMakeCredentialRequest& request,
     base::span<const uint8_t> key_handle) {
   return ConstructU2fSignCommand(
-      fido_parsing_utils::CreateSHA256Hash(request.rp.rp_id()),
+      fido_parsing_utils::CreateSHA256Hash(request.rp.id),
       request.client_data_hash, key_handle);
 }
 

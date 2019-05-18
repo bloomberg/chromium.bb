@@ -604,8 +604,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   }
 
   // 6. Check for already registered credentials.
-  const auto rp_id_hash =
-      fido_parsing_utils::CreateSHA256Hash(request.rp.rp_id());
+  const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request.rp.id);
   if (request.exclude_list) {
     if (config_.reject_large_allow_and_exclude_lists &&
         request.exclude_list->size() > 1) {
@@ -1302,7 +1301,7 @@ void VirtualCtap2Device::InitPendingRPs() {
     DCHECK(!registration.second.is_u2f);
     DCHECK(registration.second.user);
     DCHECK(registration.second.rp);
-    if (!base::ContainsKey(rp_ids, registration.second.rp->rp_id())) {
+    if (!base::ContainsKey(rp_ids, registration.second.rp->id)) {
       mutable_state()->pending_rps.push_back(*registration.second.rp);
     }
   }
@@ -1345,11 +1344,12 @@ void VirtualCtap2Device::InitPendingRegistrations(
 void VirtualCtap2Device::GetNextRP(cbor::Value::MapValue* response_map) {
   DCHECK(!mutable_state()->pending_rps.empty());
   response_map->emplace(static_cast<int>(CredentialManagementResponseKey::kRP),
-                        mutable_state()->pending_rps.front().ConvertToCBOR());
+                        PublicKeyCredentialRpEntity::ConvertToCBOR(
+                            mutable_state()->pending_rps.front()));
   response_map->emplace(
       static_cast<int>(CredentialManagementResponseKey::kRPIDHash),
       fido_parsing_utils::CreateSHA256Hash(
-          mutable_state()->pending_rps.front().rp_id()));
+          mutable_state()->pending_rps.front().id));
   mutable_state()->pending_rps.pop_front();
 }
 

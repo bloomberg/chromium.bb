@@ -20,7 +20,7 @@ namespace {
 
 CtapMakeCredentialRequest ConstructMakeCredentialRequest() {
   PublicKeyCredentialRpEntity rp("acme.com");
-  rp.SetRpName("acme.com");
+  rp.name = "acme.com";
 
   PublicKeyCredentialUserEntity user(
       fido_parsing_utils::Materialize(test_data::kUserId));
@@ -73,7 +73,7 @@ TEST(U2fCommandConstructorTest, TestConvertCtapMakeCredentialToU2fRegister) {
 
 TEST(U2fCommandConstructorTest, TestU2fRegisterCredentialAlgorithmRequirement) {
   PublicKeyCredentialRpEntity rp("acme.com");
-  rp.SetRpName("acme.com");
+  rp.name = "acme.com";
 
   PublicKeyCredentialUserEntity user(
       fido_parsing_utils::Materialize(test_data::kUserId));

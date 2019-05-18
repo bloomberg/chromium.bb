@@ -20,7 +20,7 @@ namespace device {
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html
 TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
   PublicKeyCredentialRpEntity rp("acme.com");
-  rp.SetRpName("Acme");
+  rp.name = "Acme";
 
   PublicKeyCredentialUserEntity user(
       fido_parsing_utils::Materialize(test_data::kUserId));
@@ -98,8 +98,8 @@ TEST(VirtualCtap2DeviceTest, ParseMakeCredentialRequestForVirtualCtapKey) {
   auto client_data_hash = std::get<1>(*request_and_hash);
   EXPECT_THAT(client_data_hash,
               ::testing::ElementsAreArray(test_data::kClientDataHash));
-  EXPECT_EQ(test_data::kRelyingPartyId, request.rp.rp_id());
-  EXPECT_EQ("Acme", request.rp.rp_name());
+  EXPECT_EQ(test_data::kRelyingPartyId, request.rp.id);
+  EXPECT_EQ("Acme", request.rp.name);
   EXPECT_THAT(request.user.id, ::testing::ElementsAreArray(test_data::kUserId));
   ASSERT_TRUE(request.user.name);
   EXPECT_EQ("johnpsmith@example.com", *request.user.name);

@@ -196,9 +196,9 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
                                     CtapMakeCredentialRequest request) {
   DCHECK(webauthn_api->IsAvailable());
 
-  base::string16 rp_id = base::UTF8ToUTF16(request.rp.rp_id());
-  base::string16 rp_name = base::UTF8ToUTF16(request.rp.rp_name().value_or(""));
-  base::string16 rp_icon_url = OptionalGURLToUTF16(request.rp.rp_icon_url());
+  base::string16 rp_id = base::UTF8ToUTF16(request.rp.id);
+  base::string16 rp_name = base::UTF8ToUTF16(request.rp.name.value_or(""));
+  base::string16 rp_icon_url = OptionalGURLToUTF16(request.rp.icon_url);
   WEBAUTHN_RP_ENTITY_INFORMATION rp_info{
       WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION, base::as_wcstr(rp_id),
       base::as_wcstr(rp_name), base::as_wcstr(rp_icon_url)};

@@ -47,7 +47,8 @@ CtapMakeCredentialRequest::EncodeAsCBOR(
     const CtapMakeCredentialRequest& request) {
   cbor::Value::MapValue cbor_map;
   cbor_map[cbor::Value(1)] = cbor::Value(request.client_data_hash);
-  cbor_map[cbor::Value(2)] = request.rp.ConvertToCBOR();
+  cbor_map[cbor::Value(2)] =
+      PublicKeyCredentialRpEntity::ConvertToCBOR(request.rp);
   cbor_map[cbor::Value(3)] =
       PublicKeyCredentialUserEntity::ConvertToCBOR(request.user);
   cbor_map[cbor::Value(4)] =

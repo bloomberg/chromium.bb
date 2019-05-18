@@ -168,10 +168,10 @@ TypeConverter<::device::PublicKeyCredentialRpEntity,
               PublicKeyCredentialRpEntityPtr>::
     Convert(const PublicKeyCredentialRpEntityPtr& input) {
   device::PublicKeyCredentialRpEntity rp_entity(input->id);
-  rp_entity.SetRpName(input->name);
-  if (input->icon)
-    rp_entity.SetRpIconUrl(*input->icon);
-
+  rp_entity.name = input->name;
+  if (input->icon) {
+    rp_entity.icon_url = input->icon;
+  }
   return rp_entity;
 }
 

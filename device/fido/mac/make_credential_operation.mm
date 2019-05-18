@@ -45,7 +45,7 @@ MakeCredentialOperation::MakeCredentialOperation(
 MakeCredentialOperation::~MakeCredentialOperation() = default;
 
 const std::string& MakeCredentialOperation::RpId() const {
-  return request().rp.rp_id();
+  return request().rp.id;
 }
 
 void MakeCredentialOperation::Run() {
