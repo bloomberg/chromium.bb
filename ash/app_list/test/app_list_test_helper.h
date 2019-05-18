@@ -24,8 +24,7 @@ class AppListTestHelper {
   AppListTestHelper();
   ~AppListTestHelper();
 
-  // Show the app list in |display_id|, and wait until animation and mojo calls
-  // finish.
+  // Show the app list in |display_id|, and wait until animation finishes.
   // Note: we usually don't care about the show source in tests.
   void ShowAndRunLoop(uint64_t display_id);
 
@@ -33,23 +32,22 @@ class AppListTestHelper {
   void Show(uint64_t display_id);
 
   // Show the app list in |display_id| triggered with |show_source|, and wait
-  // until animation and mojo calls finish.
+  // until animation finishes.
   void ShowAndRunLoop(uint64_t display_id,
                       app_list::AppListShowSource show_source);
 
-  // Dismiss the app list, and wait until animation and mojo calls finish.
+  // Dismiss the app list, and wait until animation finishes.
   void DismissAndRunLoop();
 
   // Dismiss the app list.
   void Dismiss();
 
-  // Toggle the app list in |display_id|, and wait until animation and mojo
-  // calls finish.
+  // Toggle the app list in |display_id|, and wait until animation finishes.
   // Note: we usually don't care about the show source in tests.
   void ToggleAndRunLoop(uint64_t display_id);
 
   // Toggle the app list in |display_id| triggered with |show_source|, and wait
-  // until animation and mojo calls finish.
+  // until animation finishes.
   void ToggleAndRunLoop(uint64_t display_id,
                         app_list::AppListShowSource show_source);
 
@@ -60,7 +58,7 @@ class AppListTestHelper {
   // Check the current app list view state.
   void CheckState(ash::mojom::AppListViewState state);
 
-  // Run all pending in message loop and flush all mojo calls.
+  // Run all pending in message loop to wait for animation to finish.
   void WaitUntilIdle();
 
   app_list::AppListView* GetAppListView();

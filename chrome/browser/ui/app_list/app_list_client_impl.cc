@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_controller.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -35,11 +34,9 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/models/menu_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -56,23 +53,9 @@ bool IsTabletMode() {
 
 }  // namespace
 
-AppListClientImpl::MojoRecorderForTest::MojoRecorderForTest() = default;
-AppListClientImpl::MojoRecorderForTest::~MojoRecorderForTest() = default;
-
-int AppListClientImpl::MojoRecorderForTest::Query(int profile_id) const {
-  auto iter = recorder_.find(profile_id);
-  return iter == recorder_.end() ? 0 : iter->second;
-}
-///////////////////////////////////////////////////////////////////////////////
-
-AppListClientImpl::AppListClientImpl() {
-  app_list::AppListController::Get()->SetClient(this);
-
-  // Get the mojo AppListController in Ash.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &app_list_controller_);
-
+AppListClientImpl::AppListClientImpl()
+    : app_list_controller_(app_list::AppListController::Get()) {
+  app_list_controller_->SetClient(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
   DCHECK(!g_app_list_client_instance);
@@ -80,7 +63,6 @@ AppListClientImpl::AppListClientImpl() {
 }
 
 AppListClientImpl::~AppListClientImpl() {
-  app_list_controller_.reset();
   SetProfile(nullptr);
 
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
@@ -88,13 +70,21 @@ AppListClientImpl::~AppListClientImpl() {
   DCHECK_EQ(this, g_app_list_client_instance);
   g_app_list_client_instance = nullptr;
 
-  if (app_list::AppListController::Get())
-    app_list::AppListController::Get()->SetClient(nullptr);
+  if (app_list_controller_)
+    app_list_controller_->SetClient(nullptr);
 }
 
 // static
 AppListClientImpl* AppListClientImpl::GetInstance() {
   return g_app_list_client_instance;
+}
+
+void AppListClientImpl::OnAppListControllerDestroyed() {
+  // |app_list_controller_| could be released earlier, e.g. starting a kiosk
+  // next session.
+  app_list_controller_ = nullptr;
+  if (current_model_updater_)
+    current_model_updater_->SetActive(false);
 }
 
 void AppListClientImpl::StartSearch(const base::string16& trimmed_query) {
@@ -235,9 +225,6 @@ void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
 void AppListClientImpl::OnFolderCreated(
     int profile_id,
     ash::mojom::AppListItemMetadataPtr item) {
-  if (mojo_recorder_for_test_.get())
-    mojo_recorder_for_test_->Record(profile_id);
-
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (!requested_model_updater)
     return;
@@ -386,15 +373,6 @@ AppListModelUpdater* AppListClientImpl::GetModelUpdaterForTest() {
   return current_model_updater_;
 }
 
-void AppListClientImpl::SetUpMojoRecorderForTest() {
-  mojo_recorder_for_test_ = std::make_unique<MojoRecorderForTest>();
-}
-
-int AppListClientImpl::QueryMojoRecorderForTest(int profile_id) {
-  DCHECK(mojo_recorder_for_test_.get());
-  return mojo_recorder_for_test_->Query(profile_id);
-}
-
 void AppListClientImpl::OnTemplateURLServiceChanged() {
   DCHECK(current_model_updater_);
 
@@ -428,8 +406,8 @@ Profile* AppListClientImpl::GetCurrentAppListProfile() const {
   return ChromeLauncherController::instance()->profile();
 }
 
-ash::mojom::AppListController* AppListClientImpl::GetAppListController() const {
-  return app_list_controller_.get();
+app_list::AppListController* AppListClientImpl::GetAppListController() const {
+  return app_list_controller_;
 }
 
 void AppListClientImpl::DismissView() {
@@ -532,8 +510,4 @@ ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(
     default:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
-}
-
-void AppListClientImpl::FlushMojoForTesting() {
-  app_list_controller_.FlushForTesting();
 }

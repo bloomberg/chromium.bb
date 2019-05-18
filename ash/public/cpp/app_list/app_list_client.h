@@ -19,6 +19,8 @@
 
 namespace app_list {
 
+class AppListController;
+
 // TODO(crbug.com/958134): Remove the alias and app_list.mojom.h include.
 using AppListLaunchedFrom = ash::mojom::AppListLaunchedFrom;
 using AppListLaunchType = ash::mojom::AppListLaunchType;
@@ -35,6 +37,9 @@ using AppListLaunchType = ash::mojom::AppListLaunchType;
 //   in Chrome.
 class ASH_PUBLIC_EXPORT AppListClient {
  public:
+  // Invoked when AppListController is destroyed.
+  virtual void OnAppListControllerDestroyed() = 0;
+
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces on searching:
   // Triggers a search query.

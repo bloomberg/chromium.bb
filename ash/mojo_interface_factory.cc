@@ -66,15 +66,6 @@ void BindAccessibilityFocusRingControllerRequestOnMainThread(
       std::move(request));
 }
 
-void BindAppListControllerRequestOnMainThread(
-    mojom::AppListControllerRequest request) {
-  // The AppListController is not available in KioskNext sessions.
-  // TODO(michaelpg): Also disable the Chrome AppList client in KioskNext
-  // sessions.
-  if (Shell::Get()->app_list_controller())
-    Shell::Get()->app_list_controller()->BindRequest(std::move(request));
-}
-
 void BindAssistantAlarmTimerControllerRequestOnMainThread(
     mojom::AssistantAlarmTimerControllerRequest request) {
   Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
@@ -232,9 +223,6 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(
           &BindAccessibilityFocusRingControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindAppListControllerRequestOnMainThread),
       main_thread_task_runner);
   if (chromeos::switches::IsAssistantEnabled()) {
     registry->AddInterface(

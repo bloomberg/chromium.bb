@@ -35,7 +35,6 @@ AppListTestHelper::~AppListTestHelper() {
 }
 
 void AppListTestHelper::WaitUntilIdle() {
-  app_list_controller_->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 }
 

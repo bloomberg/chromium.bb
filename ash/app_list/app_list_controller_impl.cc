@@ -157,6 +157,9 @@ AppListControllerImpl::~AppListControllerImpl() {
   // remove this from objects it's observing.
   if (!is_shutdown_)
     Shutdown();
+
+  if (client_)
+    client_->OnAppListControllerDestroyed();
 }
 
 // static
@@ -169,11 +172,6 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 void AppListControllerImpl::SetClient(app_list::AppListClient* client) {
   client_ = client;
-}
-
-void AppListControllerImpl::BindRequest(
-    mojom::AppListControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 app_list::AppListModel* AppListControllerImpl::GetModel() {
@@ -587,10 +585,6 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
 
 ash::mojom::AppListViewState AppListControllerImpl::GetAppListViewState() {
   return model_->state_fullscreen();
-}
-
-void AppListControllerImpl::FlushForTesting() {
-  bindings_.FlushForTesting();
 }
 
 void AppListControllerImpl::OnShellDestroying() {

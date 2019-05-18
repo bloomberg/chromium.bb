@@ -36,8 +36,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 class PrefRegistrySimple;
 
@@ -54,7 +52,6 @@ class AppListControllerObserver;
 // state.
 class ASH_EXPORT AppListControllerImpl
     : public app_list::AppListController,
-      public mojom::AppListController,
       public SessionObserver,
       public app_list::AppListModelObserver,
       public app_list::AppListViewDelegate,
@@ -71,22 +68,15 @@ class ASH_EXPORT AppListControllerImpl
       public HomeLauncherGestureHandlerObserver,
       public HomeScreenDelegate {
  public:
-  using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
-  using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
   AppListControllerImpl();
   ~AppListControllerImpl() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Binds the mojom::AppListController interface request to this object.
-  void BindRequest(mojom::AppListControllerRequest request);
-
   app_list::AppListPresenterImpl* presenter() { return &presenter_; }
 
   // app_list::AppListController:
   void SetClient(app_list::AppListClient* client) override;
-
-  // mojom::AppListController:
   void AddItem(AppListItemMetadataPtr app_item) override;
   void AddItemToFolder(AppListItemMetadataPtr app_item,
                        const std::string& folder_id) override;
@@ -222,8 +212,6 @@ class ASH_EXPORT AppListControllerImpl
   void NotifyAppListVisibilityChanged(bool visible, int64_t display_id);
   void NotifyAppListTargetVisibilityChanged(bool visible);
 
-  void FlushForTesting();
-
   // ShellObserver:
   void OnShellDestroying() override;
 
@@ -358,9 +346,6 @@ class ASH_EXPORT AppListControllerImpl
   // |presenter_| should be put below |client_| and |model_| to prevent a crash
   // in destruction.
   app_list::AppListPresenterImpl presenter_;
-
-  // Bindings for the AppListController interface.
-  mojo::BindingSet<mojom::AppListController> bindings_;
 
   // True if the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;

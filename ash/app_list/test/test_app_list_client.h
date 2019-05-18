@@ -20,6 +20,7 @@ class TestAppListClient : public app_list::AppListClient {
   ~TestAppListClient() override;
 
   // app_list::AppListClient:
+  void OnAppListControllerDestroyed() override {}
   void StartSearch(const base::string16& trimmed_query) override {}
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,

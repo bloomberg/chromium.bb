@@ -66,7 +66,7 @@ const service_manager::Manifest& GetManifest() {
               service_manager::Manifest::InterfaceList<
                   mojom::AccessibilityController,
                   mojom::AccessibilityFocusRingController,
-                  mojom::AppListController, mojom::AshMessageCenterController,
+                  mojom::AshMessageCenterController,
                   mojom::AssistantAlarmTimerController,
                   mojom::AssistantController,
                   mojom::AssistantNotificationController,

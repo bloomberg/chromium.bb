@@ -12,7 +12,6 @@
 
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -41,29 +40,13 @@ class AppListClientImpl
       public user_manager::UserManager::UserSessionStateObserver,
       public TemplateURLServiceObserver {
  public:
-  class MojoRecorderForTest {
-   public:
-    MojoRecorderForTest();
-    ~MojoRecorderForTest();
-
-    void Record(int profile_id) { recorder_[profile_id]++; }
-
-    int Query(int profile_id) const;
-
-   private:
-    // For each pair in the map, the key is a profile id while the value is the
-    // mojo calling times associated with the particular profile.
-    std::map<int, int> recorder_;
-
-    DISALLOW_COPY_AND_ASSIGN(MojoRecorderForTest);
-  };
-
   AppListClientImpl();
   ~AppListClientImpl() override;
 
   static AppListClientImpl* GetInstance();
 
   // app_list::AppListClient:
+  void OnAppListControllerDestroyed() override;
   void StartSearch(const base::string16& trimmed_query) override;
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
@@ -145,7 +128,7 @@ class AppListClientImpl
   bool app_list_visible() const { return app_list_visible_; }
 
   // Returns a pointer to control the app list views in ash.
-  ash::mojom::AppListController* GetAppListController() const;
+  app_list::AppListController* GetAppListController() const;
 
   AppListControllerDelegate* GetControllerDelegate();
   Profile* GetCurrentAppListProfile() const;
@@ -153,13 +136,6 @@ class AppListClientImpl
   app_list::SearchController* search_controller();
 
   AppListModelUpdater* GetModelUpdaterForTest();
-
-  void SetUpMojoRecorderForTest();
-
-  int QueryMojoRecorderForTest(int profile_id);
-
-  // Flushes all pending mojo call to Ash for testing.
-  void FlushMojoForTesting();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AppListClientWithProfileTest, CheckDataRace);
@@ -199,12 +175,10 @@ class AppListClientImpl
   std::unique_ptr<app_list::SearchController> search_controller_;
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 
-  std::unique_ptr<MojoRecorderForTest> mojo_recorder_for_test_;
-
   ScopedObserver<TemplateURLService, AppListClientImpl>
       template_url_service_observer_{this};
 
-  ash::mojom::AppListControllerPtr app_list_controller_;
+  app_list::AppListController* app_list_controller_ = nullptr;
 
   bool app_list_target_visibility_ = false;
   bool app_list_visible_ = false;

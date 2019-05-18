@@ -46,20 +46,12 @@ TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
   generator.set_current_screen_location(
       app_list_button->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
-  // Flush the mojo message from Ash to Chrome to show the app list.
-  controller->FlushForTesting();
   EXPECT_TRUE(presenter->GetTargetVisibility());
-  // Flush the mojo message from Chrome to Ash reporting the visibility change.
-  EXPECT_TRUE(controller->GetTargetVisibility());
   EXPECT_EQ(1u, app_list_container->children().size());
   EXPECT_TRUE(app_list_button->IsShowingAppList());
 
   // Click the button again to dismiss the app list; it will animate to close.
   generator.ClickLeftButton();
-  // Flush the mojo message from Ash to Chrome to hide the app list.
-  controller->FlushForTesting();
-  EXPECT_FALSE(presenter->GetTargetVisibility());
-  // Flush the mojo message from Chrome to Ash reporting the visibility change.
   EXPECT_FALSE(controller->GetTargetVisibility());
   EXPECT_EQ(1u, app_list_container->children().size());
   EXPECT_FALSE(app_list_button->IsShowingAppList());
