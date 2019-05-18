@@ -28,6 +28,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A {@link TabListMediator.ThumbnailProvider} that will create a single Bitmap Thumbnail for all
@@ -106,18 +107,22 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                     final int index = i;
                     final String url = mTabs.get(i).getUrl();
                     final boolean isIncognito = mTabs.get(i).isIncognito();
+                    // getTabThumbnailWithCallback() might call the callback up to twice,
+                    // so use |lastFavicon| to avoid fetching the favicon the second time.
+                    // Fetching the favicon after getting the live thumbnail would lead to
+                    // visible flicker.
+                    final AtomicReference<Drawable> lastFavicon = new AtomicReference<>();
                     mTabContentManager.getTabThumbnailWithCallback(mTabs.get(i), thumbnail -> {
                         drawThumbnailBitmapOnCanvasWithFrame(thumbnail, index);
-                        mTabListFaviconProvider.getFaviconForUrlAsync(
-                                url, isIncognito, (Drawable favicon) -> {
-                                    drawFaviconDrawableOnCanvasWithFrame(favicon, index);
-                                    if (mThumbnailsToFetch.decrementAndGet() == 0) {
-                                        PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
-                                                ()
-                                                        -> mFinalCallback.onResult(
-                                                                mMultiThumbnailBitmap));
-                                    }
-                                });
+                        if (lastFavicon.get() != null) {
+                            drawFaviconThenMaybeSendBack(lastFavicon.get(), index);
+                        } else {
+                            mTabListFaviconProvider.getFaviconForUrlAsync(
+                                    url, isIncognito, (Drawable favicon) -> {
+                                        lastFavicon.set(favicon);
+                                        drawFaviconThenMaybeSendBack(favicon, index);
+                                    });
+                        }
                     }, mForceUpdate && i == 0);
                 } else {
                     drawThumbnailBitmapOnCanvasWithFrame(null, i);
@@ -162,6 +167,14 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                     rectF.width() / 2 - mFaviconCirclePadding, mFaviconBackgroundPaint);
             favicon.setBounds(mFaviconRects.get(index));
             favicon.draw(mCanvas);
+        }
+
+        private void drawFaviconThenMaybeSendBack(Drawable favicon, int index) {
+            drawFaviconDrawableOnCanvasWithFrame(favicon, index);
+            if (mThumbnailsToFetch.decrementAndGet() == 0) {
+                PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
+                        () -> mFinalCallback.onResult(mMultiThumbnailBitmap));
+            }
         }
 
         private void fetch() {

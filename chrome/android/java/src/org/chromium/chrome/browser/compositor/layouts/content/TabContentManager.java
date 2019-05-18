@@ -256,24 +256,28 @@ public class TabContentManager {
      * TODO(yusufo): Change the plumbing so that at the least a {@link android.net.Uri} is sent
      * over JNI of an uncompressed file on disk.
      * @param tab The tab to get the thumbnail for.
-     * @param callback The callback to send the {@link Bitmap} with.
+     * @param callback The callback to send the {@link Bitmap} with. Can be called up to twice when
+     *                 forceUpdate; otherwise always called exactly once.
+     * @param forceUpdate Whether to obtain the thumbnail from the live content.
      */
     public void getTabThumbnailWithCallback(
             Tab tab, Callback<Bitmap> callback, boolean forceUpdate) {
         if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
 
+        // Reading thumbnail from disk is faster than taking screenshot from live Tab, so fetch
+        // that first even if |forceUpdate|.
+        nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
+
         if (forceUpdate) {
             cacheTabThumbnail(tab, (bitmap) -> {
+                // Null check to avoid having a Bitmap from nativeGetTabThumbnailWithCallback() but
+                // cleared here.
+                // If invalidation is not needed, cacheTabThumbnail() might not do anything and
+                // send back null.
                 if (bitmap != null) {
                     callback.onResult(bitmap);
-                    return;
                 }
-                // If invalidation is not needed, cacheTabThumbnail() might not do anything, so we
-                // need to fall back to reading from disk.
-                nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
             });
-        } else {
-            nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
         }
     }
 
