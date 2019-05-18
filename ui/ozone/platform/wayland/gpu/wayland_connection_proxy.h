@@ -150,6 +150,14 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   void DestroyZwpLinuxDmabufInternal(gfx::AcceleratedWidget widget,
                                      uint32_t buffer_id);
 
+  void CreateShmBufferInternal(gfx::AcceleratedWidget widget,
+                               base::File file,
+                               size_t length,
+                               const gfx::Size size);
+  void PresentShmBufferForWidgetInternal(gfx::AcceleratedWidget widget,
+                                         const gfx::Rect& damage);
+  void DestroyShmBufferInternal(gfx::AcceleratedWidget widget);
+
   void BindHostInterface();
 
   // Non-owned pointer to a WaylandConnection. It is only used in a single

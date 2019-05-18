@@ -150,6 +150,22 @@ void WaylandConnectionProxy::CreateShmBufferForWidget(
     base::File file,
     size_t length,
     const gfx::Size size) {
+  DCHECK(gpu_thread_runner_);
+  // Do a mojo call on the GpuMainThread instead of the io child thread to
+  // ensure proper functionality.
+  gpu_thread_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WaylandConnectionProxy::CreateShmBufferInternal,
+                     base::Unretained(this), widget, std::move(file), length,
+                     std::move(size)));
+}
+
+void WaylandConnectionProxy::CreateShmBufferInternal(
+    gfx::AcceleratedWidget widget,
+    base::File file,
+    size_t length,
+    const gfx::Size size) {
+  DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   if (!wc_ptr_.is_bound())
     BindHostInterface();
 
@@ -160,11 +176,36 @@ void WaylandConnectionProxy::CreateShmBufferForWidget(
 void WaylandConnectionProxy::PresentShmBufferForWidget(
     gfx::AcceleratedWidget widget,
     const gfx::Rect& damage) {
+  DCHECK(gpu_thread_runner_);
+  // Do a mojo call on the GpuMainThread instead of the io child thread to
+  // ensure proper functionality.
+  gpu_thread_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WaylandConnectionProxy::PresentShmBufferForWidgetInternal,
+                     base::Unretained(this), widget, damage));
+}
+
+void WaylandConnectionProxy::PresentShmBufferForWidgetInternal(
+    gfx::AcceleratedWidget widget,
+    const gfx::Rect& damage) {
+  DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK(wc_ptr_);
   wc_ptr_->PresentShmBufferForWidget(widget, damage);
 }
 
 void WaylandConnectionProxy::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
+  DCHECK(gpu_thread_runner_);
+  // Do a mojo call on the GpuMainThread instead of the io child thread to
+  // ensure proper functionality.
+  gpu_thread_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WaylandConnectionProxy::DestroyShmBufferInternal,
+                     base::Unretained(this), widget));
+}
+
+void WaylandConnectionProxy::DestroyShmBufferInternal(
+    gfx::AcceleratedWidget widget) {
+  DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK(wc_ptr_);
   wc_ptr_->DestroyShmBuffer(widget);
 }
