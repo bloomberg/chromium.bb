@@ -156,7 +156,6 @@ class PersistentWindowController;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
 class PowerEventObserver;
-class NotificationReporter;
 class PowerPrefs;
 class ProjectingObserver;
 class ResizeShadowController;
@@ -430,9 +429,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   NightLightController* night_light_controller();
   NoteTakingController* note_taking_controller() {
     return note_taking_controller_.get();
-  }
-  NotificationReporter* notification_reporter() {
-    return notification_reporter_.get();
   }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
   PartialMagnificationController* partial_magnification_controller() {
@@ -833,8 +829,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   bool simulate_modal_window_open_for_test_ = false;
 
   std::unique_ptr<MessageCenterController> message_center_controller_;
-
-  std::unique_ptr<NotificationReporter> notification_reporter_;
 
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 
