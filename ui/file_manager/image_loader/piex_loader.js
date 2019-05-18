@@ -25,11 +25,11 @@ if (chrome && chrome.fileManagerPrivate) {
  * but only declare the parts required for PIEX work.
  * @typedef {{
  *   calledRun: boolean,
- *   onAbort: function(!Error):undefined,
+ *   onAbort: function((!Error|string)):undefined,
  *   HEAP8: !Uint8Array,
  *   _malloc: function(number):number,
  *   _free: function(number):undefined,
- *   image: function(number, number):Object
+ *   image: function(number, number):PiexWasmImageResult
  * }}
  */
 var PiexWasmModule;
@@ -41,15 +41,15 @@ var PiexWasmModule;
 var Module = window['Module'] || {};
 
 /**
- * Set true only if the Module.onAbort() handler is called.
+ * Set true only if the wasm Module.onAbort() handler is called.
  * @type {boolean}
  */
 let wasmFailed = false;
 
 /**
  * Installs an (Emscripten) wasm Module.onAbort handler, that records that
- * the Module has failed and then re-throws the error.
- * @throws
+ * the Module has failed and re-throws the error.
+ * @throws {!Error|string}
  */
 Module.onAbort = (error) => {
   wasmFailed = true;
@@ -233,7 +233,8 @@ PiexLoader.prototype.loadNaclModule_ = function() {
 
   this.naclPromise_ =
       new Promise(function(fulfill) {
-        chrome.fileManagerPrivate.isPiexLoaderEnabled(fulfill);
+        const useNacl = !useWasm;
+        fulfill(useNacl);
       })
           .then(function(enabled) {
             if (!enabled) {
@@ -429,6 +430,149 @@ function readFromFileSystem(url) {
 }
 
 /**
+ * Piex wasm extacts the preview image metadata from a raw image. The preview
+ * image |format| is either 0 (JPEG) or 1 (RGB), and has a |colorSpace| (sRGB
+ * or AdobeRGB1998) and a JETA EXIF image |orientation|.
+ *
+ * An RGB format preview image has both |width| and |height|, but JPEG format
+ * previews have neither (PIEX C++ does not attempt to parse/decode JPEG).
+ *
+ * The |offset| to, and |length| of, the preview image relative to the source
+ * data is indicated by those fields, and they are never 0. Note their values
+ * are controlled by a third-party and are untrustworthy (Security).
+ *
+ * @typedef {{
+ *  format:number,
+ *  colorSpace:ColorSpace,
+ *  orientation:number,
+ *  width:?number,
+ *  height:?number,
+ *  offset:number,
+ *  length:number
+ * }}
+ */
+var PiexWasmPreviewImageMetadata;
+
+/**
+ * The piex wasm Module.image(<raw image source>,...) API returns |error|, or
+ * else the source |preview| and/or |thumbnail| image metadata.
+ *
+ * FilesApp (and related) only use |preview| images. Preview images are JPEG.
+ * The |thumbnail| images are small, lower-quality, JPEG or RGB format images
+ * and are not currently used in FilesApp.
+ *
+ * @typedef {{
+ *  error:?string,
+ *  preview:?PiexWasmPreviewImageMetadata,
+ *  thumbnail:?PiexWasmPreviewImageMetadata
+ * }}
+ */
+var PiexWasmImageResult;
+
+/**
+ * Piex wasm raw image preview image extractor.
+ */
+class ImageBuffer {
+  /**
+   * @param {!ArrayBuffer} buffer - raw image source data.
+   * @param {number} id - caller-defined id.
+   */
+  constructor(buffer, id) {
+    /**
+     * @type {number}
+     * @const
+     * @private
+     */
+    this.id = id;
+
+    /**
+     * @type {!Uint8Array}
+     * @const
+     * @private
+     */
+    this.source = new Uint8Array(buffer);
+
+    /**
+     * @type {number}
+     * @const
+     * @private
+     */
+    this.length = buffer.byteLength;
+
+    /**
+     * @type {number}
+     * @private
+     */
+    this.memory = 0;
+  }
+
+  /**
+   * Calls Module.image() to process |this.source|, and returns the result.
+   * @return {!PiexWasmImageResult}
+   * @throws {!Error}
+   */
+  process() {
+    this.memory = Module._malloc(this.length);
+    if (!this.memory) {
+      throw new Error('Image malloc failure');
+    }
+
+    Module.HEAP8.set(this.source, this.memory);
+    const result = Module.image(this.memory, this.length);
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    return result;
+  }
+
+  /**
+   * Returns the preview image data. If no preview image was found, returns
+   * an empty preview image.
+   *
+   * @param {!PiexWasmImageResult} result
+   *
+   * @throws {!Error} Data access security error.
+   *
+   * @return {{id:number, thumbnail:!ArrayBuffer, orientation:number,
+   *          colorSpace: ColorSpace}}
+   */
+  preview(result) {
+    const preview = result.preview;
+    if (!preview) {
+      return {
+        thumbnail: new ArrayBuffer(0),
+        colorSpace: ColorSpace.SRGB,
+        orientation: 1,
+        id: this.id,
+      };
+    }
+
+    const offset = preview.offset;
+    const length = preview.length;
+    if (offset > this.length || (this.length - offset) < length) {
+      throw new Error('Preview image access failed');
+    }
+
+    const view = new Uint8Array(this.source.buffer, offset, length);
+    return {
+      thumbnail: new Uint8Array(view).buffer,
+      orientation: preview.orientation,
+      colorSpace: preview.colorSpace,
+      id: this.id,
+    };
+  }
+
+  /**
+   * Release resources.
+   */
+  close() {
+    Module._free(this.memory);
+  }
+}
+
+/**
  * Starts to load RAW image.
  * @param {string} url
  * @return {!Promise<!PiexLoaderResponse>}
@@ -439,6 +583,30 @@ PiexLoader.prototype.load = function(url) {
   if (this.unloadTimer_) {
     clearTimeout(this.unloadTimer_);
     this.unloadTimer_ = 0;
+  }
+
+  if (useWasm) {
+    let imageBuffer;
+    return readFromFileSystem(url)
+        .then((buffer) => {
+          if (wasmModuleFailed() === true) {
+            return Promise.reject('piex wasm module failed');
+          }
+          imageBuffer = new ImageBuffer(buffer, requestId);
+          return imageBuffer.process();
+        })
+        .then((result) => {
+          imageBuffer.close();
+          return new PiexLoaderResponse(imageBuffer.preview(result));
+        })
+        .catch((error) => {
+          if (wasmModuleFailed() === true) {
+            return Promise.reject('piex wasm module failed');
+          }
+          imageBuffer && imageBuffer.close();
+          console.error('[PiexLoader] ' + error);
+          return Promise.reject(error);
+        });
   }
 
   // Prevents unloading the NaCl module during handling the promises below.
