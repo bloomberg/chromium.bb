@@ -8,7 +8,6 @@
 
 #include "ash/keyboard/ui/container_floating_behavior.h"
 #include "ash/keyboard/ui/container_full_width_behavior.h"
-#include "ash/keyboard/ui/container_fullscreen_behavior.h"
 #include "ash/keyboard/ui/display_util.h"
 #include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/keyboard/ui/keyboard_layout_manager.h"
@@ -731,11 +730,6 @@ void KeyboardController::SetContainerBehaviorInternal(
     case mojom::ContainerType::kFloating:
       container_behavior_ = std::make_unique<ContainerFloatingBehavior>(this);
       break;
-    case mojom::ContainerType::kFullscreen:
-      container_behavior_ = std::make_unique<ContainerFullscreenBehavior>(this);
-      break;
-    default:
-      NOTREACHED();
   }
 }
 
@@ -1055,8 +1049,7 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   // temporarily overridden by a static field in certain lock screen contexts.
   // Furthermore, floating keyboard should never affect layout.
   if (!IsKeyboardOverscrollEnabled() &&
-      container_behavior_->GetType() != mojom::ContainerType::kFloating &&
-      container_behavior_->GetType() != mojom::ContainerType::kFullscreen) {
+      container_behavior_->GetType() != mojom::ContainerType::kFloating) {
     return visual_bounds_in_root_;
   }
   return gfx::Rect();

@@ -64,8 +64,6 @@ keyboard::mojom::ContainerType ConvertKeyboardModeToContainerType(int mode) {
       return keyboard::mojom::ContainerType::kFullWidth;
     case keyboard_api::KEYBOARD_MODE_FLOATING:
       return keyboard::mojom::ContainerType::kFloating;
-    case keyboard_api::KEYBOARD_MODE_FULLSCREEN:
-      return keyboard::mojom::ContainerType::kFullscreen;
   }
 
   NOTREACHED();

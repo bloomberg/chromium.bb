@@ -396,16 +396,10 @@ TEST_F(AshKeyboardControllerTest, SetContainerType) {
       target_bounds.size(),
       keyboard_controller()->GetKeyboardWindow()->GetTargetBounds().size());
 
-  // Set the container type to kFullscreen.
-  EXPECT_TRUE(test_client()->SetContainerType(
-      keyboard::mojom::ContainerType::kFullscreen, base::nullopt));
-  EXPECT_EQ(keyboard::mojom::ContainerType::kFullscreen,
-            keyboard_controller()->GetActiveContainerType());
-
   // Setting the container type to the current type should fail.
   EXPECT_FALSE(test_client()->SetContainerType(
-      keyboard::mojom::ContainerType::kFullscreen, base::nullopt));
-  EXPECT_EQ(keyboard::mojom::ContainerType::kFullscreen,
+      keyboard::mojom::ContainerType::kFloating, base::nullopt));
+  EXPECT_EQ(keyboard::mojom::ContainerType::kFloating,
             keyboard_controller()->GetActiveContainerType());
 }
 

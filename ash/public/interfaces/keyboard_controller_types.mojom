@@ -38,7 +38,7 @@ enum KeyboardEnableFlag {
   kCommandLineEnabled,
 };
 
-// Container types used to set and identify contaner behavior. Used in UMA
+// Container types used to set and identify container behavior. Used in UMA
 // stats gathering, so values should never be changed or reused.
 enum ContainerType {
   // Corresponds to a ContainerFullWidthBehavior.
@@ -48,5 +48,5 @@ enum ContainerType {
   kFloating = 1,
 
   // Corresponds to a ContainerFullscreenBehavior.
-  kFullscreen = 2,
+  // kFullscreen = 2,  // Deprecated; feature was abandoned.
 };
