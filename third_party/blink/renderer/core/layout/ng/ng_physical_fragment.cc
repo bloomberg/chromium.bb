@@ -219,7 +219,7 @@ void NGPhysicalFragmentTraits::Destruct(const NGPhysicalFragment* fragment) {
 NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        NGFragmentType type,
                                        unsigned sub_type)
-    : layout_object_(builder->layout_object_),
+    : layout_object_(*builder->layout_object_),
       size_(ToPhysicalSize(builder->size_, builder->GetWritingMode())),
       break_token_(std::move(builder->break_token_)),
       type_(type),
@@ -227,7 +227,9 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       style_variant_((unsigned)builder->style_variant_),
       has_floating_descendants_(false),
       is_fieldset_container_(false),
-      is_legacy_layout_root_(false) {}
+      is_legacy_layout_root_(false) {
+  DCHECK(builder->layout_object_);
+}
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGStyleVariant style_variant,
@@ -235,7 +237,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGFragmentType type,
                                        unsigned sub_type,
                                        scoped_refptr<NGBreakToken> break_token)
-    : layout_object_(layout_object),
+    : layout_object_(*layout_object),
       size_(size),
       break_token_(std::move(break_token)),
       type_(type),
@@ -243,7 +245,9 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       style_variant_((unsigned)style_variant),
       has_floating_descendants_(false),
       is_fieldset_container_(false),
-      is_legacy_layout_root_(false) {}
+      is_legacy_layout_root_(false) {
+  DCHECK(layout_object);
+}
 
 // Keep the implementation of the destructor here, to avoid dependencies on
 // ComputedStyle in the header file.
@@ -267,38 +271,34 @@ void NGPhysicalFragment::Destroy() const {
   }
 }
 
-const ComputedStyle& NGPhysicalFragment::Style() const {
-  if (auto* line_box = DynamicTo<NGPhysicalLineBoxFragment>(this))
-    return line_box->Style();
+const ComputedStyle& NGPhysicalFragment::SlowEffectiveStyle() const {
   switch (StyleVariant()) {
     case NGStyleVariant::kStandard:
-      DCHECK(GetLayoutObject());
-      return *GetLayoutObject()->Style();
+      return layout_object_.StyleRef();
     case NGStyleVariant::kFirstLine:
-      DCHECK(GetLayoutObject());
-      return *GetLayoutObject()->FirstLineStyle();
+      return layout_object_.FirstLineStyleRef();
     case NGStyleVariant::kEllipsis:
       DCHECK_EQ(Type(), kFragmentText);
       DCHECK_EQ(StyleVariant(), NGStyleVariant::kEllipsis);
-      DCHECK(GetLayoutObject());
       // The ellipsis is styled according to the line style.
       // https://drafts.csswg.org/css-ui/#ellipsing-details
       // Use first-line style if exists since most cases it is the first line.
       // TODO(kojii): Should determine if it's really in the first line.
-      if (LayoutObject* block = GetLayoutObject()->ContainingBlock())
+      DCHECK(layout_object_.IsInline());
+      if (LayoutObject* block = layout_object_.ContainingBlock())
         return block->FirstLineStyleRef();
-      return GetLayoutObject()->FirstLineStyleRef();
+      return layout_object_.FirstLineStyleRef();
   }
   NOTREACHED();
-  return *GetLayoutObject()->Style();
+  return layout_object_.StyleRef();
 }
 
 Node* NGPhysicalFragment::GetNode() const {
-  return layout_object_ ? layout_object_->GetNode() : nullptr;
+  return !IsLineBox() ? layout_object_.GetNode() : nullptr;
 }
 
 bool NGPhysicalFragment::HasLayer() const {
-  return layout_object_ && layout_object_->HasLayer();
+  return !IsLineBox() && layout_object_.HasLayer();
 }
 
 PaintLayer* NGPhysicalFragment::Layer() const {
@@ -307,7 +307,7 @@ PaintLayer* NGPhysicalFragment::Layer() const {
 
   // If the underlying LayoutObject has a layer it's guaranteed to be a
   // LayoutBoxModelObject.
-  return static_cast<LayoutBoxModelObject*>(layout_object_)->Layer();
+  return static_cast<LayoutBoxModelObject&>(layout_object_).Layer();
 }
 
 bool NGPhysicalFragment::HasSelfPaintingLayer() const {
@@ -316,32 +316,32 @@ bool NGPhysicalFragment::HasSelfPaintingLayer() const {
 
   // If the underlying LayoutObject has a layer it's guaranteed to be a
   // LayoutBoxModelObject.
-  return static_cast<LayoutBoxModelObject*>(layout_object_)
-      ->HasSelfPaintingLayer();
+  return static_cast<LayoutBoxModelObject&>(layout_object_)
+      .HasSelfPaintingLayer();
 }
 
 bool NGPhysicalFragment::HasOverflowClip() const {
-  return layout_object_ && layout_object_->HasOverflowClip();
+  return !IsLineBox() && layout_object_.HasOverflowClip();
 }
 
 bool NGPhysicalFragment::ShouldClipOverflow() const {
-  return layout_object_ && layout_object_->ShouldClipOverflow();
+  return !IsLineBox() && layout_object_.ShouldClipOverflow();
 }
 
 bool NGPhysicalFragment::IsBlockFlow() const {
-  return layout_object_ && layout_object_->IsLayoutBlockFlow();
+  return !IsLineBox() && layout_object_.IsLayoutBlockFlow();
 }
 
 bool NGPhysicalFragment::IsListMarker() const {
-  return layout_object_ && layout_object_->IsLayoutNGListMarker();
+  return !IsLineBox() && layout_object_.IsLayoutNGListMarker();
 }
 
 bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   // TODO(kojii): Move this to a flag for |LayoutNGBlockFlow::UpdateBlockLayout|
   // to set.
-  if (!layout_object_)
+  if (IsLineBox())
     return false;
-  const LayoutBlock* container = layout_object_->ContainingBlock();
+  const LayoutBlock* container = layout_object_.ContainingBlock();
   if (!container)
     return false;
   return container->IsLayoutNGMixin() || container->IsLayoutNGFlexibleBox();

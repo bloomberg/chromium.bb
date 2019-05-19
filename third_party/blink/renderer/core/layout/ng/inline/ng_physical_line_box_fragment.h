@@ -44,7 +44,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // True if descendants were propagated to outside of this fragment.
   bool HasPropagatedDescendants() const { return has_propagated_descendants_; }
 
-  const ComputedStyle& Style() const { return *style_; }
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
   // The base direction of this line. Also known as the paragraph direction.
@@ -81,7 +80,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
  private:
   NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
 
-  scoped_refptr<const ComputedStyle> style_;
   NGLineHeightMetrics metrics_;
   NGLinkStorage children_[];
 };

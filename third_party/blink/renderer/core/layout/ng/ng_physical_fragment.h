@@ -163,7 +163,18 @@ class CORE_EXPORT NGPhysicalFragment
   bool UsesFirstLineStyle() const {
     return StyleVariant() == NGStyleVariant::kFirstLine;
   }
-  const ComputedStyle& Style() const;
+
+  // Returns the style for this fragment.
+  //
+  // For a line box, this returns the style of the containing block. This mostly
+  // represents the style for the line box, except 1) |style.Direction()| maybe
+  // incorrect, use |BaseDirection()| instead, and 2) margin/border/padding,
+  // background etc. do not apply to the line box.
+  const ComputedStyle& Style() const {
+    return StyleVariant() == NGStyleVariant::kStandard
+               ? layout_object_.StyleRef()
+               : SlowEffectiveStyle();
+  }
   Node* GetNode() const;
 
   // Whether there is a PaintLayer associated with the fragment.
@@ -182,7 +193,13 @@ class CORE_EXPORT NGPhysicalFragment
 
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.
-  LayoutObject* GetLayoutObject() const { return layout_object_; }
+  //
+  // For a line box, |layout_object_| has its containing block but this function
+  // returns |nullptr| for the historical reasons. TODO(kojii): We may change
+  // this in future. Use |IsLineBox()| instead of testing this is |nullptr|.
+  LayoutObject* GetLayoutObject() const {
+    return !IsLineBox() ? &layout_object_ : nullptr;
+  }
 
   // Scrollable overflow. including contents, in the local coordinate.
   PhysicalRect ScrollableOverflow() const;
@@ -240,9 +257,11 @@ class CORE_EXPORT NGPhysicalFragment
                      unsigned sub_type,
                      scoped_refptr<NGBreakToken> break_token = nullptr);
 
+  const ComputedStyle& SlowEffectiveStyle() const;
+
   const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
-  LayoutObject* const layout_object_;
+  LayoutObject& layout_object_;
   const PhysicalSize size_;
   scoped_refptr<NGBreakToken> break_token_;
 

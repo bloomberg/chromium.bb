@@ -379,12 +379,17 @@ void NGPaintFragment::PopulateDescendants(
 
     if (children_are_inline) {
       DCHECK(!child_fragment->IsOutOfFlowPositioned());
-      if (!child_fragment->IsFloating() && !child_fragment->IsListMarker()) {
-        if (LayoutObject* layout_object = child_fragment->GetLayoutObject())
-          child->AssociateWithLayoutObject(layout_object, last_fragment_map);
-
+      if (child_fragment->IsText() || child_fragment->IsInlineBox() ||
+          child_fragment->IsAtomicInline()) {
+        child->AssociateWithLayoutObject(child_fragment->GetLayoutObject(),
+                                         last_fragment_map);
         child->inline_offset_to_container_box_ =
             inline_offset_to_container_box + child_fragment.Offset();
+      } else if (child_fragment->IsLineBox()) {
+        child->inline_offset_to_container_box_ =
+            inline_offset_to_container_box + child_fragment.Offset();
+      } else {
+        DCHECK(child_fragment->IsFloating() || child_fragment->IsListMarker());
       }
 
       if (populate_children) {

@@ -37,9 +37,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    writing_mode,
                                    direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
-        did_break_(false) {
-    layout_object_ = node.GetLayoutBox();
-  }
+        did_break_(false) {}
 
   // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
   // has NGInlineItem but does not have corresponding NGLayoutInputNode.

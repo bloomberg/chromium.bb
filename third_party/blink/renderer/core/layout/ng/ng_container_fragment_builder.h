@@ -210,7 +210,9 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
                              TextDirection direction)
       : NGFragmentBuilder(std::move(style), writing_mode, direction),
         node_(node),
-        space_(space) {}
+        space_(space) {
+    layout_object_ = node.GetLayoutBox();
+  }
 
   void AddChildInternal(scoped_refptr<const NGPhysicalFragment>,
                         const LogicalOffset&);
