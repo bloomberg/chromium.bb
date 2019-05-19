@@ -55,7 +55,6 @@ class SessionTerminationManager;
 class ShutdownPolicyForwarder;
 class WakeOnWifiManager;
 class WilcoDtcSupportdManager;
-class GnubbyNotification;
 
 namespace default_app_order {
 class ExternalLoader;
@@ -173,8 +172,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
-
-  std::unique_ptr<GnubbyNotification> gnubby_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };
