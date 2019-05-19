@@ -548,8 +548,7 @@ void Shell::NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window) {
 
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
              service_manager::Connector* connector)
-    : aura_env_(aura::Env::GetInstance()),
-      brightness_control_delegate_(
+    : brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
       connector_(connector),
       first_run_helper_(std::make_unique<FirstRunHelper>()),
@@ -934,10 +933,11 @@ void Shell::Init(
 
   // This will initialize aura::Env which requires |display_manager_| to
   // be initialized first.
+  aura::Env* env = aura::Env::GetInstance();
   if (context_factory)
-    aura_env_->set_context_factory(context_factory);
+    env->set_context_factory(context_factory);
   if (context_factory_private)
-    aura_env_->set_context_factory_private(context_factory_private);
+    env->set_context_factory_private(context_factory_private);
 
   // Night Light depends on the display manager, the display color manager, and
   // aura::Env, so initialize it after all have been initialized.
@@ -947,7 +947,7 @@ void Shell::Init(
   // pretarget handler list to ensure that it processes input events when modal
   // windows are active.
   window_modality_controller_ =
-      std::make_unique<::wm::WindowModalityController>(this, aura_env_);
+      std::make_unique<::wm::WindowModalityController>(this, env);
 
   event_rewriter_controller_ = std::make_unique<EventRewriterController>();
 
@@ -1092,7 +1092,7 @@ void Shell::Init(
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_ = std::make_unique<::wm::ShadowController>(
       focus_controller_.get(), std::make_unique<WmShadowControllerDelegate>(),
-      aura_env_);
+      env);
 
   logout_confirmation_controller_ =
       std::make_unique<LogoutConfirmationController>();
@@ -1265,7 +1265,7 @@ bool Shell::CanAcceptEvent(const ui::Event& event) {
 }
 
 ui::EventTarget* Shell::GetParentTarget() {
-  return aura_env_;
+  return aura::Env::GetInstance();
 }
 
 std::unique_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {

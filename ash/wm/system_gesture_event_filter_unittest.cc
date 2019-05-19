@@ -464,7 +464,7 @@ TEST_F(SystemGestureEventFilterTest,
   child->Show();
 
   ui::test::TestEventHandler event_handler;
-  Shell::Get()->aura_env()->AddPreTargetHandler(
+  aura::Env::GetInstance()->AddPreTargetHandler(
       &event_handler, ui::EventTarget::Priority::kSystem);
 
   GetEventGenerator()->MoveMouseTo(0, 0);
@@ -475,7 +475,7 @@ TEST_F(SystemGestureEventFilterTest,
   EXPECT_EQ(event_handler.num_gesture_events(),
             delegate.GetGestureCountAndReset());
 
-  Shell::Get()->aura_env()->RemovePreTargetHandler(&event_handler);
+  aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
 }  // namespace ash

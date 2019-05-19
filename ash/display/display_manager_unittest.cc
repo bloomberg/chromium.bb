@@ -2072,7 +2072,7 @@ TEST_F(DisplayManagerTest, UpdateMouseCursorAfterRotateZoom) {
   // Make sure just rotating will not change native location.
   UpdateDisplay("300x200,200x150");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  aura::Env* env = Shell::Get()->aura_env();
+  aura::Env* env = aura::Env::GetInstance();
 
   ui::test::EventGenerator generator1(root_windows[0]);
   ui::test::EventGenerator generator2(root_windows[1]);

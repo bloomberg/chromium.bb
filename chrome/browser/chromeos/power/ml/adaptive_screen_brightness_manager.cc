@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
@@ -189,8 +188,7 @@ AdaptiveScreenBrightnessManager::CreateInstance() {
           mojo::MakeRequest(&video_observer_screen_brightness_logger),
           std::make_unique<base::RepeatingTimer>(),
           base::DefaultClock::GetInstance(), std::make_unique<RealBootClock>());
-  ash::Shell::Get()
-      ->aura_env()
+  aura::Env::GetInstance()
       ->context_factory_private()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(

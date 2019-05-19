@@ -31,8 +31,7 @@ namespace exo {
 namespace {
 
 viz::SurfaceManager* GetSurfaceManager() {
-  return ash::Shell::Get()
-      ->aura_env()
+  return aura::Env::GetInstance()
       ->context_factory_private()
       ->GetFrameSinkManager()
       ->surface_manager();

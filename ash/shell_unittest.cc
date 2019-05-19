@@ -553,11 +553,11 @@ TEST_F(ShellTest, TestPreTargetHandlerOrder) {
 // Verifies an EventHandler added to Env gets notified from EventGenerator.
 TEST_F(ShellTest, EnvPreTargetHandler) {
   ui::test::TestEventHandler event_handler;
-  Shell::Get()->aura_env()->AddPreTargetHandler(&event_handler);
+  aura::Env::GetInstance()->AddPreTargetHandler(&event_handler);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseBy(1, 1);
   EXPECT_NE(0, event_handler.num_mouse_events());
-  Shell::Get()->aura_env()->RemovePreTargetHandler(&event_handler);
+  aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after

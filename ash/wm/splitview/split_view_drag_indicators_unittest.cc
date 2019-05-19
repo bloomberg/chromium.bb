@@ -111,7 +111,7 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
 
 TEST_F(SplitViewDragIndicatorsTest, Dragging) {
   base::HistogramTester histogram_tester;
-  Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
+  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
   UpdateDisplay("800x600");
   const int screen_width = 800;
   const float edge_inset = GetEdgeInset(screen_width);

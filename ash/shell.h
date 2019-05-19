@@ -29,7 +29,6 @@
 class PrefService;
 
 namespace aura {
-class Env;
 class RootWindow;
 class Window;
 }  // namespace aura
@@ -356,7 +355,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
 
   DockedMagnifierControllerImpl* docked_magnifier_controller();
-  aura::Env* aura_env() { return aura_env_; }
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
   EventRewriterController* event_rewriter_controller() {
     return event_rewriter_controller_.get();
@@ -646,9 +644,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void OnLockStateChanged(bool locked) override;
 
   static Shell* instance_;
-
-  // TODO(crbug.com/960503): remove this.
-  aura::Env* aura_env_;
 
   // The CompoundEventFilter owned by aura::Env object.
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;

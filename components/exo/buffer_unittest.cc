@@ -27,10 +27,6 @@ namespace {
 
 using BufferTest = test::ExoTestBase;
 
-aura::Env* GetAuraEnv() {
-  return ash::Shell::Get()->aura_env();
-}
-
 void Release(int* release_call_count) {
   (*release_call_count)++;
 }
@@ -40,7 +36,7 @@ void VerifySyncTokensInCompositorFrame(viz::CompositorFrame* frame) {
   for (auto& resource : frame->resource_list)
     sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
   gpu::raster::RasterInterface* ri =
-      GetAuraEnv()
+      aura::Env::GetInstance()
           ->context_factory()
           ->SharedMainThreadRasterContextProvider()
           ->RasterInterface();
@@ -104,7 +100,9 @@ TEST_F(BufferTest, IsLost) {
   ASSERT_TRUE(rv);
 
   scoped_refptr<viz::RasterContextProvider> context_provider =
-      GetAuraEnv()->context_factory()->SharedMainThreadRasterContextProvider();
+      aura::Env::GetInstance()
+          ->context_factory()
+          ->SharedMainThreadRasterContextProvider();
   if (context_provider) {
     gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
     ri->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
@@ -157,7 +155,7 @@ TEST_F(BufferTest, OnLostResources) {
   ASSERT_TRUE(rv);
 
   viz::RasterContextProvider* context_provider =
-      GetAuraEnv()
+      aura::Env::GetInstance()
           ->context_factory()
           ->SharedMainThreadRasterContextProvider()
           .get();

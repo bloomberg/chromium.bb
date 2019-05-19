@@ -144,7 +144,7 @@ class OverviewSessionTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
+    aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
     shelf_view_test_api_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
     shelf_view_test_api_->SetAnimationDuration(1);
@@ -3192,7 +3192,7 @@ TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
 
 // Verify the correct behavior when dragging windows in overview mode.
 TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
-  Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
+  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();

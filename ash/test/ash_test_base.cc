@@ -495,7 +495,7 @@ bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
   return original_display.id() !=
          screen
              ->GetDisplayNearestPoint(
-                 Shell::Get()->aura_env()->last_mouse_location())
+                 aura::Env::GetInstance()->last_mouse_location())
              .id();
 }
 

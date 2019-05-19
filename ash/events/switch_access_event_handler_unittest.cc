@@ -78,7 +78,7 @@ class SwitchAccessEventHandlerTest : public AshTestBase {
     // This test triggers a resize of WindowTreeHost, which will end up
     // throttling events. set_throttle_input_on_resize_for_testing() disables
     // this.
-    Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
+    aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
     delegate_ = std::make_unique<TestDelegate>();
 
     generator_ = AshTestBase::GetEventGenerator();

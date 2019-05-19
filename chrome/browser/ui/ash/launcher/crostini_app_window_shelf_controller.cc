@@ -11,7 +11,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -71,27 +70,13 @@ void MoveWindowFromOldDisplayToNewDisplay(aura::Window* window,
 CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  // TODO(mash): Find another way to observe for crostini app window creation.
-  // https://crbug.com/887156
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->aura_env()->AddObserver(this);
-  // When window service is enabled, aura::Env::GetInstance() is a different
-  // instance from ash::Shell::Get()->aura_env(), and it needs to be observed
-  // for the Crostini terminal, which is a Chrome app window. Note that it still
-  // needs to observe ash::Shell::Get()->aura_env() too for other crostini apps,
-  // which are hosted by exo.
-  // TODO(mukai): clean this up. https://crbug.com/887156
-  if (features::IsUsingWindowService())
-    aura::Env::GetInstance()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 CrostiniAppWindowShelfController::~CrostiniAppWindowShelfController() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
-  if (features::IsUsingWindowService())
-    aura::Env::GetInstance()->RemoveObserver(this);
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->aura_env()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void CrostiniAppWindowShelfController::AddToShelf(aura::Window* window,

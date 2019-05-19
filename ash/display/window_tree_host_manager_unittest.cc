@@ -1469,7 +1469,7 @@ TEST_F(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {
   UpdateDisplay("200x200,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  aura::Env* env = Shell::Get()->aura_env();
+  aura::Env* env = aura::Env::GetInstance();
 
   ui::test::EventGenerator generator_on_2nd(root_windows[1]);
 
@@ -1511,7 +1511,7 @@ TEST_F(WindowTreeHostManagerTest,
   UpdateDisplay("500x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  aura::Env* env = Shell::Get()->aura_env();
+  aura::Env* env = aura::Env::GetInstance();
 
   ui::test::EventGenerator generator(root_windows[0]);
 
@@ -1546,7 +1546,7 @@ TEST_F(WindowTreeHostManagerTest,
   EXPECT_EQ("-300,0 300x300",
             display_manager()->GetSecondaryDisplay().bounds().ToString());
 
-  aura::Env* env = Shell::Get()->aura_env();
+  aura::Env* env = aura::Env::GetInstance();
 
   // Set the initial position.
   root_windows[0]->MoveCursorTo(gfx::Point(-150, 250));
@@ -1573,7 +1573,7 @@ TEST_F(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_SwapPrimary) {
   UpdateDisplay("200x200,200x200*2/r");
 
-  aura::Env* env = Shell::Get()->aura_env();
+  aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
@@ -1597,7 +1597,7 @@ TEST_F(WindowTreeHostManagerTest,
 // and rotation are updated when the primary display is disconnected.
 TEST_F(WindowTreeHostManagerTest,
        UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected) {
-  aura::Env* env = Shell::Get()->aura_env();
+  aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
@@ -1628,7 +1628,7 @@ TEST_F(WindowTreeHostManagerTest,
 
 TEST_F(WindowTreeHostManagerTest,
        UpdateNonVisibleMouseLocationAfterDisplayChange_PrimaryDisconnected) {
-  aura::Env* env = Shell::Get()->aura_env();
+  aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();

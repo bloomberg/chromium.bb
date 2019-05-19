@@ -8,7 +8,6 @@
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shell.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -30,18 +29,13 @@
 InternalAppWindowShelfController::InternalAppWindowShelfController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  // TODO(mash): Find another way to observe for internal app window creation.
-  // https://crbug.com/887156
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->aura_env()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 InternalAppWindowShelfController::~InternalAppWindowShelfController() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
-
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->aura_env()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void InternalAppWindowShelfController::ActiveUserChanged(

@@ -89,7 +89,7 @@ ScreenAsh::ScreenAsh() = default;
 ScreenAsh::~ScreenAsh() = default;
 
 gfx::Point ScreenAsh::GetCursorScreenPoint() {
-  return Shell::Get()->aura_env()->last_mouse_location();
+  return aura::Env::GetInstance()->last_mouse_location();
 }
 
 bool ScreenAsh::IsWindowUnderCursor(gfx::NativeWindow window) {

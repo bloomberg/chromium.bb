@@ -279,7 +279,7 @@ TEST_F(MagnificationControllerTest, FollowFocusChanged) {
 }
 
 TEST_F(MagnificationControllerTest, PanWindow2xLeftToRight) {
-  const aura::Env* env = Shell::Get()->aura_env();
+  const aura::Env* env = aura::Env::GetInstance();
 
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->MoveMouseToInHost(gfx::Point(0, 0));
@@ -383,7 +383,7 @@ TEST_F(MagnificationControllerTest, PanWindow2xLeftToRight) {
 }
 
 TEST_F(MagnificationControllerTest, PanWindow2xRightToLeft) {
-  const aura::Env* env = Shell::Get()->aura_env();
+  const aura::Env* env = aura::Env::GetInstance();
 
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->MoveMouseToInHost(gfx::Point(799, 300));
@@ -436,7 +436,7 @@ TEST_F(MagnificationControllerTest, PanWindow2xRightToLeft) {
 }
 
 TEST_F(MagnificationControllerTest, PanWindowToRight) {
-  const aura::Env* env = Shell::Get()->aura_env();
+  const aura::Env* env = aura::Env::GetInstance();
 
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->MoveMouseToInHost(gfx::Point(400, 300));
@@ -482,7 +482,7 @@ TEST_F(MagnificationControllerTest, PanWindowToRight) {
 }
 
 TEST_F(MagnificationControllerTest, PanWindowToLeft) {
-  const aura::Env* env = Shell::Get()->aura_env();
+  const aura::Env* env = aura::Env::GetInstance();
 
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->MoveMouseToInHost(gfx::Point(400, 300));

@@ -135,7 +135,7 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
       Shell::GetPrimaryRootWindow()->GetHost()->ConvertScreenInPixelsToDIP(
           &new_point_in_screen);
     }
-    Shell::Get()->aura_env()->SetLastMouseLocation(new_point_in_screen);
+    aura::Env::GetInstance()->SetLastMouseLocation(new_point_in_screen);
   }
 }
 

@@ -21,7 +21,7 @@ namespace ash {
 
 EventRewriterController::EventRewriterController() {
   // Add the controller as an observer for new root windows.
-  Shell::Get()->aura_env()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
 
   std::unique_ptr<KeyboardDrivenEventRewriter> keyboard_driven_event_rewriter =
       std::make_unique<KeyboardDrivenEventRewriter>();
@@ -35,7 +35,7 @@ EventRewriterController::EventRewriterController() {
 }
 
 EventRewriterController::~EventRewriterController() {
-  Shell::Get()->aura_env()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
   // Remove the rewriters from every root window EventSource and destroy them.
   for (const auto& rewriter : rewriters_) {
     for (auto* window : Shell::GetAllRootWindows())

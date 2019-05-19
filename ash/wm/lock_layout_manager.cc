@@ -52,7 +52,7 @@ void LockLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
   window_state->OnWMEvent(&event);
 
-  Shell::Get()->aura_env()->gesture_recognizer()->CancelActiveTouchesExcept(
+  aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouchesExcept(
       nullptr);
 
   // Disable virtual keyboard overscroll because it interferes with scrolling

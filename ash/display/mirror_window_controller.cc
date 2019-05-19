@@ -125,7 +125,7 @@ int64_t GetCurrentReflectingSourceId() {
 }
 
 ui::ContextFactoryPrivate* GetContextFactoryPrivate() {
-  return Shell::Get()->aura_env()->context_factory_private();
+  return aura::Env::GetInstance()->context_factory_private();
 }
 
 }  // namespace

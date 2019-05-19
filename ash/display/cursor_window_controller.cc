@@ -219,7 +219,7 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
 void CursorWindowController::UpdateLocation() {
   if (!cursor_window_)
     return;
-  gfx::Point point = Shell::Get()->aura_env()->last_mouse_location();
+  gfx::Point point = aura::Env::GetInstance()->last_mouse_location();
   point.Offset(-bounds_in_screen_.x(), -bounds_in_screen_.y());
   point.Offset(-hot_point_.x(), -hot_point_.y());
   gfx::Rect bounds = cursor_window_->bounds();
@@ -371,7 +371,7 @@ void CursorWindowController::UpdateCursorVisibility() {
 
 void CursorWindowController::UpdateCursorView() {
   cursor_view_.reset(new cursor::CursorView(
-      container_, Shell::Get()->aura_env()->last_mouse_location(),
+      container_, aura::Env::GetInstance()->last_mouse_location(),
       is_cursor_motion_blur_enabled_));
   UpdateCursorImage();
 }

@@ -1,7 +1,0 @@
-specific_include_rules = {
-  # TODO(mash): Find another way to observe for ARC++ window creation.
-  # https://crbug.com/887156
-  "arc_kiosk_app_launcher\.cc": [
-    "+ash/shell.h",
-  ],
-}
