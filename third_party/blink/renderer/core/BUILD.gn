@@ -2015,6 +2015,7 @@ jumbo_source_set("unit_tests") {
     "layout/scroll_anchor_test.cc",
     "layout/scrollbars_test.cc",
     "layout/shapes/box_shape_test.cc",
+    "layout/style_retain_scope_test.cc",
     "layout/svg/layout_svg_foreign_object_test.cc",
     "layout/svg/layout_svg_root_test.cc",
     "layout/svg/layout_svg_text_test.cc",

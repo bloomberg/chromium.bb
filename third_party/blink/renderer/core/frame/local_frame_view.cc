@@ -90,6 +90,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/style_retain_scope.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/layout/traced_layout_object.h"
@@ -766,6 +767,7 @@ void LocalFrameView::UpdateLayout() {
   LayoutObject* root_for_this_layout = GetLayoutView();
 
   FontCachePurgePreventer font_cache_purge_preventer;
+  StyleRetainScope style_retain_scope;
   {
     base::AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
                                                     false);

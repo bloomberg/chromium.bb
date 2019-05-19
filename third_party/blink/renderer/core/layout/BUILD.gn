@@ -497,6 +497,8 @@ blink_core_sources("layout") {
     "shapes/shape_interval.h",
     "shapes/shape_outside_info.cc",
     "shapes/shape_outside_info.h",
+    "style_retain_scope.cc",
+    "style_retain_scope.h",
     "subtree_layout_scope.cc",
     "subtree_layout_scope.h",
     "svg/line/svg_inline_flow_box.cc",

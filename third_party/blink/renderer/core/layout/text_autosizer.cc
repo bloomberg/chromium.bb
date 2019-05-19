@@ -53,12 +53,27 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/style_retain_scope.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 
 namespace blink {
+
+namespace {
+
+// Temporary styles are kept in |styles_retained_during_layout_| until the
+// |TextAutosizer::EndLayout()|. Normally it is enough, but in case bad things
+// occur, keeping them alive until the layout is completed helps to avoid
+// use-after-free.
+inline void RetainStylesInCurrentScope(
+    Vector<scoped_refptr<const ComputedStyle>>& styles) {
+  if (auto* scope = StyleRetainScope::Current())
+    scope->RetainIfOneRef(styles);
+}
+
+}  // namespace
 
 static LayoutObject* ParentElementLayoutObject(
     const LayoutObject* layout_object) {
@@ -248,7 +263,12 @@ TextAutosizer::TextAutosizer(const Document* document)
       did_check_cross_site_use_count_(false) {
 }
 
-TextAutosizer::~TextAutosizer() = default;
+TextAutosizer::~TextAutosizer() {
+  // |EndLayout()| should be called before destructing, which clears
+  // |styles_retained_during_layout_|. Still retain in case.
+  DCHECK(styles_retained_during_layout_.IsEmpty());
+  RetainStylesInCurrentScope(styles_retained_during_layout_);
+}
 
 void TextAutosizer::Record(LayoutBlock* block) {
   if (!page_info_.setting_enabled_)
@@ -397,6 +417,8 @@ void TextAutosizer::EndLayout(LayoutBlock* block) {
   if (block == first_block_to_begin_layout_) {
     first_block_to_begin_layout_ = nullptr;
     cluster_stack_.clear();
+    DCHECK(StyleRetainScope::Current());
+    RetainStylesInCurrentScope(styles_retained_during_layout_);
     styles_retained_during_layout_.clear();
 #if DCHECK_IS_ON()
     blocks_that_have_begun_layout_.clear();
