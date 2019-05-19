@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
-#include "chrome/common/chrome_features.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -124,8 +122,7 @@ void LoginHandler::Start(
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
     const GURL& request_url,
-    scoped_refptr<net::HttpResponseHeaders> response_headers,
-    HandlerMode mode) {
+    scoped_refptr<net::HttpResponseHeaders> response_headers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents());
   DCHECK(!WasAuthHandled());
@@ -137,9 +134,9 @@ void LoginHandler::Start(
   auto* api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
           web_contents()->GetBrowserContext());
-  auto continuation = base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
-                                     weak_factory_.GetWeakPtr(), request_url,
-                                     is_main_frame, mode);
+  auto continuation =
+      base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
+                     weak_factory_.GetWeakPtr(), request_url, is_main_frame);
   if (api->MaybeProxyAuthRequest(web_contents()->GetBrowserContext(),
                                  auth_info_, std::move(response_headers),
                                  request_id, is_main_frame,
@@ -155,7 +152,7 @@ void LoginHandler::Start(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
                      weak_factory_.GetWeakPtr(), request_url, is_main_frame,
-                     mode, base::nullopt, false /* should_cancel */));
+                     base::nullopt, false /* should_cancel */));
 }
 
 void LoginHandler::SetAuth(const base::string16& username,
@@ -416,7 +413,6 @@ void LoginHandler::GetDialogStrings(const GURL& request_url,
 void LoginHandler::MaybeSetUpLoginPrompt(
     const GURL& request_url,
     bool is_request_for_main_frame,
-    HandlerMode mode,
     const base::Optional<net::AuthCredentials>& credentials,
     bool should_cancel) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -479,25 +475,6 @@ void LoginHandler::MaybeSetUpLoginPrompt(
       web_contents()->GetDelegate()->GetDisplayMode(web_contents()) !=
           blink::kWebDisplayModeStandalone) {
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
-
-    if (base::FeatureList::IsEnabled(
-            features::kHTTPAuthCommittedInterstitials)) {
-      switch (mode) {
-        case PRE_COMMIT:
-          prompt_started_ = false;
-          CancelAuth();
-          return;
-        case POST_COMMIT:
-          // TODO(https://crbug.com/963313): add a WebContentsObserver which
-          // observes when LoginHandler does the PRE_COMMIT cancel and triggers
-          // the login prompt in POST_COMMIT mode on top of the committed error
-          // page.
-          NOTREACHED();
-          ShowLoginPrompt(request_url);
-          return;
-      }
-      NOTREACHED();
-    }
 
     // Show a blank interstitial for main-frame, cross origin requests
     // so that the correct URL is shown in the omnibox.
@@ -598,11 +575,10 @@ std::unique_ptr<content::LoginDelegate> CreateLoginPrompt(
     bool is_request_for_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
-    LoginHandler::HandlerMode mode,
     LoginAuthRequiredCallback auth_required_callback) {
   std::unique_ptr<LoginHandler> handler = LoginHandler::Create(
       auth_info, web_contents, std::move(auth_required_callback));
   handler->Start(request_id, is_request_for_main_frame, url,
-                 std::move(response_headers), mode);
+                 std::move(response_headers));
   return handler;
 }

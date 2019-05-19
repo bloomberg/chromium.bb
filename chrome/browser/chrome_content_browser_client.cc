@@ -5223,8 +5223,7 @@ ChromeContentBrowserClient::CreateLoginDelegate(
     LoginAuthRequiredCallback auth_required_callback) {
   return CreateLoginPrompt(
       auth_info, web_contents, request_id, is_request_for_main_frame, url,
-      std::move(response_headers), LoginHandler::PRE_COMMIT,
-      std::move(auth_required_callback));
+      std::move(response_headers), std::move(auth_required_callback));
 }
 
 bool ChromeContentBrowserClient::HandleExternalProtocol(
