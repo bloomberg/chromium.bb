@@ -10,7 +10,7 @@ import copy
 import os.path
 
 from . import commands
-from .model import CodeSignedProduct, VerifyOptions
+from .model import CodeSignOptions, CodeSignedProduct, VerifyOptions
 
 _PROVISIONPROFILE_EXT = '.provisionprofile'
 _PROVISIONPROFILE_DEST = 'embedded.provisionprofile'
@@ -39,7 +39,7 @@ def get_parts(config):
             CodeSignedProduct(
                 '{.app_product}.app'.format(config),
                 config.base_bundle_id,
-                options=config.codesign_options_outer_app,
+                options=CodeSignOptions.RESTRICT,
                 requirements=config.codesign_requirements_outer_app,
                 identifier_requirement=False,
                 resource_rules=None if config.use_new_mac_bundle_structure else
@@ -58,14 +58,16 @@ def get_parts(config):
                 .format(config),
                 '{}.framework.AlertNotificationService'.format(
                     config.base_bundle_id),
-                options=config.codesign_options_helpers,
+                options=CodeSignOptions.RESTRICT +
+                CodeSignOptions.LIBRARY_VALIDATION,
                 verify_options=VerifyOptions.DEEP),
         'crashpad':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/chrome_crashpad_handler'.format(
                     config),
                 'chrome_crashpad_handler',
-                options=config.codesign_options_helpers,
+                options=CodeSignOptions.RESTRICT +
+                CodeSignOptions.LIBRARY_VALIDATION,
                 verify_options=VerifyOptions.DEEP),
         'helper-app':
             CodeSignedProduct(
@@ -74,13 +76,14 @@ def get_parts(config):
                  '{0.app_product}.app/Contents/Versions/{0.version}/{0.product} Helper.app'
                 ).format(config),
                 '{}.helper'.format(uncustomized_bundle_id),
-                options=config.codesign_options_helpers,
+                options=CodeSignOptions.RESTRICT,
                 verify_options=VerifyOptions.DEEP),
         'app-mode-app':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/app_mode_loader'.format(config),
                 'app_mode_loader',
-                options=config.codesign_options_helpers,
+                options=CodeSignOptions.RESTRICT +
+                CodeSignOptions.LIBRARY_VALIDATION,
                 verify_options=VerifyOptions.IGNORE_RESOURCES),
     }
 
@@ -122,12 +125,11 @@ def get_installer_tools(config):
         'xzdec',
     )
     for binary in binaries:
-        options = config.codesign_options_installer_tools if not binary.endswith(
-            '.dylib') else None
+        options = CodeSignOptions.RESTRICT + CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL
         tools[binary] = CodeSignedProduct(
             '{.packaging_dir}/{binary}'.format(config, binary=binary),
             binary.replace('.dylib', ''),
-            options=options,
+            options=options if not binary.endswith('dylib') else None,
             verify_options=VerifyOptions.DEEP)
 
     return tools
@@ -151,7 +153,7 @@ def sign_part(paths, config, part):
     if config.keychain:
         command.extend(['--keychain', config.keychain])
     if part.options:
-        command.extend(['--options', part.options])
+        command.extend(['--options', ','.join(part.options)])
     if part.resource_rules:
         command.extend([
             '--resource-rules',

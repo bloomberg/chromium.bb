@@ -58,6 +58,27 @@ class TestGetParts(unittest.TestCase):
                          all_parts['helper-app'].identifier)
 
 
+    def test_part_options(self):
+        parts = signing.get_parts(test_config.TestConfig())
+        self.assertEqual(
+            set(model.CodeSignOptions.RESTRICT), set(parts['app'].options))
+        self.assertEqual(
+            set(model.CodeSignOptions.RESTRICT),
+            set(parts['helper-app'].options))
+        self.assertEqual(
+            set(model.CodeSignOptions.RESTRICT +
+                model.CodeSignOptions.LIBRARY_VALIDATION),
+            set(parts['crashpad'].options))
+        self.assertEqual(
+            set(model.CodeSignOptions.RESTRICT +
+                model.CodeSignOptions.LIBRARY_VALIDATION),
+            set(parts['notification-xpc'].options))
+        self.assertEqual(
+            set(model.CodeSignOptions.RESTRICT +
+                model.CodeSignOptions.LIBRARY_VALIDATION),
+            set(parts['app-mode-app'].options))
+
+
 @mock.patch('signing.commands.run_command')
 class TestSignPart(unittest.TestCase):
 
@@ -117,7 +138,10 @@ class TestSignPart(unittest.TestCase):
 
     def test_sign_part_with_options(self, run_command):
         part = model.CodeSignedProduct(
-            'Test.app', 'test.signing.app', options='restrict,library')
+            'Test.app',
+            'test.signing.app',
+            options=model.CodeSignOptions.RESTRICT +
+            model.CodeSignOptions.LIBRARY_VALIDATION)
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--requirements',

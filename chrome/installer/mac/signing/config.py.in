@@ -97,25 +97,6 @@ class CodeSignConfig(object):
         return set(('libwidevinecdm.dylib',))
 
     @property
-    def codesign_options_outer_app(self):
-        """Returns the codesign -o flags for the outer app bundle."""
-        return 'restrict'
-
-    @property
-    def codesign_options_helpers(self):
-        """Returns the codesign -o flags for helper executables within the
-        bundle.
-        """
-        return self.codesign_options_outer_app + ',library'
-
-    @property
-    def codesign_options_installer_tools(self):
-        """Returns the codesign -o flags for the installer tools, which
-        are not shipped to end-users.
-        """
-        return self.codesign_options_helpers + ',kill'
-
-    @property
     def codesign_requirements_basic(self):
         """Returns the codesign --requirements string that is combined with
         a designated identifier requirement string of a

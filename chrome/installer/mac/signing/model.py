@@ -30,8 +30,8 @@ class CodeSignedProduct(object):
             identifier: The unique identifier set when code signing. This is
                 only explicitly passed with the `--identifier` flag if
                 |sign_with_identifier| is True.
-            options: Comma-separated string of option names passed to the
-                `codesign -o` flag.
+            options: Options flags to pass to `codesign --options`, from
+                |CodeSignOptions|.
             requirements: String for additional `--requirements` to pass to the
                 `codesign` command. These are joined with a space to the
                 |config.CodeSignConfig.codesign_requirements_basic| string. See
@@ -53,6 +53,8 @@ class CodeSignedProduct(object):
         """
         self.path = path
         self.identifier = identifier
+        if not CodeSignOptions.valid(options):
+            raise ValueError('Invalid CodeSignOptions: {}'.format(options))
         self.options = options
         self.requirements = requirements
         self.identifier_requirement = identifier_requirement
@@ -88,23 +90,23 @@ class CodeSignedProduct(object):
                 'options={0.options}, path={0.path})'.format(self)
 
 
-class VerifyOptions(object):
-    """Enum for the options that can be specified when validating the results of
-    code signing.
+def make_enum(class_name, options):
+    """Makes a new class type for an enum.
 
-    These options are passed to `codesign --verify` after the
-    |CodeSignedProduct| has been signed.
+    Args:
+        class_name: Name of the new type to make.
+        options: A dictionary of enum options to use. The keys will become
+            attributes on the class, and the values will be wrapped in a tuple
+            so that the options can be joined together.
+
+    Returns:
+        A new class for the enum.
     """
-    DEEP = ('--deep',)
-    NO_STRICT = ('--no-strict',)
-    IGNORE_RESOURCES = ('--ignore-resources',)
-
-    def __init__(self):
-        raise TypeError('VerifyOptions cannot be constructed')
+    attrs = {}
 
     @classmethod
-    def valid(cls, options):
-        """Tests if the specified |options| are valid.
+    def valid(cls, opts_to_check):
+        """Tests if the specified |opts_to_check| are valid.
 
         Args:
             options: Iterable of option strings.
@@ -112,10 +114,41 @@ class VerifyOptions(object):
         Returns:
             True if all the options are valid, False if otherwise.
         """
-        if options is None:
+        if opts_to_check is None:
             return True
-        all_options = cls.DEEP + cls.NO_STRICT + cls.IGNORE_RESOURCES
-        return all([option in all_options for option in options])
+        valid_values = options.values()
+        return all([option in valid_values for option in opts_to_check])
+
+    attrs['valid'] = valid
+
+    for name, value in options.items():
+        assert type(name) is str
+        assert type(value) is str
+        attrs[name] = (value,)
+
+    return type(class_name, (object,), attrs)
+
+
+"""Enum for the options that can be specified when validating the results of
+code signing.
+
+These options are passed to `codesign --verify` after the
+|CodeSignedProduct| has been signed.
+"""
+VerifyOptions = make_enum(
+    'signing.model.VerifyOptions', {
+        'DEEP': '--deep',
+        'NO_STRICT': '--no-strict',
+        'IGNORE_RESOURCES': '--ignore-resources',
+    })
+
+CodeSignOptions = make_enum(
+    'signing.model.CodeSignOptions', {
+        'RESTRICT': 'restrict',
+        'LIBRARY_VALIDATION': 'library',
+        'HARDENED_RUNTIME': 'runtime',
+        'KILL': 'kill',
+    })
 
 
 class Distribution(object):
