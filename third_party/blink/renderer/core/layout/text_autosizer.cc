@@ -61,20 +61,6 @@
 
 namespace blink {
 
-namespace {
-
-// Temporary styles are kept in |styles_retained_during_layout_| until the
-// |TextAutosizer::EndLayout()|. Normally it is enough, but in case bad things
-// occur, keeping them alive until the layout is completed helps to avoid
-// use-after-free.
-inline void RetainStylesInCurrentScope(
-    Vector<scoped_refptr<const ComputedStyle>>& styles) {
-  if (auto* scope = StyleRetainScope::Current())
-    scope->RetainIfOneRef(styles);
-}
-
-}  // namespace
-
 static LayoutObject* ParentElementLayoutObject(
     const LayoutObject* layout_object) {
   // At style recalc, the layoutObject's parent may not be attached,
@@ -263,12 +249,7 @@ TextAutosizer::TextAutosizer(const Document* document)
       did_check_cross_site_use_count_(false) {
 }
 
-TextAutosizer::~TextAutosizer() {
-  // |EndLayout()| should be called before destructing, which clears
-  // |styles_retained_during_layout_|. Still retain in case.
-  DCHECK(styles_retained_during_layout_.IsEmpty());
-  RetainStylesInCurrentScope(styles_retained_during_layout_);
-}
+TextAutosizer::~TextAutosizer() = default;
 
 void TextAutosizer::Record(LayoutBlock* block) {
   if (!page_info_.setting_enabled_)
@@ -417,9 +398,6 @@ void TextAutosizer::EndLayout(LayoutBlock* block) {
   if (block == first_block_to_begin_layout_) {
     first_block_to_begin_layout_ = nullptr;
     cluster_stack_.clear();
-    DCHECK(StyleRetainScope::Current());
-    RetainStylesInCurrentScope(styles_retained_during_layout_);
-    styles_retained_during_layout_.clear();
 #if DCHECK_IS_ON()
     blocks_that_have_begun_layout_.clear();
 #endif
@@ -1217,7 +1195,10 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
       // Don't free current_style until the end of the layout pass. This allows
       // other parts of the system to safely hold raw ComputedStyle* pointers
       // during layout, e.g. BreakingContext::current_style_.
-      styles_retained_during_layout_.push_back(&current_style);
+      if (auto* scope = StyleRetainScope::Current())
+        scope->Retain(current_style);
+      else
+        DCHECK(false);
 
       layout_object->SetModifiedStyleOutsideStyleRecalc(
           std::move(style), LayoutObject::ApplyStyleChanges::kNo);

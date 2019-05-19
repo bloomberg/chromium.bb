@@ -28,9 +28,6 @@ class CORE_EXPORT StyleRetainScope {
     styles_retained_during_layout_.push_back(&style);
   }
 
-  // Retain a reference if it has only one ref.
-  void RetainIfOneRef(const Vector<scoped_refptr<const ComputedStyle>>& styles);
-
  private:
   Vector<scoped_refptr<const ComputedStyle>> styles_retained_during_layout_;
   StyleRetainScope* parent_;

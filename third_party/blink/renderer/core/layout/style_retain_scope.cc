@@ -35,12 +35,4 @@ StyleRetainScope* StyleRetainScope::Current() {
   return *CurrentPtr();
 }
 
-void StyleRetainScope::RetainIfOneRef(
-    const Vector<scoped_refptr<const ComputedStyle>>& styles) {
-  for (const auto& style : styles) {
-    if (style->HasOneRef())
-      Retain(*style);
-  }
-}
-
 }  // namespace blink

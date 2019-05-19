@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class ComputedStyle;
 class Document;
 class IntSize;
 class LayoutBlock;
@@ -369,7 +368,6 @@ class CORE_EXPORT TextAutosizer final
   // Clusters are created and destroyed during layout
   ClusterStack cluster_stack_;
   FingerprintMapper fingerprint_mapper_;
-  Vector<scoped_refptr<const ComputedStyle>> styles_retained_during_layout_;
   // FIXME: All frames should share the same m_pageInfo instance.
   PageInfo page_info_;
   bool update_page_info_deferred_;
