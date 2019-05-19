@@ -42,8 +42,12 @@ void SharedWorkerClient::OnConnected(
 }
 
 void SharedWorkerClient::OnScriptLoadFailed() {
-  worker_->DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
   worker_->SetIsBeingConnected(false);
+  worker_->DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
+  // |this| can be destroyed at this point, for example, when a frame hosting
+  // this shared worker is detached in the error handler, and closes mojo's
+  // strong bindings bound with |this| in
+  // SharedWorkerClientHolder::ContextDestroyed().
 }
 
 void SharedWorkerClient::OnFeatureUsed(mojom::WebFeature feature) {
