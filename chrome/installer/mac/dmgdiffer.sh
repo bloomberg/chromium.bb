@@ -146,15 +146,20 @@ make_patch_fs() {
   readonly KS_VERSION_KEY="KSVersion"
   readonly KS_PRODUCT_KEY="KSProductID"
   readonly KS_CHANNEL_KEY="KSChannelID"
-  readonly VERSIONS_DIR_NEW=\
-"Contents/Frameworks/${product_name} Framework.framework/Versions"
   readonly VERSIONS_DIR_OLD="Contents/Versions"
   readonly BUILD_RE="^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+\$"
   readonly MIN_BUILD=434
 
-  local product_url="https://www.google.com/chrome/"
+  local versions_dir_new
+  local product_url
   if [[ "${product_name}" = "Google Chrome Canary" ]]; then
+    versions_dir_new=\
+"Contents/Frameworks/Google Chrome Framework.framework/Versions"
     product_url="https://www.google.com/chrome/canary/"
+  else
+    versions_dir_new=\
+"Contents/Frameworks/${product_name} Framework.framework/Versions"
+    product_url="https://www.google.com/chrome/"
   fi
 
   local old_app_path="${old_fs}/${APP_NAME}"
@@ -237,16 +242,16 @@ make_patch_fs() {
   fi
 
   local old_versioned_dir
-  if [[ -e "${old_app_path}/${VERSIONS_DIR_NEW}" ]]; then
-    old_versioned_dir="${old_app_path}/${VERSIONS_DIR_NEW}/${old_app_version}"
+  if [[ -e "${old_app_path}/${versions_dir_new}" ]]; then
+    old_versioned_dir="${old_app_path}/${versions_dir_new}/${old_app_version}"
   else
     old_versioned_dir="${old_app_path}/${VERSIONS_DIR_OLD}/${old_app_version}"
   fi
 
   local new_versioned_dir
   local layout_new
-  if [[ -e "${new_app_path}/${VERSIONS_DIR_NEW}" ]]; then
-    new_versioned_dir="${new_app_path}/${VERSIONS_DIR_NEW}/${new_app_version}"
+  if [[ -e "${new_app_path}/${versions_dir_new}" ]]; then
+    new_versioned_dir="${new_app_path}/${versions_dir_new}/${new_app_version}"
     layout_new="y"
   else
     new_versioned_dir="${new_app_path}/${VERSIONS_DIR_OLD}/${new_app_version}"
@@ -297,13 +302,12 @@ make_patch_fs() {
   # The only visible contents of the disk image will be a README file that
   # explains the image's purpose.
   local new_app_version_extra="${new_app_version}${name_extra}"
-  cat > "${patch_fs}/README.txt" << __EOF__ ||
+  cat > "${patch_fs}/README.txt" << __EOF__ || \
       (err "could not write README.txt" && exit 13)
 This disk image contains a differential updater that can update
 ${product_name} from version ${old_app_version} to ${new_app_version_extra}.
 
-This image is part of the auto-update system and is not independently
-useful.
+This image is part of the auto-update system and is not independently useful.
 
 To install ${product_name}, please visit ${product_url}.
 __EOF__
@@ -333,13 +337,11 @@ ${version_patch_name}_${old_app_version}_${new_app_version}.dirpatch"
   # but to include an empty Versions directory. The versioned directory was
   # already addressed in the preceding dirpatch.
   if [[ -n "${layout_new}" ]]; then
-    # Transform VERSIONS_DIR_NEW into a regular expression pattern by
-    # backslashing the dot.
-    #
-    # This exclude pattern omits the Current symbolic link, which will be fixed
-    # up after dirdiffer creates this dirpatch.
+    # Transform versions_dir_new and the version into a regular expression
+    # pattern by backslashing the dots.
     export DIRDIFFER_EXCLUDE=\
-"/${APP_NAME_RE}/$(echo "${VERSIONS_DIR_NEW}" | sed -e 's/\./\\./g')/"
+"/${APP_NAME_RE}/$(echo "${versions_dir_new}/${new_app_version}" |
+                       sed -e 's/\./\\./g')"
   else
     # VERSIONS_DIR_OLD doesn't contain anything that a regular expression parser
     # would misinterpret.
@@ -363,14 +365,6 @@ ${version_patch_name}_${old_app_version}_${new_app_version}.dirpatch"
   fi
 
   unset DIRDIFFER_EXCLUDE DIRDIFFER_NO_DIFF
-
-  if [[ -n "${layout_new}" ]]; then
-    # The Current symbolic link in the framework's Versions directory was
-    # excluded by DIRDIFFER_EXCLUDE, but its presence is critical.
-    rsync --links --perms --times \
-           "${new_app_path}/${VERSIONS_DIR_NEW}/Current" \
-           "${patch_app_dir}/${VERSIONS_DIR_NEW}/Current"
-  fi
 
   echo "${product_name} ${old_app_version}-${new_app_version_extra} Update"
 }
