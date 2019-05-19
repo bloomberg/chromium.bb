@@ -1434,8 +1434,7 @@ TEST_P(FrameThrottlingTest, GraphicsLayerCollection) {
   ASSERT_NE(nullptr, paint_controller);
   // We no longer collect the graphics layers of the iframe and the composited
   // content.
-  EXPECT_EQ(display_item_count - 2,
-            paint_controller->GetDisplayItemList().size());
+  EXPECT_GT(display_item_count, paint_controller->GetDisplayItemList().size());
 
   // Move the child back to the visible viewport.
   frame_element->setAttribute(kStyleAttr,
