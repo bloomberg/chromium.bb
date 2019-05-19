@@ -38,6 +38,7 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump, public GraphObserver {
   void OnIsCurrentChanged(FrameNodeImpl* frame_node) override;
   void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override;
   void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override;
+  void OnURLChanged(FrameNodeImpl* frame_node) override;
   // Event notification.
   void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
   void OnIsVisibleChanged(PageNodeImpl* page_node) override;

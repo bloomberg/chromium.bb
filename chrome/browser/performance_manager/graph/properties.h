@@ -35,7 +35,7 @@ class ObservedPropertyImpl {
         ((observer).*(NotifyFunctionPtr))(node);
     }
 
-    PropertyType value() const { return value_; }
+    const PropertyType& value() const { return value_; }
 
    private:
     PropertyType value_;
@@ -66,7 +66,7 @@ class ObservedPropertyImpl {
       return true;
     }
 
-    PropertyType value() const { return value_; }
+    const PropertyType& value() const { return value_; }
 
    private:
     PropertyType value_;

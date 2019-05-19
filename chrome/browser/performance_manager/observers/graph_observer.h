@@ -65,6 +65,7 @@ class GraphObserverDefaultImpl : public GraphObserver {
   void OnIsCurrentChanged(FrameNodeImpl* frame_node) override {}
   void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override {}
   void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override {}
+  void OnURLChanged(FrameNodeImpl* frame_node) override {}
   void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
 
   // PageNodeImplObserver implementation:

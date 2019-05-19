@@ -38,6 +38,9 @@ class FrameNodeImplObserver {
   // Invoked when the |lifecycle_state| property changes.
   virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) = 0;
 
+  // Invoked when the |url| property changes.
+  virtual void OnURLChanged(FrameNodeImpl* frame_node) = 0;
+
   // Events with no property changes.
 
   // Invoked when a non-persistent notification has been issued by the frame.
@@ -153,7 +156,7 @@ class FrameNodeImpl
 
     void Reset(FrameNodeImpl* frame_node, const GURL& url_in);
 
-    GURL url;
+    ObservedProperty::NotifiesOnlyOnChanges<GURL, &Observer::OnURLChanged> url;
     bool has_nonempty_beforeunload = false;
 
     // Network is considered almost idle when there are no more than 2 network
@@ -233,6 +236,7 @@ class FrameNodeImpl::ObserverDefaultImpl : public FrameNodeImpl::Observer {
   void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override {}
   void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override {}
   void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
+  void OnURLChanged(FrameNodeImpl* frame_node) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);

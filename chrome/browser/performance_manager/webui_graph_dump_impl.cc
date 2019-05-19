@@ -214,6 +214,11 @@ void WebUIGraphDumpImpl::OnLifecycleStateChanged(FrameNodeImpl* frame_node) {
   SendFrameNotification(frame_node, false);
 }
 
+void WebUIGraphDumpImpl::OnURLChanged(FrameNodeImpl* frame_node) {
+  SendFrameNotification(frame_node, false);
+  StartFrameFaviconRequest(frame_node);
+}
+
 void WebUIGraphDumpImpl::OnIsVisibleChanged(PageNodeImpl* page_node) {
   SendPageNotification(page_node, false);
 }

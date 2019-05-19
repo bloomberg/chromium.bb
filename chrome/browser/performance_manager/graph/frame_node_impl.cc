@@ -140,7 +140,7 @@ bool FrameNodeImpl::has_nonempty_beforeunload() const {
 
 const GURL& FrameNodeImpl::url() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return document_.url;
+  return document_.url.value();
 }
 
 bool FrameNodeImpl::is_current() const {
@@ -192,7 +192,7 @@ void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (same_document) {
-    document_.url = url;
+    document_.url.SetAndMaybeNotify(this, url);
     return;
   }
 
@@ -345,7 +345,7 @@ FrameNodeImpl::DocumentProperties::~DocumentProperties() = default;
 
 void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
                                               const GURL& url_in) {
-  url = url_in;
+  url.SetAndMaybeNotify(frame_node, url_in);
   has_nonempty_beforeunload = false;
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
