@@ -79,7 +79,7 @@ using std::endl;
 
 namespace {
 
-class QuicSimpleClientFactory : public quic::QuicToyClientBase::ClientFactory {
+class QuicSimpleClientFactory : public quic::QuicToyClient::ClientFactory {
  public:
   std::unique_ptr<quic::QuicSpdyClientBase> CreateClient(
       std::string host,
@@ -129,6 +129,6 @@ int main(int argc, char* argv[]) {
   }
 
   QuicSimpleClientFactory factory;
-  quic::QuicToyClientBase client(&factory);
+  quic::QuicToyClient client(&factory);
   return client.SendRequestsAndPrintResponses(urls);
 }

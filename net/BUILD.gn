@@ -3161,6 +3161,8 @@ if (is_linux) {
   executable("epoll_quic_client") {
     sources = [
       "third_party/quiche/src/quic/tools/quic_client_bin.cc",
+      "third_party/quiche/src/quic/tools/quic_epoll_client_factory.cc",
+      "third_party/quiche/src/quic/tools/quic_epoll_client_factory.h",
       "third_party/quiche/src/quic/tools/quic_toy_client.cc",
       "third_party/quiche/src/quic/tools/quic_toy_client.h",
     ]
@@ -3177,6 +3179,8 @@ if (is_linux) {
   executable("epoll_quic_server") {
     sources = [
       "third_party/quiche/src/quic/tools/quic_server_bin.cc",
+      "third_party/quiche/src/quic/tools/quic_toy_server.cc",
+      "third_party/quiche/src/quic/tools/quic_toy_server.h",
     ]
     deps = [
       ":epoll_quic_tools",
@@ -3506,6 +3510,7 @@ source_set("simple_quic_tools") {
     "third_party/quiche/src/quic/tools/quic_simple_server_stream.h",
     "third_party/quiche/src/quic/tools/quic_spdy_client_base.cc",
     "third_party/quiche/src/quic/tools/quic_spdy_client_base.h",
+    "third_party/quiche/src/quic/tools/quic_spdy_server_base.h",
     "third_party/quiche/src/quic/tools/quic_url.cc",
     "third_party/quiche/src/quic/tools/quic_url.h",
     "tools/quic/quic_client_message_loop_network_helper.cc",
