@@ -4066,6 +4066,20 @@ void LayoutObject::SetModifiedStyleOutsideStyleRecalc(
   GetNode()->SetComputedStyle(std::move(style));
 }
 
+LayoutUnit LayoutObject::FlipForWritingModeInternal(
+    LayoutUnit position,
+    LayoutUnit width,
+    const LayoutBox* box_for_flipping) const {
+  DCHECK(!IsBox());
+  DCHECK(HasFlippedBlocksWritingMode());
+  DCHECK(!box_for_flipping || box_for_flipping == ContainingBlock());
+  // For now, block flipping doesn't apply for non-box SVG objects.
+  if (IsSVG())
+    return position;
+  return (box_for_flipping ? box_for_flipping : ContainingBlock())
+      ->FlipForWritingMode(position, width);
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG

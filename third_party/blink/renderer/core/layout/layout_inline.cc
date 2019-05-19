@@ -793,7 +793,7 @@ void LayoutInline::CollectLineBoxRects(
     CollectCulledLineBoxRects(yield);
   } else {
     const LayoutBlock* block_for_flipping =
-        NeedsFlipForWritingMode() ? ContainingBlock() : nullptr;
+        UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
     for (InlineFlowBox* curr : *LineBoxes()) {
       yield(FlipForWritingMode(LayoutRect(curr->Location(), curr->Size()),
                                block_for_flipping));
@@ -806,7 +806,7 @@ void LayoutInline::CollectCulledLineBoxRects(
     const PhysicalRectCollector& yield) const {
   DCHECK(!IsInLayoutNGInlineFormattingContext());
   const LayoutBlock* block_for_flipping =
-      NeedsFlipForWritingMode() ? ContainingBlock() : nullptr;
+      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   CollectCulledLineBoxRectsInFlippedBlocksDirection(
       [this, block_for_flipping, &yield](const LayoutRect& r) {
         PhysicalRect rect = FlipForWritingMode(r, block_for_flipping);
@@ -921,7 +921,7 @@ void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
   LayoutGeometryMap geometry_map(mode);
   geometry_map.PushMappingsToAncestor(this, nullptr);
   const LayoutBlock* block_for_flipping =
-      NeedsFlipForWritingMode() ? ContainingBlock() : nullptr;
+      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   CollectLineBoxRects(
       [this, &quads, &geometry_map, block_for_flipping](const PhysicalRect& r) {
         // LayoutGeometryMap requires flipped rect as the input.
@@ -947,7 +947,7 @@ base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
   }
   if (const InlineBox* first_box = FirstLineBoxIncludingCulling()) {
     LayoutPoint location = first_box->Location();
-    if (UNLIKELY(NeedsFlipForWritingMode())) {
+    if (UNLIKELY(HasFlippedBlocksWritingMode())) {
       location.Move(first_box->Width(), LayoutUnit());
       return ContainingBlock()->FlipForWritingMode(location);
     }
@@ -1751,28 +1751,6 @@ void LayoutInline::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   if (CanContainFixedPositionObjects())
     mode &= ~kIsFixed;
   LayoutBoxModelObject::MapLocalToAncestor(ancestor, transform_state, mode);
-}
-
-LayoutRect LayoutInline::FlipForWritingMode(
-    const PhysicalRect& rect,
-    const LayoutBlock* block_for_flipping) const {
-  if (UNLIKELY(NeedsFlipForWritingMode())) {
-    DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
-    return (block_for_flipping ? block_for_flipping : ContainingBlock())
-        ->FlipForWritingMode(rect);
-  }
-  return rect.ToLayoutRect();
-}
-
-PhysicalRect LayoutInline::FlipForWritingMode(
-    const LayoutRect& rect,
-    const LayoutBlock* block_for_flipping) const {
-  if (UNLIKELY(NeedsFlipForWritingMode())) {
-    DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
-    return (block_for_flipping ? block_for_flipping : ContainingBlock())
-        ->FlipForWritingMode(rect);
-  }
-  return PhysicalRect(rect);
 }
 
 PhysicalRect LayoutInline::DebugRect() const {

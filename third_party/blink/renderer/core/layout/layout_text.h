@@ -321,9 +321,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // it was inserted/changed but also it was moved.
   void InvalidateInlineItems() { valid_ng_items_ = false; }
 
-  WARN_UNUSED_RESULT LayoutRect FlipForWritingMode(const PhysicalRect& r) const;
-  WARN_UNUSED_RESULT PhysicalRect FlipForWritingMode(const LayoutRect& r) const;
-
  protected:
   virtual const NGInlineItems* GetNGInlineItems() const { return nullptr; }
   virtual NGInlineItems* GetNGInlineItems() { return nullptr; }
@@ -394,22 +391,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   bool CanOptimizeSetText() const;
   void SetFirstTextBoxLogicalLeft(float text_width) const;
-
-  bool NeedsFlipForWritingMode() const {
-    return HasFlippedBlocksWritingMode() && !IsSVG();
-  }
-  // These functions flip the input rect in ContainingBlock() if
-  // NeedsFlipForWritingMode() is true. If |block_for_flipping| is not null,
-  // it should be ContainingBlock(), otherwise the function will call
-  // ContainingBlock() by themselves. The caller should prepare
-  // |block_for_flipping| if it will loop through many rects to flip to avoid
-  // the cost of repeated ContainingBlock() calls.
-  ALWAYS_INLINE WARN_UNUSED_RESULT LayoutRect
-  FlipForWritingMode(const PhysicalRect& r,
-                     const LayoutBlock* block_for_flipping) const;
-  ALWAYS_INLINE WARN_UNUSED_RESULT PhysicalRect
-  FlipForWritingMode(const LayoutRect& r,
-                     const LayoutBlock* block_for_flipping) const;
 
  private:
   ContentCaptureManager* GetContentCaptureManager();

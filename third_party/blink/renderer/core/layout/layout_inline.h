@@ -399,22 +399,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   base::Optional<PhysicalOffset> FirstLineBoxTopLeftInternal() const;
   PhysicalOffset AnchorPhysicalLocation() const;
 
-  bool NeedsFlipForWritingMode() const {
-    return HasFlippedBlocksWritingMode() && !IsSVG();
-  }
-  // These functions flip the input rect in ContainingBlock() if
-  // NeedsFlipForWritingMode() is true. If |block_for_flipping| is not null,
-  // it should be ContainingBlock(), otherwise the function will call
-  // ContainingBlock() by themselves. The caller should prepare
-  // |block_for_flipping| if it will loop through many rects to flip to avoid
-  // the cost of repeated ContainingBlock() calls.
-  ALWAYS_INLINE WARN_UNUSED_RESULT LayoutRect
-  FlipForWritingMode(const PhysicalRect& r,
-                     const LayoutBlock* block_for_flipping = nullptr) const;
-  ALWAYS_INLINE WARN_UNUSED_RESULT PhysicalRect
-  FlipForWritingMode(const LayoutRect& r,
-                     const LayoutBlock* block_for_flipping = nullptr) const;
-
   LayoutObjectChildList children_;
 
   union {

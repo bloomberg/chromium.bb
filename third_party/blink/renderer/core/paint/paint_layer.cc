@@ -2570,7 +2570,7 @@ PhysicalRect PaintLayer::LocalBoundingBox() const {
     rect = ToLayoutBox(GetLayoutObject()).PhysicalVisualOverflowRect();
   } else {
     LayoutRect layout_rect = GetLayoutObject().VisualOverflowRect();
-    rect = GetLayoutObject().ContainingBlock()->FlipForWritingMode(layout_rect);
+    rect = GetLayoutObject().FlipForWritingMode(layout_rect);
   }
 
   if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {

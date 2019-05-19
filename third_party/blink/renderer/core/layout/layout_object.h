@@ -929,6 +929,45 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return StyleRef().IsFlippedBlocksWritingMode();
   }
 
+  // If HasFlippedBlocksWritingMode() is true, these functions flip the input
+  // rect/point in blocks direction in this object's local coordinate space
+  // (which is the ContainerBlock()'s space if this object is not a box).
+  // For non-boxes, for better performance, the caller can prepare
+  // |block_for_flipping| (= ContainingBlock()) if it will loop through many
+  // rects/points to flip to avoid the cost of repeated ContainingBlock() calls.
+  WARN_UNUSED_RESULT LayoutRect
+  FlipForWritingMode(const PhysicalRect& r,
+                     const LayoutBox* box_for_flipping = nullptr) const {
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
+      return r.ToLayoutRect();
+    return {FlipForWritingModeInternal(r.X(), r.Width(), box_for_flipping),
+            r.Y(), r.Width(), r.Height()};
+  }
+  WARN_UNUSED_RESULT PhysicalRect
+  FlipForWritingMode(const LayoutRect& r,
+                     const LayoutBox* box_for_flipping = nullptr) const {
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
+      return PhysicalRect(r);
+    return {FlipForWritingModeInternal(r.X(), r.Width(), box_for_flipping),
+            r.Y(), r.Width(), r.Height()};
+  }
+  WARN_UNUSED_RESULT LayoutPoint
+  FlipForWritingMode(const PhysicalOffset& p,
+                     const LayoutBox* box_for_flipping = nullptr) const {
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
+      return p.ToLayoutPoint();
+    return {FlipForWritingModeInternal(p.left, LayoutUnit(), box_for_flipping),
+            p.top};
+  }
+  WARN_UNUSED_RESULT PhysicalOffset
+  FlipForWritingMode(const LayoutPoint& p,
+                     const LayoutBox* box_for_flipping = nullptr) const {
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
+      return PhysicalOffset(p);
+    return {FlipForWritingModeInternal(p.X(), LayoutUnit(), box_for_flipping),
+            p.Y()};
+  }
+
   bool HasLayer() const { return bitfields_.HasLayer(); }
 
   // This may be different from StyleRef().hasBoxDecorationBackground() because
@@ -2585,6 +2624,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ApplyFirstLineChanges(const ComputedStyle* old_style);
 
   IntRect AdjustVisualRectForInlineBox(const IntRect&) const;
+
+  virtual LayoutUnit FlipForWritingModeInternal(
+      LayoutUnit position,
+      LayoutUnit width,
+      const LayoutBox* box_for_flipping) const;
 
   // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
   // during PrePaint in this object's InvalidatePaint(). It's different from

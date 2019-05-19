@@ -1307,44 +1307,31 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutPoint FlipForWritingModeForChild(const LayoutBox* child,
                                          const LayoutPoint&) const;
 
-  WARN_UNUSED_RESULT LayoutUnit FlipForWritingMode(LayoutUnit position) const {
+  WARN_UNUSED_RESULT LayoutUnit
+  FlipForWritingMode(LayoutUnit position,
+                     LayoutUnit width = LayoutUnit()) const {
     // The offset is in the block direction (y for horizontal writing modes, x
     // for vertical writing modes).
-    if (!UNLIKELY(HasFlippedBlocksWritingMode()))
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
       return position;
     DCHECK(!IsHorizontalWritingMode());
-    return frame_rect_.Width() - position;
+    return frame_rect_.Width() - (position + width);
   }
   WARN_UNUSED_RESULT LayoutPoint
   FlipForWritingMode(const PhysicalOffset& offset) const {
     return LayoutPoint(FlipForWritingMode(offset.left), offset.top);
   }
-  WARN_UNUSED_RESULT PhysicalOffset
-  FlipForWritingMode(const LayoutPoint& position) const {
-    return PhysicalOffset(FlipForWritingMode(position.X()), position.Y());
-  }
+  // Inherit other flipping methods from LayoutObject.
+  using LayoutObject::FlipForWritingMode;
+
   WARN_UNUSED_RESULT LayoutPoint
   DeprecatedFlipForWritingMode(const LayoutPoint& position) const {
     return LayoutPoint(FlipForWritingMode(position.X()), position.Y());
   }
-
-  WARN_UNUSED_RESULT LayoutRect
-  FlipForWritingMode(const PhysicalRect& r) const {
-    return FlipForWritingMode(r.ToLayoutRect()).ToLayoutRect();
-  }
-  WARN_UNUSED_RESULT PhysicalRect
-  FlipForWritingMode(const LayoutRect& r) const {
-    if (!UNLIKELY(HasFlippedBlocksWritingMode()))
-      return PhysicalRect(r);
-    DCHECK(!IsHorizontalWritingMode());
-    return PhysicalRect(frame_rect_.Width() - r.MaxX(), r.Y(), r.Width(),
-                        r.Height());
-  }
   void DeprecatedFlipForWritingMode(LayoutRect& rect) const {
-    if (!UNLIKELY(HasFlippedBlocksWritingMode()))
+    if (LIKELY(!HasFlippedBlocksWritingMode()))
       return;
-    DCHECK(!IsHorizontalWritingMode());
-    rect.SetX(frame_rect_.Width() - rect.MaxX());
+    rect = FlipForWritingMode(rect).ToLayoutRect();
   }
 
   // Passing |flipped_blocks_container| causes flipped-block flipping w.r.t.
@@ -1788,6 +1775,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // is just to make sure that left-hand scrollbars don't mess up
   // scrollWidth. For the full story, visit http://crbug.com/724255.
   LayoutUnit VerticalScrollbarWidthClampedToContentBox() const;
+
+  LayoutUnit FlipForWritingModeInternal(
+      LayoutUnit position,
+      LayoutUnit width,
+      const LayoutBox* box_for_flipping) const final {
+    DCHECK(!box_for_flipping || box_for_flipping == this);
+    return FlipForWritingMode(position, width);
+  }
 
   // The CSS border box rect for this box.
   //

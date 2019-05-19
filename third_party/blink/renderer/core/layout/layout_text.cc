@@ -436,7 +436,7 @@ void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
   }
 
   const LayoutBlock* block_for_flipping =
-      UNLIKELY(NeedsFlipForWritingMode()) ? ContainingBlock() : nullptr;
+      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   for (InlineTextBox* box : TextBoxes()) {
     LayoutRect boundaries = box->FrameRect();
     const IntRect ellipsis_rect = (option == kClipToEllipsis)
@@ -455,7 +455,7 @@ void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
 void LayoutText::AbsoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
   const LayoutBlock* block_for_flipping =
-      UNLIKELY(NeedsFlipForWritingMode()) ? ContainingBlock() : nullptr;
+      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   CollectLineBoxRects(
       [this, &quads, mode, block_for_flipping](const PhysicalRect& r) {
         // LocalToAbsoluteQuad requires the input to be in flipped blocks
@@ -615,7 +615,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
 FloatRect LayoutText::LocalBoundingBoxRectForAccessibility() const {
   FloatRect result;
   const LayoutBlock* block_for_flipping =
-      UNLIKELY(NeedsFlipForWritingMode()) ? ContainingBlock() : nullptr;
+      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   CollectLineBoxRects(
       [this, &result, block_for_flipping](const PhysicalRect& r) {
         LayoutRect rect = FlipForWritingMode(r, block_for_flipping);
@@ -1546,7 +1546,7 @@ PhysicalOffset LayoutText::FirstLineBoxTopLeft() const {
     return fragment->InlineOffsetToContainerBox();
   if (const auto* text_box = FirstTextBox()) {
     LayoutPoint location = text_box->Location();
-    if (UNLIKELY(NeedsFlipForWritingMode())) {
+    if (UNLIKELY(HasFlippedBlocksWritingMode())) {
       location.Move(text_box->Width(), LayoutUnit());
       return ContainingBlock()->FlipForWritingMode(location);
     }
@@ -2425,36 +2425,6 @@ const NGInlineItems& LayoutText::InlineItems() const {
   DCHECK(GetNGInlineItems());
   DCHECK(!GetNGInlineItems()->IsEmpty());
   return *GetNGInlineItems();
-}
-
-LayoutRect LayoutText::FlipForWritingMode(const PhysicalRect& rect) const {
-  return FlipForWritingMode(rect, nullptr);
-}
-
-PhysicalRect LayoutText::FlipForWritingMode(const LayoutRect& rect) const {
-  return FlipForWritingMode(rect, nullptr);
-}
-
-LayoutRect LayoutText::FlipForWritingMode(
-    const PhysicalRect& rect,
-    const LayoutBlock* block_for_flipping) const {
-  if (UNLIKELY(NeedsFlipForWritingMode())) {
-    DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
-    return (block_for_flipping ? block_for_flipping : ContainingBlock())
-        ->FlipForWritingMode(rect);
-  }
-  return rect.ToLayoutRect();
-}
-
-PhysicalRect LayoutText::FlipForWritingMode(
-    const LayoutRect& rect,
-    const LayoutBlock* block_for_flipping) const {
-  if (UNLIKELY(NeedsFlipForWritingMode())) {
-    DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
-    return (block_for_flipping ? block_for_flipping : ContainingBlock())
-        ->FlipForWritingMode(rect);
-  }
-  return PhysicalRect(rect);
 }
 
 }  // namespace blink
