@@ -39,11 +39,7 @@ THREADS_ENABLED_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, 'threads_enabled')
 COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, 'compiler-rt')
 CLANG_DIR = os.path.join(LLVM_DIR, 'tools', 'clang')
 LLD_DIR = os.path.join(LLVM_DIR, 'tools', 'lld')
-# TODO(thakis): Use projects/compiler-rt on Linux too once tests pass there.
-if sys.platform in ['darwin', 'win32']:
-  COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
-else:
-  COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'compiler-rt')
+COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
 LIBCXX_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxx')
 LIBCXXABI_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxxabi')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
@@ -145,8 +141,7 @@ def CheckoutRepos(args):
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
   Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
   # Remove compiler-rt at old location.
-  if (sys.platform == 'darwin' and
-      os.path.exists(os.path.join(LLVM_DIR, 'compiler-rt'))):
+  if os.path.exists(os.path.join(LLVM_DIR, 'compiler-rt')):
     RmTree(os.path.join(LLVM_DIR, 'compiler-rt'))
   Checkout('compiler-rt', LLVM_REPO_URL + '/compiler-rt/trunk', COMPILER_RT_DIR)
   if sys.platform == 'darwin':
@@ -416,6 +411,28 @@ def main():
         # Ignore args.disable_asserts for the bootstrap compiler.
         '-DLLVM_ENABLE_ASSERTIONS=ON',
         ]
+    if sys.platform == 'darwin':
+      # On macOS, the bootstrap toolchain needs to have compiler-rt because
+      # dsymutil's link needs libclang_rt.osx.a. Only the x86_64 osx
+      # libraries are needed though, and only libclang_rt (i.e.
+      # COMPILER_RT_BUILD_BUILTINS).
+      bootstrap_args.extend([
+          "-DDARWIN_osx_ARCHS=x86_64",
+          "-DCOMPILER_RT_BUILD_BUILTINS=ON",
+          "-DCOMPILER_RT_BUILD_CRT=OFF",
+          "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
+          "-DCOMPILER_RT_BUILD_PROFILE=OFF",
+          "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+          "-DCOMPILER_RT_BUILD_XRAY=OFF",
+          "-DCOMPILER_RT_ENABLE_IOS=OFF",
+          "-DCOMPILER_RT_ENABLE_WATCHOS=OFF",
+          "-DCOMPILER_RT_ENABLE_TVOS=OFF",
+          ])
+    else:
+      # On non-darwin, the bootstrap toolchain doesn't need compiler-rt,
+      # so don't build it during bootstrap. If we ever do need it,
+      # consider setting COMPILER_RT_DEFAULT_TARGET_ONLY.
+      bootstrap_args.append("-DLLVM_TOOL_COMPILER_RT_BUILD=OFF")
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
     RmCmakeCache('.')
@@ -576,12 +593,12 @@ def main():
   # Do an out-of-tree build of compiler-rt.
   # On Windows, this is used to get the 32-bit ASan run-time.
   # TODO(hans): Remove once the regular build above produces this.
-  if sys.platform != 'darwin':
+  if sys.platform == 'win32':
     if os.path.isdir(COMPILER_RT_BUILD_DIR):
       RmTree(COMPILER_RT_BUILD_DIR)
     os.makedirs(COMPILER_RT_BUILD_DIR)
     os.chdir(COMPILER_RT_BUILD_DIR)
-    if args.bootstrap and sys.platform == 'win32':
+    if args.bootstrap:
       # The bootstrap compiler produces 64-bit binaries by default.
       cflags += ['-m32']
       cxxflags += ['-m32']
@@ -589,34 +606,19 @@ def main():
         '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags)]
-    if sys.platform != 'win32':
-      compiler_rt_args += ['-DLLVM_CONFIG_PATH=' +
-                           os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-config'),
-                          ]
     RmCmakeCache('.')
-    RunCommand(['cmake'] + compiler_rt_args +
-               [LLVM_DIR if sys.platform == 'win32' else COMPILER_RT_DIR],
+    RunCommand(['cmake'] + compiler_rt_args + [LLVM_DIR],
                msvc_arch='x86', env=deployment_env)
     RunCommand(['ninja', 'compiler-rt'], msvc_arch='x86')
 
     # Copy select output to the main tree.
     # TODO(hans): Make this (and the .gypi and .isolate files) version number
     # independent.
-    rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', platform)
-    if sys.platform == 'win32':
-      # TODO(thakis): This too is due to compiler-rt being part of the checkout
-      # on Windows, see TODO above COMPILER_RT_DIR.
-      rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
-                                    RELEASE_VERSION, 'lib', platform)
+    rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
+                                  RELEASE_VERSION, 'lib', platform)
     # Blacklists:
     CopyDirectoryContents(os.path.join(rt_lib_src_dir, '..', '..', 'share'),
                           os.path.join(rt_lib_dst_dir, '..', '..', 'share'))
-    # Headers:
-    if sys.platform != 'win32':
-      CopyDirectoryContents(
-          os.path.join(COMPILER_RT_BUILD_DIR, 'include/sanitizer'),
-          os.path.join(LLVM_BUILD_DIR, 'lib/clang', RELEASE_VERSION,
-                       'include/sanitizer'))
     # Static and dynamic libraries:
     CopyDirectoryContents(rt_lib_src_dir, rt_lib_dst_dir)
 
