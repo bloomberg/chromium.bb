@@ -26,23 +26,23 @@ namespace autofill {
 
 // Dictionary keys for address components info.
 const char kFieldTypeKey[] = "field";
-const char kFieldLengthKey[] = "length";
-const char kFieldNameKey[] = "name";
+const char kFieldLengthKey[] = "isLongField";
+const char kFieldNameKey[] = "fieldName";
 
 // Field names for the address components.
-const char kFullNameField[] = "fullName";
-const char kCompanyNameField[] = "companyName";
-const char kAddressLineField[] = "addrLines";
-const char kDependentLocalityField[] = "dependentLocality";
-const char kCityField[] = "city";
-const char kStateField[] = "state";
-const char kPostalCodeField[] = "postalCode";
-const char kSortingCodeField[] = "sortingCode";
-const char kCountryField[] = "country";
+const char kFullNameField[] = "FULL_NAME";
+const char kCompanyNameField[] = "COMPANY_NAME";
+const char kAddressLineField[] = "ADDRESS_LINES";
+const char kDependentLocalityField[] = "ADDRESS_LEVEL_3";
+const char kCityField[] = "ADDRESS_LEVEL_2";
+const char kStateField[] = "ADDRESS_LEVEL_1";
+const char kPostalCodeField[] = "POSTAL_CODE";
+const char kSortingCodeField[] = "SORTING_CODE";
+const char kCountryField[] = "COUNTY_CODE";
 
 // Address field length values.
-const char kShortField[] = "short";
-const char kLongField[] = "long";
+const bool kShortField = false;
+const bool kLongField = true;
 
 ServerFieldType GetFieldTypeFromString(const std::string& type) {
   if (type == kFullNameField)
@@ -143,10 +143,10 @@ void GetAddressComponents(const std::string& country_code,
 
     switch (components[i].length_hint) {
       case AddressUiComponent::HINT_LONG:
-        component->SetString(kFieldLengthKey, kLongField);
+        component->SetBoolean(kFieldLengthKey, kLongField);
         break;
       case AddressUiComponent::HINT_SHORT:
-        component->SetString(kFieldLengthKey, kShortField);
+        component->SetBoolean(kFieldLengthKey, kShortField);
         break;
     }
 

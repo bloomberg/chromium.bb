@@ -55,10 +55,10 @@ extern const char kSortingCodeField[];
 extern const char kCountryField[];
 
 // AddressUiComponent::HINT_SHORT.
-extern const char kShortField[];
+extern const bool kShortField;
 
 // AddressUiComponent::HINT_LONG.
-extern const char kLongField[];
+extern const bool kLongField;
 
 // Converts a field type in string format as returned by
 // autofill::GetAddressComponents into the appropriate autofill::ServerFieldType

@@ -457,8 +457,8 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
         NOTREACHED();
         return;
       }
-      std::string field_length;
-      if (!component->GetString(autofill::kFieldLengthKey, &field_length)) {
+      bool field_length;
+      if (!component->GetBoolean(autofill::kFieldLengthKey, &field_length)) {
         NOTREACHED();
         return;
       }
