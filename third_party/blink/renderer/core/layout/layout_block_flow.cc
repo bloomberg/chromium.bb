@@ -396,9 +396,9 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
   if (logical_height_length.IsPercentOrCalc() &&
       !GetDocument().InQuirksMode()) {
     has_auto_height = true;
-    for (LayoutBlock* cb = ContainingBlock(); !cb->IsLayoutView();
-         cb = cb->ContainingBlock()) {
-      if (cb->StyleRef().LogicalHeight().IsFixed() || cb->IsTableCell())
+    if (LayoutBlock* cb = ContainingBlock()) {
+      if (!cb->IsLayoutView() &&
+          (cb->StyleRef().LogicalHeight().IsFixed() || cb->IsTableCell()))
         has_auto_height = false;
     }
   }
