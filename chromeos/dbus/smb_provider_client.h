@@ -69,17 +69,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
                      const std::string& workgroup,
                      const std::string& username,
                      base::ScopedFD password_fd,
+                     bool skip_connect,
                      MountCallback callback) = 0;
-
-  // Calls Remount. This attempts to remount the share at |share_path| with its
-  // original |mount_id|.
-  virtual void Remount(const base::FilePath& share_path,
-                       int32_t mount_id,
-                       bool ntlm_enabled,
-                       const std::string& workgroup,
-                       const std::string& username,
-                       base::ScopedFD password_fd,
-                       StatusCallback callback) = 0;
 
   // Calls Unmount. This removes the corresponding mount of |mount_id| from
   // the list of valid mounts. Subsequent operations on |mount_id| will fail.
