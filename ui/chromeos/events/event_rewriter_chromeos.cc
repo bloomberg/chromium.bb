@@ -1496,11 +1496,6 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
       {{ui::EF_NONE, ui::VKEY_ZOOM},
        {ui::EF_NONE, ui::DomCode::ZOOM_TOGGLE, ui::DomKey::ZOOM_TOGGLE,
         ui::VKEY_MEDIA_LAUNCH_APP2}},
-      // Next keyboard layout IME is through space + control + shift
-      {{ui::EF_NONE, ui::VKEY_MODECHANGE},
-       {ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
-        ui::DomCode::KEYBOARD_LAYOUT_SELECT, ui::DomKey::MODE_CHANGE,
-        ui::VKEY_SPACE}},
   };
 
   // Some key codes have a Dom code but no VKEY value assigned. They're mapped

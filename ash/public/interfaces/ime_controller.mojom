@@ -98,4 +98,7 @@ interface ImeControllerClient {
   // 'kNone', we switch to the default keyset. Because this is asynchronous,
   // any code that needs the keyset to be updated first must use the callback.
   OverrideKeyboardKeyset(chromeos.input_method.mojom.ImeKeyset keyset) => ();
+
+  // Show the current mode.
+  ShowModeIndicator();
 };

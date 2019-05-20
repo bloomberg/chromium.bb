@@ -28,6 +28,7 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
                               OverrideKeyboardKeysetCallback callback) override;
   void UpdateMirroringState(bool enabled) override;
   void UpdateCastingState(bool enabled) override;
+  void ShowModeIndicator() override;
 
   int next_ime_count_ = 0;
   int last_used_ime_count_ = 0;
@@ -39,6 +40,7 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
       chromeos::input_method::mojom::ImeKeyset::kNone;
   bool is_mirroring_ = false;
   bool is_casting_ = false;
+  int show_mode_indicator_count_ = 0;
 
  private:
   mojo::Binding<mojom::ImeControllerClient> binding_;

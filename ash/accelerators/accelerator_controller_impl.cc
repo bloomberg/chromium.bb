@@ -600,6 +600,11 @@ void HandleShowImeMenuBubble() {
   }
 }
 
+void HandleShowOrSwitchIme() {
+  base::RecordAction(UserMetricsAction("Accel_Show_Or_Switch_Ime"));
+  Shell::Get()->ime_controller()->ShowOrSwitchIme();
+}
+
 void HandleCrosh() {
   base::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
 
@@ -1411,6 +1416,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case RESTORE_TAB:
     case ROTATE_WINDOW:
     case SHOW_IME_MENU_BUBBLE:
+    case SHOW_OR_SWITCH_IME:
     case SHOW_SHORTCUT_VIEWER:
     case SHOW_TASK_MANAGER:
     case SUSPEND:
@@ -1640,6 +1646,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case SHOW_IME_MENU_BUBBLE:
       HandleShowImeMenuBubble();
+      break;
+    case SHOW_OR_SWITCH_IME:
+      HandleShowOrSwitchIme();
       break;
     case SHOW_SHORTCUT_VIEWER:
       HandleShowKeyboardShortcutViewer();

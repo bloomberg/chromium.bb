@@ -58,4 +58,8 @@ void TestImeControllerClient::UpdateCastingState(bool enabled) {
   is_casting_ = enabled;
 }
 
+void TestImeControllerClient::ShowModeIndicator() {
+  ++show_mode_indicator_count_;
+}
+
 }  // namespace ash

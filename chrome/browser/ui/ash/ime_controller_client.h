@@ -46,6 +46,7 @@ class ImeControllerClient
   void UpdateCastingState(bool casting_enabled) override;
   void OverrideKeyboardKeyset(chromeos::input_method::mojom::ImeKeyset keyset,
                               OverrideKeyboardKeysetCallback callback) override;
+  void ShowModeIndicator() override;
 
   // chromeos::input_method::InputMethodManager::Observer:
   void InputMethodChanged(chromeos::input_method::InputMethodManager* manager,
@@ -86,8 +87,6 @@ class ImeControllerClient
 
   // Sends information about current and available IMEs to ash.
   void RefreshIme();
-
-  void ShowModeIndicator();
 
   chromeos::input_method::InputMethodManager* const input_method_manager_;
 

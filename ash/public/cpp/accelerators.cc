@@ -183,6 +183,9 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_A, ui::EF_COMMAND_DOWN, START_VOICE_INTERACTION},
     {true, ui::VKEY_ASSISTANT, ui::EF_NONE, START_VOICE_INTERACTION},
 
+    // IME mode change key.
+    {true, ui::VKEY_MODECHANGE, ui::EF_NONE, SHOW_OR_SWITCH_IME},
+
     // Debugging shortcuts that need to be available to end-users in
     // release builds.
     {true, ui::VKEY_U, kDebugModifier, PRINT_UI_HIERARCHIES},

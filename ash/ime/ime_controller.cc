@@ -222,6 +222,13 @@ void ImeController::FlushMojoForTesting() {
   client_.FlushForTesting();
 }
 
+void ImeController::ShowOrSwitchIme() {
+  if (mode_indicator_observer_->active_widget())
+    SwitchToNextIme();
+  else
+    client_->ShowModeIndicator();
+}
+
 bool ImeController::IsCapsLockEnabled() const {
   return is_caps_lock_enabled_;
 }

@@ -16,6 +16,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -47,6 +48,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -2240,6 +2242,39 @@ TEST_P(MediaSessionAcceleratorTest,
     EXPECT_EQ(2, client()->handle_media_next_track_count());
     EXPECT_EQ(0, controller()->next_track_count());
   }
+}
+
+// Tests the IME mode change key.
+TEST_F(AcceleratorControllerTest,
+       ChangeIMEMode_ModeIndicatorHiddenShowsIndicator) {
+  ImeController* controller = Shell::Get()->ime_controller();
+
+  TestImeControllerClient client;
+  controller->SetClient(client.CreateInterfacePtr());
+
+  EXPECT_FALSE(controller->mode_indicator_observer()->active_widget());
+  EXPECT_EQ(0, client.show_mode_indicator_count_);
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MODECHANGE, ui::EF_NONE));
+  controller->FlushMojoForTesting();
+
+  EXPECT_EQ(1, client.show_mode_indicator_count_);
+}
+
+TEST_F(AcceleratorControllerTest,
+       ChangeIMEMode_ModeIndicatorVisibleSwitchesInputMethod) {
+  ImeController* controller = Shell::Get()->ime_controller();
+
+  TestImeControllerClient client;
+  controller->SetClient(client.CreateInterfacePtr());
+
+  controller->ShowModeIndicator(gfx::Rect(10, 10), base::ASCIIToUTF16("test"));
+  EXPECT_EQ(0, client.next_ime_count_);
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MODECHANGE, ui::EF_NONE));
+  controller->FlushMojoForTesting();
+
+  EXPECT_EQ(1, client.next_ime_count_);
 }
 
 }  // namespace ash
