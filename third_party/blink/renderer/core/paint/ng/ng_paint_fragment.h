@@ -157,7 +157,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // overflow of this object (e.g. when not clipped,) in the local coordinate.
   PhysicalRect InkOverflow() const;
 
-  void RecalcInlineChildrenInkOverflow();
+  void RecalcInlineChildrenInkOverflow() const;
 
   void AddSelfOutlineRects(Vector<PhysicalRect>*,
                            const PhysicalOffset& offset,
@@ -185,7 +185,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // Set ShouldDoFullPaintInvalidation flag to all objects in the first line of
   // this block-level fragment.
-  void SetShouldDoFullPaintInvalidationForFirstLine();
+  void SetShouldDoFullPaintInvalidationForFirstLine() const;
 
   // DisplayItemClient methods.
   String DebugName() const override;
@@ -255,7 +255,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // When the LayoutObject is an inline block, it belongs to an inline
   // formatting context while it creates its own for its descendants. This
   // function always returns the one it belongs to.
-  static NGPaintFragment* GetForInlineContainer(const LayoutObject*);
+  static const NGPaintFragment* GetForInlineContainer(const LayoutObject*);
 
   // Returns a range of NGPaintFragment in an inline formatting context that are
   // for a LayoutObject.
@@ -320,7 +320,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // Re-compute ink overflow of children and return the union.
   PhysicalRect RecalcInkOverflow();
-  PhysicalRect RecalcContentsInkOverflow();
+  PhysicalRect RecalcContentsInkOverflow() const;
 
   // This fragment will use the layout object's visual rect.
   const LayoutObject& VisualRectLayoutObject(bool& this_as_inline_box) const;

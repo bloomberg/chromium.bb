@@ -2687,7 +2687,7 @@ void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
   DCHECK(ChildrenInline());
   if (RootInlineBox* first_root_box = FirstRootBox())
     first_root_box->SetShouldDoFullPaintInvalidationRecursively();
-  else if (NGPaintFragment* paint_fragment = PaintFragment())
+  else if (const NGPaintFragment* paint_fragment = PaintFragment())
     paint_fragment->SetShouldDoFullPaintInvalidationForFirstLine();
 }
 

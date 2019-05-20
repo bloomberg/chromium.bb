@@ -429,11 +429,11 @@ void NGPaintFragment::AssociateWithLayoutObject(
   add_result.stored_value->value = this;
 }
 
-NGPaintFragment* NGPaintFragment::GetForInlineContainer(
+const NGPaintFragment* NGPaintFragment::GetForInlineContainer(
     const LayoutObject* layout_object) {
   DCHECK(layout_object && layout_object->IsInline());
   if (LayoutBlockFlow* block_flow = layout_object->ContainingNGBlockFlow()) {
-    if (NGPaintFragment* fragment = block_flow->PaintFragment())
+    if (const NGPaintFragment* fragment = block_flow->PaintFragment())
       return fragment;
 
     // TODO(kojii): IsLayoutFlowThread should probably be done in
@@ -558,12 +558,12 @@ PhysicalRect NGPaintFragment::InkOverflow() const {
   return rect;
 }
 
-void NGPaintFragment::RecalcInlineChildrenInkOverflow() {
+void NGPaintFragment::RecalcInlineChildrenInkOverflow() const {
   DCHECK(GetLayoutObject()->ChildrenInline());
   RecalcContentsInkOverflow();
 }
 
-PhysicalRect NGPaintFragment::RecalcContentsInkOverflow() {
+PhysicalRect NGPaintFragment::RecalcContentsInkOverflow() const {
   PhysicalRect contents_rect;
   for (NGPaintFragment* child : Children()) {
     const NGPhysicalFragment& child_fragment = child->PhysicalFragment();
@@ -769,7 +769,7 @@ void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
 
   // The |layout_object| is inserted into an empty block.
   // Mark the first line box dirty.
-  if (NGPaintFragment* paint_fragment = parent.PaintFragment()) {
+  if (const NGPaintFragment* paint_fragment = parent.PaintFragment()) {
     if (NGPaintFragment* first_line = paint_fragment->FirstLineBox()) {
       first_line->is_dirty_inline_ = true;
       return;
@@ -825,7 +825,7 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationRecursively() {
     child->SetShouldDoFullPaintInvalidationRecursively();
 }
 
-void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() {
+void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() const {
   DCHECK(PhysicalFragment().IsBox() && GetLayoutObject() &&
          GetLayoutObject()->IsLayoutBlockFlow());
 

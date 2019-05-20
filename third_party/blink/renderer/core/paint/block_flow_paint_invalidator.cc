@@ -45,7 +45,7 @@ void BlockFlowPaintInvalidator::InvalidateDisplayItemClients(
   ObjectPaintInvalidator object_paint_invalidator(block_flow_);
   object_paint_invalidator.InvalidateDisplayItemClient(block_flow_, reason);
 
-  NGPaintFragment* paint_fragment = block_flow_.PaintFragment();
+  const NGPaintFragment* paint_fragment = block_flow_.PaintFragment();
   if (paint_fragment) {
     object_paint_invalidator.InvalidateDisplayItemClient(*paint_fragment,
                                                          reason);

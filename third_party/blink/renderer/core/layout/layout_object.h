@@ -1330,7 +1330,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns the associated |NGPaintFragment|. When this is not a |nullptr|,
   // this is the root of an inline formatting context, laid out by LayoutNG.
-  virtual NGPaintFragment* PaintFragment() const { return nullptr; }
+  virtual const NGPaintFragment* PaintFragment() const { return nullptr; }
 
   // Paint/Physical fragments are not in sync with LayoutObject tree until it is
   // laid out. For inline, it needs to check if the containing block is

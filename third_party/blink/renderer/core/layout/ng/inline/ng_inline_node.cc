@@ -349,7 +349,7 @@ void NGInlineNode::PrepareLayoutIfNeeded() {
   }
 
   if (RuntimeEnabledFeatures::LayoutNGLineCacheEnabled()) {
-    if (NGPaintFragment* fragment = block_flow->PaintFragment()) {
+    if (const NGPaintFragment* fragment = block_flow->PaintFragment()) {
       NGDirtyLines dirty_lines(fragment);
       PrepareLayout(std::move(previous_data), &dirty_lines);
       return;
@@ -996,7 +996,7 @@ const NGPaintFragment* NGInlineNode::ReusableLineBoxContainer(
   if (constraint_space.HasBlockFragmentation())
     return nullptr;
 
-  NGPaintFragment* paint_fragment = block_flow->PaintFragment();
+  const NGPaintFragment* paint_fragment = block_flow->PaintFragment();
   if (!paint_fragment)
     return nullptr;
 
@@ -1015,7 +1015,7 @@ const NGPaintFragment* NGInlineNode::ReusableLineBoxContainer(
 // |DirtyLinesFromChangedChild()|, but insertions and style changes are not
 // marked yet.
 bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow,
-                                      NGPaintFragment* paint_fragment) {
+                                      const NGPaintFragment* paint_fragment) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGLineCacheEnabled());
   NGDirtyLines dirty_lines(paint_fragment);
   if (block_flow->NeedsCollectInlines()) {

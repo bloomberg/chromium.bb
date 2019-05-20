@@ -50,7 +50,7 @@ class LayoutNGMixin : public Base {
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
-  NGPaintFragment* PaintFragment() const final {
+  const NGPaintFragment* PaintFragment() const final {
     // TODO(layout-dev) crbug.com/963103
     // Safer option here is to return nullptr only if
     // Lifecycle > DocumentLifecycle::kAfterPerformLayout, but this breaks

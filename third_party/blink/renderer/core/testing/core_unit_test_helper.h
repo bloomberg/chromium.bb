@@ -141,7 +141,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
     return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
   }
 
-  DisplayItemClient* GetDisplayItemClientFromLayoutObject(
+  const DisplayItemClient* GetDisplayItemClientFromLayoutObject(
       LayoutObject* obj) const {
     LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlowOrNull(obj);
     if (block_flow && block_flow->PaintFragment())
@@ -149,7 +149,8 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
     return obj;
   }
 
-  DisplayItemClient* GetDisplayItemClientFromElementId(const char* id) const {
+  const DisplayItemClient* GetDisplayItemClientFromElementId(
+      const char* id) const {
     return GetDisplayItemClientFromLayoutObject(GetLayoutObjectByElementId(id));
   }
 

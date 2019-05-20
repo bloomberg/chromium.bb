@@ -192,18 +192,20 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
   )HTML");
   InvalidateAll(RootPaintController());
 
-  DisplayItemClient& container1 =
+  const DisplayItemClient& container1 =
       *GetDisplayItemClientFromElementId("container1");
-  DisplayItemClient& content1 = *GetDisplayItemClientFromElementId("content1");
-  DisplayItemClient& container2 =
+  const DisplayItemClient& content1 =
+      *GetDisplayItemClientFromElementId("content1");
+  const DisplayItemClient& container2 =
       *GetDisplayItemClientFromElementId("container2");
-  DisplayItemClient& content2a =
+  const DisplayItemClient& content2a =
       *GetDisplayItemClientFromElementId("content2a");
-  DisplayItemClient& content2b =
+  const DisplayItemClient& content2b =
       *GetDisplayItemClientFromElementId("content2b");
-  DisplayItemClient& container3 =
+  const DisplayItemClient& container3 =
       *GetDisplayItemClientFromElementId("container3");
-  DisplayItemClient& content3 = *GetDisplayItemClientFromElementId("content3");
+  const DisplayItemClient& content3 =
+      *GetDisplayItemClientFromElementId("content3");
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   Paint(IntRect(0, 0, 400, 300));
@@ -287,12 +289,14 @@ TEST_P(PaintLayerPainterTest,
   // PaintResult of all subsequences will be MayBeClippedByCullRect.
   Paint(IntRect(0, 0, 50, 300));
 
-  DisplayItemClient& container1 =
+  const DisplayItemClient& container1 =
       *GetDisplayItemClientFromElementId("container1");
-  DisplayItemClient& content1 = *GetDisplayItemClientFromElementId("content1");
-  DisplayItemClient& container2 =
+  const DisplayItemClient& content1 =
+      *GetDisplayItemClientFromElementId("content1");
+  const DisplayItemClient& container2 =
       *GetDisplayItemClientFromElementId("container2");
-  DisplayItemClient& content2 = *GetDisplayItemClientFromElementId("content2");
+  const DisplayItemClient& content2 =
+      *GetDisplayItemClientFromElementId("content2");
 
   const auto& background_display_item_client = ViewScrollingBackgroundClient();
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),

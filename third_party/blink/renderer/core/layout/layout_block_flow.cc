@@ -4597,7 +4597,7 @@ bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
 void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
   DCHECK(ChildrenInline());
 
-  if (NGPaintFragment* paint_fragment = PaintFragment()) {
+  if (const NGPaintFragment* paint_fragment = PaintFragment()) {
     paint_fragment->RecalcInlineChildrenInkOverflow();
     return;
   }

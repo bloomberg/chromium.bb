@@ -18,7 +18,7 @@ class CORE_EXPORT NGDirtyLines {
   STACK_ALLOCATED();
 
  public:
-  explicit NGDirtyLines(NGPaintFragment* block_fragment)
+  explicit NGDirtyLines(const NGPaintFragment* block_fragment)
       : block_fragment_(block_fragment) {
     DCHECK(block_fragment_);
   }
@@ -82,7 +82,7 @@ class CORE_EXPORT NGDirtyLines {
   // is |nullptr|, the first line box is marked as dirty.
   void MarkLastFragment();
 
-  NGPaintFragment* block_fragment_;
+  const NGPaintFragment* block_fragment_;
   NGPaintFragment* last_fragment_ = nullptr;
 };
 

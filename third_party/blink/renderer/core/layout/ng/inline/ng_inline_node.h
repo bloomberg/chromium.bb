@@ -126,7 +126,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
   void AssociateItemsWithInlines(NGInlineNodeData*);
 
-  bool MarkLineBoxesDirty(LayoutBlockFlow*, NGPaintFragment*);
+  bool MarkLineBoxesDirty(LayoutBlockFlow*, const NGPaintFragment*);
 
   NGInlineNodeData* MutableData() {
     return To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
