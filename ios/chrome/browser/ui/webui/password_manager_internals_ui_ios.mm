@@ -68,7 +68,7 @@ void PasswordManagerInternalsUIIOS::LogSavePasswordProgress(
   base::Value text_string_value(net::EscapeForHTML(no_quotes));
 
   std::vector<const base::Value*> args{&text_string_value};
-  web_ui()->CallJavascriptFunction("addSavePasswordProgressLog", args);
+  web_ui()->CallJavascriptFunction("addLog", args);
 }
 
 void PasswordManagerInternalsUIIOS::PageLoaded(
