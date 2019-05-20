@@ -176,7 +176,7 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
-  if (cpu_uarch == "Goldmont") {
+  if (cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
     cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));

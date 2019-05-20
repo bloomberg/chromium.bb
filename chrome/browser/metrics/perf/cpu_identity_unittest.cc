@@ -39,6 +39,16 @@ TEST(CpuIdentityTest, DefaultCommandsBasedOnUarch_SandyBridge) {
   EXPECT_EQ("SandyBridge", GetCpuUarch(cpuid));
 }
 
+TEST(CpuIdentityTest, DefaultCommandsBasedOnUarch_GoldmontPlus) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 0x06;
+  cpuid.model = 0x7a;  // Gemini Lake
+  cpuid.model_name = "";
+  EXPECT_EQ("GoldmontPlus", GetCpuUarch(cpuid));
+}
+
 TEST(CpuIdentityTest, DefaultCommandsBasedOnUarch_Excavator) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
