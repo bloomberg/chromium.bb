@@ -3100,6 +3100,9 @@ public class AwContents implements SmartClipProvider {
     @CalledByNative
     private void onReceivedHttpAuthRequest(AwHttpAuthHandler handler, String host, String realm) {
         mContentsClient.onReceivedHttpAuthRequest(handler, host, realm);
+
+        AwHistogramRecorder.recordCallbackInvocation(
+                AwHistogramRecorder.WebViewCallbackType.ON_RECEIVED_HTTP_AUTH_REQUEST);
     }
 
     public AwGeolocationPermissions getGeolocationPermissions() {

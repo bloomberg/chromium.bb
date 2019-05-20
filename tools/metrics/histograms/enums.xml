@@ -58886,6 +58886,13 @@ Full version information for the fingerprint enum values:
   <int value="77" label="stopLoading"/>
 </enum>
 
+<enum name="WebViewCallbackType">
+  <int value="0" label="onReceivedLoginRequest"/>
+  <int value="1" label="onReceivedClientCertRequest"/>
+  <int value="2" label="onReceivedHttpAuthRequest"/>
+  <int value="3" label="onDownloadStart"/>
+</enum>
+
 <enum name="WebViewClientErrorCode">
   <int value="-16" label="ERROR_UNSAFE_RESOURCE"/>
   <int value="-15" label="ERROR_TOO_MANY_REQUESTS"/>
