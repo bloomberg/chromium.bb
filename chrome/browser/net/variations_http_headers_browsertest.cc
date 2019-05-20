@@ -364,9 +364,17 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
+#if defined(OS_CHROMEOS)
+// See https://crbug.com/964338
+#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext \
+  DISABLED_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
+#else
+#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext \
+  TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
+#endif
 IN_PROC_BROWSER_TEST_F(
     VariationsHttpHeadersBrowserTest,
-    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
+    MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
   GURL url = GetGoogleRedirectUrl1();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
