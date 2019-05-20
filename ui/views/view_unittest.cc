@@ -1325,7 +1325,7 @@ void RotateCounterclockwise(gfx::Transform* transform) {
 }
 
 void RotateClockwise(gfx::Transform* transform) {
-  transform->matrix().set3x3( 0, 1, 0,
+  transform->matrix().set3x3( 0, 1, 0,  // NOLINT
                              -1, 0, 0,
                               0, 0, 1);
 }
