@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.history;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JCaller;
+import org.chromium.base.annotations.NativeMethods;
 
 /** The JNI bridge for Android to receive notifications about history deletions. */
-// TODO(crbug.com/964072): Write unit tests for this class.
 public class HistoryDeletionBridge {
     /**
      * Allows derived class to listen to history deletions that pass through this bridge. The
@@ -35,7 +37,7 @@ public class HistoryDeletionBridge {
 
     HistoryDeletionBridge() {
         // This object is a singleton and therefore will be implicitly destroyed.
-        nativeInit();
+        HistoryDeletionBridgeJni.get().init(this);
     }
 
     public void addObserver(Observer observer) {
@@ -47,9 +49,13 @@ public class HistoryDeletionBridge {
     }
 
     @CalledByNative
-    private void onURLsDeleted(HistoryDeletionInfo historyDeletionInfo) {
+    @VisibleForTesting
+    void onURLsDeleted(HistoryDeletionInfo historyDeletionInfo) {
         for (Observer observer : mObservers) observer.onURLsDeleted(historyDeletionInfo);
     }
 
-    private native long nativeInit();
+    @NativeMethods
+    interface Natives {
+        long init(@JCaller HistoryDeletionBridge self);
+    }
 }
