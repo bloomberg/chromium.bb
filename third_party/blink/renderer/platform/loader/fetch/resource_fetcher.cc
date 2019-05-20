@@ -1021,8 +1021,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       break;
   }
   DCHECK(resource);
-  // TODO(yoav): turn to a DCHECK. See https://crbug.com/690632
-  CHECK_EQ(resource->GetType(), resource_type);
+  DCHECK_EQ(resource->GetType(), resource_type);
 
   if (policy != kUse)
     resource->VirtualTimePauser() = std::move(pauser);
