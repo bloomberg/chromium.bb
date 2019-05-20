@@ -115,6 +115,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(presentPasswordSettings)];
+  settingsButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_INFOBAR_MODAL_PASSWORD_SETTINGS_HINT);
   self.navigationItem.leftBarButtonItem = cancelButton;
   self.navigationItem.rightBarButtonItem = settingsButton;
   self.navigationController.navigationBar.prefersLargeTitles = NO;
@@ -174,6 +176,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.passwordItem.identifyingIcon =
       [UIImage imageNamed:@"infobar_reveal_password_icon"];
   self.passwordItem.identifyingIconEnabled = YES;
+  self.passwordItem.identifyingIconAccessibilityLabel = l10n_util::GetNSString(
+      IDS_IOS_INFOBAR_MODAL_PASSWORD_REVEAL_PASSWORD_HINT);
   [model addItem:self.passwordItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
@@ -341,10 +345,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.passwordItem.identifyingIcon =
         [UIImage imageNamed:@"infobar_reveal_password_icon"];
     self.passwordItem.textFieldValue = self.maskedPassword;
+    self.passwordItem.identifyingIconAccessibilityLabel =
+        l10n_util::GetNSString(
+            IDS_IOS_INFOBAR_MODAL_PASSWORD_REVEAL_PASSWORD_HINT);
   } else {
     self.passwordItem.identifyingIcon =
         [UIImage imageNamed:@"infobar_hide_password_icon"];
     self.passwordItem.textFieldValue = self.unmaskedPassword;
+    self.passwordItem.identifyingIconAccessibilityLabel =
+        l10n_util::GetNSString(
+            IDS_IOS_INFOBAR_MODAL_PASSWORD_HIDE_PASSWORD_HINT);
   }
   [self reconfigureCellsForItems:@[ self.passwordItem ]];
 }

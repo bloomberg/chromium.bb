@@ -25,6 +25,9 @@
 // If YES the identifyingIcon will be enabled as a button. Disabled by default.
 @property(nonatomic, assign) BOOL identifyingIconEnabled;
 
+// If set the String will be used as the identifyingIcon button A11y label.
+@property(nonatomic, copy) NSString* identifyingIconAccessibilityLabel;
+
 // Whether to hide or display the trailing edit icon.
 @property(nonatomic, assign) BOOL hideEditIcon;
 

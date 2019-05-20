@@ -58,9 +58,6 @@ const CGFloat kEditIconLength = 18;
   }
 
   cell.textField.enabled = self.textFieldEnabled;
-  // If the TextField is enabled, the cell shouldn't be an A11y element in order
-  // to make its TextField accessible to voice over.
-  cell.isAccessibilityElement = !self.textFieldEnabled;
 
   if (self.hideEditIcon) {
     cell.textField.textColor =
@@ -78,8 +75,19 @@ const CGFloat kEditIconLength = 18;
   cell.textField.returnKeyType = self.returnKeyType;
   cell.textField.keyboardType = self.keyboardType;
   cell.textField.autocapitalizationType = self.autoCapitalizationType;
+
   [cell setIdentifyingIcon:self.identifyingIcon];
   cell.identifyingIconButton.enabled = self.identifyingIconEnabled;
+  if ([self.identifyingIconAccessibilityLabel length]) {
+    cell.identifyingIconButton.accessibilityLabel =
+        self.identifyingIconAccessibilityLabel;
+  }
+
+  // If the TextField or IconButton are enabled, the cell needs to make its
+  // inner TextField or button accessible to voice over. In order to achieve
+  // this the cell can't be an A11y element.
+  cell.isAccessibilityElement =
+      !(self.textFieldEnabled || self.identifyingIconEnabled);
 }
 
 #pragma mark Actions

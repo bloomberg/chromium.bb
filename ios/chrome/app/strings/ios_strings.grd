@@ -798,6 +798,15 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT" desc="The iOS infobar badge item for saving password credentials [Length:Unlimited]">
         Options to Save Password
       </message>
+      <message name="IDS_IOS_INFOBAR_MODAL_PASSWORD_SETTINGS_HINT" desc="Accessibility hint that indicates to the user that they can access the Password Settings. [Length:Unlimited]">
+        Access password settings
+      </message>
+      <message name="IDS_IOS_INFOBAR_MODAL_PASSWORD_REVEAL_PASSWORD_HINT" desc="Accessibility hint that indicates to the user that they can reveal the hidden/masked password. [Length:Unlimited]">
+        Reveal Password
+      </message>
+      <message name="IDS_IOS_INFOBAR_MODAL_PASSWORD_HIDE_PASSWORD_HINT" desc="Accessibility hint that indicates to the user that then can hide/mask the password. [Length:Unlimited]">
+        Hide Password
+      </message>
       <message name="IDS_IOS_INSPECT_UI_CONSOLE_NOTICE" desc="The message at the top of the debugging page which displays JavaScript console logs [iOS only].">
         Tap the "Start Logging" button to collect future JavaScript console logs and errors from all tabs. Logs will be collected (and stored only in memory) until this page is closed or "Stop Logging" is tapped.
       </message>
