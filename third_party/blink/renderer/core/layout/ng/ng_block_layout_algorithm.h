@@ -29,7 +29,7 @@ class NGPhysicalLineBoxFragment;
 struct NGPreviousInflowPosition {
   LayoutUnit logical_block_offset;
   NGMarginStrut margin_strut;
-  bool empty_block_affected_by_clearance;
+  bool empty_block_had_clearance;
 };
 
 // This strut holds information for the current inflow child. The data is not
@@ -39,8 +39,6 @@ struct NGInflowChildData {
   NGMarginStrut margin_strut;
   NGBoxStrut margins;
   bool margins_fully_resolved;
-  bool force_clearance;
-  bool is_new_fc;
 };
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -102,13 +100,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
       const LogicalSize child_available_size,
-      const base::Optional<LayoutUnit> floats_bfc_block_offset = base::nullopt);
+      bool is_new_fc,
+      const base::Optional<LayoutUnit> forced_bfc_block_offset = base::nullopt,
+      bool has_clearance_past_adjoining_floats = false);
 
   // @return Estimated BFC block offset for the "to be layout" child.
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
                                      NGLayoutInputNode,
                                      const NGBreakToken* child_break_token,
-                                     bool force_clearance,
                                      bool is_new_fc);
 
   NGPreviousInflowPosition ComputeInflowPosition(
@@ -119,16 +118,16 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const LogicalOffset&,
       const NGLayoutResult&,
       const NGFragment&,
-      bool empty_block_affected_by_clearance);
+      bool empty_block_had_clearance);
 
-  // Position an empty child using the parent BFC block offset.
+  // Position an empty-block using the parent BFC block offset.
   // The fragment doesn't know its offset, but we can still calculate its BFC
   // position because the parent fragment's BFC is known.
   // Example:
   //   BFC Offset is known here because of the padding.
   //   <div style="padding: 1px">
   //     <div id="empty-div" style="margin: 1px"></div>
-  LayoutUnit PositionEmptyChildWithParentBfc(
+  LayoutUnit PositionEmptyBlockWithParentBfc(
       const NGLayoutInputNode& child,
       const NGConstraintSpace& child_space,
       const NGInflowChildData& child_data,
@@ -192,6 +191,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGLayoutInputNode child,
       const NGBreakToken* child_break_token,
       const NGConstraintSpace&,
+      bool has_clearance_past_adjoining_floats,
       scoped_refptr<const NGLayoutResult>,
       NGInflowChildData*,
       NGPreviousInflowPosition*,
@@ -246,18 +246,35 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   // If still unresolved, resolve the fragment's BFC block offset.
   //
-  // This includes applying clearance, so the bfc_block_offset passed won't be
-  // the final BFC block offset, if it wasn't large enough to get past all
-  // relevant floats. The updated BFC block offset can be read out with
-  // ContainerBfcBlockOffset().
+  // This includes applying clearance, so the |bfc_block_offset| passed won't
+  // be the final BFC block-offset, if it wasn't large enough to get past all
+  // relevant floats. The updated BFC block-offset can be read out with
+  // |ContainerBfcBlockOffset()|.
+  //
+  // If the |forced_bfc_block_offset| has a value, it will override the given
+  // |bfc_block_offset|. Typically this comes from the input constraints, when
+  // the current node has clearance past adjoining floats, or has a re-layout
+  // due to a child resolving the BFC block-offset.
   //
   // In addition to resolving our BFC block offset, this will also position
-  // pending floats, and update our in-flow layout state. Returns false if
-  // resolving the BFC block offset resulted in needing to abort layout. It
-  // will always return true otherwise. If the BFC block offset was already
-  // resolved, this method does nothing (and returns true).
-  bool ResolveBfcBlockOffset(NGPreviousInflowPosition*,
-                             LayoutUnit bfc_block_offset);
+  // pending floats, and update our in-flow layout state.
+  //
+  // Returns false if resolving the BFC block-offset resulted in needing to
+  // abort layout. It will always return true otherwise. If the BFC
+  // block-offset was already resolved, this method does nothing (and returns
+  // true).
+  bool ResolveBfcBlockOffset(
+      NGPreviousInflowPosition*,
+      LayoutUnit bfc_block_offset,
+      const base::Optional<LayoutUnit> forced_bfc_block_offset);
+
+  // This passes in the |forced_bfc_block_offset| from the input constraints,
+  // which is almost always desired.
+  bool ResolveBfcBlockOffset(NGPreviousInflowPosition* previous_inflow_position,
+                             LayoutUnit bfc_block_offset) {
+    return ResolveBfcBlockOffset(previous_inflow_position, bfc_block_offset,
+                                 ConstraintSpace().ForcedBfcBlockOffset());
+  }
 
   // A very common way to resolve the BFC block offset is to simply commit the
   // pending margin, so here's a convenience overload for that.

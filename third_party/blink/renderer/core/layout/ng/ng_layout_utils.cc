@@ -517,8 +517,7 @@ bool IsBlockLayoutComplete(const NGConstraintSpace& space,
   if (space.IsIntermediateLayout())
     return false;
   // Check that we're done positioning pending floats.
-  return !result.AdjoiningFloatTypes() || result.BfcBlockOffset() ||
-         space.FloatsBfcBlockOffset();
+  return !result.AdjoiningFloatTypes() || result.BfcBlockOffset();
 }
 
 }  // namespace blink

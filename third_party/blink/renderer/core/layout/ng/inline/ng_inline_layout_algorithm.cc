@@ -349,6 +349,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // Even if we have something in-flow, it may just be empty items that
   // shouldn't trigger creation of a line. Exit now if that's the case.
   if (line_info->IsEmptyLine()) {
+    container_builder_.SetIsEmptyBlock();
     container_builder_.SetIsEmptyLineBox();
     container_builder_.SetBaseDirection(line_info->BaseDirection());
     container_builder_.AddChildren(line_box_);
@@ -569,9 +570,8 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
   bool is_empty_inline = Node().IsEmptyInline();
 
   LayoutUnit bfc_block_offset = line_info.BfcOffset().block_offset;
-  if (is_empty_inline && ConstraintSpace().FloatsBfcBlockOffset()) {
-    bfc_block_offset = *ConstraintSpace().FloatsBfcBlockOffset();
-  }
+  if (is_empty_inline && ConstraintSpace().ForcedBfcBlockOffset())
+    bfc_block_offset = *ConstraintSpace().ForcedBfcBlockOffset();
 
   LayoutUnit bfc_line_offset = container_builder_.BfcLineOffset();
 
@@ -917,6 +917,11 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
       // TODO(ikilpatrick): Move this into ng_block_layout_algorithm.
       container_builder_.SetBlockSize(
           ComputeContentSize(line_info, exclusion_space, line_height));
+
+      // As we aren't an empty inline we should have correctly placed all
+      // our adjoining floats, and shouldn't propagate this information
+      // to siblings.
+      container_builder_.ResetAdjoiningFloatTypes();
     }
     break;
   }
@@ -957,13 +962,13 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
             ? kFloatTypeLeft
             : kFloatTypeRight);
 
-    // If we are an empty inline, and don't have the special floats BFC
+    // If we are an empty inline, and don't have the special forced BFC
     // block-offset yet, there is no way to position any floats.
-    if (is_empty_inline && !ConstraintSpace().FloatsBfcBlockOffset())
+    if (is_empty_inline && !ConstraintSpace().ForcedBfcBlockOffset())
       continue;
 
     LayoutUnit origin_bfc_block_offset =
-        is_empty_inline ? *ConstraintSpace().FloatsBfcBlockOffset()
+        is_empty_inline ? *ConstraintSpace().ForcedBfcBlockOffset()
                         : ConstraintSpace().BfcOffset().block_offset;
 
     NGPositionedFloat positioned_float = PositionFloat(

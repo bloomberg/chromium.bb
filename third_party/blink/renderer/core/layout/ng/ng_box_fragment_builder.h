@@ -240,6 +240,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool did_break_;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;
+  bool is_empty_block_ = false;
   LayoutUnit used_block_size_;
 
   LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();

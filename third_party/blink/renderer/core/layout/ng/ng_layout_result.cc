@@ -67,6 +67,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
       final_break_after_(other.final_break_after_),
       has_valid_space_(other.has_valid_space_),
       has_forced_break_(other.has_forced_break_),
+      is_empty_block_(other.is_empty_block_),
       is_pushed_by_floats_(other.is_pushed_by_floats_),
       adjoining_floats_(other.adjoining_floats_),
       is_initial_block_size_indefinite_(
@@ -87,6 +88,7 @@ NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilder* builder,
       end_margin_strut_(builder->end_margin_strut_),
       has_valid_space_(cache_space && builder->space_),
       has_forced_break_(false),
+      is_empty_block_(builder->is_empty_block_),
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
       is_initial_block_size_indefinite_(false),
@@ -147,6 +149,7 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
 
   DCHECK_EQ(has_valid_space_, other.has_valid_space_);
   DCHECK_EQ(has_forced_break_, other.has_forced_break_);
+  DCHECK_EQ(is_empty_block_, other.is_empty_block_);
   DCHECK_EQ(is_pushed_by_floats_, other.is_pushed_by_floats_);
   DCHECK_EQ(adjoining_floats_, other.adjoining_floats_);
 

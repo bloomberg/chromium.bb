@@ -39,7 +39,6 @@ NGConstraintSpace CreateIndefiniteConstraintSpaceForChild(
       .SetPercentageResolutionSize(indefinite_size)
       .SetReplacedPercentageResolutionSize(indefinite_size)
       .SetIsIntermediateLayout(true)
-      .SetFloatsBfcBlockOffset(LayoutUnit())
       .ToConstraintSpace();
 }
 

@@ -184,6 +184,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
+  NGConstraintSpaceBuilder& SetAncestorHasClearancePastAdjoiningFloats() {
+    SetFlag(NGConstraintSpace::kAncestorHasClearancePastAdjoiningFloats, true);
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
     if (!is_new_fc_)
       space_.bitfields_.adjoining_floats = static_cast<unsigned>(floats);
@@ -212,15 +217,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
     return *this;
   }
-  NGConstraintSpaceBuilder& SetFloatsBfcBlockOffset(
-      const base::Optional<LayoutUnit>& floats_bfc_block_offset) {
+  NGConstraintSpaceBuilder& SetForcedBfcBlockOffset(
+      const base::Optional<LayoutUnit>& forced_bfc_block_offset) {
 #if DCHECK_IS_ON()
-    DCHECK(!is_floats_bfc_block_offset_set_);
-    is_floats_bfc_block_offset_set_ = true;
+    DCHECK(!is_forced_bfc_block_offset_set_);
+    is_forced_bfc_block_offset_set_ = true;
 #endif
-    if (LIKELY(!is_new_fc_ && floats_bfc_block_offset != base::nullopt)) {
-      space_.EnsureRareData()->floats_bfc_block_offset =
-          floats_bfc_block_offset;
+    if (LIKELY(!is_new_fc_ && forced_bfc_block_offset != base::nullopt)) {
+      space_.EnsureRareData()->forced_bfc_block_offset =
+          forced_bfc_block_offset;
     }
 
     return *this;
@@ -234,11 +239,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     if (!is_new_fc_ && clearance_offset != LayoutUnit::Min())
       space_.EnsureRareData()->clearance_offset = clearance_offset;
 
-    return *this;
-  }
-
-  NGConstraintSpaceBuilder& SetShouldForceClearance(bool b) {
-    SetFlag(NGConstraintSpace::kForceClearance, b);
     return *this;
   }
 
@@ -312,7 +312,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_fragmentainer_space_at_bfc_start_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
   bool is_margin_strut_set_ = false;
-  bool is_floats_bfc_block_offset_set_ = false;
+  bool is_forced_bfc_block_offset_set_ = false;
   bool is_clearance_offset_set_ = false;
 
   bool to_constraint_space_called_ = false;

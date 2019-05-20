@@ -66,7 +66,7 @@ class CORE_EXPORT NGConstraintSpace final {
     kNewFormattingContext = 1 << 4,
     kAnonymous = 1 << 5,
     kUseFirstLineStyle = 1 << 6,
-    kForceClearance = 1 << 7,
+    kAncestorHasClearancePastAdjoiningFloats = 1 << 7,
 
     // Size of bitfield used to store the flags.
     kNumberOfConstraintSpaceFlags = 8
@@ -276,6 +276,16 @@ class CORE_EXPORT NGConstraintSpace final {
   // Also note this is true only when the document has ':first-line' rules.
   bool UseFirstLineStyle() const { return HasFlag(kUseFirstLineStyle); }
 
+  // Returns true if an ancestor had clearance past adjoining floats.
+  //
+  // Typically this can be detected by seeing if a |ForcedBfcBlockOffset| is
+  // set. However new formatting contexts may require additional passes (if
+  // margins are adjoining or not), and without this extra bit of information
+  // can get into a bad state.
+  bool AncestorHasClearancePastAdjoiningFloats() const {
+    return HasFlag(kAncestorHasClearancePastAdjoiningFloats);
+  }
+
   // Some layout modes “stretch” their children to a fixed size (e.g. flex,
   // grid). These flags represented whether a layout needs to produce a
   // fragment that satisfies a fixed constraint in the inline and block
@@ -346,27 +356,28 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() ? rare_data_->bfc_offset : bfc_offset_;
   }
 
-  // If present, and the current layout hasn't resolved its BFC offset yet (see
-  // BfcOffset), the layout should position all of its unpositioned floats at
-  // this offset. This value is the BFC offset that we calculated in the
-  // previous pass, a pass which aborted once the BFC offset got resolved,
-  // because we had walked past content (i.e. floats) that depended on it being
-  // resolved.
+  // If present, and the current layout hasn't resolved its BFC block-offset
+  // yet (see BfcOffset), the layout should position all of its unpositioned
+  // floats at this offset.
   //
-  // This value should be propogated to child layouts if the current layout
+  // This value is present if:
+  //   - An ancestor had clearance past adjoining floats. In this case this
+  //     value is calculated ahead of time.
+  //   - A second layout pass is required as there were unpositioned floats
+  //     within the tree, and an arbitrary sibling determined their BFC
+  //     block-offset.
+  //
+  // This value should be propagated to child layouts if the current layout
   // hasn't resolved its BFC offset yet.
-  //
-  // This value is calculated *after* an initial pass of the tree, and should
-  // only be present during subsequent passes.
-  base::Optional<LayoutUnit> FloatsBfcBlockOffset() const {
-    return HasRareData() ? rare_data_->floats_bfc_block_offset : base::nullopt;
+  base::Optional<LayoutUnit> ForcedBfcBlockOffset() const {
+    return HasRareData() ? rare_data_->forced_bfc_block_offset : base::nullopt;
   }
 
   // Return the types (none, left, right, both) of preceding adjoining
   // floats. These are floats that are added while the in-flow BFC offset is
   // still unknown. The floats may or may not be unpositioned (pending). That
   // depends on which layout pass we're in. They are typically positioned if
-  // FloatsBfcOffset() is known. Adjoining floats should be treated differently
+  // ForcedBfcOffset() is known. Adjoining floats should be treated differently
   // when calculating clearance on a block with adjoining block-start margin.
   // (in such cases we will know up front that the block will need clearance,
   // since, if it doesn't, the float will be pulled along with the block, and
@@ -385,28 +396,6 @@ class CORE_EXPORT NGConstraintSpace final {
   LayoutUnit ClearanceOffset() const {
     return HasRareData() ? rare_data_->clearance_offset : LayoutUnit::Min();
   }
-
-  // Return true if the fragment needs to have clearance applied to it,
-  // regardless of its hypothetical position. The fragment will then go exactly
-  // below the relevant floats. This happens when a cleared child gets separated
-  // from floats that would otherwise be adjoining; example:
-  //
-  // <div id="container">
-  //   <div id="float" style="float:left; width:100px; height:100px;"></div>
-  //   <div id="clearee" style="clear:left; margin-top:12345px;">text</div>
-  // </div>
-  //
-  // Clearance separates #clearee from #container, and #float is positioned at
-  // the block-start content edge of #container. Without clearance, margins
-  // would have been adjoining and the large margin on #clearee would have
-  // pulled both #container and #float along with it. No margin, no matter how
-  // large, would ever be able to pull #clearee below the float then. But we
-  // have clearance, the margins are separated, and in this case we know that we
-  // have clearance even before we have laid out (because of the adjoining
-  // float). So it would just be wrong to check for clearance when we position
-  // #clearee. Nothing can prevent clearance here. A large margin on the cleared
-  // child will be canceled out with negative clearance.
-  bool ShouldForceClearance() const { return HasFlag(kForceClearance); }
 
   const NGBaselineRequestList BaselineRequests() const {
     return NGBaselineRequestList(bitfields_.baseline_requests);
@@ -517,7 +506,7 @@ class CORE_EXPORT NGConstraintSpace final {
     NGBfcOffset bfc_offset;
     NGMarginStrut margin_strut;
 
-    base::Optional<LayoutUnit> floats_bfc_block_offset;
+    base::Optional<LayoutUnit> forced_bfc_block_offset;
     LayoutUnit clearance_offset = LayoutUnit::Min();
 
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
@@ -527,7 +516,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
-             floats_bfc_block_offset == other.floats_bfc_block_offset &&
+             forced_bfc_block_offset == other.forced_bfc_block_offset &&
              fragmentainer_block_size == other.fragmentainer_block_size &&
              fragmentainer_space_at_bfc_start ==
                  other.fragmentainer_space_at_bfc_start &&
@@ -538,7 +527,7 @@ class CORE_EXPORT NGConstraintSpace final {
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
       return margin_strut == NGMarginStrut() &&
-             floats_bfc_block_offset == base::nullopt &&
+             forced_bfc_block_offset == base::nullopt &&
              fragmentainer_block_size == kIndefiniteSize &&
              fragmentainer_space_at_bfc_start == kIndefiniteSize &&
              block_direction_fragmentation_type == kFragmentNone;

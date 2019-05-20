@@ -95,6 +95,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // Return true if the fragment broke because a forced break before a child.
   bool HasForcedBreak() const { return has_forced_break_; }
 
+  // Returns true if the fragment should be considered empty for margin
+  // collapsing purposes (e.g. margins "collapse through").
+  bool IsEmptyBlock() const { return is_empty_block_; }
+
   // Return true if this fragment got its block offset increased by the presence
   // of floats.
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
@@ -217,6 +221,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned has_valid_space_ : 1;
   unsigned has_forced_break_ : 1;
 
+  unsigned is_empty_block_ : 1;
   unsigned is_pushed_by_floats_ : 1;
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
 

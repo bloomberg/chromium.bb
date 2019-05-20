@@ -148,6 +148,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
                                              nullptr);
   }
 
+  NGContainerFragmentBuilder& SetIsEmptyBlock() {
+    is_empty_block_ = true;
+    return *this;
+  }
+
   NGContainerFragmentBuilder& SetIsPushedByFloats() {
     is_pushed_by_floats_ = true;
     return *this;
@@ -160,6 +165,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
   NGContainerFragmentBuilder& AddAdjoiningFloatTypes(NGFloatTypes floats) {
     adjoining_floats_ |= floats;
+    return *this;
+  }
+  NGContainerFragmentBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
+    adjoining_floats_ = floats;
     return *this;
   }
   NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
@@ -244,6 +253,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
 
+  bool is_empty_block_ = false;
   bool is_pushed_by_floats_ = false;
   bool is_legacy_layout_root_ = false;
 
