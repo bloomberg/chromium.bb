@@ -3045,6 +3045,7 @@
                         "is_same_host_scale": "0",
                         "is_url_incremented_scale": "100",
                         "ratio_area_scale": "100",
+                        "retry_preconnect_wait_time_ms": "50",
                         "same_origin_preconnecting_allowed": "true",
                         "source_engagement_score_scale": "100",
                         "target_engagement_score_scale": "100"
