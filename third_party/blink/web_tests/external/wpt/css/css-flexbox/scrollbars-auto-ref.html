@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<script src="resources/scrollbars.js"></script>
+<head>
+
+<script src="support/scrollbars.js"></script>
+
 <style>
 .horizontal-header {
   width: 120px;
@@ -34,7 +37,7 @@
 }
 .flex {
   border: 2px solid red;
-  overflow: scroll;
+  overflow: auto;
   max-width: 100px;
   max-height: 100px;
   white-space: nowrap;
@@ -126,6 +129,8 @@
   flex: none;
 }
 </style>
+
+</head>
 
 <div class="container-row">
   <div class="vertical-header ltr horizontal"></div>
