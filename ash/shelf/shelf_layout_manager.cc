@@ -734,6 +734,9 @@ ShelfLayoutManager::TargetBounds::TargetBounds()
 ShelfLayoutManager::TargetBounds::~TargetBounds() = default;
 
 void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
+  if (suspend_visibility_update_)
+    return;
+
   State state;
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
