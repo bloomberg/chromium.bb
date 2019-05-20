@@ -4,24 +4,12 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
-#import <EarlGrey/EarlGrey.h>
-
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
-#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/testing/nserror_util.h"
-#import "ios/web/public/test/earl_grey/js_test_util.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -44,6 +32,24 @@ id<GREYAction> ScrollDown() {
   CGFloat const kMenuScrollDisplacement = 150;
   return grey_scrollInDirection(kGREYDirectionDown, kMenuScrollDisplacement);
 }
+
+bool IsAppCompactWidth() {
+#if defined(CHROME_EARL_GREY_1)
+  UIApplication* application = [UIApplication sharedApplication];
+  UIWindow* keyWindow = application.keyWindow;
+  UIUserInterfaceSizeClass sizeClass =
+      keyWindow.traitCollection.horizontalSizeClass;
+#elif defined(CHROME_EARL_GREY_2)
+  UIApplication* remoteApplication =
+      [GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication];
+  UIWindow* remoteKeyWindow = remoteApplication.keyWindow;
+  UIUserInterfaceSizeClass sizeClass =
+      remoteKeyWindow.traitCollection.horizontalSizeClass;
+#endif
+
+  return sizeClass == UIUserInterfaceSizeClassCompact;
+}
+
 }  // namespace
 
 @implementation ChromeEarlGreyUIImpl
@@ -55,8 +61,7 @@ id<GREYAction> ScrollDown() {
       selectElementWithMatcher:grey_allOf(chrome_test_util::ToolsMenuButton(),
                                           grey_sufficientlyVisible(), nil)]
          usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionDown)
-      onElementWithMatcher:web::WebViewScrollView(
-                               chrome_test_util::GetCurrentWebState())]
+      onElementWithMatcher:chrome_test_util::WebStateScrollViewMatcher()]
       performAction:grey_tap()];
   // TODO(crbug.com/639517): Add webViewScrollView matcher so we don't have
   // to always find it.
@@ -94,9 +99,8 @@ id<GREYAction> ScrollDown() {
 
 - (void)openAndClearBrowsingDataFromHistory {
   // Open Clear Browsing Data Button
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kHistoryToolbarClearBrowsingButtonIdentifier)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          HistoryClearBrowsingDataButton()]
       performAction:grey_tap()];
 
   // Uncheck "Cookies, Site Data" and "Cached Images and Files," which are
@@ -105,8 +109,8 @@ id<GREYAction> ScrollDown() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCacheButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kClearBrowsingDataButtonIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ClearBrowsingDataButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           ConfirmClearBrowsingDataButton()]
@@ -133,7 +137,7 @@ id<GREYAction> ScrollDown() {
       assertWithMatcher:grey_notNil()];
 
   id<GREYMatcher> historyEntryMatcher =
-      grey_allOf(grey_kindOfClass([TableViewURLCell class]),
+      grey_allOf(grey_kindOfClassName(@"TableViewURLCell"),
                  grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:historyEntryMatcher]
       assertWithMatcher:grey_nil()];
@@ -144,14 +148,14 @@ id<GREYAction> ScrollDown() {
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:grey_accessibilityID(kPrivacyTableViewId)]
+      onElementWithMatcher:chrome_test_util::SettingsPrivacyTableView()]
       performAction:grey_tap()];
 }
 
 - (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher {
   [[[EarlGrey selectElementWithMatcher:buttonMatcher]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsTableViewId)]
+      onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
 }
 
@@ -190,7 +194,7 @@ id<GREYAction> ScrollDown() {
 
 - (void)reload {
   // On iPhone Reload button is a part of tools menu, so open it.
-  if (IsCompactWidth()) {
+  if (IsAppCompactWidth()) {
     [self openToolsMenu];
   }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]

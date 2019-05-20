@@ -190,6 +190,9 @@
 // view.
 + (id<GREYMatcher>)settingsImportDataContinueButton;
 
+// Returns matcher for the privacy table view.
++ (id<GREYMatcher>)settingsPrivacyTableView;
+
 // Returns matcher for the Manage Synced Data button in sync setting view.
 + (id<GREYMatcher>)settingsSyncManageSyncedDataButton;
 
@@ -273,6 +276,12 @@
 
 // Returns a matcher for the current WebView.
 + (id<GREYMatcher>)webViewMatcher;
+
+// Returns a matcher for the current WebState's scroll view.
++ (id<GREYMatcher>)webStateScrollViewMatcher;
+
+// Returns a matcher for the Clear Browsing Data button in the History UI.
++ (id<GREYMatcher>)historyClearBrowsingDataButton;
 
 @end
 

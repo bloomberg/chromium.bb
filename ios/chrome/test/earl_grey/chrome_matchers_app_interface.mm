@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
@@ -27,6 +28,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
@@ -430,6 +432,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kImportDataContinueButtonId);
 }
 
++ (id<GREYMatcher>)settingsPrivacyTableView {
+  return grey_accessibilityID(kPrivacyTableViewId);
+}
+
 + (id<GREYMatcher>)settingsSyncManageSyncedDataButton {
   return grey_accessibilityID(kSettingsSyncId);
 }
@@ -566,6 +572,14 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)webViewMatcher {
   return web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+}
+
++ (id<GREYMatcher>)webStateScrollViewMatcher {
+  return web::WebViewScrollView(chrome_test_util::GetCurrentWebState());
+}
+
++ (id<GREYMatcher>)historyClearBrowsingDataButton {
+  return grey_accessibilityID(kHistoryToolbarClearBrowsingButtonIdentifier);
 }
 
 @end

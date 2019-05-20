@@ -25,6 +25,7 @@ source_set("earl_grey_support") {
     "earl_grey_app.h",
     "earl_grey_app.mm",
     "earl_grey_test.h",
+    "earl_grey_test.mm",
     "matchers.h",
     "matchers.mm",
   ]
@@ -66,11 +67,13 @@ source_set("eg_test_support+eg2") {
     "coverage_utils_stub.mm",
     "disabled_test_macros.h",
     "earl_grey_test.h",
+    "earl_grey_test.mm",
     "matchers.h",
     "matchers.mm",
   ]
 
   deps = [
+    "//base",
     "//ios/third_party/earl_grey2:test_lib",
     "//testing/gtest:gtest",
   ]

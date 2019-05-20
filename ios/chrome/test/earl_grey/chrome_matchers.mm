@@ -237,6 +237,10 @@ id<GREYMatcher> SettingsImportDataContinueButton() {
   return [ChromeMatchersAppInterface settingsImportDataContinueButton];
 }
 
+id<GREYMatcher> SettingsPrivacyTableView() {
+  return [ChromeMatchersAppInterface settingsPrivacyTableView];
+}
+
 id<GREYMatcher> SettingsSyncManageSyncedDataButton() {
   return [ChromeMatchersAppInterface settingsSyncManageSyncedDataButton];
 }
@@ -343,6 +347,14 @@ id<GREYMatcher> FakeOmnibox() {
 
 id<GREYMatcher> WebViewMatcher() {
   return [ChromeMatchersAppInterface webViewMatcher];
+}
+
+id<GREYMatcher> WebStateScrollViewMatcher() {
+  return [ChromeMatchersAppInterface webStateScrollViewMatcher];
+}
+
+id<GREYMatcher> HistoryClearBrowsingDataButton() {
+  return [ChromeMatchersAppInterface historyClearBrowsingDataButton];
 }
 
 }  // namespace chrome_test_util
