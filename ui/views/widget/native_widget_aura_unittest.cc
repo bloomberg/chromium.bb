@@ -98,9 +98,9 @@ TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
-  EXPECT_EQ(gfx::Rect( (640 - 100) / 2,
-                       (480 - 100) / 2,
-                       100, 100),
+  EXPECT_EQ(gfx::Rect((640 - 100) / 2,
+                      (480 - 100) / 2,
+                      100, 100),
             window->GetNativeWindow()->bounds());
   widget->CloseNow();
 }
@@ -115,9 +115,9 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
-  EXPECT_EQ(gfx::Rect( (480 - 100) / 2,
-                       (320 - 100) / 2,
-                       100, 100),
+  EXPECT_EQ(gfx::Rect((480 - 100) / 2,
+                      (320 - 100) / 2,
+                      100, 100),
             window->GetNativeWindow()->bounds());
   widget->CloseNow();
 }

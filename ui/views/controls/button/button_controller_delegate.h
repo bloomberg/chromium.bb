@@ -13,7 +13,7 @@ class Button;
 // ButtonController between different Button types.
 class VIEWS_EXPORT ButtonControllerDelegate {
  public:
-  ButtonControllerDelegate(Button* button) : button_(button) {}
+  explicit ButtonControllerDelegate(Button* button) : button_(button) {}
 
   virtual ~ButtonControllerDelegate() {}
 

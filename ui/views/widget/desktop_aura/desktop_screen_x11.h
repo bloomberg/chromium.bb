@@ -67,7 +67,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   friend class test::DesktopScreenX11TestApi;
 
   // Constructor used in tests.
-  DesktopScreenX11(const std::vector<display::Display>& test_displays);
+  explicit DesktopScreenX11(const std::vector<display::Display>& test_displays);
 
   // Removes |delayed_configuration_task_| from the task queue (if
   // it's in the queue) and adds it back at the end of the queue.

@@ -21,7 +21,7 @@ class BridgedNativeWidgetHostImpl;
 class VIEWS_EXPORT TextInputHost
     : public views_bridge_mac::mojom::TextInputHost {
  public:
-  TextInputHost(BridgedNativeWidgetHostImpl* host_impl);
+  explicit TextInputHost(BridgedNativeWidgetHostImpl* host_impl);
   ~TextInputHost() override;
   void BindRequest(
       views_bridge_mac::mojom::TextInputHostAssociatedRequest request);

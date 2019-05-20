@@ -441,4 +441,4 @@ class VIEWS_EXPORT TreeView : public View,
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_TREE_TREE_VIEW_VIEWS_H_
+#endif  // UI_VIEWS_CONTROLS_TREE_TREE_VIEW_H_

@@ -223,7 +223,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // TODO(cyan): Consider having Button implement ButtonControllerDelegate.
   class DefaultButtonControllerDelegate : public ButtonControllerDelegate {
    public:
-    DefaultButtonControllerDelegate(Button* button);
+    explicit DefaultButtonControllerDelegate(Button* button);
     ~DefaultButtonControllerDelegate() override;
 
     // views::ButtonControllerDelegate:

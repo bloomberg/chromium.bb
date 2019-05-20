@@ -697,7 +697,6 @@ class TestTouchEditable : public ui::TouchEditable {
   gfx::Rect bounds_;
 
   // Cursor position inside the client view.
-  //gfx::Rect cursor_rect_;
   gfx::SelectionBound cursor_bound_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTouchEditable);

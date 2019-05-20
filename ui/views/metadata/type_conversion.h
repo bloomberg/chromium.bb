@@ -40,7 +40,8 @@ struct EnumStrings {
     base::string16 str_value;
   };
 
-  EnumStrings(std::vector<EnumString> init_val) : pairs(std::move(init_val)) {}
+  explicit EnumStrings(std::vector<EnumString> init_val)
+      : pairs(std::move(init_val)) {}
 
   const std::vector<EnumString> pairs;
 };
