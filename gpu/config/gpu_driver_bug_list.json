@@ -3274,6 +3274,14 @@
       "features": [
         "disable_direct_composition_layers"
       ]
+    },
+    {
+      "id": 305,
+      "description": "Disable MESA_framebuffer_flip_y until passing WebGL 2.0 Conformance tests",
+      "cr_bugs": [964010],
+      "disabled_extensions": [
+        "GL_MESA_framebuffer_flip_y"
+      ]
     }
   ]
 }
