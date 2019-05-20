@@ -160,8 +160,7 @@ void NetworkListView::OnGetNetworkStateList(
     auto info = std::make_unique<NetworkInfo>(network->guid);
 
     network_icon::NetworkIconState network_icon_state(network.get());
-    info->label = network_icon::GetLabelForNetwork(
-        network_icon_state, network_icon::ICON_TYPE_MENU_LIST);
+    info->label = network_icon::GetLabelForNetworkList(network_icon_state);
     // |network_list_| only contains non virtual networks.
     info->image = network_icon::GetImageForNonVirtualNetwork(
         network_icon_state, network_icon::ICON_TYPE_LIST,

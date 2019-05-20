@@ -86,16 +86,6 @@ void ActiveNetworkIcon::BindCrosNetworkConfig(
                      base::Unretained(this), connector));
 }
 
-base::string16 ActiveNetworkIcon::GetDefaultLabel(
-    network_icon::IconType icon_type) {
-  if (!default_network_) {
-    if (cellular_uninitialized_msg_ != 0)
-      return l10n_util::GetStringUTF16(cellular_uninitialized_msg_);
-    return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED);
-  }
-  return network_icon::GetLabelForNetwork(*default_network_, icon_type);
-}
-
 gfx::ImageSkia ActiveNetworkIcon::GetSingleImage(
     network_icon::IconType icon_type,
     bool* animating) {

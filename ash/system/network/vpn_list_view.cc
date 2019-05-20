@@ -240,8 +240,7 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
   network_icon::NetworkIconState vpn_icon_state(vpn);
   gfx::ImageSkia image = network_icon::GetImageForVPN(
       vpn_icon_state, network_icon::ICON_TYPE_LIST);
-  base::string16 label = network_icon::GetLabelForNetwork(
-      vpn_icon_state, network_icon::ICON_TYPE_MENU_LIST);
+  base::string16 label = network_icon::GetLabelForNetworkList(vpn_icon_state);
   AddIconAndLabel(image, label);
   if (chromeos::network_config::StateIsConnected(vpn->connection_state)) {
     owner_->SetupConnectedScrollListItem(this);

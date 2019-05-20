@@ -107,10 +107,9 @@ gfx::ImageSkia GetDisconnectedImageForNetworkType(
 ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
                                                     SkColor badge_color);
 
-// Returns the label for |network| based on |icon_type|. |network| cannot be
-// nullptr.
-ASH_EXPORT base::string16 GetLabelForNetwork(const NetworkIconState&,
-                                             IconType icon_type);
+// Returns the label for |network| when displayed in a list.
+ASH_EXPORT base::string16 GetLabelForNetworkList(
+    const NetworkIconState& network);
 
 // Called periodically with the current list of network guids. Removes cached
 // entries that are no longer in the list.

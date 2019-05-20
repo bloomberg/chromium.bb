@@ -37,8 +37,8 @@ namespace ash {
 //    a technology badge is used to represent the network.
 // ** Cellular (enabled devices only): The state of the Cellular connection if
 //    available regardless of whether it is the active network.
-// NOTE : GetSingleDefaultImage and GetDefaultLabel are partially tested in
-// network_icon_unittest.cc, and partially in active_network_icon_unittest.cc.
+// NOTE : GetSingleDefaultImage is partially tested in network_icon_unittest.cc,
+// and partially in active_network_icon_unittest.cc.
 // TODO(stevenjb): Move all test coverage to active_network_icon_unittest.cc and
 // test Dual icon methods.
 // This class is also responsible for periodically purging the icon cache.
@@ -47,9 +47,6 @@ class ASH_EXPORT ActiveNetworkIcon
  public:
   explicit ActiveNetworkIcon(service_manager::Connector* connector);
   ~ActiveNetworkIcon() override;
-
-  // Returns the label for the primary active network..
-  base::string16 GetDefaultLabel(network_icon::IconType icon_type);
 
   // Single image mode. Returns a network icon (which may be empty) and sets
   // |animating| if provided.

@@ -166,24 +166,6 @@ class ActiveNetworkIconTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ActiveNetworkIconTest);
 };
 
-TEST_F(ActiveNetworkIconTest, GetDefaultLabel) {
-  SetupCellular(shill::kStateOnline);
-  base::string16 label = active_network_icon()->GetDefaultLabel(icon_type());
-  // Note: The guid is used for the name in ConfigureService.
-  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
-                                       base::UTF8ToUTF16("cellular_guid")),
-            label);
-
-  SetupWiFi(shill::kStateIdle);
-  network_state_handler()->SetNetworkConnectRequested(wifi_path(), true);
-  base::RunLoop().RunUntilIdle();
-  label = active_network_icon()->GetDefaultLabel(icon_type());
-  // Note: The guid is used for the name in ConfigureService.
-  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING,
-                                       base::UTF8ToUTF16("wifi_guid")),
-            label);
-}
-
 TEST_F(ActiveNetworkIconTest, GetSingleImage) {
   // Cellular only = Cellular icon
   SetupCellular(shill::kStateOnline);
@@ -234,11 +216,6 @@ TEST_F(ActiveNetworkIconTest, GetSingleImage) {
 TEST_F(ActiveNetworkIconTest, CellularUninitialized) {
   SetCellularUninitialized(false /* scanning */);
 
-  base::string16 label = active_network_icon()->GetDefaultLabel(icon_type());
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR),
-      label);
-
   bool animating;
   gfx::ImageSkia image =
       active_network_icon()->GetSingleImage(icon_type(), &animating);
@@ -253,10 +230,6 @@ TEST_F(ActiveNetworkIconTest, CellularScanning) {
 
   ASSERT_TRUE(network_state_handler()->GetScanningByType(
       chromeos::NetworkTypePattern::Cellular()));
-
-  base::string16 label = active_network_icon()->GetDefaultLabel(icon_type());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_MOBILE_SCANNING),
-            label);
 
   bool animating;
   gfx::ImageSkia image =

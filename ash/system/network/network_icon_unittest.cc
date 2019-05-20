@@ -99,12 +99,8 @@ class NetworkIconTest : public testing::Test {
     return GetImageForNonVirtualNetwork(network, false /* show_vpn_badge */);
   }
 
-  void GetDefaultNetworkImageAndLabel(IconType icon_type,
-                                      gfx::ImageSkia* image,
-                                      base::string16* label,
-                                      bool* animating) {
-    *image = active_network_icon_->GetSingleImage(icon_type, animating);
-    *label = active_network_icon_->GetDefaultLabel(icon_type);
+  gfx::ImageSkia GetDefaultNetworkImage(IconType icon_type, bool* animating) {
+    return active_network_icon_->GetSingleImage(icon_type, animating);
   }
 
   // The icon for a Tether network should be the same as one for a cellular
@@ -236,18 +232,15 @@ TEST_F(NetworkIconTest, NetworkSignalStrength) {
   EXPECT_EQ(SignalStrength::STRONG, GetSignalStrength(100));
 }
 
-TEST_F(NetworkIconTest, DefaultImageAndLabelWifiConnected) {
+TEST_F(NetworkIconTest, DefaultImageWifiConnected) {
   // Set the Wifi service as connected.
   SetServiceProperty(wifi1_path(), shill::kSignalStrengthProperty,
                      base::Value(45));
   SetServiceProperty(wifi1_path(), shill::kStateProperty,
                      base::Value(shill::kStateOnline));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -258,18 +251,15 @@ TEST_F(NetworkIconTest, DefaultImageAndLabelWifiConnected) {
       gfx::Image(default_image), ImageForNetwork(reference_network.get())));
 }
 
-TEST_F(NetworkIconTest, DefaultImageAndLabelWifiConnecting) {
+TEST_F(NetworkIconTest, DefaultImageWifiConnecting) {
   // Set the Wifi service as connected.
   SetServiceProperty(wifi1_path(), shill::kSignalStrengthProperty,
                      base::Value(45));
   SetServiceProperty(wifi1_path(), shill::kStateProperty,
                      base::Value(shill::kStateAssociation));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_TRUE(animating);
 
@@ -286,7 +276,7 @@ TEST_F(NetworkIconTest, DefaultImageAndLabelWifiConnecting) {
 // connected, but that is not always the case. For example, if the connected
 // wifi service has no Internet connectivity, cellular service will be selected
 // as default.
-TEST_F(NetworkIconTest, DefaultImageAndLabelCellularDefaultWithWifiConnected) {
+TEST_F(NetworkIconTest, DefaultImageCellularDefaultWithWifiConnected) {
   // Set both wifi and cellular networks in a connected state, but with wifi not
   // online - this should prompt fake shill manager implementation to prefer
   // cellular network over wifi.
@@ -300,11 +290,8 @@ TEST_F(NetworkIconTest, DefaultImageAndLabelCellularDefaultWithWifiConnected) {
   SetServiceProperty(cellular_path(), shill::kStateProperty,
                      base::Value(shill::kStateOnline));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -334,14 +321,11 @@ TEST_F(NetworkIconTest, DefaultImageReconnectingWifiWithCellularConnected) {
   SetServiceProperty(wifi1_path(), shill::kStateProperty,
                      base::Value(shill::kStateAssociation));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
-  bool animating = false;
   // Verify that the default network is connecting icon for the initial default
   // network (even though the default network as reported by shill actually
   // changed).
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  bool animating = false;
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_TRUE(animating);
 
@@ -364,8 +348,7 @@ TEST_F(NetworkIconTest, DefaultImageReconnectingWifiWithCellularConnected) {
   NetworkStatePropertiesPtr reference_network_2 =
       CreateStandaloneNetworkProperties("reference2", NetworkType::kCellular,
                                         ConnectionStateType::kOnline, 65);
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -380,8 +363,7 @@ TEST_F(NetworkIconTest, DefaultImageReconnectingWifiWithCellularConnected) {
   NetworkStatePropertiesPtr reference_network_3 =
       CreateStandaloneNetworkProperties("reference3", NetworkType::kWiFi,
                                         ConnectionStateType::kOnline, 45);
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -405,11 +387,8 @@ TEST_F(NetworkIconTest, DefaultImageDisconnectWifiWithCellularConnected) {
   SetServiceProperty(wifi1_path(), shill::kStateProperty,
                      base::Value(shill::kStateIdle));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -438,15 +417,12 @@ TEST_F(NetworkIconTest, DefaultImageWhileNonDefaultNetworkReconnecting) {
   SetServiceProperty(cellular_path(), shill::kStateProperty,
                      base::Value(shill::kStateAssociation));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
-  bool animating = false;
   // Currently, a connecting icon is used as default network icon even if
   // another network connected and used as default.
   // TODO(tbarzic): Consider changing network icon logic to use a connected
   //     network icon if a network is connected while a network is reconnecting.
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  bool animating = false;
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_TRUE(animating);
 
@@ -461,8 +437,7 @@ TEST_F(NetworkIconTest, DefaultImageWhileNonDefaultNetworkReconnecting) {
   SetServiceProperty(cellular_path(), shill::kStateProperty,
                      base::Value(shill::kStateReady));
 
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
   NetworkStatePropertiesPtr reference_network_2 =
@@ -476,8 +451,7 @@ TEST_F(NetworkIconTest, DefaultImageWhileNonDefaultNetworkReconnecting) {
   SetServiceProperty(cellular_path(), shill::kStateProperty,
                      base::Value(shill::kStateOnline));
 
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
@@ -498,11 +472,8 @@ TEST_F(NetworkIconTest, DefaultImageConnectingToWifiWhileCellularConnected) {
   SetServiceProperty(cellular_path(), shill::kStateProperty,
                      base::Value(shill::kStateOnline));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -521,11 +492,8 @@ TEST_F(NetworkIconTest, DefaultNetworkImageActivatingCellularNetwork) {
   SetServiceProperty(cellular_path(), shill::kActivationStateProperty,
                      base::Value(shill::kActivationStateActivating));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -550,11 +518,8 @@ TEST_F(NetworkIconTest,
   SetServiceProperty(cellular_path(), shill::kActivationStateProperty,
                      base::Value(shill::kActivationStateActivating));
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -567,10 +532,6 @@ TEST_F(NetworkIconTest,
 
 // Tests VPN badging for the default network.
 TEST_F(NetworkIconTest, DefaultNetworkVpnBadge) {
-  gfx::ImageSkia default_image;
-  base::string16 label;
-  bool animating = false;
-
   // Set up initial state with Ethernet and WiFi connected.
   std::string ethernet_path = ConfigureService(
       R"({"GUID": "ethernet_guid", "Type": "ethernet", "State": "online"})");
@@ -582,8 +543,8 @@ TEST_F(NetworkIconTest, DefaultNetworkVpnBadge) {
                      base::Value(45));
 
   // With Ethernet and WiFi connected, the default icon should be empty.
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  bool animating = false;
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_TRUE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -593,8 +554,7 @@ TEST_F(NetworkIconTest, DefaultNetworkVpnBadge) {
   ASSERT_FALSE(vpn_path.empty());
 
   // When a VPN is connected, the default icon should be Ethernet with a badge.
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -613,8 +573,7 @@ TEST_F(NetworkIconTest, DefaultNetworkVpnBadge) {
   // Disconnect Ethernet. The default icon should become WiFi with a badge.
   SetServiceProperty(ethernet_path, shill::kStateProperty,
                      base::Value(shill::kStateIdle));
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_FALSE(animating);
 
@@ -628,8 +587,7 @@ TEST_F(NetworkIconTest, DefaultNetworkVpnBadge) {
   // Set the VPN to connecting; the default icon should be animating.
   SetServiceProperty(vpn_path, shill::kStateProperty,
                      base::Value(shill::kStateAssociation));
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_TRUE(animating);
 }
@@ -645,11 +603,8 @@ TEST_F(NetworkIconTest, DefaultNetworkImageVpnAndWifi) {
       R"({"GUID": "vpn_guid", "Type": "vpn", "State": "online"})");
   ASSERT_FALSE(vpn_path.empty());
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_TRUE(animating);
 
@@ -672,11 +627,8 @@ TEST_F(NetworkIconTest, DefaultNetworkImageVpnAndCellular) {
       R"({"GUID": "vpn_guid", "Type": "vpn", "State": "online"})");
   ASSERT_FALSE(vpn_path.empty());
 
-  gfx::ImageSkia default_image;
-  base::string16 label;
   bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
+  gfx::ImageSkia default_image = GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(default_image.isNull());
   EXPECT_TRUE(animating);
 

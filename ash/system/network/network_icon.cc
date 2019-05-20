@@ -581,42 +581,17 @@ gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
   return CreateNetworkIconImage(icon, badges);
 }
 
-base::string16 GetLabelForNetwork(const NetworkIconState& network,
-                                  IconType icon_type) {
+base::string16 GetLabelForNetworkList(const NetworkIconState& network) {
   ActivationStateType activation_state = network.activation_state;
-  if (icon_type == ICON_TYPE_LIST || icon_type == ICON_TYPE_MENU_LIST) {
-    // Show "<network>: [Connecting|Activating]..."
-    if (icon_type != ICON_TYPE_MENU_LIST && IsConnecting(network)) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING,
-          base::UTF8ToUTF16(network.name));
-    }
-    if (activation_state == ActivationStateType::kActivating) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING,
-          base::UTF8ToUTF16(network.name));
-    }
-    // Show "Activate <network>" in list view only.
-    if (activation_state == ActivationStateType::kNotActivated ||
-        activation_state == ActivationStateType::kPartiallyActivated) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
-          base::UTF8ToUTF16(network.name));
-    }
-  } else {
-    // Show "[Connected to|Connecting to|Activating] <network>" (non-list view).
-    if (IsConnected(network)) {
-      return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
-                                        base::UTF8ToUTF16(network.name));
-    }
-    if (IsConnecting(network)) {
-      return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING,
-                                        base::UTF8ToUTF16(network.name));
-    }
-    if (activation_state == ActivationStateType::kActivating) {
-      return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING,
-                                        base::UTF8ToUTF16(network.name));
-    }
+  if (activation_state == ActivationStateType::kActivating) {
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING,
+        base::UTF8ToUTF16(network.name));
+  }
+  if (activation_state == ActivationStateType::kNotActivated ||
+      activation_state == ActivationStateType::kPartiallyActivated) {
+    return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
+                                      base::UTF8ToUTF16(network.name));
   }
 
   // Otherwise just show the network name or 'Ethernet'.
