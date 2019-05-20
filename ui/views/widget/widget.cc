@@ -187,7 +187,8 @@ Widget::~Widget() {
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
     delete native_widget_;
   } else {
-    DCHECK(native_widget_destroyed_)
+    // TODO(crbug.com/937381): Revert to DCHECK once we figure out the reason.
+    CHECK(native_widget_destroyed_)
         << "Destroying a widget with a live native widget. "
         << "Widget probably should use WIDGET_OWNS_NATIVE_WIDGET ownership.";
   }
