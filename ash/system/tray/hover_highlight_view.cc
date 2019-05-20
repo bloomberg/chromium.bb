@@ -229,6 +229,10 @@ void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetCheckedState(checked_state);
 }
 
+const char* HoverHighlightView::GetClassName() const {
+  return "HoverHighlightView";
+}
+
 gfx::Size HoverHighlightView::CalculatePreferredSize() const {
   gfx::Size size = ActionableView::CalculatePreferredSize();
 

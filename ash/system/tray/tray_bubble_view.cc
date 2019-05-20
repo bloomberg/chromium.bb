@@ -468,6 +468,10 @@ void TrayBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 }
 
+const char* TrayBubbleView::GetClassName() const {
+  return "TrayBubbleView";
+}
+
 void TrayBubbleView::MouseMovedOutOfHost() {
   // The user moved the mouse that was over the bubble when it was first shown.
   if (delegate_)

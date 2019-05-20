@@ -172,6 +172,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
 
   // Overridden from MouseWatcherListener
   void MouseMovedOutOfHost() override;

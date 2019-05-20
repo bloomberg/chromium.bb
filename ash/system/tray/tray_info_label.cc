@@ -75,6 +75,10 @@ void TrayInfoLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->role = ax::mojom::Role::kLabelText;
 }
 
+const char* TrayInfoLabel::GetClassName() const {
+  return "TrayInfoLabel";
+}
+
 bool TrayInfoLabel::IsClickable() {
   if (delegate_)
     return delegate_->IsLabelClickable(message_id_);

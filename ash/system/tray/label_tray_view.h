@@ -29,6 +29,9 @@ class LabelTrayView : public views::View {
 
   void SetMessage(const base::string16& message);
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   views::View* CreateChildView(const base::string16& message) const;
 

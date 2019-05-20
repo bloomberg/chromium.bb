@@ -91,4 +91,8 @@ SystemMenuButton::CreateInkDropHighlight() const {
       ink_drop_color_.value_or(kTrayPopupInkDropBaseColor));
 }
 
+const char* SystemMenuButton::GetClassName() const {
+  return "SystemMenuButton";
+}
+
 }  // namespace ash

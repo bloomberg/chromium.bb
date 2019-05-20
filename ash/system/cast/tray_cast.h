@@ -27,6 +27,9 @@ class CastDetailedView : public TrayDetailedView,
   // CastConfigController::Observer:
   void OnDevicesUpdated(const std::vector<SinkAndRoute>& devices) override;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   void CreateItems();
 

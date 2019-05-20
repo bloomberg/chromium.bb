@@ -108,6 +108,10 @@ void LogoutButtonTray::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(button_->GetText());
 }
 
+const char* LogoutButtonTray::GetClassName() const {
+  return "LogoutButtonTray";
+}
+
 void LogoutButtonTray::UpdateShowLogoutButtonInTray() {
   show_logout_button_in_tray_ = pref_change_registrar_->prefs()->GetBoolean(
       prefs::kShowLogoutButtonInTray);

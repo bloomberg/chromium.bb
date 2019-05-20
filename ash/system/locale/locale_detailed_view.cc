@@ -91,6 +91,8 @@ class LocaleItem : public ActionableView {
     ScrollViewToVisible();
   }
 
+  const char* GetClassName() const override { return "LocaleItem"; }
+
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     ActionableView::GetAccessibleNodeData(node_data);
     node_data->role = ax::mojom::Role::kCheckBox;
@@ -146,6 +148,10 @@ void LocaleDetailedView::HandleViewClicked(views::View* view) {
     Shell::Get()->system_tray_model()->client_ptr()->SetLocaleAndExit(
         locale_iso_code);
   }
+}
+
+const char* LocaleDetailedView::GetClassName() const {
+  return "LocaleDetailedView";
 }
 
 }  // namespace tray

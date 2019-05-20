@@ -123,6 +123,8 @@ class ScrollContentsView : public views::View {
     PositionHeaderRows();
   }
 
+  const char* GetClassName() const override { return "ScrollContentsView"; }
+
   View::Views GetChildrenInZOrder() override {
     // Place sticky headers last in the child order so that they wind up on top
     // in Z order.
@@ -457,6 +459,10 @@ int TrayDetailedView::GetHeightForWidth(int width) const {
   // the preferred height of the default view, and that determines the
   // initial height of |this|. Always request to stay the same height.
   return height();
+}
+
+const char* TrayDetailedView::GetClassName() const {
+  return "TrayDetailedView";
 }
 
 }  // namespace ash

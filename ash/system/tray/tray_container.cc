@@ -60,6 +60,10 @@ gfx::Rect TrayContainer::GetAnchorBoundsInScreen() const {
   return GetBoundsInScreen();
 }
 
+const char* TrayContainer::GetClassName() const {
+  return "TrayContainer";
+}
+
 void TrayContainer::UpdateLayout() {
   const bool is_horizontal = shelf_->IsHorizontalAlignment();
 

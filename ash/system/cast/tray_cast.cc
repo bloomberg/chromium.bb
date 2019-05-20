@@ -112,6 +112,10 @@ void CastDetailedView::OnDevicesUpdated(
   Layout();
 }
 
+const char* CastDetailedView::GetClassName() const {
+  return "CastDetailedView";
+}
+
 void CastDetailedView::UpdateReceiverListFromCachedData() {
   // Remove all of the existing views.
   view_to_sink_map_.clear();

@@ -105,6 +105,7 @@ class HoverHighlightView : public ActionableView {
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
 
   TriView* tri_view() { return tri_view_; }
 

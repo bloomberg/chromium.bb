@@ -168,6 +168,10 @@ void OverviewButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   // This class has no bubbles to hide.
 }
 
+const char* OverviewButtonTray::GetClassName() const {
+  return "OverviewButtonTray";
+}
+
 void OverviewButtonTray::UpdateIconVisibility() {
   // The visibility of the OverviewButtonTray has diverged from
   // OverviewController::CanSelect. The visibility of the button should

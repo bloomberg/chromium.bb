@@ -69,6 +69,9 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   friend class OverviewButtonTrayTest;
 
