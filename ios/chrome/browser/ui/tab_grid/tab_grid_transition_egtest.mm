@@ -204,7 +204,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
   // Verify that the original tab is visible again.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
 }
 
 // Tests exiting the switcher by tapping the new tab button or selecting new tab
@@ -222,7 +222,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
 }
 
 // Tests exiting the switcher by tapping the new incognito tab button or
@@ -244,7 +244,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
 }
 
 // Tests exiting the switcher by opening a new tab in the other tab model.
@@ -264,7 +264,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:[self makeURLForTitle:incognito_title]]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(incognito_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(incognito_title)]);
 
   // Go from incognito mode to normal mode.
   ShowTabSwitcher();
@@ -277,7 +277,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:[self makeURLForTitle:normal_title]]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(normal_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(normal_title)]);
 }
 
 // Tests exiting the tab switcher by selecting a normal tab.
@@ -300,12 +300,12 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   ShowTabSwitcher();
   SelectTab(tab1_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
 
   ShowTabSwitcher();
   SelectTab(tab3_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab3_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab3_title)]);
 }
 
 // Tests exiting the tab switcher by selecting an incognito tab.
@@ -330,12 +330,12 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   ShowTabSwitcher();
   SelectTab(tab1_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
 
   ShowTabSwitcher();
   SelectTab(tab3_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab3_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab3_title)]);
 }
 
 // Tests exiting the tab switcher by selecting a tab in the other tab model.
@@ -357,7 +357,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
       performAction:grey_tap()];
   SelectTab(normal_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(normal_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(normal_title)]);
 
   ShowTabSwitcher();
   // Switch to the incognito panel and select the one tab that is there.
@@ -366,7 +366,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
   SelectTab(incognito_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(incognito_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(incognito_title)]);
 }
 
 // Tests switching back and forth between the normal and incognito BVCs.
@@ -400,7 +400,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   ShowTabSwitcher();
   SelectTab(tab_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)]);
 
   // Show the tab switcher and return to the BVC, in landscape.
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
@@ -408,7 +408,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   ShowTabSwitcher();
   SelectTab(tab_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)]);
 
   // Show the tab switcher and return to the BVC, in portrait.
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
@@ -416,7 +416,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   ShowTabSwitcher();
   SelectTab(tab_title);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:base::SysNSStringToUTF8(tab_title)]);
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)]);
 }
 
 @end

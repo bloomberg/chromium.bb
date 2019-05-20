@@ -226,20 +226,6 @@ id ExecuteJavaScript(NSString* javascript,
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-- (NSError*)tapWebViewElementWithID:(NSString*)elementID {
-  BOOL success =
-      web::test::TapWebViewElementWithId(chrome_test_util::GetCurrentWebState(),
-                                         base::SysNSStringToUTF8(elementID));
-
-  if (!success) {
-    NSString* errorDescription = [NSString
-        stringWithFormat:@"Failed to tap web view element with ID: %@",
-                         elementID];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
-  }
-  return nil;
-}
-
 - (NSError*)waitForErrorPage {
   NSString* const kErrorPageText =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
@@ -273,54 +259,6 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-- (NSError*)waitForWebViewContainingText:(std::string)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return web::test::IsWebViewContainingText(
-        chrome_test_util::GetCurrentWebState(), text);
-  });
-
-  if (!success) {
-    NSString* errorDescription =
-        [NSString stringWithFormat:@"Failed waiting for web view containing %s",
-                                   text.c_str()];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebViewContainingElement:(ElementSelector*)selector {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return web::test::IsWebViewContainingElement(
-        chrome_test_util::GetCurrentWebState(), selector);
-  });
-
-  if (!success) {
-    NSString* errorDescription = [NSString
-        stringWithFormat:@"Failed waiting for web view containing element %@",
-                         selector.selectorDescription];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebViewNotContainingText:(std::string)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return !web::test::IsWebViewContainingText(
-        chrome_test_util::GetCurrentWebState(), text);
-  });
-
-  if (!success) {
-    NSString* errorDescription = [NSString
-        stringWithFormat:@"Failed waiting for web view not containing %s",
-                         text.c_str()];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
-  }
-
-  return nil;
-}
-
 - (NSError*)waitForMainTabCount:(NSUInteger)count {
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -329,11 +267,10 @@ id ExecuteJavaScript(NSString* javascript,
   });
 
   if (!success) {
-    NSString* errorDescription =
+    return testing::NSErrorWithLocalizedDescription(
         [NSString stringWithFormat:@"Failed waiting for main tab "
                                    @"count to become %" PRIuNS,
-                                   count];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
+                                   count]);
   }
 
   return nil;
@@ -347,43 +284,10 @@ id ExecuteJavaScript(NSString* javascript,
   });
 
   if (!success) {
-    NSString* errorDescription =
+    return testing::NSErrorWithLocalizedDescription(
         [NSString stringWithFormat:@"Failed waiting for incognito tab "
                                    @"count to become %" PRIuNS,
-                                   count];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebViewContainingBlockedImageElementWithID:
-    (std::string)imageID {
-  bool success = web::test::WaitForWebViewContainingImage(
-      imageID, chrome_test_util::GetCurrentWebState(),
-      web::test::IMAGE_STATE_BLOCKED);
-
-  if (!success) {
-    NSString* errorDescription = [NSString
-        stringWithFormat:@"Failed waiting for web view blocked image %s",
-                         imageID.c_str()];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebViewContainingLoadedImageElementWithID:
-    (std::string)imageID {
-  bool success = web::test::WaitForWebViewContainingImage(
-      imageID, chrome_test_util::GetCurrentWebState(),
-      web::test::IMAGE_STATE_LOADED);
-
-  if (!success) {
-    NSString* errorDescription = [NSString
-        stringWithFormat:@"Failed waiting for web view loaded image %s",
-                         imageID.c_str()];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
+                                   count]);
   }
 
   return nil;
@@ -411,7 +315,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-- (NSError*)waitForElementWithMatcherSufficientlyVisible:
+- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
     (id<GREYMatcher>)matcher {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     NSError* error = nil;
@@ -422,14 +326,163 @@ id ExecuteJavaScript(NSString* javascript,
   });
 
   if (!success) {
-    NSString* errorDescription = [NSString
+    return testing::NSErrorWithLocalizedDescription([NSString
         stringWithFormat:
             @"Failed waiting for element with matcher %@ to become visible",
-            matcher];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
+            matcher]);
+  }
+  return nil;
+}
+
+#pragma mark - WebState Utilities
+
+- (NSError*)tapWebStateElementWithID:(NSString*)elementID {
+  NSError* error = nil;
+  NSError* __autoreleasing tempError = error;
+  BOOL success = web::test::TapWebViewElementWithId(
+      chrome_test_util::GetCurrentWebState(),
+      base::SysNSStringToUTF8(elementID), &tempError);
+  error = tempError;
+
+  if (error != nil) {
+    return error;
+  }
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Failed to tap web state element with ID: %@",
+                         elementID]);
+  }
+  return nil;
+}
+
+- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID {
+  bool success = web::test::TapWebViewElementWithIdInIframe(
+      chrome_test_util::GetCurrentWebState(), elementID);
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        [NSString stringWithFormat:@"Failed to tap element with ID=%s",
+                                   elementID.c_str()]);
   }
 
   return nil;
+}
+
+- (NSError*)submitWebStateFormWithID:(const std::string&)formID {
+  bool success = web::test::SubmitWebViewFormWithId(
+      chrome_test_util::GetCurrentWebState(), formID);
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Failed to submit form with ID=%s", formID.c_str()]);
+  }
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateContainingText:(std::string)text {
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return web::test::IsWebViewContainingText(
+        chrome_test_util::GetCurrentWebState(), text);
+  });
+
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Failed waiting for web state containing %s",
+                         text.c_str()]);
+  }
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return web::test::IsWebViewContainingElement(
+        chrome_test_util::GetCurrentWebState(), selector);
+  });
+
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Failed waiting for web state containing element %@",
+                         selector.selectorDescription]);
+  }
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateNotContainingText:(std::string)text {
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return !web::test::IsWebViewContainingText(
+        chrome_test_util::GetCurrentWebState(), text);
+  });
+
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Failed waiting for web view not containing %s",
+                         text.c_str()]);
+  }
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
+    (std::string)imageID {
+  bool success = web::test::WaitForWebViewContainingImage(
+      imageID, chrome_test_util::GetCurrentWebState(),
+      web::test::IMAGE_STATE_BLOCKED);
+
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Failed waiting for web view blocked image %s",
+                         imageID.c_str()]);
+  }
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
+    (std::string)imageID {
+  bool success = web::test::WaitForWebViewContainingImage(
+      imageID, chrome_test_util::GetCurrentWebState(),
+      web::test::IMAGE_STATE_LOADED);
+
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Failed waiting for web view loaded image %s",
+                         imageID.c_str()]);
+  }
+
+  return nil;
+}
+
+#pragma mark - WebState Utilities to not break downstream builds.
+
+// Remove methods below since a cl below will be submitted
+// https://chrome-internal-review.googlesource.com/c/chrome/ios_internal/+/1284395
+
+- (NSError*)waitForElementWithMatcherSufficientlyVisible:
+    (id<GREYMatcher>)matcher {
+  return [self waitForSufficientlyVisibleElementWithMatcher:matcher];
+}
+
+- (NSError*)waitForWebViewContainingText:(std::string)text {
+  return [self waitForWebStateContainingText:text];
+}
+
+- (NSError*)waitForWebViewNotContainingText:(std::string)text {
+  return [self waitForWebStateNotContainingText:text];
+}
+
+- (NSError*)tapWebViewElementWithID:(NSString*)elementID {
+  return [self tapWebStateElementWithID:elementID];
+}
+
+- (NSError*)waitForWebViewContainingLoadedImageElementWithID:
+    (std::string)imageID {
+  return [self waitForWebStateContainingLoadedImageElementWithID:imageID];
+}
+
+- (NSError*)waitForWebViewContainingBlockedImageElementWithID:
+    (std::string)imageID {
+  return [self waitForWebStateContainingBlockedImageElementWithID:imageID];
 }
 
 #pragma mark - Sync Utilities

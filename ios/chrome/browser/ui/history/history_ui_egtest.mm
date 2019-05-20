@@ -198,7 +198,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponse1]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse1]);
 }
 
 // Tests that history is not changed after performing back navigation.
@@ -209,7 +209,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponse1]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse1]);
 
   [self openHistoryPanel];
 
@@ -424,15 +424,15 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 - (void)loadTestURLs {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL1]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponse1]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse1]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL2]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponse2]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse2]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL3]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponse3]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse3]);
 }
 
 - (void)openHistoryPanel {

@@ -227,7 +227,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
   // Verify web page finished loading.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kFindInPageResponse]);
+      [ChromeEarlGrey waitForWebStateContainingText:kFindInPageResponse]);
 }
 
 @end

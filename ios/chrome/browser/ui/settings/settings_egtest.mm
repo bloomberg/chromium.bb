@@ -29,7 +29,6 @@
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -38,7 +37,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
@@ -464,7 +462,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponse]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
 
   NSDictionary* cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
@@ -474,11 +472,11 @@ id<GREYMatcher> BandwidthSettingsButton() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kUrlWithSetCookie)]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponseWithSetCookie]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponseWithSetCookie]);
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponse]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqualObjects(kCookieValue, cookies[kCookieName],
@@ -499,7 +497,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kResponse]);
+      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");

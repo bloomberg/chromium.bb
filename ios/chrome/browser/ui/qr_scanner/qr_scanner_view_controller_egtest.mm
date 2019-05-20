@@ -117,7 +117,7 @@ void ShowQRScanner() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
+      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
                           chrome_test_util::Omnibox()]);
 
   // Tap the QR Code scanner button in the keyboard accessory view.
@@ -778,7 +778,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
     TapKeyboardReturnKeyInOmniboxWithText(result);
   }
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:response]);
+      [ChromeEarlGrey waitForWebStateContainingText:response]);
 
   // Press the back button to get back to the NTP.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]

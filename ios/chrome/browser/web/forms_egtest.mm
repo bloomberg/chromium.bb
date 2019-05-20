@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -36,7 +35,6 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
-using chrome_test_util::TapWebViewElementWithId;
 using testing::ElementToDismissAlert;
 
 namespace {
@@ -48,7 +46,7 @@ const char kDestinationText[] = "bar!";
 const char kGenericText[] = "A generic page";
 
 // Label for the button in the form.
-const char kSubmitButtonLabel[] = "submit";
+NSString* kSubmitButtonLabel = @"submit";
 
 // Html form template with a submission button named "submit".
 const char* kFormHtmlTemplate =
@@ -212,10 +210,10 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
-  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
-             kSubmitButtonLabel);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey tapWebStateElementWithID:kSubmitButtonLabel]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -231,7 +229,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [self confirmResendWarning];
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -243,10 +241,10 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
-  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
-             kSubmitButtonLabel);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey tapWebStateElementWithID:kSubmitButtonLabel]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -264,7 +262,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   [self confirmResendWarning];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -276,10 +274,10 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
-  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
-             kSubmitButtonLabel);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey tapWebStateElementWithID:kSubmitButtonLabel]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -296,7 +294,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   [self confirmResendWarning];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -308,10 +306,10 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
-  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
-             kSubmitButtonLabel);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey tapWebStateElementWithID:kSubmitButtonLabel]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -331,7 +329,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   }
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -342,10 +340,10 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
-  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
-             kSubmitButtonLabel);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey tapWebStateElementWithID:kSubmitButtonLabel]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -369,8 +367,9 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // LegacyNavigationManager displays repost on |goBack|. So after cancelling,
     // web view should show form URL.
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebViewContainingText:kSubmitButtonLabel]);
+    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+        waitForWebStateContainingText:(base::SysNSStringToUTF8(
+                                          kSubmitButtonLabel))]);
     [[EarlGrey selectElementWithMatcher:OmniboxText(GetFormUrl().GetContent())]
         assertWithMatcher:grey_notNil()];
     [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
@@ -379,7 +378,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     // WKBasedNavigationManager displays repost on |reload|. So after
     // cancelling, web view should show |destinationURL|.
     CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+        [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
     [[EarlGrey
         selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
         assertWithMatcher:grey_notNil()];
@@ -394,10 +393,10 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
-  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
-             kSubmitButtonLabel);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey tapWebStateElementWithID:kSubmitButtonLabel]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -413,13 +412,13 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   // Repost confirmation box should be visible.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:ResendPostButtonMatcher()]);
+      waitForSufficientlyVisibleElementWithMatcher:ResendPostButtonMatcher()]);
 
   // Starting a new navigation while the repost dialog is presented should not
   // crash.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetGenericUrl()]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kGenericText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kGenericText]);
 
   // Repost dialog should not be visible anymore.
   [[EarlGrey selectElementWithMatcher:ResendPostButtonMatcher()]
@@ -433,17 +432,18 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   GURL destinationURL = GetDestinationUrl();
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetFormUrl()]);
-  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
-             kSubmitButtonLabel);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationText]);
+      [ChromeEarlGrey tapWebStateElementWithID:kSubmitButtonLabel]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back and verify the browser navigates to the original URL.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kSubmitButtonLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:(base::SysNSStringToUTF8(
+                                                        kSubmitButtonLabel))]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetFormUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -456,12 +456,12 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GetRedirectFormUrl()]);
 
   // Submit the form, which redirects before printing the data.
-  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
-             kSubmitButtonLabel);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:kSubmitButtonLabel]);
 
   // Check that the redirect changes the POST to a GET.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"GET"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"GET"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -471,7 +471,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [[EarlGrey selectElementWithMatcher:ResendPostButtonMatcher()]
       assertWithMatcher:grey_nil()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"GET"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"GET"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -495,9 +495,10 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // Open the second URL, tap the button, and verify the browser navigates to
   // the expected URL.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:formURL]);
-  GREYAssert(TapWebViewElementWithId("button"), @"Failed to tap \"button\"");
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"POST"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"button"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey waitForWebStateContainingText:"POST"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(formURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -524,7 +525,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   // Verify that the browser navigates to the expected URL.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"bar!"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"bar!"]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 

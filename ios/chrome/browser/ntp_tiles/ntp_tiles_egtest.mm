@@ -102,7 +102,7 @@ using web::test::HttpServer;
   // Load first URL and expect redirect to destination URL.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:firstRedirectURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"redirect complete"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"redirect complete"]);
 
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.

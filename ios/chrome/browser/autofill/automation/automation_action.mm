@@ -216,7 +216,7 @@
 
   // Wait for the element to be visible on the page.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:selector]);
+      [ChromeEarlGrey waitForWebStateContainingElement:selector]);
 
   // Potentially scroll into view if below the fold.
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
@@ -441,7 +441,7 @@
 
   // Wait for the element to be visible on the page.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:selector]);
+      [ChromeEarlGrey waitForWebStateContainingElement:selector]);
 
   NSString* expectedType = base::SysUTF8ToNSString([self
       getStringFromDictionaryWithKey:"expectedAutofillType"
@@ -499,7 +499,7 @@
 
   // Wait for the element to be visible on the page.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:selector]);
+      [ChromeEarlGrey waitForWebStateContainingElement:selector]);
 
   int selectedIndex = [self getIntFromDictionaryWithKey:"index" error:&error];
   if (error) {

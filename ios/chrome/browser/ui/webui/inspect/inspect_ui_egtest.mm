@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -23,7 +22,6 @@
 #endif
 
 using chrome_test_util::GetCurrentWebState;
-using chrome_test_util::TapWebViewElementWithIdInIframe;
 
 namespace {
 // Directory containing the |kLogoPagePath| and |kLogoPageImageSourcePath|
@@ -116,21 +114,21 @@ ElementSelector* StartLoggingButton() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL(kChromeUIInspectURL)]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()]);
+      [ChromeEarlGrey waitForWebStateContainingElement:StartLoggingButton()]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStartLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStartLoggingButtonId]);
 
   ElementSelector* stopLoggingButton = [ElementSelector
       selectorWithElementID:base::SysNSStringToUTF8(kStopLoggingButtonId)];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:stopLoggingButton]);
+      [ChromeEarlGrey waitForWebStateContainingElement:stopLoggingButton]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStopLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStopLoggingButtonId]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()]);
+      [ChromeEarlGrey waitForWebStateContainingElement:StartLoggingButton()]);
 }
 
 // Tests that log messages from a page's main frame are displayed.
@@ -139,9 +137,9 @@ ElementSelector* StartLoggingButton() {
 
   // Start logging.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()]);
+      [ChromeEarlGrey waitForWebStateContainingElement:StartLoggingButton()]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStartLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStartLoggingButtonId]);
 
   // Open console test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
@@ -149,43 +147,43 @@ ElementSelector* StartLoggingButton() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:consoleTestsURL]);
   std::string debugButtonID = base::SysNSStringToUTF8(kDebugMessageButtonId);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingElement:
+      waitForWebStateContainingElement:
           [ElementSelector selectorWithElementID:debugButtonID]]);
 
   // Log messages.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kDebugMessageButtonId]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kErrorMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kErrorMessageButtonId]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kInfoMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kInfoMessageButtonId]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kLogMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kLogMessageButtonId]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kWarningMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kWarningMessageButtonId]);
 
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   // Validate messages and labels are displayed.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageText]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kErrorMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kErrorMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kErrorMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kErrorMessageText]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kInfoMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kInfoMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kInfoMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kInfoMessageText]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogMessageText]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kWarningMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kWarningMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kWarningMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kWarningMessageText]);
 }
 
 // Tests that log messages from an iframe are displayed.
@@ -194,9 +192,9 @@ ElementSelector* StartLoggingButton() {
 
   // Start logging.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()]);
+      [ChromeEarlGrey waitForWebStateContainingElement:StartLoggingButton()]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStartLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStartLoggingButtonId]);
 
   // Open console test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
@@ -205,51 +203,51 @@ ElementSelector* StartLoggingButton() {
 
   std::string debugButtonID = base::SysNSStringToUTF8(kDebugMessageButtonId);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingElement:
+      waitForWebStateContainingElement:
           [ElementSelector selectorWithElementID:debugButtonID]]);
 
   // Log messages.
-  GREYAssertTrue(TapWebViewElementWithIdInIframe(debugButtonID),
-                 @"Failed to tap debug button.");
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementInIFrameWithID:debugButtonID]);
 
   std::string errorButtonID = base::SysNSStringToUTF8(kErrorMessageButtonId);
-  GREYAssertTrue(TapWebViewElementWithIdInIframe(errorButtonID),
-                 @"Failed to tap error button.");
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementInIFrameWithID:errorButtonID]);
 
   std::string infoButtonID = base::SysNSStringToUTF8(kInfoMessageButtonId);
-  GREYAssertTrue(TapWebViewElementWithIdInIframe(infoButtonID),
-                 @"Failed to tap info button.");
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementInIFrameWithID:infoButtonID]);
 
   std::string logButtonID = base::SysNSStringToUTF8(kLogMessageButtonId);
-  GREYAssertTrue(TapWebViewElementWithIdInIframe(logButtonID),
-                 @"Failed to tap log button.");
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementInIFrameWithID:logButtonID]);
 
   std::string warnButtonID = base::SysNSStringToUTF8(kWarningMessageButtonId);
-  GREYAssertTrue(TapWebViewElementWithIdInIframe(warnButtonID),
-                 @"Failed to tap warn button.");
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementInIFrameWithID:warnButtonID]);
 
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   // Validate messages and labels are displayed.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kIFrameDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kIFrameDebugMessageText]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kErrorMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kErrorMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kIFrameErrorMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kIFrameErrorMessageText]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kInfoMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kInfoMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kIFrameInfoMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kIFrameInfoMessageText]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kIFrameLogMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kIFrameLogMessageText]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kWarningMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kWarningMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kIFrameWarningMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kIFrameWarningMessageText]);
 }
 
 // Tests that log messages are correctly displayed from multiple tabs.
@@ -258,9 +256,9 @@ ElementSelector* StartLoggingButton() {
 
   // Start logging.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()]);
+      [ChromeEarlGrey waitForWebStateContainingElement:StartLoggingButton()]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStartLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStartLoggingButtonId]);
 
   // Open console test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
@@ -268,39 +266,39 @@ ElementSelector* StartLoggingButton() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:consoleTestsURL]);
   std::string logButtonID = base::SysNSStringToUTF8(kLogMessageButtonId);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingElement:[ElementSelector
-                                          selectorWithElementID:logButtonID]]);
+      waitForWebStateContainingElement:[ElementSelector
+                                           selectorWithElementID:logButtonID]]);
 
   // Log a message and verify it is displayed.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kDebugMessageButtonId]);
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageText]);
 
   // Open console test page again.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:consoleTestsURL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingElement:[ElementSelector
-                                          selectorWithElementID:logButtonID]]);
+      waitForWebStateContainingElement:[ElementSelector
+                                           selectorWithElementID:logButtonID]]);
 
   // Log another message and verify it is displayed.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kLogMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kLogMessageButtonId]);
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogMessageText]);
 
   // Ensure the log from the first tab still exists.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageText]);
 }
 
 // Tests that messages are cleared after stopping logging.
@@ -309,9 +307,9 @@ ElementSelector* StartLoggingButton() {
 
   // Start logging.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()]);
+      [ChromeEarlGrey waitForWebStateContainingElement:StartLoggingButton()]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStartLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStartLoggingButtonId]);
 
   // Open console test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
@@ -319,26 +317,26 @@ ElementSelector* StartLoggingButton() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:consoleTestsURL]);
   std::string logButtonID = base::SysNSStringToUTF8(kLogMessageButtonId);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingElement:[ElementSelector
-                                          selectorWithElementID:logButtonID]]);
+      waitForWebStateContainingElement:[ElementSelector
+                                           selectorWithElementID:logButtonID]]);
 
   // Log a message and verify it is displayed.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kDebugMessageButtonId]);
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageText]);
 
   // Stop logging.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStopLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStopLoggingButtonId]);
   // Ensure message was cleared.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateNotContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateNotContainingText:kDebugMessageText]);
 }
 
 // Tests that messages are cleared after a page reload.
@@ -347,9 +345,9 @@ ElementSelector* StartLoggingButton() {
 
   // Start logging.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()]);
+      [ChromeEarlGrey waitForWebStateContainingElement:StartLoggingButton()]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStartLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStartLoggingButtonId]);
 
   // Open console test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
@@ -357,25 +355,25 @@ ElementSelector* StartLoggingButton() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:consoleTestsURL]);
   std::string logButtonID = base::SysNSStringToUTF8(kLogMessageButtonId);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingElement:[ElementSelector
-                                          selectorWithElementID:logButtonID]]);
+      waitForWebStateContainingElement:[ElementSelector
+                                           selectorWithElementID:logButtonID]]);
 
   // Log a message and verify it is displayed.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kDebugMessageButtonId]);
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageText]);
 
   // Reload page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
   // Ensure message was cleared.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateNotContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateNotContainingText:kDebugMessageText]);
 }
 
 // Tests that messages are cleared for a tab which is closed.
@@ -384,9 +382,9 @@ ElementSelector* StartLoggingButton() {
 
   // Start logging.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingElement:StartLoggingButton()]);
+      [ChromeEarlGrey waitForWebStateContainingElement:StartLoggingButton()]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kStartLoggingButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kStartLoggingButtonId]);
 
   // Open console test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
@@ -394,18 +392,18 @@ ElementSelector* StartLoggingButton() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:consoleTestsURL]);
   std::string debugButtonID = base::SysNSStringToUTF8(kDebugMessageButtonId);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingElement:
+      waitForWebStateContainingElement:
           [ElementSelector selectorWithElementID:debugButtonID]]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:kDebugMessageButtonId]);
+      [ChromeEarlGrey tapWebStateElementWithID:kDebugMessageButtonId]);
   [ChromeEarlGrey closeCurrentTab];
 
   // Validate message and label are not displayed.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageLabel]);
+      [ChromeEarlGrey waitForWebStateNotContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewNotContainingText:kDebugMessageText]);
+      [ChromeEarlGrey waitForWebStateNotContainingText:kDebugMessageText]);
 }
 
 @end

@@ -50,7 +50,7 @@ id<GREYMatcher> PrintOptionsCancelButton() {
 
   // Tap print button.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:@"printButton"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"printButton"]);
 
   // Test if print dialog appeared.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Printer Options")]

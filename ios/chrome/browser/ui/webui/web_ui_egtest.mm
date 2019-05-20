@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -30,7 +29,6 @@
 
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
-using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
 
@@ -87,13 +85,13 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   // Verify that app version is present on the page.
   const std::string version = version_info::GetVersionNumber();
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:version]);
+      [ChromeEarlGrey waitForWebStateContainingText:version]);
 
   // Verify that mobile User Agent string is present on the page.
   const std::string userAgent =
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:userAgent]);
+      [ChromeEarlGrey waitForWebStateContainingText:userAgent]);
 }
 
 // Tests that clicking on a chrome://terms link from chrome://chrome-urls
@@ -102,15 +100,16 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   LoadWebUIUrl(kChromeUIChromeURLsHost);
 
   // Tap on chrome://terms link on the page.
-  GREYAssert(TapWebViewElementWithId(kChromeUITermsHost), @"Failed to tap %s",
-             kChromeUITermsHost);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      tapWebStateElementWithID:[NSString
+                                   stringWithUTF8String:kChromeUITermsHost]]);
 
   // Verify that the resulting page is chrome://terms.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
       assertWithMatcher:grey_notNil()];
   const std::string kTermsText = "Google Chrome Terms of Service";
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kTermsText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kTermsText]);
 }
 
 // Tests that back navigation functions properly after navigation via anchor
@@ -119,14 +118,15 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   LoadWebUIUrl(kChromeUIChromeURLsHost);
 
   // Tap on chrome://version link on the page.
-  GREYAssert(TapWebViewElementWithId(kChromeUIVersionHost), @"Failed to tap %s",
-             kChromeUIVersionHost);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      tapWebStateElementWithID:[NSString
+                                   stringWithUTF8String:kChromeUIVersionHost]]);
 
   // Verify that the resulting page is chrome://version.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://version")]
       assertWithMatcher:grey_notNil()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"The Chromium Authors"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"The Chromium Authors"]);
 
   // Tap the back button in the toolbar and verify that the resulting page is
   // the previously visited page chrome://chrome-urls.
@@ -135,7 +135,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
       selectElementWithMatcher:WaitForOmniboxText("chrome://chrome-urls")]
       assertWithMatcher:grey_notNil()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"List of Chrome URLs"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"List of Chrome URLs"]);
 }
 
 // Tests that back and forward navigation between chrome URLs functions
@@ -204,7 +204,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
       assertWithMatcher:grey_notNil()];
   std::string errorMessage = net::ErrorToShortString(net::ERR_INVALID_URL);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:errorMessage]);
+      [ChromeEarlGrey waitForWebStateContainingText:errorMessage]);
 }
 
 // Tests that repeated back/forward navigation from web URL is allowed.
@@ -221,28 +221,28 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeVersionURL)]
       assertWithMatcher:grey_notNil()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kChromeVersionWebText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kChromeVersionWebText]);
 
   GURL webURL = self.testServer->GetURL("/pony.html");
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:webURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kWebPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kWebPageText]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeVersionURL)]
       assertWithMatcher:grey_notNil()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kChromeVersionWebText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kChromeVersionWebText]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goForward]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kWebPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kWebPageText]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeVersionURL)]
       assertWithMatcher:grey_notNil()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kChromeVersionWebText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kChromeVersionWebText]);
 }
 
 @end

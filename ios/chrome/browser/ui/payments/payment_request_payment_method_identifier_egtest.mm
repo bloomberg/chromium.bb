@@ -46,7 +46,7 @@ const char kPaymentMethodIdentifierPage[] =
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   const payments::PaymentRequestCache::PaymentRequestSet& requests =
       [self paymentRequestsForWebState:GetCurrentWebState()];
@@ -68,7 +68,7 @@ const char kPaymentMethodIdentifierPage[] =
       loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:@"buyBasicCard"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"buyBasicCard"]);
 
   const payments::PaymentRequestCache::PaymentRequestSet& requests =
       [self paymentRequestsForWebState:GetCurrentWebState()];

@@ -117,7 +117,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 
   // Wait until the page is half loaded.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kPageText]);
 
   // On iPhone Stop/Reload button is a part of tools menu, so open it.
   if (!IsIPadIdiom()) {

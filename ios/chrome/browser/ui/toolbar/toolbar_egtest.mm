@@ -51,7 +51,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"You've arrived"]);
 }
 
 // Verifies opening a new tab from the tools menu.
@@ -434,7 +434,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
+      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
                           chrome_test_util::Omnibox()]);
 
   // Tap the "/" keyboard accessory button.

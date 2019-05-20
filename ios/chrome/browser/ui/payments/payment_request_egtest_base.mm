@@ -26,7 +26,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
-#import "ios/web/public/test/web_view_interaction_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -132,7 +131,7 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 - (void)waitForWebViewContainingTexts:(const std::vector<std::string>&)texts {
   for (const std::string& text : texts)
     CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebViewContainingText:text]);
+        [ChromeEarlGrey waitForWebStateContainingText:text]);
 }
 
 - (autofill::PersonalDataManager*)personalDataManager {

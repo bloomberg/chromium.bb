@@ -78,7 +78,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
+      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
                           chrome_test_util::Omnibox()]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([pageString stringByAppendingString:@"\n"])];
@@ -90,7 +90,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
+      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
                           chrome_test_util::Omnibox()]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(
