@@ -14,6 +14,7 @@
 #include "ash/keyboard/ui/keyboard_event_handler.h"
 #include "ash/keyboard/ui/keyboard_export.h"
 #include "ash/keyboard/ui/keyboard_layout_delegate.h"
+#include "ash/keyboard/ui/keyboard_ui_model.h"
 #include "ash/keyboard/ui/keyboard_ukm_recorder.h"
 #include "ash/keyboard/ui/notification_manager.h"
 #include "ash/keyboard/ui/queued_container_type.h"
@@ -46,28 +47,6 @@ class CallbackAnimationObserver;
 class KeyboardControllerObserver;
 class KeyboardUI;
 class KeyboardUIFactory;
-
-// Represents the current state of the keyboard managed by the controller.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class KeyboardControllerState {
-  kUnknown = 0,
-  // Keyboard has never been shown.
-  kInitial = 1,
-  // Waiting for an extension to be loaded. Will move to HIDDEN if this is
-  // loading pre-emptively, otherwise will move to SHOWN.
-  kLoadingExtension = 2,
-  // kShowing = 3,  // no longer used
-  // Keyboard is shown.
-  kShown = 4,
-  // Keyboard is still shown, but will move to HIDING in a short period, or if
-  // an input element gets focused again, will move to SHOWN.
-  kWillHide = 5,
-  // kHiding = 6,  // no longer used
-  // Keyboard is hidden, but has shown at least once.
-  kHidden = 7,
-  kMaxValue = kHidden
-};
 
 // Provides control of the virtual keyboard, including enabling/disabling the
 // keyboard and controlling its visibility.
@@ -253,7 +232,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
       std::unique_ptr<ContainerBehavior> container_behavior) {
     container_behavior_ = std::move(container_behavior);
   }
-  KeyboardControllerState GetStateForTest() const { return state_; }
+  KeyboardControllerState GetStateForTest() const { return model_.state(); }
   ui::InputMethod* GetInputMethodForTest();
   void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds_in_root);
 
@@ -436,17 +415,18 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   bool show_on_keyboard_window_load_ = false;
 
   // If true, the keyboard is always visible even if no window has input focus.
+  // TODO(https://crbug.com/964191): Move this to the UI model.
   bool keyboard_locked_ = false;
   KeyboardEventHandler event_handler_;
 
   base::ObserverList<KeyboardControllerObserver>::Unchecked observer_list_;
 
+  KeyboardUIModel model_;
+
   // The bounds for the visible portion of the keyboard, relative to the root
   // window. If the keyboard window is visible, this should be the same size as
   // the keyboard window. If not, this should be empty.
   gfx::Rect visual_bounds_in_root_;
-
-  KeyboardControllerState state_ = KeyboardControllerState::kInitial;
 
   // Keyboard configuration associated with the controller.
   mojom::KeyboardConfig keyboard_config_;

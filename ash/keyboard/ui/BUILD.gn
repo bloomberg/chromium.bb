@@ -35,6 +35,8 @@ jumbo_component("ui") {
     "keyboard_ui.h",
     "keyboard_ui_factory.cc",
     "keyboard_ui_factory.h",
+    "keyboard_ui_model.cc",
+    "keyboard_ui_model.h",
     "keyboard_ukm_recorder.cc",
     "keyboard_ukm_recorder.h",
     "keyboard_util.cc",
