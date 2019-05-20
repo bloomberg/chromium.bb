@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 
 class Profile;
 
@@ -64,14 +65,18 @@ class BookmarkAppInstallationTask {
 
   virtual ~BookmarkAppInstallationTask();
 
+  // Temporarily takes a |load_url_result| to decide if a placeholder app should
+  // be installed.
+  // TODO(ortuno): Remove once loading is done inside the task.
   virtual void Install(content::WebContents* web_contents,
+                       web_app::WebAppUrlLoader::Result load_url_result,
                        ResultCallback result_callback);
-
-  virtual void InstallPlaceholder(ResultCallback result_callback);
 
   const web_app::InstallOptions& install_options() { return install_options_; }
 
  private:
+  void InstallPlaceholder(ResultCallback result_callback);
+
   void UninstallPlaceholderApp(content::WebContents* web_contents,
                                ResultCallback result_callback);
   void OnPlaceholderUninstalled(content::WebContents* web_contents,

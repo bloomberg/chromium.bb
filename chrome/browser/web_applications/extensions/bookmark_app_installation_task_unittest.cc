@@ -370,7 +370,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   bool callback_called = false;
   task->Install(
-      web_contents(),
+      web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting(
           [&](BookmarkAppInstallationTask::Result result) {
             base::Optional<web_app::AppId> id =
@@ -413,7 +413,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   bool callback_called = false;
   task->Install(
-      web_contents(),
+      web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting(
           [&](BookmarkAppInstallationTask::Result result) {
             base::Optional<web_app::AppId> id =
@@ -448,7 +448,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
-  task->Install(web_contents(),
+  task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
                 base::BindLambdaForTesting(
                     [&](BookmarkAppInstallationTask::Result result) {
                       EXPECT_EQ(web_app::InstallResultCode::kSuccess,
@@ -477,7 +477,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
-  task->Install(web_contents(),
+  task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
                 base::BindLambdaForTesting(
                     [&](BookmarkAppInstallationTask::Result result) {
                       EXPECT_EQ(web_app::InstallResultCode::kSuccess,
@@ -509,7 +509,7 @@ TEST_F(
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
-  task->Install(web_contents(),
+  task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
                 base::BindLambdaForTesting(
                     [&](BookmarkAppInstallationTask::Result result) {
                       EXPECT_EQ(web_app::InstallResultCode::kSuccess,
@@ -538,7 +538,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
-  task->Install(web_contents(),
+  task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
                 base::BindLambdaForTesting(
                     [&](BookmarkAppInstallationTask::Result result) {
                       EXPECT_EQ(web_app::InstallResultCode::kSuccess,
@@ -565,7 +565,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
-  task->Install(web_contents(),
+  task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
                 base::BindLambdaForTesting(
                     [&](BookmarkAppInstallationTask::Result result) {
                       EXPECT_EQ(web_app::InstallResultCode::kSuccess,
@@ -592,7 +592,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
-  task->Install(web_contents(),
+  task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
                 base::BindLambdaForTesting(
                     [&](BookmarkAppInstallationTask::Result result) {
                       EXPECT_EQ(web_app::InstallResultCode::kSuccess,
@@ -618,7 +618,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
-  task->Install(web_contents(),
+  task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
                 base::BindLambdaForTesting(
                     [&](BookmarkAppInstallationTask::Result result) {
                       EXPECT_EQ(web_app::InstallResultCode::kSuccess,
@@ -638,6 +638,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
 TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
+  options.install_placeholder = true;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(), std::move(options));
   install_finalizer()->SetNextFinalizeInstallResult(
@@ -646,8 +647,10 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
       install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
 
   base::RunLoop run_loop;
-  task->InstallPlaceholder(base::BindLambdaForTesting(
-      [&](BookmarkAppInstallationTask::Result result) {
+  task->Install(
+      web_contents(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded,
+      base::BindLambdaForTesting([&](BookmarkAppInstallationTask::Result
+                                         result) {
         EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
@@ -673,6 +676,7 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
 TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
+  options.install_placeholder = true;
   web_app::AppId placeholder_app_id;
 
   // Install a placeholder app.
@@ -685,14 +689,17 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
         install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
 
     base::RunLoop run_loop;
-    task->InstallPlaceholder(base::BindLambdaForTesting(
-        [&](BookmarkAppInstallationTask::Result result) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
-          placeholder_app_id = result.app_id.value();
+    task->Install(
+        web_contents(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded,
+        base::BindLambdaForTesting(
+            [&](BookmarkAppInstallationTask::Result result) {
+              EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
+              placeholder_app_id = result.app_id.value();
 
-          EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
-          run_loop.Quit();
-        }));
+              EXPECT_EQ(1u,
+                        install_finalizer()->finalize_options_list().size());
+              run_loop.Quit();
+            }));
     run_loop.Run();
   }
 
@@ -700,22 +707,25 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(), options);
   base::RunLoop run_loop;
-  task->InstallPlaceholder(base::BindLambdaForTesting(
-      [&](BookmarkAppInstallationTask::Result result) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
-        EXPECT_EQ(placeholder_app_id, result.app_id.value());
+  task->Install(
+      web_contents(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded,
+      base::BindLambdaForTesting(
+          [&](BookmarkAppInstallationTask::Result result) {
+            EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
+            EXPECT_EQ(placeholder_app_id, result.app_id.value());
 
-        // There shouldn't be a second call to the finalizer.
-        EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
+            // There shouldn't be a second call to the finalizer.
+            EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
 
-        run_loop.Quit();
-      }));
+            run_loop.Quit();
+          }));
   run_loop.Run();
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
+  options.install_placeholder = true;
   web_app::AppId placeholder_app_id;
 
   // Install a placeholder app.
@@ -728,14 +738,17 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
         install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
 
     base::RunLoop run_loop;
-    task->InstallPlaceholder(base::BindLambdaForTesting(
-        [&](BookmarkAppInstallationTask::Result result) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
-          placeholder_app_id = result.app_id.value();
+    task->Install(
+        web_contents(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded,
+        base::BindLambdaForTesting(
+            [&](BookmarkAppInstallationTask::Result result) {
+              EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
+              placeholder_app_id = result.app_id.value();
 
-          EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
-          run_loop.Quit();
-        }));
+              EXPECT_EQ(1u,
+                        install_finalizer()->finalize_options_list().size());
+              run_loop.Quit();
+            }));
     run_loop.Run();
   }
 
@@ -746,7 +759,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
   install_finalizer()->SetNextUninstallExternalWebAppResult(kWebAppUrl, true);
   base::RunLoop run_loop;
   task->Install(
-      web_contents(),
+      web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting(
           [&](BookmarkAppInstallationTask::Result result) {
             EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
@@ -770,6 +783,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
 TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderFails) {
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
+  options.install_placeholder = true;
   web_app::AppId placeholder_app_id;
 
   // Install a placeholder app.
@@ -782,15 +796,18 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderFails) {
         install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
 
     base::RunLoop run_loop;
-    task->InstallPlaceholder(base::BindLambdaForTesting(
-        [&](BookmarkAppInstallationTask::Result result) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
-          placeholder_app_id = result.app_id.value();
+    task->Install(
+        web_contents(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded,
+        base::BindLambdaForTesting(
+            [&](BookmarkAppInstallationTask::Result result) {
+              EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
+              placeholder_app_id = result.app_id.value();
 
-          EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
+              EXPECT_EQ(1u,
+                        install_finalizer()->finalize_options_list().size());
 
-          run_loop.Quit();
-        }));
+              run_loop.Quit();
+            }));
     run_loop.Run();
   }
 
@@ -801,7 +818,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderFails) {
   install_finalizer()->SetNextUninstallExternalWebAppResult(kWebAppUrl, false);
   base::RunLoop run_loop;
   task->Install(
-      web_contents(),
+      web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting(
           [&](BookmarkAppInstallationTask::Result result) {
             EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason,

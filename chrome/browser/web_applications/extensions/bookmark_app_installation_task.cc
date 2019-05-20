@@ -56,22 +56,38 @@ BookmarkAppInstallationTask::BookmarkAppInstallationTask(
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
 
-void BookmarkAppInstallationTask::Install(content::WebContents* web_contents,
-                                          ResultCallback result_callback) {
+void BookmarkAppInstallationTask::Install(
+    content::WebContents* web_contents,
+    web_app::WebAppUrlLoader::Result load_url_result,
+    ResultCallback result_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(web_contents->GetBrowserContext(), profile_);
 
-  // If we are not re-installing a placeholder, then no need to uninstall
-  // anything.
-  if (!install_options_.reinstall_placeholder) {
-    ContinueWebAppInstall(web_contents, std::move(result_callback));
+  if (load_url_result == web_app::WebAppUrlLoader::Result::kUrlLoaded) {
+    // If we are not re-installing a placeholder, then no need to uninstall
+    // anything.
+    if (!install_options_.reinstall_placeholder) {
+      ContinueWebAppInstall(web_contents, std::move(result_callback));
+      return;
+    }
+    // Calling InstallWebAppWithOptions with the same URL used to install a
+    // placeholder won't necessarily replace the placeholder app, because the
+    // new app might be installed with a new AppId. To avoid this, always
+    // uninstall the placeholder app.
+    UninstallPlaceholderApp(web_contents, std::move(result_callback));
     return;
   }
-  // Calling InstallWebAppWithOptions with the same URL used to install a
-  // placeholder won't necessarily replace the placeholder app, because the new
-  // app might be installed with a new AppId. To avoid this, always uninstall
-  // the placeholder app.
-  UninstallPlaceholderApp(web_contents, std::move(result_callback));
+
+  if (install_options_.install_placeholder) {
+    InstallPlaceholder(std::move(result_callback));
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(result_callback),
+                     Result(web_app::InstallResultCode::kFailedUnknownReason,
+                            base::nullopt)));
 }
 
 void BookmarkAppInstallationTask::UninstallPlaceholderApp(

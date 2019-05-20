@@ -239,27 +239,10 @@ void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
 
 void PendingBookmarkAppManager::OnUrlLoaded(
     web_app::WebAppUrlLoader::Result result) {
-  const auto& install_options =
-      current_task_and_callback_->task->install_options();
-
-  if (result == web_app::WebAppUrlLoader::Result::kUrlLoaded) {
-    current_task_and_callback_->task->Install(
-        web_contents_.get(),
-        base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
-                       weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
-  // TODO(ortuno): Move this into BookmarkAppInstallationTask::Install() once
-  // loading the URL is part of Install().
-  if (install_options.install_placeholder) {
-    current_task_and_callback_->task->InstallPlaceholder(
-        base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
-                       weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
-  CurrentInstallationFinished(base::nullopt);
+  current_task_and_callback_->task->Install(
+      web_contents_.get(), result,
+      base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PendingBookmarkAppManager::OnInstalled(

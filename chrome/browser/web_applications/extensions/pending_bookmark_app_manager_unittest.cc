@@ -84,10 +84,6 @@ class TestBookmarkAppInstallationTaskFactory {
 
   size_t install_run_count() { return install_run_count_; }
 
-  size_t install_placeholder_run_count() {
-    return install_placeholder_run_count_;
-  }
-
   const std::vector<web_app::InstallOptions>& install_options_list() {
     return install_options_list_;
   }
@@ -110,12 +106,6 @@ class TestBookmarkAppInstallationTaskFactory {
 
   void OnInstallCalled(const web_app::InstallOptions& install_options) {
     ++install_run_count_;
-    install_options_list_.push_back(install_options);
-  }
-
-  void OnInstallPlaceholderCalled(
-      const web_app::InstallOptions& install_options) {
-    ++install_placeholder_run_count_;
     install_options_list_.push_back(install_options);
   }
 
@@ -147,18 +137,10 @@ class TestBookmarkAppInstallationTaskFactory {
     ~TestBookmarkAppInstallationTask() override = default;
 
     void Install(content::WebContents* web_contents,
+                 web_app::WebAppUrlLoader::Result url_loaded_result,
                  ResultCallback callback) override {
       factory_->OnInstallCalled(install_options_);
-      SimulateInstallingApp(/*is_placeholder=*/false, std::move(callback));
-    }
 
-    void InstallPlaceholder(ResultCallback callback) override {
-      factory_->OnInstallPlaceholderCalled(install_options_);
-      SimulateInstallingApp(/*is_placeholder=*/true, std::move(callback));
-    }
-
-   private:
-    void SimulateInstallingApp(bool is_placeholder, ResultCallback callback) {
       base::Optional<web_app::AppId> app_id;
       auto result_code =
           factory_->GetNextInstallationTaskResult(install_options_.url);
@@ -167,6 +149,8 @@ class TestBookmarkAppInstallationTaskFactory {
         externally_installed_app_prefs_.Insert(install_options_.url,
                                                app_id.value(),
                                                install_options_.install_source);
+        const bool is_placeholder =
+            (url_loaded_result != web_app::WebAppUrlLoader::Result::kUrlLoaded);
         externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
                                                          is_placeholder);
         registrar_->AddAsInstalled(app_id.value());
@@ -174,6 +158,7 @@ class TestBookmarkAppInstallationTaskFactory {
       std::move(callback).Run({result_code, app_id});
     }
 
+   private:
     TestBookmarkAppInstallationTaskFactory* factory_;
     Profile* profile_;
     web_app::TestAppRegistrar* registrar_;
@@ -185,7 +170,6 @@ class TestBookmarkAppInstallationTaskFactory {
 
   std::vector<web_app::InstallOptions> install_options_list_;
   size_t install_run_count_ = 0;
-  size_t install_placeholder_run_count_ = 0;
 
   std::map<GURL, web_app::InstallResultCode> next_installation_task_results_;
 };
@@ -302,11 +286,6 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   // Number of times BookmarkAppInstallationTask::Install was called. Reflects
   // how many times we've tried to create an Extension.
   size_t install_run_count() { return task_factory_->install_run_count(); }
-
-  // Number of times BookmarkAppInstallatioNTask::InstallPlaceholder was called.
-  size_t install_placeholder_run_count() {
-    return task_factory_->install_placeholder_run_count();
-  }
 
   size_t uninstall_call_count() {
     return install_finalizer_->uninstall_external_web_app_urls().size();
@@ -499,8 +478,10 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingSuccessfulTask) {
 
 TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
+  task_factory()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, web_app::InstallResultCode::kFailedUnknownReason);
   url_loader()->SetNextLoadUrlResult(
-      kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+      kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
   task_factory()->SetNextInstallationTaskResult(
       kBarWebAppUrl, web_app::InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(
@@ -517,8 +498,8 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
             EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason, code);
             EXPECT_EQ(kFooWebAppUrl, url);
 
-            // The installation didn't run because we loaded the wrong url.
-            EXPECT_EQ(0u, install_run_count());
+            EXPECT_EQ(1u, install_run_count());
+
             foo_run_loop.Quit();
           }));
   // Make sure the installation has started.
@@ -531,7 +512,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
             EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
             EXPECT_EQ(kBarWebAppUrl, url);
 
-            EXPECT_EQ(1u, install_run_count());
+            EXPECT_EQ(2u, install_run_count());
             EXPECT_EQ(GetBarInstallOptions(), last_install_options());
 
             bar_run_loop.Quit();
@@ -710,10 +691,12 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
   }
 }
 
-TEST_F(PendingBookmarkAppManagerTest, Install_FailsLoadIncorrectURL) {
+TEST_F(PendingBookmarkAppManagerTest, Install_InstallationFails) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
+  task_factory()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, web_app::InstallResultCode::kFailedUnknownReason);
   url_loader()->SetNextLoadUrlResult(
-      kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+      kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
   base::Optional<GURL> url;
   base::Optional<web_app::InstallResultCode> code;
@@ -723,8 +706,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_FailsLoadIncorrectURL) {
   EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason, code);
   EXPECT_EQ(kFooWebAppUrl, url);
 
-  EXPECT_EQ(0u, install_run_count());
-  EXPECT_EQ(0u, install_placeholder_run_count());
+  EXPECT_EQ(1u, install_run_count());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_PlaceholderApp) {
@@ -745,8 +727,8 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PlaceholderApp) {
   EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
   EXPECT_EQ(kFooWebAppUrl, url);
 
-  EXPECT_EQ(0u, install_run_count());
-  EXPECT_EQ(1u, install_placeholder_run_count());
+  EXPECT_EQ(1u, install_run_count());
+  EXPECT_EQ(install_options, last_install_options());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, InstallApps_Succeeds) {
@@ -789,27 +771,6 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_FailsInstallationFails) {
           {{kFooWebAppUrl, web_app::InstallResultCode::kFailedUnknownReason}}));
 
   EXPECT_EQ(1u, install_run_count());
-  EXPECT_EQ(0u, install_placeholder_run_count());
-}
-
-TEST_F(PendingBookmarkAppManagerTest, InstallApps_FailsLoadIncorrectURL) {
-  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
-  url_loader()->SetNextLoadUrlResult(
-      kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-
-  std::vector<web_app::InstallOptions> apps_to_install;
-  apps_to_install.push_back(GetFooInstallOptions());
-
-  InstallAppsResults results =
-      InstallAppsAndWait(pending_app_manager.get(), std::move(apps_to_install));
-
-  EXPECT_EQ(
-      results,
-      InstallAppsResults(
-          {{kFooWebAppUrl, web_app::InstallResultCode::kFailedUnknownReason}}));
-
-  EXPECT_EQ(0u, install_run_count());
-  EXPECT_EQ(0u, install_placeholder_run_count());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, InstallApps_PlaceholderApp) {
@@ -819,9 +780,10 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PlaceholderApp) {
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
 
+  auto install_options = GetFooInstallOptions();
+  install_options.install_placeholder = true;
   std::vector<web_app::InstallOptions> apps_to_install;
-  apps_to_install.push_back(GetFooInstallOptions());
-  apps_to_install.front().install_placeholder = true;
+  apps_to_install.push_back(install_options);
 
   InstallAppsResults results =
       InstallAppsAndWait(pending_app_manager.get(), std::move(apps_to_install));
@@ -830,8 +792,8 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PlaceholderApp) {
             InstallAppsResults(
                 {{kFooWebAppUrl, web_app::InstallResultCode::kSuccess}}));
 
-  EXPECT_EQ(0u, install_run_count());
-  EXPECT_EQ(1u, install_placeholder_run_count());
+  EXPECT_EQ(1u, install_run_count());
+  EXPECT_EQ(install_options, last_install_options());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, InstallApps_Multiple) {
@@ -1223,8 +1185,7 @@ TEST_F(PendingBookmarkAppManagerTest, ReinstallPlaceholderApp_Success) {
     std::tie(url, code) =
         InstallAndWait(pending_app_manager.get(), install_options);
     ASSERT_EQ(web_app::InstallResultCode::kSuccess, code.value());
-    EXPECT_EQ(0u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
+    EXPECT_EQ(1u, install_run_count());
   }
 
   // Reinstall placeholder
@@ -1245,8 +1206,7 @@ TEST_F(PendingBookmarkAppManagerTest, ReinstallPlaceholderApp_Success) {
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
 
-    EXPECT_EQ(1u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
+    EXPECT_EQ(2u, install_run_count());
   }
 }
 
@@ -1268,8 +1228,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     std::tie(url, code) =
         InstallAndWait(pending_app_manager.get(), install_options);
     ASSERT_EQ(web_app::InstallResultCode::kSuccess, code.value());
-    EXPECT_EQ(0u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
+    EXPECT_EQ(1u, install_run_count());
   }
 
   // Try to reinstall placeholder
@@ -1288,11 +1247,10 @@ TEST_F(PendingBookmarkAppManagerTest,
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
 
-    EXPECT_EQ(0u, install_run_count());
     // Even though the placeholder app is already install, we make a call to
     // InstallFinalizer. InstallFinalizer ensures we don't unnecessarily
     // install the placeholder app again.
-    EXPECT_EQ(2u, install_placeholder_run_count());
+    EXPECT_EQ(2u, install_run_count());
   }
 }
 
@@ -1313,8 +1271,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     std::tie(url, code) =
         InstallAndWait(pending_app_manager.get(), install_options);
     ASSERT_EQ(web_app::InstallResultCode::kSuccess, code.value());
-    EXPECT_EQ(0u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
+    EXPECT_EQ(1u, install_run_count());
   }
 
   // Reinstall placeholder
@@ -1335,8 +1292,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
 
-    EXPECT_EQ(1u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
+    EXPECT_EQ(2u, install_run_count());
   }
 }
 
@@ -1358,8 +1314,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     std::tie(url, code) =
         InstallAndWait(pending_app_manager.get(), install_options);
     ASSERT_EQ(web_app::InstallResultCode::kSuccess, code.value());
-    EXPECT_EQ(0u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
+    EXPECT_EQ(1u, install_run_count());
   }
 
   // Reinstall placeholder
@@ -1382,8 +1337,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
 
-    EXPECT_EQ(1u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
+    EXPECT_EQ(2u, install_run_count());
   }
 }
 
