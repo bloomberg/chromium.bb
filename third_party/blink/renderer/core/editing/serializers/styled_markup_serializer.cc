@@ -300,7 +300,6 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
     }
   } else if (should_append_parent_tag) {
     EditingStyle* style = traverser.CreateInlineStyleIfNeeded(*last_closed_);
-    // traverser.WrapWithNode(*To<ContainerNode>(last_closed_.Get()), style);
     traverser.WrapWithNode(To<ContainerNode>(*last_closed_), style);
   }
 
