@@ -38,6 +38,10 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   void setValidity(ValidityStateFlags* flags,
                    const String& message,
                    ExceptionState& exception_state);
+  void setValidity(ValidityStateFlags* flags,
+                   const String& message,
+                   Element* anchor,
+                   ExceptionState& exception_state);
   bool willValidate(ExceptionState& exception_state) const;
   ValidityState* validity(ExceptionState& exception_state);
   String ValidationMessageForBinding(ExceptionState& exception_state);
@@ -66,6 +70,7 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   bool CustomError() const override;
   String validationMessage() const override;
   String ValidationSubMessage() const override;
+  Element& ValidationAnchor() const override;
   void DisabledStateMightBeChanged() override;
   bool ClassSupportsStateRestore() const override;
   bool ShouldSaveAndRestoreFormControlState() const override;
@@ -78,6 +83,7 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   ControlValue state_;
   bool is_disabled_ = false;
   Member<ValidityStateFlags> validity_flags_;
+  Member<Element> validation_anchor_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementInternals);
 };

@@ -1326,13 +1326,18 @@ bool Node::IsShadowIncludingInclusiveAncestorOf(const Node* node) const {
   if (!node)
     return false;
 
-  if (this == node)
-    return true;
+  return this == node || IsShadowIncludingAncestorOf(*node);
+}
 
-  if (GetDocument() != node->GetDocument())
+bool Node::IsShadowIncludingAncestorOf(const Node& node) const {
+  // In the following case, contains(host) below returns true.
+  if (this == &node)
     return false;
 
-  if (isConnected() != node->isConnected())
+  if (GetDocument() != node.GetDocument())
+    return false;
+
+  if (isConnected() != node.isConnected())
     return false;
 
   auto* this_node = DynamicTo<ContainerNode>(this);
@@ -1341,9 +1346,9 @@ bool Node::IsShadowIncludingInclusiveAncestorOf(const Node* node) const {
   if (!has_children && !has_shadow)
     return false;
 
-  for (; node; node = node->OwnerShadowHost()) {
-    if (GetTreeScope() == node->GetTreeScope())
-      return contains(node);
+  for (const Node* host = &node; host; host = host->OwnerShadowHost()) {
+    if (GetTreeScope() == host->GetTreeScope())
+      return contains(host);
   }
 
   return false;

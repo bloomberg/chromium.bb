@@ -39,6 +39,7 @@ void ElementInternals::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   visitor->Trace(state_);
   visitor->Trace(validity_flags_);
+  visitor->Trace(validation_anchor_);
   ListedElement::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -88,11 +89,18 @@ HTMLFormElement* ElementInternals::form(ExceptionState& exception_state) const {
 
 void ElementInternals::setValidity(ValidityStateFlags* flags,
                                    ExceptionState& exception_state) {
-  setValidity(flags, String(), exception_state);
+  setValidity(flags, String(), nullptr, exception_state);
 }
 
 void ElementInternals::setValidity(ValidityStateFlags* flags,
                                    const String& message,
+                                   ExceptionState& exception_state) {
+  setValidity(flags, message, nullptr, exception_state);
+}
+
+void ElementInternals::setValidity(ValidityStateFlags* flags,
+                                   const String& message,
+                                   Element* anchor,
                                    ExceptionState& exception_state) {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
@@ -109,7 +117,19 @@ void ElementInternals::setValidity(ValidityStateFlags* flags,
         "first argument are true.");
     return;
   }
+  if (anchor && !Target().IsShadowIncludingAncestorOf(*anchor)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotFoundError,
+        "The Element argument should be a shadow-including descendant of the "
+        "target element.");
+    return;
+  }
+
+  if (validation_anchor_ && validation_anchor_ != anchor) {
+    HideVisibleValidationMessage();
+  }
   validity_flags_ = flags;
+  validation_anchor_ = anchor;
   SetCustomValidationMessage(message);
   SetNeedsValidityCheck();
 }
@@ -155,6 +175,10 @@ String ElementInternals::ValidationSubMessage() const {
   if (PatternMismatch())
     return Target().FastGetAttribute(html_names::kTitleAttr).GetString();
   return String();
+}
+
+Element& ElementInternals::ValidationAnchor() const {
+  return validation_anchor_ ? *validation_anchor_ : Target();
 }
 
 bool ElementInternals::checkValidity(ExceptionState& exception_state) {

@@ -234,7 +234,7 @@ bool HTMLFormElement::ValidateInteractively() {
 
   // Focus on the first focusable control and show a validation message.
   for (const auto& unhandled : unhandled_invalid_controls) {
-    if (unhandled->ToHTMLElement().IsFocusable()) {
+    if (unhandled->ValidationAnchorOrHostIsFocusable()) {
       unhandled->ShowValidationMessage();
       UseCounter::Count(GetDocument(),
                         WebFeature::kFormValidationShowedMessage);
@@ -244,7 +244,7 @@ bool HTMLFormElement::ValidateInteractively() {
   // Warn about all of unfocusable controls.
   if (GetDocument().GetFrame()) {
     for (const auto& unhandled : unhandled_invalid_controls) {
-      if (unhandled->ToHTMLElement().IsFocusable())
+      if (unhandled->ValidationAnchorOrHostIsFocusable())
         continue;
       String message(
           "An invalid form control with name='%name' is not focusable.");

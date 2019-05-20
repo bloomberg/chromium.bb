@@ -396,14 +396,15 @@ void ListedElement::FindCustomValidationMessageTextDirection(
 }
 
 void ListedElement::UpdateVisibleValidationMessage() {
-  HTMLElement& element = ToHTMLElement();
+  const Element& element = ValidationAnchor();
   Page* page = element.GetDocument().GetPage();
   if (!page || !page->IsPageVisible() || element.GetDocument().UnloadStarted())
     return;
   if (page->Paused())
     return;
   String message;
-  if (element.GetLayoutObject() && WillValidate())
+  if (element.GetLayoutObject() && WillValidate() &&
+      ToHTMLElement().IsShadowIncludingInclusiveAncestorOf(&element))
     message = validationMessage().StripWhiteSpace();
 
   has_validation_message_ = true;
@@ -426,7 +427,7 @@ void ListedElement::HideVisibleValidationMessage() {
     return;
 
   if (auto* client = GetValidationMessageClient())
-    client->HideValidationMessage(ToHTMLElement());
+    client->HideValidationMessage(ValidationAnchor());
 }
 
 bool ListedElement::IsValidationMessageVisible() const {
@@ -434,7 +435,7 @@ bool ListedElement::IsValidationMessageVisible() const {
     return false;
 
   if (auto* client = GetValidationMessageClient()) {
-    return client->IsValidationMessageVisible(ToHTMLElement());
+    return client->IsValidationMessageVisible(ValidationAnchor());
   }
   return false;
 }
@@ -443,6 +444,20 @@ ValidationMessageClient* ListedElement::GetValidationMessageClient() const {
   if (Page* page = ToHTMLElement().GetDocument().GetPage())
     return &page->GetValidationMessageClient();
   return nullptr;
+}
+
+Element& ListedElement::ValidationAnchor() const {
+  return const_cast<HTMLElement&>(ToHTMLElement());
+}
+
+bool ListedElement::ValidationAnchorOrHostIsFocusable() const {
+  const Element& anchor = ValidationAnchor();
+  const HTMLElement& host = ToHTMLElement();
+  if (anchor.IsFocusable())
+    return true;
+  if (&anchor == &host)
+    return false;
+  return host.IsFocusable();
 }
 
 bool ListedElement::checkValidity(List* unhandled_invalid_controls) {
@@ -460,9 +475,12 @@ bool ListedElement::checkValidity(List* unhandled_invalid_controls) {
 }
 
 void ListedElement::ShowValidationMessage() {
-  HTMLElement& element = ToHTMLElement();
+  Element& element = ValidationAnchor();
   element.scrollIntoViewIfNeeded(false);
-  element.focus();
+  if (element.IsFocusable())
+    element.focus();
+  else
+    ToHTMLElement().focus();
   UpdateVisibleValidationMessage();
 }
 

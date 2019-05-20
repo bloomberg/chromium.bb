@@ -639,7 +639,11 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool IsDescendantOf(const Node*) const;
   bool contains(const Node*) const;
+  // https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
+  // TODO(tkent): The argument should be |const Node&|.
   bool IsShadowIncludingInclusiveAncestorOf(const Node*) const;
+  // https://dom.spec.whatwg.org/#concept-shadow-including-ancestor
+  bool IsShadowIncludingAncestorOf(const Node&) const;
   bool ContainsIncludingHostElements(const Node&) const;
   Node* CommonAncestor(const Node&,
                        ContainerNode* (*parent)(const Node&)) const;
