@@ -590,8 +590,7 @@ CrSettingsPeoplePageKerberosAccountsTest.prototype = {
   ]),
 };
 
-// Test is consistently failing. http://crbug.com/960837
-TEST_F('CrSettingsPeoplePageKerberosAccountsTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsPeoplePageKerberosAccountsTest', 'All', function() {
   mocha.run();
 });
 

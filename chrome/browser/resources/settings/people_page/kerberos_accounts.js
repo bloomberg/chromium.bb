@@ -32,6 +32,15 @@ Polymer({
      * @private {?settings.KerberosAccount}
      */
     actionMenuAccount_: Object,
+
+    /** @private */
+    addAccountPresetUsername_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
+    showAddAccountDialog_: Boolean,
   },
 
   /** @private {?settings.KerberosAccountsBrowserProxy} */
@@ -63,8 +72,9 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  addAccount_: function(event) {
-    this.browserProxy_.addAccount();
+  onAddAccountClick_: function(event) {
+    this.addAccountPresetUsername_ = '';
+    this.showAddAccountDialog_ = true;
   },
 
   /**
@@ -72,7 +82,13 @@ Polymer({
    * @private
    */
   onReauthenticationClick_: function(event) {
-    this.browserProxy_.reauthenticateAccount(event.model.item.principalName);
+    this.addAccountPresetUsername_ = event.model.item.principalName;
+    this.showAddAccountDialog_ = true;
+  },
+
+  /** @private */
+  onAddAccountDialogClosed_: function() {
+    this.showAddAccountDialog_ = false;
   },
 
   /**
