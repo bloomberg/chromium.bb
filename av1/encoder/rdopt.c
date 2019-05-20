@@ -2741,7 +2741,7 @@ static void model_rd_for_sb_with_dnn(
     if (plane_dist) plane_dist[plane] = dist;
   }
 
-  if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
+  if (skip_txfm_sb) *skip_txfm_sb = rate_sum == 0;
   if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
   *out_rate_sum = (int)rate_sum;
   *out_dist_sum = dist_sum;
@@ -2846,7 +2846,7 @@ static void model_rd_for_sb_with_surffit(
     if (plane_dist) plane_dist[plane] = dist;
   }
 
-  if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
+  if (skip_txfm_sb) *skip_txfm_sb = rate_sum == 0;
   if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
   *out_rate_sum = (int)rate_sum;
   *out_dist_sum = dist_sum;
@@ -2952,7 +2952,7 @@ static void model_rd_for_sb_with_curvfit(
     if (plane_dist) plane_dist[plane] = dist;
   }
 
-  if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
+  if (skip_txfm_sb) *skip_txfm_sb = rate_sum == 0;
   if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
   *out_rate_sum = (int)rate_sum;
   *out_dist_sum = dist_sum;
