@@ -112,8 +112,28 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       OnExtensionInstalled, web_app_info.app_url, launch_type,
       options.locally_installed, std::move(callback), crx_installer));
 
-  if (options.policy_installed)
-    crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  switch (options.source) {
+    case web_app::InstallFinalizer::Source::kDefaultInstalled:
+      crx_installer->set_install_source(Manifest::EXTERNAL_PREF_DOWNLOAD);
+      // CrxInstaller::InstallWebApp will OR the creation flags with
+      // FROM_BOOKMARK.
+      crx_installer->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
+      break;
+    case web_app::InstallFinalizer::Source::kPolicyInstalled:
+      crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
+      break;
+    case web_app::InstallFinalizer::Source::kSystemInstalled:
+      // System Apps are considered EXTERNAL_COMPONENT as they are downloaded
+      // from the WebUI they point to. COMPONENT seems like the more correct
+      // value, but usages (icon loading, filesystem cleanup), are tightly
+      // coupled to this value, making it unsuitable.
+      crx_installer->set_install_source(Manifest::EXTERNAL_COMPONENT);
+      // InstallWebApp will OR the creation flags with FROM_BOOKMARK.
+      crx_installer->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
+      break;
+    case web_app::InstallFinalizer::Source::kUser:
+      break;
+  }
 
   if (options.no_network_install) {
     // Ensure that this app is not synced. A no-network install means we have

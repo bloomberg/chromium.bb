@@ -100,7 +100,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
     info->title = base::ASCIIToUTF16(kWebAppTitle);
 
     web_app::InstallFinalizer::FinalizeOptions options;
-    options.policy_installed = true;
+    options.source = web_app::InstallFinalizer::Source::kPolicyInstalled;
 
     web_app::AppId app_id;
     base::RunLoop run_loop;
@@ -252,7 +252,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
   EXPECT_TRUE(callback2_called);
 }
 
-TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstallSucceeds) {
+TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
   BookmarkAppInstallFinalizer installer(profile());
 
   auto info = std::make_unique<WebApplicationInfo>();
@@ -260,7 +260,36 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstallSucceeds) {
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
-  options.policy_installed = true;
+  options.source = web_app::InstallFinalizer::Source::kDefaultInstalled;
+
+  base::RunLoop run_loop;
+  installer.FinalizeInstall(
+      *info, options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+
+        auto* extension =
+            ExtensionRegistry::Get(profile())->GetInstalledExtension(
+                installed_app_id);
+        EXPECT_TRUE(Manifest::IsExternalLocation(extension->location()));
+        EXPECT_EQ(Manifest::EXTERNAL_PREF_DOWNLOAD, extension->location());
+        EXPECT_TRUE(extension->was_installed_by_default());
+
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
+  BookmarkAppInstallFinalizer installer(profile());
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = kWebAppUrl;
+  info->title = base::ASCIIToUTF16(kWebAppTitle);
+
+  web_app::InstallFinalizer::FinalizeOptions options;
+  options.source = web_app::InstallFinalizer::Source::kPolicyInstalled;
 
   base::RunLoop run_loop;
   installer.FinalizeInstall(
@@ -274,6 +303,35 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstallSucceeds) {
                 installed_app_id);
         EXPECT_TRUE(Manifest::IsPolicyLocation(extension->location()));
         EXPECT_TRUE(BookmarkAppIsLocallyInstalled(profile(), extension));
+
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
+  BookmarkAppInstallFinalizer installer(profile());
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = kWebAppUrl;
+  info->title = base::ASCIIToUTF16(kWebAppTitle);
+
+  web_app::InstallFinalizer::FinalizeOptions options;
+  options.source = web_app::InstallFinalizer::Source::kSystemInstalled;
+
+  base::RunLoop run_loop;
+  installer.FinalizeInstall(
+      *info, options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+
+        auto* extension =
+            ExtensionRegistry::Get(profile())->GetInstalledExtension(
+                installed_app_id);
+        EXPECT_TRUE(Manifest::IsExternalLocation(extension->location()));
+        EXPECT_EQ(Manifest::EXTERNAL_COMPONENT, extension->location());
+        EXPECT_TRUE(extension->was_installed_by_default());
 
         run_loop.Quit();
       }));

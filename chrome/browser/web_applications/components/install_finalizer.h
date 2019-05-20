@@ -33,13 +33,20 @@ class InstallFinalizer {
   using CreateOsShortcutsCallback =
       base::OnceCallback<void(bool shortcuts_created)>;
 
+  enum class Source {
+    kUser,
+    kDefaultInstalled,
+    kPolicyInstalled,
+    kSystemInstalled,
+  };
+
   struct FinalizeOptions {
     // If |force_launch_container| defined as non-kDefault then the installed
     // app will launch in |force_launch_container|.
     LaunchContainer force_launch_container = LaunchContainer::kDefault;
+    Source source = Source::kUser;
     bool error_on_unsupported_requirements = false;
     bool locally_installed = true;
-    bool policy_installed = false;
     bool no_network_install = false;
   };
 

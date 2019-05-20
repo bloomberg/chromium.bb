@@ -154,7 +154,7 @@ void BookmarkAppInstallationTask::InstallPlaceholder(ResultCallback callback) {
   }
 
   web_app::InstallFinalizer::FinalizeOptions options;
-  options.policy_installed = true;
+  options.source = web_app::InstallFinalizer::Source::kPolicyInstalled;
 
   install_finalizer_->FinalizeInstall(
       web_app_info, options,
