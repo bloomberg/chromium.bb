@@ -577,6 +577,19 @@ using web::wk_navigation_util::IsWKInternalUrl;
 - (void)webView:(WKWebView*)webView
     didReceiveServerRedirectForProvisionalNavigation:(WKNavigation*)navigation {
   [self didReceiveWKNavigationDelegateCallback];
+
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+
+  // This callback should never be triggered for placeholder navigations.
+  DCHECK(!(web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+           IsPlaceholderUrl(webViewURL)));
+
+  [self.navigationStates setState:web::WKNavigationState::REDIRECTED
+                    forNavigation:navigation];
+
+  web::NavigationContextImpl* context =
+      [self.navigationStates contextForNavigation:navigation];
+  [self didReceiveRedirectForNavigation:context withURL:webViewURL];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -869,6 +882,29 @@ using web::wk_navigation_util::IsWKInternalUrl;
       ->CreateDownloadTask(self.webStateImpl, [NSUUID UUID].UUIDString,
                            responseURL, contentDisposition, contentLength,
                            MIMEType, transition);
+}
+
+// Updates URL for navigation context and navigation item.
+- (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
+                                withURL:(const GURL&)URL {
+  context->SetUrl(URL);
+  web::NavigationItemImpl* item =
+      web::GetItemWithUniqueID(self.navigationManagerImpl, context);
+
+  // Associated item can be a pending item, previously discarded by another
+  // navigation. WKWebView allows multiple provisional navigations, while
+  // Navigation Manager has only one pending navigation.
+  if (item) {
+    if (!IsWKInternalUrl(URL)) {
+      item->SetVirtualURL(URL);
+      item->SetURL(URL);
+    }
+    // Redirects (3xx response code), must change POST requests to GETs.
+    item->SetPostData(nil);
+    item->ResetHttpRequestHeaders();
+  }
+
+  self.userInteractionState->ResetLastTransferTime();
 }
 
 #pragma mark - Public methods

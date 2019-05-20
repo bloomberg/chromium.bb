@@ -133,6 +133,12 @@ class UserInteractionState;
 - (web::NavigationContextImpl*)contextForPendingMainFrameNavigationWithURL:
     (const GURL&)URL;
 
+// Notifies that server redirect has been received.
+// TODO(crbug.com/956511): Remove this once "webView:didCommitNavigation" is
+// moved into CRWWKNavigationHandler.
+- (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
+                                withURL:(const GURL&)URL;
+
 @end
 
 #endif  // IOS_WEB_NAVIGATION_CRW_WK_NAVIGATION_HANDLER_H_

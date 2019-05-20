@@ -3888,20 +3888,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     didReceiveServerRedirectForProvisionalNavigation:(WKNavigation*)navigation {
   [self.navigationHandler webView:webView
       didReceiveServerRedirectForProvisionalNavigation:navigation];
-
-  GURL webViewURL = net::GURLWithNSURL(webView.URL);
-
-  // This callback should never be triggered for placeholder navigations.
-  DCHECK(!(web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-           IsPlaceholderUrl(webViewURL)));
-
-  [self.navigationHandler.navigationStates
-           setState:web::WKNavigationState::REDIRECTED
-      forNavigation:navigation];
-
-  web::NavigationContextImpl* context =
-      [self.navigationHandler.navigationStates contextForNavigation:navigation];
-  [self didReceiveRedirectForNavigation:context withURL:webViewURL];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4051,7 +4037,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       // rdar://37547029 was fixed on iOS 12.
     } else if (context && !context->IsPlaceholderNavigation() &&
                context->GetUrl() != webViewURL) {
-      [self didReceiveRedirectForNavigation:context withURL:webViewURL];
+      [self.navigationHandler didReceiveRedirectForNavigation:context
+                                                      withURL:webViewURL];
     }
   }
 
@@ -4703,29 +4690,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (self.navigationHandler.pendingNavigationInfo.MIMEType)
     holder->set_mime_type(
         self.navigationHandler.pendingNavigationInfo.MIMEType);
-}
-
-// Updates URL for navigation context and navigation item.
-- (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
-                                withURL:(const GURL&)URL {
-  context->SetUrl(URL);
-  web::NavigationItemImpl* item =
-      web::GetItemWithUniqueID(self.navigationManagerImpl, context);
-
-  // Associated item can be a pending item, previously discarded by another
-  // navigation. WKWebView allows multiple provisional navigations, while
-  // Navigation Manager has only one pending navigation.
-  if (item) {
-    if (!IsWKInternalUrl(URL)) {
-      item->SetVirtualURL(URL);
-      item->SetURL(URL);
-    }
-    // Redirects (3xx response code), must change POST requests to GETs.
-    item->SetPostData(nil);
-    item->ResetHttpRequestHeaders();
-  }
-
-  _userInteractionState.ResetLastTransferTime();
 }
 
 // Returns YES if the current live view is a web view with an image MIME type.
