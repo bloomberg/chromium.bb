@@ -76,10 +76,14 @@ class InProcessReceiver {
 
   // Begin delivering any received audio/video frames to the OnXXXFrame()
   // methods.
+  //
+  // Start() and Stop() must only be called from one thread.
   virtual void Start();
 
   // Destroy the sub-compontents of this class.
   // After this call, it is safe to destroy this object on any thread.
+  //
+  // Start() and Stop() must only be called from one thread.
   virtual void Stop();
 
  protected:
@@ -130,6 +134,9 @@ class InProcessReceiver {
 
   std::unique_ptr<CastTransport> transport_;
   std::unique_ptr<CastReceiver> cast_receiver_;
+
+  // Boolean gate to avoid stopping if stopped.
+  bool stopped_ = true;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<InProcessReceiver> weak_factory_;

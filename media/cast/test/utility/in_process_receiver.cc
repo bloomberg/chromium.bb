@@ -61,9 +61,13 @@ void InProcessReceiver::Start() {
                               FROM_HERE,
                               base::Bind(&InProcessReceiver::StartOnMainThread,
                                          base::Unretained(this)));
+  stopped_ = false;
 }
 
 void InProcessReceiver::Stop() {
+  if (stopped_) {
+    return;
+  }
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   if (cast_environment_->CurrentlyOn(CastEnvironment::MAIN)) {
@@ -76,6 +80,7 @@ void InProcessReceiver::Stop() {
                                            &event));
     event.Wait();
   }
+  stopped_ = true;
 }
 
 void InProcessReceiver::StopOnMainThread(base::WaitableEvent* event) {

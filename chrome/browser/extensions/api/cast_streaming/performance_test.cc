@@ -10,6 +10,7 @@
 #include <cstring>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
@@ -674,7 +675,7 @@ IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
   }
   scoped_refptr<media::cast::StandaloneCastEnvironment> cast_environment(
       new SkewedCastEnvironment(delta));
-  TestPatternReceiver* const receiver = new TestPatternReceiver(
+  auto receiver = std::make_unique<TestPatternReceiver>(
       cast_environment, receiver_end_point, is_full_performance_run());
   receiver->Start();
 
