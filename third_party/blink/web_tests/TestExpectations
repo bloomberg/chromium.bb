@@ -5628,3 +5628,4 @@ crbug.com/964239 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin
 
 # Sheriff 2019-05-20
 crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
+crbug.com/964158 [ Linux ] external/wpt/payment-handler/change-payment-method.https.html [ Pass Crash ]
