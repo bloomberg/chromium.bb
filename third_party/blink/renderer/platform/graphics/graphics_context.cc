@@ -751,7 +751,6 @@ void GraphicsContext::DrawRect(const IntRect& rect) {
   if (ContextDisabled())
     return;
 
-  DCHECK(!rect.IsEmpty());
   if (rect.IsEmpty())
     return;
 
