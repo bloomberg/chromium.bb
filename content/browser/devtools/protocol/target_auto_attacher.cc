@@ -211,16 +211,23 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
 
   FrameTreeNode* frame_tree_node = navigation_handle->frame_tree_node();
   RenderFrameHostImpl* new_host = navigation_handle->GetRenderFrameHost();
+
+  // |new_host| can be nullptr for navigation that doesn't commmit
+  // (e.g. download). Skip possibly detaching the old agent host so the DevTools
+  // message logged via the old RFH can be seen.
+  if (!new_host)
+    return nullptr;
+
   scoped_refptr<DevToolsAgentHost> agent_host =
       RenderFrameDevToolsAgentHost::FindForDangling(frame_tree_node);
 
   bool old_cross_process = !!agent_host;
   bool is_portal_main_frame =
-      frame_tree_node->IsMainFrame() && new_host &&
+      frame_tree_node->IsMainFrame() &&
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(new_host))
           ->IsPortal();
   bool new_cross_process =
-      (new_host && new_host->IsCrossProcessSubframe()) || is_portal_main_frame;
+      new_host->IsCrossProcessSubframe() || is_portal_main_frame;
 
   if (old_cross_process == new_cross_process)
     return nullptr;

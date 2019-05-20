@@ -1245,9 +1245,9 @@ void NavigationRequest::OnResponseStarted(
 
   // Check if the response should be sent to a renderer.
   response_should_be_rendered_ =
-      !is_download_ && (!response->head.headers.get() ||
-                        (response->head.headers->response_code() != 204 &&
-                         response->head.headers->response_code() != 205));
+      !is_download && (!response->head.headers.get() ||
+                       (response->head.headers->response_code() != 204 &&
+                        response->head.headers->response_code() != 205));
 
   // Response that will not commit should be marked as aborted in the
   // NavigationHandle.
@@ -1393,8 +1393,8 @@ void NavigationRequest::OnResponseStarted(
   // know how to display the content.  We follow Firefox here and show our
   // own error page instead of intercepting the request as a stream or a
   // download.
-  if (is_download_ && (response->head.headers.get() &&
-                       (response->head.headers->response_code() / 100 != 2))) {
+  if (is_download && (response->head.headers.get() &&
+                      (response->head.headers->response_code() / 100 != 2))) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(net::ERR_INVALID_RESPONSE),
         false /* skip_throttles */, base::nullopt /* error_page_content */,
