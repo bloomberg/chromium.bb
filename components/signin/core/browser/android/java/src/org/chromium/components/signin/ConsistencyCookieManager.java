@@ -15,7 +15,8 @@ import org.chromium.base.annotations.NativeMethods;
  * Created by native code to get status of {@link AccountManagerFacade#isUpdatePending()} and
  * notifications when it changes.
  */
-public class ConsistencyCookieManager implements ObservableValue.Observer {
+public class ConsistencyCookieManager
+        implements ObservableValue.Observer, AccountTrackerService.OnSystemAccountsSeededListener {
     private final long mNativeConsistencyCookieManager;
     private final AccountTrackerService mAccountTrackerService;
     private final AccountManagerFacade mAccountManagerFacade;
@@ -38,11 +39,16 @@ public class ConsistencyCookieManager implements ObservableValue.Observer {
         // have already invalidate account seed status, so mIsUpdatePending will stay false until
         // accounts are seeded to the native AccountTrackerService.
         // TODO(https://crbug.com/831257): Simplify this after seeding is reimplemented.
-        mAccountTrackerService.addSystemAccountsSeededListener(this::onValueChanged);
+        mAccountTrackerService.addSystemAccountsSeededListener(this);
         mAccountManagerFacade.isUpdatePending().addObserver(this);
         mSigninActivityMonitor.hasOngoingActivity().addObserver(this);
 
         mIsUpdatePending = calculateIsUpdatePending();
+    }
+
+    @Override
+    public void onSystemAccountsSeedingComplete() {
+        onValueChanged();
     }
 
     @Override
@@ -71,6 +77,8 @@ public class ConsistencyCookieManager implements ObservableValue.Observer {
     @MainThread
     private void destroy() {
         ThreadUtils.assertOnUiThread();
+        mAccountTrackerService.removeSystemAccountsSeededListener(this);
+        mSigninActivityMonitor.hasOngoingActivity().removeObserver(this);
         mAccountManagerFacade.isUpdatePending().removeObserver(this);
     }
 
