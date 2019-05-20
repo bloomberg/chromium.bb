@@ -37,16 +37,19 @@ class InitHelper {
   // Initializes subsystems in notification scheduler, |callback| will be
   // invoked if all initializations finished or anyone of them failed. The
   // object should be destroyed along with the |callback|.
-  void Init(NotificationSchedulerContext* context, InitCallback callback) {
+  void Init(NotificationSchedulerContext* context,
+            ScheduledNotificationManager::Delegate* delegate,
+            InitCallback callback) {
     callback_ = std::move(callback);
     context->icon_store()->Init(base::BindOnce(
         &InitHelper::OnIconStoreInitialized, weak_ptr_factory_.GetWeakPtr()));
     context->impression_tracker()->Init(
         base::BindOnce(&InitHelper::OnImpressionTrackerInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
+
     context->notification_manager()->Init(
-        base::BindOnce(&InitHelper::OnNotificationManagerInitialized,
-                       weak_ptr_factory_.GetWeakPtr()));
+        delegate, base::BindOnce(&InitHelper::OnNotificationManagerInitialized,
+                                 weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -106,7 +109,7 @@ class NotificationSchedulerImpl
     auto helper = std::make_unique<InitHelper>();
     auto* helper_ptr = helper.get();
     helper_ptr->Init(
-        context_.get(),
+        context_.get(), this,
         base::BindOnce(&NotificationSchedulerImpl::OnInitialized,
                        weak_ptr_factory_.GetWeakPtr(), std::move(helper),
                        std::move(init_callback)));

@@ -16,6 +16,7 @@
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_impl.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
+#include "chrome/browser/notifications/scheduler/notification_store.h"
 #include "chrome/browser/notifications/scheduler/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/scheduler_config.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -26,6 +27,8 @@ namespace {
 const base::FilePath::CharType kImpressionDBName[] =
     FILE_PATH_LITERAL("ImpressionDB");
 const base::FilePath::CharType kIconDBName[] = FILE_PATH_LITERAL("IconDB");
+const base::FilePath::CharType kNotificationDBName[] =
+    FILE_PATH_LITERAL("NotificationDB");
 }  // namespace
 
 KeyedService* CreateNotificationScheduleService(
@@ -54,13 +57,24 @@ KeyedService* CreateNotificationScheduleService(
   auto impression_tracker = std::make_unique<ImpressionHistoryTrackerImpl>(
       *config.get(), std::move(impression_store));
 
-  // TODO(xingliu): Build notification store.
+  // Build notification store.
+  base::FilePath notification_store_dir =
+      storage_dir.Append(kNotificationDBName);
+  auto notification_db = db_provider->GetDB<proto::NotificationEntry,
+                                            notifications::NotificationEntry>(
+      leveldb_proto::ProtoDbType::NOTIFICATION_SCHEDULER_NOTIFICATION_STORE,
+      notification_store_dir, task_runner);
+  auto notification_store =
+      std::make_unique<NotificationStore>(std::move(notification_db));
+
   std::unique_ptr<ScheduledNotificationManager> notification_manager;
+  notification_manager->Create(std::move(notification_store));
 
   auto context = std::make_unique<NotificationSchedulerContext>(
       std::move(background_task_scheduler), std::move(icon_store),
       std::move(impression_tracker), std::move(notification_manager),
       DisplayDecider::Create(), std::move(config));
+
   auto scheduler = NotificationScheduler::Create(std::move(context));
   auto init_aware_scheduler =
       std::make_unique<InitAwareNotificationScheduler>(std::move(scheduler));
