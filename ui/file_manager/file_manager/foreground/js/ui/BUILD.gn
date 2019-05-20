@@ -29,7 +29,6 @@ js_type_check("closure_compile_module") {
     ":directory_tree",
     ":drag_selector",
     ":empty_folder",
-    ":error_dialog",
     ":file_grid",
     ":file_list_selection_model",
     ":file_manager_dialog_base",
@@ -79,7 +78,6 @@ js_library("closure_compile_externs") {
 
 js_library("action_model_ui") {
   deps = [
-    ":error_dialog",
     ":files_alert_dialog",
     ":list_container",
   ]
@@ -189,12 +187,6 @@ js_library("empty_folder") {
   ]
 }
 
-js_library("error_dialog") {
-  deps = [
-    "//ui/webui/resources/js/cr/ui:dialogs",
-  ]
-}
-
 js_library("file_grid") {
   deps = [
     ":drag_selector",
@@ -242,7 +234,6 @@ js_library("file_manager_ui") {
     ":dialog_footer",
     ":directory_tree",
     ":empty_folder",
-    ":error_dialog",
     ":file_grid",
     ":file_table",
     ":files_alert_dialog",

@@ -7,8 +7,7 @@ class ActionModelUI {
   constructor() {
     /** @type {!FilesAlertDialog} */
     this.alertDialog;
-    /** @type {!ErrorDialog} */
-    this.errorDialog;
+
     /** @type {!ListContainer} */
     this.listContainer;
   }

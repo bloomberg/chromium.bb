@@ -42,13 +42,6 @@ class FileManagerUI {
     this.separators_ = [].slice.call(document.querySelectorAll('cr-menu > hr'));
 
     /**
-     * Error dialog.
-     * @type {!ErrorDialog}
-     * @const
-     */
-    this.errorDialog = new ErrorDialog(this.element);
-
-    /**
      * Alert dialog.
      * @type {!FilesAlertDialog}
      * @const

@@ -136,7 +136,6 @@ js_library("actions_model") {
     ":folder_shortcuts_data_model",
     "../../common/js:util",
     "metadata:metadata_model",
-    "ui:error_dialog",
     "ui:files_alert_dialog",
     "ui:list_container",
     "//ui/file_manager/file_manager/foreground/js/ui:action_model_ui",

@@ -71,10 +71,6 @@ class MockUI {
     this.alertDialog = /** @type {!FilesAlertDialog} */ ({
       showHtml: function() {},
     });
-
-    this.errorDialog = /** @type {!ErrorDialog} */ ({
-      showHtml: function() {},
-    });
   }
 }
 

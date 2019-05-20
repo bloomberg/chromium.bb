@@ -158,7 +158,6 @@
 // <include src="ui/directory_tree.js">
 // <include src="ui/drag_selector.js">
 // <include src="ui/empty_folder.js">
-// <include src="ui/error_dialog.js">
 // <include src="ui/file_grid.js">
 // <include src="ui/file_manager_ui.js">
 // <include src="ui/file_metadata_formatter.js">
