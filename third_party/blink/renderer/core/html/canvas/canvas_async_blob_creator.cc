@@ -322,9 +322,9 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
 
     } else {
       worker_pool::PostTask(
-          FROM_HERE,
-          CrossThreadBind(&CanvasAsyncBlobCreator::EncodeImageOnEncoderThread,
-                          WrapCrossThreadPersistent(this), quality));
+          FROM_HERE, CrossThreadBindOnce(
+                         &CanvasAsyncBlobCreator::EncodeImageOnEncoderThread,
+                         WrapCrossThreadPersistent(this), quality));
     }
   } else {
     idle_task_status_ = kIdleTaskNotStarted;

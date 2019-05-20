@@ -165,7 +165,7 @@ void BackgroundFetchIconLoader::DidFinishLoading(uint64_t resource_identifier) {
 
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &BackgroundFetchIconLoader::DecodeAndResizeImageOnBackgroundThread,
           WrapCrossThreadPersistent(this), std::move(task_runner),
           SegmentReader::CreateFromSharedBuffer(std::move(data_))));
