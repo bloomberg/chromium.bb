@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
@@ -28,7 +29,8 @@ WorkerThread::WorkerThread(const ThreadCreationParams& params)
       worker_scheduler_proxy_(params.frame_or_worker_scheduler
                                   ? std::make_unique<WorkerSchedulerProxy>(
                                         params.frame_or_worker_scheduler)
-                                  : nullptr) {
+                                  : nullptr),
+      supports_gc_(params.supports_gc) {
   auto non_main_thread_scheduler_factory = base::BindOnce(
       &WorkerThread::CreateNonMainThreadScheduler, base::Unretained(this));
   base::SimpleThread::Options options;
@@ -36,9 +38,17 @@ WorkerThread::WorkerThread(const ThreadCreationParams& params)
   thread_ = std::make_unique<SimpleThreadImpl>(
       params.name ? params.name : std::string(), options,
       std::move(non_main_thread_scheduler_factory));
+  if (supports_gc_) {
+    MemoryPressureListenerRegistry::Instance().RegisterThread(
+        const_cast<scheduler::WorkerThread*>(this));
+  }
 }
 
 WorkerThread::~WorkerThread() {
+  if (supports_gc_) {
+    MemoryPressureListenerRegistry::Instance().UnregisterThread(
+        const_cast<scheduler::WorkerThread*>(this));
+  }
   thread_->Quit();
   thread_->Join();
 }

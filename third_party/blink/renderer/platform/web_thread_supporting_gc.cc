@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
@@ -22,17 +21,16 @@ WebThreadSupportingGC::WebThreadSupportingGC(
   if (params.thread_type == WebThreadType::kAudioWorkletThread) {
     thread_ = Thread::CreateWebAudioThread();
   } else {
-    thread_ = Thread::CreateThread(params);
+    ThreadCreationParams gc_enabled_params = params;
+    gc_enabled_params.supports_gc = true;
+    thread_ = Thread::CreateThread(gc_enabled_params);
   }
-  MemoryPressureListenerRegistry::Instance().RegisterThread(thread_.get());
 }
 
 WebThreadSupportingGC::~WebThreadSupportingGC() {
   DETACH_FROM_THREAD(thread_checker_);
-  Thread* thread_pointer = thread_.get();
   // blink::Thread's destructor blocks until all the tasks are processed.
   thread_.reset();
-  MemoryPressureListenerRegistry::Instance().UnregisterThread(thread_pointer);
 }
 
 void WebThreadSupportingGC::InitializeOnThread() {

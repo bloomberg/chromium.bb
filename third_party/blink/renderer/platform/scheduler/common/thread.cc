@@ -68,7 +68,8 @@ std::unique_ptr<Thread>& GetCompositorThread() {
 ThreadCreationParams::ThreadCreationParams(WebThreadType thread_type)
     : thread_type(thread_type),
       name(GetNameForThreadType(thread_type)),
-      frame_or_worker_scheduler(nullptr) {}
+      frame_or_worker_scheduler(nullptr),
+      supports_gc(false) {}
 
 ThreadCreationParams& ThreadCreationParams::SetThreadNameForTest(
     const char* thread_name) {
@@ -96,6 +97,7 @@ std::unique_ptr<Thread> Thread::CreateWebAudioThread() {
   // system is under the high pressure. Note that the main browser thread also
   // runs with same priority. (see: crbug.com/734539)
   params.thread_priority = base::ThreadPriority::DISPLAY;
+  params.supports_gc = true;
   return CreateThread(params);
 }
 
