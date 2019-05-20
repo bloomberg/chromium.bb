@@ -64,6 +64,9 @@ Polymer({
   ],
 
   /** @const */
+  EMPTY_NAMESERVER: '0.0.0.0',
+
+  /** @const */
   MAX_NAMESERVERS: 4,
 
   /**
@@ -71,6 +74,39 @@ Polymer({
    * @private {!Array<string>}
    */
   savedNameservers_: [],
+
+  /**
+   * Returns true if |nameservers| contains any all google nameserver entries
+   * and only google nameserver entries or empty entries.
+   * @param {!Array<string>} nameservers
+   * @private
+   */
+  isGoogleNameservers_: function(nameservers) {
+    const matches = [];
+    for (let i = 0; i < nameservers.length; ++i) {
+      const nameserver = nameservers[i];
+      if (nameserver == this.EMPTY_NAMESERVER) {
+        continue;
+      }
+      let valid = false;
+      for (let j = 0; j < this.GOOGLE_NAMESERVERS.length; ++j) {
+        if (nameserver == this.GOOGLE_NAMESERVERS[j]) {
+          valid = true;
+          matches[j] = true;
+          break;
+        }
+      }
+      if (!valid) {
+        return false;
+      }
+    }
+    for (let j = 0; j < this.GOOGLE_NAMESERVERS.length; ++j) {
+      if (!matches[j]) {
+        return false;
+      }
+    }
+    return true;
+  },
 
   /** @private */
   networkPropertiesChanged_: function(newValue, oldValue) {
@@ -95,8 +131,9 @@ Polymer({
         CrOnc.getActiveValue(this.networkProperties.NameServersConfigType);
     let type;
     if (configType == CrOnc.IPConfigType.STATIC) {
-      if (nameservers.join(',') == this.GOOGLE_NAMESERVERS.join(',')) {
+      if (this.isGoogleNameservers_(nameservers)) {
         type = 'google';
+        nameservers = this.GOOGLE_NAMESERVERS;  // Use consistent order.
       } else {
         type = 'custom';
       }
@@ -118,9 +155,11 @@ Polymer({
     if (nameserversType == 'custom') {
       // Add empty entries for unset custom nameservers.
       for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i) {
-        nameservers[i] = '';
+        nameservers[i] = this.EMPTY_NAMESERVER;
       }
-      this.savedNameservers_ = nameservers.slice();
+      if (!this.isGoogleNameservers_(nameservers)) {
+        this.savedNameservers_ = nameservers.slice();
+      }
     }
     this.nameservers_ = nameservers;
     // Set nameserversType_ after dom-repeat has been stamped.

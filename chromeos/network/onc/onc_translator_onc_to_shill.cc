@@ -27,6 +27,7 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
+#include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -94,6 +95,7 @@ class LocalTranslator {
   void TranslateVPN();
   void TranslateWiFi();
   void TranslateEAP();
+  void TranslateStaticIPConfig();
   void TranslateNetworkConfiguration();
 
   // Copies all entries from |onc_object_| to |shill_dictionary_| for which a
@@ -144,6 +146,8 @@ void LocalTranslator::TranslateFields() {
     TranslateWiFi();
   else if (onc_signature_ == &kEAPSignature)
     TranslateEAP();
+  else if (onc_signature_ == &kStaticIPConfigSignature)
+    TranslateStaticIPConfig();
   else
     CopyFieldsAccordingToSignature();
 }
@@ -330,6 +334,26 @@ void LocalTranslator::TranslateEAP() {
   }
 
   CopyFieldsAccordingToSignature();
+}
+
+void LocalTranslator::TranslateStaticIPConfig() {
+  CopyFieldsAccordingToSignature();
+  // Shill expects 4 valid nameserver values. Ensure all values are valid and
+  // replace any invalid values with 0.0.0.0 (which has no effect). See
+  // https://crbug.com/922219 for details.
+  base::Value* name_servers =
+      shill_dictionary_->FindKey(shill::kNameServersProperty);
+  if (name_servers) {
+    static const char kDefaultIpAddr[] = "0.0.0.0";
+    net::IPAddress ip_addr;
+    for (base::Value& value_ref : name_servers->GetList()) {
+      // AssignFromIPLiteral returns true if a string is valid ipv4 or ipv6.
+      if (!ip_addr.AssignFromIPLiteral(value_ref.GetString()))
+        value_ref = base::Value(kDefaultIpAddr);
+    }
+    while (name_servers->GetList().size() < 4)
+      name_servers->GetList().push_back(base::Value(kDefaultIpAddr));
+  }
 }
 
 void LocalTranslator::TranslateNetworkConfiguration() {
