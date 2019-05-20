@@ -277,8 +277,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     seek_position_ = result;
     // TODO(asargent) - we'll need to add proper support for range headers.
     // crbug.com/369895.
-    if (result > 0 && verify_job_.get())
-      verify_job_ = NULL;
+    const bool is_seek_contiguous = result == bytes_read_;
+    if (result > 0 && verify_job_.get() && !is_seek_contiguous)
+      verify_job_ = nullptr;
   }
 
   void OnReadComplete(net::IOBuffer* buffer, int result) override {
@@ -702,7 +703,8 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
     seek_position_ = result;
     // TODO(asargent) - we'll need to add proper support for range headers.
     // crbug.com/369895.
-    if (result > 0 && verify_job_.get())
+    const bool is_seek_contiguous = result == bytes_read_;
+    if (result > 0 && verify_job_.get() && !is_seek_contiguous)
       verify_job_ = nullptr;
   }
 

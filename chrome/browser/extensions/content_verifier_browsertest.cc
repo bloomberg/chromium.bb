@@ -115,6 +115,21 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     EXPECT_TRUE(job_observer.WaitForExpectedJobs());
   }
 
+  void NavigateToResourceAndExpectExtensionDisabled(
+      const ExtensionId& extension_id,
+      const GURL& extension_resource) {
+    TestExtensionRegistryObserver unload_observer(
+        ExtensionRegistry::Get(profile()), extension_id);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), extension_resource,
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_NONE);
+    EXPECT_TRUE(unload_observer.WaitForExtensionUnloaded());
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+    int reasons = prefs->GetDisableReasons(extension_id);
+    EXPECT_EQ(disable_reason::DISABLE_CORRUPTED, reasons);
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -282,18 +297,34 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, VerificationFailureOnNavigate) {
   }
 
   GURL page_url = extension->GetResourceURL("page.html");
-  TestExtensionRegistryObserver unload_observer(
-      ExtensionRegistry::Get(profile()), kExtensionId);
-  // Wait for 0 navigations to complete because with PlzNavigate it's racy
-  // when the didstop IPC arrives relative to the tab being closed. The
-  // wait call below is what the tests care about.
-  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
-      browser(), page_url, 0, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
-  EXPECT_TRUE(unload_observer.WaitForExtensionUnloaded());
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  int reasons = prefs->GetDisableReasons(kExtensionId);
-  EXPECT_TRUE(reasons & disable_reason::DISABLE_CORRUPTED);
+  NavigateToResourceAndExpectExtensionDisabled(kExtensionId, page_url);
+}
+
+// Tests that tampering with a large resource fails content verification as
+// expected. The size of the resource is such that it would trigger
+// FileLoaderObserver::OnSeekComplete in extension_protocols.cc.
+//
+// Regression test for: http://crbug.com/965043.
+IN_PROC_BROWSER_TEST_F(ContentVerifierTest, TamperLargeSizedResource) {
+  // This test extension is copied from the webstore that has actual
+  // signatures.
+  const Extension* extension = InstallExtensionFromWebstore(
+      test_data_dir_.AppendASCII("content_verifier/different_sized_files.crx"),
+      1);
+  ASSERT_TRUE(extension);
+
+  const char kResource[] = "jquery-3.2.0.min.js";
+  {
+    // Modify content so that content verification fails.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath real_path = extension->path().AppendASCII(kResource);
+    ASSERT_TRUE(base::PathExists(real_path));
+    std::string extra = "some_extra_function_call();";
+    ASSERT_TRUE(base::AppendToFile(real_path, extra.data(), extra.size()));
+  }
+
+  NavigateToResourceAndExpectExtensionDisabled(
+      extension->id(), extension->GetResourceURL(kResource));
 }
 
 class ContentVerifierPolicyTest : public ContentVerifierTest {
