@@ -205,6 +205,7 @@ test("ios_web_unittests") {
     "//ios/web/download:download_unittests",
     "//ios/web/find_in_page:find_in_page_unittests",
     "//ios/web/interstitials:interstitials_unittests",
+    "//ios/web/web_view:unittests",
   ]
 
   assert_no_deps = ios_assert_no_deps

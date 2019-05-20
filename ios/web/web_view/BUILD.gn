@@ -16,3 +16,18 @@ source_set("web_view") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("unittests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  deps = [
+    ":web_view",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "wk_web_view_util_unittest.mm",
+  ]
+}
