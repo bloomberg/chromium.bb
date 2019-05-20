@@ -78,7 +78,8 @@ void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
 // static
 bool ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
     content::NavigationHandle* handle,
-    apps::AppsNavigationCallback callback) {
+    apps::AppsNavigationCallback callback,
+    bool should_launch_preferred_app) {
   ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
   if (!arc_service_manager)
     return false;
@@ -112,8 +113,10 @@ bool ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
   // navigation as soon as the callback is run. If the WebContents is destroyed
   // prior to this asynchronous method finishing, it is safe to not run
   // |callback| since it will not matter what we do with the deferred navigation
-  // for a now-closed tab.
-  app_fetcher->GetArcAppsForNavigation(instance, url, std::move(callback));
+  // for a now-closed tab. If |should_launch_preferred_app| flag is set to be
+  // true, preferred app (if exists) will be automatically launched.
+  app_fetcher->GetArcAppsForNavigation(instance, url, std::move(callback),
+                                       should_launch_preferred_app);
   return true;
 }
 
@@ -193,14 +196,16 @@ ArcIntentPickerAppFetcher::ArcIntentPickerAppFetcher(
 void ArcIntentPickerAppFetcher::GetArcAppsForNavigation(
     mojom::IntentHelperInstance* instance,
     const GURL& url,
-    apps::AppsNavigationCallback callback) {
+    apps::AppsNavigationCallback callback,
+    bool should_launch_preferred_app) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   instance->RequestUrlHandlerList(
       url.spec(),
       base::BindOnce(
           &ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation,
-          weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+          weak_ptr_factory_.GetWeakPtr(), url, std::move(callback),
+          should_launch_preferred_app));
 }
 
 void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
@@ -219,6 +224,7 @@ void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
 void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation(
     const GURL& url,
     apps::AppsNavigationCallback callback,
+    bool should_launch_preferred_app,
     std::vector<mojom::IntentHandlerInfoPtr> app_candidates) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -235,24 +241,25 @@ void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation(
     return;
   }
 
-  // If one of the apps is marked as preferred, launch it immediately.
-  apps::PreferredPlatform pref_platform =
-      DidLaunchPreferredArcApp(url, app_candidates);
+  if (should_launch_preferred_app) {
+    // If one of the apps is marked as preferred, launch it immediately.
+    apps::PreferredPlatform pref_platform =
+        DidLaunchPreferredArcApp(url, app_candidates);
 
-  switch (pref_platform) {
-    case apps::PreferredPlatform::ARC:
-      std::move(callback).Run(apps::AppsNavigationAction::CANCEL, {});
-      return;
-    case apps::PreferredPlatform::NATIVE_CHROME:
-      std::move(callback).Run(apps::AppsNavigationAction::RESUME, {});
-      return;
-    case apps::PreferredPlatform::PWA:
-      NOTREACHED();
-      break;
-    case apps::PreferredPlatform::NONE:
-      break;  // Do nothing.
+    switch (pref_platform) {
+      case apps::PreferredPlatform::ARC:
+        std::move(callback).Run(apps::AppsNavigationAction::CANCEL, {});
+        return;
+      case apps::PreferredPlatform::NATIVE_CHROME:
+        std::move(callback).Run(apps::AppsNavigationAction::RESUME, {});
+        return;
+      case apps::PreferredPlatform::PWA:
+        NOTREACHED();
+        break;
+      case apps::PreferredPlatform::NONE:
+        break;  // Do nothing.
+    }
   }
-
   // We are always going to resume navigation at this point, and possibly show
   // the intent picker bubble to prompt the user to choose if they would like to
   // use an ARC app to open the URL.
