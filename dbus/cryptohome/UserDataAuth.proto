@@ -325,15 +325,46 @@ message MigrateKeyReply {
 // TODO(b/126307305): For the messages, below, we'll need to add the documentations
 // for them.
 
+// Input parameters to StartMigrateToDircrypto().
 message StartMigrateToDircryptoRequest {
+  // The owner of the cryptohome that we are going to migrate.
   cryptohome.AccountIdentifier account_id = 1;
+
   // If true, only a few paths (specified in cryptohomed) that are necessary for
   // a working profile will be migrated. Most user data will be wiped.
   bool minimal_migration = 2;
 }
 
+// Output parameters for StartMigrateToDircrypto().
 message StartMigrateToDircryptoReply {
+  // Indicates an error if not empty.
   CryptohomeErrorCode error = 1;
+}
+
+// Status code for the message DircryptoMigrationProgress below.
+enum DircryptoMigrationStatus {
+  // 0 means a successful completion.
+  DIRCRYPTO_MIGRATION_SUCCESS = 0;
+  // TODO(kinaba,dspaid): Add error codes as needed here.
+  DIRCRYPTO_MIGRATION_FAILED = 1;
+  // TODO(kinaba,dspaid): Add state codes as needed.
+  DIRCRYPTO_MIGRATION_INITIALIZING = 2;
+  DIRCRYPTO_MIGRATION_IN_PROGRESS = 3;
+}
+
+// The data that comes with DircryptoMigrationProgress signal.
+message DircryptoMigrationProgress {
+  // See cryptohome::dircrypto_data_migrator::MigrationHelper::ProgressCallback
+  // for more information.
+
+  // The status of the migration
+  DircryptoMigrationStatus status = 1;
+
+  // The amount of bytes that we've migrated over.
+  uint64 current_bytes = 2;
+
+  // The total amount of bytes in this migration operation.
+  uint64 total_bytes = 3;
 }
 
 message NeedsDircryptoMigrationRequest {
