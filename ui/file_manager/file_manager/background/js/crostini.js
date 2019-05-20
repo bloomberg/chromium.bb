@@ -243,6 +243,13 @@ CrostiniImpl.prototype.canSharePath = function(vmName, entry, persist) {
     return false;
   }
 
+  // TODO(crbug.com/958840): Sharing Play files root is disallowed until
+  // we can ensure it will not also share Downloads.
+  if (root === VolumeManagerCommon.RootType.ANDROID_FILES &&
+      entry.fullPath === '/') {
+    return false;
+  }
+
   // Special case to disallow PluginVm sharing on /MyFiles/PluginVm and
   // subfolders since it gets shared by default.
   if (vmName === CrostiniImpl.PLUGIN_VM &&

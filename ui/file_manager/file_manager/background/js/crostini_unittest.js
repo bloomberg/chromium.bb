@@ -171,14 +171,22 @@ function testCanSharePath() {
   setDriveFsEnabled(true);
   // TODO(crbug.com/917920): Add computers_grand_root and computers when DriveFS
   // enforces allowed write paths.
+
   const allowed = [
     'downloads', 'removable', 'android_files', 'drive',
     'shared_drives_grand_root', 'team_drive'
   ];
   for (const type of allowed) {
     volumeManagerRootType = type;
-    assertTrue(crostini.canSharePath('vm', root, true));
-    assertTrue(crostini.canSharePath('vm', root, false));
+    // TODO(crbug.com/958840): Sharing Play files root is disallowed until
+    // we can ensure it will not also share Downloads.
+    if (type === 'android_files') {
+      assertFalse(crostini.canSharePath('vm', root, true));
+      assertFalse(crostini.canSharePath('vm', root, false));
+    } else {
+      assertTrue(crostini.canSharePath('vm', root, true));
+      assertTrue(crostini.canSharePath('vm', root, false));
+    }
     assertFalse(crostini.canSharePath('vm', rootFile, true));
     assertTrue(crostini.canSharePath('vm', rootFile, false));
     assertTrue(crostini.canSharePath('vm', rootFolder, true));

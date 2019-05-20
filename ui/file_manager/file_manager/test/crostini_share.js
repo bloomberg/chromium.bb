@@ -211,17 +211,9 @@ shareBase.testSharePaths = async (vmName, vmNameSelector, enumUma, done) => {
       givePermission + 'files in your Google Drive. ' +
           'Changes will sync to your other devices.');
 
-  // Verify share with dialog for Play files.
-  test.mountAndroidFiles();
-  await test.waitForElement(androidRoot);
-  await shareBase.verifyShareWithDialog(
-      'Android files', androidRoot, menuShareWithDirTree, shareWithDirTree,
-      givePermission + 'files in the Play files folder');
-
   // Reset Linux files and Play files back to unmounted.
   chrome.fileManagerPrivate.removeMount('crostini');
   await test.waitForElement(fakeLinuxFiles);
-  chrome.fileManagerPrivate.removeMount('android_files');
 
   // Restore fmp.*.
   chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;

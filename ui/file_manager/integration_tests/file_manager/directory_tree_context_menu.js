@@ -810,7 +810,6 @@
    */
   testcase.dirContextMenuPlayFiles = async () => {
     const playFilesMenus = [
-      ['#share-with-linux', true],
       ['#new-folder', false],
     ];
     const folderMenus = [
