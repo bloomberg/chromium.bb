@@ -219,7 +219,7 @@ AXObject* AXObjectCacheImpl::FocusedObject() {
 
   // the HTML element, for example, is focusable but has an AX object that is
   // ignored
-  if (!obj->AccessibilityIsIncludedInTree())
+  if (obj->AccessibilityIsIgnored())
     obj = obj->ParentObjectUnignored();
 
   return obj;
@@ -1437,8 +1437,7 @@ AXObject* AXObjectCacheImpl::FirstAccessibleObjectFromNode(const Node* node) {
     return nullptr;
 
   AXObject* accessible_object = GetOrCreate(node->GetLayoutObject());
-  while (accessible_object &&
-         !accessible_object->AccessibilityIsIncludedInTree()) {
+  while (accessible_object && accessible_object->AccessibilityIsIgnored()) {
     node = NodeTraversal::Next(*node);
 
     while (node && !node->GetLayoutObject())
@@ -1616,7 +1615,7 @@ void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {
   AXObject* obj = GetOrCreate(anchor_node->GetLayoutObject());
   if (!obj)
     return;
-  if (!obj->AccessibilityIsIncludedInTree())
+  if (obj->AccessibilityIsIgnored())
     obj = obj->ParentObjectUnignored();
   PostNotification(obj, ax::mojom::Event::kScrolledToAnchor);
 }
