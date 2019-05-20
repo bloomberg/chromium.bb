@@ -958,12 +958,6 @@ void UmaEmitSearchOutcome(
   }
 }
 
-std::unique_ptr<base::ListValue> MakeBlankReturnValue() {
-  auto list_value = std::make_unique<base::ListValue>();
-  list_value->AppendString("");
-  return list_value;
-}
-
 }  // namespace
 
 FileManagerPrivateInternalGetEntryPropertiesFunction::
@@ -1776,16 +1770,14 @@ FileManagerPrivateInternalGetDownloadUrlFunction::RunAsyncForDrive(
   if (!file_system) {
     // |file_system| is NULL if Drive is disabled or not mounted.
     // Intentionally returns a blank.
-    return RespondNow(ErrorWithArguments(MakeBlankReturnValue(),
-                                         "Drive is disabled or not mounted."));
+    return RespondNow(Error("Drive is disabled or not mounted."));
   }
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
       render_frame_host(), chrome_details.GetProfile(), url);
   if (!drive::util::IsUnderDriveMountPoint(path)) {
     // Intentionally returns a blank.
-    return RespondNow(ErrorWithArguments(MakeBlankReturnValue(),
-                                         "The given file is not in Drive."));
+    return RespondNow(Error("The given file is not in Drive."));
   }
   base::FilePath file_path = drive::util::ExtractDrivePath(path);
 
@@ -1818,8 +1810,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
     GURL download_url) {
   if (download_url.is_empty()) {
     // Intentionally returns a blank.
-    Respond(ErrorWithArguments(MakeBlankReturnValue(),
-                               "Download Url for this item is not available."));
+    Respond(Error("Download Url for this item is not available."));
     return;
   }
   download_url_ = std::move(download_url);
@@ -1845,8 +1836,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched(
     const std::string& access_token) {
   if (code != google_apis::HTTP_SUCCESS) {
     // Intentionally returns a blank.
-    Respond(ErrorWithArguments(MakeBlankReturnValue(),
-                               "Not able to fetch the token."));
+    Respond(Error("Not able to fetch the token."));
     return;
   }
 

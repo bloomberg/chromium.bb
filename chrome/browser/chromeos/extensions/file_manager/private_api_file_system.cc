@@ -418,9 +418,7 @@ void FileWatchFunctionBase::RespondWith(bool success) {
   if (success) {
     Respond(OneArgument(std::move(result_value)));
   } else {
-    auto result_list = std::make_unique<base::ListValue>();
-    result_list->Append(std::move(result_value));
-    Respond(ErrorWithArguments(std::move(result_list), ""));
+    Respond(Error(""));
   }
 }
 
@@ -445,8 +443,7 @@ ExtensionFunction::ResponseAction FileWatchFunctionBase::Run() {
   if (file_system_url.path().empty()) {
     auto result_list = std::make_unique<base::ListValue>();
     result_list->Append(std::make_unique<base::Value>(false));
-    return RespondNow(
-        ErrorWithArguments(std::move(result_list), "Invalid URL"));
+    return RespondNow(Error("Invalid URL"));
   }
 
   file_manager::EventRouter* const event_router =

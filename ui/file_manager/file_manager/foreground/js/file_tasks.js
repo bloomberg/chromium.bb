@@ -645,6 +645,12 @@ class FileTasks {
     };
 
     const onViewFiles = result => {
+      if (chrome.runtime.lastError) {
+        // Suppress the Unchecked runtime.lastError console message
+        console.debug(chrome.runtime.lastError.message);
+        onViewFilesFailure();
+        return;
+      }
       switch (result) {
         case 'opened':
           callback(true, this.entries_);
@@ -661,10 +667,6 @@ class FileTasks {
           callback(true, this.entries_);
           break;
         case 'failed':
-          // Suppress the Unchecked runtime.lastError console message
-          if (chrome.runtime.lastError) {
-            console.debug(chrome.runtime.lastError.message);
-          }
           onViewFilesFailure();
           break;
       }
@@ -711,6 +713,12 @@ class FileTasks {
           FileTasks.recordZipHandlerUMA_(task.taskId);
           chrome.fileManagerPrivate.executeTask(
               task.taskId, this.entries_, (result) => {
+                if (chrome.runtime.lastError) {
+                  console.warn(
+                      'Unable to execute task: ' +
+                      chrome.runtime.lastError.message);
+                  return;
+                }
                 if (result !== 'message_sent') {
                   return;
                 }
