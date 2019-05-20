@@ -361,6 +361,7 @@ source_set("eg_tests") {
     "//components/search_engines",
     "//components/strings",
     "//components/ukm/ios:features",
+    "//components/unified_consent",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",

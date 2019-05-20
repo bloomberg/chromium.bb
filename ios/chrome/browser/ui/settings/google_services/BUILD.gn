@@ -90,6 +90,7 @@ source_set("eg_tests") {
     "//components/browser_sync",
     "//components/strings",
     "//components/sync",
+    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
