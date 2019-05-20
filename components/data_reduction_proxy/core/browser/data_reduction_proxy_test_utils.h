@@ -98,7 +98,8 @@ class TestDataReductionProxyConfigServiceClient
       DataReductionProxyConfig* config,
       DataReductionProxyIOData* io_data,
       network::NetworkConnectionTracker* network_connection_tracker,
-      ConfigStorer config_storer);
+      ConfigStorer config_storer,
+      const net::BackoffEntry::Policy& backoff_policy);
 
   ~TestDataReductionProxyConfigServiceClient() override;
 
@@ -111,6 +112,8 @@ class TestDataReductionProxyConfigServiceClient
   base::TimeDelta GetDelay() const;
 
   int GetBackoffErrorCount();
+
+  base::TimeDelta GetBackoffTimeUntilRelease() const;
 
   void SetConfigServiceURL(const GURL& service_url);
 

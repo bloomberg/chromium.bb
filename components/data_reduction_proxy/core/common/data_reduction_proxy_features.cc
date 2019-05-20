@@ -61,5 +61,11 @@ const base::Feature kDataReductionProxyDisableProxyFailedWarmup{
     "DataReductionProxyDisableProxyFailedWarmup",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables fetching the client config aggressively by tuning the backoff params
+// and by not deferring fetches while Chrome is in background.
+const base::Feature kDataReductionProxyAggressiveConfigFetch{
+    "DataReductionProxyAggressiveConfigFetch",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy
