@@ -272,14 +272,15 @@ void ClearSessionStorageOnUIThread(
       origin_matcher, perform_storage_cleanup, std::move(callback)));
 }
 
-WebContents* GetWebContents(uint32_t process_id, uint32_t routing_id) {
+WebContents* GetWebContentsForStoragePartition(uint32_t process_id,
+                                               uint32_t routing_id) {
   if (process_id != network::mojom::kBrowserProcessId) {
     return WebContentsImpl::FromRenderFrameHostID(process_id, routing_id);
   }
   return WebContents::FromFrameTreeNodeId(routing_id);
 }
 
-BrowserContext* GetBrowserContext(
+BrowserContext* GetBrowserContextFromStoragePartition(
     base::WeakPtr<StoragePartitionImpl> weak_partition_ptr) {
   return weak_partition_ptr ? weak_partition_ptr->browser_context() : nullptr;
 }
@@ -1012,10 +1013,10 @@ void StoragePartitionImpl::OnClearSiteData(uint32_t process_id,
                                            const std::string& header_value,
                                            int load_flags,
                                            OnClearSiteDataCallback callback) {
-  auto browser_context_getter =
-      base::BindRepeating(GetBrowserContext, weak_factory_.GetWeakPtr());
-  auto web_contents_getter =
-      base::BindRepeating(GetWebContents, process_id, routing_id);
+  auto browser_context_getter = base::BindRepeating(
+      GetBrowserContextFromStoragePartition, weak_factory_.GetWeakPtr());
+  auto web_contents_getter = base::BindRepeating(
+      GetWebContentsForStoragePartition, process_id, routing_id);
   ClearSiteDataHandler::HandleHeader(browser_context_getter,
                                      web_contents_getter, url, header_value,
                                      load_flags, std::move(callback));
