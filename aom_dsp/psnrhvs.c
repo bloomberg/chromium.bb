@@ -137,13 +137,15 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
   (void)_par;
   ret = pixels = 0;
   sum1 = sum2 = delt = 0.0f;
-  for (x = 0; x < _w * _h; x++) {
-    if (!buf_is_hbd) {
-      sum1 += _src8[x];
-      sum2 += _dst8[x];
-    } else {
-      sum1 += _src16[x] >> _shift;
-      sum2 += _dst16[x] >> _shift;
+  for (y = 0; y < _h; y++) {
+    for (x = 0; x < _w; x++) {
+      if (!buf_is_hbd) {
+        sum1 += _src8[y * _systride + x];
+        sum2 += _dst8[y * _dystride + x];
+      } else {
+        sum1 += _src16[y * _systride + x] >> _shift;
+        sum2 += _dst16[y * _dystride + x] >> _shift;
+      }
     }
   }
   delt = (sum1 - sum2) / (_w * _h);
