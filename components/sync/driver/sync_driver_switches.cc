@@ -73,7 +73,7 @@ const base::Feature kSyncUSSPasswords{"SyncUSSPasswords",
 
 // Enable USS implementation of autofill profile datatype.
 const base::Feature kSyncUSSAutofillProfile{"SyncUSSAutofillProfile",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable USS implementation of autofill wallet metadata datatype.
 const base::Feature kSyncUSSAutofillWalletMetadata{
