@@ -67,8 +67,8 @@ if (is_chromeos) {
     public_deps = [
       ":media",
       ":notifications",
-      "//device/usb/public/mojom",
       "//mojo/public/mojom/base",
+      "//services/device/public/mojom:usb",
       "//services/media_session/public/mojom",
       "//services/resource_coordinator/public/mojom",
       "//ui/accessibility/mojom",

@@ -12,10 +12,10 @@
 #include <string>
 #include <vector>
 
-#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/set_disjunction_permission.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 
 namespace extensions {
 

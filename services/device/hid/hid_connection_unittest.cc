@@ -18,11 +18,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
-#include "device/test/usb_test_gadget.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_service.h"
 #include "services/device/hid/hid_service.h"
 #include "services/device/public/mojom/hid.mojom.h"
+#include "services/device/test/usb_test_gadget.h"
+#include "services/device/usb/usb_device.h"
+#include "services/device/usb/usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

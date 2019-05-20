@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
-#include "device/usb/public/mojom/device.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 
 struct AndroidInterfaceInfo {
   AndroidInterfaceInfo(

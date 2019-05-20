@@ -21,8 +21,8 @@
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "extensions/browser/extension_registry.h"
+#include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

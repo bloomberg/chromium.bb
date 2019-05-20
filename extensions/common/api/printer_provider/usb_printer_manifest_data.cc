@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "device/usb/public/cpp/usb_utils.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/manifest_constants.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 
 namespace extensions {
 

@@ -28,10 +28,10 @@ source_set("manifest") {
 
   deps = [
     "//base",
-    "//device/usb/public/mojom",
-    "//device/usb/public/mojom:test",
     "//services/device/public/mojom",
     "//services/device/public/mojom:generic_sensor",
+    "//services/device/public/mojom:usb",
+    "//services/device/public/mojom:usb_test",
     "//services/service_manager/public/cpp",
   ]
 

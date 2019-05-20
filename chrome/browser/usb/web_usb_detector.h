@@ -8,9 +8,9 @@
 #include <map>
 
 #include "base/macros.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
-#include "device/usb/public/mojom/device_manager_client.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
+#include "services/device/public/mojom/usb_manager_client.mojom.h"
 #include "url/gurl.h"
 
 class WebUsbDetector : public device::mojom::UsbDeviceManagerClient {

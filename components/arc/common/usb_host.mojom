@@ -6,7 +6,7 @@
 module arc.mojom;
 
 // re-use device.mojom.UsbDeviceInfo
-import "device/usb/public/mojom/device.mojom";
+import "services/device/public/mojom/usb_device.mojom";
 
 // Next method ID: 4
 interface UsbHostHost {

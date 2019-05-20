@@ -137,7 +137,7 @@ component("midi") {
   }
 
   if (is_win) {
-    deps += [ "//device/usb/public/cpp" ]
+    deps += [ "//services/device/public/cpp/usb" ]
     sources += [
       "midi_manager_win.cc",
       "midi_manager_win.h",

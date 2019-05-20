@@ -19,9 +19,9 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/usb/public/cpp/fake_usb_device_manager.h"
-#include "device/usb/public/mojom/device.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "services/device/public/cpp/test/fake_usb_device_manager.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

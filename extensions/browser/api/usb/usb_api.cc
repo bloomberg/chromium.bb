@@ -16,10 +16,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
-#include "device/usb/public/cpp/usb_utils.h"
-#include "device/usb/public/mojom/device.mojom.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -29,6 +25,10 @@
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 
 namespace usb = extensions::api::usb;
 namespace BulkTransfer = usb::BulkTransfer;

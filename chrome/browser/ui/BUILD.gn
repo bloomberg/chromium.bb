@@ -758,9 +758,9 @@ jumbo_split_static_library("ui") {
       "//components/navigation_interception",
       "//components/subresource_filter/core/browser",
       "//crypto:platform",
-      "//device/usb/public/cpp",
-      "//device/usb/public/mojom",
       "//device/vr/buildflags",
+      "//services/device/public/cpp/usb",
+      "//services/device/public/mojom:usb",
       "//ui/android",
     ]
   } else {
@@ -3681,8 +3681,8 @@ jumbo_split_static_library("ui") {
       "webui/print_preview/sticky_settings.h",
     ]
     deps += [
-      "//device/usb/public/cpp",
-      "//device/usb/public/mojom",
+      "//services/device/public/cpp/usb",
+      "//services/device/public/mojom:usb",
     ]
 
     if (is_chromeos) {

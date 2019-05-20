@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/usb/public/cpp/usb_ids.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_host.h"
@@ -24,6 +23,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "services/device/public/cpp/usb/usb_ids.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

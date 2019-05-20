@@ -124,6 +124,8 @@ test("device_unittests") {
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/apdu",
     "//components/cbor",
+    "//components/device_event_log",
+    "//device/base",
     "//device/base/synchronization",
     "//device/bluetooth",
     "//device/bluetooth:deprecated_experimental_mojo",
@@ -143,7 +145,6 @@ test("device_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",
-    "//tools/usb_gadget",
     "//ui/base",
     "//url",
   ]
@@ -175,45 +176,10 @@ test("device_unittests") {
     deps += [ "//device/udev_linux" ]
   }
 
-  # USB does not compile on iOS.
-  if (!is_ios) {
-    sources += [
-      "usb/mojo/device_impl_unittest.cc",
-      "usb/mojo/device_manager_impl_unittest.cc",
-      "usb/public/cpp/usb_utils_unittest.cc",
-      "usb/usb_descriptors_unittest.cc",
-      "usb/usb_device_handle_unittest.cc",
-      "usb/usb_service_unittest.cc",
-      "usb/webusb_descriptors_unittest.cc",
-    ]
-    deps += [
-      ":usb_test_gadget",
-      "//device/base",
-      "//device/usb",
-      "//device/usb:test_support",
-      "//device/usb/mojo",
-      "//device/usb/public/cpp",
-      "//device/usb/public/cpp:test_support",
-      "//device/usb/public/mojom",
-      "//net:test_support",
-    ]
-
-    if (!is_android) {
-      sources += [ "usb/public/cpp/usb_ids_unittest.cc" ]
-    }
-  }
-
-  # UsbContext is a libusb-specific object.
-  if (is_mac || is_win) {
-    sources += [ "usb/usb_context_unittest.cc" ]
-    deps += [ "//third_party/libusb" ]
-  }
-
   if (is_android) {
     deps += [
       ":bluetooth_test_java",
       ":bluetooth_test_jni_headers",
-      "//device/usb:java",
     ]
   }
 
@@ -385,21 +351,6 @@ test("device_unittests") {
       "//services/device/hid:mocks",
     ]
   }
-}
-
-source_set("usb_test_gadget") {
-  testonly = true
-
-  sources = [
-    "test/usb_test_gadget.h",
-    "test/usb_test_gadget_impl.cc",
-  ]
-
-  deps = [
-    "//device/base",
-    "//device/usb",
-    "//net:test_support",
-  ]
 }
 
 if (is_android) {

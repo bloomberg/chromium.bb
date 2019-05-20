@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/printing/printer_detector.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 
 namespace chromeos {
 

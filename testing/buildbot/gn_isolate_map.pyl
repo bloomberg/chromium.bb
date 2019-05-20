@@ -2652,11 +2652,11 @@
     "type": "console_test_launcher",
   },
   "usb_descriptors_fuzzer": {
-    "label": "//device/usb:usb_descriptors_fuzzer",
+    "label": "//services/device/usb:usb_descriptors_fuzzer",
     "type": "fuzzer",
   },
   "usb_string_read_fuzzer": {
-    "label": "//device/usb:usb_string_read_fuzzer",
+    "label": "//services/device/usb:usb_string_read_fuzzer",
     "type": "fuzzer",
   },
   "usrsctp_fuzzer": {
@@ -2863,7 +2863,7 @@
     "type": "script",
   },
   "webusb_descriptors_fuzzer": {
-    "label": "//device/usb:webusb_descriptors_fuzzer",
+    "label": "//services/device/usb:webusb_descriptors_fuzzer",
     "type": "fuzzer",
   },
   "webview_cts_tests": {

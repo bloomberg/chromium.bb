@@ -19,9 +19,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "device/usb/public/cpp/usb_utils.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using device::mojom::UsbDeviceInfo;

@@ -18,7 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace net {

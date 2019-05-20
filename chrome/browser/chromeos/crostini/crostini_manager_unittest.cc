@@ -20,7 +20,7 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/usb/public/cpp/fake_usb_device_manager.h"
+#include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

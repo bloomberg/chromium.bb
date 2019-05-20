@@ -20,13 +20,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/usb/public/cpp/usb_utils.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
-#include "device/usb/public/cpp/usb_ids.h"
+#include "services/device/public/cpp/usb/usb_ids.h"
 #endif  // !defined(OS_ANDROID)
 
 using content::RenderFrameHost;

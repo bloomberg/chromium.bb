@@ -29,12 +29,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/win/windows_version.h"
-#include "device/usb/public/cpp/usb_ids.h"
 #include "media/midi/message_util.h"
 #include "media/midi/midi_manager_winrt.h"
 #include "media/midi/midi_service.h"
 #include "media/midi/midi_service.mojom.h"
 #include "media/midi/midi_switches.h"
+#include "services/device/public/cpp/usb/usb_ids.h"
 
 namespace midi {
 

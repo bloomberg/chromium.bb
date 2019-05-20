@@ -39,8 +39,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/web_contents_tester.h"
-#include "device/usb/public/cpp/fake_usb_device_manager.h"
-#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "services/device/public/cpp/test/fake_usb_device_manager.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {

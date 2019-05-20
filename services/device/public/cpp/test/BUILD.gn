@@ -10,6 +10,14 @@ source_set("test_support") {
     "fake_sensor_and_provider.h",
     "fake_serial_port_manager.cc",
     "fake_serial_port_manager.h",
+    "fake_usb_device.cc",
+    "fake_usb_device.h",
+    "fake_usb_device_info.cc",
+    "fake_usb_device_info.h",
+    "fake_usb_device_manager.cc",
+    "fake_usb_device_manager.h",
+    "mock_usb_mojo_device.cc",
+    "mock_usb_mojo_device.h",
     "scoped_geolocation_overrider.cc",
     "scoped_geolocation_overrider.h",
     "test_wake_lock_provider.cc",
@@ -20,13 +28,17 @@ source_set("test_support") {
     "//base",
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/cpp/geolocation",
+    "//services/device/public/cpp/usb",
     "//services/device/public/mojom",
+    "//services/device/public/mojom:usb",
     "//services/service_manager/public/cpp",
   ]
 
   deps = [
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//testing/gmock",
     "//testing/gtest",
+    "//url:url",
   ]
 }

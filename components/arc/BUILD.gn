@@ -110,7 +110,6 @@ static_library("arc") {
     "//content/public/browser:browser",
     "//content/public/common",
     "//device/bluetooth",
-    "//device/usb/public/mojom",
     "//google_apis",
     "//services/device/public/mojom",
     "//skia",

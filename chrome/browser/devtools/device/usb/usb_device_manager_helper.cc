@@ -14,9 +14,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 using device::mojom::UsbTransferDirection;

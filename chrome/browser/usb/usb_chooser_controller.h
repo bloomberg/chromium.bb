@@ -16,7 +16,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
-#include "device/usb/public/mojom/device.mojom.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/origin.h"
 

@@ -13,13 +13,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "device/usb/public/cpp/usb_ids.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "services/device/public/cpp/usb/usb_ids.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

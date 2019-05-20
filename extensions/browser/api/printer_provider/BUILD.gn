@@ -18,9 +18,9 @@ source_set("printer_provider") {
   ]
 
   deps = [
-    "//device/usb/public/cpp",
-    "//device/usb/public/mojom",
     "//extensions/common/api",
+    "//services/device/public/cpp/usb",
+    "//services/device/public/mojom:usb",
   ]
 
   public_deps = [
