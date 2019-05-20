@@ -203,6 +203,10 @@ void NetworkStateListDetailedView::ToggleInfoBubbleForTesting() {
   ToggleInfoBubble();
 }
 
+const char* NetworkStateListDetailedView::GetClassName() const {
+  return "NetworkStateListDetailedView";
+}
+
 void NetworkStateListDetailedView::Init() {
   CreateScrollableList();
   CreateTitleRow(list_type_ == ListType::LIST_TYPE_NETWORK

@@ -19,6 +19,9 @@ class NightLightToggleButton : public SystemMenuButton {
   // Toggles the status of NightLight.
   void Toggle();
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   // Updates the icon and its style based on the status of NightLight.
   void Update();

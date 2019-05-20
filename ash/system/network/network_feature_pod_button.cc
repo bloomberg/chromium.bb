@@ -187,6 +187,10 @@ void NetworkFeaturePodButton::ActiveNetworkStateChanged() {
   Update();
 }
 
+const char* NetworkFeaturePodButton::GetClassName() const {
+  return "NetworkFeaturePodButton";
+}
+
 void NetworkFeaturePodButton::Update() {
   bool animating = false;
   gfx::ImageSkia image =

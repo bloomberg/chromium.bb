@@ -98,6 +98,10 @@ bool NetworkListView::IsNetworkEntry(views::View* view,
   return true;
 }
 
+const char* NetworkListView::GetClassName() const {
+  return "NetworkListView";
+}
+
 void NetworkListView::BindCrosNetworkConfig() {
   // Ensure binding is reset in case this is called after a failure.
   cros_network_config_ptr_.reset();

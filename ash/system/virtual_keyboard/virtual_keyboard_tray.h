@@ -43,6 +43,9 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   // Updates the icon UI.
   void UpdateIcon();

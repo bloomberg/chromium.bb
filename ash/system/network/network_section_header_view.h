@@ -33,6 +33,9 @@ class NetworkSectionHeaderView : public views::View,
   // Modify enabled/disabled and on/off state of toggle.
   virtual void SetToggleState(bool toggle_enabled, bool is_on);
 
+  // views::View:
+  const char* GetClassName() const override;
+
  protected:
   void Init(bool enabled);
 

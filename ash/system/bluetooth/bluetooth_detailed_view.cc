@@ -218,6 +218,10 @@ void BluetoothDetailedView::SetToggleIsOn(bool is_on) {
     toggle_->AnimateIsOn(is_on);
 }
 
+const char* BluetoothDetailedView::GetClassName() const {
+  return "BluetoothDetailedView";
+}
+
 void BluetoothDetailedView::CreateItems() {
   CreateScrollableList();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_BLUETOOTH);

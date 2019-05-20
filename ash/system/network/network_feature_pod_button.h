@@ -26,6 +26,9 @@ class NetworkFeaturePodButton : public FeaturePodButton,
   // TrayNetworkStateObserver::Observer:
   void ActiveNetworkStateChanged() override;
 
+  // views::Button:
+  const char* GetClassName() const override;
+
  private:
   void Update();
   void SetTooltipState(const base::string16& tooltip_state);

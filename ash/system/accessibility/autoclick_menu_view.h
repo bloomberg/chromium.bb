@@ -25,6 +25,9 @@ class AutoclickMenuBubbleView : public TrayBubbleView {
 
   void MoveToPosition(const gfx::Rect& rect);
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AutoclickMenuBubbleView);
 };
@@ -52,6 +55,9 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::View:
+  const char* GetClassName() const override;
 
  private:
   // Unowned. Owned by views hierarchy.

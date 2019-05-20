@@ -45,6 +45,9 @@ class NetworkListView : public NetworkStateListDetailedView,
   void UpdateNetworkList() override;
   bool IsNetworkEntry(views::View* view, std::string* guid) const override;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   void BindCrosNetworkConfig();
   void OnGetDeviceStateList(

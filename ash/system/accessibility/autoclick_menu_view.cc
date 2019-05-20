@@ -56,6 +56,9 @@ class AutoclickMenuButton : public TopShortcutButton {
 
   ~AutoclickMenuButton() override = default;
 
+  // views::Button:
+  const char* GetClassName() const override { return "AutoclickMenuButton"; }
+
   // Set the vector icon shown in a circle.
   void SetVectorIcon(const gfx::VectorIcon& icon) {
     icon_ = &icon;
@@ -135,6 +138,10 @@ void AutoclickMenuBubbleView::MoveToPosition(const gfx::Rect& rect) {
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   SetAnchorRect(rect);
+}
+
+const char* AutoclickMenuBubbleView::GetClassName() const {
+  return "AutoclickMenuBubbleView";
 }
 
 // ------ AutoclickMenuView  ------ //
@@ -302,6 +309,10 @@ void AutoclickMenuView::ButtonPressed(views::Button* sender,
   Shell::Get()->accessibility_controller()->SetAutoclickEventType(type);
   UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosAutoclick.TrayMenu.ChangeAction",
                             type);
+}
+
+const char* AutoclickMenuView::GetClassName() const {
+  return "AutoclickMenuView";
 }
 
 }  // namespace ash

@@ -106,6 +106,10 @@ void VirtualKeyboardTray::OnSessionStateChanged(
   UpdateIcon();
 }
 
+const char* VirtualKeyboardTray::GetClassName() const {
+  return "VirtualKeyboardTray";
+}
+
 void VirtualKeyboardTray::UpdateIcon() {
   const gfx::VectorIcon& icon = kShelfKeyboardNewuiIcon;
   gfx::ImageSkia image = gfx::CreateVectorIcon(

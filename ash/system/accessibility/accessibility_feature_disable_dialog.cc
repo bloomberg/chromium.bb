@@ -89,4 +89,8 @@ AccessibilityFeatureDisableDialog::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+const char* AccessibilityFeatureDisableDialog::GetClassName() const {
+  return "AccessibilityFeatureDisableDialog";
+}
+
 }  // namespace ash

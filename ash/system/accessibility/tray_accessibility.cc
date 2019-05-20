@@ -137,6 +137,10 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
                                             sticky_keys_enabled_);
 }
 
+const char* AccessibilityDetailedView::GetClassName() const {
+  return "AccessibilityDetailedView";
+}
+
 void AccessibilityDetailedView::AppendAccessibilityList() {
   CreateScrollableList();
 

@@ -86,6 +86,10 @@ void NetworkSectionHeaderView::SetToggleState(bool toggle_enabled, bool is_on) {
   toggle_->AnimateIsOn(is_on);
 }
 
+const char* NetworkSectionHeaderView::GetClassName() const {
+  return "NetworkSectionHeaderView";
+}
+
 int NetworkSectionHeaderView::GetHeightForWidth(int width) const {
   // Make row height fixed avoiding layout manager adjustments.
   return GetPreferredSize().height();

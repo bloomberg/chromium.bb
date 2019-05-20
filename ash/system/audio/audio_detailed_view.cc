@@ -70,6 +70,10 @@ void AudioDetailedView::Update() {
   Layout();
 }
 
+const char* AudioDetailedView::GetClassName() const {
+  return "AudioDetailedView";
+}
+
 void AudioDetailedView::AddAudioSubHeader(const gfx::VectorIcon& icon,
                                           int text_id) {
   TriView* header = AddScrollListSubHeader(icon, text_id);

@@ -60,6 +60,10 @@ void NightLightToggleButton::Toggle() {
   NotifyAccessibilityEvent(ax::mojom::Event::kAriaAttributeChanged, true);
 }
 
+const char* NightLightToggleButton::GetClassName() const {
+  return "NightLightToggleButton";
+}
+
 void NightLightToggleButton::Update() {
   const bool night_light_enabled =
       Shell::Get()->night_light_controller()->GetEnabled();

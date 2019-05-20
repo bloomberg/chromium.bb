@@ -26,6 +26,7 @@ class ASH_EXPORT PowerStatusView : public views::View,
   // views::View:
   void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
 
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;

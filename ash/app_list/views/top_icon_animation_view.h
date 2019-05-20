@@ -59,7 +59,7 @@ class TopIconAnimationView : public views::View,
   // location to the small icon inside the folder icon.
   void TransformView();
 
-  // views::View
+  // views::View:
   const char* GetClassName() const override;
 
  private:

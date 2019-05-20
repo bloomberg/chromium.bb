@@ -94,4 +94,8 @@ void PowerStatusView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
 }
 
+const char* PowerStatusView::GetClassName() const {
+  return "PowerStatusView";
+}
+
 }  // namespace ash

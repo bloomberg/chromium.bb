@@ -137,6 +137,10 @@ PowerButtonMenuView::GetTransformDisplacement() const {
   return transform_displacement;
 }
 
+const char* PowerButtonMenuView::GetClassName() const {
+  return "PowerButtonMenuView";
+}
+
 void PowerButtonMenuView::CreateItems() {
   power_off_item_ = new PowerButtonMenuItemView(
       this, kSystemPowerButtonMenuPowerOffIcon,

@@ -34,6 +34,9 @@ class AccessibilityFeatureDisableDialog : public views::DialogDelegateView {
 
   base::WeakPtr<AccessibilityFeatureDisableDialog> GetWeakPtr();
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   const base::string16 window_title_;
   base::OnceClosure on_accept_callback_;

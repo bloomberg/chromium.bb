@@ -126,6 +126,10 @@ base::HourClockType TimeView::GetHourTypeForTesting() const {
   return model_->hour_clock_type();
 }
 
+const char* TimeView::GetClassName() const {
+  return "TimeView";
+}
+
 bool TimeView::PerformAction(const ui::Event& event) {
   return false;
 }

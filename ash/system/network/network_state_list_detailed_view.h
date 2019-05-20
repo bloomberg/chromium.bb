@@ -36,6 +36,9 @@ class ASH_EXPORT NetworkStateListDetailedView
 
   void ToggleInfoBubbleForTesting();
 
+  // views::View:
+  const char* GetClassName() const override;
+
  protected:
   enum ListType { LIST_TYPE_NETWORK, LIST_TYPE_VPN };
 

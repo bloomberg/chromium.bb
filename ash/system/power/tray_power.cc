@@ -73,6 +73,10 @@ base::string16 PowerTrayView::GetTooltipText(const gfx::Point& p) const {
   return tooltip_;
 }
 
+const char* PowerTrayView::GetClassName() const {
+  return "PowerTrayView";
+}
+
 void PowerTrayView::OnPowerStatusChanged() {
   UpdateStatus();
 }

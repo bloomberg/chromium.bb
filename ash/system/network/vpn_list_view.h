@@ -59,6 +59,9 @@ class VPNListView : public NetworkStateListDetailedView,
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   using NetworkStateList =
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>;

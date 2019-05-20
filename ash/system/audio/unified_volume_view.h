@@ -21,6 +21,9 @@ class UnifiedVolumeView : public UnifiedSliderView,
 
   views::Button* more_button() { return more_button_; }
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   void Update(bool by_user);
 

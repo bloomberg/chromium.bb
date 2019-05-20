@@ -130,6 +130,9 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
     tri_view->AddView(TriView::Container::END, add_vpn_button);
   }
 
+  // views::View:
+  const char* GetClassName() const override { return "VPNListProviderEntry"; }
+
  protected:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
@@ -174,6 +177,9 @@ class VPNListNetworkEntry : public HoverHighlightView,
 
   // views::ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
+
+  // views::View:
+  const char* GetClassName() const override { return "VPNListNetworkEntry"; }
 
  private:
   void OnGetNetworkState(NetworkStatePropertiesPtr result);
@@ -360,6 +366,10 @@ void VPNListView::OnVPNProvidersChanged() {
 void VPNListView::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true,
                                 PrefRegistry::PUBLIC);
+}
+
+const char* VPNListView::GetClassName() const {
+  return "VPNListView";
 }
 
 void VPNListView::BindCrosNetworkConfig() {
