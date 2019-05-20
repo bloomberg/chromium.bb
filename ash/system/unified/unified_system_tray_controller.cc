@@ -329,14 +329,15 @@ void UnifiedSystemTrayController::InitFeaturePods() {
 
   // If you want to add a new feature pod item, add here.
 
-  std::string histogram_name = "ChromeOS.SystemTray.FeaturePodCountOnOpen";
   if (Shell::Get()
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled()) {
-    histogram_name = "ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen";
+    UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen",
+                             unified_view_->GetVisibleFeaturePodCount());
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.FeaturePodCountOnOpen",
+                             unified_view_->GetVisibleFeaturePodCount());
   }
-  UMA_HISTOGRAM_COUNTS_100(histogram_name,
-                           unified_view_->GetVisibleFeaturePodCount());
 }
 
 void UnifiedSystemTrayController::AddFeaturePodItem(
