@@ -4865,7 +4865,7 @@
             ]
         }
     ],
-    "SkipTouchEventFilter": [
+    "SkipPassthroughTouchEventQueueFilter": [
         {
             "platforms": [
                 "linux",
