@@ -498,6 +498,7 @@ UIColor* BackgroundColor() {
 
 - (void)hideTabStrip:(BOOL)hidden {
   self.view.hidden = hidden;
+  [self updateTabSwitcherGuide];
 }
 
 #pragma mark - Private
@@ -727,9 +728,13 @@ UIColor* BackgroundColor() {
 - (void)updateTabSwitcherGuide {
   NamedGuide* tabSwitcherGuide =
       [NamedGuide guideWithName:kTabStripTabSwitcherGuide view:self.view];
-  tabSwitcherGuide.constrainedFrame =
-      [_tabSwitcherButton.superview convertRect:_tabSwitcherButton.frame
-                                         toView:tabSwitcherGuide.owningView];
+  if (self.view.hidden) {
+    tabSwitcherGuide.constrainedFrame = CGRectZero;
+  } else {
+    tabSwitcherGuide.constrainedFrame =
+        [_tabSwitcherButton.superview convertRect:_tabSwitcherButton.frame
+                                           toView:tabSwitcherGuide.owningView];
+  }
 }
 
 #pragma mark -
