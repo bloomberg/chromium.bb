@@ -154,22 +154,69 @@ var endSequenceEvents = {
  * Describes how value events should be rendered in charts. |color| specifies
  * color of the event, |name| is used in tooltips, |width| specify width of
  * the line in chart, |scale| is used to convert actual value to rendered value.
+ * When rendered, min and max values and determined and used as a range where
+ * chart is drawn. However, in the case range is small, let say 1 mb for
+ * |kMemUsed| this may lead to user confusion that huge amount of memory was
+ * allocated. To prevent this scanario, |minRange| defines the minimum range of
+ * values and is set in scaled units.
  */
 var valueAttributes = {
   // kMemUsed.
-  1: {color: '#ff3d00', name: 'used mb', scale: 1.0 / 1024.0, width: 1.0},
+  1: {
+    color: '#ff3d00',
+    minRange: 512.0,
+    name: 'used mb',
+    scale: 1.0 / 1024.0,
+    width: 1.0
+  },
   // kSwapRead.
-  2: {color: '#ffc400', name: 'swap read sectors', scale: 1.0, width: 1.0},
+  2: {
+    color: '#ffc400',
+    minRange: 32.0,
+    name: 'swap read sectors',
+    scale: 1.0,
+    width: 1.0
+  },
   // kSwapWrite.
-  3: {color: '#ff9100', name: 'swap write sectors', scale: 1.0, width: 1.0},
+  3: {
+    color: '#ff9100',
+    minRange: 32.0,
+    name: 'swap write sectors',
+    scale: 1.0,
+    width: 1.0
+  },
   // kGemObjects.
-  5: {color: '#3d5afe', name: 'geom. objects', scale: 1.0, width: 1.0},
+  5: {
+    color: '#3d5afe',
+    minRange: 1000,
+    name: 'geom. objects',
+    scale: 1.0,
+    width: 1.0
+  },
   // kGemSize.
-  6: {color: '#7c4dff', name: 'geom. size mb', scale: 1.0 / 1024.0, width: 1.0},
+  6: {
+    color: '#7c4dff',
+    minRange: 256.0,
+    name: 'geom. size mb',
+    scale: 1.0 / 1024.0,
+    width: 1.0
+  },
   // kGpuFreq.
-  7: {color: '#01579b', name: 'GPU frequency mhz', scale: 1.0, width: 1.0},
+  7: {
+    color: '#01579b',
+    minRange: 300.0,
+    name: 'GPU frequency mhz',
+    scale: 1.0,
+    width: 1.0
+  },
   // kCpuTemp.
-  8: {color: '#ff3d00', name: 'CPU celsius.', scale: 1.0 / 1000.0, width: 1.0},
+  8: {
+    color: '#ff3d00',
+    minRange: 20.0,
+    name: 'CPU celsius.',
+    scale: 1.0 / 1000.0,
+    width: 1.0
+  },
 };
 
 /**
@@ -587,6 +634,7 @@ class EventBands {
     // Calculate min/max for sources and event indices.
     var minValue = null;
     var maxValue = null;
+    var attributes = null;
     var eventIndicesForAll = [];
     for (var i = 0; i < sources.length; ++i) {
       var source = sources[i];
@@ -606,17 +654,25 @@ class EventBands {
         minValue = Math.min(minValue, source.events[eventIndex][2]);
         maxValue = Math.max(maxValue, source.events[eventIndex][2]);
         eventIndex = source.getNextEvent(eventIndex, 1 /* direction */);
+        if (!attributes) {
+          attributes = valueAttributes[source.events[eventIndex][0]];
+        }
       }
       eventIndicesForAll.push(eventIndices);
     }
 
+    if (!attributes) {
+      // no one event to render.
+      return;
+    }
+
+    // Ensure minimum value range.
+    if (maxValue - minValue < attributes.minRange / attributes.scale) {
+      maxValue = minValue + attributes.minRange / attributes.scale;
+    }
+
     // Add +-1% to bounds.
     var dif = maxValue - minValue;
-    if (minValue == maxValue) {
-      // To support constant value, set diff to any non-zero value that would
-      // put line in the center.
-      dif = 1;
-    }
     minValue -= dif * 0.01;
     maxValue += dif * 0.01;
     var divider = 1.0 / (maxValue - minValue);
@@ -631,7 +687,6 @@ class EventBands {
       }
       // Determine type using first element.
       var eventType = source.events[eventIndices[0]][0];
-      var attributes = valueAttributes[eventType];
 
       var points = [];
       var lastY = 0;
