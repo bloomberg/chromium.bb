@@ -191,6 +191,7 @@ source_set("eg_tests") {
     "//components/strings",
     "//components/ukm",
     "//components/ukm:test_support",
+    "//components/unified_consent:unified_consent",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/metrics",

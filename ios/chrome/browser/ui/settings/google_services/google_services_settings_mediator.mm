@@ -45,6 +45,9 @@ typedef NSArray<TableViewItem*>* ItemArray;
 
 namespace {
 
+NSString* const kBetterSearchAndBrowsingItemAccessibilityID =
+    @"betterSearchAndBrowsingItem_switch";
+
 // List of sections.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   IdentitySectionIdentifier = kSectionIdentifierEnumZero,
@@ -554,6 +557,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
                       dataType:0];
+    betterSearchAndBrowsingItemType.accessibilityIdentifier =
+        kBetterSearchAndBrowsingItemAccessibilityID;
     _nonPersonalizedItems = @[
       autocompleteSearchesAndURLsItem, improveChromeItem,
       betterSearchAndBrowsingItemType

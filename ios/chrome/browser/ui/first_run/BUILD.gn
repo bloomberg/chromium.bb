@@ -95,6 +95,7 @@ source_set("eg_tests") {
     "//base/test:test_support",
     "//components/metrics",
     "//components/prefs",
+    "//components/unified_consent",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
