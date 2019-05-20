@@ -10,7 +10,7 @@ loadTimeData.data = $GRDP;
 // Extend with additional fields not found in grdp files.
 loadTimeData.overrideValues({
   'CROSTINI_ENABLED': true,
-  'DRIVE_FS_ENABLED': false,
+  'DRIVE_FS_ENABLED': true,
   'GOOGLE_DRIVE_REDEEM_URL': 'http://www.google.com/intl/en/chrome/devices' +
       '/goodies.html?utm_source=filesapp&utm_medium=banner&utm_campaign=gsg',
   'GOOGLE_DRIVE_OVERVIEW_URL':

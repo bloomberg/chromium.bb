@@ -222,6 +222,8 @@ shareBase.testSharePathShown = async (vmName, vmNameSelector, done) => {
   await test.waitForFiles(
       test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
 
+  // Set DRIVE_FS_ENABLED=false, and check that 'Share with <VM>' is not shown.
+  loadTimeData.data_['DRIVE_FS_ENABLED'] = false;
   // Check 'Share with <VM>' is not shown in menu.
   assertTrue(
       test.fakeMouseRightClick('#file-list [file-name="A"]'),
@@ -258,8 +260,6 @@ shareBase.testSharePathShown = async (vmName, vmNameSelector, done) => {
   await test.waitForElement(
       '#directory-tree .tree-item [root-type-icon="crostini"]');
 
-  // Unset DRIVE_FS_ENABLED.
-  loadTimeData.data_['DRIVE_FS_ENABLED'] = false;
   // Clear Crostini shared folders.
   fileManager.crostini.unregisterSharedPath(vmName, alreadySharedPhotosDir);
   done();
