@@ -221,10 +221,7 @@ class BinhostConfWriterTest(
     self._Run('master-postsubmit')
 
     public_slave_boards = ('amd64-generic', 'daisy')
-    # Not putting reef in postsubmit, experiment parallel CQ postsubmit reef
-    # producing prebuilts.
-    # private_slave_boards = ('glados', 'grunt', 'reef')
-    private_slave_boards = ('glados', 'grunt')
+    private_slave_boards = ('glados', 'grunt', 'reef')
 
     self._VerifyResults(public_slave_boards=public_slave_boards,
                         private_slave_boards=private_slave_boards)
