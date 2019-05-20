@@ -6301,15 +6301,12 @@ const CSSValue* TextUnderlinePosition::ParseSingleValue(
 
   CSSIdentifierValue* under_value =
       css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(range);
-  CSSIdentifierValue* left_or_right_value = nullptr;
-  if (RuntimeEnabledFeatures::TextUnderlinePositionLeftRightEnabled()) {
-    left_or_right_value =
-        css_property_parser_helpers::ConsumeIdent<CSSValueID::kLeft,
-                                                  CSSValueID::kRight>(range);
-    if (left_or_right_value && !under_value) {
-      under_value =
-          css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(range);
-    }
+  CSSIdentifierValue* left_or_right_value =
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kLeft,
+                                                CSSValueID::kRight>(range);
+  if (left_or_right_value && !under_value) {
+    under_value =
+        css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(range);
   }
   if (!under_value && !left_or_right_value) {
     return nullptr;

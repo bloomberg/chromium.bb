@@ -1415,10 +1415,6 @@
       status: "experimental",
     },
     {
-      name: "TextUnderlinePositionLeftRight",
-      status: "stable",
-    },
-    {
       name: "TimerThrottlingForBackgroundTabs",
       status: "stable",
     },
