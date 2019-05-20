@@ -44,10 +44,10 @@ void IdentityManagerObserverBridge::OnRefreshTokenUpdatedForAccount(
 }
 
 void IdentityManagerObserverBridge::OnRefreshTokenRemovedForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   if ([delegate_
           respondsToSelector:@selector(onRefreshTokenRemovedForAccount:)]) {
-    [delegate_ onRefreshTokenRemovedForAccount:account_id];
+    [delegate_ onRefreshTokenRemovedForAccount:account_id.id];
   }
 }
 

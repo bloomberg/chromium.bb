@@ -98,7 +98,7 @@ class IdentityManager : public SigninManagerBase::Observer,
     // OnPrimaryAccountCleared() callback is undefined.If this lack of ordering
     // is problematic for your use case, please contact blundell@chromium.org.
     virtual void OnRefreshTokenRemovedForAccount(
-        const std::string& account_id) {}
+        const CoreAccountId& account_id) {}
 
     // Called when the error state of the refresh token for |account_id| has
     // changed. Note: It is always called after

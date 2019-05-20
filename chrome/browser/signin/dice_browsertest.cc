@@ -528,7 +528,8 @@ class DiceBrowserTest : public InProcessBrowserTest,
     }
   }
 
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override {
     ++token_revoked_notification_count_;
   }
 

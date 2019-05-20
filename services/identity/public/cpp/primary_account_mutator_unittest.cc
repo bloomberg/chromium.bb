@@ -68,7 +68,8 @@ class ClearPrimaryAccountTestObserver
     on_primary_account_cleared_.Run(account_info);
   }
 
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+  void OnRefreshTokenRemovedForAccount(
+      const CoreAccountId& account_id) override {
     on_refresh_token_removed_.Run(account_id);
   }
 

@@ -116,7 +116,7 @@ void ProfileIdentityProvider::OnRefreshTokenUpdatedForAccount(
 }
 
 void ProfileIdentityProvider::OnRefreshTokenRemovedForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   ProcessRefreshTokenRemovalForAccount(account_id);
 }
 
