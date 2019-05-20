@@ -315,8 +315,7 @@ TEST_F(CrostiniAppModelBuilderTest, CreatesFolder) {
 
   // We simulate ash creating the crostini folder and calling back into chrome
   // (rather than use a full browser test).
-  ash::mojom::AppListItemMetadataPtr metadata =
-      ash::mojom::AppListItemMetadata::New();
+  auto metadata = std::make_unique<ash::AppListItemMetadata>();
   metadata->id = crostini::kCrostiniFolderId;
   GetModelUpdater()->OnFolderCreated(std::move(metadata));
 

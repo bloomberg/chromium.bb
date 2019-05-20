@@ -77,8 +77,8 @@ class ASH_EXPORT AppListControllerImpl
 
   // app_list::AppListController:
   void SetClient(app_list::AppListClient* client) override;
-  void AddItem(AppListItemMetadataPtr app_item) override;
-  void AddItemToFolder(AppListItemMetadataPtr app_item,
+  void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) override;
+  void AddItemToFolder(std::unique_ptr<ash::AppListItemMetadata> app_item,
                        const std::string& folder_id) override;
   void RemoveItem(const std::string& id) override;
   void RemoveUninstalledItem(const std::string& id) override;
@@ -97,13 +97,13 @@ class ASH_EXPORT AppListControllerImpl
   void PublishSearchResults(
       std::vector<SearchResultMetadataPtr> results) override;
   void SetItemMetadata(const std::string& id,
-                       AppListItemMetadataPtr data) override;
+                       std::unique_ptr<ash::AppListItemMetadata> data) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
   void SetItemIsInstalling(const std::string& id, bool is_installing) override;
   void SetItemPercentDownloaded(const std::string& id,
                                 int32_t percent_downloaded) override;
   void SetModelData(int profile_id,
-                    std::vector<AppListItemMetadataPtr> apps,
+                    std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
                     bool is_search_engine_google) override;
 
   void SetSearchResultMetadata(SearchResultMetadataPtr metadata) override;
@@ -313,7 +313,7 @@ class ASH_EXPORT AppListControllerImpl
 
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
-      AppListItemMetadataPtr metadata);
+      std::unique_ptr<ash::AppListItemMetadata> metadata);
   app_list::AppListFolderItem* FindFolderItem(const std::string& folder_id);
 
   // Update the visibility of Assistant functionality.

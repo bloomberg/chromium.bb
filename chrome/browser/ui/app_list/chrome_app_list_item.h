@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -65,8 +66,8 @@ class ChromeAppListItem {
   void SetIsInstalling(bool is_installing);
   void SetPercentDownloaded(int32_t percent_downloaded);
 
-  void SetMetadata(ash::mojom::AppListItemMetadataPtr metadata);
-  ash::mojom::AppListItemMetadataPtr CloneMetadata() const;
+  void SetMetadata(std::unique_ptr<ash::AppListItemMetadata> metadata);
+  std::unique_ptr<ash::AppListItemMetadata> CloneMetadata() const;
 
   // The following methods set Chrome side data here, and call model updater
   // interfaces that talk to ash directly.
@@ -140,7 +141,7 @@ class ChromeAppListItem {
   void MaybeDismissAppList();
 
  private:
-  ash::mojom::AppListItemMetadataPtr metadata_;
+  std::unique_ptr<ash::AppListItemMetadata> metadata_;
   Profile* profile_;
   AppListModelUpdater* model_updater_ = nullptr;
 

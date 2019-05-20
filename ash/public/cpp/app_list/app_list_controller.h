@@ -5,6 +5,8 @@
 #ifndef ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONTROLLER_H_
 #define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/public/cpp/ash_public_export.h"
 // TODO(crbug.com/958134): Remove.
 #include "ash/public/interfaces/app_list.mojom.h"
@@ -25,7 +27,6 @@ class AppListClient;
 //   happen while installing/uninstalling apps and the app list gets toggled.
 class ASH_PUBLIC_EXPORT AppListController {
  public:
-  using AppListItemMetadataPtr = ash::mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = ash::mojom::SearchResultMetadataPtr;
 
   // Gets the instance.
@@ -35,11 +36,12 @@ class ASH_PUBLIC_EXPORT AppListController {
   virtual void SetClient(AppListClient* client) = 0;
 
   // Adds an item to AppListModel.
-  virtual void AddItem(AppListItemMetadataPtr app_item) = 0;
+  virtual void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) = 0;
 
   // Adds an item into a certain folder in AppListModel.
-  virtual void AddItemToFolder(AppListItemMetadataPtr app_item,
-                               const std::string& folder_id) = 0;
+  virtual void AddItemToFolder(
+      std::unique_ptr<ash::AppListItemMetadata> app_item,
+      const std::string& folder_id) = 0;
 
   // Removes an item by its id from AppListModel.
   virtual void RemoveItem(const std::string& id) = 0;
@@ -85,8 +87,9 @@ class ASH_PUBLIC_EXPORT AppListController {
       std::vector<SearchResultMetadataPtr> results) = 0;
 
   // Updates an item's metadata (e.g. name, position, etc).
-  virtual void SetItemMetadata(const std::string& id,
-                               AppListItemMetadataPtr data) = 0;
+  virtual void SetItemMetadata(
+      const std::string& id,
+      std::unique_ptr<ash::AppListItemMetadata> data) = 0;
 
   // Updates an item's icon.
   virtual void SetItemIcon(const std::string& id,
@@ -101,9 +104,10 @@ class ASH_PUBLIC_EXPORT AppListController {
                                         int32_t percent_downloaded) = 0;
 
   // Update the whole model, usually when profile changes happen in Chrome.
-  virtual void SetModelData(int profile_id,
-                            std::vector<AppListItemMetadataPtr> apps,
-                            bool is_search_engine_google) = 0;
+  virtual void SetModelData(
+      int profile_id,
+      std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
+      bool is_search_engine_google) = 0;
 
   // Updates a search rresult's metadata.
   virtual void SetSearchResultMetadata(SearchResultMetadataPtr metadata) = 0;
@@ -131,8 +135,7 @@ class ASH_PUBLIC_EXPORT AppListController {
   //                           creating; if it's invalid then the final position
   //                           is determined in Ash.
   // |oem_folder|: the meta data of the existing/created OEM folder.
-  using FindOrCreateOemFolderCallback =
-      base::OnceCallback<void(AppListItemMetadataPtr)>;
+  using FindOrCreateOemFolderCallback = base::OnceClosure;
   virtual void FindOrCreateOemFolder(
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preferred_oem_position,
@@ -144,7 +147,7 @@ class ASH_PUBLIC_EXPORT AppListController {
   //                           Ash.
   // |oem_folder|: the meta data of the OEM folder, or null if it doesn't exist.
   using ResolveOemFolderPositionCallback =
-      base::OnceCallback<void(AppListItemMetadataPtr)>;
+      base::OnceCallback<void(std::unique_ptr<ash::AppListItemMetadata>)>;
   virtual void ResolveOemFolderPosition(
       const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) = 0;

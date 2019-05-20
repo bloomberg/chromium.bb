@@ -44,11 +44,11 @@ class TestAppListClient : public app_list::AppListClient {
   void OnAppListTargetVisibilityChanged(bool visible) override {}
   void OnAppListVisibilityChanged(bool visible) override {}
   void OnFolderCreated(int profile_id,
-                       mojom::AppListItemMetadataPtr item) override {}
+                       std::unique_ptr<AppListItemMetadata> item) override {}
   void OnFolderDeleted(int profile_id,
-                       mojom::AppListItemMetadataPtr item) override {}
+                       std::unique_ptr<AppListItemMetadata> item) override {}
   void OnItemUpdated(int profile_id,
-                     mojom::AppListItemMetadataPtr item) override {}
+                     std::unique_ptr<AppListItemMetadata> item) override {}
   void OnPageBreakItemAdded(int profile_id,
                             const std::string& id,
                             const syncer::StringOrdinal& position) override {}

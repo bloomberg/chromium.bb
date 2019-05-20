@@ -13,23 +13,6 @@ import "ui/gfx/image/mojo/image.mojom";
 import "ui/gfx/range/mojo/range.mojom";
 import "url/mojom/url.mojom";
 
-// A structure holding the common information which is sent between ash and,
-// chrome representing an app list item.
-// This structure should be kept as small as possible so that minimum data
-// is sent via mojo calls when an item is moved or reparented.
-struct AppListItemMetadata {
-  string id;          // The id of the app list item.
-  string name;        // The corresponding app or folder's name of the item.
-  string short_name;  // The corresponding app's short name of the item. It's
-                      // empty if the app doesn't have one or it's a folder.
-  string folder_id;   // The id of the item's folder.
-  syncer.mojom.StringOrdinal position; // The position of the item.
-  bool is_folder;     // Whether this item is a folder.
-  bool is_persistent; // Whether this folder is allowed to contain 1 item.
-  gfx.mojom.ImageSkia? icon;  // The icon of this item.
-  bool is_page_break; // Whether this item is a "page break" item.
-};
-
 // A structure holding the common information which is sent from chrome to ash,
 // representing a search result.
 struct SearchResultMetadata {

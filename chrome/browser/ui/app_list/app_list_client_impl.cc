@@ -225,7 +225,7 @@ void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
 
 void AppListClientImpl::OnFolderCreated(
     int profile_id,
-    ash::mojom::AppListItemMetadataPtr item) {
+    std::unique_ptr<ash::AppListItemMetadata> item) {
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (!requested_model_updater)
     return;
@@ -235,7 +235,7 @@ void AppListClientImpl::OnFolderCreated(
 
 void AppListClientImpl::OnFolderDeleted(
     int profile_id,
-    ash::mojom::AppListItemMetadataPtr item) {
+    std::unique_ptr<ash::AppListItemMetadata> item) {
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (!requested_model_updater)
     return;
@@ -243,8 +243,9 @@ void AppListClientImpl::OnFolderDeleted(
   requested_model_updater->OnFolderDeleted(std::move(item));
 }
 
-void AppListClientImpl::OnItemUpdated(int profile_id,
-                                      ash::mojom::AppListItemMetadataPtr item) {
+void AppListClientImpl::OnItemUpdated(
+    int profile_id,
+    std::unique_ptr<ash::AppListItemMetadata> item) {
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (!requested_model_updater)
     return;

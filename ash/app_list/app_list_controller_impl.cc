@@ -182,7 +182,8 @@ app_list::SearchModel* AppListControllerImpl::GetSearchModel() {
   return &search_model_;
 }
 
-void AppListControllerImpl::AddItem(AppListItemMetadataPtr item_data) {
+void AppListControllerImpl::AddItem(
+    std::unique_ptr<ash::AppListItemMetadata> item_data) {
   const std::string folder_id = item_data->folder_id;
   if (folder_id.empty())
     model_->AddItem(CreateAppListItem(std::move(item_data)));
@@ -190,8 +191,9 @@ void AppListControllerImpl::AddItem(AppListItemMetadataPtr item_data) {
     AddItemToFolder(std::move(item_data), folder_id);
 }
 
-void AppListControllerImpl::AddItemToFolder(AppListItemMetadataPtr item_data,
-                                            const std::string& folder_id) {
+void AppListControllerImpl::AddItemToFolder(
+    std::unique_ptr<ash::AppListItemMetadata> item_data,
+    const std::string& folder_id) {
   // When we're setting a whole model of a profile, each item may have its
   // folder id set properly. However, |AppListModel::AddItemToFolder| requires
   // the item to add is not in the target folder yet, and sets its folder id
@@ -259,8 +261,9 @@ void AppListControllerImpl::PublishSearchResults(
   search_model_.PublishResults(std::move(new_results));
 }
 
-void AppListControllerImpl::SetItemMetadata(const std::string& id,
-                                            AppListItemMetadataPtr data) {
+void AppListControllerImpl::SetItemMetadata(
+    const std::string& id,
+    std::unique_ptr<ash::AppListItemMetadata> data) {
   app_list::AppListItem* item = model_->FindItem(id);
   if (!item)
     return;
@@ -314,7 +317,7 @@ void AppListControllerImpl::SetItemPercentDownloaded(
 
 void AppListControllerImpl::SetModelData(
     int profile_id,
-    std::vector<AppListItemMetadataPtr> apps,
+    std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
     bool is_search_engine_google) {
   // Clear old model data.
   model_->DeleteAllItems();
@@ -394,7 +397,7 @@ void AppListControllerImpl::FindOrCreateOemFolder(
     model_->SetItemPosition(oem_folder, oem_position);
   }
   model_->SetItemName(oem_folder, oem_folder_name);
-  std::move(callback).Run(oem_folder->CloneMetadata());
+  std::move(callback).Run();
 }
 
 void AppListControllerImpl::ResolveOemFolderPosition(
@@ -402,7 +405,7 @@ void AppListControllerImpl::ResolveOemFolderPosition(
     ResolveOemFolderPositionCallback callback) {
   // In ash:
   app_list::AppListFolderItem* ash_oem_folder = FindFolderItem(kOemFolderId);
-  ash::mojom::AppListItemMetadataPtr metadata = nullptr;
+  std::unique_ptr<ash::AppListItemMetadata> metadata;
   if (ash_oem_folder) {
     const syncer::StringOrdinal& oem_folder_pos =
         preferred_oem_position.IsValid() ? preferred_oem_position
@@ -1270,7 +1273,7 @@ syncer::StringOrdinal AppListControllerImpl::GetOemFolderPos() {
 }
 
 std::unique_ptr<app_list::AppListItem> AppListControllerImpl::CreateAppListItem(
-    AppListItemMetadataPtr metadata) {
+    std::unique_ptr<ash::AppListItemMetadata> metadata) {
   std::unique_ptr<app_list::AppListItem> app_list_item =
       metadata->is_folder
           ? std::make_unique<app_list::AppListFolderItem>(metadata->id)

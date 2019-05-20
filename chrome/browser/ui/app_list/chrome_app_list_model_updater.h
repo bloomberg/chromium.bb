@@ -108,9 +108,9 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
       bool update_folder) override;
 
   // Methods to handle model update from ash:
-  void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) override;
-  void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override;
-  void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
+  void OnFolderCreated(std::unique_ptr<ash::AppListItemMetadata> item) override;
+  void OnFolderDeleted(std::unique_ptr<ash::AppListItemMetadata> item) override;
+  void OnItemUpdated(std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnPageBreakItemAdded(const std::string& id,
                             const syncer::StringOrdinal& position) override;
   void OnPageBreakItemDeleted(const std::string& id) override;

@@ -5,9 +5,11 @@
 #ifndef ASH_PUBLIC_CPP_APP_LIST_APP_LIST_TYPES_H_
 #define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_TYPES_H_
 
+#include <string>
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "components/sync/model/string_ordinal.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
 
@@ -22,6 +24,26 @@ constexpr int kAppListProfileIdStartFrom = 0;
 
 // Id of OEM folder in app list.
 ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
+
+// A structure holding the common information which is sent between ash and,
+// chrome representing an app list item.
+struct ASH_PUBLIC_EXPORT AppListItemMetadata {
+  AppListItemMetadata();
+  AppListItemMetadata(const AppListItemMetadata& rhs);
+  ~AppListItemMetadata();
+
+  std::string id;          // Id of the app list item.
+  std::string name;        // Corresponding app/folder's name of the item.
+  std::string short_name;  // Corresponding app's short name of the item. Empty
+                           // if the app doesn't have one or it's a folder.
+  std::string folder_id;   // Id of folder where the item resides.
+  syncer::StringOrdinal position;  // Position of the item.
+  bool is_folder = false;          // Whether this item is a folder.
+  bool is_persistent = false;  // Whether this folder is allowed to contain only
+                               // 1 item.
+  gfx::ImageSkia icon;         // The icon of this item.
+  bool is_page_break = false;  // Whether this item is a "page break" item.
+};
 
 // All possible states of the app list.
 // Note: Do not change the order of these as they are used for metrics.

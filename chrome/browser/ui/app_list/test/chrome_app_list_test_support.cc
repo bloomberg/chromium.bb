@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 
+#include <memory>
 #include <string>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -97,11 +99,12 @@ void PopulateDummyAppListItems(int n) {
     const std::string app_id = crx_file::id_util::GenerateId(app_name);
     auto item =
         std::make_unique<ChromeAppListItem>(profile, app_id, model_updater);
-    gfx::ImageSkia icon = CreateImageSkia(i);
-    item->SetMetadata(ash::mojom::AppListItemMetadata::New(
-        app_id, app_name, /*short_name=*/app_name, /*folder_id=*/"",
-        syncer::StringOrdinal(app_id), /*is_folder=*/false,
-        /*is_persistent=*/false, icon, /*is_page_break=*/false));
+    auto metadata = std::make_unique<ash::AppListItemMetadata>();
+    metadata->id = app_id;
+    metadata->name = app_name;
+    metadata->short_name = app_name;
+    metadata->icon = CreateImageSkia(i);
+    item->SetMetadata(std::move(metadata));
     model_updater->AddItem(std::move(item));
   }
   // Wait for the AddItem mojo calls to be handled by Ash. Note that

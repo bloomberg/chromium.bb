@@ -8,6 +8,14 @@ namespace ash {
 
 const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
 
+////////////////////////////////////////////////////////////////////////////////
+// AppListItemMetadata:
+
+AppListItemMetadata::AppListItemMetadata() = default;
+AppListItemMetadata::AppListItemMetadata(const AppListItemMetadata& rhs) =
+    default;
+AppListItemMetadata::~AppListItemMetadata() = default;
+
 OmniBoxZeroStateAction GetOmniBoxZeroStateAction(int button_index) {
   if (button_index < 0 ||
       button_index >=
