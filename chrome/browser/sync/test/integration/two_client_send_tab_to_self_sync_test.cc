@@ -220,3 +220,46 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
   EXPECT_EQ(1u, profile1_target_device_map.size());
   EXPECT_EQ(1u, profile2_target_device_map.size());
 }
+
+IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
+                       MarkOpenedWhenBothClientsAlreadySyncing) {
+  const GURL kUrl("https://www.example.com");
+  const base::Time kHistoryEntryTime = base::Time::Now();
+  const std::string kTitle("example");
+  const std::string kTargetDeviceSyncCacheGuid("target_device");
+  const base::Time kTime = base::Time::FromDoubleT(1);
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(GetProfile(0),
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  history_service->AddPage(kUrl, kHistoryEntryTime, history::SOURCE_BROWSED);
+
+  base::RunLoop run_loop;
+  history_service->FlushForTest(run_loop.QuitClosure());
+  run_loop.Run();
+
+  send_tab_to_self::SendTabToSelfSyncService* service0 =
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0));
+
+  send_tab_to_self::SendTabToSelfModel* model0 =
+      service0->GetSendTabToSelfModel();
+
+  ASSERT_TRUE(
+      model0->AddEntry(kUrl, kTitle, kTime, kTargetDeviceSyncCacheGuid));
+
+  send_tab_to_self::SendTabToSelfSyncService* service1 =
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1));
+
+  ASSERT_TRUE(
+      send_tab_to_self_helper::SendTabToSelfUrlChecker(service1, kUrl).Wait());
+
+  const std::string guid = model0->GetAllGuids()[0];
+
+  service1->GetSendTabToSelfModel()->MarkEntryOpened(guid);
+
+  EXPECT_TRUE(
+      send_tab_to_self_helper::SendTabToSelfUrlOpenedChecker(service0, kUrl)
+          .Wait());
+}

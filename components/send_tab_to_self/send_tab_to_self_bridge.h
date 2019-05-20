@@ -80,6 +80,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
       const std::string& target_device_cache_guid) override;
   void DeleteEntry(const std::string& guid) override;
   void DismissEntry(const std::string& guid) override;
+  void MarkEntryOpened(const std::string& guid) override;
   bool IsReady() override;
   std::map<std::string, TargetDeviceInfo> GetTargetDeviceNameToCacheInfoMap()
       override;
@@ -97,7 +98,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   using SendTabToSelfEntries =
       std::map<std::string, std::unique_ptr<SendTabToSelfEntry>>;
 
-  // Notify all observers of any added |entries| when they are added the the
+  // Notify all observers of any added |new_entries| when they are added the the
   // model via sync.
   void NotifyRemoteSendTabToSelfEntryAdded(
       const std::vector<const SendTabToSelfEntry*>& new_entries);
@@ -106,6 +107,11 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // the model via sync or via history deletion.
   void NotifyRemoteSendTabToSelfEntryDeleted(
       const std::vector<std::string>& guids);
+
+  // Notify all observers when any new or existing |opened_entries| have been
+  // marked as opened in the model via sync.
+  void NotifyRemoteSendTabToSelfEntryOpened(
+      const std::vector<const SendTabToSelfEntry*>& opened_entries);
 
   // Notify all observers that the model is loaded;
   void NotifySendTabToSelfModelLoaded();

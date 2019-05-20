@@ -50,9 +50,13 @@ class SendTabToSelfModel {
   // of the model as driven by user behaviors.
   virtual void DeleteEntry(const std::string& guid) = 0;
 
-  // Dismiss entry with |guid| from entries. Allows clients to modify the state
+  // Dismiss entry with key |guid|. Allows clients to modify the state
   // of the model as driven by user behaviors.
   virtual void DismissEntry(const std::string& guid) = 0;
+
+  // Mark entry with key |guid| as opened. Allows clients to modify the state
+  // of the model as driven by user behaviors.
+  virtual void MarkEntryOpened(const std::string& guid) = 0;
 
   // Guarantee that the model is operational and syncing, i.e., the local
   // database is started and the initial data has been downloaded.

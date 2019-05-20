@@ -45,7 +45,8 @@ SendTabToSelfEntry::SendTabToSelfEntry(
       target_device_sync_cache_guid_(target_device_sync_cache_guid),
       shared_time_(shared_time),
       original_navigation_time_(original_navigation_time),
-      notification_dismissed_(false) {
+      notification_dismissed_(false),
+      opened_(false) {
   DCHECK(!guid_.empty());
   DCHECK(url_.is_valid());
   DCHECK(base::IsStringUTF8(guid_));
@@ -84,6 +85,14 @@ const std::string& SendTabToSelfEntry::GetTargetDeviceSyncCacheGuid() const {
   return target_device_sync_cache_guid_;
 }
 
+bool SendTabToSelfEntry::IsOpened() const {
+  return opened_;
+}
+
+void SendTabToSelfEntry::MarkOpened() {
+  opened_ = true;
+}
+
 void SendTabToSelfEntry::SetNotificationDismissed(bool notification_dismissed) {
   notification_dismissed_ = notification_dismissed;
 }
@@ -104,6 +113,7 @@ SendTabToSelfLocal SendTabToSelfEntry::AsLocalProto() const {
       TimeToProtoTime(GetOriginalNavigationTime()));
   pb_entry->set_device_name(GetDeviceName());
   pb_entry->set_target_device_sync_cache_guid(GetTargetDeviceSyncCacheGuid());
+  pb_entry->set_opened(IsOpened());
   local_entry.set_notification_dismissed(GetNotificationDismissed());
 
   return local_entry;
@@ -133,10 +143,17 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
     navigation_time = ProtoTimeToTime(pb_entry.navigation_time_usec());
   }
 
+  bool opened = pb_entry.opened();
+
   // Protobuf parsing enforces utf8 encoding for all strings.
-  return std::make_unique<SendTabToSelfEntry>(
+  auto entry = std::make_unique<SendTabToSelfEntry>(
       guid, url, pb_entry.title(), shared_time, navigation_time,
       pb_entry.device_name(), pb_entry.target_device_sync_cache_guid());
+
+  if (opened) {
+    entry->MarkOpened();
+  }
+  return entry;
 }
 
 std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromLocalProto(

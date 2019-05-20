@@ -21,7 +21,7 @@ class SendTabToSelfSyncService;
 namespace send_tab_to_self_helper {
 
 // Class that allows waiting until a particular |url| is exposed by the
-// SendTabToSelfModel in|service|.
+// SendTabToSelfModel in |service|.
 class SendTabToSelfUrlChecker
     : public StatusChangeChecker,
       public send_tab_to_self::SendTabToSelfModelObserver {
@@ -49,6 +49,41 @@ class SendTabToSelfUrlChecker
   send_tab_to_self::SendTabToSelfSyncService* const service_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfUrlChecker);
+};
+
+// Class that allows waiting until a particular |url| is marked opened by the
+// SendTabToSelfModel in |service|.
+class SendTabToSelfUrlOpenedChecker
+    : public StatusChangeChecker,
+      public send_tab_to_self::SendTabToSelfModelObserver {
+ public:
+  // The caller must ensure that |service| is not null and will outlive this
+  // object.
+  SendTabToSelfUrlOpenedChecker(
+      send_tab_to_self::SendTabToSelfSyncService* service,
+      const GURL& url);
+  ~SendTabToSelfUrlOpenedChecker() override;
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+  // SendTabToSelfModelObserver implementation.
+  void SendTabToSelfModelLoaded() override;
+  void EntriesAddedRemotely(
+      const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
+          new_entries) override;
+  void EntriesRemovedRemotely(
+      const std::vector<std::string>& guids_removed) override;
+  void EntriesOpenedRemotely(
+      const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
+          opened_entries) override;
+
+ private:
+  const GURL url_;
+  send_tab_to_self::SendTabToSelfSyncService* const service_;
+
+  DISALLOW_COPY_AND_ASSIGN(SendTabToSelfUrlOpenedChecker);
 };
 
 // Class that allows waiting the number of entries in until |service0|

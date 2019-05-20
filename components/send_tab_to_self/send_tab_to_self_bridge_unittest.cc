@@ -35,6 +35,7 @@ namespace send_tab_to_self {
 namespace {
 
 using testing::_;
+using testing::AllOf;
 using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::Pair;
@@ -77,9 +78,15 @@ class MockSendTabToSelfModelObserver : public SendTabToSelfModelObserver {
   MOCK_METHOD0(SendTabToSelfModelLoaded, void());
   MOCK_METHOD1(EntriesAddedRemotely,
                void(const std::vector<const SendTabToSelfEntry*>&));
+  MOCK_METHOD1(EntriesOpenedRemotely,
+               void(const std::vector<const SendTabToSelfEntry*>&));
 
   MOCK_METHOD1(EntriesRemovedRemotely, void(const std::vector<std::string>&));
 };
+
+MATCHER_P(GuidIs, e, "") {
+  return testing::ExplainMatchResult(e, arg->GetGUID(), result_listener);
+}
 
 // TODO(crbug.com/958016): Extract into its own file.
 // Mock DeviceInfoTracker class for setting device info.
@@ -858,6 +865,45 @@ TEST_F(SendTabToSelfBridgeTest,
   EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
               UnorderedElementsAre(Pair("name", device_info_1),
                                    Pair("new_name", device_info_2)));
+}
+
+TEST_F(SendTabToSelfBridgeTest, NotifyRemoteSendTabToSelfEntryOpened) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{kSendTabToSelfShowSendingUI,
+                            kSendTabToSelfBroadcast},
+      /*disabled_features=*/{});
+
+  InitializeBridge();
+  SetLocalDeviceCacheGuid("Device1");
+
+  // Add on entry targeting this device and another targeting another device.
+  syncer::EntityChangeList remote_input;
+  SendTabToSelfEntry entry1("guid1", GURL("http://www.example.com/"), "title",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                            "Device1");
+  SendTabToSelfEntry entry2("guid2", GURL("http://www.example.com/"), "title",
+                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
+                            "Device2");
+  remote_input.push_back(
+      syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry1)));
+  remote_input.push_back(
+      syncer::EntityChange::CreateAdd("guid2", MakeEntityData(entry2)));
+
+  entry1.MarkOpened();
+  remote_input.push_back(
+      syncer::EntityChange::CreateUpdate("guid1", MakeEntityData(entry1)));
+
+  auto metadata_change_list =
+      std::make_unique<syncer::InMemoryMetadataChangeList>();
+
+  // an entry with "guid1" should be sent to the observers.
+  EXPECT_CALL(*mock_observer(), EntriesOpenedRemotely(AllOf(
+                                    SizeIs(1), ElementsAre(GuidIs("guid1")))));
+  bridge()->MergeSyncData(std::move(metadata_change_list),
+                          std::move(remote_input));
+
+  EXPECT_EQ(2ul, bridge()->GetAllGuids().size());
 }
 
 }  // namespace

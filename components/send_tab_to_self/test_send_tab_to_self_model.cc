@@ -29,6 +29,8 @@ void TestSendTabToSelfModel::DeleteEntry(const std::string& guid) {}
 
 void TestSendTabToSelfModel::DismissEntry(const std::string& guid) {}
 
+void TestSendTabToSelfModel::MarkEntryOpened(const std::string& guid) {}
+
 bool TestSendTabToSelfModel::IsReady() {
   return false;
 }

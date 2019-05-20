@@ -26,15 +26,19 @@ class SendTabToSelfModelObserver {
   // have a way to ensure that the model is active before interacting with it.
   virtual void SendTabToSelfModelLoaded() = 0;
 
-  // Invoked when elements of the model are added or removed. This is the
-  // mechanism for the sync server to push changes in the state of the model to
-  // clients.
+  // Invoked when elements of the model are added, removed, or updated. This is
+  // the mechanism for the sync server to push changes in the state of the model
+  // to clients.
   // TODO(crbug.com/945396) move EntriesAddedRemotely to use const refs to
   // clarify ownership.
   virtual void EntriesAddedRemotely(
       const std::vector<const SendTabToSelfEntry*>& new_entries) = 0;
   virtual void EntriesRemovedRemotely(
       const std::vector<std::string>& guids) = 0;
+  // This observer will>>>>>>>> notify listeners of new and existing entries
+  // that have been marked as opened.
+  virtual void EntriesOpenedRemotely(
+      const std::vector<const SendTabToSelfEntry*>& opened_entries) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfModelObserver);

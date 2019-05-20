@@ -55,6 +55,56 @@ void SendTabToSelfUrlChecker::EntriesRemovedRemotely(
   CheckExitCondition();
 }
 
+SendTabToSelfUrlOpenedChecker::SendTabToSelfUrlOpenedChecker(
+    send_tab_to_self::SendTabToSelfSyncService* service,
+    const GURL& url)
+    : url_(url), service_(service) {
+  DCHECK(service);
+  service->GetSendTabToSelfModel()->AddObserver(this);
+}
+
+SendTabToSelfUrlOpenedChecker::~SendTabToSelfUrlOpenedChecker() {
+  service_->GetSendTabToSelfModel()->RemoveObserver(this);
+}
+
+bool SendTabToSelfUrlOpenedChecker::IsExitConditionSatisfied() {
+  send_tab_to_self::SendTabToSelfModel* model =
+      service_->GetSendTabToSelfModel();
+  for (auto const& guid : model->GetAllGuids()) {
+    const send_tab_to_self::SendTabToSelfEntry* entry =
+        model->GetEntryByGUID(guid);
+    if (entry->GetURL() == url_ && entry->IsOpened()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::string SendTabToSelfUrlOpenedChecker::GetDebugMessage() const {
+  return "Waiting for data for url '" + url_.spec() + "' to be marked opened.";
+}
+
+void SendTabToSelfUrlOpenedChecker::SendTabToSelfModelLoaded() {
+  CheckExitCondition();
+}
+
+void SendTabToSelfUrlOpenedChecker::EntriesAddedRemotely(
+    const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
+        new_entries) {
+  CheckExitCondition();
+}
+
+void SendTabToSelfUrlOpenedChecker::EntriesRemovedRemotely(
+    const std::vector<std::string>& guids_removed) {
+  CheckExitCondition();
+}
+
+void SendTabToSelfUrlOpenedChecker::EntriesOpenedRemotely(
+    const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
+        opened_entries) {
+  CheckExitCondition();
+}
+
 SendTabToSelfModelEqualityChecker::SendTabToSelfModelEqualityChecker(
     send_tab_to_self::SendTabToSelfSyncService* service0,
     send_tab_to_self::SendTabToSelfSyncService* service1)

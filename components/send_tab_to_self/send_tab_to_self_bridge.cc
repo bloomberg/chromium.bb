@@ -145,6 +145,11 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   std::vector<const SendTabToSelfEntry*> added;
+
+  // The opened vector will accumulate both added entries that are already
+  // opened as well as existing entries that have been updated to be marked as
+  // opened.
+  std::vector<const SendTabToSelfEntry*> opened;
   std::vector<std::string> removed;
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
@@ -158,28 +163,40 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
         removed.push_back(change->storage_key());
       }
     } else {
-      // syncer::EntityChange::ACTION_UPDATE is not supported by this bridge
-      DCHECK(change->type() == syncer::EntityChange::ACTION_ADD);
 
       const sync_pb::SendTabToSelfSpecifics& specifics =
           change->data().specifics.send_tab_to_self();
 
-      std::unique_ptr<SendTabToSelfEntry> entry =
+      std::unique_ptr<SendTabToSelfEntry> remote_entry =
           SendTabToSelfEntry::FromProto(specifics, clock_->Now());
-      if (!entry) {
+      if (!remote_entry) {
         continue;  // Skip invalid entries.
       }
-      // This entry is new. Add it to the model if it hasn't expired.
-      if (entry->IsExpired(clock_->Now())) {
+      if (remote_entry->IsExpired(clock_->Now())) {
         // Remove expired data from server.
         change_processor()->Delete(guid, batch->GetMetadataChangeList());
       } else {
-        added.push_back(entry.get());
-        SendTabToSelfLocal entry_pb = entry->AsLocalProto();
-        entries_[entry->GetGUID()] = std::move(entry);
+        SendTabToSelfEntry* local_entry =
+            GetMutableEntryByGUID(remote_entry->GetGUID());
+        SendTabToSelfLocal remote_entry_pb = remote_entry->AsLocalProto();
+
+        if (local_entry == nullptr) {
+          // This remote_entry is new. Add it to the model.
+          added.push_back(remote_entry.get());
+          if (remote_entry->IsOpened()) {
+            opened.push_back(remote_entry.get());
+          }
+          entries_[remote_entry->GetGUID()] = std::move(remote_entry);
+        } else {
+          // Update existing model if entries have been opened.
+          if (remote_entry->IsOpened() && !local_entry->IsOpened()) {
+            local_entry->MarkOpened();
+            opened.push_back(local_entry);
+          }
+        }
 
         // Write to the store.
-        batch->WriteData(guid, entry_pb.SerializeAsString());
+        batch->WriteData(guid, remote_entry_pb.SerializeAsString());
       }
     }
   }
@@ -192,6 +209,9 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
   }
   if (!added.empty()) {
     NotifyRemoteSendTabToSelfEntryAdded(added);
+  }
+  if (!opened.empty()) {
+    NotifyRemoteSendTabToSelfEntryOpened(opened);
   }
 
   return base::nullopt;
@@ -357,10 +377,34 @@ void SendTabToSelfBridge::DismissEntry(const std::string& guid) {
   if (!entry) {
     return;
   }
+
   entry->SetNotificationDismissed(true);
 
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
+
+  batch->WriteData(guid, entry->AsLocalProto().SerializeAsString());
+  Commit(std::move(batch));
+}
+
+void SendTabToSelfBridge::MarkEntryOpened(const std::string& guid) {
+  SendTabToSelfEntry* entry = GetMutableEntryByGUID(guid);
+  // Assure that an entry with that guid exists.
+  if (!entry) {
+    return;
+  }
+
+  DCHECK(change_processor()->IsTrackingMetadata());
+
+  entry->MarkOpened();
+
+  std::unique_ptr<ModelTypeStore::WriteBatch> batch =
+      store_->CreateWriteBatch();
+
+  auto entity_data = CopyToEntityData(entry->AsLocalProto().specifics());
+
+  change_processor()->Put(guid, std::move(entity_data),
+                          batch->GetMetadataChangeList());
 
   batch->WriteData(guid, entry->AsLocalProto().SerializeAsString());
   Commit(std::move(batch));
@@ -443,6 +487,13 @@ void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryDeleted(
   // TODO(crbug.com/956216): Only send the entries that targeted this device.
   for (SendTabToSelfModelObserver& observer : observers_) {
     observer.EntriesRemovedRemotely(guids);
+  }
+}
+
+void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryOpened(
+    const std::vector<const SendTabToSelfEntry*>& opened_entries) {
+  for (SendTabToSelfModelObserver& observer : observers_) {
+    observer.EntriesOpenedRemotely(opened_entries);
   }
 }
 
