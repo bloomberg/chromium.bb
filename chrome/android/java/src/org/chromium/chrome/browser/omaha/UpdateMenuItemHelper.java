@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.omaha;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.Intent;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -199,9 +197,8 @@ public class UpdateMenuItemHelper {
                 if (TextUtils.isEmpty(mStatus.updateUrl)) return;
 
                 try {
-                    Intent launchIntent =
-                            new Intent(Intent.ACTION_VIEW, Uri.parse(mStatus.updateUrl));
-                    activity.startActivity(launchIntent);
+                    UpdateStatusProvider.getInstance().startIntentUpdate(
+                            activity, UpdateInteractionSource.FROM_MENU, false /* newTask */);
                     recordItemClickedHistogram(ITEM_CLICKED_INTENT_LAUNCHED);
                     PrefServiceBridge.getInstance().setClickedUpdateMenuItem(true);
                 } catch (ActivityNotFoundException e) {

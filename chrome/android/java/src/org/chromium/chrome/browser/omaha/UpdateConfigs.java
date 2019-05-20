@@ -56,6 +56,8 @@ public class UpdateConfigs {
 
     private static final String UPDATE_FLOW_PARAM_NAME = "flow";
 
+    private static final String UPDATE_ATTRIBUTION_WINDOW_PARAM_NAME =
+            "update_attribution_window_days";
     private static final String UPDATE_NOTIFICATION_INTERVAL_PARAM_NAME =
             "update_notification_interval_days";
     private static final String UPDATE_NOTIFICATION_STATE_PARAM_NAME = "update_notification_state";
@@ -63,6 +65,7 @@ public class UpdateConfigs {
             "update_notification_experimental_context";
 
     private static final long DEFAULT_UPDATE_NOTIFICATION_INTERVAL = 21 * DateUtils.DAY_IN_MILLIS;
+    private static final long DEFAULT_UPDATE_ATTRIBUTION_WINDOW_MS = 2 * DateUtils.DAY_IN_MILLIS;
 
     /** Possible update flow configurations. */
     @IntDef({UpdateFlowConfiguration.NEVER_SHOW, UpdateFlowConfiguration.INTENT_ONLY,
@@ -197,6 +200,20 @@ public class UpdateConfigs {
      */
     public static String getMockMarketUrl() {
         return getStringParamValue(ChromeSwitches.MARKET_URL_FOR_TESTING);
+    }
+
+    /**
+     * @return How long to wait before attributing an update success or failure to the Chrome update
+     * mechanism.
+     */
+    public static long getUpdateAttributionWindowMs() {
+        String configuration = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.INLINE_UPDATE_FLOW, UPDATE_ATTRIBUTION_WINDOW_PARAM_NAME);
+        try {
+            return Long.parseLong(configuration) * DateUtils.DAY_IN_MILLIS;
+        } catch (NumberFormatException e) {
+            return DEFAULT_UPDATE_ATTRIBUTION_WINDOW_MS;
+        }
     }
 
     /**

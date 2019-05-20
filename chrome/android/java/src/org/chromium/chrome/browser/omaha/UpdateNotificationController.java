@@ -15,9 +15,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -36,6 +34,7 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateInteractionSource;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
 
@@ -140,10 +139,6 @@ public class UpdateNotificationController implements Destroyable {
         Context context = ContextUtils.getApplicationContext();
         Intent clickIntent = new Intent(context, UpdateNotificationReceiver.class)
                                      .putExtra(UPDATE_NOTIFICATION_STATE_EXTRA, status.updateState);
-
-        if (status.updateState == UPDATE_AVAILABLE && !TextUtils.isEmpty(status.updateUrl)) {
-            clickIntent.setData(Uri.parse(status.updateUrl));
-        }
         PendingIntentProvider contentIntent = PendingIntentProvider.getBroadcast(
                 context, 0, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         return contentIntent;
@@ -183,10 +178,15 @@ public class UpdateNotificationController implements Destroyable {
                     IntentHandler.startActivityForTrustedIntent(launchInlineUpdateIntent);
                     break;
                 case UPDATE_AVAILABLE:
-                    if (intent.getData() == null) return;
-                    Intent launchPlayStoreIntent = new Intent(Intent.ACTION_VIEW, intent.getData())
-                                                           .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(launchPlayStoreIntent);
+                    Callback<UpdateStatus> intentLauncher = new Callback<UpdateStatus>() {
+                        @Override
+                        public void onResult(UpdateStatus result) {
+                            UpdateStatusProvider.getInstance().startIntentUpdate(context,
+                                    UpdateInteractionSource.FROM_NOTIFICATION, true /* newTask */);
+                            UpdateStatusProvider.getInstance().removeObserver(this);
+                        }
+                    };
+                    UpdateStatusProvider.getInstance().addObserver(intentLauncher);
                     break;
                 default:
                     break;
