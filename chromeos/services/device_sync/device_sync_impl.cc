@@ -20,9 +20,9 @@
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/device_sync_type_converters.h"
-#include "chromeos/services/device_sync/persistent_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/proto/device_classifier_util.h"
 #include "chromeos/services/device_sync/public/cpp/gcm_device_info_provider.h"
@@ -47,7 +47,7 @@ void RegisterDeviceSyncPrefs(PrefRegistrySimple* registry) {
           chromeos::features::kCryptAuthV2Enrollment)) {
     CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(registry);
     CryptAuthKeyRegistryImpl::RegisterPrefs(registry);
-    PersistentEnrollmentScheduler::RegisterPrefs(registry);
+    CryptAuthSchedulerImpl::RegisterPrefs(registry);
   } else {
     CryptAuthEnrollmentManagerImpl::RegisterPrefs(registry);
   }

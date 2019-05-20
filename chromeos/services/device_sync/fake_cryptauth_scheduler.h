@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_ENROLLMENT_SCHEDULER_H_
-#define CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_ENROLLMENT_SCHEDULER_H_
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_SCHEDULER_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_SCHEDULER_H_
 
 #include <vector>
 
@@ -11,23 +11,24 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_result.h"
-#include "chromeos/services/device_sync/cryptauth_enrollment_scheduler.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 
 namespace chromeos {
 
 namespace device_sync {
 
-// Fake CryptAuthEnrollmentScheduler implementation.
-class FakeCryptAuthEnrollmentScheduler : public CryptAuthEnrollmentScheduler {
+// Fake CryptAuthScheduler implementation.
+class FakeCryptAuthScheduler : public CryptAuthScheduler {
  public:
   static constexpr base::TimeDelta kDefaultRefreshPeriod =
       base::TimeDelta::FromDays(30);
   static constexpr base::TimeDelta kDefaultTimeToNextEnrollmentRequest =
       base::TimeDelta::FromHours(12);
 
-  FakeCryptAuthEnrollmentScheduler(Delegate* delegate);
-  ~FakeCryptAuthEnrollmentScheduler() override;
+  explicit FakeCryptAuthScheduler(Delegate* delegate);
+
+  ~FakeCryptAuthScheduler() override;
 
   const std::vector<CryptAuthEnrollmentResult>& handled_enrollment_results()
       const {
@@ -58,7 +59,7 @@ class FakeCryptAuthEnrollmentScheduler : public CryptAuthEnrollmentScheduler {
     num_consecutive_failures_ = num_consecutive_failures;
   }
 
-  // CryptAuthEnrollmentScheduler:
+  // CryptAuthScheduler:
   void RequestEnrollmentNow() override;
   void HandleEnrollmentResult(
       const CryptAuthEnrollmentResult& enrollment_result) override;
@@ -79,15 +80,14 @@ class FakeCryptAuthEnrollmentScheduler : public CryptAuthEnrollmentScheduler {
   size_t num_consecutive_failures_ = 0u;
   bool is_waiting_for_enrollment_result_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthEnrollmentScheduler);
+  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthScheduler);
 };
 
-// Fake CryptAuthEnrollmentScheduler::Delegate implementation.
-class FakeCryptAuthEnrollmentSchedulerDelegate
-    : public CryptAuthEnrollmentScheduler::Delegate {
+// Fake CryptAuthScheduler::Delegate implementation.
+class FakeCryptAuthSchedulerDelegate : public CryptAuthScheduler::Delegate {
  public:
-  FakeCryptAuthEnrollmentSchedulerDelegate();
-  ~FakeCryptAuthEnrollmentSchedulerDelegate() override;
+  FakeCryptAuthSchedulerDelegate();
+  ~FakeCryptAuthSchedulerDelegate() override;
 
   const std::vector<base::Optional<cryptauthv2::PolicyReference>>&
   policy_references_from_enrollment_requests() const {
@@ -95,18 +95,18 @@ class FakeCryptAuthEnrollmentSchedulerDelegate
   }
 
  private:
-  // CryptAuthEnrollmentScheduler::Delegate:
+  // CryptAuthScheduler::Delegate:
   void OnEnrollmentRequested(const base::Optional<cryptauthv2::PolicyReference>&
                                  client_directive_policy_reference) override;
 
   std::vector<base::Optional<cryptauthv2::PolicyReference>>
       policy_references_from_enrollment_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthEnrollmentSchedulerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthSchedulerDelegate);
 };
 
 }  // namespace device_sync
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_ENROLLMENT_SCHEDULER_H_
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_SCHEDULER_H_

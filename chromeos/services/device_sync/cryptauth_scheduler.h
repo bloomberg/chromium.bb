@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_SCHEDULER_H_
-#define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_SCHEDULER_H_
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_SCHEDULER_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_SCHEDULER_H_
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -22,7 +22,7 @@ namespace device_sync {
 // enrollment attempt has completed, successfully or not, the client should
 // invoke HandleEnrollmentResult() so the scheduler can process the enrollment
 // attempt outcome.
-class CryptAuthEnrollmentScheduler {
+class CryptAuthScheduler {
  public:
   class Delegate {
    public:
@@ -40,7 +40,7 @@ class CryptAuthEnrollmentScheduler {
             client_directive_policy_reference) = 0;
   };
 
-  virtual ~CryptAuthEnrollmentScheduler();
+  virtual ~CryptAuthScheduler();
 
   // Cancels the currently scheduled enrollment, and requests an enrollment
   // immediately.
@@ -73,7 +73,7 @@ class CryptAuthEnrollmentScheduler {
   virtual size_t GetNumConsecutiveFailures() const = 0;
 
  protected:
-  CryptAuthEnrollmentScheduler(Delegate* delegate);
+  explicit CryptAuthScheduler(Delegate* delegate);
 
   // Alerts the delegate that an enrollment has been requested.
   void NotifyEnrollmentRequested(
@@ -83,11 +83,11 @@ class CryptAuthEnrollmentScheduler {
  private:
   Delegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(CryptAuthEnrollmentScheduler);
+  DISALLOW_COPY_AND_ASSIGN(CryptAuthScheduler);
 };
 
 }  // namespace device_sync
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_SCHEDULER_H_
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_SCHEDULER_H_

@@ -15,9 +15,9 @@
 #include "base/time/default_clock.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_result.h"
-#include "chromeos/services/device_sync/cryptauth_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 
@@ -67,10 +67,9 @@ class CryptAuthV2Enroller;
 //  4) If the enrollment is no longer valid--due for a refresh, for
 //     example--use PERIODIC.
 //  5) As a last resort, use INVOCATION_REASON_UNSPECIFIED.
-class CryptAuthV2EnrollmentManagerImpl
-    : public CryptAuthEnrollmentManager,
-      public CryptAuthEnrollmentScheduler::Delegate,
-      public CryptAuthGCMManager::Observer {
+class CryptAuthV2EnrollmentManagerImpl : public CryptAuthEnrollmentManager,
+                                         public CryptAuthScheduler::Delegate,
+                                         public CryptAuthGCMManager::Observer {
  public:
   class Factory {
    public:
@@ -180,7 +179,7 @@ class CryptAuthV2EnrollmentManagerImpl
   std::unique_ptr<base::OneShotTimer> timer_;
 
   State state_ = State::kIdle;
-  std::unique_ptr<CryptAuthEnrollmentScheduler> scheduler_;
+  std::unique_ptr<CryptAuthScheduler> scheduler_;
   std::unique_ptr<CryptAuthV2Enroller> enroller_;
 
   // Only non-null while an enrollment attempt is active. The invocation reason

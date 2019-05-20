@@ -11,7 +11,7 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/services/device_sync/persistent_enrollment_scheduler.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
 
 namespace chromeos {
 
@@ -39,17 +39,17 @@ void NetworkAwareEnrollmentScheduler::Factory::SetFactoryForTesting(
 
 NetworkAwareEnrollmentScheduler::Factory::~Factory() = default;
 
-std::unique_ptr<CryptAuthEnrollmentScheduler>
+std::unique_ptr<CryptAuthScheduler>
 NetworkAwareEnrollmentScheduler::Factory::BuildInstance(
-    CryptAuthEnrollmentScheduler::Delegate* delegate,
+    CryptAuthScheduler::Delegate* delegate,
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler) {
   std::unique_ptr<NetworkAwareEnrollmentScheduler> network_aware_scheduler =
       base::WrapUnique(
           new NetworkAwareEnrollmentScheduler(delegate, network_state_handler));
 
-  std::unique_ptr<CryptAuthEnrollmentScheduler> network_unaware_scheduler =
-      PersistentEnrollmentScheduler::Factory::Get()->BuildInstance(
+  std::unique_ptr<CryptAuthScheduler> network_unaware_scheduler =
+      CryptAuthSchedulerImpl::Factory::Get()->BuildInstance(
           network_aware_scheduler.get(), pref_service);
 
   network_aware_scheduler->network_unaware_scheduler_ =
@@ -59,9 +59,9 @@ NetworkAwareEnrollmentScheduler::Factory::BuildInstance(
 }
 
 NetworkAwareEnrollmentScheduler::NetworkAwareEnrollmentScheduler(
-    CryptAuthEnrollmentScheduler::Delegate* delegate,
+    CryptAuthScheduler::Delegate* delegate,
     NetworkStateHandler* network_state_handler)
-    : CryptAuthEnrollmentScheduler(delegate),
+    : CryptAuthScheduler(delegate),
       network_state_handler_(network_state_handler) {
   DCHECK(network_state_handler_);
   network_state_handler_->AddObserver(this, FROM_HERE);

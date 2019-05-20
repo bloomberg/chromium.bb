@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/device_sync/persistent_enrollment_scheduler.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
 
 #include <memory>
 #include <string>
@@ -15,7 +15,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/services/device_sync/fake_cryptauth_enrollment_scheduler.h"
+#include "chromeos/services/device_sync/fake_cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,9 +56,9 @@ std::string ClientDirectiveToPrefString(
 
 }  // namespace
 
-class DeviceSyncPersistentEnrollmentSchedulerTest : public testing::Test {
+class DeviceSyncCryptAuthSchedulerImplTest : public testing::Test {
  protected:
-  DeviceSyncPersistentEnrollmentSchedulerTest() {
+  DeviceSyncCryptAuthSchedulerImplTest() {
     fake_client_directive_.mutable_policy_reference()->set_name(
         kFakePolicyName);
     fake_client_directive_.mutable_policy_reference()->set_version(
@@ -70,10 +70,10 @@ class DeviceSyncPersistentEnrollmentSchedulerTest : public testing::Test {
     fake_client_directive_.set_retry_attempts(kFakeMaxImmediateRetries);
   }
 
-  ~DeviceSyncPersistentEnrollmentSchedulerTest() override = default;
+  ~DeviceSyncCryptAuthSchedulerImplTest() override = default;
 
   void SetUp() override {
-    PersistentEnrollmentScheduler::RegisterPrefs(pref_service_.registry());
+    CryptAuthSchedulerImpl::RegisterPrefs(pref_service_.registry());
   }
 
   void CreateScheduler() {
@@ -85,7 +85,7 @@ class DeviceSyncPersistentEnrollmentSchedulerTest : public testing::Test {
 
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
-    scheduler_ = PersistentEnrollmentScheduler::Factory::Get()->BuildInstance(
+    scheduler_ = CryptAuthSchedulerImpl::Factory::Get()->BuildInstance(
         &fake_delegate_, &pref_service_, &test_clock_, std::move(mock_timer),
         test_task_runner);
 
@@ -126,9 +126,7 @@ class DeviceSyncPersistentEnrollmentSchedulerTest : public testing::Test {
         expected_time);
   }
 
-  FakeCryptAuthEnrollmentSchedulerDelegate* delegate() {
-    return &fake_delegate_;
-  }
+  FakeCryptAuthSchedulerDelegate* delegate() { return &fake_delegate_; }
 
   PrefService* pref_service() { return &pref_service_; }
 
@@ -136,27 +134,26 @@ class DeviceSyncPersistentEnrollmentSchedulerTest : public testing::Test {
 
   base::MockOneShotTimer* timer() { return mock_timer_; }
 
-  CryptAuthEnrollmentScheduler* scheduler() { return scheduler_.get(); }
+  CryptAuthScheduler* scheduler() { return scheduler_.get(); }
 
   const cryptauthv2::ClientDirective& fake_client_directive() {
     return fake_client_directive_;
   }
 
  private:
-  FakeCryptAuthEnrollmentSchedulerDelegate fake_delegate_;
+  FakeCryptAuthSchedulerDelegate fake_delegate_;
   TestingPrefServiceSimple pref_service_;
   base::SimpleTestClock test_clock_;
   base::MockOneShotTimer* mock_timer_;
 
   cryptauthv2::ClientDirective fake_client_directive_;
 
-  std::unique_ptr<CryptAuthEnrollmentScheduler> scheduler_;
+  std::unique_ptr<CryptAuthScheduler> scheduler_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeviceSyncPersistentEnrollmentSchedulerTest);
+  DISALLOW_COPY_AND_ASSIGN(DeviceSyncCryptAuthSchedulerImplTest);
 };
 
-TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
-       HandleSuccessfulEnrollmentResult) {
+TEST_F(DeviceSyncCryptAuthSchedulerImplTest, HandleSuccessfulEnrollmentResult) {
   clock()->SetNow(kFakeTimeNow);
   CreateScheduler();
 
@@ -196,7 +193,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
   VerifyReceivedPolicyReference(2, fake_client_directive().policy_reference());
 }
 
-TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
+TEST_F(DeviceSyncCryptAuthSchedulerImplTest,
        NotDueForRefresh_RequestImmediateEnrollment) {
   pref_service()->SetString(
       prefs::kCryptAuthEnrollmentSchedulerClientDirective,
@@ -231,8 +228,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
             delegate()->policy_references_from_enrollment_requests().size());
 }
 
-TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
-       DueForRefreshBeforeConstructed) {
+TEST_F(DeviceSyncCryptAuthSchedulerImplTest, DueForRefreshBeforeConstructed) {
   pref_service()->SetString(
       prefs::kCryptAuthEnrollmentSchedulerClientDirective,
       ClientDirectiveToPrefString(fake_client_directive()));
@@ -253,7 +249,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
             scheduler()->GetTimeToNextEnrollmentRequest());
 }
 
-TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest, HandleFailures) {
+TEST_F(DeviceSyncCryptAuthSchedulerImplTest, HandleFailures) {
   clock()->SetNow(kFakeTimeNow);
   CreateScheduler();
 
@@ -323,7 +319,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest, HandleFailures) {
   VerifyLastEnrollmentAttemptTimePref(kFakeTimeLaterAfterRetryPeriod);
 }
 
-TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest, HandlePersistedFailures) {
+TEST_F(DeviceSyncCryptAuthSchedulerImplTest, HandlePersistedFailures) {
   // Seed the preferences to simulate the previous scheduler using all of its
   // immediate retry attempts and making 10 periodic retry attempts.
   pref_service()->SetString(

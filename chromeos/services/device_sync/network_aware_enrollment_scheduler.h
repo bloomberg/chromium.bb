@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/services/device_sync/cryptauth_enrollment_scheduler.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler.h"
 
 class PrefService;
 
@@ -20,7 +20,7 @@ class NetworkStateHandler;
 
 namespace device_sync {
 
-// CryptAuthEnrollmentScheduler implementation which ensures that enrollment is
+// CryptAuthScheduler implementation which ensures that enrollment is
 // only requested while online. This class owns and serves as a delegate to a
 // network-unaware scheduler which requests enrollment without checking for
 // network connectivity. When this class receives a request from the network-
@@ -28,18 +28,17 @@ namespace device_sync {
 //   *Requests enrollment immediately if there is network connectivity, or
 //   *Caches the request until network connectivity has been attained, then
 //    requests enrollment.
-class NetworkAwareEnrollmentScheduler
-    : public CryptAuthEnrollmentScheduler,
-      public CryptAuthEnrollmentScheduler::Delegate,
-      public NetworkStateHandlerObserver {
+class NetworkAwareEnrollmentScheduler : public CryptAuthScheduler,
+                                        public CryptAuthScheduler::Delegate,
+                                        public NetworkStateHandlerObserver {
  public:
   class Factory {
    public:
     static Factory* Get();
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
-    virtual std::unique_ptr<CryptAuthEnrollmentScheduler> BuildInstance(
-        CryptAuthEnrollmentScheduler::Delegate* delegate,
+    virtual std::unique_ptr<CryptAuthScheduler> BuildInstance(
+        CryptAuthScheduler::Delegate* delegate,
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler =
             NetworkHandler::Get()->network_state_handler());
@@ -51,11 +50,10 @@ class NetworkAwareEnrollmentScheduler
   ~NetworkAwareEnrollmentScheduler() override;
 
  private:
-  NetworkAwareEnrollmentScheduler(
-      CryptAuthEnrollmentScheduler::Delegate* delegate,
-      NetworkStateHandler* network_state_handler);
+  NetworkAwareEnrollmentScheduler(CryptAuthScheduler::Delegate* delegate,
+                                  NetworkStateHandler* network_state_handler);
 
-  // CryptAuthEnrollmentScheduler:
+  // CryptAuthScheduler:
   void RequestEnrollmentNow() override;
   void HandleEnrollmentResult(
       const CryptAuthEnrollmentResult& enrollment_result) override;
@@ -65,7 +63,7 @@ class NetworkAwareEnrollmentScheduler
   bool IsWaitingForEnrollmentResult() const override;
   size_t GetNumConsecutiveFailures() const override;
 
-  // CryptAuthEnrollmentScheduler::Delegate:
+  // CryptAuthScheduler::Delegate:
   void OnEnrollmentRequested(const base::Optional<cryptauthv2::PolicyReference>&
                                  client_directive_policy_reference) override;
 
@@ -76,7 +74,7 @@ class NetworkAwareEnrollmentScheduler
   bool DoesMachineHaveNetworkConnectivity();
 
   NetworkStateHandler* network_state_handler_;
-  std::unique_ptr<CryptAuthEnrollmentScheduler> network_unaware_scheduler_;
+  std::unique_ptr<CryptAuthScheduler> network_unaware_scheduler_;
 
   // The pending enrollment request, if it exists. If OnEnrollmentRequested() is
   // invoked while offline, this class stores the optional PolicyReference

@@ -20,14 +20,14 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_result.h"
-#include "chromeos/services/device_sync/cryptauth_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
-#include "chromeos/services/device_sync/fake_cryptauth_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/fake_cryptauth_gcm_manager.h"
+#include "chromeos/services/device_sync/fake_cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/fake_cryptauth_v2_enroller.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
 #include "chromeos/services/device_sync/network_aware_enrollment_scheduler.h"
@@ -71,21 +71,21 @@ const cryptauthv2::PolicyReference& GetClientDirectivePolicyReferenceForTest() {
   return *policy_reference;
 }
 
-// A child of FakeCryptAuthEnrollmentScheduler that sets scheduler parameters
+// A child of FakeCryptAuthScheduler that sets scheduler parameters
 // based on the latest enrollment result.
 class FakeCryptAuthEnrollmentSchedulerWithResultHandling
-    : public FakeCryptAuthEnrollmentScheduler {
+    : public FakeCryptAuthScheduler {
  public:
   FakeCryptAuthEnrollmentSchedulerWithResultHandling(
-      CryptAuthEnrollmentScheduler::Delegate* delegate,
+      CryptAuthScheduler::Delegate* delegate,
       base::Clock* clock)
-      : FakeCryptAuthEnrollmentScheduler(delegate), clock_(clock) {}
+      : FakeCryptAuthScheduler(delegate), clock_(clock) {}
 
   ~FakeCryptAuthEnrollmentSchedulerWithResultHandling() override = default;
 
   void HandleEnrollmentResult(
       const CryptAuthEnrollmentResult& enrollment_result) override {
-    FakeCryptAuthEnrollmentScheduler::HandleEnrollmentResult(enrollment_result);
+    FakeCryptAuthScheduler::HandleEnrollmentResult(enrollment_result);
 
     if (handled_enrollment_results().back().IsSuccess()) {
       set_num_consecutive_failures(0);
@@ -121,8 +121,8 @@ class FakeNetworkAwareEnrollmentSchedulerFactory
 
  private:
   // NetworkAwareEnrollmentScheduler::Factory
-  std::unique_ptr<CryptAuthEnrollmentScheduler> BuildInstance(
-      CryptAuthEnrollmentScheduler::Delegate* delegate,
+  std::unique_ptr<CryptAuthScheduler> BuildInstance(
+      CryptAuthScheduler::Delegate* delegate,
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler) override {
     EXPECT_EQ(expected_pref_service_, pref_service);

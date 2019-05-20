@@ -15,8 +15,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
-#include "chromeos/services/device_sync/fake_cryptauth_enrollment_scheduler.h"
-#include "chromeos/services/device_sync/persistent_enrollment_scheduler.h"
+#include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
+#include "chromeos/services/device_sync/fake_cryptauth_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -30,32 +30,32 @@ const char kWifiServiceGuid[] = "wifiGuid";
 
 enum class NetworkConnectionStatus { kDisconnected, kConnecting, kConnected };
 
-class FakePersistentEnrollmentSchedulerFactory
-    : public PersistentEnrollmentScheduler::Factory {
+class FakeCryptAuthSchedulerImplFactory
+    : public CryptAuthSchedulerImpl::Factory {
  public:
-  FakePersistentEnrollmentSchedulerFactory() = default;
-  ~FakePersistentEnrollmentSchedulerFactory() override = default;
+  FakeCryptAuthSchedulerImplFactory() = default;
+  ~FakeCryptAuthSchedulerImplFactory() override = default;
 
-  FakeCryptAuthEnrollmentScheduler* instance() { return instance_; }
+  FakeCryptAuthScheduler* instance() { return instance_; }
 
  private:
-  // PersistentEnrollmentScheduler::Factory:
-  std::unique_ptr<CryptAuthEnrollmentScheduler> BuildInstance(
-      CryptAuthEnrollmentScheduler::Delegate* delegate,
+  // CryptAuthSchedulerImpl::Factory:
+  std::unique_ptr<CryptAuthScheduler> BuildInstance(
+      CryptAuthScheduler::Delegate* delegate,
       PrefService* pref_service,
       base::Clock* clock,
       std::unique_ptr<base::OneShotTimer> timer,
       scoped_refptr<base::TaskRunner> task_runner) override {
     EXPECT_FALSE(instance_);
     auto fake_network_unaware_scheduler =
-        std::make_unique<FakeCryptAuthEnrollmentScheduler>(delegate);
+        std::make_unique<FakeCryptAuthScheduler>(delegate);
     instance_ = fake_network_unaware_scheduler.get();
     return std::move(fake_network_unaware_scheduler);
   }
 
-  FakeCryptAuthEnrollmentScheduler* instance_ = nullptr;
+  FakeCryptAuthScheduler* instance_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(FakePersistentEnrollmentSchedulerFactory);
+  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthSchedulerImplFactory);
 };
 
 }  // namespace
@@ -66,20 +66,19 @@ class DeviceSyncNetworkAwareEnrollmentSchedulerTest : public testing::Test {
   ~DeviceSyncNetworkAwareEnrollmentSchedulerTest() override = default;
 
   void SetUp() override {
-    fake_persistent_enrollment_scheduler_factory_ =
-        std::make_unique<FakePersistentEnrollmentSchedulerFactory>();
-    PersistentEnrollmentScheduler::Factory::SetFactoryForTesting(
-        fake_persistent_enrollment_scheduler_factory_.get());
+    fake_cryptauth_scheduler_impl_factory_ =
+        std::make_unique<FakeCryptAuthSchedulerImplFactory>();
+    CryptAuthSchedulerImpl::Factory::SetFactoryForTesting(
+        fake_cryptauth_scheduler_impl_factory_.get());
 
-    fake_delegate_ =
-        std::make_unique<FakeCryptAuthEnrollmentSchedulerDelegate>();
+    fake_delegate_ = std::make_unique<FakeCryptAuthSchedulerDelegate>();
     scheduler_ = NetworkAwareEnrollmentScheduler::Factory::Get()->BuildInstance(
         fake_delegate_.get(), nullptr /* pref_service */,
         helper_.network_state_handler());
   }
 
   void TearDown() override {
-    PersistentEnrollmentScheduler::Factory::SetFactoryForTesting(nullptr);
+    CryptAuthSchedulerImpl::Factory::SetFactoryForTesting(nullptr);
   }
 
   void AddDisconnectedWifiNetwork() {
@@ -129,21 +128,21 @@ class DeviceSyncNetworkAwareEnrollmentSchedulerTest : public testing::Test {
     return fake_delegate_->policy_references_from_enrollment_requests();
   }
 
-  CryptAuthEnrollmentScheduler* scheduler() { return scheduler_.get(); }
+  CryptAuthScheduler* scheduler() { return scheduler_.get(); }
 
-  FakeCryptAuthEnrollmentScheduler* fake_network_unaware_scheduler() {
-    return fake_persistent_enrollment_scheduler_factory_->instance();
+  FakeCryptAuthScheduler* fake_network_unaware_scheduler() {
+    return fake_cryptauth_scheduler_impl_factory_->instance();
   }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
 
-  std::unique_ptr<FakePersistentEnrollmentSchedulerFactory>
-      fake_persistent_enrollment_scheduler_factory_;
+  std::unique_ptr<FakeCryptAuthSchedulerImplFactory>
+      fake_cryptauth_scheduler_impl_factory_;
 
-  std::unique_ptr<FakeCryptAuthEnrollmentSchedulerDelegate> fake_delegate_;
-  std::unique_ptr<CryptAuthEnrollmentScheduler> scheduler_;
+  std::unique_ptr<FakeCryptAuthSchedulerDelegate> fake_delegate_;
+  std::unique_ptr<CryptAuthScheduler> scheduler_;
 
   std::string wifi_network_service_path_;
 
