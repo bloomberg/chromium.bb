@@ -56,7 +56,8 @@ int main(int argc, char* argv[]) {
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
 
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   CHECK(logging::InitLogging(settings));
 
   if (line->HasSwitch("h") || line->HasSwitch("help")) {

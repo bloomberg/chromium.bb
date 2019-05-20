@@ -33,7 +33,8 @@ struct Env {
     // Re-initialize logging in order to pick up any command-line parameters
     // (such as --v=1 to enable verbose logging).
     logging::LoggingSettings settings;
-    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    settings.logging_dest =
+        logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
     logging::InitLogging(settings);
 
     browser_process = std::make_unique<viz::FuzzerBrowserProcess>(png_dir_path);

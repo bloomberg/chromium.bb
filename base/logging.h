@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 #include <sstream>
 #include <string>
@@ -169,22 +170,30 @@ typedef base::char16 PathChar;
 typedef char PathChar;
 #endif
 
-// Where to record logging output? A flat file and/or system debug log
-// via OutputDebugString.
-enum LoggingDestination {
+// A bitmask of potential logging destinations.
+using LoggingDestination = uint32_t;
+// Specifies where logs will be written. Multiple destinations can be specified
+// with bitwise OR.
+// Unless destination is LOG_NONE, all logs with severity ERROR and above will
+// be written to stderr in addition to the specified destination.
+enum : uint32_t {
   LOG_NONE                = 0,
   LOG_TO_FILE             = 1 << 0,
   LOG_TO_SYSTEM_DEBUG_LOG = 1 << 1,
+  LOG_TO_STDERR           = 1 << 2,
 
-  LOG_TO_ALL = LOG_TO_FILE | LOG_TO_SYSTEM_DEBUG_LOG,
+  LOG_TO_ALL = LOG_TO_FILE | LOG_TO_SYSTEM_DEBUG_LOG | LOG_TO_STDERR,
 
-  // On Windows, use a file next to the exe; on POSIX platforms, where
-  // it may not even be possible to locate the executable on disk, use
-  // stderr.
-#if defined(OS_WIN)
-  LOG_DEFAULT = LOG_TO_FILE,
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+// On Windows, use a file next to the exe.
+// On POSIX platforms, where it may not even be possible to locate the
+// executable on disk, use stderr.
+// On Fuchsia, use the Fuchsia logging service.
+#if defined(OS_FUCHSIA) || defined(OS_NACL)
   LOG_DEFAULT = LOG_TO_SYSTEM_DEBUG_LOG,
+#elif defined(OS_WIN)
+  LOG_DEFAULT = LOG_TO_FILE,
+#elif defined(OS_POSIX)
+  LOG_DEFAULT = LOG_TO_SYSTEM_DEBUG_LOG | LOG_TO_STDERR,
 #endif
 };
 
@@ -210,7 +219,9 @@ struct BASE_EXPORT LoggingSettings {
   //  delete_old:   APPEND_TO_OLD_LOG_FILE
   LoggingSettings();
 
-  LoggingDestination logging_dest;
+  // Equivalent to logging destination enum, but allows for multiple
+  // destinations.
+  uint32_t logging_dest;
 
   // The three settings below have an effect only when LOG_TO_FILE is
   // set in |logging_dest|.

@@ -24,7 +24,8 @@ void CommonProcessInitialization(int argc, char** argv) {
 
   base::CommandLine::Init(argc, argv);
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
 
   CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));

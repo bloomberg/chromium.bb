@@ -137,7 +137,9 @@ const char* log_severity_name(int severity) {
 
 int g_min_log_level = 0;
 
-LoggingDestination g_logging_destination = LOG_DEFAULT;
+// Specifies the process' logging sink(s), represented as a combination of
+// LoggingDestination values joined by bitwise OR.
+int g_logging_destination = LOG_DEFAULT;
 
 // For LOG_ERROR and above, always print to stderr.
 const int kAlwaysPrintErrorLevel = LOG_ERROR;
@@ -413,8 +415,9 @@ LoggingSettings::LoggingSettings()
 
 bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 #if defined(OS_NACL)
-  // Can log only to the system debug log.
-  CHECK_EQ(settings.logging_dest & ~LOG_TO_SYSTEM_DEBUG_LOG, 0);
+  // Can log only to the system debug log and stderr.
+  CHECK_EQ(settings.logging_dest & ~(LOG_TO_SYSTEM_DEBUG_LOG | LOG_TO_STDERR),
+           0u);
 #endif
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Don't bother initializing |g_vlog_info| unless we use one of the
@@ -838,17 +841,17 @@ LogMessage::~LogMessage() {
                     str_newline.c_str());
     }
 #endif  // OS_FUCHSIA
-    ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
-    fflush(stderr);
-  } else if (severity_ >= kAlwaysPrintErrorLevel) {
-    // When we're only outputting to a log file, above a certain log level, we
-    // should still output to stderr so that we can better detect and diagnose
+  }
+
+  if ((g_logging_destination & LOG_TO_STDERR) != 0 ||
+      severity_ >= kAlwaysPrintErrorLevel) {
+    // Write logs with destination LOG_TO_STDERR to stderr. Also output to
+    // stderr for logs above a certain log level to better detect and diagnose
     // problems with unit tests, especially on the buildbots.
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
     fflush(stderr);
   }
 
-  // write to log file
   if ((g_logging_destination & LOG_TO_FILE) != 0) {
     // We can have multiple threads and/or processes, so try to prevent them
     // from clobbering each other's writes.

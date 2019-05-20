@@ -15,7 +15,8 @@ void InitLogging() {
   logging::SetMinLogLevel(logging::LOG_FATAL);
 
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   settings.log_file = nullptr;
   logging::InitLogging(settings);
 }

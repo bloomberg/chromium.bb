@@ -10,7 +10,8 @@
 
 void ServiceMain(service_manager::mojom::ServiceRequest request) {
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
 
   base::MessageLoop message_loop;

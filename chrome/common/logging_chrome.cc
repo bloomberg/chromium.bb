@@ -146,7 +146,7 @@ LoggingDestination DetermineLoggingDestination(
     // Let --enable-logging=stderr force only stderr, particularly useful for
     // non-debug builds where otherwise you can't get logs to stderr at all.
     if (command_line.GetSwitchValueASCII(switches::kEnableLogging) == "stderr")
-      log_mode = LOG_TO_SYSTEM_DEBUG_LOG;
+      log_mode = LOG_TO_SYSTEM_DEBUG_LOG | LOG_TO_STDERR;
     else
       log_mode = kDefaultLoggingMode;
   } else {

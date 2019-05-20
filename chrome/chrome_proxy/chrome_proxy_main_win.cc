@@ -41,7 +41,8 @@ int WINAPI wWinMain(HINSTANCE instance,
   base::CommandLine::Init(0, nullptr);
 
   logging::LoggingSettings logging_settings;
-  logging_settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging_settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(logging_settings);
 
   base::FilePath chrome_dir;

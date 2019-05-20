@@ -218,6 +218,22 @@ TEST_F(LoggingTest, LoggingIsLazyByDestination) {
   LOG(ERROR) << mock_log_source_error.Log();
 }
 
+// Check that logging to stderr is gated on LOG_TO_STDERR.
+TEST_F(LoggingTest, LogToStdErrFlag) {
+  LoggingSettings settings;
+  settings.logging_dest = LOG_NONE;
+  InitLogging(settings);
+  MockLogSource mock_log_source;
+  EXPECT_CALL(mock_log_source, Log()).Times(0);
+  LOG(INFO) << mock_log_source.Log();
+
+  settings.logging_dest = LOG_TO_STDERR;
+  MockLogSource mock_log_source_stderr;
+  InitLogging(settings);
+  EXPECT_CALL(mock_log_source_stderr, Log()).Times(1).WillOnce(Return("foo"));
+  LOG(INFO) << mock_log_source_stderr.Log();
+}
+
 // Official builds have CHECKs directly call BreakDebugger.
 #if !defined(OFFICIAL_BUILD)
 

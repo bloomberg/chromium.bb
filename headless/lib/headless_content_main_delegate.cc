@@ -4,6 +4,7 @@
 
 #include "headless/lib/headless_content_main_delegate.h"
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 
@@ -178,7 +179,7 @@ void HeadlessContentMainDelegate::InitLogging(
   base::FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
   if (command_line.GetSwitchValueASCII(::switches::kEnableLogging) ==
       "stderr") {
-    log_mode = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    log_mode = logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   } else {
     base::FilePath custom_filename(
         command_line.GetSwitchValuePath(::switches::kEnableLogging));

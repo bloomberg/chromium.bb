@@ -297,7 +297,8 @@ bool InitLogging() {
   logging::SetLogMessageHandler(&HandleLogMessage);
 
   logging::LoggingSettings logging_settings;
-  logging_settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging_settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   bool res = logging::InitLogging(logging_settings);
   if (cmd_line->HasSwitch("log-path") && res) {
     VLOG(0) << "Starting ChromeDriver " << kChromeDriverVersion;
