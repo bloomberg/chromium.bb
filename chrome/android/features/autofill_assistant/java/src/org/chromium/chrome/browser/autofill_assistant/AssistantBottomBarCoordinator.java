@@ -169,6 +169,7 @@ class AssistantBottomBarCoordinator
         mInfoBoxCoordinator = null;
         mPaymentRequestCoordinator.destroy();
         mPaymentRequestCoordinator = null;
+        mHeaderCoordinator.destroy();
     }
 
     /**
