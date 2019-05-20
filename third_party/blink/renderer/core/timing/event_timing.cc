@@ -32,16 +32,17 @@ bool IsEventTypeForEventTiming(const Event& event) {
 }
 
 bool ShouldReportForEventTiming(WindowPerformance* performance) {
+  if (!performance->FirstInputDetected())
+    return true;
+
   if (!RuntimeEnabledFeatures::EventTimingEnabled(
           performance->GetExecutionContext()))
     return false;
 
+  if (performance->HasObserverFor(PerformanceEntry::kEvent))
+    return true;
   if (performance->ShouldBufferEntries() &&
       !performance->IsEventTimingBufferFull()) {
-    return true;
-  }
-  if (performance->HasObserverFor(PerformanceEntry::kEvent) ||
-      !performance->FirstInputDetected()) {
     return true;
   }
 
@@ -91,8 +92,6 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
 }
 
 void EventTiming::DidDispatchEvent(const Event& event) {
-  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(
-      performance_->GetExecutionContext()));
   performance_->RegisterEventTiming(event.type(), event_timestamp_,
                                     processing_start_, CurrentTimeTicks(),
                                     event.cancelable());

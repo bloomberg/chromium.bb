@@ -632,6 +632,7 @@ void Performance::AddElementTimingBuffer(PerformanceElementTiming& entry) {
 }
 
 void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
+  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
   event_timing_buffer_.push_back(&entry);
 
   if (IsEventTimingBufferFull())
@@ -913,6 +914,8 @@ void Performance::UpdatePerformanceObserverFilterOptions() {
 }
 
 void Performance::NotifyObserversOfEntry(PerformanceEntry& entry) const {
+  DCHECK(entry.EntryTypeEnum() != PerformanceEntry::kEvent ||
+         RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
   bool observer_found = false;
   for (auto& observer : observers_) {
     if (observer->FilterOptions() & entry.EntryTypeEnum()) {
