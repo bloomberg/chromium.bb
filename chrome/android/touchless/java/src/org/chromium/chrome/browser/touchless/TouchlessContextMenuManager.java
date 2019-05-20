@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
@@ -43,16 +43,18 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         Bitmap getIconBitmap();
     }
 
-    private final Context mContext;
+    private final Activity mActivity;
+    private final ModalDialogManager mDialogManager;
     private PropertyModel mTouchlessMenuModel;
     private ModalDialogManager mModalDialogManager;
 
-    public TouchlessContextMenuManager(Context context,
+    public TouchlessContextMenuManager(Activity activity, ModalDialogManager dialogManager,
             NativePageNavigationDelegate navigationDelegate,
             TouchEnabledDelegate touchEnabledDelegate, Runnable closeContextMenuCallback,
             String userActionPrefix) {
         super(navigationDelegate, touchEnabledDelegate, closeContextMenuCallback, userActionPrefix);
-        mContext = context;
+        mActivity = activity;
+        mDialogManager = dialogManager;
     }
 
     /**
@@ -100,8 +102,9 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         if (itemId == ContextMenuItemId.ADD_TO_MY_APPS) {
             Delegate touchlessDelegate = (Delegate) delegate;
             TouchlessAddToHomescreenManager touchlessAddToHomescreenManager =
-                    new TouchlessAddToHomescreenManager(mContext, touchlessDelegate.getUrl(),
-                            touchlessDelegate.getTitle(), touchlessDelegate.getIconBitmap());
+                    new TouchlessAddToHomescreenManager(mActivity, mDialogManager,
+                            touchlessDelegate.getUrl(), touchlessDelegate.getTitle(),
+                            touchlessDelegate.getIconBitmap());
             touchlessAddToHomescreenManager.start();
             return false;
         }
@@ -143,9 +146,9 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
      */
     private PropertyModel buildMenuItem(@ContextMenuItemId int itemId, OnClickListener listener) {
         return new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                .with(DialogListItemProperties.TEXT, mContext.getResources(),
+                .with(DialogListItemProperties.TEXT, mActivity.getResources(),
                         getResourceIdForMenuItem(itemId))
-                .with(DialogListItemProperties.ICON, mContext, getIconIdForMenuItem(itemId))
+                .with(DialogListItemProperties.ICON, mActivity, getIconIdForMenuItem(itemId))
                 .with(DialogListItemProperties.CLICK_LISTENER, listener)
                 .build();
     }

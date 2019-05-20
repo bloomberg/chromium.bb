@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.content.Context;
 import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
@@ -20,7 +19,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
  */
 public class TouchlessExploreSitesPage extends ExploreSitesPage {
     private final ModalDialogManager mModalDialogManager;
-    private Context mContext;
+    private ChromeActivity mActivity;
     private TouchlessContextMenuManager mTouchlessContextMenuManager;
 
     /**
@@ -33,14 +32,15 @@ public class TouchlessExploreSitesPage extends ExploreSitesPage {
 
     @Override
     protected void initialize(ChromeActivity activity, final NativePageHost host) {
-        mContext = activity;
+        mActivity = activity;
         super.initialize(activity, host);
     }
 
     @Override
     protected ContextMenuManager createContextMenuManager(NativePageNavigationDelegate navDelegate,
             Runnable closeContextMenuCallback, String contextMenuUserActionPrefix) {
-        mTouchlessContextMenuManager = new TouchlessContextMenuManager(mContext, navDelegate,
+        mTouchlessContextMenuManager = new TouchlessContextMenuManager(mActivity,
+                mActivity.getModalDialogManager(), navDelegate,
                 (enabled) -> {}, closeContextMenuCallback, contextMenuUserActionPrefix);
         return mTouchlessContextMenuManager;
     }
