@@ -19,20 +19,14 @@ var volumeManagerFactory = (() => {
    * Returns the VolumeManager instance asynchronously. If it has not been
    * created or is under initialization, it will waits for the finish of the
    * initialization.
-   * @param {function(VolumeManager)=} opt_callback Called with the
-   *     VolumeManager instance. TODO(hirono): Remove the callback and use
-   *     Promise instead.
    * @return {!Promise<!VolumeManager>} Promise to be fulfilled with the volume
    *     manager.
    */
-  function getInstance(opt_callback) {
+  function getInstance() {
     if (!instancePromise) {
       instance = new VolumeManagerImpl();
       instancePromise =
           new Promise(fulfill => instance.initialize(() => fulfill(instance)));
-    }
-    if (opt_callback) {
-      instancePromise.then(opt_callback);
     }
     return instancePromise;
   }

@@ -105,11 +105,14 @@ class FilteredVolumeManager extends cr.EventTarget {
       });
     }
 
-    queue.run(callNextStep => {
-      this.backgroundPage_.volumeManagerFactory.getInstance(volumeManager => {
+    queue.run(async (callNextStep) => {
+      try {
+        const volumeManager =
+            await this.backgroundPage_.volumeManagerFactory.getInstance();
         this.onReady_(volumeManager);
+      } finally {
         callNextStep();
-      });
+      }
     });
   }
 
