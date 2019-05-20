@@ -500,6 +500,13 @@ const base::Feature kAudioFocusDuckFlash {
 #endif
 };
 
+// Only affects Android. Suspends a media session when audio focus is lost; when
+// this setting is disabled, an Android media session will not be suspended when
+// Audio focus is lost. This is used by Cast which sometimes needs to drive
+// multiple media sessions.
+const base::Feature kAudioFocusLossSuspendMediaSession{
+    "AudioFocusMediaSession", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the internal Media Session logic without enabling the Media Session
 // service.
 const base::Feature kInternalMediaSession {
