@@ -22,7 +22,6 @@ import urllib2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
-from chromite.lib import osutils
 from chromite.lib import parallel
 
 
@@ -119,20 +118,6 @@ class PackageIndex(object):
         d[k] = v
     return d
 
-  def _FormatPkgIndex(self, entry):
-    """Formats lines for _WritePkgIndex.
-
-    Args:
-      entry (dict): The key/value pairs to write.
-    """
-    lines = ['%s: %s' % (k, v) for k, v in sorted(entry.items()) if v]
-    if lines:
-      # Temporary means of simplifying formatting and ensuring a blank line
-      # after each entry. This whole system needs to be cleaned up.
-      lines.extend([''])
-
-    return lines
-
   def _WritePkgIndex(self, pkgfile, entry):
     """Write header entry or package entry to packages file.
 
@@ -143,8 +128,8 @@ class PackageIndex(object):
       pkgfile: A python file object.
       entry: A dictionary of the key/value pairs to write.
     """
-    lines = self._FormatPkgIndex(entry)
-    pkgfile.write('%s' % '\n'.join(lines))
+    lines = ['%s: %s' % (k, v) for k, v in sorted(entry.items()) if v]
+    pkgfile.write('%s\n\n' % '\n'.join(lines))
 
   def _ReadHeader(self, pkgfile):
     """Read header of packages file.
@@ -268,13 +253,19 @@ class PackageIndex(object):
     Args:
       pkgfile: A python file object.
     """
-    self._ModifiedHeaderUpdate()
+    if self.modified:
+      self.header['TIMESTAMP'] = str(long(time.time()))
+      self.header['PACKAGES'] = str(len(self.packages))
+      self.modified = False
     self._WritePkgIndex(pkgfile, self.header)
     for metadata in sorted(self.packages, key=operator.itemgetter('CPV')):
       self._WritePkgIndex(pkgfile, metadata)
 
   def WriteToNamedTemporaryFile(self):
     """Write pkgindex to a temporary file.
+
+    Args:
+      pkgindex: The PackageIndex object.
 
     Returns:
       A temporary file containing the packages from pkgindex.
@@ -284,21 +275,6 @@ class PackageIndex(object):
     f.flush()
     f.seek(0)
     return f
-
-  def WriteFile(self, file_path, sudo=False):
-    """Like Write, but takes a file path."""
-    self._ModifiedHeaderUpdate()
-    lines = self._FormatPkgIndex(self.header)
-    for metadata in sorted(self.packages, key=operator.itemgetter('CPV')):
-      lines.extend(self._FormatPkgIndex(metadata))
-
-    osutils.WriteFile(file_path, '\n'.join(lines), sudo=sudo)
-
-  def _ModifiedHeaderUpdate(self):
-    if self.modified:
-      self.header['TIMESTAMP'] = str(long(time.time()))
-      self.header['PACKAGES'] = str(len(self.packages))
-      self.modified = False
 
 
 def _RetryUrlOpen(url, tries=3):
