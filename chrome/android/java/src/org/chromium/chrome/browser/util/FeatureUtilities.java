@@ -632,6 +632,7 @@ public class FeatureUtilities {
     /**
      * @return Whether no-touch-mode is enabled.
      */
+    @CalledByNative
     public static boolean isNoTouchModeEnabled() {
         return TouchlessDelegate.TOUCHLESS_MODE_ENABLED;
     }
