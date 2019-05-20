@@ -647,7 +647,7 @@ void PasswordManager::OnPasswordFormSubmitted(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
   if (IsNewFormParsingForSavingEnabled())
-    ProvisionallySaveForm(password_form.form_data, driver);
+    ProvisionallySaveForm(password_form.form_data, driver, false);
 
   ProvisionallySavePassword(password_form, driver);
 }
@@ -683,7 +683,7 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
   }
 
   if (IsNewFormParsingForSavingEnabled())
-    ProvisionallySaveForm(password_form.form_data, driver);
+    ProvisionallySaveForm(password_form.form_data, driver, false);
 
   ProvisionallySavePassword(password_form, driver);
 
@@ -701,10 +701,10 @@ void PasswordManager::ShowManualFallbackForSaving(
       !client_->GetStoreResultFilter()->ShouldSave(password_form))
     return;
 
-  std::unique_ptr<PasswordFormManagerInterface> manager = nullptr;
+  std::unique_ptr<PasswordFormManagerInterface> manager;
   if (IsNewFormParsingForSavingEnabled()) {
     NewPasswordFormManager* matched_manager =
-        ProvisionallySaveForm(password_form.form_data, driver);
+        ProvisionallySaveForm(password_form.form_data, driver, true);
     manager = matched_manager ? matched_manager->Clone() : nullptr;
   } else {
     manager = FindAndCloneMatchedPasswordFormManager(
@@ -915,7 +915,8 @@ NewPasswordFormManager* PasswordManager::CreateFormManager(
 
 NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     const FormData& submitted_form,
-    PasswordManagerDriver* driver) {
+    PasswordManagerDriver* driver,
+    bool is_manual_fallback) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -963,6 +964,12 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
         PasswordManagerMetricsRecorder::NO_MATCHING_FORM, submitted_form.url,
         logger.get());
     matched_manager = CreateFormManager(driver, submitted_form);
+  }
+
+  if (is_manual_fallback && matched_manager->GetFormFetcher()->GetState() ==
+                                FormFetcher::State::WAITING) {
+    // In case of manual fallback, the form manager has to be ready for saving.
+    return nullptr;
   }
 
   if (!matched_manager->ProvisionallySave(submitted_form, driver))

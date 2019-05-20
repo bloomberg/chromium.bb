@@ -463,8 +463,7 @@ class PasswordManagerTest : public testing::Test {
     manager_.reset(new PasswordManager(&client_));
   }
 
-  void TurnOnOnlyNewPassword(
-      base::test::ScopedFeatureList* scoped_feature_list) {
+  void TurnOnOnlyNewParser(base::test::ScopedFeatureList* scoped_feature_list) {
     scoped_feature_list->InitWithFeatures(
         {features::kNewPasswordFormParsing,
          features::kNewPasswordFormParsingForSaving, features::kOnlyNewParser},
@@ -1007,7 +1006,7 @@ TEST_F(PasswordManagerTest, FormSubmit) {
 
 TEST_F(PasswordManagerTest, IsPasswordFieldDetectedOnPage) {
   base::test::ScopedFeatureList scoped_feature_list;
-  TurnOnOnlyNewPassword(&scoped_feature_list);
+  TurnOnOnlyNewParser(&scoped_feature_list);
   PasswordForm form(MakeSimpleForm());
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
@@ -2656,31 +2655,38 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving) {
 // Tests that the manual fallback for saving isn't shown if there is no response
 // from the password storage. When crbug.com/741537 is fixed, change this test.
 TEST_F(PasswordManagerTest, ManualFallbackForSaving_SlowBackend) {
-  std::vector<PasswordForm> observed;
-  PasswordForm form(MakeSimpleForm());
-  observed.push_back(form);
-  PasswordStoreConsumer* store_consumer = nullptr;
-  EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
-      .WillRepeatedly(Return(true));
-  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
-  // the old parser is gone.
-  EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(SaveArg<1>(&store_consumer));
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  for (bool only_new_parser_enabled : {false, true}) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (only_new_parser_enabled)
+      TurnOnOnlyNewParser(&scoped_feature_list);
+    std::vector<PasswordForm> observed;
+    PasswordForm form(MakeSimpleForm());
+    observed.push_back(form);
+    PasswordStoreConsumer* store_consumer = nullptr;
+    EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
+        .WillRepeatedly(Return(true));
+    // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+    // the old parser is gone.
+    EXPECT_CALL(*store_, GetLogins(_, _))
+        .WillRepeatedly(SaveArg<1>(&store_consumer));
+    manager()->OnPasswordFormsParsed(&driver_, observed);
+    manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
-  // There is no response from the store. Don't show the fallback.
-  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, _, _)).Times(0);
-  manager()->ShowManualFallbackForSaving(&driver_, form);
+    // There is no response from the store. Don't show the fallback.
+    EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, _, _)).Times(0);
+    manager()->ShowManualFallbackForSaving(&driver_, form);
 
-  // The storage responded. The fallback can be shown.
-  ASSERT_TRUE(store_consumer);
-  store_consumer->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
-  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
-  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
-      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
-  manager()->ShowManualFallbackForSaving(&driver_, form);
+    // The storage responded. The fallback can be shown.
+    ASSERT_TRUE(store_consumer);
+    store_consumer->OnGetPasswordStoreResults(
+        std::vector<std::unique_ptr<PasswordForm>>());
+    std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+    EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+        .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+    manager()->ShowManualFallbackForSaving(&driver_, form);
+    Mock::VerifyAndClearExpectations(&client_);
+    Mock::VerifyAndClearExpectations(&store_);
+  }
 }
 
 TEST_F(PasswordManagerTest, ManualFallbackForSaving_GeneratedPassword) {
@@ -3006,7 +3012,7 @@ TEST_F(PasswordManagerTest, ProcessingNormalFormSubmission) {
                    << "  successful_submission = " << successful_submission);
       base::test::ScopedFeatureList scoped_feature_list;
       if (only_new_parser)
-        TurnOnOnlyNewPassword(&scoped_feature_list);
+        TurnOnOnlyNewParser(&scoped_feature_list);
       else
         TurnOnNewParsingForSaving(&scoped_feature_list, true);
 
@@ -3060,7 +3066,7 @@ TEST_F(PasswordManagerTest, ProcessingOtherSubmissionTypes) {
     SCOPED_TRACE(testing::Message("only_new_parser = ") << only_new_parser);
     base::test::ScopedFeatureList scoped_feature_list;
     if (only_new_parser)
-      TurnOnOnlyNewPassword(&scoped_feature_list);
+      TurnOnOnlyNewParser(&scoped_feature_list);
     else
       TurnOnNewParsingForSaving(&scoped_feature_list, true);
 

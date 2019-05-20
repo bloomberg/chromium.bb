@@ -278,10 +278,13 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // the match. If the function is called multiple times, only the form from the
   // last call is provisionally saved. Multiple calls is possible because it is
   // called on any user keystroke. If there is no NewPasswordFormManager that
-  // manages |form|, the new one is created.
-  // Returns manager which manages |form|.
+  // manages |form|, the new one is created. If |is_manual_fallback| is true
+  // and the matched form manager has not recieved yet response from the
+  // password store, then nullptr is returned. Returns manager which manages
+  // |form|.
   NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
-                                                PasswordManagerDriver* driver);
+                                                PasswordManagerDriver* driver,
+                                                bool is_manual_fallback);
 
   // Passes |form| to NewPasswordFormManager that manages it for using it after
   // detecting submission success for saving.
