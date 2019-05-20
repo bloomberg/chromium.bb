@@ -66,9 +66,6 @@ class WebStateImpl;
 // is not supported.
 @property(weak, nonatomic, readonly) UIView* viewForPrinting;
 
-// Returns the current page loading phase.
-@property(nonatomic, readonly, assign) web::WKNavigationState navigationState;
-
 // The fraction of the page load that has completed as a number between 0.0
 // (nothing loaded) and 1.0 (fully loaded).
 @property(nonatomic, readonly) double loadingProgress;
@@ -212,6 +209,9 @@ class WebStateImpl;
 
 @property(nonatomic, readonly) web::WebState* webState;
 @property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
+// Returns the current page loading phase.
+// TODO(crbug.com/956511): Remove this once refactor is done.
+@property(nonatomic, readonly, assign) web::WKNavigationState navigationState;
 
 // Injects a CRWWebViewContentView for testing.  Takes ownership of
 // |webViewContentView|.

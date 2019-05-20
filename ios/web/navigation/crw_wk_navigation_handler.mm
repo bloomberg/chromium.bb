@@ -33,8 +33,10 @@
 #endif
 
 using web::wk_navigation_util::IsPlaceholderUrl;
+using web::wk_navigation_util::CreatePlaceholderUrlForUrl;
 using web::wk_navigation_util::kReferrerHeaderName;
 using web::wk_navigation_util::IsRestoreSessionUrl;
+using web::wk_navigation_util::IsWKInternalUrl;
 
 @interface CRWWKNavigationHandler ()
 
@@ -60,6 +62,9 @@ using web::wk_navigation_util::IsRestoreSessionUrl;
 - (instancetype)init {
   if (self = [super init]) {
     _navigationStates = [[CRWWKNavigationStates alloc] init];
+    // Load phase when no WebView present is 'loaded' because this represents
+    // the idle state.
+    _navigationState = web::WKNavigationState::FINISHED;
   }
   return self;
 }
@@ -456,6 +461,117 @@ using web::wk_navigation_util::IsRestoreSessionUrl;
 - (void)webView:(WKWebView*)webView
     didStartProvisionalNavigation:(WKNavigation*)navigation {
   [self didReceiveWKNavigationDelegateCallback];
+
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+
+  [self.navigationStates setState:web::WKNavigationState::STARTED
+                    forNavigation:navigation];
+
+  if (webViewURL.is_empty()) {
+    // May happen on iOS9, however in didCommitNavigation: callback the URL
+    // will be "about:blank".
+    webViewURL = GURL(url::kAboutBlankURL);
+  }
+
+  web::NavigationContextImpl* context =
+      [self.navigationStates contextForNavigation:navigation];
+
+  if (context) {
+    // This is already seen and registered navigation.
+
+    if (context->IsLoadingErrorPage()) {
+      // This is loadHTMLString: navigation to display error page in web view.
+      self.navigationState = web::WKNavigationState::REQUESTED;
+      return;
+    }
+
+    if (!context->IsPlaceholderNavigation() &&
+        context->GetUrl() != webViewURL) {
+      // Update last seen URL because it may be changed by WKWebView (f.e. by
+      // performing characters escaping).
+      web::NavigationItem* item =
+          web::GetItemWithUniqueID(self.navigationManagerImpl, context);
+      if (!IsWKInternalUrl(webViewURL)) {
+        if (item) {
+          item->SetURL(webViewURL);
+        }
+        context->SetUrl(webViewURL);
+      }
+    }
+    self.webStateImpl->OnNavigationStarted(context);
+    return;
+  }
+
+  // This is renderer-initiated navigation which was not seen before and
+  // should be registered.
+
+  // When using WKBasedNavigationManager, renderer-initiated app-specific loads
+  // should be allowed in two specific cases:
+  // 1) if |backForwardList.currentItem| is a placeholder URL for the
+  //    provisional load URL (i.e. webView.URL), then this is an in-progress
+  //    app-specific load and should not be restarted.
+  // 2) back/forward navigation to an app-specific URL should be allowed.
+  bool exemptedAppSpecificLoad = false;
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    bool currentItemIsPlaceholder =
+        CreatePlaceholderUrlForUrl(webViewURL) ==
+        net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
+    bool isBackForward = self.pendingNavigationInfo.navigationType ==
+                         WKNavigationTypeBackForward;
+    bool isRestoringSession =
+        web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+        IsRestoreSessionUrl([self.delegate navigationHandlerDocumentURL:self]);
+    exemptedAppSpecificLoad =
+        currentItemIsPlaceholder || isBackForward || isRestoringSession;
+  }
+
+  if (!web::GetWebClient()->IsAppSpecificURL(webViewURL) ||
+      !exemptedAppSpecificLoad) {
+    self.webStateImpl->ClearWebUI();
+  }
+
+  if (web::GetWebClient()->IsAppSpecificURL(webViewURL) &&
+      !exemptedAppSpecificLoad) {
+    // Restart app specific URL loads to properly capture state.
+    // TODO(crbug.com/546347): Extract necessary tasks for app specific URL
+    // navigation rather than restarting the load.
+
+    // Renderer-initiated loads of WebUI can be done only from other WebUI
+    // pages. WebUI pages may have increased power and using the same web
+    // process (which may potentially be controller by an attacker) is
+    // dangerous.
+    if (web::GetWebClient()->IsAppSpecificURL(
+            [self.delegate navigationHandlerDocumentURL:self])) {
+      [self.delegate navigationHandlerAbortLoading:self];
+      web::NavigationManager::WebLoadParams params(webViewURL);
+      self.navigationManagerImpl->LoadURLWithParams(params);
+    }
+    return;
+  }
+
+  self.webStateImpl->GetNavigationManagerImpl()
+      .OnRendererInitiatedNavigationStarted(webViewURL);
+
+  // When a client-side redirect occurs while an interstitial warning is
+  // displayed, clear the warning and its navigation item, so that a new
+  // pending item is created for |context| in |registerLoadRequestForURL|. See
+  // crbug.com/861836.
+  self.webStateImpl->ClearTransientContent();
+
+  std::unique_ptr<web::NavigationContextImpl> navigationContext =
+      [self.delegate navigationHandler:self
+             registerLoadRequestForURL:webViewURL
+                sameDocumentNavigation:NO
+                        hasUserGesture:self.pendingNavigationInfo.hasUserGesture
+                     rendererInitiated:YES
+                 placeholderNavigation:IsPlaceholderUrl(webViewURL)];
+  web::NavigationContextImpl* navigationContextPtr = navigationContext.get();
+  // GetPendingItem which may be called inside OnNavigationStarted relies on
+  // association between NavigationContextImpl and WKNavigation.
+  [self.navigationStates setContext:std::move(navigationContext)
+                      forNavigation:navigation];
+  self.webStateImpl->OnNavigationStarted(navigationContextPtr);
+  DCHECK_EQ(web::WKNavigationState::REQUESTED, self.navigationState);
 }
 
 - (void)webView:(WKWebView*)webView

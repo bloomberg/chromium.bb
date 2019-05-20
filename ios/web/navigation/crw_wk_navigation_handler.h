@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
+#import <memory>
+
 #include "ui/base/page_transition_types.h"
 
 @class CRWWKNavigationHandler;
@@ -18,6 +20,7 @@ namespace base {
 class RepeatingTimer;
 }
 namespace web {
+enum class WKNavigationState;
 struct Referrer;
 class WebStateImpl;
 class NavigationContextImpl;
@@ -64,6 +67,10 @@ class UserInteractionState;
 // Stop Loading current page.
 - (void)navigationHandlerStopLoading:(CRWWKNavigationHandler*)navigationHandler;
 
+// Aborts any load for both the web view and its controller.
+- (void)navigationHandlerAbortLoading:
+    (CRWWKNavigationHandler*)navigationHandler;
+
 // Returns YES if |url| should be loaded in a native view.
 - (BOOL)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
     shouldLoadURLInNativeView:(const GURL&)url;
@@ -73,6 +80,14 @@ class UserInteractionState;
 // only checks on creation, such that the whole object needs to be rebuilt.
 - (void)navigationHandlerRequirePageReconstruction:
     (CRWWKNavigationHandler*)navigationHandler;
+
+- (std::unique_ptr<web::NavigationContextImpl>)
+            navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+    registerLoadRequestForURL:(const GURL&)URL
+       sameDocumentNavigation:(BOOL)sameDocumentNavigation
+               hasUserGesture:(BOOL)hasUserGesture
+            rendererInitiated:(BOOL)renderedInitiated
+        placeholderNavigation:(BOOL)placeholderNavigation;
 
 @end
 
@@ -95,6 +110,10 @@ class UserInteractionState;
 // Holds all WKNavigation objects and their states which are currently in
 // flight.
 @property(nonatomic, readonly, strong) CRWWKNavigationStates* navigationStates;
+
+// The current page loading phase.
+// TODO(crbug.com/956511): Remove this once refactor is done.
+@property(nonatomic, readwrite, assign) web::WKNavigationState navigationState;
 
 // The SafeBrowsingDetection timer.
 // TODO(crbug.com/956511): Remove this once refactor is done.
