@@ -622,6 +622,17 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
           [NSString stringWithFormat:@"FreeformCommandLineFlag%d", i];
       NSString* flag = [defaults stringForKey:key];
       if ([flag length]) {
+        // iOS keyboard replaces -- with —, so undo that.
+        flag = [flag stringByReplacingOccurrencesOfString:@"—"
+                                               withString:@"--"
+                                                  options:0
+                                                    range:NSMakeRange(0, 1)];
+        // To make things easier, allow flags with no dashes by prepending them
+        // here. This also allows for flags that just have one dash if they
+        // exist.
+        if (![flag hasPrefix:@"-"]) {
+          flag = [@"--" stringByAppendingString:flag];
+        }
         flags.push_back(base::SysNSStringToUTF8(flag));
       }
     }
