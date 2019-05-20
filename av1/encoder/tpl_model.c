@@ -476,7 +476,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
   // unavailable, the pointer will be set to Null.
   for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx) {
     int rf_idx = gf_group->ref_frame_gop_idx[frame_idx][idx];
-    if (rf_idx > 0) ref_frame[idx] = gf_picture[rf_idx];
+    if (rf_idx != -1) ref_frame[idx] = gf_picture[rf_idx];
   }
 
   xd->mi = cm->mi_grid_visible;
