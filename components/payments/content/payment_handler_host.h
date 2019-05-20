@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
-#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace payments {
 
@@ -32,8 +31,6 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
                                      const std::string& stringified_data) = 0;
   };
 
-  using MethodChecker = base::RepeatingCallback<bool(const std::string&)>;
-
   // The |delegate| cannot be null and must outlive this object. Typically this
   // is accomplished by the |delegate| owning this object.
   explicit PaymentHandlerHost(Delegate* delegate);
@@ -50,8 +47,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
 
   // Notifies the payment handler of the updated details, such as updated total,
   // in response to the change of the payment method.
-  void UpdateWith(const mojom::PaymentDetailsPtr& details,
-                  const MethodChecker& method_checker);
+  void UpdateWith(mojom::PaymentMethodChangeResponsePtr response);
 
   // Notifies the payment handler that the merchant did not handle the payment
   // method change event, so the payment details are unchanged.

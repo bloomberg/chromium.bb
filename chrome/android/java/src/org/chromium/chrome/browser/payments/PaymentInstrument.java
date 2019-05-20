@@ -13,6 +13,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
+import org.chromium.payments.mojom.PaymentMethodChangeResponse;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.List;
@@ -121,7 +122,7 @@ public abstract class PaymentInstrument extends EditableOption {
      *         supported card types and networks in the data should be verified for 'basic-card'
      *         payment method.
      */
-    public boolean isValidForPaymentMethodData(String method, PaymentMethodData data) {
+    public boolean isValidForPaymentMethodData(String method, @Nullable PaymentMethodData data) {
         return getInstrumentMethodNames().contains(method);
     }
 
@@ -175,17 +176,31 @@ public abstract class PaymentInstrument extends EditableOption {
             InstrumentDetailsCallback callback);
 
     /**
-     * Update the payment information in response to payment method change event.
-     *
-     * @param total The updated total amount. The total amount can be null if there is no change to
-     *              the total amount or if merchant encountered an error in
-     *              |onPaymentMethodChange(methodName, stringifiedDetails)| call.
-     * @param error A human-readable error message that explains why merchant could not process the
-     *              |onPaymentMethodChange(methodName, stringifiedDetails)| call. The error message
-     *              can be null if there're no errors.
+     * DO NOT USE. DEPRECATED. Instead of this method, please override updateWith(response),
+     * noUpdatedPaymentDetails(), and isChangingPaymentMethod().
+     * TODO(rouslan): Remove this method when all dependencies stop using it.
+     * https://crbug.com/884680
      */
     public void onPaymentDetailsUpdate(
             @Nullable PaymentCurrencyAmount total, @Nullable String error) {}
+
+    /**
+     * Update the payment information in response to payment method change event.
+     *
+     * @param response The merchant's response to the payment method change event.
+     */
+    public void updateWith(PaymentMethodChangeResponse response) {}
+
+    /** Called when the merchant ignored the payment method change event. */
+    public void noUpdatedPaymentDetails() {}
+
+    /**
+     * @return True after changePaymentMethodFromInvokedApp(), before update updateWith() or
+     * noUpdatedPaymentDetails().
+     */
+    public boolean isChangingPaymentMethod() {
+        return false;
+    }
 
     /**
      * Abort invocation of the payment app.

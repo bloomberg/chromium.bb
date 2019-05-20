@@ -6,8 +6,9 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "components/payments/content/android/payment_details_deserializer.h"
+#include "components/payments/content/android/byte_buffer_helper.h"
 #include "jni/PaymentHandlerHost_jni.h"
+#include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
 
 namespace payments {
 namespace android {
@@ -46,17 +47,13 @@ void PaymentHandlerHost::Destroy(
 void PaymentHandlerHost::UpdateWith(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller,
-    const base::android::JavaParamRef<jobject>& payment_details_buffer) {
-  bool success = false;
-  mojom::PaymentDetailsPtr details =
-      DeserializePaymentDetails(env, payment_details_buffer, &success);
-
-  // Payment details have been pre-validated in PaymentRequestImpl.updateWith().
+    const base::android::JavaParamRef<jobject>& response_buffer) {
+  mojom::PaymentMethodChangeResponsePtr response;
+  bool success = mojom::PaymentMethodChangeResponse::Deserialize(
+      std::move(JavaByteBufferToNativeByteVector(env, response_buffer)),
+      &response);
   DCHECK(success);
-
-  payment_handler_host_.UpdateWith(
-      details, base::BindRepeating(&PaymentHandlerHost::CheckMethod,
-                                   base::Unretained(this), env));
+  payment_handler_host_.UpdateWith(std::move(response));
 }
 
 void PaymentHandlerHost::NoUpdatedPaymentDetails(
@@ -69,15 +66,9 @@ bool PaymentHandlerHost::ChangePaymentMethod(
     const std::string& method_name,
     const std::string& stringified_data) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_PaymentHandlerHostDelegate_changePaymentMethod(
+  return Java_PaymentHandlerHostDelegate_changePaymentMethodFromPaymentHandler(
       env, delegate_, base::android::ConvertUTF8ToJavaString(env, method_name),
       base::android::ConvertUTF8ToJavaString(env, stringified_data));
-}
-
-bool PaymentHandlerHost::CheckMethod(JNIEnv* env,
-                                     const std::string& method_name) {
-  return Java_PaymentHandlerHostDelegate_isInvokedInstrumentValidForPaymentMethodIdentifier(
-      env, delegate_, base::android::ConvertUTF8ToJavaString(env, method_name));
 }
 
 }  // namespace android

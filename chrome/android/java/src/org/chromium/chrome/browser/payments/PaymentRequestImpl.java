@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.widget.prefeditor.Completable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.OriginSecurityChecker;
+import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.components.payments.PaymentHandlerHost.PaymentHandlerHostDelegate;
 import org.chromium.components.payments.PaymentValidator;
@@ -107,7 +108,7 @@ public class PaymentRequestImpl
                    PaymentAppFactory.PaymentAppCreatedCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
-                   PaymentHandlerHostDelegate {
+                   PaymentHandlerHostDelegate, PaymentDetailsConverter.MethodChecker {
     /**
      * A test-only observer for the PaymentRequest service implementation.
      */
@@ -860,16 +861,30 @@ public class PaymentRequestImpl
         return result == null ? null : Collections.unmodifiableMap(result);
     }
 
+    /** Called by the payment app to get updated total based on the billing address, for example. */
     @Override
-    public boolean changePaymentMethod(String methodName, String stringifiedData) {
-        if (TextUtils.isEmpty(methodName) || stringifiedData == null || mClient == null
-                || mInvokedPaymentInstrument == null || mPaymentHandlerHost == null
-                || mPaymentHandlerHost.isChangingPaymentMethod()) {
+    public boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails) {
+        if (TextUtils.isEmpty(methodName) || stringifiedDetails == null || mClient == null
+                || mInvokedPaymentInstrument == null) {
             return false;
         }
 
-        mClient.onPaymentMethodChange(methodName, stringifiedData);
+        mClient.onPaymentMethodChange(methodName, stringifiedDetails);
         return true;
+    }
+
+    /**
+     * Called by the web-based payment handler to get updated total based on the billing address,
+     * for example.
+     */
+    @Override
+    public boolean changePaymentMethodFromPaymentHandler(
+            String methodName, String stringifiedData) {
+        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChangingPaymentMethod()) {
+            return false;
+        }
+
+        return changePaymentMethodFromInvokedApp(methodName, stringifiedData);
     }
 
     @Override
@@ -899,9 +914,8 @@ public class PaymentRequestImpl
         }
 
         if (!mRequestShipping && !mRequestPayerName && !mRequestPayerEmail && !mRequestPayerPhone
-                && mInvokedPaymentInstrument == null
-                && (mPaymentHandlerHost == null
-                        || !mPaymentHandlerHost.isChangingPaymentMethod())) {
+                && (mInvokedPaymentInstrument == null
+                        || !mInvokedPaymentInstrument.isChangingPaymentMethod())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     "PaymentRequestUpdateEvent.updateWith() called without passing a promise into "
@@ -913,7 +927,7 @@ public class PaymentRequestImpl
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
         if (mInvokedPaymentInstrument != null
-                && !(mInvokedPaymentInstrument instanceof AutofillPaymentInstrument)) {
+                && mInvokedPaymentInstrument.isChangingPaymentMethod()) {
             // After a payment app has been invoked, all of the merchant's calls to update the price
             // via updateWith() should be forwarded to the invoked app, so it can reflect the
             // updated price in its UI.
@@ -923,12 +937,9 @@ public class PaymentRequestImpl
             // opaque to Chrome sub-instruments inside, representing each card in the user account.
             // Hence Chrome forwards the updateWith() calls to the currently invoked
             // PaymentInstrument object.
-            if (mPaymentHandlerHost != null && mPaymentHandlerHost.isChangingPaymentMethod()) {
-                mPaymentHandlerHost.updateWith(details);
-                return;
-            }
-            mInvokedPaymentInstrument.onPaymentDetailsUpdate(
-                    details.total != null ? details.total.amount : null, details.error);
+            mInvokedPaymentInstrument.updateWith(
+                    PaymentDetailsConverter.convertToPaymentMethodChangeResponse(
+                            details, this /* methodChecker */));
             return;
         }
 
@@ -993,13 +1004,8 @@ public class PaymentRequestImpl
         }
 
         if (mInvokedPaymentInstrument != null
-                && !(mInvokedPaymentInstrument instanceof AutofillPaymentInstrument)) {
-            if (mPaymentHandlerHost != null && mPaymentHandlerHost.isChangingPaymentMethod()) {
-                mPaymentHandlerHost.noUpdatedPaymentDetails();
-                return;
-            }
-
-            mInvokedPaymentInstrument.onPaymentDetailsUpdate(null, null);
+                && mInvokedPaymentInstrument.isChangingPaymentMethod()) {
+            mInvokedPaymentInstrument.noUpdatedPaymentDetails();
             return;
         }
 
@@ -1564,7 +1570,10 @@ public class PaymentRequestImpl
         }
 
         if (mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp) {
-            if (mPaymentHandlerHost == null) mPaymentHandlerHost = new PaymentHandlerHost(this);
+            if (mPaymentHandlerHost == null) {
+                mPaymentHandlerHost = new PaymentHandlerHost(this /* delegate */);
+            }
+
             ((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
                     .setPaymentHandlerHost(mPaymentHandlerHost);
         }
@@ -2107,12 +2116,6 @@ public class PaymentRequestImpl
         } else {
             mUI.onPayButtonProcessingCancelled();
         }
-    }
-
-    /** Called by the payment app to get updated total based on the billing address, for example. */
-    @Override
-    public void onPaymentMethodChange(String methodName, String stringifiedDetails) {
-        if (mClient != null) mClient.onPaymentMethodChange(methodName, stringifiedDetails);
     }
 
     @Override

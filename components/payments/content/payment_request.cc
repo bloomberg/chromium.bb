@@ -13,6 +13,7 @@
 #include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/origin_security_checker.h"
+#include "components/payments/content/payment_details_converter.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
@@ -279,11 +280,13 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
     return;
   }
 
-  if (state()->selected_instrument() && state()->IsPaymentAppInvoked()) {
+  if (state()->selected_instrument() && state()->IsPaymentAppInvoked() &&
+      payment_handler_host_.is_changing_payment_method()) {
     payment_handler_host_.UpdateWith(
-        details, base::BindRepeating(
-                     &PaymentInstrument::IsValidForPaymentMethodIdentifier,
-                     base::Unretained(state()->selected_instrument())));
+        PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
+            details, base::BindRepeating(
+                         &PaymentInstrument::IsValidForPaymentMethodIdentifier,
+                         base::Unretained(state()->selected_instrument()))));
   }
 
   bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();
@@ -318,8 +321,10 @@ void PaymentRequest::NoUpdatedPaymentDetails() {
 
   spec_->RecomputeSpecForDetails();
 
-  if (state()->IsPaymentAppInvoked())
+  if (state()->IsPaymentAppInvoked() &&
+      payment_handler_host_.is_changing_payment_method()) {
     payment_handler_host_.NoUpdatedPaymentDetails();
+  }
 }
 
 void PaymentRequest::Abort() {

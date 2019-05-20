@@ -56,12 +56,11 @@ class PaymentHandlerHost : public payments::PaymentHandlerHost::Delegate {
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& caller);
 
   // Notifies the payment handler that the merchant has updated the payment
-  // details. The |payment_details_buffer| should be a serialization of a valid
-  // PaymentDetails.java object.
-  void UpdateWith(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller,
-      const base::android::JavaParamRef<jobject>& payment_details_buffer);
+  // details. The |response_buffer| should be a serialization of a valid
+  // PaymentMethodChangeResponse.java object.
+  void UpdateWith(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& caller,
+                  const base::android::JavaParamRef<jobject>& response_buffer);
 
   // Notifies the payment handler that the merchant ignored the payment
   // method change event.
@@ -73,9 +72,6 @@ class PaymentHandlerHost : public payments::PaymentHandlerHost::Delegate {
   // PaymentHandlerHost::Delegate implementation:
   bool ChangePaymentMethod(const std::string& method_name,
                            const std::string& stringified_data) override;
-
-  // Returns true if the invoked payment app supports the given |method_name|.
-  bool CheckMethod(JNIEnv* env, const std::string& method_name);
 
   base::android::ScopedJavaGlobalRef<jobject> delegate_;
   payments::PaymentHandlerHost payment_handler_host_;

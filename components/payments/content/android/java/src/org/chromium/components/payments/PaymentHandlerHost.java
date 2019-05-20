@@ -7,7 +7,7 @@ package org.chromium.components.payments;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.payments.mojom.PaymentDetails;
+import org.chromium.payments.mojom.PaymentMethodChangeResponse;
 
 import java.nio.ByteBuffer;
 
@@ -30,16 +30,7 @@ public class PaymentHandlerHost {
          * @return "False" if not in a valid state.
          */
         @CalledByNative("PaymentHandlerHostDelegate")
-        boolean changePaymentMethod(String methodName, String stringifiedData);
-
-        /**
-         * Checks whether the invoked payment instrument is valid for the given payment method
-         * identifier.
-         * @param methodName Payment method identifier.
-         * @return Whether the invoked instrument is valid for the given payment method identifier.
-         */
-        @CalledByNative("PaymentHandlerHostDelegate")
-        boolean isInvokedInstrumentValidForPaymentMethodIdentifier(String methodName);
+        boolean changePaymentMethodFromPaymentHandler(String methodName, String stringifiedData);
     }
 
     /** Pointer to the native bridge. This Java object owns the native bridge. */
@@ -76,12 +67,11 @@ public class PaymentHandlerHost {
     /**
      * Notifies the payment handler that the merchant has updated the payment details in response to
      * the payment-method-change event.
-     * @param paymentDetails The updated payment details. Should not be null. Should have been
-     *                       pre-validated.
+     * @param response The payment method change response. Should not be null.
      */
-    public void updateWith(PaymentDetails paymentDetails) {
-        assert paymentDetails != null;
-        PaymentHandlerHostJni.get().updateWith(mNativePointer, paymentDetails.serialize());
+    public void updateWith(PaymentMethodChangeResponse response) {
+        assert response != null;
+        PaymentHandlerHostJni.get().updateWith(mNativePointer, response.serialize());
     }
 
     /**
@@ -128,10 +118,9 @@ public class PaymentHandlerHost {
         /**
          * Notifies the payment handler that the merchant has updated the payment details.
          * @param nativePaymentHandlerHost The pointer to the native payment handler host bridge.
-         * @param paymentDetailsBuffer The serialized updated payment details from the merchant.
-         *                             Should have been pre-validated.
+         * @param responseBuffer The serialized payment method change response from the merchant.
          */
-        void updateWith(long nativePaymentHandlerHost, ByteBuffer paymentDetailsBuffer);
+        void updateWith(long nativePaymentHandlerHost, ByteBuffer responseBuffer);
 
         /**
          * Notifies the payment handler that the merchant ignored the payment method change event.

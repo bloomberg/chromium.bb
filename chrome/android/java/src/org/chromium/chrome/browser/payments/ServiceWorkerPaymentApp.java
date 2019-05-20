@@ -14,6 +14,7 @@ import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
+import org.chromium.payments.mojom.PaymentMethodChangeResponse;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.net.URI;
@@ -254,6 +255,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     // 'basic-card' payment method with the Capabilities in this payment app to determine whether
     // this payment app supports |requestMethodData|.
     private boolean matchBasiccardCapabilities(PaymentMethodData requestMethodData) {
+        assert requestMethodData != null;
         // Empty supported card types and networks in payment request method data indicates it
         // supports all card types and networks.
         if (requestMethodData.supportedTypes.length == 0
@@ -336,9 +338,10 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     }
 
     @Override
-    public boolean isValidForPaymentMethodData(String method, PaymentMethodData data) {
+    public boolean isValidForPaymentMethodData(String method, @Nullable PaymentMethodData data) {
         boolean isSupportedMethod = super.isValidForPaymentMethodData(method, data);
-        if (isSupportedMethod && BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
+        if (isSupportedMethod && BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)
+                && data != null) {
             return matchBasiccardCapabilities(data);
         }
         return isSupportedMethod;
@@ -362,6 +365,23 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
                     new HashSet<>(modifiers.values()), mPaymentHandlerHost, callback);
         }
+    }
+
+    @Override
+    public void updateWith(PaymentMethodChangeResponse response) {
+        assert isChangingPaymentMethod();
+        mPaymentHandlerHost.updateWith(response);
+    }
+
+    @Override
+    public void noUpdatedPaymentDetails() {
+        assert isChangingPaymentMethod();
+        mPaymentHandlerHost.noUpdatedPaymentDetails();
+    }
+
+    @Override
+    public boolean isChangingPaymentMethod() {
+        return mPaymentHandlerHost != null && mPaymentHandlerHost.isChangingPaymentMethod();
     }
 
     @Override

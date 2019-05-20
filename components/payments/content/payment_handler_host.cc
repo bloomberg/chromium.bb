@@ -11,46 +11,6 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace payments {
-namespace {
-
-mojom::PaymentMethodChangeResponsePtr ConvertToPaymentMethodChangeResponse(
-    const mojom::PaymentDetailsPtr& details,
-    const PaymentHandlerHost::MethodChecker& method_checker) {
-  mojom::PaymentMethodChangeResponsePtr response =
-      mojom::PaymentMethodChangeResponse::New();
-  response->error = details->error;
-  response->stringified_payment_method_errors =
-      details->stringified_payment_method_errors;
-
-  if (details->total)
-    response->total = details->total->amount.Clone();
-
-  if (!details->modifiers)
-    return response;
-
-  response->modifiers = std::vector<mojom::PaymentHandlerModifierPtr>();
-
-  for (const auto& merchant : *details->modifiers) {
-    if (!method_checker.Run(merchant->method_data->supported_method)) {
-      continue;
-    }
-
-    mojom::PaymentHandlerModifierPtr mod = mojom::PaymentHandlerModifier::New();
-    mod->method_data = mojom::PaymentHandlerMethodData::New();
-    mod->method_data->method_name = merchant->method_data->supported_method;
-    mod->method_data->stringified_data =
-        merchant->method_data->stringified_data;
-
-    if (merchant->total)
-      mod->total = merchant->total->amount.Clone();
-
-    response->modifiers->emplace_back(std::move(mod));
-  }
-
-  return response;
-}
-
-}  // namespace
 
 PaymentHandlerHost::PaymentHandlerHost(Delegate* delegate)
     : binding_(this), delegate_(delegate), weak_ptr_factory_(this) {
@@ -59,13 +19,24 @@ PaymentHandlerHost::PaymentHandlerHost(Delegate* delegate)
 
 PaymentHandlerHost::~PaymentHandlerHost() {}
 
-void PaymentHandlerHost::UpdateWith(const mojom::PaymentDetailsPtr& details,
-                                    const MethodChecker& method_checker) {
+mojom::PaymentHandlerHostPtrInfo PaymentHandlerHost::Bind() {
+  mojom::PaymentHandlerHostPtrInfo host_ptr_info;
+  binding_.Close();
+  binding_.Bind(mojo::MakeRequest(&host_ptr_info));
+
+  // Connection error handler can be set only after the Bind() call.
+  binding_.set_connection_error_handler(base::BindOnce(
+      &PaymentHandlerHost::Disconnect, weak_ptr_factory_.GetWeakPtr()));
+
+  return host_ptr_info;
+}
+
+void PaymentHandlerHost::UpdateWith(
+    mojom::PaymentMethodChangeResponsePtr response) {
   if (!change_payment_method_callback_)
     return;
 
-  std::move(change_payment_method_callback_)
-      .Run(ConvertToPaymentMethodChangeResponse(details, method_checker));
+  std::move(change_payment_method_callback_).Run(std::move(response));
 }
 
 void PaymentHandlerHost::NoUpdatedPaymentDetails() {
@@ -111,18 +82,6 @@ void PaymentHandlerHost::ChangePaymentMethod(
   }
 
   change_payment_method_callback_ = std::move(callback);
-}
-
-mojom::PaymentHandlerHostPtrInfo PaymentHandlerHost::Bind() {
-  mojom::PaymentHandlerHostPtrInfo host_ptr_info;
-  binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&host_ptr_info));
-
-  // Connection error handler can be set only after the Bind() call.
-  binding_.set_connection_error_handler(base::BindOnce(
-      &PaymentHandlerHost::Disconnect, weak_ptr_factory_.GetWeakPtr()));
-
-  return host_ptr_info;
 }
 
 }  // namespace payments
