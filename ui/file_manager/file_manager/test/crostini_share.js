@@ -55,6 +55,8 @@ shareBase.testSharePaths = async (vmName, vmNameSelector, enumUma, done) => {
   const shareWith = '#file-context-menu [command="#' + share + '"]';
   const menuShareWithDirTree = '#directory-tree-context-menu:not([hidden]) ' +
       '[command="#' + share + '"]:not([hidden]):not([disabled])';
+  const menuNoShareWithDirTree = '#directory-tree-context-menu:not([hidden]) ' +
+      '[command="#' + share + '"][hidden][disabled="disabled"]';
   const shareWithDirTree =
       '#directory-tree-context-menu [command="#' + share + '"]';
   const photos = '#file-list [file-name="photos"]';
@@ -211,9 +213,29 @@ shareBase.testSharePaths = async (vmName, vmNameSelector, enumUma, done) => {
       givePermission + 'files in your Google Drive. ' +
           'Changes will sync to your other devices.');
 
+  // Verify no share for Play files root.
+  /** @type {MockFileSystem} */ (
+      mockVolumeManager
+          .getCurrentProfileVolumeInfo(
+              VolumeManagerCommon.VolumeType.ANDROID_FILES)
+          .fileSystem)
+      .populate(['/Pictures/']);
+  test.mountAndroidFiles();
+  await test.waitForElement(androidRoot);
+  assertTrue(test.fakeMouseRightClick(androidRoot), 'right-click Play files');
+  await test.waitForElement(menuNoShareWithDirTree);
+
+  // Verify share for folders under Play files root.
+  assertTrue(test.fakeMouseClick(androidRoot), 'click Play files');
+  const pictures = '#file-list [file-name="Pictures"]';
+  await test.waitForElement(pictures);
+  assertTrue(test.fakeMouseRightClick(pictures), 'right-click Pictures');
+  await test.waitForElement(menuShareWith);
+
   // Reset Linux files and Play files back to unmounted.
   chrome.fileManagerPrivate.removeMount('crostini');
   await test.waitForElement(fakeLinuxFiles);
+  chrome.fileManagerPrivate.removeMount('android_files');
 
   // Restore fmp.*.
   chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
