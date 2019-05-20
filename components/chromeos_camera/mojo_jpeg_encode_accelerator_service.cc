@@ -202,11 +202,11 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
   base::UnguessableToken exif_guid = base::UnguessableToken::Create();
   base::UnguessableToken output_guid = base::UnguessableToken::Create();
   base::SharedMemoryHandle input_shm_handle(
-      base::FileDescriptor(input_fd, true), 0u, input_guid);
+      base::FileDescriptor(input_fd, true), input_buffer_size, input_guid);
   base::SharedMemoryHandle exif_shm_handle(base::FileDescriptor(exif_fd, true),
-                                           0u, exif_guid);
+                                           exif_buffer_size, exif_guid);
   base::SharedMemoryHandle output_shm_handle(
-      base::FileDescriptor(output_fd, true), 0u, output_guid);
+      base::FileDescriptor(output_fd, true), output_buffer_size, output_guid);
 
   media::BitstreamBuffer output_buffer(
       buffer_id, output_shm_handle, false /* read_only */, output_buffer_size);
@@ -316,7 +316,7 @@ void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
   }
   base::UnguessableToken exif_guid = base::UnguessableToken::Create();
   base::SharedMemoryHandle exif_shm_handle(base::FileDescriptor(exif_fd, true),
-                                           0u, exif_guid);
+                                           exif_buffer_size, exif_guid);
   std::unique_ptr<media::BitstreamBuffer> exif_buffer;
   if (exif_buffer_size > 0) {
     exif_buffer = std::make_unique<media::BitstreamBuffer>(
