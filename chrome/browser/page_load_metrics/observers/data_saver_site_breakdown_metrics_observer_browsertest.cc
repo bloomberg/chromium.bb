@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
-                       LazyImagesDataSavings) {
+                       DISABLED_LazyImagesDataSavings) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url(
@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
-                       LoFiTest) {
+                       DISABLED_LoFiTest) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kPreviews,
