@@ -190,8 +190,7 @@ void InterventionsInternalsPageHandler::SetIgnorePreviewsBlacklistDecision(
 void InterventionsInternalsPageHandler::OnLastObserverRemove() {
   // Reset the status of ignoring PreviewsBlackList decisions to default value.
   previews_ui_service_->SetIgnorePreviewsBlacklistDecision(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          previews::switches::kIgnorePreviewsBlacklist));
+      previews::switches::ShouldIgnorePreviewsBlacklist());
 }
 
 void InterventionsInternalsPageHandler::OnIgnoreBlacklistDecisionStatusChanged(

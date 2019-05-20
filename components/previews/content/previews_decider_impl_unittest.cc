@@ -1922,8 +1922,7 @@ TEST_F(PreviewsDeciderImplTest, IgnoreBlacklistEnabledViaFlag) {
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
   command_line->AppendSwitch(switches::kIgnorePreviewsBlacklist);
-  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIgnorePreviewsBlacklist));
+  ASSERT_TRUE(switches::ShouldIgnorePreviewsBlacklist());
 
   InitializeUIService();
 

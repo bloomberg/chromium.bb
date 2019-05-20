@@ -89,11 +89,6 @@ bool CheckECTOnlyAtCommitTime(PreviewsType type) {
   return false;
 }
 
-bool IsPreviewsBlacklistIgnoredViaFlag() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIgnorePreviewsBlacklist);
-}
-
 // We don't care if the ECT is unknown if the slow page threshold is set to 4G
 // (i.e.: all pages).
 bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
@@ -105,9 +100,8 @@ bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
 
 }  // namespace
 
-PreviewsDeciderImpl::PreviewsDeciderImpl(
-    base::Clock* clock)
-    : blacklist_ignored_(IsPreviewsBlacklistIgnoredViaFlag()),
+PreviewsDeciderImpl::PreviewsDeciderImpl(base::Clock* clock)
+    : blacklist_ignored_(switches::ShouldIgnorePreviewsBlacklist()),
       clock_(clock),
       page_id_(1u),
       weak_factory_(this) {}

@@ -4,8 +4,15 @@
 
 #include "components/previews/core/previews_switches.h"
 
+#include "base/command_line.h"
+
 namespace previews {
 namespace switches {
+
+bool ShouldIgnorePreviewsBlacklist() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kIgnorePreviewsBlacklist);
+}
 
 // Do not require the user notification InfoBar to be shown before triggering a
 // Lite Page Redirect preview.

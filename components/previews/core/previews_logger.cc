@@ -132,8 +132,7 @@ PreviewsLogger::MessageLog::MessageLog(const MessageLog& other)
       page_id(other.page_id) {}
 
 PreviewsLogger::PreviewsLogger()
-    : blacklist_ignored_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnorePreviewsBlacklist)) {}
+    : blacklist_ignored_(switches::ShouldIgnorePreviewsBlacklist()) {}
 
 PreviewsLogger::~PreviewsLogger() {}
 
