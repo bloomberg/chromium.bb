@@ -47,6 +47,7 @@ Layer::Inputs::Inputs(int layer_id)
       is_root_for_isolated_group(false),
       hit_testable_without_draws_content(false),
       contents_opaque(false),
+      contents_opaque_for_lcd_text(false),
       is_drawable(false),
       double_sided(true),
       should_flatten_transform(true),
@@ -720,6 +721,14 @@ void Layer::SetContentsOpaque(bool opaque) {
   SetPropertyTreesNeedRebuild();
 }
 
+void Layer::SetContentsOpaqueForLCDText(bool opaque) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.contents_opaque_for_lcd_text == opaque)
+    return;
+  inputs_.contents_opaque_for_lcd_text = opaque;
+  SetNeedsCommit();
+}
+
 void Layer::SetPosition(const gfx::PointF& position) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.position == position)
@@ -1391,8 +1400,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetWheelEventHandlerRegion(Region());
   }
   layer->SetContentsOpaque(inputs_.contents_opaque);
-  layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(
       should_flatten_screen_space_transform_from_property_tree_);
+  layer->SetContentsOpaqueForLCDText(inputs_.contents_opaque_for_lcd_text);
   layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
