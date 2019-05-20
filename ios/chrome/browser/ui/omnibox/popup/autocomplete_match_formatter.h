@@ -8,11 +8,16 @@
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 
 struct AutocompleteMatch;
+
 @interface AutocompleteMatchFormatter : NSObject <AutocompleteSuggestion>
 
 // This is a temporary solution for coloring strings.
 @property(nonatomic, assign, getter=isIncognito) BOOL incognito;
 @property(nonatomic, assign, getter=isStarred) BOOL starred;
+
+// Whether the default search engine is Google impacts which icon is used in
+// some cases
+@property(nonatomic, assign) BOOL defaultSearchEngineIsGoogle;
 
 - (instancetype)initWithMatch:(const AutocompleteMatch&)match
     NS_DESIGNATED_INITIALIZER;

@@ -8,6 +8,8 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,14 +21,12 @@ namespace {
 OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
     AutocompleteMatchType::Type type,
     base::Optional<int> answerType) {
-  // Some suggestions have custom icons. Others fallback to the icon from the
-  // overall match type.
   if (answerType) {
     switch (answerType.value()) {
       case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
         return DICTIONARY;
       case SuggestionAnswer::ANSWER_TYPE_FINANCE:
-        return CURRENCY;
+        return STOCK;
       case SuggestionAnswer::ANSWER_TYPE_TRANSLATION:
         return TRANSLATION;
       case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
@@ -41,7 +41,7 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
       case SuggestionAnswer::ANSWER_TYPE_LOCAL_TIME:
       case SuggestionAnswer::ANSWER_TYPE_PLAY_INSTALL:
       case SuggestionAnswer::ANSWER_TYPE_WEATHER:
-        break;
+        return FALLBACK_ANSWER;
       case SuggestionAnswer::ANSWER_TYPE_INVALID:
       case SuggestionAnswer::ANSWER_TYPE_TOTAL_COUNT:
         NOTREACHED();
@@ -127,10 +127,12 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
 }
 
 - (UIImage*)iconImage {
-  NSString* imageName =
-      GetOmniboxNewSuggestionIconTypeAssetName(self.suggestionIconType);
-  return [[UIImage imageNamed:imageName]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  if (self.suggestionIconType == FALLBACK_ANSWER &&
+      self.defaultSearchEngineIsGoogle && [self fallbackAnswerBrandedIcon]) {
+    return [[self fallbackAnswerBrandedIcon]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  }
+  return GetOmniboxSuggestionIcon(self.suggestionIconType);
 }
 
 - (BOOL)hasCustomAnswerIcon {
@@ -143,16 +145,30 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
     case CALCULATOR:
     case CONVERSION:
     case DICTIONARY:
-    case CURRENCY:
+    case STOCK:
     case SUNRISE:
     case LOCAL_TIME:
     case WHEN_IS:
     case TRANSLATION:
       return YES;
+    // For the fallback answer, this depends on whether the branded icon exists
+    // and whether the default search engine is Google (the icon only exists for
+    // Google branding).
+    // The default fallback answer icon uses the grey background styling, like
+    // the non-answer icons.
+    case FALLBACK_ANSWER:
+      return self.defaultSearchEngineIsGoogle &&
+             [self fallbackAnswerBrandedIcon];
     case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
       NOTREACHED();
       return NO;
   }
+}
+
+- (UIImage*)fallbackAnswerBrandedIcon {
+  return ios::GetChromeBrowserProvider()
+      ->GetBrandedImageProvider()
+      ->GetOmniboxAnswerIcon();
 }
 
 - (UIColor*)iconImageTintColor {

@@ -81,6 +81,7 @@ const CGFloat kOmniboxIconSize = 16;
         [AutocompleteMatchFormatter formatterWithMatch:match];
     formatter.starred = _delegate->IsStarredMatch(match);
     formatter.incognito = _incognito;
+    formatter.defaultSearchEngineIsGoogle = self.defaultSearchEngineIsGoogle;
     [wrappedMatches addObject:formatter];
   }
 

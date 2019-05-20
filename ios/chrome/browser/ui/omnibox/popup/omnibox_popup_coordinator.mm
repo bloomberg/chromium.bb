@@ -8,8 +8,10 @@
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/common/omnibox_features.h"
+#import "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
@@ -68,6 +70,13 @@
              delegate:_popupView.get()];
   self.mediator.dispatcher = (id<BrowserCommands>)self.dispatcher;
   self.mediator.webStateList = self.webStateList;
+  TemplateURLService* templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
+  self.mediator.defaultSearchEngineIsGoogle =
+      templateURLService && templateURLService->GetDefaultSearchProvider() &&
+      templateURLService->GetDefaultSearchProvider()->GetEngineType(
+          templateURLService->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
+
   if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
     self.popupViewController = [[OmniboxPopupViewController alloc] init];
   } else {

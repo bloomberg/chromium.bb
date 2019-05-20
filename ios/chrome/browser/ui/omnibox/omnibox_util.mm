@@ -36,7 +36,7 @@ NSString* GetOmniboxSuggestionIconTypeAssetName(
     case DICTIONARY:
       NOTREACHED();
       return @"omnibox_completion_default_favicon";
-    case CURRENCY:
+    case STOCK:
       NOTREACHED();
       return @"omnibox_completion_default_favicon";
     case SUNRISE:
@@ -49,6 +49,9 @@ NSString* GetOmniboxSuggestionIconTypeAssetName(
       NOTREACHED();
       return @"omnibox_completion_default_favicon";
     case TRANSLATION:
+      NOTREACHED();
+      return @"omnibox_completion_default_favicon";
+    case FALLBACK_ANSWER:
       NOTREACHED();
       return @"omnibox_completion_default_favicon";
     case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
@@ -78,8 +81,8 @@ NSString* GetOmniboxNewSuggestionIconTypeAssetName(
       return @"answer_conversion";
     case DICTIONARY:
       return @"answer_dictionary";
-    case CURRENCY:
-      return @"answer_currency";
+    case STOCK:
+      return @"answer_stock";
     case SUNRISE:
       return @"answer_sunrise";
     case LOCAL_TIME:
@@ -88,6 +91,8 @@ NSString* GetOmniboxNewSuggestionIconTypeAssetName(
       return @"answer_when_is";
     case TRANSLATION:
       return @"answer_translation";
+    case FALLBACK_ANSWER:
+      return @"search";
     case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
       NOTREACHED();
       return @"favicon_fallback";
@@ -95,9 +100,12 @@ NSString* GetOmniboxNewSuggestionIconTypeAssetName(
 }
 
 UIImage* GetOmniboxSuggestionIcon(OmniboxSuggestionIconType iconType) {
-  NSString* imageName = GetOmniboxSuggestionIconTypeAssetName(iconType);
-  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout))
+  NSString* imageName = nil;
+  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
     imageName = GetOmniboxNewSuggestionIconTypeAssetName(iconType);
+  } else {
+    imageName = GetOmniboxSuggestionIconTypeAssetName(iconType);
+  }
   return [[UIImage imageNamed:imageName]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }

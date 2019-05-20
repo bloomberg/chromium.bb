@@ -66,6 +66,9 @@ class OmniboxPopupMediatorDelegate {
 @property(nonatomic, strong) OmniboxPopupPresenter* presenter;
 // The web state list this mediator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
+// Whether the default search engine is Google impacts which icon is used in
+// some cases
+@property(nonatomic, assign) BOOL defaultSearchEngineIsGoogle;
 
 // Designated initializer. Takes ownership of |imageFetcher|.
 - (instancetype)initWithFetcher:

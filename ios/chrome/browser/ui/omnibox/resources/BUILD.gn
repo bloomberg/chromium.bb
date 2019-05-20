@@ -100,11 +100,11 @@ imageset("answer_dictionary") {
   ]
 }
 
-imageset("answer_currency") {
+imageset("answer_stock") {
   sources = [
-    "answer_currency.imageset/Contents.json",
-    "answer_currency.imageset/answer_currency@2x.png",
-    "answer_currency.imageset/answer_currency@3x.png",
+    "answer_stock.imageset/Contents.json",
+    "answer_stock.imageset/answer_stock@2x.png",
+    "answer_stock.imageset/answer_stock@3x.png",
   ]
 }
 

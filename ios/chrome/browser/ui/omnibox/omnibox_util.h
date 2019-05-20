@@ -21,11 +21,14 @@ enum OmniboxSuggestionIconType {
   SEARCH,
   CONVERSION,
   DICTIONARY,
-  CURRENCY,
+  STOCK,
   SUNRISE,
   LOCAL_TIME,
   WHEN_IS,
   TRANSLATION,
+  // The FALLBACK_ANSWER icon is used for all answers that don't have special
+  // icons above.
+  FALLBACK_ANSWER,
   OMNIBOX_SUGGESTION_ICON_TYPE_COUNT,
 };
 

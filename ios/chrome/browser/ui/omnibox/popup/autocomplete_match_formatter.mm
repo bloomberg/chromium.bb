@@ -146,7 +146,10 @@ bool ShouldUseNewFormatting() {
 }
 
 - (id<OmniboxIcon>)icon {
-  return [[OmniboxIconFormatter alloc] initWithMatch:_match];
+  OmniboxIconFormatter* icon =
+      [[OmniboxIconFormatter alloc] initWithMatch:_match];
+  icon.defaultSearchEngineIsGoogle = self.defaultSearchEngineIsGoogle;
+  return icon;
 }
 
 - (NSInteger)numberOfLines {
