@@ -122,8 +122,10 @@ message OmniboxEventProto {
     // The instant new tab page enum value was deprecated on August 2, 2013.
     OBSOLETE_INSTANT_NTP = 5;
 
-    // The search term replacement enum value was deprecated in August 2016.
-    OBSOLETE_SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT = 6;
+    // The user is on a search result page that does search term replacement.
+    // This means the search terms are shown in the omnibox instead of the URL.
+    // In other words: Query in Omnibox is Active for this SRP.
+    SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT = 6;
 
     // The new tab page in which this omnibox interaction first started
     // with the user having focus in the omnibox.
@@ -133,9 +135,9 @@ message OmniboxEventProto {
     // with the user having focus in the fakebox.
     INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS = 8;
 
-    // The user is on a search result page that's not doing search term
-    // replacement, meaning the URL of the page should've appeared in the
-    // omnibox before the user started editing it, not the search terms.
+    // The user is on a search result page that does not do search term
+    // replacement. This means the URL of the SRP is shown in the omnibox.
+    // In other words: Query in Omnibox is Inactive for this SRP.
     SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT = 9;
 
     // The user is on the home screen.
