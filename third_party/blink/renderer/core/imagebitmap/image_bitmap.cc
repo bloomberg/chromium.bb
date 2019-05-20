@@ -1014,11 +1014,11 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       std::make_unique<ParsedOptions>(parsed_options);
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBind(&RasterizeImageOnBackgroundThread,
-                      WrapCrossThreadPersistent(resolver),
-                      std::move(paint_record), draw_dst_rect,
-                      !image->WouldTaintOrigin(),
-                      WTF::Passed(std::move(passed_parsed_options))));
+      CrossThreadBindOnce(&RasterizeImageOnBackgroundThread,
+                          WrapCrossThreadPersistent(resolver),
+                          std::move(paint_record), draw_dst_rect,
+                          !image->WouldTaintOrigin(),
+                          WTF::Passed(std::move(passed_parsed_options))));
   return promise;
 }
 
