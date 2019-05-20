@@ -1130,8 +1130,6 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
     const ResourceLoaderOptions& options) {
   DCHECK(!GetProperties().IsDetached());
   DCHECK(loader_factory_);
-  if (!IsMainThread())
-    Context().CountUsage(mojom::WebFeature::kOffMainThreadFetch);
   return loader_factory_->CreateURLLoader(request, options, task_runner_);
 }
 
