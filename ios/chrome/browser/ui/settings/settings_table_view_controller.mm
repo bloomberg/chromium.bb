@@ -1210,8 +1210,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
     // (including the corresponding AccountViewBase).
     ios::GetChromeBrowserProvider()
         ->GetChromeIdentityService()
-        ->GetAvatarForIdentity(_identity, ^(UIImage*){
-                               });
+        ->GetAvatarForIdentity(_identity, nil);
   }
 
   // If the currently used image has already been resized, use it.
