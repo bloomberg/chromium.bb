@@ -258,7 +258,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     protected void openPageAndClickNode(String nodeId)
             throws InterruptedException, TimeoutException {
         openPage();
-        DOMUtils.clickNode(mWebContentsRef.get(), nodeId);
+        clickNode(nodeId);
     }
 
     protected void triggerUIAndWait(String nodeId, PaymentsCallbackHelper<PaymentRequestUI> helper)
@@ -291,8 +291,13 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     protected void clickNodeAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        DOMUtils.clickNode(mWebContentsRef.get(), nodeId);
+        clickNode(nodeId);
         helper.waitForCallback(callCount);
+    }
+
+    /** Clicks on an HTML node. */
+    protected void clickNode(String nodeId) throws InterruptedException, TimeoutException {
+        DOMUtils.clickNode(mWebContentsRef.get(), nodeId);
     }
 
     /** Clicks on an element in the payments UI. */

@@ -836,6 +836,14 @@ void PaymentRequestBrowserTestBase::WaitForObservedEvent() {
   event_waiter_->Wait();
 }
 
+void PaymentRequestBrowserTestBase::EnalbeSkipUIForForBasicCard() {
+  std::vector<PaymentRequest*> requests =
+      GetPaymentRequests(GetActiveWebContents());
+  ASSERT_EQ(1U, requests.size());
+  requests.front()
+      ->set_skip_ui_for_non_url_payment_method_identifiers_for_test();
+}
+
 }  // namespace payments
 
 std::ostream& operator<<(

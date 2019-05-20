@@ -30,15 +30,6 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
     ASSERT_EQ(contents, "instruments.set(): Payment handler installed.");
   }
 
-  // Allows to skip UI into payment handler for "basic-card".
-  void EnalbeSkipUIForForBasicCard() {
-    std::vector<PaymentRequest*> requests =
-        GetPaymentRequests(GetActiveWebContents());
-    ASSERT_EQ(1U, requests.size());
-    requests.front()
-        ->set_skip_ui_for_non_url_payment_method_identifiers_for_test();
-  }
-
   // Shows the browser payment sheet.
   void ShowBrowserPaymentSheet() {
     ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,

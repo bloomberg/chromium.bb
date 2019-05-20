@@ -4,7 +4,13 @@
  * found in the LICENSE file.
  */
 
-const methodName = window.location.origin;
+let methodName = window.location.origin + '/pay';
+let request = undefined;
+
+/** Switches to the basic-card method name. */
+function basicCardMethodName() {  // eslint-disable-line no-unused-vars
+  methodName = 'basic-card';
+}
 
 /** Installs the payment handler. */
 function install() {  // eslint-disable-line no-unused-vars
@@ -73,17 +79,32 @@ function outputChangePaymentMethodReturnValue(request) {
     });
 }
 
+/** @return {PaymentRequest} The Payment Request object for testNoHandler(). */
+function initTestNoHandler() {
+  request = new PaymentRequest([{supportedMethods: methodName}], {
+    total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
+  });
+  return request;
+}
+
 /**
  * Verifies that PaymentRequestEvent.changePaymentMethod() returns null if there
  * is no handler for the "paymentmethodchange" event in PaymentRequest.
  */
 function testNoHandler() {  // eslint-disable-line no-unused-vars
   // Intentionally do not respond to the 'paymentmethodchange' event.
-  outputChangePaymentMethodReturnValue(
-    new PaymentRequest([{supportedMethods: methodName}], {
-      total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
-    })
-  );
+  outputChangePaymentMethodReturnValue(initTestNoHandler());
+}
+
+/** @return {PaymentRequest} The Payment Request object for testReject(). */
+function initTestReject() {
+  request = new PaymentRequest([{supportedMethods: methodName}], {
+    total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
+  });
+  request.addEventListener('paymentmethodchange', (event) => {
+    event.updateWith(Promise.reject('Error for test'));
+  });
+  return request;
 }
 
 /**
@@ -91,21 +112,12 @@ function testNoHandler() {  // eslint-disable-line no-unused-vars
  * PaymentMethodChangeEvent.updateWith() is rejected.
  */
 function testReject() {  // eslint-disable-line no-unused-vars
-  const request = new PaymentRequest([{supportedMethods: methodName}], {
-    total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
-  });
-  request.addEventListener('paymentmethodchange', (event) => {
-    event.updateWith(Promise.reject('Error for test'));
-  });
-  outputChangePaymentMethodReturnValue(request);
+  outputChangePaymentMethodReturnValue(initTestReject());
 }
 
-/**
- * Verifies that PaymentRequest.show() is rejected if there is an exception in
- * the promised passed into PaymentMethodChangeEvent.updateWith().
- */
-function testThrow() {  // eslint-disable-line no-unused-vars
-  const request = new PaymentRequest([{supportedMethods: methodName}], {
+/** @return {PaymentRequest} The Payment Request object for testThrow(). */
+function initTestThrow() {
+  request = new PaymentRequest([{supportedMethods: methodName}], {
     total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
   });
   request.addEventListener('paymentmethodchange', (event) => {
@@ -115,15 +127,20 @@ function testThrow() {  // eslint-disable-line no-unused-vars
       })
     );
   });
-  outputChangePaymentMethodReturnValue(request);
+  return request;
 }
 
 /**
- * Verifies that PaymentRequestEvent.changePaymentMethod() returns a subset of
- * details passed into PaymentMethodChangeEvent.updateWith() method.
+ * Verifies that PaymentRequest.show() is rejected if there is an exception in
+ * the promised passed into PaymentMethodChangeEvent.updateWith().
  */
-function testDetails() {  // eslint-disable-line no-unused-vars
-  const request = new PaymentRequest([{supportedMethods: methodName}], {
+function testThrow() {  // eslint-disable-line no-unused-vars
+  outputChangePaymentMethodReturnValue(initTestThrow());
+}
+
+/** @return {PaymentRequest} The Payment Request object for testDetails(). */
+function initTestDetails() {
+  request = new PaymentRequest([{supportedMethods: methodName}], {
     total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
   });
   request.addEventListener('paymentmethodchange', (event) => {
@@ -146,7 +163,7 @@ function testDetails() {  // eslint-disable-line no-unused-vars
           ],
         },
         {
-          supportedMethods: methodName + '/2',
+          supportedMethods: methodName + '2',
           data: {soup: 'tomato'},
           total: {
             label: 'Modified total #2',
@@ -176,5 +193,13 @@ function testDetails() {  // eslint-disable-line no-unused-vars
       ],
     });
   });
-  outputChangePaymentMethodReturnValue(request);
+  return request;
+}
+
+/**
+ * Verifies that PaymentRequestEvent.changePaymentMethod() returns a subset of
+ * details passed into PaymentMethodChangeEvent.updateWith() method.
+ */
+function testDetails() {  // eslint-disable-line no-unused-vars
+  outputChangePaymentMethodReturnValue(initTestDetails());
 }
