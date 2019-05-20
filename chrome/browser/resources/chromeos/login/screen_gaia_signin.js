@@ -60,11 +60,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     ],
 
     /**
-     * Saved gaia auth host load params.
+     * Saved authenticator load params.
      * @type {?string}
      * @private
      */
-    gaiaAuthParams_: null,
+    authenticatorParams_: null,
 
     /**
      * Current mode of this screen.
@@ -202,12 +202,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     decorate: function() {
       this.navigation_ = $('gaia-navigation');
 
-      this.gaiaAuthHost_ = new cr.login.Authenticator($('signin-frame'));
-      this.gaiaAuthHost_.addEventListener(
+      this.authenticator_ = new cr.login.Authenticator($('signin-frame'));
+      this.authenticator_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
 
       var that = this;
-      [this.gaiaAuthHost_, $('offline-gaia'), $('offline-ad-auth')].forEach(
+      [this.authenticator_, $('offline-gaia'), $('offline-ad-auth')].forEach(
           function(frame) {
             // Ignore events from currently inactive frame.
             var frameFilter = function(callback) {
@@ -216,7 +216,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
                 switch (that.screenMode_) {
                   case ScreenMode.DEFAULT:
                   case ScreenMode.SAML_INTERSTITIAL:
-                    currentFrame = that.gaiaAuthHost_;
+                    currentFrame = that.authenticator_;
                     break;
                   case ScreenMode.OFFLINE:
                     currentFrame = $('offline-gaia');
@@ -242,28 +242,29 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
                 'menuItemClicked', frameFilter(that.onMenuItemClicked_));
           });
 
-      this.gaiaAuthHost_.addEventListener(
+      this.authenticator_.addEventListener(
           'showView', this.onShowView_.bind(this));
-      this.gaiaAuthHost_.confirmPasswordCallback =
+      this.authenticator_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
-      this.gaiaAuthHost_.noPasswordCallback = this.onAuthNoPassword_.bind(this);
-      this.gaiaAuthHost_.insecureContentBlockedCallback =
+      this.authenticator_.noPasswordCallback =
+          this.onAuthNoPassword_.bind(this);
+      this.authenticator_.insecureContentBlockedCallback =
           this.onInsecureContentBlocked_.bind(this);
-      this.gaiaAuthHost_.missingGaiaInfoCallback =
+      this.authenticator_.missingGaiaInfoCallback =
           this.missingGaiaInfo_.bind(this);
-      this.gaiaAuthHost_.samlApiUsedCallback = this.samlApiUsed_.bind(this);
-      this.gaiaAuthHost_.getIsSamlUserPasswordlessCallback =
+      this.authenticator_.samlApiUsedCallback = this.samlApiUsed_.bind(this);
+      this.authenticator_.getIsSamlUserPasswordlessCallback =
           this.getIsSamlUserPasswordless_.bind(this);
-      this.gaiaAuthHost_.addEventListener(
+      this.authenticator_.addEventListener(
           'authDomainChange', this.onAuthDomainChange_.bind(this));
-      this.gaiaAuthHost_.addEventListener(
+      this.authenticator_.addEventListener(
           'authFlowChange', this.onAuthFlowChange_.bind(this));
-      this.gaiaAuthHost_.addEventListener(
+      this.authenticator_.addEventListener(
           'videoEnabledChange', this.onVideoEnabledChange_.bind(this));
 
-      this.gaiaAuthHost_.addEventListener(
+      this.authenticator_.addEventListener(
           'loadAbort', this.onLoadAbortMessage_.bind(this));
-      this.gaiaAuthHost_.addEventListener(
+      this.authenticator_.addEventListener(
           'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
 
       this.navigation_.addEventListener(
@@ -293,15 +294,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('saml-interstitial')
           .addEventListener('samlPageNextClicked', function() {
             this.screenMode = ScreenMode.DEFAULT;
-            this.loadGaiaAuthHost_(true /* doSamlRedirect */);
+            this.loadAuthenticator_(true /* doSamlRedirect */);
           }.bind(this));
       $('saml-interstitial')
           .addEventListener('samlPageChangeAccountClicked', function() {
             // The user requests to change the account. We must clear the email
             // field of the auth params.
-            this.gaiaAuthParams_.email = '';
+            this.authenticatorParams_.email = '';
             this.screenMode = ScreenMode.DEFAULT;
-            this.loadGaiaAuthHost_(false /* doSamlRedirect */);
+            this.loadAuthenticator_(false /* doSamlRedirect */);
           }.bind(this));
 
       $('offline-ad-auth').addEventListener('cancel', function() {
@@ -328,13 +329,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      *     authentication by automatic redirection to the SAML-based enrollment
      *     enterprise domain IdP.
      */
-    loadGaiaAuthHost_: function(doSamlRedirect) {
+    loadAuthenticator_: function(doSamlRedirect) {
       this.loading = true;
       this.startLoadingTimer_();
 
-      this.gaiaAuthParams_.doSamlRedirect = doSamlRedirect;
-      this.gaiaAuthHost_.load(
-          cr.login.Authenticator.AuthMode.DEFAULT, this.gaiaAuthParams_);
+      this.authenticatorParams_.doSamlRedirect = doSamlRedirect;
+      this.authenticator_.load(
+          cr.login.Authenticator.AuthMode.DEFAULT, this.authenticatorParams_);
     },
 
     /**
@@ -667,8 +668,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
         signinFrameParent.replaceChild(newSigninFrame, signinFrame);
 
-        // Make sure the auth host uses the new webview from now on.
-        this.gaiaAuthHost_.rebindWebview($('signin-frame'));
+        // Make sure the authenticator uses the new webview from now on.
+        this.authenticator_.rebindWebview($('signin-frame'));
       }
     },
 
@@ -682,7 +683,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       // page from working in a background (see crbug.com/613245).
       if (this.screenMode_ == ScreenMode.DEFAULT &&
           data.screenMode != ScreenMode.DEFAULT) {
-        this.gaiaAuthHost_.resetWebview();
+        this.authenticator_.resetWebview();
       }
 
       this.setSigninFramePartition_(data.webviewPartitionName);
@@ -716,11 +717,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           !(data.enterpriseManagedDevice || data.hasDeviceOwner);
       params.obfuscatedOwnerId = data.obfuscatedOwnerId;
 
-      this.gaiaAuthParams_ = params;
+      this.authenticatorParams_ = params;
 
       switch (this.screenMode_) {
         case ScreenMode.DEFAULT:
-          this.loadGaiaAuthHost_(false /* doSamlRedirect */);
+          this.loadAuthenticator_(false /* doSamlRedirect */);
           break;
 
         case ScreenMode.OFFLINE:
@@ -767,7 +768,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Whether the current auth flow is SAML.
      */
     isSAML: function() {
-      return this.gaiaAuthHost_.authFlow ==
+      return this.authenticator_.authFlow ==
           cr.login.Authenticator.AuthFlow.SAML;
     },
 
@@ -775,14 +776,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Helper function to update the title bar.
      */
     updateSamlNotice_: function() {
-      if (this.gaiaAuthHost_.videoEnabled) {
+      if (this.authenticator_.videoEnabled) {
         $('saml-notice-message').textContent = loadTimeData.getStringF(
-            'samlNoticeWithVideo', this.gaiaAuthHost_.authDomain);
+            'samlNoticeWithVideo', this.authenticator_.authDomain);
         $('saml-notice-recording-indicator').hidden = false;
         $('saml-notice-container').style.justifyContent = 'flex-start';
       } else {
         $('saml-notice-message').textContent = loadTimeData.getStringF(
-            'samlNotice', this.gaiaAuthHost_.authDomain);
+            'samlNotice', this.authenticator_.authDomain);
         $('saml-notice-recording-indicator').hidden = true;
         $('saml-notice-container').style.justifyContent = 'center';
       }
@@ -799,18 +800,18 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the authDomain property is changed on the GAIA host.
+     * Invoked when the authDomain property is changed on the authenticator.
      */
     onAuthDomainChange_: function() {
       this.updateSamlNotice_();
     },
 
     /**
-     * Invoked when the videoEnabled property is changed on the GAIA host.
+     * Invoked when the videoEnabled property is changed on the authenticator.
      */
     onVideoEnabledChange_: function() {
       this.updateSamlNotice_();
-      if (this.gaiaAuthHost_.videoEnabled && this.videoTimer_ === undefined) {
+      if (this.authenticator_.videoEnabled && this.videoTimer_ === undefined) {
         this.videoTimer_ =
             setTimeout(this.cancel.bind(this), VIDEO_LOGIN_TIMEOUT);
       } else {
@@ -819,7 +820,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the authFlow property is changed on the GAIA host.
+     * Invoked when the authFlow property is changed on the authenticator.
      */
     onAuthFlowChange_: function() {
       var isSAML = this.isSAML();
@@ -835,7 +836,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host emits 'ready' event.
+     * Invoked when the authenticator emits 'ready' event or when another
+     * authentication frame is completely loaded.
      * @private
      */
     onAuthReady_: function() {
@@ -849,7 +851,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host emits 'dialogShown' event.
+     * Invoked when a frame emits 'dialogShown' event.
      * @private
      */
     onDialogShown_: function() {
@@ -857,7 +859,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host emits 'dialogHidden' event.
+     * Invoked when a frame emits 'dialogHidden' event.
      * @private
      */
     onDialogHidden_: function() {
@@ -878,7 +880,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the the GAIA host requests whether the specified user is a
+     * Invoked when the authenticator requests whether the specified user is a
      * user without a password (neither a manually entered one nor one provided
      * via Credentials Passing API).
      * @param {string} email
@@ -892,7 +894,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host emits 'backButton' event.
+     * Invoked when a frame emits 'backButton' event.
      * @private
      */
     onBackButton_: function(e) {
@@ -902,8 +904,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host emits 'showView' event or when corresponding
-     * guard time fires.
+     * Invoked when the authenticator emits 'showView' event or when
+     * corresponding guard time fires.
      * @private
      */
     onShowView_: function(e) {
@@ -933,8 +935,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
     /**
      * Invoked when the user has successfully authenticated via SAML, the
-     * principals API was not used and the auth host needs the user to confirm
-     * the scraped password.
+     * principals API was not used and the authenticator needs the user to
+     * confirm the scraped password.
      * @param {string} email The authenticated user's e-mail.
      * @param {number} passwordCount The number of passwords that were scraped.
      * @private
@@ -964,7 +966,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onConfirmPasswordCollected_: function(password) {
       this.samlPasswordConfirmAttempt_++;
-      this.gaiaAuthHost_.verifyConfirmedPassword(password);
+      this.authenticator_.verifyConfirmedPassword(password);
 
       // Shows signin UI again without changing states.
       Oobe.showScreen({id: SCREEN_GAIA_SIGNIN});
@@ -991,7 +993,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      *     the same as their SAML password.
      */
     onManualPasswordCollected_: function(password) {
-      this.gaiaAuthHost_.completeAuthWithManualPassword(password);
+      this.authenticator_.completeAuthWithManualPassword(password);
     },
 
     /**
@@ -1105,7 +1107,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     reset: function(takeFocus, forceOnline) {
       // Reload and show the sign-in UI if needed.
-      this.gaiaAuthHost_.resetStates();
+      this.authenticator_.resetStates();
       if (takeFocus) {
         if (!forceOnline && this.isOffline()) {
           Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
@@ -1122,7 +1124,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     doReload: function() {
       if (this.screenMode_ != ScreenMode.DEFAULT)
         return;
-      this.gaiaAuthHost_.reload();
+      this.authenticator_.reload();
       this.loading = true;
       this.startLoadingTimer_();
       this.lastBackMessageValue_ = false;
@@ -1233,7 +1235,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         // reloaded. Otherwise ChromeOS overlays hide and Gaia page is shown
         // somewhere in the middle of animations.
         if (this.screenMode_ == ScreenMode.DEFAULT)
-          this.gaiaAuthHost_.resetWebview();
+          this.authenticator_.resetWebview();
       }
 
       this.classList.toggle('whitelist-error', show);

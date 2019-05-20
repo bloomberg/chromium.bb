@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
   WaitForGaiaPageLoad();
 
-  std::string frame_url = "$('gaia-signin').gaiaAuthHost_.reloadUrl_";
+  std::string frame_url = "$('gaia-signin').authenticator_.reloadUrl_";
   // New users are allowed.
   test::OobeJS().ExpectTrue(frame_url + ".search('flow=nosignup') == -1");
 

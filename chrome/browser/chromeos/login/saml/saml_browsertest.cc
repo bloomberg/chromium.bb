@@ -396,9 +396,9 @@ class SamlTest : public OobeBaseTest {
   void SetupAuthFlowChangeListener() {
     content::ExecuteScriptAsync(
         GetLoginUI()->GetWebContents(),
-        "$('gaia-signin').gaiaAuthHost_.addEventListener('authFlowChange',"
+        "$('gaia-signin').authenticator_.addEventListener('authFlowChange',"
         "    function f() {"
-        "      $('gaia-signin').gaiaAuthHost_.removeEventListener("
+        "      $('gaia-signin').authenticator_.removeEventListener("
         "          'authFlowChange', f);"
         "      window.domAutomationController.send("
         "          $('gaia-signin').isSAML() ? 'SamlLoaded' : 'GaiaLoaded');"
@@ -540,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   // Make sure that the password is scraped correctly.
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
-      "$('gaia-signin').gaiaAuthHost_.addEventListener('authCompleted',"
+      "$('gaia-signin').authenticator_.addEventListener('authCompleted',"
       "    function(e) {"
       "      var password = e.detail.password;"
       "      window.domAutomationController.send(password);"
@@ -743,14 +743,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, NoticeUpdatedOnRedirect) {
       "var processEventsAndSendIfHostFound = function() {"
       "  window.setTimeout(function() {"
       "    if (sendIfHostFound()) {"
-      "      $('gaia-signin').gaiaAuthHost_.removeEventListener("
+      "      $('gaia-signin').authenticator_.removeEventListener("
       "          'authDomainChange',"
       "          processEventsAndSendIfHostFound);"
       "    }"
       "  }, 0);"
       "};"
       "if (!sendIfHostFound()) {"
-      "  $('gaia-signin').gaiaAuthHost_.addEventListener("
+      "  $('gaia-signin').authenticator_.addEventListener("
       "      'authDomainChange',"
       "      processEventsAndSendIfHostFound);"
       "}";
@@ -1088,7 +1088,7 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
   content::DOMMessageQueue message_queue;
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
-      "$('gaia-signin').gaiaAuthHost_.addEventListener('ready', function() {"
+      "$('gaia-signin').authenticator_.addEventListener('ready', function() {"
       "  window.domAutomationController.send('ready');"
       "});"));
   ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
@@ -1146,7 +1146,7 @@ void SAMLPolicyTest::ClickChangeAccountOnSAMLInterstitialPage() {
   content::DOMMessageQueue message_queue;
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
-      "$('gaia-signin').gaiaAuthHost_.addEventListener('ready', function() {"
+      "$('gaia-signin').authenticator_.addEventListener('ready', function() {"
       "  window.domAutomationController.send('ready');"
       "});"
       "$('saml-interstitial').changeAccountLink.click();"));

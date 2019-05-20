@@ -62,7 +62,7 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   std::unique_ptr<content::WindowedNotificationObserver>
       login_screen_load_observer_;
   std::string gaia_frame_parent_ = "signin-frame";
-  std::string authenticator_id_ = "$('gaia-signin').gaiaAuthHost_";
+  std::string authenticator_id_ = "$('gaia-signin').authenticator_";
   EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
                                                      embedded_test_server()};
 
