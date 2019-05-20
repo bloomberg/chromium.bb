@@ -533,13 +533,14 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
   return tile_list_payload_size;
 }
 
+// Note: This function does not read itu_t_t35_payload_bytes because the exact
+// syntax of itu_t_t35_payload_bytes is not defined in the spec.
 static void read_metadata_itut_t35(struct aom_read_bit_buffer *rb) {
   const int itu_t_t35_country_code = aom_rb_read_literal(rb, 8);
   if (itu_t_t35_country_code == 0xFF) {
     aom_rb_read_literal(rb, 8);
   }
-  // Ignore itu_t_t35_payload_bytes, whose exact syntax is not defined in the
-  // spec.
+  // itu_t_t35_payload_bytes
 }
 
 static void read_metadata_hdr_cll(struct aom_read_bit_buffer *rb) {
@@ -634,8 +635,9 @@ static void read_metadata_timecode(struct aom_read_bit_buffer *rb) {
 
 // Checks the metadata for correct syntax but ignores the parsed metadata.
 //
-// On success, returns sz. On failure, sets pbi->common.error.error_code and
-// returns 0, or calls aom_internal_error() and does not return.
+// On success, returns the number of bytes read from 'data'. On failure, sets
+// pbi->common.error.error_code and returns 0, or calls aom_internal_error()
+// and does not return.
 static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
   size_t type_length;
   uint64_t type_value;
@@ -643,22 +645,43 @@ static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
     pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
     return 0;
   }
+  const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)type_value;
+  if (metadata_type == 0 || metadata_type >= 6) {
+    // If metadata_type is reserved for future use or a user private value,
+    // ignore the entire OBU. Don't check the trailing bit because the spec's
+    // description of the payload data in Section 5.8.1 is not very clear.
+    return sz;
+  }
   struct aom_read_bit_buffer rb;
   av1_init_read_bit_buffer(pbi, &rb, data + type_length, data + sz);
-  const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)type_value;
   if (metadata_type == OBU_METADATA_TYPE_ITUT_T35) {
     read_metadata_itut_t35(&rb);
-  } else if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
+    // Ignore itu_t_t35_payload_bytes. Don't check the trailing bit because
+    // the spec's description of itu_t_t35_payload_bytes in Section 5.8.2 is
+    // not very clear.
+    return sz;
+  }
+  if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
     read_metadata_hdr_cll(&rb);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
     read_metadata_hdr_mdcv(&rb);
   } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
     read_metadata_scalability(&rb);
-  } else if (metadata_type == OBU_METADATA_TYPE_TIMECODE) {
+    // TODO(wtc): Temporarily allow the scalability metadata type to have no
+    // trailing bits because some test vectors have this error. See
+    // https://crbug.com/aomedia/2389.
+    assert((rb.bit_offset & 7) == 0);
+    if (type_length + (rb.bit_offset >> 3) == sz) return sz;
+  } else {
+    assert(metadata_type == OBU_METADATA_TYPE_TIMECODE);
     read_metadata_timecode(&rb);
   }
-
-  return sz;
+  if (av1_check_trailing_bits(pbi, &rb) != 0) {
+    // cm->error.error_code is already set.
+    return 0;
+  }
+  assert((rb.bit_offset & 7) == 0);
+  return type_length + (rb.bit_offset >> 3);
 }
 
 // On success, returns a boolean that indicates whether the decoding of the
