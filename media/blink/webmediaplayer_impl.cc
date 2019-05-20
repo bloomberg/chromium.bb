@@ -799,7 +799,10 @@ void WebMediaPlayerImpl::Pause() {
     video_locked_when_paused_when_hidden_ = true;
 
   pipeline_controller_->SetPlaybackRate(0.0);
-  paused_time_ = pipeline_controller_->GetMediaTime();
+
+  // For states <= kReadyStateHaveMetadata, we may not have a renderer yet.
+  if (highest_ready_state_ > WebMediaPlayer::kReadyStateHaveMetadata)
+    paused_time_ = pipeline_controller_->GetMediaTime();
 
   if (observer_)
     observer_->OnPaused();
@@ -1053,7 +1056,6 @@ double WebMediaPlayerImpl::timelineOffset() const {
 
 base::TimeDelta WebMediaPlayerImpl::GetCurrentTimeInternal() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
 
   base::TimeDelta current_time;
   if (Seeking())
@@ -1775,7 +1777,6 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
 
   pipeline_metadata_ = metadata;
 
-  SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
   UMA_HISTOGRAM_ENUMERATION(
       "Media.VideoRotation",
       metadata.video_decoder_config.video_transformation().rotation,
@@ -1829,6 +1830,10 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
   CreateVideoDecodeStatsReporter();
 
   UpdatePlayState();
+
+  // This may trigger all sorts of calls into this class (e.g., Play(), Pause())
+  // so do it last to avoid unexpected states during the calls.
+  SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
 }
 
 void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
