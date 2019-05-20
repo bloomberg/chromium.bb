@@ -545,6 +545,9 @@ class Sysroot(object):
     chrome_binhost = board and self._ChromeBinhost(board)
     postsubmit_binhost, postsubmit_binhost_internal = self._PostsubmitBinhosts(
         board)
+    # TODO(crbug.com/965244) Remove when full post-submit swap has completed.
+    parallel_postsubmit_binhost, parallel_postsubmit_binhost_internal = \
+      self._PostsubmitBinhosts(board, binhost_type='PARALLEL_POSTSUBMIT')
 
     config.append("""
 # FULL_BINHOST is populated by the full builders. It is listed first because it
@@ -570,12 +573,32 @@ source %s
 PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
 """ % postsubmit_binhost_internal)
 
+    if parallel_postsubmit_binhost:
+      config.append("""
+# PARALLEL_POSTSUBMIT_BINHOST is populated by the Parallel CQ postsubmit
+# builders. If the same package is provided by both the parallel postsubmit and
+# postsubmit builders, the package is downloaded from the parallel postsubmit
+# binhost.
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $PARALLEL_POSTSUBMIT_BINHOST"
+""" % parallel_postsubmit_binhost)
+
+    if parallel_postsubmit_binhost_internal:
+      config.append("""
+# The internal PARALLEL_POSTSUBMIT_BINHOST is populated by the internal Parallel
+# CQ postsubmit builders. It takes priority over the public parallel postsubmit
+# binhost.
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $PARALLEL_POSTSUBMIT_BINHOST"
+""" % parallel_postsubmit_binhost_internal)
+
     if chrome_binhost:
       config.append("""
 # LATEST_RELEASE_CHROME_BINHOST provides prebuilts for chromeos-chrome only.
 source %s
 PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
 """ % chrome_binhost)
+
 
     return '\n'.join(config)
 
@@ -611,11 +634,12 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
 
     return None
 
-  def _PostsubmitBinhosts(self, board=None):
+  def _PostsubmitBinhosts(self, board=None, binhost_type=None):
     """Returns the postsubmit binhost to use.
 
     Args:
       board (str): Board name.
+      binhost_type (str): Override the binhost type in the file name.
     """
     prefixes = []
     # The preference of picking the binhost file for a board is in the same
@@ -636,7 +660,8 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     if arch in _ARCH_MAPPING:
       prefixes.append(_ARCH_MAPPING[arch])
 
-    filenames = ['%s-POSTSUBMIT_BINHOST.conf' % p for p in prefixes]
+    binhost_type = binhost_type or 'POSTSUBMIT'
+    filenames = ['%s-%s_BINHOST.conf' % (p, binhost_type) for p in prefixes]
 
     external = internal = None
     for filename in filenames:

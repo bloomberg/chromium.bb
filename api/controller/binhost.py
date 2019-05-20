@@ -64,6 +64,17 @@ def SetBinhost(input_proto, output_proto):
   key = binhost_pb2.BinhostKey.Name(input_proto.key)
   uri = input_proto.uri
   private = input_proto.private
+
+  # Temporary measure to force the new parallel cq post submit builders to write
+  # to a different file than the old ones. Writing to the same file was causing
+  # them to fight over the new one's value and the old logic of clearing out
+  # the values for files it didn't update. Once we've done a full switch over,
+  # we can dump this logic and delete all of the PARALLEL_POSTSUBMIT_BINHOST
+  # configs.
+  # TODO(crbug.com/965244) remove this.
+  if key == 'POSTSUBMIT_BINHOST':
+    key = 'PARALLEL_POSTSUBMIT_BINHOST'
+
   output_proto.output_file = binhost.SetBinhost(target, key, uri,
                                                 private=private)
 
