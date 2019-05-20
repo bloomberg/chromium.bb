@@ -112,7 +112,6 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -143,6 +142,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
@@ -314,8 +314,8 @@ enum class EnterTabSwitcherSnapshotResult {
                               GoogleServicesNavigationCoordinatorDelegate,
                               PrefObserverDelegate,
                               SettingsNavigationControllerDelegate,
-                              TabModelObserver,
                               TabSwitcherDelegate,
+                              WebStateListObserving,
                               UserFeedbackDataSource> {
   IBOutlet UIWindow* _window;
 
@@ -723,7 +723,7 @@ enum class EnterTabSwitcherSnapshotResult {
   [_browserViewWrangler shutdown];
   _browserViewWrangler =
       [[BrowserViewWrangler alloc] initWithBrowserState:_mainBrowserState
-                                       tabModelObserver:self
+                                   webStateListObserver:self
                              applicationCommandEndpoint:self
                                    appURLLoadingService:_appURLLoadingService
                                         storageSwitcher:self];
@@ -2203,20 +2203,19 @@ enum class EnterTabSwitcherSnapshotResult {
   _settingsNavigationController = nil;
 }
 
-#pragma mark - TabModelObserver
+#pragma mark - WebStateListObserving
 
-// Called when a Tab is removed. Triggers the switcher view when the last tab is
-// closed on a device that uses the switcher.
-- (void)tabModel:(TabModel*)notifiedTabModel
-    didRemoveTab:(Tab*)tab
-         atIndex:(NSUInteger)index {
-  TabModel* currentTabModel = [self currentTabModel];
+// Called when a WebState is removed. Triggers the switcher view when the last
+// WebState is closed on a device that uses the switcher.
+- (void)webStateList:(WebStateList*)notifiedWebStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
   // Do nothing on initialization.
-  if (!currentTabModel)
+  if (![self currentTabModel].webStateList)
     return;
 
-  if (notifiedTabModel.count == 0U) {
-    if ([notifiedTabModel isOffTheRecord]) {
+  if (notifiedWebStateList->empty()) {
+    if (webState->GetBrowserState()->IsOffTheRecord()) {
       [self lastIncognitoTabClosed];
     } else {
       [self lastRegularTabClosed];

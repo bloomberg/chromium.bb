@@ -87,7 +87,6 @@
 
 @interface BrowserViewWrangler () <WebStateListObserving, TabModelObserver> {
   ios::ChromeBrowserState* _browserState;
-  __weak id<TabModelObserver> _tabModelObserver;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   __weak id<BrowserStateStorageSwitching> _storageSwitcher;
   AppUrlLoadingService* _appURLLoadingService;
@@ -96,6 +95,7 @@
   std::unique_ptr<Browser> _mainBrowser;
   std::unique_ptr<Browser> _otrBrowser;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
 }
 
 @property(nonatomic, strong, readwrite) WrangledBrowser* mainInterface;
@@ -139,7 +139,7 @@
 @synthesize currentInterface = _currentInterface;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                    tabModelObserver:(id<TabModelObserver>)tabModelObserver
+                webStateListObserver:(id<WebStateListObserving>)observer
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
                 appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
@@ -147,11 +147,12 @@
                          (id<BrowserStateStorageSwitching>)storageSwitcher {
   if ((self = [super init])) {
     _browserState = browserState;
-    _tabModelObserver = tabModelObserver;
     _applicationCommandEndpoint = applicationCommandEndpoint;
     _appURLLoadingService = appURLLoadingService;
     _storageSwitcher = storageSwitcher;
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _webStateListForwardingObserver =
+        std::make_unique<WebStateListObserverBridge>(observer);
   }
   return self;
 }
@@ -245,11 +246,10 @@
     breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
     breakpad::StopMonitoringURLsForWebStateList(tabModel.webStateList);
     [tabModel browserStateDestroyed];
-    if (_tabModelObserver) {
-      [tabModel removeObserver:_tabModelObserver];
-    }
     [tabModel removeObserver:self];
     tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
+    tabModel.webStateList->RemoveObserver(
+        _webStateListForwardingObserver.get());
   }
 
   _mainBrowser = std::move(mainBrowser);
@@ -260,11 +260,10 @@
     TabModel* tabModel = self.otrBrowser->GetTabModel();
     breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
     [tabModel browserStateDestroyed];
-    if (_tabModelObserver) {
-      [tabModel removeObserver:_tabModelObserver];
-    }
     [tabModel removeObserver:self];
     tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
+    tabModel.webStateList->RemoveObserver(
+        _webStateListForwardingObserver.get());
   }
 
   _otrBrowser = std::move(otrBrowser);
@@ -416,11 +415,9 @@
   }
 
   // Add observers.
-  if (_tabModelObserver) {
-    [tabModel addObserver:_tabModelObserver];
-    [tabModel addObserver:self];
-    tabModel.webStateList->AddObserver(_webStateListObserver.get());
-  }
+  [tabModel addObserver:self];
+  tabModel.webStateList->AddObserver(_webStateListObserver.get());
+  tabModel.webStateList->AddObserver(_webStateListForwardingObserver.get());
   breakpad::MonitorTabStateForWebStateList(tabModel.webStateList);
 }
 
