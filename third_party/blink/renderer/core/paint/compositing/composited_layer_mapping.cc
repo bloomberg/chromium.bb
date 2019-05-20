@@ -3164,7 +3164,8 @@ void CompositedLayerMapping::DoPaintTask(
   context.SetDeviceScaleFactor(device_scale_factor);
 
   Settings* settings = GetLayoutObject().GetFrame()->GetSettings();
-  context.SetDarkMode(BuildDarkModeSettings(*settings, GetLayoutObject()));
+  context.SetDarkMode(
+      BuildDarkModeSettings(*settings, *GetLayoutObject().View()));
 
   if (paint_info.paint_layer->GetCompositingState() !=
       kPaintsIntoGroupedBacking) {
