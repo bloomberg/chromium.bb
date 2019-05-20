@@ -132,6 +132,18 @@ gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
 }
 
+bool GetSyncedFaviconForPageURL(
+    sync_sessions::SessionSyncService* session_sync_service,
+    const GURL& page_url,
+    scoped_refptr<base::RefCountedMemory>* sync_bitmap) {
+  if (!session_sync_service)
+    return false;
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      session_sync_service->GetOpenTabsUIDelegate();
+  return open_tabs &&
+         open_tabs->GetSyncedFaviconForPageURL(page_url.spec(), sync_bitmap);
+}
+
 }  // namespace
 
 enum RecentTabAction {
@@ -565,62 +577,37 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
 void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
   int index_in_menu = GetIndexOfCommandId(command_id);
 
-  // Start to fetch the favicon from local history asynchronously.
   // Set default icon first.
   SetIcon(index_in_menu, favicon::GetDefaultFavicon());
-  // Start request to fetch actual icon if possible.
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(browser_->profile(),
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  if (!favicon_service)
-    return;
 
   bool is_local_tab = command_id < kFirstOtherDevicesTabCommandId;
-  favicon_service->GetFaviconImageForPageURL(
+  favicon_request_handler_.GetFaviconImageForPageURL(
       url,
-      base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
-                 weak_ptr_factory_.GetWeakPtr(), url, command_id),
+      base::BindRepeating(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
+                          base::Unretained(this), command_id),
+      favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
+      FaviconServiceFactory::GetForProfile(browser_->profile(),
+                                           ServiceAccessType::EXPLICIT_ACCESS),
+      base::BindOnce(&GetSyncedFaviconForPageURL,
+                     base::Unretained(session_sync_service_)),
       is_local_tab ? &local_tab_cancelable_task_tracker_
                    : &other_devices_tab_cancelable_task_tracker_);
 }
 
 void RecentTabsSubMenuModel::OnFaviconDataAvailable(
-    const GURL& page_url,
     int command_id,
     const favicon_base::FaviconImageResult& image_result) {
+  if (image_result.image.IsEmpty()) {
+    // Default icon has already been set.
+    return;
+  }
   int index_in_menu = GetIndexOfCommandId(command_id);
-  if (!image_result.image.IsEmpty()) {
-    favicon::RecordFaviconRequestMetric(
-        favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
-        favicon::FaviconAvailability::kLocal);
-    DCHECK_GT(index_in_menu, -1);
-    SetIcon(index_in_menu, image_result.image);
-    ui::MenuModelDelegate* delegate = menu_model_delegate();
-    if (delegate)
-      delegate->OnIconChanged(index_in_menu);
-    return;
-  }
-
-  // If tab has synced favicon, use it.
-  // Note that currently, other devices' tabs only have favicons if
-  // --sync-tab-favicons switch is on; according to zea@, this flag is now
-  // automatically enabled for iOS and android, and they're looking into
-  // enabling it for other platforms.
-  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
-  scoped_refptr<base::RefCountedMemory> favicon_png;
-  if (open_tabs &&
-      open_tabs->GetSyncedFaviconForPageURL(page_url.spec(), &favicon_png)) {
-    favicon::RecordFaviconRequestMetric(
-        favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
-        favicon::FaviconAvailability::kSync);
-    gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(favicon_png);
-    SetIcon(index_in_menu, image);
-    return;
-  }
-
-  favicon::RecordFaviconRequestMetric(
-      favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
-      favicon::FaviconAvailability::kNotAvailable);
+  DCHECK_GT(index_in_menu, -1);
+  SetIcon(index_in_menu, image_result.image);
+  ui::MenuModelDelegate* delegate = menu_model_delegate();
+  if (delegate)
+    delegate->OnIconChanged(index_in_menu);
+  return;
 }
 
 int RecentTabsSubMenuModel::CommandIdToTabVectorIndex(

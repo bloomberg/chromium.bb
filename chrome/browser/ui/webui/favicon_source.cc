@@ -38,6 +38,21 @@ favicon::FaviconRequestOrigin ParseFaviconRequestOrigin(const GURL& url) {
     return favicon::FaviconRequestOrigin::HISTORY;
   return favicon::FaviconRequestOrigin::UNKNOWN;
 }
+
+bool GetSyncedFaviconForPageURL(
+    Profile* profile,
+    const GURL& page_url,
+    scoped_refptr<base::RefCountedMemory>* sync_bitmap) {
+  sync_sessions::SessionSyncService* session_sync_service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  if (!session_sync_service)
+    return false;
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      session_sync_service->GetOpenTabsUIDelegate();
+  return open_tabs &&
+         open_tabs->GetSyncedFaviconForPageURL(page_url.spec(), sync_bitmap);
+}
+
 }  // namespace
 
 FaviconSource::IconRequest::IconRequest()
@@ -112,7 +127,7 @@ void FaviconSource::StartDataRequest(
     // IconType.
     favicon_service->GetRawFavicon(
         url, favicon_base::IconType::kFavicon, desired_size_in_pixel,
-        base::Bind(
+        base::BindRepeating(
             &FaviconSource::OnFaviconDataAvailable, base::Unretained(this),
             IconRequest(callback, url, parsed.size_in_dip,
                         parsed.device_scale_factor, unsafe_request_origin)),
@@ -135,21 +150,14 @@ void FaviconSource::StartDataRequest(
       }
     }
 
-    // |url| is an origin, and it may not have had a favicon associated with it.
-    // A trickier case is when |url| only has domain-scoped cookies, but
-    // visitors are redirected to HTTPS on visiting. Then |url| defaults to a
-    // HTTP scheme, but the favicon will be associated with the HTTPS URL and
-    // hence won't be found if we include the scheme in the lookup. Set
-    // |fallback_to_host|=true so the favicon database will fall back to
-    // matching only the hostname to have the best chance of finding a favicon.
-    const bool fallback_to_host = true;
-    favicon_service->GetRawFaviconForPageURL(
-        url, {favicon_base::IconType::kFavicon}, desired_size_in_pixel,
-        fallback_to_host,
-        base::Bind(
+    favicon_request_handler_.GetRawFaviconForPageURL(
+        url, desired_size_in_pixel,
+        base::BindRepeating(
             &FaviconSource::OnFaviconDataAvailable, base::Unretained(this),
             IconRequest(callback, url, parsed.size_in_dip,
                         parsed.device_scale_factor, unsafe_request_origin)),
+        unsafe_request_origin, favicon_service,
+        base::BindOnce(&GetSyncedFaviconForPageURL, base::Unretained(profile_)),
         &cancelable_task_tracker_);
   }
 }
@@ -182,23 +190,6 @@ bool FaviconSource::ShouldServiceRequest(
                                              render_process_id);
 }
 
-bool FaviconSource::HandleMissingResource(const IconRequest& request) {
-  // If the favicon is not available, try to use the synced favicon.
-  sync_sessions::SessionSyncService* service =
-      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  sync_sessions::OpenTabsUIDelegate* open_tabs =
-      service ? service->GetOpenTabsUIDelegate() : nullptr;
-
-  scoped_refptr<base::RefCountedMemory> response;
-  if (open_tabs &&
-      open_tabs->GetSyncedFaviconForPageURL(request.request_path.spec(),
-                                            &response)) {
-    request.callback.Run(response.get());
-    return true;
-  }
-  return false;
-}
-
 ui::NativeTheme* FaviconSource::GetNativeTheme() {
   return ui::NativeTheme::GetInstanceForNativeUi();
 }
@@ -207,18 +198,9 @@ void FaviconSource::OnFaviconDataAvailable(
     const IconRequest& request,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
-    favicon::RecordFaviconRequestMetric(request.icon_request_origin,
-                                        favicon::FaviconAvailability::kLocal);
     // Forward the data along to the networking system.
     request.callback.Run(bitmap_result.bitmap_data.get());
-  } else if (HandleMissingResource(request)) {
-    favicon::RecordFaviconRequestMetric(request.icon_request_origin,
-                                        favicon::FaviconAvailability::kSync);
-    // The response was already treated by HandleMissingResource.
   } else {
-    favicon::RecordFaviconRequestMetric(
-        request.icon_request_origin,
-        favicon::FaviconAvailability::kNotAvailable);
     SendDefaultResponse(request);
   }
 }
