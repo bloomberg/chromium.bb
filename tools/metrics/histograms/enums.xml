@@ -43492,6 +43492,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PageLoadMetricsAMPViewType">
+  <obsolete>
+    Deprecated 5/2019
+  </obsolete>
   <int value="0" label="None"/>
   <int value="1" label="AMP Cache"/>
   <int value="2" label="Google Search AMP Viewer"/>
