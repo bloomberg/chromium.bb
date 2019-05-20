@@ -16,7 +16,7 @@ class UnifiedSystemTrayController;
 
 // Controller of vpn feature pod button.
 class VPNFeaturePodController : public FeaturePodControllerBase,
-                                public TrayNetworkStateObserver::Delegate {
+                                public TrayNetworkStateObserver::Observer {
  public:
   VPNFeaturePodController(UnifiedSystemTrayController* tray_controller);
   ~VPNFeaturePodController() override;
@@ -26,13 +26,11 @@ class VPNFeaturePodController : public FeaturePodControllerBase,
   void OnIconPressed() override;
   SystemTrayItemUmaType GetUmaType() const override;
 
-  // TrayNetworkStateObserver::Delegate:
-  void NetworkStateChanged(bool notify_a11y) override;
+  // TrayNetworkStateObserver::Observer:
+  void ActiveNetworkStateChanged() override;
 
  private:
   void Update();
-
-  const std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   // Unowned.
   UnifiedSystemTrayController* const tray_controller_;

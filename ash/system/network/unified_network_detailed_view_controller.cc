@@ -6,6 +6,7 @@
 
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_list.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 
@@ -14,12 +15,13 @@ namespace ash {
 UnifiedNetworkDetailedViewController::UnifiedNetworkDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
-          std::make_unique<DetailedViewDelegate>(tray_controller)),
-      network_state_observer_(
-          std::make_unique<TrayNetworkStateObserver>(this)) {}
+          std::make_unique<DetailedViewDelegate>(tray_controller)) {
+  Shell::Get()->system_tray_model()->network_observer()->AddObserver(this);
+}
 
-UnifiedNetworkDetailedViewController::~UnifiedNetworkDetailedViewController() =
-    default;
+UnifiedNetworkDetailedViewController::~UnifiedNetworkDetailedViewController() {
+  Shell::Get()->system_tray_model()->network_observer()->RemoveObserver(this);
+}
 
 views::View* UnifiedNetworkDetailedViewController::CreateView() {
   DCHECK(!view_);
@@ -30,8 +32,12 @@ views::View* UnifiedNetworkDetailedViewController::CreateView() {
   return view_;
 }
 
-void UnifiedNetworkDetailedViewController::NetworkStateChanged(
-    bool notify_a11y) {
+void UnifiedNetworkDetailedViewController::ActiveNetworkStateChanged() {
+  if (view_)
+    view_->Update();
+}
+
+void UnifiedNetworkDetailedViewController::NetworkListChanged() {
   if (view_)
     view_->Update();
 }

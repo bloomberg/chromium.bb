@@ -8,48 +8,67 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace ash {
 
-class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
+class TrayNetworkStateObserver
+    : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
-  class Delegate {
+  // TrayNetworkStateObserver observes the mojo interface, and in turn has UI
+  // observers that only need to be informed when the UI should be refreshed.
+  class Observer : public base::CheckedObserver {
    public:
-    // Called when any interesting network changes occur. The frequency of this
-    // event is limited to kUpdateFrequencyMs.
-    virtual void NetworkStateChanged(bool notify_a11y) = 0;
+    // The active networks changed or a device enabled state changed.
+    virtual void ActiveNetworkStateChanged();
 
-   protected:
-    virtual ~Delegate() {}
+    // The list of networks changed. The frequency of this event is limited.
+    virtual void NetworkListChanged();
   };
 
-  explicit TrayNetworkStateObserver(Delegate* delegate);
-
+  explicit TrayNetworkStateObserver(service_manager::Connector* connector);
   ~TrayNetworkStateObserver() override;
 
-  // NetworkStateHandlerObserver
-  void NetworkListChanged() override;
-  void DeviceListChanged() override;
-  void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
-                                 active_networks) override;
-  void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
-  void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // CrosNetworkConfigObserver
+  void OnActiveNetworksChanged(
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>)
+      override;
+  void OnNetworkStateListChanged() override;
+  void OnDeviceStateListChanged() override;
 
  private:
-  void SignalUpdate(bool notify_a11y);
-  void SendNetworkStateChanged(bool notify_a11y);
+  void BindCrosNetworkConfig(service_manager::Connector* connector);
+  void UpdateDeviceEnabledStates();
+  void OnGetDeviceStateList(
+      std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
+          devices);
+  void NotifyNetworkListChanged();
+  void SendActiveNetworkStateChanged();
+  void SendNetworkListChanged();
 
-  // Unowned Delegate pointer (must outlive this instance).
-  Delegate* delegate_;
+  chromeos::network_config::mojom::CrosNetworkConfigPtr
+      cros_network_config_ptr_;
+  mojo::Binding<chromeos::network_config::mojom::CrosNetworkConfigObserver>
+      cros_network_config_observer_binding_{this};
 
-  // Frequency at which to push NetworkStateChanged updates. This avoids
+  base::ObserverList<Observer> observer_list_;
+
+  // Frequency at which to push NetworkListChanged updates. This avoids
   // unnecessarily frequent UI updates (which can be expensive). We set this
   // to 0 for tests to eliminate timing variance.
   int update_frequency_;
 
-  // Timer used to limit the frequency of NetworkStateChanged updates.
+  // Timer used to limit the frequency of NetworkListChanged updates.
   base::OneShotTimer timer_;
 
   // The cached states of whether Wi-Fi and Mobile are enabled. The tray

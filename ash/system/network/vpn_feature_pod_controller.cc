@@ -8,6 +8,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/tray/tray_constants.h"
@@ -62,10 +63,13 @@ bool IsVPNConnected() {
 
 VPNFeaturePodController::VPNFeaturePodController(
     UnifiedSystemTrayController* tray_controller)
-    : network_state_observer_(std::make_unique<TrayNetworkStateObserver>(this)),
-      tray_controller_(tray_controller) {}
+    : tray_controller_(tray_controller) {
+  Shell::Get()->system_tray_model()->network_observer()->AddObserver(this);
+}
 
-VPNFeaturePodController::~VPNFeaturePodController() = default;
+VPNFeaturePodController::~VPNFeaturePodController() {
+  Shell::Get()->system_tray_model()->network_observer()->RemoveObserver(this);
+}
 
 FeaturePodButton* VPNFeaturePodController::CreateButton() {
   DCHECK(!button_);
@@ -88,7 +92,7 @@ SystemTrayItemUmaType VPNFeaturePodController::GetUmaType() const {
   return SystemTrayItemUmaType::UMA_VPN;
 }
 
-void VPNFeaturePodController::NetworkStateChanged(bool notify_a11y) {
+void VPNFeaturePodController::ActiveNetworkStateChanged() {
   Update();
 }
 

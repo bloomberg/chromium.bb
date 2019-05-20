@@ -23,6 +23,7 @@ class EnterpriseDomainModel;
 class LocaleModel;
 class SessionLengthLimitModel;
 class TracingModel;
+class TrayNetworkStateObserver;
 class UpdateModel;
 class VirtualKeyboardModel;
 
@@ -70,7 +71,9 @@ class SystemTrayModel : public mojom::SystemTray {
   ActiveNetworkIcon* active_network_icon() {
     return active_network_icon_.get();
   }
-
+  TrayNetworkStateObserver* network_observer() {
+    return network_observer_.get();
+  }
   const mojom::SystemTrayClientPtr& client_ptr() { return client_ptr_; }
 
  private:
@@ -82,6 +85,7 @@ class SystemTrayModel : public mojom::SystemTray {
   std::unique_ptr<UpdateModel> update_model_;
   std::unique_ptr<VirtualKeyboardModel> virtual_keyboard_;
   std::unique_ptr<ActiveNetworkIcon> active_network_icon_;
+  std::unique_ptr<TrayNetworkStateObserver> network_observer_;
 
   // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
   // * BluetoothModel

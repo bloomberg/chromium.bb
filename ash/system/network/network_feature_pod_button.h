@@ -15,7 +15,7 @@ namespace ash {
 // animation to implement network connecting animation on feature pod button.
 class NetworkFeaturePodButton : public FeaturePodButton,
                                 public network_icon::AnimationObserver,
-                                public TrayNetworkStateObserver::Delegate {
+                                public TrayNetworkStateObserver::Observer {
  public:
   explicit NetworkFeaturePodButton(FeaturePodControllerBase* controller);
   ~NetworkFeaturePodButton() override;
@@ -23,14 +23,12 @@ class NetworkFeaturePodButton : public FeaturePodButton,
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
 
-  // TrayNetworkStateObserver::Delegate:
-  void NetworkStateChanged(bool notify_a11y) override;
+  // TrayNetworkStateObserver::Observer:
+  void ActiveNetworkStateChanged() override;
 
  private:
   void Update();
   void SetTooltipState(const base::string16& tooltip_state);
-
-  std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkFeaturePodButton);
 };

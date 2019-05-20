@@ -20,7 +20,7 @@ class UnifiedSystemTrayController;
 // Controller of Network detailed view in UnifiedSystemTray.
 class UnifiedNetworkDetailedViewController
     : public DetailedViewController,
-      public TrayNetworkStateObserver::Delegate {
+      public TrayNetworkStateObserver::Observer {
  public:
   explicit UnifiedNetworkDetailedViewController(
       UnifiedSystemTrayController* tray_controller);
@@ -29,12 +29,12 @@ class UnifiedNetworkDetailedViewController
   // DetailedViewControllerBase:
   views::View* CreateView() override;
 
-  // TrayNetworkStateObserver::Delegate:
-  void NetworkStateChanged(bool notify_a11y) override;
+  // TrayNetworkStateObserver::Observer:
+  void ActiveNetworkStateChanged() override;
+  void NetworkListChanged() override;
 
  private:
   const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
-  const std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   tray::NetworkListView* view_ = nullptr;
 

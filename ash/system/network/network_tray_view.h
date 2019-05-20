@@ -28,7 +28,7 @@ const chromeos::NetworkState* GetConnectedNetwork();
 class NetworkTrayView : public TrayItemView,
                         public network_icon::AnimationObserver,
                         public SessionObserver,
-                        public TrayNetworkStateObserver::Delegate {
+                        public TrayNetworkStateObserver::Observer {
  public:
   ~NetworkTrayView() override;
 
@@ -52,8 +52,9 @@ class NetworkTrayView : public TrayItemView,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
-  // TrayNetworkStateObserver::Delegate:
-  void NetworkStateChanged(bool notify_a11y) override;
+  // TrayNetworkStateObserver::Observer:
+  void ActiveNetworkStateChanged() override;
+  void NetworkListChanged() override;
 
  private:
   NetworkTrayView(Shelf* shelf,
@@ -71,7 +72,6 @@ class NetworkTrayView : public TrayItemView,
   base::string16 accessible_description_;
   base::string16 connection_status_tooltip_;
 
-  std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
   std::unique_ptr<NetworkTrayIconStrategy> network_tray_icon_strategy_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);

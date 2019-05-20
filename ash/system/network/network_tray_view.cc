@@ -9,6 +9,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_tray_icon_strategy.h"
@@ -34,6 +35,7 @@ const NetworkState* GetConnectedNetwork() {
 
 NetworkTrayView::~NetworkTrayView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+  Shell::Get()->system_tray_model()->network_observer()->RemoveObserver(this);
 }
 
 NetworkTrayView* NetworkTrayView::CreateForDefault(Shelf* shelf) {
@@ -80,17 +82,22 @@ void NetworkTrayView::OnSessionStateChanged(
   UpdateNetworkStateHandlerIcon();
 }
 
-void NetworkTrayView::NetworkStateChanged(bool notify_a11y) {
+void NetworkTrayView::ActiveNetworkStateChanged() {
   UpdateNetworkStateHandlerIcon();
-  UpdateConnectionStatus(GetConnectedNetwork(), notify_a11y);
+  UpdateConnectionStatus(GetConnectedNetwork(), true /* notify _a11y */);
+}
+
+void NetworkTrayView::NetworkListChanged() {
+  UpdateNetworkStateHandlerIcon();
+  UpdateConnectionStatus(GetConnectedNetwork(), false /* notify_a11y */);
 }
 
 NetworkTrayView::NetworkTrayView(
     Shelf* shelf,
     std::unique_ptr<NetworkTrayIconStrategy> network_tray_icon_strategy)
     : TrayItemView(shelf),
-      network_state_observer_(std::make_unique<TrayNetworkStateObserver>(this)),
       network_tray_icon_strategy_(std::move(network_tray_icon_strategy)) {
+  Shell::Get()->system_tray_model()->network_observer()->AddObserver(this);
   CreateImageView();
   UpdateNetworkStateHandlerIcon();
   UpdateConnectionStatus(GetConnectedNetwork(), true /* notify_a11y */);
