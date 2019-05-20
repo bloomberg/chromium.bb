@@ -52,6 +52,8 @@ class BASE_EXPORT AtExitManager {
   // Disable all registered at-exit callbacks. This is used only in a single-
   // process mode.
   static void DisableAllAtExitManagers();
+  // Return true if an AtExitManager has been initialized.
+  static bool IsInitialized();
 
  protected:
   // This constructor will allow this instance of AtExitManager to be created
