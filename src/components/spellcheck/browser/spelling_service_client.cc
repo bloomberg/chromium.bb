@@ -19,7 +19,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
+
+// SHEZ: Remove dependency on data_use_measurement
+// #include "components/data_use_measurement/core/data_use_user_data.h"
+
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -99,7 +102,8 @@ bool SpellingServiceClient::RequestTextCheck(
       "\"key\":%s"
       "}"
       "}";
-  std::string api_key = base::GetQuotedJSONString(google_apis::GetAPIKey());
+  // SHEZ: remove dependency on google_apis
+  std::string api_key = ""; // base::GetQuotedJSONString(google_apis::GetAPIKey());
   std::string request = base::StringPrintf(
       kSpellingRequest, type, encoded_text.c_str(), language_code.c_str(),
       country_code.c_str(), api_key.c_str());
@@ -159,9 +163,12 @@ bool SpellingServiceClient::RequestTextCheck(
           ? url_loader_factory_for_testing_
           : content::BrowserContext::GetDefaultStoragePartition(context)
                 ->GetURLLoaderFactoryForBrowserProcess();
+  // TODO(blpwtk2): Remove dependency on data_use_measurement
+
   // TODO(https://crbug.com/808498): Re-add data use measurement once
   // SimpleURLLoader supports it.
   // ID=data_use_measurement::DataUseUserData::SPELL_CHECKER
+
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory.get(),
       base::BindOnce(&SpellingServiceClient::OnSimpleLoaderComplete,
