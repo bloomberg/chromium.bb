@@ -314,7 +314,7 @@ int main(int argc, char *argv[]) {
                      info.frame_height, 1)) {
     die("Failed to allocate image.");
   }
-  infile = fopen(args.input, "r");
+  infile = fopen(args.input, "rb");
   if (!infile) {
     die("Failed to open input file:", args.input);
   }
