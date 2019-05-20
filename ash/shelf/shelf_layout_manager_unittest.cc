@@ -1309,9 +1309,6 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
 
 // Tests that the shelf should be visible when in overview mode.
 TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
-  ui::ScopedAnimationDurationScaleMode regular_animations(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   window->Show();
   Shelf* shelf = GetPrimaryShelf();
@@ -1329,22 +1326,14 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Tests that the shelf is visible when in overview mode
   overview_controller->ToggleOverview();
-  ash::ShellTestApi().WaitForOverviewAnimationState(
-      ash::OverviewAnimationState::kEnterAnimationComplete);
-
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_BACKGROUND_OVERVIEW, GetShelfWidget()->GetBackgroundType());
 
   // Test that on exiting overview mode, the shelf returns to auto hide state.
   overview_controller->ToggleOverview();
-  ash::ShellTestApi().WaitForOverviewAnimationState(
-      ash::OverviewAnimationState::kExitAnimationComplete);
-
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  EXPECT_EQ(display.bounds().bottom() - kHiddenShelfInScreenPortion,
-            GetShelfWidget()->GetWindowBoundsInScreen().y());
 }
 
 // Assertions around SetAutoHideBehavior.
