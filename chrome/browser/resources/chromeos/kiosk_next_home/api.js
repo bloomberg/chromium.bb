@@ -25,6 +25,16 @@ kioskNextHome.Bridge = class {
   addListener(listener) {}
 
   /**
+   * @return {!Promise<string>} Promise for the user's given name.
+   */
+  getUserGivenName() {}
+
+  /**
+   * @return {!Promise<string>} Promise for the user's display name.
+   */
+  getUserDisplayName() {}
+
+  /**
    * Gets the obfuscated account Gaia ID associated with the current user
    * session.
    * @return {!Promise<string>} Promise for the obfuscated account Gaia ID.

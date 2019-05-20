@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/chromeos/kiosk_next_home/app_controller_service.h"
+#include "chrome/browser/chromeos/kiosk_next_home/identity_controller_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "services/identity/public/mojom/constants.mojom.h"
@@ -27,6 +28,12 @@ void KioskNextHomeInterfaceBrokerImpl::GetIdentityAccessor(
     ::identity::mojom::IdentityAccessorRequest request) {
   connector_->BindInterface(::identity::mojom::kServiceName,
                             std::move(request));
+}
+
+void KioskNextHomeInterfaceBrokerImpl::GetIdentityController(
+    mojom::IdentityControllerRequest request) {
+  identity_controller_ =
+      std::make_unique<IdentityControllerImpl>(std::move(request));
 }
 
 void KioskNextHomeInterfaceBrokerImpl::GetAppController(

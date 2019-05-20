@@ -5,6 +5,7 @@
 module chromeos.kiosk_next_home.mojom;
 
 import "chrome/browser/chromeos/kiosk_next_home/mojom/app_controller.mojom";
+import "chrome/browser/chromeos/kiosk_next_home/mojom/identity_controller.mojom";
 import "services/identity/public/mojom/identity_accessor.mojom";
 
 // Single entry point for any interface requests issued by the Kiosk Next
@@ -12,7 +13,11 @@ import "services/identity/public/mojom/identity_accessor.mojom";
 // its functionality.
 interface KioskNextHomeInterfaceBroker {
   // Binds IdentityAccessor service request.
+  // TODO(brunoad): migrate needed methods to IdentityController and remove.
   GetIdentityAccessor(identity.mojom.IdentityAccessor& request);
+
+  // Binds the IdentityController service request.
+  GetIdentityController(IdentityController& request);
 
   // Binds the AppController service request.
   GetAppController(AppController& request);

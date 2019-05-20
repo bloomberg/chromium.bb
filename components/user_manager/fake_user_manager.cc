@@ -86,6 +86,18 @@ user_manager::UserList FakeUserManager::GetUsersAllowedForMultiProfile() const {
   return result;
 }
 
+void FakeUserManager::UpdateUserAccountData(
+    const AccountId& account_id,
+    const UserAccountData& account_data) {
+  for (user_manager::User* user : users_) {
+    if (user->GetAccountId() == account_id) {
+      user->set_display_name(account_data.display_name());
+      user->set_given_name(account_data.given_name());
+      return;
+    }
+  }
+}
+
 void FakeUserManager::UserLoggedIn(const AccountId& account_id,
                                    const std::string& username_hash,
                                    bool browser_restart,
