@@ -30,6 +30,7 @@
 #include "ui/events/blink/event_with_callback.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
+#include "ui/events/blink/momentum_scroll_jank_tracker.h"
 #include "ui/events/blink/scroll_predictor.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -347,6 +348,24 @@ void InputHandlerProxy::DispatchSingleInputEvent(
     case blink::WebGestureEvent::kGestureScrollEnd:
     case blink::WebGestureEvent::kGesturePinchEnd:
       has_ongoing_compositor_scroll_or_pinch_ = false;
+      break;
+    default:
+      break;
+  }
+
+  // Handle jank tracking during the momentum phase of a scroll gesture. The
+  // class filters non-momentum events internally.
+  switch (type) {
+    case blink::WebGestureEvent::kGestureScrollBegin:
+      momentum_scroll_jank_tracker_ =
+          std::make_unique<MomentumScrollJankTracker>();
+      break;
+    case blink::WebGestureEvent::kGestureScrollUpdate:
+      momentum_scroll_jank_tracker_->OnDispatchedInputEvent(
+          event_with_callback.get(), now);
+      break;
+    case blink::WebGestureEvent::kGestureScrollEnd:
+      momentum_scroll_jank_tracker_.reset();
       break;
     default:
       break;

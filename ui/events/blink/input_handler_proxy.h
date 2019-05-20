@@ -30,6 +30,7 @@ namespace ui {
 namespace test {
 class InputHandlerProxyTest;
 class InputHandlerProxyEventQueueTest;
+class InputHandlerProxyMomentumScrollJankTest;
 class TestInputHandlerProxy;
 }
 
@@ -40,6 +41,7 @@ class InputScrollElasticityController;
 class ScrollPredictor;
 class SynchronousInputHandler;
 class SynchronousInputHandlerProxy;
+class MomentumScrollJankTracker;
 struct DidOverscrollParams;
 
 // This class is a proxy between the blink web input events for a WebWidget and
@@ -135,6 +137,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   friend class test::TestInputHandlerProxy;
   friend class test::InputHandlerProxyTest;
   friend class test::InputHandlerProxyEventQueueTest;
+  friend class test::InputHandlerProxyMomentumScrollJankTest;
 
   void DispatchSingleInputEvent(std::unique_ptr<EventWithCallback>,
                                 const base::TimeTicks);
@@ -250,6 +253,9 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // main thread, or all events (touch start/end/move).
   bool skip_touch_filter_discrete_ = false;
   bool skip_touch_filter_all_ = false;
+
+  // Helpers for the momentum scroll jank UMAs.
+  std::unique_ptr<MomentumScrollJankTracker> momentum_scroll_jank_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };
