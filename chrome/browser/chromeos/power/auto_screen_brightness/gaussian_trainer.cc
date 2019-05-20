@@ -394,7 +394,9 @@ MonotoneCubicSpline GaussianTrainer::Train(
   if (!need_to_update_curve_)
     return *current_curve_;
 
-  current_curve_.emplace(MonotoneCubicSpline(ambient_log_lux_, brightness_));
+  current_curve_ = MonotoneCubicSpline::CreateMonotoneCubicSpline(
+      ambient_log_lux_, brightness_);
+  DCHECK(current_curve_);
   need_to_update_curve_ = false;
   return *current_curve_;
 }

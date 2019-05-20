@@ -223,20 +223,15 @@ void Adapter::OnModelTrained(const MonotoneCubicSpline& brightness_curve) {
   if (adapter_status_ == Status::kDisabled)
     return;
 
-  personal_curve_.emplace(brightness_curve);
+  model_.personal_curve = brightness_curve;
+  ++model_.iteration_count;
 }
 
-void Adapter::OnModelInitialized(
-    const base::Optional<MonotoneCubicSpline>& global_curve,
-    const base::Optional<MonotoneCubicSpline>& personal_curve) {
+void Adapter::OnModelInitialized(const Model& model) {
   DCHECK(!model_initialized_);
 
   model_initialized_ = true;
-
-  if (global_curve)
-    global_curve_.emplace(*global_curve);
-  if (personal_curve)
-    personal_curve_.emplace(*personal_curve);
+  model_ = model;
 
   UpdateStatus();
 }
@@ -279,12 +274,12 @@ bool Adapter::IsAppliedForTesting() const {
 }
 
 base::Optional<MonotoneCubicSpline> Adapter::GetGlobalCurveForTesting() const {
-  return global_curve_;
+  return model_.global_curve;
 }
 
 base::Optional<MonotoneCubicSpline> Adapter::GetPersonalCurveForTesting()
     const {
-  return personal_curve_;
+  return model_.personal_curve;
 }
 
 base::Optional<AlsAvgStdDev> Adapter::GetAverageAmbientWithStdDevForTesting(
@@ -367,21 +362,8 @@ void Adapter::InitParams(const ModelConfig& model_config) {
     return;
   }
   params_.model_curve = static_cast<ModelCurve>(model_curve);
-
-  const int auto_brightness_als_horizon_seconds =
-      GetFieldTrialParamByFeatureAsInt(
-          features::kAutoScreenBrightness,
-          "auto_brightness_als_horizon_seconds",
-          model_config.auto_brightness_als_horizon_seconds);
-
-  if (auto_brightness_als_horizon_seconds <= 0) {
-    adapter_status_ = Status::kDisabled;
-    LogParameterError(ParameterError::kAdapterError);
-    return;
-  }
-
-  params_.auto_brightness_als_horizon =
-      base::TimeDelta::FromSeconds(auto_brightness_als_horizon_seconds);
+  params_.auto_brightness_als_horizon = base::TimeDelta::FromSeconds(
+      model_config.auto_brightness_als_horizon_seconds);
   log_als_values_ = std::make_unique<AmbientLightSampleBuffer>(
       params_.auto_brightness_als_horizon);
 
@@ -431,7 +413,7 @@ void Adapter::UpdateStatus() {
   if (!model_initialized_)
     return;
 
-  if (!global_curve_) {
+  if (!model_.global_curve) {
     adapter_status_ = Status::kDisabled;
     SetMetricsReporterDeviceClass();
     return;
@@ -521,7 +503,7 @@ Adapter::AdapterDecision Adapter::CanAdjustBrightness(base::TimeTicks now) {
     return decision;
   }
 
-  if (params_.model_curve == ModelCurve::kPersonal && !personal_curve_) {
+  if (params_.model_curve == ModelCurve::kPersonal && !model_.personal_curve) {
     decision.no_brightness_change_cause =
         NoBrightnessChangeCause::kMissingPersonalCurve;
     return decision;
@@ -631,15 +613,15 @@ double Adapter::GetBrightnessBasedOnAmbientLogLux(
   DCHECK_EQ(adapter_status_, Status::kSuccess);
   switch (params_.model_curve) {
     case ModelCurve::kGlobal:
-      return global_curve_->Interpolate(ambient_log_lux);
+      return model_.global_curve->Interpolate(ambient_log_lux);
     case ModelCurve::kPersonal:
-      DCHECK(personal_curve_);
-      return personal_curve_->Interpolate(ambient_log_lux);
+      DCHECK(model_.personal_curve);
+      return model_.personal_curve->Interpolate(ambient_log_lux);
     default:
       // We use the latest curve available.
-      if (personal_curve_)
-        return personal_curve_->Interpolate(ambient_log_lux);
-      return global_curve_->Interpolate(ambient_log_lux);
+      if (model_.personal_curve)
+        return model_.personal_curve->Interpolate(ambient_log_lux);
+      return model_.global_curve->Interpolate(ambient_log_lux);
   }
 }
 

@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/metrics_reporter.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/model_config.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/model_config_loader.h"
-#include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/modeller_impl.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -185,9 +185,7 @@ class Adapter : public AlsReader::Observer,
 
   // Modeller::Observer overrides:
   void OnModelTrained(const MonotoneCubicSpline& brightness_curve) override;
-  void OnModelInitialized(
-      const base::Optional<MonotoneCubicSpline>& global_curve,
-      const base::Optional<MonotoneCubicSpline>& personal_curve) override;
+  void OnModelInitialized(const Model& model) override;
 
   // ModelConfigLoader::Observer overrides:
   void OnModelConfigLoaded(base::Optional<ModelConfig> model_config) override;
@@ -231,7 +229,8 @@ class Adapter : public AlsReader::Observer,
           MetricsReporter* metrics_reporter,
           const base::TickClock* tick_clock);
 
-  // Called by |OnModelConfigLoaded|. It will initialize all params used by
+  // Called by |OnModelConfigLoaded| and only if |model_config| has been checked
+  // as valid by ModelConfigLoader. It will initialize all params used by
   // the modeller from |model_config| and also other experiment flags. If
   // any param is invalid, it will disable the adapter.
   void InitParams(const ModelConfig& model_config);
@@ -258,9 +257,9 @@ class Adapter : public AlsReader::Observer,
   void AdjustBrightness(BrightnessChangeCause cause, double log_als_avg);
 
   // Calculates brightness from given |ambient_log_lux| based on either
-  // |global_curve_| or |personal_curve_| (as specified by the experiment
-  // params). It's only safe to call this method when |CanAdjustBrightness|
-  // returns a |BrightnessChangeCause| in its decision.
+  // |model_.global_curve| or |model_.personal_curve| (as specified by the
+  // experiment params). It's only safe to call this method when
+  // |CanAdjustBrightness| returns a |BrightnessChangeCause| in its decision.
   double GetBrightnessBasedOnAmbientLogLux(double ambient_log_lux) const;
 
   // Called when brightness is changed by the model or user. This function
@@ -362,8 +361,7 @@ class Adapter : public AlsReader::Observer,
   base::Optional<double> brightening_threshold_;
   base::Optional<double> darkening_threshold_;
 
-  base::Optional<MonotoneCubicSpline> global_curve_;
-  base::Optional<MonotoneCubicSpline> personal_curve_;
+  Model model_;
 
   // |average_log_ambient_lux_| is only recorded when screen brightness is
   // changed by either model or user. New thresholds will be calculated from it.

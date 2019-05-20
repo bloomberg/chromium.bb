@@ -20,8 +20,12 @@ namespace auto_screen_brightness {
 class GaussianTrainerTest : public testing::Test {
  public:
   GaussianTrainerTest()
-      : global_curve_(MonotoneCubicSpline(log_lux_, global_brightness_)),
-        personal_curve_(MonotoneCubicSpline(log_lux_, personal_brightness_)) {}
+      : global_curve_(*MonotoneCubicSpline::CreateMonotoneCubicSpline(
+            log_lux_,
+            global_brightness_)),
+        personal_curve_(*MonotoneCubicSpline::CreateMonotoneCubicSpline(
+            log_lux_,
+            personal_brightness_)) {}
 
   void ResetModelWithParams(const std::map<std::string, std::string>& params) {
     base::test::ScopedFeatureList scoped_feature_list;
@@ -551,11 +555,13 @@ TEST_F(GaussianTrainerTest, TrainedCurveValue) {
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
   const MonotoneCubicSpline trained_curve = gaussian_trainer_->Train({data});
-  const MonotoneCubicSpline expected_curve(
-      log_lux_,
-      {3.0,  8.0,  12.48, 18.72, 24.96, 31.2, 37.44, 43.68, 49.92, 56.16, 62.4,
-       62.4, 62.4, 66.0,  71.0,  76.0,  81.0, 86.0,  91.0,  95,    100.0});
-  EXPECT_EQ(trained_curve, expected_curve);
+  const base::Optional<MonotoneCubicSpline> expected_curve =
+      MonotoneCubicSpline::CreateMonotoneCubicSpline(
+          log_lux_, {3.0,   8.0,   12.48, 18.72, 24.96, 31.2, 37.44,
+                     43.68, 49.92, 56.16, 62.4,  62.4,  62.4, 66.0,
+                     71.0,  76.0,  81.0,  86.0,  91.0,  95,   100.0});
+  DCHECK(expected_curve);
+  EXPECT_EQ(trained_curve, *expected_curve);
 }
 
 // Initial personal curve doesn't satisfy slope constraints.

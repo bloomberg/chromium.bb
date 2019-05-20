@@ -60,7 +60,7 @@ bool IsValidModelConfig(const ModelConfig& model_config) {
     return false;
 
   if (model_config.log_lux.size() != model_config.brightness.size() ||
-      model_config.brightness.empty())
+      model_config.brightness.size() < 2)
     return false;
 
   if (model_config.metrics_key.empty())
