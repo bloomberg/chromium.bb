@@ -23,8 +23,6 @@
 #include "content/test/test_render_widget_host.h"
 #include "ui/base/page_transition_types.h"
 
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
-
 namespace net {
 class IPEndPoint;
 }
@@ -65,6 +63,16 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
   bool IsTestRenderFrameHost() const override;
+
+  // Public overrides to expose RenderFrameHostImpl's mojo methods to tests.
+  void DidFailProvisionalLoadWithError(
+      const GURL& url,
+      int error_code,
+      const base::string16& error_description,
+      bool showing_repost_interstitial) override;
+  void DidFailLoadWithError(const GURL& url,
+                            int error_code,
+                            const base::string16& error_description) override;
 
   // RenderFrameHostTester implementation.
   void InitializeRenderFrameIfNeeded() override;

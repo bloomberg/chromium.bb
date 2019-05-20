@@ -108,18 +108,20 @@ NavigationController* NavigatorImpl::GetController() {
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
-    const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
-  VLOG(1) << "Failed Provisional Load: " << params.url.possibly_invalid_spec()
-          << ", error_code: " << params.error_code
-          << ", error_description: " << params.error_description
-          << ", showing_repost_interstitial: "
-          << params.showing_repost_interstitial
+    const GURL& url,
+    int error_code,
+    const base::string16& error_description,
+    bool showing_repost_interstitial) {
+  VLOG(1) << "Failed Provisional Load: " << url.possibly_invalid_spec()
+          << ", error_code: " << error_code
+          << ", error_description: " << error_description
+          << ", showing_repost_interstitial: " << showing_repost_interstitial
           << ", frame_id: " << render_frame_host->GetRoutingID();
-  GURL validated_url(params.url);
+  GURL validated_url(url);
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
 
-  if (net::ERR_ABORTED == params.error_code) {
+  if (net::ERR_ABORTED == error_code) {
     // EVIL HACK ALERT! Ignore failed loads when we're showing interstitials.
     // This means that the interstitial won't be torn down properly, which is
     // bad. But if we have an interstitial, go back to another tab type, and

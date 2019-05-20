@@ -99,8 +99,6 @@ class GURL;
 struct AccessibilityHostMsg_EventBundleParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
 struct AccessibilityHostMsg_LocationChangeParams;
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
-struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_TextTrackSettings_Params;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -1064,11 +1062,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
-  void OnDidFailProvisionalLoadWithError(
-      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
-  void OnDidFailLoadWithError(const GURL& url,
-                              int error_code,
-                              const base::string16& error_description);
   void OnUpdateState(const PageState& state);
   void OnBeforeUnloadACK(
       bool proceed,
@@ -1220,7 +1213,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
-
+  void DidFailProvisionalLoadWithError(
+      const GURL& url,
+      int error_code,
+      const base::string16& error_description,
+      bool showing_repost_interstitial) override;
+  void DidFailLoadWithError(const GURL& url,
+                            int error_code,
+                            const base::string16& error_description) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

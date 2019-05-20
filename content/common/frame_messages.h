@@ -337,19 +337,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServerTimingInfo)
   IPC_STRUCT_TRAITS_MEMBER(description)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
-  // Error code as reported in the DidFailProvisionalLoad callback.
-  IPC_STRUCT_MEMBER(int, error_code)
-  // An error message generated from the error_code. This can be an empty
-  // string if we were unable to find a meaningful description.
-  IPC_STRUCT_MEMBER(base::string16, error_description)
-  // The URL that the error is reported for.
-  IPC_STRUCT_MEMBER(GURL, url)
-  // True if the failure is the result of navigating to a POST again
-  // and we're going to show the POST interstitial.
-  IPC_STRUCT_MEMBER(bool, showing_repost_interstitial)
-IPC_STRUCT_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_MEMBER(nav_entry_id)
   IPC_STRUCT_TRAITS_MEMBER(item_sequence_number)
@@ -1135,17 +1122,9 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_RenderProcessGone,
 // Sent by the renderer when the frame becomes focused.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
-// Sent when the renderer fails a provisional load with an error.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,
-                    FrameHostMsg_DidFailProvisionalLoadWithError_Params)
-
 // Notifies the browser that a document has been loaded.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFinishDocumentLoad)
 
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidFailLoadWithError,
-                    GURL /* validated_url */,
-                    int /* error_code */,
-                    base::string16 /* error_description */)
 
 // Sent when the renderer is done loading a page.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)

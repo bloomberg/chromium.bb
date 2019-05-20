@@ -1403,10 +1403,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailProvisionalLoadWithError,
-                        OnDidFailProvisionalLoadWithError)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailLoadWithError,
-                        OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
@@ -2161,13 +2157,15 @@ void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
     uint64_t features_mask) {
   scheduler_tracked_features_ = features_mask;
 }
-
-void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
-    const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
+void RenderFrameHostImpl::DidFailProvisionalLoadWithError(
+    const GURL& url,
+    int error_code,
+    const base::string16& error_description,
+    bool showing_repost_interstitial) {
   TRACE_EVENT2("navigation",
-               "RenderFrameHostImpl::OnDidFailProvisionalLoadWithError",
+               "RenderFrameHostImpl::DidFailProvisionalLoadWithError",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(),
-               "error", params.error_code);
+               "error", error_code);
   // TODO(clamy): Kill the renderer with RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE and
   // return early if navigation_handle_ is null, once we prevent that case from
   // happening in practice. See https://crbug.com/605289.
@@ -2175,18 +2173,19 @@ void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
   // Update the error code in the NavigationHandle of the navigation.
   if (GetNavigationHandle()) {
     GetNavigationHandle()->set_net_error_code(
-        static_cast<net::Error>(params.error_code));
+        static_cast<net::Error>(error_code));
   }
 
-  frame_tree_node_->navigator()->DidFailProvisionalLoadWithError(this, params);
+  frame_tree_node_->navigator()->DidFailProvisionalLoadWithError(
+      this, url, error_code, error_description, showing_repost_interstitial);
 }
 
-void RenderFrameHostImpl::OnDidFailLoadWithError(
+void RenderFrameHostImpl::DidFailLoadWithError(
     const GURL& url,
     int error_code,
     const base::string16& error_description) {
   TRACE_EVENT2("navigation",
-               "RenderFrameHostImpl::OnDidFailProvisionalLoadWithError",
+               "RenderFrameHostImpl::DidFailProvisionalLoadWithError",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(),
                "error", error_code);
 

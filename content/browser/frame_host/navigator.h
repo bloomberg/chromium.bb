@@ -18,7 +18,6 @@
 
 class GURL;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
-struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace base {
 class TimeTicks;
@@ -56,7 +55,10 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // The RenderFrameHostImpl has failed a provisional load.
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
+      const GURL& url,
+      int error_code,
+      const base::string16& error_description,
+      bool showing_repost_interstitial) {}
 
   // The RenderFrameHostImpl has failed to load the document.
   virtual void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,

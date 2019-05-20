@@ -101,6 +101,22 @@ bool TestRenderFrameHost::IsTestRenderFrameHost() const {
   return true;
 }
 
+void TestRenderFrameHost::DidFailProvisionalLoadWithError(
+    const GURL& url,
+    int error_code,
+    const base::string16& error_description,
+    bool showing_repost_interstitial) {
+  RenderFrameHostImpl::DidFailProvisionalLoadWithError(
+      url, error_code, error_description, showing_repost_interstitial);
+}
+
+void TestRenderFrameHost::DidFailLoadWithError(
+    const GURL& url,
+    int error_code,
+    const base::string16& error_description) {
+  RenderFrameHostImpl::DidFailLoadWithError(url, error_code, error_description);
+}
+
 void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
   if (!render_view_host()->IsRenderViewLive()) {
     render_view_host()->GetProcess()->Init();

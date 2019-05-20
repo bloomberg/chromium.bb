@@ -424,15 +424,11 @@ TEST_F(NavigationControllerTestWithBrowserSideNavigation,
                      std::string());
   EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
 
-  // The DidFailProvsionalLoad IPC is received from the current RFH that is
-  // committing an error page. This should not reset the pending entry for the
-  // new ongoing navigation.
-  FrameHostMsg_DidFailProvisionalLoadWithError_Params error;
-  error.error_code = net::ERR_TIMED_OUT;
-  error.url = url_1;
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidFailProvisionalLoadWithError(
-          main_test_rfh()->GetRoutingID(), error));
+  // The DidFailProvsionalLoad mojo call is received from the current RFH that
+  // is committing an error page. This should not reset the pending entry for
+  // the new ongoing navigation.
+  main_test_rfh()->DidFailProvisionalLoadWithError(url_1, net::ERR_TIMED_OUT,
+                                                   base::string16(), false);
   EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
 }
 
@@ -1118,14 +1114,8 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
-  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.error_code = net::ERR_ABORTED;
-  params.error_description = base::string16();
-  params.url = kNewURL;
-  params.showing_repost_interstitial = false;
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
-                                                   params));
+  main_test_rfh()->DidFailProvisionalLoadWithError(kNewURL, net::ERR_ABORTED,
+                                                   base::string16(), false);
 
   // This should not clear the pending entry or notify of a navigation state
   // change, so that we keep displaying kNewURL (until the user clears it).
@@ -2549,7 +2539,6 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // which causes the pending entry to be cleared.
   NavigationSimulator::NavigateAndFailFromDocument(url, net::ERR_ABORTED,
                                                    main_test_rfh());
-
   // Now the pending restored entry commits.
   restore_navigation->Commit();
 
@@ -3058,13 +3047,8 @@ TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
 
   // Suppose it aborts before committing, if it's a 204 or download or due to a
   // stop or a new navigation from the user.  The URL should remain visible.
-  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.error_code = net::ERR_ABORTED;
-  params.error_description = base::string16();
-  params.url = url;
-  params.showing_repost_interstitial = false;
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidFailProvisionalLoadWithError(0, params));
+  main_test_rfh()->DidFailProvisionalLoadWithError(url, net::ERR_ABORTED,
+                                                   base::string16(), false);
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
 
   // If something else later modifies the contents of the about:blank page, then

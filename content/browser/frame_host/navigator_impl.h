@@ -42,8 +42,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   NavigationController* GetController() override;
   void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
-      override;
+      const GURL& url,
+      int error_code,
+      const base::string16& error_description,
+      bool showing_repost_interstitial) override;
   void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                             const GURL& url,
                             int error_code,

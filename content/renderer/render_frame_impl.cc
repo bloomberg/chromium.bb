@@ -4959,9 +4959,8 @@ void RenderFrameImpl::DidFailLoad(const WebURLError& error,
   base::string16 error_description;
   GetContentClient()->renderer()->GetErrorDescription(
       error, document_loader->HttpMethod().Ascii(), &error_description);
-  Send(new FrameHostMsg_DidFailLoadWithError(
-      routing_id_, document_loader->GetUrl(), error.reason(),
-      error_description));
+  GetFrameHost()->DidFailLoadWithError(document_loader->GetUrl(),
+                                       error.reason(), error_description);
 }
 
 void RenderFrameImpl::DidFinishLoad() {
@@ -7181,13 +7180,11 @@ void RenderFrameImpl::SendFailedProvisionalLoad(const std::string& http_method,
   bool show_repost_interstitial =
       error.reason() == net::ERR_CACHE_MISS && http_method == "POST";
 
-  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.error_code = error.reason();
-  GetContentClient()->renderer()->GetErrorDescription(
-      error, http_method, &params.error_description);
-  params.url = error.url(),
-  params.showing_repost_interstitial = show_repost_interstitial;
-  Send(new FrameHostMsg_DidFailProvisionalLoadWithError(routing_id_, params));
+  base::string16 error_description;
+  GetContentClient()->renderer()->GetErrorDescription(error, http_method,
+                                                      &error_description);
+  GetFrameHost()->DidFailProvisionalLoadWithError(
+      error.url(), error.reason(), error_description, show_repost_interstitial);
 }
 
 bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(
