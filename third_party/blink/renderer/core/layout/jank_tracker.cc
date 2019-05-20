@@ -105,11 +105,13 @@ static bool ShouldLog(const LocalFrame& frame) {
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
+      score_with_move_distance_(0.0),
       weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &JankTracker::TimerFired),
-      max_distance_(0.0) {}
+      frame_max_distance_(0.0),
+      overall_max_distance_(0.0) {}
 
 void JankTracker::AccumulateJank(const LayoutObject& source,
                                  const PaintLayer& painting_layer,
@@ -161,8 +163,8 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   }
 #endif
 
-  max_distance_ =
-      std::max(max_distance_, GetMoveDistance(old_rect, new_rect, source));
+  frame_max_distance_ = std::max(frame_max_distance_,
+                                 GetMoveDistance(old_rect, new_rect, source));
 
   IntRect visible_old_rect = RoundedIntRect(old_rect);
   visible_old_rect.Intersect(viewport);
@@ -262,6 +264,18 @@ void JankTracker::NotifyPrePaintFinished() {
 
   score_ += jank_fraction;
 
+  DCHECK_GT(frame_max_distance_, 0.0);
+  double move_distance_factor =
+      (frame_max_distance_ < viewport.Height())
+          ? double(frame_max_distance_) / double(viewport.Height())
+          : 1.0;
+  double jank_fraction_with_move_distance =
+      jank_fraction * move_distance_factor;
+
+  score_with_move_distance_ += jank_fraction_with_move_distance;
+
+  overall_max_distance_ = std::max(overall_max_distance_, frame_max_distance_);
+
   LocalFrame& frame = frame_view_->GetFrame();
 #if DCHECK_IS_ON()
   if (ShouldLog(frame)) {
@@ -272,10 +286,11 @@ void JankTracker::NotifyPrePaintFinished() {
   }
 #endif
 
-  TRACE_EVENT_INSTANT2("loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
-                       "data",
-                       PerFrameTraceData(jank_fraction, granularity_scale),
-                       "frame", ToTraceValue(&frame));
+  TRACE_EVENT_INSTANT2(
+      "loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD, "data",
+      PerFrameTraceData(jank_fraction, jank_fraction_with_move_distance,
+                        granularity_scale),
+      "frame", ToTraceValue(&frame));
 
   double weighted_jank_fraction = jank_fraction * SubframeWeightingFactor();
   if (weighted_jank_fraction > 0) {
@@ -299,6 +314,8 @@ void JankTracker::NotifyPrePaintFinished() {
     region_experimental_.Reset();
   else
     region_ = Region();
+
+  frame_max_distance_ = 0.0;
 }
 
 void JankTracker::NotifyInput(const WebInputEvent& event) {
@@ -333,11 +350,17 @@ bool JankTracker::IsActive() {
 
 std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
     double jank_fraction,
+    double jank_fraction_with_move_distance,
     double granularity_scale) const {
   auto value = std::make_unique<TracedValue>();
   value->SetDouble("jank_fraction", jank_fraction);
+  value->SetDouble("jank_fraction_with_move_distance",
+                   jank_fraction_with_move_distance);
   value->SetDouble("cumulative_score", score_);
-  value->SetDouble("max_distance", max_distance_);
+  value->SetDouble("cumulative_score_with_move_distance",
+                   score_with_move_distance_);
+  value->SetDouble("overall_max_distance", overall_max_distance_);
+  value->SetDouble("frame_max_distance", frame_max_distance_);
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
     RegionToTracedValue(region_experimental_, granularity_scale, *value);
   else

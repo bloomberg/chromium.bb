@@ -45,14 +45,14 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
   )HTML");
 
   EXPECT_EQ(0.0, GetJankTracker().Score());
-  EXPECT_EQ(0.0, GetJankTracker().MaxDistance());
+  EXPECT_EQ(0.0, GetJankTracker().OverallMaxDistance());
 
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
   // 300 * (100 + 60) / (default viewport size 800 * 600)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
-  EXPECT_FLOAT_EQ(60.0, GetJankTracker().MaxDistance());
+  EXPECT_FLOAT_EQ(60.0, GetJankTracker().OverallMaxDistance());
 }
 
 TEST_F(JankTrackerTest, GranularitySnapping) {
@@ -101,7 +101,7 @@ TEST_F(JankTrackerTest, RtlDistance) {
   GetDocument().getElementById("j")->setAttribute(
       html_names::kStyleAttr, AtomicString("width: 70px; left: 10px"));
   UpdateAllLifecyclePhases();
-  EXPECT_FLOAT_EQ(20.0, GetJankTracker().MaxDistance());
+  EXPECT_FLOAT_EQ(20.0, GetJankTracker().OverallMaxDistance());
 }
 
 TEST_F(JankTrackerTest, SmallMovementIgnored) {
@@ -262,7 +262,7 @@ TEST_F(JankTrackerTest, JankWhileScrolled) {
 
   GetDocument().scrollingElement()->setScrollTop(100);
   EXPECT_EQ(0.0, GetJankTracker().Score());
-  EXPECT_EQ(0.0, GetJankTracker().MaxDistance());
+  EXPECT_EQ(0.0, GetJankTracker().OverallMaxDistance());
 
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));

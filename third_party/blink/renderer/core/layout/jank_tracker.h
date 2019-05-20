@@ -39,7 +39,7 @@ class CORE_EXPORT JankTracker {
   bool IsActive();
   double Score() const { return score_; }
   double WeightedScore() const { return weighted_score_; }
-  float MaxDistance() const { return max_distance_; }
+  float OverallMaxDistance() const { return overall_max_distance_; }
   void Dispose() { timer_.Stop(); }
 
  private:
@@ -50,6 +50,7 @@ class CORE_EXPORT JankTracker {
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(
       double jank_fraction,
+      double jank_fraction_with_move_distance,
       double granularity_scale) const;
   double SubframeWeightingFactor() const;
 
@@ -58,6 +59,12 @@ class CORE_EXPORT JankTracker {
 
   // The cumulative jank score for this LocalFrame, unweighted.
   double score_;
+
+  // The cumulative jank score for this LocalFrame, unweighted, with move
+  // distance applied. This is a temporary member needed to understand the
+  // impact of move distance on scores, and will be removed once analysis is
+  // complete.
+  double score_with_move_distance_;
 
   // The cumulative jank score for this LocalFrame, with each increase weighted
   // by the extent to which the LocalFrame visibly occupied the main frame at
@@ -74,8 +81,13 @@ class CORE_EXPORT JankTracker {
   // Tracks the short period after an input event during which we ignore jank.
   TaskRunnerTimer<JankTracker> timer_;
 
-  // The maximum distance any layout object has moved in any frame.
-  float max_distance_;
+  // The maximum distance any layout object has moved in the current animation
+  // frame.
+  float frame_max_distance_;
+
+  // The maximum distance any layout object has moved, across all animation
+  // frames.
+  float overall_max_distance_;
 };
 
 }  // namespace blink
