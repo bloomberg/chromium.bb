@@ -120,11 +120,11 @@ const char kGeniusAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 
 #if defined(OS_CHROMEOS)
 const char kHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
-const char kHighlightsAlt1AppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
-const char kHighlightsAlt2AppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
+const char kHighlightsEveAppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
+const char kHighlightsNocturneAppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
 const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
-const char kScreensaverAlt1AppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
-const char kScreensaverAlt2AppId[] = "lminefdanffajachfahfpmphfkhahcnj";
+const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
+const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
 
 bool IsSystemUIApp(base::StringPiece extension_id) {
   static const char* const kApps[] = {
@@ -133,11 +133,11 @@ bool IsSystemUIApp(base::StringPiece extension_id) {
       kChromeVoxExtensionId,
       kFeedbackExtensionId,
       kFilesManagerAppId,
-      kHighlightsAlt1AppId,
-      kHighlightsAlt2AppId,
+      kHighlightsEveAppId,
+      kHighlightsNocturneAppId,
       kHighlightsAppId,
-      kScreensaverAlt1AppId,
-      kScreensaverAlt2AppId,
+      kScreensaverEveAppId,
+      kScreensaverNocturneAppId,
       kScreensaverAppId,
       // clang-format on
   };

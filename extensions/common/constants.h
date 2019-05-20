@@ -251,20 +251,20 @@ extern const char kGeniusAppId[];
 // The extension id of the default Demo Mode Highlights app.
 extern const char kHighlightsAppId[];
 
-// The extension id of an alternate Demo Mode Highlights app.
-extern const char kHighlightsAlt1AppId[];
+// The extension id of the eve Demo Mode Highlights app.
+extern const char kHighlightsEveAppId[];
 
-// The extension id of an alternate Demo Mode Highlights app.
-extern const char kHighlightsAlt2AppId[];
+// The extension id of the nocturne Demo Mode Highlights app.
+extern const char kHighlightsNocturneAppId[];
 
 // The extension id of the default Demo Mode screensaver app.
 extern const char kScreensaverAppId[];
 
-// The extension id of an alternate Demo Mode screensaver app.
-extern const char kScreensaverAlt1AppId[];
+// The extension id of the eve Demo Mode screensaver app.
+extern const char kScreensaverEveAppId[];
 
-// The extension id of an alternate Demo Mode screensaver app.
-extern const char kScreensaverAlt2AppId[];
+// The extension id of the nocturne Demo Mode screensaver app.
+extern const char kScreensaverNocturneAppId[];
 
 // Returns true if this app is part of the "system UI". Generally this is UI
 // that that on other operating systems would be considered part of the OS,
