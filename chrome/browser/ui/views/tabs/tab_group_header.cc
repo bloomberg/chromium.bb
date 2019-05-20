@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
@@ -18,8 +17,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -47,10 +44,6 @@ TabGroupHeader::TabGroupHeader(TabController* controller, int group)
                          views::FlexSpecification::ForSizeRule(
                              views::MinimumFlexSizeRule::kScaleToZero,
                              views::MaximumFlexSizeRule::kUnbounded));
-
-  auto group_menu_button = views::CreateVectorImageButton(/*listener*/ nullptr);
-  views::SetImageFromVectorIcon(group_menu_button.get(), kBrowserToolsIcon);
-  AddChildView(std::move(group_menu_button));
 }
 
 void TabGroupHeader::OnPaint(gfx::Canvas* canvas) {

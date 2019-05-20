@@ -826,9 +826,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NewTabFromLinkOpensInGroup) {
   // It should have inherited the tab group from the first tab.
   EXPECT_EQ(browser()->tab_strip_model()->GetTabGroupForTab(0),
             browser()->tab_strip_model()->GetTabGroupForTab(1));
-
-  // TODO (946263): Remove this teardown once the crash it prevents is fixed.
-  model->RemoveFromGroup({0, 1});
 }
 
 // BeforeUnloadAtQuitWithTwoWindows is a regression test for
