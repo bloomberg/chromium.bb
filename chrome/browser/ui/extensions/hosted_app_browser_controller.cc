@@ -256,12 +256,9 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
 }
 
 base::string16 HostedAppBrowserController::GetTitle() const {
-  // When showing the location bar, display the name of the app, instead of the
+  // When showing the toolbar, display the name of the app, instead of the
   // current page as the title.
-  // Note: We only do this when the CustomTab UI is enabled, as otherwise the
-  // title of the current page will not be displayed anywhere.
-  if (ShouldShowToolbar() &&
-      base::FeatureList::IsEnabled(features::kDesktopPWAsCustomTabUI)) {
+  if (ShouldShowToolbar()) {
     const Extension* extension = GetExtension();
     return base::UTF8ToUTF16(extension->name());
   }

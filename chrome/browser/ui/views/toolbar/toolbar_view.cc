@@ -107,9 +107,7 @@ ToolbarView::DisplayMode GetDisplayMode(Browser* browser) {
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
     return ToolbarView::DisplayMode::NORMAL;
 
-  if (browser->app_controller() &&
-      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser) &&
-      base::FeatureList::IsEnabled(features::kDesktopPWAsCustomTabUI))
+  if (web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser))
     return ToolbarView::DisplayMode::CUSTOM_TAB;
 
   return ToolbarView::DisplayMode::LOCATION;

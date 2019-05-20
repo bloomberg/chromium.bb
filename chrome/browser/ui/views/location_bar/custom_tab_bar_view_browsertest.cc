@@ -190,8 +190,7 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
 
   void SetUpOnMainThread() override {
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsStayInWindow, features::kDesktopPWAWindowing,
-         features::kDesktopPWAsCustomTabUI},
+        {features::kDesktopPWAsStayInWindow, features::kDesktopPWAWindowing},
         {});
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 

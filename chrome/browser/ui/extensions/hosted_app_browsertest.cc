@@ -260,7 +260,7 @@ AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
 // kDesktopPWAWindowing flag.
 class HostedAppTest
     : public extensions::ExtensionBrowserTest,
-      public ::testing::WithParamInterface<std::tuple<AppType, bool, bool>> {
+      public ::testing::WithParamInterface<std::tuple<AppType, bool>> {
  public:
   HostedAppTest()
       : app_browser_(nullptr),
@@ -272,9 +272,8 @@ class HostedAppTest
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     bool desktop_pwa_flag;
-    bool use_custom_tab_flag;
 
-    std::tie(app_type_, desktop_pwa_flag, use_custom_tab_flag) = GetParam();
+    std::tie(app_type_, desktop_pwa_flag) = GetParam();
     std::vector<base::Feature> enabled_features;
     std::vector<base::Feature> disabled_features = {
         predictors::kSpeculativePreconnectFeature};
@@ -283,9 +282,6 @@ class HostedAppTest
     } else {
       disabled_features.push_back(features::kDesktopPWAWindowing);
     }
-
-    auto& features = use_custom_tab_flag ? enabled_features : disabled_features;
-    features.push_back(features::kDesktopPWAsCustomTabUI);
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     extensions::ExtensionBrowserTest::SetUp();
@@ -861,12 +857,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, EmptyTitlesDoNotDisplayUrl) {
             app_browser->GetWindowTitleForCurrentTab(false));
 }
 
-using HostedAppCustomTabBarOnlyTest = HostedAppTest;
-
 // Ensure that hosted app windows display the app title instead of the page
 // title when off scope.
-IN_PROC_BROWSER_TEST_P(HostedAppCustomTabBarOnlyTest,
-                       OffScopeUrlsDisplayAppTitle) {
+IN_PROC_BROWSER_TEST_P(HostedAppTest, OffScopeUrlsDisplayAppTitle) {
   ASSERT_TRUE(https_server()->Start());
   GURL url = GetSecureAppURL();
 
@@ -895,8 +888,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppCustomTabBarOnlyTest,
 
 // Ensure that hosted app windows display the app title instead of the page
 // title when using http.
-IN_PROC_BROWSER_TEST_P(HostedAppCustomTabBarOnlyTest,
-                       InScopeHttpUrlsDisplayAppTitle) {
+IN_PROC_BROWSER_TEST_P(HostedAppTest, InScopeHttpUrlsDisplayAppTitle) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("app.site.com", "/simple.html");
   WebApplicationInfo web_app_info;
@@ -2788,45 +2780,34 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, ShouldShowToolbarForExtensionPage) {
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          HostedAppTest,
                          ::testing::Combine(kAppTypeValues,
-                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         HostedAppCustomTabBarOnlyTest,
-                         ::testing::Combine(kAppTypeValues,
-                                            ::testing::Bool(),
-                                            ::testing::Values(true)));
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppPWAOnlyTest,
     ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
-                       ::testing::Values(true),
-                       ::testing::Bool()));
+                       ::testing::Values(true)));
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppOnlyTest,
     ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
-                       ::testing::Bool(),
                        ::testing::Bool()));
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppProcessModelTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
-                       ::testing::Bool(),
                        ::testing::Bool()));
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppIsolatedOriginTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
-                       ::testing::Bool(),
                        ::testing::Bool()));
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppSitePerProcessTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
-                       ::testing::Bool(),
                        ::testing::Bool()));
 
 #if !defined(OS_CHROMEOS)
@@ -2834,6 +2815,5 @@ INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppBadgingTest,
     ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
-                       ::testing::Values(true),
-                       ::testing::Bool()));
+                       ::testing::Values(true)));
 #endif  // !defined(OS_CHROMEOS)
