@@ -150,8 +150,8 @@ class RootInlineBox : public InlineFlowBox {
 
   LineLayoutBlockFlow Block() const;
 
-  InlineBox* ClosestLeafChildForPoint(const LayoutPoint&,
-                                      bool only_editable_leaves) const;
+  const LayoutObject* ClosestLeafChildForPoint(const LayoutPoint&,
+                                               bool only_editable_leaves) const;
   InlineBox* ClosestLeafChildForLogicalLeftPosition(
       LayoutUnit,
       bool only_editable_leaves = false) const;

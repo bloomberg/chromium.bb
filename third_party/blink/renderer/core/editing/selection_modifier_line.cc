@@ -41,6 +41,17 @@ namespace blink {
 
 namespace {
 
+const RootInlineBox* ComputeContainingLineBox(const VisiblePosition& position) {
+  if (position.IsNull() ||
+      !position.DeepEquivalent().AnchorNode()->GetLayoutObject()) {
+    return nullptr;
+  }
+  const InlineBox* box = ComputeInlineBoxPosition(position).inline_box;
+  if (!box)
+    return nullptr;
+  return &box->Root();
+}
+
 ContainerNode* HighestEditableRootOfNode(const Node& node) {
   return HighestEditableRoot(FirstPositionInOrBeforeNode(node));
 }
@@ -223,10 +234,9 @@ VisiblePosition SelectionModifier::PreviousLinePosition(
   if (!layout_object)
     return VisiblePosition();
 
-  const RootInlineBox* root = nullptr;
-  const InlineBox* box = ComputeInlineBoxPosition(visible_position).inline_box;
-  if (box) {
-    root = box->Root().PrevRootBox();
+  const RootInlineBox* root = ComputeContainingLineBox(visible_position);
+  if (root) {
+    root = root->PrevRootBox();
     // We want to skip zero height boxes.
     // This could happen in case it is a TrailingFloatsRootInlineBox.
     if (!root || !root->LogicalHeight() || !root->FirstLeafChild())
@@ -238,15 +248,12 @@ VisiblePosition SelectionModifier::PreviousLinePosition(
         PreviousRootInlineBoxCandidatePosition(node, visible_position);
     if (position.IsNotNull()) {
       const VisiblePosition candidate = CreateVisiblePosition(position);
-      const InlineBox* inline_box =
-          candidate.IsNotNull() ? ComputeInlineBoxPosition(candidate).inline_box
-                                : nullptr;
-      if (!inline_box) {
+      root = ComputeContainingLineBox(candidate);
+      if (!root) {
         // TODO(editing-dev): Investigate if this is correct for null
         // |candidate|.
         return candidate;
       }
-      root = &inline_box->Root();
     }
   }
 
@@ -254,14 +261,13 @@ VisiblePosition SelectionModifier::PreviousLinePosition(
     // FIXME: Can be wrong for multi-column layout and with transforms.
     LayoutPoint point_in_line = AbsoluteLineDirectionPointToLocalPointInBlock(
         root, line_direction_point);
-    LineLayoutItem line_layout_item =
-        root->ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p))
-            ->GetLineLayoutItem();
-    Node* node = line_layout_item.GetNode();
+    const LayoutObject* closest_leaf_child =
+        root->ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p));
+    const Node* node = closest_leaf_child->GetNode();
     if (node && EditingIgnoresContent(*node))
       return VisiblePosition::InParentBeforeNode(*node);
     return CreateVisiblePosition(
-        line_layout_item.PositionForPoint(point_in_line));
+        closest_leaf_child->PositionForPoint(point_in_line));
   }
 
   // Could not find a previous line. This means we must already be on the first
@@ -293,10 +299,9 @@ VisiblePosition SelectionModifier::NextLinePosition(
   if (!layout_object)
     return VisiblePosition();
 
-  const RootInlineBox* root = nullptr;
-  const InlineBox* box = ComputeInlineBoxPosition(visible_position).inline_box;
-  if (box) {
-    root = box->Root().NextRootBox();
+  const RootInlineBox* root = ComputeContainingLineBox(visible_position);
+  if (root) {
+    root = root->NextRootBox();
     // We want to skip zero height boxes.
     // This could happen in case it is a TrailingFloatsRootInlineBox.
     if (!root || !root->LogicalHeight() || !root->FirstLeafChild())
@@ -312,15 +317,12 @@ VisiblePosition SelectionModifier::NextLinePosition(
         NextRootInlineBoxCandidatePosition(search_start_node, visible_position);
     if (position.IsNotNull()) {
       const VisiblePosition candidate = CreateVisiblePosition(position);
-      const InlineBox* inline_box =
-          candidate.IsNotNull() ? ComputeInlineBoxPosition(candidate).inline_box
-                                : nullptr;
-      if (!inline_box) {
+      root = ComputeContainingLineBox(candidate);
+      if (!root) {
         // TODO(editing-dev): Investigate if this is correct for null
         // |candidate|.
         return candidate;
       }
-      root = &inline_box->Root();
     }
   }
 
@@ -328,14 +330,13 @@ VisiblePosition SelectionModifier::NextLinePosition(
     // FIXME: Can be wrong for multi-column layout and with transforms.
     LayoutPoint point_in_line = AbsoluteLineDirectionPointToLocalPointInBlock(
         root, line_direction_point);
-    LineLayoutItem line_layout_item =
-        root->ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p))
-            ->GetLineLayoutItem();
-    Node* node = line_layout_item.GetNode();
+    const LayoutObject* closest_leaf_child =
+        root->ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p));
+    const Node* node = closest_leaf_child->GetNode();
     if (node && EditingIgnoresContent(*node))
       return VisiblePosition::InParentBeforeNode(*node);
     return CreateVisiblePosition(
-        line_layout_item.PositionForPoint(point_in_line));
+        closest_leaf_child->PositionForPoint(point_in_line));
   }
 
   // Could not find a next line. This means we must already be on the last line.
