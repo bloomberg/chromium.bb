@@ -210,9 +210,9 @@ void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
 
   base::UnguessableToken guid = base::UnguessableToken::Create();
   base::SharedMemoryHandle input_shm_handle(
-      base::FileDescriptor(input_fd, true), 0u, guid);
+      base::FileDescriptor(input_fd, true), input_buffer_size, guid);
   base::SharedMemoryHandle output_shm_handle(
-      base::FileDescriptor(output_fd, true), 0u, guid);
+      base::FileDescriptor(output_fd, true), output_buffer_size, guid);
 
   media::BitstreamBuffer in_buffer(buffer_id, input_shm_handle,
                                    false /* read_only */, input_buffer_size);
