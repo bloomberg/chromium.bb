@@ -57,13 +57,13 @@ void AsyncAudioDecoder::DecodeAsync(
 
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBindOnce(&AsyncAudioDecoder::DecodeOnBackgroundThread,
-                          WrapCrossThreadPersistent(audio_data), sample_rate,
-                          WrapCrossThreadPersistent(success_callback),
-                          WrapCrossThreadPersistent(error_callback),
-                          WrapCrossThreadPersistent(resolver),
-                          WrapCrossThreadPersistent(context),
-                          std::move(task_runner)));
+      CrossThreadBind(&AsyncAudioDecoder::DecodeOnBackgroundThread,
+                      WrapCrossThreadPersistent(audio_data), sample_rate,
+                      WrapCrossThreadPersistent(success_callback),
+                      WrapCrossThreadPersistent(error_callback),
+                      WrapCrossThreadPersistent(resolver),
+                      WrapCrossThreadPersistent(context),
+                      std::move(task_runner)));
 }
 
 void AsyncAudioDecoder::DecodeOnBackgroundThread(

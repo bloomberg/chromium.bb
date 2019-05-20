@@ -316,7 +316,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
       Thread::Current()->GetTaskRunner();
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBindOnce(
+      CrossThreadBind(
           &ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread,
           WrapCrossThreadPersistent(this), std::move(task_runner),
           WrapCrossThreadPersistent(array_buffer), options_->premultiplyAlpha(),

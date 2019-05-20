@@ -467,10 +467,10 @@ bool ScriptStreamer::TryStartStreaming(
   // TODO(leszeks): Decrease the priority of these tasks where possible.
   worker_pool::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
-      CrossThreadBindOnce(RunScriptStreamingTask,
-                          WTF::Passed(std::move(script_streaming_task)),
-                          WrapCrossThreadPersistent(this),
-                          WTF::CrossThreadUnretained(stream_)));
+      CrossThreadBind(RunScriptStreamingTask,
+                      WTF::Passed(std::move(script_streaming_task)),
+                      WrapCrossThreadPersistent(this),
+                      WTF::CrossThreadUnretained(stream_)));
 
   return true;
 }

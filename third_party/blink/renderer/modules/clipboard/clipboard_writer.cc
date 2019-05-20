@@ -152,12 +152,12 @@ void ClipboardWriter::DidFinishLoading() {
 
   worker_pool::PostTask(
       FROM_HERE,
-      CrossThreadBindOnce(&ClipboardWriter::DecodeOnBackgroundThread,
-                          /* This unretained is safe because the ClipboardWriter
-                             will wait for Decode to finish and return back to
-                             this thread before deallocating. */
-                          CrossThreadUnretained(this), clipboard_task_runner_,
-                          WrapCrossThreadPersistent(array_buffer)));
+      CrossThreadBind(&ClipboardWriter::DecodeOnBackgroundThread,
+                      /* This unretained is safe because the ClipboardWriter
+                         will wait for Decode to finish and return back to this
+                         thread before deallocating. */
+                      CrossThreadUnretained(this), clipboard_task_runner_,
+                      WrapCrossThreadPersistent(array_buffer)));
 }
 
 void ClipboardWriter::DidFail(FileErrorCode error_code) {

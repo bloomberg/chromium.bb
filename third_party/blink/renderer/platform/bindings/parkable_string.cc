@@ -424,9 +424,8 @@ void ParkableStringImpl::ParkInternal(ParkingMode mode) {
         this, string_.Bytes(), string_.CharactersSizeInBytes(),
         Thread::Current()->GetTaskRunner());
     worker_pool::PostTask(
-        FROM_HERE,
-        CrossThreadBindOnce(&ParkableStringImpl::CompressInBackground,
-                            WTF::Passed(std::move(params))));
+        FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
+                                   WTF::Passed(std::move(params))));
     state_ = State::kParkingInProgress;
   }
 }

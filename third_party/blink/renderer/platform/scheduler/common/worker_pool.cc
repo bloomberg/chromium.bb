@@ -11,7 +11,7 @@ namespace blink {
 
 namespace worker_pool {
 
-void PostTask(const base::Location& location, CrossThreadOnceClosure closure) {
+void PostTask(const base::Location& location, CrossThreadClosure closure) {
   PostTaskWithTraits(location,
                      {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
                      std::move(closure));
@@ -19,9 +19,9 @@ void PostTask(const base::Location& location, CrossThreadOnceClosure closure) {
 
 void PostTaskWithTraits(const base::Location& location,
                         const base::TaskTraits& traits,
-                        CrossThreadOnceClosure closure) {
+                        CrossThreadClosure closure) {
   base::PostTaskWithTraits(location, traits,
-                           ConvertToBaseOnceCallback(std::move(closure)));
+                           ConvertToBaseCallback(std::move(closure)));
 }
 
 }  // namespace worker_pool
