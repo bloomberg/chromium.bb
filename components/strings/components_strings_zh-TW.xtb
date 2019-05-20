@@ -915,7 +915,6 @@
 <translation id="5975083100439434680">縮小</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">無法開啟付款應用程式</translation>
-<translation id="5988826871883769516">你的裝置是由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="5990559369517809815">擴充功能已封鎖要傳送至伺服器的要求。</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1194,7 +1193,6 @@
 <translation id="7554791636758816595">新增分頁</translation>
 <translation id="7564049878696755256">你可能會失去 <ph name="ORG_NAME" /> 帳戶存取權，或身分遭到冒用。Chrome 建議你立即變更密碼。</translation>
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證是以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
-<translation id="7568105740864181217">這個瀏覽器是由公司、學校或其他組織管理。你的系統管理員可以遠端變更瀏覽器設定。這部裝置上的活動也可透過 Chrome 以外的服務管理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
 <translation id="7569983096843329377">黑色</translation>
 <translation id="7578104083680115302">在不同的裝置上透過各個網站和應用程式消費時，使用您讓 Google 儲存的信用卡資料即可快速付款。</translation>
@@ -1328,7 +1326,6 @@
 <translation id="825929999321470778">顯示所有已儲存的密碼</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8267698848189296333">正在以 <ph name="USERNAME" /> 的身分登入</translation>
-<translation id="8278457561961988242">這個瀏覽器是由 <ph name="ENROLLMENT_DOMAIN" /> 所管理。你的系統管理員可以遠端變更瀏覽器設定。這部裝置上的活動也可透過 Chrome 以外的服務管理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">登入</translation>
 <translation id="8288807391153049143">顯示憑證</translation>

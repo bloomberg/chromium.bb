@@ -213,7 +213,7 @@
 <translation id="2626530649491650971">clickable</translation>
 <translation id="2628764385451019380">אין תיבה משולבת קודמת.</translation>
 <translation id="2637227747952042642">Math</translation>
-<translation id="2638785836053527382">ההורדה נמשכת <ph name="FILE_NAME" /></translation>
+<translation id="2638785836053527382">ההורדה של <ph name="FILE_NAME" /> נמשכת</translation>
 <translation id="2639750663247012216">‏מקש צירוף של ChromeVox</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2661530546602071611">הודעה</translation>
@@ -1081,7 +1081,7 @@
 <translation id="8096975275316362544">מנטה בהיר</translation>
 <translation id="8098587210054821856">אפור תכלת</translation>
 <translation id="8110647606445335195">‏אין ציוני דרך מסוג ARIA.</translation>
-<translation id="812886159861361726">ההורדה נפסקה <ph name="FILE_NAME" /></translation>
+<translation id="812886159861361726">ההורדה של <ph name="FILE_NAME" /> נפסקה</translation>
 <translation id="8138880386467279117">מגע</translation>
 <translation id="8153880621934657047">לא בתוך טבלה.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{קו תחתון}two{# סימני קו תחתון}many{# סימני קו תחתון}other{# סימני קו תחתון}}</translation>
@@ -1151,7 +1151,7 @@
 <translation id="8743786158317878347">היכנס לתוכן מובנה, כמו טבלאות</translation>
 <translation id="8747966237988593539">רשימה לפי סדר</translation>
 <translation id="8749988712346667988">כסף</translation>
-<translation id="875769700429317857">ההורדהשל <ph name="FILE_NAME" /> הושלמה</translation>
+<translation id="875769700429317857">ההורדה של <ph name="FILE_NAME" /> הושלמה</translation>
 <translation id="8759334257841767240">אין קישור הבא.</translation>
 <translation id="8767968232364267681">הכותרת הבאה של רמה 4</translation>
 <translation id="8770473310765924354">צא מתוכן מובנה, כמו טבלאות</translation>

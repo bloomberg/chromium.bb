@@ -621,7 +621,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5349770431644471053">Liên kết ngược</translation>
 <translation id="536031132345979795">Lùi lại đoạn trước đó trong khi tiếp tục đọc</translation>
 <translation id="5368000168321181111">Tắt kết nối tai nghe</translation>
-<translation id="5368505757342402527">Đã tải được <ph name="PROGRESS" />% của <ph name="FILE_NAME" /> xuống. Còn khoảng <ph name="TIME" /> <ph name="UNITS" /> nữa.</translation>
+<translation id="5368505757342402527">Đã tải <ph name="FILE_NAME" /> được <ph name="PROGRESS" />%. Còn khoảng <ph name="TIME" /> <ph name="UNITS" /> nữa.</translation>
 <translation id="5374320867641260420">Không có nút tiếp theo nào.</translation>
 <translation id="5376407118396657359">Nhấn tổ hợp phím Tìm kiếm+Ctrl+Alt cùng với các mũi tên để di chuyển theo ô.</translation>
 <translation id="5382299583965267720">Không có tiêu đề cấp 1 tiếp theo nào.</translation>
@@ -802,7 +802,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="667999046851023355">Tài liệu</translation>
 <translation id="6688209025607531203">Thông báo phi thể thức</translation>
 <translation id="6689672606256159458">Màu hồng cam đậm</translation>
-<translation id="669617842401078250">Đã tạm dừng quá trình tải <ph name="FILE_NAME" /> xuống</translation>
+<translation id="669617842401078250">Đã tạm dừng tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="6696967141280706829">Lời nói đầu</translation>
 <translation id="6697092096875747123">Hộp kết hợp trước</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{dấu chấm than}other{# dấu chấm than}}</translation>

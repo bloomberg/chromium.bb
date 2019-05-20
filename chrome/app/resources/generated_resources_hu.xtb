@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Megjelenítőeszköz beállításainak megnyitása</translation>
 <translation id="1572266655485775982">Wi-Fi engedélyezése</translation>
 <translation id="1572876035008611720">Adja meg e-mail-címét</translation>
-<translation id="1573150740912592860">Mentse a munkáját</translation>
 <translation id="1576594961618857597">Alapértelmezett fehér avatar</translation>
 <translation id="1581962803218266616">Megjelenítés a Finderben</translation>
 <translation id="1584990664401018068">Előfordulhat, hogy az Ön által használt Wi-Fi-hálózat (<ph name="NETWORK_ID" />) hitelesítést ír elő.</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">Nem sikerült csatlakoztatni az eszközt a domainhez. Győződjön meg róla, hogy nem lépte túl a hozzáadható eszközök számát.</translation>
 <translation id="1744108098763830590">háttéroldal</translation>
 <translation id="1745520510852184940">Mindig ezt tegye</translation>
+<translation id="1746402432151920942">Védett médiaelem azonosítója</translation>
 <translation id="175196451752279553">Bezárt lap m&amp;egnyitása</translation>
 <translation id="1753905327828125965">Leggyakrabban látogatott</translation>
 <translation id="1756681705074952506">Beviteli mód</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">Nem jelentkezett be</translation>
 <translation id="1832511806131704864">Telefonmódosítás frissítve</translation>
 <translation id="1834503245783133039">Sikertelen letöltés: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-eszközök</translation>
 <translation id="1838374766361614909">Keresett kifejezés törlése</translation>
 <translation id="1841545962859478868">Az eszköz rendszergazdája figyelheti a következőket:</translation>
 <translation id="1841616161104323629">Hiányzó eszközrekord.</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">Probléma bejelentése</translation>
 <translation id="2220572644011485463">PIN-kód vagy jelszó</translation>
 <translation id="2224444042887712269">Ez a beállítás a következő fiókhoz tartozik: <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Kisegítő események</translation>
 <translation id="2224551243087462610">Mappa nevének szerkesztése</translation>
 <translation id="2226449515541314767">Ennél a webhelynél le van tiltva a MIDI-eszközökhöz való teljes hozzáférés.</translation>
 <translation id="2226720438730111184">Mondja el, mi a probléma</translation>
@@ -5066,7 +5068,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8898786835233784856">Következő lap kiválasztása</translation>
 <translation id="8898840733695078011">Jelerősség</translation>
 <translation id="8899851313684471736">Link megnyitása új &amp;ablakban</translation>
-<translation id="8902081783136172774">Válasszon háttérképet a kezdőoldalra</translation>
 <translation id="8902667442496790482">Felolvasási beállítások megnyitása</translation>
 <translation id="8904976895050290827">Chrome - szinkronizálás</translation>
 <translation id="890616557918890486">Forrás módosítása</translation>

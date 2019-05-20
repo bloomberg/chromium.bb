@@ -915,7 +915,6 @@
 <translation id="5975083100439434680">Reduzir</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Não é possível abrir a aplicação de pagamento</translation>
-<translation id="5988826871883769516">O seu dispositivo é gerido por <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Não foram especificados servidores proxy fixos nem um URL de script .pac.</translation>
 <translation id="5990559369517809815">Os pedidos para o servidor foram bloqueados por uma extensão.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1193,7 +1192,6 @@ Detalhes adicionais:
 <translation id="7554791636758816595">Novo separador</translation>
 <translation id="7564049878696755256">Pode perder o acesso à sua conta do serviço <ph name="ORG_NAME" /> ou ser vítima de roubo de identidade. O Chrome recomenda a alteração da palavra-passe agora.</translation>
 <translation id="7567204685887185387">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ter sido emitido de forma fraudulenta. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
-<translation id="7568105740864181217">Este navegador é gerido por uma empresa, escola ou outra entidade. O administrador pode alterar a configuração do navegador remotamente. A atividade neste dispositivo também pode ser gerida fora do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">Pretende remover o cartão de crédito do Chrome?</translation>
 <translation id="7569983096843329377">Preto</translation>
 <translation id="7578104083680115302">Pague rapidamente em sites e aplicações em todos os dispositivos com cartões que tenha guardado com o Google.</translation>
@@ -1327,7 +1325,6 @@ Detalhes adicionais:
 <translation id="825929999321470778">Mostrar todas as palavras-passe guardadas</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8267698848189296333">A iniciar sessão como <ph name="USERNAME" /></translation>
-<translation id="8278457561961988242">Este navegador é gerido por <ph name="ENROLLMENT_DOMAIN" />. O administrador pode alterar a configuração do navegador remotamente. A atividade neste dispositivo também pode ser gerida fora do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Iniciar Sessão</translation>
 <translation id="8288807391153049143">Mostrar certificado</translation>

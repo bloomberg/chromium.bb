@@ -367,7 +367,6 @@
 <translation id="1568323446248056064">Отваряне на настройките за дисплея</translation>
 <translation id="1572266655485775982">Активиране на Wi-Fi</translation>
 <translation id="1572876035008611720">Въведете имейл адреса си</translation>
-<translation id="1573150740912592860">Запазване на напредъка ви</translation>
 <translation id="1576594961618857597">Стандартен бял аватар</translation>
 <translation id="1581962803218266616">Показване във Finder</translation>
 <translation id="1584990664401018068">Използваната от вас Wi-Fi мрежа (<ph name="NETWORK_ID" />) може да изисква удостоверяване.</translation>
@@ -485,6 +484,7 @@
 <translation id="1744060673522309905">Устройството не може да се присъедини към домейна. Проверете дали не сте надхвърлили броя устройства, които можете да добавите.</translation>
 <translation id="1744108098763830590">фонова страница</translation>
 <translation id="1745520510852184940">Превеждане винаги</translation>
+<translation id="1746402432151920942">Идентификатор на защитена мултимедия</translation>
 <translation id="175196451752279553">По&amp;вторно отваряне на затворения раздел</translation>
 <translation id="1753905327828125965">Ползвани</translation>
 <translation id="1756681705074952506">Метод за въвеждане</translation>
@@ -542,6 +542,7 @@
 <translation id="1830550083491357902">Не сте в профила си</translation>
 <translation id="1832511806131704864">Промяната на телефона е актуализирана</translation>
 <translation id="1834503245783133039">Неуспешно изтегляне: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI устройства</translation>
 <translation id="1838374766361614909">Изчистване на търсенето</translation>
 <translation id="1841545962859478868">Администраторът на устройството може да наблюдава следното:</translation>
 <translation id="1841616161104323629">Липсва запис за устройството.</translation>
@@ -785,6 +786,7 @@
 <translation id="2220529011494928058">Подаване на сигнал за проблем</translation>
 <translation id="2220572644011485463">ПИН код или парола</translation>
 <translation id="2224444042887712269">Тази настройка принадлежи на <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Събития за достъпност</translation>
 <translation id="2224551243087462610">Редактиране на името на папката</translation>
 <translation id="2226449515541314767">Пълният контрол над MIDI устройствата е блокиран за този сайт.</translation>
 <translation id="2226720438730111184">Кажете ни какво се случва</translation>
@@ -5064,7 +5066,6 @@
 <translation id="8898786835233784856">Избор на следващия раздел</translation>
 <translation id="8898840733695078011">Сила на сигнала</translation>
 <translation id="8899851313684471736">Отваряне на връзк&amp;ата в нов прозорец</translation>
-<translation id="8902081783136172774">Изберете тапет за началната си страница</translation>
 <translation id="8902667442496790482">Отваряне на настройките на Прочитане на глас</translation>
 <translation id="8904976895050290827">Синхронизиране в Chrome</translation>
 <translation id="890616557918890486">Промяна на източника</translation>

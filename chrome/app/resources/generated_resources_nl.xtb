@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Weergave-instellingen van apparaat openen</translation>
 <translation id="1572266655485775982">Wifi inschakelen</translation>
 <translation id="1572876035008611720">Geef je e-mailadres op</translation>
-<translation id="1573150740912592860">Voortgang opslaan</translation>
 <translation id="1576594961618857597">Standaard witte avatar</translation>
 <translation id="1581962803218266616">Toon in Finder</translation>
 <translation id="1584990664401018068">Mogelijk is verificatie vereist voor het wifi-netwerk dat je gebruikt (<ph name="NETWORK_ID" />).</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">Kan het apparaat niet aan het domein koppelen. Zorg ervoor dat je het aantal apparaten dat je kunt toevoegen niet overschrijdt.</translation>
 <translation id="1744108098763830590">achtergrondpagina</translation>
 <translation id="1745520510852184940">Dit altijd doen</translation>
+<translation id="1746402432151920942">ID voor beschermde media</translation>
 <translation id="175196451752279553">Gesloten tabblad opni&amp;euw openen</translation>
 <translation id="1753905327828125965">Meest bezocht</translation>
 <translation id="1756681705074952506">Invoermethode</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">Niet ingelogd</translation>
 <translation id="1832511806131704864">Telefoonwijziging geüpdatet</translation>
 <translation id="1834503245783133039">Download niet geslaagd: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-apparaten</translation>
 <translation id="1838374766361614909">Zoekopdracht wissen</translation>
 <translation id="1841545962859478868">De apparaatbeheerder kan het volgende controleren:</translation>
 <translation id="1841616161104323629">Ontbrekende apparaatrecord.</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">Een probleem melden</translation>
 <translation id="2220572644011485463">Pincode of wachtwoord</translation>
 <translation id="2224444042887712269">Deze instelling hoort bij <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Toegankelijkheidsgebeurtenissen</translation>
 <translation id="2224551243087462610">Mapnaam bewerken</translation>
 <translation id="2226449515541314767">Deze site is geblokkeerd voor volledig beheer van MIDI-apparaten.</translation>
 <translation id="2226720438730111184">Vertel ons wat er aan de hand is</translation>
@@ -5064,7 +5066,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8898786835233784856">Selecteer volgend tabblad</translation>
 <translation id="8898840733695078011">Signaalsterkte</translation>
 <translation id="8899851313684471736">Link openen in nieu&amp;w venster</translation>
-<translation id="8902081783136172774">Een achtergrond kiezen voor je startpagina</translation>
 <translation id="8902667442496790482">Instellingen voor 'Selecteer om uitgesproken te worden' openen</translation>
 <translation id="8904976895050290827">Chrome-synchronisatie</translation>
 <translation id="890616557918890486">Bron wijzigen</translation>

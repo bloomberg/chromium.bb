@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Otvoriť nastavenia obrazovky</translation>
 <translation id="1572266655485775982">Povolenie Wi‑Fi</translation>
 <translation id="1572876035008611720">Zadajte svoj e-mail</translation>
-<translation id="1573150740912592860">Uložte svoj postup</translation>
 <translation id="1576594961618857597">Predvolený biely avatar</translation>
 <translation id="1581962803218266616">Zobraziť v aplikácii Finder</translation>
 <translation id="1584990664401018068">Využívaná sieť Wi‑Fi (<ph name="NETWORK_ID" />) môže vyžadovať overenie totožnosti.</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">Zariadenie sa nepodarilo pripojiť k doméne. Skontrolujte, či ste nepresiahli počet zariadení, ktoré môžete pridať.</translation>
 <translation id="1744108098763830590">stránka na pozadí</translation>
 <translation id="1745520510852184940">Vždy prekladať</translation>
+<translation id="1746402432151920942">Identifikátor chráneného média</translation>
 <translation id="175196451752279553">Znovu o&amp;tvoriť zatvorenú kartu</translation>
 <translation id="1753905327828125965">Najviac navšt.</translation>
 <translation id="1756681705074952506">Metóda vstupu</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">Neprihlásený/-á</translation>
 <translation id="1832511806131704864">Zmena telefónu bola aktualizovaná</translation>
 <translation id="1834503245783133039">Sťahovanie sa nepodarilo: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Zariadenia MIDI</translation>
 <translation id="1838374766361614909">Vymazať vyhľadávanie</translation>
 <translation id="1841545962859478868">Správca zariadenia môže monitorovať nasledovné:</translation>
 <translation id="1841616161104323629">Chýbajúci záznam zariadenia.</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">Nahlásiť problém</translation>
 <translation id="2220572644011485463">PIN alebo heslo</translation>
 <translation id="2224444042887712269">Nastavenie patrí používateľovi <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Udalosti dostupnosti</translation>
 <translation id="2224551243087462610">Upraviť názov priečinka</translation>
 <translation id="2226449515541314767">Týmto stránkam bola zablokovaná úplná kontrola nad zariadeniami MIDI.</translation>
 <translation id="2226720438730111184">Povedzte nám, čo sa deje</translation>
@@ -5061,7 +5063,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8898786835233784856">Vybrať ďalšiu kartu</translation>
 <translation id="8898840733695078011">Sila signálu</translation>
 <translation id="8899851313684471736">Otvoriť odkaz v novom &amp;okne</translation>
-<translation id="8902081783136172774">Pridajte si na úvodnú stránku tapetu</translation>
 <translation id="8902667442496790482">Otvoriť nastavenia počúvania vybraného textu</translation>
 <translation id="8904976895050290827">Synchronizácia Chromu</translation>
 <translation id="890616557918890486">Zmeniť zdroj</translation>

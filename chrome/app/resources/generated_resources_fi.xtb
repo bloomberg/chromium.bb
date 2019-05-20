@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Avaa näytön laiteasetukset</translation>
 <translation id="1572266655485775982">Wi-Fi käyttöön</translation>
 <translation id="1572876035008611720">Anna sähköpostiosoitteesi.</translation>
-<translation id="1573150740912592860">Tallenna edistyminen</translation>
 <translation id="1576594961618857597">Valkoinen oletusavatar</translation>
 <translation id="1581962803218266616">Näytä Finderissä</translation>
 <translation id="1584990664401018068">Käyttämäsi Wi-Fi-verkko (<ph name="NETWORK_ID" />) saattaa edellyttää todennusta.</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">Laitetta ei voi liittää verkkotunnukseen. Varmista, ettei lisättävien laitteiden kiintiösi ole ylittynyt,</translation>
 <translation id="1744108098763830590">taustasivu:</translation>
 <translation id="1745520510852184940">Käännä aina</translation>
+<translation id="1746402432151920942">Suojatun median tunniste</translation>
 <translation id="175196451752279553">A&amp;vaa suljettu välilehti uudelleen</translation>
 <translation id="1753905327828125965">Käydyimmät</translation>
 <translation id="1756681705074952506">Syöttötapa</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">Ei kirjautunut</translation>
 <translation id="1832511806131704864">Puhelimen vaihdos päivitettiin</translation>
 <translation id="1834503245783133039">Lataus epäonnistui: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-laitteet</translation>
 <translation id="1838374766361614909">Tyhjennä haku</translation>
 <translation id="1841545962859478868">Laitteen järjestelmänvalvoja voi seurata näitä:</translation>
 <translation id="1841616161104323629">Laitetallenne puuttuu.</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">Ilmoita ongelmasta</translation>
 <translation id="2220572644011485463">PIN-koodi tai salasana</translation>
 <translation id="2224444042887712269">Tämä asetus kuuluu käyttäjälle <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Esteettömyystapahtumat</translation>
 <translation id="2224551243087462610">Muokkaa kansion nimeä</translation>
 <translation id="2226449515541314767">Tältä sivustolta on estetty MIDI-laitteiden täysi käyttöoikeus.</translation>
 <translation id="2226720438730111184">Kerro, mitä tapahtuu</translation>
@@ -5063,7 +5065,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8898786835233784856">Valitse seuraava välilehti</translation>
 <translation id="8898840733695078011">Signaalin vahvuus</translation>
 <translation id="8899851313684471736">Avaa linkki uudessa &amp;ikkunassa</translation>
-<translation id="8902081783136172774">Aloitussivun taustakuvan valinta</translation>
 <translation id="8902667442496790482">Avaa Teksti puhuttuna -asetukset</translation>
 <translation id="8904976895050290827">Chromen synkronointi</translation>
 <translation id="890616557918890486">Vaihda lähdettä</translation>

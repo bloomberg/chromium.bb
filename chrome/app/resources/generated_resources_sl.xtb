@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Odpiranje nastavitev zaslona v napravi</translation>
 <translation id="1572266655485775982">Omogočanje Wi-Fi-ja</translation>
 <translation id="1572876035008611720">Vnesite e-poštni naslov</translation>
-<translation id="1573150740912592860">Shranite napredek</translation>
 <translation id="1576594961618857597">Privzeti beli avatar</translation>
 <translation id="1581962803218266616">Pokaži v Finderju</translation>
 <translation id="1584990664401018068">Omrežje Wi-Fi, ki ga uporabljate (<ph name="NETWORK_ID" />), bo morda zahtevalo preverjanje pristnosti.</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">Naprave ni mogoče pridružiti domeni. Preverite, ali niste presegli števila naprav, ki jih lahko dodate.</translation>
 <translation id="1744108098763830590">stran v ozadju</translation>
 <translation id="1745520510852184940">Vedno izvedi to</translation>
+<translation id="1746402432151920942">Identifikator zaščitene predstavnosti</translation>
 <translation id="175196451752279553">&amp;Znova odpri zaprt zavihek</translation>
 <translation id="1753905327828125965">Najpogosteje obiskane</translation>
 <translation id="1756681705074952506">Način vnosa</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">Niste prijavljeni</translation>
 <translation id="1832511806131704864">Sprememba telefona posodobljena</translation>
 <translation id="1834503245783133039">Prenos ni uspel: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Naprave MIDI</translation>
 <translation id="1838374766361614909">Čiščenje iskanja</translation>
 <translation id="1841545962859478868">Skrbnik naprave morda nadzira naslednje:</translation>
 <translation id="1841616161104323629">Manjka zapis o napravi.</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">Prijavite težavo</translation>
 <translation id="2220572644011485463">Koda PIN ali geslo</translation>
 <translation id="2224444042887712269">Ta nastavitev se nanaša na uporabnika <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Dogodki funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="2224551243087462610">Uredi ime mape</translation>
 <translation id="2226449515541314767">Temu spletnemu mestu je preprečen popolni nadzor nad napravami MIDI.</translation>
 <translation id="2226720438730111184">Povejte nam, kaj se dogaja</translation>
@@ -5066,7 +5068,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8898786835233784856">Izberi naslednji zavihek</translation>
 <translation id="8898840733695078011">Moč signala</translation>
 <translation id="8899851313684471736">Odpri povezavo v novem &amp;oknu</translation>
-<translation id="8902081783136172774">Izbira ozadja za začetno stran</translation>
 <translation id="8902667442496790482">Odpri nastavitve storitve Izberite in poslušajte</translation>
 <translation id="8904976895050290827">Sinhronizacija za Chrome</translation>
 <translation id="890616557918890486">Spremeni vir</translation>

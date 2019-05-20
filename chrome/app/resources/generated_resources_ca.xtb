@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Obre la configuració de la pantalla</translation>
 <translation id="1572266655485775982">Activa la Wi-Fi</translation>
 <translation id="1572876035008611720">Introdueix el correu electrònic</translation>
-<translation id="1573150740912592860">Desa el que estiguis fent</translation>
 <translation id="1576594961618857597">Avatar blanc predeterminat</translation>
 <translation id="1581962803218266616">Mostra a Finder</translation>
 <translation id="1584990664401018068">És possible que la xarxa Wi-Fi que esteu fent servir (<ph name="NETWORK_ID" />) sol·liciti que us autentiqueu.</translation>
@@ -616,7 +615,7 @@
 <translation id="1932026958134051332">Opcions d'Accés amb interruptors</translation>
 <translation id="1932098463447129402">No abans</translation>
 <translation id="1933809209549026293">Connecteu un cursor o un teclat. Si feu servir un dispositiu Bluetooth, assegureu-vos que estigui preparat per a la sincronització.</translation>
-<translation id="1937774647013465102">No es pot importar el tipus d'arquitectura <ph name="ARCHITECTURE_CONTAINER" /> del contenidor amb aquest dispositiu, que és <ph name="ARCHITECTURE_DEVICE" />. Pots provar de restaurar el contenidor en un altre dispositiu o accedir als fitxers que inclou la imatge del contenidor obrint l'aplicació Fitxers.</translation>
+<translation id="1937774647013465102">No es pot importar el tipus d'arquitectura de contenidors<ph name="ARCHITECTURE_CONTAINER" /> amb aquest dispositiu, que és <ph name="ARCHITECTURE_DEVICE" />. Pots provar de restaurar el contenidor en un altre dispositiu o accedir als fitxers que inclou la imatge del contenidor obrint l'aplicació Fitxers.</translation>
 <translation id="1938351510777341717">Ordre externa</translation>
 <translation id="1940546824932169984">Dispositius connectats</translation>
 <translation id="1944921356641260203">S'ha trobat una actualització.</translation>
@@ -1490,7 +1489,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3317459757438853210">A dues cares</translation>
 <translation id="3317678681329786349">La càmera i el micròfon estan bloquejats</translation>
 <translation id="3319048459796106952">Finestra d'incògnit nova</translation>
-<translation id="3323521181261657960">Que bé! Tens més temps de connexió</translation>
+<translation id="3323521181261657960">Has obtingut més temps de connexió!</translation>
 <translation id="3325910708063135066">La càmera i el micròfon estan desactivats a les preferències del sistema de Mac</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Informació de l'aplicació</translation>
@@ -1710,7 +1709,8 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3664511988987167893">Icona de l'extensió</translation>
 <translation id="3665589677786828986">Chrome ha detectat que un altre programa ha malmès alguns dels paràmetres de configuració i els ha restablert als valors predeterminats originals.</translation>
 <translation id="3668570675727296296">Configuració d'idioma</translation>
-<translation id="366867565525278777">No s'ha pogut fer la instal·lació perquè falta espai d'emmagatzematge. Calen almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
+<translation id="366867565525278777">No s'ha pogut fer la instal·lació perquè falta espai d'emmagatzematge. Cal
+en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="3668801437375206837">Per diagnosticar millor els problemes del Bluetooth, els Googlers poden incloure registres de Bluetooth addicionals als seus informes de suggeriments. Si aquesta opció està marcada, l'informe inclourà registres BTSnoop i HCI de la teva sessió actual, que es depurarà per suprimir tanta informació d'identificació personal (IIP) com sigui possible. L'accés a aquests registres es restringirà als gestors del grup de productes de Chrome OS a Listnr. Els registres se suprimiran permanentment al cap de 90 dies.</translation>
 <translation id="3668823961463113931">Gestors</translation>
 <translation id="3670113805793654926">Dispositius de qualsevol proveïdor</translation>
@@ -3838,7 +3838,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7022562585984256452">S'ha definit la pàgina d'inici.</translation>
 <translation id="7025190659207909717">Gestió de serveis de dades mòbils</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
-<translation id="7031608529463141342"><ph name="WINDOW_TITLE" />: port en sèrie connecat</translation>
+<translation id="7031608529463141342"><ph name="WINDOW_TITLE" />: port en sèrie connectat</translation>
 <translation id="7031962166228839643">El mòdul TPM s'està preparant (aquest procés pot trigar una estona). Espereu...</translation>
 <translation id="7037509989619051237">Text de prova</translation>
 <translation id="7039326228527141150">Accedir a dispositius USB del proveïdor <ph name="VENDOR_NAME" /></translation>
@@ -4399,7 +4399,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7877451762676714207">Error de servidor desconegut. Torneu-ho a provar o contacteu amb l'administrador del servidor.</translation>
 <translation id="7877680364634660272">Visita guiada</translation>
 <translation id="7878562273885520351">La teva contrasenya pot estar en perill</translation>
-<translation id="7880823633812189969">Les dades locals se suprimiran en reiniciar</translation>
+<translation id="7880823633812189969">Les dades locals se suprimiran en reiniciar el dispositiu</translation>
 <translation id="7881483672146086348">Mostra el compte</translation>
 <translation id="7882358943899516840">Tipus de proveïdor</translation>
 <translation id="7885253890047913815">Destinacions recents</translation>
@@ -5060,7 +5060,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8898786835233784856">Selecciona la pestanya següent</translation>
 <translation id="8898840733695078011">Intensitat del senyal</translation>
 <translation id="8899851313684471736">Obre l'enllaç en una &amp;finestra nova</translation>
-<translation id="8902081783136172774">Selecciona un fons de pantalla per a la pàgina d'inici</translation>
 <translation id="8902667442496790482">Obre la configuració d'Escolta la selecció</translation>
 <translation id="8904976895050290827">Sincronització de Google Chrome</translation>
 <translation id="890616557918890486">Canvia la font</translation>

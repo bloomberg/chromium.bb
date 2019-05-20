@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Buka tetapan peranti paparan</translation>
 <translation id="1572266655485775982">Wi-Fi didayakan</translation>
 <translation id="1572876035008611720">Masukkan e-mel anda</translation>
-<translation id="1573150740912592860">Simpan kemajuan anda</translation>
 <translation id="1576594961618857597">Avatar putih lalai</translation>
 <translation id="1581962803218266616">Show in Finder</translation>
 <translation id="1584990664401018068">Rangkaian Wi-Fi yang anda gunakan (<ph name="NETWORK_ID" />) mungkin menghendaki pengesahan.</translation>
@@ -905,7 +904,7 @@
 <translation id="2392369802118427583">Aktifkan</translation>
 <translation id="2394566832561516196">Tetapan akan dikosongkan pada muat semula seterusnya.</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> anda berjaya didaftarkan untuk pengurusan perusahaan, tetapi gagal menghantar maklumat aset dan lokasinya. Sila masukkan maklumat ini secara manual daripada Admin console anda untuk peranti ini.</translation>
-<translation id="2396783860772170191">Masukkan pin 4 angka (0000-9999)</translation>
+<translation id="2396783860772170191">Masukkan PIN 4 angka (0000-9999)</translation>
 <translation id="2408955596600435184">Masukkan PIN anda</translation>
 <translation id="241082044617551207">Pemalam tidak diketahui</translation>
 <translation id="2413749388954403953">Ubah antara muka pengguna penanda halaman</translation>
@@ -1001,7 +1000,7 @@
 <translation id="2538361623464451692">Penyegerakan dilumpuhkan</translation>
 <translation id="2540449034743108469">Tekan "Mula" untuk mendengar aktiviti sambungan</translation>
 <translation id="2541002089857695151">Optimumkan penghantaran skrin penuh?</translation>
-<translation id="2541706104884128042">Masa tidur baharu ditetapkan</translation>
+<translation id="2541706104884128042">Waktu tidur baharu ditetapkan</translation>
 <translation id="2544853746127077729">Sijil pengesahan ditolak oleh rangkaian</translation>
 <translation id="2549985041256363841">Mulakan rakaman</translation>
 <translation id="2550212893339833758">Memori ditukar</translation>
@@ -1334,7 +1333,7 @@
 <translation id="304747341537320566">Enjin Pertuturan</translation>
 <translation id="3047644958362961983">Maklumat ini membantu kami memahami masalah Assistant anda dengan lebih baik. Maklumat ini disimpan sehingga 90 hari dan akses dihadkan kepada pasukan kejuruteraan dan maklum balas yang berkenaan.</translation>
 <translation id="3053013834507634016">Penggunaan Penting Sijil</translation>
-<translation id="3053273573829329829">Dayakan pin pengguna</translation>
+<translation id="3053273573829329829">Dayakan PIN pengguna</translation>
 <translation id="3058498974290601450">Anda boleh mematikan penyegerakan pada bila-bila masa dalam tetapan</translation>
 <translation id="3060379269883947824">Dayakan pilih untuk bercakap</translation>
 <translation id="3061707000357573562">Perkhidmatan Tampung</translation>
@@ -3772,7 +3771,7 @@
 <translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" /> tidak dapat dibuka</translation>
 <translation id="6921709132208495314">Berhenti menggunakan data pada halaman ini</translation>
 <translation id="6922128026973287222">Simpan data dan semak imbas dengan lebih pantas menggunakan Penjimat Data Google. Klik untuk mengetahui lebih lanjut.</translation>
-<translation id="6922745772873733498">Masukkan pin untuk mencetak</translation>
+<translation id="6922745772873733498">Masukkan PIN untuk mencetak</translation>
 <translation id="6923132443355966645">Tatal / Klik</translation>
 <translation id="6923633482430812883">Ralat semasa melekapkan kongsi. Sila pastikan bahawa pelayan fail yang bersambung dengan anda itu menyokong SMBv2 atau yang lebih baharu.</translation>
 <translation id="6930036377490597025">Kunci keselamatan luaran atau penderia terbina dalam</translation>
@@ -4988,7 +4987,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8780123805589053431">Dapatkan perihalan imej daripada Google</translation>
 <translation id="8780443667474968681">Carian suara telah dimatikan.</translation>
 <translation id="878069093594050299">Sijil telah disahkan untuk penggunaan berikut:</translation>
-<translation id="8781470833671194250">Klik penstabilan kedudukan</translation>
+<translation id="8781470833671194250">Penstabilan kedudukan klik</translation>
 <translation id="8781980678064919987">Matikan apabila penutup ditutup</translation>
 <translation id="8782565991310229362">Pelancaran aplikasi kios dibatalkan.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin berkongsi pencetak &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan anda.</translation>
@@ -5069,7 +5068,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8898786835233784856">Pilih Tab Seterusnya</translation>
 <translation id="8898840733695078011">Kekuatan isyarat</translation>
 <translation id="8899851313684471736">Buka pautan dalam tetingkap &amp;baharu</translation>
-<translation id="8902081783136172774">Pilih kertas dinding untuk halaman mula anda</translation>
 <translation id="8902667442496790482">Buka tetapan pilih untuk bercakap</translation>
 <translation id="8904976895050290827">Penyegerakan Chrome</translation>
 <translation id="890616557918890486">Tukar sumber</translation>

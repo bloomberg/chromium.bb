@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Άνοιγμα των ρυθμίσεων οθόνης της συσκευής</translation>
 <translation id="1572266655485775982">Ενεργοποίηση Wi-Fi</translation>
 <translation id="1572876035008611720">Εισαγάγετε τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας</translation>
-<translation id="1573150740912592860">Αποθήκευση της προόδου σας</translation>
 <translation id="1576594961618857597">Προεπιλεγμένο λευκό avatar</translation>
 <translation id="1581962803218266616">Εμφάνιση στο Finder</translation>
 <translation id="1584990664401018068">Το δίκτυο Wi-Fi που χρησιμοποιείτε (<ph name="NETWORK_ID" />) ενδέχεται να απαιτεί έλεγχο ταυτότητας.</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">Δεν είναι δυνατή η σύνδεση της συσκευής στον τομέα. Βεβαιωθείτε ότι δεν έχετε υπερβεί τον αριθμό των συσκευών που μπορείτε να προσθέσετε.</translation>
 <translation id="1744108098763830590">σελίδα παρασκηνίου</translation>
 <translation id="1745520510852184940">Να γίνεται πάντα</translation>
+<translation id="1746402432151920942">Αναγνωριστικό προστατευμένων μέσων</translation>
 <translation id="175196451752279553">Ε&amp;παναφορά καρτέλας που έχει κλείσει</translation>
 <translation id="1753905327828125965">Πιο Δημοφιλή</translation>
 <translation id="1756681705074952506">Μέθοδος εισόδου</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">Δεν είναι συνδεδεμένος</translation>
 <translation id="1832511806131704864">Η αλλαγή του τηλεφώνου ενημερώθηκε</translation>
 <translation id="1834503245783133039">Ανεπιτυχής λήψη: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Συσκευές MIDI</translation>
 <translation id="1838374766361614909">Διαγραφή αναζητήσεων</translation>
 <translation id="1841545962859478868">Ο διαχειριστής της συσκευής μπορεί να παρακολουθεί τα παρακάτω:</translation>
 <translation id="1841616161104323629">Λείπει κάποιο αρχείο συσκευής.</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">Αναφορά προβλήματος</translation>
 <translation id="2220572644011485463">PIN ή κωδικός πρόσβασης</translation>
 <translation id="2224444042887712269">Αυτή η ρύθμιση ανήκει στον χρήστη <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Συμβάντα προσβασιμότητας</translation>
 <translation id="2224551243087462610">Επεξεργασία ονόματος φακέλου</translation>
 <translation id="2226449515541314767">Αυτός ο ιστότοπος έχει αποκλειστεί από τον πλήρη έλεγχο των συσκευών MIDI.</translation>
 <translation id="2226720438730111184">Πείτε μας τι συμβαίνει</translation>
@@ -5063,7 +5065,6 @@
 <translation id="8898786835233784856">Επιλογή Επόμενης Καρτέλας</translation>
 <translation id="8898840733695078011">Ισχύς σήματος</translation>
 <translation id="8899851313684471736">Άνοιγμα συνδέσμου σε νέο παρά&amp;θυρο</translation>
-<translation id="8902081783136172774">Επιλέξτε μια ταπετσαρία για την αρχική σελίδα σας</translation>
 <translation id="8902667442496790482">Άνοιγμα ρυθμίσεων λειτουργίας "Επιλέξτε για εκφώνηση"</translation>
 <translation id="8904976895050290827">Συγχρονισμός Chrome</translation>
 <translation id="890616557918890486">Αλλαγή πηγής</translation>

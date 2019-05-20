@@ -915,7 +915,6 @@
 <translation id="5975083100439434680">تصغير</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">لا يمكن فتح تطبيق الدفع</translation>
-<translation id="5988826871883769516">يدير حسابك <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
 <translation id="5990559369517809815">تم حظر الطلبات المقدمة إلى الخادم بواسطة إحدى الإضافات.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1194,7 +1193,6 @@
 <translation id="7554791636758816595">علامة تبويب جديدة</translation>
 <translation id="7564049878696755256">‏قد تفقد إمكانية الوصول إلى حسابك على <ph name="ORG_NAME" /> أو تتعرض لسرقة هويتك. لذا يوصي Chrome بتغيير كلمة مرورك الآن.</translation>
 <translation id="7567204685887185387">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تم إصدارها عن طريق الاحتيال. وربما يكون سبب ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
-<translation id="7568105740864181217">‏تتم إدارة هذا المتصفِّح من خلال شركة أو مؤسسة تعليمية أو مؤسسة أخرى. يمكن لمشرفك تغيير إعداد المتصفِّح عن بُعد. قد تتم أيضًا إدارة النشاط على هذا الجهاز خارج Chrome. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">‏هل تريد إزالة بطاقة الائتمان من Chrome؟</translation>
 <translation id="7569983096843329377">أسود</translation>
 <translation id="7578104083680115302">‏الدفع سريعًا على المواقع والتطبيقات على جميع الأجهزة باستخدام البطاقات التي حفظتها في Google.</translation>
@@ -1328,7 +1326,6 @@
 <translation id="825929999321470778">عرض جميع كلمات المرور المحفوظة</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8267698848189296333">تسجيل الدخول باسم <ph name="USERNAME" /></translation>
-<translation id="8278457561961988242">‏تتم إدارة هذا المتصفِّح من خلال <ph name="ENROLLMENT_DOMAIN" />. ويمكن لمشرفك تغيير إعداد المتصفِّح عن بُعد. قد تتم أيضًا إدارة النشاط على هذا الجهاز خارج Chrome. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">تسجيل الدخول</translation>
 <translation id="8288807391153049143">عرض الشهادة</translation>

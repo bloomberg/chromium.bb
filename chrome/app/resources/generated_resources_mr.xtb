@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">डिस्प्ले डिव्हाइस सेटिंग्ज उघडा</translation>
 <translation id="1572266655485775982">वाय-फाय सुरू</translation>
 <translation id="1572876035008611720">तुमचा ईमेल एंटर करा</translation>
-<translation id="1573150740912592860">तुमची प्रगती सेव्ह करा</translation>
 <translation id="1576594961618857597">डीफॉल्ट पांढरा अवतार</translation>
 <translation id="1581962803218266616">फाइंडर मध्ये दर्शवा</translation>
 <translation id="1584990664401018068">तुम्ही वापरत असलेल्या वाय-फाय नेटवर्कला (<ph name="NETWORK_ID" />) अॉथेंटिकेशनची आवश्यकता असू शकते.</translation>
@@ -487,6 +486,7 @@
 <translation id="1744060673522309905">डिव्हाइस डोमेनशी जोडू शकत नाही. तुम्हाला जोडता येऊ शकणाऱ्या डिव्हाइसची संख्या तुम्ही ओलांडलेली नाही याची खात्री करा.</translation>
 <translation id="1744108098763830590">पार्श्वभूमी पृष्ठ</translation>
 <translation id="1745520510852184940">हे नेहमी करा</translation>
+<translation id="1746402432151920942">संरक्षित मीडिया आयडेंटिफायर</translation>
 <translation id="175196451752279553">पु&amp;न्हा बंद टॅब उघडा</translation>
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
 <translation id="1756681705074952506">इनपुट पद्धत</translation>
@@ -544,6 +544,7 @@
 <translation id="1830550083491357902">साइन इन केलेले नाही</translation>
 <translation id="1832511806131704864">फोन बदल अपडेट झाला</translation>
 <translation id="1834503245783133039">डाउनलोड करता आले नाही: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI डिव्हाइस</translation>
 <translation id="1838374766361614909">शोध साफ करा</translation>
 <translation id="1841545962859478868">डिव्हाइस प्रशासक कदाचित खालील गोष्टींचे परीक्षण करू शकतो:</translation>
 <translation id="1841616161104323629">डिव्हाइस रेकॉर्ड उपलब्ध नाही.</translation>
@@ -787,6 +788,7 @@
 <translation id="2220529011494928058">समस्येची तक्रार करा</translation>
 <translation id="2220572644011485463">पिन किंवा पासवर्ड</translation>
 <translation id="2224444042887712269">ही सेटिंग <ph name="OWNER_EMAIL" /> च्या मालकीची आहे.</translation>
+<translation id="2224471211857467033">अॅक्सेसिबिलिटी इव्हेंट</translation>
 <translation id="2224551243087462610">फोल्डर नाव संपादित करा</translation>
 <translation id="2226449515541314767">MIDI डिव्हाइसचे पूर्ण नियंत्रण असण्यापासून ही साइट अवरोधित केली गेली आहे.</translation>
 <translation id="2226720438730111184">काय होत आहे ते आम्हाला सांगा</translation>
@@ -5063,7 +5065,6 @@
 <translation id="8898786835233784856">पुढील टॅब निवडा</translation>
 <translation id="8898840733695078011">सिग्नल सामर्थ्य</translation>
 <translation id="8899851313684471736">नवीन &amp;विंडोमध्ये लिंक उघडा</translation>
-<translation id="8902081783136172774">तुमच्या सुरू करा पेजसाठी वॉलपेपर निवडा</translation>
 <translation id="8902667442496790482">बोलण्यासाठी निवडा सेटिंग्ज उघडा</translation>
 <translation id="8904976895050290827">Chrome सिंक</translation>
 <translation id="890616557918890486">स्रोत बदला</translation>

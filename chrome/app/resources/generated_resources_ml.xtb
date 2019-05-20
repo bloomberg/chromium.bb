@@ -367,7 +367,6 @@
 <translation id="1568323446248056064">ഡിസ്‌പ്ലേ ഉപകരണ ക്രമീകരണം തുറക്കുക</translation>
 <translation id="1572266655485775982">Wi-Fi പ്രവർത്തനക്ഷമമാക്കൽ</translation>
 <translation id="1572876035008611720">നിങ്ങളുടെ ഇമെയിൽ നൽകുക</translation>
-<translation id="1573150740912592860">നിങ്ങളുടെ പുരോഗതി സംരക്ഷിക്കുക</translation>
 <translation id="1576594961618857597">ഡിഫോൾട്ടായ വെളുത്ത അവതാർ</translation>
 <translation id="1581962803218266616">ഫൈന്‍ഡറില്‍ കാണിക്കുക</translation>
 <translation id="1584990664401018068">നിങ്ങൾ ഉപയോഗിക്കുന്ന Wi-Fi നെറ്റ്‌വർക്കിന് (<ph name="NETWORK_ID" />) പരിശോധിച്ചുറപ്പിക്കൽ ആവശ്യമായി വരാം.</translation>
@@ -485,6 +484,7 @@
 <translation id="1744060673522309905">ഉപകരണത്തെ ഡൊമെയ്‌നുമായി ബന്ധിപ്പിക്കാൻ കഴിയുന്നില്ല. നിങ്ങൾക്ക് ചേർക്കാനാവുന്ന ഉപകരണങ്ങളുടെ എണ്ണം കവിഞ്ഞിട്ടില്ലെന്ന് ഉറപ്പാക്കുക.</translation>
 <translation id="1744108098763830590">പശ്ചാത്തല പേജ്</translation>
 <translation id="1745520510852184940">എല്ലായ്‌പ്പോഴും ഇങ്ങനെ ചെയ്യുക</translation>
+<translation id="1746402432151920942">പരിരക്ഷിത മീഡിയ ഐഡന്റിഫയർ</translation>
 <translation id="175196451752279553">അടച്ച ടാബ് വീ&amp;ണ്ടും തുറക്കുക</translation>
 <translation id="1753905327828125965">കൂടുതൽ‍ സന്ദര്‍ശിച്ചത്</translation>
 <translation id="1756681705074952506">ഇന്‍‌പുട്ട് രീതി</translation>
@@ -542,6 +542,7 @@
 <translation id="1830550083491357902">പ്രവേശിച്ചിട്ടില്ല</translation>
 <translation id="1832511806131704864">ഫോൺ മാറ്റം അപ്‌ഡേറ്റ് ചെയ്‌തു</translation>
 <translation id="1834503245783133039">ഡൗൺലോഡ് പരാജയപ്പെട്ടു: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI ഉപകരണങ്ങൾ</translation>
 <translation id="1838374766361614909">തിരയൽ മായ്ക്കുക</translation>
 <translation id="1841545962859478868">ഉപകരണ അഡ്‌മിൻ ഇനിപ്പറയുന്നവ നിരീക്ഷിച്ചേക്കാം:</translation>
 <translation id="1841616161104323629">ഉപകരണ റെക്കോർഡ് കണ്ടെത്താനായില്ല.</translation>
@@ -785,6 +786,7 @@
 <translation id="2220529011494928058">ഒരു പ്രശ്‌നം റിപ്പോർട്ടുചെയ്യുക</translation>
 <translation id="2220572644011485463">പിൻ അല്ലെങ്കിൽ പാസ്‌വേഡ്</translation>
 <translation id="2224444042887712269">ഈ ക്രമീകരണം <ph name="OWNER_EMAIL" />-ന്റേതാണ്.</translation>
+<translation id="2224471211857467033">ഉപയോഗസഹായി ഇവന്റുകൾ</translation>
 <translation id="2224551243087462610">ഫോള്‍ഡര്‍ നാമം എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="2226449515541314767">MIDI ഉപകരണങ്ങളിൽ പൂർണ്ണനിയന്ത്രണം നേടുന്നതിൽ നിന്ന് ഈ സൈറ്റിനെ തടഞ്ഞു.</translation>
 <translation id="2226720438730111184">എന്താണ് സംഭവിക്കുന്നതെന്ന് ഞങ്ങളെ അറിയിക്കുക</translation>
@@ -5061,7 +5063,6 @@
 <translation id="8898786835233784856">അടുത്ത ടാബ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8898840733695078011">സിഗ്‌നൽ ശക്തി</translation>
 <translation id="8899851313684471736">ലിങ്ക് പുതിയ &amp;വിൻഡോയിൽ തുറക്കുക</translation>
-<translation id="8902081783136172774">നിങ്ങളുടെ ആരംഭ പേജിനായി ഒരു വാൾപേപ്പർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8902667442496790482">'വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക' ക്രമീകരണം തുറക്കുക</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="890616557918890486">ഉറവിടം മാറ്റുക</translation>

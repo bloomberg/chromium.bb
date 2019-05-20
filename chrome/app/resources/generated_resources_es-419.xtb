@@ -367,7 +367,6 @@
 <translation id="1568323446248056064">Abrir configuración de pantalla</translation>
 <translation id="1572266655485775982">Habilitar Wi-Fi</translation>
 <translation id="1572876035008611720">Ingresa tu correo electrónico.</translation>
-<translation id="1573150740912592860">Guardar el progreso</translation>
 <translation id="1576594961618857597">Avatar blanco predeterminado</translation>
 <translation id="1581962803218266616">Mostrar en Buscador</translation>
 <translation id="1584990664401018068">La red Wi-Fi que estás usando (<ph name="NETWORK_ID" />) podría exigir autenticación.</translation>
@@ -485,6 +484,7 @@
 <translation id="1744060673522309905">No se pudo unir el dispositivo al dominio. Asegúrate de no haber superado la cantidad de dispositivos que puedes agregar.</translation>
 <translation id="1744108098763830590">página en segundo plano</translation>
 <translation id="1745520510852184940">Realizar siempre esta acción</translation>
+<translation id="1746402432151920942">Identificador de medios protegidos</translation>
 <translation id="175196451752279553">Volver a abrir una pestaña cerrada</translation>
 <translation id="1753905327828125965">Más visitados</translation>
 <translation id="1756681705074952506">Método de entrada</translation>
@@ -542,6 +542,7 @@
 <translation id="1830550083491357902">No has accedido.</translation>
 <translation id="1832511806131704864">Cambio de teléfono actualizado</translation>
 <translation id="1834503245783133039">No se pudo realizar la descarga: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Dispositivos MIDI</translation>
 <translation id="1838374766361614909">Borrar la búsqueda</translation>
 <translation id="1841545962859478868">Es posible que el administrador de dispositivos supervise lo siguiente:</translation>
 <translation id="1841616161104323629">Falta un registro de dispositivo.</translation>
@@ -785,6 +786,7 @@
 <translation id="2220529011494928058">Informar un problema</translation>
 <translation id="2220572644011485463">PIN o contraseña</translation>
 <translation id="2224444042887712269">Esta configuración pertenece a <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Eventos de accesibilidad</translation>
 <translation id="2224551243087462610">Editar nombre de carpeta</translation>
 <translation id="2226449515541314767">Se bloqueó este sitio para que no tenga el control total de los dispositivos MIDI</translation>
 <translation id="2226720438730111184">Cuéntanos cuál es el problema</translation>
@@ -5062,7 +5064,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8898786835233784856">Seleccionar siguiente pestaña</translation>
 <translation id="8898840733695078011">Intensidad de la señal</translation>
 <translation id="8899851313684471736">Abrir enlace en una &amp;ventana nueva</translation>
-<translation id="8902081783136172774">Elige un fondo de pantalla para tu página de inicio</translation>
 <translation id="8902667442496790482">Abrir configuración de Seleccionar para pronunciar</translation>
 <translation id="8904976895050290827">Sincronización de Chrome</translation>
 <translation id="890616557918890486">Cambiar la fuente</translation>

@@ -907,7 +907,6 @@
 <translation id="5975083100439434680">Tālināt</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nevar atvērt maksājumu lietotni</translation>
-<translation id="5988826871883769516">Jūsu ierīci pārvalda <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Nav norādīti nedz fiksēti starpniekserveri, nedz .pac skripta URL.</translation>
 <translation id="5990559369517809815">Paplašinājums ir bloķējis pieprasījumus serverim.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1183,7 +1182,6 @@ Papildu informācija:
 <translation id="7554791636758816595">Jauna cilne</translation>
 <translation id="7564049878696755256">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chrome iesaka nekavējoties nomainīt paroli.</translation>
 <translation id="7567204685887185387">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts, iespējams, ir izveidots krāpnieciski. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
-<translation id="7568105740864181217">Šo pārlūku pārvalda uzņēmums, skola vai cita organizācija. Jūsu administrators var attālināti mainīt jūsu pārlūka iestatījumus. Darbību šajā ierīcē var pārvaldīt arī ārpus Chrome. <ph name="BEGIN_LINK" />Uzzināt vairāk<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">Vai noņemt kredītkarti no pārlūka Chrome?</translation>
 <translation id="7569983096843329377">Melna</translation>
 <translation id="7578104083680115302">Ātri apmaksājiet pirkumus vietnēs un lietotnēs no dažādām ierīcēm, izmantojot kartes, ko esat saglabājis Google sistēmā.</translation>
@@ -1317,7 +1315,6 @@ Papildu informācija:
 <translation id="825929999321470778">Rādīt visas saglabātās paroles</translation>
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8267698848189296333">Notiek pierakstīšanās lietotāja <ph name="USERNAME" /> kontā</translation>
-<translation id="8278457561961988242">Šo pārlūku pārvalda domēns <ph name="ENROLLMENT_DOMAIN" />. Jūsu administrators var attālināti mainīt pārlūka iestatījumus. Darbību šajā ierīcē var pārvaldīt arī ārpus Chrome. <ph name="BEGIN_LINK" />Uzzināt vairāk<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Pierakstīties</translation>
 <translation id="8288807391153049143">Rādīt sertifikātu</translation>

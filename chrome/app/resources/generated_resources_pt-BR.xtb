@@ -31,7 +31,7 @@
 <translation id="1036982837258183574">Pressione |<ph name="ACCELERATOR" />| para sair do modo tela cheia</translation>
 <translation id="1038168778161626396">Somente codificar</translation>
 <translation id="1039337018183941703">Arquivo inválido ou corrompido</translation>
-<translation id="1041175011127912238">Esta página não está respondendo.</translation>
+<translation id="1041175011127912238">Esta página não está respondendo</translation>
 <translation id="1042174272890264476">Seu computador já vem com a biblioteca RLZ do <ph name="SHORT_PRODUCT_NAME" /> integrada. O RLZ atribui uma tag não exclusiva e sem identificação pessoal para medir as pesquisas e o uso do <ph name="SHORT_PRODUCT_NAME" /> gerados por uma campanha promocional específica. Esses marcadores às vezes aparecem em consultas da Pesquisa Google no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">Ops. Este nome já está em uso.</translation>
 <translation id="1046635659603195359">Parece que você já configurou o "Voice Match" com seu Google Assistente em outro dispositivo. Essas gravações anteriores podem ser usadas para criar um modelo de voz neste dispositivo. Isso levará menos de um minuto.</translation>
@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Abrir configurações de exibição do dispositivo</translation>
 <translation id="1572266655485775982">Ativar Wi-Fi</translation>
 <translation id="1572876035008611720">Digite seu e-mail</translation>
-<translation id="1573150740912592860">Salve seu progresso</translation>
 <translation id="1576594961618857597">Avatar branco padrão</translation>
 <translation id="1581962803218266616">Mostrar no Finder</translation>
 <translation id="1584990664401018068">A rede Wi-Fi que você está usando (<ph name="NETWORK_ID" />) pode exigir autenticação.</translation>
@@ -1715,7 +1714,7 @@
 <translation id="3664511988987167893">Ícone de extensão</translation>
 <translation id="3665589677786828986">O Google Chrome detectou que algumas das suas configurações foram corrompidas por outro programa e as redefiniu para os padrões originais.</translation>
 <translation id="3668570675727296296">Configurações de idioma</translation>
-<translation id="366867565525278777">Falha na instalação devido à falta de espaço de armazenamento. É necessário ter pelo menos <ph name="INSTALL_SIZE" /> de espaço livre. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
+<translation id="366867565525278777">Falha na instalação devido à falta de espaço de armazenamento. É necessário pelo menos <ph name="INSTALL_SIZE" /> de espaço livre. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
 <translation id="3668801437375206837">Para diagnosticar melhor os problemas de Bluetooth, os Googlers podem incluir outros registros de Bluetooth aos relatórios de feedback deles. Quando essa opção estiver marcada, seu relatório incluirá registros btsnoop e HCI da sua sessão atual, depois de terem sido corrigidos para remover o máximo de PII possível. O acesso a esses registros será restrito aos gerentes do grupo de produtos do Chrome OS no Listnr. Os registros serão excluídos após 90 dias.</translation>
 <translation id="3668823961463113931">Manipuladores</translation>
 <translation id="3670113805793654926">Dispositivos de qualquer fornecedor</translation>
@@ -4021,7 +4020,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7289225569524511578">Abra o app de papel de parede</translation>
 <translation id="7290242001003353852">Este serviço de login, hospedado por <ph name="SAML_DOMAIN" />, está acessando sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
-<translation id="7295614427631867477">O Android, o Google Play e os apps associados são regidos pelas próprias políticas de uso e coleta de dados.</translation>
+<translation id="7295614427631867477">O Android, o Google Play e os apps associados são regidos pelas próprias políticas de uso e de coleta de dados.</translation>
 <translation id="729583233778673644">Permitir a codificação AES e RC4. O uso dessa opção é mais arriscado, porque as criptografias RC4 não são seguras.</translation>
 <translation id="7296774163727375165">Termos de <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nome de usuário/senha incorretos ou falha de autenticação EAP</translation>
@@ -5070,7 +5069,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8898786835233784856">Selecionar próxima guia</translation>
 <translation id="8898840733695078011">Intensidade do sinal</translation>
 <translation id="8899851313684471736">Abrir link em uma nova &amp;janela</translation>
-<translation id="8902081783136172774">Escolha um plano de fundo para sua página inicial</translation>
 <translation id="8902667442496790482">Abrir configurações de Selecionar para ouvir</translation>
 <translation id="8904976895050290827">Sincronização do Google Chrome</translation>
 <translation id="890616557918890486">Alterar origem</translation>

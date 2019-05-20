@@ -906,7 +906,6 @@
 <translation id="5975083100439434680">Уменьшить</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Не удалось открыть Payments</translation>
-<translation id="5988826871883769516">Ваше устройство находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Ни фиксированные прокси-серверы, ни URL PAC-скриптов не указаны.</translation>
 <translation id="5990559369517809815">Расширение заблокировало отправку запроса на сервер.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1182,7 +1181,6 @@
 <translation id="7554791636758816595">Новая вкладка</translation>
 <translation id="7564049878696755256">Кто-то посторонний мог получить доступ к вашим личным данным или аккаунту в домене <ph name="ORG_NAME" />. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="7567204685887185387">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности мог быть выдан обманным путем. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
-<translation id="7568105740864181217">Этим браузером управляет компания, учебное заведение или другая организация. Администратор может удаленно менять настройки браузера и выполнять другие действия вне браузера Chrome на этом устройстве. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">Удалить кредитную карту из Chrome?</translation>
 <translation id="7569983096843329377">Черный</translation>
 <translation id="7578104083680115302">Быстро оплачивайте покупки на сайтах и в приложениях с помощью карт, сохраненных в Google Payments. Настройка будет действовать на всех ваших устройствах.</translation>
@@ -1316,7 +1314,6 @@
 <translation id="825929999321470778">Показать все сохраненные пароли</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8267698848189296333">Вход в аккаунт <ph name="USERNAME" /></translation>
-<translation id="8278457561961988242">У администратора <ph name="ENROLLMENT_DOMAIN" /> есть право удаленно менять настройки этого браузера и выполнять другие действия вне браузера Chrome на этом устройстве. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Вход</translation>
 <translation id="8288807391153049143">Показать сертификат</translation>

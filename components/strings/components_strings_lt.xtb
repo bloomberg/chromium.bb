@@ -916,7 +916,6 @@
 <translation id="5975083100439434680">Tolinti</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nepavyksta atidaryti mokėjimo programos</translation>
-<translation id="5988826871883769516">Įrenginį tvarko <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Nenurodyti nei fiksuoti įgaliotieji serveriai, nei .pac scenarijaus URL.</translation>
 <translation id="5990559369517809815">Plėtinys užblokavo serveriui teikiamas užklausas.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1195,7 +1194,6 @@ Papildoma išsami informacija:
 <translation id="7554791636758816595">Naujas skirtukas</translation>
 <translation id="7564049878696755256">Galite prarasti galimybę pasiekti „<ph name="ORG_NAME" />“ paskyrą arba gali būti pavogta tapatybė. „Chrome“ rekomenduoja pakeisti slaptažodį dabar.</translation>
 <translation id="7567204685887185387">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas gali būti neteisėtai išduotas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
-<translation id="7568105740864181217">Šią naršyklę tvarko įmonė, mokykla arba kita organizacija. Administratorius gali nuotoliniu būdu keisti naršyklės nustatymą. Veiklą šiame įrenginyje taip pat galima tvarkyti ne naršyklėje „Chrome“. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">Pašalinti kredito kortelės informaciją iš „Chrome“?</translation>
 <translation id="7569983096843329377">Juoda</translation>
 <translation id="7578104083680115302">Greitai mokėkite svetainėse ir programose įvairiuose įrenginiuose naudodami korteles, kurias išsaugojote „Google“.</translation>
@@ -1329,7 +1327,6 @@ Papildoma išsami informacija:
 <translation id="825929999321470778">Rodyti visus išsaugotus slaptažodžius</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8267698848189296333">Prisijungiama kaip <ph name="USERNAME" /></translation>
-<translation id="8278457561961988242">Ši naršyklė tvarkoma <ph name="ENROLLMENT_DOMAIN" />. Administratorius gali nuotoliniu būdu keisti naršyklės nustatymą. Veiklą šiame įrenginyje taip pat galima tvarkyti ne naršyklėje „Chrome“. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Prisijungti</translation>
 <translation id="8288807391153049143">Rodyti sertifikatą</translation>

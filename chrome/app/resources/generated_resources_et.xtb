@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Kuvaseadme seadete avamine</translation>
 <translation id="1572266655485775982">WiFi lubamine</translation>
 <translation id="1572876035008611720">Sisestage oma e-posti aadress</translation>
-<translation id="1573150740912592860">Salvestage edenemisteave</translation>
 <translation id="1576594961618857597">Valge vaikeavatar</translation>
 <translation id="1581962803218266616">Näita otsijas</translation>
 <translation id="1584990664401018068">Teie kasutatav WiFi-võrk (<ph name="NETWORK_ID" />) võib nõuda autentimist.</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">Seadet ei saa domeeniga liita. Veenduge, et lisatavate seadmete maksimumarv ei oleks ületatud.</translation>
 <translation id="1744108098763830590">taustleht</translation>
 <translation id="1745520510852184940">Tee seda alati</translation>
+<translation id="1746402432151920942">Kaitstud meedia identifikaator</translation>
 <translation id="175196451752279553">&amp;Ava suletud vaheleht uuesti</translation>
 <translation id="1753905327828125965">Enim külastatud</translation>
 <translation id="1756681705074952506">Sisestusmeetod</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">Pole sisse logitud</translation>
 <translation id="1832511806131704864">Telefoni muutmist värskendati</translation>
 <translation id="1834503245783133039">Allalaadimine nurjus: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-seadmed</translation>
 <translation id="1838374766361614909">Otsingu kustutamine</translation>
 <translation id="1841545962859478868">Seadme administraator võib jälgida järgmist:</translation>
 <translation id="1841616161104323629">Seadme kirje puudub.</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">Probleemist teatamine</translation>
 <translation id="2220572644011485463">PIN-kood või parool</translation>
 <translation id="2224444042887712269">Seade omanik on <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Juurdepääsetavuse sündmused</translation>
 <translation id="2224551243087462610">Muuda kausta nime</translation>
 <translation id="2226449515541314767">Saidil pole lubatud MIDI-seadmeid täielikult juhtida.</translation>
 <translation id="2226720438730111184">Andke meile teada, mis toimub</translation>
@@ -5065,7 +5067,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8898786835233784856">Vali järgmine vaheleht</translation>
 <translation id="8898840733695078011">Signaali tugevus</translation>
 <translation id="8899851313684471736">Ava link uues &amp;aknas</translation>
-<translation id="8902081783136172774">Valige oma avalehe taustapilt</translation>
 <translation id="8902667442496790482">Ava funktsiooni Vali ja kuula seaded</translation>
 <translation id="8904976895050290827">Chrome'i sünkroonimine</translation>
 <translation id="890616557918890486">Vaheta allikat</translation>

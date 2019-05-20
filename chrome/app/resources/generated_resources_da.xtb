@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Åbn enhedens skærmindstillinger</translation>
 <translation id="1572266655485775982">Aktivér Wi-Fi</translation>
 <translation id="1572876035008611720">Angiv din mailadresse</translation>
-<translation id="1573150740912592860">Gem dine ændringer</translation>
 <translation id="1576594961618857597">Hvid standardavatar</translation>
 <translation id="1581962803218266616">Vis i Finder</translation>
 <translation id="1584990664401018068">Det Wi-Fi-netværk, du bruger (<ph name="NETWORK_ID" />), kan kræve godkendelse.</translation>
@@ -485,6 +484,7 @@
 <translation id="1744060673522309905">Enheden kunne ikke knyttes til domænet. Sørg for, at du ikke har overskredet antallet af enheder, du kan tilføje.</translation>
 <translation id="1744108098763830590">baggrundsside</translation>
 <translation id="1745520510852184940">Gør altid dette</translation>
+<translation id="1746402432151920942">Id for beskyttet medie</translation>
 <translation id="175196451752279553">G&amp;enåbn lukket fane</translation>
 <translation id="1753905327828125965">Mest besøgte</translation>
 <translation id="1756681705074952506">Indtastningsmetode</translation>
@@ -542,6 +542,7 @@
 <translation id="1830550083491357902">Ikke logget ind</translation>
 <translation id="1832511806131704864">Telefonændring opdateret</translation>
 <translation id="1834503245783133039">Downloaden blev ikke fuldført: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-enheder</translation>
 <translation id="1838374766361614909">Ryd søgning</translation>
 <translation id="1841545962859478868">Administratoren af enheden kan overvåge følgende:</translation>
 <translation id="1841616161104323629">Manglende enhedsregistrering.</translation>
@@ -785,6 +786,7 @@
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2220572644011485463">Pin- eller adgangskode</translation>
 <translation id="2224444042887712269">Denne indstilling tilhører <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Handlinger foretaget i hjælpetilstand</translation>
 <translation id="2224551243087462610">Rediger mappenavn</translation>
 <translation id="2226449515541314767">Dette website er blevet blokeret fra at have fuld kontrol over MIDI-enheder.</translation>
 <translation id="2226720438730111184">Fortæl os, hvad der sker</translation>
@@ -5063,7 +5065,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8898786835233784856">Vælg næste fane</translation>
 <translation id="8898840733695078011">Signalstyrke</translation>
 <translation id="8899851313684471736">Åbn link i nyt &amp;vindue</translation>
-<translation id="8902081783136172774">Vælg en baggrund til din startside</translation>
 <translation id="8902667442496790482">Åbn indstillinger for Tekstoplæsning</translation>
 <translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="890616557918890486">Skift kilde</translation>

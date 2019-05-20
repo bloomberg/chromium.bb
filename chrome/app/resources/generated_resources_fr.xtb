@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">Ouvrir les paramètres de l'écran</translation>
 <translation id="1572266655485775982">Activation du Wi-Fi</translation>
 <translation id="1572876035008611720">Saisissez votre adresse e-mail</translation>
-<translation id="1573150740912592860">Enregistrer votre progression</translation>
 <translation id="1576594961618857597">Avatar blanc par défaut</translation>
 <translation id="1581962803218266616">Afficher dans le Finder</translation>
 <translation id="1584990664401018068">Pour utiliser ce réseau Wi-Fi (<ph name="NETWORK_ID" />), vous devrez peut-être vous identifier.</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">Impossible d'associer l'appareil au domaine. Vérifiez que vous n'avez pas dépassé le nombre d'appareils pouvant être ajoutés.</translation>
 <translation id="1744108098763830590">page en arrière-plan</translation>
 <translation id="1745520510852184940">Toujours procéder ainsi</translation>
+<translation id="1746402432151920942">Identifiant du contenu multimédia protégé</translation>
 <translation id="175196451752279553">&amp;Rouvrir l'onglet fermé</translation>
 <translation id="1753905327828125965">Les + visités</translation>
 <translation id="1756681705074952506">Mode de saisie</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">Non connecté</translation>
 <translation id="1832511806131704864">Changement de téléphone mis à jour</translation>
 <translation id="1834503245783133039">Échec du téléchargement : <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Appareils MIDI</translation>
 <translation id="1838374766361614909">Effacer la recherche</translation>
 <translation id="1841545962859478868">L'administrateur de cet appareil peut contrôler les éléments suivants :</translation>
 <translation id="1841616161104323629">Enregistrement de l'appareil manquant.</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">Signaler un problème</translation>
 <translation id="2220572644011485463">Code ou mot de passe</translation>
 <translation id="2224444042887712269">Ce paramètre appartient à <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Événements d'accessibilité</translation>
 <translation id="2224551243087462610">Modifier le nom du dossier</translation>
 <translation id="2226449515541314767">Le contrôle total des appareils MIDI a été bloqué pour ce site.</translation>
 <translation id="2226720438730111184">Décrivez-nous le problème rencontré</translation>
@@ -5065,7 +5067,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8898786835233784856">Sélectionner l'onglet suivant</translation>
 <translation id="8898840733695078011">Intensité du signal</translation>
 <translation id="8899851313684471736">Ouvrir le lien dans une nouvelle &amp;fenêtre</translation>
-<translation id="8902081783136172774">Choisir un fond d'écran pour votre page d'accueil</translation>
 <translation id="8902667442496790482">Ouvrir les paramètres de "Sélectionner pour prononcer"</translation>
 <translation id="8904976895050290827">Synchronisation Chrome</translation>
 <translation id="890616557918890486">Modifier la source</translation>

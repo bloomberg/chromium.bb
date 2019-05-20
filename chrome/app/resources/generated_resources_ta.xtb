@@ -266,7 +266,7 @@
 <translation id="1408504635543854729">கோப்புகள் பயன்பாட்டில் சாதனத்தின் உள்ளடக்கத்தைத் தேடவும். உள்ளடக்கத்தை நிர்வாகி கட்டுப்படுத்துவதால் அதைத் திருத்த முடியாது.</translation>
 <translation id="1408789165795197664">மேம்பட்டவை...</translation>
 <translation id="1409390508152595145">மேற்பார்வையிடப்படும் பயனரை உருவாக்கு</translation>
-<translation id="1410197035576869800">பயன்பாட்டின் ஐகான்</translation>
+<translation id="1410197035576869800">ஆப்ஸின் ஐகான்</translation>
 <translation id="1410616244180625362">உங்கள் கேமராவை அணுக <ph name="HOST" /> ஐத் தொடர்ந்து அனுமதிக்கவும்</translation>
 <translation id="1414648216875402825">உருவாக்கப்பட்டு வரும் அம்சங்கள் உள்ள <ph name="PRODUCT_NAME" /> இன் நிலையற்ற பதிப்பிற்கு மேம்படுத்துகிறீர்கள். சிதைவுகள் மற்றும் எதிர்பாராத பிழைகள் ஏற்படும். கவனமாக தொடரவும்.</translation>
 <translation id="1415708812149920388">கிளிப்போர்டைப் படிப்பதற்கான அணுகல் மறுக்கப்பட்டது</translation>
@@ -369,7 +369,6 @@
 <translation id="1568323446248056064">திரை அமைப்புகளைத் திற</translation>
 <translation id="1572266655485775982">வைஃபையை இயக்கு</translation>
 <translation id="1572876035008611720">மின்னஞ்சலை உள்ளிடவும்</translation>
-<translation id="1573150740912592860">உங்கள் செயல்நிலையைச் சேமியுங்கள்</translation>
 <translation id="1576594961618857597">இயல்பு வெள்ளைநிற அவதார்</translation>
 <translation id="1581962803218266616">&amp;கண்டுபிடிப்பானில் காண்பி</translation>
 <translation id="1584990664401018068">பயன்படுத்திக் கொண்டிருக்கும் வைஃபை நெட்வொர்க்குக்கு (<ph name="NETWORK_ID" />) அங்கீகரிப்பு தேவைப்படலாம்.</translation>
@@ -503,7 +502,7 @@
 <translation id="1768278914020124551">அச்சச்சோ!  உள்நுழைவுச் சேவையகத்தைத் தொடர்புகொள்வதில் பிழை ஏற்பட்டது. நெட்வொர்க் இணைப்பையும் டொமைன் பெயரையும் சரிபார்த்து, மீண்டும் முயலவும்.</translation>
 <translation id="1769104665586091481">இணைப்பை புதிய &amp;சாளரத்தில் திற</translation>
 <translation id="1773212559869067373">அடையாளச் சான்றிதழ் பயனரின் கம்ப்யூட்டரில் நிராகரிக்கப்பட்டது</translation>
-<translation id="177336675152937177">ஹோஸ்ட் செய்யப்பட்ட பயன்பாட்டின் தரவு</translation>
+<translation id="177336675152937177">ஹோஸ்ட் செய்யப்பட்ட ஆப்ஸின் தரவு</translation>
 <translation id="1774833706453699074">திறந்திருக்கும் பக்கங்களைப் புக்மார்க் செய்...</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">"<ph name="DEVICE_NAME" />" இல் இந்தக் கடவுவிசையை உள்ளிடுக:</translation>
@@ -2677,7 +2676,7 @@
 <translation id="5234764350956374838">நிராகரி</translation>
 <translation id="5235050375939235066">ஆப்ஸை நிறுவல் நீக்கவா?</translation>
 <translation id="5235750401727657667">புதிய தாவலைத் திறக்கும் போது காண்பிக்கப்படும் பக்கத்தை மாற்று</translation>
-<translation id="5238278114306905396">பயன்பாட்டின் "<ph name="EXTENSION_NAME" />" ஆனது தானாக அகற்றப்பட்டது.</translation>
+<translation id="5238278114306905396">ஆப்ஸின் "<ph name="EXTENSION_NAME" />" ஆனது தானாக அகற்றப்பட்டது.</translation>
 <translation id="5238369540257804368">நோக்கங்கள்</translation>
 <translation id="5241128660650683457">நீங்கள் செல்லும் இணையதளங்களில் உள்ள உங்கள் தரவு அனைத்தையும் படிக்கவும்</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" ஐ இயக்கவா?</translation>
@@ -3470,7 +3469,7 @@
 <translation id="6444070574980481588">தேதியையும் நேரத்தையும் அமை</translation>
 <translation id="6445450263907939268">உங்களுக்கு இந்த மாற்றங்கள் பிடிக்கவில்லை எனில், முந்தைய அமைப்புகளை நீங்கள் மீட்டெடுக்கலாம்.</translation>
 <translation id="6447842834002726250">குக்கீகள்</translation>
-<translation id="6449285849137521213">பயன்பாட்டின் "<ph name="EXTENSION_NAME" />" சேர்க்கப்பட்டது.</translation>
+<translation id="6449285849137521213">ஆப்ஸின் "<ph name="EXTENSION_NAME" />" சேர்க்கப்பட்டது.</translation>
 <translation id="6450876761651513209">உங்களின் தனியுரிமைத் தொடர்பான அமைப்புகளை மாற்றலாம்</translation>
 <translation id="6451180435462401570">கிளவுடு அச்சுச் சாதனங்களை நிர்வகி</translation>
 <translation id="6451689256222386810">கடவுச்சொற்றொடரை மறந்துவிட்டால் அல்லது இந்த அமைப்பை மாற்ற விரும்பினால், <ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்கவும்<ph name="END_LINK" />.</translation>
@@ -4977,7 +4976,7 @@
 <translation id="878069093594050299">பின்வரும் பயன்பாடுகளுக்காக, இந்த சான்றிதழானது சரிபார்க்கப்பட்டது:</translation>
 <translation id="8781470833671194250">கிளிக் இயக்கத்தை நிலைப்படுத்தும்</translation>
 <translation id="8781980678064919987">மூடியிருக்கும் போது, சாதனத்தை நிறுத்து</translation>
-<translation id="8782565991310229362">Kiosk பயன்பாட்டின் துவக்கம் ரத்தானது.</translation>
+<translation id="8782565991310229362">Kiosk ஆப்ஸின் துவக்கம் ரத்தானது.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; உங்களுடன் &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; பிரிண்டரைப் பகிர விரும்புகிறார்.</translation>
 <translation id="8784626084144195648">குப்பைக்கு நகர்த்தப்பட்டதன் சராசரி</translation>
 <translation id="8785622406424941542">ஸ்டைலஸ்</translation>
@@ -5056,7 +5055,6 @@
 <translation id="8898786835233784856">அடுத்த தாவலைத் தேர்ந்தெடு</translation>
 <translation id="8898840733695078011">சிக்னலின் வலிமை</translation>
 <translation id="8899851313684471736">இணைப்பை புதிய &amp;சாளரத்தில் திற</translation>
-<translation id="8902081783136172774">உங்கள் தொடக்கப் பக்கத்திற்கான வால்பேப்பரைத் தேர்வுசெய்க</translation>
 <translation id="8902667442496790482">பேசும் திரை அமைப்புகளைத் திற</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="890616557918890486">மூலத்தை மாற்று</translation>

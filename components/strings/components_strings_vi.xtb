@@ -345,7 +345,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Kết nối đã được đặt lại.</translation>
 <translation id="2788784517760473862">Thẻ tín dụng được chấp nhận</translation>
-<translation id="2792012897584536778">Các quản trị viên của thiết bị này đã thiết lập các chứng chỉ bảo mật cho phép họ xem nội dung của những trang web bạn truy cập.</translation>
+<translation id="2792012897584536778">Các quản trị viên của thiết bị này đã thiết lập các chứng chỉ bảo mật có thể cho phép họ xem nội dung của những trang web bạn truy cập.</translation>
 <translation id="2794233252405721443">Trang web đã bị chặn</translation>
 <translation id="2799020568854403057">Trang web bạn sắp truy cập chứa ứng dụng có hại</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
@@ -722,7 +722,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> cho biết</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
-<translation id="4945672369594656571">Kiểm soát cách Google xử lý dữ liệu tài khoản và thiết bị của bạn. Google chỉ xử lý dữ liệu tài khoản và thiết bị của bạn theo chỉ dẫn của người quản lý tài khoản và thiết bị, cũng như chỉ cho các mục đích mà người quản lý tài khoản và thiết bị chỉ định.</translation>
+<translation id="4945672369594656571">Kiểm soát cách Google xử lý dữ liệu tài khoản và thiết bị của bạn. Google xử lý dữ liệu tài khoản và thiết bị của bạn hoàn toàn theo chỉ dẫn của người quản lý tài khoản và thiết bị của bạn, và chỉ cho các mục đích mà người quản lý tài khoản và thiết bị của bạn chỉ định.</translation>
 <translation id="4950898438188848926">Nút chuyển đổi tab, nhấn phím Enter để chuyển sang tab đang mở, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -736,7 +736,7 @@
 <translation id="5017554619425969104">Văn bản bạn đã sao chép</translation>
 <translation id="5018422839182700155">Không thể mở trang này</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
-<translation id="5020154601324912079">Kiểm soát cách Google xử lý dữ liệu thiết bị của bạn. Google chỉ xử lý dữ liệu thiết bị của bạn theo chỉ dẫn của người quản lý thiết bị và chỉ cho các mục đích mà người quản lý thiết bị chỉ định.</translation>
+<translation id="5020154601324912079">Kiểm soát cách Google xử lý dữ liệu thiết bị của bạn. Google xử lý dữ liệu thiết bị của bạn hoàn toàn theo chỉ dẫn của người quản lý thiết bị và chỉ cho các mục đích mà người quản lý thiết bị chỉ định.</translation>
 <translation id="5023310440958281426">Kiểm tra chính sách của quản trị viên của bạn</translation>
 <translation id="5029568752722684782">Xóa bản sao</translation>
 <translation id="503069730517007720">Cần có chứng chỉ gốc cho "<ph name="SOFTWARE_NAME" />" nhưng chứng chỉ này chưa được cài đặt. Hãy yêu cầu quản trị viên CNTT của bạn xem hướng dẫn cấu hình cho "<ph name="SOFTWARE_NAME" />" để khắc phục sự cố này. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -915,7 +915,6 @@
 <translation id="5975083100439434680">Thu nhỏ</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Không thể mở ứng dụng thanh toán</translation>
-<translation id="5988826871883769516">Thiết bị của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý.</translation>
 <translation id="5989320800837274978">Cả máy chủ proxy cố định và URL tập lệnh .pac đều chưa được chỉ định.</translation>
 <translation id="5990559369517809815">Tiện ích đã chặn yêu cầu tới máy chủ.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1160,7 +1159,7 @@ Thông tin chi tiết bổ sung:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Quản lý mật khẩu…</translation>
 <translation id="7419106976560586862">Đường dẫn cấu hình</translation>
-<translation id="7424427397225027541">Kiểm soát cách Google xử lý dữ liệu tài khoản của bạn. Google chỉ xử lý dữ liệu tài khoản của bạn theo chỉ dẫn của người quản lý tài khoản và chỉ cho các mục đích mà người quản lý tài khoản chỉ định.</translation>
+<translation id="7424427397225027541">Kiểm soát cách Google xử lý dữ liệu tài khoản của bạn. Google xử lý dữ liệu tài khoản của bạn hoàn toàn theo chỉ dẫn của người quản lý tài khoản của bạn và chỉ cho các mục đích mà người quản lý tài khoản của bạn chỉ định.</translation>
 <translation id="7437289804838430631">Thêm thông tin liên hệ</translation>
 <translation id="7440140511386898319">Khám phá khi không có mạng</translation>
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>
@@ -1194,7 +1193,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7554791636758816595">Tab mới</translation>
 <translation id="7564049878696755256">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="7567204685887185387">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị gian lận khi phát hành. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
-<translation id="7568105740864181217">Một công ty, trường học hoặc tổ chức khác quản lý trình duyệt này. Quản trị viên có thể thay đổi quy trình thiết lập trình duyệt của bạn từ xa. Hoạt động trên thiết bị này cũng có thể được quản lý bên ngoài Chrome. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">Xóa thẻ tín dụng khỏi Chrome?</translation>
 <translation id="7569983096843329377">Đen</translation>
 <translation id="7578104083680115302">Thanh toán nhanh trên các trang web và ứng dụng trong mọi thiết bị nhờ sử dụng thẻ bạn đã lưu với Google.</translation>
@@ -1328,7 +1326,6 @@ Thông tin chi tiết bổ sung:
 <translation id="825929999321470778">Hiển thị tất cả các mật khẩu đã lưu</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8267698848189296333">Đăng nhập với tên <ph name="USERNAME" /></translation>
-<translation id="8278457561961988242"><ph name="ENROLLMENT_DOMAIN" /> quản lý trình duyệt này. Quản trị viên có thể thay đổi quy trình thiết lập trình duyệt của bạn từ xa. Hoạt động trên thiết bị này cũng có thể được quản lý bên ngoài Chrome. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Đăng nhập</translation>
 <translation id="8288807391153049143">Hiển thị chứng chỉ</translation>

@@ -903,7 +903,6 @@
 <translation id="5975083100439434680">缩小</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">无法打开付款应用</translation>
-<translation id="5988826871883769516">您的设备由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
 <translation id="5990559369517809815">对服务器的请求已遭到某个扩展程序的阻止。</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1178,7 +1177,6 @@
 <translation id="7554791636758816595">新标签页</translation>
 <translation id="7564049878696755256">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chrome 建议您立即更改密码。</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
-<translation id="7568105740864181217">此浏览器由某个公司、学校或其他组织管理。您的管理员可以远程更改您的浏览器设置。此设备上的活动也可能会在 Chrome 外部受管理。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
 <translation id="7569983096843329377">黑色</translation>
 <translation id="7578104083680115302">通过各种设备在网站和应用中购物时，您都可以使用 Google 为您保存的银行卡信息快速付款。</translation>
@@ -1312,7 +1310,6 @@
 <translation id="825929999321470778">显示所有已保存的密码</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8267698848189296333">目前登录的帐号是 <ph name="USERNAME" /></translation>
-<translation id="8278457561961988242">此浏览器由 <ph name="ENROLLMENT_DOMAIN" /> 管理。您的管理员可以远程更改您的浏览器设置。此设备上的活动也可能会在 Chrome 外部受管理。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">登录</translation>
 <translation id="8288807391153049143">显示证书</translation>

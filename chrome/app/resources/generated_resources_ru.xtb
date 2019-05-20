@@ -369,7 +369,6 @@
 <translation id="1568323446248056064">Открыть настройки экрана</translation>
 <translation id="1572266655485775982">Включить Wi-Fi</translation>
 <translation id="1572876035008611720">Эл. почта</translation>
-<translation id="1573150740912592860">Сохраняйте изменения</translation>
 <translation id="1576594961618857597">Аватар по умолчанию (белый)</translation>
 <translation id="1581962803218266616">Показать в Finder</translation>
 <translation id="1584990664401018068">Для сети Wi-Fi (<ph name="NETWORK_ID" />) может потребоваться аутентификация.</translation>
@@ -487,6 +486,7 @@
 <translation id="1744060673522309905">Не удалось подключить устройство к домену. Убедитесь, что вы не превысили допустимое количество устройств.</translation>
 <translation id="1744108098763830590">фоновая страница</translation>
 <translation id="1745520510852184940">Всегда переводить</translation>
+<translation id="1746402432151920942">Идентификатор защищенного мультимедийного контента</translation>
 <translation id="175196451752279553">От&amp;крыть закрытую вкладку</translation>
 <translation id="1753905327828125965">Наиболее посещаемые</translation>
 <translation id="1756681705074952506">Способ ввода</translation>
@@ -544,6 +544,7 @@
 <translation id="1830550083491357902">Вход не выполнен</translation>
 <translation id="1832511806131704864">Сведения о телефоне обновлены</translation>
 <translation id="1834503245783133039">Не удалось скачать файл <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-устройства</translation>
 <translation id="1838374766361614909">Удалить условия поиска</translation>
 <translation id="1841545962859478868">Администратор устройства может просматривать следующую информацию:</translation>
 <translation id="1841616161104323629">Устройство не зарегистрировано.</translation>
@@ -787,6 +788,7 @@
 <translation id="2220529011494928058">Сообщить о проблеме</translation>
 <translation id="2220572644011485463">PIN-код или пароль</translation>
 <translation id="2224444042887712269">Этот параметр установлен пользователем <ph name="OWNER_EMAIL" /></translation>
+<translation id="2224471211857467033">События, связанные со специальными возможностями</translation>
 <translation id="2224551243087462610">Изменить имя папки</translation>
 <translation id="2226449515541314767">Этому сайту запрещено получать полный контроль над устройствами MIDI.</translation>
 <translation id="2226720438730111184">Описание проблемы</translation>
@@ -5063,7 +5065,6 @@
 <translation id="8898786835233784856">Выбрать следующую вкладку</translation>
 <translation id="8898840733695078011">Уровень сигнала</translation>
 <translation id="8899851313684471736">Открыть ссылку в новом &amp;окне</translation>
-<translation id="8902081783136172774">Выберите обои для стартовой страницы.</translation>
 <translation id="8902667442496790482">Открыть настройки озвучивания при нажатии</translation>
 <translation id="8904976895050290827">Синхронизация Chrome</translation>
 <translation id="890616557918890486">Изменить источник</translation>

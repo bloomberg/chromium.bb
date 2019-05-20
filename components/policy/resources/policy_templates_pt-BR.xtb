@@ -754,7 +754,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2303795211377219696">Ativar o preenchimento automático para cartões de crédito</translation>
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2327252517317514801">Definir os domínios autorizados a acessar o G Suite</translation>
-<translation id="2356878440219553005">Especifica a política de gerenciamento de energia para o modo avançado de carregamento de bateria.
+<translation id="2356878440219553005">Especifica a política de gerenciamento de energia para o modo de carregamento de bateria.
 
           Controle dinamicamente o carregamento da bateria para minimizar o desgaste devido ao estresse e aumentar a vida útil.
 
@@ -764,7 +764,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           Se esta política não for definida e a política for compatível com o dispositivo, o modo padrão de carregamento da bateria será aplicado e não poderá ser alterado pelo usuário.
 
-          Observação: Se <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> for especificada, ela substituirá esta política.</translation>
+          Observação: se <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> for especificada, ela substituirá esta política.</translation>
 <translation id="237494535617297575">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2386362615870139244">Permitir bloqueios de ativação da tela</translation>
 <translation id="2411817661175306360">O aviso de proteção de senha está desativado</translation>
@@ -1201,7 +1201,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política não for definida, o valor global padrão será usado para todos os sites da política "DefaultImagesSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.
 
           Esta política foi erroneamente ativada no Android no passado, mas esta funcionalidade nunca foi completamente compatível com essa plataforma.</translation>
-<translation id="3091832372132789233">Carregar a bateria de dispositivos que estejam conectados a uma fonte de energia externa.</translation>
+<translation id="3091832372132789233">Carregar a bateria de dispositivos que ficam a maior parte do tempo conectados a uma fonte de energia externa.</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher o modo de especificar as configurações do servidor proxy</translation>
 <translation id="3101709781009526431">Data e hora</translation>
@@ -1626,21 +1626,21 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se essa política for definida como "true" ou não for definida, os usuários terão permissão para resgatar ofertas por meio do registro do Chrome OS.
 
       Se essa política for definida como "false", os usuários não terão permissão para resgatar ofertas.</translation>
-<translation id="4008233182078913897">Especifica uma lista de apps e extensões que são instalados silenciosamente, sem interação do usuário e que não podem ser desinstalados ou desativados pelo usuário. Todas as permissões solicitadas pelos apps/extensões são concedidas implicitamente, sem interação do usuário, incluindo permissões extras solicitadas por futuras versões do app/extensão. Além disso, são concedidas permissões para as APIs de extensão enterprise.deviceAttributes e enterprise.platformKeys. Essas duas APIs não estão disponíveis para apps/extensões que não tenham sido instalados forçadamente.
+<translation id="4008233182078913897">Especifica uma lista de apps e extensões que são instalados silenciosamente, sem qualquer interação do usuário e sem permitir a desinstalação nem a desativação feita por ele. Todas as permissões solicitadas pelos apps/extensões são concedidas implicitamente, sem interação do usuário, incluindo as permissões solicitadas por versões futuras do app/extensão. Além disso, são concedidas permissões para as APIs de extensão enterprise.deviceAttributes e enterprise.platformKeys. Essas duas APIs não estão disponíveis para apps/extensões que não tenham sido instalados à força.
 
-          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflitante. Se um app ou extensão anteriormente instalado de modo forçado for removido dessa lista, ele será automaticamente desinstalado pelo <ph name="PRODUCT_NAME" />.
+          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> possivelmente conflitante. Se um app ou extensão que anteriormente foi instalado à força for removido dessa lista, ele será automaticamente desinstalado pelo <ph name="PRODUCT_NAME" />.
 
-          Em instâncias do Windows não vinculadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada limita-se a apps e extensões listados na Chrome Web Store.
+Em instâncias do Windows não vinculadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada se limita a apps e extensões listados na Chrome Web Store.
 
           Observe que o código-fonte de qualquer extensão pode ser alterado pelos usuários por meio das Ferramentas para Desenvolvedores (possivelmente tornando a extensão defeituosa). Se essa preocupação existir, será preciso definir a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Cada item da lista da política é uma string que contém um código de extensão e, opcionalmente, um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. O URL de "atualização", se especificado, precisa apontar para um documento XML de manifesto de atualização, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por padrão, é usado o URL de "atualização" da Chrome Web Store (atualmente, "https://clients2.google.com/service/update2/crx"). Observe que o URL de "atualização" definido nesta política só é usado na instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão. Observe também que especificar o URL de "atualização" era uma etapa obrigatória nas versões do <ph name="PRODUCT_NAME" /> até a 67.
+          Cada item da lista da política é uma string que contém um código de extensão e, opcionalmente, um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. O URL de "atualização", se especificado, precisa apontar para um documento XML de manifesto de atualização, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por padrão, é usado o URL de atualização da Chrome Web Store (atualmente, "https://clients2.google.com/service/update2/crx"). Observe que o URL de "atualização" definido nesta política só é usado na instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão. Observe também que especificar o URL de "atualização" era uma etapa obrigatória nas versões do <ph name="PRODUCT_NAME" /> até a 67.
 
-          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com código <ph name="EXTENSION_ID_SAMPLE" /> por meio do URL de "atualização" padrão da Chrome Web Store. Para ver mais informações sobre a hospedagem de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a extensão com código <ph name="EXTENSION_ID_SAMPLE" /> por meio do URL padrão de "atualização" da Chrome Web Store. Para ver mais informações sobre hospedagem de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
-          Se esta política não for definida, nenhum app ou extensão será instalado automaticamente, e o usuário poderá desinstalar apps ou extensões no <ph name="PRODUCT_NAME" />.
+Se esta política não for definida, nenhum app ou extensão será instalado automaticamente, e o usuário poderá desinstalar apps ou extensões no <ph name="PRODUCT_NAME" />.
 
-          Observe que esta política não se aplica ao modo de navegação anônima.</translation>
+Observe que esta política não se aplica ao modo de navegação anônima.</translation>
 <translation id="4008507541867797979">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> mostrará os usuários existentes na tela de login, permitindo escolher um deles.
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não mostrará os usuários existentes na tela de login. A tela de login normal (que solicita o e-mail e a senha ou o número de telefone do usuário) ou a tela intersticial SAML (se tiver sido ativada por meio da política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) será mostrada, a menos que uma sessão gerenciada tenha sido configurada. Se uma sessão gerenciada tiver sido configurada, apenas as contas da sessão gerenciada serão mostradas, permitindo escolher uma delas.
@@ -2219,7 +2219,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Se a política não for configurada ou for definida para a string em branco ou um alcance de porta inválido, o WebRTC terá permissão para usar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Especificar uma lista de plug-ins que podem ser ativados ou desativados pelo usuário</translation>
-<translation id="5306186200045823863">Ativar confiança na infraestrutura PKI legada da Symantec Corporation</translation>
+<translation id="5306186200045823863">Ativar confiança na infraestrutura de ICP legada da Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilidade do modo de navegação anônima</translation>
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
 <translation id="5323128137188992869">Permite que o conteúdo seja transmitido usando o <ph name="PRODUCT_NAME" />.
@@ -2550,10 +2550,12 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="5897913798715600338">Carregar a bateria usando tecnologia de carregamento rápido.</translation>
 <translation id="5898486742390981550">Quando vários usuários estão conectados, somente o usuário principal pode usar os apps Android.</translation>
 <translation id="5901427587865226597">Apenas impressão duplex</translation>
-<translation id="5903898512448364160">Se a política for definida como verdadeira, a política da nuvem terá precedência caso haja conflito com a da plataforma.
-      Se a política for definida como falsa ou não for configurada, a política da plataforma terá precedência caso haja conflito com a política da nuvem.
+<translation id="5903898512448364160">
+      Se a política for definida como verdadeira, a política da nuvem terá precedência caso haja conflito com a da plataforma.
+      Se a política for definida como falsa ou não for configurada, a política da plataforma terá precedência caso haja conflito com a da nuvem.
 
-      Esta política está disponível apenas como uma política de plataforma de máquina obrigatória e só afeta as políticas da nuvem no escopo da máquina.</translation>
+      Esta política só está disponível como uma política da plataforma de máquina obrigatória e só afeta políticas da nuvem do escopo de máquina.
+      </translation>
 <translation id="5905473632148429217">Ativar verificações OCSP/CRL on-line</translation>
 <translation id="5906199912611534122">Permite ativar ou desativar a limitação da rede.
       Essa opção se aplica a todos os usuários e todas as interfaces no dispositivo. Depois que a política é definida,
@@ -2637,7 +2639,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 
       Quando esta política estiver configurada como <ph name="GLS_UNDER_USER_CONTROL" />, o usuário poderá optar por usar ou não os Serviços de localização do Google. Isso permitirá que apps Android usem os serviços para consultar a localização do dispositivo e também ativará o envio de dados de local anônimos para o Google.
 
-      Observe que esta política controla o estado dos Serviços de localização do Google apenas durante a configuração inicial. O usuário pode abrir as configurações do Android posteriormente e ativar ou desativar esse recurso.
+      Esta política controla o estado dos Serviços de localização do Google apenas durante a configuração inicial. O usuário pode abrir as configurações do Android posteriormente e ativar ou desativar esse recurso.
 
       Observe que esta política será ignorada e os Serviços de localização do Google estarão sempre desativados quando a política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> estiver configurada como <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Sempre usar detecção de fuso horário aproximada</translation>
@@ -3092,7 +3094,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
           Alguns dispositivos têm uma porta USB específica marcada com um ícone de raio ou de bateria, que pode ser usada para carregar dispositivos como um smartphone usando a bateria do sistema. Esta política afeta o comportamento de carregamento dessa porta enquanto o sistema está no modo de suspensão ou de encerramento. Esta política não afeta outras portas USB e o comportamento do carregamento enquanto o sistema está ativo.
 
-          Quando estiver ativado, a porta USB sempre fornecerá energia.
+          Quando estiver ativo, a porta USB sempre fornecerá energia.
 
           Quando em suspensão, se esta política for definida como verdadeira, a energia será fornecida à porta USB quando o dispositivo for conectado ao carregador de tomada ou se o nível da bateria estiver acima de 50%. Caso contrário, não será fornecida nenhuma energia.
 
@@ -3944,7 +3946,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se essa configuração estiver desativada ou não for definida, o serviço de proteção de senhas encaminhará os usuários para https://myaccounts.google.com para a alteração da senha.
       Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="8798099450830957504">Padrão</translation>
-<translation id="8800453707696044281">Configurar a parada personalizada do carregamento da bateria, em porcentagem.</translation>
+<translation id="8800453707696044281">Configurar a parada personalizada do carregamento da bateria, em porcentagem</translation>
 <translation id="8801680448782904838">Notifica um usuário de que a reinicialização do navegador ou do dispositivo é recomendada ou obrigatória</translation>
 <translation id="8818173863808665831">Informar a localização geográfica do dispositivo. 
 

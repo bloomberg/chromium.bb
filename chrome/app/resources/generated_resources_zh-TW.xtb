@@ -370,7 +370,6 @@
 <translation id="1568323446248056064">開啟顯示裝置設定</translation>
 <translation id="1572266655485775982">啟用 Wi-Fi</translation>
 <translation id="1572876035008611720">請輸入您的電子郵件</translation>
-<translation id="1573150740912592860">儲存你的進度</translation>
 <translation id="1576594961618857597">預設的白色顯示圖片</translation>
 <translation id="1581962803218266616">在 Finder 中顯示</translation>
 <translation id="1584990664401018068">您所使用的 Wi-Fi 網路 (<ph name="NETWORK_ID" />) 可能需要驗證。</translation>
@@ -488,6 +487,7 @@
 <translation id="1744060673522309905">無法將這個裝置加入網域。請確認裝置數量沒有超過添加上限。</translation>
 <translation id="1744108098763830590">背景頁面</translation>
 <translation id="1745520510852184940">一律採取這種處理方式</translation>
+<translation id="1746402432151920942">受保護媒體 ID</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
 <translation id="1753905327828125965">最常造訪</translation>
 <translation id="1756681705074952506">輸入法</translation>
@@ -545,6 +545,7 @@
 <translation id="1830550083491357902">未登入</translation>
 <translation id="1832511806131704864">手機變更已更新</translation>
 <translation id="1834503245783133039">下載失敗：<ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI 裝置</translation>
 <translation id="1838374766361614909">清除搜尋</translation>
 <translation id="1841545962859478868">裝置管理員可能會監控下列項目：</translation>
 <translation id="1841616161104323629">沒有裝置記錄。</translation>
@@ -788,6 +789,7 @@
 <translation id="2220529011494928058">回報問題</translation>
 <translation id="2220572644011485463">PIN 或密碼</translation>
 <translation id="2224444042887712269">這項設定屬於 <ph name="OWNER_EMAIL" />。</translation>
+<translation id="2224471211857467033">無障礙工具活動</translation>
 <translation id="2224551243087462610">編輯資料夾名稱</translation>
 <translation id="2226449515541314767">這個網站已遭封鎖，無法完整控制 MIDI 裝置。</translation>
 <translation id="2226720438730111184">將發生的狀況告訴我們</translation>
@@ -5060,7 +5062,6 @@
 <translation id="8898786835233784856">選取下一個分頁</translation>
 <translation id="8898840733695078011">訊號強度</translation>
 <translation id="8899851313684471736">在新視窗中開啟連結(&amp;W)</translation>
-<translation id="8902081783136172774">選擇起始網頁上顯示的桌布圖片</translation>
 <translation id="8902667442496790482">開啟隨選朗讀設定</translation>
 <translation id="8904976895050290827">Google Chrome 同步功能</translation>
 <translation id="890616557918890486">變更來源</translation>

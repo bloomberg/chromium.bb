@@ -1038,6 +1038,7 @@
       Ako je pravilo AutoplayAllowed postavljeno na False, svi uzorci URL-a postavljeni u ovom pravilu i dalje će se moći reproducirati.
 
       Ako se <ph name="PRODUCT_NAME" /> izvodi, a pravilo se promijeni, pravilo će se primjenjivati samo na nove otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s prethodnim pravilom.</translation>
+<translation id="284288632677954003">URL XML datoteke koja sadrži URL-ove koji nikada ne bi trebali pokrenuti promjenu preglednika.</translation>
 <translation id="285480231336205327">Omogućavanje načina visokog kontrasta</translation>
 <translation id="2854919890879212089">Određuje da <ph name="PRODUCT_NAME" /> u Pregledu ispisa upotrebljava zadani pisač sustava, a ne pisač koji je upotrijebljen zadnji put.
 
@@ -1208,6 +1209,15 @@
 <translation id="3096595567015595053">Popis omogućenih dodataka</translation>
 <translation id="3101501961102569744">Odaberi način određivanja postavki proxy poslužitelja</translation>
 <translation id="3101709781009526431">Datum i vrijeme</translation>
+<translation id="3114411414586006215">To pravilo određuje popis web-lokacija koje nikad neće uzrokovati promjenu preglednika.
+
+      Tom se popisu elementi mogu dodati i pomoću pravila <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Ako se pravilo ne postavi, web-lokacije neće se dodavati na popis.
+
+      Ako se pravilo postavi, svaka se stavka tretira kao pravilo. To je slično pravilu <ph name="URL_LIST_POLICY_NAME" />, samo što je logika je obrnuta: podudarna pravila neće otvoriti zamjenski preglednik.
+
+      Za razliku od pravila <ph name="URL_LIST_POLICY_NAME" />, pravila se primjenjuju u oba smjera. To znači da kada je prisutan i omogućen dodatak Internet Explorera, ono također određuje treba li <ph name="IE_PRODUCT_NAME" /> otvoriti te URL-ove u pregledniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Upozorenje: DHE potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 57 (oko ožujka 2017.) i ovo će pravilo tada prestati funkcionirati.
 
       Ako se to pravilo ne postavi ili se postavi na "False", DHE paketi šifri u TLS-u neće biti omogućeni. U protivnom se može postaviti na "True" radi omogućivanja DHE paketa šifri i održanja kompatibilnosti sa zastarjelim poslužiteljem. To je privremena mjera i poslužitelj se treba ponovo konfigurirati.
@@ -1399,6 +1409,17 @@
 <translation id="3550875587920006460">Omogućuje postavljanje prilagođenog rasporeda za traženje ažuriranja. Primjenjuje se na sve korisnike i sva sučelja na uređaju. Kada se postavi, uređaj će provjeravati ima li ažuriranja prema tom rasporedu. Pravilo se mora ukloniti da bi se otkazala daljnja primjena rasporeda za traženje ažuriranja.</translation>
 <translation id="355118380775352753">Web-lokacije koje se trebaju otvoriti u zamjenskom pregledniku</translation>
 <translation id="3554984410014457319">Dopustite Google asistentu da osluškuje izraze za glasovnu aktivaciju.</translation>
+<translation id="3557208865710006939">Prisilno omogućuje jezike provjere pravopisa. Jezici na popisu koji nisu prepoznati zanemarit će se.
+
+      Ako omogućite to pravilo, provjera pravopisa bit će omogućena za navedene jezike, kao i za one jezike za koje korisnik omogući provjeru pravopisa.
+
+      Ako to pravilo ne postavite ili ga onemogućite, korisnikove postavke provjere pravopisa neće se promijeniti.
+
+      Ako se pravilo <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> postavi na false, neće se primjenjivati.
+
+      Ako je jezik naveden i u ovom pravilu i u pravilu <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, prioritet će imati ovo pravilo i jezik za provjeru pravopisa bit će omogućen.
+
+      Trenutačno su podržani sljedeći jezici: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Korisnici mogu konfigurirati kanal izdanja OS-a Chrome</translation>
 <translation id="3575011234198230041">HTTP autentifikacija</translation>
 <translation id="3577251398714997599">Postavke oglasa za web-lokacije s ometajućim oglasima</translation>
@@ -1748,6 +1769,9 @@
           Ako postavite to pravilo, korisnici ga neće moći promijeniti niti nadjačati.
 
           Ako se pravilo ne postavi, ljepljive tipke u početku su onemogućene, ali ih korisnici mogu omogućiti kad god žele.</translation>
+<translation id="4171331498167688968">Ako je pravilo postavljeno na false, softver treće strane moći će ubaciti izvršni kôd u Chromeove procese. Ako pravilo nije postavljeno ili je postavljeno na true, softver treće strane neće moći ubaciti izvršni kôd u Chromeove procese.
+
+      Neovisno o vrijednosti pravila, preglednik softveru treće strane trenutačno neće onemogućiti ubacivanje izvršnog koda u svoje procese na stroju koji je pridružen domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Zadana postavka za dodatak <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL za validaciju tokena za autentifikaciju klijenta za daljinski pristup</translation>
 <translation id="4203389617541558220">Ograniči aktivno vrijeme uređaja određivanjem vremena za automatska ponovna pokretanja.
@@ -2105,6 +2129,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
           Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
 <translation id="5085647276663819155">Onemogući pregled ispisa</translation>
 <translation id="5090209345759901501">Proširi postavku Flash sadržaja na sav sadržaj</translation>
+<translation id="5090791951240382356">Dopusti spajanje pravila rječnika koja potječu iz različitih izvora</translation>
 <translation id="5093540029655764852">Određuje stopu (u danima) po kojoj klijent mijenja zaporku računa na računalu. Klijent tu zaporku generira nasumično i korisnik je ne može vidjeti.
 
       Zaporke računa na računalu trebale bi se jednako redovito mijenjati kao i korisničke. Ako se to pravilo onemogući ili postavi na veliki broj dana, to može negativno utjecati na sigurnost jer potencijalnim napadačima daje više vremena za pronalaženje zaporke računa uređaja i njezinu upotrebu.
@@ -3017,6 +3042,17 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       </translation>
 <translation id="6922884955650325312">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Određuje naziv zadanog davatelja usluga pretraživanja. Ako naziv ostane prazan ili nije postavljen, upotrebljavat će se naziv hosta određen URL-om pretraživanja. Ovo će pravilo biti uzeto u obzir samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
+<translation id="6924223708804692571">Prisilno onemogućuje jezike provjere pravopisa. Jezici na popisu koji nisu prepoznati zanemarit će se.
+
+      Ako omogućite to pravilo, za navedene jezike neće biti omogućena provjera pravopisa. Za jezike koji nisu navedeni na popisu korisnik će moći omogućiti ili onemogućiti provjeru pravopisa.
+
+      Ako to pravilo ne postavite ili ga onemogućite, korisnikove postavke provjere pravopisa neće se promijeniti.
+
+      Ako se pravilo <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> postavi na false, neće se primjenjivati.
+
+      Ako je jezik naveden i u ovom pravilu i u pravilu <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, prioritet će imati potonje pravilo i jezik za provjeru pravopisa bit će omogućen.
+
+      Trenutačno su podržani sljedeći jezici: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Omogući dvostrani ispis po dužem rubu</translation>
 <translation id="6931242315485576290">Onemogući sinkronizaciju podataka s Googleom</translation>
 <translation id="6936894225179401731">Određuje maksimalni broj simultanih veza proxy poslužitelja.
@@ -3153,6 +3189,15 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se to pravilo konfigurira, utvrđuje se skupina aplikacija i korisnik ih ne može mijenjati.
 
       Ako se to pravilo ne postavi, korisnik može mijenjati popis prikvačenih aplikacija u pokretaču.</translation>
+<translation id="713121532817834879">To je pravilo URL koji usmjerava na XML datoteku u istom formatu kao i pravilo <ph name="IEEM_SITELIST_POLICY" /> u Internet Exploreru. Ono učitava pravila iz XML datoteke i pritom ih ne dijeli s Internet Explorerom.
+
+      Pravila u toj XML datoteci primjenjuju se na isti način kao i pravilo <ph name="GREYLIST_POLICY_NAME" />. Odnosno, ta pravila onemogućavaju pregledniku <ph name="PRODUCT_NAME" /> otvaranje nekog drugog preglednika te onemogućavaju drugom pregledniku da otvori preglednik <ph name="PRODUCT_NAME" />.
+
+      Ako se to pravilo ne postavi ili se ne postavi na važeći URL, <ph name="PRODUCT_NAME" /> neće ga upotrebljavati kao izvor pravila koja ne pokreću promjenu preglednika.
+
+      Ako se to pravilo postavi na važeći URL, <ph name="PRODUCT_NAME" /> s tog će URL-a preuzeti popis web-lokacija i primijeniti pravila kao da su konfigurirana pravilom <ph name="SITELIST_POLICY_NAME" />.
+
+      Više informacija o pravilu <ph name="IEEM_SITELIST_POLICY" /> dostupno je na stranici: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL-ovi koji će dobiti pristup uređajima za videosnimanje bez postavljanja upita</translation>
 <translation id="7138678301420049075">Ostalo</translation>
 <translation id="7140629953254369759">Upućuje <ph name="PRODUCT_OS_NAME" /> na korištenje konfiguracije alata za zakazivanje zadataka koji se prepoznaje po navedenom imenu.
@@ -3197,6 +3242,15 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
           Automatska reprodukcija dopuštena je samo za domene koje su izričito navedene u pravilu <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Ako želite omogućiti automatsku reprodukciju za sve web-lokacije, razmislite o dodavanju http://* i https://* na taj popis.
 
           Ako se to pravilo ne postavi, korisnik će tu postavku moći promijeniti ručno.</translation>
+<translation id="7222749588229362483">Omogućuje spajanje odabranih pravila istog opsega i razine kada potječu iz različitih izvora.
+
+        Spajanje se sastoji od spajanja ključeva prve razine rječnika iz svakog izvora. U slučaju sukoba među ključevima primijenit će se ključ koji potječe iz izvora najvišeg prioriteta.
+
+        Ako za pravilo na popisu postoji sukob između dva izvora, vrijednosti će se spojiti u novi rječnik pravila pod uvjetom da su izvori istog opsega i razine.
+
+        Ako za pravilo na popisu postoji sukob između dva izvora, ali i između njihovih opsega i/ili razine, primijenit će se pravilo najvišeg prioriteta.
+
+        Ako postoji sukob između izvora, opsega i/ili razine za pravilo koje nije navedeno na popisu, primijenit će se pravilo najvišeg prioriteta.</translation>
 <translation id="7229975860249300121">Sadrži regularni izraz koji se upotrebljava za određivanje Google računa koji se mogu postaviti kao primarni računi preglednika <ph name="PRODUCT_NAME" /> (to je račun koji se odabire prilikom tijeka uključivanja sinkronizacije).
 
       Prikazuje se odgovarajuća pogreška ako se korisnik pokuša prijaviti korisničkim imenom koje se ne podudara s uzorkom.
@@ -3819,6 +3873,12 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
       Ako se pravilo postavki na "Zamijeni", korisnička pravila u GPO-ovima korisnika zamjenjuju se korisničkim pravilima u GPO-ovima računala (GPO-ovi korisnika zanemaruju se).</translation>
 <translation id="8465065632133292531">Parametri za URL usluge Instant koji upotrebljava POST</translation>
+<translation id="8465746466645315861">Ako se to pravilo ne postavi, korisnik može omogućiti ili onemogućiti provjeru pravopisa u postavkama jezika.
+
+      Ako se pravilo postavi na true, provjera pravopisa je omogućena i korisnik je ne može onemogućiti. Na sustavima <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> i <ph name="LINUX_OS_NAME" /> jezici provjere pravopisa mogu se pojedinačno uključiti ili isključiti kako bi korisnik ipak mogao onemogućiti provjeru pravopisa isključivanjem svih jezika provjere pravopisa. Da bi se to izbjeglo, možete upotrijebiti pravilo <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> za prisilno omogućavanje određenih jezika provjere pravopisa.
+
+      Ako se to pravilo postavi na false, provjera pravopisa je onemogućena i korisnik je ne može omogućiti. Pravila <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> i <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> ne primjenjuju se ako je pravilo postavljeno na false.
+      </translation>
 <translation id="847472800012384958">Ne dopusti web-lokacijama prikazivanje skočnih prozora</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Uklanja osjetljive dijelove https:// URL-ova koji se odnose na privatnost i sigurnost prije nego što se URL-ovi proslijede PAC skriptama (Proxy Auto Config) kojima se <ph name="PRODUCT_NAME" /> koristi tijekom razrješavanja proxyja.

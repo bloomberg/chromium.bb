@@ -62,7 +62,6 @@
 <translation id="164969095109328410">Chrome डिवाइस</translation>
 <translation id="1665611772925418501">फ़ाइल को संशोधित नहीं किया जा सका.</translation>
 <translation id="1673103856845176271">सुरक्षा कारणों से फ़ाइल तक नहीं पहुंचा जा सका.</translation>
-<translation id="1679806121152819234">Plugin VM</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> आइटम ज़िप किए जा रहे हैं...</translation>
 <translation id="174173592514158117">Play के सभी फ़ोल्डर दिखाएं</translation>
@@ -287,7 +286,6 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फ़ाइल</translation>
 <translation id="457386861538956877">ज़्यादा...</translation>
 <translation id="4582497162516204941">Linux (बीटा) वाला पैकेज इंस्टॉल करें</translation>
-<translation id="4584780943629874245">प्लग इन VM से शेयर करें</translation>
 <translation id="4631887759990505102">कलाकार</translation>
 <translation id="4656293982926141856">यह कंप्यूटर</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' के सदस्यों को तब तक एक्सेस नहीं मिलेगा जब तक कि ये आइटम उनके साथ शेयर नहीं किए जाते.</translation>
@@ -529,7 +527,6 @@
 <translation id="7339898014177206373">नई विंडो</translation>
 <translation id="7348749398828259943">यूएस वर्कमैन अंतर्राष्‍ट्रीय कीबोर्ड</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> आइटम कॉपी किए जा रहे हैं...</translation>
-<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> फ़ोल्डर प्लग इन VM से शेयर किए गए</translation>
 <translation id="7389722738210761877">थाई कीबोर्ड (TIS 820-2531)</translation>
 <translation id="7396038720194014279">हिन्दी कीबोर्ड (फ़ोनेटिक)</translation>
 <translation id="7417453074306512035">इथिओपियाई कीबोर्ड</translation>
@@ -592,7 +589,6 @@
 <translation id="7969525169268594403">स्लोवेनियाई</translation>
 <translation id="7982283708762922719">ऊंचाई</translation>
 <translation id="7987485481246785146">सोरानी कुर्दिश अरबी-आधारित कीबोर्ड</translation>
-<translation id="7990715602172183602">प्लग इन VM से एक फ़ोल्डर शेयर किया गया</translation>
 <translation id="799547531016638432">शॉर्टकट निकालें</translation>
 <translation id="799923393800005025">देख सकते हैं</translation>
 <translation id="8008366997883261463">श्वान</translation>
@@ -633,7 +629,6 @@
 <translation id="8342318071240498787">समान नाम वाली फ़ाइल या निर्देशिका पहले से ही मौजूद है.</translation>
 <translation id="8391950649760071442">लिप्यंतरण (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">आयाम</translation>
-<translation id="8400874747056634633">प्लग इन VM शेयरिंग प्रबंधित करें</translation>
 <translation id="8412586565681117057">क्विक इनपुट पद्धति</translation>
 <translation id="8418113698656761985">रोमानियाई कीबोर्ड</translation>
 <translation id="8432745813735585631">यूएस कोलमैक कीबोर्ड</translation>

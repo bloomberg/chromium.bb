@@ -915,7 +915,6 @@
 <translation id="5975083100439434680">دورنمایی کردن</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">برنامه پرداخت باز نشد</translation>
-<translation id="5988826871883769516">دستگاهتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="5990559369517809815">درخواست‌های ارسالی به سرور توسط یک برنامهٔ افزودنی مسدود شد.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1194,7 +1193,6 @@
 <translation id="7554791636758816595">برگهٔ جدید</translation>
 <translation id="7564049878696755256">‏ممکن است دسترسی به حساب <ph name="ORG_NAME" /> را از دست بدهید یا به سرقت هویت دچار شوید. Chrome توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="7567204685887185387">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن به صورت تقلبی صادر شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
-<translation id="7568105740864181217">‏این مرورگر توسط شرکت، مدرسه یا سازمان دیگری مدیریت می‌شود. سرپرستتان می‌تواند تنظیم مرورگرتان را ازراه‌دور تغییر دهد. همچنین ممکن است فعالیت در این دستگاه خارج از Chrome مدیریت شود. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="7569952961197462199">‏کارت اعتباری از Chrome پاک شود؟</translation>
 <translation id="7569983096843329377">سیاه</translation>
 <translation id="7578104083680115302">‏با استفاده از کارت‌هایی که با Google ذخیره کرده‌اید به‌سرعت در همه دستگاه‌هایتان پرداخت‌های سایت‌ها و برنامه‌ها را انجام دهید.</translation>
@@ -1328,7 +1326,6 @@
 <translation id="825929999321470778">نمایش همه گذرواژه‌های ذخیره‌شده</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8267698848189296333">ورود به سیستم به‌عنوان <ph name="USERNAME" /></translation>
-<translation id="8278457561961988242">‏این دستگاه توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود. سرپرستتان می‌تواند تنظیم مرورگرتان را ازراه‌دور تغییر دهد. همچنین ممکن است فعالیت در این دستگاه خارج از Chrome مدیریت شود. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">ورود به سیستم</translation>
 <translation id="8288807391153049143">نمایش گواهی</translation>
