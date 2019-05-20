@@ -26,7 +26,7 @@ namespace content {
 namespace {
 
 // Returns the histogram suffix for the given |event| type.
-std::string EventTypeToString(ServiceWorkerMetrics::EventType event) {
+std::string HistogramSuffixForEventType(ServiceWorkerMetrics::EventType event) {
   switch (event) {
     case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_ABORT:
       return "AbortEvent";
@@ -42,12 +42,29 @@ std::string EventTypeToString(ServiceWorkerMetrics::EventType event) {
   }
 }
 
+// Returns a human-readable string for the given |event| type.
+std::string EventTypeToString(ServiceWorkerMetrics::EventType event) {
+  switch (event) {
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_ABORT:
+      return "BackgroundFetchAbortEvent";
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_CLICK:
+      return "BackgroundFetchClickEvent";
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL:
+      return "BackgroundFetchFailEvent";
+    case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_SUCCESS:
+      return "BackgroundFetchSuccessEvent";
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
 // Records the result of a dispatched Background Fetch event.
 void RecordDispatchResult(
     ServiceWorkerMetrics::EventType event,
     BackgroundFetchEventDispatcher::DispatchResult result) {
-  std::string histogram_name =
-      "BackgroundFetch.EventDispatchResult." + EventTypeToString(event);
+  std::string histogram_name = "BackgroundFetch.EventDispatchResult." +
+                               HistogramSuffixForEventType(event);
 
   // Used because the |histogram_name| is not a constant.
   base::UmaHistogramEnumeration(
@@ -59,7 +76,7 @@ void RecordDispatchResult(
 void RecordFailureResult(ServiceWorkerMetrics::EventType event,
                          const char* metric_name,
                          blink::ServiceWorkerStatusCode service_worker_status) {
-  std::string event_type = EventTypeToString(event);
+  std::string event_type = HistogramSuffixForEventType(event);
   std::string histogram_name =
       base::StringPrintf("BackgroundFetch.EventDispatchFailure.%s.%s",
                          metric_name, event_type.c_str());

@@ -73,7 +73,7 @@ Background Fetch Success:
         eventMetadata : [
             [0] : {
                 key : Event Type
-                value : SuccessEvent
+                value : BackgroundFetchSuccessEvent
             }
         ]
         eventName : Background Fetch completed
@@ -157,7 +157,7 @@ Background Fetch Failure:
         eventMetadata : [
             [0] : {
                 key : Event Type
-                value : FailEvent
+                value : BackgroundFetchFailEvent
             }
             [1] : {
                 key : Failure Reason
