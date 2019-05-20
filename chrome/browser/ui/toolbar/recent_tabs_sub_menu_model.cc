@@ -132,7 +132,7 @@ gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
 }
 
-bool GetSyncedFaviconForPageURL(
+bool RecentTabsGetSyncedFaviconForPageURL(
     sync_sessions::SessionSyncService* session_sync_service,
     const GURL& page_url,
     scoped_refptr<base::RefCountedMemory>* sync_bitmap) {
@@ -588,7 +588,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
       favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
       FaviconServiceFactory::GetForProfile(browser_->profile(),
                                            ServiceAccessType::EXPLICIT_ACCESS),
-      base::BindOnce(&GetSyncedFaviconForPageURL,
+      base::BindOnce(&RecentTabsGetSyncedFaviconForPageURL,
                      base::Unretained(session_sync_service_)),
       is_local_tab ? &local_tab_cancelable_task_tracker_
                    : &other_devices_tab_cancelable_task_tracker_);
