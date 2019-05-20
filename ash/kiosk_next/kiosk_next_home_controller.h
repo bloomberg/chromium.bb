@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 
 namespace ash {
@@ -16,7 +17,8 @@ namespace ash {
 // TODO(michaelpg): Manage gestures on the Home window, such as dragging down
 // from the top for Overview mode.
 class ASH_EXPORT KioskNextHomeController : public HomeScreenDelegate,
-                                           public display::DisplayObserver {
+                                           public display::DisplayObserver,
+                                           public aura::WindowObserver {
  public:
   KioskNextHomeController();
   ~KioskNextHomeController() override;
@@ -37,7 +39,15 @@ class ASH_EXPORT KioskNextHomeController : public HomeScreenDelegate,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  // WindowObserver:
+  void OnWindowAdded(aura::Window* new_window) override;
+  void OnWillRemoveWindow(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
+
  private:
+  aura::Window* home_screen_container_ = nullptr;
+  aura::Window* home_screen_window_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(KioskNextHomeController);
 };
 
