@@ -822,11 +822,6 @@ if (is_win) {
       # versions.
       ":clean_up_old_versions",
 
-      # keystone_registration_framework copies the framework into the framework
-      # bundle via a script that performs additional actions, rather than
-      # relying on a bundle_data to copy it.
-      ":keystone_registration_framework",
-
       # verify_chrome_framework_order depends on :chrome_framework and, for
       # non-component builds, will ensure the export symbol table is correct.
       ":verify_chrome_framework_order",
@@ -1251,33 +1246,11 @@ if (is_win) {
     }
   }
 
-  if (is_chrome_branded && enable_keystone_registration_framework) {
-    action("keystone_registration_framework") {
-      script = "//chrome/tools/build/mac/copy_keystone_framework.py"
-
-      framework_path = "//third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework"
-      output_path = "$root_out_dir/$chrome_framework_name.framework/Versions/$chrome_framework_version/Frameworks/"
-
-      sources = [
-        framework_path,
-        script,
+  group("keystone_registration_framework") {
+    if (is_chrome_branded && enable_keystone_registration_framework) {
+      deps = [
+        "//third_party/googlemac/Releases/Keystone:keystone_registration",
       ]
-
-      args = [
-        rebase_path(framework_path, root_out_dir),
-        rebase_path(output_path, root_out_dir),
-      ]
-
-      if (!use_system_xcode) {
-        args += [ hermetic_xcode_path ]
-      }
-
-      outputs = [
-        "$output_path/KeystoneRegistration.framework",
-      ]
-    }
-  } else {
-    group("keystone_registration_framework") {
     }
   }
 
@@ -1387,6 +1360,7 @@ if (is_win) {
       ":chrome_framework_plugins",
       ":chrome_framework_resources",
       ":chrome_framework_services",
+      ":keystone_registration_framework",
       ":packed_resources",
       ":swiftshader_library",
       ":widevine_cdm_library",
