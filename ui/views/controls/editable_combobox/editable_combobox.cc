@@ -162,6 +162,13 @@ class EditableCombobox::EditableComboboxMenuModel
     return MenuConfig::instance().check_selected_combobox_item;
   }
 
+  base::string16 GetItemTextAt(int index, bool showing_password_text) const {
+    return showing_password_text
+               ? items_shown_[index]
+               : base::string16(items_shown_[index].length(),
+                                gfx::RenderText::kPasswordReplacementChar);
+  }
+
   //////////////////////////////////////////////////////////////////////////////
   // Overridden from ComboboxModelObserver:
   void OnComboboxModelChanged(ui::ComboboxModel* model) override {
@@ -172,18 +179,6 @@ class EditableCombobox::EditableComboboxMenuModel
   // Overridden from MenuModel:
 
   int GetItemCount() const override { return items_shown_.size(); }
-
-  base::string16 GetLabelAt(int index) const override {
-    // Inserting the Unicode formatting characters if necessary so that the text
-    // is displayed correctly in right-to-left UIs.
-    base::string16 text =
-        owner_->showing_password_text_
-            ? items_shown_[index]
-            : base::string16(items_shown_[index].length(),
-                             gfx::RenderText::kPasswordReplacementChar);
-    base::i18n::AdjustStringForLocaleDirection(&text);
-    return text;
-  }
 
  private:
   bool HasIcons() const override { return false; }
@@ -199,6 +194,12 @@ class EditableCombobox::EditableComboboxMenuModel
   int GetCommandIdAt(int index) const override {
     constexpr int kFirstMenuItemId = 1000;
     return index + kFirstMenuItemId;
+  }
+
+  base::string16 GetLabelAt(int index) const override {
+    base::string16 text = GetItemTextAt(index, owner_->showing_password_text_);
+    base::i18n::AdjustStringForLocaleDirection(&text);
+    return text;
   }
 
   bool IsItemDynamicAt(int index) const override { return false; }
@@ -338,7 +339,7 @@ int EditableCombobox::GetItemCountForTest() {
 }
 
 base::string16 EditableCombobox::GetItemForTest(int index) {
-  return menu_model_->GetLabelAt(index);
+  return menu_model_->GetItemTextAt(index, showing_password_text_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -431,15 +432,10 @@ void EditableCombobox::CloseMenu() {
 }
 
 void EditableCombobox::OnItemSelected(int index) {
-  // We set |showing_password_text_| to true before calling GetLabelAt on the
-  // selected item so that even if it was false we still get the actual
-  // characters before setting them in the textfield, which can hide them on its
-  // own. Otherwise we would be setting
-  // gfx::RenderText::kPasswordReplacementChar characters.
-  bool showing_password_text = showing_password_text_;
-  showing_password_text_ = true;
-  base::string16 selected_item_text = menu_model_->GetLabelAt(index);
-  showing_password_text_ = showing_password_text;
+  // |textfield_| can hide the characters on its own so we read the actual
+  // characters instead of gfx::RenderText::kPasswordReplacementChar characters.
+  base::string16 selected_item_text =
+      menu_model_->GetItemTextAt(index, /*showing_password_text=*/true);
   textfield_->SetText(selected_item_text);
   // SetText does not actually notify the TextfieldController, so we call the
   // handling code directly.
