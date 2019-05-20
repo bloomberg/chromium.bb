@@ -17,6 +17,8 @@
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
@@ -273,6 +275,12 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       chrome_content_renderer_client_->GetChromeObserver()
           ->chromeos_listener()));
 #endif  // defined(OS_CHROMEOS)
+
+  if (subresource_redirect::ShouldForceEnableSubresourceRedirect()) {
+    throttles.push_back(
+        std::make_unique<
+            subresource_redirect::SubresourceRedirectURLLoaderThrottle>());
+  }
 
   return throttles;
 }

@@ -276,7 +276,13 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
                                       int32_t intra_priority_value) {
   if (!url_loader_) {
     if (!loader_completed_) {
-      DCHECK_EQ(DEFERRED_START, deferred_stage_);
+      // Only check |deferred_stage_| if this resource has not been redirected
+      // by a throttle.
+      if (throttle_will_start_redirect_url_.is_empty() &&
+          throttle_will_redirect_redirect_url_.is_empty()) {
+        DCHECK_EQ(DEFERRED_START, deferred_stage_);
+      }
+
       priority_info_ =
           std::make_unique<PriorityInfo>(priority, intra_priority_value);
     }
