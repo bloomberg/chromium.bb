@@ -3231,13 +3231,13 @@
       "description": "Mesa hangs the system when allocating large textures",
       "cr_bugs": [927470],
       "os": {
-        "type" : "linux"
+        "type" : "linux",
+        "version": {
+          "op": "<",
+          "value": "5.0"
+        }
       },
-      "driver_vendor": "Mesa",
-      "driver_version": {
-        "op": ">=",
-        "value": "18"
-      },
+      "vendor_id": "0x8086",
       "features": [
         "max_texture_size_limit_4096",
         "max_3d_array_texture_size_1024"
