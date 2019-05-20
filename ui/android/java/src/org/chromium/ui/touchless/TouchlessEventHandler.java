@@ -4,6 +4,10 @@
 
 package org.chromium.ui.touchless;
 
+import android.os.StrictMode;
+
+import org.chromium.base.BuildInfo;
+
 /**
  * org.chromium.ui.touchless.TouchlessEventHandler
  */
@@ -21,11 +25,16 @@ public class TouchlessEventHandler {
     private static TouchlessEventHandler sInstance;
 
     static {
+        // Work around Android bug b/120099466 in which failed reflection causes disk reads.
+        StrictMode.ThreadPolicy oldPolicy = null;
+        if (!BuildInfo.isAtLeastQ()) oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             sInstance = (TouchlessEventHandler) Class.forName(EVENT_HANDLER_INTERNAL).newInstance();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | IllegalArgumentException e) {
             sInstance = null;
+        } finally {
+            if (oldPolicy != null) StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 
