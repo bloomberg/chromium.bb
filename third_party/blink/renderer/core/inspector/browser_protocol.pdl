@@ -479,8 +479,6 @@ experimental domain BackgroundService
     enum
       backgroundFetch
       backgroundSync
-      pushMessaging
-      notifications
 
   # Enables event updates for the service.
   command startObserving
