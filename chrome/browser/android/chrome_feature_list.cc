@@ -181,6 +181,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kUsageStatsFeature,
     &kVideoPersistence,
     &kVrBrowsingFeedback,
+    &kOfferWipeDataOnSignout,
     &network::features::kNetworkService,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kWebPaymentsExperimentalFeatures,
@@ -549,6 +550,9 @@ const base::Feature kVideoPersistence{"VideoPersistence",
 
 const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kOfferWipeDataOnSignout{"OfferWipeDataOnSignout",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 static jboolean JNI_ChromeFeatureList_IsInitialized(JNIEnv* env) {
   return !!base::FeatureList::GetInstance();

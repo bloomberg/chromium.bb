@@ -117,6 +117,7 @@ extern const base::Feature kUsageStatsFeature;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;
 extern const base::Feature kVrBrowsingFeedback;
+extern const base::Feature kOfferWipeDataOnSignout;
 
 }  // namespace android
 }  // namespace chrome
