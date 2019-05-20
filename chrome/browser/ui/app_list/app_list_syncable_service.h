@@ -152,6 +152,9 @@ class AppListSyncableService : public syncer::SyncableService,
   // Returns true if this service was initialized.
   bool IsInitialized() const;
 
+  // Returns true if sync was started.
+  bool IsSyncing() const;
+
   // Registers new observers and makes sure that service is started.
   void AddObserverAndStart(Observer* observer);
   void RemoveObserver(Observer* observer);

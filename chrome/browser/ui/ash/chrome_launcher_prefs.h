@@ -10,9 +10,12 @@
 #include "ash/public/cpp/shelf_types.h"
 
 class LauncherControllerHelper;
-class PrefRegistrySimple;
 class PrefService;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 // Key for the dictionary entries in the prefs::kPinnedLauncherApps list
 // specifying the extension ID of the app to be pinned by that entry.
@@ -24,7 +27,8 @@ extern const char kPinnedAppsPrefPinnedByPolicy[];
 // This is NOT a valid extension identifier so pre-M31 versions ignore it.
 extern const char kPinnedAppsPlaceholder[];
 
-void RegisterChromeLauncherUserPrefs(PrefRegistrySimple* registry);
+void RegisterChromeLauncherUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry);
 
 // Init a local pref from a synced pref, if the local pref has no user setting.
 // This is used to init shelf alignment and auto-hide on the first user sync.

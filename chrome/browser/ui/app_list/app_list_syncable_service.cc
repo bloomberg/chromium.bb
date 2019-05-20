@@ -370,6 +370,10 @@ bool AppListSyncableService::IsInitialized() const {
   return ext_apps_builder_.get();
 }
 
+bool AppListSyncableService::IsSyncing() const {
+  return sync_processor_.get();
+}
+
 void AppListSyncableService::BuildModel() {
   InitFromLocalStorage();
 
