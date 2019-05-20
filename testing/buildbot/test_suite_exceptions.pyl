@@ -299,6 +299,9 @@
   # Note: keep experiment percentages the same as
   # network_service_chrome_public_test_apk.
   'chrome_public_test_apk': {
+    'remove_from': [
+      'android-asan',  # https://crbug.com/964562
+    ],
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
@@ -346,6 +349,8 @@
       # chromium.clang
       'ToTAndroid',
       'ToTAndroidCFI',
+      # chromium.memory
+      'android-asan',  # https://crbug.com/964562
     ],
   },
   'chrome_public_test_vr_apk-vega': {
@@ -441,6 +446,12 @@
         'experiment_percentage': 100,  # https://crbug.com/861730
       },
     },
+  },
+  'content_shell_test_apk': {
+    'remove_from': [
+      # chromium.memory
+      'android-asan',  # https://crbug.com/964562
+    ],
   },
   'content_unittests': {
     'modifications': {
@@ -883,6 +894,7 @@
       'Marshmallow Tablet Tester',
       'KitKat Phone Tester (dbg)',
       # chromium.memory
+      'android-asan',  # https://crbug.com/964562
       'Android CFI',
       # chromium.clang
       'ToTAndroid',
@@ -952,6 +964,7 @@
       'Marshmallow Tablet Tester',
       'KitKat Phone Tester (dbg)',
       # chromium.memory
+      'android-asan',  # https://crbug.com/964562
       'Android CFI',
       # chromium.clang
       'ToTAndroid',
@@ -1023,6 +1036,7 @@
       'Marshmallow Tablet Tester',
       'KitKat Phone Tester (dbg)',
       # chromium.memory
+      'android-asan',  # https://crbug.com/964562
       'Android CFI',
       # chromium.clang
       'ToTAndroid',
@@ -1906,6 +1920,8 @@
       # chromium.android.fyi
       # chromium.clang; matching chromium.android, the test fails on these.
       'ToTAndroid',
+      # chromium.memory
+      'android-asan',  # https://crbug.com/964562
       # On chromium.swarm, this should possibly be being run (or removed
       # from Android N5X Swarm).
       'Android N5 Swarm',
