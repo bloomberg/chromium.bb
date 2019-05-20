@@ -84,6 +84,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include <string>
 #include <utility>
 
+#include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -159,6 +160,9 @@ base::LazyInstance<base::stack<LogAssertHandlerFunction>>::Leaky
 
 // A log message handler that gets notified of every log message we process.
 LogMessageHandlerFunction log_message_handler = nullptr;
+// Another log message handler that gets notified of every log message we
+// process.  This takes precedence over 'log_message_handler'.
+LogMessageHandlerFunction wtk2_log_message_handler = nullptr;
 
 // Helper functions to wrap platform differences.
 
@@ -462,7 +466,7 @@ bool ShouldCreateLogMessage(int severity) {
   // Return true here unless we know ~LogMessage won't do anything. Note that
   // ~LogMessage writes to stderr if severity_ >= kAlwaysPrintErrorLevel, even
   // when g_logging_destination is LOG_NONE.
-  return g_logging_destination != LOG_NONE || log_message_handler ||
+  return g_logging_destination != LOG_NONE || log_message_handler || wtk2_log_message_handler ||
          severity >= kAlwaysPrintErrorLevel;
 }
 
@@ -513,6 +517,14 @@ void SetLogMessageHandler(LogMessageHandlerFunction handler) {
 
 LogMessageHandlerFunction GetLogMessageHandler() {
   return log_message_handler;
+}
+
+void SetWtk2LogMessageHandler(LogMessageHandlerFunction handler) {
+  wtk2_log_message_handler = handler;
+}
+
+LogMessageHandlerFunction GetWtk2LogMessageHandler() {
+  return wtk2_log_message_handler;
 }
 
 // Explicit instantiations for commonly used comparisons.
@@ -590,18 +602,31 @@ LogMessage::~LogMessage() {
     trace.OutputToStream(&stream_);
   }
 #endif
+
+  // Give the wtk2 log message handler first dibs on the message.
+  bool wtk2_handled = false;
+  if (wtk2_log_message_handler &&
+      wtk2_log_message_handler(severity_, file_, line_,
+                               message_start_, stream_.str())) {
+    // The handler took care of it, no further processing.
+    // Unless the severity is fatal!  Then we want to crash (further below).
+    wtk2_handled = true;
+    if (severity_ != LOG_FATAL)
+        return;
+  }
+
   stream_ << std::endl;
   std::string str_newline(stream_.str());
 
   // Give any log message handler first dibs on the message.
-  if (log_message_handler &&
+  if (!wtk2_handled && log_message_handler &&
       log_message_handler(severity_, file_, line_,
                           message_start_, str_newline)) {
     // The handler took care of it, no further processing.
     return;
   }
 
-  if ((g_logging_destination & LOG_TO_SYSTEM_DEBUG_LOG) != 0) {
+  if (!wtk2_handled && (g_logging_destination & LOG_TO_SYSTEM_DEBUG_LOG) != 0) {
 #if defined(OS_WIN)
     OutputDebugStringA(str_newline.c_str());
 #elif defined(OS_MACOSX)
@@ -787,7 +812,7 @@ LogMessage::~LogMessage() {
 #endif  // OS_ANDROID
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
     fflush(stderr);
-  } else if (severity_ >= kAlwaysPrintErrorLevel) {
+  } else if (!wtk2_handled && severity_ >= kAlwaysPrintErrorLevel) {
     // When we're only outputting to a log file, above a certain log level, we
     // should still output to stderr so that we can better detect and diagnose
     // problems with unit tests, especially on the buildbots.
@@ -796,7 +821,7 @@ LogMessage::~LogMessage() {
   }
 
   // write to log file
-  if ((g_logging_destination & LOG_TO_FILE) != 0) {
+  if (!wtk2_handled && (g_logging_destination & LOG_TO_FILE) != 0) {
     // We can have multiple threads and/or processes, so try to prevent them
     // from clobbering each other's writes.
     // If the client app did not call InitLogging, and the lock has not
@@ -1077,4 +1102,27 @@ BASE_EXPORT void LogErrorNotReached(const char* file, int line) {
 
 std::ostream& std::operator<<(std::ostream& out, const wchar_t* wstr) {
   return out << (wstr ? base::WideToUTF8(wstr) : std::string());
+}
+
+static bool g_debugWithTimeEnabled = false;
+void EnableDebugWithTime(bool enabled)
+{
+    g_debugWithTimeEnabled = enabled;
+}
+
+void DebugWithTime(const char *format, ...)
+{
+    if (!g_debugWithTimeEnabled) return;
+
+    va_list arglist;
+    va_start(arglist, format);
+
+    static base::TimeTicks START_TIME = base::TimeTicks::Now();
+    int milliseconds = (base::TimeTicks::Now() - START_TIME).InMilliseconds();
+    int threadId = base::PlatformThread::CurrentId();
+
+    char buf[1024];
+    int timeLen = sprintf_s(buf, sizeof(buf), "DWT: %d - %d: ", threadId, milliseconds);
+    _vsprintf_s_l(buf+timeLen, sizeof(buf)-timeLen, format, NULL, arglist);
+    OutputDebugStringA(buf);
 }

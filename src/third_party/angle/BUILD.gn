@@ -6,6 +6,7 @@
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//blpwtk2/blpwtk2.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("gni/angle.gni")
 if (is_android) {
@@ -728,6 +729,12 @@ config("angle_static") {
 }
 
 angle_shared_library("libGLESv2${angle_libs_suffix}") {
+  if (bb_version != "") {
+    output_name = "blpcr_glesv2.$bb_version"
+  } else {
+    output_name = "blpcr_glesv2"
+  }
+ 
   sources = libglesv2_sources
 
   if (is_win) {
@@ -738,6 +745,12 @@ angle_shared_library("libGLESv2${angle_libs_suffix}") {
     ":angle_gl_visibility_config",
     ":debug_annotations_config",
     ":gl_prototypes",
+  ]
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_configs = [
+    "//blpwtk2:blpwtk2_public"
   ]
 
   defines = [ "LIBGLESV2_IMPLEMENTATION" ]
@@ -761,6 +774,7 @@ angle_static_library("libGLESv2_static") {
   ]
   public_deps = [
     ":libANGLE",
+    "//blpwtk2:blpwtk2_generate_sources",
   ]
 }
 
@@ -812,12 +826,22 @@ angle_source_set("libEGL_egl_loader") {
 }
 
 angle_shared_library("libEGL${angle_libs_suffix}") {
+  if (bb_version != "") {
+    output_name = "blpcr_egl.$bb_version"
+  } else {
+    output_name = "blpcr_egl"
+  }
+
   sources = libegl_sources
 
   configs += [
     ":debug_annotations_config",
     ":library_name_config",
   ]
+
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
 
   defines = [ "LIBEGL_IMPLEMENTATION" ]
   if (is_win) {
@@ -852,6 +876,9 @@ angle_static_library("libEGL_static") {
     ":debug_annotations_config",
     ":library_name_config",
   ]
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
 
   public_configs += [ ":angle_static" ]
 

@@ -17,7 +17,7 @@
 #include "src/third_party/vtune/v8-vtune.h"
 #endif
 
-#include "include/libplatform/libplatform.h"
+#include "include/v8-default-platform.h"
 #include "include/libplatform/v8-tracing.h"
 #include "include/v8-inspector.h"
 #include "src/api-inl.h"
@@ -417,7 +417,6 @@ class BackgroundCompileThread : public base::Thread {
                          v8::ScriptCompiler::StreamedSource::UTF8),
         task_(v8::ScriptCompiler::StartStreamingScript(isolate,
                                                        &streamed_source_)) {}
-
   void Run() override { task_->Run(); }
 
   v8::ScriptCompiler::StreamedSource* streamed_source() {
@@ -3345,7 +3344,9 @@ void Shell::CleanupWorkers() {
 
 int Shell::Main(int argc, char* argv[]) {
   std::ofstream trace_file;
+#if defined(USING_V8_BASE_SHARED)
   v8::base::EnsureConsoleOutput();
+#endif
   if (!SetOptions(argc, argv)) return 1;
   v8::V8::InitializeICUDefaultLocation(argv[0], options.icu_data_file);
 

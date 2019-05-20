@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -24,6 +25,7 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
 #include "media/audio/audio_manager.h"
+#include "content/shell/common/shell_switches.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/ssl/client_cert_identity.h"
@@ -41,6 +43,10 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox.h"
+#endif
 
 namespace content {
 
@@ -528,6 +534,10 @@ TtsPlatform* ContentBrowserClient::GetTtsPlatform() {
 
 net::NetLog* ContentBrowserClient::GetNetLog() {
   return nullptr;
+}
+
+bool ContentBrowserClient::SupportsInProcessRenderer() {
+  return false;
 }
 
 base::FilePath ContentBrowserClient::GetDefaultDownloadDirectory() {

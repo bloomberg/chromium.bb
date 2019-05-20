@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
+namespace blpwtk2 {
+class ForwardingService;
+}
+
 namespace service_manager {
 
 struct BindSourceInfo;
@@ -104,6 +108,8 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   void Terminate();
 
  private:
+  friend class blpwtk2::ForwardingService;
+
   base::OnceClosure termination_closure_;
 
 };

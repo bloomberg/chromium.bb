@@ -31,6 +31,7 @@ class ShellContentUtilityClient : public ContentUtilityClient {
   std::unique_ptr<AudioServiceTestHelper> audio_service_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellContentUtilityClient);
+  bool OnMessageReceived(const IPC::Message& message) override;  
 };
 
 }  // namespace content

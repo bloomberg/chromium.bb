@@ -81,10 +81,10 @@ class ThreadControllerImpl;
 // Please be SURE your task is reentrant (nestable) and all global variables
 // are stable and accessible before calling SetNestableTasksAllowed(true).
 
-class BASE_EXPORT MessageLoopBase {
+class BASE_EXPORT MessageLoopBase : public MessagePump::Delegate 
+{
  public:
   MessageLoopBase() = default;
-  virtual ~MessageLoopBase() = default;
 
   // A MessageLoop has a particular type, which indicates the set of
   // asynchronous events it may process in addition to tasks and timers.
@@ -188,6 +188,11 @@ class BASE_EXPORT MessageLoopBase {
   // can post other tasks when destructed.
   virtual void DeletePendingTasks() = 0;
 
+  // MessagePump::Delegate
+  bool DoWork() override;
+  bool DoDelayedWork(TimeTicks* next_delayed_work_time) override;
+  bool DoIdleWork() override;
+
  protected:
   friend class MessageLoop;
   friend class MessageLoopForUI;
@@ -290,6 +295,16 @@ class BASE_EXPORT MessageLoop {
   // TODO(alexclarke): Make this const when MessageLoopImpl goes away.
   bool IsIdleForTesting();
 
+#if defined(OS_WIN)
+  void set_ipc_sync_messages_should_peek(bool ipc_sync_messages_should_peek) {
+    ipc_sync_messages_should_peek_ = ipc_sync_messages_should_peek;
+  }
+
+  bool ipc_sync_messages_should_peek() const {
+    return ipc_sync_messages_should_peek_;
+  }
+#endif  // OS_WIN
+
   MessageLoopBase* GetMessageLoopBase();
 
   //----------------------------------------------------------------------------
@@ -346,6 +361,11 @@ class BASE_EXPORT MessageLoop {
   std::unique_ptr<MessagePump> CreateMessagePump();
 
   const Type type_;
+
+#if defined(OS_WIN)
+  // Should be set to true if IPC sync messages should PeekMessage periodically.
+  bool ipc_sync_messages_should_peek_ = false;
+#endif
 
   // If set this will be returned by the next call to CreateMessagePump().
   // This is only set if |type_| is TYPE_CUSTOM and |pump_| is null.

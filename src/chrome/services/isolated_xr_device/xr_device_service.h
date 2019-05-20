@@ -25,7 +25,6 @@ class XrDeviceService : public service_manager::Service {
       device::mojom::IsolatedXRRuntimeProviderRequest request);
   void OnTestHookRequest(
       device_test::mojom::XRTestHookRegistrationRequest request);
-
  private:
   // service_manager::Service:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
