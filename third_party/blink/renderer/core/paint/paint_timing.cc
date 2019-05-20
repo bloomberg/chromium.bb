@@ -173,8 +173,8 @@ void PaintTiming::SetFirstContentfulPaint(TimeTicks stamp) {
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {
   RegisterNotifySwapTime(
-      event, CrossThreadBind(&PaintTiming::ReportSwapTime,
-                             WrapCrossThreadWeakPersistent(this), event));
+      event, CrossThreadBindOnce(&PaintTiming::ReportSwapTime,
+                                 WrapCrossThreadWeakPersistent(this), event));
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event,
@@ -185,7 +185,7 @@ void PaintTiming::RegisterNotifySwapTime(PaintEvent event,
   if (!GetFrame() || !GetFrame()->GetPage())
     return;
   GetFrame()->GetPage()->GetChromeClient().NotifySwapTime(
-      *GetFrame(), ConvertToBaseCallback(std::move(callback)));
+      *GetFrame(), ConvertToBaseOnceCallback(std::move(callback)));
 }
 
 void PaintTiming::ReportSwapTime(PaintEvent event,

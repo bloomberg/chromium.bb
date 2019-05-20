@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -116,8 +117,8 @@ void TextPaintTimingDetector::OnPaintFinished() {
       timer_.StartRepeating(kTimerDelay, FROM_HERE);
     if (!awaiting_swap_promise_) {
       RegisterNotifySwapTime(
-          CrossThreadBind(&TextPaintTimingDetector::ReportSwapTime,
-                          WrapCrossThreadWeakPersistent(this)));
+          CrossThreadBindOnce(&TextPaintTimingDetector::ReportSwapTime,
+                              WrapCrossThreadWeakPersistent(this)));
     }
   }
 }
@@ -139,7 +140,7 @@ void TextPaintTimingDetector::RegisterNotifySwapTime(
   if (!frame.GetPage())
     return;
   frame.GetPage()->GetChromeClient().NotifySwapTime(
-      frame, ConvertToBaseCallback(std::move(callback)));
+      frame, ConvertToBaseOnceCallback(std::move(callback)));
   awaiting_swap_promise_ = true;
 }
 

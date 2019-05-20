@@ -121,8 +121,8 @@ class TextRecordsManager {
 class CORE_EXPORT TextPaintTimingDetector final
     : public GarbageCollectedFinalized<TextPaintTimingDetector> {
   using ReportTimeCallback =
-      WTF::CrossThreadFunction<void(WebWidgetClient::SwapResult,
-                                    base::TimeTicks)>;
+      WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
+                                        base::TimeTicks)>;
   friend class TextPaintTimingDetectorTest;
 
  public:
