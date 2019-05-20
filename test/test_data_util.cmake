@@ -628,7 +628,7 @@ endfunction()
 # writes it to $local_path.
 function(download_test_file file_url file_checksum local_path)
   message("Downloading ${file_url} ...")
-  file(DOWNLOAD "${file_url}" "${local_path}" SHOW_PROGRESS
-       EXPECTED_HASH SHA1=${file_checksum})
+  file(DOWNLOAD "${file_url}" "${local_path}" SHOW_PROGRESS EXPECTED_HASH
+                                              SHA1=${file_checksum})
   message("Download of ${file_url} complete.")
 endfunction()

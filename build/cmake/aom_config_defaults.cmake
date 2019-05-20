@@ -171,10 +171,10 @@ set_aom_option_var(ENABLE_VSX "Enables VSX optimizations on PowerPC targets."
                    ON)
 
 # x86/x86_64 assembly/intrinsics flags.
-set_aom_option_var(ENABLE_MMX
-                   "Enables MMX optimizations on x86/x86_64 targets." ON)
-set_aom_option_var(ENABLE_SSE
-                   "Enables SSE optimizations on x86/x86_64 targets." ON)
+set_aom_option_var(ENABLE_MMX "Enables MMX optimizations on x86/x86_64 targets."
+                   ON)
+set_aom_option_var(ENABLE_SSE "Enables SSE optimizations on x86/x86_64 targets."
+                   ON)
 set_aom_option_var(ENABLE_SSE2
                    "Enables SSE2 optimizations on x86/x86_64 targets." ON)
 set_aom_option_var(ENABLE_SSE3
@@ -185,7 +185,7 @@ set_aom_option_var(ENABLE_SSE4_1
                    "Enables SSE4_1 optimizations on x86/x86_64 targets." ON)
 set_aom_option_var(ENABLE_SSE4_2
                    "Enables SSE4_2 optimizations on x86/x86_64 targets." ON)
-set_aom_option_var(ENABLE_AVX
-                   "Enables AVX optimizations on x86/x86_64 targets." ON)
+set_aom_option_var(ENABLE_AVX "Enables AVX optimizations on x86/x86_64 targets."
+                   ON)
 set_aom_option_var(ENABLE_AVX2
                    "Enables AVX2 optimizations on x86/x86_64 targets." ON)
