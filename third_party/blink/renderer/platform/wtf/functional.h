@@ -467,4 +467,7 @@ using WTF::CrossThreadUnretained;
 using WTF::CrossThreadFunction;
 using WTF::CrossThreadClosure;
 
+using WTF::CrossThreadOnceClosure;
+using WTF::CrossThreadOnceFunction;
+
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_FUNCTIONAL_H_
