@@ -16,6 +16,7 @@
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -2805,10 +2806,19 @@ id<GREYMatcher> SearchIconButton() {
       selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
-                                          grey_sufficientlyVisible(), nil)]
-      performAction:grey_tap()];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Cancel the sign-in operation.
+    [[EarlGrey selectElementWithMatcher:
+                   grey_buttonTitle([l10n_util::GetNSString(
+                       IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
+                       uppercaseString])] performAction:grey_tap()];
+  } else {
+    // Cancel the add account operation.
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
+                                            grey_sufficientlyVisible(), nil)]
+        performAction:grey_tap()];
+  }
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
@@ -2833,18 +2843,25 @@ id<GREYMatcher> SearchIconButton() {
   [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
-  // Tap the Sign in button.
+  // Tap the primary button.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kSigninPromoSecondaryButtonId),
+      selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
-  // Tap the CANCEL button.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_buttonTitle([l10n_util::GetNSString(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                     uppercaseString])] performAction:grey_tap()];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Cancel the sign-in operation.
+    [[EarlGrey selectElementWithMatcher:
+                   grey_buttonTitle([l10n_util::GetNSString(
+                       IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
+                       uppercaseString])] performAction:grey_tap()];
+  } else {
+    // Undo the sign-in operation.
+    [[EarlGrey selectElementWithMatcher:
+                   grey_buttonTitle([l10n_util::GetNSString(
+                       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_UNDO_BUTTON)
+                       uppercaseString])] performAction:grey_tap()];
+  }
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [SigninEarlGreyUI
@@ -2874,6 +2891,11 @@ id<GREYMatcher> SearchIconButton() {
       selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
+
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    // Select the identity to dismiss the identity chooser.
+    [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
+  }
 
   // Tap the CANCEL button.
   [[EarlGrey selectElementWithMatcher:
