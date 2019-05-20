@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.ui.modelutil.ListModel;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ public class EditDistanceTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/963672")
     public void testEmptyTarget() {
         ListModel<Integer> spiedListModel = createSpiedListModel(1, 2, 3);
         testTransformation(spiedListModel, Collections.emptyList());
@@ -110,6 +112,7 @@ public class EditDistanceTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/963672")
     public void testDeleteEnd() {
         ListModel<Integer> spiedListModel = createSpiedListModel(1, 2, 3);
         testTransformation(spiedListModel, Arrays.asList(1, 2));
@@ -156,6 +159,7 @@ public class EditDistanceTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/963672")
     public void testMultipleDelete() {
         ListModel<Integer> spiedListModel = createSpiedListModel(1, 2, 3, 4, 5, 6, 7, 8);
         testTransformation(spiedListModel, Arrays.asList(3, 6));
