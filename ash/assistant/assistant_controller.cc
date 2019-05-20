@@ -325,6 +325,11 @@ void AssistantController::OnVoiceInteractionStatusChanged(
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
 }
 
+void AssistantController::OnLockedFullScreenStateChanged(bool enabled) {
+  if (enabled)
+    assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
+}
+
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

@@ -83,6 +83,11 @@ void VoiceInteractionControllerClient::NotifyStatusChanged(
     observer.OnStateChanged(state);
 }
 
+void VoiceInteractionControllerClient::NotifyLockedFullScreenStateChanged(
+    bool enabled) {
+  voice_interaction_controller_->NotifyLockedFullScreenStateChanged(enabled);
+}
+
 void VoiceInteractionControllerClient::SetControllerForTesting(
     ash::mojom::VoiceInteractionControllerPtr controller) {
   voice_interaction_controller_ = std::move(controller);

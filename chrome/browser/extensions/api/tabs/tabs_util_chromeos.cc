@@ -9,6 +9,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -59,6 +61,12 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
       if (arc::IsArcPlayStoreEnabledForProfile(profile))
         arc_session_manager->RequestEnable();
     }
+  }
+
+  if (assistant::IsAssistantAllowedForProfile(profile) ==
+      ash::mojom::AssistantAllowedState::ALLOWED) {
+    arc::VoiceInteractionControllerClient::Get()
+        ->NotifyLockedFullScreenStateChanged(locked);
   }
 }
 

@@ -352,10 +352,12 @@ void AssistantUiController::OnUiVisibilityChanged(
 }
 
 void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
-  if (!Shell::Get()
-           ->voice_interaction_controller()
-           ->settings_enabled()
-           .value_or(false)) {
+  auto* voice_interaction_controller =
+      Shell::Get()->voice_interaction_controller();
+
+  if (!voice_interaction_controller->settings_enabled().value_or(false) ||
+      voice_interaction_controller->locked_full_screen_enabled().value_or(
+          false)) {
     return;
   }
 

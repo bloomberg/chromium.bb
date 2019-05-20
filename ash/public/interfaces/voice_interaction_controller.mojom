@@ -80,6 +80,9 @@ interface VoiceInteractionObserver {
   // "en-US" or simply "en". When locale is not set in pref, it returns empty
   // string.
   OnLocaleChanged(string locale);
+
+  // Called when locked full screen state has changed.
+  OnLockedFullScreenStateChanged(bool enabled);
 };
 
 // Interface for ash client (Chrome) to connect to the voice interaction
@@ -120,6 +123,9 @@ interface VoiceInteractionController {
 
   // Called when Google Play Store is enabled/disabled.
   NotifyArcPlayStoreEnabledChanged(bool enabled);
+
+  // Called when locked full screen state is enabled/disabled.
+  NotifyLockedFullScreenStateChanged(bool enabled);
 
   // Add an observer.
   AddObserver(VoiceInteractionObserver observer);

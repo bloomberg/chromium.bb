@@ -68,4 +68,9 @@ void FakeVoiceInteractionController::NotifyArcPlayStoreEnabledChanged(
   arc_play_store_enabled_ = enabled;
 }
 
+void FakeVoiceInteractionController::NotifyLockedFullScreenStateChanged(
+    bool enabled) {
+  locked_full_screen_enabled_ = enabled;
+}
+
 }  // namespace arc

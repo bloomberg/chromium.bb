@@ -158,6 +158,7 @@ class ASH_EXPORT AssistantController
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
       mojom::VoiceInteractionState state) override;
+  void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // The observer list should be initialized early so that sub-controllers may
   // register as observers during their construction.

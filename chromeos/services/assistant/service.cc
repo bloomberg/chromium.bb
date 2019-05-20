@@ -187,12 +187,6 @@ void Service::OnSessionActivated(bool activated) {
 
 void Service::OnLockStateChanged(bool locked) {
   locked_ = locked;
-
-  if (assistant_manager_service_->GetState() !=
-      AssistantManagerService::State::RUNNING) {
-    return;
-  }
-
   UpdateListeningState();
 }
 
@@ -210,6 +204,10 @@ void Service::OnLocaleChanged(const std::string& locale) {
 
 void Service::OnArcPlayStoreEnabledChanged(bool enabled) {
   UpdateAssistantManagerState();
+}
+
+void Service::OnLockedFullScreenStateChanged(bool enabled) {
+  UpdateListeningState();
 }
 
 void Service::OnVoiceInteractionHotwordAlwaysOn(bool always_on) {
@@ -418,7 +416,15 @@ void Service::AddAshSessionObserver() {
 }
 
 void Service::UpdateListeningState() {
-  bool should_listen = !locked_ && session_active_;
+  if (assistant_manager_service_->GetState() !=
+      AssistantManagerService::State::RUNNING) {
+    return;
+  }
+
+  bool should_listen =
+      !locked_ &&
+      !assistant_state_.locked_full_screen_enabled().value_or(false) &&
+      session_active_;
   DVLOG(1) << "Update assistant listening state: " << should_listen;
   assistant_manager_service_->EnableListening(should_listen);
 }

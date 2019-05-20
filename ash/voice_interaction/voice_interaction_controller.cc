@@ -144,6 +144,20 @@ void VoiceInteractionController::NotifyArcPlayStoreEnabledChanged(
     observer.OnArcPlayStoreEnabledChanged(enabled);
 }
 
+void VoiceInteractionController::NotifyLockedFullScreenStateChanged(
+    bool enabled) {
+  if (locked_full_screen_enabled_ == enabled)
+    return;
+
+  locked_full_screen_enabled_ = enabled;
+
+  observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnLockedFullScreenStateChanged(enabled);
+  });
+  for (auto& observer : local_observers_)
+    observer.OnLockedFullScreenStateChanged(enabled);
+}
+
 void VoiceInteractionController::AddObserver(
     mojom::VoiceInteractionObserverPtr observer) {
   InitObserver(observer.get());
