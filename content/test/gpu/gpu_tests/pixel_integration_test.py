@@ -287,7 +287,6 @@ class PixelIntegrationTest(
           self._UploadTestResultToSkiaGold(
             image_name, screenshot,
             tab, page,
-            is_check_mode=True,
             build_id_args=build_id_args)
         except CalledProcessError:
           self.fail('Gold said the test failed, so fail.')

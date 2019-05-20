@@ -426,8 +426,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     return 'None' if num == None else self.ToHex(num)
 
   def _UploadTestResultToSkiaGold(self, image_name, screenshot,
-                                  tab, page,
-                                  is_check_mode=True, build_id_args=None):
+                                  tab, page, build_id_args=None):
     if build_id_args is None:
       raise Exception('Requires build args to be specified, including --commit')
     if self._skia_gold_temp_dir is None:
@@ -447,7 +446,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       'msaa': str(ref_img_params.msaa),
       'model_name': str(ref_img_params.model_name),
     }
-    mode = ['--passfail'] if is_check_mode else []
+    mode = ['--passfail']
     json_temp_file = tempfile.NamedTemporaryFile(suffix='.json').name
     failure_file = tempfile.NamedTemporaryFile(suffix='.txt').name
     with open(json_temp_file, 'w+') as f:
@@ -499,8 +498,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         self._UploadTestResultToSkiaGold(
           image_name, screenshot,
           tab, page,
-          # Always upload because we already did the check locally.
-          is_check_mode=False,
           build_id_args=build_id_args)
       else:
         self._WriteErrorImages(
