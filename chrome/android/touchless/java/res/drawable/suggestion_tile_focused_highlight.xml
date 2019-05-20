@@ -4,5 +4,5 @@
      found in the LICENSE file. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <stroke android:width="@dimen/most_likely_tile_focus_stroke_width" android:color="@color/light_active_color"/>
+    <stroke android:width="@dimen/focus_ring_stroke_width" android:color="@color/modern_blue_800"/>
 </shape>

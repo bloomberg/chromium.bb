@@ -15,6 +15,8 @@
     <dimen name="notouch_key_functions_tooltip_item_image_vertical_padding">5dp</dimen>
     <dimen name="notouch_key_functions_tooltip_item_horizontal_margin">4dp</dimen>
 
+    <dimen name="focus_ring_stroke_width">2dp</dimen>
+
     <!-- Open last tab placeholder dimensions. -->
     <dimen name="open_last_tab_placeholder_image_size">24dp</dimen>
     <dimen name="open_last_tab_placeholder_image_margin_bottom">13dp</dimen>
@@ -27,7 +29,6 @@
     <dimen name="open_last_tab_timestamp_text_margin_left">10dp</dimen>
 
     <!-- Most likely carousel dimensions. -->
-    <dimen name="most_likely_tile_focus_stroke_width">2dp</dimen>
     <dimen name="most_likely_carousel_edge_spacer">8dp</dimen>
     <dimen name="most_likely_tile_size">40dp</dimen>
     <!-- Desired 24dp, but the edge spacer is also in effect. 8 + 16 = 24 -->
