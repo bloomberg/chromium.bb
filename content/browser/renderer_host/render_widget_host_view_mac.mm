@@ -1801,6 +1801,8 @@ bool RenderWidgetHostViewMac::SyncGetFirstRectForRange(
   *success = true;
   if (!GetCachedFirstRectForCharacterRange(requested_range, rect,
                                            actual_range)) {
+    // https://crbug.com/121917
+    base::ScopedAllowBlocking allow_wait;
     *rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
         GetFocusedWidget(), requested_range);
     // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.

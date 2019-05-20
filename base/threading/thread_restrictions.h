@@ -140,6 +140,7 @@ class DesktopCaptureDevice;
 class DWriteFontLookupTableBuilder;
 class GpuProcessTransportFactory;
 class NestedMessagePumpAndroid;
+class RenderWidgetHostViewMac;
 class RTCVideoDecoder;
 class RTCVideoDecoderAdapter;
 class RTCVideoEncoder;
@@ -338,6 +339,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class android_webview::ScopedAllowInitGLBindings;
   friend class content::BrowserProcessSubThread;
   friend class content::GpuProcessTransportFactory;
+  friend class content::RenderWidgetHostViewMac;  // http://crbug.com/121917
   friend class content::WebContentsViewMac;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
