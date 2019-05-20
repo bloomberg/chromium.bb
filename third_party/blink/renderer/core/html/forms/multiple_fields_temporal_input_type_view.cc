@@ -135,23 +135,26 @@ bool DateTimeFormatValidator::ValidateFormat(
 
 DateTimeEditElement*
 MultipleFieldsTemporalInputTypeView::GetDateTimeEditElement() const {
-  return ToDateTimeEditElementOrDie(
-      GetElement().UserAgentShadowRoot()->getElementById(
-          shadow_element_names::DateTimeEdit()));
+  auto* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::DateTimeEdit());
+  CHECK(!element || IsA<DateTimeEditElement>(element));
+  return To<DateTimeEditElement>(element);
 }
 
 SpinButtonElement* MultipleFieldsTemporalInputTypeView::GetSpinButtonElement()
     const {
-  return ToSpinButtonElementOrDie(
-      GetElement().UserAgentShadowRoot()->getElementById(
-          shadow_element_names::SpinButton()));
+  auto* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::SpinButton());
+  CHECK(!element || IsA<SpinButtonElement>(element));
+  return To<SpinButtonElement>(element);
 }
 
 ClearButtonElement* MultipleFieldsTemporalInputTypeView::GetClearButtonElement()
     const {
-  return ToClearButtonElementOrDie(
-      GetElement().UserAgentShadowRoot()->getElementById(
-          shadow_element_names::ClearButton()));
+  auto* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::ClearButton());
+  CHECK(!element || IsA<ClearButtonElement>(element));
+  return To<ClearButtonElement>(element);
 }
 
 PickerIndicatorElement*

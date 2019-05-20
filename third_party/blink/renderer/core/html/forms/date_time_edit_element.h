@@ -161,6 +161,13 @@ DEFINE_TYPE_CASTS(DateTimeEditElement,
                   element->IsDateTimeEditElement(),
                   element.IsDateTimeEditElement());
 
+template <>
+struct DowncastTraits<DateTimeEditElement> {
+  static bool AllowFrom(const Element& element) {
+    return element.IsDateTimeEditElement();
+  }
+};
+
 }  // namespace blink
 
 #endif

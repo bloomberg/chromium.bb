@@ -173,8 +173,10 @@ HTMLElement* TextControlElement::PlaceholderElement() const {
   if (!SupportsPlaceholder())
     return nullptr;
   DCHECK(UserAgentShadowRoot());
-  return ToHTMLElementOrDie(UserAgentShadowRoot()->getElementById(
-      shadow_element_names::Placeholder()));
+  auto* element = UserAgentShadowRoot()->getElementById(
+      shadow_element_names::Placeholder());
+  CHECK(!element || IsA<HTMLElement>(element));
+  return To<HTMLElement>(element);
 }
 
 void TextControlElement::UpdatePlaceholderVisibility() {

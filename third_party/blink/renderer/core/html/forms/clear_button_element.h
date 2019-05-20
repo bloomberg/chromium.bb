@@ -62,6 +62,13 @@ DEFINE_TYPE_CASTS(ClearButtonElement,
                   element->IsClearButtonElement(),
                   element.IsClearButtonElement());
 
+template <>
+struct DowncastTraits<ClearButtonElement> {
+  static bool AllowFrom(const Element& element) {
+    return element.IsClearButtonElement();
+  }
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_CLEAR_BUTTON_ELEMENT_H_

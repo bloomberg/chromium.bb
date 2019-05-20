@@ -155,8 +155,10 @@ void HTMLOptGroupElement::UpdateGroupLabel() {
 }
 
 HTMLDivElement& HTMLOptGroupElement::OptGroupLabelElement() const {
-  return *ToHTMLDivElementOrDie(UserAgentShadowRoot()->getElementById(
-      shadow_element_names::OptGroupLabel()));
+  auto* element = UserAgentShadowRoot()->getElementById(
+      shadow_element_names::OptGroupLabel());
+  CHECK(!element || IsA<HTMLDivElement>(element));
+  return *To<HTMLDivElement>(element);
 }
 
 }  // namespace blink

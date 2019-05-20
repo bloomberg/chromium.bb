@@ -108,6 +108,13 @@ DEFINE_TYPE_CASTS(SpinButtonElement,
                   ToElement(node)->IsSpinButtonElement(),
                   ToElement(node).IsSpinButtonElement());
 
+template <>
+struct DowncastTraits<SpinButtonElement> {
+  static bool AllowFrom(const Node& node) {
+    return ToElement(node).IsSpinButtonElement();
+  }
+};
+
 }  // namespace blink
 
 #endif

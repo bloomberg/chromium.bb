@@ -97,8 +97,9 @@ Element* HTMLDetailsElement::FindMainSummary() const {
           Traversal<HTMLSummaryElement>::FirstChild(*this))
     return summary;
 
-  HTMLSlotElement* slot =
-      ToHTMLSlotElementOrDie(UserAgentShadowRoot()->firstChild());
+  auto* element = UserAgentShadowRoot()->firstChild();
+  CHECK(!element || IsA<HTMLSlotElement>(element));
+  HTMLSlotElement* slot = To<HTMLSlotElement>(element);
   DCHECK(slot->firstChild());
   CHECK(IsHTMLSummaryElement(*slot->firstChild()));
   return ToElement(slot->firstChild());

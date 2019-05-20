@@ -48,6 +48,7 @@ inline bool IsElementOfType<const {{tag.interface}}>(const {{namespace}}Element&
 // reinterpret_cast in the casting functions above. reinterpret_cast would be
 // unsafe due to multiple inheritence.
 
+// TODO(abhijeet@igalia.com): Remove below type casting macros.
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 template <>
 struct DowncastTraits<{{tag.interface}}> {
@@ -64,7 +65,6 @@ struct DowncastTraits<{{tag.interface}}> {
 };
 #define To{{tag.interface}}(x) blink::To<blink::{{tag.interface}}>(x)
 #define To{{tag.interface}}OrNull(x) blink::DynamicTo<blink::{{tag.interface}}>(x)
-#define To{{tag.interface}}OrDie(x) blink::To<blink::{{tag.interface}}>(x)
 
 {% endfor %}
 
