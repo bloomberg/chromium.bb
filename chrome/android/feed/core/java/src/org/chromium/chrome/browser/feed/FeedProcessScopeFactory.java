@@ -12,7 +12,7 @@ import com.google.android.libraries.feed.api.host.config.Configuration;
 import com.google.android.libraries.feed.api.host.config.DebugBehavior;
 import com.google.android.libraries.feed.api.host.network.NetworkClient;
 import com.google.android.libraries.feed.api.host.stream.TooltipSupportedApi;
-import com.google.android.libraries.feed.api.scope.FeedProcessScope;
+import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
 import com.google.android.libraries.feed.common.functional.Consumer;
 
 import org.chromium.base.ContextUtils;

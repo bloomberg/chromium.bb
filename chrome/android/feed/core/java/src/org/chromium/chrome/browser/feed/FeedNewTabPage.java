@@ -28,7 +28,7 @@ import com.google.android.libraries.feed.api.host.stream.StreamConfiguration;
 import com.google.android.libraries.feed.api.host.stream.TooltipApi;
 import com.google.android.libraries.feed.api.host.stream.TooltipCallbackApi;
 import com.google.android.libraries.feed.api.host.stream.TooltipInfo;
-import com.google.android.libraries.feed.api.scope.FeedProcessScope;
+import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
 
 import org.chromium.base.ApiCompatibilityUtils;
