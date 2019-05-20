@@ -250,7 +250,7 @@ void OffTheRecordProfileImpl::InitIoData() {
 
 #if !defined(OS_ANDROID)
 void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
-  DCHECK_NE(INCOGNITO_PROFILE, profile_->GetProfileType());
+  DCHECK(!profile_->IsIncognito());
 
   // Here we only want to use zoom levels stored in the main-context's default
   // storage partition. We're not interested in zoom levels in special

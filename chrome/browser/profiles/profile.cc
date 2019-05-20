@@ -237,6 +237,10 @@ bool Profile::IsIncognito() const {
   return GetProfileType() == INCOGNITO_PROFILE;
 }
 
+bool Profile::IsGuestProfile() const {
+  return GetProfileType() == GUEST_PROFILE;
+}
+
 bool Profile::IsGuestSession() const {
 #if defined(OS_CHROMEOS)
   static bool is_guest_session =

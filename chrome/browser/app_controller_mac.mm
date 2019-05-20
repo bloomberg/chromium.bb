@@ -1713,7 +1713,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Handoff is not allowed from an incognito profile. To err on the safe side,
   // also disallow Handoff from a guest profile.
-  if (profile->GetProfileType() != Profile::REGULAR_PROFILE)
+  if (!profile->IsRegularProfile())
     return GURL();
 
   if (!webContents)

@@ -337,8 +337,7 @@ bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
 bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
 #if defined(OS_MACOSX)
   // Touch ID is available in Incognito, but not in Guest mode.
-  return Profile::FromBrowserContext(browser_context())->GetProfileType() ==
-         Profile::ProfileType::GUEST_PROFILE;
+  return Profile::FromBrowserContext(browser_context())->IsGuestProfile();
 #else  // Windows, Android
   return browser_context()->IsOffTheRecord();
 #endif

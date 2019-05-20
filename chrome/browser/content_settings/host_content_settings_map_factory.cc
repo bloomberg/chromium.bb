@@ -82,8 +82,7 @@ scoped_refptr<RefcountedKeyedService>
   }
 
   scoped_refptr<HostContentSettingsMap> settings_map(new HostContentSettingsMap(
-      profile->GetPrefs(), profile->IsIncognito(),
-      profile->GetProfileType() == Profile::GUEST_PROFILE,
+      profile->GetPrefs(), profile->IsIncognito(), profile->IsGuestProfile(),
       /*store_last_modified=*/true,
       base::FeatureList::IsEnabled(features::kPermissionDelegation)));
 

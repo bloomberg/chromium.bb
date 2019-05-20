@@ -56,6 +56,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+class OffTheRecordProfileIOData;
+
 // Instead of adding more members to Profile, consider creating a
 // KeyedService. See
 // http://dev.chromium.org/developers/design-documents/profile-architecture
@@ -146,9 +148,6 @@ class Profile : public content::BrowserContext {
   // implementations, this is usually the Google-services email address.
   virtual std::string GetProfileUserName() const = 0;
 
-  // Returns the profile type.
-  virtual ProfileType GetProfileType() const = 0;
-
   // Return the incognito version of this profile. The returned pointer
   // is owned by the receiving profile. If the receiving profile is off the
   // record, the same profile is returned.
@@ -228,6 +227,12 @@ class Profile : public content::BrowserContext {
   // versa).
   virtual bool IsSameProfile(Profile* profile) = 0;
 
+  // Returns whether two profiles are the same and of the same type.
+  bool IsSameProfileAndType(Profile* profile) {
+    return IsSameProfile(profile) &&
+           GetProfileType() == profile->GetProfileType();
+  }
+
   // Returns the time the profile was started. This is not the time the profile
   // was created, rather it is the time the user started chrome and logged into
   // this profile. For the single profile case, this corresponds to the time
@@ -302,15 +307,25 @@ class Profile : public content::BrowserContext {
 
   std::string GetDebugName();
 
-  // Returns whether it's a regular profile. Short-hand for GetProfileType() ==
-  // REGULAR_PROFILE.
+  // IsRegularProfile(), IsIncognito(), and IsGuestProfile() are mutually
+  // exclusive.
+  // IsSystemProfile() implies that IsRegularProfile() is true.
+  // IsOffTheRecord() is an equivalent of IsIncognito() || IsGuestProfile().
+
+  // Returns whether it's a regular profile.
   bool IsRegularProfile() const;
 
-  // Returns whether it is an Incognito session. An Incognito session is an
-  // off-the-record session that is not a guest session.
+  // Returns whether it is an Incognito profile. An Incognito profile is an
+  // off-the-record profile that is not a guest profile.
+  // TODO(https://crbug.com/947933): Replace with IsIncognitProfile.
   bool IsIncognito() const;
 
-  // Returns whether it is a guest session.
+  // Returns whether it is a Guest profile. A Guest profile is an off-the-record
+  // profile in a guest session.
+  bool IsGuestProfile() const;
+
+  // Returns whether it is a guest session. This covers both the guest profile
+  // and its parent.
   virtual bool IsGuestSession() const;
 
   // Returns whether it is a system profile.
@@ -391,6 +406,11 @@ class Profile : public content::BrowserContext {
   void Wipe();
 
  protected:
+  friend class OffTheRecordProfileIOData;
+
+  // Returns the profile type.
+  virtual ProfileType GetProfileType() const = 0;
+
   void set_is_guest_profile(bool is_guest_profile) {
     is_guest_profile_ = is_guest_profile;
   }
