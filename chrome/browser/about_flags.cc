@@ -3105,6 +3105,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          features::kAllowSignedHTTPExchangeCertsWithoutExtension)},
 
+    {"enable-sxg-subresource-prefetching",
+     flag_descriptions::kEnableSignedExchangeSubresourcePrefetchName,
+     flag_descriptions::kEnableSignedExchangeSubresourcePrefetchDescription,
+     kOsAll, FEATURE_VALUE_TYPE(features::kSignedExchangeSubresourcePrefetch)},
+
     {"enable-autofill-account-wallet-storage",
      flag_descriptions::kEnableAutofillAccountWalletStorageName,
      flag_descriptions::kEnableAutofillAccountWalletStorageDescription,

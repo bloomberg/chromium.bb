@@ -55,6 +55,9 @@ extern const char kAllowPopupsDuringPageUnloadDescription[];
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[];
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 
+extern const char kEnableSignedExchangeSubresourcePrefetchName[];
+extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
+
 extern const char kAllowStartingServiceManagerOnlyName[];
 extern const char kAllowStartingServiceManagerOnlyDescription[];
 

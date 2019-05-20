@@ -1557,6 +1557,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-sxg-subresource-prefetching",
+    "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-sync-pseudo-uss-app-list",
     "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76

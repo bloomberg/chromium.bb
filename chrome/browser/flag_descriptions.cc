@@ -37,6 +37,16 @@ const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[] =
     "that do not have CanSignHttpExchangesDraft extension. Warning: Enabling "
     "this may pose a security risk.";
 
+const char kEnableSignedExchangeSubresourcePrefetchName[] =
+    "Enable Signed Exchange subresource prefetching";
+const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
+    "When enabled, the distributors of signed exchanges can let Chrome know "
+    "alternative signed exchange subresources by setting \"alternate\" link "
+    "header. Chrome will prefetch the alternate signed exchange subresources "
+    "and will load them if the publisher of the main signed exchange has set "
+    "\"allowed-alt-sxg\" link header in the signed innere response of the "
+    "main signed exchange.";
+
 const char kAllowStartingServiceManagerOnlyName[] =
     "Allow starting service manager only";
 const char kAllowStartingServiceManagerOnlyDescription[] =
