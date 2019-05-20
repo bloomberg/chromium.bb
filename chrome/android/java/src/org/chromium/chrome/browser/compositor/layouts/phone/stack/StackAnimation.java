@@ -281,7 +281,7 @@ public class StackAnimation {
             tab.resetOffset();
             tab.setScale(mStack.getScaleAmount());
             tab.setAlpha(1.f);
-            tab.getLayoutTab().setToolbarAlpha(0.f);
+            tab.getLayoutTab().setToolbarAlpha(i == focusIndex ? 1.f : 0.f);
             tab.getLayoutTab().setBorderScale(1.f);
 
             float scrollOffset = mStack.screenToScroll(i * spacing);
@@ -336,7 +336,7 @@ public class StackAnimation {
             tab.resetOffset();
             tab.setScale(mStack.getScaleAmount());
             tab.setAlpha(1.f);
-            tab.getLayoutTab().setToolbarAlpha(0.f);
+            tab.getLayoutTab().setToolbarAlpha(i == focusIndex ? 1.f : 0.f);
             tab.getLayoutTab().setBorderScale(1.f);
 
             final float scrollOffset = mStack.screenToScroll(i * spacing);
