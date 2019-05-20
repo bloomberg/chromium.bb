@@ -856,11 +856,12 @@ if (is_win) {
       _stamp_file,
     ]
 
+    _old_versions_dir =
+        "$root_out_dir/$chrome_product_full_name.app/Contents/Versions"
     if (new_mac_bundle_structure) {
       _versions_dir = "$root_out_dir/$chrome_product_full_name.app/Contents/Frameworks/$chrome_framework_name.framework/Versions"
     } else {
-      _versions_dir =
-          "$root_out_dir/$chrome_product_full_name.app/Contents/Versions"
+      _versions_dir = _old_versions_dir
     }
 
     args = [
@@ -876,6 +877,8 @@ if (is_win) {
       args += [
         "--keep",
         "Current",
+        "--delete",
+        rebase_path(_old_versions_dir, root_build_dir),
       ]
     }
   }

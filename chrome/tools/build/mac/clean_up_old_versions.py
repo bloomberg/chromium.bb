@@ -19,6 +19,10 @@ def CleanUpOldVersions(args):
         else:
           os.unlink(path)
 
+  for path in args.delete:
+    if os.path.exists(path):
+      shutil.rmtree(path)
+
   open(args.stamp, 'w').close()
   os.utime(args.stamp, None)
 
@@ -32,8 +36,15 @@ def Main():
   parser.add_argument(
       '--keep',
       action='append',
+      default=[],
       help=('The names of items to keep in the `--versions-dir`. '
             'Can be specified multiple times.'))
+  parser.add_argument(
+      '--delete',
+      action='append',
+      default=[],
+      help=('Unconditionally deletes the tree at this path. Can be '
+            'specified multiple times.'))
   parser.add_argument(
       '--stamp', required=True, help='Path to write the stamp file.')
   args = parser.parse_args()
