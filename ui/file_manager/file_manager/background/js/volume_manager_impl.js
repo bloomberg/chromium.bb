@@ -74,51 +74,47 @@ class VolumeManagerImpl extends cr.EventTarget {
    * @return {!Promise<!VolumeInfo>}
    * @private
    */
-  addVolumeMetadata_(volumeMetadata) {
-    return volumeManagerUtil.createVolumeInfo(volumeMetadata)
-        .then(
-            /**
-             * @param {!VolumeInfo} volumeInfo
-             * @return {!VolumeInfo}
-             */
-            volumeInfo => {
-              // We don't show Downloads and Drive on volume list if they have
-              // mount error, since users can do nothing in this situation. We
-              // show Removable and Provided volumes regardless of mount error
-              // so that users can unmount or format the volume.
-              // TODO(fukino): Once the Files app gets ready, show erroneous
-              // Drive volume so that users can see auth warning banner on the
-              // volume. crbug.com/517772.
-              let shouldShow = true;
-              switch (volumeInfo.volumeType) {
-                case VolumeManagerCommon.VolumeType.DOWNLOADS:
-                case VolumeManagerCommon.VolumeType.DRIVE:
-                  shouldShow = !!volumeInfo.fileSystem;
-                  break;
-              }
-              if (!shouldShow) {
-                return volumeInfo;
-              }
-              if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
-                this.volumeInfoList.add(volumeInfo);
+  async addVolumeMetadata_(volumeMetadata) {
+    const volumeInfo = await volumeManagerUtil.createVolumeInfo(volumeMetadata);
 
-                // Update the network connection status, because until the drive
-                // is initialized, the status is set to not ready.
-                // TODO(mtomasz): The connection status should be migrated into
-                // chrome.fileManagerPrivate.VolumeMetadata.
-                if (volumeMetadata.volumeType ===
-                    VolumeManagerCommon.VolumeType.DRIVE) {
-                  this.onDriveConnectionStatusChanged_();
-                }
-              } else if (
-                  volumeMetadata.volumeType ===
-                  VolumeManagerCommon.VolumeType.REMOVABLE) {
-                // Update for remounted USB external storage, because they were
-                // remounted to switch read-only policy.
-                this.volumeInfoList.add(volumeInfo);
-              }
-              return volumeInfo;
-            });
+    // We don't show Downloads and Drive on volume list if they have
+    // mount error, since users can do nothing in this situation. We
+    // show Removable and Provided volumes regardless of mount error
+    // so that users can unmount or format the volume.
+    // TODO(fukino): Once the Files app gets ready, show erroneous
+    // Drive volume so that users can see auth warning banner on the
+    // volume. crbug.com/517772.
+    let shouldShow = true;
+    switch (volumeInfo.volumeType) {
+      case VolumeManagerCommon.VolumeType.DOWNLOADS:
+      case VolumeManagerCommon.VolumeType.DRIVE:
+        shouldShow = !!volumeInfo.fileSystem;
+        break;
+    }
+
+    if (!shouldShow) {
+      return volumeInfo;
+    }
+
+    if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
+      this.volumeInfoList.add(volumeInfo);
+
+      // Update the network connection status, because until the drive
+      // is initialized, the status is set to not ready.
+      // TODO(mtomasz): The connection status should be migrated into
+      // chrome.fileManagerPrivate.VolumeMetadata.
+      if (volumeMetadata.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
+        this.onDriveConnectionStatusChanged_();
+      }
+    } else if (
+        volumeMetadata.volumeType ===
+        VolumeManagerCommon.VolumeType.REMOVABLE) {
+      // Update for remounted USB external storage, because they were
+      // remounted to switch read-only policy.
+      this.volumeInfoList.add(volumeInfo);
+    }
+
+    return volumeInfo;
   }
 
   /**
@@ -166,59 +162,59 @@ class VolumeManagerImpl extends cr.EventTarget {
    * @private
    */
   onMountCompleted_(event) {
-    this.mountQueue_.run(callback => {
-      switch (event.eventType) {
-        case 'mount':
-          var requestKey = this.makeRequestKey_(
-              'mount', event.volumeMetadata.sourcePath || '');
+    this.mountQueue_.run(async (callback) => {
+      try {
+        switch (event.eventType) {
+          case 'mount':
+            var requestKey = this.makeRequestKey_(
+                'mount', event.volumeMetadata.sourcePath || '');
 
-          if (event.status === 'success' ||
-              event.status ===
-                  VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM ||
-              event.status ===
-                  VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
-            this.addVolumeMetadata_(event.volumeMetadata).then(volumeInfo => {
+            if (event.status === 'success' ||
+                event.status ===
+                    VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM ||
+                event.status ===
+                    VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
+              const volumeInfo =
+                  await this.addVolumeMetadata_(event.volumeMetadata);
               this.finishRequest_(requestKey, event.status, volumeInfo);
-              callback();
-            });
-          } else if (
-              event.status ===
-              VolumeManagerCommon.VolumeError.ALREADY_MOUNTED) {
-            const navigationEvent =
-                new Event(VolumeManagerCommon.VOLUME_ALREADY_MOUNTED);
-            navigationEvent.volumeId = event.volumeMetadata.volumeId;
-            this.dispatchEvent(navigationEvent);
-            this.finishRequest_(requestKey, event.status);
-            callback();
-          } else {
-            console.warn('Failed to mount a volume: ' + event.status);
-            this.finishRequest_(requestKey, event.status);
-            callback();
-          }
-          break;
+            } else if (
+                event.status ===
+                VolumeManagerCommon.VolumeError.ALREADY_MOUNTED) {
+              const navigationEvent =
+                  new Event(VolumeManagerCommon.VOLUME_ALREADY_MOUNTED);
+              navigationEvent.volumeId = event.volumeMetadata.volumeId;
+              this.dispatchEvent(navigationEvent);
+              this.finishRequest_(requestKey, event.status);
+            } else {
+              console.warn('Failed to mount a volume: ' + event.status);
+              this.finishRequest_(requestKey, event.status);
+            }
+            break;
 
-        case 'unmount':
-          const volumeId = event.volumeMetadata.volumeId;
-          const status = event.status;
-          var requestKey = this.makeRequestKey_('unmount', volumeId);
-          const requested = requestKey in this.requests_;
-          const volumeInfoIndex = this.volumeInfoList.findIndex(volumeId);
-          const volumeInfo = volumeInfoIndex !== -1 ?
-              this.volumeInfoList.item(volumeInfoIndex) :
-              null;
-          if (event.status === 'success' && !requested && volumeInfo) {
-            console.warn('Unmounted volume without a request: ' + volumeId);
-            this.dispatchEvent(
-                new CustomEvent('externally-unmounted', {detail: volumeInfo}));
-          }
+          case 'unmount':
+            const volumeId = event.volumeMetadata.volumeId;
+            const status = event.status;
+            var requestKey = this.makeRequestKey_('unmount', volumeId);
+            const requested = requestKey in this.requests_;
+            const volumeInfoIndex = this.volumeInfoList.findIndex(volumeId);
+            const volumeInfo = volumeInfoIndex !== -1 ?
+                this.volumeInfoList.item(volumeInfoIndex) :
+                null;
+            if (event.status === 'success' && !requested && volumeInfo) {
+              console.warn('Unmounted volume without a request: ' + volumeId);
+              this.dispatchEvent(new CustomEvent(
+                  'externally-unmounted', {detail: volumeInfo}));
+            }
 
-          this.finishRequest_(requestKey, status);
-          if (event.status === 'success') {
-            this.volumeInfoList.remove(event.volumeMetadata.volumeId);
-          }
-          console.warn('unmounted volume: ' + volumeId);
-          callback();
-          break;
+            this.finishRequest_(requestKey, status);
+            if (event.status === 'success') {
+              this.volumeInfoList.remove(event.volumeMetadata.volumeId);
+            }
+            console.warn('unmounted volume: ' + volumeId);
+            break;
+        }
+      } finally {
+        callback();
       }
     });
   }
