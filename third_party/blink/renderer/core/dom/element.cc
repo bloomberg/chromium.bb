@@ -2893,7 +2893,7 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
   }
 
   if (GetShadowRoot()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Shadow root cannot be created on a host "
                                       "which already hosts a shadow tree.");
     return nullptr;

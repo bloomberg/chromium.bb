@@ -1469,7 +1469,7 @@ ElementInternals* HTMLElement::attachInternals(
       registry ? registry->DefinitionForName(localName()) : nullptr;
   if (!definition) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "Unable to attach ElementInternals to non-custom elements.");
     return nullptr;
   }
@@ -1481,7 +1481,7 @@ ElementInternals* HTMLElement::attachInternals(
   }
   if (DidAttachInternals()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "ElementInternals for the specified element was already attached.");
     return nullptr;
   }
