@@ -249,11 +249,17 @@ WorkletAnimation::WorkletAnimation(
       effect_needs_restart_(false) {
   DCHECK(IsMainThread());
 
+  auto timings = base::MakeRefCounted<base::RefCountedData<Vector<Timing>>>();
+  timings->data.ReserveInitialCapacity(effects_.size());
+
+  DCHECK_GE(effects_.size(), 1u);
   for (auto& effect : effects_) {
     AnimationEffect* target_effect = effect;
     target_effect->Attach(this);
     local_times_.push_back(base::nullopt);
+    timings->data.push_back(target_effect->SpecifiedTiming());
   }
+  effect_timings_ = std::make_unique<WorkletAnimationEffectTimings>(timings);
 
   if (timeline_->IsScrollTimeline())
     ToScrollTimeline(timeline_)->AttachAnimation();
@@ -568,7 +574,7 @@ bool WorkletAnimation::StartOnCompositor() {
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
         id_, animator_name_, playback_rate_,
         scroll_timeline_util::ToCompositorScrollTimeline(timeline_),
-        std::move(options_));
+        std::move(options_), std::move(effect_timings_));
     compositor_animation_->SetAnimationDelegate(this);
   }
 
@@ -796,10 +802,13 @@ void WorkletAnimation::UpdateInputState(
 
   if (!was_active && is_active) {
     input_state->Add({id_, std::string(animator_name_.Utf8().data()),
-                      current_time_ms, CloneOptions(), effects_.size()});
+                      current_time_ms, CloneOptions(), CloneEffectTimings()});
   } else if (was_active && is_active) {
     // Skip if the input time is not changed.
     if (did_time_change)
+      // TODO(jortaylo): EffectTimings need to be sent to the worklet during
+      // updates, otherwise the timing info will become outdated.
+      // https://crbug.com/915344.
       input_state->Update({id_, current_time_ms});
   } else if (was_active && !is_active) {
     input_state->Remove(id_);

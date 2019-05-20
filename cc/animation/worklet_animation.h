@@ -20,6 +20,7 @@ FORWARD_DECLARE_TEST(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe);
 }  // namespace
 
 class AnimationOptions;
+class AnimationEffectTimings;
 class ScrollTimeline;
 
 // A WorkletAnimation is an animation that allows its animation
@@ -42,13 +43,15 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
                    double playback_rate,
                    std::unique_ptr<ScrollTimeline> scroll_timeline,
                    std::unique_ptr<AnimationOptions> options,
+                   std::unique_ptr<AnimationEffectTimings> effect_timings,
                    bool is_controlling_instance);
   static scoped_refptr<WorkletAnimation> Create(
       WorkletAnimationId worklet_animation_id,
       const std::string& name,
       double playback_rate,
       std::unique_ptr<ScrollTimeline> scroll_timeline,
-      std::unique_ptr<AnimationOptions> options);
+      std::unique_ptr<AnimationOptions> options,
+      std::unique_ptr<AnimationEffectTimings> effect_timings);
   scoped_refptr<Animation> CreateImplInstance() const override;
 
   WorkletAnimationId worklet_animation_id() { return worklet_animation_id_; }
@@ -96,6 +99,7 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
                    double playback_rate,
                    std::unique_ptr<ScrollTimeline> scroll_timeline,
                    std::unique_ptr<AnimationOptions> options,
+                   std::unique_ptr<AnimationEffectTimings> effect_timings,
                    bool is_controlling_instance,
                    std::unique_ptr<KeyframeEffect> effect);
 
@@ -117,6 +121,10 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   std::unique_ptr<AnimationOptions> CloneOptions() const {
     return options_ ? options_->Clone() : nullptr;
+  }
+
+  std::unique_ptr<AnimationEffectTimings> CloneEffectTimings() const {
+    return effect_timings_ ? effect_timings_->Clone() : nullptr;
   }
 
   // Updates the playback rate of the Impl thread instance.
@@ -147,6 +155,7 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   double playback_rate_;
 
   std::unique_ptr<AnimationOptions> options_;
+  std::unique_ptr<AnimationEffectTimings> effect_timings_;
 
   // Local time is used as an input to the keyframe effect of this animation.
   // The value comes from the user script that runs inside the animation worklet

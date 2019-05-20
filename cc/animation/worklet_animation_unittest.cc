@@ -37,7 +37,7 @@ class WorkletAnimationTest : public AnimationTimelinesTest {
 
     worklet_animation_ = WrapRefCounted(
         new WorkletAnimation(1, worklet_animation_id_, "test_name", 1, nullptr,
-                             nullptr, true /* controlling instance*/));
+                             nullptr, nullptr, true /* controlling instance*/));
     worklet_animation_->AttachElement(element_id_);
     host_->AddAnimationTimeline(timeline_);
     timeline_->AttachAnimation(worklet_animation_);
@@ -68,7 +68,7 @@ TEST_F(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe) {
 
   scoped_refptr<WorkletAnimation> worklet_animation =
       WrapRefCounted(new WorkletAnimation(
-          1, worklet_animation_id_, "test_name", 1, nullptr, nullptr,
+          1, worklet_animation_id_, "test_name", 1, nullptr, nullptr, nullptr,
           false /* not impl instance*/, std::move(effect)));
 
   EXPECT_CALL(*mock_effect, Tick(_)).Times(0);
@@ -118,7 +118,7 @@ TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
           (base::TimeTicks() + base::TimeDelta::FromMilliseconds(1234))));
   scoped_refptr<WorkletAnimation> worklet_animation =
       WorkletAnimation::Create(worklet_animation_id_, "test_name", 1,
-                               std::move(scroll_timeline), nullptr);
+                               std::move(scroll_timeline), nullptr, nullptr);
 
   ScrollTree scroll_tree;
   std::unique_ptr<MutatorInputState> state =
@@ -133,7 +133,7 @@ TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
 TEST_F(WorkletAnimationTest,
        CurrentTimeFromRegularTimelineIsOffsetByStartTime) {
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
-      worklet_animation_id_, "test_name", 1, nullptr, nullptr);
+      worklet_animation_id_, "test_name", 1, nullptr, nullptr, nullptr);
 
   base::TimeTicks first_ticks =
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
@@ -171,7 +171,7 @@ TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
   const double playback_rate_half = 0.5;
   scoped_refptr<WorkletAnimation> worklet_animation =
       WorkletAnimation::Create(worklet_animation_id_, "test_name",
-                               playback_rate_double, nullptr, nullptr);
+                               playback_rate_double, nullptr, nullptr, nullptr);
 
   base::TimeTicks first_ticks =
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
@@ -223,7 +223,7 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
 
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
       worklet_animation_id_, "test_name", playback_rate_double,
-      std::move(scroll_timeline), nullptr);
+      std::move(scroll_timeline), nullptr, nullptr);
   const MockScrollTimeline* mock_timeline =
       static_cast<const MockScrollTimeline*>(
           worklet_animation->scroll_timeline());
@@ -273,7 +273,7 @@ TEST_F(WorkletAnimationTest, InactiveScrollTimeline) {
 
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
       worklet_animation_id_, "test_name", /*playback_rate*/ 1,
-      std::move(scroll_timeline), nullptr);
+      std::move(scroll_timeline), nullptr, nullptr);
 
   const MockScrollTimeline* mock_timeline =
       static_cast<const MockScrollTimeline*>(

@@ -37,7 +37,7 @@ class AnimationHostTest : public AnimationTimelinesTest {
     client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
 
     worklet_animation_ = WorkletAnimation::Create(
-        worklet_animation_id_, "test_name", 1, nullptr, nullptr);
+        worklet_animation_id_, "test_name", 1, nullptr, nullptr, nullptr);
     int cc_id = worklet_animation_->id();
     worklet_animation_->AttachElement(element_id_);
     host_->AddAnimationTimeline(timeline_);
@@ -340,7 +340,7 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
   // Create a worklet animation that is bound to the scroll timeline.
   scoped_refptr<WorkletAnimation> worklet_animation(
       new WorkletAnimation(animation_id2, worklet_animation_id, "test_name", 1,
-                           std::move(scroll_timeline), nullptr, true));
+                           std::move(scroll_timeline), nullptr, nullptr, true));
   worklet_animation->AttachElement(element_id);
   timeline_->AttachAnimation(worklet_animation);
 

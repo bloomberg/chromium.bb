@@ -30,13 +30,14 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
+class PLATFORM_EXPORT TimingFunction
+    : public ThreadSafeRefCounted<TimingFunction> {
  public:
   using Type = cc::TimingFunction::Type;
 

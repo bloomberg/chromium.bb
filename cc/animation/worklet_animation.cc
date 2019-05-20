@@ -8,6 +8,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_timeline.h"
+#include "cc/trees/animation_effect_timings.h"
 #include "cc/trees/animation_options.h"
 
 namespace cc {
@@ -19,6 +20,7 @@ WorkletAnimation::WorkletAnimation(
     double playback_rate,
     std::unique_ptr<ScrollTimeline> scroll_timeline,
     std::unique_ptr<AnimationOptions> options,
+    std::unique_ptr<AnimationEffectTimings> effect_timings,
     bool is_controlling_instance)
     : WorkletAnimation(cc_animation_id,
                        worklet_animation_id,
@@ -26,6 +28,7 @@ WorkletAnimation::WorkletAnimation(
                        playback_rate,
                        std::move(scroll_timeline),
                        std::move(options),
+                       std::move(effect_timings),
                        is_controlling_instance,
                        nullptr) {}
 
@@ -36,6 +39,7 @@ WorkletAnimation::WorkletAnimation(
     double playback_rate,
     std::unique_ptr<ScrollTimeline> scroll_timeline,
     std::unique_ptr<AnimationOptions> options,
+    std::unique_ptr<AnimationEffectTimings> effect_timings,
     bool is_controlling_instance,
     std::unique_ptr<KeyframeEffect> effect)
     : SingleKeyframeEffectAnimation(cc_animation_id, std::move(effect)),
@@ -44,6 +48,7 @@ WorkletAnimation::WorkletAnimation(
       scroll_timeline_(std::move(scroll_timeline)),
       playback_rate_(playback_rate),
       options_(std::move(options)),
+      effect_timings_(std::move(effect_timings)),
       local_time_(base::nullopt),
       start_time_(base::nullopt),
       last_current_time_(base::nullopt),
@@ -57,10 +62,12 @@ scoped_refptr<WorkletAnimation> WorkletAnimation::Create(
     const std::string& name,
     double playback_rate,
     std::unique_ptr<ScrollTimeline> scroll_timeline,
-    std::unique_ptr<AnimationOptions> options) {
+    std::unique_ptr<AnimationOptions> options,
+    std::unique_ptr<AnimationEffectTimings> effect_timings) {
   return WrapRefCounted(new WorkletAnimation(
       AnimationIdProvider::NextAnimationId(), worklet_animation_id, name,
-      playback_rate, std::move(scroll_timeline), std::move(options), false));
+      playback_rate, std::move(scroll_timeline), std::move(options),
+      std::move(effect_timings), false));
 }
 
 scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
@@ -68,9 +75,9 @@ scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
   if (scroll_timeline_)
     impl_timeline = scroll_timeline_->CreateImplInstance();
 
-  return WrapRefCounted(
-      new WorkletAnimation(id(), worklet_animation_id_, name(), playback_rate_,
-                           std::move(impl_timeline), CloneOptions(), true));
+  return WrapRefCounted(new WorkletAnimation(
+      id(), worklet_animation_id_, name(), playback_rate_,
+      std::move(impl_timeline), CloneOptions(), CloneEffectTimings(), true));
 }
 
 void WorkletAnimation::PushPropertiesTo(Animation* animation_impl) {
@@ -142,10 +149,13 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
       // https://crbug.com/767043.
       input_state->Add({worklet_animation_id(), name(),
                         current_time->InMillisecondsF(), CloneOptions(),
-                        1 /* num_effects */});
+                        CloneEffectTimings()});
       state_ = State::RUNNING;
       break;
     case State::RUNNING:
+      // TODO(jortaylo): EffectTimings need to be sent to the worklet during
+      // updates, otherwise the timing info will become outdated.
+      // https://crbug.com/915344.
       input_state->Update(
           {worklet_animation_id(), current_time->InMillisecondsF()});
       break;

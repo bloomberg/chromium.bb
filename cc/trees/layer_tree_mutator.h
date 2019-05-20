@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
+#include "cc/trees/animation_effect_timings.h"
 #include "cc/trees/animation_options.h"
 
 #include <memory>
@@ -64,13 +65,13 @@ struct CC_EXPORT AnimationWorkletInput {
     // Worklet animation's current time, from its associated timeline.
     double current_time;
     std::unique_ptr<AnimationOptions> options;
-    int num_effects;
+    std::unique_ptr<AnimationEffectTimings> effect_timings;
 
     AddAndUpdateState(WorkletAnimationId worklet_animation_id,
                       std::string name,
                       double current_time,
                       std::unique_ptr<AnimationOptions> options,
-                      int num_effects);
+                      std::unique_ptr<AnimationEffectTimings> effect_timings);
 
     AddAndUpdateState(AddAndUpdateState&&);
     ~AddAndUpdateState();

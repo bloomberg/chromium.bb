@@ -628,6 +628,7 @@ _CONFIG = [
         ],
         'allowed': [
             'cc::AnimationOptions',
+            'cc::AnimationEffectTimings',
         ],
     },
     {

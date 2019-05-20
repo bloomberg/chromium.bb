@@ -61,9 +61,9 @@ modules_idl_files =
     get_path_info(
         [
           "animationworklet/animation_worklet_global_scope.idl",
-          "animationworklet/effect_proxy.idl",
+          "animationworklet/worklet_animation_effect.idl",
           "animationworklet/worklet_animation.idl",
-          "animationworklet/worklet_group_effect_proxy.idl",
+          "animationworklet/worklet_group_effect.idl",
           "app_banner/before_install_prompt_event.idl",
           "background_fetch/background_fetch_event.idl",
           "background_fetch/background_fetch_manager.idl",

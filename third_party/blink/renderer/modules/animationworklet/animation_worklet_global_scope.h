@@ -67,13 +67,15 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
       const String& name,
       WorkletAnimationOptions options,
       scoped_refptr<SerializedScriptValue> serialized_state,
-      const std::vector<base::Optional<TimeDelta>>& local_times);
+      const std::vector<base::Optional<TimeDelta>>& local_times,
+      const Vector<Timing>& timings);
   Animator* CreateAnimatorFor(
       int animation_id,
       const String& name,
       WorkletAnimationOptions options,
       scoped_refptr<SerializedScriptValue> serialized_state,
-      const std::vector<base::Optional<TimeDelta>>& local_times);
+      const std::vector<base::Optional<TimeDelta>>& local_times,
+      const Vector<Timing>& timings);
   typedef HeapHashMap<String, Member<AnimatorDefinition>> DefinitionMap;
   DefinitionMap animator_definitions_;
 

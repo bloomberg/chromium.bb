@@ -115,10 +115,10 @@ class AnimationWorkletMutatorDispatcherImplTest : public ::testing::Test {
 
 std::unique_ptr<AnimationWorkletDispatcherInput> CreateTestMutatorInput() {
   AnimationWorkletInput::AddAndUpdateState state1{
-      {11, 1}, "test1", 5000, nullptr, 1};
+      {11, 1}, "test1", 5000, nullptr, nullptr};
 
   AnimationWorkletInput::AddAndUpdateState state2{
-      {22, 2}, "test2", 5000, nullptr, 1};
+      {22, 2}, "test2", 5000, nullptr, nullptr};
 
   auto input = std::make_unique<AnimationWorkletDispatcherInput>();
   input->Add(std::move(state1));
@@ -169,11 +169,11 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   EXPECT_CALL(*first_mutator, MutateRef(_)).Times(0);
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
 
-  AnimationWorkletInput::AddAndUpdateState state2{
-      {22, 2}, "test2", 5000, nullptr, 1};
+  AnimationWorkletInput::AddAndUpdateState state{
+      {22, 2}, "test2", 5000, nullptr, nullptr};
 
   auto input = std::make_unique<AnimationWorkletDispatcherInput>();
-  input->Add(std::move(state2));
+  input->Add(std::move(state));
 
   mutator_->MutateSynchronously(std::move(input));
 }
@@ -445,11 +445,11 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
                                             first_thread->GetTaskRunner());
 
-  AnimationWorkletInput::AddAndUpdateState state2{
-      {22, 2}, "test2", 5000, nullptr, 1};
+  AnimationWorkletInput::AddAndUpdateState state{
+      {22, 2}, "test2", 5000, nullptr, nullptr};
 
   auto input = std::make_unique<AnimationWorkletDispatcherInput>();
-  input->Add(std::move(state2));
+  input->Add(std::move(state));
 
   EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))

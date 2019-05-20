@@ -4,6 +4,6 @@
 [
     Exposed=AnimationWorklet,
     RuntimeEnabled=AnimationWorklet
-] interface WorkletGroupEffectProxy {
-  sequence<EffectProxy> getChildren();
+] interface WorkletGroupEffect {
+  sequence<WorkletAnimationEffect> getChildren();
 };

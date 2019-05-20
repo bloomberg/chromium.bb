@@ -42,7 +42,7 @@
 
 namespace blink {
 
-struct Timing {
+struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
 
  public:
