@@ -36,6 +36,14 @@ source_set("history") {
   ]
 }
 
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "history_ui_constants.h",
+    "history_ui_constants.mm",
+  ]
+}
+
 source_set("history_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -54,12 +62,11 @@ source_set("history_ui") {
     "history_table_view_controller.mm",
     "history_transitioning_delegate.h",
     "history_transitioning_delegate.mm",
-    "history_ui_constants.h",
-    "history_ui_constants.mm",
     "history_util.h",
     "history_util.mm",
   ]
   deps = [
+    ":constants",
     "public",
     "resources:empty_history",
     "//base",
@@ -136,6 +143,7 @@ source_set("eg_tests") {
     "history_ui_egtest.mm",
   ]
   deps = [
+    ":constants",
     ":history",
     ":history_ui",
     "//base",

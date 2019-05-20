@@ -262,6 +262,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
+    "//ios/chrome/browser/ui/history:constants",
     "//ios/chrome/browser/ui/history:history_ui",
     "//ios/chrome/browser/ui/location_bar:location_bar",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
