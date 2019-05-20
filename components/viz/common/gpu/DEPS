@@ -10,3 +10,9 @@ include_rules = [
   "+third_party/skia/include/gpu",
   "+third_party/vulkan/include",
 ]
+
+specific_include_rules = {
+  "metal_api_proxy.mm": [
+    "+ui/gl",
+  ]
+}

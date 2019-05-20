@@ -18,6 +18,10 @@ class MTLDeviceProtocol;
 using MTLDevicePtr = MTLDeviceProtocol*;
 #endif
 
+namespace gl {
+class ProgressReporter;
+}  // namespace gl
+
 namespace viz {
 
 // The MetalContextProvider provides a Metal-backed GrContext.
@@ -30,6 +34,11 @@ class VIZ_METAL_CONTEXT_PROVIDER_EXPORT MetalContextProvider {
 
   virtual GrContext* GetGrContext() = 0;
   virtual MTLDevicePtr GetMTLDevice() = 0;
+
+  // Set the progress reported used to prevent watchdog timeouts during longer
+  // sequences of Metal API calls. It is guaranteed that no further calls to
+  // |progress_reporter| will be made after |this| is destroyed.
+  virtual void SetProgressReporter(gl::ProgressReporter* progress_reporter) = 0;
 };
 
 }  // namespace viz

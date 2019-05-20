@@ -90,6 +90,11 @@ void SharedContextState::InitializeGrContext(
     gl::ProgressReporter* progress_reporter) {
   progress_reporter_ = progress_reporter;
 
+#if defined(OS_MACOSX)
+  if (metal_context_provider_)
+    metal_context_provider_->SetProgressReporter(progress_reporter);
+#endif
+
   if (GrContextIsGL()) {
     DCHECK(context_->IsCurrent(nullptr));
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
