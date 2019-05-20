@@ -5,15 +5,30 @@
 #include "ash/ime/ime_controller.h"
 
 #include "ash/ime/ime_mode_indicator_view.h"
+#include "ash/ime/ime_switch_type.h"
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/display/manager/display_manager.h"
 
 namespace ash {
+
+namespace {
+
+// The result of pressing VKEY_MODECHANGE (for metrics).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ModeChangeKeyAction {
+  kShowIndicator = 0,
+  kSwitchIme = 1,
+  kMaxValue = kSwitchIme
+};
+
+}  // namespace
 
 ImeController::ImeController()
     : mode_indicator_observer_(std::make_unique<ModeIndicatorObserver>()) {}
@@ -223,10 +238,20 @@ void ImeController::FlushMojoForTesting() {
 }
 
 void ImeController::ShowOrSwitchIme() {
-  if (mode_indicator_observer_->active_widget())
+  if (mode_indicator_observer_->active_widget()) {
     SwitchToNextIme();
-  else
+
+    UMA_HISTOGRAM_ENUMERATION("InputMethod.ModeChangeKeyAction",
+                              ModeChangeKeyAction::kSwitchIme);
+    UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch",
+                              ImeSwitchType::kModeChangeKey,
+                              ImeSwitchType::kCount);
+  } else {
     client_->ShowModeIndicator();
+
+    UMA_HISTOGRAM_ENUMERATION("InputMethod.ModeChangeKeyAction",
+                              ModeChangeKeyAction::kShowIndicator);
+  }
 }
 
 bool ImeController::IsCapsLockEnabled() const {

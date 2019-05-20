@@ -29323,6 +29323,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="IMESwitchType">
   <int value="0" label="By tray menu">IME switches by tray menu</int>
   <int value="1" label="By accelerator">IME switches by accelerator</int>
+  <int value="2" label="By mode change key">
+    IME switches by mode change key
+  </int>
 </enum>
 
 <enum name="IMEVKLayout">
@@ -38422,6 +38425,16 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="After native initialization complete"/>
   <int value="2" label="After first meaningful paint"/>
   <int value="3" label="After first pageload finished"/>
+</enum>
+
+<enum name="ModeChangeKeyAction">
+  <summary>Result of pressing the mode change key</summary>
+  <int value="0" label="Show indicator">
+    Showed the indicator for the current input method.
+  </int>
+  <int value="1" label="Switch to next IME">
+    Switched to the next input method.
+  </int>
 </enum>
 
 <enum name="ModuleBlacklistCacheReadResult">
