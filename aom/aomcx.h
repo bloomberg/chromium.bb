@@ -1100,6 +1100,13 @@ enum aome_enc_control_id {
    * Bit value 0: Main Tier; 1: High Tier.
    */
   AV1E_SET_TIER_MASK,
+
+  /*!\brief Control to set minimum compression ratio.
+   * Take integer values. If non-zero, encoder will try to keep the compression
+   * ratio of each frame to be higher than the given value divided by 100.
+   * E.g. 850 means minimum compression ratio of 8.5.
+   */
+  AV1E_SET_MIN_CR
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1520,6 +1527,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TARGET_SEQ_LEVEL_IDX, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TIER_MASK, unsigned int)
 #define AOM_CTRL_AV1E_SET_TIER_MASK
+
+AOM_CTRL_USE_TYPE(AV1E_SET_MIN_CR, unsigned int)
+#define AOM_CTRL_AV1E_SET_MIN_CR
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

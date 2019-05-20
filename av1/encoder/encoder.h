@@ -409,6 +409,8 @@ typedef struct AV1EncoderConfig {
   // Bit mask to specify which tier each of the 32 possible operating points
   // conforms to.
   unsigned int tier_mask;
+  // min_cr / 100 is the target minimum compression ratio for each frame.
+  unsigned int min_cr;
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {
@@ -1237,6 +1239,10 @@ static INLINE int get_chessboard_index(int frame_index) {
 static INLINE int *cond_cost_list(const struct AV1_COMP *cpi, int *cost_list) {
   return cpi->sf.mv.subpel_search_method != SUBPEL_TREE ? cost_list : NULL;
 }
+
+// Compression ratio of current frame.
+double av1_get_compression_ratio(const AV1_COMMON *const cm,
+                                 size_t encoded_frame_size);
 
 void av1_new_framerate(AV1_COMP *cpi, double framerate);
 

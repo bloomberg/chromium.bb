@@ -668,6 +668,11 @@ static const arg_def_t target_seq_level_idx =
             "xy: Target level index for the OP. "
             "E.g. \"0\" means target level index 0 for the 0th OP; "
             "\"1021\" means target level index 21 for the 10th OP.");
+static const arg_def_t set_min_cr =
+    ARG_DEF(NULL, "min-cr", 1,
+            "Set minimum compression ratio. Take integer values. Default is 0. "
+            "If non-zero, encoder will try to keep the compression ratio of "
+            "each frame to be higher than the given value divided by 100.");
 
 static const struct arg_enum_list color_primaries_enum[] = {
   { "bt709", AOM_CICP_CP_BT_709 },
@@ -871,6 +876,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_ref_frame_mvs,
                                        &target_seq_level_idx,
                                        &set_tier_mask,
+                                       &set_min_cr,
                                        &bitdeptharg,
                                        &inbitdeptharg,
                                        &input_chroma_subsampling_x,
@@ -971,6 +977,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_REF_FRAME_MVS,
                                         AV1E_SET_TARGET_SEQ_LEVEL_IDX,
                                         AV1E_SET_TIER_MASK,
+                                        AV1E_SET_MIN_CR,
                                         0 };
 #endif  // CONFIG_AV1_ENCODER
 

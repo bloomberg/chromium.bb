@@ -141,6 +141,8 @@ struct av1_extracfg {
   // Bit mask to specify which tier each of the 32 possible operating points
   // conforms to.
   unsigned int tier_mask;
+  // min_cr / 100 is the target minimum compression ratio for each frame.
+  unsigned int min_cr;
   COST_UPDATE_TYPE coeff_cost_upd_freq;
   COST_UPDATE_TYPE mode_cost_upd_freq;
 };
@@ -255,6 +257,7 @@ static struct av1_extracfg default_extra_cfg = {
       31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
   },            // target_seq_level_idx
   0,            // tier_mask
+  0,            // min_cr
   COST_UPD_SB,  // coeff_cost_upd_freq
   COST_UPD_SB,  // mode_cost_upd_freq
 };
@@ -885,6 +888,7 @@ static aom_codec_err_t set_encoder_config(
   memcpy(oxcf->target_seq_level_idx, extra_cfg->target_seq_level_idx,
          sizeof(oxcf->target_seq_level_idx));
   oxcf->tier_mask = extra_cfg->tier_mask;
+  oxcf->min_cr = extra_cfg->min_cr;
   return AOM_CODEC_OK;
 }
 
@@ -1616,6 +1620,13 @@ static aom_codec_err_t ctrl_set_tier_mask(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
+static aom_codec_err_t ctrl_set_min_cr(aom_codec_alg_priv_t *ctx,
+                                       va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.min_cr = CAST(AV1E_SET_MIN_CR, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
 static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
                                     aom_codec_priv_enc_mr_cfg_t *data) {
   aom_codec_err_t res = AOM_CODEC_OK;
@@ -2321,6 +2332,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, ctrl_enable_motion_vector_unit_test },
   { AV1E_SET_TARGET_SEQ_LEVEL_IDX, ctrl_set_target_seq_level_idx },
   { AV1E_SET_TIER_MASK, ctrl_set_tier_mask },
+  { AV1E_SET_MIN_CR, ctrl_set_min_cr },
 
   // Getters
   { AOME_GET_LAST_QUANTIZER, ctrl_get_quantizer },

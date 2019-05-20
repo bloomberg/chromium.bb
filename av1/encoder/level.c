@@ -618,23 +618,16 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
                  &min_cropped_tile_width, &min_cropped_tile_height,
                  &tile_width_is_valid);
 
-  const SequenceHeader *const seq_params = &cm->seq_params;
-  const BITSTREAM_PROFILE profile = seq_params->profile;
-  const int pic_size_profile_factor =
-      profile == PROFILE_0 ? 15 : (profile == PROFILE_1 ? 30 : 36);
-  const size_t frame_compressed_size = (size > 129 ? size - 128 : 1);
-  const size_t frame_uncompressed_size =
-      (luma_pic_size * pic_size_profile_factor) >> 3;
-
   aom_clear_system_state();
-  const double compression_ratio =
-      frame_uncompressed_size / (double)frame_compressed_size;
+  const double compression_ratio = av1_get_compression_ratio(cm, size);
   const double total_time_encoded =
       (cpi->last_end_time_stamp_seen - cpi->first_time_stamp_ever) /
       (double)TICKS_PER_SEC;
 
   const int temporal_layer_id = cm->temporal_layer_id;
   const int spatial_layer_id = cm->spatial_layer_id;
+  const SequenceHeader *const seq_params = &cm->seq_params;
+  const BITSTREAM_PROFILE profile = seq_params->profile;
   const int is_still_picture = seq_params->still_picture;
   // update level_stats
   // TODO(kyslov@) fix the implementation according to buffer model
