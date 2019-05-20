@@ -12,9 +12,11 @@
 #include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -33,6 +35,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
+#include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log_event.h"
 #include "media/filters/gpu_video_decoder.h"
@@ -705,8 +708,25 @@ void MediaInternals::SendGeneralAudioInformation() {
         base::Value(base::FeatureList::IsEnabled(feature) ? "Enabled"
                                                           : "Disabled"));
   };
+
   set_feature_data(features::kAudioServiceAudioStreams);
   set_feature_data(features::kAudioServiceOutOfProcess);
+
+  std::string feature_value_string;
+  if (base::FeatureList::IsEnabled(
+          features::kAudioServiceOutOfProcessKillAtHang)) {
+    std::string timeout_value = base::GetFieldTrialParamValueByFeature(
+        features::kAudioServiceOutOfProcessKillAtHang, "timeout_seconds");
+    if (timeout_value.empty())
+      timeout_value = "<undefined>";
+    feature_value_string =
+        base::StrCat({"Enabled, timeout = ", timeout_value, " seconds"});
+  } else {
+    feature_value_string = "Disabled";
+  }
+  audio_info_data.SetKey(features::kAudioServiceOutOfProcessKillAtHang.name,
+                         base::Value(feature_value_string));
+
   set_feature_data(features::kAudioServiceLaunchOnStartup);
   set_feature_data(service_manager::features::kAudioServiceSandbox);
   set_feature_data(features::kWebRtcApmInAudioService);

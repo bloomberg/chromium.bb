@@ -11,6 +11,7 @@
 
 namespace features {
 
+MEDIA_EXPORT extern const base::Feature kAudioServiceOutOfProcessKillAtHang;
 MEDIA_EXPORT extern const base::Feature kDumpOnAudioServiceHang;
 
 #if defined(OS_CHROMEOS)
