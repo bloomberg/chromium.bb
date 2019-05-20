@@ -42,8 +42,7 @@ def get_parts(config):
                 options=CodeSignOptions.RESTRICT,
                 requirements=config.codesign_requirements_outer_app,
                 identifier_requirement=False,
-                resource_rules=None if config.use_new_mac_bundle_structure else
-                'app_resource_rules.plist',
+                resource_rules='app_resource_rules.plist',
                 entitlements='app-entitlements.plist',
                 verify_options=VerifyOptions.DEEP + VerifyOptions.NO_STRICT),
         'framework':

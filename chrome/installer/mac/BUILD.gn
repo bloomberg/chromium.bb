@@ -12,36 +12,10 @@ import("//chrome/process_version_rc_template.gni")
 group("mac") {
   public_deps = [
     ":copies",
-    ":make_signers",
   ]
 }
 
 _packaging_dir = "$root_out_dir/$chrome_product_full_name Packaging"
-
-action("make_signers") {
-  visibility = [ ":mac" ]
-
-  script = "//build/gn_run_binary.py"
-  shell_script = "//chrome/installer/mac/make_signers.sh"
-
-  inputs = [
-    script,
-    shell_script,
-    "app_resource_rules.plist.in",
-    "//chrome/VERSION",
-  ]
-
-  outputs = [
-    "$_packaging_dir/app_resource_rules.plist",
-  ]
-
-  args = [
-    rebase_path(shell_script, root_build_dir),
-    rebase_path(_packaging_dir, root_build_dir),
-    chrome_product_full_name,
-    chrome_version_full,
-  ]
-}
 
 process_version_rc_template("sign_config") {
   visibility = [ ":copy_signing" ]
@@ -108,6 +82,7 @@ copy("copies") {
     "$root_out_dir/liblzma_decompress.dylib",
     "$root_out_dir/xz",
     "$root_out_dir/xzdec",
+    "app_resource_rules.plist",
     "dirdiffer.sh",
     "dirpatcher.sh",
     "dmgdiffer.sh",
