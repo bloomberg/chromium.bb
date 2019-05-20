@@ -44,10 +44,15 @@ cryptohome::SerializedInstallAttributes BuildInstallAttributes(
   install_attrs_["enterprise.domain"] = domain;
   install_attrs_["enterprise.realm"] = realm;
   install_attrs_["enterprise.device_id"] = device_id;
-  install_attrs_["enterprise.owned"] = "true";
+  if (!mode.empty())
+    install_attrs_["enterprise.owned"] = "true";
 
   cryptohome::SerializedInstallAttributes install_attrs;
+  install_attrs.set_version(1);
+
   for (const auto& it : install_attrs_) {
+    if (it.second.empty())
+      continue;
     cryptohome::SerializedInstallAttributes::Attribute* attr_entry =
         install_attrs.add_attributes();
     const std::string& name = it.first;
@@ -151,13 +156,13 @@ void DeviceStateMixin::CreatedBrowserMainParts(
     case DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED:
     case DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED:
     case DeviceStateMixin::State::OOBE_COMPLETED_DEMO_MODE:
-      local_state_values.device_registered = 1;
-      FALLTHROUGH;
     case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
+      local_state_values.device_registered = 1;
       local_state_values.enrollment_recovery_required = false;
       local_state_values.oobe_complete = true;
       break;
     case DeviceStateMixin::State::BEFORE_OOBE:
+      local_state_values.device_registered = 0;
       break;
   }
 
@@ -217,30 +222,31 @@ void DeviceStateMixin::WriteInstallAttrFile() {
   std::string device_mode, domain, realm, device_id;
   switch (state_) {
     case DeviceStateMixin::State::BEFORE_OOBE:
+    case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
       // No file at all.
       return;
-    case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
-      // Write file with empty install attributes.
+    case DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED:
+      // File with version only.
       break;
     case DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED:
       device_mode = "enterprise";
       domain = !domain_.empty() ? domain_ : kFakeDomain;
+      device_id = kFakeDeviceId;
       break;
     case DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED:
       device_mode = "enterprise_ad";
       realm = kFakeDomain;
-      break;
-    case DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED:
-      device_mode = "consumer";
+      device_id = kFakeDeviceId;
       break;
     case DeviceStateMixin::State::OOBE_COMPLETED_DEMO_MODE:
       device_mode = "demo_mode";
       domain = "cros-demo-mode.com";
+      device_id = kFakeDeviceId;
       break;
   }
 
   std::string install_attrs_bits;
-  CHECK(BuildInstallAttributes(device_mode, domain, realm, kFakeDeviceId)
+  CHECK(BuildInstallAttributes(device_mode, domain, realm, device_id)
             .SerializeToString(&install_attrs_bits));
   WriteFile(install_attrs_file, install_attrs_bits);
 }
