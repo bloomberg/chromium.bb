@@ -105,6 +105,11 @@ class SmbService : public KeyedService,
                        const std::string& share_path,
                        StartReadDirIfSuccessfulCallback reply);
 
+  // Disable share discovery in test.
+  static void DisableShareDiscoveryForTesting() {
+    disable_share_discovery_for_testing_ = true;
+  }
+
  private:
   friend class SmbServiceTest;
 
@@ -266,6 +271,8 @@ class SmbService : public KeyedService,
   void RecordMountCount() const;
 
   static bool service_should_run_;
+  static bool disable_share_discovery_for_testing_;
+
   base::TimeTicks previous_host_discovery_time_;
   const ProviderId provider_id_;
   Profile* profile_;

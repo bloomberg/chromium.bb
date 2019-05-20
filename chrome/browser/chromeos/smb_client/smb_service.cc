@@ -108,6 +108,7 @@ std::unique_ptr<TempFileManager> CreateTempFileManager() {
 }  // namespace
 
 bool SmbService::service_should_run_ = false;
+bool SmbService::disable_share_discovery_for_testing_ = false;
 
 SmbService::SmbService(Profile* profile,
                        std::unique_ptr<base::TickClock> tick_clock)
@@ -429,7 +430,7 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
   // service tickets are keyed on hosname.
   const base::FilePath mount_path =
       is_kerberos_chromad
-          ? share_path
+          ? base::FilePath(parsed_url.ToString())
           : base::FilePath(share_finder_->GetResolvedUrl(parsed_url));
 
   // An empty password is passed to Mount to conform with the credentials API
@@ -572,6 +573,10 @@ void SmbService::FireMountCallback(MountResponse callback,
 }
 
 void SmbService::RegisterHostLocators() {
+  if (disable_share_discovery_for_testing_) {
+    return;
+  }
+
   SetUpMdnsHostLocator();
   if (IsNetBiosDiscoveryEnabled()) {
     SetUpNetBiosHostLocator();
