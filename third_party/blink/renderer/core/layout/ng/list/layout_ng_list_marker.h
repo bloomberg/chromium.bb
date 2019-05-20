@@ -32,6 +32,7 @@ class CORE_EXPORT LayoutNGListMarker final
 
  private:
   bool IsOfType(LayoutObjectType) const override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListMarker, IsLayoutNGListMarker());

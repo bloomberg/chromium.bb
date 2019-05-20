@@ -24,4 +24,9 @@ bool LayoutNGInsideListMarker::IsOfType(LayoutObjectType type) const {
          LayoutInline::IsOfType(type);
 }
 
+PositionWithAffinity LayoutNGInsideListMarker::PositionForPoint(
+    const LayoutPoint&) const {
+  return CreatePositionWithAffinity(0);
+}
+
 }  // namespace blink

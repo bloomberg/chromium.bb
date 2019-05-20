@@ -53,4 +53,9 @@ bool LayoutNGListMarker::NeedsOccupyWholeLine() const {
   return false;
 }
 
+PositionWithAffinity LayoutNGListMarker::PositionForPoint(
+    const LayoutPoint&) const {
+  return CreatePositionWithAffinity(0);
+}
+
 }  // namespace blink
