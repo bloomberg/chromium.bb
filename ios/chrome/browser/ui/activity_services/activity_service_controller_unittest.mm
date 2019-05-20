@@ -165,12 +165,6 @@
   _latestErrorAlertMessage = [message copy];
 }
 
-- (CGRect)shareButtonAnchorRect {
-  // On iPad, UIPopovers must be anchored to rectangles that have a non zero
-  // size.
-  return CGRectMake(0, 0, 1, 1);
-}
-
 - (UIView*)shareButtonView {
   return self.parentViewController.view;
 }
