@@ -78,7 +78,7 @@ PhysicalRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
       const_cast<LayoutObject*>(caret_rect.layout_object);
   DCHECK(caret_layout_object->IsDescendantOf(caret_block));
 
-  PhysicalRect result_rect = caret_block->FlipForWritingMode(caret_rect.rect);
+  PhysicalRect result_rect = caret_rect.rect;
   while (caret_layout_object != caret_block) {
     LayoutObject* container_object = caret_layout_object->Container();
     if (!container_object)

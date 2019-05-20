@@ -1553,8 +1553,11 @@ wtf_size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
 }
 
 FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
-  return caret_rect.layout_object->LocalToAbsoluteQuad(
-      FloatRect(caret_rect.rect));
+  // TODO(wangxianzhu): Don't flip when LayoutObject::LocalToAbsoluteQuad()
+  // accepts physical coordinates.
+  LayoutRect rect =
+      caret_rect.layout_object->FlipForWritingMode(caret_rect.rect);
+  return caret_rect.layout_object->LocalToAbsoluteQuad(FloatRect(rect));
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {

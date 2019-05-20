@@ -1818,6 +1818,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       const InlineBox*,
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const;
+  PhysicalRect PhysicalLocalCaretRect(
+      const InlineBox* inline_box,
+      int caret_offset,
+      LayoutUnit* extra_width_to_end_of_line = nullptr) const {
+    return FlipForWritingMode(
+        LocalCaretRect(inline_box, caret_offset, extra_width_to_end_of_line));
+  }
 
   // When performing a global document tear-down, the layoutObject of the
   // document is cleared. We use this as a hook to detect the case of document

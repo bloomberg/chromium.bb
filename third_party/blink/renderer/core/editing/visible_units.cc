@@ -1259,14 +1259,14 @@ IntRect FirstRectForRange(const EphemeralRange& range) {
       CreateVisiblePosition(range.StartPosition()).DeepEquivalent(),
       TextAffinity::kDownstream);
   const IntRect start_caret_rect =
-      AbsoluteCaretRectOfPosition(start_position, &extra_width_to_end_of_line);
+      AbsoluteCaretBoundsOf(start_position, &extra_width_to_end_of_line);
   if (start_caret_rect.IsEmpty())
     return IntRect();
 
   const PositionWithAffinity end_position(
       CreateVisiblePosition(range.EndPosition()).DeepEquivalent(),
       TextAffinity::kUpstream);
-  const IntRect end_caret_rect = AbsoluteCaretRectOfPosition(end_position);
+  const IntRect end_caret_rect = AbsoluteCaretBoundsOf(end_position);
   if (end_caret_rect.IsEmpty())
     return IntRect();
 

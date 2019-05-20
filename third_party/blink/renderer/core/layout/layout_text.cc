@@ -204,6 +204,8 @@ void LayoutText::StyleDidChange(StyleDifference diff,
     valid_ng_items_ = false;
     SetNeedsCollectInlines();
   }
+
+  SetHorizontalWritingMode(new_style.IsHorizontalWritingMode());
 }
 
 void LayoutText::RemoveAndDestroyTextBoxes() {

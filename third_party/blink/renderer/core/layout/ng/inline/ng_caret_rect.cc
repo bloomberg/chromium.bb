@@ -125,31 +125,19 @@ LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
       DCHECK(fragment.PhysicalFragment().IsBox());
       const PhysicalRect fragment_local_rect = ComputeLocalCaretRectByBoxSide(
           fragment, caret_position.position_type);
-      return {layout_object, fragment_local_rect.ToLayoutRect()};
+      return {layout_object, fragment_local_rect};
     }
     case NGCaretPositionType::kAtTextOffset: {
       DCHECK(fragment.PhysicalFragment().IsText());
       DCHECK(caret_position.text_offset.has_value());
       const PhysicalRect caret_rect = ComputeLocalCaretRectAtTextOffset(
           fragment, *caret_position.text_offset);
-      LayoutRect layout_rect = caret_rect.ToLayoutRect();
-
-      // For vertical-rl, convert to "flipped block-flow" coordinates space.
-      // See core/layout/README.md#coordinate-spaces for details.
-      // TODO(layout-dev): Use PhysicalRect for LocalCaretRect when removing
-      // legacy inline layout code.
-      if (fragment.Style().IsFlippedBlocksWritingMode()) {
-        const LayoutBlockFlow* container =
-            layout_object->ContainingNGBlockFlow();
-        container->DeprecatedFlipForWritingMode(layout_rect);
-      }
-
-      return {layout_object, layout_rect};
+      return {layout_object, caret_rect};
     }
   }
 
   NOTREACHED();
-  return {layout_object, LayoutRect()};
+  return {layout_object, PhysicalRect()};
 }
 
 LocalCaretRect ComputeLocalSelectionRect(
@@ -158,34 +146,21 @@ LocalCaretRect ComputeLocalSelectionRect(
   if (!caret_rect.layout_object)
     return caret_rect;
 
-  const LayoutObject* layout_object = caret_rect.layout_object;
-  const LayoutRect rect = caret_rect.rect;
-
   const NGPaintFragment& fragment = *caret_position.fragment;
   const NGPaintFragment* line_box = fragment.ContainerLineBox();
   // TODO(xiaochengh): We'll hit this DCHECK for caret in empty block if we
   // enable LayoutNG in contenteditable.
   DCHECK(line_box);
 
+  PhysicalRect rect = caret_rect.rect;
   if (fragment.Style().IsHorizontalWritingMode()) {
-    const LayoutUnit line_top = line_box->InlineOffsetToContainerBox().top;
-    const LayoutUnit line_height = line_box->Size().height;
-    return LocalCaretRect(layout_object, LayoutRect(rect.X(), line_top,
-                                                    rect.Width(), line_height));
+    rect.SetY(line_box->InlineOffsetToContainerBox().top);
+    rect.SetHeight(line_box->Size().height);
+  } else {
+    rect.SetX(line_box->InlineOffsetToContainerBox().left);
+    rect.SetHeight(line_box->Size().width);
   }
-
-  const LayoutUnit line_top = line_box->InlineOffsetToContainerBox().left;
-  const LayoutUnit line_height = line_box->Size().width;
-  LayoutRect layout_rect(line_top, rect.Y(), line_height, rect.Height());
-  // For vertical-rl, convert to "flipped block-flow" coordinates space.
-  // See core/layout/README.md#coordinate-spaces for details.
-  // TODO(layout-dev): Use PhysicalRect for LocalCaretRect when removing
-  // legacy inline layout code.
-  if (fragment.Style().IsFlippedBlocksWritingMode()) {
-    const LayoutBlockFlow* container = layout_object->ContainingNGBlockFlow();
-    container->DeprecatedFlipForWritingMode(layout_rect);
-  }
-  return LocalCaretRect(layout_object, layout_rect);
+  return {caret_rect.layout_object, rect};
 }
 
 }  // namespace

@@ -124,7 +124,7 @@ LayoutPoint AbsoluteLineDirectionPointToLocalPointInBlock(
   if (containing_block.HasOverflowClip())
     absolute_block_point -= FloatSize(containing_block.ScrolledContentOffset());
 
-  if (root->Block().IsHorizontalWritingMode()) {
+  if (containing_block.IsHorizontalWritingMode()) {
     return LayoutPoint(
         LayoutUnit(line_direction_point - absolute_block_point.X()),
         root->BlockDirectionPointInLine());

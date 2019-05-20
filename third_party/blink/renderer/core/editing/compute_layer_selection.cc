@@ -84,8 +84,11 @@ static gfx::Point LocalToInvalidationBackingPoint(
 
 std::pair<LayoutPoint, LayoutPoint> static GetLocalSelectionStartpoints(
     const LocalCaretRect& local_caret_rect) {
-  const LayoutRect rect = local_caret_rect.rect;
-  if (local_caret_rect.layout_object->Style()->IsHorizontalWritingMode())
+  // TODO(wangxianzhu): Don't flip when LayoutObject::LocalToAncestorPoint()
+  // accepts physical coordinates, and let this file use physical coordinates.
+  const LayoutRect rect =
+      local_caret_rect.layout_object->FlipForWritingMode(local_caret_rect.rect);
+  if (local_caret_rect.layout_object->IsHorizontalWritingMode())
     return {rect.MinXMinYCorner(), rect.MinXMaxYCorner()};
 
   // When text is vertical, it looks better for the start handle baseline to
@@ -96,8 +99,11 @@ std::pair<LayoutPoint, LayoutPoint> static GetLocalSelectionStartpoints(
 
 std::pair<LayoutPoint, LayoutPoint> static GetLocalSelectionEndpoints(
     const LocalCaretRect& local_caret_rect) {
-  const LayoutRect rect = local_caret_rect.rect;
-  if (local_caret_rect.layout_object->Style()->IsHorizontalWritingMode())
+  // TODO(wangxianzhu): Don't flip when LayoutObject::LocalToAncestorPoint()
+  // accepts physical coordinates, and let this file use physical coordinates.
+  const LayoutRect rect =
+      local_caret_rect.layout_object->FlipForWritingMode(local_caret_rect.rect);
+  if (local_caret_rect.layout_object->IsHorizontalWritingMode())
     return {rect.MinXMinYCorner(), rect.MinXMaxYCorner()};
 
   return {rect.MinXMinYCorner(), rect.MaxXMinYCorner()};
