@@ -44,7 +44,7 @@ const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
     "alternative signed exchange subresources by setting \"alternate\" link "
     "header. Chrome will prefetch the alternate signed exchange subresources "
     "and will load them if the publisher of the main signed exchange has set "
-    "\"allowed-alt-sxg\" link header in the signed innere response of the "
+    "\"allowed-alt-sxg\" link header in the signed inner response of the "
     "main signed exchange.";
 
 const char kAllowStartingServiceManagerOnlyName[] =
