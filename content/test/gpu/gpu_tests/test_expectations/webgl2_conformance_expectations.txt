@@ -311,6 +311,7 @@ crbug.com/844311 [ mac ] conformance/glsl/misc/fragcolor-fragdata-invariant.html
 crbug.com/709351 [ mac ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/630800 [ intel mac ] conformance2/rendering/framebuffer-completeness-unaffected.html [ Failure ]
 crbug.com/630800 [ nvidia mac ] conformance2/rendering/framebuffer-completeness-unaffected.html [ Failure ]
+crbug.com/965209 [ mac ] conformance2/textures/canvas/tex-2d-rgb16f-rgb-half_float.html [ RetryOnFailure ]
 crbug.com/630800 [ intel mac ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/630800 [ nvidia mac ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/811614 [ amd mac ] deqp/functional/gles3/negativeshaderapi.html [ Failure ]
