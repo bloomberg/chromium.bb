@@ -168,4 +168,10 @@ const base::Feature kDirectCompositionUseNV12DecodeSwapChain{
 const base::Feature kDefaultANGLEOpenGL{"DefaultANGLEOpenGL",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use swap chain frame statistics for GLSurface presentation feedback.  Also
+// forces direct composition root surface to always use a swap chain instead of
+// an IDCompositionSurface.
+const base::Feature kSwapChainFrameStatistics{
+    "SwapChainFrameStatistics", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

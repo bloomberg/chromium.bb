@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/traced_value.h"
 #include "base/win/windows_version.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/native_widget_types.h"
@@ -19,6 +20,7 @@
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/scoped_make_current.h"
 
 #ifndef EGL_ANGLE_flexible_surface_compatibility
@@ -87,7 +89,26 @@ bool IsSwapChainTearingSupported() {
 }
 }  // namespace
 
-DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin() = default;
+DirectCompositionChildSurfaceWin::PendingFrame::PendingFrame(
+    uint32_t present_count,
+    uint32_t target_refresh_count,
+    PresentationCallback callback)
+    : present_count(present_count),
+      target_refresh_count(target_refresh_count),
+      callback(std::move(callback)) {}
+DirectCompositionChildSurfaceWin::PendingFrame::PendingFrame(
+    PendingFrame&& other) = default;
+DirectCompositionChildSurfaceWin::PendingFrame::~PendingFrame() = default;
+DirectCompositionChildSurfaceWin::PendingFrame&
+DirectCompositionChildSurfaceWin::PendingFrame::operator=(
+    PendingFrame&& other) = default;
+
+// static
+bool DirectCompositionChildSurfaceWin::UseSwapChainFrameStatistics() {
+  return base::FeatureList::IsEnabled(features::kSwapChainFrameStatistics);
+}
+
+DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin() {}
 
 DirectCompositionChildSurfaceWin::~DirectCompositionChildSurfaceWin() {
   Destroy();
@@ -138,6 +159,7 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
   if (draw_texture_) {
     draw_texture_.Reset();
     if (dcomp_surface_) {
+      TRACE_EVENT0("gpu", "DirectCompositionChildSurfaceWin::EndDraw");
       HRESULT hr = dcomp_surface_->EndDraw();
       if (FAILED(hr)) {
         DLOG(ERROR) << "EndDraw failed with error " << std::hex << hr;
@@ -145,6 +167,7 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       }
       dcomp_surface_serial_++;
     } else if (!will_discard) {
+      TRACE_EVENT0("gpu", "DirectCompositionChildSurfaceWin::PresentSwapChain");
       bool allow_tearing = IsSwapChainTearingSupported();
       UINT interval = first_swap_ || !vsync_enabled_ || allow_tearing ? 0 : 1;
       UINT flags = allow_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0;
@@ -180,6 +203,10 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
 }
 
 void DirectCompositionChildSurfaceWin::Destroy() {
+  for (auto& frame : pending_frames_)
+    std::move(frame.callback).Run(gfx::PresentationFeedback::Failure());
+  pending_frames_.clear();
+
   if (default_surface_) {
     if (!eglDestroySurface(GetDisplay(), default_surface_)) {
       DLOG(ERROR) << "eglDestroySurface failed with error "
@@ -220,12 +247,21 @@ gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
     PresentationCallback callback) {
   TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::SwapBuffers", "size",
                size_.ToString());
-  // PresentationCallback is handled by DirectCompositionSurfaceWin. The child
-  // surface doesn't need provide presentation feedback.
-  DCHECK(!callback);
-  if (!ReleaseDrawTexture(false /* will_discard */))
-    return gfx::SwapResult::SWAP_FAILED;
-  return gfx::SwapResult::SWAP_ACK;
+
+  bool succeeded = ReleaseDrawTexture(false /* will_discard */);
+
+  if (UseSwapChainFrameStatistics()) {
+    CheckPendingFrames();
+    // Enqueue callback after retiring previous callbacks so that it's called
+    // after SwapBuffers() returns.
+    EnqueuePendingFrame(std::move(callback));
+  } else {
+    // PresentationCallback is handled by DirectCompositionSurfaceWin. The child
+    // surface doesn't need to provide presentation feedback.
+    DCHECK(!callback);
+  }
+
+  return succeeded ? gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED;
 }
 
 bool DirectCompositionChildSurfaceWin::FlipsVertically() const {
@@ -287,7 +323,10 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
 
   DXGI_FORMAT dxgi_format = gl::ColorSpaceUtils::GetDXGIFormat(color_space_);
 
-  if (enable_dc_layers_ && !dcomp_surface_) {
+  bool force_swap_chain = UseSwapChainFrameStatistics();
+  bool use_swap_chain = force_swap_chain || !enable_dc_layers_;
+
+  if (!dcomp_surface_ && !use_swap_chain) {
     TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::CreateSurface",
                  "width", size_.width(), "height", size_.height());
     swap_chain_.Reset();
@@ -300,7 +339,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
       DLOG(ERROR) << "CreateSurface failed with error " << std::hex << hr;
       return false;
     }
-  } else if (!enable_dc_layers_ && !swap_chain_) {
+  } else if (!swap_chain_ && use_swap_chain) {
     TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::CreateSwapChain",
                  "width", size_.width(), "height", size_.height());
     dcomp_surface_.Reset();
@@ -325,8 +364,9 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     desc.Scaling = DXGI_SCALING_STRETCH;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    desc.AlphaMode =
-        has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
+    desc.AlphaMode = (has_alpha_ || enable_dc_layers_)
+                         ? DXGI_ALPHA_MODE_PREMULTIPLIED
+                         : DXGI_ALPHA_MODE_IGNORE;
     desc.Flags =
         IsSwapChainTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
@@ -348,6 +388,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
   draw_offset_ = gfx::Vector2d();
 
   if (dcomp_surface_) {
+    TRACE_EVENT0("gpu", "DirectCompositionChildSurfaceWin::BeginDraw");
     POINT update_offset;
     const RECT rect = rectangle.ToRECT();
     HRESULT hr = dcomp_surface_->BeginDraw(&rect, IID_PPV_ARGS(&draw_texture_),
@@ -358,6 +399,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     }
     draw_offset_ = gfx::Point(update_offset) - rectangle.origin();
   } else {
+    TRACE_EVENT0("gpu", "DirectCompositionChildSurfaceWin::GetBuffer");
     swap_chain_->GetBuffer(0, IID_PPV_ARGS(&draw_texture_));
   }
   DCHECK(draw_texture_);
@@ -427,6 +469,7 @@ bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
       return true;
     DLOG(ERROR) << "ResizeBuffers failed with error 0x" << std::hex << hr;
   }
+  ClearPendingFrames();
   // Next SetDrawRectangle call will recreate the swap chain or surface.
   swap_chain_.Reset();
   dcomp_surface_.Reset();
@@ -437,12 +480,114 @@ bool DirectCompositionChildSurfaceWin::SetEnableDCLayers(bool enable) {
   if (enable_dc_layers_ == enable)
     return true;
   enable_dc_layers_ = enable;
-  // Next SetDrawRectangle call will recreate the swap chain or surface.
   if (!ReleaseDrawTexture(true /* will_discard */))
     return false;
+  ClearPendingFrames();
+  // Next SetDrawRectangle call will recreate the swap chain or surface.
   swap_chain_.Reset();
   dcomp_surface_.Reset();
   return true;
+}
+
+void DirectCompositionChildSurfaceWin::UpdateVSyncParameters(
+    base::TimeTicks vsync_time,
+    base::TimeDelta vsync_interval) {
+  last_vsync_time_ = vsync_time;
+  last_vsync_interval_ = vsync_interval;
+}
+
+bool DirectCompositionChildSurfaceWin::HasPendingFrames() const {
+  return !pending_frames_.empty();
+}
+
+void DirectCompositionChildSurfaceWin::CheckPendingFrames() {
+  DCHECK(UseSwapChainFrameStatistics());
+
+  // Check if swap chain has already been destroyed e.g. due to Resize().
+  if (!swap_chain_ || pending_frames_.empty())
+    return;
+
+  TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::CheckPendingFrames",
+               "num_pending_frames", pending_frames_.size());
+
+  // The stats indicate that the present corresponding to |stats.PresentCount|
+  // was displayed at the vblank corresponding to |stats.PresentRefreshCount|
+  // with presentation time |stats.SyncQPCTime|.
+  DXGI_FRAME_STATISTICS stats = {};
+  if (SUCCEEDED(swap_chain_->GetFrameStatistics(&stats))) {
+    auto present_time =
+        base::TimeTicks::FromQPCValue(stats.SyncQPCTime.QuadPart);
+
+    auto traced_stats = std::make_unique<base::trace_event::TracedValue>();
+    traced_stats->SetInteger("PresentCount", stats.PresentCount);
+    traced_stats->SetInteger("PresentRefreshCount", stats.PresentRefreshCount);
+    traced_stats->SetInteger("SyncRefreshCount", stats.SyncRefreshCount);
+    traced_stats->SetDouble("SyncQPCTime",
+                            present_time.since_origin().InMillisecondsF());
+    TRACE_EVENT_INSTANT1("gpu", "Swap chain frame statistics",
+                         TRACE_EVENT_SCOPE_THREAD, "DXGI_FRAME_STATISTICS",
+                         std::move(traced_stats));
+    // Retire presentation callbacks for presents up to |stats.PresentCount|.
+    uint32_t last_refresh_count = 0;
+    while (!pending_frames_.empty()) {
+      auto& frame = pending_frames_.front();
+      // Subtraction will underflow if stats.PresentCount > frame.present_count
+      // including when present count wraps around.
+      if (stats.PresentCount - frame.present_count > 0x80000000u)
+        break;
+      std::move(frame.callback)
+          .Run(gfx::PresentationFeedback(
+              present_time, last_vsync_interval_,
+              gfx::PresentationFeedback::kVSync |
+                  gfx::PresentationFeedback::kHWClock |
+                  gfx::PresentationFeedback::kHWCompletion));
+      last_refresh_count = frame.target_refresh_count;
+      pending_frames_.pop_front();
+    }
+    // Glitch detection doesn't work correctly for the first few frames after
+    // a pause in presentation since we don't know how old the stats are.
+    if (last_refresh_count > 0 &&
+        last_refresh_count != stats.PresentRefreshCount) {
+      uint32_t num_frames = stats.PresentRefreshCount - last_refresh_count;
+      TRACE_EVENT_INSTANT1("gpu", "Swap chain presentation glitch",
+                           TRACE_EVENT_SCOPE_THREAD, "num_frames", num_frames);
+    }
+    // Update target refresh count for remaining frames.
+    uint32_t next_refresh_count = stats.PresentRefreshCount + 1;
+    for (auto& frame : pending_frames_)
+      frame.target_refresh_count = next_refresh_count++;
+  } else {
+    ClearPendingFrames();
+  }
+}
+
+void DirectCompositionChildSurfaceWin::EnqueuePendingFrame(
+    PresentationCallback callback) {
+  DCHECK(UseSwapChainFrameStatistics());
+
+  uint32_t next_refresh_count = 0;
+  if (!pending_frames_.empty())
+    next_refresh_count = pending_frames_.back().target_refresh_count + 1;
+
+  UINT present_count = 0;
+  DCHECK(swap_chain_);
+  swap_chain_->GetLastPresentCount(&present_count);
+
+  pending_frames_.emplace_back(present_count, next_refresh_count,
+                               std::move(callback));
+}
+
+void DirectCompositionChildSurfaceWin::ClearPendingFrames() {
+  if (pending_frames_.empty())
+    return;
+  TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::ClearPendingFrames",
+               "num_pending_frames", pending_frames_.size());
+  for (auto& frame : pending_frames_) {
+    std::move(frame.callback)
+        .Run(gfx::PresentationFeedback(last_vsync_time_, last_vsync_interval_,
+                                       gfx::PresentationFeedback::kVSync));
+  }
+  pending_frames_.clear();
 }
 
 }  // namespace gpu

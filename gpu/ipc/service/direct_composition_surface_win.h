@@ -133,18 +133,32 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   ~DirectCompositionSurfaceWin() override;
 
  private:
+  void HandleVSyncOnVSyncThread(base::TimeTicks vsync_time,
+                                base::TimeDelta vsync_interval);
+
+  void HandleVSyncOnMainThread(base::TimeTicks vsync_time,
+                               base::TimeDelta vsync_interval);
+
   HWND window_ = nullptr;
   ChildWindowWin child_window_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  std::unique_ptr<gl::VSyncThreadWin> vsync_thread_;
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
+
+  std::unique_ptr<gl::VSyncThreadWin> vsync_thread_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
+
   const VSyncCallback vsync_callback_;
+  bool vsync_callback_enabled_ = false;
+
   std::unique_ptr<gl::GLSurfacePresentationHelper> presentation_helper_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
+
+  VSyncCallback main_thread_vsync_callback_;
+  base::WeakPtrFactory<DirectCompositionSurfaceWin> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionSurfaceWin);
 };
