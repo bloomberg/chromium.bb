@@ -51,7 +51,7 @@ TEST(SerializedScriptValueThreadedTest,
   // Intentionally keep a reference on this thread while this occurs.
   worker_thread.GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           [](WorkerThread* worker_thread,
              scoped_refptr<SerializedScriptValue> serialized) {
             WorkerOrWorkletScriptController* script =
@@ -71,8 +71,8 @@ TEST(SerializedScriptValueThreadedTest,
   // references held by the task are dropped.
   base::WaitableEvent done;
   worker_thread.GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&base::WaitableEvent::Signal,
-                                 CrossThreadUnretained(&done)));
+      FROM_HERE, CrossThreadBindOnce(&base::WaitableEvent::Signal,
+                                     CrossThreadUnretained(&done)));
   done.Wait();
 
   // Now destroy the value on the main thread.

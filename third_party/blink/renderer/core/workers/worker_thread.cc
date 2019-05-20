@@ -164,9 +164,9 @@ void WorkerThread::Start(
   base::WaitableEvent waitable_event;
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
-      CrossThreadBind(&WorkerThread::InitializeSchedulerOnWorkerThread,
-                      CrossThreadUnretained(this),
-                      CrossThreadUnretained(&waitable_event)));
+      CrossThreadBindOnce(&WorkerThread::InitializeSchedulerOnWorkerThread,
+                          CrossThreadUnretained(this),
+                          CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
 
   inspector_task_runner_ =
@@ -174,7 +174,7 @@ void WorkerThread::Start(
 
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &WorkerThread::InitializeOnWorkerThread, CrossThreadUnretained(this),
           WTF::Passed(std::move(global_scope_creation_params)),
           thread_startup_data, WTF::Passed(std::move(devtools_params))));
@@ -239,8 +239,8 @@ void WorkerThread::Resume() {
     ResumeOnWorkerThread();
   } else {
     GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE, CrossThreadBind(&WorkerThread::ResumeOnWorkerThread,
-                                   CrossThreadUnretained(this)));
+        FROM_HERE, CrossThreadBindOnce(&WorkerThread::ResumeOnWorkerThread,
+                                       CrossThreadUnretained(this)));
   }
 }
 
@@ -262,11 +262,12 @@ void WorkerThread::Terminate() {
 
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
-      CrossThreadBind(&WorkerThread::PrepareForShutdownOnWorkerThread,
-                      CrossThreadUnretained(this)));
+      CrossThreadBindOnce(&WorkerThread::PrepareForShutdownOnWorkerThread,
+                          CrossThreadUnretained(this)));
   GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&WorkerThread::PerformShutdownOnWorkerThread,
-                                 CrossThreadUnretained(this)));
+      FROM_HERE,
+      CrossThreadBindOnce(&WorkerThread::PerformShutdownOnWorkerThread,
+                          CrossThreadUnretained(this)));
 }
 
 void WorkerThread::TerminateForTesting() {
@@ -748,7 +749,7 @@ void WorkerThread::PauseOrFreeze(mojom::FrameLifecycleState state) {
                                 interrupt_data);
     }
     GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE, CrossThreadBind(
+        FROM_HERE, CrossThreadBindOnce(
                        &WorkerThread::PauseOrFreezeInsidePostTaskOnWorkerThread,
                        CrossThreadUnretained(interrupt_data)));
   }

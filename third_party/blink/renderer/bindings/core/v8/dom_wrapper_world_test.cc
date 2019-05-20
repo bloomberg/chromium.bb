@@ -119,9 +119,9 @@ TEST(DOMWrapperWorldTest, Basic) {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       Thread::Current()->GetTaskRunner();
   thread->BackingThread().PostTask(
-      FROM_HERE,
-      CrossThreadBind(&WorkerThreadFunc, CrossThreadUnretained(thread.get()),
-                      std::move(main_thread_task_runner)));
+      FROM_HERE, CrossThreadBindOnce(&WorkerThreadFunc,
+                                     CrossThreadUnretained(thread.get()),
+                                     std::move(main_thread_task_runner)));
   test::EnterRunLoop();
 
   // Worlds on the worker thread should not be visible from the main thread.

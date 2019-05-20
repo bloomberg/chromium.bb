@@ -79,8 +79,8 @@ void AnimationAndPaintWorkletThread::CollectAllGarbageForTesting() {
   if (!holder)
     return;
   holder->GetThread()->BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThreadForTesting,
-                                 CrossThreadUnretained(&done_event)));
+      FROM_HERE, CrossThreadBindOnce(&CollectAllGarbageOnThreadForTesting,
+                                     CrossThreadUnretained(&done_event)));
   done_event.Wait();
 }
 

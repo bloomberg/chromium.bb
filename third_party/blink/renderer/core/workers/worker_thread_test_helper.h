@@ -144,8 +144,9 @@ class WorkerThreadForTest : public WorkerThread {
   void WaitForInit() {
     base::WaitableEvent completion_event;
     GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE, CrossThreadBind(&base::WaitableEvent::Signal,
-                                   CrossThreadUnretained(&completion_event)));
+        FROM_HERE,
+        CrossThreadBindOnce(&base::WaitableEvent::Signal,
+                            CrossThreadUnretained(&completion_event)));
     completion_event.Wait();
   }
 

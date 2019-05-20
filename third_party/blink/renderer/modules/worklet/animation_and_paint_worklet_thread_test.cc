@@ -58,7 +58,7 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
         std::make_unique<base::WaitableEvent>();
     thread->GetWorkerBackingThread().BackingThread().PostTask(
         FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AnimationAndPaintWorkletThreadTest::ExecuteScriptInWorklet,
             CrossThreadUnretained(this), CrossThreadUnretained(thread),
             CrossThreadUnretained(wait_event.get())));

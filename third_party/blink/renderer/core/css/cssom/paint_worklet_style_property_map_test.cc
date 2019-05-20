@@ -40,9 +40,10 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
   void ShutDownThread() {
     base::WaitableEvent waitable_event;
     thread_->PostTask(
-        FROM_HERE, CrossThreadBind(&PaintWorkletStylePropertyMapTest::ShutDown,
-                                   CrossThreadUnretained(this),
-                                   CrossThreadUnretained(&waitable_event)));
+        FROM_HERE,
+        CrossThreadBindOnce(&PaintWorkletStylePropertyMapTest::ShutDown,
+                            CrossThreadUnretained(this),
+                            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
@@ -195,7 +196,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
   thread_->PostTask(
-      FROM_HERE, CrossThreadBind(
+      FROM_HERE, CrossThreadBindOnce(
                      &PaintWorkletStylePropertyMapTest::CheckStyleMap,
                      CrossThreadUnretained(this),
                      CrossThreadUnretained(&waitable_event), std::move(input)));

@@ -59,8 +59,8 @@ class WorkletThreadHolder {
     thread_ = std::move(backing_thread);
     thread_->BackingThread().PostTask(
         FROM_HERE,
-        CrossThreadBind(&WorkletThreadHolder::InitializeOnWorkletThread,
-                        CrossThreadUnretained(this)));
+        CrossThreadBindOnce(&WorkletThreadHolder::InitializeOnWorkletThread,
+                            CrossThreadUnretained(this)));
   }
 
   void InitializeOnWorkletThread() {
@@ -74,9 +74,9 @@ class WorkletThreadHolder {
     base::WaitableEvent waitable_event;
     thread_->BackingThread().PostTask(
         FROM_HERE,
-        CrossThreadBind(&WorkletThreadHolder::ShutdownOnWorkletThread,
-                        CrossThreadUnretained(this),
-                        CrossThreadUnretained(&waitable_event)));
+        CrossThreadBindOnce(&WorkletThreadHolder::ShutdownOnWorkletThread,
+                            CrossThreadUnretained(this),
+                            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 

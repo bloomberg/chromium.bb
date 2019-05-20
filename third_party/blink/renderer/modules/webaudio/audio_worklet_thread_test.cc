@@ -73,10 +73,10 @@ class AudioWorkletThreadTest : public PageTestBase {
     base::WaitableEvent wait_event;
     thread->GetWorkerBackingThread().BackingThread().PostTask(
         FROM_HERE,
-        CrossThreadBind(&AudioWorkletThreadTest::ExecuteScriptInWorklet,
-                        CrossThreadUnretained(this),
-                        CrossThreadUnretained(thread),
-                        CrossThreadUnretained(&wait_event)));
+        CrossThreadBindOnce(&AudioWorkletThreadTest::ExecuteScriptInWorklet,
+                            CrossThreadUnretained(this),
+                            CrossThreadUnretained(thread),
+                            CrossThreadUnretained(&wait_event)));
     wait_event.Wait();
   }
 

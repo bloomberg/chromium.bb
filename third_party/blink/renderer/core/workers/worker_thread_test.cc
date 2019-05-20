@@ -503,10 +503,11 @@ TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
 
   base::WaitableEvent waitable_event;
   worker_thread_->GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&VerifyParentAndChildAreTerminated,
-                                 CrossThreadUnretained(worker_thread_.get()),
-                                 CrossThreadUnretained(&nested_worker_helper),
-                                 CrossThreadUnretained(&waitable_event)));
+      FROM_HERE,
+      CrossThreadBindOnce(&VerifyParentAndChildAreTerminated,
+                          CrossThreadUnretained(worker_thread_.get()),
+                          CrossThreadUnretained(&nested_worker_helper),
+                          CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
 }
 
