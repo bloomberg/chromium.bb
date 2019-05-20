@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
@@ -1007,18 +1008,23 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // Update the service worker and send C-S-D during update.
   delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
                                       false);
+
+  base::RunLoop loop;
+  auto* remover = BrowserContext::GetBrowsingDataRemover(browser_context());
+  remover->SetWouldCompleteCallbackForTesting(
+      base::BindLambdaForTesting([&](const base::RepeatingClosure& callback) {
+        callback.Run();
+        loop.Quit();
+      }));
+
   SetClearSiteDataHeader("\"storage\"");
   // Expect the update to fail and the service worker to be removed.
   EXPECT_FALSE(RunScriptAndGetBool("updateServiceWorker()"));
   delegate()->VerifyAndClearExpectations();
-  // The service worker should be gone but a few tests are flaky and fail
-  // because it hasn't been removed. To find out if this is just a
-  // timing issue, add some delay if the first call returns true.
-  // TODO(crbug.com/912313): Check if this worked and find out why.
-  if (RunScriptAndGetBool("hasServiceWorker()")) {
-    LOG(ERROR) << "There was a service worker, checking again in a second";
-    EXPECT_FALSE(RunScriptAndGetBool("setTimeout(hasServiceWorker, 1000)"));
-  }
+  loop.Run();
+
+  // Notify crbug.com/912313 if the test fails here again.
+  EXPECT_FALSE(RunScriptAndGetBool("hasServiceWorker()"));
 }
 
 }  // namespace content
