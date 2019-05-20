@@ -1222,6 +1222,16 @@ void WizardController::InitiateOOBEUpdate() {
     return;
   }
 
+  const auto* skip_screen_key = oobe_configuration_.FindKeyOfType(
+      configuration::kUpdateSkipUpdate, base::Value::Type::BOOLEAN);
+  const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();
+
+  if (skip_screen) {
+    VLOG(1) << "Skip OOBE Update because of configuration.";
+    OnUpdateCompleted();
+    return;
+  }
+
   // If this is a Cellular First device, instruct UpdateEngine to allow
   // updates over cellular data connections.
   if (chromeos::switches::IsCellularFirstDevice()) {
