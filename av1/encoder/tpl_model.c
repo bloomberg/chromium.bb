@@ -475,8 +475,18 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
   // Prepare reference frame pointers. If any reference frame slot is
   // unavailable, the pointer will be set to Null.
   for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx) {
-    int rf_idx = gf_group->ref_frame_gop_idx[frame_idx][idx];
-    if (rf_idx != -1) ref_frame[idx] = gf_picture[rf_idx];
+    const int rf_idx = gf_group->ref_frame_gop_idx[frame_idx][idx];
+    if (rf_idx != -1) {
+      int duplicate = 0;
+      for (int idx2 = 0; idx2 < idx; ++idx2) {
+        const int rf_idx2 = gf_group->ref_frame_gop_idx[frame_idx][idx2];
+        if (gf_picture[rf_idx] == gf_picture[rf_idx2]) {
+          duplicate = 1;
+          break;
+        }
+      }
+      if (!duplicate) ref_frame[idx] = gf_picture[rf_idx];
+    }
   }
 
   xd->mi = cm->mi_grid_visible;
