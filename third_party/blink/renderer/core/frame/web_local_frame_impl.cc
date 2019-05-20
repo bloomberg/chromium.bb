@@ -720,6 +720,17 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
       world_id, source_in, KURL(), SanitizeScriptErrors::kDoNotSanitize);
 }
 
+void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int world_id) {
+  if (!GetFrame())
+    return;
+  if (world_id <= DOMWrapperWorld::kMainWorldId ||
+      world_id >= DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit) {
+    return;
+  }
+
+  GetFrame()->GetDocument()->ClearIsolatedWorldCSPForTesting(world_id);
+}
+
 void WebLocalFrameImpl::SetIsolatedWorldInfo(int world_id,
                                              const WebIsolatedWorldInfo& info) {
   DCHECK(GetFrame());

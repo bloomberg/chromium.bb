@@ -1555,6 +1555,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetMetaColorScheme(const ColorSchemeSet&);
   void ColorSchemeChanged();
 
+  void ClearIsolatedWorldCSPForTesting(int world_id);
+
  protected:
   void DidUpdateSecurityOrigin() final;
 

@@ -324,6 +324,10 @@ class WebLocalFrame : public WebFrame {
   ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
                                              const WebScriptSource&) = 0;
 
+  // Clears the isolated world CSP stored for |world_id| by this frame's
+  // Document.
+  virtual void ClearIsolatedWorldCSPForTesting(int world_id) = 0;
+
   // Sets up an isolated world by associating a |world_id| with |info|.
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.

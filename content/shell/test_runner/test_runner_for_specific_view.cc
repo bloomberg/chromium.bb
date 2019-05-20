@@ -650,6 +650,9 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
         blink::MainThreadIsolate(), content_security_policy.As<v8::String>());
   }
 
+  // Clear the document->isolated world CSP mapping.
+  web_view()->FocusedFrame()->ClearIsolatedWorldCSPForTesting(world_id);
+
   web_view()->FocusedFrame()->SetIsolatedWorldInfo(world_id, info);
 }
 

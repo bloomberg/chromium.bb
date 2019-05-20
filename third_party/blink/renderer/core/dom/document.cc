@@ -7968,6 +7968,10 @@ bool Document::IsInWebAppScope() const {
   return Url().GetString().StartsWith(web_app_scope);
 }
 
+void Document::ClearIsolatedWorldCSPForTesting(int world_id) {
+  isolated_world_csp_map_->erase(world_id);
+}
+
 void Document::SendViolationReport(
     mojom::blink::CSPViolationParamsPtr violation_params) {
   std::unique_ptr<SourceLocation> source_location =

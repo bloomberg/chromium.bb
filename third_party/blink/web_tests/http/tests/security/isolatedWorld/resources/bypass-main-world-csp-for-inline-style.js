@@ -3,7 +3,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-tests = 4;
+tests = 6;
 window.addEventListener("message", function(message) {
     tests -= 1;
     test();
@@ -53,33 +53,67 @@ function test() {
         window.postMessage("next", "*");
     }
 
+    function testInlineStyleInIsolatedWorldHelper(
+        worldId, functionStr, shouldSucceedStr, tests) {
+      testRunner.evaluateScriptInIsolatedWorld(
+          worldId,
+          String(eval(functionStr)) +
+              `\n${functionStr}(${shouldSucceedStr}, ${tests});`);
+    }
+
+    function testInlineStyleInIsolatedWorld(worldId, shouldSucceed, tests) {
+      var success = shouldSucceed ? 'true' : 'false';
+      testInlineStyleInIsolatedWorldHelper(
+          worldId, 'injectInlineStyle', success, tests);
+      testInlineStyleInIsolatedWorldHelper(
+          worldId, 'injectInlineStyleAttribute', success, tests);
+    }
+
     switch (tests) {
-        case 4:
-            console.log("Injecting in main world: this should fail.");
-            injectInlineStyle(false, tests);
-            break;
-        case 3:
-            console.log("Injecting into isolated world without bypass: this should fail.");
-            // Clear any existing csp or security origin as a side effect of
-            // another test.
-            testRunner.setIsolatedWorldInfo(1, null, null);
-            testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyle")) + "\ninjectInlineStyle(false," + tests + ");");
-            testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyleAttribute")) + "\ninjectInlineStyleAttribute(false," + tests + ");");
-            break;
-        case 2:
-            console.log("Starting to bypass main world's CSP: this should pass!");
-            testRunner.setIsolatedWorldInfo(1, 'chrome-extension://123', 'style-src \'unsafe-inline\' *');
-            testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyle")) + "\ninjectInlineStyle(true," + tests + ");");
-            testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyleAttribute")) + "\ninjectInlineStyleAttribute(true," + tests + ");");
-            break;
-        case 1:
-            console.log("Injecting into main world again: this should fail.");
-            injectInlineStyle(false, tests);
-            break;
-        case 0:
-            testRunner.setIsolatedWorldInfo(1, null, null);
-            testRunner.notifyDone();
-            break;
+      case 6:
+        console.log("Injecting in main world: this should fail.");
+        injectInlineStyle(false, tests);
+        break;
+      case 5:
+        console.log(
+            "Injecting into isolated world without bypass: this should fail.");
+        // Clear any existing csp or security origin as a side effect of
+        // another test.
+        testRunner.setIsolatedWorldInfo(1, null, null);
+        testInlineStyleInIsolatedWorld(1, false, tests);
+        break;
+      case 4:
+        console.log(
+            'Have a separate CSP for the isolated world. Allow unsafe-inline. This should pass.');
+        testRunner.setIsolatedWorldInfo(
+            1, 'chrome-extension://123', 'style-src \'unsafe-inline\'');
+        testInlineStyleInIsolatedWorld(1, true, tests);
+        break;
+      case 3:
+        console.log(
+            'Have a separate CSP for the isolated world. Use an empty CSP. This should pass.');
+        testRunner.setIsolatedWorldInfo(1, 'chrome-extension://123', '');
+        testInlineStyleInIsolatedWorld(1, true, tests);
+        break;
+      case 2:
+        console.log(
+            'Have a separate CSP for the isolated world. Disallow unsafe-inline.');
+        testRunner.setIsolatedWorldInfo(
+            1, 'chrome-extension://123', 'style-src \'none\'');
+        console.log(
+            'internals.runtimeFlags.isolatedWorldCSPEnabled is ' +
+            internals.runtimeFlags.isolatedWorldCSPEnabled);
+        var allowUnsafeInline = !internals.runtimeFlags.isolatedWorldCSPEnabled;
+        testInlineStyleInIsolatedWorld(1, allowUnsafeInline, tests);
+        break;
+      case 1:
+        console.log("Injecting into main world again: this should fail.");
+        injectInlineStyle(false, tests);
+        break;
+      case 0:
+        testRunner.setIsolatedWorldInfo(1, null, null);
+        testRunner.notifyDone();
+        break;
     }
 }
 

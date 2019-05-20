@@ -5165,10 +5165,9 @@ void Element::StyleAttributeChanged(
   if (new_style_string.IsNull()) {
     EnsureUniqueElementData().inline_style_.Clear();
   } else if (modification_reason == AttributeModificationReason::kByCloning ||
-             ContentSecurityPolicy::ShouldBypassMainWorld(&GetDocument()) ||
              (ContainingShadowRoot() &&
               ContainingShadowRoot()->IsUserAgent()) ||
-             GetDocument().GetContentSecurityPolicy()->AllowInline(
+             GetDocument().GetContentSecurityPolicyForWorld()->AllowInline(
                  ContentSecurityPolicy::InlineType::kStyleAttribute, this,
                  new_style_string, String() /* nonce */, GetDocument().Url(),
                  start_line_number)) {
