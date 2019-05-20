@@ -747,8 +747,6 @@ component("ash") {
     "system/network/network_icon_animation.cc",
     "system/network/network_icon_animation.h",
     "system/network/network_icon_animation_observer.h",
-    "system/network/network_icon_purger.cc",
-    "system/network/network_icon_purger.h",
     "system/network/network_info.cc",
     "system/network/network_info.h",
     "system/network/network_list.cc",

@@ -15,7 +15,6 @@
 #include "ash/system/message_center/message_center_ui_delegate.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/network/network_icon_purger.h"
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/status_area_widget.h"
@@ -123,7 +122,6 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       model_(std::make_unique<UnifiedSystemTrayModel>()),
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
-      network_icon_purger_(std::make_unique<NetworkIconPurger>()),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
       managed_device_view_(new ManagedDeviceView(shelf)),

@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -40,6 +41,7 @@ namespace ash {
 // network_icon_unittest.cc, and partially in active_network_icon_unittest.cc.
 // TODO(stevenjb): Move all test coverage to active_network_icon_unittest.cc and
 // test Dual icon methods.
+// This class is also responsible for periodically purging the icon cache.
 class ASH_EXPORT ActiveNetworkIcon
     : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
@@ -91,6 +93,7 @@ class ASH_EXPORT ActiveNetworkIcon
           devices);
   chromeos::network_config::mojom::DeviceStateProperties* GetDevice(
       chromeos::network_config::mojom::NetworkType type);
+  void PurgeNetworkIconCache();
 
   chromeos::network_config::mojom::CrosNetworkConfigPtr
       cros_network_config_ptr_;
@@ -106,6 +109,8 @@ class ASH_EXPORT ActiveNetworkIcon
   base::Optional<network_icon::NetworkIconState> active_vpn_;
   int cellular_uninitialized_msg_ = 0;
   base::Time uninitialized_state_time_;
+  base::OneShotTimer purge_timer_;
+  base::WeakPtrFactory<ActiveNetworkIcon> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveNetworkIcon);
 };

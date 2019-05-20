@@ -29,6 +29,8 @@ using network_icon::NetworkIconState;
 
 namespace {
 
+const int kPurgeDelayMs = 500;
+
 bool IsTrayIcon(network_icon::IconType icon_type) {
   return icon_type == network_icon::ICON_TYPE_TRAY_REGULAR ||
          icon_type == network_icon::ICON_TYPE_TRAY_OOBE;
@@ -58,7 +60,8 @@ base::Optional<NetworkIconState> GetConnectingOrConnected(
 
 }  // namespace
 
-ActiveNetworkIcon::ActiveNetworkIcon(service_manager::Connector* connector) {
+ActiveNetworkIcon::ActiveNetworkIcon(service_manager::Connector* connector)
+    : weak_ptr_factory_(this) {
   if (connector)  // May be null in tests.
     BindCrosNetworkConfig(connector);
 }
@@ -295,7 +298,14 @@ void ActiveNetworkIcon::OnActiveNetworksChanged(
   SetCellularUninitializedMsg();
 }
 
-void ActiveNetworkIcon::OnNetworkStateListChanged() {}
+void ActiveNetworkIcon::OnNetworkStateListChanged() {
+  if (purge_timer_.IsRunning())
+    return;
+  purge_timer_.Start(FROM_HERE,
+                     base::TimeDelta::FromMilliseconds(kPurgeDelayMs),
+                     base::BindOnce(&ActiveNetworkIcon::PurgeNetworkIconCache,
+                                    weak_ptr_factory_.GetWeakPtr()));
+}
 
 void ActiveNetworkIcon::OnDeviceStateListChanged() {
   cros_network_config_ptr_->GetDeviceStateList(base::BindOnce(
@@ -321,6 +331,22 @@ DeviceStateProperties* ActiveNetworkIcon::GetDevice(NetworkType type) {
   if (iter == devices_.end())
     return nullptr;
   return iter->second.get();
+}
+
+void ActiveNetworkIcon::PurgeNetworkIconCache() {
+  cros_network_config_ptr_->GetNetworkStateList(
+      NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
+                         /*limit=*/0),
+      base::BindOnce(
+          [](std::vector<
+              chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+                 networks) {
+            std::set<std::string> network_guids;
+            for (const auto& iter : networks) {
+              network_guids.insert(iter->guid);
+            }
+            network_icon::PurgeNetworkIconCache(network_guids);
+          }));
 }
 
 }  // namespace ash
