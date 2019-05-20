@@ -776,8 +776,6 @@ component("ash") {
     "system/network/vpn_list.h",
     "system/network/vpn_list_view.cc",
     "system/network/vpn_list_view.h",
-    "system/network/vpn_util.cc",
-    "system/network/vpn_util.h",
     "system/network/wifi_toggle_notification_controller.cc",
     "system/network/wifi_toggle_notification_controller.h",
     "system/night_light/night_light_controller.cc",
