@@ -214,7 +214,9 @@ static void set_good_speed_features_framesize_independent(
   sf->prune_mode_search_simple_translation = 1;
   sf->two_loop_comp_search = 0;
   sf->prune_ref_frame_for_rect_partitions =
-      boosted ? 0 : (is_boosted_arf2_bwd_type ? 1 : 2);
+      (boosted || (cm->allow_screen_content_tools))
+          ? 0
+          : (is_boosted_arf2_bwd_type ? 1 : 2);
   sf->less_rectangular_check_level = 1;
   sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
   sf->gm_disable_recode = 1;
