@@ -86,6 +86,7 @@ jumbo_source_set("capture_device_specific") {
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:image_capture_types",
     "//media/mojo/interfaces:interfaces",
+    "//media/parsers",
     "//third_party/libyuv",
     "//ui/gfx",
   ]

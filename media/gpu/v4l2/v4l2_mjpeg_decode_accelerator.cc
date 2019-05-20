@@ -16,8 +16,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
+#include "media/parsers/jpeg_parser.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)    \

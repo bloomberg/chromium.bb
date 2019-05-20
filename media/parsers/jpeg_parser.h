@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-#ifndef MEDIA_FILTERS_JPEG_PARSER_H_
-#define MEDIA_FILTERS_JPEG_PARSER_H_
+#ifndef MEDIA_PARSERS_JPEG_PARSER_H_
+#define MEDIA_PARSERS_JPEG_PARSER_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/component_export.h"
+#include "media/parsers/media_parsers_export.h"
 
 namespace media {
 
@@ -81,11 +81,11 @@ struct JpegHuffmanTable {
 };
 
 // K.3.3.1 "Specification of typical tables for DC difference coding"
-COMPONENT_EXPORT(JPEG_PARSER)
+MEDIA_PARSERS_EXPORT
 extern const JpegHuffmanTable kDefaultDcTable[kJpegMaxHuffmanTableNumBaseline];
 
 // K.3.3.2 "Specification of typical tables for AC coefficient coding"
-COMPONENT_EXPORT(JPEG_PARSER)
+MEDIA_PARSERS_EXPORT
 extern const JpegHuffmanTable kDefaultAcTable[kJpegMaxHuffmanTableNumBaseline];
 
 // Parsing result of JPEG DQT marker.
@@ -94,11 +94,11 @@ struct JpegQuantizationTable {
   uint8_t value[kDctSize];  // baseline only supports 8 bits quantization table
 };
 
-COMPONENT_EXPORT(JPEG_PARSER) extern const uint8_t kZigZag8x8[64];
+MEDIA_PARSERS_EXPORT extern const uint8_t kZigZag8x8[64];
 
 // Table K.1 Luminance quantization table
 // Table K.2 Chrominance quantization table
-COMPONENT_EXPORT(JPEG_PARSER)
+MEDIA_PARSERS_EXPORT
 extern const JpegQuantizationTable kDefaultQuantTable[2];
 
 // Parsing result of a JPEG component.
@@ -146,7 +146,7 @@ struct JpegParseResult {
 // Parses JPEG picture in |buffer| with |length|.  Returns true iff header is
 // valid and JPEG baseline sequential process is present. If parsed
 // successfully, |result| is the parsed result.
-COMPONENT_EXPORT(JPEG_PARSER)
+MEDIA_PARSERS_EXPORT
 bool ParseJpegPicture(const uint8_t* buffer,
                       size_t length,
                       JpegParseResult* result);
@@ -154,11 +154,11 @@ bool ParseJpegPicture(const uint8_t* buffer,
 // Parses the first image of JPEG stream in |buffer| with |length|.  Returns
 // true iff header is valid and JPEG baseline sequential process is present.
 // If parsed successfully, |result| is the parsed result.
-COMPONENT_EXPORT(JPEG_PARSER)
+MEDIA_PARSERS_EXPORT
 bool ParseJpegStream(const uint8_t* buffer,
                      size_t length,
                      JpegParseResult* result);
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_JPEG_PARSER_H_
+#endif  // MEDIA_PARSERS_JPEG_PARSER_H_

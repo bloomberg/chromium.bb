@@ -91,6 +91,7 @@ source_set("v4l2") {
     deps += [
       "//components/chromeos_camera:jpeg_encode_accelerator",
       "//components/chromeos_camera:mjpeg_decode_accelerator",
+      "//media/parsers",
     ]
   }
 }

@@ -94,6 +94,7 @@ source_set("vaapi") {
     deps += [
       "//components/chromeos_camera:jpeg_encode_accelerator",
       "//components/chromeos_camera:mjpeg_decode_accelerator",
+      "//media/parsers",
     ]
   }
 
@@ -160,6 +161,7 @@ source_set("jpeg_decoder_unit_test") {
     ":vaapi_utils_unittest",
     "//base",
     "//media:test_support",
+    "//media/parsers",
     "//skia",
     "//testing/gtest",
     "//third_party/libyuv:libyuv",

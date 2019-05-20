@@ -21,9 +21,9 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
-#include "media/filters/jpeg_parser.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
+#include "media/parsers/jpeg_parser.h"
 
 namespace {
 

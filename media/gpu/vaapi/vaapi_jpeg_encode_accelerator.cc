@@ -18,9 +18,9 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
-#include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_jpeg_encoder.h"
+#include "media/parsers/jpeg_parser.h"
 
 namespace media {
 

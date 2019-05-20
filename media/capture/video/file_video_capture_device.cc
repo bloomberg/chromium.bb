@@ -18,7 +18,7 @@
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video_capture_types.h"
-#include "media/filters/jpeg_parser.h"
+#include "media/parsers/jpeg_parser.h"
 
 namespace media {
 

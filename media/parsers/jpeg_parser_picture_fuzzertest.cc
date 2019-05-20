@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "media/filters/jpeg_parser.h"
+#include "media/parsers/jpeg_parser.h"
 
 struct Environment {
   Environment() { logging::SetMinLogLevel(logging::LOG_FATAL); }
