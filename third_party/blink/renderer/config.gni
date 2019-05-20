@@ -21,9 +21,6 @@ declare_args() {
 }
 
 declare_args() {
-  # DEPRECATED: Use blink_symbol_level=0. https://crbug.com/943869
-  remove_webcore_debug_symbols = false
-
   # How many symbols to include in the build of blink. This affects
   # the performance of the build since the symbols are large and dealing with
   # them is slow.
@@ -44,11 +41,6 @@ declare_args() {
   # If true, webgl2-compute context will be supported.
   support_webgl2_compute_context = !is_android
 }
-
-assert(!remove_webcore_debug_symbols,
-       "The GN arg 'remove_webcore_debug_symbols' has been removed. " +
-           "Please change your args.gn to use 'blink_symbol_level = 0'. " +
-           "https://crbug.com/943869")
 
 # feature_defines_list ---------------------------------------------------------
 
