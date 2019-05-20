@@ -297,9 +297,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
                                                          bool hidden);
 
-  // Helper method to create and initialize a RenderFrameProxyHost and return
-  // its routing id.
-  int CreateRenderFrameProxy(SiteInstance* instance);
+  // Helper method to create and initialize a RenderFrameProxyHost.
+  void CreateRenderFrameProxy(SiteInstance* instance);
 
   // Creates proxies for a new child frame at FrameTreeNode |child| in all
   // SiteInstances for which the current frame has proxies.  This method is

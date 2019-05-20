@@ -171,14 +171,14 @@ int BrowserPluginGuest::GetGuestProxyRoutingID() {
   SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
   if (!owner_site_instance)
     return MSG_ROUTING_NONE;
-  int proxy_routing_id = GetWebContents()
-                             ->GetFrameTree()
-                             ->root()
-                             ->render_manager()
-                             ->CreateRenderFrameProxy(owner_site_instance);
-  guest_proxy_routing_id_ = RenderFrameProxyHost::FromID(
-      owner_site_instance->GetProcess()->GetID(), proxy_routing_id)
-          ->GetRenderViewHost()->GetRoutingID();
+
+  RenderFrameHostManager* rfh_manager =
+      GetWebContents()->GetFrameTree()->root()->render_manager();
+  rfh_manager->CreateRenderFrameProxy(owner_site_instance);
+  guest_proxy_routing_id_ =
+      rfh_manager->GetRenderFrameProxyHost(owner_site_instance)
+          ->GetRenderViewHost()
+          ->GetRoutingID();
 
   return guest_proxy_routing_id_;
 }

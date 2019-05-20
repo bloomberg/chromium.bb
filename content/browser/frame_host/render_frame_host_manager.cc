@@ -2000,16 +2000,16 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   return new_render_frame_host;
 }
 
-int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
+void RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   // A RenderFrameProxyHost should never be created in the same SiteInstance as
   // the current RFH.
   CHECK(instance);
   CHECK_NE(instance, render_frame_host_->GetSiteInstance());
 
-  // Return an already existing RenderFrameProxyHost if one exists and is alive.
+  // If a proxy already exists and is alive, nothing needs to be done.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
   if (proxy && proxy->is_render_frame_proxy_live())
-    return proxy->GetRoutingID();
+    return;
 
   // At this point we know that we either have to 1) create a new
   // RenderFrameProxyHost or 2) revive an existing, but no longer alive
@@ -2035,8 +2035,6 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   } else {
     proxy->InitRenderFrameProxy();
   }
-
-  return proxy->GetRoutingID();
 }
 
 void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
