@@ -387,6 +387,7 @@
       'GPU FYI Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Win x64 Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU FYI Win x64 dEQP Builder': 'deqp_release_trybot',
+      'GPU FYI XR Win Builder': 'gpu_fyi_tests_release_trybot_x86',
       'Linux FYI GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan',
       'Mac FYI GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
       'Optional Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
