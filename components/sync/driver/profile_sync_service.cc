@@ -1673,11 +1673,23 @@ void ProfileSyncService::GetAllNodesForDebugging(
 
 CoreAccountInfo ProfileSyncService::GetAuthenticatedAccountInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!auth_manager_) {
+    // Some crashes on iOS (crbug.com/962384) suggest that ProfileSyncService
+    // gets called after it has been already shutdown. It's not clear why this
+    // actually happens. We add this null check here to protect against such
+    // crashes.
+    return CoreAccountInfo();
+  }
   return auth_manager_->GetActiveAccountInfo().account_info;
 }
 
 bool ProfileSyncService::IsAuthenticatedAccountPrimary() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!auth_manager_) {
+    // This is a precautionary check to be consistent with the check in
+    // GetAuthenticatedAccountInfo().
+    return false;
+  }
   return auth_manager_->GetActiveAccountInfo().is_primary;
 }
 
