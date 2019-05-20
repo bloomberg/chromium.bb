@@ -220,6 +220,8 @@ class AXPosition {
     return GetAnchor() && kind_ == AXPositionKind::TEXT_POSITION;
   }
 
+  // TODO(nektar): Update logic of AtStartOfAnchor() for text_offset_ == 0 and
+  // fix related bug.
   bool AtStartOfAnchor() const {
     if (!GetAnchor())
       return false;
@@ -228,7 +230,9 @@ class AXPosition {
       case AXPositionKind::NULL_POSITION:
         return false;
       case AXPositionKind::TREE_POSITION:
-        if (AnchorChildCount())
+        if (text_offset_ > 0)
+          return false;
+        if (AnchorChildCount() || text_offset_ == 0)
           return child_index_ == 0;
         return child_index_ == BEFORE_TEXT;
       case AXPositionKind::TEXT_POSITION:
@@ -564,9 +568,9 @@ class AXPosition {
       bool forwards) const {
     // Disallow AXBoundaryBehavior::StopAtAnchorBoundary, as it would be no
     // different than moving by anchor
-    DCHECK(boundary_behavior != AXBoundaryBehavior::StopAtAnchorBoundary);
+    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopAtAnchorBoundary);
 
-    if (kind_ == AXPositionKind::NULL_POSITION)
+    if (IsNullPosition())
       return CreateNullPosition();
 
     bool was_tree_position = IsTreePosition();
@@ -577,16 +581,17 @@ class AXPosition {
 
     // Start or end of document
     if (current_endpoint->IsNullPosition()) {
-      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary) {
-        current_endpoint =
-            forwards ? initial_endpoint->CreatePositionAtEndOfAnchor()
-                     : initial_endpoint->CreatePositionAtStartOfAnchor();
-        return was_tree_position ? current_endpoint->AsTreePosition()
-                                 : std::move(current_endpoint);
+      if (boundary_behavior == AXBoundaryBehavior::CrossBoundary &&
+          ((forwards && AtEndOfAnchor()) || (!forwards && AtStartOfAnchor()))) {
+        // Expected behavior is to return a null position for cross-boundary
+        // moves that hit the beginning or end of the document
+        return std::move(current_endpoint);
       }
-      // Expected behavior is to return a null position for cross-boundary
-      // moves that hit the beginning or end of the document
-      return std::move(current_endpoint);
+      current_endpoint =
+          forwards ? initial_endpoint->CreatePositionAtEndOfAnchor()
+                   : initial_endpoint->CreatePositionAtStartOfAnchor();
+      return was_tree_position ? current_endpoint->AsTreePosition()
+                               : std::move(current_endpoint);
     }
 
     AXNodeTextStyles initial_styles =

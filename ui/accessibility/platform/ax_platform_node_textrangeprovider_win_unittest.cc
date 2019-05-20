@@ -447,10 +447,23 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     paragraph3_text_data.SetName(text_content);
     paragraph3_data.child_ids = {15};
 
+    ui::AXNodeData paragraph4_data;
+    paragraph4_data.id = 16;
+    paragraph4_data.role = ax::mojom::Role::kParagraph;
+    paragraph4_data.AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
+                                      2.0f);
+
+    ui::AXNodeData paragraph4_text_data;
+    paragraph4_text_data.id = 17;
+    paragraph4_text_data.role = ax::mojom::Role::kStaticText;
+    text_content = "Paragraph 4";
+    paragraph4_text_data.SetName(text_content);
+    paragraph4_data.child_ids = {17};
+
     ui::AXNodeData root_data;
     root_data.id = 1;
     root_data.role = ax::mojom::Role::kRootWebArea;
-    root_data.child_ids = {2, 4, 8, 10, 12, 14};
+    root_data.child_ids = {2, 4, 8, 10, 12, 14, 16};
 
     ui::AXTreeUpdate update;
     ui::AXTreeData tree_data;
@@ -473,6 +486,8 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     update.nodes.push_back(paragraph2_text_data);
     update.nodes.push_back(paragraph3_data);
     update.nodes.push_back(paragraph3_text_data);
+    update.nodes.push_back(paragraph4_data);
+    update.nodes.push_back(paragraph4_text_data);
 
     return update;
   }
@@ -880,7 +895,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_TEXTRANGE_EQ(
       text_range_provider,
       L"Text with formattingStandalone line with no formattingbold "
-      L"textParagraph 1Paragraph 2Paragraph 3");
+      L"textParagraph 1Paragraph 2Paragraph 3Paragraph 4");
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
@@ -1187,7 +1202,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
                   /*count*/ 0,
                   /*expected_text*/
                   L"Text with formattingStandalone line with no formattingbold "
-                  L"textParagraph 1Paragraph 2Paragraph 3",
+                  L"textParagraph 1Paragraph 2Paragraph 3Paragraph 4",
                   /*expected_count*/ 0);
 
   // Move forward.
@@ -1203,18 +1218,22 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
                   /*count*/ 1,
                   /*expected_text*/ L"Paragraph 2Paragraph 3",
                   /*expected_count*/ 1);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 1,
+                  /*expected_text*/ L"Paragraph 4",
+                  /*expected_count*/ 1);
 
   // Trying to move past the last format should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
                   /*count*/ 1,
-                  /*expected_text*/ L"Paragraph 2Paragraph 3",
+                  /*expected_text*/ L"Paragraph 4",
                   /*expected_count*/ 0);
 
   // Move backward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
-                  /*count*/ -2,
+                  /*count*/ -3,
                   /*expected_text*/ L"bold text",
-                  /*expected_count*/ -2);
+                  /*expected_count*/ -3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
                   /*count*/ -1,
                   /*expected_text*/ L"Standalone line with no formatting",
@@ -1232,11 +1251,49 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
                   L"Text with formatting",
                   /*expected_count*/ 0);
 
+  // Test degenerate range creation at the beginning of the document.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/ L"",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/ L"Text with formatting",
+      /*expected_count*/ 1);
+
+  // Test degenerate range creation at the end of the document.
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 5,
+                  /*expected_text*/ L"Paragraph 4",
+                  /*expected_count*/ 5);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/ L"",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/ L"Paragraph 4",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/ L"",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/ L"Paragraph 4",
+      /*expected_count*/ -1);
+
   // Degenerate range moves.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
-                  /*count*/ 1,
-                  /*expected_text*/ L"Standalone line with no formatting",
-                  /*expected_count*/ 1);
+                  /*count*/ -5,
+                  /*expected_text*/ L"Text with formatting",
+                  /*expected_count*/ -5);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
       /*count*/ -1,
@@ -2013,14 +2070,14 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_TEXTRANGE_EQ(
       text_range_provider,
       L"Text with formattingStandalone line with no formattingbold "
-      L"textParagraph 1Paragraph 2Paragraph 3");
+      L"textParagraph 1Paragraph 2Paragraph 3Paragraph 4");
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
-      /*count*/ -1,
+      /*count*/ -2,
       /*expected_text*/
       L"Text with formattingStandalone line with no formattingbold "
       L"textParagraph 1",
-      /*expected_count*/ -1);
+      /*expected_count*/ -2);
 
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
@@ -2051,17 +2108,17 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
-      /*count*/ 6,
+      /*count*/ 7,
       /*expected_text*/
       L"Text with formattingStandalone line with no formattingbold "
-      L"textParagraph 1Paragraph 2Paragraph 3",
-      /*expected_count*/ 5);
+      L"textParagraph 1Paragraph 2Paragraph 3Paragraph 4",
+      /*expected_count*/ 6);
 
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
       /*count*/ -8,
       /*expected_text*/ L"",
-      /*expected_count*/ -5);
+      /*expected_count*/ -6);
 
   AXNodePosition::SetTreeForTesting(nullptr);
 }
