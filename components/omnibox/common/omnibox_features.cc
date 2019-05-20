@@ -84,6 +84,9 @@ const base::Feature kOmniboxRichEntitySuggestions{
 const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOmniboxPreserveDefaultMatchScore{
+    "OmniboxPreserveDefaultMatchScore", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable swapping the rows on answers.
 const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

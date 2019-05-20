@@ -94,8 +94,14 @@ class AutocompleteResult {
   bool TopMatchIsStandaloneVerbatimMatch() const;
 
   // Returns the first match in |matches| which might be chosen as default.
-  static ACMatches::const_iterator FindTopMatch(const ACMatches& matches);
-  static ACMatches::iterator FindTopMatch(ACMatches* matches);
+  // If |kOmniboxPreserveDefaultMatchScore| is enabled and the page is not
+  // the fake box, the scores are not demoted by type.
+  static ACMatches::const_iterator FindTopMatch(
+      metrics::OmniboxEventProto::PageClassification page_classification,
+      const ACMatches& matches);
+  static ACMatches::iterator FindTopMatch(
+      metrics::OmniboxEventProto::PageClassification page_classification,
+      ACMatches* matches);
 
   const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 

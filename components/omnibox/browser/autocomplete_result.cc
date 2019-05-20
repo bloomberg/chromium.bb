@@ -31,6 +31,8 @@
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using metrics::OmniboxEventProto;
+
 typedef AutocompleteMatchType ACMatchType;
 
 struct MatchGURLHash {
@@ -174,7 +176,7 @@ void AutocompleteResult::SortAndCull(
   std::sort(matches_.begin(), matches_.end(), comparing_object);
   // Top match is not allowed to be the default match.  Find the most
   // relevant legal match and shift it to the front.
-  auto it = FindTopMatch(&matches_);
+  auto it = FindTopMatch(input.current_page_classification(), &matches_);
   if (it != matches_.end())
     std::rotate(matches_.begin(), it, it + 1);
   // In the process of trimming, drop all matches with a demoted relevance
@@ -361,19 +363,32 @@ bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
 
 // static
 ACMatches::const_iterator AutocompleteResult::FindTopMatch(
+    OmniboxEventProto::PageClassification page_classification,
     const ACMatches& matches) {
-  auto it = matches.begin();
-  while ((it != matches.end()) && !it->allowed_to_be_default_match)
-    ++it;
-  return it;
+  return FindTopMatch(page_classification, const_cast<ACMatches*>(&matches));
 }
 
 // static
-ACMatches::iterator AutocompleteResult::FindTopMatch(ACMatches* matches) {
-  auto it = matches->begin();
-  while ((it != matches->end()) && !it->allowed_to_be_default_match)
-    ++it;
-  return it;
+ACMatches::iterator AutocompleteResult::FindTopMatch(
+    OmniboxEventProto::PageClassification page_classification,
+    ACMatches* matches) {
+  if (page_classification !=
+          OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS &&
+      OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled()) {
+    auto best = matches->end();
+    for (auto it = matches->begin(); it != matches->end(); ++it) {
+      if (it->allowed_to_be_default_match &&
+          (best == matches->end() ||
+           AutocompleteMatch::MoreRelevant(*it, *best))) {
+        best = it;
+      }
+    }
+    return best;
+  } else {
+    return std::find_if(matches->begin(), matches->end(), [](const auto& m) {
+      return m.allowed_to_be_default_match;
+    });
+  }
 }
 
 void AutocompleteResult::Reset() {
