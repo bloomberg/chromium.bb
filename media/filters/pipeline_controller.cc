@@ -177,6 +177,11 @@ void PipelineController::OnPipelineStatus(State expected_state,
   if (state_ == State::PLAYING_OR_SUSPENDED) {
     waiting_for_seek_ = false;
     state_ = pipeline_->IsSuspended() ? State::SUSPENDED : State::PLAYING;
+
+    // It's possible for a Suspend() call to come in during startup. If we've
+    // completed a suspended startup, we should clear that now.
+    if (state_ == State::SUSPENDED)
+      pending_suspend_ = false;
   }
 
   if (state_ == State::PLAYING) {
@@ -188,12 +193,15 @@ void PipelineController::OnPipelineStatus(State expected_state,
     // properly fixed.
     if (old_state == State::RESUMING) {
       DCHECK(!pipeline_->IsSuspended());
+      DCHECK(!pending_resume_);
+
       resumed_cb_.Run();
     }
   }
 
   if (state_ == State::SUSPENDED) {
     DCHECK(pipeline_->IsSuspended());
+    DCHECK(!pending_suspend_);
 
     // Warning: possibly reentrant. The state may change inside this callback.
     // It must be safe to call Dispatch() twice in a row here.
@@ -219,7 +227,11 @@ void PipelineController::Dispatch() {
     return;
   }
 
-  if (pending_resume_ && state_ == State::SUSPENDED) {
+  // In additional to the standard |pending_resume_| case, if we completed a
+  // suspended startup, but a Seek() came in, we need to resume the pipeline to
+  // complete the seek before calling |seeked_cb_|.
+  if ((pending_resume_ || (pending_startup_ && pending_seek_)) &&
+      state_ == State::SUSPENDED) {
     // If there is a pending seek, resume to that time instead...
     if (pending_seek_) {
       seek_time_ = pending_seek_time_;
