@@ -79,6 +79,8 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     const device::mojom::blink::XRInputSourceDescriptionPtr& desc =
         state->description;
 
+    // Setting target ray mode and handedness is fine here because earlier in
+    // this function the input source was re-created if necessary.
     updated_source->SetTargetRayMode(
         MojomToBlinkTargetRayMode(desc->target_ray_mode));
     updated_source->SetHandedness(MojomToBlinkHandedness(desc->handedness));
@@ -106,20 +108,22 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
   return updated_source;
 }
 
-XRInputSource::XRInputSource(XRSession* session, uint32_t source_id)
+XRInputSource::XRInputSource(XRSession* session,
+                             uint32_t source_id,
+                             TargetRayMode target_ray_mode)
     : session_(session),
       source_id_(source_id),
       target_ray_space_(MakeGarbageCollected<XRTargetRaySpace>(session, this)),
       grip_space_(MakeGarbageCollected<XRGripSpace>(session, this)),
       base_timestamp_(session->xr()->NavigationStart()) {
-  SetTargetRayMode(kGaze);
+  SetTargetRayMode(target_ray_mode);
   SetHandedness(kHandNone);
 }
 
 XRInputSource::XRInputSource(
     XRSession* session,
     const device::mojom::blink::XRInputSourceStatePtr& state)
-    : XRInputSource(session, state->source_id) {
+    : XRInputSource(session, state->source_id, kGaze) {
   if (state->gamepad) {
     gamepad_ = MakeGarbageCollected<Gamepad>(this, 0, base_timestamp_,
                                              TimeTicks::Now());
@@ -174,6 +178,20 @@ bool XRInputSource::InvalidatesSameObject(
     const device::mojom::blink::XRInputSourceStatePtr& state) {
   if ((state->gamepad && !gamepad_) || (!state->gamepad && gamepad_)) {
     return true;
+  }
+
+  if (state->description) {
+    Handedness other_handedness =
+        MojomToBlinkHandedness(state->description->handedness);
+    if (other_handedness != handedness_) {
+      return true;
+    }
+
+    TargetRayMode other_mode =
+        MojomToBlinkTargetRayMode(state->description->target_ray_mode);
+    if (other_mode != target_ray_mode_) {
+      return true;
+    }
   }
 
   return false;

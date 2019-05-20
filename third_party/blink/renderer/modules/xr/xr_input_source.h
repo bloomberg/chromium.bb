@@ -43,7 +43,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
       XRSession* session,
       const device::mojom::blink::XRInputSourceStatePtr& state);
 
-  XRInputSource(XRSession*, uint32_t source_id);
+  XRInputSource(XRSession*, uint32_t source_id, TargetRayMode);
   XRInputSource(XRSession*,
                 const device::mojom::blink::XRInputSourceStatePtr& state);
   XRInputSource(const XRInputSource& other);
@@ -60,7 +60,6 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   uint32_t source_id() const { return source_id_; }
 
-  void SetTargetRayMode(TargetRayMode);
   void SetPointerTransformMatrix(std::unique_ptr<TransformationMatrix>);
 
   // Gamepad::Client
@@ -83,6 +82,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   friend class XRTargetRaySpace;
 
   void SetHandedness(Handedness);
+  void SetTargetRayMode(TargetRayMode);
   void SetEmulatedPosition(bool emulated_position);
   void SetBasePoseMatrix(std::unique_ptr<TransformationMatrix>);
 

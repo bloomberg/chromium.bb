@@ -168,6 +168,13 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
     UpdateControllerAndWait(controller_index, controller_data);
   }
 
+  void UpdateControllerRole(unsigned int controller_index,
+                            device::ControllerRole role) {
+    auto controller_data = GetCurrentControllerData(controller_index);
+    controller_data.role = role;
+    UpdateControllerAndWait(controller_index, controller_data);
+  }
+
  private:
   vr::EVRButtonId GetAxisId(unsigned int offset) {
     return static_cast<vr::EVRButtonId>(vr::k_EButton_Axis0 + offset);
@@ -198,6 +205,42 @@ void WebXrControllerInputMock::OnFrameSubmitted(
     wait_loop_->Quit();
   }
   std::move(callback).Run();
+}
+
+// Ensure that when an input source's handedness changes, an input source change
+// event is fired and a new input source is created.
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestInputHandednessChange) {
+  WebXrControllerInputMock my_mock;
+  unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();
+
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  EnterSessionWithUserGestureOrFail();
+
+  // We should only have seen the first change indicating we have input sources.
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 1", kPollTimeoutShort);
+
+  // We only expect one input source, cache it.
+  RunJavaScriptOrFail("validateInputSourceLength(1)");
+  RunJavaScriptOrFail("updateCachedInputSource(0)");
+
+  // Change the handedness from right to left and verify that we get a change
+  // event.  Then cache the new input source.
+  my_mock.UpdateControllerRole(controller_index,
+                               device::ControllerRole::kControllerRoleLeft);
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 2", kPollTimeoutShort);
+  RunJavaScriptOrFail("validateCachedSourcePresence(false)");
+  RunJavaScriptOrFail("validateInputSourceLength(1)");
+  RunJavaScriptOrFail("updateCachedInputSource(0)");
+
+  // Switch back to the right hand and confirm that we get the change.
+  my_mock.UpdateControllerRole(controller_index,
+                               device::ControllerRole::kControllerRoleRight);
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 3", kPollTimeoutShort);
+  RunJavaScriptOrFail("validateCachedSourcePresence(false)");
+  RunJavaScriptOrFail("validateInputSourceLength(1)");
+  RunJavaScriptOrFail("done()");
+  EndTest();
 }
 
 // Test that inputsourceschange events contain only the expected added/removed
