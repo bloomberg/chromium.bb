@@ -25,6 +25,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/constants.h"
@@ -404,6 +405,14 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     // persists between tests.
     TextfieldModel::ClearKillBuffer();
     ViewsTestBase::TearDown();
+  }
+
+  void SetUp() override {
+    // OS clipboard is a global resource, which causes flakiness when unit tests
+    // run in parallel. So, use a per-instance test clipboard.
+    ui::Clipboard::SetClipboardForCurrentThread(
+        std::make_unique<ui::TestClipboard>());
+    ViewsTestBase::SetUp();
   }
 
   ui::ClipboardType GetAndResetCopiedToClipboard() {
@@ -2268,7 +2277,6 @@ TEST_F(TextfieldTest, Yank) {
 
 TEST_F(TextfieldTest, CutCopyPaste) {
   InitTextfield();
-
   // Ensure IDS_APP_CUT cuts.
   textfield_->SetText(ASCIIToUTF16("123"));
   textfield_->SelectAll(false);
