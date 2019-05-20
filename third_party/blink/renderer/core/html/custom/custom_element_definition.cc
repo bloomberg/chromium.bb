@@ -34,6 +34,7 @@ CustomElementDefinition::CustomElementDefinition(
       observed_attributes_(observed_attributes),
       has_style_attribute_changed_callback_(
           observed_attributes.Contains(html_names::kStyleAttr.LocalName())),
+      disable_shadow_(disabled_features.Contains(String("shadow"))),
       disable_internals_(disabled_features.Contains(String("internals"))),
       is_form_associated_(form_association_flag == FormAssociationFlag::kYes) {}
 

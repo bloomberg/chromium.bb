@@ -122,6 +122,7 @@ class CORE_EXPORT CustomElementDefinition
   bool HasDefaultStyleSheets() const {
     return !default_style_sheets_.IsEmpty();
   }
+  bool DisableShadow() const { return disable_shadow_; }
   bool DisableInternals() const { return disable_internals_; }
   bool IsFormAssociated() const { return is_form_associated_; }
 
@@ -162,6 +163,7 @@ class CORE_EXPORT CustomElementDefinition
   HashSet<AtomicString> observed_attributes_;
   bool has_style_attribute_changed_callback_;
   bool added_default_style_sheet_ = false;
+  bool disable_shadow_ = false;
   bool disable_internals_ = false;
   bool is_form_associated_ = false;
 

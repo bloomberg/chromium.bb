@@ -2892,6 +2892,23 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
     return nullptr;
   }
 
+  // Checking IsCustomElement() here is just an optimization because
+  // IsValidName() is not cheap.
+  if (RuntimeEnabledFeatures::ElementInternalsEnabled() && IsCustomElement() &&
+      (CustomElement::IsValidName(localName()) || !IsValue().IsNull())) {
+    auto* registry = CustomElement::Registry(*this);
+    auto* definition =
+        registry ? registry->DefinitionForName(IsValue().IsNull() ? localName()
+                                                                  : IsValue())
+                 : nullptr;
+    if (definition && definition->DisableShadow()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "attachShadow() is disabled by disabledFeatures static field.");
+      return nullptr;
+    }
+  }
+
   if (GetShadowRoot()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Shadow root cannot be created on a host "
