@@ -44,6 +44,11 @@ void KerberosAccountsHandler::RegisterMessages() {
       base::BindRepeating(&KerberosAccountsHandler::HandleAddKerberosAccount,
                           weak_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
+      "reauthenticateKerberosAccount",
+      base::BindRepeating(
+          &KerberosAccountsHandler::HandleReauthenticateKerberosAccount,
+          weak_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
       "removeKerberosAccount",
       base::BindRepeating(&KerberosAccountsHandler::HandleRemoveKerberosAccount,
                           weak_factory_.GetWeakPtr()));
@@ -95,28 +100,23 @@ void KerberosAccountsHandler::HandleAddKerberosAccount(
   //   - Prevent account changes when Kerberos is disabled.
   //   - Remove all accounts when Kerberos is disabled.
 
-  CHECK_EQ(3U, args->GetSize());
+  // TODO(ljusten): Call KerberosAddAccountDialog::Show() instead when that's
+  // implemented.
 
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-
-  std::string principal_name;
-  CHECK(args->GetString(1, &principal_name));
-
-  std::string password;
-  CHECK(args->GetString(2, &password));
-
+  static int count = 0;
   KerberosCredentialsManager::Get().AddAccountAndAuthenticate(
-      std::move(principal_name), password,
-      base::BindOnce(&KerberosAccountsHandler::OnAddAccountAndAuthenticate,
-                     weak_factory_.GetWeakPtr(), callback_id));
+      base::StringPrintf("user%i@realm", ++count), "password",
+      EmptyResultCallback());
 }
 
-void KerberosAccountsHandler::OnAddAccountAndAuthenticate(
-    const std::string& callback_id,
-    kerberos::ErrorType error) {
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(static_cast<int>(error)));
+void KerberosAccountsHandler::HandleReauthenticateKerberosAccount(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK(!args->GetList().empty());
+
+  // TODO(ljusten): Add KerberosAddAccountDialog::Show(principal_name) when
+  // that's implemented.
 }
 
 void KerberosAccountsHandler::HandleRemoveKerberosAccount(

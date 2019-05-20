@@ -20,33 +20,6 @@ cr.exportPath('settings');
 settings.KerberosAccount;
 
 cr.define('settings', function() {
-  /**
-   *  @enum {number}
-   *  These values must be kept in sync with the ErrorType enum in
-   *  third_party/cros_system_api/dbus/kerberos/kerberos_service.proto.
-   */
-  const KerberosErrorType = {
-    kNone: 0,
-    kUnknown: 1,
-    kDBusFailure: 2,
-    kNetworkProblem: 3,
-    kUnknownKrb5Error: 4,
-    kBadPrincipal: 5,
-    kBadPassword: 6,
-    kPasswordExpired: 7,
-    kPasswordRejected: 8,
-    kNoCredentialsCacheFound: 9,
-    kKerberosTicketExpired: 10,
-    kKdcDoesNotSupportEncryptionType: 11,
-    kContactingKdcFailed: 12,
-    kParseRequestFailed: 13,
-    kLocalIo: 14,
-    kUnknownPrincipalName: 15,
-    kDuplicatePrincipalName: 16,
-    kInProgress: 17,
-    kParsePrincipalFailed: 18,
-  };
-
   /** @interface */
   class KerberosAccountsBrowserProxy {
     /**
@@ -57,12 +30,16 @@ cr.define('settings', function() {
     getAccounts() {}
 
     /**
-     * Attempts to add a new (or update an existing) Kerberos account.
-     * @param {string} principalName Kerberos principal (user@realm.com).
-     * @param {string} password Account password.
-     * @return {!Promise<!settings.KerberosErrorType>}
+     * Triggers the 'Add account' flow.
      */
-    addAccount(principalName, password) {}
+    addAccount() {}
+
+    /**
+     * Triggers the re-authentication flow for the account pointed to by
+     * |principalName|.
+     * @param {!string} principalName
+     */
+    reauthenticateAccount(principalName) {}
 
     /**
      * Removes |account| from the set of Kerberos accounts.
@@ -81,8 +58,13 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    addAccount(principalName, password) {
-      return cr.sendWithPromise('addKerberosAccount', principalName, password);
+    addAccount() {
+      chrome.send('addKerberosAccount');
+    }
+
+    /** @override */
+    reauthenticateAccount(principalName) {
+      chrome.send('reauthenticateKerberosAccount', [principalName]);
     }
 
     /** @override */
@@ -94,7 +76,6 @@ cr.define('settings', function() {
   cr.addSingletonGetter(KerberosAccountsBrowserProxyImpl);
 
   return {
-    KerberosErrorType: KerberosErrorType,
     KerberosAccountsBrowserProxy: KerberosAccountsBrowserProxy,
     KerberosAccountsBrowserProxyImpl: KerberosAccountsBrowserProxyImpl,
   };

@@ -11,7 +11,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="kerberos_accounts_browser_proxy.html">
-<link rel="import" href="kerberos_add_account_dialog.html">
 
 <dom-module id="settings-kerberos-accounts">
   <template>
@@ -64,7 +63,7 @@
       <div id="account-list-header" class="flex">
         <h2>$i18n{kerberosAccountsListHeader}</h2>
       </div>
-      <paper-button id="add-account-button" on-click="onAddAccountClick_">
+      <paper-button id="add-account-button" on-click="addAccount_">
         <div id="add-account-icon"></div>
         $i18n{kerberosAccountsAddAccountLabel}
       </paper-button>
@@ -113,12 +112,6 @@
         </button>
       </cr-action-menu>
     </div>
-
-    <template is="dom-if" if="[[showAddAccountDialog_]]" restamp>
-      <kerberos-add-account-dialog username="[[addAccountPresetUsername_]]"
-          on-close="onAddAccountDialogClosed_">
-      </kerberos-add-account-dialog>
-    </template>
   </template>
   <script src="kerberos_accounts.js"></script>
 </dom-module>
