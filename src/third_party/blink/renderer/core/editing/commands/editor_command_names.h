@@ -46,6 +46,7 @@ namespace blink {
   V(InsertBacktab)                                \
   V(InsertHorizontalRule)                         \
   V(InsertHTML)                                   \
+  V(InsertHTMLNested)                             \
   V(InsertImage)                                  \
   V(InsertLineBreak)                              \
   V(InsertNewline)                                \
