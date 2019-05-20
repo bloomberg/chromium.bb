@@ -107,8 +107,6 @@ void AppListClientImpl::OpenSearchResult(
   if (!result)
     return;
 
-  search_controller_->OpenResult(result, event_flags);
-
   // Send training signal to search controller.
   search_controller_->Train(result_id,
                             app_list::RankingItemTypeFromSearchResult(*result));
@@ -122,6 +120,9 @@ void AppListClientImpl::OpenSearchResult(
 
   RecordSearchResultOpenTypeHistogram(
       launched_from, result->GetSearchResultType(), IsTabletMode());
+
+  // OpenResult may cause |result| to be deleted.
+  search_controller_->OpenResult(result, event_flags);
 }
 
 void AppListClientImpl::InvokeSearchResultAction(const std::string& result_id,

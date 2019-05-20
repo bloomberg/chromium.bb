@@ -151,6 +151,50 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
   }
 }
 
+// Test that OpenSearchResult that dismisses app list runs fine without
+// user-after-free.
+IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  ASSERT_TRUE(client);
+
+  // Associate |client| with the current profile.
+  client->UpdateProfile();
+
+  // Show the launcher.
+  client->ShowAppList();
+
+  AppListModelUpdater* model_updater = test::GetModelUpdater(client);
+  ASSERT_TRUE(model_updater);
+  app_list::SearchController* search_controller = client->search_controller();
+  ASSERT_TRUE(search_controller);
+
+  // Any app that opens a window to dismiss app list is good enough for this
+  // test.
+  const std::string app_title = "chromium";
+  const std::string app_result_id =
+      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf/";
+
+  // Search by title and the app must present in the results.
+  model_updater->UpdateSearchBox(base::ASCIIToUTF16(app_title),
+                                 true /* initiated_by_user */);
+  ASSERT_TRUE(search_controller->FindSearchResult(app_result_id));
+
+  // Open the app result.
+  client->OpenSearchResult(
+      app_result_id, ui::EF_NONE,
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::mojom::AppListLaunchType::kAppSearchResult, 0);
+
+  // App list should be dismissed.
+  EXPECT_FALSE(client->app_list_target_visibility());
+
+  // Needed to let AppLaunchEventLogger finish its work on worker thread.
+  // Otherwise, its |weak_factory_| is released on UI thread and causing
+  // the bound WeakPtr to fail sequence check on a worker thread.
+  // TODO(crbug.com/965065): Remove after fixing AppLaunchEventLogger.
+  content::RunAllTasksUntilIdle();
+}
+
 // Test that browser launch time is recorded is recorded in preferences.
 // This is important for suggested apps sorting.
 IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
