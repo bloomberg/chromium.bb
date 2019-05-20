@@ -158,6 +158,8 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     event_from_ = event_from;
   }
 
+  ax::mojom::EventFrom event_from() const { return event_from_; }
+
  protected:
   // AXTreeObserver overrides.
   void OnNodeDataWillChange(AXTree* tree,

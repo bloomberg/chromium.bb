@@ -87,8 +87,8 @@ class AX_EXPORT AXTreeObserver : public base::CheckedObserver {
 
   // Called when tree data changes.
   virtual void OnTreeDataChanged(AXTree* tree,
-                                 const ui::AXTreeData& old_data,
-                                 const ui::AXTreeData& new_data) {}
+                                 const AXTreeData& old_data,
+                                 const AXTreeData& new_data) {}
 
   // Called just before a node is deleted. Its id and data will be valid,
   // but its links to parents and children are invalid. This is called

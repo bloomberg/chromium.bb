@@ -90,6 +90,7 @@ void AXEventGenerator::ReleaseTree() {
 
 void AXEventGenerator::ClearEvents() {
   tree_events_.clear();
+  event_from_ = ax::mojom::EventFrom::kNone;
 }
 
 void AXEventGenerator::AddEvent(ui::AXNode* node,

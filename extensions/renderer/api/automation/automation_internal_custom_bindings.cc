@@ -1990,6 +1990,54 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
       "automationInternal.onAccessibilityEvent", &args, nullptr, context());
 }
 
+void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
+    AutomationAXTreeWrapper* tree,
+    ax::mojom::EventFrom event_from,
+    const ExtensionMsg_AccessibilityEventBundleParams& event_bundle) {
+  // Get the root-most tree.
+  AutomationAXTreeWrapper* root_tree = tree;
+  while (
+      (tree = AutomationAXTreeWrapper::GetParentOfTreeId(root_tree->tree_id())))
+    root_tree = tree;
+
+  ui::AXNode* new_node = nullptr;
+  AutomationAXTreeWrapper* new_wrapper = nullptr;
+  if (!GetFocusInternal(root_tree, &new_wrapper, &new_node))
+    return;
+
+  ui::AXNode* old_node = nullptr;
+  AutomationAXTreeWrapper* old_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(focus_tree_id_);
+  if (old_wrapper)
+    old_node = old_wrapper->tree()->GetFromId(focus_id_);
+
+  if (new_wrapper == old_wrapper && new_node == old_node)
+    return;
+
+  // Blur previous focus.
+  if (old_node) {
+    ui::AXEvent blur_event;
+    blur_event.id = old_node->id();
+    blur_event.event_from = event_from;
+    SendAutomationEvent(old_wrapper->tree_id(), event_bundle.mouse_location,
+                        blur_event, api::automation::EVENT_TYPE_BLUR);
+
+    focus_id_ = -1;
+    focus_tree_id_ = ui::AXTreeIDUnknown();
+  }
+
+  // New focus.
+  if (new_node) {
+    ui::AXEvent focus_event;
+    focus_event.id = new_node->id();
+    focus_event.event_from = event_from;
+    SendAutomationEvent(new_wrapper->tree_id(), event_bundle.mouse_location,
+                        focus_event, api::automation::EVENT_TYPE_FOCUS);
+    focus_id_ = new_node->id();
+    focus_tree_id_ = new_wrapper->tree_id();
+  }
+}
+
 void AutomationInternalCustomBindings::SendChildTreeIDEvent(
     ui::AXTreeID child_tree_id) {
   base::ListValue args;

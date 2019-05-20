@@ -76,6 +76,7 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   // changes outside of unserialization do not get reflected here. The value is
   // reset after unserialization.
   bool did_send_tree_change_during_unserialization_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(AutomationAXTreeWrapper);
 };
 
