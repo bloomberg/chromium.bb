@@ -74,7 +74,8 @@ class WebStateImpl;
 @property(nonatomic, readonly) double loadingProgress;
 
 // YES if the web process backing WebView is believed to currently be crashed.
-@property(nonatomic, assign, getter=isWebProcessCrashed) BOOL webProcessCrashed;
+@property(nonatomic, readonly, assign, getter=isWebProcessCrashed)
+    BOOL webProcessCrashed;
 
 // Whether the WebController is visible. Returns YES after wasShown call and
 // NO after wasHidden() call.
