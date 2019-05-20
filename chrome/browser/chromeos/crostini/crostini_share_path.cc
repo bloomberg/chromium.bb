@@ -602,14 +602,12 @@ void CrostiniSharePath::OnFileChanged(const base::FilePath& path, bool error) {
     return;
   }
   base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&CrostiniSharePath::CheckIfPathDeletedOnIOThread,
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&CrostiniSharePath::CheckIfPathDeleted,
                      base::Unretained(this), path));
 }
 
-void CrostiniSharePath::CheckIfPathDeletedOnIOThread(
-    const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+void CrostiniSharePath::CheckIfPathDeleted(const base::FilePath& path) {
   if (base::PathExists(path)) {
     return;
   }
