@@ -54,6 +54,10 @@
         color: white;
       }
 
+      :host-context(:not([dark])):host([new-print-preview]) cr-icon-button {
+        --cr-icon-button-ripple-opacity: .5;
+      }
+
       :host-context([dark]):host([new-print-preview]) cr-icon-button {
         background-color: var(--google-grey-900);
         color: var(--google-grey-200);
