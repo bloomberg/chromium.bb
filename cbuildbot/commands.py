@@ -1353,14 +1353,14 @@ def RunSkylabHWTestSuite(
       raise
 
     logging.info(
-        'Suite ended in state %s (failure=%s) with output:\n%s',
+        'Suite ended in state %s (success=%s) with output:\n%s',
         report['task-result']['state'],
-        report['task-result']['failure'],
+        report['task-result']['success'],
         report['stdout'],
     )
 
     error = None
-    if report['task-result']['failure']:
+    if not report['task-result']['success']:
       error = failures_lib.TestFailure('Suite failed.')
 
     return HWTestSuiteResult(error, None)

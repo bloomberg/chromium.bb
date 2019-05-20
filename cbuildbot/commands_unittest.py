@@ -191,7 +191,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     report = {
         'task-result': {
             'state': state,
-            'failure': failure,
+            'success': not failure,
         },
         'stdout': stdout,
     }
