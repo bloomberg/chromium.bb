@@ -197,9 +197,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/795110
     "race:third_party/fontconfig/*\n"
 
-    // http://crbug.com/797998
-    "race:content::SandboxIPCHandler::HandleLocaltime\n"
-
     // http://crbug.com/927330
     "race:net::(anonymous namespace)::g_network_change_notifier\n"
 
