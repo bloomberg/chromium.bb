@@ -399,12 +399,13 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result.value();
   }
 
-  blink::ServiceWorkerStatusCode DeleteRegistration(int64_t registration_id,
-                                                    const GURL& origin) {
+  blink::ServiceWorkerStatusCode DeleteRegistration(
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      const GURL& origin) {
     bool was_called = false;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->DeleteRegistration(
-        registration_id, origin, MakeStatusCallback(&was_called, &result));
+    storage()->DeleteRegistration(registration, origin,
+                                  MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -672,7 +673,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
             UpdateToActiveState(live_registration));
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
-            DeleteRegistration(kRegistrationId, kScope.GetOrigin()));
+            DeleteRegistration(live_registration, kScope.GetOrigin()));
 
   // Response reader and writer created by the disabled storage should fail to
   // access the disk cache.
@@ -888,25 +889,6 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
             found_registration->active_version()->status());
   EXPECT_EQ(kToday, found_registration->last_update_check());
-
-  // Delete from storage but with a instance still live.
-  EXPECT_TRUE(context()->GetLiveVersion(kRegistrationId));
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            DeleteRegistration(kRegistrationId, kScope.GetOrigin()));
-  EXPECT_TRUE(context()->GetLiveVersion(kRegistrationId));
-
-  // Should no longer be found.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
-            FindRegistrationForId(kRegistrationId, kScope.GetOrigin(),
-                                  &found_registration));
-  EXPECT_FALSE(found_registration.get());
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
-            FindRegistrationForIdOnly(kRegistrationId, &found_registration));
-  EXPECT_FALSE(found_registration.get());
-
-  // Deleting an unstored registration should succeed.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            DeleteRegistration(kRegistrationId + 1, kScope.GetOrigin()));
 }
 
 TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
@@ -1154,7 +1136,7 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
   ASSERT_EQ("data", data_out[0]);
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            DeleteRegistration(kRegistrationId, kScope.GetOrigin()));
+            DeleteRegistration(live_registration, kScope.GetOrigin()));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
             GetUserData(kRegistrationId, {"key"}, &data_out));
   data_list_out.clear();
@@ -1399,13 +1381,12 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   std::set<int64_t> verify_ids;
 
   registration_->SetWaitingVersion(nullptr);
-  registration_ = nullptr;
 
   // Deleting the registration should result in the resources being added to the
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
   storage()->DeleteRegistration(
-      registration_id_, scope_.GetOrigin(),
+      registration_, scope_.GetOrigin(),
       base::BindOnce(&VerifyPurgeableListStatusCallback,
                      base::Unretained(database()), &verify_ids, &was_called,
                      &result));
@@ -1432,7 +1413,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
   storage()->DeleteRegistration(
-      registration_->id(), scope_.GetOrigin(),
+      registration_, scope_.GetOrigin(),
       base::BindOnce(&VerifyPurgeableListStatusCallback,
                      base::Unretained(database()), &verify_ids, &was_called,
                      &result));
@@ -1479,7 +1460,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
   storage()->DeleteRegistration(
-      registration_->id(), scope_.GetOrigin(),
+      registration_, scope_.GetOrigin(),
       base::BindOnce(&VerifyPurgeableListStatusCallback,
                      base::Unretained(database()), &verify_ids, &was_called,
                      &result));
@@ -1529,7 +1510,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
   storage()->DeleteRegistration(
-      registration_->id(), scope_.GetOrigin(),
+      registration_, scope_.GetOrigin(),
       base::BindOnce(&VerifyPurgeableListStatusCallback,
                      base::Unretained(database()), &verify_ids, &was_called,
                      &result));

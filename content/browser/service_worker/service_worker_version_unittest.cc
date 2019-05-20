@@ -397,13 +397,13 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop run_loop;
   helper_->context()->storage()->DeleteRegistration(
-      registration_->id(), registration_->scope().GetOrigin(),
+      registration_, registration_->scope().GetOrigin(),
       ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
   run_loop.Run();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
-  // The live registration is marked as deleted, but still exists.
-  ASSERT_TRUE(registration_->is_deleted());
+  // The live registration is marked as uninstalling, but still exists.
+  ASSERT_TRUE(registration_->is_uninstalling());
 
   {
     // Stop the worker.

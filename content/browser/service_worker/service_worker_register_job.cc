@@ -667,12 +667,15 @@ void ServiceWorkerRegisterJob::CompleteInternal(
         registration()->UnsetVersion(new_version());
         new_version()->Doom();
       }
-      if (!registration()->waiting_version() &&
-          !registration()->active_version()) {
+      if (!registration()->newest_installed_version()) {
         registration()->NotifyRegistrationFailed();
-        context_->storage()->DeleteRegistration(
-            registration()->id(), registration()->scope().GetOrigin(),
-            base::DoNothing());
+        if (!registration()->is_deleted()) {
+          context_->storage()->DeleteRegistration(
+              registration(), registration()->scope().GetOrigin(),
+              base::DoNothing());
+          context_->storage()->NotifyDoneUninstallingRegistration(
+              registration(), ServiceWorkerRegistration::Status::kUninstalled);
+        }
       }
     }
     if (!is_promise_resolved_)
@@ -682,8 +685,26 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   if (registration()) {
     context_->storage()->NotifyDoneInstallingRegistration(
         registration(), new_version(), status);
-    if (registration()->newest_installed_version())
-      registration()->set_is_uninstalled(false);
+#if DCHECK_IS_ON()
+    switch (registration()->status()) {
+      case ServiceWorkerRegistration::Status::kIntact:
+        // The registration must have a version installed, but this job may or
+        // may not have succeeded (i.e., may have failed to update).
+        DCHECK(registration()->newest_installed_version());
+        break;
+      case ServiceWorkerRegistration::Status::kUninstalling:
+        // This job must have failed. One case this happens is when the
+        // registration was already uninstalling when the job started, so it
+        // aborted.
+        DCHECK_NE(status, blink::ServiceWorkerStatusCode::kOk);
+        break;
+      case ServiceWorkerRegistration::Status::kUninstalled:
+        // This job must have failed.
+        DCHECK(!registration()->newest_installed_version());
+        DCHECK_NE(status, blink::ServiceWorkerStatusCode::kOk);
+        break;
+    }
+#endif  // DCHECK_IS_ON()
   }
 }
 

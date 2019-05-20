@@ -429,6 +429,13 @@ void ServiceWorkerStorage::StoreRegistration(
 
   DCHECK_NE(version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
+  // The registration must be new or fully uninstalled. In-progress
+  // uninstallation should be canceled first to remove it from the uninstalling
+  // list.
+  // TODO(crbug.com/964201): Also disallow kUninstalled after DeleteVersion
+  // aborts in-progress register jobs, for simplicity.
+  DCHECK_NE(registration->status(),
+            ServiceWorkerRegistration::Status::kUninstalling);
 
   ServiceWorkerDatabase::RegistrationData data;
   data.registration_id = registration->id();
@@ -474,8 +481,7 @@ void ServiceWorkerStorage::StoreRegistration(
                      base::BindOnce(&ServiceWorkerStorage::DidStoreRegistration,
                                     weak_factory_.GetWeakPtr(),
                                     std::move(callback), data)));
-
-  registration->set_is_deleted(false);
+  registration->SetStatus(ServiceWorkerRegistration::Status::kIntact);
 }
 
 void ServiceWorkerStorage::UpdateToActiveState(
@@ -562,9 +568,10 @@ void ServiceWorkerStorage::UpdateNavigationPreloadHeader(
       base::BindOnce(&DidUpdateNavigationPreloadState, std::move(callback)));
 }
 
-void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
-                                              const GURL& origin,
-                                              StatusCallback callback) {
+void ServiceWorkerStorage::DeleteRegistration(
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    const GURL& origin,
+    StatusCallback callback) {
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
@@ -578,23 +585,22 @@ void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
   if (!has_checked_for_stale_resources_)
     DeleteStaleResources();
 
+  DCHECK(!registration->is_deleted())
+      << "attempt to delete a registration twice";
+
   auto params = std::make_unique<DidDeleteRegistrationParams>(
-      registration_id, origin, std::move(callback));
+      registration->id(), origin, std::move(callback));
 
   database_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &DeleteRegistrationFromDB, database_.get(),
-          base::ThreadTaskRunnerHandle::Get(), registration_id, origin,
+          base::ThreadTaskRunnerHandle::Get(), registration->id(), origin,
           base::BindOnce(&ServiceWorkerStorage::DidDeleteRegistration,
                          weak_factory_.GetWeakPtr(), std::move(params))));
 
-  // The registration should no longer be findable.
-  pending_deletions_.insert(registration_id);
-  ServiceWorkerRegistration* registration =
-      context_->GetLiveRegistration(registration_id);
-  if (registration)
-    registration->set_is_deleted(true);
+  uninstalling_registrations_[registration->id()] = registration;
+  registration->SetStatus(ServiceWorkerRegistration::Status::kUninstalling);
 }
 
 void ServiceWorkerStorage::PerformStorageCleanup(base::OnceClosure callback) {
@@ -1121,15 +1127,10 @@ void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
   }
 }
 
-void ServiceWorkerStorage::NotifyUninstallingRegistration(
-    ServiceWorkerRegistration* registration) {
-  DCHECK(uninstalling_registrations_.find(registration->id()) ==
-         uninstalling_registrations_.end());
-  uninstalling_registrations_[registration->id()] = registration;
-}
-
 void ServiceWorkerStorage::NotifyDoneUninstallingRegistration(
-    ServiceWorkerRegistration* registration) {
+    ServiceWorkerRegistration* registration,
+    ServiceWorkerRegistration::Status new_status) {
+  registration->SetStatus(new_status);
   uninstalling_registrations_.erase(registration->id());
 }
 
@@ -1531,7 +1532,6 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     const ServiceWorkerDatabase::RegistrationData& deleted_version,
     const std::vector<int64_t>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
-  pending_deletions_.erase(params->registration_id);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     ScheduleDeleteAndStartOver();
     std::move(params->callback).Run(DatabaseStatusToStatusCode(status));
@@ -1636,10 +1636,9 @@ ServiceWorkerStorage::GetOrCreateRegistration(
       new ServiceWorkerRegistration(options, data.registration_id, context_);
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
-  if (pending_deletions_.find(data.registration_id) !=
-      pending_deletions_.end()) {
-    registration->set_is_deleted(true);
-  }
+  DCHECK(uninstalling_registrations_.find(data.registration_id) ==
+         uninstalling_registrations_.end());
+
   scoped_refptr<ServiceWorkerVersion> version =
       context_->GetLiveVersion(data.version_id);
   if (!version) {

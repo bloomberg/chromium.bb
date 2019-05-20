@@ -46,9 +46,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
     : scope_(options.scope),
       update_via_cache_(options.update_via_cache),
       registration_id_(registration_id),
-      is_deleted_(false),
-      is_uninstalling_(false),
-      is_uninstalled_(false),
+      status_(Status::kIntact),
       should_activate_when_ready_(false),
       resources_total_size_bytes_(0),
       context_(context),
@@ -66,6 +64,32 @@ ServiceWorkerRegistration::~ServiceWorkerRegistration() {
     context_->RemoveLiveRegistration(registration_id_);
   if (active_version())
     active_version()->RemoveObserver(this);
+}
+
+void ServiceWorkerRegistration::SetStatus(Status status) {
+  if (status_ == status)
+    return;
+#if DCHECK_IS_ON()
+  switch (status_) {
+    case Status::kIntact:
+      DCHECK_EQ(status, Status::kUninstalling);
+      break;
+    case Status::kUninstalling:
+      // All transitions are allowed:
+      // - To kIntact: resurrected.
+      // - To kUninstalled: finished uninstalling.
+      break;
+    case Status::kUninstalled:
+      // We can return to kIntact in the rare case of an in-progress register
+      // job that registers after DeleteVersion() deletes.
+      // TODO(crbug.com/964201): Disallow transitions after DeleteVersion aborts
+      // in-progress register jobs, for simplicity.
+      DCHECK_EQ(status, Status::kIntact);
+      break;
+  }
+#endif  // DCHECK_IS_ON()
+
+  status_ = status;
 }
 
 ServiceWorkerVersion* ServiceWorkerRegistration::GetNewestVersion() const {
@@ -107,8 +131,8 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return ServiceWorkerRegistrationInfo(
       scope(), update_via_cache(), registration_id_,
-      is_deleted_ ? ServiceWorkerRegistrationInfo::IS_DELETED
-                  : ServiceWorkerRegistrationInfo::IS_NOT_DELETED,
+      is_deleted() ? ServiceWorkerRegistrationInfo::IS_DELETED
+                   : ServiceWorkerRegistrationInfo::IS_NOT_DELETED,
       GetVersionInfo(active_version_.get()),
       GetVersionInfo(waiting_version_.get()),
       GetVersionInfo(installing_version_.get()), resources_total_size_bytes_,
@@ -246,13 +270,13 @@ void ServiceWorkerRegistration::ClaimClients() {
 
 void ServiceWorkerRegistration::ClearWhenReady() {
   DCHECK(context_);
-  if (is_uninstalling_)
+  if (is_deleted()) {
+    // We already deleted and are waiting to clear, or the registration is
+    // already cleared.
     return;
-  is_uninstalling_ = true;
-
-  context_->storage()->NotifyUninstallingRegistration(this);
+  }
   context_->storage()->DeleteRegistration(
-      id(), scope().GetOrigin(),
+      this, scope().GetOrigin(),
       AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, this)));
 
@@ -262,12 +286,21 @@ void ServiceWorkerRegistration::ClearWhenReady() {
 
 void ServiceWorkerRegistration::AbortPendingClear(StatusCallback callback) {
   DCHECK(context_);
-  if (!is_uninstalling()) {
-    std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
-    return;
+
+  switch (status_) {
+    case Status::kIntact:
+      std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
+      return;
+    case Status::kUninstalling:
+      break;
+    case Status::kUninstalled:
+      NOTREACHED()
+          << "attempt to resurrect a completely uninstalled registration";
+      break;
   }
-  is_uninstalling_ = false;
-  context_->storage()->NotifyDoneUninstallingRegistration(this);
+
+  context_->storage()->NotifyDoneUninstallingRegistration(this,
+                                                          Status::kIntact);
 
   scoped_refptr<ServiceWorkerVersion> most_recent_version =
       waiting_version() ? waiting_version() : active_version();
@@ -283,7 +316,7 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
   if (!context_)
     return;
   DCHECK_EQ(active_version(), version);
-  if (is_uninstalling_) {
+  if (is_uninstalling()) {
     // TODO(falken): This can destroy the caller during this observer function
     // call, which is impolite and dangerous. Try to make this async, or make
     // OnNoControllees not an observer function.
@@ -475,15 +508,17 @@ void ServiceWorkerRegistration::DeleteVersion(
   if (!active_version() && !waiting_version()) {
     // Delete the records from the db.
     context_->storage()->DeleteRegistration(
-        id(), scope().GetOrigin(),
+        this, scope().GetOrigin(),
         base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, protect));
     // But not from memory if there is a version in the pipeline.
-    // TODO(falken): Fix this logic. There could be a running register job for
-    // this registration that hasn't set installing_version() yet.
+    // TODO(crbug.com/964201): This is too clever. Delete this exception and
+    // just abort on-going register jobs.
     if (installing_version()) {
-      is_deleted_ = false;
+      context_->storage()->NotifyDoneUninstallingRegistration(this,
+                                                              Status::kIntact);
     } else {
-      is_uninstalled_ = true;
+      context_->storage()->NotifyDoneUninstallingRegistration(
+          this, Status::kUninstalled);
       NotifyRegistrationFailed();
     }
   }
@@ -581,8 +616,8 @@ void ServiceWorkerRegistration::OnDeleteFinished(
 }
 
 void ServiceWorkerRegistration::Clear() {
-  is_uninstalling_ = false;
-  is_uninstalled_ = true;
+  DCHECK(is_uninstalling());
+  SetStatus(Status::kUninstalled);
   should_activate_when_ready_ = false;
 
   // Some callbacks, at least OnRegistrationFinishedUninstalling and
@@ -592,8 +627,10 @@ void ServiceWorkerRegistration::Clear() {
   // or make the observers more polite?
   auto protect = base::WrapRefCounted(this);
 
-  if (context_)
-    context_->storage()->NotifyDoneUninstallingRegistration(this);
+  if (context_) {
+    context_->storage()->NotifyDoneUninstallingRegistration(
+        this, Status::kUninstalled);
+  }
 
   std::vector<scoped_refptr<ServiceWorkerVersion>> versions_to_doom;
   auto mask =

@@ -1517,7 +1517,7 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     // registration. To handle the case, check the live registrations here.
     protect = context_->GetLiveRegistration(registration_id_);
     if (protect) {
-      DCHECK(protect->is_deleted());
+      DCHECK(protect->is_uninstalling());
       status = blink::ServiceWorkerStatusCode::kOk;
     }
   }

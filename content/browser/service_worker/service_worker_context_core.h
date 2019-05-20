@@ -45,7 +45,6 @@ class ServiceWorkerContextWrapper;
 class ServiceWorkerJobCoordinator;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
-class ServiceWorkerStorage;
 class URLLoaderFactoryGetter;
 
 // This class manages data associated with service workers.
