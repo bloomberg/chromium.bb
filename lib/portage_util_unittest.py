@@ -746,7 +746,6 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     run = self.PatchObject(cros_build_lib, 'RunCommand')
-    readfile = self.PatchObject(osutils, 'ReadFile')
 
     # Reject no output.
     run.return_value = cros_build_lib.CommandResult(
@@ -754,10 +753,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(portage_util.Error,
                       self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
-    self.assertEqual(exists.call_count, 2)
+    self.assertEqual(exists.call_count, 1)
     exists.reset_mock()
-    self.assertEqual(readfile.call_count, 1)
-    readfile.reset_mock()
 
     # Reject simple output.
     run.return_value = cros_build_lib.CommandResult(
@@ -765,10 +762,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(portage_util.Error,
                       self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
-    self.assertEqual(exists.call_count, 2)
+    self.assertEqual(exists.call_count, 1)
     exists.reset_mock()
-    self.assertEqual(readfile.call_count, 1)
-    readfile.reset_mock()
 
     # Reject error.
     run.return_value = cros_build_lib.CommandResult(
@@ -776,8 +771,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(portage_util.Error,
                       self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
-    self.assertEqual(exists.call_count, 2)
-    self.assertEqual(readfile.call_count, 1)
+    self.assertEqual(exists.call_count, 1)
 
   def testVersionScriptTooHighVersion(self):
     """Reject scripts that output high version numbers."""

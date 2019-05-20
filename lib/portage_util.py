@@ -908,25 +908,10 @@ class EBuild(object):
 
     output = result.output.strip()
     if result.returncode or not output:
-      # Crbug.com/917099 - Let's get more information for debugging, at least
-      # temporarily.
-      fsck_out = {}
-      packed_refs = ''
-      for srcdir in srcdirs:
-        fsck_out[srcdir] = self._RunCommand(['git', 'fsck', srcdir],
-                                            error_code_ok=True)
-      # TODO(crbug.com/917099): Remove this long-term because it's verbose.
-      ls_out = self._RunCommand(['ls', '-lLRa'] + srcdirs, error_code_ok=True)
-      for srcdir in srcdirs + ['.']:
-        path = os.path.join(srcdir, '.git/packed-refs')
-        if os.path.exists(path):
-          packed_refs += '%s:\n%s\n' % (path, osutils.ReadFile(path))
       raise Error(
           'Package %s has a chromeos-version.sh script but failed:\n'
-          'return code = %s\nstdout = %s\nstderr = %s\ndir listing = %s\n'
-          'git fsck = %s\nsrcdirs = %s\npacked-refs file contents:\n%s\n',
-          self.pkgname, result.returncode, result.output, result.error,
-          ls_out, fsck_out, srcdirs, packed_refs)
+          'return code = %s\nstdout = %s\nstderr = %s\n',
+          self.pkgname, result.returncode, result.output, result.error)
 
     # Sanity check: disallow versions that will be larger than the 9999 ebuild
     # used by cros-workon.
