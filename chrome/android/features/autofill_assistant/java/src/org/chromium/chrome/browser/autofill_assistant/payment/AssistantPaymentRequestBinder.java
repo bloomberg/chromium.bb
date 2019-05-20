@@ -330,14 +330,15 @@ class AssistantPaymentRequestBinder
         }
         view.mTermsSection.setPaddings(view.mSectionToSectionPadding, 0);
 
-        // Hide the divider after the expanded section, if any.
-        boolean prevSectionIsExpanded = false;
+        // Hide dividers for currently invisible sections and after the expanded section, if any.
+        boolean prevSectionIsExpandedOrInvisible = false;
         for (int i = 0; i < view.mPaymentRequestExpanderAccordion.getChildCount(); i++) {
             View child = view.mPaymentRequestExpanderAccordion.getChildAt(i);
             if (child instanceof AssistantVerticalExpander) {
-                prevSectionIsExpanded = ((AssistantVerticalExpander) child).isExpanded();
+                prevSectionIsExpandedOrInvisible = ((AssistantVerticalExpander) child).isExpanded()
+                        || child.getVisibility() != View.VISIBLE;
             } else if (child.getTag() == view.mDividerTag) {
-                child.setVisibility(prevSectionIsExpanded ? View.GONE : View.VISIBLE);
+                child.setVisibility(prevSectionIsExpandedOrInvisible ? View.GONE : View.VISIBLE);
             }
         }
         return true;
