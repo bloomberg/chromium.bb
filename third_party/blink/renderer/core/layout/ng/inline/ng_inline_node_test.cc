@@ -1339,6 +1339,55 @@ TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockObtainsBlockChild) {
   EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
 }
 
+// Test inline objects are initialized when |SplitFlow()| moves them.
+TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
+  SetBodyInnerHTML(R"HTML(
+    <div>
+      <span id=outer_span>
+        <span id=inner_span>1234</span>
+      </span>
+    </div>
+  )HTML");
+
+  // Keep the text fragment to compare later.
+  Element* inner_span = GetElementById("inner_span");
+  Node* text = inner_span->firstChild();
+  scoped_refptr<NGPaintFragment> text_fragment_before_split =
+      text->GetLayoutObject()->FirstInlineFragment();
+  EXPECT_NE(text_fragment_before_split.get(), nullptr);
+
+  // Append <div> to <span>. causing SplitFlow().
+  Element* outer_span = GetElementById("outer_span");
+  Element* div = GetDocument().CreateRawElement(html_names::kDivTag);
+  outer_span->appendChild(div);
+
+  // Update tree but do NOT update layout. At this point, there's no guarantee,
+  // but there are some clients (e.g., Schroll Anchor) who try to read
+  // associated fragments.
+  //
+  // NGPaintFragment is owned by LayoutNGBlockFlow. Because the original owner
+  // no longer has an inline formatting context, the NGPaintFragment subtree is
+  // destroyed, and should not be accessible.
+  GetDocument().UpdateStyleAndLayoutTree();
+  scoped_refptr<NGPaintFragment> text_fragment_before_layout =
+      text->GetLayoutObject()->FirstInlineFragment();
+  EXPECT_EQ(text_fragment_before_layout, nullptr);
+
+  // Update layout. There should be a different instance of the text fragment.
+  UpdateAllLifecyclePhasesForTest();
+  scoped_refptr<NGPaintFragment> text_fragment_after_layout =
+      text->GetLayoutObject()->FirstInlineFragment();
+  EXPECT_NE(text_fragment_before_split, text_fragment_after_layout);
+
+  // Check it is the one owned by the new root inline formatting context.
+  LayoutBlock* anonymous_block =
+      inner_span->GetLayoutObject()->ContainingBlock();
+  EXPECT_TRUE(anonymous_block->IsAnonymous());
+  const NGPaintFragment* block_fragment = anonymous_block->PaintFragment();
+  const NGPaintFragment* line_box_fragment = block_fragment->FirstChild();
+  EXPECT_EQ(line_box_fragment->FirstChild(), text_fragment_after_layout);
+}
+
 // https://crbug.com/911220
 TEST_F(NGInlineNodeTest, PreservedNewlineWithBidiAndRelayout) {
   SetupHtml("container",

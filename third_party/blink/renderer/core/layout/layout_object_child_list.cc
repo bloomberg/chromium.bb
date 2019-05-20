@@ -37,23 +37,34 @@ namespace blink {
 
 namespace {
 
-// Invalidate InineItems() in LayoutNGText.
+// Invalidate LayoutNG properties for insertion.
 //
 // They need to be invalidated when moving across inline formatting context
 // (i.e., to a different LayoutBlockFlow.)
 void InvalidateInlineItems(LayoutObject* object) {
-  if (object->IsInLayoutNGInlineFormattingContext())
-    object->SetFirstInlineFragment(nullptr);
-  if (object->IsText()) {
-    ToLayoutText(object)->InvalidateInlineItems();
-  } else if (object->IsLayoutInline()) {
-    // When moving without |notify_layout_object|, only top-level objects are
-    // moved. Ensure to invalidate all LayoutNGText in this inline formatting
-    // context.
-    for (LayoutObject* curr = object->SlowFirstChild(); curr;
-         curr = curr->NextSibling())
-      InvalidateInlineItems(curr);
+  DCHECK(object->IsInLayoutNGInlineFormattingContext());
+
+  if (auto* layout_text = ToLayoutTextOrNull(object)) {
+    layout_text->SetFirstInlineFragment(nullptr);
+    layout_text->InvalidateInlineItems();
+    return;
   }
+
+  if (auto* layout_inline = ToLayoutInlineOrNull(object)) {
+    layout_inline->SetFirstInlineFragment(nullptr);
+
+    // In some cases, only top-level objects are moved, when |SplitFlow()| moves
+    // subtree, or when moving without |notify_layout_object|. Ensure to
+    // invalidate all descendants in this inline formatting context.
+    for (LayoutObject* child = layout_inline->FirstChild(); child;
+         child = child->NextSibling()) {
+      if (child->IsInLayoutNGInlineFormattingContext())
+        InvalidateInlineItems(child);
+    }
+    return;
+  }
+
+  object->SetFirstInlineFragment(nullptr);
 }
 
 }  // namespace
@@ -193,14 +204,16 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   }
 
   if (!owner->DocumentBeingDestroyed()) {
+    // Run LayoutNG invalidations outside of |InsertedIntoTree| because it needs
+    // to run regardless of |notify_layout_object|. |notify_layout_object| is an
+    // optimization to skip notifications when moving within the same tree.
+    if (new_child->IsInLayoutNGInlineFormattingContext()) {
+      InvalidateInlineItems(new_child);
+    }
+
     if (notify_layout_object) {
       new_child->InsertedIntoTree();
       LayoutCounter::LayoutObjectSubtreeAttached(new_child);
-    } else if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-      // |notify_layout_object| is an optimization to skip notifications when
-      // moving within the same tree. Inline items need to be invalidated even
-      // when moving.
-      InvalidateInlineItems(new_child);
     }
 
     if (owner->IsInLayoutNGInlineFormattingContext() ||
