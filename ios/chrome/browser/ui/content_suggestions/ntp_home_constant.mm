@@ -18,6 +18,9 @@ const CGFloat kMostVisitedBottomMarginIPad = 80;
 const CGFloat kMostVisitedBottomMarginIPhone = 60;
 const CGFloat kSuggestionPeekingHeight = 60;
 
+const CGFloat kIdentityAvatarDimension = 32;
+const CGFloat kIdentityAvatarMargin = 16;
+
 UIColor* kNTPBackgroundColor() {
   return [UIColor colorWithWhite:0.98 alpha:1.0];
 }

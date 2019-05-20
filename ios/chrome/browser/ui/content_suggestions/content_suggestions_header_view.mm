@@ -6,9 +6,12 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
@@ -49,6 +52,12 @@ CGFloat ToolbarHeight() {
       [UIApplication sharedApplication].preferredContentSizeCategory);
 }
 
+// Returns the amount of vertical space to allow for the existence of a top
+// toolbar when iPhone is in landscape orientation.
+CGFloat IdentityDiscToolbarOffset() {
+  return IsCompactHeight() ? ToolbarHeight() : 0;
+}
+
 }  // namespace
 
 @interface ContentSuggestionsHeaderView ()
@@ -64,6 +73,9 @@ CGFloat ToolbarHeight() {
 @property(nonatomic, strong) NSLayoutConstraint* fakeToolbarTopConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* voiceSearchTrailingConstraint;
+// Layout constraints for Identity Disc that need to be adjusted based on
+// device size class changes.
+@property(nonatomic, strong) NSLayoutConstraint* identityDiscTopConstraint;
 
 @end
 
@@ -89,6 +101,38 @@ CGFloat ToolbarHeight() {
     [toolbarView.heightAnchor constraintEqualToConstant:ToolbarHeight()],
     [toolbarView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor]
   ]];
+}
+
+- (void)setIdentityDiscView:(UIView*)identityDiscView {
+  DCHECK(identityDiscView);
+  _identityDiscView = identityDiscView;
+  [self addSubview:_identityDiscView];
+
+  // Sets the layout constraints for size of Identity Disc and the placement
+  // based on whether there is a top toolbar or not.
+  self.identityDiscView.translatesAutoresizingMaskIntoConstraints = NO;
+  id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
+  self.identityDiscTopConstraint = [self.identityDiscView.topAnchor
+      constraintEqualToAnchor:layoutGuide.topAnchor
+                     constant:IdentityDiscToolbarOffset()];
+  CGFloat dimension =
+      ntp_home::kIdentityAvatarDimension + 2 * ntp_home::kIdentityAvatarMargin;
+  [NSLayoutConstraint activateConstraints:@[
+    [self.identityDiscView.heightAnchor constraintEqualToConstant:dimension],
+    [self.identityDiscView.widthAnchor constraintEqualToConstant:dimension],
+    [self.identityDiscView.trailingAnchor
+        constraintEqualToAnchor:layoutGuide.trailingAnchor],
+    self.identityDiscTopConstraint
+  ]];
+}
+
+- (void)adjustIdentityDiscConstraints {
+  // identityDiscView may not be set.
+  if (!self.identityDiscView)
+    return;
+
+  DCHECK(base::FeatureList::IsEnabled(kIdentityDisc));
+  self.identityDiscTopConstraint.constant = IdentityDiscToolbarOffset();
 }
 
 - (void)addViewsToSearchField:(UIView*)searchField {
