@@ -13,6 +13,8 @@ js_type_check("closure_compile") {
     "//chrome/browser/resources/settings/people_page:change_picture_browser_proxy",
     "//chrome/browser/resources/settings/people_page:fingerprint_browser_proxy",
     "//chrome/browser/resources/settings/people_page:fingerprint_list",
+    "//chrome/browser/resources/settings/people_page:kerberos_accounts",
+    "//chrome/browser/resources/settings/people_page:kerberos_accounts_browser_proxy",
     "//chrome/browser/resources/settings/people_page:lock_screen",
     "//chrome/browser/resources/settings/people_page:lock_screen_password_prompt_dialog",
     "//chrome/browser/resources/settings/people_page:lock_state_behavior",

@@ -71,7 +71,7 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!PeoplePageVisibility}
+     * @type {!PageVisibility}
      */
     pageVisibility: Object,
 
@@ -449,6 +449,18 @@ Polymer({
   /** @private */
   onManageOtherPeople_: function() {
     settings.navigateTo(settings.routes.ACCOUNTS);
+  },
+
+  /** @private */
+  shouldShowAccountManager_: function() {
+    return this.isAccountManagerEnabled_ &&
+        this.pageVisibility.people.googleAccounts;
+  },
+
+  /** @private */
+  shouldShowKerberos_: function() {
+    return this.isKerberosEnabled_ &&
+        this.pageVisibility.people.kerberosAccounts;
   },
   // </if>
 

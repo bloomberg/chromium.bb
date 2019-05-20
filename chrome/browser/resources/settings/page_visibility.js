@@ -47,6 +47,7 @@ let DownloadsPageVisibility;
 /**
  * @typedef {{
  *   googleAccounts: boolean,
+ *   kerberosAccounts: boolean,
  *   lockScreen: boolean,
  *   manageUsers: boolean,
  * }}
@@ -129,6 +130,7 @@ cr.define('settings', function() {
       autofill: true,
       people: {
         lockScreen: showOSSettings,
+        kerberosAccounts: showOSSettings,
         googleAccounts: showOSSettings,
         manageUsers: showOSSettings,
       },
