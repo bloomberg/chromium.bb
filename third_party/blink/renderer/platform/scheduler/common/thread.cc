@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
+#include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -92,12 +94,17 @@ std::unique_ptr<Thread> Thread::CreateThread(
 }
 
 std::unique_ptr<Thread> Thread::CreateWebAudioThread() {
-  ThreadCreationParams params(WebThreadType::kWebAudioThread);
+  ThreadCreationParams params(WebThreadType::kAudioWorkletThread);
+  params.supports_gc = true;
+
   // WebAudio uses a thread with |DISPLAY| priority to avoid glitch when the
   // system is under the high pressure. Note that the main browser thread also
   // runs with same priority. (see: crbug.com/734539)
-  params.thread_priority = base::ThreadPriority::DISPLAY;
-  params.supports_gc = true;
+  params.thread_priority =
+      base::FeatureList::IsEnabled(features::kAudioWorkletRealtimeThread)
+          ? base::ThreadPriority::REALTIME_AUDIO
+          : base::ThreadPriority::DISPLAY;
+
   return CreateThread(params);
 }
 

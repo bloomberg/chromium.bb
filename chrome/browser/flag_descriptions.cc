@@ -53,6 +53,12 @@ const char kAllowStartingServiceManagerOnlyDescription[] =
     "Allows running a lightweight service-manager-only mode, in which services "
     "can run without the browser process.";
 
+const char kAudioWorkletRealtimeThreadName[] =
+    "Use realtime priority thread for Audio Worklet";
+const char kAudioWorkletRealtimeThreadDescription[] =
+    "Run Audio Worklet operation on a realtime priority thread for better "
+    "audio stream stability.";
+
 const char kUpdatedCellularActivationUiName[] =
     "Updated Cellular Activation UI";
 const char kUpdatedCellularActivationUiDescription[] =

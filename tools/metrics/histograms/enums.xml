@@ -34281,6 +34281,7 @@ from previous Chrome versions.
   <int value="192167036" label="LogJsConsoleMessages:disabled"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
+  <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
   <int value="201343576" label="enable-password-change-support:enabled"/>
@@ -35189,6 +35190,7 @@ from previous Chrome versions.
   <int value="1593917165" label="SimplifiedNTP:disabled"/>
   <int value="1594247626" label="ContentSuggestionsSettings:enabled"/>
   <int value="1594664550" label="NTPModernLayout:enabled"/>
+  <int value="1595208893" label="AudioWorkletRealtimeThread:enabled"/>
   <int value="1597880096" label="FocusMode:disabled"/>
   <int value="1600850069" label="MobileIdentityConsistency:disabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>

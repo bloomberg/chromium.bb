@@ -83,6 +83,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
 
+BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
+
 // Returns true when off-the-main-thread shared worker script fetch is enabled.
 BLINK_COMMON_EXPORT bool IsOffMainThreadSharedWorkerScriptFetchEnabled();
 

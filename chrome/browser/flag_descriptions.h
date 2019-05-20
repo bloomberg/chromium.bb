@@ -61,6 +61,9 @@ extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 extern const char kAllowStartingServiceManagerOnlyName[];
 extern const char kAllowStartingServiceManagerOnlyDescription[];
 
+extern const char kAudioWorkletRealtimeThreadName[];
+extern const char kAudioWorkletRealtimeThreadDescription[];
+
 extern const char kUpdatedCellularActivationUiName[];
 extern const char kUpdatedCellularActivationUiDescription[];
 

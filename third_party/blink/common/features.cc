@@ -268,6 +268,9 @@ const base::Feature kWebFontsCacheAwareTimeoutAdaption {
 const base::Feature kBlockingFocusWithoutUserActivation{
     "BlockingFocusWithoutUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAudioWorkletRealtimeThread{
+    "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
   // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
   // (NetworkService).

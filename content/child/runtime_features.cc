@@ -505,6 +505,12 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableFormControlsRefresh(
       features::IsFormControlsRefreshEnabled());
+
+  if (base::FeatureList::IsEnabled(
+      blink::features::kAudioWorkletRealtimeThread)) {
+    WebRuntimeFeatures::EnableFeatureFromString(
+        "AudioWorkletRealtimeThread", true);
+  }
 }
 
 }  // namespace
