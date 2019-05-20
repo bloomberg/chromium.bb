@@ -3242,7 +3242,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-002.xhtml [ Failure ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-shape-inside-002.svg [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-horiz-002.xhtml [ Failure ]
-crbug.com/626703 [ Android ] virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-play.html [ Crash ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Timeout ]
 crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
