@@ -514,7 +514,7 @@ class ImageBuffer {
   process() {
     this.memory = Module._malloc(this.length);
     if (!this.memory) {
-      throw new Error('Image malloc failure');
+      throw new Error('Image malloc failed: ' + this.length + ' bytes');
     }
 
     Module.HEAP8.set(this.source, this.memory);
