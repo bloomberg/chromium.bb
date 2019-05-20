@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
@@ -314,15 +313,15 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTestWithLanguageDetection,
       "<span lang='en-US'>The first paragraph</span>"
       "<span lang='fr-FR'>la deuxième paragraphe</span></div>");
 
-  std::pair<std::string, std::string> result1 =
+  SpeechMonitorUtterance result1 =
       speech_monitor_.GetNextUtteranceWithLanguage();
-  EXPECT_TRUE(base::MatchPattern(result1.first, "The first paragraph*"));
-  EXPECT_EQ("en-US", result1.second);
+  EXPECT_TRUE(base::MatchPattern(result1.text, "The first paragraph*"));
+  EXPECT_EQ("en-US", result1.lang);
 
-  std::pair<std::string, std::string> result2 =
+  SpeechMonitorUtterance result2 =
       speech_monitor_.GetNextUtteranceWithLanguage();
-  EXPECT_TRUE(base::MatchPattern(result2.first, "la deuxième paragraphe*"));
-  EXPECT_EQ("fr-FR", result2.second);
+  EXPECT_TRUE(base::MatchPattern(result2.text, "la deuxième paragraphe*"));
+  EXPECT_EQ("fr-FR", result2.lang);
 }
 
 // Flaky test. https://crbug.com/950049
