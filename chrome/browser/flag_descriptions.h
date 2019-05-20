@@ -1915,9 +1915,6 @@ extern const char kUsbguardDescription[];
 extern const char kUseMonitorColorSpaceName[];
 extern const char kUseMonitorColorSpaceDescription[];
 
-extern const char kUserActivityPredictionMlServiceName[];
-extern const char kUserActivityPredictionMlServiceDescription[];
-
 extern const char kVaapiJpegImageDecodeAccelerationName[];
 extern const char kVaapiJpegImageDecodeAccelerationDescription[];
 

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 source_set("smart_dim") {
-  # Dependent targets should not include tf_native_inference.h directly.
   public = [
     "model.h",
     "model_impl.h",
@@ -12,9 +11,9 @@ source_set("smart_dim") {
   sources = [
     "ml_service_client.cc",
     "ml_service_client.h",
+    "model.h",
     "model_impl.cc",
-    "tf_native_inference.cc",
-    "tf_native_inference.h",
+    "model_impl.h",
   ]
 
   deps = [

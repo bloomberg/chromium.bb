@@ -3510,13 +3510,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcHwVP9EncodingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebRtcHWVP9Encoding)},
 
-#if defined(OS_CHROMEOS)
-    {"user-activity-prediction-ml-service",
-     flag_descriptions::kUserActivityPredictionMlServiceName,
-     flag_descriptions::kUserActivityPredictionMlServiceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kUserActivityPredictionMlService)},
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_ANDROID)
     {"manual-password-generation-android",
      flag_descriptions::kManualPasswordGenerationAndroidName,

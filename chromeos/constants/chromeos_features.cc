@@ -124,11 +124,6 @@ const base::Feature kUseMessagesStagingUrl{"UseMessagesStagingUrl",
 const base::Feature kUserActivityPrediction{"UserActivityPrediction",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables ML service inferencing (instead of TFNative inferencing)
-// for the Smart Dim feature on Chrome OS.
-const base::Feature kUserActivityPredictionMlService{
-    "UserActivityPredictionMlService", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable or disable native controls in video player on Chrome OS.
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};

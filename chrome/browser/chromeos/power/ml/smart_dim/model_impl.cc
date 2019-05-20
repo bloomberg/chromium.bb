@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim/tf_native_inference.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -39,14 +38,10 @@ constexpr int64_t kLiteModelInputVectorSize = 343;
 // RankerExample to a vectorized float for inactivity score calculation. Returns
 // nullptr if cannot load or parse the config.
 std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
-LoadExamplePreprocessorConfig(bool use_ml_service) {
+LoadExamplePreprocessorConfig() {
   auto config = std::make_unique<assist_ranker::ExamplePreprocessorConfig>();
 
-  // TODO(crbug.com/893425): Remove the TF Native version once we shift to
-  // ML service completely.
-  const int res_id = use_ml_service
-                         ? IDR_SMART_DIM_LITE_EXAMPLE_PREPROCESSOR_CONFIG_PB
-                         : IDR_SMART_DIM_EXAMPLE_PREPROCESSOR_CONFIG_PB;
+  const int res_id = IDR_SMART_DIM_LITE_EXAMPLE_PREPROCESSOR_CONFIG_PB;
 
   scoped_refptr<base::RefCountedMemory> raw_config =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res_id);
@@ -238,11 +233,7 @@ float GetDimThreshold() {
 
 }  // namespace
 
-SmartDimModelImpl::SmartDimModelImpl()
-    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
-      use_ml_service_(base::FeatureList::IsEnabled(
-          features::kUserActivityPredictionMlService)) {}
+SmartDimModelImpl::SmartDimModelImpl() = default;
 
 SmartDimModelImpl::~SmartDimModelImpl() = default;
 
@@ -282,36 +273,6 @@ SmartDimModelResult SmartDimModelImpl::PreprocessInput(
   return SmartDimModelResult::kSuccess;
 }
 
-SmartDimModelResult SmartDimModelImpl::CalculateInactivityScoreTfNative(
-    const UserActivityEvent::Features& features,
-    float* inactivity_score_out) {
-  // This is the TF Native codepath.
-  // TODO(crbug.com/893425): Remove this codepath once we shift to ML service
-  // completely.
-  CHECK(inactivity_score_out);
-
-  std::vector<float> vectorized_features;
-  auto preprocess_result = PreprocessInput(features, &vectorized_features);
-  if (preprocess_result != SmartDimModelResult::kSuccess) {
-    LogPowerMLSmartDimModelResult(preprocess_result);
-    return preprocess_result;
-  }
-
-  if (vectorized_features.size() != tfnative_model::FEATURES_SIZE) {
-    LogPowerMLSmartDimModelResult(
-        SmartDimModelResult::kMismatchedFeatureSizeError);
-    return SmartDimModelResult::kMismatchedFeatureSizeError;
-  }
-
-  if (!model_alloc_)
-    model_alloc_ = std::make_unique<tfnative_model::FixedAllocations>();
-
-  tfnative_model::Inference(vectorized_features.data(), inactivity_score_out,
-                            model_alloc_.get());
-
-  return SmartDimModelResult::kSuccess;
-}
-
 UserActivityEvent::ModelPrediction
 SmartDimModelImpl::CreatePredictionFromInactivityScore(float inactivity_score) {
   UserActivityEvent::ModelPrediction prediction;
@@ -329,26 +290,7 @@ SmartDimModelImpl::CreatePredictionFromInactivityScore(float inactivity_score) {
   return prediction;
 }
 
-UserActivityEvent::ModelPrediction SmartDimModelImpl::ShouldDimTfNative(
-    const UserActivityEvent::Features& input_features) {
-  UserActivityEvent::ModelPrediction prediction;
-  prediction.set_response(UserActivityEvent::ModelPrediction::MODEL_ERROR);
-
-  float inactivity_score = 0;
-  const SmartDimModelResult result =
-      CalculateInactivityScoreTfNative(input_features, &inactivity_score);
-
-  if (result != SmartDimModelResult::kSuccess) {
-    // No need to log here as all error cases are already logged in
-    // CalculateInactivityScoreTfNative.
-    return prediction;
-  }
-
-  LogPowerMLSmartDimModelResult(SmartDimModelResult::kSuccess);
-  return CreatePredictionFromInactivityScore(inactivity_score);
-}
-
-void SmartDimModelImpl::ShouldDimMlService(
+void SmartDimModelImpl::ShouldDim(
     const UserActivityEvent::Features& input_features,
     DimDecisionCallback callback) {
   UserActivityEvent::ModelPrediction prediction;
@@ -392,15 +334,7 @@ void SmartDimModelImpl::RequestDimDecision(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Cancel previously assigned callbacks and set it to the new callback.
   cancelable_callback_.Reset(std::move(dim_callback));
-  if (!use_ml_service_) {
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_.get(), FROM_HERE,
-        base::BindOnce(&SmartDimModelImpl::ShouldDimTfNative,
-                       base::Unretained(this), input_features),
-        base::BindOnce(cancelable_callback_.callback()));
-  } else {
-    ShouldDimMlService(input_features, cancelable_callback_.callback());
-  }
+  ShouldDim(input_features, cancelable_callback_.callback());
 }
 
 void SmartDimModelImpl::CancelPreviousRequest() {
@@ -415,18 +349,13 @@ void SmartDimModelImpl::SetMlServiceClientForTesting(
 }
 
 void SmartDimModelImpl::LazyInitialize() {
-  // TODO(crbug.com/893425): Remove the flag check once we shift to ML service
-  // completely.
-  if (use_ml_service_) {
-    if (!ml_service_client_) {
-      ml_service_client_ = CreateMlServiceClient();
-    }
+  if (!ml_service_client_) {
+    ml_service_client_ = CreateMlServiceClient();
   }
 
-  if (preprocessor_config_)
-    return;
-
-  preprocessor_config_ = LoadExamplePreprocessorConfig(use_ml_service_);
+  if (!preprocessor_config_) {
+    preprocessor_config_ = LoadExamplePreprocessorConfig();
+  }
 }
 
 }  // namespace ml

@@ -3177,11 +3177,6 @@ const char kUsbguardDescription[] =
     " until Chrome OS is unlocked to protect against malicious USB devices."
     " Already connected USB devices will continue to function.";
 
-const char kUserActivityPredictionMlServiceName[] =
-    "ML Service Smart Dim model";
-const char kUserActivityPredictionMlServiceDescription[] =
-    "Uses the new ML Service model for user activity prediction (Smart Dim).";
-
 const char kVaapiJpegImageDecodeAccelerationName[] =
     "VA-API JPEG decode acceleration for images";
 const char kVaapiJpegImageDecodeAccelerationDescription[] =

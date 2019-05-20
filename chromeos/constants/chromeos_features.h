@@ -62,8 +62,6 @@ extern const base::Feature kUseMessagesStagingUrl;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUserActivityPrediction;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kUserActivityPredictionMlService;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVideoPlayerNativeControls;
 
 // Keep alphabetized.
