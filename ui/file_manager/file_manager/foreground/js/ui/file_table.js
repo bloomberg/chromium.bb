@@ -14,6 +14,32 @@ function FileTableColumnModel(tableColumns) {
 }
 
 /**
+ * Customize the column header to decorate with a11y attributes that announces
+ * the sorting used when clicked.
+ *
+ * @this {cr.ui.table.TableColumn} Bound by cr.ui.table.TableHeader before
+ * calling.
+ * @param {Element} table Table being rendered.
+ * @return {Element}
+ */
+function renderHeader_(table) {
+  const column = /** @type {cr.ui.table.TableColumn} */ (this);
+  const textElement = table.ownerDocument.createElement('span');
+  textElement.textContent = column.name;
+  const dm = table.dataModel;
+
+  let sortOrder = column.defaultOrder;
+  if (dm && dm.sortStatus.field === column.id) {
+    // Here we have to flip, because clicking will perform the opposite sorting.
+    sortOrder = dm.sortStatus.direction === 'desc' ? 'asc' : 'desc';
+  }
+
+  textElement.setAttribute('aria-describedby', 'sort-column-' + sortOrder);
+  textElement.setAttribute('role', 'button');
+  return textElement;
+}
+
+/**
  * Inherits from cr.ui.TableColumnModel.
  */
 FileTableColumnModel.prototype.__proto__ =
@@ -397,25 +423,30 @@ FileTable.decorate =
       const nameColumn = new cr.ui.table.TableColumn(
           'name', str('NAME_COLUMN_LABEL'), fullPage ? 386 : 324);
       nameColumn.renderFunction = self.renderName_.bind(self);
+      nameColumn.headerRenderFunction = renderHeader_;
 
       const sizeColumn = new cr.ui.table.TableColumn(
           'size', str('SIZE_COLUMN_LABEL'), 110, true);
       sizeColumn.renderFunction = self.renderSize_.bind(self);
       sizeColumn.defaultOrder = 'desc';
+      sizeColumn.headerRenderFunction = renderHeader_;
 
       const statusColumn = new cr.ui.table.TableColumn(
           'status', str('STATUS_COLUMN_LABEL'), 60, true);
       statusColumn.renderFunction = self.renderStatus_.bind(self);
       statusColumn.visible = self.importStatusVisible_;
+      statusColumn.headerRenderFunction = renderHeader_;
 
       const typeColumn = new cr.ui.table.TableColumn(
           'type', str('TYPE_COLUMN_LABEL'), fullPage ? 110 : 110);
       typeColumn.renderFunction = self.renderType_.bind(self);
+      typeColumn.headerRenderFunction = renderHeader_;
 
       const modTimeColumn = new cr.ui.table.TableColumn(
           'modificationTime', str('DATE_COLUMN_LABEL'), fullPage ? 150 : 210);
       modTimeColumn.renderFunction = self.renderDate_.bind(self);
       modTimeColumn.defaultOrder = 'desc';
+      modTimeColumn.headerRenderFunction = renderHeader_;
 
       const columns =
           [nameColumn, sizeColumn, statusColumn, typeColumn, modTimeColumn];

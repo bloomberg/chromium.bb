@@ -127,7 +127,7 @@ cr.define('cr.ui.table', function() {
 
   /**
    * The column header render function.
-   * @type {function(Element): Text}
+   * @type {function(Element):Node}
    */
   cr.defineProperty(TableColumn, 'headerRenderFunction');
 

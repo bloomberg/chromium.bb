@@ -943,6 +943,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("filesTooltipClickHides")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    FileList, /* file_list.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("fileListAriaAttributes")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("mountCrostini"),
@@ -1125,9 +1130,7 @@ class MultiProfileFilesAppBrowserTest : public FileManagerBrowserTestBase {
     return test_case_name_.c_str();
   }
 
-  std::string GetFullTestCaseName() const override {
-    return test_case_name_;
-  }
+  std::string GetFullTestCaseName() const override { return test_case_name_; }
 
   const char* GetTestExtensionManifestName() const override {
     return "file_manager_test_manifest.json";
