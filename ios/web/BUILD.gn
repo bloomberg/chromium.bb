@@ -205,6 +205,7 @@ test("ios_web_unittests") {
     "//ios/web/download:download_unittests",
     "//ios/web/find_in_page:find_in_page_unittests",
     "//ios/web/interstitials:interstitials_unittests",
+    "//ios/web/security:unittests",
     "//ios/web/web_view:unittests",
   ]
 
@@ -322,11 +323,11 @@ source_set("ios_web_net_unittests") {
     "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//ios/web/security",
     "//ios/web/test:mojo_bindings",
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
     "//ios/web/test/fakes",
-    "//ios/web/web_state:wk_web_view_security_util",
     "//net:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
@@ -418,6 +419,7 @@ source_set("ios_web_web_state_unittests") {
     "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//ios/web/security",
     "//ios/web/test:mojo_bindings",
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
@@ -428,7 +430,6 @@ source_set("ios_web_web_state_unittests") {
     "//ios/web/web_state:session_certificate_policy_cache",
     "//ios/web/web_state:web_frame",
     "//ios/web/web_state:web_view_internal_creation_util",
-    "//ios/web/web_state:wk_web_view_security_util",
     "//net:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
@@ -454,7 +455,6 @@ source_set("ios_web_web_state_unittests") {
     "web_state/web_state_policy_decider_bridge_unittest.mm",
     "web_state/web_state_unittest.mm",
     "web_state/web_view_internal_creation_util_unittest.mm",
-    "web_state/wk_web_view_security_util_unittest.mm",
   ]
 }
 
@@ -517,12 +517,12 @@ source_set("ios_web_web_state_ui_unittests") {
     "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//ios/web/security",
     "//ios/web/test:mojo_bindings",
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
     "//ios/web/test/fakes:fakes",
     "//ios/web/web_state:context_menu",
-    "//ios/web/web_state:wk_web_view_security_util",
     "//ios/web/web_state/js",
     "//ios/web/web_state/js:script_util",
     "//ios/web/web_state/ui:crw_context_menu_controller",

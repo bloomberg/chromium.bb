@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/wk_web_view_security_util.h"
+#import "ios/web/security/wk_web_view_security_util.h"
 
 #import <Foundation/Foundation.h>
 #include <Security/Security.h>

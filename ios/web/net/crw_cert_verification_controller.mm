@@ -16,7 +16,7 @@
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
-#import "ios/web/web_state/wk_web_view_security_util.h"
+#import "ios/web/security/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_proc_ios.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_ios.h"
