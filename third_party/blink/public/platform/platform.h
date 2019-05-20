@@ -632,10 +632,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
   // by the second parameter.
-  virtual void CreateHTMLVideoElementCapturer(
-      WebMediaStream*,
-      WebMediaPlayer*,
-      scoped_refptr<base::SingleThreadTaskRunner>) {}
   virtual void CreateHTMLAudioElementCapturer(
       WebMediaStream*,
       WebMediaPlayer*,

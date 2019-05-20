@@ -39,7 +39,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/blob_storage/webblobregistry_impl.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
@@ -55,7 +54,6 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
 #include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
-#include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 #include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
@@ -749,20 +747,6 @@ RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
 }
 
 //------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::CreateHTMLVideoElementCapturer(
-    WebMediaStream* web_media_stream,
-    WebMediaPlayer* web_media_player,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(web_media_stream);
-  DCHECK(web_media_player);
-  AddVideoTrackToMediaStream(
-      HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player, content::RenderThread::Get()->GetIOTaskRunner(),
-          std::move(task_runner)),
-      false,  // is_remote
-      web_media_stream);
-}
 
 void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
     WebMediaStream* web_media_stream,

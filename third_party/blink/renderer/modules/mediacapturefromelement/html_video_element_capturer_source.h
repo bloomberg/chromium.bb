@@ -2,39 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_HTML_VIDEO_ELEMENT_CAPTURER_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_HTML_VIDEO_ELEMENT_CAPTURER_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_HTML_VIDEO_ELEMENT_CAPTURER_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_HTML_VIDEO_ELEMENT_CAPTURER_SOURCE_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_types.h"
 #include "media/capture/video_capturer_source.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-namespace base{
+namespace base {
 class SingleThreadTaskRunner;
 }
-
-namespace blink {
-class WebMediaPlayer;
-}  // namespace blink
 
 namespace cc {
 class PaintCanvas;
 }  // namespace cc
 
-namespace content {
+namespace blink {
+
+class WebMediaPlayer;
 
 // This class is a VideoCapturerSource taking video snapshots of the ctor-passed
 // blink::WebMediaPlayer on Render Main thread. The captured data is converted
 // and sent back to |io_task_runner_| via the registered |new_frame_callback_|.
-class CONTENT_EXPORT HtmlVideoElementCapturerSource final
+class MODULES_EXPORT HtmlVideoElementCapturerSource final
     : public media::VideoCapturerSource {
  public:
   static std::unique_ptr<HtmlVideoElementCapturerSource>
@@ -85,7 +83,7 @@ class CONTENT_EXPORT HtmlVideoElementCapturerSource final
   base::TimeTicks next_capture_time_;
 
   // Bound to the main render thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Used on main render thread to schedule future capture events.
   base::WeakPtrFactory<HtmlVideoElementCapturerSource> weak_factory_;
@@ -93,6 +91,6 @@ class CONTENT_EXPORT HtmlVideoElementCapturerSource final
   DISALLOW_COPY_AND_ASSIGN(HtmlVideoElementCapturerSource);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_HTML_VIDEO_ELEMENT_CAPTURER_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_HTML_VIDEO_ELEMENT_CAPTURER_SOURCE_H_

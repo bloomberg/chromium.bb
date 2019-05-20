@@ -16,6 +16,8 @@ blink_modules_sources("mediacapturefromelement") {
     "html_canvas_element_capture.h",
     "html_media_element_capture.cc",
     "html_media_element_capture.h",
+    "html_video_element_capturer_source.cc",
+    "html_video_element_capturer_source.h",
     "on_request_canvas_draw_listener.cc",
     "on_request_canvas_draw_listener.h",
     "timed_canvas_draw_listener.cc",

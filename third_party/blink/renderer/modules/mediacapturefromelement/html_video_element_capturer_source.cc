@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/html_video_element_capturer_source.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "content/public/renderer/render_thread.h"
 #include "media/base/limits.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
@@ -19,15 +17,18 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace {
 const float kMinFramesPerSecond = 1.0;
 }  // anonymous namespace
 
-namespace content {
+namespace blink {
 
-//static
+// static
 std::unique_ptr<HtmlVideoElementCapturerSource>
 HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
     blink::WebMediaPlayer* player,
@@ -56,18 +57,18 @@ HtmlVideoElementCapturerSource::HtmlVideoElementCapturerSource(
 }
 
 HtmlVideoElementCapturerSource::~HtmlVideoElementCapturerSource() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 media::VideoCaptureFormats
 HtmlVideoElementCapturerSource::GetPreferredFormats() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // WebMediaPlayer has a setRate() but can't be read back.
   // TODO(mcasas): Add getRate() to WMPlayer and/or fix the spec to allow users
   // to specify it.
   const media::VideoCaptureFormat format(
-      web_media_player_->NaturalSize(),
+      gfx::Size(web_media_player_->NaturalSize()),
       blink::MediaStreamVideoSource::kDefaultFrameRate,
       media::PIXEL_FORMAT_I420);
   media::VideoCaptureFormats formats;
@@ -82,7 +83,7 @@ void HtmlVideoElementCapturerSource::StartCapture(
   DVLOG(2) << __func__ << " requested "
            << media::VideoCaptureFormat::ToString(params.requested_format);
   DCHECK(params.requested_format.IsValid());
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   running_callback_ = running_callback;
   if (!web_media_player_ || !web_media_player_->HasVideo()) {
@@ -98,14 +99,15 @@ void HtmlVideoElementCapturerSource::StartCapture(
                         params.requested_format.frame_rate));
 
   running_callback_.Run(true);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&HtmlVideoElementCapturerSource::sendNewFrame,
-                                weak_factory_.GetWeakPtr()));
+  // TODO(crbug.com/964463): Use per-frame task runner.
+  Thread::Current()->GetTaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(&HtmlVideoElementCapturerSource::sendNewFrame,
+                           weak_factory_.GetWeakPtr()));
 }
 
 void HtmlVideoElementCapturerSource::StopCapture() {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   running_callback_.Reset();
   new_frame_callback_.Reset();
   next_capture_time_ = base::TimeTicks();
@@ -114,7 +116,7 @@ void HtmlVideoElementCapturerSource::StopCapture() {
 void HtmlVideoElementCapturerSource::sendNewFrame() {
   DVLOG(3) << __func__;
   TRACE_EVENT0("media", "HtmlVideoElementCapturerSource::sendNewFrame");
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!web_media_player_ || new_frame_callback_.is_null())
     return;
@@ -154,9 +156,11 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
     return;
   }
 
+  // TODO(crbug.com/964494): Avoid the explicit convertion to gfx::Size here.
+  gfx::Size gfx_resolution = gfx::Size(resolution);
   scoped_refptr<media::VideoFrame> frame = frame_pool_.CreateFrame(
       is_opaque_ ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
-      resolution, gfx::Rect(resolution), resolution,
+      gfx_resolution, gfx::Rect(gfx_resolution), gfx_resolution,
       current_time - start_capture_time_);
 
   const uint32_t source_pixel_format =
@@ -179,14 +183,23 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
     if (!is_opaque_) {
       // OK to use ARGB...() because alpha has the same alignment for both ABGR
       // and ARGB.
-      libyuv::ARGBExtractAlpha(static_cast<uint8_t*>(bitmap_.getPixels()),
-                               bitmap_.rowBytes() /* stride */,
-                               frame->visible_data(media::VideoFrame::kAPlane),
-                               frame->stride(media::VideoFrame::kAPlane),
-                               bitmap_.info().width(), bitmap_.info().height());
+      libyuv::ARGBExtractAlpha(
+          static_cast<uint8_t*>(bitmap_.getPixels()),
+          static_cast<int>(bitmap_.rowBytes()) /* stride */,
+          frame->visible_data(media::VideoFrame::kAPlane),
+          frame->stride(media::VideoFrame::kAPlane), bitmap_.info().width(),
+          bitmap_.info().height());
     }  // Success!
-    io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(new_frame_callback_, frame, current_time));
+
+    // Post with CrossThreadBind here, instead of CrossThreadBindOnce,
+    // otherwise the |new_frame_callback_| ivar can be nulled out
+    // unintentionally.
+    //
+    // TODO(crbug.com/964922): Consider cloning |new_frame_callback_|
+    // and use CrossThreadBind
+    PostCrossThreadTask(
+        *io_task_runner_, FROM_HERE,
+        CrossThreadBind(new_frame_callback_, frame, current_time));
   }
 
   // Calculate the time in the future where the next frame should be created.
@@ -202,11 +215,11 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
       next_capture_time_ = current_time;
   }
   // Schedule next capture.
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&HtmlVideoElementCapturerSource::sendNewFrame,
-                     weak_factory_.GetWeakPtr()),
+  PostDelayedCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&HtmlVideoElementCapturerSource::sendNewFrame,
+                          weak_factory_.GetWeakPtr()),
       next_capture_time_ - current_time);
 }
 
-}  // namespace content
+}  // namespace blink

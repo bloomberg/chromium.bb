@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/html_video_element_capturer_source.h"
 
 #include <memory>
 #include <utility>
@@ -10,8 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "media/base/limits.h"
@@ -21,27 +20,30 @@
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::SaveArg;
 
-namespace content {
+namespace blink {
 
-ACTION_P(RunClosure, closure) {
+namespace {
+
+// This is named |RunClosure2| not to collide with the same construction
+// in canvas_capture_handler_unittest.cc on jumbo builds.
+ACTION_P(RunClosure2, closure) {
   closure.Run();
 }
 
 // An almost empty WebMediaPlayer to override paint() method.
-class MockWebMediaPlayer : public blink::WebMediaPlayer {
+class MockWebMediaPlayer : public WebMediaPlayer {
  public:
   MockWebMediaPlayer() : weak_factory_(this) {}
   ~MockWebMediaPlayer() override = default;
 
-  LoadTiming Load(LoadType,
-                  const blink::WebMediaPlayerSource&,
-                  CorsMode) override {
+  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CorsMode) override {
     return LoadTiming::kImmediate;
   }
   void Play() override {}
@@ -50,18 +52,14 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer {
   void SetRate(double) override {}
   void SetVolume(double) override {}
   void OnRequestPictureInPicture() override {}
-  blink::WebTimeRanges Buffered() const override {
-    return blink::WebTimeRanges();
-  }
-  blink::WebTimeRanges Seekable() const override {
-    return blink::WebTimeRanges();
-  }
-  void SetSinkId(const blink::WebString& sinkId,
-                 blink::WebSetSinkIdCompleteCallback) override {}
+  WebTimeRanges Buffered() const override { return WebTimeRanges(); }
+  WebTimeRanges Seekable() const override { return WebTimeRanges(); }
+  void SetSinkId(const WebString& sinkId,
+                 WebSetSinkIdCompleteCallback) override {}
   bool HasVideo() const override { return true; }
   bool HasAudio() const override { return false; }
-  blink::WebSize NaturalSize() const override { return blink::WebSize(16, 10); }
-  blink::WebSize VisibleRect() const override { return blink::WebSize(16, 10); }
+  WebSize NaturalSize() const override { return WebSize(16, 10); }
+  WebSize VisibleRect() const override { return WebSize(16, 10); }
   bool Paused() const override { return false; }
   bool Seeking() const override { return false; }
   double Duration() const override { return 0.0; }
@@ -71,9 +69,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer {
   SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
     return SurfaceLayerMode::kNever;
   }
-  blink::WebString GetErrorMessage() const override {
-    return blink::WebString();
-  }
+  WebString GetErrorMessage() const override { return WebString(); }
 
   bool DidLoadingProgress() override { return true; }
   bool WouldTaintOrigin() const override { return false; }
@@ -85,7 +81,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer {
   uint64_t VideoDecodedByteCount() const override { return 0; }
 
   void Paint(cc::PaintCanvas* canvas,
-             const blink::WebRect& rect,
+             const WebRect& rect,
              cc::PaintFlags&,
              int already_uploaded_id,
              VideoFrameUploadMetadata* out_metadata) override {
@@ -105,16 +101,16 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer {
   base::WeakPtrFactory<MockWebMediaPlayer> weak_factory_;
 };
 
+}  // namespace
+
 class HTMLVideoElementCapturerSourceTest : public testing::TestWithParam<bool> {
  public:
   HTMLVideoElementCapturerSourceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        web_media_player_(new MockWebMediaPlayer()),
+      : web_media_player_(new MockWebMediaPlayer()),
         html_video_capturer_(new HtmlVideoElementCapturerSource(
             web_media_player_->AsWeakPtr(),
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting())) {}
+            scheduler::GetSingleThreadTaskRunnerForTesting(),
+            scheduler::GetSingleThreadTaskRunnerForTesting())) {}
 
   // Necessary callbacks and MOCK_METHODS for them.
   MOCK_METHOD2(DoOnDeliverFrame,
@@ -132,10 +128,6 @@ class HTMLVideoElementCapturerSourceTest : public testing::TestWithParam<bool> {
   }
 
  protected:
-  // We need some kind of message loop to allow |html_video_capturer_| to
-  // schedule capture events.
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
-
   std::unique_ptr<MockWebMediaPlayer> web_media_player_;
   std::unique_ptr<HtmlVideoElementCapturerSource> html_video_capturer_;
 };
@@ -166,20 +158,21 @@ TEST_P(HTMLVideoElementCapturerSourceTest, GetFormatsAndStartAndStop) {
   SetVideoPlayerOpacity(is_video_opaque);
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   scoped_refptr<media::VideoFrame> first_frame;
   scoped_refptr<media::VideoFrame> second_frame;
   EXPECT_CALL(*this, DoOnDeliverFrame(_, _)).WillOnce(SaveArg<0>(&first_frame));
   EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
       .Times(1)
       .WillOnce(DoAll(SaveArg<0>(&second_frame),
-                      RunClosure(std::move(quit_closure))));
+                      RunClosure2(std::move(quit_closure))));
 
   html_video_capturer_->StartCapture(
-      params, base::Bind(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
+      params,
+      WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
                          base::Unretained(this)),
-      base::Bind(&HTMLVideoElementCapturerSourceTest::OnRunning,
-                 base::Unretained(this)));
+      WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnRunning,
+                         base::Unretained(this)));
 
   run_loop.Run();
 
@@ -220,10 +213,10 @@ TEST_F(HTMLVideoElementCapturerSourceTest,
 
   html_video_capturer_->StartCapture(
       params,
-      base::Bind(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
-                 base::Unretained(this)),
-      base::Bind(&HTMLVideoElementCapturerSourceTest::OnRunning,
-                 base::Unretained(this)));
+      WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
+                         base::Unretained(this)),
+      WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnRunning,
+                         base::Unretained(this)));
   html_video_capturer_->StopCapture();
   base::RunLoop().RunUntilIdle();
 
@@ -243,18 +236,18 @@ TEST_F(HTMLVideoElementCapturerSourceTest, AlphaAndNot) {
     SetVideoPlayerOpacity(false);
 
     base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     scoped_refptr<media::VideoFrame> frame;
     EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
     EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
         .WillOnce(
-            DoAll(SaveArg<0>(&frame), RunClosure(std::move(quit_closure))));
+            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
     html_video_capturer_->StartCapture(
         params,
-        base::Bind(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
-                   base::Unretained(this)),
-        base::Bind(&HTMLVideoElementCapturerSourceTest::OnRunning,
-                   base::Unretained(this)));
+        WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
+                           base::Unretained(this)),
+        WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnRunning,
+                           base::Unretained(this)));
     run_loop.Run();
 
     EXPECT_EQ(media::PIXEL_FORMAT_I420A, frame->format());
@@ -263,11 +256,11 @@ TEST_F(HTMLVideoElementCapturerSourceTest, AlphaAndNot) {
     SetVideoPlayerOpacity(true);
 
     base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     scoped_refptr<media::VideoFrame> frame;
     EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
         .WillOnce(
-            DoAll(SaveArg<0>(&frame), RunClosure(std::move(quit_closure))));
+            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
     run_loop.Run();
 
     EXPECT_EQ(media::PIXEL_FORMAT_I420, frame->format());
@@ -276,11 +269,11 @@ TEST_F(HTMLVideoElementCapturerSourceTest, AlphaAndNot) {
     SetVideoPlayerOpacity(false);
 
     base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     scoped_refptr<media::VideoFrame> frame;
     EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
         .WillOnce(
-            DoAll(SaveArg<0>(&frame), RunClosure(std::move(quit_closure))));
+            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
     run_loop.Run();
 
     EXPECT_EQ(media::PIXEL_FORMAT_I420A, frame->format());
@@ -290,4 +283,4 @@ TEST_F(HTMLVideoElementCapturerSourceTest, AlphaAndNot) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-}  // namespace content
+}  // namespace blink

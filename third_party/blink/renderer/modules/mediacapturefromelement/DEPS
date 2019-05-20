@@ -5,15 +5,19 @@ include_rules = [
     "+third_party/blink/renderer/modules/mediastream",
     "+third_party/blink/renderer/modules/modules_export.h",
 
+    "+cc/paint/paint_canvas.h",
+    "+cc/paint/skia_paint_canvas.h",
     "+components/viz/common",
     "+media/base",
     "+media/capture",
+    "+skia/ext/platform_canvas.h",
     "+third_party/libyuv",
     "+ui/gfx/color_space.h",
 ]
 
 specific_include_rules = {
-    "canvas_capture_handler_unittest\.cc" : [
+    ".*_unittest.cc": [
         "+base/run_loop.h",
+        "+cc/paint/paint_flags.h",
     ],
 }
