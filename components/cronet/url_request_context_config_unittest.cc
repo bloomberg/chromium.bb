@@ -392,7 +392,7 @@ TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
   EXPECT_EQ(params->quic_supported_versions.size(), 1u);
   EXPECT_EQ(params->quic_supported_versions[0],
             quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                                    quic::QUIC_VERSION_43));
+                                    quic::QUIC_VERSION_46));
 }
 
 TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {

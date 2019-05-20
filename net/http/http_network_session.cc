@@ -138,7 +138,7 @@ HttpNetworkSession::Params::Params()
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
   quic_supported_versions.push_back(quic::ParsedQuicVersion(
-      quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_43));
+      quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46));
   enable_early_data =
       base::FeatureList::IsEnabled(features::kEnableTLS13EarlyData);
 }
