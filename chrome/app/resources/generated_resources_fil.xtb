@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Hindi maisama ang device sa domain. Tiyaking hindi mo nalampasan ang bilang ng mga device na maaari mong idagdag.</translation>
 <translation id="1744108098763830590">pahina ng background</translation>
 <translation id="1745520510852184940">Palagi Itong Gawin</translation>
+<translation id="1746402432151920942">Pinoprotektahang Pagkakakilanlan ng Media</translation>
 <translation id="175196451752279553">M&amp;uling buksan ang nakasarang tab</translation>
 <translation id="1753905327828125965">Most Visited</translation>
 <translation id="1756681705074952506">Pamamaraan ng pag-input</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Hindi naka-sign in</translation>
 <translation id="1832511806131704864">Na-update na ang pagbabago sa telepono</translation>
 <translation id="1834503245783133039">Hindi na-download: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Mga MIDI Device</translation>
 <translation id="1838374766361614909">I-clear ang paghahanap</translation>
 <translation id="1841545962859478868">Maaaring subaybayan ng admin ng device ang mga sumusunod:</translation>
 <translation id="1841616161104323629">Nawawala ang tala ng device.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Mag-ulat ng isyu</translation>
 <translation id="2220572644011485463">PIN o password</translation>
 <translation id="2224444042887712269">Ang setting na ito ay kay <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Mga Event sa Pagiging Accessible</translation>
 <translation id="2224551243087462610">I-edit ang pangalan ng folder</translation>
 <translation id="2226449515541314767">Na-block ang site na ito mula sa pagkakaroon ng buong kontrol sa mga MIDI device.</translation>
 <translation id="2226720438730111184">Sabihin sa Amin Kung Ano ang Nangyayari</translation>
@@ -2114,6 +2117,7 @@
 <translation id="4268025649754414643">Pag-encipher ng Key</translation>
 <translation id="4270393598798225102">Bersyon <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Walang mga pagtutugma</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">I-restart ang iyong device</translation>
 <translation id="4278101229438943600">Handa na ang iyong Assistant</translation>
 <translation id="4278390842282768270">Pinapayagan</translation>
@@ -4163,6 +4167,7 @@
 <translation id="7506541170099744506">Matagumpay na na-enroll ang iyong <ph name="DEVICE_TYPE" /> para sa pamamahala ng enterprise.</translation>
 <translation id="7507930499305566459">Certificate sa Katayuan ng Responder</translation>
 <translation id="7513029293694390567">Awtomatikong mag-sign in sa mga website gamit ang mga naka-store na kredensyal. Kung naka-disable, hihingan ka ng kumpirmasyon sa bawat pagkakataon bago ka mag-sign in sa isang website.</translation>
+<translation id="7514365320538308">I-download</translation>
 <translation id="7517786267097410259">Gumawa ng isang password -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sabihin ang "Ok Google"</translation>
@@ -5041,6 +5046,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8850251000316748990">Tumingin pa...</translation>
 <translation id="885246833287407341">Mga argument ng API function</translation>
 <translation id="8853586775156634952">Sa device lang na ito ise-save ang card na ito</translation>
+<translation id="885701979325669005">Storage</translation>
 <translation id="8859057652521303089">Piliin ang iyong wika:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Lumipat sa isang mabilis na browser</translation>

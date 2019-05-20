@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">無法將這個裝置加入網域。請確認裝置數量沒有超過添加上限。</translation>
 <translation id="1744108098763830590">背景頁面</translation>
 <translation id="1745520510852184940">一律採取這種處理方式</translation>
+<translation id="1746402432151920942">受保護媒體 ID</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
 <translation id="1753905327828125965">最常造訪</translation>
 <translation id="1756681705074952506">輸入法</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">未登入</translation>
 <translation id="1832511806131704864">手機變更已更新</translation>
 <translation id="1834503245783133039">下載失敗：<ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI 裝置</translation>
 <translation id="1838374766361614909">清除搜尋</translation>
 <translation id="1841545962859478868">裝置管理員可能會監控下列項目：</translation>
 <translation id="1841616161104323629">沒有裝置記錄。</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">回報問題</translation>
 <translation id="2220572644011485463">PIN 或密碼</translation>
 <translation id="2224444042887712269">這項設定屬於 <ph name="OWNER_EMAIL" />。</translation>
+<translation id="2224471211857467033">無障礙工具活動</translation>
 <translation id="2224551243087462610">編輯資料夾名稱</translation>
 <translation id="2226449515541314767">這個網站已遭封鎖，無法完整控制 MIDI 裝置。</translation>
 <translation id="2226720438730111184">將發生的狀況告訴我們</translation>
@@ -2112,6 +2115,7 @@
 <translation id="4268025649754414643">金鑰編密</translation>
 <translation id="4270393598798225102">第 <ph name="NUMBER" /> 版</translation>
 <translation id="4271396100647220620">找不到相符的項目</translation>
+<translation id="4275663329226226506">媒體</translation>
 <translation id="4275830172053184480">重新啟動裝置</translation>
 <translation id="4278101229438943600">你的 Google 助理已準備就緒</translation>
 <translation id="4278390842282768270">允許</translation>
@@ -4161,6 +4165,7 @@
 <translation id="7506541170099744506">你的 <ph name="DEVICE_TYPE" /> 已成功註冊企業管理服務。</translation>
 <translation id="7507930499305566459">狀態回應程式憑證</translation>
 <translation id="7513029293694390567">使用已儲存的憑證自動登入網站。如果停用這項功能，每當你登入網站時，都必須向系統確認你的登入憑證。</translation>
+<translation id="7514365320538308">下載</translation>
 <translation id="7517786267097410259">建立密碼 -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">說出「Ok Google」</translation>
@@ -5036,6 +5041,7 @@
 <translation id="8850251000316748990">顯示更多...</translation>
 <translation id="885246833287407341">API 函式引數</translation>
 <translation id="8853586775156634952">這張卡片只會儲存在這部裝置上</translation>
+<translation id="885701979325669005">儲存空間</translation>
 <translation id="8859057652521303089">選擇語言：</translation>
 <translation id="8859174528519900719">子頁框：<ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">改用速度飛快的瀏覽器</translation>

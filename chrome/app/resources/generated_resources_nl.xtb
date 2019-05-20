@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Kan het apparaat niet aan het domein koppelen. Zorg ervoor dat je het aantal apparaten dat je kunt toevoegen niet overschrijdt.</translation>
 <translation id="1744108098763830590">achtergrondpagina</translation>
 <translation id="1745520510852184940">Dit altijd doen</translation>
+<translation id="1746402432151920942">ID voor beschermde media</translation>
 <translation id="175196451752279553">Gesloten tabblad opni&amp;euw openen</translation>
 <translation id="1753905327828125965">Meest bezocht</translation>
 <translation id="1756681705074952506">Invoermethode</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Niet ingelogd</translation>
 <translation id="1832511806131704864">Telefoonwijziging geüpdatet</translation>
 <translation id="1834503245783133039">Download niet geslaagd: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-apparaten</translation>
 <translation id="1838374766361614909">Zoekopdracht wissen</translation>
 <translation id="1841545962859478868">De apparaatbeheerder kan het volgende controleren:</translation>
 <translation id="1841616161104323629">Ontbrekende apparaatrecord.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Een probleem melden</translation>
 <translation id="2220572644011485463">Pincode of wachtwoord</translation>
 <translation id="2224444042887712269">Deze instelling hoort bij <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Toegankelijkheidsgebeurtenissen</translation>
 <translation id="2224551243087462610">Mapnaam bewerken</translation>
 <translation id="2226449515541314767">Deze site is geblokkeerd voor volledig beheer van MIDI-apparaten.</translation>
 <translation id="2226720438730111184">Vertel ons wat er aan de hand is</translation>
@@ -2114,6 +2117,7 @@
 <translation id="4268025649754414643">Sleutelcodering</translation>
 <translation id="4270393598798225102">Versie <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Geen overeenkomsten</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Je apparaat opnieuw opstarten</translation>
 <translation id="4278101229438943600">De Assistent staat klaar</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
@@ -4163,6 +4167,7 @@
 <translation id="7506541170099744506">Je <ph name="DEVICE_TYPE" /> is aangemeld voor bedrijfsbeheer.</translation>
 <translation id="7507930499305566459">Certificaat voor statusbeantwoorder</translation>
 <translation id="7513029293694390567">Automatisch inloggen bij websites met de opgeslagen gegevens. Als de functie is uitgeschakeld, wordt elke keer om bevestiging gevraagd voordat je inlogt bij een website.</translation>
+<translation id="7514365320538308">Downloaden</translation>
 <translation id="7517786267097410259">Een wachtwoord maken –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Zeg "Oké Google"</translation>
@@ -5040,6 +5045,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8850251000316748990">Meer weergeven…</translation>
 <translation id="885246833287407341">Argumenten voor API-functie</translation>
 <translation id="8853586775156634952">Deze pas wordt alleen op dit apparaat opgeslagen</translation>
+<translation id="885701979325669005">Opslag</translation>
 <translation id="8859057652521303089">Selecteer je taal:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Overschakelen naar een snelle browser</translation>

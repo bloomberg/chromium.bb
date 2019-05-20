@@ -8,7 +8,7 @@
 <translation id="1007408791287232274">Không thể tải các thiết bị.</translation>
 <translation id="1008186147501209563">Xuất dấu trang</translation>
 <translation id="1008557486741366299">Không phải Bây giờ</translation>
-<translation id="1010498023906173788">Tab này kết nối với một cổng nối tiếp.</translation>
+<translation id="1010498023906173788">Tab này đã kết nối với một cổng nối tiếp.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Trang không phản hồi}other{Trang không phản hồi}}</translation>
 <translation id="1012794136286421601">Các tệp Google Tài liệu, Trang tính, Trang trình bày và Bản vẽ của bạn đang được đồng bộ hóa. Mở ứng dụng Google Drive để truy cập chúng trực tuyến hoặc ngoại tuyến.</translation>
 <translation id="1012876632442809908">Thiết bị USB-C (cổng phía trước)</translation>
@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Không thể kết hợp thiết bị với miền. Hãy đảm bảo số thiết bị bạn thêm không vượt quá giới hạn.</translation>
 <translation id="1744108098763830590">trang nền</translation>
 <translation id="1745520510852184940">Luôn làm điều này</translation>
+<translation id="1746402432151920942">Mã nhận dạng nội dung đa phương tiện được bảo vệ</translation>
 <translation id="175196451752279553">&amp;Mở lại tab đã đóng</translation>
 <translation id="1753905327828125965">Truy cập nhiều nhất</translation>
 <translation id="1756681705074952506">Phương thức nhập</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Chưa đăng nhập</translation>
 <translation id="1832511806131704864">Đã cập nhật thay đổi điện thoại</translation>
 <translation id="1834503245783133039">Tải xuống không thành công: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Thiết bị MIDI</translation>
 <translation id="1838374766361614909">Xóa tìm kiếm</translation>
 <translation id="1841545962859478868">Quản trị viên thiết bị có thể theo dõi các vấn đề sau đây:</translation>
 <translation id="1841616161104323629">Thiếu hồ sơ thiết bị.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Báo cáo sự cố</translation>
 <translation id="2220572644011485463">Mã PIN hoặc mật khẩu</translation>
 <translation id="2224444042887712269">Cài đặt này thuộc về <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Sự kiện hỗ trợ tiếp cận</translation>
 <translation id="2224551243087462610">Chỉnh sửa tên thư mục</translation>
 <translation id="2226449515541314767">Trang web này đã bị chặn quyền kiểm soát hoàn toàn thiết bị MIDI.</translation>
 <translation id="2226720438730111184">Cho chúng tôi biết điều gì đang xảy ra</translation>
@@ -802,7 +805,7 @@
 <translation id="2241053333139545397">Đọc và thay đổi dữ liệu của bạn trên một số trang web</translation>
 <translation id="2241634353105152135">Chỉ một lần</translation>
 <translation id="2242687258748107519">Thông tin tệp</translation>
-<translation id="2246549592927364792">Tải nội dung mô tả hình ảnh của Google?</translation>
+<translation id="2246549592927364792">Tải nội dung mô tả hình ảnh từ Google?</translation>
 <translation id="224940702122312781">Trang này sẽ sử dụng nhiều dữ liệu.</translation>
 <translation id="2249605167705922988">ví dụ: 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Mở bằng trình xem hệ thống</translation>
@@ -1088,7 +1091,7 @@
 <translation id="2677748264148917807">Rời khỏi</translation>
 <translation id="2678063897982469759">Kích hoạt lại</translation>
 <translation id="268053382412112343">Lị&amp;ch sử</translation>
-<translation id="2682498795777673382">Cập nhật từ cha mẹ</translation>
+<translation id="2682498795777673382">Thông tin mới từ cha mẹ</translation>
 <translation id="2683638487103917598">Đẵ sắp xếp thư mục</translation>
 <translation id="2684004000387153598">Để tiếp tục, hãy nhấp vào OK, sau đó nhấp vào Thêm người để tạo hồ sơ mới cho địa chỉ email của bạn.</translation>
 <translation id="2688196195245426394">Lỗi khi đăng ký thiết bị với máy chủ: <ph name="CLIENT_ERROR" />.</translation>
@@ -1489,7 +1492,7 @@
 <translation id="3317459757438853210">Hai mặt</translation>
 <translation id="3317678681329786349">Máy ảnh và micrô bị chặn</translation>
 <translation id="3319048459796106952">Cửa sổ ẩn &amp;danh mới</translation>
-<translation id="3323521181261657960">Phần thưởng! Bạn đã có thêm thời gian sử dụng thiết bị</translation>
+<translation id="3323521181261657960">Phần thưởng! Bạn có thêm thời gian sử dụng thiết bị</translation>
 <translation id="3325910708063135066">Máy ảnh và micrô đã bị tắt trong System Preferences (Tùy chọn hệ thống) trên máy Mac</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Thông tin ứng dụng</translation>
@@ -2114,6 +2117,7 @@
 <translation id="4268025649754414643">Mã hóa Khóa</translation>
 <translation id="4270393598798225102">Phiên bản <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Không có kết quả phù hợp</translation>
+<translation id="4275663329226226506">Truyền thông</translation>
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
 <translation id="4278101229438943600">Trợ lý của bạn đã sẵn sàng</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
@@ -3447,7 +3451,7 @@
 <translation id="6390994422085833176">Xem lại các tính năng đồng bộ hóa và cá nhân hóa sau khi thiết lập</translation>
 <translation id="6393156038355142111">Đề xuất mật khẩu mạnh</translation>
 <translation id="6395423953133416962">Gửi <ph name="BEGIN_LINK1" />thông tin hệ thống<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />số liệu<ph name="END_LINK2" /></translation>
-<translation id="6396988158856674517">Chặn không cho trang web sử dụng cảm biến chuyển động</translation>
+<translation id="6396988158856674517">Chặn không cho các trang web sử dụng cảm biến chuyển động</translation>
 <translation id="6397094776139756010">Tùy chọn đồng bộ hóa và cá nhân hóa</translation>
 <translation id="6398715114293939307">Xóa Cửa hàng Google Play</translation>
 <translation id="6398765197997659313">Thoát khỏi chế độ toàn màn hình</translation>
@@ -4163,6 +4167,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> của bạn đã được đăng ký thành công cho quản lý doanh nghiệp.</translation>
 <translation id="7507930499305566459">Chứng chỉ Trả lời Trạng thái</translation>
 <translation id="7513029293694390567">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Nếu tính năng này tắt, bạn sẽ luôn được yêu cầu xác nhận trước khi đăng nhập vào trang web.</translation>
+<translation id="7514365320538308">Tải xuống</translation>
 <translation id="7517786267097410259">Tạo mật khẩu -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Nói “Ok Google”</translation>
@@ -4956,7 +4961,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8732212173949624846">Đọc và thay đổi lịch sử duyệt web của bạn trên tất cả các thiết bị đã đăng nhập</translation>
 <translation id="8732844209475700754">Các mục cài đặt khác có liên quan đến quyền riêng tư, bảo mật và hoạt động thu thập dữ liệu</translation>
 <translation id="8734073480934656039">Bật cài đặt này cho phép ứng dụng kiosk tự động chạy khi khởi động.</translation>
-<translation id="8734671092194994316">Thao tác này sẽ ghi lại lượt truy cập của bạn vào <ph name="WEBSITE" /> trên khóa bảo mật đó.</translation>
+<translation id="8734671092194994316">Thao tác này sẽ ghi lại lượt truy cập của bạn vào <ph name="WEBSITE" /> trên khóa bảo mật của bạn.</translation>
 <translation id="873545264931343897">Khi cập nhật xong <ph name="PLUGIN_NAME" />, hãy tải lại trang để kích hoạt plugin này</translation>
 <translation id="8736288397686080465">Trang web này đã được cập nhật trong nền.</translation>
 <translation id="8737685506611670901">Mở liên kết <ph name="PROTOCOL" /> thay vì <ph name="REPLACED_HANDLER_TITLE" /></translation>
@@ -5040,6 +5045,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8850251000316748990">Xem thêm...</translation>
 <translation id="885246833287407341">Đối số hàm API</translation>
 <translation id="8853586775156634952">Thẻ này sẽ chỉ được lưu vào thiết bị này</translation>
+<translation id="885701979325669005">Bộ nhớ</translation>
 <translation id="8859057652521303089">Chọn ngôn ngữ:</translation>
 <translation id="8859174528519900719">Khung phụ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Chuyển sang một trình duyệt nhanh</translation>

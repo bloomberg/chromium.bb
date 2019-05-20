@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">นำอุปกรณ์เข้าร่วมโดเมนไม่ได้ ตรวจสอบว่าคุณไม่ได้เพิ่มอุปกรณ์เกินจำนวนจำกัด</translation>
 <translation id="1744108098763830590">หน้าพื้นหลัง</translation>
 <translation id="1745520510852184940">แปลทุกครั้ง</translation>
+<translation id="1746402432151920942">ตัวระบุสื่อที่มีการป้องกัน</translation>
 <translation id="175196451752279553">เ&amp;ปิดแท็บที่ถูกปิดขึ้นใหม่</translation>
 <translation id="1753905327828125965">เข้าชมบ่อยสุด</translation>
 <translation id="1756681705074952506">วิธีการป้อนข้อมูล</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">ไม่ได้ลงชื่อเข้าใช้</translation>
 <translation id="1832511806131704864">อัปเดตการเปลี่ยนแปลงของโทรศัพท์แล้ว</translation>
 <translation id="1834503245783133039">ดาวน์โหลดไม่สำเร็จ: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">อุปกรณ์ MIDI</translation>
 <translation id="1838374766361614909">ล้างการค้นหา</translation>
 <translation id="1841545962859478868">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบรายการต่อไปนี้</translation>
 <translation id="1841616161104323629">ไม่มีระเบียนอุปกรณ์</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">รายงานปัญหา</translation>
 <translation id="2220572644011485463">PIN หรือรหัสผ่าน</translation>
 <translation id="2224444042887712269">การตั้งค่านี้เป็นของ <ph name="OWNER_EMAIL" /></translation>
+<translation id="2224471211857467033">เหตุการณ์การช่วยเหลือพิเศษ</translation>
 <translation id="2224551243087462610">แก้ไขชื่อโฟลเดอร์</translation>
 <translation id="2226449515541314767">ไซต์นี้ถูกบล็อกจากการมีสิทธิ์ควบคุมอุปกรณ์ MIDI เต็มรูปแบบ</translation>
 <translation id="2226720438730111184">แจ้งให้เราทราบถึงสิ่งที่เกิดขึ้น</translation>
@@ -2114,6 +2117,7 @@
 <translation id="4268025649754414643">การเข้ารหัสคีย์</translation>
 <translation id="4270393598798225102">รุ่น <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">ไม่มีรายการที่ตรงกัน</translation>
+<translation id="4275663329226226506">สื่อ</translation>
 <translation id="4275830172053184480">รีสตาร์ทอุปกรณ์ของคุณ</translation>
 <translation id="4278101229438943600">Assistant พร้อมใช้งานแล้ว</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
@@ -4163,6 +4167,7 @@
 <translation id="7506541170099744506">ลงทะเบียน <ph name="DEVICE_TYPE" /> ของคุณสำหรับการจัดการองค์กรเรียบร้อยแล้ว</translation>
 <translation id="7507930499305566459">ใบรับรอง Status Responder</translation>
 <translation id="7513029293694390567">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลเข้าสู่ระบบที่เก็บไว้ เมื่อฟีเจอร์นี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนลงชื่อเข้าใช้เว็บไซต์</translation>
+<translation id="7514365320538308">ดาวน์โหลด</translation>
 <translation id="7517786267097410259">สร้างรหัสผ่าน -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">พูดว่า "Ok Google"</translation>
@@ -5040,6 +5045,7 @@
 <translation id="8850251000316748990">ดูเพิ่มเติม...</translation>
 <translation id="885246833287407341">อาร์กิวเมนต์ของฟังก์ชัน API</translation>
 <translation id="8853586775156634952">บัตรนี้จะบันทึกอยู่ในอุปกรณ์เครื่องนี้เท่านั้น</translation>
+<translation id="885701979325669005">พื้นที่เก็บข้อมูล</translation>
 <translation id="8859057652521303089">เลือกภาษาที่ต้องการ:</translation>
 <translation id="8859174528519900719">เฟรมย่อย: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">เปลี่ยนเป็นเบราว์เซอร์ที่เร็ว</translation>

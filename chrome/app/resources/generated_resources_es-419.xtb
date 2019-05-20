@@ -484,6 +484,7 @@
 <translation id="1744060673522309905">No se pudo unir el dispositivo al dominio. Asegúrate de no haber superado la cantidad de dispositivos que puedes agregar.</translation>
 <translation id="1744108098763830590">página en segundo plano</translation>
 <translation id="1745520510852184940">Realizar siempre esta acción</translation>
+<translation id="1746402432151920942">Identificador de medios protegidos</translation>
 <translation id="175196451752279553">Volver a abrir una pestaña cerrada</translation>
 <translation id="1753905327828125965">Más visitados</translation>
 <translation id="1756681705074952506">Método de entrada</translation>
@@ -541,6 +542,7 @@
 <translation id="1830550083491357902">No has accedido.</translation>
 <translation id="1832511806131704864">Cambio de teléfono actualizado</translation>
 <translation id="1834503245783133039">No se pudo realizar la descarga: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Dispositivos MIDI</translation>
 <translation id="1838374766361614909">Borrar la búsqueda</translation>
 <translation id="1841545962859478868">Es posible que el administrador de dispositivos supervise lo siguiente:</translation>
 <translation id="1841616161104323629">Falta un registro de dispositivo.</translation>
@@ -783,6 +785,7 @@
 <translation id="2220529011494928058">Informar un problema</translation>
 <translation id="2220572644011485463">PIN o contraseña</translation>
 <translation id="2224444042887712269">Esta configuración pertenece a <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Eventos de accesibilidad</translation>
 <translation id="2224551243087462610">Editar nombre de carpeta</translation>
 <translation id="2226449515541314767">Se bloqueó este sitio para que no tenga el control total de los dispositivos MIDI</translation>
 <translation id="2226720438730111184">Cuéntanos cuál es el problema</translation>
@@ -2111,6 +2114,7 @@
 <translation id="4268025649754414643">Cifrado de clave</translation>
 <translation id="4270393598798225102">Versión <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">No hay coincidencias</translation>
+<translation id="4275663329226226506">Multimedia</translation>
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4278101229438943600">Tu Asistente está listo</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -4160,6 +4164,7 @@
 <translation id="7506541170099744506">Tu dispositivo <ph name="DEVICE_TYPE" /> se inscribió correctamente para la administración empresarial.</translation>
 <translation id="7507930499305566459">Certificado del respondedor de estado</translation>
 <translation id="7513029293694390567">Accede automáticamente a los sitios web con las credenciales almacenadas. Si la función está inhabilitada, deberás confirmar siempre tu identidad para acceder a un sitio web.</translation>
+<translation id="7514365320538308">Descargar</translation>
 <translation id="7517786267097410259">Crear una contraseña:</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Di "OK Google".</translation>
@@ -5038,6 +5043,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8850251000316748990">Ver más…</translation>
 <translation id="885246833287407341">Argumentos de la función de la API</translation>
 <translation id="8853586775156634952">Esta tarjeta solo se guardará en este dispositivo</translation>
+<translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8859057652521303089">Selecciona tu idioma:</translation>
 <translation id="8859174528519900719">Submarco: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Cambia a un navegador rápido</translation>

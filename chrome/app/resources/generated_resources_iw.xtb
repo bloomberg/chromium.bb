@@ -484,6 +484,7 @@
 <translation id="1744060673522309905">אי אפשר לצרף את המכשיר אל הדומיין. יש לוודא שלא חרגת ממספר המכשירים שניתן להוסיף.</translation>
 <translation id="1744108098763830590">דף רקע</translation>
 <translation id="1745520510852184940">עשה זאת תמיד</translation>
+<translation id="1746402432151920942">מזהה מדיה מוגנת</translation>
 <translation id="175196451752279553">פ&amp;תח מחדש את הכרטיסייה הסגורה</translation>
 <translation id="1753905327828125965">עם המבקרים הרבים ביותר</translation>
 <translation id="1756681705074952506">שיטת קלט</translation>
@@ -541,6 +542,7 @@
 <translation id="1830550083491357902">לא מחובר</translation>
 <translation id="1832511806131704864">השינוי בטלפון עודכן</translation>
 <translation id="1834503245783133039">ההורדה נכשלה: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">‏התקני MIDI</translation>
 <translation id="1838374766361614909">ניקוי חיפוש</translation>
 <translation id="1841545962859478868">ייתכן שמנהל המכשיר עוקב אחרי:</translation>
 <translation id="1841616161104323629">רשומת מכשיר חסרה.</translation>
@@ -783,6 +785,7 @@
 <translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2220572644011485463">‏PIN או סיסמה</translation>
 <translation id="2224444042887712269">ההגדרה הזו שייכת ל-<ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">אירועי נגישות</translation>
 <translation id="2224551243087462610">ערוך את שם התיקייה</translation>
 <translation id="2226449515541314767">‏האפשרות לשלוט שליטה מלאה על מכשירי MIDI נחסמה עבור אתר זה.</translation>
 <translation id="2226720438730111184">ספר לנו מה קורה</translation>
@@ -1706,7 +1709,7 @@
 <translation id="3664511988987167893">סמל התוסף</translation>
 <translation id="3665589677786828986">‏Chrome זיהה שחלק מההגדרות שלך נפגמו על ידי תכנית אחרת ואיפס אותן לברירות המחדל המקוריות.</translation>
 <translation id="3668570675727296296">הגדרות שפה</translation>
-<translation id="366867565525278777">ההתקנה נכשלה כי אין מספיק שטח אחסון. צריך שטח אחסון פנוי בגודל <ph name="INSTALL_SIZE" /> לפחות. כדי לפנות שטח, עליך למחוק קבצים מאחסון המכשיר.</translation>
+<translation id="366867565525278777">ההתקנה נכשלה כי אין מספיק שטח אחסון. צריך שטח אחסון פנוי של <ph name="INSTALL_SIZE" /> לפחות. כדי לפנות שטח, עליך למחוק קבצים מאחסון המכשיר.</translation>
 <translation id="3668801437375206837">‏כדי לשפר את האבחון של בעיות בחיבור Bluetooth, גוגלרים יכולים לכלול יומני Bluetooth נוספים במשובים. אם האפשרות מסומנת, הדוח יכלול את יומני btsnoop ו-HCI מהסשן הנוכחי, והמערכת "תנקה" אותו כדי להסיר כמה שיותר פרטים אישיים מזהים (PII). הגישה ליומנים האלה תוגבל למנהלים של קבוצת מוצרי Chrome OS ב-Listnr. המערכת תמחק לצמיתות את היומנים אחרי 90 ימים.</translation>
 <translation id="3668823961463113931">מטפלים</translation>
 <translation id="3670113805793654926">מכשירים של כל ספק</translation>
@@ -2016,7 +2019,7 @@
 <translation id="409579654357498729">‏הוסף ל-Google Cloud Print</translation>
 <translation id="4096508467498758490">השבתת תוספים של מצב מפתח</translation>
 <translation id="4096824249111507322">המערכת מכינה את המודול המאובטח (פעולה זו עשויה להימשך מספר דקות), אנא המתן...</translation>
-<translation id="4097560579602855702">‏חפש ב-Google</translation>
+<translation id="4097560579602855702">‏חיפוש ב-Google</translation>
 <translation id="4099060993766194518">לשחזר את מנוע החיפוש שהוגדר כברירת המחדל?</translation>
 <translation id="4099874310852108874">התרחשה שגיאת רשת.</translation>
 <translation id="4100733287846229632">שטח האחסון במכשיר כמעט נגמר</translation>
@@ -2111,6 +2114,7 @@
 <translation id="4268025649754414643">קידוד מפתח</translation>
 <translation id="4270393598798225102">גרסה <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">אין התאמות</translation>
+<translation id="4275663329226226506">מדיה</translation>
 <translation id="4275830172053184480">הפעלת המכשיר מחדש</translation>
 <translation id="4278101229438943600">‏ה-Assistant מוכן</translation>
 <translation id="4278390842282768270">מותר</translation>
@@ -3871,7 +3875,7 @@
 <translation id="706626672220389329">קרתה שגיאה בטעינת התקן הרשת לשיתוף קבצים. ההתקן שצוין כבר נטען.</translation>
 <translation id="7066944511817949584">נכשלה ההתחברות אל "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7067725467529581407">לעולם אל תציג זאת שוב.</translation>
-<translation id="7069811530847688087">ייתכן שיהיה צורך במפתח אבטחה חדש יותר או מסוג אחר עבור <ph name="WEBSITE" /></translation>
+<translation id="7069811530847688087">ייתכן שיהיה צורך במפתח אבטחה חדש יותר, או מסוג אחר, עבור <ph name="WEBSITE" /></translation>
 <translation id="7070484045139057854">התוסף יכול לקרוא ולשנות נתוני אתרים</translation>
 <translation id="7072010813301522126">שם קיצור הדרך</translation>
 <translation id="707392107419594760">בחר מקלדת:</translation>
@@ -4160,6 +4164,7 @@
 <translation id="7506541170099744506">הרישום של המכשיר שלך <ph name="DEVICE_TYPE" /> לניהול ארגוני הסתיים בהצלחה.</translation>
 <translation id="7507930499305566459">אישור מגיב סטטוס</translation>
 <translation id="7513029293694390567">היכנס באופן אוטומטי לאתרים באמצעות פרטי כניסה שמורים. כשהאפשרות הזו מושבתת, תתבקש לאשר לפני כל כניסה לאתר.</translation>
+<translation id="7514365320538308">הורדה</translation>
 <translation id="7517786267097410259">צור סיסמה -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">‏אמור "Ok Google"</translation>
@@ -5036,6 +5041,7 @@
 <translation id="8850251000316748990">עוד אפשרויות...</translation>
 <translation id="885246833287407341">‏ארגומנטים של פונקציות API</translation>
 <translation id="8853586775156634952">הכרטיס הזה יישמר רק במכשיר זה</translation>
+<translation id="885701979325669005">אחסון</translation>
 <translation id="8859057652521303089">בחר שפה:</translation>
 <translation id="8859174528519900719">תת-מסגרת: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">החלף לדפדפן מהיר</translation>

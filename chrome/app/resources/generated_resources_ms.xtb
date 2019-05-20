@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Tidak dapat menghubungkan peranti ke domain. Pastikan anda belum melebihi jumlah peranti yang boleh ditambahkan.</translation>
 <translation id="1744108098763830590">halaman latar belakang</translation>
 <translation id="1745520510852184940">Sentiasa Terjemahkan</translation>
+<translation id="1746402432151920942">Pengecam Media Dilindungi</translation>
 <translation id="175196451752279553">B&amp;uka semula tab yang ditutup</translation>
 <translation id="1753905327828125965">Paling Kerap Dilawati</translation>
 <translation id="1756681705074952506">Kaedah input</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Tidak dilog masuk</translation>
 <translation id="1832511806131704864">Perubahan telefon dikemas kini</translation>
 <translation id="1834503245783133039">Muat turun tidak berjaya: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Peranti MIDI</translation>
 <translation id="1838374766361614909">Kosongkan carian</translation>
 <translation id="1841545962859478868">Pentadbir peranti boleh memantau perkara berikut:</translation>
 <translation id="1841616161104323629">Rekod peranti tiada.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Laporkan isu</translation>
 <translation id="2220572644011485463">PIN atau kata laluan</translation>
 <translation id="2224444042887712269">Tetapan ini milik <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Acara Kebolehaksesan</translation>
 <translation id="2224551243087462610">Edit nama folder</translation>
 <translation id="2226449515541314767">Tapak ini telah disekat daripada mengawal sepenuhnya peranti MIDI.</translation>
 <translation id="2226720438730111184">Beritahu Kami Perkara Yang Berlaku</translation>
@@ -899,7 +902,7 @@
 <translation id="2392369802118427583">Aktifkan</translation>
 <translation id="2394566832561516196">Tetapan akan dikosongkan pada muat semula seterusnya.</translation>
 <translation id="2395616325548404795"><ph name="DEVICE_TYPE" /> anda berjaya didaftarkan untuk pengurusan perusahaan, tetapi gagal menghantar maklumat aset dan lokasinya. Sila masukkan maklumat ini secara manual daripada Admin console anda untuk peranti ini.</translation>
-<translation id="2396783860772170191">Masukkan pin 4 angka (0000-9999)</translation>
+<translation id="2396783860772170191">Masukkan PIN 4 angka (0000-9999)</translation>
 <translation id="2408955596600435184">Masukkan PIN anda</translation>
 <translation id="241082044617551207">Pemalam tidak diketahui</translation>
 <translation id="2413749388954403953">Ubah antara muka pengguna penanda halaman</translation>
@@ -996,7 +999,7 @@
 <translation id="2538361623464451692">Penyegerakan dilumpuhkan</translation>
 <translation id="2540449034743108469">Tekan "Mula" untuk mendengar aktiviti sambungan</translation>
 <translation id="2541002089857695151">Optimumkan penghantaran skrin penuh?</translation>
-<translation id="2541706104884128042">Masa tidur baharu ditetapkan</translation>
+<translation id="2541706104884128042">Waktu tidur baharu ditetapkan</translation>
 <translation id="2544853746127077729">Sijil pengesahan ditolak oleh rangkaian</translation>
 <translation id="2549985041256363841">Mulakan rakaman</translation>
 <translation id="2550212893339833758">Memori ditukar</translation>
@@ -1329,7 +1332,7 @@
 <translation id="304747341537320566">Enjin Pertuturan</translation>
 <translation id="3047644958362961983">Maklumat ini membantu kami memahami masalah Assistant anda dengan lebih baik. Maklumat ini disimpan sehingga 90 hari dan akses dihadkan kepada pasukan kejuruteraan dan maklum balas yang berkenaan.</translation>
 <translation id="3053013834507634016">Penggunaan Penting Sijil</translation>
-<translation id="3053273573829329829">Dayakan pin pengguna</translation>
+<translation id="3053273573829329829">Dayakan PIN pengguna</translation>
 <translation id="3058498974290601450">Anda boleh mematikan penyegerakan pada bila-bila masa dalam tetapan</translation>
 <translation id="3060379269883947824">Dayakan pilih untuk bercakap</translation>
 <translation id="3061707000357573562">Perkhidmatan Tampung</translation>
@@ -2115,6 +2118,7 @@
 <translation id="4268025649754414643">Encipherment Penting</translation>
 <translation id="4270393598798225102">Versi <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Tiada padanan</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Mulakan semula peranti anda</translation>
 <translation id="4278101229438943600">Assistant anda bersedia</translation>
 <translation id="4278390842282768270">Dibenarkan</translation>
@@ -3778,7 +3782,7 @@
 <translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" /> tidak dapat dibuka</translation>
 <translation id="6921709132208495314">Berhenti menggunakan data pada halaman ini</translation>
 <translation id="6922128026973287222">Simpan data dan semak imbas dengan lebih pantas menggunakan Penjimat Data Google. Klik untuk mengetahui lebih lanjut.</translation>
-<translation id="6922745772873733498">Masukkan pin untuk mencetak</translation>
+<translation id="6922745772873733498">Masukkan PIN untuk mencetak</translation>
 <translation id="6923132443355966645">Tatal / Klik</translation>
 <translation id="6923633482430812883">Ralat semasa melekapkan kongsi. Sila pastikan bahawa pelayan fail yang bersambung dengan anda itu menyokong SMBv2 atau yang lebih baharu.</translation>
 <translation id="6930036377490597025">Kunci keselamatan luaran atau penderia terbina dalam</translation>
@@ -4164,6 +4168,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> anda berjaya didaftarkan untuk pengurusan perusahaan.</translation>
 <translation id="7507930499305566459">Status Pembalas Sijil</translation>
 <translation id="7513029293694390567">Log masuk secara automatik ke tapak web menggunakan bukti kelayakan yang disimpan. Jika dilumpuhkan, anda akan diminta memberikan pengesahan setiap kali sebelum mengelog masuk ke tapak web.</translation>
+<translation id="7514365320538308">Muat Turun</translation>
 <translation id="7517786267097410259">Buat kata laluan -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sebut "Ok Google".</translation>
@@ -4991,7 +4996,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8780123805589053431">Dapatkan perihalan imej daripada Google</translation>
 <translation id="8780443667474968681">Carian suara telah dimatikan.</translation>
 <translation id="878069093594050299">Sijil telah disahkan untuk penggunaan berikut:</translation>
-<translation id="8781470833671194250">Klik penstabilan kedudukan</translation>
+<translation id="8781470833671194250">Penstabilan kedudukan klik</translation>
 <translation id="8781980678064919987">Matikan apabila penutup ditutup</translation>
 <translation id="8782565991310229362">Pelancaran aplikasi kios dibatalkan.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ingin berkongsi pencetak &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; dengan anda.</translation>
@@ -5042,6 +5047,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8850251000316748990">Lihat lagi...</translation>
 <translation id="885246833287407341">Argumen fungsi API</translation>
 <translation id="8853586775156634952">Kad ini akan disimpan ke peranti ini sahaja</translation>
+<translation id="885701979325669005">Storan</translation>
 <translation id="8859057652521303089">Pilih bahasa anda:</translation>
 <translation id="8859174528519900719">Subbingkai: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Tukar kepada penyemak imbas yang pantas</translation>

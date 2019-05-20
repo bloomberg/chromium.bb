@@ -328,9 +328,9 @@
 
           Jika 'DeviceDockMacAddress' dipilih atau dasar ini dibiarkan tanpa ditetapkan, alamat MAC dok peranti yang ditetapkan akan digunakan.
 
-          Jika 'DeviceNicMacAddress' dipilih, alamat NIC (pengawal antara muka rangkaian) MAC peranti akan digunakan.
+          Jika 'DeviceNicMacAddress' dipilih, alamat MAC NIC (pengawal antara muka rangkaian) peranti akan digunakan.
 
-          Jika 'DockNicMacAddress' dipilih, alamat NIC MAC dok akan digunakan.
+          Jika 'DockNicMacAddress' dipilih, alamat MAC NIC dok akan digunakan.
 
           Tetapan ini tidak boleh diubah oleh pengguna.</translation>
 <translation id="1507957856411744193">Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada semua alamat IP, bukan alamat peribadi RFC1918/RFC4193 semata-mata.
@@ -1213,9 +1213,9 @@
 
       Jika anda menetapkan dasar ini kepada 'Migrate', direktori laman utama yang disulitkan dengan ecryptfs akan dihijrahkan kepada penyulitan ext4 secara automatik pada log masuk tanpa meminta persetujuan pengguna.
 
-      Jika anda menetapkan dasar ini kepada 'Wipe', direktori laman utama yang disulitkan dengan ecryptfs akan dipadamkan pada log masuk, sebaliknya direktori laman utama baharu yang disulitkan dengan ext4 akan dibuat. Amaran: Tindakan ini mengalih keluar data setempat pengguna.
+      Jika anda menetapkan dasar ini kepada 'Wipe', direktori laman utama yang disulitkan dengan ecryptfs akan dipadamkan pada log masuk, sebaliknya direktori laman utama baharu yang disulitkan dengan ext4 akan dibuat. Amaran: Tindakan ini akan mengalih keluar data setempat pengguna.
 
-      Jika anda menetapkan dasar ini kepada 'MinimalMigrate', direktori laman utama yang disulitkan dengan ecryptfs akan dipadamkan pada log masuk, sebaliknya direktori laman utama baharu yang disulitkan dengan ext4 akan dibuat. Walau bagaimanapun dasar ini akan cuba mengekalkan token log masuk supaya pengguna tidak perlu log masuk semula. Amaran: Tindakan ini mengalih keluar data setempat pengguna.
+      Jika anda menetapkan dasar ini kepada 'MinimalMigrate', direktori laman utama yang disulitkan dengan ecryptfs akan dipadamkan pada log masuk, sebaliknya direktori laman utama baharu yang disulitkan dengan ext4 akan dibuat. Walau bagaimanapun, dasar ini akan cuba mengekalkan token log masuk supaya pengguna tidak perlu log masuk semula. Amaran: Tindakan ini akan mengalih keluar data setempat pengguna.
 
       Jika anda menetapkan dasar ini kepada pilihan yang tidak disokong lagi ('AskUser' atau 'AskForEcryptfsArcUsers'), dasar ini akan dikendalikan seolah-olah anda telah memilih 'Migrate'.
 
@@ -1424,7 +1424,7 @@
       Jika dasar ini ditetapkan kepada 'DeveloperToolsAllowed' (nilai 1), Alat Pembangun dan konsol JavaScript boleh diakses dan digunakan dalam semua konteks, termasuk konteks sambungan yang dipasang oleh dasar perusahaan.
       Jika dasar ini ditetapkan kepada 'DeveloperToolsDisallowed' (nilai 2), Alat Pembangun tidak boleh diakses dan unsur tapak web tidak boleh disemak lagi. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
-<translation id="3550875587920006460">Membolehkan penetapan jadual tersuai untuk menyemak kemas kini. Dasar ini digunakan pada semua pengguna dan semua antara muka pada peranti. Apabila ditetapkan, peranti akan menyemak kemas kini mengikut jadual tersebut. Dasar ini mesti dialih keluar untuk membatalkan sebarang semakan kemas kini berjadual lagi.</translation>
+<translation id="3550875587920006460">Membolehkan penetapan jadual tersuai untuk menyemak kemas kini. Dasar ini digunakan pada semua pengguna dan semua antara muka pada peranti. Setelah ditetapkan, peranti akan menyemak kemas kini mengikut jadual tersebut. Dasar ini mesti dialih keluar untuk membatalkan sebarang semakan kemas kini berjadual lagi.</translation>
 <translation id="355118380775352753">Tapak web untuk dibuka dalam penyemak imbas alternatif</translation>
 <translation id="3554984410014457319">Benarkan Google Assistant mendengar ungkapan pengaktifan suara</translation>
 <translation id="356579196325389849">Pengguna boleh mengkonfigurasi saluran keluaran OS Chrome</translation>
@@ -1546,7 +1546,7 @@
 
       Apabila dasar ini ditetapkan kepada <ph name="BR_ENABLED" />, sandaran dan pemulihan Android didayakan pada awalnya.
 
-      Apabila dasar ini ditetapkan kepada <ph name="BR_UNDER_USER_CONTROL" />, pengguna diminta untuk memilih sama ada hendak menggunakan sandaran dan pemulihan Android. Jika pengguna mendayakan sandaran dan pemulihan, data apl Android dimuat naik ke pelayan sandaran Android dan dipulihkan daripada pelayan tersebut apabila pemasangan semula apl dilakukan untuk apl yang serasi.
+      Apabila dasar ini ditetapkan kepada <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan diminta untuk memilih sama ada hendak menggunakan sandaran dan pemulihan Android. Jika pengguna mendayakan sandaran dan pemulihan, data apl Android dimuat naik ke pelayan sandaran Android dan dipulihkan daripada pelayan tersebut apabila pemasangan semula apl dilakukan untuk apl yang serasi.
 
       Ambil perhatian bahawa dasar ini mengawal keadaan sandaran dan pemulihan Android semasa penyediaan awal sahaja. Pengguna boleh membuka tetapan Android kemudian dan menghidupkan/mematikan sandaran dan pemulihan Android.</translation>
 <translation id="3831376478177535007">Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> membenarkan sijil yang dikeluarkan oleh operasi PKI Lama Symantec Corporation untuk dipercayai jika sijil ini berjaya disahkan dan dikaitkan dengan sijil CA yang dicam.
@@ -1683,9 +1683,9 @@
 
           Untuk tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />, pemasangan paksa adalah terhad kepada apl dan sambungan yang disenaraikan di Gedung Web Chrome.
 
-          Sila ambil perhatian bahawa kod sumber mana-mana sambungan mungkin diubah oleh pengguna melalui Alatan Pembangun (berkemungkinan menyebabkan disfungsi pada sambungan). Jika perkara ini menimbulkan kebimbangan, maka dasar  <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> harus ditetapkan.
+          Sila ambil perhatian bahawa kod sumber mana-mana sambungan mungkin diubah oleh pengguna melalui Alatan Pembangun (berkemungkinan menyebabkan disfungsi pada sambungan). Jika perkara ini menimbulkan kebimbangan, maka dasar <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> harus ditetapkan.
 
-          Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan, sebagai pilihan, URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf yang didapati, contohnya, pada <ph name="CHROME_EXTENSIONS_LINK" /> apabila dalam mod pembangun. URL "kemas kini", jika dinyatakan, harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di  <ph name="LINK_TO_EXTENSION_DOC1" />. Secara lalai, URL kemas kini Gedung Web Chrome digunakan (pada masa ini ialah "https://clients2.google.com/service/update2/crx"). Sila ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan tersebut. Sila ambil perhatian juga bahawa menyatakan URL "kemas kini" secara jelas adalah mandatori dalam <ph name="PRODUCT_NAME" /> sehingga dan merangkumi versi 67.
+          Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan, sebagai pilihan, URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf yang didapati, contohnya, pada <ph name="CHROME_EXTENSIONS_LINK" /> apabila dalam mod pembangun. URL "kemas kini", jika dinyatakan, harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC1" />. Secara lalai, URL kemas kini Gedung Web Chrome digunakan (pada masa ini ialah "https://clients2.google.com/service/update2/crx"). Sila ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan tersebut. Sila ambil perhatian juga bahawa menyatakan URL "kemas kini" secara jelas adalah mandatori dalam <ph name="PRODUCT_NAME" /> sehingga dan merangkumi versi 67.
 
           Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> memasang sambungan dengan id <ph name="EXTENSION_ID_SAMPLE" /> daripada URL "kemas kini" standard Gedung Web Chrome. Untuk mendapatkan maklumat lanjut tentang mengehoskan sambungan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -2708,7 +2708,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 <translation id="5950205771952201658">Berasaskan fakta bahawa semakan pembatalan dalam talian gagal-lembut tidak memberikan sebarang manfaat keselamatan yang berkesan, semakan ini dilumpuhkan secara lalai dalam <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baharu. Dengan menetapkan dasar ini kepada benar, gelagat sebelumnya dipulihkan dan semakan OCSP/CRL dalam talian akan dilaksanakan.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> tidak akan melaksanakan semakan pembatalan dalam talian dalam <ph name="PRODUCT_NAME" /> 19 dan yang lebih baharu.</translation>
-<translation id="5961137303188584693">Alamat NIC MAC terbina dalam peranti</translation>
+<translation id="5961137303188584693">Alamat MAC NIC terbina dalam peranti</translation>
 <translation id="5966615072639944554">Sambungan dibenarkan untuk mengguna API pembuktian jauh</translation>
 <translation id="5983708779415553259">Gelagat lalai untuk tapak yang tidak didapati dalam mana-mana pek kandungan</translation>
 <translation id="5997543603646547632">Gunakan jam 24 jam secara lalai</translation>
@@ -2771,7 +2771,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 <translation id="6034341625190551415">Mengawal jenis akaun sesi awam dan kios.</translation>
 <translation id="6034603289689965535">Membenarkan halaman memaparkan tetingkap timbul semasa penyahmuatannya</translation>
 <translation id="6036523166753287175">Dayakan penyusuran tembok api daripada hos akses jauh</translation>
-<translation id="605475635122964053">Mengehadkan mod pencetakan PIN. Dasar yang tidak ditetapkan akan dianggap sebagai tiada sekatan. Jika mod tidak tersedia, dasar ini akan diabaikan. Sila ambil perhatian bahawa ciri pencetakan PIN didayakan hanya untuk pencetak yang menggunakan salah satu protokol IPPS, USB atau IPP melalui USB </translation>
+<translation id="605475635122964053">Sekat mod pencetakan PIN. Dasar yang tidak ditetapkan akan dianggap sebagai tiada sekatan. Jika mod tidak tersedia, dasar ini akan diabaikan. Sila ambil perhatian bahawa ciri pencetakan PIN didayakan hanya untuk pencetak yang menggunakan salah satu protokol IPPS, USB atau IPP melalui USB </translation>
 <translation id="6070667616071269965">Reka letak papan kekunci skrin log masuk peranti</translation>
 <translation id="6074963268421707432">Jangan benarkan mana-mana tapak untuk memaparkan pemberitahuan desktop</translation>
 <translation id="6074964551275531965">Tetapkan tempoh waktu untuk pemberitahuan kemas kini</translation>
@@ -3324,7 +3324,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar dibiarkan tanpa ditetapkan, pengguna boleh memilih sama ada mereka ingin diminta memberikan kata laluan untuk membuka kunci peranti atau tidak.</translation>
 <translation id="7107148737865880402">Dayakan dasar pengurusan kuasa perkongsian kuasa USB.
 
-          Sesetengah peranti mempunyai port USB khusus yang ditandai dengan ikon panahan petir atau bateri yang boleh digunakan untuk mengecas peranti seperti telefon mudah alih menggunakan bateri sistem. Dasar ini mempengaruhi gelagat pengecasan port ini semasa sistem dalam mod tidur atau tutup. Dasar ini tidak mempengaruhi port USB lain dan gelagat pengecasan semasa sistem dalam mod jaga.
+          Sesetengah peranti mempunyai port USB khusus yang ditandakan dengan ikon panahan petir atau bateri yang boleh digunakan untuk mengecas peranti seperti telefon mudah alih menggunakan bateri sistem. Dasar ini mempengaruhi gelagat pengecasan port ini semasa sistem dalam mod tidur atau tutup. Dasar ini tidak mempengaruhi port USB lain dan gelagat pengecasan semasa sistem dalam mod jaga.
 
           Semasa dalam mod jaga, port USB akan sentiasa membekalkan kuasa.
 

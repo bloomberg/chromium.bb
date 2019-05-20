@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Zařízení do domény nelze přidat. Zkontrolujte, zda jste nepřekročili maximální počet zařízení, která můžete přidat.</translation>
 <translation id="1744108098763830590">stránka na pozadí</translation>
 <translation id="1745520510852184940">Vždy provádět tuto akci</translation>
+<translation id="1746402432151920942">Identifikátor chráněného média</translation>
 <translation id="175196451752279553">Znovu ot&amp;evřít zavřenou kartu</translation>
 <translation id="1753905327828125965">Nejnavštěvovanější</translation>
 <translation id="1756681705074952506">Metoda zadávání dat</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Nejste přihlášeni</translation>
 <translation id="1832511806131704864">Změna telefonu aktualizována</translation>
 <translation id="1834503245783133039">Stažení se nezdařilo: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Zařízení MIDI</translation>
 <translation id="1838374766361614909">Vymazat vyhledávání</translation>
 <translation id="1841545962859478868">Správce zařízení může sledovat toto:</translation>
 <translation id="1841616161104323629">Chybí záznam zařízení.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Nahlásit problém</translation>
 <translation id="2220572644011485463">PIN nebo heslo</translation>
 <translation id="2224444042887712269">Toto nastavení patří uživateli <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Události přístupnosti</translation>
 <translation id="2224551243087462610">Upravit název složky</translation>
 <translation id="2226449515541314767">U tohoto webu byla zablokována úplná kontrola zařízení MIDI.</translation>
 <translation id="2226720438730111184">Sdělte nám, co se děje</translation>
@@ -2110,6 +2113,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4268025649754414643">Šifrování klíče</translation>
 <translation id="4270393598798225102">Verze <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Žádné shody</translation>
+<translation id="4275663329226226506">Média</translation>
 <translation id="4275830172053184480">Restartovat zařízení</translation>
 <translation id="4278101229438943600">Asistent je připraven</translation>
 <translation id="4278390842282768270">Povoleno</translation>
@@ -4159,6 +4163,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7506541170099744506">Vaše zařízení <ph name="DEVICE_TYPE" /> bylo úspěšně zaregistrováno do podnikové správy.</translation>
 <translation id="7507930499305566459">Certifikát stavového odpovídače</translation>
 <translation id="7513029293694390567">Přihlašovat se na weby automaticky pomocí uložených identifikačních údajů. Když je tato funkce vypnutá, budete před každým přihlášením na web požádáni o potvrzení.</translation>
+<translation id="7514365320538308">Stáhnout</translation>
 <translation id="7517786267097410259">Vytvořte heslo –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Řekněte „Ok Google“.</translation>
@@ -5033,6 +5038,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8850251000316748990">Zobrazit další...</translation>
 <translation id="885246833287407341">Argumenty funkce rozhraní API</translation>
 <translation id="8853586775156634952">Tato karta bude uložena jen na tomto zařízení</translation>
+<translation id="885701979325669005">Úložiště</translation>
 <translation id="8859057652521303089">Vyberte jazyk:</translation>
 <translation id="8859174528519900719">Podrámec: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Přejděte na rychlý prohlížeč</translation>

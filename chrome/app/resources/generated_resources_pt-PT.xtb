@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Não é possível associar o dispositivo ao domínio. Certifique-se de que não excedeu o número de dispositivos que pode adicionar.</translation>
 <translation id="1744108098763830590">página de fundo</translation>
 <translation id="1745520510852184940">Fazer sempre isto</translation>
+<translation id="1746402432151920942">Identificador de multimédia protegido</translation>
 <translation id="175196451752279553">Voltar a abrir o s&amp;eparador fechado</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
 <translation id="1756681705074952506">Método de introdução</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Não tem sessão iniciada</translation>
 <translation id="1832511806131704864">Alteração de telemóvel atualizada</translation>
 <translation id="1834503245783133039">Transferência sem êxito: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Dispositivos MIDI</translation>
 <translation id="1838374766361614909">Limpar pesquisa</translation>
 <translation id="1841545962859478868">O gestor do dispositivo pode monitorizar o seguinte:</translation>
 <translation id="1841616161104323629">Registo do dispositivo em falta.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Comunicar um problema</translation>
 <translation id="2220572644011485463">PIN ou palavra-passe</translation>
 <translation id="2224444042887712269">Esta definição pertence a <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Eventos de acessibilidade</translation>
 <translation id="2224551243087462610">Editar nome da pasta</translation>
 <translation id="2226449515541314767">Este site foi impedido de ter controlo total sobre dispositivos MIDI.</translation>
 <translation id="2226720438730111184">Indique-nos o que está a acontecer</translation>
@@ -2114,6 +2117,7 @@ Pretende pará-lo?</translation>
 <translation id="4268025649754414643">Cifragem de chaves</translation>
 <translation id="4270393598798225102">Versão <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Sem correspondências</translation>
+<translation id="4275663329226226506">Multimédia</translation>
 <translation id="4275830172053184480">Reiniciar o dispositivo</translation>
 <translation id="4278101229438943600">O seu Assistente está pronto</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -4164,6 +4168,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7506541170099744506">O seu <ph name="DEVICE_TYPE" /> foi inscrito com êxito para gestão empresarial.</translation>
 <translation id="7507930499305566459">Certificado do dispositivo de resposta do estado</translation>
 <translation id="7513029293694390567">Inicie sessão automaticamente nos Sites com as credenciais armazenadas. Se esta funcionalidade estiver desativada, é-lhe pedida sempre uma confirmação antes de iniciar sessão num Website.</translation>
+<translation id="7514365320538308">Transferir</translation>
 <translation id="7517786267097410259">Criar palavra-passe –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Diga "Ok Google"</translation>
@@ -5040,6 +5045,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8850251000316748990">Veja mais…</translation>
 <translation id="885246833287407341">Argumentos de função da API</translation>
 <translation id="8853586775156634952">Este cartão será guardado apenas neste dispositivo.</translation>
+<translation id="885701979325669005">Armazenamento</translation>
 <translation id="8859057652521303089">Selecionar idioma:</translation>
 <translation id="8859174528519900719">Subestrutura: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Mude para um navegador rápido</translation>

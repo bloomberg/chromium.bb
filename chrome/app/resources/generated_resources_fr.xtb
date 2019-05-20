@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Impossible d'associer l'appareil au domaine. Vérifiez que vous n'avez pas dépassé le nombre d'appareils pouvant être ajoutés.</translation>
 <translation id="1744108098763830590">page en arrière-plan</translation>
 <translation id="1745520510852184940">Toujours procéder ainsi</translation>
+<translation id="1746402432151920942">Identifiant du contenu multimédia protégé</translation>
 <translation id="175196451752279553">&amp;Rouvrir l'onglet fermé</translation>
 <translation id="1753905327828125965">Les + visités</translation>
 <translation id="1756681705074952506">Mode de saisie</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Non connecté</translation>
 <translation id="1832511806131704864">Changement de téléphone mis à jour</translation>
 <translation id="1834503245783133039">Échec du téléchargement : <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Appareils MIDI</translation>
 <translation id="1838374766361614909">Effacer la recherche</translation>
 <translation id="1841545962859478868">L'administrateur de cet appareil peut contrôler les éléments suivants :</translation>
 <translation id="1841616161104323629">Enregistrement de l'appareil manquant.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Signaler un problème</translation>
 <translation id="2220572644011485463">Code ou mot de passe</translation>
 <translation id="2224444042887712269">Ce paramètre appartient à <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Événements d'accessibilité</translation>
 <translation id="2224551243087462610">Modifier le nom du dossier</translation>
 <translation id="2226449515541314767">Le contrôle total des appareils MIDI a été bloqué pour ce site.</translation>
 <translation id="2226720438730111184">Décrivez-nous le problème rencontré</translation>
@@ -2114,6 +2117,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4268025649754414643">Chiffrement de la clé</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Aucune correspondance</translation>
+<translation id="4275663329226226506">Médias</translation>
 <translation id="4275830172053184480">Redémarrer l'appareil</translation>
 <translation id="4278101229438943600">L'Assistant est prêt</translation>
 <translation id="4278390842282768270">Autorisé</translation>
@@ -4164,6 +4168,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7506541170099744506">Votre <ph name="DEVICE_TYPE" /> a bien été enregistré pour bénéficier de la gestion d'entreprise.</translation>
 <translation id="7507930499305566459">Certificat du répondeur d'état</translation>
 <translation id="7513029293694390567">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Si cette fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
+<translation id="7514365320538308">Télécharger</translation>
 <translation id="7517786267097410259">Créer un mot de passe –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Dites "Ok Google"</translation>
@@ -5041,6 +5046,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8850251000316748990">Voir plus…</translation>
 <translation id="885246833287407341">Arguments de fonction API</translation>
 <translation id="8853586775156634952">Cette carte sera enregistrée sur cet appareil uniquement</translation>
+<translation id="885701979325669005">Données stockées</translation>
 <translation id="8859057652521303089">Sélectionnez votre langue :</translation>
 <translation id="8859174528519900719">Sous-cadre : <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Passez à un navigateur rapide</translation>

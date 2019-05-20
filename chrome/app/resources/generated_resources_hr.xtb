@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Uređaj nije moguće pridružiti domeni. Provjerite jeste li premašili broj uređaja koji možete dodati.</translation>
 <translation id="1744108098763830590">pozadinska stranica</translation>
 <translation id="1745520510852184940">Učini to uvijek</translation>
+<translation id="1746402432151920942">Identifikator zaštićenog medija</translation>
 <translation id="175196451752279553">P&amp;onovo otvori zatvorenu karticu</translation>
 <translation id="1753905327828125965">Najposjećenije</translation>
 <translation id="1756681705074952506">Način unosa</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Nije prijavljen</translation>
 <translation id="1832511806131704864">Promjena telefona ažurirana je</translation>
 <translation id="1834503245783133039">Preuzimanje nije uspjelo: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI uređaji</translation>
 <translation id="1838374766361614909">Brisanje pretraživanja</translation>
 <translation id="1841545962859478868">Administrator uređaja može nadzirati sljedeće:</translation>
 <translation id="1841616161104323629">Zapis uređaja nije prisutan.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Prijavite poteškoću</translation>
 <translation id="2220572644011485463">PIN ili zaporka</translation>
 <translation id="2224444042887712269">Ova postavka pripada korisniku <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Događaji pristupačnosti</translation>
 <translation id="2224551243087462610">Uredi naziv mape</translation>
 <translation id="2226449515541314767">Za tu je web-lokaciju blokiran potpuni nadzor nad MIDI uređajima.</translation>
 <translation id="2226720438730111184">Recite nam što se događa</translation>
@@ -2114,6 +2117,7 @@
 <translation id="4268025649754414643">Šifriranje ključa</translation>
 <translation id="4270393598798225102">Verzija <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Nema rezultata</translation>
+<translation id="4275663329226226506">Mediji</translation>
 <translation id="4275830172053184480">Ponovo pokrenite svoj uređaj</translation>
 <translation id="4278101229438943600">Vaš je Asistent spreman</translation>
 <translation id="4278390842282768270">Dopušteno</translation>
@@ -4163,6 +4167,7 @@
 <translation id="7506541170099744506">Vaš je <ph name="DEVICE_TYPE" /> uređaj uspješno registriran za poslovno upravljanje.</translation>
 <translation id="7507930499305566459">Certifikat odgovora statusa</translation>
 <translation id="7513029293694390567">Automatski se prijavite na web-lokacije pomoću spremljenih vjerodajnica. Ako je ta značajka onemogućena, tražit će se potvrda prije svakog prijavljivanja na web-lokaciju.</translation>
+<translation id="7514365320538308">Preuzmi</translation>
 <translation id="7517786267097410259">Izrada zaporke –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Recite "Ok Google"</translation>
@@ -5041,6 +5046,7 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8850251000316748990">Pogledajte više...</translation>
 <translation id="885246833287407341">Argumenti za funkciju API-ja</translation>
 <translation id="8853586775156634952">Ova će se kartica spremiti samo na vaš uređaj</translation>
+<translation id="885701979325669005">Prostor za pohranu</translation>
 <translation id="8859057652521303089">Odaberite svoj jezik:</translation>
 <translation id="8859174528519900719">Podokvir: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Prijeđite na brz preglednik</translation>

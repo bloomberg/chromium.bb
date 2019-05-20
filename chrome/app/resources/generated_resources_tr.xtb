@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Cihaz alan adına eklenemiyor. Ekleyebileceğiniz cihaz sayısını aşmadığınızdan emin olun.</translation>
 <translation id="1744108098763830590">arka plan sayfası</translation>
 <translation id="1745520510852184940">Bunu Her Zaman Yap</translation>
+<translation id="1746402432151920942">Korunan Medya Tanımlayıcı</translation>
 <translation id="175196451752279553">&amp;Kapatılan sekmeyi yeniden aç</translation>
 <translation id="1753905327828125965">En Çok Ziyaret Edilenler</translation>
 <translation id="1756681705074952506">Giriş yöntemi</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Oturum açılmadı</translation>
 <translation id="1832511806131704864">Telefon değişikliği güncellendi</translation>
 <translation id="1834503245783133039">İndirme işlemi başarısız oldu: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI Cihazlar</translation>
 <translation id="1838374766361614909">Aramayı temizle</translation>
 <translation id="1841545962859478868">Cihaz yöneticisi aşağıdakileri izleyebilir:</translation>
 <translation id="1841616161104323629">Eksik cihaz kaydı.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Sorun bildir</translation>
 <translation id="2220572644011485463">PIN veya şifre</translation>
 <translation id="2224444042887712269">Bu ayar <ph name="OWNER_EMAIL" /> kullanıcısına aittir.</translation>
+<translation id="2224471211857467033">Erişilebilirlik Etkinlikleri</translation>
 <translation id="2224551243087462610">Klasör adını düzenle</translation>
 <translation id="2226449515541314767">Bu sitenin MIDI cihazları üzerinde tam denetime sahip olması engellendi.</translation>
 <translation id="2226720438730111184">Ne Olduğunu Anlatın</translation>
@@ -2114,6 +2117,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4268025649754414643">Anahtar Şifreleme</translation>
 <translation id="4270393598798225102">Sürüm <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Eşleşme yok</translation>
+<translation id="4275663329226226506">Medya</translation>
 <translation id="4275830172053184480">Cihazınızı yeniden başlatın</translation>
 <translation id="4278101229438943600">Asistanınız hazır</translation>
 <translation id="4278390842282768270">İzin verilen</translation>
@@ -4164,6 +4168,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> cihazınız kurumsal yönetim için başarıyla kaydettirildi.</translation>
 <translation id="7507930499305566459">Durum Yanıtlayıcı Sertifikası</translation>
 <translation id="7513029293694390567">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik devre dışı bırakılırsa, bir web sitesinde oturum açmadan önce her defasında işlemi onaylamanız istenir.</translation>
+<translation id="7514365320538308">İndir</translation>
 <translation id="7517786267097410259">Bir şifre oluşturun -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">"Ok Google" deyin</translation>
@@ -5040,6 +5045,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8850251000316748990">Daha fazla göster...</translation>
 <translation id="885246833287407341">API işlevi bağımsız değişkenleri</translation>
 <translation id="8853586775156634952">Bu kart yalnızca bu cihaza kaydedilecek</translation>
+<translation id="885701979325669005">Depolama</translation>
 <translation id="8859057652521303089">Dilinizi seçin:</translation>
 <translation id="8859174528519900719">Alt çerçeve: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Hızlı bir tarayıcıya geç</translation>

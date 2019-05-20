@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Nepavyko prijungti įrenginio prie domeno. Įsitikinkite, kad neviršijote įrenginių, kuriuos galite pridėti, skaičiaus.</translation>
 <translation id="1744108098763830590">foninis puslapis</translation>
 <translation id="1745520510852184940">Visada tai daryti</translation>
+<translation id="1746402432151920942">Apsaugotos medijos identifikatorius</translation>
 <translation id="175196451752279553">I&amp;š naujo atidaryti uždarytą skirtuką</translation>
 <translation id="1753905327828125965">Dažniausiai lankomi</translation>
 <translation id="1756681705074952506">Įvesties metodas</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Neprisijungta</translation>
 <translation id="1832511806131704864">Telefono pakeitimas atnaujintas</translation>
 <translation id="1834503245783133039">Nepavyko atsisiųsti: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI įrenginiai</translation>
 <translation id="1838374766361614909">Išvalyti paiešką</translation>
 <translation id="1841545962859478868">Įrenginio administratorius gali stebėti:</translation>
 <translation id="1841616161104323629">Trūksta įrenginio įrašo.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Pranešti apie problemą</translation>
 <translation id="2220572644011485463">PIN kodas arba slaptažodis</translation>
 <translation id="2224444042887712269">Šis nustatymas priklauso <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Pritaikomumo įvykiai</translation>
 <translation id="2224551243087462610">Redaguoti aplanko pavadinimą</translation>
 <translation id="2226449515541314767">Ši svetainė užblokuota, kad negalėtų visiškai valdyti MIDI įrenginių.</translation>
 <translation id="2226720438730111184">Aprašykite problemą</translation>
@@ -2114,6 +2117,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4268025649754414643">Rakto kodavimas</translation>
 <translation id="4270393598798225102"><ph name="NUMBER" /> versija</translation>
 <translation id="4271396100647220620">Nėra atitikčių</translation>
+<translation id="4275663329226226506">Medija</translation>
 <translation id="4275830172053184480">Iš naujo paleisti įrenginį</translation>
 <translation id="4278101229438943600">Padėjėjas pasiruošęs</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
@@ -4164,6 +4168,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7506541170099744506">„<ph name="DEVICE_TYPE" />“ sėkmingai užregistruotas kaip tvarkomas įmonėje.</translation>
 <translation id="7507930499305566459">Būsenos atsakiklio sertifikatas</translation>
 <translation id="7513029293694390567">Automatiškai prisijungti prie svetainių naudojant išsaugotus prisijungimo duomenis. Kai funkcija išjungta, kaskart prisijungiant prie svetainės bus prašoma patvirtinti.</translation>
+<translation id="7514365320538308">Atsisiųsti</translation>
 <translation id="7517786267097410259">Sukurti slaptažodį –</translation>
 <translation id="7521387064766892559">„JavaScript“</translation>
 <translation id="7522255036471229694">Ištarkite „Ok Google“.</translation>
@@ -5041,6 +5046,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8850251000316748990">Žr. daugiau...</translation>
 <translation id="885246833287407341">API funkcijos argumentai</translation>
 <translation id="8853586775156634952">Ši kortelė bus išsaugota tik šiame įrenginyje</translation>
+<translation id="885701979325669005">Saugykla</translation>
 <translation id="8859057652521303089">Pasirinkite kalbą:</translation>
 <translation id="8859174528519900719">Antrinis kadras: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Perjunkite į sparčią naršyklę</translation>

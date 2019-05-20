@@ -345,7 +345,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Kết nối đã được đặt lại.</translation>
 <translation id="2788784517760473862">Thẻ tín dụng được chấp nhận</translation>
-<translation id="2792012897584536778">Các quản trị viên của thiết bị này đã thiết lập các chứng chỉ bảo mật cho phép họ xem nội dung của những trang web bạn truy cập.</translation>
+<translation id="2792012897584536778">Các quản trị viên của thiết bị này đã thiết lập các chứng chỉ bảo mật có thể cho phép họ xem nội dung của những trang web bạn truy cập.</translation>
 <translation id="2794233252405721443">Trang web đã bị chặn</translation>
 <translation id="2799020568854403057">Trang web bạn sắp truy cập chứa ứng dụng có hại</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
@@ -726,7 +726,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> cho biết</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
-<translation id="4945672369594656571">Kiểm soát cách Google xử lý dữ liệu tài khoản và thiết bị của bạn. Google chỉ xử lý dữ liệu tài khoản và thiết bị của bạn theo chỉ dẫn của người quản lý tài khoản và thiết bị, cũng như chỉ cho các mục đích mà người quản lý tài khoản và thiết bị chỉ định.</translation>
+<translation id="4945672369594656571">Kiểm soát cách Google xử lý dữ liệu tài khoản và thiết bị của bạn. Google xử lý dữ liệu tài khoản và thiết bị của bạn hoàn toàn theo chỉ dẫn của người quản lý tài khoản và thiết bị của bạn, và chỉ cho các mục đích mà người quản lý tài khoản và thiết bị của bạn chỉ định.</translation>
 <translation id="4950898438188848926">Nút chuyển đổi tab, nhấn phím Enter để chuyển sang tab đang mở, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -740,7 +740,7 @@
 <translation id="5017554619425969104">Văn bản bạn đã sao chép</translation>
 <translation id="5018422839182700155">Không thể mở trang này</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
-<translation id="5020154601324912079">Kiểm soát cách Google xử lý dữ liệu thiết bị của bạn. Google chỉ xử lý dữ liệu thiết bị của bạn theo chỉ dẫn của người quản lý thiết bị và chỉ cho các mục đích mà người quản lý thiết bị chỉ định.</translation>
+<translation id="5020154601324912079">Kiểm soát cách Google xử lý dữ liệu thiết bị của bạn. Google xử lý dữ liệu thiết bị của bạn hoàn toàn theo chỉ dẫn của người quản lý thiết bị và chỉ cho các mục đích mà người quản lý thiết bị chỉ định.</translation>
 <translation id="5023310440958281426">Kiểm tra chính sách của quản trị viên của bạn</translation>
 <translation id="5029568752722684782">Xóa bản sao</translation>
 <translation id="503069730517007720">Cần có chứng chỉ gốc cho "<ph name="SOFTWARE_NAME" />" nhưng chứng chỉ này chưa được cài đặt. Hãy yêu cầu quản trị viên CNTT của bạn xem hướng dẫn cấu hình cho "<ph name="SOFTWARE_NAME" />" để khắc phục sự cố này. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -1092,7 +1092,7 @@
 <translation id="7062635574500127092">Xanh mòng két</translation>
 <translation id="7064851114919012435">Thông tin liên hệ</translation>
 <translation id="7079718277001814089">Trang web này có chứa phần mềm độc hại</translation>
-<translation id="7081564429925484109">Cảnh báo: Chính sách này không được hợp nhất như đã chỉ định trong chính sách PolicyListMultipleSourceMergeList vì đó không phải là danh sách.</translation>
+<translation id="7081564429925484109">Cảnh báo: Chính sách này không được hợp nhất như đã chỉ định trong chính sách PolicyListMultipleSourceMergeList vì chính sách này không phải là danh sách.</translation>
 <translation id="7087282848513945231">Hạt</translation>
 <translation id="7090678807593890770">Tìm kiếm <ph name="LINK" /> trên Google</translation>
 <translation id="7108338896283013870">Ẩn</translation>
@@ -1169,7 +1169,7 @@ Thông tin chi tiết bổ sung:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Quản lý mật khẩu…</translation>
 <translation id="7419106976560586862">Đường dẫn cấu hình</translation>
-<translation id="7424427397225027541">Kiểm soát cách Google xử lý dữ liệu tài khoản của bạn. Google chỉ xử lý dữ liệu tài khoản của bạn theo chỉ dẫn của người quản lý tài khoản và chỉ cho các mục đích mà người quản lý tài khoản chỉ định.</translation>
+<translation id="7424427397225027541">Kiểm soát cách Google xử lý dữ liệu tài khoản của bạn. Google xử lý dữ liệu tài khoản của bạn hoàn toàn theo chỉ dẫn của người quản lý tài khoản của bạn và chỉ cho các mục đích mà người quản lý tài khoản của bạn chỉ định.</translation>
 <translation id="7437289804838430631">Thêm thông tin liên hệ</translation>
 <translation id="7440140511386898319">Khám phá khi không có mạng</translation>
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>

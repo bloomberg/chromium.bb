@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Laitetta ei voi liittää verkkotunnukseen. Varmista, ettei lisättävien laitteiden kiintiösi ole ylittynyt,</translation>
 <translation id="1744108098763830590">taustasivu:</translation>
 <translation id="1745520510852184940">Käännä aina</translation>
+<translation id="1746402432151920942">Suojatun median tunniste</translation>
 <translation id="175196451752279553">A&amp;vaa suljettu välilehti uudelleen</translation>
 <translation id="1753905327828125965">Käydyimmät</translation>
 <translation id="1756681705074952506">Syöttötapa</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Ei kirjautunut</translation>
 <translation id="1832511806131704864">Puhelimen vaihdos päivitettiin</translation>
 <translation id="1834503245783133039">Lataus epäonnistui: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-laitteet</translation>
 <translation id="1838374766361614909">Tyhjennä haku</translation>
 <translation id="1841545962859478868">Laitteen järjestelmänvalvoja voi seurata näitä:</translation>
 <translation id="1841616161104323629">Laitetallenne puuttuu.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Ilmoita ongelmasta</translation>
 <translation id="2220572644011485463">PIN-koodi tai salasana</translation>
 <translation id="2224444042887712269">Tämä asetus kuuluu käyttäjälle <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Esteettömyystapahtumat</translation>
 <translation id="2224551243087462610">Muokkaa kansion nimeä</translation>
 <translation id="2226449515541314767">Tältä sivustolta on estetty MIDI-laitteiden täysi käyttöoikeus.</translation>
 <translation id="2226720438730111184">Kerro, mitä tapahtuu</translation>
@@ -2112,6 +2115,7 @@
 <translation id="4268025649754414643">Avaimen salakoodaus</translation>
 <translation id="4270393598798225102">Versio <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Ei hakutuloksia</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Käynnistä laite uudelleen</translation>
 <translation id="4278101229438943600">Assistant on valmiina</translation>
 <translation id="4278390842282768270">Sallittu</translation>
@@ -4163,6 +4167,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7506541170099744506">Yrityshallinta on otettu käyttöön laitteessa <ph name="DEVICE_TYPE" />.</translation>
 <translation id="7507930499305566459">Tilavastausvarmenne</translation>
 <translation id="7513029293694390567">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
+<translation id="7514365320538308">Lataa</translation>
 <translation id="7517786267097410259">Luo salasana –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sano ”Ok Google”.</translation>
@@ -5039,6 +5044,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8850251000316748990">Katso lisää…</translation>
 <translation id="885246833287407341">Sovellusliittymätoimintojen argumentit</translation>
 <translation id="8853586775156634952">Kortti tallennetaan vain tälle laitteelle</translation>
+<translation id="885701979325669005">Tallennus</translation>
 <translation id="8859057652521303089">Valitse kieli:</translation>
 <translation id="8859174528519900719">Alakehys: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Siirry käyttämään nopeaa selainta.</translation>

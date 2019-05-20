@@ -484,6 +484,7 @@
 <translation id="1744060673522309905">Das Gerät konnte der Domain nicht beitreten. Sie dürfen nicht mehr als die erlaubte Anzahl von Geräten hinzufügen.</translation>
 <translation id="1744108098763830590">Hintergrundseite</translation>
 <translation id="1745520510852184940">Immer so verfahren</translation>
+<translation id="1746402432151920942">ID für geschützte Medien</translation>
 <translation id="175196451752279553">Geschlossenen Tab wieder öffn&amp;en</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
 <translation id="1756681705074952506">Eingabemethode</translation>
@@ -541,6 +542,7 @@
 <translation id="1830550083491357902">Nicht angemeldet</translation>
 <translation id="1832511806131704864">Änderung übernommen</translation>
 <translation id="1834503245783133039">Download fehlgeschlagen: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-Geräte</translation>
 <translation id="1838374766361614909">Suche löschen</translation>
 <translation id="1841545962859478868">Der Geräteadministrator überwacht eventuell Folgendes:</translation>
 <translation id="1841616161104323629">Fehlender Gerätedatensatz.</translation>
@@ -783,6 +785,7 @@
 <translation id="2220529011494928058">Problem melden</translation>
 <translation id="2220572644011485463">PIN oder Passwort</translation>
 <translation id="2224444042887712269">Inhaber dieser Einstellung ist <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Bedienungshilfen</translation>
 <translation id="2224551243087462610">Ordnername bearbeiten</translation>
 <translation id="2226449515541314767">Dieser Website wurde keine vollständige Kontrolle über MIDI-Geräte gewährt.</translation>
 <translation id="2226720438730111184">Sagen Sie uns, was los ist</translation>
@@ -2109,6 +2112,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4268025649754414643">Schlüsselverschlüsselung</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Keine Übereinstimmungen</translation>
+<translation id="4275663329226226506">Medien</translation>
 <translation id="4275830172053184480">Gerät neu starten</translation>
 <translation id="4278101229438943600">Google Assistant ist bereit</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
@@ -4158,6 +4162,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7506541170099744506">Ihr <ph name="DEVICE_TYPE" /> wurde erfolgreich für die Unternehmensverwaltung angemeldet.</translation>
 <translation id="7507930499305566459">Zertifikat für Statusantwortdienst</translation>
 <translation id="7513029293694390567">Sie werden mithilfe gespeicherter Anmeldedaten automatisch auf Websites angemeldet. Wenn diese Funktion deaktiviert ist, werden Sie bei jeder Anmeldung auf einer Website nach einer Bestätigung gefragt.</translation>
+<translation id="7514365320538308">Herunterladen</translation>
 <translation id="7517786267097410259">Passwort erstellen –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sagen Sie "Ok Google".</translation>
@@ -5035,6 +5040,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8850251000316748990">Mehr…</translation>
 <translation id="885246833287407341">API-Funktionsargumente</translation>
 <translation id="8853586775156634952">Diese Karte wird nur auf diesem Gerät gespeichert</translation>
+<translation id="885701979325669005">Speicher</translation>
 <translation id="8859057652521303089">Sprache auswählen:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Steigen Sie auf einen schnellen Browser um</translation>

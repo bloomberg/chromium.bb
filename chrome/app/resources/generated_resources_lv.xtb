@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Ierīci nevar saistīt ar domēnu. Nepārsniedziet pievienojamo ierīču skaitu.</translation>
 <translation id="1744108098763830590">fona lapa</translation>
 <translation id="1745520510852184940">Vienmēr</translation>
+<translation id="1746402432151920942">Aizsargāta multivides satura identifikators</translation>
 <translation id="175196451752279553">Vēlr&amp;eiz atvērt aizvērto cilni</translation>
 <translation id="1753905327828125965">Visapmeklētākais</translation>
 <translation id="1756681705074952506">Ievades metode</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Nav pierakstījies</translation>
 <translation id="1832511806131704864">Tālruņa iestatījumu izmaiņas atjauninātas</translation>
 <translation id="1834503245783133039">Nesekmīga lejupielāde: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI ierīces</translation>
 <translation id="1838374766361614909">Notīrīt meklēšanas vaicājumu</translation>
 <translation id="1841545962859478868">Ierīces administrators var uzraudzīt šo:</translation>
 <translation id="1841616161104323629">Trūkst ierīces ieraksta.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Ziņot par problēmu</translation>
 <translation id="2220572644011485463">PIN vai parole</translation>
 <translation id="2224444042887712269">Šo iestatījumu veica <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Pieejamības notikumi</translation>
 <translation id="2224551243087462610">Rediģēt mapes nosaukumu</translation>
 <translation id="2226449515541314767">Šajā vietnē ir bloķēta MIDI ierīču pilnīga pārvaldība.</translation>
 <translation id="2226720438730111184">Aprakstiet problēmu.</translation>
@@ -2114,6 +2117,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4268025649754414643">Atslēgas šifrēšana</translation>
 <translation id="4270393598798225102"><ph name="NUMBER" /> versija</translation>
 <translation id="4271396100647220620">Nav atbilstību</translation>
+<translation id="4275663329226226506">Multivide</translation>
 <translation id="4275830172053184480">Ierīces restartēšana</translation>
 <translation id="4278101229438943600">Asistents ir gatavs</translation>
 <translation id="4278390842282768270">Atļauts</translation>
@@ -4163,6 +4167,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7506541170099744506">Jūsu <ph name="DEVICE_TYPE" /> ierīce ir sekmīgi reģistrēta uzņēmuma pārvaldībai.</translation>
 <translation id="7507930499305566459">Statusa atbildētāja sertifikāts</translation>
 <translation id="7513029293694390567">Automātiski pierakstieties vietnēs, izmantojot saglabātos akreditācijas datus. Ja funkcija ir atspējota, apstiprināšana būs jāveic ikreiz, kad pierakstīsieties vietnē.</translation>
+<translation id="7514365320538308">Lejupielādēt</translation>
 <translation id="7517786267097410259">Paroles izveide —</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sakiet frāzi “Ok Google”</translation>
@@ -5040,6 +5045,7 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8850251000316748990">Skatīt vairāk...</translation>
 <translation id="885246833287407341">API funkcijas argumenti</translation>
 <translation id="8853586775156634952">Šīs kartes dati tiks saglabāti tikai šajā ierīcē</translation>
+<translation id="885701979325669005">Krātuve</translation>
 <translation id="8859057652521303089">Atlasiet savu valodu:</translation>
 <translation id="8859174528519900719">Apakšrāmis: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Pāreja uz ātru pārlūku</translation>

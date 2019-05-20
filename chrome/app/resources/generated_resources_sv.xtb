@@ -486,6 +486,7 @@
 <translation id="1744060673522309905">Det gick inte att ansluta enheten till domänen. Kontrollera att du inte redan har lagt till det högsta tillåtna antalet enheter.</translation>
 <translation id="1744108098763830590">bakgrundssida</translation>
 <translation id="1745520510852184940">Gör alltid detta</translation>
+<translation id="1746402432151920942">Identifierare för skyddad media</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
 <translation id="1756681705074952506">Inmatningsmetod</translation>
@@ -543,6 +544,7 @@
 <translation id="1830550083491357902">Inte inloggad</translation>
 <translation id="1832511806131704864">Mobiländringen har uppdaterats</translation>
 <translation id="1834503245783133039">Nedladdningen misslyckades: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-enheter</translation>
 <translation id="1838374766361614909">Rensa sökning</translation>
 <translation id="1841545962859478868">Enhetsadministratören kan övervaka följande:</translation>
 <translation id="1841616161104323629">Uppgift om enheten saknas.</translation>
@@ -785,6 +787,7 @@
 <translation id="2220529011494928058">Rapportera ett problem</translation>
 <translation id="2220572644011485463">Pinkod eller lösenord</translation>
 <translation id="2224444042887712269">Den här inställningen tillhör <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Tillgänglighetshändelser</translation>
 <translation id="2224551243087462610">Redigera mappnamn</translation>
 <translation id="2226449515541314767">Webbplatsen har blockerats från fullständig kontroll över MIDI-enheter.</translation>
 <translation id="2226720438730111184">Berätta vad som händer</translation>
@@ -2113,6 +2116,7 @@
 <translation id="4268025649754414643">Nyckelchiffrering</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Inga träffar</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Starta om enheten</translation>
 <translation id="4278101229438943600">Assistenten är redo</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
@@ -4162,6 +4166,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> har registrerats för företagshantering.</translation>
 <translation id="7507930499305566459">Status för svarscertifikat</translation>
 <translation id="7513029293694390567">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du bekräfta inloggningen varje gång du besöker en webbplats.</translation>
+<translation id="7514365320538308">Ladda ned</translation>
 <translation id="7517786267097410259">Skapa ett lösenord –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Säg ”Ok Google”</translation>
@@ -5039,6 +5044,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8850251000316748990">Visa fler …</translation>
 <translation id="885246833287407341">API-funktionens argument</translation>
 <translation id="8853586775156634952">Det här kortet sparas enbart på den här enheten</translation>
+<translation id="885701979325669005">Lagring</translation>
 <translation id="8859057652521303089">Välj språk:</translation>
 <translation id="8859174528519900719">Underram: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Byt till en snabb webbläsare</translation>

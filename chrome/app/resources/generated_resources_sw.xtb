@@ -484,6 +484,7 @@
 <translation id="1744060673522309905">Imeshindwa kuunganisha kifaa kwenye kikoa. Hakikisha kuwa hujapitisha idadi ya vifaa unavyoruhusiwa kuongeza.</translation>
 <translation id="1744108098763830590">Ukurasa wa mandharinyuma</translation>
 <translation id="1745520510852184940">Fanya Hivi Kila Mara</translation>
+<translation id="1746402432151920942">Kitambulishi cha Maudhui Yanayolindwa</translation>
 <translation id="175196451752279553">&amp;Fungua tena kichupo kilichofungwa</translation>
 <translation id="1753905327828125965">Zinazotembelewa Zaidi</translation>
 <translation id="1756681705074952506">Mbinu ya uingizaji</translation>
@@ -541,6 +542,7 @@
 <translation id="1830550083491357902">Haijaingiwa</translation>
 <translation id="1832511806131704864">Mabadiliko ya simu yamesasishwa</translation>
 <translation id="1834503245783133039">Imeshindwa kupakua: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Vifaa vya MIDI</translation>
 <translation id="1838374766361614909">Futa utafutaji</translation>
 <translation id="1841545962859478868">Msimamizi wa kifaa anaweza kufuatilia mambo yafuatayo:</translation>
 <translation id="1841616161104323629">Rekodi ya kifaa haipo.</translation>
@@ -783,6 +785,7 @@
 <translation id="2220529011494928058">Ripoti tatizo</translation>
 <translation id="2220572644011485463">PIN au nenosiri</translation>
 <translation id="2224444042887712269">Mipangilio hii ni ya <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Matukio ya Kuwasha Zana za Walio na Matatizo ya Kuona au Kusikia</translation>
 <translation id="2224551243087462610">Badilisha jina la folda</translation>
 <translation id="2226449515541314767">Tovuti imezuiwa isiwe na udhibiti kamili wa vifaa vya MIDI.</translation>
 <translation id="2226720438730111184">Tueleze Kinachotendeka</translation>
@@ -2105,6 +2108,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4268025649754414643">Usimbaji wa Ufunguo</translation>
 <translation id="4270393598798225102">Toleo <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Hakuna matokeo yanayolingana</translation>
+<translation id="4275663329226226506">Vyombo vya Habari</translation>
 <translation id="4275830172053184480">Washa upya kifaa chako</translation>
 <translation id="4278101229438943600">Mratibu wako yuko tayari</translation>
 <translation id="4278390842282768270">Imeruhusiwa</translation>
@@ -4154,6 +4158,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7506541170099744506">Kifaa chako cha <ph name="DEVICE_TYPE" /> kimesajiliwa kwa usimamizi wa biashara.</translation>
 <translation id="7507930499305566459">Cheti cha Jibu la Hali</translation>
 <translation id="7513029293694390567">Ingia katika tovuti kiotomatiki ukitumia kitambulisho kilichohifadhiwa. Kipengele kikizimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
+<translation id="7514365320538308">Pakua</translation>
 <translation id="7517786267097410259">Tunga nenosiri -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sema "Ok Google"</translation>
@@ -5034,6 +5039,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8850251000316748990">Ona mengine...</translation>
 <translation id="885246833287407341">Hoja za utendaji wa API</translation>
 <translation id="8853586775156634952">Tutahifadhi kadi hii kwenye kifaa hiki pekee</translation>
+<translation id="885701979325669005">Hifadhi</translation>
 <translation id="8859057652521303089">Chagua lugha yako:</translation>
 <translation id="8859174528519900719">Fremu ndogo: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Badilisha ili utumie kivinjari chenye kasi zaidi</translation>

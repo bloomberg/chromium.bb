@@ -484,6 +484,7 @@
 <translation id="1744060673522309905">نمی‌توان دستگاه را به دامنه وصل کرد. مطمئن شوید بیشتر از تعداد مجاز دستگاه اضافه نکرده‌اید.</translation>
 <translation id="1744108098763830590">صفحه پس‌زمینه</translation>
 <translation id="1745520510852184940">این کار همیشه انجام شود</translation>
+<translation id="1746402432151920942">شناسه رسانه محافظت‌شده</translation>
 <translation id="175196451752279553">با&amp;ز کردن مجدد برگه بسته</translation>
 <translation id="1753905327828125965">بیشترین موارد بازدید شده</translation>
 <translation id="1756681705074952506">روش ورودی</translation>
@@ -541,6 +542,7 @@
 <translation id="1830550083491357902">وارد سیستم نشده است</translation>
 <translation id="1832511806131704864">تغییر تلفن به‌روزرسانی شد</translation>
 <translation id="1834503245783133039">بارگیری ناموفق بود: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">‏دستگاه‌های MIDI</translation>
 <translation id="1838374766361614909">پاک کردن جستجو</translation>
 <translation id="1841545962859478868">سرپرست دستگاه ممکن است موارد زیر را پایش کند</translation>
 <translation id="1841616161104323629">ثبت دستگاه موجود نیست.</translation>
@@ -610,7 +612,7 @@
 <translation id="1932026958134051332">گزینه‌های دسترسی سوئیچ</translation>
 <translation id="1932098463447129402">نه قبل از</translation>
 <translation id="1933809209549026293">لطفاً موشواره یا صفحه‌کلیدی را وصل کنید. اگر از دستگاه بلوتوث استفاده می‌کنید، مطمئن شوید آماده مرتبط‌سازی است.</translation>
-<translation id="1937774647013465102">‏نمی‌توان با این دستگاه که <ph name="ARCHITECTURE_DEVICE" /> است، محتوی با نوع معماری <ph name="ARCHITECTURE_CONTAINER" /> را وارد کرد. می‌توانید این محتوی را در دستگاه دیگری بازیابی کنید، یا اینکه برنامه Files را باز کنید و ازطریق آن به فایل‌های درون این تصویر محتوی دسترسی یابید.</translation>
+<translation id="1937774647013465102">‏نمی‌توان با این دستگاه که <ph name="ARCHITECTURE_DEVICE" /> است، محتوای با نوع معماری <ph name="ARCHITECTURE_CONTAINER" /> را وارد کرد. می‌توانید این محتوا را در دستگاه دیگری بازیابی کنید، یا اینکه برنامه Files را باز کنید و ازطریق آن به فایل‌های درون این تصویر محتوی دسترسی یابید.</translation>
 <translation id="1938351510777341717">فرمان خارجی</translation>
 <translation id="1940546824932169984">دستگاه‌های متصل</translation>
 <translation id="1944921356641260203">به‌روزرسانی پیدا شد</translation>
@@ -783,6 +785,7 @@
 <translation id="2220529011494928058">گزارش یک مشکل</translation>
 <translation id="2220572644011485463">پین یا گذرواژه</translation>
 <translation id="2224444042887712269">این تنظیم به <ph name="OWNER_EMAIL" /> متعلق است.</translation>
+<translation id="2224471211857467033">رویدادهای دسترس‌پذیری</translation>
 <translation id="2224551243087462610">ویرایش نام پوشه</translation>
 <translation id="2226449515541314767">‏این سایت از داشتن کنترل کامل دستگاه‌های MIDI ممانعت شده است.</translation>
 <translation id="2226720438730111184">به ما بگویید چه اتفاقی افتاده است</translation>
@@ -2110,6 +2113,7 @@
 <translation id="4268025649754414643">به رمز درآوردن کلید</translation>
 <translation id="4270393598798225102">نسخه <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">مورد منطبقی وجود ندارد</translation>
+<translation id="4275663329226226506">رسانه</translation>
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
 <translation id="4278101229438943600">«دستیار» آماده است</translation>
 <translation id="4278390842282768270">مجاز است</translation>
@@ -4159,6 +4163,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> شما باموفقیت برای مدیریت شرکت ثبت شد.</translation>
 <translation id="7507930499305566459">گواهی وضعیت پاسخگو</translation>
 <translation id="7513029293694390567">با استفاده از اعتبارنامه‌های ذخیره‌شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. اگر این قابلیت غیرفعال باشد، هر بار قبل از وارد شدن به وب‌سایت از شما برای تأیید اطلاعات درخواست می‌شود.</translation>
+<translation id="7514365320538308">بارگیری</translation>
 <translation id="7517786267097410259">ایجاد گذرواژه -</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7522255036471229694">‏بگویید «Ok Google»</translation>
@@ -5036,6 +5041,7 @@
 <translation id="8850251000316748990">دیدن موارد بیشتر...</translation>
 <translation id="885246833287407341">‏متغیرهای مستقل عملکرد API</translation>
 <translation id="8853586775156634952">این کارت فقط در این دستگاه ذخیره خواهد شد</translation>
+<translation id="885701979325669005">فضای ذخیره‌سازی</translation>
 <translation id="8859057652521303089">انتخاب زبان:</translation>
 <translation id="8859174528519900719">قاب فرعی: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">به مرورگر سریعی جابه‌جا شوید</translation>

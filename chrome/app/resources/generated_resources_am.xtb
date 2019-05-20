@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">መሣሪያውን ከጎራው ጋር ማቀላቀል አልተቻለም። ማከል ከሚችሉት የመሣሪያዎች ብዛት አለመብለጥዎን ያረጋግጡ።</translation>
 <translation id="1744108098763830590">የጀርባ ገጽ</translation>
 <translation id="1745520510852184940">ሁልጊዜ ይህን አድርግ</translation>
+<translation id="1746402432151920942">ጥበቃ የሚደረግለት የሚዲያ ለዪ</translation>
 <translation id="175196451752279553">የተ&amp;ዘጋውን ትር ዳግም ክፈት</translation>
 <translation id="1753905327828125965">በይበልጥ የተጎበኙ</translation>
 <translation id="1756681705074952506">የግቤት ስልት</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">አልተገባም</translation>
 <translation id="1832511806131704864">የስልክ ለውጥ ዘምኗል</translation>
 <translation id="1834503245783133039">ማውረድ አልተሳካም፦ <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">የMIDI መሣሪያዎች</translation>
 <translation id="1838374766361614909">ፍለጋን ያፅዱ</translation>
 <translation id="1841545962859478868">የመሣሪያው አስተዳዳሪ የሚከተሉትን ሊከታተል ይችላል፦</translation>
 <translation id="1841616161104323629">የሚጎድል የመሣሪያ መዝገብ።</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">ችግር ሪፖርት አድርግ</translation>
 <translation id="2220572644011485463">ፒን ወይም የይለፍ ቃል</translation>
 <translation id="2224444042887712269">ይህ ቅንብር የ<ph name="OWNER_EMAIL" /> ነው።</translation>
+<translation id="2224471211857467033">የተደራሽነት ክስተቶች</translation>
 <translation id="2224551243087462610">የአቃፊ ስም አርትዕ</translation>
 <translation id="2226449515541314767">ይህ ጣቢያ የMIDI መሳሪያዎች ሙሉ ቁጥጥር እንዳይኖረው ታግዷል።</translation>
 <translation id="2226720438730111184">ምን እየተከሰተ እንዳለ ይንገሩን</translation>
@@ -2111,6 +2114,7 @@
 <translation id="4268025649754414643">የቀልፍ ሚስጥራዊነት</translation>
 <translation id="4270393598798225102">ስሪት <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">ምንም ተዛማጆች የሉም</translation>
+<translation id="4275663329226226506">ማህደረ መረጃ</translation>
 <translation id="4275830172053184480">መሣሪያዎን ዳግም ያስጀምሩ</translation>
 <translation id="4278101229438943600">የእርስዎ ረዳት ዝግጁ ነው</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
@@ -4160,6 +4164,7 @@
 <translation id="7506541170099744506">የእርስዎ <ph name="DEVICE_TYPE" /> በተሳካ ሁኔታ ለድርጅት አስተዳደር ተመዝግቧል።</translation>
 <translation id="7507930499305566459">የሁኔታ መላሽ ሰርቲፍኬት</translation>
 <translation id="7513029293694390567">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ ድር ጣቢያዎች ይግቡ። ከተሰናከለ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ሁልጊዜ ማረጋገጫ እንዲሰጡ ይጠየቃሉ።</translation>
+<translation id="7514365320538308">አውርድ</translation>
 <translation id="7517786267097410259">አንድ የይለፍ ቃል ይፍጠሩ -</translation>
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
 <translation id="7522255036471229694">«Ok Google» ይብሉ</translation>
@@ -5041,6 +5046,7 @@ nil</translation>
 <translation id="8850251000316748990">ተጨማሪ ይመልከቱ...</translation>
 <translation id="885246833287407341">API ተግባር ክርክሮች</translation>
 <translation id="8853586775156634952">ይህ ካርድ ወደዚህ መሣሪያ ብቻ ይቀመጣል</translation>
+<translation id="885701979325669005">ማከማቻ</translation>
 <translation id="8859057652521303089">ቋንቋዎትን ይምረጡ፦</translation>
 <translation id="8859174528519900719">ንዑስ ክፈፍ፦ <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">ወደ ፈጣን አሳሽ ቀይር</translation>

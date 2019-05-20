@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">No es pot connectar el dispositiu al domini. Comprova que no hagis superat el nombre de dispositius que hi pots afegir.</translation>
 <translation id="1744108098763830590">pàgina en segon pla</translation>
 <translation id="1745520510852184940">Fes-ho sempre</translation>
+<translation id="1746402432151920942">Identificador de contingut multimèdia protegit</translation>
 <translation id="175196451752279553">T&amp;orna a obrir la pestanya tancada</translation>
 <translation id="1753905327828125965">Els més visitats</translation>
 <translation id="1756681705074952506">Mètode d'introducció de text</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Sessió no iniciada</translation>
 <translation id="1832511806131704864">Canvi de telèfon actualitzat</translation>
 <translation id="1834503245783133039">Error en la baixada: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Dispositius MIDI</translation>
 <translation id="1838374766361614909">Esborra la cerca</translation>
 <translation id="1841545962859478868">És possible que l'administrador del dispositiu supervisi el següent:</translation>
 <translation id="1841616161104323629">Falta el registre del dispositiu.</translation>
@@ -613,7 +615,7 @@
 <translation id="1932026958134051332">Opcions d'Accés amb interruptors</translation>
 <translation id="1932098463447129402">No abans</translation>
 <translation id="1933809209549026293">Connecteu un cursor o un teclat. Si feu servir un dispositiu Bluetooth, assegureu-vos que estigui preparat per a la sincronització.</translation>
-<translation id="1937774647013465102">No es pot importar el tipus d'arquitectura <ph name="ARCHITECTURE_CONTAINER" /> del contenidor amb aquest dispositiu, que és <ph name="ARCHITECTURE_DEVICE" />. Pots provar de restaurar el contenidor en un altre dispositiu o accedir als fitxers que inclou la imatge del contenidor obrint l'aplicació Fitxers.</translation>
+<translation id="1937774647013465102">No es pot importar el tipus d'arquitectura de contenidors<ph name="ARCHITECTURE_CONTAINER" /> amb aquest dispositiu, que és <ph name="ARCHITECTURE_DEVICE" />. Pots provar de restaurar el contenidor en un altre dispositiu o accedir als fitxers que inclou la imatge del contenidor obrint l'aplicació Fitxers.</translation>
 <translation id="1938351510777341717">Ordre externa</translation>
 <translation id="1940546824932169984">Dispositius connectats</translation>
 <translation id="1944921356641260203">S'ha trobat una actualització.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Informa d'un problema</translation>
 <translation id="2220572644011485463">PIN o contrasenya</translation>
 <translation id="2224444042887712269">Aquesta configuració pertany a <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Esdeveniments d'accessibilitat</translation>
 <translation id="2224551243087462610">Edita el nom de la carpeta</translation>
 <translation id="2226449515541314767">S'ha impedit que aquest lloc tingui control total dels dispositius MIDI.</translation>
 <translation id="2226720438730111184">Indica'ns el problema</translation>
@@ -1484,7 +1487,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3317459757438853210">A dues cares</translation>
 <translation id="3317678681329786349">La càmera i el micròfon estan bloquejats</translation>
 <translation id="3319048459796106952">Finestra d'incògnit nova</translation>
-<translation id="3323521181261657960">Que bé! Tens més temps de connexió</translation>
+<translation id="3323521181261657960">Has obtingut més temps de connexió!</translation>
 <translation id="3325910708063135066">La càmera i el micròfon estan desactivats a les preferències del sistema de Mac</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Informació de l'aplicació</translation>
@@ -1704,7 +1707,8 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3664511988987167893">Icona de l'extensió</translation>
 <translation id="3665589677786828986">Chrome ha detectat que un altre programa ha malmès alguns dels paràmetres de configuració i els ha restablert als valors predeterminats originals.</translation>
 <translation id="3668570675727296296">Configuració d'idioma</translation>
-<translation id="366867565525278777">No s'ha pogut fer la instal·lació perquè falta espai d'emmagatzematge. Calen almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
+<translation id="366867565525278777">No s'ha pogut fer la instal·lació perquè falta espai d'emmagatzematge. Cal
+en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="3668801437375206837">Per diagnosticar millor els problemes del Bluetooth, els Googlers poden incloure registres de Bluetooth addicionals als seus informes de suggeriments. Si aquesta opció està marcada, l'informe inclourà registres BTSnoop i HCI de la teva sessió actual, que es depurarà per suprimir tanta informació d'identificació personal (IIP) com sigui possible. L'accés a aquests registres es restringirà als gestors del grup de productes de Chrome OS a Listnr. Els registres se suprimiran permanentment al cap de 90 dies.</translation>
 <translation id="3668823961463113931">Gestors</translation>
 <translation id="3670113805793654926">Dispositius de qualsevol proveïdor</translation>
@@ -2108,6 +2112,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4268025649754414643">Encriptació de claus</translation>
 <translation id="4270393598798225102">Versió <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Cap coincidència</translation>
+<translation id="4275663329226226506">Multimèdia</translation>
 <translation id="4275830172053184480">Reinici del dispositiu</translation>
 <translation id="4278101229438943600">L'Assistent està a punt</translation>
 <translation id="4278390842282768270">Permès</translation>
@@ -3845,7 +3850,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7022562585984256452">S'ha definit la pàgina d'inici.</translation>
 <translation id="7025190659207909717">Gestió de serveis de dades mòbils</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
-<translation id="7031608529463141342"><ph name="WINDOW_TITLE" />: port en sèrie connecat</translation>
+<translation id="7031608529463141342"><ph name="WINDOW_TITLE" />: port en sèrie connectat</translation>
 <translation id="7031962166228839643">El mòdul TPM s'està preparant (aquest procés pot trigar una estona). Espereu...</translation>
 <translation id="7037509989619051237">Text de prova</translation>
 <translation id="7039326228527141150">Accedir a dispositius USB del proveïdor <ph name="VENDOR_NAME" /></translation>
@@ -4159,6 +4164,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> s'ha inscrit correctament a la gestió empresarial.</translation>
 <translation id="7507930499305566459">Certificat de resposta d'estat</translation>
 <translation id="7513029293694390567">Inicia la sessió automàticament als llocs web amb les credencials emmagatzemades. Si la funció està desactivada, se't demanarà sempre que confirmis les credencials per iniciar la sessió en un lloc web.</translation>
+<translation id="7514365320538308">Baixa</translation>
 <translation id="7517786267097410259">Crea una contrasenya</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Digueu "Ok Google"</translation>
@@ -4405,7 +4411,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7877451762676714207">Error de servidor desconegut. Torneu-ho a provar o contacteu amb l'administrador del servidor.</translation>
 <translation id="7877680364634660272">Visita guiada</translation>
 <translation id="7878562273885520351">La teva contrasenya pot estar en perill</translation>
-<translation id="7880823633812189969">Les dades locals se suprimiran en reiniciar</translation>
+<translation id="7880823633812189969">Les dades locals se suprimiran en reiniciar el dispositiu</translation>
 <translation id="7881483672146086348">Mostra el compte</translation>
 <translation id="7882358943899516840">Tipus de proveïdor</translation>
 <translation id="7885253890047913815">Destinacions recents</translation>
@@ -5033,6 +5039,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8850251000316748990">Mostra'n més...</translation>
 <translation id="885246833287407341">Arguments de les funcions de l'API</translation>
 <translation id="8853586775156634952">Aquesta targeta només es desarà en aquest dispositiu</translation>
+<translation id="885701979325669005">Emmagatzematge</translation>
 <translation id="8859057652521303089">Seleccioneu el vostre idioma:</translation>
 <translation id="8859174528519900719">Submarc: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Canvia a un navegador ràpid</translation>

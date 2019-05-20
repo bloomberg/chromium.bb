@@ -484,6 +484,7 @@
 <translation id="1744060673522309905">Kan ikke knytte enheten til domenet. Kontrollér at du ikke har overskredet antall enheter som du kan legge til.</translation>
 <translation id="1744108098763830590">bakgrunnsside</translation>
 <translation id="1745520510852184940">Gjør alltid dette</translation>
+<translation id="1746402432151920942">Beskyttet medieidentifikator</translation>
 <translation id="175196451752279553">Gj&amp;enåpne den lukkede fanen</translation>
 <translation id="1753905327828125965">Mest besøkt</translation>
 <translation id="1756681705074952506">Inndatametode</translation>
@@ -541,6 +542,7 @@
 <translation id="1830550083491357902">Ikke pålogget</translation>
 <translation id="1832511806131704864">Telefonendring oppdatert</translation>
 <translation id="1834503245783133039">Nedlasting mislykket: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI-enheter</translation>
 <translation id="1838374766361614909">Fjern søket</translation>
 <translation id="1841545962859478868">Enhetsadministratoren kan overvåke følgende:</translation>
 <translation id="1841616161104323629">Manglende enhetsoppføring.</translation>
@@ -783,6 +785,7 @@
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2220572644011485463">PIN-kode eller passord</translation>
 <translation id="2224444042887712269">Denne innstillingen tilhører <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Tilgjengelighetshendelser</translation>
 <translation id="2224551243087462610">Rediger mappenavn</translation>
 <translation id="2226449515541314767">Full kontroll over MIDI-enheter er blokkert for dette nettstedet.</translation>
 <translation id="2226720438730111184">Fortell oss hva som skjer</translation>
@@ -2107,6 +2110,7 @@
 <translation id="4268025649754414643">Nøkkelchiffrering</translation>
 <translation id="4270393598798225102">Versjon <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Ingen treff</translation>
+<translation id="4275663329226226506">Medier</translation>
 <translation id="4275830172053184480">Start enheten din på nytt</translation>
 <translation id="4278101229438943600">Assistenten din er klar</translation>
 <translation id="4278390842282768270">Tillatt</translation>
@@ -4156,6 +4160,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" />-enheten din er nå registrert for bedriftsadministrering.</translation>
 <translation id="7507930499305566459">Sertifikat for statussvar</translation>
 <translation id="7513029293694390567">Bruk lagret legitimasjon til å logge på nettsteder automatisk. Hvis dette er slått av, blir du bedt om bekreftelse hver gang du logger på et nettsted.</translation>
+<translation id="7514365320538308">Last ned</translation>
 <translation id="7517786267097410259">Lag et passord –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Si «Ok Google»</translation>
@@ -5031,6 +5036,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8850251000316748990">Se flere …</translation>
 <translation id="885246833287407341">API-funksjonsargumenter</translation>
 <translation id="8853586775156634952">Dette kortet lagres kun på denne enheten</translation>
+<translation id="885701979325669005">Lagring</translation>
 <translation id="8859057652521303089">Velg språk:</translation>
 <translation id="8859174528519900719">Underramme: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Bytt til en raskere nettleser</translation>

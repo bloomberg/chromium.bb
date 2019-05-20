@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Не вдається приєднати пристрій до домену. Переконайтеся, що ви не перевищили допустиму кількість доданих пристроїв.</translation>
 <translation id="1744108098763830590">фонова сторінка</translation>
 <translation id="1745520510852184940">Завжди виконувати цю дію</translation>
+<translation id="1746402432151920942">Ідентифікатор захищених медіа</translation>
 <translation id="175196451752279553">В&amp;ідкрити закриту вкладку знову</translation>
 <translation id="1753905327828125965">Часто відвідувані</translation>
 <translation id="1756681705074952506">Метод введення</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Користувач не ввійшов</translation>
 <translation id="1832511806131704864">Телефон змінено</translation>
 <translation id="1834503245783133039">Не вдалося завантажити файл "<ph name="FILE_NAME" />"</translation>
+<translation id="1834583737373831634">Пристрої MIDI</translation>
 <translation id="1838374766361614909">Очистити поле пошуку</translation>
 <translation id="1841545962859478868">Адміністратор пристрою може відстежувати таку інформацію:</translation>
 <translation id="1841616161104323629">Немає запису про пристрій.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Повідомити про проблему</translation>
 <translation id="2220572644011485463">PIN-код або пароль</translation>
 <translation id="2224444042887712269">Це налаштування встановив користувач <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Події спеціальних можливостей</translation>
 <translation id="2224551243087462610">Редагувати ім’я папки</translation>
 <translation id="2226449515541314767">Цьому сайту заборонено повністю контролювати пристрої MIDI.</translation>
 <translation id="2226720438730111184">Розкажіть нам, що відбувається</translation>
@@ -2114,6 +2117,7 @@
 <translation id="4268025649754414643">Шифрування ключа</translation>
 <translation id="4270393598798225102">Версія <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Немає збігів</translation>
+<translation id="4275663329226226506">Медіа-дані</translation>
 <translation id="4275830172053184480">Перезапустіть пристрій</translation>
 <translation id="4278101229438943600">Ваш Асистент готовий</translation>
 <translation id="4278390842282768270">Дозволено</translation>
@@ -4163,6 +4167,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> зареєстровано для корпоративного керування.</translation>
 <translation id="7507930499305566459">Сертифікат відповідача статусу</translation>
 <translation id="7513029293694390567">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених облікових даних. Якщо цю функцію вимкнено, потрібно підтверджувати облікові дані під час кожного входу на веб-сайтах.</translation>
+<translation id="7514365320538308">Завантажити</translation>
 <translation id="7517786267097410259">Створити пароль –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Скажіть "Ok Google"</translation>
@@ -5040,6 +5045,7 @@
 <translation id="8850251000316748990">Показати більше…</translation>
 <translation id="885246833287407341">Аргументи функції API</translation>
 <translation id="8853586775156634952">Картку буде збережено лише на цьому пристрої</translation>
+<translation id="885701979325669005">Обсяг пам’яті</translation>
 <translation id="8859057652521303089">Виберіть мову:</translation>
 <translation id="8859174528519900719">Додатковий фрейм: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Виберіть швидкий веб-переглядач</translation>

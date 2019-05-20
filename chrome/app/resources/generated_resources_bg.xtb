@@ -484,6 +484,7 @@
 <translation id="1744060673522309905">Устройството не може да се присъедини към домейна. Проверете дали не сте надхвърлили броя устройства, които можете да добавите.</translation>
 <translation id="1744108098763830590">фонова страница</translation>
 <translation id="1745520510852184940">Превеждане винаги</translation>
+<translation id="1746402432151920942">Идентификатор на защитена мултимедия</translation>
 <translation id="175196451752279553">По&amp;вторно отваряне на затворения раздел</translation>
 <translation id="1753905327828125965">Ползвани</translation>
 <translation id="1756681705074952506">Метод за въвеждане</translation>
@@ -541,6 +542,7 @@
 <translation id="1830550083491357902">Не сте в профила си</translation>
 <translation id="1832511806131704864">Промяната на телефона е актуализирана</translation>
 <translation id="1834503245783133039">Неуспешно изтегляне: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI устройства</translation>
 <translation id="1838374766361614909">Изчистване на търсенето</translation>
 <translation id="1841545962859478868">Администраторът на устройството може да наблюдава следното:</translation>
 <translation id="1841616161104323629">Липсва запис за устройството.</translation>
@@ -783,6 +785,7 @@
 <translation id="2220529011494928058">Подаване на сигнал за проблем</translation>
 <translation id="2220572644011485463">ПИН код или парола</translation>
 <translation id="2224444042887712269">Тази настройка принадлежи на <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Събития за достъпност</translation>
 <translation id="2224551243087462610">Редактиране на името на папката</translation>
 <translation id="2226449515541314767">Пълният контрол над MIDI устройствата е блокиран за този сайт.</translation>
 <translation id="2226720438730111184">Кажете ни какво се случва</translation>
@@ -2113,6 +2116,7 @@
 <translation id="4268025649754414643">Шифроване на ключ</translation>
 <translation id="4270393598798225102">Версия <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Няма съответствия</translation>
+<translation id="4275663329226226506">Медия</translation>
 <translation id="4275830172053184480">Рестартиране на устройството ви</translation>
 <translation id="4278101229438943600">Асистент е в готовност</translation>
 <translation id="4278390842282768270">Разрешено</translation>
@@ -4163,6 +4167,7 @@
 <translation id="7506541170099744506">Устройството ви <ph name="DEVICE_TYPE" /> е успешно записано за корпоративно управление.</translation>
 <translation id="7507930499305566459">Сертификат за състоянието на респондер</translation>
 <translation id="7513029293694390567">Автоматично влизане в уебсайтове посредством съхраняваните идентификационни данни. Ако е деактивирано, ще се иска потвърждение от вас преди всяко влизане в профил в уебсайт.</translation>
+<translation id="7514365320538308">Изтегляне</translation>
 <translation id="7517786267097410259">Създаване на парола –</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7522255036471229694">Кажете „Ok Google“</translation>
@@ -5040,6 +5045,7 @@
 <translation id="8850251000316748990">Вижте още...</translation>
 <translation id="885246833287407341">Аргументи за функция за API</translation>
 <translation id="8853586775156634952">Картата ще бъде запазена само на това устройство</translation>
+<translation id="885701979325669005">Хранилище</translation>
 <translation id="8859057652521303089">Изберете своя език:</translation>
 <translation id="8859174528519900719">Подрамка: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Преминете към бърз браузър</translation>

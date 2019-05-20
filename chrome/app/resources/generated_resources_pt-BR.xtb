@@ -31,7 +31,7 @@
 <translation id="1036982837258183574">Pressione |<ph name="ACCELERATOR" />| para sair do modo tela cheia</translation>
 <translation id="1038168778161626396">Somente codificar</translation>
 <translation id="1039337018183941703">Arquivo inválido ou corrompido</translation>
-<translation id="1041175011127912238">Esta página não está respondendo.</translation>
+<translation id="1041175011127912238">Esta página não está respondendo</translation>
 <translation id="1042174272890264476">Seu computador já vem com a biblioteca RLZ do <ph name="SHORT_PRODUCT_NAME" /> integrada. O RLZ atribui uma tag não exclusiva e sem identificação pessoal para medir as pesquisas e o uso do <ph name="SHORT_PRODUCT_NAME" /> gerados por uma campanha promocional específica. Esses marcadores às vezes aparecem em consultas da Pesquisa Google no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">Ops. Este nome já está em uso.</translation>
 <translation id="1046635659603195359">Parece que você já configurou o "Voice Match" com seu Google Assistente em outro dispositivo. Essas gravações anteriores podem ser usadas para criar um modelo de voz neste dispositivo. Isso levará menos de um minuto.</translation>
@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">Não é possível vincular o dispositivo ao domínio. Verifique se você não excedeu o número de dispositivos que podem ser adicionados.</translation>
 <translation id="1744108098763830590">página de plano de fundo</translation>
 <translation id="1745520510852184940">Sempre fazer isso</translation>
+<translation id="1746402432151920942">Identificador de mídia protegida</translation>
 <translation id="175196451752279553">R&amp;eabrir guia fechada</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
 <translation id="1756681705074952506">Método de entrada</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">Desconectado</translation>
 <translation id="1832511806131704864">Atualização da alteração do smartphone</translation>
 <translation id="1834503245783133039">Falha no download: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">Dispositivos MIDI</translation>
 <translation id="1838374766361614909">Limpar pesquisa</translation>
 <translation id="1841545962859478868">O administrador do dispositivo pode monitorar o seguinte:</translation>
 <translation id="1841616161104323629">Registro do dispositivo não encontrado.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">Informar um problema</translation>
 <translation id="2220572644011485463">PIN ou senha</translation>
 <translation id="2224444042887712269">Esta configuração pertence a <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">Eventos de acessibilidade</translation>
 <translation id="2224551243087462610">Editar nome da pasta</translation>
 <translation id="2226449515541314767">O controle total de dispositivos MIDI foi bloqueado neste site.</translation>
 <translation id="2226720438730111184">Conte-nos o que está acontecendo</translation>
@@ -1709,7 +1712,7 @@
 <translation id="3664511988987167893">Ícone de extensão</translation>
 <translation id="3665589677786828986">O Google Chrome detectou que algumas das suas configurações foram corrompidas por outro programa e as redefiniu para os padrões originais.</translation>
 <translation id="3668570675727296296">Configurações de idioma</translation>
-<translation id="366867565525278777">Falha na instalação devido à falta de espaço de armazenamento. É necessário ter pelo menos <ph name="INSTALL_SIZE" /> de espaço livre. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
+<translation id="366867565525278777">Falha na instalação devido à falta de espaço de armazenamento. É necessário pelo menos <ph name="INSTALL_SIZE" /> de espaço livre. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
 <translation id="3668801437375206837">Para diagnosticar melhor os problemas de Bluetooth, os Googlers podem incluir outros registros de Bluetooth aos relatórios de feedback deles. Quando essa opção estiver marcada, seu relatório incluirá registros btsnoop e HCI da sua sessão atual, depois de terem sido corrigidos para remover o máximo de PII possível. O acesso a esses registros será restrito aos gerentes do grupo de produtos do Chrome OS no Listnr. Os registros serão excluídos após 90 dias.</translation>
 <translation id="3668823961463113931">Manipuladores</translation>
 <translation id="3670113805793654926">Dispositivos de qualquer fornecedor</translation>
@@ -2114,6 +2117,7 @@
 <translation id="4268025649754414643">Codificação de chaves</translation>
 <translation id="4270393598798225102">Versão <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Nenhuma correspondência</translation>
+<translation id="4275663329226226506">Mídia</translation>
 <translation id="4275830172053184480">Reiniciar seu dispositivo</translation>
 <translation id="4278101229438943600">O Assistente está pronto</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -4028,7 +4032,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7289225569524511578">Abra o app de papel de parede</translation>
 <translation id="7290242001003353852">Este serviço de login, hospedado por <ph name="SAML_DOMAIN" />, está acessando sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
-<translation id="7295614427631867477">O Android, o Google Play e os apps associados são regidos pelas próprias políticas de uso e coleta de dados.</translation>
+<translation id="7295614427631867477">O Android, o Google Play e os apps associados são regidos pelas próprias políticas de uso e de coleta de dados.</translation>
 <translation id="729583233778673644">Permitir a codificação AES e RC4. O uso dessa opção é mais arriscado, porque as criptografias RC4 não são seguras.</translation>
 <translation id="7296774163727375165">Termos de <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Nome de usuário/senha incorretos ou falha de autenticação EAP</translation>
@@ -4165,6 +4169,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7506541170099744506">Seu <ph name="DEVICE_TYPE" /> foi inscrito para o gerenciamento empresarial.</translation>
 <translation id="7507930499305566459">Certificado do respondente de status</translation>
 <translation id="7513029293694390567">Faça login automaticamente nos sites que usam credenciais armazenadas. Quando o recurso estiver desativado, será necessário fornecer uma confirmação todas as vezes que fizer login em um site.</translation>
+<translation id="7514365320538308">Fazer o download</translation>
 <translation id="7517786267097410259">Criar uma senha:</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Diga "Ok Google"</translation>
@@ -5043,6 +5048,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8850251000316748990">Ver mais…</translation>
 <translation id="885246833287407341">Argumentos de função da API</translation>
 <translation id="8853586775156634952">O card será salvo apenas neste dispositivo</translation>
+<translation id="885701979325669005">Armazenamento</translation>
 <translation id="8859057652521303089">Selecione o seu idioma:</translation>
 <translation id="8859174528519900719">Subquadro: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Mudar para um navegador rápido</translation>

@@ -95,7 +95,7 @@
 <translation id="1671236975893690980">Đang chờ tải xuống...</translation>
 <translation id="1672586136351118594">Không hiển thị lại</translation>
 <translation id="1692118695553449118">Đồng bộ hóa đang bật</translation>
-<translation id="169515064810179024">Chặn không cho trang web sử dụng cảm biến chuyển động</translation>
+<translation id="169515064810179024">Chặn không cho các trang web sử dụng cảm biến chuyển động</translation>
 <translation id="1709438864123551175">Trình tiết kiệm dữ liệu</translation>
 <translation id="1717218214683051432">Cảm biến chuyển động</translation>
 <translation id="1718835860248848330">Giờ vừa qua</translation>
@@ -195,7 +195,7 @@
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2369533728426058518">tab đang mở</translation>
 <translation id="2387895666653383613">Chia tỷ lệ văn bản</translation>
-<translation id="2394602618534698961">Các tệp bạn tải xuống xuất hiện ở đây</translation>
+<translation id="2394602618534698961">Các tệp bạn tải xuống sẽ xuất hiện ở đây</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2410754283952462441">Chọn một tài khoản</translation>
 <translation id="2414886740292270097">Tối</translation>
@@ -915,7 +915,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="756809126120519699">Đã xóa dữ liệu Chrome</translation>
 <translation id="757524316907819857">Chặn không cho trang web phát nội dung được bảo vệ</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Đã tải <ph name="FILES_DOWNLOADED_ONE" /> tệp xuống}other{Đã tải <ph name="FILES_DOWNLOADED_MANY" /> tệp xuống}}</translation>
-<translation id="7588219262685291874">Bật giao diện tối khi đang bật Trình tiết kiệm pin trên thiết bị</translation>
+<translation id="7588219262685291874">Bật giao diện tối khi Trình tiết kiệm pin trên thiết bị đang bật</translation>
 <translation id="7589445247086920869">Chặn công cụ tìm kiếm hiện tại</translation>
 <translation id="7593557518625677601">Mở c.đặt Android &amp; bật lại đ.bộ hóa hệ thống Android để b.đầu đồng bộ hóa Chrome</translation>
 <translation id="7596558890252710462">Hệ điều hành</translation>
@@ -1080,7 +1080,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8788968922598763114">Mở lại tab đóng sau cùng</translation>
 <translation id="8801436777607969138">Chặn JavaScript cho một trang web cụ thể.</translation>
 <translation id="8812260976093120287">Trên một số trang web, bạn có thể thanh toán bằng các ứng dụng thanh toán được hỗ trợ bên trên trên thiết bị của bạn.</translation>
-<translation id="8816026460808729765">Chặn không cho trang web sử dụng cảm biến</translation>
+<translation id="8816026460808729765">Chặn không cho các trang web sử dụng cảm biến</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> sẽ mở trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome, cũng như <ph name="BEGIN_LINK3" />Thông báo bảo mật cho Tài khoản Google được quản lý bằng Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="8833831881926404480">Một trang web đang chia sẻ màn hình của bạn</translation>

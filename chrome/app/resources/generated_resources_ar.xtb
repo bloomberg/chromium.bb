@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">يتعذَّر ضم الجهاز إلى النطاق. يُرجى التأكُّد من أنك لم تتجاوز عدد الأجهزة التي يمكنك إضافتها.</translation>
 <translation id="1744108098763830590">صفحة الخلفية</translation>
 <translation id="1745520510852184940">أجرِ ذلك دائمًا</translation>
+<translation id="1746402432151920942">معرّف الوسائط المحمية</translation>
 <translation id="175196451752279553">إ&amp;عادة فتح علامة التبويب المغلقة</translation>
 <translation id="1753905327828125965">الأكثر زيارة</translation>
 <translation id="1756681705074952506">أسلوب الإدخال</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">لم يتم تسجيل الدخول</translation>
 <translation id="1832511806131704864">تم تحديث تغيير الهاتف</translation>
 <translation id="1834503245783133039">تعذّر التنزيل: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">‏أجهزة MIDI</translation>
 <translation id="1838374766361614909">محو البحث</translation>
 <translation id="1841545962859478868">قد يراقب مشرف الجهاز ما يلي:</translation>
 <translation id="1841616161104323629">سجِلّ الجهاز مفقود.</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">الإبلاغ عن مشكلة</translation>
 <translation id="2220572644011485463">رقم التعريف الشخصي أو كلمة المرور</translation>
 <translation id="2224444042887712269">ينتمي هذا الإعداد إلى <ph name="OWNER_EMAIL" />.</translation>
+<translation id="2224471211857467033">أحداث إمكانية الوصول</translation>
 <translation id="2224551243087462610">تعديل اسم المجلد</translation>
 <translation id="2226449515541314767">‏تم حظر هذا الموقع من التحكم تحكمًا كاملاً في أجهزة MIDI.</translation>
 <translation id="2226720438730111184">أخبرنا بما يحدث</translation>
@@ -2109,6 +2112,7 @@
 <translation id="4268025649754414643">تشفير المفتاح</translation>
 <translation id="4270393598798225102">الإصدار <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">لا توجد أي مطابقات</translation>
+<translation id="4275663329226226506">الوسائط</translation>
 <translation id="4275830172053184480">إعادة تشغيل جهازك</translation>
 <translation id="4278101229438943600">المساعد جاهز</translation>
 <translation id="4278390842282768270">مسموح</translation>
@@ -4159,6 +4163,7 @@
 <translation id="7506541170099744506">لقد تم تسجيل جهاز <ph name="DEVICE_TYPE" /> بنجاح لإدارة المؤسسة.</translation>
 <translation id="7507930499305566459">شهادة الاستجابة للحالة</translation>
 <translation id="7513029293694390567">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وعندما تكون هذه الميزة غير مفعّلة، سيُطلب منك التحقّق من بيانات الاعتماد في كل مرة قبل تسجيل الدخول إلى موقع ويب.</translation>
+<translation id="7514365320538308">تنزيل</translation>
 <translation id="7517786267097410259">إنشاء كلمة مرور -</translation>
 <translation id="7521387064766892559">جافا سكريبت</translation>
 <translation id="7522255036471229694">‏قل "Ok Google".</translation>
@@ -5036,6 +5041,7 @@
 <translation id="8850251000316748990">عرض المزيد...</translation>
 <translation id="885246833287407341">وسيطات وظيفة واجهة برمجة التطبيقات</translation>
 <translation id="8853586775156634952">سيتم حفظ هذه البطاقة في هذا الجهاز فقط</translation>
+<translation id="885701979325669005">التخزين</translation>
 <translation id="8859057652521303089">حدد لغتك:</translation>
 <translation id="8859174528519900719">هيكل سفلي: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">التبديل إلى متصفح سريع</translation>

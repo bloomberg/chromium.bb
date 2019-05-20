@@ -487,6 +487,7 @@
 <translation id="1744060673522309905">デバイスをドメインに追加できません。追加できるデバイスの上限数を超えていないかご確認ください。</translation>
 <translation id="1744108098763830590">バックグラウンド ページ</translation>
 <translation id="1745520510852184940">常に翻訳する</translation>
+<translation id="1746402432151920942">保護されているメディア識別子</translation>
 <translation id="175196451752279553">閉じたタブを開く(&amp;R)</translation>
 <translation id="1753905327828125965">よくアクセスするページ</translation>
 <translation id="1756681705074952506">入力方法</translation>
@@ -544,6 +545,7 @@
 <translation id="1830550083491357902">ログインしていません</translation>
 <translation id="1832511806131704864">スマートフォンの変更が反映されました</translation>
 <translation id="1834503245783133039"><ph name="FILE_NAME" /> をダウンロードできませんでした</translation>
+<translation id="1834583737373831634">MIDI デバイス</translation>
 <translation id="1838374766361614909">検索をクリア</translation>
 <translation id="1841545962859478868">デバイス管理者が次の情報を監視している可能性があります。</translation>
 <translation id="1841616161104323629">デバイスレコードがありません。</translation>
@@ -786,6 +788,7 @@
 <translation id="2220529011494928058">問題を報告</translation>
 <translation id="2220572644011485463">PIN またはパスワード</translation>
 <translation id="2224444042887712269">この設定は <ph name="OWNER_EMAIL" /> に帰属します。</translation>
+<translation id="2224471211857467033">ユーザー補助イベント</translation>
 <translation id="2224551243087462610">フォルダ名の編集</translation>
 <translation id="2226449515541314767">このサイトには MIDI デバイスのフル コントロールは許可されていません。</translation>
 <translation id="2226720438730111184">問題の詳細をお知らせください</translation>
@@ -2114,6 +2117,7 @@
 <translation id="4268025649754414643">キーの暗号化</translation>
 <translation id="4270393598798225102">バージョン <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">一致する結果は見つかりませんでした</translation>
+<translation id="4275663329226226506">メディア</translation>
 <translation id="4275830172053184480">デバイスの再起動</translation>
 <translation id="4278101229438943600">アシスタントの設定完了</translation>
 <translation id="4278390842282768270">許可</translation>
@@ -4164,6 +4168,7 @@
 <translation id="7506541170099744506">この <ph name="DEVICE_TYPE" /> は組織の管理対象として登録されました。</translation>
 <translation id="7507930499305566459">ステータス レスポンダ証明書</translation>
 <translation id="7513029293694390567">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能が無効になっている場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
+<translation id="7514365320538308">ダウンロード</translation>
 <translation id="7517786267097410259">パスワードを作成 -</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7522255036471229694">「OK Google」と言ってください</translation>
@@ -5041,6 +5046,7 @@
 <translation id="8850251000316748990">もっと見る...</translation>
 <translation id="885246833287407341">API 関数の引数</translation>
 <translation id="8853586775156634952">このカードはこのデバイスにのみ保存されます</translation>
+<translation id="885701979325669005">ストレージ</translation>
 <translation id="8859057652521303089">言語の選択:</translation>
 <translation id="8859174528519900719">サブフレーム: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">高速なブラウザをぜひご利用ください</translation>

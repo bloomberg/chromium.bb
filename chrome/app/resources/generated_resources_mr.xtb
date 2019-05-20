@@ -486,6 +486,7 @@
 <translation id="1744060673522309905">डिव्हाइस डोमेनशी जोडू शकत नाही. तुम्हाला जोडता येऊ शकणाऱ्या डिव्हाइसची संख्या तुम्ही ओलांडलेली नाही याची खात्री करा.</translation>
 <translation id="1744108098763830590">पार्श्वभूमी पृष्ठ</translation>
 <translation id="1745520510852184940">हे नेहमी करा</translation>
+<translation id="1746402432151920942">संरक्षित मीडिया आयडेंटिफायर</translation>
 <translation id="175196451752279553">पु&amp;न्हा बंद टॅब उघडा</translation>
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
 <translation id="1756681705074952506">इनपुट पद्धत</translation>
@@ -543,6 +544,7 @@
 <translation id="1830550083491357902">साइन इन केलेले नाही</translation>
 <translation id="1832511806131704864">फोन बदल अपडेट झाला</translation>
 <translation id="1834503245783133039">डाउनलोड करता आले नाही: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI डिव्हाइस</translation>
 <translation id="1838374766361614909">शोध साफ करा</translation>
 <translation id="1841545962859478868">डिव्हाइस प्रशासक कदाचित खालील गोष्टींचे परीक्षण करू शकतो:</translation>
 <translation id="1841616161104323629">डिव्हाइस रेकॉर्ड उपलब्ध नाही.</translation>
@@ -785,6 +787,7 @@
 <translation id="2220529011494928058">समस्येची तक्रार करा</translation>
 <translation id="2220572644011485463">पिन किंवा पासवर्ड</translation>
 <translation id="2224444042887712269">ही सेटिंग <ph name="OWNER_EMAIL" /> च्या मालकीची आहे.</translation>
+<translation id="2224471211857467033">अॅक्सेसिबिलिटी इव्हेंट</translation>
 <translation id="2224551243087462610">फोल्डर नाव संपादित करा</translation>
 <translation id="2226449515541314767">MIDI डिव्हाइसचे पूर्ण नियंत्रण असण्यापासून ही साइट अवरोधित केली गेली आहे.</translation>
 <translation id="2226720438730111184">काय होत आहे ते आम्हाला सांगा</translation>
@@ -2113,6 +2116,7 @@
 <translation id="4268025649754414643">की एनसिफरमेन्ट</translation>
 <translation id="4270393598798225102">आवृत्ती <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">कोणत्याही जुळण्या नाहीत</translation>
+<translation id="4275663329226226506">माध्यम</translation>
 <translation id="4275830172053184480">तुमचा डिव्हाइस रीस्टार्ट करा</translation>
 <translation id="4278101229438943600">तुमचा असिस्टंट तयार आहे</translation>
 <translation id="4278390842282768270">अनुमत</translation>
@@ -4163,6 +4167,7 @@
 <translation id="7506541170099744506">एंटरप्राइझ व्यवस्थापनासाठी आपल्या <ph name="DEVICE_TYPE" /> ची यशस्वीरित्या नोंदणी केली गेली.</translation>
 <translation id="7507930499305566459">स्थिती प्रतिसादकर्ता सर्टिफिकेट</translation>
 <translation id="7513029293694390567">स्टोअर क्रेडेंशियल वापरून वेबसाइटवर आपोआप साइन इन करा. अक्षम केले असल्यास, वेबसाइटवर साइन इन करण्यापूर्वी प्रत्येकवेळी तुम्हाला पुष्टीकरणासाठी विचारले जाईल.</translation>
+<translation id="7514365320538308">डाउनलोड करा</translation>
 <translation id="7517786267097410259">एक पासवर्ड तयार करा -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">"Ok Google" म्हणा</translation>
@@ -5039,6 +5044,7 @@
 <translation id="8850251000316748990">आणखी पहा...</translation>
 <translation id="885246833287407341">API फंक्शन arguments</translation>
 <translation id="8853586775156634952">हे कार्ड फक्त या डिव्हाइसवर सेव्ह केले जाईल</translation>
+<translation id="885701979325669005">स्टोरेज</translation>
 <translation id="8859057652521303089">तुमची भाषा निवडा:</translation>
 <translation id="8859174528519900719">सबफ्रेम: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">वेगवान ब्राउझरवर बदला</translation>
