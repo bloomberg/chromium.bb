@@ -6,11 +6,16 @@
 #define ASH_PUBLIC_CPP_TEST_SHELL_TEST_API_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/app_list_view.mojom-forward.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+
+namespace aura {
+class Window;
+}
 
 namespace ash {
 class DragDropController;
@@ -88,6 +93,10 @@ class ASH_EXPORT ShellTestApi {
   // Runs the callback when the launcher state becomes |state| after
   // state transition animation.
   void WaitForLauncherAnimationState(mojom::AppListViewState state);
+
+  // Returns the list of windows used in overview item. Returns empty
+  // if not in the overview mode.
+  std::vector<aura::Window*> GetItemWindowListInOverviewGrids();
 
  private:
   Shell* shell_;  // not owned

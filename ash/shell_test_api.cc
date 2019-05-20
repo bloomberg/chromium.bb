@@ -251,4 +251,10 @@ void ShellTestApi::WaitForLauncherAnimationState(
   run_loop.Run();
 }
 
+std::vector<aura::Window*> ShellTestApi::GetItemWindowListInOverviewGrids() {
+  return ash::Shell::Get()
+      ->overview_controller()
+      ->GetItemWindowListInOverviewGridsForTest();
+}
+
 }  // namespace ash

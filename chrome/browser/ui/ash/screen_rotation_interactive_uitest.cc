@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "base/macros.h"
@@ -17,6 +18,9 @@
 #include "chrome/test/base/perf/performance_test.h"
 #include "ui/aura/window.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/compositor/layer_animation_observer.h"
+
+namespace {
 
 // Test overview enter/exit animations with following conditions
 // int: number of windows : 2, 8
@@ -97,11 +101,71 @@ class ScreenRotationWaiter : public ash::ScreenRotationAnimatorObserver {
   DISALLOW_COPY_AND_ASSIGN(ScreenRotationWaiter);
 };
 
-IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTable) {
+class WindowAnimationWaiter : public ui::LayerAnimationObserver {
+ public:
+  explicit WindowAnimationWaiter(aura::Window* window)
+      : animator_(window->layer()->GetAnimator()) {
+    animator_->AddObserver(this);
+  }
+  ~WindowAnimationWaiter() override = default;
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    if (!animator_->is_animating()) {
+      animator_->RemoveObserver(this);
+      run_loop_.Quit();
+    }
+  }
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  ui::LayerAnimator* animator_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowAnimationWaiter);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTablet) {
   // Browser window is used just to identify display.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   gfx::NativeWindow browser_window =
       browser_view->GetWidget()->GetNativeWindow();
+
+  ScreenRotationWaiter waiter(browser_window->GetRootWindow());
+
+  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_REFRESH,
+                            /*control=*/true,
+                            /*shift=*/true,
+                            /*alt=*/false,
+                            /*command=*/false);
+  waiter.Wait();
+}
+
+IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTableOverview) {
+  // Browser window is used just to identify display.
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  gfx::NativeWindow browser_window =
+      browser_view->GetWidget()->GetNativeWindow();
+  ui_controls::SendKeyPress(browser_window, ui::VKEY_MEDIA_LAUNCH_APP1,
+                            /*control=*/false,
+                            /*shift=*/false,
+                            /*alt=*/false,
+                            /*command=*/false);
+  ash::ShellTestApi().WaitForOverviewAnimationState(
+      ash::OverviewAnimationState::kEnterAnimationComplete);
+  // Wait until the window labels are shown.
+  {
+    auto windows = ash::ShellTestApi().GetItemWindowListInOverviewGrids();
+    ASSERT_TRUE(windows.size() > 0);
+    WindowAnimationWaiter waiter(windows[0]);
+    waiter.Wait();
+  }
 
   ScreenRotationWaiter waiter(browser_window->GetRootWindow());
 
