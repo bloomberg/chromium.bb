@@ -69,21 +69,28 @@ class WaylandGamepadDelegate : public GamepadDelegate {
     wl_resource_set_user_data(gamepad_resource_, nullptr);
     delete this;
   }
-  void OnAxis(int axis, double value) override {
+  void OnAxis(int axis, int raw_axis, double value) override {
     if (!gamepad_resource_) {
       return;
     }
+    // TODO(tetsui): Send raw axis index when kRawGamepadInfoFeature is enabled.
     zcr_gamepad_v2_send_axis(gamepad_resource_, NowInMilliseconds(), axis,
                              wl_fixed_from_double(value));
   }
-  void OnButton(int button, bool pressed, double value) override {
+  void OnButton(int button,
+                int raw_button,
+                bool pressed,
+                double value) override {
     if (!gamepad_resource_) {
       return;
     }
     uint32_t state = pressed ? ZCR_GAMEPAD_V2_BUTTON_STATE_PRESSED
                              : ZCR_GAMEPAD_V2_BUTTON_STATE_RELEASED;
-    zcr_gamepad_v2_send_button(gamepad_resource_, NowInMilliseconds(), button,
-                               state, wl_fixed_from_double(value));
+    zcr_gamepad_v2_send_button(
+        gamepad_resource_, NowInMilliseconds(),
+        base::FeatureList::IsEnabled(kRawGamepadInfoFeature) ? raw_button
+                                                             : button,
+        state, wl_fixed_from_double(value));
   }
   void OnFrame() override {
     if (!gamepad_resource_) {

@@ -37,8 +37,8 @@ class MockGamepadDelegate : public GamepadDelegate {
 
   // Overridden from GamepadDelegate:
   MOCK_METHOD0(OnRemoved, void());
-  MOCK_METHOD2(OnAxis, void(int, double));
-  MOCK_METHOD3(OnButton, void(int, bool, double));
+  MOCK_METHOD3(OnAxis, void(int, int, double));
+  MOCK_METHOD4(OnButton, void(int, int, bool, double));
   MOCK_METHOD0(OnFrame, void());
 };
 

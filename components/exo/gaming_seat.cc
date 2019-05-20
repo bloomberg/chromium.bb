@@ -97,10 +97,11 @@ void GamingSeat::OnGamepadEvent(const ui::GamepadEvent& event) {
 
   switch (event.type()) {
     case ui::GamepadEventType::BUTTON:
-      it->second->OnButton(event.code(), event.value(), event.value());
+      it->second->OnButton(event.code(), event.raw_code(), event.value(),
+                           event.value());
       break;
     case ui::GamepadEventType::AXIS:
-      it->second->OnAxis(event.code(), event.value());
+      it->second->OnAxis(event.code(), event.raw_code(), event.value());
       break;
     case ui::GamepadEventType::FRAME:
       it->second->OnFrame();
