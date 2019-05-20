@@ -24,6 +24,96 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Records Presentation Metrics for the Infobar Delegate.
+// |current_password_saved| is true if the Infobar is on read-only mode after a
+// Save/Update action has occured.
+// |update_infobar| is YES if presenting an Update Infobar, NO if presenting a
+// Save Infobar.
+// |automatic| is YES the Infobar was presented automatically(e.g. The banner
+// was presented), NO if the user triggered it  (e.g. Tapped onthe badge).
+void RecordPresentationMetrics(
+    password_manager::PasswordFormManagerForUI* form_to_save,
+    bool current_password_saved,
+    bool update_infobar,
+    bool automatic) {
+  if (current_password_saved) {
+    // Password was already saved or updated.
+    form_to_save->GetMetricsRecorder()->RecordPasswordBubbleShown(
+        form_to_save->GetCredentialSource(),
+        password_manager::metrics_util::MANUAL_MANAGE_PASSWORDS);
+    password_manager::metrics_util::LogUIDisplayDisposition(
+        password_manager::metrics_util::MANUAL_MANAGE_PASSWORDS);
+    return;
+  }
+
+  if (update_infobar) {
+    // Update Password.
+    if (automatic) {
+      form_to_save->GetMetricsRecorder()->RecordPasswordBubbleShown(
+          form_to_save->GetCredentialSource(),
+          password_manager::metrics_util::
+              AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
+      password_manager::metrics_util::LogUIDisplayDisposition(
+          password_manager::metrics_util::
+              AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
+    } else {
+      form_to_save->GetMetricsRecorder()->RecordPasswordBubbleShown(
+          form_to_save->GetCredentialSource(),
+          password_manager::metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE);
+      password_manager::metrics_util::LogUIDisplayDisposition(
+          password_manager::metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE);
+    }
+  } else {
+    // Save Password.
+    if (automatic) {
+      form_to_save->GetMetricsRecorder()->RecordPasswordBubbleShown(
+          form_to_save->GetCredentialSource(),
+          password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+      password_manager::metrics_util::LogUIDisplayDisposition(
+          password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+    } else {
+      form_to_save->GetMetricsRecorder()->RecordPasswordBubbleShown(
+          form_to_save->GetCredentialSource(),
+          password_manager::metrics_util::MANUAL_WITH_PASSWORD_PENDING);
+      password_manager::metrics_util::LogUIDisplayDisposition(
+          password_manager::metrics_util::MANUAL_WITH_PASSWORD_PENDING);
+    }
+  }
+}
+
+// Records Dismissal Metrics for the Infobar Delegate.
+// |infobar_response| is the action that was taken in order to dismiss the
+// Infobar.
+// |update_infobar| is YES if presenting an Update Infobar, NO if presenting a
+// Save Infobar.
+void RecordDismissalMetrics(
+    password_manager::PasswordFormManagerForUI* form_to_save,
+    password_manager::metrics_util::UIDismissalReason infobar_response,
+    bool update_infobar) {
+  form_to_save->GetMetricsRecorder()->RecordUIDismissalReason(infobar_response);
+
+  if (update_infobar) {
+    password_manager::metrics_util::LogUpdateUIDismissalReason(
+        infobar_response);
+  } else {
+    password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response);
+  }
+}
+
+bool IsUpdateInfobar(PasswordInfobarType infobar_type) {
+  switch (infobar_type) {
+    case PasswordInfobarType::kPasswordInfobarTypeUpdate: {
+      return YES;
+    }
+    case PasswordInfobarType::kPasswordInfobarTypeSave:
+      return NO;
+  }
+}
+
+}  // namespace
+
 using password_manager::PasswordFormManagerForUI;
 
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
@@ -36,33 +126,24 @@ IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
       infobar_type_(password_update
                         ? PasswordInfobarType::kPasswordInfobarTypeUpdate
                         : PasswordInfobarType::kPasswordInfobarTypeSave) {
-  if (password_update) {
-    form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
-        form_to_save()->GetCredentialSource(),
-        password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
-
-  } else {
-    form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
-        form_to_save()->GetCredentialSource(),
-        password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+  if (!IsInfobarUIRebootEnabled()) {
+    RecordPresentationMetrics(form_to_save(), false /*current_password_saved*/,
+                              false /*update_infobar*/, true /*automatic*/);
   }
 }
 
 IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
-  switch (infobar_type_) {
-    case PasswordInfobarType::kPasswordInfobarTypeUpdate: {
-      DCHECK(IsInfobarUIRebootEnabled());
-      password_manager::metrics_util::LogUpdateUIDismissalReason(
-          infobar_response());
-      break;
+  if (IsInfobarUIRebootEnabled()) {
+    // If by any reason this delegate gets dealloc before the Infobar is
+    // dismissed, record the dismissal metrics.
+    if (infobar_presenting_) {
+      RecordDismissalMetrics(form_to_save(), infobar_response(),
+                             IsUpdateInfobar(infobar_type_));
     }
-    case PasswordInfobarType::kPasswordInfobarTypeSave:
-      password_manager::metrics_util::LogSaveUIDismissalReason(
-          infobar_response());
-      break;
+  } else {
+    RecordDismissalMetrics(form_to_save(), infobar_response(),
+                           false /*update_infobar*/);
   }
-  form_to_save()->GetMetricsRecorder()->RecordUIDismissalReason(
-      infobar_response());
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -139,6 +220,26 @@ void IOSChromeSavePasswordInfoBarDelegate::UpdateCredentials(
   const base::string16 password_string = base::SysNSStringToUTF16(password);
   UpdatePasswordFormUsernameAndPassword(username_string, password_string,
                                         form_to_save());
+}
+
+void IOSChromeSavePasswordInfoBarDelegate::InfobarPresenting(bool automatic) {
+  DCHECK(IsInfobarUIRebootEnabled());
+  DCHECK(!infobar_presenting_);
+
+  RecordPresentationMetrics(form_to_save(), current_password_saved_,
+                            IsUpdateInfobar(infobar_type_), automatic);
+  infobar_presenting_ = YES;
+}
+
+void IOSChromeSavePasswordInfoBarDelegate::InfobarDismissed() {
+  DCHECK(IsInfobarUIRebootEnabled());
+  DCHECK(infobar_presenting_);
+
+  RecordDismissalMetrics(form_to_save(), infobar_response(),
+                         IsUpdateInfobar(infobar_type_));
+  // After the metrics have been recorded we can reset the response.
+  set_infobar_response(password_manager::metrics_util::NO_DIRECT_INTERACTION);
+  infobar_presenting_ = NO;
 }
 
 bool IOSChromeSavePasswordInfoBarDelegate::IsPasswordUpdate() const {

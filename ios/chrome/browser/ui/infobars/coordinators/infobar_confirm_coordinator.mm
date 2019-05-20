@@ -80,6 +80,14 @@
       base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
 }
 
+- (void)infobarBannerWasPresented {
+  // NO-OP.
+}
+
+- (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner {
+  // NO-OP.
+}
+
 - (void)dismissBannerWhenInteractionIsFinished {
   [self.bannerViewController dismissWhenInteractionIsFinished];
 }

@@ -98,6 +98,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                                       completion:^{
                                         weakSelf.presentingInfobarBanner = YES;
                                         weakSelf.bannerWasPresented = YES;
+                                        [weakSelf infobarBannerWasPresented];
                                         if (completion)
                                           completion();
                                       }];
@@ -112,6 +113,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     self.modalTransitionDriver.modalPositioner = self;
     [self presentInfobarModalFrom:self.baseViewController
                            driver:self.modalTransitionDriver];
+    [self infobarModalPresentedFromBanner:NO];
   };
 
   // Dismiss InfobarBanner first if being presented.
@@ -161,6 +163,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.modalTransitionDriver.modalPositioner = self;
   [self presentInfobarModalFrom:self.bannerViewController
                          driver:self.modalTransitionDriver];
+  [self infobarModalPresentedFromBanner:YES];
 }
 
 - (void)dismissInfobarBanner:(id)sender
@@ -276,6 +279,14 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 #pragma mark InfobarCoordinatorImplementation
 
 - (void)configureModalViewController {
+  NOTREACHED() << "Subclass must implement.";
+}
+
+- (void)infobarBannerWasPresented {
+  NOTREACHED() << "Subclass must implement.";
+}
+
+- (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner {
   NOTREACHED() << "Subclass must implement.";
 }
 

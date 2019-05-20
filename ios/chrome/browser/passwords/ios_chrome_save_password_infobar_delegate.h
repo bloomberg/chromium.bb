@@ -45,6 +45,14 @@ class IOSChromeSavePasswordInfoBarDelegate
   // Updates the credentials being saved with |username| and |password|.
   void UpdateCredentials(NSString* username, NSString* password);
 
+  // Informs the delegate that the Infobar has been presented. If |automatic|
+  // YES the Infobar was presented automatically (e.g. The banner was
+  // presented), if NO the user triggered it  (e.g. Tapped on the badge).
+  void InfobarPresenting(bool automatic);
+
+  // Informs the delegate that the Infobar has been dismissed.
+  void InfobarDismissed();
+
   // true if password is being updated at the moment the InfobarModal is
   // created.
   bool IsPasswordUpdate() const;
@@ -71,6 +79,9 @@ class IOSChromeSavePasswordInfoBarDelegate
   // The PasswordInfobarType for this delegate. Set at initialization and won't
   // change throughout the life of the delegate.
   const PasswordInfobarType infobar_type_;
+
+  // YES if an Infobar is being presented by this delegate.
+  bool infobar_presenting_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSavePasswordInfoBarDelegate);
 };

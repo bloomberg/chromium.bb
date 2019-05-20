@@ -16,6 +16,12 @@
 // the InfobarCoordinator.
 - (void)configureModalViewController;
 
+// Performs any actions related to an Infobar Banner presentation.
+- (void)infobarBannerWasPresented;
+
+// Performs any actions related to an Infobar Modal presentation.
+- (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner;
+
 // Dismisses the InfobarBanner once there's no interaction in progress. An
 // interaction is any user initiated behavior with the Banner.
 - (void)dismissBannerWhenInteractionIsFinished;

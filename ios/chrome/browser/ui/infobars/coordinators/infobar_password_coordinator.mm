@@ -139,6 +139,19 @@
   [self recordModalPresentationMetricsUsingModalType:infobarModalType];
 }
 
+- (void)infobarBannerWasPresented {
+  self.passwordInfoBarDelegate->InfobarPresenting(YES /*automatic*/);
+}
+
+- (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner {
+  // If the modal is being expanded from the banner we count that as the same
+  // presentation from infobarBannerWasPresented.
+  if (presentedFromBanner)
+    return;
+
+  self.passwordInfoBarDelegate->InfobarPresenting(NO /*automatic*/);
+}
+
 - (void)dismissBannerWhenInteractionIsFinished {
   [self.bannerViewController dismissWhenInteractionIsFinished];
 }
@@ -151,6 +164,10 @@
   // Release these strong ViewControllers at the time of infobar dismissal.
   self.bannerViewController = nil;
   self.modalViewController = nil;
+  // While navigating away the Infobar delegate might be niled before the banner
+  // has been dismissed. Check that the delegate still exists.
+  if (self.passwordInfoBarDelegate)
+    self.passwordInfoBarDelegate->InfobarDismissed();
 }
 
 - (CGFloat)infobarModalContentHeight {
