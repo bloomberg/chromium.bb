@@ -447,42 +447,55 @@ test.addEntries = function(downloads, drive, crostini) {
               'MyUSB')
           .fileSystem);
   fsRemovable.populate([], true);
+
+  const fsAndroidFiles = /** @type {MockFileSystem} */ (
+      mockVolumeManager
+          .createVolumeInfo(
+              VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files',
+              str('ANDROID_FILES_ROOT_LABEL'))
+          .fileSystem);
+  fsAndroidFiles.populate([], true);
+};
+
+/**
+ * Sends mount event.
+ * @param {!VolumeManagerCommon.VolumeType} volumeType
+ * @param {string} volumeId
+ */
+test.mount = function(volumeType, volumeId) {
+  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+    status: 'success',
+    eventType: 'mount',
+    volumeMetadata: {
+      volumeType: volumeType,
+      volumeId: volumeId,
+      isReadOnly: false,
+      iconSet: {},
+      profile: {isCurrentProfile: true, displayName: ''},
+      mountContext: 'user',
+    },
+  });
 };
 
 /**
  * Sends mount event for crostini volume.
  */
 test.mountCrostini = function() {
-  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
-    status: 'success',
-    eventType: 'mount',
-    volumeMetadata: {
-      volumeType: VolumeManagerCommon.VolumeType.CROSTINI,
-      volumeId: 'crostini',
-      isReadOnly: false,
-      iconSet: {},
-      profile: {isCurrentProfile: true, displayName: ''},
-      mountContext: 'user',
-    },
-  });
+  test.mount(VolumeManagerCommon.VolumeType.CROSTINI, 'crostini');
 };
 
 /**
- * Sends mount event for crostini volume.
+ * Sends mount event for removable volume.
  */
 test.mountRemovable = function() {
-  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
-    status: 'success',
-    eventType: 'mount',
-    volumeMetadata: {
-      volumeType: VolumeManagerCommon.VolumeType.REMOVABLE,
-      volumeId: 'removable:MyUSB',
-      isReadOnly: false,
-      iconSet: {},
-      profile: {isCurrentProfile: true, displayName: ''},
-      mountContext: 'user',
-    },
-  });
+  test.mount(VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:MyUSB');
+};
+
+/**
+ * Sends mount event for android files volume.
+ */
+test.mountAndroidFiles = function() {
+  test.mount(VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files');
 };
 
 /**

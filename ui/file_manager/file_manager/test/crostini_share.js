@@ -18,8 +18,30 @@ const shareBase = {
 const crostiniShare = {};
 const pluginVmShare = {};
 
-shareBase.testSharePathsSuccess =
-    async (vmName, vmNameSelector, enumUma, done) => {
+// Right click clickTarget, ensure menuVisible is shown,
+// Click menuTarget, ensure dialog is shown with expectedText.
+shareBase.verifyShareWithDialog =
+    async (name, clickTarget, menuVisible, menuTarget, expectedText) => {
+  const dialog = '.cr-dialog-container';
+  const dialogVisible = '.cr-dialog-container.shown';
+  const dialogText = '.cr-dialog-container.shown .cr-dialog-text';
+  const dialogCancel = 'button.cr-dialog-cancel';
+
+  // Check 'Share with <VM>' is shown in menu.
+  assertTrue(test.fakeMouseRightClick(clickTarget), 'right-click ' + name);
+  await test.waitForElement(menuVisible);
+
+  // Click 'Share with <VM>', verify dialog and text.
+  assertTrue(test.fakeMouseClick(menuTarget, 'Share with <VM> ' + name));
+  await test.waitForElement(dialogVisible);
+  assertEquals(expectedText, document.querySelector(dialogText).innerText);
+
+  // Click Cancel button to close.
+  assertTrue(test.fakeMouseClick(dialogCancel));
+  await test.waitForElementLost(dialog);
+};
+
+shareBase.testSharePaths = async (vmName, vmNameSelector, enumUma, done) => {
   const share = 'share-with-' + vmNameSelector;
   const manage = 'manage-' + vmNameSelector + '-sharing';
   const menuNoShareWith = '#file-context-menu:not([hidden]) ' +
@@ -37,6 +59,18 @@ shareBase.testSharePathsSuccess =
       '#directory-tree-context-menu [command="#' + share + '"]';
   const photos = '#file-list [file-name="photos"]';
   const myFilesDirTree = '#directory-tree [root-type-icon="my_files"]';
+  const removableRoot = '#directory-tree [volume-type-icon="removable"]';
+  const menuShareWithVolumeRoot = '#roots-context-menu:not([hidden]) ' +
+      '[command="#' + share + '"]:not([hidden]):not([disabled])';
+  const shareWithVolumeRoot = '#roots-context-menu [command="#' + share + '"]';
+  const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
+  const googleDrive = '#directory-tree .tree-item [volume-type-icon="drive"]';
+  const menuHidden = '#file-context-menu[hidden]';
+  const androidRoot = '#directory-tree [volume-type-icon="android_files"]';
+
+  const shareLabel = {'termina': 'Linux apps', 'PluginVm': 'Plugin VM'};
+  const givePermission = `Give ${shareLabel[vmName]} permission to modify `;
+
   const oldSharePaths = chrome.fileManagerPrivate.sharePathsWithCrostini;
   let sharePathsCalled = false;
   let sharePathsPersist;
@@ -116,64 +150,11 @@ shareBase.testSharePathsSuccess =
   assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
   await test.waitForElement(menuShareWith);
 
-  // Verify dialog is shown for MyFiles root.
-  // Check 'Share with <VM>' is shown in menu.
-  assertTrue(test.fakeMouseRightClick(myFilesDirTree), 'right-click MyFiles');
-  await test.waitForElement(menuShareWithDirTree);
+  // Verify share for MyFiles.
+  await shareBase.verifyShareWithDialog(
+      'MyFiles root', myFilesDirTree, menuShareWithDirTree, shareWithDirTree,
+      givePermission + 'files in the My files folder');
 
-  // Click 'Share with <VM>', verify dialog.
-  assertTrue(test.fakeMouseClick(shareWithDirTree, 'Share with <VM>'));
-  await test.waitForElement('.cr-dialog-container.shown');
-
-  // Click Cancel button to close.
-  assertTrue(test.fakeMouseClick('button.cr-dialog-cancel'));
-  await test.waitForElementLost('.cr-dialog-container');
-
-  // Restore fmp.*.
-  chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
-  // Restore Crostini.unregisterSharedPath.
-  fileManager.crostini.unregisterSharedPath = oldCrostiniUnregister;
-  done();
-};
-
-crostiniShare.testSharePathsSuccess = done => {
-  shareBase.testSharePathsSuccess(
-      shareBase.vmNameTermina, shareBase.vmNameSelectorLinux,
-      shareBase.enumUmaShareWithLinux, done);
-};
-
-pluginVmShare.testSharePathsSuccess = done => {
-  shareBase.testSharePathsSuccess(
-      shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm,
-      shareBase.enumUmaShareWithPluginVm, done);
-};
-
-// Verify right-click menu with 'Share with <VM>' is not shown
-// for:
-// * Files (not directory).
-// * Any folder already shared.
-// * Root Downloads folder.
-// * Any folder outside of downloads (e.g. crostini or drive).
-// * Is shown for drive if DriveFS is enabled.
-shareBase.testSharePathShown = async (vmName, vmNameSelector, done) => {
-  const share = 'share-with-' + vmNameSelector;
-  const myFiles = '#directory-tree .tree-item [root-type-icon="my_files"]';
-  const downloads = '#file-list li [file-type-icon="downloads"]';
-  const linuxFiles = '#directory-tree .tree-item [root-type-icon="crostini"]';
-  const googleDrive = '#directory-tree .tree-item [volume-type-icon="drive"]';
-  const menuHidden = '#file-context-menu[hidden]';
-  const menuNoShareWith = '#file-context-menu:not([hidden]) ' +
-      '[command="#' + share + '"][hidden][disabled="disabled"]';
-  const menuShareWith = '#file-context-menu:not([hidden]) ' +
-      '[command="#' + share + '"]:not([hidden]):not([disabled])';
-  const removableVolumeRoot = '#directory-tree [volume-type-icon="removable"]';
-  const menuShareWithDirTree = '#directory-tree-context-menu:not([hidden]) ' +
-      '[command="#' + share + '"]:not([hidden]):not([disabled])';
-  const menuShareWithVolumeRoot = '#roots-context-menu:not([hidden]) ' +
-      '[command="#' + share + '"]:not([hidden]):not([disabled])';
-  let alreadySharedPhotosDir;
-
-  await test.setupAndWaitUntilReady();
   // Right-click 'hello.txt' file.
   // Check 'Share with <VM>' is not shown in menu.
   assertTrue(
@@ -181,44 +162,17 @@ shareBase.testSharePathShown = async (vmName, vmNameSelector, done) => {
       'right-click hello.txt');
   await test.waitForElement(menuNoShareWith);
 
-  // Set a folder as already shared.
-  alreadySharedPhotosDir =
-      mockVolumeManager
-          .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
-          .fileSystem.entries['/photos'];
-  fileManager.crostini.registerSharedPath(vmName, alreadySharedPhotosDir);
-  assertTrue(
-      test.fakeMouseRightClick('#file-list [file-name="photos"]'),
-      'right-click hello.txt');
-  await test.waitForElement(menuNoShareWith);
-
-  // Select 'My files' in directory tree to show Downloads in file list.
-  assertTrue(test.fakeMouseClick(myFiles), 'click My files');
-  await test.waitForElement(downloads);
-
-  // Right-click 'Downloads' directory.
-  // Check 'Share with <VM>' is shown in menu.
-  assertTrue(test.fakeMouseRightClick(downloads), 'right-click downloads');
-  await test.waitForElement(menuShareWith);
-
-  // Right-click 'MyFiles' in directory tree.
-  // Check 'Share with <VM>' is shown in menu.
-  assertTrue(test.fakeMouseRightClick(myFiles), 'MyFiles dirtree');
-  await test.waitForElement(menuShareWithDirTree);
-
-  // Select removable root.
+  // Verify share for removable root.
   test.mountRemovable();
-  await test.waitForElement(removableVolumeRoot);
-
-  // Right-click 'MyUSB' removable root.
-  // Check 'Share with <VM>' is shown in menu.
-  assertTrue(test.fakeMouseRightClick(removableVolumeRoot), 'removable root');
-  await test.waitForElement(menuShareWithVolumeRoot);
+  await test.waitForElement(removableRoot);
+  await shareBase.verifyShareWithDialog(
+      'Removable root', removableRoot, menuShareWithVolumeRoot,
+      shareWithVolumeRoot, givePermission + 'files in the MyUSB folder');
 
   // Select 'Linux files' in directory tree to show dir A in file list.
-  await test.waitForElement(linuxFiles);
+  await test.waitForElement(fakeLinuxFiles);
 
-  assertTrue(test.fakeMouseClick(linuxFiles), 'click Linux files');
+  assertTrue(test.fakeMouseClick(fakeLinuxFiles), 'click Linux files');
   await test.waitForFiles(
       test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
 
@@ -238,41 +192,54 @@ shareBase.testSharePathShown = async (vmName, vmNameSelector, done) => {
       test.TestEntryInfo.getExpectedRows(test.BASIC_DRIVE_ENTRY_SET));
 
   // Check 'Share with <VM>' is not shown in menu.
-  assertTrue(
-      test.fakeMouseRightClick('#file-list [file-name="photos"]'),
-      'right-click photos');
+  assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
   await test.waitForElement(menuNoShareWith);
 
   // Close menu by clicking file-list.
   assertTrue(test.fakeMouseClick('#file-list'));
   await test.waitForElement(menuHidden);
 
-  // Set DRIVE_FS_ENABLED, and check that 'Share with <VM>' is shown.
+  // Set DRIVE_FS_ENABLED=true, and check that 'Share with <VM>' is shown.
   loadTimeData.data_['DRIVE_FS_ENABLED'] = true;
-  // Check 'Share with <VM>' is not shown in menu.
-  assertTrue(
-      test.fakeMouseRightClick('#file-list [file-name="photos"]'),
-      'right-click photos');
+  // Check 'Share with <VM>' is shown in menu.
+  assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
   await test.waitForElement(menuShareWith);
 
-  // Reset Linux files back to unmounted.
-  chrome.fileManagerPrivate.removeMount('crostini');
-  await test.waitForElement(
-      '#directory-tree .tree-item [root-type-icon="crostini"]');
+  // Verify share with dialog for MyDrive.
+  await shareBase.verifyShareWithDialog(
+      'My Drive', googleDrive, menuShareWithVolumeRoot, shareWithVolumeRoot,
+      givePermission + 'files in your Google Drive. ' +
+          'Changes will sync to your other devices.');
 
-  // Clear Crostini shared folders.
-  fileManager.crostini.unregisterSharedPath(vmName, alreadySharedPhotosDir);
+  // Verify share with dialog for Play files.
+  test.mountAndroidFiles();
+  await test.waitForElement(androidRoot);
+  await shareBase.verifyShareWithDialog(
+      'Android files', androidRoot, menuShareWithDirTree, shareWithDirTree,
+      givePermission + 'files in the Play files folder');
+
+  // Reset Linux files and Play files back to unmounted.
+  chrome.fileManagerPrivate.removeMount('crostini');
+  await test.waitForElement(fakeLinuxFiles);
+  chrome.fileManagerPrivate.removeMount('android_files');
+
+  // Restore fmp.*.
+  chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
+  // Restore Crostini.unregisterSharedPath.
+  fileManager.crostini.unregisterSharedPath = oldCrostiniUnregister;
   done();
 };
 
-crostiniShare.testSharePathShown = done => {
-  shareBase.testSharePathShown(
-      shareBase.vmNameTermina, shareBase.vmNameSelectorLinux, done);
+crostiniShare.testSharePaths = done => {
+  shareBase.testSharePaths(
+      shareBase.vmNameTermina, shareBase.vmNameSelectorLinux,
+      shareBase.enumUmaShareWithLinux, done);
 };
 
-pluginVmShare.testSharePathShown = done => {
-  shareBase.testSharePathShown(
-      shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm, done);
+pluginVmShare.testSharePaths = done => {
+  shareBase.testSharePaths(
+      shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm,
+      shareBase.enumUmaShareWithPluginVm, done);
 };
 
 // Verify gear menu 'Manage ? sharing'.

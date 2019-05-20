@@ -2056,9 +2056,9 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = /** @type {Command} */ ({
     // Non-Drive volume roots are always '/'.
     if (dir.fullPath == '/') {
       fileManager.ui_.confirmDialog.showHtml(
-          strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE'),
-          strf('SHARE_ROOT_FOLDER_WITH_CROSTINI', info.volumeInfo.label), share,
-          () => {});
+          strf('SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE'),
+          strf('SHARE_ROOT_FOLDER_WITH_PLUGIN_VM', info.volumeInfo.label),
+          share, () => {});
     } else if (
         info.isRootEntry &&
         (info.rootType == VolumeManagerCommon.RootType.DRIVE ||
@@ -2069,8 +2069,8 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = /** @type {Command} */ ({
       // Computers Grand Root.  Do not show for roots of a single Shared Drive
       // or Computer.
       fileManager.ui_.confirmDialog.showHtml(
-          strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE'),
-          strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_DRIVE'), share, () => {});
+          strf('SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE'),
+          strf('SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE'), share, () => {});
     } else {
       // This is not a root, share it without confirmation dialog.
       share();
