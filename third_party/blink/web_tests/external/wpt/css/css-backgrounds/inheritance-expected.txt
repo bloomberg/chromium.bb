@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 60 tests; 59 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 64 tests; 63 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Property background-attachment has initial value scroll
 PASS Property background-attachment does not inherit
 PASS Property background-clip has initial value border-box
@@ -12,6 +12,10 @@ PASS Property background-origin has initial value padding-box
 PASS Property background-origin does not inherit
 PASS Property background-position has initial value 0% 0%
 PASS Property background-position does not inherit
+PASS Property background-position-x has initial value 0%
+PASS Property background-position-x does not inherit
+PASS Property background-position-y has initial value 0%
+PASS Property background-position-y does not inherit
 PASS Property background-repeat has initial value repeat
 PASS Property background-repeat does not inherit
 PASS Property background-size has initial value auto
