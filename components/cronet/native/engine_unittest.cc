@@ -32,7 +32,9 @@ using TestOnRequestFinishedClientContext = int;
 // increment this value.
 void TestRequestInfoListener_OnRequestFinished(
     Cronet_RequestFinishedInfoListenerPtr self,
-    Cronet_RequestFinishedInfoPtr request_info) {
+    Cronet_RequestFinishedInfoPtr request_info,
+    Cronet_UrlResponseInfoPtr,
+    Cronet_ErrorPtr) {
   CHECK(self);
   Cronet_ClientContext context =
       Cronet_RequestFinishedInfoListener_GetClientContext(self);

@@ -312,7 +312,10 @@ void Cronet_EngineImpl::ReportRequestFinished(
             [](scoped_refptr<RequestInfo> request_info,
                Cronet_RequestFinishedInfoListenerPtr
                    request_finished_listener) {
-              request_finished_listener->OnRequestFinished(&request_info->data);
+              // TODO(crbug.com/879208): Pass-though UrlResponseInfo and Error
+              // too.
+              request_finished_listener->OnRequestFinished(&request_info->data,
+                                                           nullptr, nullptr);
             },
             request_info, request_finished_listener)));
   }

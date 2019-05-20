@@ -108,7 +108,9 @@ enum class RequestFinishedListenerType {
 // App implementation of Cronet_RequestFinishedInfoListener methods.
 static void TestRequestInfoListener_OnRequestFinished(
     Cronet_RequestFinishedInfoListenerPtr self,
-    Cronet_RequestFinishedInfoPtr request_info) {
+    Cronet_RequestFinishedInfoPtr request_info,
+    Cronet_UrlResponseInfoPtr,
+    Cronet_ErrorPtr) {
   CHECK(self);
 }
 

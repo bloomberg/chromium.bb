@@ -1440,17 +1440,6 @@ struct RequestFinishedInfo {
    * Returns the reason why the request finished.
    */
   FINISHED_REASON finished_reason = SUCCEEDED;
-
-  /**
-   * {@link UrlResponseInfo} for the request, if its response had started.
-   */
-  UrlResponseInfo? response_info;
-
-  /**
-   * If the request failed, will be equal to the same {@link Error} provided to
-   * {@link UrlRequestCallback.OnFailed}.
-   */
-  Error? error;
 };
 
 /**
@@ -1479,6 +1468,19 @@ interface RequestFinishedInfoListener {
    *
    *     This is accomplished by ownership being shared between the {@code
    *     UrlRequest} and the code that calls this listener.
+   *
+   * @param response_info A pointer to the same UrlResponseInfo passed to
+   *     {@link UrlRequestCallback.OnCanceled()}, {@link
+   *     UrlRequestCallback.OnFailed()} or {@link
+   *     UrlRequestCallback.OnSucceeded()}. The lifetime and ownership of
+   *     {@code response_info} works the same as for {@code request_info}.
+   *
+   * @param error A pointer to the same Error passed to
+   *     {@code UrlRequestCallback.OnFailed()}, or null if there was no error.
+   *     The lifetime and ownership of {@code error} works the same as for
+   *     {@code request_info}.
    */
-  OnRequestFinished(RequestFinishedInfo request_info);
+  OnRequestFinished(RequestFinishedInfo request_info,
+                    UrlResponseInfo response_info,
+                    Error error);
 };
