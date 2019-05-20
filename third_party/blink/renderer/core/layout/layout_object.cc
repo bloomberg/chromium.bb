@@ -825,6 +825,12 @@ const NGPhysicalBoxFragment* LayoutObject::ContainingBlockFlowFragment() const {
   return block_flow->CurrentFragment();
 }
 
+bool LayoutObject::IsFirstInlineFragmentSafe() const {
+  DCHECK(IsInline());
+  LayoutBlockFlow* block_flow = ContainingNGBlockFlow();
+  return block_flow && !block_flow->NeedsLayout();
+}
+
 LayoutBox* LayoutObject::EnclosingScrollableBox() const {
   for (LayoutObject* ancestor = Parent(); ancestor;
        ancestor = ancestor->Parent()) {

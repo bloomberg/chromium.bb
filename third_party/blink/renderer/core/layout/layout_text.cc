@@ -1542,8 +1542,13 @@ UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
 }
 
 PhysicalOffset LayoutText::FirstLineBoxTopLeft() const {
-  if (const NGPaintFragment* fragment = FirstInlineFragment())
+  if (const NGPaintFragment* fragment = FirstInlineFragment()) {
+    // TODO(kojii): Some clients call this against dirty-tree, but NG fragments
+    // are not safe to read for dirty-tree. crbug.com/963103
+    if (UNLIKELY(!IsFirstInlineFragmentSafe()))
+      return PhysicalOffset();
     return fragment->InlineOffsetToContainerBox();
+  }
   if (const auto* text_box = FirstTextBox()) {
     LayoutPoint location = text_box->Location();
     if (UNLIKELY(HasFlippedBlocksWritingMode())) {
