@@ -57,7 +57,6 @@ interface CoreProbes {
   class FontCustomPlatformData;
   class FontFace;
   class HTMLDocumentParser;
-  class WorkerInspectorProxy;
   class XMLHttpRequest;
 
   void DidClearDocumentOfWindowObject([Keep] LocalFrame*);
