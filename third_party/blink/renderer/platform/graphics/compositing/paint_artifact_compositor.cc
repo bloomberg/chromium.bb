@@ -65,10 +65,12 @@ PaintArtifactCompositor::~PaintArtifactCompositor() {
 }
 
 void PaintArtifactCompositor::EnableExtraDataForTesting() {
-  if (!extra_data_for_testing_enabled_)
-    SetNeedsUpdate();
+  if (extra_data_for_testing_enabled_)
+    return;
   extra_data_for_testing_enabled_ = true;
   extra_data_for_testing_ = std::make_unique<ExtraDataForTesting>();
+  // Ensure |extra_data_for_testing_| is populated.
+  SetNeedsUpdate();
 }
 
 void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
