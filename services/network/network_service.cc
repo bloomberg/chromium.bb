@@ -830,9 +830,8 @@ void NetworkService::ReportMetrics() {
     loader_count += context->GatherActiveLoaderCount();
   }
   UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheTotalEntries", cache_size);
-  UMA_HISTOGRAM_COUNTS_10000(
-      "Net.Cors.PreflightCacheTotalMemoryPressureInBytes",
-      memory_pressure_in_bytes);
+  UMA_HISTOGRAM_COUNTS_10M("Net.Cors.PreflightCacheTotalMemoryPressureInBytes",
+                           memory_pressure_in_bytes);
   UMA_HISTOGRAM_COUNTS_1000("Net.Cors.ActiveLoaderCount", loader_count);
 }
 
