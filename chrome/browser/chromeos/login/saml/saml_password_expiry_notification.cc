@@ -16,9 +16,8 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/chrome_new_window_client.h"
+#include "chrome/browser/ui/webui/chromeos/insession_password_change_ui.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
@@ -78,11 +77,7 @@ const base::NoDestructor<base::string16> kLineSeparator(
 
 // Callback called when notification is clicked - opens password-change page.
 void OnNotificationClicked() {
-  ChromeNewWindowClient* client = ChromeNewWindowClient::Get();
-  if (client) {
-    client->NewTabWithUrl(GURL(chrome::kChromeUIPasswordChangeUrl),
-                          /*from_user_interaction=*/true);
-  }
+  PasswordChangeDialog::Show();
 }
 
 const base::NoDestructor<scoped_refptr<HandleNotificationClickDelegate>>
