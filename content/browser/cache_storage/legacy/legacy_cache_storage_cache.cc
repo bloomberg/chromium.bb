@@ -1019,11 +1019,14 @@ void LegacyCacheStorageCache::QueryCacheOpenNextEntry(
 
   query_cache_recursive_depth_ += 1;
   auto cleanup = base::ScopedClosureRunner(base::BindOnce(
-      [](LegacyCacheStorageCache* self) {
+      [](CacheStorageCacheHandle handle) {
+        LegacyCacheStorageCache* self = From(handle);
+        if (!self)
+          return;
         DCHECK(self->query_cache_recursive_depth_ > 0);
         self->query_cache_recursive_depth_ -= 1;
       },
-      base::Unretained(this)));
+      CreateHandle()));
 
   if (!query_cache_context->backend_iterator) {
     // Iteration is complete.
