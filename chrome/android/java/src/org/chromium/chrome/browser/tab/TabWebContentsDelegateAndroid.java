@@ -473,21 +473,28 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         mTab.getActivity().setOverlayMode(useOverlayMode);
     }
 
+    private ChromeFullscreenManager getFullscreenManager() {
+        // Following get* methods use this method instead of |FullscreenManager.from()|
+        // because the latter can return null if invoked while the tab is in detached state.
+        ChromeActivity activity = mTab.getActivity();
+        return activity != null ? activity.getFullscreenManager() : null;
+    }
+
     @Override
     public int getTopControlsHeight() {
-        FullscreenManager manager = FullscreenManager.from(mTab);
+        FullscreenManager manager = getFullscreenManager();
         return manager != null ? manager.getTopControlsHeight() : 0;
     }
 
     @Override
     public int getBottomControlsHeight() {
-        FullscreenManager manager = FullscreenManager.from(mTab);
+        FullscreenManager manager = getFullscreenManager();
         return manager != null ? manager.getBottomControlsHeight() : 0;
     }
 
     @Override
     public boolean controlsResizeView() {
-        FullscreenManager manager = FullscreenManager.from(mTab);
+        FullscreenManager manager = getFullscreenManager();
         return manager != null ? ((ChromeFullscreenManager) manager).controlsResizeView() : false;
     }
 
