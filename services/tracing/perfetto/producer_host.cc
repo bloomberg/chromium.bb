@@ -11,7 +11,6 @@
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
-#include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/data_source_descriptor.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
@@ -47,12 +46,9 @@ void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
   //   hence we avoid any deadlocking occurring from trace events emitted from
   //   the Perfetto sequence filling up the SMB and stalling while waiting for
   //   Perfetto to free the chunks.
-  if (!base::FeatureList::IsEnabled(
-          features::kPerfettoForceOutOfProcessProducer)) {
-    base::ProcessId pid;
-    if (PerfettoService::ParsePidFromProducerName(name, &pid)) {
-      is_in_process_ = (pid == base::Process::Current().Pid());
-    }
+  base::ProcessId pid;
+  if (PerfettoService::ParsePidFromProducerName(name, &pid)) {
+    is_in_process_ = (pid == base::Process::Current().Pid());
   }
 
   // TODO(oysteine): Figure out an uid once we need it.
