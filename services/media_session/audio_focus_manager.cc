@@ -299,24 +299,9 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
   if (audio_focus_stack_.empty())
     return;
 
-  if (audio_focus_stack_.back()->id() != id) {
-    RemoveFocusEntryIfPresent(id);
-    MaybeUpdateActiveSession();
-    return;
-  }
+  bool was_top_most_session = audio_focus_stack_.back()->id() == id;
 
-  auto row = std::move(audio_focus_stack_.back());
-  audio_focus_stack_.pop_back();
-
-  if (audio_focus_stack_.empty()) {
-    // Notify observers that we lost audio focus.
-    observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
-      observer->OnFocusLost(row->ToAudioFocusRequestState());
-    });
-
-    MaybeUpdateActiveSession();
-    return;
-  }
+  auto row = RemoveFocusEntryIfPresent(id);
 
   EnforceAudioFocus();
   MaybeUpdateActiveSession();
@@ -325,6 +310,9 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
   observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
     observer->OnFocusLost(row->ToAudioFocusRequestState());
   });
+
+  if (!was_top_most_session || audio_focus_stack_.empty())
+    return;
 
   // Notify observers that the session on top gained focus.
   StackRow* new_session = audio_focus_stack_.back().get();
