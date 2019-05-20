@@ -69,16 +69,13 @@ class AssistantBottomBarCoordinator
         mContent = new AssistantBottomSheetContent(activity);
 
         // Instantiate child components.
-        int childSpacing = activity.getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_bottombar_vertical_spacing);
         mHeaderCoordinator = new AssistantHeaderCoordinator(
                 activity, mContent.mBottomBarView, model.getHeaderModel());
         mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(activity, model.getInfoBoxModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel());
         mPaymentRequestCoordinator =
                 new AssistantPaymentRequestCoordinator(activity, model.getPaymentRequestModel());
-        mFormCoordinator =
-                new AssistantFormCoordinator(activity, model.getFormModel(), childSpacing);
+        mFormCoordinator = new AssistantFormCoordinator(activity, model.getFormModel());
         mSuggestionsCoordinator =
                 new AssistantSuggestionsCarouselCoordinator(activity, model.getSuggestionsModel());
         mActionsCoordinator =
@@ -101,8 +98,11 @@ class AssistantBottomBarCoordinator
         // do not hide them because there is an incompatibility bug between the animateLayoutChanges
         // attribute set on mBottomBarView and the animations ran by the carousels
         // RecyclerView.
+        int childSpacing = activity.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_bottombar_vertical_spacing);
         setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
+        setChildMarginTop(mFormCoordinator.getView(), childSpacing);
         setCarouselMarginTop(mSuggestionsCoordinator.getView(),
                 model.getSuggestionsModel().getChipsModel(), childSpacing);
         setCarouselMarginTop(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel(),

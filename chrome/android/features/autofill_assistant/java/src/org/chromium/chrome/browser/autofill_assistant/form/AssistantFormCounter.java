@@ -8,13 +8,16 @@ import java.text.ChoiceFormat;
 
 class AssistantFormCounter {
     private final String mLabel;
+    private final String mSubtext;
     private final ChoiceFormat mLabelChoiceFormat;
     private final int mMinValue;
     private final int mMaxValue;
     private int mValue;
 
-    AssistantFormCounter(String label, int initialValue, int minValue, int maxValue) {
+    AssistantFormCounter(
+            String label, String subtext, int initialValue, int minValue, int maxValue) {
         mLabel = label;
+        mSubtext = subtext;
         mLabelChoiceFormat = new ChoiceFormat(label);
         mValue = initialValue;
         mMinValue = minValue;
@@ -23,6 +26,10 @@ class AssistantFormCounter {
 
     String getLabel() {
         return mLabel;
+    }
+
+    String getSubtext() {
+        return mSubtext;
     }
 
     ChoiceFormat getLabelChoiceFormat() {

@@ -1192,6 +1192,9 @@ message CounterInputProto {
     // substring will be replaced by the current counter value.
     optional string label = 1;
 
+    // Text shown below the label. Optional.
+    optional string subtext = 5;
+
     // The minimum value this counter can have.
     optional int32 min_value = 2 [default = -0x80000000];  // kint32min
 
@@ -1218,8 +1221,19 @@ message CounterInputProto {
   // If specified, the input will initially display maximum |minimized_count|
   // counters. If |counters|.size > |minimized_count|, the remaining counters
   // will be displayed in an expandable section below the first
-  // |minimized_count| counters.
+  // |minimized_count| counters. Setting this value will have no effect if
+  // |expand_text| and |minimize_text| are not set.
   optional int32 minimized_count = 3 [default = 0x7FFFFFFF];  // kint32max
+
+  // Text shown when counters are inside the expandable section and the section
+  // is minimized. Clicking this text will expand the section and show the
+  // remaining counters.
+  optional string expand_text = 4;
+
+  // Text shown when counters are inside the expandable section and the section
+  // is expanded. Clicking this text will minimize the section and hide the
+  // counters inside it.
+  optional string minimize_text = 5;
 }
 
 // An input that allows the user to choose one or multiple options. This input

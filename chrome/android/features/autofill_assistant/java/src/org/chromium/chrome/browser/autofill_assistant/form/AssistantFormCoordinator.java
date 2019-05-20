@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.autofill_assistant.form;
 
 import android.content.Context;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AbstractListObserver;
 
 /**
@@ -24,8 +26,7 @@ public class AssistantFormCoordinator {
 
     private boolean mForceInvisible;
 
-    public AssistantFormCoordinator(
-            Context context, AssistantFormModel model, int verticalSpacingPx) {
+    public AssistantFormCoordinator(Context context, AssistantFormModel model) {
         mModel = model;
         mView = new ScrollView(context);
         mContainerView = new LinearLayout(context);
@@ -35,6 +36,9 @@ public class AssistantFormCoordinator {
         mContainerView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         mContainerView.setOrientation(LinearLayout.VERTICAL);
+        mContainerView.setDividerDrawable(AppCompatResources.getDrawable(
+                context, R.drawable.autofill_assistant_form_input_divider));
+        mContainerView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
         mView.addView(mContainerView);
 
         updateVisibility();
@@ -46,8 +50,6 @@ public class AssistantFormCoordinator {
                     // Add the views to the linear layout (not the scroll view).
                     View view = input.createView(context, mContainerView);
                     mContainerView.addView(view);
-                    ((LinearLayout.LayoutParams) view.getLayoutParams()).topMargin =
-                            verticalSpacingPx;
                 }
                 updateVisibility();
             }

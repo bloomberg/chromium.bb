@@ -46,8 +46,8 @@ public abstract class AssistantFormInput {
 
     @CalledByNative
     private static AssistantFormCounter createCounter(
-            String label, int initialValue, int minValue, int maxValue) {
-        return new AssistantFormCounter(label, initialValue, minValue, maxValue);
+            String label, String subtext, int initialValue, int minValue, int maxValue) {
+        return new AssistantFormCounter(label, subtext, initialValue, minValue, maxValue);
     }
 
     @CalledByNative
@@ -58,9 +58,10 @@ public abstract class AssistantFormInput {
 
     @CalledByNative
     private static AssistantFormCounterInput createCounterInput(int inputIndex, String label,
-            List<AssistantFormCounter> counters, int minimizedCount,
-            AssistantFormDelegate delegate) {
-        return new AssistantFormCounterInput(label, counters, minimizedCount,
+            String expandText, String minimizeText, List<AssistantFormCounter> counters,
+            int minimizedCount, AssistantFormDelegate delegate) {
+        return new AssistantFormCounterInput(label, expandText, minimizeText, counters,
+                minimizedCount,
                 (counterIndex,
                         value) -> delegate.onCounterChanged(inputIndex, counterIndex, value));
     }

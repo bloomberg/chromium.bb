@@ -5,26 +5,51 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:minHeight="40dp"
     android:orientation="horizontal"
-    android:layout_gravity="center_horizontal">
-    <TextView
-        android:id="@+id/label"
+    android:gravity="center_vertical">
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <Button
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.BlackTitle2"/>
+        <TextView
+            android:id="@+id/subtext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.BlackCaption"
+            android:visibility="gone"/>
+    </LinearLayout>
+    <ImageView
         android:id="@+id/decrease_button"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        android:tint="@color/filled_button_bg"
+        app:srcCompat="@drawable/ic_remove_outline_white_24dp"
+        tools:ignore="ContentDescription"/>
+    <TextView
+        android:id="@+id/value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="-"
-        tools:ignore="HardcodedText"/>
-    <Button
+        android:minWidth="20dp"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.BlackTitle2"/>
+    <ImageView
         android:id="@+id/increase_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="+"
-        tools:ignore="HardcodedText"/>
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        android:tint="@color/filled_button_bg"
+        app:srcCompat="@drawable/ic_add_outline_white_24dp"
+        tools:ignore="ContentDescription"/>
 </LinearLayout>

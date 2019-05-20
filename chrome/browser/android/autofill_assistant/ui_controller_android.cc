@@ -671,6 +671,8 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
               Java_AssistantFormInput_createCounter(
                   env,
                   base::android::ConvertUTF8ToJavaString(env, counter.label()),
+                  base::android::ConvertUTF8ToJavaString(env,
+                                                         counter.subtext()),
                   counter.initial_value(), counter.min_value(),
                   counter.max_value()));
         }
@@ -681,6 +683,10 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
                 env, i,
                 base::android::ConvertUTF8ToJavaString(env,
                                                        counter_input.label()),
+                base::android::ConvertUTF8ToJavaString(
+                    env, counter_input.expand_text()),
+                base::android::ConvertUTF8ToJavaString(
+                    env, counter_input.minimize_text()),
                 jcounters, counter_input.minimized_count(),
                 form_delegate_.GetJavaObject()));
         break;
