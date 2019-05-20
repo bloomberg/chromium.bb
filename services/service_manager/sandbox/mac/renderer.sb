@@ -95,9 +95,8 @@
 
 ; For V8 to use in thread calculations.
 (if (>= os-version 1014)
-  ; Ordering of these tcsm sysctls matters. See: https://crbug.com/964353
-  (allow sysctl-read (sysctl-name "kern.tcsm_enable"))
-  (allow sysctl-write (sysctl-name "kern.tcsm_enable"))
-  (allow sysctl-read (sysctl-name "kern.tcsm_available"))
-
-)
+  (begin
+    (allow sysctl-read (sysctl-name "kern.tcsm_enable"))
+    (allow sysctl-write (sysctl-name "kern.tcsm_enable"))
+    (allow sysctl-read (sysctl-name "kern.tcsm_available"))
+))
