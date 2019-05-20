@@ -109,7 +109,7 @@ GenericDmaBufVideoFrameMapper::Create(VideoPixelFormat format) {
 
 GenericDmaBufVideoFrameMapper::GenericDmaBufVideoFrameMapper(
     VideoPixelFormat format)
-    : format_(format) {}
+    : VideoFrameMapper(format) {}
 
 scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     scoped_refptr<const VideoFrame> video_frame) const {

@@ -103,7 +103,7 @@ std::unique_ptr<VideoFrameMapper> VaapiDmaBufVideoFrameMapper::Create(
 // conversion. Either mode or profile isn't required to create the VaapiWrapper.
 VaapiDmaBufVideoFrameMapper::VaapiDmaBufVideoFrameMapper(
     VideoPixelFormat format)
-    : format_(format),
+    : VideoFrameMapper(format),
       vaapi_wrapper_(VaapiWrapper::CreateForVideoCodec(VaapiWrapper::kDecode,
                                                        H264PROFILE_MAIN,
                                                        base::DoNothing())),

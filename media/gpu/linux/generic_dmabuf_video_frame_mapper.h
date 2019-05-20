@@ -25,9 +25,6 @@ class MEDIA_GPU_EXPORT GenericDmaBufVideoFrameMapper : public VideoFrameMapper {
  private:
   explicit GenericDmaBufVideoFrameMapper(VideoPixelFormat format);
 
-  // The pixel format of mapped VideoFrame.
-  VideoPixelFormat format_;
-
   DISALLOW_COPY_AND_ASSIGN(GenericDmaBufVideoFrameMapper);
 };
 

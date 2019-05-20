@@ -32,9 +32,6 @@ class MEDIA_GPU_EXPORT VaapiDmaBufVideoFrameMapper : public VideoFrameMapper {
  private:
   explicit VaapiDmaBufVideoFrameMapper(VideoPixelFormat format);
 
-  // The pixel format of mapped VideoFrame.
-  VideoPixelFormat format_;
-
   // Vaapi components for mapping.
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   const std::unique_ptr<VaapiPictureFactory> vaapi_picture_factory_;

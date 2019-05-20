@@ -120,7 +120,12 @@ void VideoFrameValidator::ProcessVideoFrameTask(
           VideoFrameMapperFactory::CreateMapper(video_frame->format());
       LOG_ASSERT(video_frame_mapper_) << "Failed to create VideoFrameMapper";
     }
+
     validated_frame = video_frame_mapper_->Map(std::move(validated_frame));
+    if (!validated_frame) {
+      LOG(ERROR) << "Failed to map video frame";
+      return;
+    }
   }
 #endif  // defined(OS_CHROMEOS)
 
