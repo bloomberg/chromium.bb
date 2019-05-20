@@ -2998,6 +2998,22 @@
             ]
         }
     ],
+    "MostLikelyDeprecation": [
+        {
+            "platforms": [
+                "android",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190520",
+                    "disable_features": [
+                        "DisplaySuggestionsServiceTiles"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPLaunchAfterInactivity": [
         {
             "platforms": [
