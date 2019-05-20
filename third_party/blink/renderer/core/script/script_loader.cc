@@ -212,8 +212,7 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element,
     return ShouldFireErrorEvent::kShouldFire;
 
   // https://github.com/WICG/import-maps/issues/105
-  if (!ContentSecurityPolicy::ShouldBypassMainWorld(&element_document) &&
-      !element.AllowInlineScriptForCSP(element.GetNonceForElement(),
+  if (!element.AllowInlineScriptForCSP(element.GetNonceForElement(),
                                        position.line_, import_map_text)) {
     return ShouldFireErrorEvent::kShouldFire;
   }

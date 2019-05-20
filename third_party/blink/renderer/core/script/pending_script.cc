@@ -156,12 +156,8 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   Script* script = GetSource(document_url);
 
   if (script && !IsExternal()) {
-    bool should_bypass_main_world_csp =
-        ContentSecurityPolicy::ShouldBypassMainWorld(&element_->GetDocument());
-
     AtomicString nonce = element_->GetNonceForElement();
-    if (!should_bypass_main_world_csp &&
-        !element_->AllowInlineScriptForCSP(nonce, StartingPosition().line_,
+    if (!element_->AllowInlineScriptForCSP(nonce, StartingPosition().line_,
                                            script->InlineSourceTextForCSP())) {
       // Consider as if:
       //
