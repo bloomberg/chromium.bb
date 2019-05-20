@@ -24,6 +24,7 @@
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -368,6 +369,32 @@ void EditableCombobox::ContentsChanged(Textfield* sender,
   HandleNewContent(new_contents);
   ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
 }
+
+bool EditableCombobox::HandleMouseEvent(Textfield* sender,
+                                        const ui::MouseEvent& mouse_event) {
+  // We show the menu on mouse release instead of mouse press so that the menu
+  // showing up doesn't interrupt a potential text selection operation by the
+  // user.
+  // If we don't already have focus when the mouse is pressed, we set
+  // |show_menu_on_next_focus_| to false so that the focus event that will
+  // follow the press event and precede the release event does not end up
+  // showing the menu and interrupting a text selection operation.
+  if (mouse_event.type() == ui::ET_MOUSE_PRESSED && !textfield_->HasFocus())
+    show_menu_on_next_focus_ = false;
+  else if (mouse_event.type() == ui::ET_MOUSE_RELEASED)
+    ShowDropDownMenu(ui::MENU_SOURCE_MOUSE);
+  return false;
+}
+
+bool EditableCombobox::HandleGestureEvent(
+    Textfield* sender,
+    const ui::GestureEvent& gesture_event) {
+  ShowDropDownMenu(ui::MENU_SOURCE_TOUCH);
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EditableCombobox, View overrides:
 
 void EditableCombobox::OnViewBlurred(View* observed_view) {
   CloseMenu();

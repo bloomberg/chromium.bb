@@ -682,6 +682,8 @@ bool Textfield::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
+  if (controller_)
+    controller_->HandleMouseEvent(this, event);
   selection_controller_.OnMouseReleased(event);
 }
 
