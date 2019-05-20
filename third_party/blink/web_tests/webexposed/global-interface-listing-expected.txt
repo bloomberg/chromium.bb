@@ -10731,7 +10731,6 @@ interface XRWebGLLayer : XRLayer
     getter ignoreDepthValues
     method constructor
     method getViewport
-    method requestViewportScaling
 interface XSLTProcessor
     attribute @@toStringTag
     method clearParameters

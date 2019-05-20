@@ -21,7 +21,6 @@ typedef (WebGLRenderingContext or WebGL2RenderingContext) XRWebGLRenderingContex
   [SameObject] readonly attribute WebGLFramebuffer framebuffer;
 
   XRViewport? getViewport(XRView view);
-  void requestViewportScaling(double viewportScaleFactor);
 
   static double getNativeFramebufferScaleFactor(XRSession session);
 };

@@ -25,9 +25,6 @@ namespace {
 
 const double kFramebufferMinScale = 0.2;
 
-const double kViewportMinScale = 0.2;
-const double kViewportMaxScale = 1.0;
-
 // Because including base::ClampToRange would be a dependency violation
 double ClampToRange(const double value, const double min, const double max) {
   return std::min(std::max(value, min), max);
@@ -185,24 +182,6 @@ XRViewport* XRWebGLLayer::GetViewportForEye(XRView::XREye eye) {
   return right_viewport_;
 }
 
-void XRWebGLLayer::requestViewportScaling(double scale_factor) {
-  if (!session()->immersive()) {
-    // TODO(bajones): For the moment we're just going to ignore viewport changes
-    // in non-immersive mode. This is legal, but probably not what developers
-    // would like to see. Look into making viewport scale apply properly.
-    scale_factor = 1.0;
-  } else {
-    // Clamp the developer-requested viewport size to ensure it's not too
-    // small to see or larger than the framebuffer.
-    scale_factor =
-        ClampToRange(scale_factor, kViewportMinScale, kViewportMaxScale);
-  }
-
-  // Don't set this as the viewport_scale_ directly, since that would allow the
-  // viewports to change mid-frame.
-  requested_viewport_scale_ = scale_factor;
-}
-
 double XRWebGLLayer::getNativeFramebufferScaleFactor(XRSession* session) {
   return session->NativeFramebufferScale();
 }
@@ -216,20 +195,17 @@ void XRWebGLLayer::UpdateViewports() {
   if (session()->immersive()) {
     if (session()->StereoscopicViews()) {
       left_viewport_ = MakeGarbageCollected<XRViewport>(
-          0, 0, framebuffer_width * 0.5 * viewport_scale_,
-          framebuffer_height * viewport_scale_);
+          0, 0, framebuffer_width * 0.5, framebuffer_height);
       right_viewport_ = MakeGarbageCollected<XRViewport>(
-          framebuffer_width * 0.5 * viewport_scale_, 0,
-          framebuffer_width * 0.5 * viewport_scale_,
-          framebuffer_height * viewport_scale_);
+          framebuffer_width * 0.5, 0, framebuffer_width * 0.5,
+          framebuffer_height);
     } else {
       // Phone immersive AR only uses one viewport, but the second viewport is
       // needed for the UpdateLayerBounds mojo call which currently expects
       // exactly two views. This should be revisited as part of a refactor to
       // handle a more general list of viewports, cf. https://crbug.com/928433.
-      left_viewport_ = MakeGarbageCollected<XRViewport>(
-          0, 0, framebuffer_width * viewport_scale_,
-          framebuffer_height * viewport_scale_);
+      left_viewport_ = MakeGarbageCollected<XRViewport>(0, 0, framebuffer_width,
+                                                        framebuffer_height);
       right_viewport_ = nullptr;
     }
 
@@ -279,20 +255,13 @@ void XRWebGLLayer::UpdateViewports() {
                                         FloatPoint(uv_right, uv_bottom));
     }
   } else {
-    left_viewport_ = MakeGarbageCollected<XRViewport>(
-        0, 0, framebuffer_width * viewport_scale_,
-        framebuffer_height * viewport_scale_);
+    left_viewport_ = MakeGarbageCollected<XRViewport>(0, 0, framebuffer_width,
+                                                      framebuffer_height);
   }
 }
 
 void XRWebGLLayer::OnFrameStart(
     const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
-  // If the requested scale has changed since the last from, update it now.
-  if (viewport_scale_ != requested_viewport_scale_) {
-    viewport_scale_ = requested_viewport_scale_;
-    viewports_dirty_ = true;
-  }
-
   framebuffer_->MarkOpaqueBufferComplete(true);
   framebuffer_->SetContentsChanged(false);
   if (buffer_mailbox_holder) {

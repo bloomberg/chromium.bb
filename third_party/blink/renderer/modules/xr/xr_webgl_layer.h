@@ -58,7 +58,6 @@ class XRWebGLLayer final : public XRLayer {
   bool ignoreDepthValues() const { return ignore_depth_values_; }
 
   XRViewport* getViewport(XRView*);
-  void requestViewportScaling(double scale_factor);
 
   static double getNativeFramebufferScaleFactor(XRSession* session);
 
@@ -88,8 +87,6 @@ class XRWebGLLayer final : public XRLayer {
   Member<WebGLFramebuffer> framebuffer_;
 
   double framebuffer_scale_ = 1.0;
-  double requested_viewport_scale_ = 1.0;
-  double viewport_scale_ = 1.0;
   bool viewports_dirty_ = true;
   bool can_mirror_ = false;
   bool is_direct_draw_frame = false;
