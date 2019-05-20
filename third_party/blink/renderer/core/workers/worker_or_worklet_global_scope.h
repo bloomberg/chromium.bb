@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
@@ -45,6 +46,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   WorkerOrWorkletGlobalScope(
       v8::Isolate*,
+      OffMainThreadWorkerScriptFetchOption,
       const String& name,
       const base::UnguessableToken& parent_devtools_token,
       V8CacheOptions,
@@ -135,6 +137,11 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   scheduler::WorkerScheduler* GetScheduler() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
+  OffMainThreadWorkerScriptFetchOption GetOffMainThreadWorkerScriptFetchOption()
+      const {
+    return off_main_thread_fetch_option_;
+  }
+
  protected:
   // Sets outside's CSP used for off-main-thread top-level worker script
   // fetch.
@@ -167,6 +174,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   bool web_fetch_context_initialized_ = false;
 
+  const OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option_;
   const String name_;
   const base::UnguessableToken parent_devtools_token_;
 

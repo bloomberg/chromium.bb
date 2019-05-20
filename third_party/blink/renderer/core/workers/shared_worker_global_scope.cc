@@ -34,6 +34,7 @@
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -126,6 +127,10 @@ void SharedWorkerGlobalScope::Initialize(
   BindContentSecurityPolicyToExecutionContext();
 
   OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
+
+  // This should be called after OriginTrialContext::AddTokens() to install
+  // origin trial features in JavaScript's global object.
+  ScriptController()->PrepareForEvaluation();
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model

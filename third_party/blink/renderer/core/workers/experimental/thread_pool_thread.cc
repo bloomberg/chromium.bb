@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool_thread.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/experimental/task_worklet_global_scope.h"
@@ -52,6 +53,10 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
     BindContentSecurityPolicyToExecutionContext();
 
     OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
+
+    // This should be called after OriginTrialContext::AddTokens() to install
+    // origin trial features in JavaScript's global object.
+    ScriptController()->PrepareForEvaluation();
   }
   void FetchAndRunClassicScript(
       const KURL& script_url,

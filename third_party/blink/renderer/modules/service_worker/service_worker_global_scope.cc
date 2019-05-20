@@ -473,6 +473,10 @@ void ServiceWorkerGlobalScope::Initialize(
 
   // TODO(nhiroki): Clarify mappings between the steps 4.8-4.11 and
   // implementation.
+
+  // This should be called after OriginTrialContext::AddTokens() to install
+  // origin trial features in JavaScript's global object.
+  ScriptController()->PrepareForEvaluation();
 }
 
 // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm

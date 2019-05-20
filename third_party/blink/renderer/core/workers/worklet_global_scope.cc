@@ -62,6 +62,7 @@ WorkletGlobalScope::WorkletGlobalScope(
     WorkerThread* worker_thread)
     : WorkerOrWorkletGlobalScope(
           isolate,
+          creation_params->off_main_thread_fetch_option,
           creation_params->global_scope_name,
           creation_params->parent_devtools_token,
           creation_params->v8_cache_options,

@@ -75,6 +75,10 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
   // This should be called only once.
   bool Initialize(const KURL& url_for_debugger);
 
+  // Prepares for script evaluation. This must be called after Initialize()
+  // before Evaluate().
+  void PrepareForEvaluation();
+
   // Used by WorkerGlobalScope:
   void RethrowExceptionFromImportedScript(ErrorEvent*, ExceptionState&);
   // Disables `eval()` on JavaScript. This must be called before Evaluate().
@@ -125,7 +129,8 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
   // Keeps the error message for `eval()` on JavaScript until Initialize().
   String disable_eval_pending_;
 
-  bool execution_forbidden_;
+  bool is_ready_to_evaluate_ = false;
+  bool execution_forbidden_ = false;
 
   scoped_refptr<RejectedPromises> rejected_promises_;
 

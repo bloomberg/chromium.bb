@@ -166,6 +166,7 @@ class OutsideSettingsCSPDelegate final
 
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
+    OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
     const String& name,
     const base::UnguessableToken& parent_devtools_token,
     V8CacheOptions v8_cache_options,
@@ -173,6 +174,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
     : ExecutionContext(isolate, Agent::CreateForWorkerOrWorklet(isolate)),
+      off_main_thread_fetch_option_(off_main_thread_fetch_option),
       name_(name),
       parent_devtools_token_(parent_devtools_token),
       worker_clients_(worker_clients),

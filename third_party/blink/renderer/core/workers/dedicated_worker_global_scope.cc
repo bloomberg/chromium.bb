@@ -138,8 +138,11 @@ void DedicatedWorkerGlobalScope::Initialize(
   InitContentSecurityPolicyFromVector(OutsideContentSecurityPolicyHeaders());
   BindContentSecurityPolicyToExecutionContext();
 
+  // This should be called after OriginTrialContext::AddTokens() to install
+  // origin trial features in JavaScript's global object.
   // DedicatedWorkerGlobalScope inherits the outside's OriginTrialTokens in the
   // constructor instead of the response origin trial tokens.
+  ScriptController()->PrepareForEvaluation();
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
