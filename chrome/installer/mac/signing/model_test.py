@@ -20,6 +20,15 @@ class TestCodeSignedProduct(unittest.TestCase):
             'path/binary', 'binary', identifier_requirement=False)
         self.assertEqual('', product.requirements_string(TestConfig()))
 
+    def test_requirements_string_ad_hoc(self):
+        config = TestConfig(identity='-')
+        product = model.CodeSignedProduct('path/binary', 'binary')
+        self.assertEqual('', product.requirements_string(config))
+
+        product = model.CodeSignedProduct(
+            'path/binary', 'binary', requirements='req')
+        self.assertEqual('', product.requirements_string(config))
+
     def test_requirements_product_requirement(self):
         product = model.CodeSignedProduct(
             'path/binary', 'binary', requirements='and another requirement')
@@ -40,6 +49,9 @@ class TestCodeSignedProduct(unittest.TestCase):
         self.assertEqual(
             'designated => identifier "binary" and another requirement and config requirement',
             product.requirements_string(RequirementConfig()))
+
+        self.assertEqual(
+            '', product.requirements_string(RequirementConfig(identity='-')))
 
 
 class TestVerifyOptions(unittest.TestCase):

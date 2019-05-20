@@ -75,6 +75,14 @@ class CodeSignedProduct(object):
             A string for designated requirements of the product, which can be
             passed to `codesign --requirements`.
         """
+        # If the signing identity indicates ad-hoc (i.e. no real signing
+        # identity), do not enforce any requirements. Ad hoc signing will append
+        # a hash to the identifier, which would violate the
+        # identifier_requirement and most other requirements that would be
+        # specified.
+        if config.identity == '-':
+            return ''
+
         reqs = []
         if self.identifier_requirement:
             reqs.append('designated => identifier "{identifier}"'.format(
