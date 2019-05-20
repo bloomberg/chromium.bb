@@ -507,6 +507,7 @@ void DeviceSyncImpl::Shutdown() {
   remote_device_provider_.reset();
   cryptauth_device_manager_.reset();
   cryptauth_enrollment_manager_.reset();
+  cryptauth_scheduler_.reset();
   cryptauth_key_registry_.reset();
   cryptauth_client_factory_.reset();
   cryptauth_gcm_manager_.reset();
@@ -598,11 +599,15 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
         CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(
             pref_service_.get());
 
+    cryptauth_scheduler_ =
+        CryptAuthSchedulerImpl::Factory::Get()->BuildInstance(
+            pref_service_.get());
+
     cryptauth_enrollment_manager_ =
         CryptAuthV2EnrollmentManagerImpl::Factory::Get()->BuildInstance(
             client_app_metadata_provider_, cryptauth_key_registry_.get(),
             cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
-            pref_service_.get(), clock_);
+            cryptauth_scheduler_.get(), pref_service_.get(), clock_);
   } else {
     cryptauth_enrollment_manager_ =
         CryptAuthEnrollmentManagerImpl::Factory::NewInstance(

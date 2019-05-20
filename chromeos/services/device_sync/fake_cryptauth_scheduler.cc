@@ -14,14 +14,24 @@ constexpr base::TimeDelta FakeCryptAuthScheduler::kDefaultRefreshPeriod;
 constexpr base::TimeDelta
     FakeCryptAuthScheduler::kDefaultTimeToNextEnrollmentRequest;
 
-FakeCryptAuthScheduler::FakeCryptAuthScheduler(Delegate* delegate)
-    : CryptAuthScheduler(delegate) {}
+FakeCryptAuthScheduler::FakeCryptAuthScheduler() = default;
 
 FakeCryptAuthScheduler::~FakeCryptAuthScheduler() = default;
 
-void FakeCryptAuthScheduler::RequestEnrollmentNow() {
+void FakeCryptAuthScheduler::RequestEnrollment(
+    const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
+    const base::Optional<std::string>& session_id) {
+  DCHECK(HasEnrollmentSchedulingStarted());
   is_waiting_for_enrollment_result_ = true;
-  NotifyEnrollmentRequested(client_directive_policy_reference_);
+
+  cryptauthv2::ClientMetadata client_metadata;
+  client_metadata.set_retry_count(num_consecutive_enrollment_failures_);
+  client_metadata.set_invocation_reason(invocation_reason);
+  if (session_id)
+    client_metadata.set_session_id(*session_id);
+
+  NotifyEnrollmentRequested(client_metadata,
+                            client_directive_policy_reference_);
 }
 
 void FakeCryptAuthScheduler::HandleEnrollmentResult(
@@ -48,17 +58,27 @@ bool FakeCryptAuthScheduler::IsWaitingForEnrollmentResult() const {
   return is_waiting_for_enrollment_result_;
 }
 
-size_t FakeCryptAuthScheduler::GetNumConsecutiveFailures() const {
-  return num_consecutive_failures_;
+size_t FakeCryptAuthScheduler::GetNumConsecutiveEnrollmentFailures() const {
+  return num_consecutive_enrollment_failures_;
 }
 
-FakeCryptAuthSchedulerDelegate::FakeCryptAuthSchedulerDelegate() = default;
+FakeCryptAuthSchedulerEnrollmentDelegate::
+    FakeCryptAuthSchedulerEnrollmentDelegate()
+    : weak_ptr_factory_(this) {}
 
-FakeCryptAuthSchedulerDelegate::~FakeCryptAuthSchedulerDelegate() = default;
+FakeCryptAuthSchedulerEnrollmentDelegate::
+    ~FakeCryptAuthSchedulerEnrollmentDelegate() = default;
 
-void FakeCryptAuthSchedulerDelegate::OnEnrollmentRequested(
+base::WeakPtr<FakeCryptAuthSchedulerEnrollmentDelegate>
+FakeCryptAuthSchedulerEnrollmentDelegate::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void FakeCryptAuthSchedulerEnrollmentDelegate::OnEnrollmentRequested(
+    const cryptauthv2::ClientMetadata& client_metadata,
     const base::Optional<cryptauthv2::PolicyReference>&
         client_directive_policy_reference) {
+  client_metadata_from_enrollment_requests_.push_back(client_metadata);
   policy_references_from_enrollment_requests_.push_back(
       client_directive_policy_reference);
 }
