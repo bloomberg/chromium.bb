@@ -65,7 +65,6 @@
 
   self.viewController.defaultLeadingImage =
       GetOmniboxSuggestionIcon(DEFAULT_FAVICON);
-  self.viewController.emptyTextLeadingImage = GetOmniboxSuggestionIcon(SEARCH);
   self.viewController.dispatcher =
       static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>>(
           self.dispatcher);
