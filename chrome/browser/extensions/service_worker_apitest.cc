@@ -369,6 +369,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequestBlocking) {
   EXPECT_EQ(content::PAGE_TYPE_ERROR, NavigateAndGetPageType(url));
 }
 
+// Tests chrome.webNavigation APIs.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, FilteredEvents) {
+  ASSERT_TRUE(RunExtensionTest(
+      "service_worker/worker_based_background/filtered_events"))
+      << message_;
+}
+
 // Listens for |message| from extension Service Worker early so that tests can
 // wait for the message on startup (and not miss it).
 class ServiceWorkerWithEarlyMessageListenerTest
@@ -1683,13 +1690,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, OnPush) {
   EXPECT_TRUE(push_message_listener.WaitUntilSatisfied());
   run_loop.Run();  // Wait until the message is handled by push service.
 }
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, FilteredEvents) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-  ASSERT_TRUE(RunExtensionTest("service_worker/filtered_events"));
-}
-
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MimeHandlerView) {
   ASSERT_TRUE(RunExtensionTest("service_worker/mime_handler_view"));
 }
