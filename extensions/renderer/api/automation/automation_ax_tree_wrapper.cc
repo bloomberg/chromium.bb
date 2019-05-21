@@ -43,7 +43,7 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_EXPANDEDCHANGED;
     case ax::mojom::Event::kFocus:
     case ax::mojom::Event::kFocusContext:
-      return api::automation::EVENT_TYPE_FOCUS;
+      return api::automation::EVENT_TYPE_NONE;
     case ax::mojom::Event::kHide:
       return api::automation::EVENT_TYPE_HIDE;
     case ax::mojom::Event::kHitTestResult:
@@ -267,13 +267,19 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     return child_tree_ids.count(pair.first);
   });
 
+  // Unserialize all incoming data.
   for (const auto& update : event_bundle.updates) {
-    event_generator_.set_event_from(update.event_from);
+    // If any updates in this bundle was part of an action, consider all updates
+    // as part of a user action.
+    if (event_generator_.event_from() != ax::mojom::EventFrom::kAction)
+      event_generator_.set_event_from(update.event_from);
     deleted_node_ids_.clear();
     did_send_tree_change_during_unserialization_ = false;
 
-    if (!tree_.Unserialize(update))
+    if (!tree_.Unserialize(update)) {
+      event_generator_.ClearEvents();
       return false;
+    }
 
     if (is_active_profile) {
       owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
@@ -289,48 +295,45 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     }
   }
 
+  // Refresh child tree id  mappings.
   for (const ui::AXTreeID& tree_id : tree_.GetAllChildTreeIds()) {
     DCHECK(!base::ContainsKey(child_tree_id_reverse_map, tree_id));
     child_tree_id_reverse_map.insert(std::make_pair(tree_id, this));
   }
 
   // Exit early if this isn't the active profile.
-  if (!is_active_profile)
+  if (!is_active_profile) {
+    event_generator_.ClearEvents();
     return true;
-
-  // Send all blur and focus events first. This ensures we correctly dispatch
-  // these events, which gets re-targetted in the js bindings and ensures it
-  // receives the correct value for |event_from|.
-  for (const auto& event : event_bundle.events) {
-    if (event.event_type != ax::mojom::Event::kFocus &&
-        event.event_type != ax::mojom::Event::kBlur)
-      continue;
-
-    api::automation::EventType automation_event_type =
-        ToAutomationEvent(event.event_type);
-    owner_->SendAutomationEvent(event_bundle.tree_id,
-                                event_bundle.mouse_location, event,
-                                automation_event_type);
   }
+
+  // Perform language detection first thing if we see a load complete event.
+  // We have to run *before* we send the load complete event to javascript
+  // otherwise code which runs immediately on load complete will not be able
+  // to see the results of language detection.
+  //
+  // Currently language detection only runs once for initial load complete, any
+  // content loaded after this will not have language detection performed for
+  // it.
+  for (const auto& targeted_event : event_generator_) {
+    if (targeted_event.event_params.event ==
+        ui::AXEventGenerator::Event::LOAD_COMPLETE) {
+      DetectLanguageForSubtree(tree_.root(), &tree_);
+      if (!LabelLanguageForSubtree(tree_.root(), &tree_))
+        LOG(FATAL) << "Language detection failed at step: Label";
+
+      break;
+    }
+  }
+
+  // Send all blur and focus events first.
+  owner_->MaybeSendFocusAndBlur(this, event_generator_.event_from(),
+                                event_bundle);
 
   // Send auto-generated AXEventGenerator events.
   for (const auto& targeted_event : event_generator_) {
     api::automation::EventType event_type =
         ToAutomationEvent(targeted_event.event_params.event);
-
-    // Perform language detection first thing if we see a load complete event.
-    // We have to run *before* we send the load complete event to javascript
-    // otherwise code which runs immediately on load complete will not be able
-    // to see the results of language detection.
-    //
-    // Currently language detection only runs once for initial load complete,
-    // any content loaded after this will not have language detection performed
-    // for it.
-    if (event_type == api::automation::EVENT_TYPE_LOADCOMPLETE) {
-      DetectLanguageForSubtree(tree_.root(), &tree_);
-      if (!LabelLanguageForSubtree(tree_.root(), &tree_))
-        LOG(FATAL) << "Language detection failed at step: Label";
-    }
 
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
       ui::AXEvent generated_event;
@@ -400,7 +403,10 @@ bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
 
     child_of_ancestor = ancestor;
   }
-  return false;
+
+  // The only way we end up here is if the tree is detached from any desktop.
+  // This can occur in tabs-only mode.
+  return true;
 }
 
 // static

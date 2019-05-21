@@ -158,6 +158,8 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     event_from_ = event_from;
   }
 
+  ax::mojom::EventFrom event_from() const { return event_from_; }
+
  protected:
   // AXTreeObserver overrides.
   void OnNodeDataWillChange(AXTree* tree,
@@ -229,7 +231,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   std::vector<AXNode*> active_descendant_changed_;
 
   // The value of the event from field in TargetedEvent.
-  ax::mojom::EventFrom event_from_;
+  ax::mojom::EventFrom event_from_ = ax::mojom::EventFrom::kNone;
 };
 
 }  // namespace ui
