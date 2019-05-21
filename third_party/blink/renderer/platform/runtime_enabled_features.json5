@@ -1263,7 +1263,7 @@
     // Enables the use of the RTCSctpTransport object.
     {
       name: "RTCSctpTransport",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "RTCStatsRelativePacketArrivalDelay",
