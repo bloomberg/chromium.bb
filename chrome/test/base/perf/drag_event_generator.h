@@ -51,15 +51,15 @@ class DragEventGenerator {
   DISALLOW_COPY_AND_ASSIGN(DragEventGenerator);
 };
 
-// InterporateProducer produces the interpolated location between two points
+// InterpolatedProducer produces the interpolated location between two points
 // based on tween type.
-class InterporateProducer : public DragEventGenerator::PointProducer {
+class InterpolatedProducer : public DragEventGenerator::PointProducer {
  public:
-  InterporateProducer(const gfx::Point& start,
-                      const gfx::Point& end,
-                      const base::TimeDelta duration,
-                      gfx::Tween::Type type = gfx::Tween::LINEAR);
-  ~InterporateProducer() override;
+  InterpolatedProducer(const gfx::Point& start,
+                       const gfx::Point& end,
+                       const base::TimeDelta duration,
+                       gfx::Tween::Type type = gfx::Tween::LINEAR);
+  ~InterpolatedProducer() override;
 
   // PointProducer:
   gfx::Point GetPosition(float progress) override;
@@ -70,7 +70,7 @@ class InterporateProducer : public DragEventGenerator::PointProducer {
   base::TimeDelta duration_;
   gfx::Tween::Type type_;
 
-  DISALLOW_COPY_AND_ASSIGN(InterporateProducer);
+  DISALLOW_COPY_AND_ASSIGN(InterpolatedProducer);
 };
 
 }  // namespace ui_test_utils

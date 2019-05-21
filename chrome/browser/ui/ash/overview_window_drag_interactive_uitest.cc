@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, NormalDrag) {
   gfx::Point end_point(start_point);
   end_point.set_x(end_point.x() + display_size.width() / 2);
   ui_test_utils::DragEventGenerator generator(
-      std::make_unique<ui_test_utils::InterporateProducer>(
+      std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
       /*touch=*/true);
   generator.Wait();
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
   end_point.set_y(0);
   end_point.set_x(end_point.x() + 10);
   ui_test_utils::DragEventGenerator generator(
-      std::make_unique<ui_test_utils::InterporateProducer>(
+      std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(500),
           gfx::Tween::EASE_IN_2),
       /*touch=*/true);
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {
   gfx::Point end_point(start_point);
   end_point.set_x(0);
   ui_test_utils::DragEventGenerator generator(
-      std::make_unique<ui_test_utils::InterporateProducer>(
+      std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
       /*touch=*/true);
   generator.Wait();

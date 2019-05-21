@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Open) {
   gfx::Point end_point(start_point);
   end_point.set_y(10);
   ui_test_utils::DragEventGenerator generator(
-      std::make_unique<ui_test_utils::InterporateProducer>(
+      std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
       /*touch=*/true);
   generator.Wait();
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Close) {
   gfx::Point end_point(start_point);
   end_point.set_y(display_bounds.bottom() - ash::kShelfSize / 2);
   ui_test_utils::DragEventGenerator generator(
-      std::make_unique<ui_test_utils::InterporateProducer>(
+      std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
       /*touch=*/true);
   generator.Wait();

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/test/ui_controls.h"
@@ -34,7 +35,10 @@ DragEventGenerator::DragEventGenerator(std::unique_ptr<PointProducer> producer,
     ui_controls::SendTouchEvents(ui_controls::PRESS, 0, initial_position.x(),
                                  initial_position.y());
   } else {
-    ui_controls::SendMouseMove(initial_position.x(), initial_position.y());
+    base::RunLoop run_loop;
+    ui_controls::SendMouseMoveNotifyWhenDone(
+        initial_position.x(), initial_position.y(), run_loop.QuitClosure());
+    run_loop.Run();
     ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::DOWN);
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -116,24 +120,24 @@ void DragEventGenerator::Done(const gfx::Point position) {
 DragEventGenerator::PointProducer::~PointProducer() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
-// InterporateProducer:
+// InterpolatedProducer:
 
-InterporateProducer::InterporateProducer(const gfx::Point& start,
-                                         const gfx::Point& end,
-                                         const base::TimeDelta duration,
-                                         gfx::Tween::Type type)
+InterpolatedProducer::InterpolatedProducer(const gfx::Point& start,
+                                           const gfx::Point& end,
+                                           const base::TimeDelta duration,
+                                           gfx::Tween::Type type)
     : start_(start), end_(end), duration_(duration), type_(type) {}
 
-InterporateProducer::~InterporateProducer() = default;
+InterpolatedProducer::~InterpolatedProducer() = default;
 
-gfx::Point InterporateProducer::GetPosition(float progress) {
+gfx::Point InterpolatedProducer::GetPosition(float progress) {
   float value = gfx::Tween::CalculateValue(type_, progress);
   return gfx::Point(
       gfx::Tween::LinearIntValueBetween(value, start_.x(), end_.x()),
       gfx::Tween::LinearIntValueBetween(value, start_.y(), end_.y()));
 }
 
-const base::TimeDelta InterporateProducer::GetDuration() const {
+const base::TimeDelta InterpolatedProducer::GetDuration() const {
   return duration_;
 }
 
