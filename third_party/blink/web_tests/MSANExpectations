@@ -240,3 +240,8 @@ crbug.com/856601 [ Linux ] virtual/unified-autoplay/external/wpt/feature-policy/
 
 # Sheriff 2019-02-22
 crbug.com/929122 [ Linux ] external/wpt/html/dom/interfaces.worker.html [ Timeout ]
+
+# Sheriff 2019-05-21
+crbug.com/856601 [ Linux ] external/wpt/notifications/idlharness.https.window.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.serviceworker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/notifications/idlharness.https.any.sharedworker.html [ Pass Timeout ]
