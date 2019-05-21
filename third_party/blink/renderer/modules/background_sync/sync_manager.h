@@ -21,11 +21,15 @@ class SyncManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SyncManager* Create(ServiceWorkerRegistration* registration) {
-    return MakeGarbageCollected<SyncManager>(registration);
+  static SyncManager* Create(
+      ServiceWorkerRegistration* registration,
+      scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    return MakeGarbageCollected<SyncManager>(registration,
+                                             std::move(task_runner));
   }
 
-  explicit SyncManager(ServiceWorkerRegistration*);
+  SyncManager(ServiceWorkerRegistration*,
+              scoped_refptr<base::SequencedTaskRunner>);
 
   ScriptPromise registerFunction(ScriptState*, const String& tag);
   ScriptPromise getTags(ScriptState*);
@@ -50,6 +54,7 @@ class SyncManager final : public ScriptWrappable {
       WTF::Vector<mojom::blink::SyncRegistrationOptionsPtr> registrations);
 
   Member<ServiceWorkerRegistration> registration_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   mojom::blink::BackgroundSyncServicePtr background_sync_service_;
 };
 

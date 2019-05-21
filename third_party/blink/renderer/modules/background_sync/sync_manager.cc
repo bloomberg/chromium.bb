@@ -18,8 +18,9 @@
 
 namespace blink {
 
-SyncManager::SyncManager(ServiceWorkerRegistration* registration)
-    : registration_(registration) {
+SyncManager::SyncManager(ServiceWorkerRegistration* registration,
+                         scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : registration_(registration), task_runner_(std::move(task_runner)) {
   DCHECK(registration);
 }
 
@@ -63,7 +64,7 @@ const mojom::blink::BackgroundSyncServicePtr&
 SyncManager::GetBackgroundSyncServicePtr() {
   if (!background_sync_service_.get()) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&background_sync_service_));
+        mojo::MakeRequest(&background_sync_service_, task_runner_));
   }
   return background_sync_service_;
 }
