@@ -8,9 +8,11 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view_md.h"
@@ -26,7 +28,11 @@ namespace {
 class TestNotificationView : public message_center::NotificationViewMD {
  public:
   TestNotificationView(const message_center::Notification& notification)
-      : NotificationViewMD(notification) {}
+      : NotificationViewMD(notification) {
+    layer()->GetAnimator()->set_preemption_strategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  }
+
   ~TestNotificationView() override = default;
 
   // message_center::NotificationViewMD:
@@ -139,6 +145,8 @@ class UnifiedMessageListViewTest : public AshTestBase,
     return message_list_view()->children()[index]->bounds();
   }
 
+  void FinishSlideOutAnimation() { base::RunLoop().RunUntilIdle(); }
+
   void AnimateToMiddle() {
     EXPECT_TRUE(IsAnimating());
     message_list_view()->animation_->SetCurrentValue(0.5);
@@ -163,6 +171,10 @@ class UnifiedMessageListViewTest : public AshTestBase,
   }
 
   int size_changed_count() const { return size_changed_count_; }
+
+  ui::LayerAnimator* LayerAnimatorAt(int i) {
+    return GetMessageViewAt(i)->layer()->GetAnimator();
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -246,13 +258,15 @@ TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
   CreateMessageListView();
   int previous_height = message_list_view()->GetPreferredSize().height();
 
+  EXPECT_EQ(2u, message_list_view()->children().size());
   EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
   EXPECT_EQ(0, GetMessageViewAt(0)->bottom_radius());
 
   gfx::Rect previous_bounds = GetMessageViewBounds(0);
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
+  FinishSlideOutAnimation();
   AnimateUntilIdle();
-  EXPECT_EQ(3, size_changed_count());
+  EXPECT_EQ(1u, message_list_view()->children().size());
   EXPECT_EQ(previous_bounds.y(), GetMessageViewBounds(0).y());
   EXPECT_LT(0, message_list_view()->GetPreferredSize().height());
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
@@ -261,8 +275,9 @@ TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
   EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->bottom_radius());
 
   MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
+  FinishSlideOutAnimation();
   AnimateUntilIdle();
-  EXPECT_EQ(6, size_changed_count());
+  EXPECT_EQ(0u, message_list_view()->children().size());
   EXPECT_EQ(0, message_list_view()->GetPreferredSize().height());
 }
 
@@ -300,11 +315,7 @@ TEST_F(UnifiedMessageListViewTest, RemovingNotificationAnimation) {
   gfx::Rect bounds1 = GetMessageViewBounds(1);
 
   MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
-  AnimateToMiddle();
-  gfx::Rect slided_bounds = GetMessageViewBounds(1);
-  EXPECT_LT(bounds1.x(), slided_bounds.x());
-  AnimateToEnd();
-
+  FinishSlideOutAnimation();
   AnimateToMiddle();
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
   previous_height = message_list_view()->GetPreferredSize().height();
@@ -315,7 +326,7 @@ TEST_F(UnifiedMessageListViewTest, RemovingNotificationAnimation) {
   EXPECT_EQ(bounds1, GetMessageViewBounds(1));
 
   MessageCenter::Get()->RemoveNotification(id2, true /* by_user */);
-  AnimateToEnd();
+  FinishSlideOutAnimation();
   AnimateToMiddle();
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
   previous_height = message_list_view()->GetPreferredSize().height();
@@ -325,7 +336,7 @@ TEST_F(UnifiedMessageListViewTest, RemovingNotificationAnimation) {
   EXPECT_EQ(bounds0, GetMessageViewBounds(0));
 
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
-  AnimateToEnd();
+  FinishSlideOutAnimation();
   AnimateToMiddle();
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
   previous_height = message_list_view()->GetPreferredSize().height();
@@ -340,6 +351,7 @@ TEST_F(UnifiedMessageListViewTest, ResetAnimation) {
   CreateMessageListView();
 
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
+  FinishSlideOutAnimation();
   EXPECT_TRUE(IsAnimating());
   AnimateToMiddle();
 
@@ -520,7 +532,7 @@ TEST_F(UnifiedMessageListViewTest, ClearAllWithPinnedNotifications) {
 TEST_F(UnifiedMessageListViewTest, UserSwipesAwayNotification) {
   // Show message list with two notifications.
   AddNotification();
-  AddNotification();
+  auto id1 = AddNotification();
   CreateMessageListView();
 
   // Start swiping the notification away.
@@ -532,6 +544,8 @@ TEST_F(UnifiedMessageListViewTest, UserSwipesAwayNotification) {
   // Swiping away the notification should remove it both in the MessageCenter
   // and the MessageListView.
   GetMessageViewAt(1)->OnSlideOut();
+  MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
+  FinishSlideOutAnimation();
   EXPECT_EQ(1u, MessageCenter::Get()->GetVisibleNotifications().size());
   EXPECT_EQ(1u, message_list_view()->children().size());
 

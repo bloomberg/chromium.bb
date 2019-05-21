@@ -15,6 +15,7 @@
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -116,6 +117,16 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     message_center_view_->set_owned_by_client();
     OnViewPreferredSizeChanged(message_center_view_.get());
     size_changed_count_ = 0;
+    SkipMessageListLayerAnimations();
+  }
+
+  void SkipMessageListLayerAnimations() {
+    for (auto* child : GetMessageListView()->children()) {
+      if (!child->layer())
+        continue;
+      child->layer()->GetAnimator()->set_preemption_strategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    }
   }
 
   void AnimateMessageListToValue(float value) {
@@ -126,12 +137,18 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
 
   void AnimateMessageListToMiddle() { AnimateMessageListToValue(0.5); }
 
-  void AnimateMessageListToEnd() { GetMessageListView()->animation_->End(); }
+  void AnimateMessageListToEnd() {
+    FinishMessageListSlideOutAnimations();
+    GetMessageListView()->animation_->End();
+  }
 
   void AnimateMessageListUntilIdle() {
-    while (GetMessageListView()->animation_->is_animating())
+    while (GetMessageListView()->animation_->is_animating()) {
       GetMessageListView()->animation_->End();
+    }
   }
+
+  void FinishMessageListSlideOutAnimations() { base::RunLoop().RunUntilIdle(); }
 
   gfx::Rect GetMessageViewVisibleBounds(size_t index) {
     gfx::Rect bounds = GetMessageListView()->children()[index]->bounds();
@@ -236,7 +253,7 @@ TEST_F(UnifiedMessageCenterViewTest, AddAndRemoveNotification) {
   auto* collapse_animation = GetMessageCenterAnimation();
   collapse_animation->SetCurrentValue(0.5);
   message_center_view()->AnimationProgressed(collapse_animation);
-  AnimateMessageListToMiddle();
+  AnimateMessageListToEnd();
   EXPECT_TRUE(message_center_view()->GetVisible());
 
   // The message center is now hidden after all animations complete.
@@ -263,12 +280,7 @@ TEST_F(UnifiedMessageCenterViewTest, RemoveNotificationAtTail) {
   // Remove the last notification.
   MessageCenter::Get()->RemoveNotification(id_to_remove, true /* by_user */);
 
-  // The first animation slides the notification out of the list, and the second
-  // animation collapses the list.
-  AnimateMessageListToEnd();
-  AnimateMessageListToValue(0);
-
-  // The scroll position should not change after sliding the notification out
+  // The scroll position should not change before sliding the notification out
   // and instead should wait until the animation finishes.
   EXPECT_EQ(scroll_position, GetScroller()->GetVisibleRect().y());
 
@@ -297,7 +309,7 @@ TEST_F(UnifiedMessageCenterViewTest, ContentsRelayout) {
   const int previous_list_height = GetMessageListView()->height();
 
   MessageCenter::Get()->RemoveNotification(ids.back(), true /* by_user */);
-  AnimateMessageListUntilIdle();
+  AnimateMessageListToEnd();
   EXPECT_TRUE(message_center_view()->GetVisible());
   EXPECT_GT(previous_contents_height, GetScrollerContents()->height());
   EXPECT_GT(previous_list_height, GetMessageListView()->height());
@@ -535,7 +547,7 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterRemovedWithNotifications) {
   EXPECT_TRUE(GetStackingCounter()->GetVisible());
   for (size_t i = 0; i < 5; ++i) {
     MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
-    AnimateMessageListUntilIdle();
+    AnimateMessageListToEnd();
   }
   EXPECT_FALSE(GetStackingCounter()->GetVisible());
 }
@@ -629,7 +641,7 @@ TEST_F(UnifiedMessageCenterViewTest,
   EXPECT_TRUE(GetStackingCounter()->GetVisible());
   for (size_t i = 0; i < 4; ++i) {
     MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
-    AnimateMessageListUntilIdle();
+    AnimateMessageListToEnd();
   }
   EXPECT_TRUE(GetStackingCounter()->GetVisible());
   EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
@@ -808,7 +820,7 @@ TEST_F(UnifiedMessageCenterViewTest, FocusClearedAfterNotificationRemoval) {
 
   // Remove the notification and observe that the focus is cleared.
   MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
-  AnimateMessageListUntilIdle();
+  AnimateMessageListToEnd();
   EXPECT_FALSE(message_center_view()->GetFocusManager()->GetFocusedView());
 
   widget->GetRootView()->RemoveChildView(message_center_view());

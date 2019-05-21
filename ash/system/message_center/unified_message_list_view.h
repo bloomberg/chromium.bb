@@ -68,6 +68,10 @@ class ASH_EXPORT UnifiedMessageListView
   // Returns true if an animation is currently in progress.
   bool IsAnimating() const;
 
+  // Called when a notification is slid out so we can run the MOVE_DOWN
+  // animation.
+  void OnNotificationSlidOut();
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void PreferredSizeChanged() override;
@@ -111,9 +115,6 @@ class ASH_EXPORT UnifiedMessageListView
   enum class State {
     // No animation is running.
     IDLE,
-
-    // Sliding out a removed notification. It will transition to MOVE_DOWN.
-    SLIDE_OUT,
 
     // Moving down notifications.
     MOVE_DOWN,

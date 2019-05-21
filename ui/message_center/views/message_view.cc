@@ -130,6 +130,10 @@ void MessageView::CloseSwipeControl() {
   slide_out_controller_.CloseSwipeControl();
 }
 
+void MessageView::SlideOutAndClose(int direction) {
+  slide_out_controller_.SlideOutAndClose(direction);
+}
+
 void MessageView::SetExpanded(bool expanded) {
   // Not implemented by default.
 }
