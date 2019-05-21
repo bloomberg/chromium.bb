@@ -51,9 +51,9 @@ const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableFileManagerFeedbackPanel{
     "EnableFeedbackPanel", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable the piex-wasm module for raw image extraction. Offical builds only.
+// Enable the piex-wasm module for raw image preview image extraction.
 const base::Feature kEnableFileManagerPiexWasm{
-    "PiexWasm", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PiexWasm", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables web push for background notifications in
 // Android Messages Integration on Chrome OS.
