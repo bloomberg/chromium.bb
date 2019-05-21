@@ -13,6 +13,8 @@ static_library("device_sync") {
     "cryptauth_client_impl.h",
     "cryptauth_constants.cc",
     "cryptauth_constants.h",
+    "cryptauth_device.cc",
+    "cryptauth_device.h",
     "cryptauth_device_manager.cc",
     "cryptauth_device_manager.h",
     "cryptauth_device_manager_impl.cc",
@@ -100,6 +102,7 @@ static_library("device_sync") {
 
   deps = [
     "//base",
+    "//base/util/values:values_util",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
     "//chromeos/constants:constants",
@@ -175,6 +178,7 @@ source_set("unit_tests") {
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_impl_unittest.cc",
     "cryptauth_device_manager_impl_unittest.cc",
+    "cryptauth_device_unittest.cc",
     "cryptauth_enroller_impl_unittest.cc",
     "cryptauth_enrollment_manager_impl_unittest.cc",
     "cryptauth_gcm_manager_impl_unittest.cc",

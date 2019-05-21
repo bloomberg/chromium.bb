@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "chromeos/services/device_sync/proto/cryptauth_better_together_device_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_better_together_feature_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
@@ -23,6 +24,8 @@ extern const char kTestGcmRegistrationId[];
 extern const char kTestInstanceId[];
 extern const char kTestInstanceIdToken[];
 extern const char kTestLongDeviceId[];
+extern const char kTestNoPiiDeviceName[];
+extern const char kTestUserPublicKey[];
 
 // Attributes of test ClientDirective.
 extern const int32_t kTestClientDirectiveRetryAttempts;
@@ -54,9 +57,17 @@ DeviceFeatureStatus BuildDeviceFeatureStatus(
     const std::vector<std::pair<std::string /* feature_type */,
                                 bool /* enabled */>>& feature_statuses);
 
+// The data field is set to "start_|start_time_millis|_end_|end_time_millis|".
+BeaconSeed BuildBeaconSeedForTest(int64_t start_time_millis,
+                                  int64_t end_time_millis);
+
 const ClientAppMetadata& GetClientAppMetadataForTest();
+
 const ClientDirective& GetClientDirectiveForTest();
+
 const RequestContext& GetRequestContextForTest();
+
+const BetterTogetherDeviceMetadata& GetBetterTogetherDeviceMetadataForTest();
 
 }  // namespace cryptauthv2
 

@@ -5,6 +5,7 @@
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
 
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/services/device_sync/public/cpp/gcm_constants.h"
 
 namespace cryptauthv2 {
@@ -14,6 +15,8 @@ const char kTestGcmRegistrationId[] = "gcm_registraion_id";
 const char kTestInstanceId[] = "instance_id";
 const char kTestInstanceIdToken[] = "instance_id_token";
 const char kTestLongDeviceId[] = "long_device_id";
+const char kTestNoPiiDeviceName[] = "no_pii_device_name";
+const char kTestUserPublicKey[] = "user_public_key";
 
 // Attributes of test ClientDirective.
 const int32_t kTestClientDirectiveRetryAttempts = 3;
@@ -88,6 +91,17 @@ DeviceFeatureStatus BuildDeviceFeatureStatus(
   return device_feature_status;
 }
 
+BeaconSeed BuildBeaconSeedForTest(int64_t start_time_millis,
+                                  int64_t end_time_millis) {
+  BeaconSeed seed;
+  seed.set_data("start_" + base::NumberToString(start_time_millis) + "_end_" +
+                base::NumberToString(end_time_millis));
+  seed.set_start_time_millis(start_time_millis);
+  seed.set_end_time_millis(end_time_millis);
+
+  return seed;
+}
+
 const ClientAppMetadata& GetClientAppMetadataForTest() {
   static const base::NoDestructor<ClientAppMetadata> metadata([] {
     ApplicationSpecificMetadata app_specific_metadata;
@@ -151,6 +165,22 @@ const RequestContext& GetRequestContextForTest() {
         kTestInstanceId, kTestInstanceIdToken);
   }());
   return *request_context;
+}
+
+const BetterTogetherDeviceMetadata& GetBetterTogetherDeviceMetadataForTest() {
+  static const base::NoDestructor<BetterTogetherDeviceMetadata>
+      better_together_device_metadata([] {
+        BetterTogetherDeviceMetadata metadata;
+        metadata.set_public_key(kTestUserPublicKey);
+        metadata.set_no_pii_device_name(kTestNoPiiDeviceName);
+        metadata.add_beacon_seeds()->CopyFrom(BuildBeaconSeedForTest(
+            100 /* start_time_millis */, 200 /* end_time_millis */));
+        metadata.add_beacon_seeds()->CopyFrom(BuildBeaconSeedForTest(
+            200 /* start_time_millis */, 300 /* end_time_millis */));
+
+        return metadata;
+      }());
+  return *better_together_device_metadata;
 }
 
 }  // namespace cryptauthv2
