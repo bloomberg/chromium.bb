@@ -1572,7 +1572,8 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (NSRange)selectedRange {
-  return textSelectionRange_.ToNSRange();
+  return NSMakeRange(textSelectionRange_.GetMin() + textSelectionOffset_,
+                     textSelectionRange_.length());
 }
 
 - (NSRange)markedRange {

@@ -568,9 +568,11 @@ TEST_F(RenderWidgetHostViewMacTest, AcceptsFirstResponder) {
 // This test verifies that RenderWidgetHostViewCocoa's implementation of
 // NSTextInputClientConformance conforms to requirements.
 TEST_F(RenderWidgetHostViewMacTest, NSTextInputClientConformance) {
-  NSRange selectedRange = [rwhv_cocoa_ selectedRange];
-  EXPECT_EQ(0u, selectedRange.location);
-  EXPECT_EQ(0u, selectedRange.length);
+  EXPECT_NSEQ(NSMakeRange(0, 0), [rwhv_cocoa_ selectedRange]);
+
+  rwhv_mac_->SelectionChanged(base::UTF8ToUTF16("llo, world!"), 2,
+                              gfx::Range(5, 10));
+  EXPECT_NSEQ(NSMakeRange(7, 5), [rwhv_cocoa_ selectedRange]);
 
   NSRange actualRange = NSMakeRange(1u, 2u);
   NSAttributedString* actualString = [rwhv_cocoa_
