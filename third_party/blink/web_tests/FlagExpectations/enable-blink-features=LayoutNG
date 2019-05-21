@@ -299,8 +299,6 @@ crbug.com/591099 fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failur
 crbug.com/591099 fast/block/float/4145535Crash.html [ Pass ]
 crbug.com/591099 fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/591099 fast/canvas/OffscreenCanvas-copyImage.html [ Failure Pass ]
-crbug.com/591099 fast/css-intrinsic-dimensions/height-positioned.html [ Pass ]
-crbug.com/591099 fast/css-intrinsic-dimensions/height-tables.html [ Failure Pass ]
 crbug.com/591099 fast/css/absolute-inline-alignment-2.html [ Pass ]
 crbug.com/835484 fast/css/outline-narrowLine.html [ Failure ]
 crbug.com/591099 fast/css/outline-offset-large.html [ Failure ]

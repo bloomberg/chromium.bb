@@ -532,16 +532,24 @@ LayoutUnit LayoutTable::LogicalHeightFromStyle() const {
   }
 
   const Length& logical_max_height_length = StyleRef().LogicalMaxHeight();
-  if (logical_max_height_length.IsIntrinsic() ||
+  if (logical_max_height_length.IsFillAvailable() ||
       (logical_max_height_length.IsSpecified() &&
-       !logical_max_height_length.IsNegative())) {
+       !logical_max_height_length.IsNegative() &&
+       !logical_max_height_length.IsMinContent() &&
+       !logical_max_height_length.IsMaxContent() &&
+       !logical_max_height_length.IsFitContent())) {
     LayoutUnit computed_max_logical_height =
         ConvertStyleLogicalHeightToComputedHeight(logical_max_height_length);
     computed_logical_height =
         std::min(computed_logical_height, computed_max_logical_height);
   }
 
-  const Length& logical_min_height_length = StyleRef().LogicalMinHeight();
+  Length logical_min_height_length = StyleRef().LogicalMinHeight();
+  if (logical_min_height_length.IsMinContent() ||
+      logical_min_height_length.IsMaxContent() ||
+      logical_min_height_length.IsFitContent())
+    logical_min_height_length = Length::Auto();
+
   if (logical_min_height_length.IsIntrinsic() ||
       (logical_min_height_length.IsSpecified() &&
        !logical_min_height_length.IsNegative())) {

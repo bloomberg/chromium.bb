@@ -243,9 +243,7 @@ void ImageDocument::CreateDocumentStructure() {
     div_element_->setAttribute(kStyleAttr,
                                "display: flex;"
                                "flex-direction: column;"
-                               "justify-content: center;"
-                               "align-items: center;"
-                               "min-height: min-content;"
+                               "align-items: flex-start;"
                                "min-width: min-content;"
                                "height: 100%;"
                                "width: 100%;");
@@ -382,6 +380,7 @@ void ImageDocument::UpdateImageStyle() {
   if (ShouldShrinkToFit()) {
     if (shrink_to_fit_mode_ == kViewport)
       image_style.Append("max-width: 100%;");
+    image_style.Append("margin: auto;");
 
     if (image_is_loaded_) {
       MouseCursorMode new_cursor_mode = kDefault;

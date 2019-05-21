@@ -814,16 +814,25 @@ LayoutUnit LayoutBox::ConstrainLogicalWidthByMinMax(
 LayoutUnit LayoutBox::ConstrainLogicalHeightByMinMax(
     LayoutUnit logical_height,
     LayoutUnit intrinsic_content_height) const {
-  const ComputedStyle& style_to_use = StyleRef();
-  if (!style_to_use.LogicalMaxHeight().IsMaxSizeNone()) {
-    LayoutUnit max_h = ComputeLogicalHeightUsing(
-        kMaxSize, style_to_use.LogicalMaxHeight(), intrinsic_content_height);
+  // Note that the values 'min-content', 'max-content' and 'fit-content' should
+  // behave as the initial value if specified in the block direction.
+  const Length& logical_max_height = StyleRef().LogicalMaxHeight();
+  if (!logical_max_height.IsMaxSizeNone() &&
+      !logical_max_height.IsMinContent() &&
+      !logical_max_height.IsMaxContent() &&
+      !logical_max_height.IsFitContent()) {
+    LayoutUnit max_h = ComputeLogicalHeightUsing(kMaxSize, logical_max_height,
+                                                 intrinsic_content_height);
     if (max_h != -1)
       logical_height = std::min(logical_height, max_h);
   }
-  return std::max(logical_height, ComputeLogicalHeightUsing(
-                                      kMinSize, style_to_use.LogicalMinHeight(),
-                                      intrinsic_content_height));
+  Length logical_min_height = StyleRef().LogicalMinHeight();
+  if (logical_min_height.IsMinContent() || logical_min_height.IsMaxContent() ||
+      logical_min_height.IsFitContent())
+    logical_min_height = Length::Auto();
+  return std::max(logical_height,
+                  ComputeLogicalHeightUsing(kMinSize, logical_min_height,
+                                            intrinsic_content_height));
 }
 
 LayoutUnit LayoutBox::ConstrainContentBoxLogicalHeightByMinMax(
@@ -3903,6 +3912,13 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   const Length& logical_height = size_type == kMinSize
                                      ? StyleRef().LogicalMinHeight()
                                      : StyleRef().LogicalMaxHeight();
+
+  // Note that the values 'min-content', 'max-content' and 'fit-content' should
+  // behave as the initial value if specified in the block direction.
+  if (logical_height.IsMinContent() || logical_height.IsMaxContent() ||
+      logical_height.IsFitContent())
+    return true;
+
   Length initial_logical_height =
       size_type == kMinSize ? ComputedStyleInitialValues::InitialMinHeight()
                             : ComputedStyleInitialValues::InitialMaxHeight();
@@ -4880,14 +4896,17 @@ void LayoutBox::ComputePositionedLogicalHeight(
   // see FIXME 2
 
   // Calculate constraint equation values for 'max-height' case.
-  if (!style_to_use.LogicalMaxHeight().IsMaxSizeNone()) {
+  const Length& logical_max_height = style_to_use.LogicalMaxHeight();
+  if (!logical_max_height.IsMaxSizeNone() &&
+      !logical_max_height.IsMinContent() &&
+      !logical_max_height.IsMaxContent() &&
+      !logical_max_height.IsFitContent()) {
     LogicalExtentComputedValues max_values;
 
     ComputePositionedLogicalHeightUsing(
-        kMaxSize, style_to_use.LogicalMaxHeight(), container_block,
-        container_logical_height, borders_plus_padding, logical_height,
-        logical_top_length, logical_bottom_length, margin_before, margin_after,
-        max_values);
+        kMaxSize, logical_max_height, container_block, container_logical_height,
+        borders_plus_padding, logical_height, logical_top_length,
+        logical_bottom_length, margin_before, margin_after, max_values);
 
     if (computed_values.extent_ > max_values.extent_) {
       computed_values.extent_ = max_values.extent_;
@@ -4898,15 +4917,17 @@ void LayoutBox::ComputePositionedLogicalHeight(
   }
 
   // Calculate constraint equation values for 'min-height' case.
-  if (!style_to_use.LogicalMinHeight().IsZero() ||
-      style_to_use.LogicalMinHeight().IsIntrinsic()) {
+  Length logical_min_height = style_to_use.LogicalMinHeight();
+  if (logical_min_height.IsMinContent() || logical_min_height.IsMaxContent() ||
+      logical_min_height.IsFitContent())
+    logical_min_height = Length::Auto();
+  if (!logical_min_height.IsZero() || logical_min_height.IsFillAvailable()) {
     LogicalExtentComputedValues min_values;
 
     ComputePositionedLogicalHeightUsing(
-        kMinSize, style_to_use.LogicalMinHeight(), container_block,
-        container_logical_height, borders_plus_padding, logical_height,
-        logical_top_length, logical_bottom_length, margin_before, margin_after,
-        min_values);
+        kMinSize, logical_min_height, container_block, container_logical_height,
+        borders_plus_padding, logical_height, logical_top_length,
+        logical_bottom_length, margin_before, margin_after, min_values);
 
     if (computed_values.extent_ < min_values.extent_) {
       computed_values.extent_ = min_values.extent_;

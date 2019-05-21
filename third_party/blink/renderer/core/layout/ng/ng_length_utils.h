@@ -145,7 +145,8 @@ inline LayoutUnit ResolveMinBlockLength(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  if (LIKELY(length.IsAuto() ||
+  if (LIKELY(length.IsAuto() || length.IsMinContent() ||
+             length.IsMaxContent() || length.IsFitContent() ||
              BlockLengthUnresolvable(
                  constraint_space, length, phase,
                  opt_percentage_resolution_block_size_for_min_max)))
@@ -166,7 +167,8 @@ inline LayoutUnit ResolveMaxBlockLength(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  if (LIKELY(length.IsMaxSizeNone() ||
+  if (LIKELY(length.IsMaxSizeNone() || length.IsMinContent() ||
+             length.IsMaxContent() || length.IsFitContent() ||
              BlockLengthUnresolvable(
                  constraint_space, length, phase,
                  opt_percentage_resolution_block_size_for_min_max)))
