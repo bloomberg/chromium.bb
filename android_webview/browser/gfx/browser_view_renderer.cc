@@ -149,15 +149,29 @@ void BrowserViewRenderer::TrimMemory() {
     ReleaseHardware();
 }
 
-void BrowserViewRenderer::UpdateMemoryPolicy() {
+gfx::Rect BrowserViewRenderer::ComputeTileRectAndUpdateMemoryPolicy() {
   if (!compositor_) {
-    return;
+    return gfx::Rect();
   }
 
   if (!hardware_enabled_) {
     compositor_->SetMemoryPolicy(0u);
-    return;
+    return gfx::Rect();
   }
+
+  gfx::Transform transform_for_tile_priority =
+      external_draw_constraints_.transform;
+
+  gfx::Rect viewport_rect_for_tile_priority_in_view_space;
+  gfx::Transform screen_to_view(gfx::Transform::kSkipInitialization);
+  if (transform_for_tile_priority.GetInverse(&screen_to_view)) {
+    // Convert from screen space to view space.
+    viewport_rect_for_tile_priority_in_view_space =
+        cc::MathUtil::ProjectEnclosingClippedRect(
+            screen_to_view,
+            gfx::Rect(external_draw_constraints_.viewport_size));
+  }
+  viewport_rect_for_tile_priority_in_view_space.Intersect(gfx::Rect(size_));
 
   size_t bytes_limit = 0u;
   if (g_memory_override_in_bytes) {
@@ -166,9 +180,25 @@ void BrowserViewRenderer::UpdateMemoryPolicy() {
     // Note we are using |last_on_draw_global_visible_rect_| rather than
     // |external_draw_constraints_.viewport_size|. This is to reduce budget
     // for a webview that's much smaller than the surface it's rendering.
-    gfx::Rect interest_rect = offscreen_pre_raster_
-                                  ? gfx::Rect(size_)
-                                  : last_on_draw_global_visible_rect_;
+    gfx::Rect interest_rect;
+    if (offscreen_pre_raster_) {
+      interest_rect = gfx::Rect(size_);
+    } else {
+      // Re-compute screen-space rect for computing tile budget, since tile is
+      // rastered in screen space.
+      gfx::Rect viewport_rect_for_tile_priority_in_screen_space =
+          cc::MathUtil::ProjectEnclosingClippedRect(
+              transform_for_tile_priority,
+              viewport_rect_for_tile_priority_in_view_space);
+      // Intersect by viewport size again, in case axis-aligning operations made
+      // the rect bigger than necessary.
+      viewport_rect_for_tile_priority_in_screen_space.Intersect(
+          gfx::Rect(external_draw_constraints_.viewport_size));
+      interest_rect = viewport_rect_for_tile_priority_in_screen_space.IsEmpty()
+                          ? last_on_draw_global_visible_rect_
+                          : viewport_rect_for_tile_priority_in_screen_space;
+    }
+
     size_t width = interest_rect.width();
     size_t height = interest_rect.height();
     bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
@@ -178,6 +208,7 @@ void BrowserViewRenderer::UpdateMemoryPolicy() {
   }
 
   compositor_->SetMemoryPolicy(bytes_limit);
+  return viewport_rect_for_tile_priority_in_view_space;
 }
 
 content::SynchronousCompositor* BrowserViewRenderer::FindCompositor(
@@ -223,25 +254,12 @@ bool BrowserViewRenderer::OnDrawHardware() {
   hardware_enabled_ = true;
 
   DoUpdateParentDrawData();
-  UpdateMemoryPolicy();
-
-  gfx::Transform transform_for_tile_priority =
-      external_draw_constraints_.transform;
-
   // Do not override (ie leave empty) for offscreen raster.
   gfx::Size viewport_size_for_tile_priority =
       offscreen_pre_raster_ ? gfx::Size()
                             : external_draw_constraints_.viewport_size;
-
-  gfx::Rect viewport_rect_for_tile_priority_in_view_space;
-  gfx::Transform screen_to_view(gfx::Transform::kSkipInitialization);
-  if (transform_for_tile_priority.GetInverse(&screen_to_view)) {
-    // Convert from screen space to view space.
-    viewport_rect_for_tile_priority_in_view_space =
-        cc::MathUtil::ProjectEnclosingClippedRect(
-            screen_to_view, gfx::Rect(viewport_size_for_tile_priority));
-  }
-  viewport_rect_for_tile_priority_in_view_space.Intersect(gfx::Rect(size_));
+  gfx::Rect viewport_rect_for_tile_priority_in_view_space =
+      ComputeTileRectAndUpdateMemoryPolicy();
 
   // Explanation for the various viewports and transforms. There are:
   // * "default" viewport" (and identity transform) that's normally used by
@@ -266,7 +284,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   scoped_refptr<content::SynchronousCompositor::FrameFuture> future =
       compositor_->DemandDrawHwAsync(
           size_, viewport_rect_for_tile_priority_in_view_space,
-          transform_for_tile_priority);
+          external_draw_constraints_.transform);
   CopyOutputRequestQueue requests;
   copy_requests_.swap(requests);
   for (auto& copy_request_ptr : requests) {
@@ -275,7 +293,8 @@ bool BrowserViewRenderer::OnDrawHardware() {
   }
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), compositor_id_, viewport_size_for_tile_priority,
-      transform_for_tile_priority, offscreen_pre_raster_, std::move(requests));
+      external_draw_constraints_.transform, offscreen_pre_raster_,
+      std::move(requests));
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame)));
@@ -290,7 +309,7 @@ void BrowserViewRenderer::OnParentDrawDataUpdated(
   if (!DoUpdateParentDrawData())
     return;
   PostInvalidate(compositor_);
-  UpdateMemoryPolicy();
+  ComputeTileRectAndUpdateMemoryPolicy();
 }
 
 bool BrowserViewRenderer::DoUpdateParentDrawData() {
@@ -411,7 +430,7 @@ void BrowserViewRenderer::ClearView() {
 void BrowserViewRenderer::SetOffscreenPreRaster(bool enable) {
   if (offscreen_pre_raster_ != enable) {
     offscreen_pre_raster_ = enable;
-    UpdateMemoryPolicy();
+    ComputeTileRectAndUpdateMemoryPolicy();
   }
 }
 
@@ -452,7 +471,7 @@ void BrowserViewRenderer::OnSizeChanged(int width, int height) {
                        height);
   size_.SetSize(width, height);
   if (offscreen_pre_raster_)
-    UpdateMemoryPolicy();
+    ComputeTileRectAndUpdateMemoryPolicy();
 }
 
 void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
@@ -467,7 +486,7 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
 
   size_.SetSize(width, height);
   if (offscreen_pre_raster_)
-    UpdateMemoryPolicy();
+    ComputeTileRectAndUpdateMemoryPolicy();
 }
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
@@ -497,7 +516,7 @@ void BrowserViewRenderer::ReleaseHardware() {
   }
   hardware_enabled_ = false;
   has_rendered_frame_ = false;
-  UpdateMemoryPolicy();
+  ComputeTileRectAndUpdateMemoryPolicy();
 }
 
 bool BrowserViewRenderer::IsVisible() const {
@@ -573,7 +592,7 @@ void BrowserViewRenderer::SetActiveCompositor(
   compositor_ = compositor;
   copy_requests_.clear();
   if (compositor_) {
-    UpdateMemoryPolicy();
+    ComputeTileRectAndUpdateMemoryPolicy();
     compositor_->DidBecomeActive();
   }
 }

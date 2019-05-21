@@ -186,7 +186,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   gfx::Vector2d max_scroll_offset() const;
 
-  void UpdateMemoryPolicy();
+  // Return the tile rect in view space.
+  gfx::Rect ComputeTileRectAndUpdateMemoryPolicy();
 
   content::SynchronousCompositor* FindCompositor(
       const CompositorID& compositor_id) const;
