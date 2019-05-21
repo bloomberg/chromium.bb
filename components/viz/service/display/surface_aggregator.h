@@ -91,12 +91,16 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   };
 
   struct RoundedCornerInfo {
-    RoundedCornerInfo() : bounds(nullptr), is_fast_rounded_corner(false) {}
-    RoundedCornerInfo(const gfx::RRectF* bounds, bool is_fast_rounded_corner)
-        : bounds(bounds), is_fast_rounded_corner(is_fast_rounded_corner) {}
+    RoundedCornerInfo() : is_fast_rounded_corner(false) {}
+    // |target_transform| is the transform that maps |bounds| from its current
+    // space into the desired target space. It must be a scale+translation
+    // matrix.
+    RoundedCornerInfo(const gfx::RRectF& bounds,
+                      bool is_fast_rounded_corner,
+                      const gfx::Transform target_transform);
 
-    bool IsEmpty() const { return !bounds || bounds->IsEmpty(); }
-    const gfx::RRectF* bounds;
+    bool IsEmpty() const { return bounds.IsEmpty(); }
+    gfx::RRectF bounds;
     bool is_fast_rounded_corner;
   };
 

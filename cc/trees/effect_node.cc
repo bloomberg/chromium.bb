@@ -142,6 +142,10 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetDouble("opacity", opacity);
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
   value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
+  if (!rounded_corner_bounds.IsEmpty()) {
+    MathUtil::AddToTracedValue("rounded_corner_bounds", rounded_corner_bounds,
+                               value);
+  }
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   value->SetBoolean("cache_render_surface", cache_render_surface);
   value->SetBoolean("has_copy_request", has_copy_request);
@@ -156,7 +160,6 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("is_masked", is_masked);
   value->SetBoolean("effect_changed", effect_changed);
   value->SetBoolean("subtree_has_copy_request", subtree_has_copy_request);
-  value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
   value->SetString("render_surface_reason",
                    RenderSurfaceReasonToString(render_surface_reason));
   value->SetInteger("transform_id", transform_id);

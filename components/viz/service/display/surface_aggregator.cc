@@ -751,6 +751,20 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
       occluding_damage_rect_valid);
 }
 
+SurfaceAggregator::RoundedCornerInfo::RoundedCornerInfo(
+    const gfx::RRectF& bounds_arg,
+    bool is_fast_rounded_corner_arg,
+    const gfx::Transform target_transform) {
+  is_fast_rounded_corner = is_fast_rounded_corner_arg;
+  if (bounds_arg.IsEmpty())
+    return;
+  DCHECK(target_transform.Preserves2dAxisAlignment());
+  bounds = bounds_arg;
+  SkMatrix matrix = target_transform.matrix();
+  bounds.Scale(matrix.getScaleX(), matrix.getScaleY());
+  bounds.Offset(target_transform.To2dTranslation());
+}
+
 SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
     const SharedQuadState* source_sqs,
     const gfx::Transform& scaled_quad_to_target_transform,
@@ -766,7 +780,6 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
   ClipData new_clip_rect = CalculateClipRect(
       clip_rect, ClipData(source_sqs->is_clipped, source_sqs->clip_rect),
       target_transform);
-  DCHECK(rounded_corner_info.bounds);
 
   // target_transform contains any transformation that may exist
   // between the context that these quads are being copied from (i.e. the
@@ -779,7 +792,7 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
 
   shared_quad_state->SetAll(
       new_transform, quad_layer_rect, visible_quad_layer_rect,
-      *rounded_corner_info.bounds, new_clip_rect.rect, new_clip_rect.is_clipped,
+      rounded_corner_info.bounds, new_clip_rect.rect, new_clip_rect.is_clipped,
       source_sqs->are_contents_opaque, source_sqs->opacity,
       source_sqs->blend_mode, source_sqs->sorting_context_id);
   shared_quad_state->is_fast_rounded_corner =
@@ -846,9 +859,9 @@ void SurfaceAggregator::CopyQuadsToPass(
         continue;
 
       if (parent_rounded_corner_info.IsEmpty()) {
-        new_rounded_corner_info =
-            RoundedCornerInfo(&quad->shared_quad_state->rounded_corner_bounds,
-                              quad->shared_quad_state->is_fast_rounded_corner);
+        new_rounded_corner_info = RoundedCornerInfo(
+            quad->shared_quad_state->rounded_corner_bounds,
+            quad->shared_quad_state->is_fast_rounded_corner, target_transform);
       }
 
       HandleSurfaceQuad(
@@ -858,9 +871,10 @@ void SurfaceAggregator::CopyQuadsToPass(
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
         if (parent_rounded_corner_info.IsEmpty()) {
-          new_rounded_corner_info = RoundedCornerInfo(
-              &quad->shared_quad_state->rounded_corner_bounds,
-              quad->shared_quad_state->is_fast_rounded_corner);
+          new_rounded_corner_info =
+              RoundedCornerInfo(quad->shared_quad_state->rounded_corner_bounds,
+                                quad->shared_quad_state->is_fast_rounded_corner,
+                                target_transform);
         }
         const SharedQuadState* dest_shared_quad_state = CopySharedQuadState(
             quad->shared_quad_state, target_transform, clip_rect, dest_pass,
