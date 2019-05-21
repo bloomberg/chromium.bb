@@ -2138,11 +2138,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "lcd-text-aa",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "list-all-display-modes",
     "owners": [ "//ui/display/OWNERS" ],
     // This flag is used for debugging and development purposes to list all

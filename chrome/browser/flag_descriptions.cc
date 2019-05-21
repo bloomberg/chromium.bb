@@ -1123,11 +1123,6 @@ const char kKeepAliveRendererForKeepaliveRequestsDescription[] =
     "Keep a render process alive when the process has a pending fetch request "
     "with `keepalive' specified.";
 
-const char kLcdTextName[] = "LCD text antialiasing";
-const char kLcdTextDescription[] =
-    "If disabled, text is rendered with grayscale antialiasing instead of LCD "
-    "(subpixel) when doing accelerated compositing.";
-
 const char kLoadMediaRouterComponentExtensionName[] =
     "Load Media Router Component Extension";
 const char kLoadMediaRouterComponentExtensionDescription[] =

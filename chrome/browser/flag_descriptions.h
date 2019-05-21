@@ -684,9 +684,6 @@ extern const char kJavascriptHarmonyShippingDescription[];
 extern const char kKeepAliveRendererForKeepaliveRequestsName[];
 extern const char kKeepAliveRendererForKeepaliveRequestsDescription[];
 
-extern const char kLcdTextName[];
-extern const char kLcdTextDescription[];
-
 extern const char kLoadMediaRouterComponentExtensionName[];
 extern const char kLoadMediaRouterComponentExtensionDescription[];
 
