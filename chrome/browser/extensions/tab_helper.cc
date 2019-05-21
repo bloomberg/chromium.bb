@@ -192,17 +192,18 @@ void TabHelper::InvokeForContentRulesRegistries(const Func& func) {
 void TabHelper::FinishCreateBookmarkApp(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
-  // Send the 'appinstalled' event and ensure any beforeinstallpromptevent
-  // cannot trigger installation again.
-  if (banners::AppBannerManagerDesktop::IsEnabled() &&
+  const bool success = (extension != nullptr);
+
+  if (success && banners::AppBannerManagerDesktop::IsEnabled() &&
       web_app_info.open_as_window) {
+    // Send the 'appinstalled' event and ensure any beforeinstallpromptevent
+    // cannot trigger installation again.
     banners::AppBannerManagerDesktop::FromWebContents(web_contents())
         ->OnInstall(false /* is_native app */,
                     blink::kWebDisplayModeStandalone);
   }
   pending_web_app_action_ = NONE;
 
-  const bool success = !!extension;
   const ExtensionId app_id = extension ? extension->id() : ExtensionId();
   std::move(install_callback_).Run(app_id, success);
 }
