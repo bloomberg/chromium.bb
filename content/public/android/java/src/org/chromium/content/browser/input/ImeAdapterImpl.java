@@ -51,6 +51,7 @@ import org.chromium.content_public.browser.InputMethodManagerWrapper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.ViewUtils;
+import org.chromium.ui.base.ime.TextInputAction;
 import org.chromium.ui.base.ime.TextInputType;
 
 import java.lang.ref.WeakReference;
@@ -117,6 +118,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
     private int mTextInputType = TextInputType.NONE;
     private int mTextInputFlags;
     private int mTextInputMode = WebTextInputMode.DEFAULT;
+    private int mTextInputAction = TextInputAction.DEFAULT;
     private boolean mNodeEditable;
     private boolean mNodePassword;
 
@@ -310,8 +312,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         if (mInputConnectionFactory == null) return null;
         View containerView = getContainerView();
         setInputConnection(mInputConnectionFactory.initializeAndGet(containerView, this,
-                mTextInputType, mTextInputFlags, mTextInputMode, mLastSelectionStart,
-                mLastSelectionEnd, outAttrs));
+                mTextInputType, mTextInputFlags, mTextInputMode, mTextInputAction,
+                mLastSelectionStart, mLastSelectionEnd, outAttrs));
         if (DEBUG_LOGS) Log.i(TAG, "onCreateInputConnection: " + mInputConnection);
 
         if (mCursorAnchorInfoController != null) {
@@ -398,6 +400,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
      * @param textInputType Text input type for the currently focused field in renderer.
      * @param textInputFlags Text input flags.
      * @param textInputMode Text input mode.
+     * @param textInputAction Text input mode action.
      * @param showIfNeeded Whether the keyboard should be shown if it is currently hidden.
      * @param text The String contents of the field being edited.
      * @param selectionStart The character offset of the selection start, or the caret position if
@@ -412,13 +415,15 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
      */
     @CalledByNative
     private void updateState(int textInputType, int textInputFlags, int textInputMode,
-            boolean showIfNeeded, String text, int selectionStart, int selectionEnd,
-            int compositionStart, int compositionEnd, boolean replyToRequest) {
+            int textInputAction, boolean showIfNeeded, String text, int selectionStart,
+            int selectionEnd, int compositionStart, int compositionEnd, boolean replyToRequest) {
         TraceEvent.begin("ImeAdapter.updateState");
         try {
             if (DEBUG_LOGS) {
-                Log.i(TAG, "updateState: type [%d->%d], flags [%d], mode[%d], show [%b], ",
-                        mTextInputType, textInputType, textInputFlags, textInputMode, showIfNeeded);
+                Log.i(TAG,
+                        "updateState: type [%d->%d], flags [%d], mode[%d], action[%d] show [%b], ",
+                        mTextInputType, textInputType, textInputFlags, textInputMode,
+                        textInputAction, showIfNeeded);
             }
             boolean needsRestart = false;
             boolean hide = false;
@@ -442,6 +447,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
                 }
             } else if (textInputType == TextInputType.NONE) {
                 hide = true;
+            }
+            if (mTextInputAction != textInputAction) {
+                mTextInputAction = textInputAction;
+                needsRestart = true;
             }
 
             boolean editable = focusedNodeEditable();
@@ -750,19 +759,24 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
 
     boolean performEditorAction(int actionCode) {
         if (!isValid()) return false;
-        switch (actionCode) {
-            case EditorInfo.IME_ACTION_NEXT:
-                advanceFocusInForm(WebFocusType.FORWARD);
-                break;
-            case EditorInfo.IME_ACTION_PREVIOUS:
-                advanceFocusInForm(WebFocusType.BACKWARD);
-                break;
-            default:
-                sendSyntheticKeyPress(KeyEvent.KEYCODE_ENTER,
-                        KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
-                                | KeyEvent.FLAG_EDITOR_ACTION);
-                break;
+
+        // If mTextInputAction has been specified (indicating an enterKeyHint
+        // has been specified in the HTML) then we do will send the enter key
+        // events. Otherwise we fallback to having the enter key move focus
+        // between the elements.
+        if (mTextInputAction == TextInputAction.DEFAULT) {
+            switch (actionCode) {
+                case EditorInfo.IME_ACTION_NEXT:
+                    advanceFocusInForm(WebFocusType.FORWARD);
+                    return true;
+                case EditorInfo.IME_ACTION_PREVIOUS:
+                    advanceFocusInForm(WebFocusType.BACKWARD);
+                    return true;
+            }
         }
+        sendSyntheticKeyPress(KeyEvent.KEYCODE_ENTER,
+                KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
+                        | KeyEvent.FLAG_EDITOR_ACTION);
         return true;
     }
 

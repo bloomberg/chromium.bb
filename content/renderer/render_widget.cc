@@ -1466,6 +1466,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     TextInputState params;
     params.type = new_type;
     params.mode = new_mode;
+    params.action = new_info.action;
     params.flags = new_info.flags;
 #if defined(OS_ANDROID)
     if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {

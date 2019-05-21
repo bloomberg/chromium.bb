@@ -530,6 +530,7 @@ source_set("blink_headers") {
     "//skia",
     "//third_party/blink/public/common",
     "//ui/accessibility:ax_enums_mojo",
+    "//ui/base/ime:text_input_types",
     "//ui/base/ime/mojo",
     "//url",
   ]

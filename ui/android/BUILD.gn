@@ -116,6 +116,7 @@ generate_jni("ui_android_jni_headers") {
 
 java_cpp_enum("java_enums_srcjar") {
   sources = [
+    "../base/ime/text_input_action.h",
     "../base/ime/text_input_type.h",
     "../base/page_transition_types.h",
     "../base/pointer/pointer_device.h",

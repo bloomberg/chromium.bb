@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/enter_key_hint_names.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
@@ -97,12 +98,12 @@ void CoreInitializer::Initialize() {
 
   const unsigned kCoreStaticStringsCount =
       kQualifiedNamesCount + event_interface_names::kNamesCount +
-      event_target_names::kNamesCount + event_type_names::kNamesCount +
-      fetch_initiator_type_names::kNamesCount + font_family_names::kNamesCount +
-      html_tokenizer_names::kNamesCount + http_names::kNamesCount +
-      input_mode_names::kNamesCount + input_type_names::kNamesCount +
-      media_feature_names::kNamesCount + media_type_names::kNamesCount +
-      performance_entry_names::kNamesCount;
+      enter_key_hint_names::kNamesCount + event_target_names::kNamesCount +
+      event_type_names::kNamesCount + fetch_initiator_type_names::kNamesCount +
+      font_family_names::kNamesCount + html_tokenizer_names::kNamesCount +
+      http_names::kNamesCount + input_mode_names::kNamesCount +
+      input_type_names::kNamesCount + media_feature_names::kNamesCount +
+      media_type_names::kNamesCount + performance_entry_names::kNamesCount;
 
   StringImpl::ReserveStaticStringsCapacityForSize(
       kCoreStaticStringsCount + StringImpl::AllStaticStrings().size());
@@ -118,6 +119,7 @@ void CoreInitializer::Initialize() {
   xmlns_names::Init();
 
   event_interface_names::Init();
+  enter_key_hint_names::Init();
   event_target_names::Init();
   event_type_names::Init();
   fetch_initiator_type_names::Init();

@@ -272,6 +272,8 @@ class WebViewTest : public testing::Test {
                          const std::string& html_file);
   void TestInputMode(WebTextInputMode expected_input_mode,
                      const std::string& html_file);
+  void TestInputAction(ui::TextInputAction expected_input_action,
+                       const std::string& html_file);
   bool TapElement(WebInputEvent::Type, Element*);
   bool TapElementById(WebInputEvent::Type, const WebString& id);
   IntSize PrintICBSizeFromPageSize(const FloatSize& page_size);
@@ -961,6 +963,33 @@ TEST_F(WebViewTest, InputMode) {
                 "input_mode_type_decimal.html");
   TestInputMode(WebTextInputMode::kWebTextInputModeSearch,
                 "input_mode_type_search.html");
+}
+
+void WebViewTest::TestInputAction(ui::TextInputAction expected_input_action,
+                                  const std::string& html_file) {
+  RegisterMockedHttpURLLoad(html_file);
+  WebViewImpl* web_view_impl =
+      web_view_helper_.InitializeAndLoad(base_url_ + html_file);
+  web_view_impl->SetInitialFocus(false);
+  EXPECT_EQ(expected_input_action, web_view_impl->MainFrameImpl()
+                                       ->GetInputMethodController()
+                                       ->TextInputInfo()
+                                       .action);
+}
+
+TEST_F(WebViewTest, TextInputAction) {
+  TestInputAction(ui::TextInputAction::kDefault, "enter_key_hint_default.html");
+  TestInputAction(ui::TextInputAction::kDefault,
+                  "enter_key_hint_default_unknown.html");
+  TestInputAction(ui::TextInputAction::kEnter, "enter_key_hint_enter.html");
+  TestInputAction(ui::TextInputAction::kGo, "enter_key_hint_go.html");
+  TestInputAction(ui::TextInputAction::kDone, "enter_key_hint_done.html");
+  TestInputAction(ui::TextInputAction::kNext, "enter_key_hint_next.html");
+  TestInputAction(ui::TextInputAction::kPrevious,
+                  "enter_key_hint_previous.html");
+  TestInputAction(ui::TextInputAction::kSearch, "enter_key_hint_search.html");
+  TestInputAction(ui::TextInputAction::kSend, "enter_key_hint_send.html");
+  TestInputAction(ui::TextInputAction::kNext, "enter_key_hint_mixed_case.html");
 }
 
 TEST_F(WebViewTest, TextInputInfoWithReplacedElements) {

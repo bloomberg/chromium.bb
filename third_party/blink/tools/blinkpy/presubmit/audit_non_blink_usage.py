@@ -444,6 +444,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/editing/ime'],
+        'allowed': [
+            'ui::TextInputAction',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.cc'],
         'allowed': [
             # The existing code already contains gin::IsolateHolder.

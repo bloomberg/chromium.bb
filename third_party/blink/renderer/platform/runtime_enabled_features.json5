@@ -482,6 +482,10 @@
       status: "test",
     },
     {
+      name: "EnterKeyHintAttribute",
+      status: "experimental",
+    },
+    {
       name: "EventTiming",
       origin_trial_feature_name: "EventTiming",
       status: "experimental",
