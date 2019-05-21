@@ -10,8 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_operation.h"
 
@@ -33,8 +32,7 @@ void CacheStorageScheduler::ScheduleOperation(CacheStorageSchedulerOp op_type,
                                  pending_operations_.size());
 
   pending_operations_.push_back(std::make_unique<CacheStorageOperation>(
-      std::move(closure), client_type_, op_type,
-      base::SequencedTaskRunnerHandle::Get()));
+      std::move(closure), client_type_, op_type, task_runner_));
   RunOperationIfIdle();
 }
 
@@ -50,7 +48,7 @@ bool CacheStorageScheduler::ScheduledOperations() const {
 }
 
 void CacheStorageScheduler::DispatchOperationTask(base::OnceClosure task) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
+  task_runner_->PostTask(FROM_HERE, std::move(task));
 }
 
 void CacheStorageScheduler::RunOperationIfIdle() {
