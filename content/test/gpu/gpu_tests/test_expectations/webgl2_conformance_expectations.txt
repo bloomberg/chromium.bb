@@ -156,6 +156,7 @@ crbug.com/828984 [ d3d11 win amd ] conformance2/renderbuffers/multisampled-depth
 crbug.com/828984 [ d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb9_e5-rgb-half_float.html [ RetryOnFailure ]
 crbug.com/828984 [ d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb9_e5-rgb-float.html [ RetryOnFailure ]
 crbug.com/828984 [ d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb32f-rgb-float.html [ RetryOnFailure ]
+crbug.com/844483 [ d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/828984 [ d3d11 win amd ] conformance2/textures/misc/copy-texture-image-webgl-specific.html [ RetryOnFailure ]
 crbug.com/878780 [ win amd ] conformance2/textures/webgl_canvas/* [ RetryOnFailure ]
 
