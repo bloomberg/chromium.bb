@@ -22,9 +22,7 @@ enum class KeyboardUIState {
   kInitial = 1,
   // Waiting for an extension to be loaded. Will move to HIDDEN if this is
   // loading pre-emptively, otherwise will move to SHOWN.
-  // TODO(https://crbug.com/964191): Rename this to |kLoading|, as the UI may
-  // not be extension based in the future.
-  kLoadingExtension = 2,
+  kLoading = 2,
   // kShowing = 3,  // no longer used
   // Keyboard is shown.
   kShown = 4,

@@ -55,7 +55,7 @@ bool WaitUntilLoaded() {
   // single RunUntilIdle call.
   base::RunLoop run_loop;
   while (KeyboardController::Get()->GetStateForTest() ==
-         KeyboardUIState::kLoadingExtension) {
+         KeyboardUIState::kLoading) {
     run_loop.RunUntilIdle();
   }
   return true;

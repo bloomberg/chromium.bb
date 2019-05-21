@@ -378,8 +378,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
     return;
 
   auto* controller = keyboard::KeyboardController::Get();
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardUIState::kLoadingExtension);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
   KeyboardLoadedWaiter().Wait();
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kHidden);
 }
@@ -392,8 +391,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
   auto* controller = keyboard::KeyboardController::Get();
   controller->ShowKeyboard(false);
   // Need to wait the extension to be loaded. Hence LOADING_EXTENSION.
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardUIState::kLoadingExtension);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
   KeyboardVisibleWaiter(true).Wait();
 
   controller->HideKeyboardExplicitlyBySystem();
@@ -412,8 +410,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
 
   auto* controller = keyboard::KeyboardController::Get();
 
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardUIState::kLoadingExtension);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
 
   controller->Shutdown();
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kInitial);

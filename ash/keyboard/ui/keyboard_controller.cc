@@ -360,7 +360,7 @@ void KeyboardController::SetKeyboardWindowBounds(
 
 void KeyboardController::NotifyKeyboardWindowLoaded() {
   const bool should_show = show_on_keyboard_window_load_;
-  if (model_.state() == KeyboardUIState::kLoadingExtension)
+  if (model_.state() == KeyboardUIState::kLoading)
     ChangeState(KeyboardUIState::kHidden);
   if (should_show) {
     // The window height is set to 0 initially or before switch to an IME in a
@@ -534,7 +534,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
     case KeyboardUIState::kInitial:
     case KeyboardUIState::kHidden:
       return;
-    case KeyboardUIState::kLoadingExtension:
+    case KeyboardUIState::kLoading:
       show_on_keyboard_window_load_ = false;
       return;
 
@@ -716,7 +716,7 @@ void KeyboardController::LoadKeyboardWindowInBackground() {
   keyboard_window->AddObserver(this);
   parent_container_->AddChild(keyboard_window);
 
-  ChangeState(KeyboardUIState::kLoadingExtension);
+  ChangeState(KeyboardUIState::kLoading);
 }
 
 ui::InputMethod* KeyboardController::GetInputMethodForTest() {
@@ -796,7 +796,7 @@ void KeyboardController::OnTextInputStateChanged(
 
   if (should_hide) {
     switch (model_.state()) {
-      case KeyboardUIState::kLoadingExtension:
+      case KeyboardUIState::kLoading:
         show_on_keyboard_window_load_ = false;
         return;
       case KeyboardUIState::kShown:
@@ -860,7 +860,7 @@ void KeyboardController::PopulateKeyboardContent(
   switch (model_.state()) {
     case KeyboardUIState::kShown:
       return;
-    case KeyboardUIState::kLoadingExtension:
+    case KeyboardUIState::kLoading:
       show_on_keyboard_window_load_ = true;
       return;
     default:
@@ -929,12 +929,12 @@ void KeyboardController::ChangeState(KeyboardUIState state) {
 
   if (state != KeyboardUIState::kWillHide)
     weak_factory_will_hide_.InvalidateWeakPtrs();
-  if (state != KeyboardUIState::kLoadingExtension)
+  if (state != KeyboardUIState::kLoading)
     show_on_keyboard_window_load_ = false;
 
   weak_factory_report_lingering_state_.InvalidateWeakPtrs();
   switch (model_.state()) {
-    case KeyboardUIState::kLoadingExtension:
+    case KeyboardUIState::kLoading:
     case KeyboardUIState::kWillHide:
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,

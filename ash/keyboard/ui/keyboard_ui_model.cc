@@ -20,8 +20,8 @@ bool IsAllowedStateTransition(KeyboardUIState from, KeyboardUIState to) {
       kAllowedStateTransition({
           // The initial ShowKeyboard scenario
           // INITIAL -> LOADING_EXTENSION -> HIDDEN -> SHOWN.
-          {KeyboardUIState::kInitial, KeyboardUIState::kLoadingExtension},
-          {KeyboardUIState::kLoadingExtension, KeyboardUIState::kHidden},
+          {KeyboardUIState::kInitial, KeyboardUIState::kLoading},
+          {KeyboardUIState::kLoading, KeyboardUIState::kHidden},
           {KeyboardUIState::kHidden, KeyboardUIState::kShown},
 
           // Hide scenario
@@ -37,7 +37,7 @@ bool IsAllowedStateTransition(KeyboardUIState from, KeyboardUIState to) {
           {KeyboardUIState::kShown, KeyboardUIState::kHidden},
 
           // Return to INITIAL when keyboard is disabled.
-          {KeyboardUIState::kLoadingExtension, KeyboardUIState::kInitial},
+          {KeyboardUIState::kLoading, KeyboardUIState::kInitial},
           {KeyboardUIState::kHidden, KeyboardUIState::kInitial},
       });
   return kAllowedStateTransition->count(std::make_pair(from, to)) == 1;
@@ -68,8 +68,8 @@ std::string StateToStr(KeyboardUIState state) {
       return "UNKNOWN";
     case KeyboardUIState::kInitial:
       return "INITIAL";
-    case KeyboardUIState::kLoadingExtension:
-      return "LOADING_EXTENSION";
+    case KeyboardUIState::kLoading:
+      return "LOADING";
     case KeyboardUIState::kShown:
       return "SHOWN";
     case KeyboardUIState::kWillHide:
