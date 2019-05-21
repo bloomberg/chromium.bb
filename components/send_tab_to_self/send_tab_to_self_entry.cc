@@ -143,14 +143,12 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
     navigation_time = ProtoTimeToTime(pb_entry.navigation_time_usec());
   }
 
-  bool opened = pb_entry.opened();
-
   // Protobuf parsing enforces utf8 encoding for all strings.
   auto entry = std::make_unique<SendTabToSelfEntry>(
       guid, url, pb_entry.title(), shared_time, navigation_time,
       pb_entry.device_name(), pb_entry.target_device_sync_cache_guid());
 
-  if (opened) {
+  if (pb_entry.opened()) {
     entry->MarkOpened();
   }
   return entry;
