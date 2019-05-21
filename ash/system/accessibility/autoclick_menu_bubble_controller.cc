@@ -152,6 +152,16 @@ void AutoclickMenuBubbleController::CloseBubble() {
   bubble_widget_->Close();
 }
 
+void AutoclickMenuBubbleController::SetBubbleVisibility(bool is_visible) {
+  if (!bubble_widget_)
+    return;
+
+  if (is_visible)
+    bubble_widget_->Show();
+  else
+    bubble_widget_->Hide();
+}
+
 void AutoclickMenuBubbleController::ClickOnBubble(gfx::Point location_in_dips,
                                                   int mouse_event_flags) {
   if (!bubble_widget_)

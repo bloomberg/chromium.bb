@@ -30,6 +30,9 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate,
 
   void CloseBubble();
 
+  // Shows or hides the bubble.
+  void SetBubbleVisibility(bool is_visible);
+
   // Performs the mouse events on the bubble. at the given location in DIPs.
   void ClickOnBubble(gfx::Point location_in_dips, int mouse_event_flags);
 

@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
@@ -33,8 +34,10 @@ class AutoclickMenuBubbleController;
 // animate at the mouse event location and an automatic mouse event event will
 // happen after a certain amount of time at that location. The event type is
 // determined by SetAutoclickEventType.
-class ASH_EXPORT AutoclickController : public ui::EventHandler,
-                                       public aura::WindowObserver {
+class ASH_EXPORT AutoclickController
+    : public ui::EventHandler,
+      public aura::WindowObserver,
+      public aura::client::CursorClientObserver {
  public:
   AutoclickController();
   ~AutoclickController() override;
@@ -119,6 +122,11 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   // aura::WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override;
 
+  // aura::client::CursorClientObserver overrides:
+  void OnCursorVisibilityChanged(bool is_visible) override;
+  // TODO(katie): Override OnCursorDisplayChanged to move the autoclick
+  // bubble menu to the same display as the cursor.
+
   // Whether Autoclick is currently enabled.
   bool enabled_ = false;
   mojom::AutoclickEventType event_type_ = kDefaultAutoclickEventType;
@@ -136,20 +144,23 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   // The target window is observed by AutoclickController for the duration
   // of a autoclick gesture.
   aura::Window* tap_down_target_ = nullptr;
+  // The most recent mouse location.
+  gfx::Point last_mouse_location_{-kDefaultAutoclickMovementThreshold,
+                                  -kDefaultAutoclickMovementThreshold};
   // The position in screen coordinates used to determine the distance the
   // mouse has moved since dwell began. It is used to determine
   // if move events should cancel the gesture.
-  gfx::Point anchor_location_ = gfx::Point(-kDefaultAutoclickMovementThreshold,
-                                           -kDefaultAutoclickMovementThreshold);
+  gfx::Point anchor_location_{-kDefaultAutoclickMovementThreshold,
+                              -kDefaultAutoclickMovementThreshold};
   // The position in screen coodinates tracking where the autoclick gesture
   // should be anchored. While the |start_gesture_timer_| is running and before
   // the animation is drawn, subtle mouse movements will update the
   // |gesture_anchor_location_|, so that once animation begins it can focus on
   // the most recent mose point.
-  gfx::Point gesture_anchor_location_ =
-      gfx::Point(-kDefaultAutoclickMovementThreshold,
-                 -kDefaultAutoclickMovementThreshold);
+  gfx::Point gesture_anchor_location_{-kDefaultAutoclickMovementThreshold,
+                                      -kDefaultAutoclickMovementThreshold};
 
+  // The widget containing the autoclick ring.
   std::unique_ptr<views::Widget> widget_;
   base::TimeDelta delay_;
   // The timer that counts down from the beginning of a gesture until a click.

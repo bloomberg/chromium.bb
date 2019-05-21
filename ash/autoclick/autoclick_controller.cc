@@ -13,6 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
+#include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -60,6 +61,7 @@ AutoclickController::AutoclickController()
       drag_event_rewriter_(std::make_unique<AutoclickDragEventRewriter>()) {
   Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource()->AddEventRewriter(
       drag_event_rewriter_.get());
+  Shell::Get()->cursor_manager()->AddObserver(this);
   InitClickTimers();
   UpdateRingSize();
 }
@@ -69,6 +71,7 @@ AutoclickController::~AutoclickController() {
   menu_bubble_controller_ = nullptr;
   CancelAutoclickAction();
 
+  Shell::Get()->cursor_manager()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
   SetTapDownTarget(nullptr);
   Shell::GetPrimaryRootWindow()
@@ -440,14 +443,14 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(event->target());
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
     return;
-  gfx::Point point_in_screen = event->target()->GetScreenLocation(*event);
+  last_mouse_location_ = event->target()->GetScreenLocation(*event);
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
       (event->type() == ui::ET_MOUSE_MOVED ||
        (event->type() == ui::ET_MOUSE_DRAGGED &&
         drag_event_rewriter_->IsEnabled()))) {
     mouse_event_flags_ = event->flags();
     // Update the point even if the animation is not currently being shown.
-    UpdateRingWidget(point_in_screen);
+    UpdateRingWidget(last_mouse_location_);
 
     // The distance between the mouse location and the anchor location
     // must exceed a certain threshold to initiate a new autoclick countdown.
@@ -455,10 +458,10 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
     // 1. initiate an unwanted autoclick from rest
     // 2. prevent the autoclick from ever occurring when the mouse
     //    arrives at the target.
-    gfx::Vector2d delta = point_in_screen - anchor_location_;
+    gfx::Vector2d delta = last_mouse_location_ - anchor_location_;
     if (delta.LengthSquared() >= movement_threshold_ * movement_threshold_) {
-      anchor_location_ = point_in_screen;
-      gesture_anchor_location_ = point_in_screen;
+      anchor_location_ = last_mouse_location_;
+      gesture_anchor_location_ = last_mouse_location_;
       // Stop all the timers, restarting the gesture timer only. This keeps
       // the animation from being drawn while the user is still moving quickly.
       start_gesture_timer_->Reset();
@@ -468,12 +471,13 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
       autoclick_ring_handler_->StopGesture();
     } else if (start_gesture_timer_->IsRunning()) {
       // Keep track of where the gesture will be anchored.
-      gesture_anchor_location_ = point_in_screen;
+      gesture_anchor_location_ = last_mouse_location_;
     } else if (autoclick_timer_->IsRunning() && !stabilize_click_position_) {
       // If we are not stabilizing the click position, update the gesture
       // center with each mouse move event.
-      gesture_anchor_location_ = point_in_screen;
-      autoclick_ring_handler_->SetGestureCenter(point_in_screen, widget_.get());
+      gesture_anchor_location_ = last_mouse_location_;
+      autoclick_ring_handler_->SetGestureCenter(last_mouse_location_,
+                                                widget_.get());
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
              event->type() == ui::ET_MOUSE_RELEASED ||
@@ -514,6 +518,22 @@ void AutoclickController::OnScrollEvent(ui::ScrollEvent* event) {
 void AutoclickController::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(tap_down_target_, window);
   CancelAutoclickAction();
+}
+
+void AutoclickController::OnCursorVisibilityChanged(bool is_visible) {
+  if (!menu_bubble_controller_)
+    return;
+  // TODO(katie): Check that the display which is fullscreen is the same as the
+  // one containing the bubble, to determine whether to hide the bubble.
+  // Currently just checking if the display under the mouse is fullscreen.
+  aura::Window* window = wm::GetWindowForFullscreenModeInRoot(
+      wm::GetRootWindowAt(last_mouse_location_));
+  bool is_fullscreen = window != nullptr;
+
+  // Hide the bubble when the cursor is gone in fullscreen mode.
+  // Always show it otherwise.
+  menu_bubble_controller_->SetBubbleVisibility(is_fullscreen ? is_visible
+                                                             : true);
 }
 
 }  // namespace ash

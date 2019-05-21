@@ -12,6 +12,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -146,6 +148,12 @@ class AutoclickTest : public AshTestBase {
     return GetAutoclickController()
         ->GetMenuBubbleControllerForTesting()
         ->menu_view_;
+  }
+
+  views::Widget* GetAutoclickBubbleWidget() {
+    return GetAutoclickController()
+        ->GetMenuBubbleControllerForTesting()
+        ->bubble_widget_;
   }
 
   views::View* GetMenuButton(AutoclickMenuView::ButtonId view_id) {
@@ -942,6 +950,114 @@ TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
   EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
   EXPECT_FALSE(Shell::Get()->accessibility_controller()->autoclick_enabled());
   EXPECT_FALSE(GetAutoclickController()->IsEnabled());
+}
+
+TEST_F(AutoclickTest, HidesBubbleInFullscreenWhenCursorHides) {
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(ui::CursorType::kPointer);
+
+  const struct {
+    const std::string display_spec;
+    gfx::Rect widget_position;
+  } kTestCases[] = {
+      {"800x600", gfx::Rect(0, 0, 200, 200)},
+      {"800x600,800x600", gfx::Rect(0, 0, 200, 200)},
+      {"800x600,800x600", gfx::Rect(1000, 0, 200, 200)},
+  };
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.display_spec);
+    UpdateDisplay(test.display_spec);
+
+    std::unique_ptr<views::Widget> widget =
+        CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                         test.widget_position, /*show=*/true);
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Move the mouse over the widget, so it's on the same screen as the widget.
+    GetEventGenerator()->MoveMouseTo(test.widget_position.origin());
+
+    // When the widget is not fullscreen, hiding the cursor does not cause
+    // the bubble to be hidden.
+    cursor_manager->HideCursor();
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+    cursor_manager->ShowCursor();
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Bubble is visible in fullscreen mode because the mouse cursor is visible.
+    widget->SetFullscreen(true);
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Bubble is hidden when the cursor is hidden in fullscreen mode, and shown
+    // when the cursor is shown.
+    cursor_manager->HideCursor();
+    EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
+    cursor_manager->ShowCursor();
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Changing the type to another visible type doesn't cause the bubble to
+    // hide.
+    cursor_manager->SetCursor(ui::CursorType::kHand);
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Changing the type to an kNone causes the bubble to hide.
+    cursor_manager->SetCursor(ui::CursorType::kNone);
+    EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // Hiding and showing don't re-show the bubble because the type is still
+    // kNone.
+    cursor_manager->HideCursor();
+    EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
+    cursor_manager->ShowCursor();
+    EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
+
+    // The bubble is shown when the cursor is a visible type again.
+    cursor_manager->SetCursor(ui::CursorType::kPointer);
+    EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+  }
+}
+
+TEST_F(AutoclickTest, DoesNotHideBubbleWhenNotOverFullscreenWindow) {
+  UpdateDisplay("800x600,800x600");
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(ui::CursorType::kPointer);
+
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                       gfx::Rect(1000, 0, 200, 200), true);
+
+  EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+
+  // Move the mouse over the other display.
+  GetEventGenerator()->MoveMouseTo(gfx::Point(10, 10));
+
+  // When the widget is fullscreen, hiding the cursor does not hide the bubble
+  // because the cursor is on a different display.
+  widget->SetFullscreen(true);
+  cursor_manager->HideCursor();
+  EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+}
+
+TEST_F(AutoclickTest, DoesNotHideBubbleWhenOverInactiveFullscreenWindow) {
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(ui::CursorType::kPointer);
+
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
+                       gfx::Rect(0, 0, 200, 200), true);
+  GetEventGenerator()->MoveMouseTo(gfx::Point(10, 10));
+  widget->SetFullscreen(true);
+  EXPECT_TRUE(widget->IsActive());
+  views::Widget* popup_widget = views::Widget::CreateWindowWithContextAndBounds(
+      nullptr, CurrentContext(), gfx::Rect(200, 200, 200, 200));
+  popup_widget->Show();
+
+  cursor_manager->HideCursor();
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_TRUE(popup_widget->IsActive());
+  EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
 }
 
 }  // namespace ash
