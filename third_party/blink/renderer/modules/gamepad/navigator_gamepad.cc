@@ -276,7 +276,7 @@ void NavigatorGamepad::SampleAndCompareGamepadState() {
   if (processing_events_)
     return;
 
-  base::AutoReset<bool>(&processing_events_, true);
+  base::AutoReset<bool> processing_events_reset(&processing_events_, true);
   if (StartUpdatingIfAttached()) {
     if (GetPage()->IsPageVisible()) {
       // Allocate a buffer to hold the new gamepad state, if needed.
@@ -342,6 +342,8 @@ void NavigatorGamepad::SampleAndCompareGamepadState() {
 
 void NavigatorGamepad::DispatchGamepadEvent(const AtomicString& event_name,
                                             Gamepad* gamepad) {
+  // Ensure that we're blocking re-entrancy.
+  DCHECK(processing_events_);
   DCHECK(has_connection_event_listener_);
   DCHECK(gamepad);
   DomWindow()->DispatchEvent(*GamepadEvent::Create(
