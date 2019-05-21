@@ -5,6 +5,7 @@
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_holographic_space.h"
 
 #include <D3D11_1.h>
+#include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include <dxgi.h>
 #include <wrl.h>
 
@@ -64,12 +65,19 @@ MockWMRHolographicSpace::PrimaryAdapterId() {
 
 std::unique_ptr<WMRHolographicFrame>
 MockWMRHolographicSpace::TryCreateNextFrame() {
-  return std::make_unique<MockWMRHolographicFrame>();
+  return std::make_unique<MockWMRHolographicFrame>(d3d11_device_);
 }
 
 bool MockWMRHolographicSpace::TrySetDirect3D11Device(
     const Microsoft::WRL::ComPtr<
         ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice>& device) {
+  Microsoft::WRL::ComPtr<
+      Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>
+      dxgi_interface_access;
+  if (FAILED(device.As(&dxgi_interface_access)))
+    return false;
+  if (FAILED(dxgi_interface_access->GetInterface(IID_PPV_ARGS(&d3d11_device_))))
+    return false;
   return true;
 }
 

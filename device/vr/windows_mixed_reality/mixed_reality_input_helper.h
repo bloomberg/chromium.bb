@@ -59,7 +59,7 @@ class MixedRealityInputHelper {
   bool EnsureSpatialInteractionManager();
 
   ParsedInputState LockedParseWindowsSourceState(
-      const WMRInputSourceState& state,
+      const WMRInputSourceState* state,
       const WMRCoordinateSystem* origin);
 
   void OnSourcePressed(const WMRInputSourceEventArgs& args);
@@ -84,7 +84,7 @@ class MixedRealityInputHelper {
   std::unordered_map<uint32_t, ControllerState> controller_states_;
   HWND hwnd_;
 
-  std::vector<WMRInputSourceState> pending_voice_states_;
+  std::vector<std::unique_ptr<WMRInputSourceState>> pending_voice_states_;
 
   base::Lock lock_;
 

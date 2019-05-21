@@ -12,25 +12,46 @@
 namespace device {
 class WMRInputSource {
  public:
-  explicit WMRInputSource(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource> source);
-  WMRInputSource(const WMRInputSource& other);
-  virtual ~WMRInputSource();
+  virtual ~WMRInputSource() = default;
 
   // Uses ISpatialInteractionSource.
-  uint32_t Id() const;
-  ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind Kind() const;
+  virtual uint32_t Id() const = 0;
+  virtual ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind Kind()
+      const = 0;
 
   // Uses ISpatialInteractionSource2.
-  bool IsPointingSupported() const;
+  virtual bool IsPointingSupported() const = 0;
+
+  // Uses ISpatialInteractionSource3.
+  virtual ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness
+  Handedness() const = 0;
+
+  virtual ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource*
+  GetRawPtr() const;
+};
+
+class WMRInputSourceImpl : public WMRInputSource {
+ public:
+  explicit WMRInputSourceImpl(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource> source);
+  WMRInputSourceImpl(const WMRInputSourceImpl& other);
+  ~WMRInputSourceImpl() override;
+
+  // Uses ISpatialInteractionSource.
+  uint32_t Id() const override;
+  ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind Kind()
+      const override;
+
+  // Uses ISpatialInteractionSource2.
+  bool IsPointingSupported() const override;
 
   // Uses ISpatialInteractionSource3.
   ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness
-  Handedness() const;
+  Handedness() const override;
 
   ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource* GetRawPtr()
-      const;
+      const override;
 
  private:
   Microsoft::WRL::ComPtr<
@@ -43,6 +64,7 @@ class WMRInputSource {
       ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource3>
       source3_;
 };
+
 }  // namespace device
 
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_INPUT_SOURCE_H_

@@ -18,15 +18,24 @@ namespace device {
 class WMRInputSourceState;
 class WMRInputSourceEventArgs {
  public:
-  explicit WMRInputSourceEventArgs(
+  virtual ~WMRInputSourceEventArgs() = default;
+
+  virtual ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind
+  PressKind() const = 0;
+  virtual std::unique_ptr<WMRInputSourceState> State() const = 0;
+};
+
+class WMRInputSourceEventArgsImpl : public WMRInputSourceEventArgs {
+ public:
+  explicit WMRInputSourceEventArgsImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs>
           args);
-  virtual ~WMRInputSourceEventArgs();
+  ~WMRInputSourceEventArgsImpl() override;
 
   ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind PressKind()
-      const;
-  WMRInputSourceState State() const;
+      const override;
+  std::unique_ptr<WMRInputSourceState> State() const override;
 
  private:
   Microsoft::WRL::ComPtr<
@@ -46,9 +55,10 @@ class WMRInputManager {
 
   virtual ~WMRInputManager() = default;
 
-  virtual std::vector<WMRInputSourceState> GetDetectedSourcesAtTimestamp(
+  virtual std::vector<std::unique_ptr<WMRInputSourceState>>
+  GetDetectedSourcesAtTimestamp(
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
-          timestamp) const = 0;
+          timestamp) = 0;
 
   virtual std::unique_ptr<InputEventCallbackList::Subscription>
   AddPressedCallback(const InputEventCallback& cb) = 0;
@@ -70,9 +80,10 @@ class WMRInputManagerImpl : public WMRInputManager {
           manager);
   ~WMRInputManagerImpl() override;
 
-  std::vector<WMRInputSourceState> GetDetectedSourcesAtTimestamp(
+  std::vector<std::unique_ptr<WMRInputSourceState>>
+  GetDetectedSourcesAtTimestamp(
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
-          timestamp) const override;
+          timestamp) override;
 
   std::unique_ptr<InputEventCallbackList::Subscription> AddPressedCallback(
       const InputEventCallback& cb) override;

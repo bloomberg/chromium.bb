@@ -31,18 +31,17 @@ bool TryGetValue(ComPtr<IReference<T>> val_ref, T* out_val) {
 
 namespace device {
 
-WMRInputLocation::WMRInputLocation(
+WMRInputLocationImpl::WMRInputLocationImpl(
     ComPtr<ISpatialInteractionSourceLocation> location)
     : location_(location) {
-  if (location_) {
-    location_.As(&location2_);
-    location_.As(&location3_);
-  }
+  DCHECK(location_);
+  location_.As(&location2_);
+  location_.As(&location3_);
 }
 
-WMRInputLocation::~WMRInputLocation() = default;
+WMRInputLocationImpl::~WMRInputLocationImpl() = default;
 
-bool WMRInputLocation::TryGetPosition(WFN::Vector3* position) const {
+bool WMRInputLocationImpl::TryGetPosition(WFN::Vector3* position) const {
   DCHECK(position);
   if (!location_)
     return false;
@@ -52,7 +51,7 @@ bool WMRInputLocation::TryGetPosition(WFN::Vector3* position) const {
   return TryGetValue(ref, position);
 }
 
-bool WMRInputLocation::TryGetVelocity(WFN::Vector3* velocity) const {
+bool WMRInputLocationImpl::TryGetVelocity(WFN::Vector3* velocity) const {
   DCHECK(velocity);
   if (!location_)
     return false;
@@ -62,7 +61,8 @@ bool WMRInputLocation::TryGetVelocity(WFN::Vector3* velocity) const {
   return TryGetValue(ref, velocity);
 }
 
-bool WMRInputLocation::TryGetOrientation(WFN::Quaternion* orientation) const {
+bool WMRInputLocationImpl::TryGetOrientation(
+    WFN::Quaternion* orientation) const {
   DCHECK(orientation);
   if (!location2_)
     return false;
@@ -72,7 +72,7 @@ bool WMRInputLocation::TryGetOrientation(WFN::Quaternion* orientation) const {
   return TryGetValue(ref, orientation);
 }
 
-bool WMRInputLocation::TryGetAngularVelocity(
+bool WMRInputLocationImpl::TryGetAngularVelocity(
     WFN::Vector3* angular_velocity) const {
   DCHECK(angular_velocity);
   if (!location3_)

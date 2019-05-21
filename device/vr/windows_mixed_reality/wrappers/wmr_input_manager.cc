@@ -40,7 +40,7 @@ typedef ITypedEventHandler<SpatialInteractionManager*,
     SpatialInteractionSourceEventHandler;
 
 namespace device {
-WMRInputSourceEventArgs::WMRInputSourceEventArgs(
+WMRInputSourceEventArgsImpl::WMRInputSourceEventArgsImpl(
     ComPtr<ISpatialInteractionSourceEventArgs> args)
     : args_(args) {
   DCHECK(args_);
@@ -48,20 +48,21 @@ WMRInputSourceEventArgs::WMRInputSourceEventArgs(
   DCHECK(SUCCEEDED(hr));
 }
 
-WMRInputSourceEventArgs::~WMRInputSourceEventArgs() = default;
+WMRInputSourceEventArgsImpl::~WMRInputSourceEventArgsImpl() = default;
 
-WMRPressKind WMRInputSourceEventArgs::PressKind() const {
+WMRPressKind WMRInputSourceEventArgsImpl::PressKind() const {
   WMRPressKind press_kind;
   HRESULT hr = args2_->get_PressKind(&press_kind);
   DCHECK(SUCCEEDED(hr));
   return press_kind;
 }
 
-WMRInputSourceState WMRInputSourceEventArgs::State() const {
+std::unique_ptr<WMRInputSourceState> WMRInputSourceEventArgsImpl::State()
+    const {
   ComPtr<ISpatialInteractionSourceState> wmr_state;
   HRESULT hr = args_->get_State(&wmr_state);
   DCHECK(SUCCEEDED(hr));
-  return WMRInputSourceState(wmr_state);
+  return std::make_unique<WMRInputSourceStateImpl>(wmr_state);
 }
 
 WMRInputManagerImpl::WMRInputManagerImpl(
@@ -77,10 +78,10 @@ WMRInputManagerImpl::~WMRInputManagerImpl() {
   UnsubscribeEvents();
 }
 
-std::vector<WMRInputSourceState>
+std::vector<std::unique_ptr<WMRInputSourceState>>
 WMRInputManagerImpl::GetDetectedSourcesAtTimestamp(
-    ComPtr<IPerceptionTimestamp> timestamp) const {
-  std::vector<WMRInputSourceState> input_states;
+    ComPtr<IPerceptionTimestamp> timestamp) {
+  std::vector<std::unique_ptr<WMRInputSourceState>> input_states;
   ComPtr<IVectorView<SpatialInteractionSourceState*>> source_states;
   if (FAILED(manager_->GetDetectedSourcesAtTimestamp(timestamp.Get(),
                                                      &source_states)))
@@ -94,7 +95,8 @@ WMRInputManagerImpl::GetDetectedSourcesAtTimestamp(
     ComPtr<ISpatialInteractionSourceState> source_state_wmr;
     hr = source_states->GetAt(i, &source_state_wmr);
     DCHECK(SUCCEEDED(hr));
-    input_states.emplace_back(source_state_wmr);
+    input_states.push_back(
+        std::make_unique<WMRInputSourceStateImpl>(source_state_wmr));
   }
 
   return input_states;
@@ -114,7 +116,7 @@ HRESULT WMRInputManagerImpl::OnSourcePressed(
     ISpatialInteractionManager* sender,
     ISpatialInteractionSourceEventArgs* raw_args) {
   ComPtr<ISpatialInteractionSourceEventArgs> wmr_args(raw_args);
-  WMRInputSourceEventArgs args(wmr_args);
+  WMRInputSourceEventArgsImpl args(wmr_args);
   pressed_callback_list_.Notify(args);
   return S_OK;
 }
@@ -123,7 +125,7 @@ HRESULT WMRInputManagerImpl::OnSourceReleased(
     ISpatialInteractionManager* sender,
     ISpatialInteractionSourceEventArgs* raw_args) {
   ComPtr<ISpatialInteractionSourceEventArgs> wmr_args(raw_args);
-  WMRInputSourceEventArgs args(wmr_args);
+  WMRInputSourceEventArgsImpl args(wmr_args);
   released_callback_list_.Notify(args);
   return S_OK;
 }

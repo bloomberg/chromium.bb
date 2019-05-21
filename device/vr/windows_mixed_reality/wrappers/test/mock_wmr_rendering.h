@@ -43,13 +43,15 @@ class MockWMRCameraPose : public WMRCameraPose {
 
 class MockWMRRenderingParameters : public WMRRenderingParameters {
  public:
-  MockWMRRenderingParameters();
+  MockWMRRenderingParameters(
+      const Microsoft::WRL::ComPtr<ID3D11Device>& device);
   ~MockWMRRenderingParameters() override;
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> TryGetBackbufferAsTexture2D()
       override;
 
  private:
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(MockWMRRenderingParameters);
 };
 

@@ -62,11 +62,19 @@ class XrBrowserTestBase : public InProcessBrowserTest {
     STATUS_FAILED = 2
   };
 
+  enum class RuntimeType {
+    RUNTIME_NONE = 0,
+    RUNTIME_OPENVR = 1,
+    RUNTIME_WMR = 2
+  };
+
   XrBrowserTestBase();
   ~XrBrowserTestBase() override;
 
   void SetUp() override;
   void TearDown() override;
+
+  virtual RuntimeType GetRuntimeType() const;
 
   // Returns a GURL to the XR test HTML file of the given name, e.g.
   // GetHtmlTestFile("foo") returns a GURL for the foo.html file in the XR

@@ -56,4 +56,16 @@ void WebXrVrBrowserTestBase::EndSessionOrFail(
       kPollTimeoutLong, web_contents);
 }
 
+#if defined(OS_WIN)
+XrBrowserTestBase::RuntimeType WebXrVrOpenVrBrowserTestBase::GetRuntimeType()
+    const {
+  return XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR;
+}
+
+XrBrowserTestBase::RuntimeType WebXrVrWMRBrowserTestBase::GetRuntimeType()
+    const {
+  return XrBrowserTestBase::RuntimeType::RUNTIME_WMR;
+}
+#endif  // OS_WIN
+
 }  // namespace vr

@@ -21,33 +21,42 @@ using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource;
 using Microsoft::WRL::ComPtr;
 
 namespace device {
-WMRInputSource::WMRInputSource(ComPtr<ISpatialInteractionSource> source)
-    : source_(source) {
-  if (source_) {
-    source_.As(&source2_);
-    source_.As(&source3_);
-  }
+
+ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource*
+WMRInputSource::GetRawPtr() const {
+  // This should only ever be used by the real implementation, so by default
+  // make sure it's not called.
+  NOTREACHED();
+  return nullptr;
 }
 
-WMRInputSource::~WMRInputSource() = default;
+WMRInputSourceImpl::WMRInputSourceImpl(ComPtr<ISpatialInteractionSource> source)
+    : source_(source) {
+  DCHECK(source_);
+  source_.As(&source2_);
+  source_.As(&source3_);
+}
 
-WMRInputSource::WMRInputSource(const WMRInputSource& other) = default;
+WMRInputSourceImpl::~WMRInputSourceImpl() = default;
 
-uint32_t WMRInputSource::Id() const {
+WMRInputSourceImpl::WMRInputSourceImpl(const WMRInputSourceImpl& other) =
+    default;
+
+uint32_t WMRInputSourceImpl::Id() const {
   uint32_t val;
   HRESULT hr = source_->get_Id(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-SourceKind WMRInputSource::Kind() const {
+SourceKind WMRInputSourceImpl::Kind() const {
   SourceKind val;
   HRESULT hr = source_->get_Kind(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-bool WMRInputSource::IsPointingSupported() const {
+bool WMRInputSourceImpl::IsPointingSupported() const {
   if (!source2_)
     return false;
   boolean val;
@@ -56,7 +65,7 @@ bool WMRInputSource::IsPointingSupported() const {
   return val;
 }
 
-SourceHandedness WMRInputSource::Handedness() const {
+SourceHandedness WMRInputSourceImpl::Handedness() const {
   if (!source3_)
     return SourceHandedness::SpatialInteractionSourceHandedness_Unspecified;
   SourceHandedness val;
@@ -65,7 +74,7 @@ SourceHandedness WMRInputSource::Handedness() const {
   return val;
 }
 
-ISpatialInteractionSource* WMRInputSource::GetRawPtr() const {
+ISpatialInteractionSource* WMRInputSourceImpl::GetRawPtr() const {
   return source_.Get();
 }
 }  // namespace device

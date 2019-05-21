@@ -12,25 +12,41 @@
 namespace device {
 class WMRInputLocation {
  public:
-  explicit WMRInputLocation(
+  virtual ~WMRInputLocation() = default;
+
+  virtual bool TryGetPosition(
+      ABI::Windows::Foundation::Numerics::Vector3* position) const = 0;
+  virtual bool TryGetVelocity(
+      ABI::Windows::Foundation::Numerics::Vector3* velocity) const = 0;
+
+  virtual bool TryGetOrientation(
+      ABI::Windows::Foundation::Numerics::Quaternion* orientation) const = 0;
+
+  virtual bool TryGetAngularVelocity(
+      ABI::Windows::Foundation::Numerics::Vector3* angular_velocity) const = 0;
+};
+
+class WMRInputLocationImpl : public WMRInputLocation {
+ public:
+  explicit WMRInputLocationImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceLocation>
           location);
-  virtual ~WMRInputLocation();
+  ~WMRInputLocationImpl() override;
 
   // Uses ISpatialInteractionSourceLocation.
   bool TryGetPosition(
-      ABI::Windows::Foundation::Numerics::Vector3* position) const;
+      ABI::Windows::Foundation::Numerics::Vector3* position) const override;
   bool TryGetVelocity(
-      ABI::Windows::Foundation::Numerics::Vector3* velocity) const;
+      ABI::Windows::Foundation::Numerics::Vector3* velocity) const override;
 
   // Uses ISpatialInteractionSourceLocation2.
-  bool TryGetOrientation(
-      ABI::Windows::Foundation::Numerics::Quaternion* orientation) const;
+  bool TryGetOrientation(ABI::Windows::Foundation::Numerics::Quaternion*
+                             orientation) const override;
 
   // Uses ISpatialInteractionSourceLocation3.
-  bool TryGetAngularVelocity(
-      ABI::Windows::Foundation::Numerics::Vector3* angular_velocity) const;
+  bool TryGetAngularVelocity(ABI::Windows::Foundation::Numerics::Vector3*
+                                 angular_velocity) const override;
 
  private:
   Microsoft::WRL::ComPtr<
@@ -43,8 +59,9 @@ class WMRInputLocation {
       ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceLocation3>
       location3_;
 
-  DISALLOW_COPY(WMRInputLocation);
+  DISALLOW_COPY(WMRInputLocationImpl);
 };
+
 }  // namespace device
 
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_INPUT_LOCATION_H_

@@ -7,45 +7,77 @@
 #include <windows.perception.spatial.h>
 #include <windows.ui.input.spatial.h>
 #include <wrl.h>
+#include <memory>
 
 namespace device {
 class WMRCoordinateSystem;
 class WMRInputLocation;
 class WMRInputSource;
 class WMRPointerPose;
+
 class WMRInputSourceState {
  public:
-  explicit WMRInputSourceState(
+  virtual ~WMRInputSourceState() = default;
+
+  // Uses ISpatialInteractionSourceState.
+  virtual std::unique_ptr<WMRPointerPose> TryGetPointerPose(
+      const WMRCoordinateSystem* origin) const = 0;
+  virtual std::unique_ptr<WMRInputSource> GetSource() const = 0;
+
+  // Uses ISpatialInteractionSourceState2.
+  virtual bool IsGrasped() const = 0;
+  virtual bool IsSelectPressed() const = 0;
+  virtual double SelectPressedValue() const = 0;
+
+  virtual bool SupportsControllerProperties() const = 0;
+
+  // Uses SpatialInteractionControllerProperties.
+  virtual bool IsThumbstickPressed() const = 0;
+  virtual bool IsTouchpadPressed() const = 0;
+  virtual bool IsTouchpadTouched() const = 0;
+  virtual double ThumbstickX() const = 0;
+  virtual double ThumbstickY() const = 0;
+  virtual double TouchpadX() const = 0;
+  virtual double TouchpadY() const = 0;
+
+  // Uses SpatialInteractionSourceProperties.
+  virtual std::unique_ptr<WMRInputLocation> TryGetLocation(
+      const WMRCoordinateSystem* origin) const = 0;
+};
+
+class WMRInputSourceStateImpl : public WMRInputSourceState {
+ public:
+  explicit WMRInputSourceStateImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState>
           source_state);
-  WMRInputSourceState(const WMRInputSourceState& other);
-  virtual ~WMRInputSourceState();
+  WMRInputSourceStateImpl(const WMRInputSourceStateImpl& other);
+  ~WMRInputSourceStateImpl() override;
 
   // Uses ISpatialInteractionSourceState.
-  bool TryGetPointerPose(const WMRCoordinateSystem* origin,
-                         WMRPointerPose* pointer_pose) const;
-  WMRInputSource GetSource() const;
+  std::unique_ptr<WMRPointerPose> TryGetPointerPose(
+      const WMRCoordinateSystem* origin) const override;
+  std::unique_ptr<WMRInputSource> GetSource() const override;
 
   // Uses ISpatialInteractionSourceState2.
-  bool IsGrasped() const;
-  bool IsSelectPressed() const;
-  double SelectPressedValue() const;
+  bool IsGrasped() const override;
+  bool IsSelectPressed() const override;
+  double SelectPressedValue() const override;
 
-  bool SupportsControllerProperties() const;
+  bool SupportsControllerProperties() const override;
 
   // Uses SpatialInteractionControllerProperties.
-  bool IsThumbstickPressed() const;
-  bool IsTouchpadPressed() const;
-  bool IsTouchpadTouched() const;
-  double ThumbstickX() const;
-  double ThumbstickY() const;
-  double TouchpadX() const;
-  double TouchpadY() const;
+  bool IsThumbstickPressed() const override;
+  bool IsTouchpadPressed() const override;
+  bool IsTouchpadTouched() const override;
+  double ThumbstickX() const override;
+  double ThumbstickY() const override;
+  double TouchpadX() const override;
+  double TouchpadY() const override;
 
   // Uses SpatialInteractionSourceProperties.
-  bool TryGetLocation(const WMRCoordinateSystem* origin,
-                      WMRInputLocation* location) const;
+  std::unique_ptr<WMRInputLocation> TryGetLocation(
+      const WMRCoordinateSystem* origin) const override;
 
  private:
   Microsoft::WRL::ComPtr<

@@ -25,7 +25,8 @@ using ABI::Windows::UI::Input::Spatial::ISpatialPointerPose;
 using Microsoft::WRL::ComPtr;
 
 namespace device {
-WMRInputSourceState::WMRInputSourceState(
+
+WMRInputSourceStateImpl::WMRInputSourceStateImpl(
     ComPtr<ISpatialInteractionSourceState> source_state)
     : source_state_(source_state) {
   DCHECK(source_state_);
@@ -38,60 +39,58 @@ WMRInputSourceState::WMRInputSourceState(
   source_state2_->get_ControllerProperties(&controller_properties_);
 }
 
-WMRInputSourceState::WMRInputSourceState(const WMRInputSourceState& other) =
-    default;
+WMRInputSourceStateImpl::WMRInputSourceStateImpl(
+    const WMRInputSourceStateImpl& other) = default;
 
-WMRInputSourceState::~WMRInputSourceState() = default;
+WMRInputSourceStateImpl::~WMRInputSourceStateImpl() = default;
 
 // ISpatialInteractionSourceState
-bool WMRInputSourceState::TryGetPointerPose(
-    const WMRCoordinateSystem* origin,
-    WMRPointerPose* pointer_pose) const {
+std::unique_ptr<WMRPointerPose> WMRInputSourceStateImpl::TryGetPointerPose(
+    const WMRCoordinateSystem* origin) const {
   ComPtr<ISpatialPointerPose> pointer_pose_wmr;
   HRESULT hr =
       source_state_->TryGetPointerPose(origin->GetRawPtr(), &pointer_pose_wmr);
 
   if (SUCCEEDED(hr) && pointer_pose_wmr) {
-    *pointer_pose = WMRPointerPose(pointer_pose_wmr);
-    return true;
+    return std::make_unique<WMRPointerPoseImpl>(pointer_pose_wmr);
   }
 
-  return false;
+  return nullptr;
 }
 
-WMRInputSource WMRInputSourceState::GetSource() const {
+std::unique_ptr<WMRInputSource> WMRInputSourceStateImpl::GetSource() const {
   ComPtr<ISpatialInteractionSource> source;
   HRESULT hr = source_state_->get_Source(&source);
   DCHECK(SUCCEEDED(hr));
-  return WMRInputSource(source);
+  return std::make_unique<WMRInputSourceImpl>(source);
 }
 
-bool WMRInputSourceState::IsGrasped() const {
+bool WMRInputSourceStateImpl::IsGrasped() const {
   boolean val;
   HRESULT hr = source_state2_->get_IsGrasped(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-bool WMRInputSourceState::IsSelectPressed() const {
+bool WMRInputSourceStateImpl::IsSelectPressed() const {
   boolean val;
   HRESULT hr = source_state2_->get_IsSelectPressed(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-double WMRInputSourceState::SelectPressedValue() const {
+double WMRInputSourceStateImpl::SelectPressedValue() const {
   DOUBLE val;
   HRESULT hr = source_state2_->get_SelectPressedValue(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-bool WMRInputSourceState::SupportsControllerProperties() const {
+bool WMRInputSourceStateImpl::SupportsControllerProperties() const {
   return controller_properties_ != nullptr;
 }
 
-bool WMRInputSourceState::IsThumbstickPressed() const {
+bool WMRInputSourceStateImpl::IsThumbstickPressed() const {
   DCHECK(SupportsControllerProperties());
   boolean val;
   HRESULT hr = controller_properties_->get_IsThumbstickPressed(&val);
@@ -99,7 +98,7 @@ bool WMRInputSourceState::IsThumbstickPressed() const {
   return val;
 }
 
-bool WMRInputSourceState::IsTouchpadPressed() const {
+bool WMRInputSourceStateImpl::IsTouchpadPressed() const {
   DCHECK(SupportsControllerProperties());
   boolean val;
   HRESULT hr = controller_properties_->get_IsTouchpadPressed(&val);
@@ -107,7 +106,7 @@ bool WMRInputSourceState::IsTouchpadPressed() const {
   return val;
 }
 
-bool WMRInputSourceState::IsTouchpadTouched() const {
+bool WMRInputSourceStateImpl::IsTouchpadTouched() const {
   DCHECK(SupportsControllerProperties());
   boolean val;
   HRESULT hr = controller_properties_->get_IsTouchpadTouched(&val);
@@ -115,7 +114,7 @@ bool WMRInputSourceState::IsTouchpadTouched() const {
   return val;
 }
 
-double WMRInputSourceState::ThumbstickX() const {
+double WMRInputSourceStateImpl::ThumbstickX() const {
   DCHECK(SupportsControllerProperties());
   DOUBLE val;
   HRESULT hr = controller_properties_->get_ThumbstickX(&val);
@@ -123,7 +122,7 @@ double WMRInputSourceState::ThumbstickX() const {
   return val;
 }
 
-double WMRInputSourceState::ThumbstickY() const {
+double WMRInputSourceStateImpl::ThumbstickY() const {
   DCHECK(SupportsControllerProperties());
   DOUBLE val;
   HRESULT hr = controller_properties_->get_ThumbstickY(&val);
@@ -131,7 +130,7 @@ double WMRInputSourceState::ThumbstickY() const {
   return val;
 }
 
-double WMRInputSourceState::TouchpadX() const {
+double WMRInputSourceStateImpl::TouchpadX() const {
   DCHECK(SupportsControllerProperties());
   DOUBLE val;
   HRESULT hr = controller_properties_->get_TouchpadX(&val);
@@ -139,7 +138,7 @@ double WMRInputSourceState::TouchpadX() const {
   return val;
 }
 
-double WMRInputSourceState::TouchpadY() const {
+double WMRInputSourceStateImpl::TouchpadY() const {
   DCHECK(SupportsControllerProperties());
   DOUBLE val;
   HRESULT hr = controller_properties_->get_TouchpadY(&val);
@@ -147,16 +146,14 @@ double WMRInputSourceState::TouchpadY() const {
   return val;
 }
 
-bool WMRInputSourceState::TryGetLocation(const WMRCoordinateSystem* origin,
-                                         WMRInputLocation* location) const {
-  DCHECK(location);
+std::unique_ptr<WMRInputLocation> WMRInputSourceStateImpl::TryGetLocation(
+    const WMRCoordinateSystem* origin) const {
   ComPtr<ISpatialInteractionSourceLocation> location_wmr;
   if (FAILED(properties_->TryGetLocation(origin->GetRawPtr(), &location_wmr)) ||
       !location_wmr)
-    return false;
+    return nullptr;
 
-  *location = WMRInputLocation(location_wmr);
-  return true;
+  return std::make_unique<WMRInputLocationImpl>(location_wmr);
 }
 
 }  // namespace device

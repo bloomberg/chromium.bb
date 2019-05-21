@@ -154,6 +154,10 @@ void XrBrowserTestBase::TearDown() {
   InProcessBrowserTest::TearDown();
 }
 
+XrBrowserTestBase::RuntimeType XrBrowserTestBase::GetRuntimeType() const {
+  return XrBrowserTestBase::RuntimeType::RUNTIME_NONE;
+}
+
 GURL XrBrowserTestBase::GetFileUrlForHtmlTestFile(
     const std::string& test_name) {
   return ui_test_utils::GetTestUrl(

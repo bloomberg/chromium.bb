@@ -12,19 +12,29 @@
 namespace device {
 class WMRPointerSourcePose {
  public:
-  explicit WMRPointerSourcePose(
+  virtual ~WMRPointerSourcePose() = default;
+
+  virtual bool IsValid() const = 0;
+  virtual ABI::Windows::Foundation::Numerics::Vector3 Position() const = 0;
+  virtual ABI::Windows::Foundation::Numerics::Quaternion Orientation()
+      const = 0;
+};
+
+class WMRPointerSourcePoseImpl : public WMRPointerSourcePose {
+ public:
+  explicit WMRPointerSourcePoseImpl(
       Microsoft::WRL::ComPtr<ABI::Windows::UI::Input::Spatial::
                                  ISpatialPointerInteractionSourcePose>
           pointer_pose);
-  virtual ~WMRPointerSourcePose();
+  ~WMRPointerSourcePoseImpl() override;
 
-  bool IsValid() const;
+  bool IsValid() const override;
 
   // Uses ISpatialPointerInteractionSourcePose.
-  ABI::Windows::Foundation::Numerics::Vector3 Position() const;
+  ABI::Windows::Foundation::Numerics::Vector3 Position() const override;
 
   // Uses ISpatialPointerInteractionSourcePose2.
-  ABI::Windows::Foundation::Numerics::Quaternion Orientation() const;
+  ABI::Windows::Foundation::Numerics::Quaternion Orientation() const override;
 
  private:
   Microsoft::WRL::ComPtr<
@@ -34,8 +44,9 @@ class WMRPointerSourcePose {
       ABI::Windows::UI::Input::Spatial::ISpatialPointerInteractionSourcePose2>
       pointer_source_pose2_;
 
-  DISALLOW_COPY(WMRPointerSourcePose);
+  DISALLOW_COPY(WMRPointerSourcePoseImpl);
 };
+
 }  // namespace device
 
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_POINTER_SOURCE_POSE_H_

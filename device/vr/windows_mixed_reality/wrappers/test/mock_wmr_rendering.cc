@@ -4,7 +4,11 @@
 
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_rendering.h"
 
-#include "base/debug/debugger.h"
+#include <Windows.Graphics.DirectX.Direct3D11.interop.h>
+#include <d3d11.h>
+#include <dxgi.h>
+#include <dxgiformat.h>
+
 #include "base/logging.h"
 #include "device/vr/test/test_hook.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
@@ -145,13 +149,32 @@ bool MockWMRCameraPose::TryGetViewTransform(
   return true;
 }
 
-MockWMRRenderingParameters::MockWMRRenderingParameters() {}
+MockWMRRenderingParameters::MockWMRRenderingParameters(
+    const Microsoft::WRL::ComPtr<ID3D11Device>& device)
+    : d3d11_device_(device) {}
 
 MockWMRRenderingParameters::~MockWMRRenderingParameters() = default;
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D>
 MockWMRRenderingParameters::TryGetBackbufferAsTexture2D() {
-  return nullptr;
+  if (!d3d11_device_)
+    return nullptr;
+  auto desc = CD3D11_TEXTURE2D_DESC();
+  desc.ArraySize = 2;
+  desc.Width = kDefaultWmrRenderWidth;
+  desc.Height = kDefaultWmrRenderHeight;
+  desc.SampleDesc = {1, 0};
+  desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.Usage = D3D11_USAGE_DEFAULT;
+  desc.BindFlags = D3D11_BIND_RENDER_TARGET;
+  desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture = nullptr;
+  auto hr = d3d11_device_->CreateTexture2D(&desc, nullptr, &texture);
+  if (FAILED(hr))
+    return nullptr;
+
+  return texture;
 }
 
 }  // namespace device

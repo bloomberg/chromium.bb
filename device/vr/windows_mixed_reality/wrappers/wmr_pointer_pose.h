@@ -7,6 +7,7 @@
 #include <windows.perception.spatial.h>
 #include <windows.ui.input.spatial.h>
 #include <wrl.h>
+#include <memory>
 
 #include "base/macros.h"
 
@@ -15,20 +16,29 @@ class WMRInputSource;
 class WMRPointerSourcePose;
 class WMRPointerPose {
  public:
-  explicit WMRPointerPose(
+  virtual ~WMRPointerPose() = default;
+
+  virtual bool IsValid() const = 0;
+  virtual std::unique_ptr<WMRPointerSourcePose> TryGetInteractionSourcePose(
+      const WMRInputSource* source) const = 0;
+  virtual ABI::Windows::Foundation::Numerics::Vector3 HeadForward() const = 0;
+};
+
+class WMRPointerPoseImpl : public WMRPointerPose {
+ public:
+  explicit WMRPointerPoseImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::UI::Input::Spatial::ISpatialPointerPose> pointer_pose);
-  virtual ~WMRPointerPose();
+  ~WMRPointerPoseImpl() override;
 
-  bool IsValid() const;
+  bool IsValid() const override;
 
   // Uses ISpatialPointerPose2.
-  bool TryGetInteractionSourcePose(
-      const WMRInputSource& source,
-      WMRPointerSourcePose* pointer_source_pose) const;
+  std::unique_ptr<WMRPointerSourcePose> TryGetInteractionSourcePose(
+      const WMRInputSource* source) const override;
 
   // Uses IHeadPose.
-  ABI::Windows::Foundation::Numerics::Vector3 HeadForward() const;
+  ABI::Windows::Foundation::Numerics::Vector3 HeadForward() const override;
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::UI::Input::Spatial::ISpatialPointerPose>
@@ -39,8 +49,9 @@ class WMRPointerPose {
   // This is a simple interface, so expose it directly rather than create
   // a new wrapper class.
   Microsoft::WRL::ComPtr<ABI::Windows::Perception::People::IHeadPose> head_;
-  DISALLOW_COPY(WMRPointerPose);
+  DISALLOW_COPY(WMRPointerPoseImpl);
 };
+
 }  // namespace device
 
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_POINTER_POSE_H_

@@ -22,41 +22,37 @@ using ABI::Windows::UI::Input::Spatial::ISpatialPointerPose2;
 using Microsoft::WRL::ComPtr;
 
 namespace device {
-WMRPointerPose::WMRPointerPose(ComPtr<ISpatialPointerPose> pointer_pose)
+WMRPointerPoseImpl::WMRPointerPoseImpl(ComPtr<ISpatialPointerPose> pointer_pose)
     : pointer_pose_(pointer_pose) {
-  if (pointer_pose_) {
-    pointer_pose_.As(&pointer_pose2_);
+  DCHECK(pointer_pose_);
+  pointer_pose_.As(&pointer_pose2_);
 
-    HRESULT hr = pointer_pose_->get_Head(&head_);
-    DCHECK(SUCCEEDED(hr));
-  }
+  HRESULT hr = pointer_pose_->get_Head(&head_);
+  DCHECK(SUCCEEDED(hr));
 }
 
-WMRPointerPose::~WMRPointerPose() = default;
+WMRPointerPoseImpl::~WMRPointerPoseImpl() = default;
 
-bool WMRPointerPose::IsValid() const {
+bool WMRPointerPoseImpl::IsValid() const {
   return pointer_pose_ != nullptr;
 }
 
-bool WMRPointerPose::TryGetInteractionSourcePose(
-    const WMRInputSource& source,
-    WMRPointerSourcePose* pointer_source_pose) const {
-  DCHECK(pointer_source_pose);
+std::unique_ptr<WMRPointerSourcePose>
+WMRPointerPoseImpl::TryGetInteractionSourcePose(
+    const WMRInputSource* source) const {
   if (!pointer_pose2_)
-    return false;
+    return nullptr;
 
   ComPtr<ISpatialPointerInteractionSourcePose> psp_wmr;
-  HRESULT hr =
-      pointer_pose2_->TryGetInteractionSourcePose(source.GetRawPtr(), &psp_wmr);
-  if (SUCCEEDED(hr) && psp_wmr) {
-    *pointer_source_pose = WMRPointerSourcePose(psp_wmr);
-    return true;
-  }
+  HRESULT hr = pointer_pose2_->TryGetInteractionSourcePose(source->GetRawPtr(),
+                                                           &psp_wmr);
+  if (SUCCEEDED(hr) && psp_wmr)
+    return std::make_unique<WMRPointerSourcePoseImpl>(psp_wmr);
 
-  return false;
+  return nullptr;
 }
 
-WFN::Vector3 WMRPointerPose::HeadForward() const {
+WFN::Vector3 WMRPointerPoseImpl::HeadForward() const {
   DCHECK(IsValid());
   WFN::Vector3 val;
   HRESULT hr = head_->get_ForwardDirection(&val);

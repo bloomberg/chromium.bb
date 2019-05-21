@@ -4,6 +4,8 @@
 
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_holographic_frame.h"
 
+#include "device/vr/test/test_hook.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_rendering.h"
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_timestamp.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_rendering.h"
@@ -29,7 +31,9 @@ MockWMRHolographicFramePrediction::CameraPoses() {
 }
 
 // MockWMRHolographicFrame
-MockWMRHolographicFrame::MockWMRHolographicFrame() {}
+MockWMRHolographicFrame::MockWMRHolographicFrame(
+    const Microsoft::WRL::ComPtr<ID3D11Device>& device)
+    : d3d11_device_(device) {}
 
 MockWMRHolographicFrame::~MockWMRHolographicFrame() = default;
 
@@ -40,10 +44,16 @@ MockWMRHolographicFrame::CurrentPrediction() {
 
 std::unique_ptr<WMRRenderingParameters>
 MockWMRHolographicFrame::TryGetRenderingParameters(const WMRCameraPose* pose) {
-  return std::make_unique<MockWMRRenderingParameters>();
+  return std::make_unique<MockWMRRenderingParameters>(d3d11_device_);
 }
 
 bool MockWMRHolographicFrame::TryPresentUsingCurrentPrediction() {
+  // TODO(https://crbug.com/926048): Actually pass in correct data.
+  SubmittedFrameData data;
+  auto locked_hook = MixedRealityDeviceStatics::GetLockedTestHook();
+  if (locked_hook.GetHook()) {
+    locked_hook.GetHook()->OnFrameSubmitted(data);
+  }
   return true;
 }
 
