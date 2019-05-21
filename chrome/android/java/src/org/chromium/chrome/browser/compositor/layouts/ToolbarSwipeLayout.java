@@ -402,7 +402,8 @@ public class ToolbarSwipeLayout extends Layout {
         assert mSceneLayer != null;
         // contentViewport is intentionally passed for both parameters below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
-                layerTitleCache, tabContentManager, resourceManager, fullscreenManager);
+                layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
+                SceneLayer.INVALID_RESOURCE_ID);
     }
 
     /**

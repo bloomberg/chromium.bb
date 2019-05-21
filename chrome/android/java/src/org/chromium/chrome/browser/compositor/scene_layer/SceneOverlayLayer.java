@@ -8,7 +8,6 @@ package org.chromium.chrome.browser.compositor.scene_layer;
  * An extension of SceneLayer for SceneOverlay.
  */
 public abstract class SceneOverlayLayer extends SceneLayer {
-    protected static final int INVALID_RESOURCE_ID = -1;
 
     /**
      * Sets a content tree inside this scene overlay tree.

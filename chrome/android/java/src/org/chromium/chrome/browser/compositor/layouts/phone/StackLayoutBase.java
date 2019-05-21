@@ -1596,7 +1596,8 @@ public abstract class StackLayoutBase extends Layout {
         assert mSceneLayer != null;
 
         mSceneLayer.pushLayers(getContext(), viewport, contentViewport, this, layerTitleCache,
-                tabContentManager, resourceManager, fullscreenManager);
+                tabContentManager, resourceManager, fullscreenManager,
+                SceneLayer.INVALID_RESOURCE_ID);
     }
 
     /**

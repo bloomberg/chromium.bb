@@ -200,6 +200,29 @@ void TabListSceneLayer::PutTabLayer(
   content_obscures_self_ |= content.Contains(self);
 }
 
+void TabListSceneLayer::PutBackgroundLayer(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    jint resource_id) {
+  int ui_resource_id = resource_manager_->GetUIResourceId(
+      ui::ANDROID_RESOURCE_TYPE_DYNAMIC, resource_id);
+  if (ui_resource_id == 0)
+    return;
+
+  if (!background_layer_) {
+    background_layer_ = cc::UIResourceLayer::Create();
+    background_layer_->SetIsDrawable(true);
+    own_tree_->AddChild(background_layer_);
+  }
+  DCHECK(background_layer_);
+  background_layer_->SetUIResourceId(ui_resource_id);
+  gfx::Size size =
+      resource_manager_
+          ->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC, resource_id)
+          ->size();
+  background_layer_->SetBounds(size);
+}
+
 void TabListSceneLayer::OnDetach() {
   SceneLayer::OnDetach();
   for (auto tab : tab_map_)

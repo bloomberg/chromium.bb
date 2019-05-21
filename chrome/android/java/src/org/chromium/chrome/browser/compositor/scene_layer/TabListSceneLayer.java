@@ -50,10 +50,13 @@ public class TabListSceneLayer extends SceneLayer {
      * @param tabContentManager An object for accessing tab content.
      * @param resourceManager An object for accessing static and dynamic resources.
      * @param fullscreenManager The fullscreen manager for browser controls information.
+     * @param backgroundResourceId The resource ID for background. {@link #INVALID_RESOURCE_ID} if
+     *                             none. Only used in GridTabSwitcher.
      */
     public void pushLayers(Context context, RectF viewport, RectF contentViewport, Layout layout,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
-            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
+            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager,
+            int backgroundResourceId) {
         if (mNativePtr == 0) return;
 
         Resources res = context.getResources();
@@ -67,6 +70,10 @@ public class TabListSceneLayer extends SceneLayer {
 
         nativeUpdateLayer(mNativePtr, tabListBgColor, viewport.left, viewport.top, viewport.width(),
                 viewport.height(), layerTitleCache, tabContentManager, resourceManager);
+
+        if (backgroundResourceId != INVALID_RESOURCE_ID) {
+            nativePutBackgroundLayer(mNativePtr, backgroundResourceId);
+        }
 
         boolean isHTSEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
@@ -199,4 +206,6 @@ public class TabListSceneLayer extends SceneLayer {
             int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
             float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
             float sideBorderScale, boolean insetVerticalBorder);
+
+    private native void nativePutBackgroundLayer(long nativeTabListSceneLayer, int resourceId);
 }
