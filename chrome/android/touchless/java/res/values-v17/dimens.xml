@@ -16,6 +16,7 @@
     <dimen name="notouch_key_functions_tooltip_item_horizontal_margin">4dp</dimen>
 
     <dimen name="focus_ring_stroke_width">2dp</dimen>
+    <dimen name="touchless_preferences_highlight_padding">8dp</dimen>
 
     <!-- Open last tab placeholder dimensions. -->
     <dimen name="open_last_tab_placeholder_image_size">24dp</dimen>
