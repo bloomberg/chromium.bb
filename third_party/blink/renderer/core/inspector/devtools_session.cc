@@ -110,9 +110,9 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
     // Crash renderer.
     if (method == "Page.crash")
       CHECK(false);
-    inspector_task_runner_->AppendTask(
-        CrossThreadBind(&::blink::DevToolsSession::DispatchProtocolCommandImpl,
-                        session_, call_id, method, UnwrapMessage(message)));
+    inspector_task_runner_->AppendTask(CrossThreadBindOnce(
+        &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
+        call_id, method, UnwrapMessage(message)));
   }
 
  private:

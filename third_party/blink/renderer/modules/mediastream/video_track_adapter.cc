@@ -347,8 +347,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
               kResolutionAdapterWrappingFrameForCroppingFailed);
       return;
     }
-    video_frame->AddDestructionObserver(ConvertToBaseCallback(
-        CrossThreadBind(&TrackReleaseOriginalFrame, frame)));
+    video_frame->AddDestructionObserver(ConvertToBaseOnceCallback(
+        CrossThreadBindOnce(&TrackReleaseOriginalFrame, frame)));
 
     DVLOG(3) << "desired size  " << desired_size.ToString()
              << " output natural size "

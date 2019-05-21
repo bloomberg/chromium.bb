@@ -40,7 +40,7 @@ TEST(PersistentTest, BindCancellation) {
 TEST(PersistentTest, CrossThreadBindCancellation) {
   Receiver* receiver = MakeGarbageCollected<Receiver>();
   int counter = 0;
-  CrossThreadClosure function = blink::CrossThreadBind(
+  CrossThreadOnceClosure function = CrossThreadBindOnce(
       &Receiver::Increment, WrapCrossThreadWeakPersistent(receiver),
       WTF::CrossThreadUnretained(&counter));
 
