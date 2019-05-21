@@ -38,13 +38,11 @@ namespace extensions {
 namespace {
 
 // TODO(ekaramad): Make this a proper resource (https://crbug.com/659750).
-// TODO(ekaramad): Should we use an <embed>? Verify if this causes issues with
-// post messaging support for PDF viewer (https://crbug.com/659750).
 const char kFullPageMimeHandlerViewHTML[] =
     "<!doctype html><html><body style='height: 100%%; width: 100%%; overflow: "
     "hidden; margin:0px; background-color: rgb(%d, %d, %d);'><embed "
     "style='position:absolute; left: 0; top: 0;'width='100%%' height='100%%'"
-    " src='about:blank' type='text/html' "
+    " src='about:blank' type='%s' "
     "internalid='%s'></embed></body></html>";
 const uint32_t kFullPageMimeHandlerViewDataPipeSize = 512U;
 
@@ -99,9 +97,9 @@ bool MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
     return false;
   auto color = GetBackgroundColorStringForMimeType(resource_url, mime_type);
   std::string token = base::UnguessableToken::Create().ToString();
-  auto html_str =
-      base::StringPrintf(kFullPageMimeHandlerViewHTML, SkColorGetR(color),
-                         SkColorGetG(color), SkColorGetB(color), token.c_str());
+  auto html_str = base::StringPrintf(
+      kFullPageMimeHandlerViewHTML, SkColorGetR(color), SkColorGetG(color),
+      SkColorGetB(color), mime_type.c_str(), token.c_str());
   payload->assign(html_str);
   *data_pipe_size = kFullPageMimeHandlerViewDataPipeSize;
   base::PostTaskWithTraitsAndReply(

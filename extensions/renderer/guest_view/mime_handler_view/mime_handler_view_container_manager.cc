@@ -82,6 +82,12 @@ bool MimeHandlerViewContainerManager::CreateFrameContainer(
   auto* manager = Get(content::RenderFrame::FromWebFrame(
                           plugin_element.GetDocument().GetFrame()),
                       true /* create_if_does_not_exist */);
+  if (manager->IsManagedByContainerManager(plugin_element)) {
+    // This is the one injected by HTML string. Return true so that the
+    // HTMLPlugInElement creates a child frame to be used as the outer
+    // WebContents frame.
+    return true;
+  }
   if (auto* old_frame_container = GetFrameContainer(plugin_element)) {
     if (old_frame_container->resource_url().EqualsIgnoringRef(resource_url) &&
         old_frame_container->mime_type() == mime_type) {
@@ -104,9 +110,7 @@ bool MimeHandlerViewContainerManager::CreateFrameContainer(
 v8::Local<v8::Object> MimeHandlerViewContainerManager::GetScriptableObject(
     const blink::WebElement& plugin_element,
     v8::Isolate* isolate) {
-  if (plugin_element.HasAttribute("internalid") &&
-      base::ToUpperASCII(plugin_element.GetAttribute("internalid").Utf8()) ==
-          internal_id_) {
+  if (IsManagedByContainerManager(plugin_element)) {
     return GetPostMessageSupport()->GetScriptableObject(isolate);
   }
   if (auto* frame_container = GetFrameContainer(plugin_element)) {
@@ -131,6 +135,7 @@ void MimeHandlerViewContainerManager::ReadyToCommitNavigation(
   // files happens in the same RenderFrame (e.g., some of
   // PDFExtensionLoadTest tests).
   post_message_support_.reset();
+  plugin_element_ = blink::WebElement();
 }
 
 void MimeHandlerViewContainerManager::OnDestruct() {
@@ -281,4 +286,15 @@ bool MimeHandlerViewContainerManager::IsEmbedded() const {
 bool MimeHandlerViewContainerManager::IsResourceAccessibleBySource() const {
   return true;
 }
+
+bool MimeHandlerViewContainerManager::IsManagedByContainerManager(
+    const blink::WebElement& plugin_element) {
+  if (plugin_element_.IsNull() && plugin_element.HasAttribute("internalid") &&
+      base::ToUpperASCII(plugin_element.GetAttribute("internalid").Utf8()) ==
+          internal_id_) {
+    plugin_element_ = plugin_element;
+  }
+  return plugin_element_ == plugin_element;
+}
+
 }  // namespace extensions

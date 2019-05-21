@@ -15,6 +15,7 @@
 #include "extensions/common/mojo/guest_view.mojom.h"
 #include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/web/web_element.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -110,6 +111,11 @@ class MimeHandlerViewContainerManager
 
   void RecordInteraction(MimeHandlerViewUMATypes::Type type);
 
+  // Returns true if the |element| is managed by
+  // MimeHandlerViewContainerManager; this would be the element that is added by
+  // the HTML string injected at MimeHandlerViewAttachHelper.
+  bool IsManagedByContainerManager(const blink::WebElement& plugin_element);
+
   // Instantiated if this MHVFC is for a full-page MHV. This means MHV is
   // created when a frame was navigated to MHV resource by means other than
   // HTMLPlugInElement::RequestObjectInternal (e.g., omnibox). Note: the
@@ -125,6 +131,8 @@ class MimeHandlerViewContainerManager
   // MimeHandlerViewAttachHelper (and hence requires a scriptable object to for
   // postMessage purposes).
   std::string internal_id_;
+  // The plugin element that is managed by MimeHandlerViewContainerManager.
+  blink::WebElement plugin_element_;
 
   mojo::BindingSet<mojom::MimeHandlerViewContainerManager> bindings_;
   mojo::Binding<mime_handler::BeforeUnloadControl>
