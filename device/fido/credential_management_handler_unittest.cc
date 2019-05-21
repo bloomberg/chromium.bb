@@ -68,7 +68,7 @@ TEST_F(CredentialManagementHandlerTest, Test) {
   ctap_config.credential_management_support = true;
   ctap_config.resident_credential_storage = 100;
   virtual_device.SetCtap2Config(ctap_config);
-  virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+  virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   virtual_device.mutable_state()->pin = kPIN;
   virtual_device.mutable_state()->retries = 8;
   ASSERT_TRUE(virtual_device.mutable_state()->InjectResidentKey(

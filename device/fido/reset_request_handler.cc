@@ -47,7 +47,7 @@ void ResetRequestHandler::OnTouch(FidoAuthenticator* authenticator) {
   processed_touch_ = true;
   CancelActiveAuthenticators(authenticator->GetId());
 
-  if (authenticator->SupportedProtocol() != ProtocolVersion::kCtap) {
+  if (authenticator->SupportedProtocol() != ProtocolVersion::kCtap2) {
     std::move(finished_callback_)
         .Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand);
     return;

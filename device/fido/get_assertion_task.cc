@@ -72,7 +72,7 @@ bool GetAssertionTask::StringFixupPredicate(
 }
 
 void GetAssertionTask::StartTask() {
-  if (device()->supported_protocol() == ProtocolVersion::kCtap) {
+  if (device()->supported_protocol() == ProtocolVersion::kCtap2) {
     GetAssertion();
   } else {
     U2fSign();

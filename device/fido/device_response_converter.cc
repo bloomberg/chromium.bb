@@ -31,7 +31,7 @@ constexpr size_t kResponseCodeLength = 1;
 
 ProtocolVersion ConvertStringToProtocolVersion(base::StringPiece version) {
   if (version == kCtap2Version)
-    return ProtocolVersion::kCtap;
+    return ProtocolVersion::kCtap2;
   if (version == kU2fVersion)
     return ProtocolVersion::kU2f;
 

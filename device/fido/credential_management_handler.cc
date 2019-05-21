@@ -51,7 +51,7 @@ void CredentialManagementHandler::OnTouch(FidoAuthenticator* authenticator) {
   state_ = State::kGettingRetries;
   CancelActiveAuthenticators(authenticator->GetId());
 
-  if (authenticator->SupportedProtocol() != ProtocolVersion::kCtap ||
+  if (authenticator->SupportedProtocol() != ProtocolVersion::kCtap2 ||
       !authenticator->Options() ||
       !(authenticator->Options()->supports_credential_management ||
         authenticator->Options()->supports_credential_management_preview)) {

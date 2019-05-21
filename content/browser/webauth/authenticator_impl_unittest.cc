@@ -824,7 +824,7 @@ TEST_F(AuthenticatorImplTest, CryptoTokenU2fOnly) {
     device::test::ScopedVirtualFidoDevice scoped_virtual_device;
     scoped_virtual_device.SetSupportedProtocol(
         u2f_authenticator ? device::ProtocolVersion::kU2f
-                          : device::ProtocolVersion::kCtap);
+                          : device::ProtocolVersion::kCtap2);
 
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
@@ -913,7 +913,7 @@ TEST_F(AuthenticatorImplTest, AttestationPermitted) {
     device::test::ScopedVirtualFidoDevice scoped_virtual_device;
     scoped_virtual_device.SetSupportedProtocol(
         u2f_authenticator ? device::ProtocolVersion::kU2f
-                          : device::ProtocolVersion::kCtap);
+                          : device::ProtocolVersion::kCtap2);
 
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
@@ -1930,7 +1930,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 // behavior of the Touch ID platform authenticator.
 TEST_F(AuthenticatorContentBrowserClientTest,
        PlatformAuthenticatorAttestation) {
-  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   virtual_device_.mutable_state()->transport =
       device::FidoTransportProtocol::kInternal;
   virtual_device_.mutable_state()->self_attestation = true;
@@ -1977,7 +1977,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
-  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   virtual_device_.mutable_state()->self_attestation = true;
   NavigateAndCommit(GURL("https://example.com"));
 
@@ -2019,7 +2019,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
 
 TEST_F(AuthenticatorContentBrowserClientTest,
        Ctap2SelfAttestationNonZeroAaguid) {
-  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   virtual_device_.mutable_state()->self_attestation = true;
   virtual_device_.mutable_state()->non_zero_aaguid_with_self_attestation = true;
   NavigateAndCommit(GURL("https://example.com"));
@@ -2518,7 +2518,7 @@ TEST_F(AuthenticatorImplTest, Transports) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
   for (auto protocol :
-       {device::ProtocolVersion::kU2f, device::ProtocolVersion::kCtap}) {
+       {device::ProtocolVersion::kU2f, device::ProtocolVersion::kCtap2}) {
     SCOPED_TRACE(static_cast<int>(protocol));
 
     device::test::ScopedVirtualFidoDevice scoped_virtual_device;
@@ -2551,7 +2551,7 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
     SCOPED_TRACE(include_extension);
 
     device::test::ScopedVirtualFidoDevice scoped_virtual_device;
-    scoped_virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+    scoped_virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
 
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialCreationOptionsPtr options =

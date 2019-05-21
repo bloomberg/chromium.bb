@@ -56,7 +56,7 @@ void FidoHidDevice::Cancel(CancelToken token) {
     // cause the request to complete in the usual way. U2F doesn't have a cancel
     // message, but U2F devices are not expected to block on requests and also
     // no U2F command alters state in a meaningful way, as CTAP2 commands do.
-    if (supported_protocol() != ProtocolVersion::kCtap) {
+    if (supported_protocol() != ProtocolVersion::kCtap2) {
       return;
     }
 
@@ -118,7 +118,7 @@ void FidoHidDevice::Transition(base::Optional<State> next_state) {
 
       // Write message to the device.
       current_token_ = pending_transactions_.front().token;
-      const auto command_type = supported_protocol() == ProtocolVersion::kCtap
+      const auto command_type = supported_protocol() == ProtocolVersion::kCtap2
                                     ? FidoHidDeviceCommand::kCbor
                                     : FidoHidDeviceCommand::kMsg;
       auto maybe_message(FidoHidMessage::Create(
@@ -349,7 +349,7 @@ void FidoHidDevice::OnRead(bool success,
 
   // If received HID packet is a keep-alive message then reset the timeout and
   // read again.
-  if (supported_protocol() == ProtocolVersion::kCtap &&
+  if (supported_protocol() == ProtocolVersion::kCtap2 &&
       message->cmd() == FidoHidDeviceCommand::kKeepAlive) {
     timeout_callback_.Cancel();
     ArmTimeout();

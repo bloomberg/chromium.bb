@@ -199,7 +199,7 @@ TEST_F(FidoBleDeviceTest, SendPingTest) {
 TEST_F(FidoBleDeviceTest, CancelDuringTransmission) {
   // Simulate a cancelation request that occurs while a multi-fragment message
   // is still being transmitted.
-  device()->set_supported_protocol(ProtocolVersion::kCtap);
+  device()->set_supported_protocol(ProtocolVersion::kCtap2);
   ConnectWithLength(kControlPointLength);
 
   ::testing::Sequence sequence;
@@ -233,7 +233,7 @@ TEST_F(FidoBleDeviceTest, CancelDuringTransmission) {
 
 TEST_F(FidoBleDeviceTest, CancelAfterTransmission) {
   // Simulate a cancelation request that occurs after the request has been sent.
-  device()->set_supported_protocol(ProtocolVersion::kCtap);
+  device()->set_supported_protocol(ProtocolVersion::kCtap2);
   ConnectWithLength(kControlPointLength);
 
   ::testing::Sequence sequence;

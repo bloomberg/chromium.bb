@@ -580,7 +580,7 @@ TEST(CTAPResponseTest, TestReadGetInfoResponse) {
   ASSERT_TRUE(get_info_response->max_msg_size);
   EXPECT_EQ(*get_info_response->max_msg_size, 1200u);
   EXPECT_TRUE(
-      base::ContainsKey(get_info_response->versions, ProtocolVersion::kCtap));
+      base::ContainsKey(get_info_response->versions, ProtocolVersion::kCtap2));
   EXPECT_TRUE(
       base::ContainsKey(get_info_response->versions, ProtocolVersion::kU2f));
   EXPECT_TRUE(get_info_response->options.is_platform_device);
@@ -625,7 +625,7 @@ TEST(CTAPResponseTest, TestReadGetInfoResponseWithIncorrectFormat) {
 
 TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
   AuthenticatorGetInfoResponse response(
-      {ProtocolVersion::kCtap, ProtocolVersion::kU2f}, kTestDeviceAaguid);
+      {ProtocolVersion::kCtap2, ProtocolVersion::kU2f}, kTestDeviceAaguid);
   response.extensions.emplace({std::string("uvm"), std::string("hmac-secret")});
   AuthenticatorSupportedOptions options;
   options.supports_resident_key = true;

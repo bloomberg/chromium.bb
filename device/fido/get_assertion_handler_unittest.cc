@@ -770,7 +770,7 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
   base::test::ScopedTaskEnvironment scoped_task_environment{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   device::test::ScopedVirtualFidoDevice virtual_device;
-  virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+  virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
       fido_parsing_utils::Materialize(test_data::kTestGetAssertionCredentialId),
       test_data::kRelyingPartyId));

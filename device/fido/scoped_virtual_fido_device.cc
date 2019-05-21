@@ -37,7 +37,7 @@ class VirtualFidoDeviceDiscovery
  protected:
   void StartInternal() override {
     std::unique_ptr<FidoDevice> device;
-    if (supported_protocol_ == ProtocolVersion::kCtap) {
+    if (supported_protocol_ == ProtocolVersion::kCtap2) {
       device = std::make_unique<VirtualCtap2Device>(state_, ctap2_config_);
     } else {
       device = std::make_unique<VirtualU2fDevice>(state_);
@@ -73,7 +73,7 @@ void ScopedVirtualFidoDevice::SetTransport(FidoTransportProtocol transport) {
 
 void ScopedVirtualFidoDevice::SetCtap2Config(
     const VirtualCtap2Device::Config& config) {
-  supported_protocol_ = ProtocolVersion::kCtap;
+  supported_protocol_ = ProtocolVersion::kCtap2;
   ctap2_config_ = config;
 }
 

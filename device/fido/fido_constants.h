@@ -44,7 +44,7 @@ enum class FidoReturnCode : uint8_t {
 };
 
 enum class ProtocolVersion {
-  kCtap,
+  kCtap2,
   kU2f,
   kUnknown,
 };

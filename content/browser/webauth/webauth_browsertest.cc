@@ -735,7 +735,7 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
 };
 
 constexpr device::ProtocolVersion kAllProtocols[] = {
-    device::ProtocolVersion::kCtap, device::ProtocolVersion::kU2f};
+    device::ProtocolVersion::kCtap2, device::ProtocolVersion::kU2f};
 
 // Tests that when navigator.credentials.create() is called with an invalid
 // relying party id, we get a SecurityError.

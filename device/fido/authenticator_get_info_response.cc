@@ -44,8 +44,8 @@ std::vector<uint8_t> AuthenticatorGetInfoResponse::EncodeToCBOR(
     const AuthenticatorGetInfoResponse& response) {
   cbor::Value::ArrayValue version_array;
   for (const auto& version : response.versions) {
-    version_array.emplace_back(version == ProtocolVersion::kCtap ? kCtap2Version
-                                                                 : kU2fVersion);
+    version_array.emplace_back(
+        version == ProtocolVersion::kCtap2 ? kCtap2Version : kU2fVersion);
   }
   cbor::Value::MapValue device_info_map;
   device_info_map.emplace(1, std::move(version_array));

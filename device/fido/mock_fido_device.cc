@@ -36,7 +36,7 @@ std::unique_ptr<MockFidoDevice> MockFidoDevice::MakeCtap(
   if (!device_info) {
     device_info = DefaultAuthenticatorInfo();
   }
-  return std::make_unique<MockFidoDevice>(ProtocolVersion::kCtap,
+  return std::make_unique<MockFidoDevice>(ProtocolVersion::kCtap2,
                                           std::move(*device_info));
 }
 

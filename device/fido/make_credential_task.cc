@@ -107,7 +107,7 @@ void MakeCredentialTask::Cancel() {
 }
 
 void MakeCredentialTask::StartTask() {
-  if (device()->supported_protocol() == ProtocolVersion::kCtap &&
+  if (device()->supported_protocol() == ProtocolVersion::kCtap2 &&
       !request_.is_u2f_only &&
       !ShouldUseU2fBecauseCtapRequiresClientPin(device(), request_)) {
     MakeCredential();
@@ -115,7 +115,7 @@ void MakeCredentialTask::StartTask() {
     // |device_info| should be present iff the device is CTAP2. This will be
     // used in |MaybeRevertU2fFallback| to restore the protocol of CTAP2 devices
     // once this task is complete.
-    DCHECK((device()->supported_protocol() == ProtocolVersion::kCtap) ==
+    DCHECK((device()->supported_protocol() == ProtocolVersion::kCtap2) ==
            static_cast<bool>(device()->device_info()));
     device()->set_supported_protocol(ProtocolVersion::kU2f);
     U2fRegister();
@@ -258,7 +258,7 @@ void MakeCredentialTask::MaybeRevertU2fFallback(
     // This was actually a CTAP2 device, but the protocol version was set to U2F
     // because it had a PIN set and so, in order to make a credential, the U2F
     // interface was used.
-    device()->set_supported_protocol(ProtocolVersion::kCtap);
+    device()->set_supported_protocol(ProtocolVersion::kCtap2);
   }
 
   std::move(callback_).Run(status, std::move(response));

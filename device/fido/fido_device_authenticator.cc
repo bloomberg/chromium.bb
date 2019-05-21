@@ -46,7 +46,7 @@ void FidoDeviceAuthenticator::InitializeAuthenticatorDone(
     case ProtocolVersion::kU2f:
       options_ = AuthenticatorSupportedOptions();
       break;
-    case ProtocolVersion::kCtap:
+    case ProtocolVersion::kCtap2:
       DCHECK(device_->device_info()) << "uninitialized device";
       options_ = device_->device_info()->options;
       break;
