@@ -4,7 +4,7 @@
 
 module autofill.mojom;
 
-import "components/autofill/content/common/autofill_types.mojom";
+import "components/autofill/core/common/mojom/autofill_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 // There is one instance of this interface per render frame in the render

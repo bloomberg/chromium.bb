@@ -208,8 +208,8 @@ test("components_unittests") {
     deps += [
       "//components/app_modal:unit_tests",
       "//components/autofill/content/browser:unit_tests",
-      "//components/autofill/content/common:unit_tests",
       "//components/autofill/content/renderer:unit_tests",
+      "//components/autofill/core/common/mojom:unit_tests",
       "//components/cast_certificate:unit_tests",
       "//components/cast_channel:unit_tests",
       "//components/certificate_transparency:unit_tests",

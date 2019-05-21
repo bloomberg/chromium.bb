@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/autofill/content/common/autofill_types.mojom"
+mojom = "//components/autofill/core/common/mojom/autofill_types.mojom"
 public_headers = [
   "//components/autofill/core/common/filling_status.h",
   "//components/autofill/core/common/form_data.h",
@@ -17,9 +17,9 @@ public_headers = [
   "//components/autofill/core/common/submission_source.h",
 ]
 traits_headers =
-    [ "//components/autofill/content/common/autofill_types_struct_traits.h" ]
+    [ "//components/autofill/core/common/mojom/autofill_types_struct_traits.h" ]
 sources = [
-  "//components/autofill/content/common/autofill_types_struct_traits.cc",
+  "//components/autofill/core/common/mojom/autofill_types_struct_traits.cc",
 ]
 deps = [
   "//base",

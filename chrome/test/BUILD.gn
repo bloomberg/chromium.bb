@@ -2548,7 +2548,7 @@ if (is_mac) {
       "../utility/importer/firefox_importer_unittest_utils_mac.mojom",
     ]
     public_deps = [
-      "//components/autofill/content/common:mojo_types",
+      "//components/autofill/core/common/mojom:mojo_types",
       "//mojo/public/mojom/base",
     ]
   }

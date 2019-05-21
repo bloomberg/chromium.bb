@@ -8,11 +8,11 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/autofill/content/common/test_autofill_types.mojom.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/test_autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -276,58 +276,58 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
 };
 
 void ExpectFormFieldData(const FormFieldData& expected,
-                         const base::Closure& closure,
+                         base::OnceClosure closure,
                          const FormFieldData& passed) {
   EXPECT_EQ(expected, passed);
   EXPECT_EQ(expected.value, passed.value);
   EXPECT_EQ(expected.typed_value, passed.typed_value);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectFormData(const FormData& expected,
-                    const base::Closure& closure,
+                    base::OnceClosure closure,
                     const FormData& passed) {
   EXPECT_EQ(expected, passed);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectFormFieldDataPredictions(const FormFieldDataPredictions& expected,
-                                    const base::Closure& closure,
+                                    base::OnceClosure closure,
                                     const FormFieldDataPredictions& passed) {
   EXPECT_EQ(expected, passed);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectFormDataPredictions(const FormDataPredictions& expected,
-                               const base::Closure& closure,
+                               base::OnceClosure closure,
                                const FormDataPredictions& passed) {
   EXPECT_EQ(expected, passed);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectPasswordFormFillData(const PasswordFormFillData& expected,
-                                const base::Closure& closure,
+                                base::OnceClosure closure,
                                 const PasswordFormFillData& passed) {
   CheckEqualPasswordFormFillData(expected, passed);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectPasswordFormGenerationData(
     const PasswordFormGenerationData& expected,
-    const base::Closure& closure,
+    base::OnceClosure closure,
     const PasswordFormGenerationData& passed) {
   CheckEqualPasswordFormGenerationData(expected, passed);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectNewPasswordFormGenerationData(
     const NewPasswordFormGenerationData& expected,
-    const base::Closure& closure,
+    base::OnceClosure closure,
     const NewPasswordFormGenerationData& passed) {
   EXPECT_EQ(expected.new_password_renderer_id, passed.new_password_renderer_id);
   EXPECT_EQ(expected.confirmation_password_renderer_id,
             passed.confirmation_password_renderer_id);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectPasswordGenerationUIData(
@@ -339,17 +339,17 @@ void ExpectPasswordGenerationUIData(
 }
 
 void ExpectPasswordForm(const PasswordForm& expected,
-                        const base::Closure& closure,
+                        base::OnceClosure closure,
                         const PasswordForm& passed) {
   EXPECT_EQ(expected, passed);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectFormsPredictionsMap(const FormsPredictionsMap& expected,
-                               const base::Closure& closure,
+                               base::OnceClosure closure,
                                const FormsPredictionsMap& passed) {
   EXPECT_EQ(expected, passed);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
@@ -376,7 +376,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassFormFieldData(
-      input, base::Bind(&ExpectFormFieldData, input, loop.QuitClosure()));
+      input, base::BindOnce(&ExpectFormFieldData, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -390,8 +390,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormData(input,
-                      base::Bind(&ExpectFormData, input, loop.QuitClosure()));
+  proxy->PassFormData(
+      input, base::BindOnce(&ExpectFormData, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -402,8 +402,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldDataPredictions) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassFormFieldDataPredictions(
-      input,
-      base::Bind(&ExpectFormFieldDataPredictions, input, loop.QuitClosure()));
+      input, base::BindOnce(&ExpectFormFieldDataPredictions, input,
+                            loop.QuitClosure()));
   loop.Run();
 }
 
@@ -423,7 +423,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormDataPredictions) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassFormDataPredictions(
-      input, base::Bind(&ExpectFormDataPredictions, input, loop.QuitClosure()));
+      input,
+      base::BindOnce(&ExpectFormDataPredictions, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -433,8 +434,9 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormFillData) {
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassPasswordFormFillData(input, base::Bind(&ExpectPasswordFormFillData,
-                                                    input, loop.QuitClosure()));
+  proxy->PassPasswordFormFillData(
+      input,
+      base::BindOnce(&ExpectPasswordFormFillData, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -452,8 +454,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormGenerationData) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassPasswordFormGenerationData(
-      input,
-      base::Bind(&ExpectPasswordFormGenerationData, input, loop.QuitClosure()));
+      input, base::BindOnce(&ExpectPasswordFormGenerationData, input,
+                            loop.QuitClosure()));
   loop.Run();
 }
 
@@ -489,7 +491,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordForm) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassPasswordForm(
-      input, base::Bind(&ExpectPasswordForm, input, loop.QuitClosure()));
+      input, base::BindOnce(&ExpectPasswordForm, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -500,7 +502,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormsPredictionsMap) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassFormsPredictionsMap(
-      input, base::Bind(&ExpectFormsPredictionsMap, input, loop.QuitClosure()));
+      input,
+      base::BindOnce(&ExpectFormsPredictionsMap, input, loop.QuitClosure()));
   loop.Run();
 }
 

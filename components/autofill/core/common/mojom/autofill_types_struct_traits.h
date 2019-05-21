@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_TYPES_STRUCT_TRAITS_H_
-#define COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_TYPES_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_MOJOM_AUTOFILL_TYPES_STRUCT_TRAITS_H_
+#define COMPONENTS_AUTOFILL_CORE_COMMON_MOJOM_AUTOFILL_TYPES_STRUCT_TRAITS_H_
 
 #include <map>
 #include <string>
@@ -12,11 +12,11 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
-#include "components/autofill/content/common/autofill_types.mojom.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -735,4 +735,4 @@ struct StructTraits<autofill::mojom::ValueElementPairDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_TYPES_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_MOJOM_AUTOFILL_TYPES_STRUCT_TRAITS_H_
