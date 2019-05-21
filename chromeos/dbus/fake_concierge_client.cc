@@ -72,6 +72,14 @@ void FakeConciergeClient::ImportDiskImage(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void FakeConciergeClient::CancelDiskImageOperation(
+    const vm_tools::concierge::CancelDiskImageRequest& request,
+    DBusMethodCallback<vm_tools::concierge::CancelDiskImageResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), cancel_disk_image_response_));
+}
+
 void FakeConciergeClient::FakeImportCallbacks(
     DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse> callback) {
   std::move(callback).Run(import_disk_image_response_);

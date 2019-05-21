@@ -117,6 +117,28 @@ class ConciergeClientImpl : public ConciergeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void CancelDiskImageOperation(
+      const vm_tools::concierge::CancelDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::CancelDiskImageResponse> callback)
+      override {
+    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
+                                 vm_tools::concierge::kCancelDiskImageMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode CancelDiskImageRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::CancelDiskImageResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void DiskImageStatus(
       const vm_tools::concierge::DiskImageStatusRequest& request,
       DBusMethodCallback<vm_tools::concierge::DiskImageStatusResponse> callback)

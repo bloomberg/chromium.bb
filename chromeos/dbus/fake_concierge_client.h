@@ -61,6 +61,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse> callback)
       override;
 
+  // Fake version of the method that cancels a VM disk image operation (import
+  // or export).
+  void CancelDiskImageOperation(
+      const vm_tools::concierge::CancelDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::CancelDiskImageResponse> callback)
+      override;
+
   // Fake version of the method that returns the status of a disk image
   // operation.
   void DiskImageStatus(
@@ -169,6 +176,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
           import_disk_image_response) {
     import_disk_image_response_ = import_disk_image_response;
   }
+  void set_cancel_disk_image_response(
+      const vm_tools::concierge::CancelDiskImageResponse&
+          cancel_disk_image_response) {
+    cancel_disk_image_response_ = cancel_disk_image_response;
+  }
   void set_disk_image_status_response(
       const vm_tools::concierge::DiskImageStatusResponse&
           disk_image_status_response) {
@@ -247,6 +259,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   vm_tools::concierge::CreateDiskImageResponse create_disk_image_response_;
   vm_tools::concierge::DestroyDiskImageResponse destroy_disk_image_response_;
   vm_tools::concierge::ImportDiskImageResponse import_disk_image_response_;
+  vm_tools::concierge::CancelDiskImageResponse cancel_disk_image_response_;
   vm_tools::concierge::DiskImageStatusResponse disk_image_status_response_;
   vm_tools::concierge::ListVmDisksResponse list_vm_disks_response_;
   vm_tools::concierge::StartVmResponse start_vm_response_;

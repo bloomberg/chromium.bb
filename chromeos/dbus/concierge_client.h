@@ -80,7 +80,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
           callback) = 0;
 
-  // Import a VM disk image
+  // Imports a VM disk image.
   // |callback| is called after the method call finishes.
   virtual void ImportDiskImage(
       base::ScopedFD fd,
@@ -88,7 +88,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse>
           callback) = 0;
 
-  // Retrieve the status of a disk image operation
+  // Cancels a VM disk image operation (import or export) that is being
+  // executed.
+  // |callback| is called after the method call finishes.
+  virtual void CancelDiskImageOperation(
+      const vm_tools::concierge::CancelDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::CancelDiskImageResponse>
+          callback) = 0;
+
+  // Retrieves the status of a disk image operation
   // |callback| is called after the method call finishes.
   virtual void DiskImageStatus(
       const vm_tools::concierge::DiskImageStatusRequest& request,
@@ -130,22 +138,22 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
           callback) = 0;
 
-  // Attaches a USB device to a VM
-  // |callback| is called once the method call has finished
+  // Attaches a USB device to a VM.
+  // |callback| is called once the method call has finished.
   virtual void AttachUsbDevice(base::ScopedFD fd,
       const vm_tools::concierge::AttachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse>
           callback) = 0;
 
-  // Remove a USB device from a VM it's been attached to
-  // |callback| is called once the method call has finished
+  // Removes a USB device from a VM it's been attached to.
+  // |callback| is called once the method call has finished.
   virtual void DetachUsbDevice(
       const vm_tools::concierge::DetachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse>
           callback) = 0;
 
-  // List all the USB devices currently attached to a given VM
-  // |callback| is called once the method call has finished
+  // Lists all the USB devices currently attached to a given VM.
+  // |callback| is called once the method call has finished.
   virtual void ListUsbDevices(
       const vm_tools::concierge::ListUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse>
