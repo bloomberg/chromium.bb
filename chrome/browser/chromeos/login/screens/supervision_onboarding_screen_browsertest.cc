@@ -350,7 +350,13 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, NextButtonExitsScreen) {
+// https://crbug.com/965369
+#if defined(OS_CHROMEOS)
+#define MAYBE_NextButtonExitsScreen DISABLED_NextButtonExitsScreen
+#else
+#define MAYBE_NextButtonExitsScreen NextButtonExitsScreen
+#endif
+IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, MAYBE_NextButtonExitsScreen) {
   LoginAndShowScreen();
   WaitForScreen();
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
