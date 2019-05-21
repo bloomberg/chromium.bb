@@ -33,9 +33,13 @@ struct NativeFileSystemDirectoryHandleImpl::ReadDirectoryState {
 
 NativeFileSystemDirectoryHandleImpl::NativeFileSystemDirectoryHandleImpl(
     NativeFileSystemManagerImpl* manager,
-    const storage::FileSystemURL& url)
-    : manager_(manager), url_(url) {
+    const storage::FileSystemURL& url,
+    storage::IsolatedContext::ScopedFSHandle file_system)
+    : manager_(manager), url_(url), file_system_(std::move(file_system)) {
   DCHECK(manager_);
+  DCHECK_EQ(url_.mount_type() == storage::kFileSystemTypeIsolated,
+            file_system_.is_valid())
+      << url_.mount_type();
 }
 
 NativeFileSystemDirectoryHandleImpl::~NativeFileSystemDirectoryHandleImpl() =
@@ -151,7 +155,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetFile(storage::FileSystemURL url,
   }
 
   std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
-                          manager()->CreateFileHandle(url));
+                          manager()->CreateFileHandle(url, file_system_));
 }
 
 void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
@@ -166,7 +170,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
   }
 
   std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
-                          manager()->CreateDirectoryHandle(url));
+                          manager()->CreateDirectoryHandle(url, file_system_));
 }
 
 void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
@@ -279,12 +283,14 @@ NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
   if (is_directory) {
     return NativeFileSystemEntry::New(
         NativeFileSystemHandle::NewDirectory(
-            manager()->CreateDirectoryHandle(url).PassInterface()),
+            manager()
+                ->CreateDirectoryHandle(url, file_system_)
+                .PassInterface()),
         name);
   }
   return NativeFileSystemEntry::New(
       NativeFileSystemHandle::NewFile(
-          manager()->CreateFileHandle(url).PassInterface()),
+          manager()->CreateFileHandle(url, file_system_).PassInterface()),
       name);
 }
 

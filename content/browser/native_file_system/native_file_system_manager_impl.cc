@@ -85,25 +85,35 @@ void NativeFileSystemManagerImpl::ChooseEntries(
 
 blink::mojom::NativeFileSystemFileHandlePtr
 NativeFileSystemManagerImpl::CreateFileHandle(
-    const storage::FileSystemURL& url) {
+    const storage::FileSystemURL& url,
+    storage::IsolatedContext::ScopedFSHandle file_system) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(url.is_valid());
+  DCHECK_EQ(url.mount_type() == storage::kFileSystemTypeIsolated,
+            file_system.is_valid())
+      << url.mount_type();
+
   blink::mojom::NativeFileSystemFileHandlePtr result;
-  file_bindings_.AddBinding(
-      std::make_unique<NativeFileSystemFileHandleImpl>(this, url),
-      mojo::MakeRequest(&result));
+  file_bindings_.AddBinding(std::make_unique<NativeFileSystemFileHandleImpl>(
+                                this, url, std::move(file_system)),
+                            mojo::MakeRequest(&result));
   return result;
 }
 
 blink::mojom::NativeFileSystemDirectoryHandlePtr
 NativeFileSystemManagerImpl::CreateDirectoryHandle(
-    const storage::FileSystemURL& url) {
+    const storage::FileSystemURL& url,
+    storage::IsolatedContext::ScopedFSHandle file_system) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(url.is_valid());
+  DCHECK_EQ(url.mount_type() == storage::kFileSystemTypeIsolated,
+            file_system.is_valid())
+      << url.mount_type();
 
   blink::mojom::NativeFileSystemDirectoryHandlePtr result;
   directory_bindings_.AddBinding(
-      std::make_unique<NativeFileSystemDirectoryHandleImpl>(this, url),
+      std::make_unique<NativeFileSystemDirectoryHandleImpl>(
+          this, url, std::move(file_system)),
       mojo::MakeRequest(&result));
   return result;
 }
@@ -113,16 +123,13 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPath(
     const url::Origin& origin,
     const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::string name;
-  auto url = CreateFileSystemURLFromPath(origin, file_path, &name);
+  auto url = CreateFileSystemURLFromPath(origin, file_path);
 
-  // TODO(https://crbug.com/955185): Pass file system ID to the handle
-  // implementations so they can properly ref and unref the filesystem.
-  // Right now the isolated file system will just be leaked and never freed.
   return blink::mojom::NativeFileSystemEntry::New(
       blink::mojom::NativeFileSystemHandle::NewFile(
-          CreateFileHandle(url).PassInterface()),
-      name);
+          CreateFileHandle(url.url, std::move(url.file_system))
+              .PassInterface()),
+      url.base_name);
 }
 
 blink::mojom::NativeFileSystemEntryPtr
@@ -130,29 +137,26 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
     const url::Origin& origin,
     const base::FilePath& directory_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::string name;
-  auto url = CreateFileSystemURLFromPath(origin, directory_path, &name);
+  auto url = CreateFileSystemURLFromPath(origin, directory_path);
 
-  // TODO(https://crbug.com/955185): Pass file system ID to the handle
-  // implementations so they can properly ref and unref the filesystem.
-  // Right now the isolated file system will just be leaked and never freed.
   return blink::mojom::NativeFileSystemEntry::New(
       blink::mojom::NativeFileSystemHandle::NewDirectory(
-          CreateDirectoryHandle(url).PassInterface()),
-      name);
+          CreateDirectoryHandle(url.url, std::move(url.file_system))
+              .PassInterface()),
+      url.base_name);
 }
 
 void NativeFileSystemManagerImpl::CreateTransferToken(
     const NativeFileSystemFileHandleImpl& file,
     blink::mojom::NativeFileSystemTransferTokenRequest request) {
-  return CreateTransferTokenImpl(file.url(),
+  return CreateTransferTokenImpl(file.url(), file.file_system(),
                                  /*is_directory=*/false, std::move(request));
 }
 
 void NativeFileSystemManagerImpl::CreateTransferToken(
     const NativeFileSystemDirectoryHandleImpl& directory,
     blink::mojom::NativeFileSystemTransferTokenRequest request) {
-  return CreateTransferTokenImpl(directory.url(),
+  return CreateTransferTokenImpl(directory.url(), directory.file_system(),
                                  /*is_directory=*/true, std::move(request));
 }
 
@@ -188,8 +192,9 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
     return;
   }
 
-  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
-                          CreateDirectoryHandle(context()->CrackURL(root)));
+  std::move(callback).Run(
+      NativeFileSystemError::New(base::File::FILE_OK),
+      CreateDirectoryHandle(context()->CrackURL(root), /*file_system=*/{}));
 }
 
 void NativeFileSystemManagerImpl::DidChooseEntries(
@@ -216,14 +221,15 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
 
 void NativeFileSystemManagerImpl::CreateTransferTokenImpl(
     const storage::FileSystemURL& url,
+    storage::IsolatedContext::ScopedFSHandle file_system,
     bool is_directory,
     blink::mojom::NativeFileSystemTransferTokenRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto token_impl = std::make_unique<NativeFileSystemTransferTokenImpl>(
-      url, is_directory
-               ? NativeFileSystemTransferTokenImpl::HandleType::kDirectory
-               : NativeFileSystemTransferTokenImpl::HandleType::kFile);
+      url, std::move(file_system),
+      is_directory ? NativeFileSystemTransferTokenImpl::HandleType::kDirectory
+                   : NativeFileSystemTransferTokenImpl::HandleType::kFile);
   auto token = token_impl->token();
   blink::mojom::NativeFileSystemTransferTokenPtr result;
   auto emplace_result = transfer_tokens_.emplace(
@@ -258,29 +264,28 @@ void NativeFileSystemManagerImpl::DoResolveTransferToken(
   }
 }
 
-storage::FileSystemURL NativeFileSystemManagerImpl::CreateFileSystemURLFromPath(
+NativeFileSystemManagerImpl::FileSystemURLAndFSHandle
+NativeFileSystemManagerImpl::CreateFileSystemURLFromPath(
     const url::Origin& origin,
-    const base::FilePath& path,
-    std::string* name) {
+    const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto* isolated_context = storage::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
 
-  storage::IsolatedContext::ScopedFSHandle file_system =
-      isolated_context->RegisterFileSystemForPath(
-          storage::kFileSystemTypeNativeLocal, std::string(), path, name);
+  FileSystemURLAndFSHandle result;
 
-  // TODO(https://crbug.com/955185): Properly refcount file system in handle
-  // implementations, rather than just leaking them like this.
-  storage::IsolatedContext::GetInstance()->AddReference(file_system.id());
+  result.file_system = isolated_context->RegisterFileSystemForPath(
+      storage::kFileSystemTypeNativeLocal, std::string(), path,
+      &result.base_name);
 
   base::FilePath root_path =
-      isolated_context->CreateVirtualRootPath(file_system.id());
-  base::FilePath isolated_path = root_path.AppendASCII(*name);
+      isolated_context->CreateVirtualRootPath(result.file_system.id());
+  base::FilePath isolated_path = root_path.AppendASCII(result.base_name);
 
-  return context()->CreateCrackedFileSystemURL(
+  result.url = context()->CreateCrackedFileSystemURL(
       origin.GetURL(), storage::kFileSystemTypeIsolated, isolated_path);
+  return result;
 }
 
 }  // namespace content

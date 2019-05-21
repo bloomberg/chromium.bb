@@ -31,11 +31,16 @@ class NativeFileSystemTransferTokenImpl;
 class NativeFileSystemDirectoryHandleImpl
     : public blink::mojom::NativeFileSystemDirectoryHandle {
  public:
-  NativeFileSystemDirectoryHandleImpl(NativeFileSystemManagerImpl* manager,
-                                      const storage::FileSystemURL& url);
+  NativeFileSystemDirectoryHandleImpl(
+      NativeFileSystemManagerImpl* manager,
+      const storage::FileSystemURL& url,
+      storage::IsolatedContext::ScopedFSHandle file_system);
   ~NativeFileSystemDirectoryHandleImpl() override;
 
   const storage::FileSystemURL& url() const { return url_; }
+  const storage::IsolatedContext::ScopedFSHandle& file_system() const {
+    return file_system_;
+  }
 
   // blink::mojom::NativeFileSystemDirectoryHandle:
   void GetFile(const std::string& name,
@@ -103,6 +108,7 @@ class NativeFileSystemDirectoryHandleImpl
   // The NativeFileSystemManagerImpl that owns us.
   NativeFileSystemManagerImpl* const manager_;
   const storage::FileSystemURL url_;
+  const storage::IsolatedContext::ScopedFSHandle file_system_;
 
   base::WeakPtrFactory<NativeFileSystemDirectoryHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemDirectoryHandleImpl);

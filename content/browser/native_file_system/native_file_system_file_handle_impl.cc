@@ -28,9 +28,13 @@ struct NativeFileSystemFileHandleImpl::WriteState {
 
 NativeFileSystemFileHandleImpl::NativeFileSystemFileHandleImpl(
     NativeFileSystemManagerImpl* manager,
-    const storage::FileSystemURL& url)
-    : manager_(manager), url_(url) {
+    const storage::FileSystemURL& url,
+    storage::IsolatedContext::ScopedFSHandle file_system)
+    : manager_(manager), url_(url), file_system_(std::move(file_system)) {
   DCHECK(manager_);
+  DCHECK_EQ(url_.mount_type() == storage::kFileSystemTypeIsolated,
+            file_system_.is_valid())
+      << url_.mount_type();
 }
 
 NativeFileSystemFileHandleImpl::~NativeFileSystemFileHandleImpl() = default;

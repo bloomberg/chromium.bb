@@ -63,12 +63,14 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   // Creates a new NativeFileSystemFileHandleImpl for a given url. Assumes the
   // passed in URL is valid and represents a file.
   blink::mojom::NativeFileSystemFileHandlePtr CreateFileHandle(
-      const storage::FileSystemURL& url);
+      const storage::FileSystemURL& url,
+      storage::IsolatedContext::ScopedFSHandle file_system);
 
   // Creates a new NativeFileSystemDirectoryHandleImpl for a given url. Assumes
   // the passed in URL is valid and represents a directory.
   blink::mojom::NativeFileSystemDirectoryHandlePtr CreateDirectoryHandle(
-      const storage::FileSystemURL& url);
+      const storage::FileSystemURL& url,
+      storage::IsolatedContext::ScopedFSHandle file_system);
 
   // Creates a new NativeFileSystemEntryPtr from the path to a file. Assumes the
   // passed in path is valid and represents a file.
@@ -126,6 +128,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   void CreateTransferTokenImpl(
       const storage::FileSystemURL& url,
+      storage::IsolatedContext::ScopedFSHandle file_system,
       bool is_directory,
       blink::mojom::NativeFileSystemTransferTokenRequest request);
   void TransferTokenConnectionErrorHandler(const base::UnguessableToken& token);
@@ -134,9 +137,14 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
                               const base::UnguessableToken& token);
 
   // Creates a FileSystemURL which corresponds to a FilePath and Origin.
-  storage::FileSystemURL CreateFileSystemURLFromPath(const url::Origin& origin,
-                                                     const base::FilePath& path,
-                                                     std::string* name);
+  struct FileSystemURLAndFSHandle {
+    storage::FileSystemURL url;
+    std::string base_name;
+    storage::IsolatedContext::ScopedFSHandle file_system;
+  };
+  FileSystemURLAndFSHandle CreateFileSystemURLFromPath(
+      const url::Origin& origin,
+      const base::FilePath& path);
 
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;

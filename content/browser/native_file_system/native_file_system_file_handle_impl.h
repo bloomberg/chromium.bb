@@ -36,11 +36,16 @@ namespace content {
 class CONTENT_EXPORT NativeFileSystemFileHandleImpl
     : public blink::mojom::NativeFileSystemFileHandle {
  public:
-  NativeFileSystemFileHandleImpl(NativeFileSystemManagerImpl* manager,
-                                 const storage::FileSystemURL& url);
+  NativeFileSystemFileHandleImpl(
+      NativeFileSystemManagerImpl* manager,
+      const storage::FileSystemURL& url,
+      storage::IsolatedContext::ScopedFSHandle file_system);
   ~NativeFileSystemFileHandleImpl() override;
 
   const storage::FileSystemURL& url() const { return url_; }
+  const storage::IsolatedContext::ScopedFSHandle& file_system() const {
+    return file_system_;
+  }
 
   // blink::mojom::NativeFileSystemFileHandle:
   void AsBlob(AsBlobCallback callback) override;
@@ -96,6 +101,7 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   // The NativeFileSystemManagerImpl that owns us.
   NativeFileSystemManagerImpl* const manager_;
   const storage::FileSystemURL url_;
+  const storage::IsolatedContext::ScopedFSHandle file_system_;
 
   base::WeakPtrFactory<NativeFileSystemFileHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemFileHandleImpl);

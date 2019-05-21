@@ -8,8 +8,16 @@ namespace content {
 
 NativeFileSystemTransferTokenImpl::NativeFileSystemTransferTokenImpl(
     const storage::FileSystemURL& url,
+    storage::IsolatedContext::ScopedFSHandle file_system,
     HandleType type)
-    : token_(base::UnguessableToken::Create()), url_(url), type_(type) {}
+    : token_(base::UnguessableToken::Create()),
+      url_(url),
+      file_system_(std::move(file_system)),
+      type_(type) {
+  DCHECK_EQ(url_.mount_type() == storage::kFileSystemTypeIsolated,
+            file_system_.is_valid())
+      << url_.mount_type();
+}
 
 void NativeFileSystemTransferTokenImpl::GetInternalID(
     GetInternalIDCallback callback) {
