@@ -314,7 +314,7 @@ void OmniboxFieldTrial::GetDemotionsByType(
     // enough to be inline autocompleted (1400+), even after demotion it will
     // score above 850 ( 1400 * 0.61 > 850).  850 is the maximum score for
     // queries when the input has been detected as URL-seeking.
-    constexpr char kDemoteURLs[] = "1:61,2:61,3:61,4:61,16:61";
+    constexpr char kDemoteURLs[] = "1:61,2:61,3:61,4:61,16:61,24:61";
 #if defined(OS_ANDROID)
     if (current_page_classification == OmniboxEventProto::
         SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT)
