@@ -1232,8 +1232,13 @@
                  type="chrome_html"/>
       <structure name="IDR_OS_SETTINGS_PEOPLE_PAGE_KERBEROS_ACCOUNTS_JS"
                  file="people_page/kerberos_accounts.js"
-                 type="chrome_html"
-                 preprocess="true" />
+                 type="chrome_html"/>
+      <structure name="IDR_OS_SETTINGS_PEOPLE_PAGE_KERBEROS_ADD_ACCOUNT_DIALOG_HTML"
+                 file="people_page/kerberos_add_account_dialog.html"
+                 type="chrome_html"/>
+      <structure name="IDR_OS_SETTINGS_PEOPLE_PAGE_KERBEROS_ADD_ACCOUNT_DIALOG_JS"
+                 file="people_page/kerberos_add_account_dialog.js"
+                 type="chrome_html"/>
       <structure name="IDR_OS_SETTINGS_PEOPLE_PAGE_KEREROS_ACCOUNTS_BROWSER_PROXY_HTML"
                  file="people_page/kerberos_accounts_browser_proxy.html"
                  type="chrome_html"/>
