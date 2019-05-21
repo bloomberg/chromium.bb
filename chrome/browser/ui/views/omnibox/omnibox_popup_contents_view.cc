@@ -196,9 +196,10 @@ gfx::Image OmniboxPopupContentsView::GetMatchIcon(
   return model_->GetMatchIcon(match, vector_icon_color);
 }
 
-OmniboxTint OmniboxPopupContentsView::GetTint() const {
+OmniboxTint OmniboxPopupContentsView::CalculateTint() const {
   // Use LIGHT in tests.
-  return location_bar_view_ ? location_bar_view_->tint() : OmniboxTint::LIGHT;
+  return location_bar_view_ ? location_bar_view_->CalculateTint()
+                            : OmniboxTint::LIGHT;
 }
 
 void OmniboxPopupContentsView::SetSelectedLine(size_t index) {

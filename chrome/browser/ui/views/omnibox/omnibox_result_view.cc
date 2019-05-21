@@ -78,7 +78,7 @@ OmniboxResultView::OmniboxResultView(
 OmniboxResultView::~OmniboxResultView() {}
 
 SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
-  return GetOmniboxColor(part, GetTint(), GetThemeState());
+  return GetOmniboxColor(part, CalculateTint(), GetThemeState());
 }
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
@@ -231,8 +231,8 @@ OmniboxPartState OmniboxResultView::GetThemeState() const {
   return is_hovered_ ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
 }
 
-OmniboxTint OmniboxResultView::GetTint() const {
-  return popup_contents_view_->GetTint();
+OmniboxTint OmniboxResultView::CalculateTint() const {
+  return popup_contents_view_->CalculateTint();
 }
 
 void OmniboxResultView::OnMatchIconUpdated() {

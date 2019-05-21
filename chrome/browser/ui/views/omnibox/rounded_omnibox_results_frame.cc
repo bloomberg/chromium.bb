@@ -129,7 +129,7 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
   contents_host_->layer()->SetFillsBoundsOpaquely(false);
 
   // Use a solid background. Note this is clipped to get rounded corners.
-  const OmniboxTint tint = location_bar->tint();
+  const OmniboxTint tint = location_bar->CalculateTint();
   const SkColor background_color =
       GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
   contents_host_->SetBackground(views::CreateSolidBackground(background_color));

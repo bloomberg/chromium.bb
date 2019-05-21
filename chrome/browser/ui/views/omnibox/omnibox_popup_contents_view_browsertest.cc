@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, PopupAlignment) {
 
 // Integration test for omnibox popup theming. This is a browser test since it
 // relies on initialization done in chrome_browser_main_extra_parts_views_linux
-// propagating through correctly to OmniboxPopupContentsView::GetTint().
+// propagating through correctly to OmniboxPopupContentsView::CalculateTint().
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
   // Sanity check the bot: ensure the profile is configured to use the system
   // theme. On Linux, the default depends on a whitelist using the result of
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
   // Unthemed, non-incognito always has a white background. Exceptions: Inverted
   // color themes on Windows and GTK (not tested here).
   EXPECT_EQ(SK_ColorWHITE, GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                                           popup_view()->GetTint()));
+                                           popup_view()->CalculateTint()));
 
   Browser* browser_under_test = browser();
 
@@ -181,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
             ->toolbar()
             ->location_bar();
     return GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                           location_bar->tint(), OmniboxPartState::SELECTED);
+                           location_bar->CalculateTint(),
+                           OmniboxPartState::SELECTED);
   };
 
   const SkColor selection_color_light =

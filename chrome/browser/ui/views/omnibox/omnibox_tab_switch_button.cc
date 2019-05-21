@@ -182,16 +182,17 @@ SkPath OmniboxTabSwitchButton::GetFocusRingPath() const {
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
   return GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                         result_view_->GetTint(),
+                         result_view_->CalculateTint(),
                          state() == STATE_HOVERED ? OmniboxPartState::HOVERED
                                                   : OmniboxPartState::NORMAL);
 }
 
 void OmniboxTabSwitchButton::SetPressed() {
-  SetBgColorOverride(color_utils::AlphaBlend(
-      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
-                      OmniboxPartState::SELECTED),
-      SK_ColorBLACK, 0.8f));
+  SetBgColorOverride(
+      color_utils::AlphaBlend(GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
+                                              result_view_->CalculateTint(),
+                                              OmniboxPartState::SELECTED),
+                              SK_ColorBLACK, 0.8f));
 }
 
 size_t OmniboxTabSwitchButton::CalculateGoalWidth(size_t parent_width,

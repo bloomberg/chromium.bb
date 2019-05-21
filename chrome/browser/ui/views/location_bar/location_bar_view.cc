@@ -145,8 +145,7 @@ LocationBarView::LocationBarView(Browser* browser,
       ChromeOmniboxEditController(command_updater),
       browser_(browser),
       delegate_(delegate),
-      is_popup_mode_(is_popup_mode),
-      tint_(GetTint()) {
+      is_popup_mode_(is_popup_mode) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -289,7 +288,7 @@ bool LocationBarView::IsInitialized() const {
 }
 
 SkColor LocationBarView::GetColor(OmniboxPart part) const {
-  return GetOmniboxColor(part, tint());
+  return GetOmniboxColor(part, CalculateTint());
 }
 
 SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) const {
@@ -625,8 +624,6 @@ void LocationBarView::OnThemeChanged() {
   if (!IsInitialized())
     return;
 
-  tint_ = GetTint();
-
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
   omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
   for (PageActionIconView* icon_view : page_action_icons_)
@@ -813,10 +810,11 @@ void LocationBarView::RefreshBackground() {
   if (omnibox_view_->model()->is_caret_visible()) {
     background_color = border_color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
   } else {
-    const SkColor normal = GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND,
-                                           tint(), OmniboxPartState::NORMAL);
+    const SkColor normal =
+        GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, CalculateTint(),
+                        OmniboxPartState::NORMAL);
     const SkColor hovered =
-        GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint(),
+        GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, CalculateTint(),
                         OmniboxPartState::HOVERED);
     const double opacity = hover_animation_.GetCurrentValue();
     background_color = gfx::Tween::ColorValueBetween(opacity, normal, hovered);
@@ -1203,13 +1201,15 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
   }
 }
 
-OmniboxTint LocationBarView::GetTint() {
+OmniboxTint LocationBarView::CalculateTint() const {
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
-  bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
   if (theme_service->UsingDefaultTheme()) {
-    return (profile()->IsIncognitoProfile() || is_dark_mode)
-               ? OmniboxTint::DARK
-               : OmniboxTint::LIGHT;
+    if (profile()->IsIncognitoProfile() ||
+        GetNativeTheme()->SystemDarkModeEnabled()) {
+      return OmniboxTint::DARK;
+    }
+
+    return OmniboxTint::LIGHT;
   }
 
   // Check for GTK on Desktop Linux.
@@ -1217,7 +1217,8 @@ OmniboxTint LocationBarView::GetTint() {
       theme_service->UsingSystemTheme())
     return OmniboxTint::NATIVE;
 
-  return is_dark_mode ? OmniboxTint::DARK : OmniboxTint::LIGHT;
+  return GetNativeTheme()->SystemDarkModeEnabled() ? OmniboxTint::DARK
+                                                   : OmniboxTint::LIGHT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1274,7 +1275,7 @@ void LocationBarView::OnLocationIconDragged(const ui::MouseEvent& event) {
 
 SkColor LocationBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  return GetOmniboxSecurityChipColor(tint(), security_level);
+  return GetOmniboxSecurityChipColor(CalculateTint(), security_level);
 }
 
 bool LocationBarView::ShowPageInfoDialog() {

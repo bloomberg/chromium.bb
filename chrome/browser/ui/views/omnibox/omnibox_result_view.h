@@ -69,7 +69,7 @@ class OmniboxResultView : public views::View,
   bool IsSelected() const;
 
   OmniboxPartState GetThemeState() const;
-  OmniboxTint GetTint() const;
+  OmniboxTint CalculateTint() const;
 
   // Notification that the match icon has changed and schedules a repaint.
   void OnMatchIconUpdated();

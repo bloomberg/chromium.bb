@@ -123,15 +123,12 @@ class LocationBarView : public LocationBar,
   // be called when the receiving instance is attached to a view container.
   bool IsInitialized() const;
 
-  // Helper to get the color for |part| using the current tint().
+  // Helper to get the color for |part| using the current CalculateTint().
   SkColor GetColor(OmniboxPart part) const;
 
   // Returns the location bar border color blended with the toolbar color.
   // It's guaranteed to be opaque.
   SkColor GetOpaqueBorderColor(bool incognito) const;
-
-  // Returns the cached theme color tint for the location bar and results.
-  OmniboxTint tint() const { return tint_; }
 
   // Returns a background that paints an (optionally stroked) rounded rect with
   // the given color.
@@ -261,7 +258,7 @@ class LocationBarView : public LocationBar,
   SkColor GetLocationIconInkDropColor() const override;
 
   // Gets the theme color tint for the location bar and results.
-  OmniboxTint GetTint();
+  OmniboxTint CalculateTint() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
@@ -438,9 +435,6 @@ class LocationBarView : public LocationBar,
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.
   const bool is_popup_mode_;
-
-  // The theme tint. Updated based on the profile and theme settings.
-  OmniboxTint tint_;
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
