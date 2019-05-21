@@ -136,7 +136,9 @@ void SendTabToSelfBubbleViewImpl::DevicePressed(size_t index) {
   }
   SendTabToSelfBubbleDeviceButton* device_button =
       device_buttons_.at(index).get();
-  controller_->OnDeviceSelected(device_button->device_guid());
+  controller_->OnDeviceSelected(device_button->device_name(),
+                                device_button->device_guid());
+  Hide();
 }
 
 void SendTabToSelfBubbleViewImpl::MaybeSizeToContents() {

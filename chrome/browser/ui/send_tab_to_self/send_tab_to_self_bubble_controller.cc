@@ -72,10 +72,10 @@ Profile* SendTabToSelfBubbleController::GetProfile() const {
 }
 
 void SendTabToSelfBubbleController::OnDeviceSelected(
-    std::string target_device_id) {
-  // TODO(crbug/959698): send current tab to target device; close the bubble
-  // and hide the icon.
-  NOTIMPLEMENTED();
+    const std::string& target_device_name,
+    const std::string& target_device_guid) {
+  CreateNewEntry(web_contents_, target_device_name, target_device_guid);
+  // TODO(crbug/956189): update the omnibox icon; hide it.
 }
 
 void SendTabToSelfBubbleController::OnBubbleClosed() {

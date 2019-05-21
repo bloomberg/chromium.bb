@@ -46,7 +46,8 @@ class SendTabToSelfBubbleController
 
   // Handles the action when the user click on one valid device. Sends tab to
   // the target device; closes the button and hides the omnibox icon.
-  void OnDeviceSelected(std::string target_device_id);
+  void OnDeviceSelected(const std::string& target_device_name,
+                        const std::string& target_device_guid);
   // Close the bubble when the user click on the close button.
   void OnBubbleClosed();
 
