@@ -125,9 +125,8 @@ class Database(object):
     # Mapping of owners to the paths or globs they own.
     self._owners_to_paths = {EVERYONE: set()}
 
-    # Mappings of paths to authorized owners, via the longest path with no
-    # glob in it.
-    # For instance "chrome/browser" -> "chrome/browser/*.h" -> ("john", "maria")
+    # Mappings of directories -> globs in the directory -> owners
+    # Example: "chrome/browser" -> "chrome/browser/*.h" -> ("john", "maria")
     self._paths_to_owners = {}
 
     # Mapping reviewers to the preceding comment per file in the OWNERS files.
@@ -137,9 +136,13 @@ class Database(object):
     self._fnmatch_cache = {}
 
     # Sets of paths that stop us from looking above them for owners.
-    # (This is implicitly true for the root directory). They are organized
-    # by glob free path so that a 'ui/events/devices/mojo/*_struct_traits*.*'
-    # rule would be found in 'ui/events/devices/mojo'.
+    # (This is implicitly true for the root directory).
+    #
+    # The implementation is a mapping:
+    # Directory -> globs in the directory,
+    #
+    # Example:
+    # 'ui/events/devices/mojo' -> 'ui/events/devices/mojo/*_struct_traits*.*'
     self._stop_looking = {'': set([''])}
 
     # Set of files which have already been read.
