@@ -114,6 +114,8 @@ const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules = {
         &kNuxOnboardingForceEnabled, "returning-user-modules",
         "nux-set-as-default"};
+const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowGoogleApp = {
+    &kNuxOnboardingForceEnabled, "app-variation-enabled", false};
 
 // Onboarding experiments depend on Google being the default search provider.
 bool CanExperimentWithVariations(Profile* profile) {
@@ -181,6 +183,11 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   return false;
+}
+
+bool IsAppVariationEnabled() {
+  return kNuxOnboardingForceEnabledShowGoogleApp.Get() ||
+         kNuxOnboardingShowGoogleApp.Get();
 }
 
 const policy::PolicyMap& GetPoliciesFromProfile(Profile* profile) {

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit-part>
+  <if expr="not is_android and not is_ios and _google_chrome">
+    <structure type="chrome_scaled_image" name="IDS_ONBOARDING_WELCOME_SEARCH" file="google_chrome/welcome/search.png" />
+  </if>
+</grit-part>

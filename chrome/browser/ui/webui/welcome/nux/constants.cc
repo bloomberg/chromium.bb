@@ -24,4 +24,7 @@ const base::FeatureParam<std::string> kNuxOnboardingReturningUserModules{
     &kNuxOnboardingFeature, "returning-user-modules",
     kDefaultReturningUserModules};
 
+const base::FeatureParam<bool> kNuxOnboardingShowGoogleApp{
+    &kNuxOnboardingFeature, "app-variation-enabled", false};
+
 }  // namespace nux
