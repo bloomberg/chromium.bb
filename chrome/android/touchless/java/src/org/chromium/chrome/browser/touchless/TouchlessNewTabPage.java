@@ -125,8 +125,9 @@ public class TouchlessNewTabPage extends BasicNativePage {
         // is reparented.
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
         mContextMenuManager = new TouchlessContextMenuManager(activity,
-                suggestionsUiDelegate.getNavigationDelegate(), mRecyclerView::setTouchEnabled,
-                closeContextMenuCallback, NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
+                activity.getModalDialogManager(), suggestionsUiDelegate.getNavigationDelegate(),
+                mRecyclerView::setTouchEnabled, closeContextMenuCallback,
+                NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         UiConfig uiConfig = new UiConfig(mRecyclerView);
