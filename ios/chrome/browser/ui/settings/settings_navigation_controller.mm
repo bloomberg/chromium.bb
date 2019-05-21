@@ -94,12 +94,10 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
 
 + (SettingsNavigationController*)
      newSyncController:(ios::ChromeBrowserState*)browserState
-allowSwitchSyncAccount:(BOOL)allowSwitchSyncAccount
               delegate:(id<SettingsNavigationControllerDelegate>)delegate {
   SyncSettingsTableViewController* controller =
-      [[SyncSettingsTableViewController alloc]
-            initWithBrowserState:browserState
-          allowSwitchSyncAccount:allowSwitchSyncAccount];
+      [[SyncSettingsTableViewController alloc] initWithBrowserState:browserState
+                                             allowSwitchSyncAccount:YES];
   controller.dispatcher = [delegate dispatcherForSettings];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller

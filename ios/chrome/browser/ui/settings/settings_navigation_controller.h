@@ -74,7 +74,6 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
 // not be nil. |delegate| may be nil.
 + (SettingsNavigationController*)
      newSyncController:(ios::ChromeBrowserState*)browserState
-allowSwitchSyncAccount:(BOOL)allowSwitchSyncAccount
               delegate:(id<SettingsNavigationControllerDelegate>)delegate;
 
 // Creates a new SyncEncryptionPassphraseCollectionViewController and the chrome

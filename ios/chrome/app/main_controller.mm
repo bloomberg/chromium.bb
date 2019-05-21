@@ -1701,7 +1701,6 @@ enum class EnterTabSwitcherSnapshotResult {
   }
   _settingsNavigationController =
       [SettingsNavigationController newSyncController:_mainBrowserState
-                               allowSwitchSyncAccount:YES
                                              delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
