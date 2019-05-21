@@ -183,7 +183,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // by |decoder_|.
   void InitiateSurfaceSetChange(size_t num_pics,
                                 gfx::Size size,
-                                size_t num_reference_frames);
+                                size_t num_reference_frames,
+                                const gfx::Rect& visible_rect);
 
   // Check if the surfaces have been released or post ourselves for later.
   void TryFinishSurfaceSetChange();
@@ -313,9 +314,11 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // to be returned before we can free them. Only used on |task_runner_|.
   bool awaiting_va_surfaces_recycle_;
 
-  // Last requested number/resolution of output PictureBuffers.
+  // Last requested number/resolution/visible rectangle of output
+  // PictureBuffers.
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
+  gfx::Rect requested_visible_rect_;
   // Potential extra PictureBuffers to request, used only on
   // BufferAllocationMode::kNone, see DecideBufferAllocationMode().
   size_t num_extra_pics_ = 0;

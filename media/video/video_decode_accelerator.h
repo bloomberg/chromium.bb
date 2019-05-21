@@ -212,6 +212,17 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
                                        const gfx::Size& dimensions,
                                        uint32_t texture_target) = 0;
 
+    // This is the same as ProvidePictureBuffers() except that |visible_rect| is
+    // also included. The default implementation of VDA would call
+    // ProvidePictureBuffers().
+    virtual void ProvidePictureBuffersWithVisibleRect(
+        uint32_t requested_num_of_buffers,
+        VideoPixelFormat format,
+        uint32_t textures_per_buffer,
+        const gfx::Size& dimensions,
+        const gfx::Rect& visible_rect,
+        uint32_t texture_target);
+
     // Callback to dismiss picture buffer that was assigned earlier.
     virtual void DismissPictureBuffer(int32_t picture_buffer_id) = 0;
 

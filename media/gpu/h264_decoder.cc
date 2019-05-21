@@ -1416,6 +1416,10 @@ gfx::Size H264Decoder::GetPicSize() const {
   return pic_size_;
 }
 
+gfx::Rect H264Decoder::GetVisibleRect() const {
+  return visible_rect_;
+}
+
 size_t H264Decoder::GetRequiredNumOfPictures() const {
   constexpr size_t kPicsInPipeline = limits::kMaxVideoFrames + 1;
   return GetNumReferenceFrames() + kPicsInPipeline;

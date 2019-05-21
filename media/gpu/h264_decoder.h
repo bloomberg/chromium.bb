@@ -159,6 +159,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   void Reset() override;
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
+  gfx::Rect GetVisibleRect() const override;
   size_t GetRequiredNumOfPictures() const override;
   size_t GetNumReferenceFrames() const override;
 

@@ -452,7 +452,8 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
             base::BindOnce(
                 &VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
                 weak_this_, decoder_->GetRequiredNumOfPictures(),
-                decoder_->GetPicSize(), decoder_->GetNumReferenceFrames()));
+                decoder_->GetPicSize(), decoder_->GetNumReferenceFrames(),
+                decoder_->GetVisibleRect()));
         // We'll get rescheduled once ProvidePictureBuffers() finishes.
         return;
 
@@ -492,7 +493,8 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
     size_t num_pics,
     gfx::Size size,
-    size_t num_reference_frames) {
+    size_t num_reference_frames,
+    const gfx::Rect& visible_rect) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!awaiting_va_surfaces_recycle_);
   DCHECK_GT(num_pics, num_reference_frames);
@@ -506,6 +508,7 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
   awaiting_va_surfaces_recycle_ = true;
 
   requested_pic_size_ = size;
+  requested_visible_rect_ = visible_rect;
 
   if (buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced) {
     // Add one to the reference frames for the one being currently egressed.
@@ -576,10 +579,10 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   const VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
       vaapi_picture_factory_->GetBufferFormat());
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Client::ProvidePictureBuffers, client_,
-                     requested_num_pics_, format, 1, requested_pic_size_,
-                     vaapi_picture_factory_->GetGLTextureTarget()));
+      FROM_HERE, base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect,
+                                client_, requested_num_pics_, format, 1,
+                                requested_pic_size_, requested_visible_rect_,
+                                vaapi_picture_factory_->GetGLTextureTarget()));
   // |client_| may respond via AssignPictureBuffers().
 }
 

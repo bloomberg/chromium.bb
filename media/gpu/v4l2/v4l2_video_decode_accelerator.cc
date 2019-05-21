@@ -2551,9 +2551,10 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
           : PIXEL_FORMAT_UNKNOWN;
 
   child_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Client::ProvidePictureBuffers, client_,
-                                buffer_count, pixel_format, 1, egl_image_size_,
-                                device_->GetTextureTarget()));
+      FROM_HERE,
+      base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect, client_,
+                     buffer_count, pixel_format, 1, egl_image_size_,
+                     gfx::Rect(visible_size_), device_->GetTextureTarget()));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding
   // or event handling while we are waiting for AssignPictureBuffers(). Not

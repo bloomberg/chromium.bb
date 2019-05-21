@@ -46,6 +46,12 @@ class GpuArcVideoDecodeAccelerator
                              uint32_t textures_per_buffer,
                              const gfx::Size& dimensions,
                              uint32_t texture_target) override;
+  void ProvidePictureBuffersWithVisibleRect(uint32_t requested_num_of_buffers,
+                                            media::VideoPixelFormat format,
+                                            uint32_t textures_per_buffer,
+                                            const gfx::Size& dimensions,
+                                            const gfx::Rect& visible_rect,
+                                            uint32_t texture_target) override;
   void PictureReady(const media::Picture& picture) override;
   void DismissPictureBuffer(int32_t picture_buffer_id) override;
   void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) override;
@@ -102,6 +108,10 @@ class GpuArcVideoDecodeAccelerator
                      PendingCallback cb,
                      media::VideoDecodeAccelerator* vda);
 
+  // TODO(crbug.com/949898): Remove if all clients support a newer
+  // ProvidePictureBuffers().
+  void GetClientVersion(base::OnceClosure callback, uint32_t version);
+
   // Global counter that keeps track of the number of active clients (i.e., how
   // many VDAs in use by this class).
   // Since this class only works on the same thread, it's safe to access
@@ -146,7 +156,12 @@ class GpuArcVideoDecodeAccelerator
   bool secure_mode_ = false;
   size_t output_buffer_count_ = 0;
 
+  uint32_t client_version_ = std::numeric_limits<uint32_t>::max();
+
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<GpuArcVideoDecodeAccelerator> weak_this_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoDecodeAccelerator);
 };
 

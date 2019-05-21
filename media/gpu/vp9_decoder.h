@@ -106,6 +106,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   void Reset() override;
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
+  gfx::Rect GetVisibleRect() const override;
   size_t GetRequiredNumOfPictures() const override;
   size_t GetNumReferenceFrames() const override;
 
@@ -148,6 +149,9 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
 
   // Current coded resolution.
   gfx::Size pic_size_;
+
+  // Visible rectangle on the most recent allocation.
+  gfx::Rect visible_rect_;
 
   size_t size_change_failure_counter_ = 0;
 

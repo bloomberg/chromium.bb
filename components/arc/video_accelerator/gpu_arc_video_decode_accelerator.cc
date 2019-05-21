@@ -109,6 +109,7 @@ static bool VerifyDmabuf(media::VideoPixelFormat pixel_format,
 
   return true;
 }
+
 }  // namespace
 
 namespace arc {
@@ -120,7 +121,8 @@ GpuArcVideoDecodeAccelerator::GpuArcVideoDecodeAccelerator(
     const gpu::GpuPreferences& gpu_preferences,
     scoped_refptr<ProtectedBufferManager> protected_buffer_manager)
     : gpu_preferences_(gpu_preferences),
-      protected_buffer_manager_(std::move(protected_buffer_manager)) {}
+      protected_buffer_manager_(std::move(protected_buffer_manager)),
+      weak_this_factory_(this) {}
 
 GpuArcVideoDecodeAccelerator::~GpuArcVideoDecodeAccelerator() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -128,11 +130,31 @@ GpuArcVideoDecodeAccelerator::~GpuArcVideoDecodeAccelerator() {
     client_count_--;
 }
 
+// TODO(crbug.com/949898): Remove if all clients support a newer
+// ProvidePictureBuffers().
+void GpuArcVideoDecodeAccelerator::GetClientVersion(base::OnceClosure callback,
+                                                    uint32_t version) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  client_version_ = version;
+  std::move(callback).Run();
+}
+
 void GpuArcVideoDecodeAccelerator::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
     media::VideoPixelFormat format,
     uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
+    uint32_t texture_target) {
+  NOTIMPLEMENTED() << "VDA must call ProvidePictureBuffersWithVisibleRect() "
+                   << "for ARC++ video decoding";
+}
+
+void GpuArcVideoDecodeAccelerator::ProvidePictureBuffersWithVisibleRect(
+    uint32_t requested_num_of_buffers,
+    media::VideoPixelFormat format,
+    uint32_t textures_per_buffer,
+    const gfx::Size& dimensions,
+    const gfx::Rect& visible_rect,
     uint32_t texture_target) {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -143,7 +165,28 @@ void GpuArcVideoDecodeAccelerator::ProvidePictureBuffers(
   auto pbf = mojom::PictureBufferFormat::New();
   pbf->min_num_buffers = requested_num_of_buffers;
   pbf->coded_size = dimensions;
-  client_->ProvidePictureBuffers(std::move(pbf));
+
+  // TODO(crbug.com/949898): Remove if all clients support a newer
+  // ProvidePictureBuffers().
+  if (client_version_ == std::numeric_limits<uint32_t>::max()) {
+    // Base::Unretained(this) is safe here. |this| is ensured to be valid when
+    // GetClientVersion is called.
+    auto callback = base::BindOnce(
+        &GpuArcVideoDecodeAccelerator::ProvidePictureBuffersWithVisibleRect,
+        base::Unretained(this), requested_num_of_buffers, format,
+        textures_per_buffer, dimensions, visible_rect, texture_target);
+    client_.QueryVersion(base::BindRepeating(
+        &GpuArcVideoDecodeAccelerator::GetClientVersion,
+        weak_this_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
+    return;
+  }
+
+  if (client_version_ >=
+      ::arc::mojom::VideoDecodeClient::kProvidePictureBuffersMinVersion) {
+    client_->ProvidePictureBuffers(std::move(pbf), visible_rect);
+  } else {
+    client_->ProvidePictureBuffersDeprecated(std::move(pbf));
+  }
 }
 
 void GpuArcVideoDecodeAccelerator::DismissPictureBuffer(

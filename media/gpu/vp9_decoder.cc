@@ -135,8 +135,17 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 
     gfx::Size new_pic_size(curr_frame_hdr_->frame_width,
                            curr_frame_hdr_->frame_height);
-    DCHECK(!new_pic_size.IsEmpty());
+    gfx::Rect new_render_rect(curr_frame_hdr_->render_width,
+                              curr_frame_hdr_->render_height);
+    // For safety, check the validity of render size or leave it as (0, 0).
+    if (!gfx::Rect(new_pic_size).Contains(new_render_rect)) {
+      DVLOG(1) << "Render size exceeds picture size. render size: "
+               << new_render_rect.ToString()
+               << ", picture size: " << new_pic_size.ToString();
+      new_render_rect = gfx::Rect();
+    }
 
+    DCHECK(!new_pic_size.IsEmpty());
     if (new_pic_size != pic_size_) {
       DVLOG(1) << "New resolution: " << new_pic_size.ToString();
 
@@ -164,6 +173,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       ref_frames_.Clear();
 
       pic_size_ = new_pic_size;
+      visible_rect_ = new_render_rect;
       size_change_failure_counter_ = 0;
       return kAllocateNewSurfaces;
     }
@@ -171,16 +181,6 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     scoped_refptr<VP9Picture> pic = accelerator_->CreateVP9Picture();
     if (!pic)
       return kRanOutOfSurfaces;
-
-    gfx::Rect new_render_rect(curr_frame_hdr_->render_width,
-                              curr_frame_hdr_->render_height);
-    // For safety, check the validity of render size or leave it as (0, 0).
-    if (!gfx::Rect(pic_size_).Contains(new_render_rect)) {
-      DVLOG(1) << "Render size exceeds picture size. render size: "
-               << new_render_rect.ToString()
-               << ", picture size: " << pic_size_.ToString();
-      new_render_rect = gfx::Rect();
-    }
     DVLOG(2) << "Render resolution: " << new_render_rect.ToString();
 
     pic->set_visible_rect(new_render_rect);
@@ -250,6 +250,10 @@ void VP9Decoder::SetError() {
 
 gfx::Size VP9Decoder::GetPicSize() const {
   return pic_size_;
+}
+
+gfx::Rect VP9Decoder::GetVisibleRect() const {
+  return visible_rect_;
 }
 
 size_t VP9Decoder::GetRequiredNumOfPictures() const {
