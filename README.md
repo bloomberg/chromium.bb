@@ -195,19 +195,6 @@ Open [this link](repros/removeIMEUnderlineColor.html) in Chrome and type in
 Japanese. Without this patch, the underline color will be black, but it will
 be yellow once the patch is applied.
 
-### feature/setDataNoRelayout (Shezan Baig; D42070031) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FsetDataNoRelayout)\]
-This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.
-
-There are situations where we want to update a span, and because we know the
-span is of a fixed size, we don't want the new text to trigger a relayout.
-For this, we introduced a new method on text nodes "bbSetDataNoRelayout".
-
-Open [this link](repros/setDataNoRelayout.html) in Chrome (may take a while to
-finish loading). With this patch applied, there will be a noticable difference
-in the time taken to execute the button click, depending on whether the
-"norelayout" checkbox is enabled or disabled.
-
 * * *
 
 ###### Microsoft, Windows, Visual Studio and ClearType are registered trademarks of Microsoft Corp.
