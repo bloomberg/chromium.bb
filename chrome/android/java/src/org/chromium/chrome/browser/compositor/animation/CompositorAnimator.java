@@ -220,7 +220,7 @@ public class CompositorAnimator extends Animator {
      * @return The animated fraction after being passed through the time interpolator, if set.
      */
     @VisibleForTesting
-    public float getAnimatedFraction() {
+    float getAnimatedFraction() {
         return mAnimatedFraction;
     }
 
@@ -245,8 +245,7 @@ public class CompositorAnimator extends Animator {
      * @param start The value to begin the animation with.
      * @param end The value to end the animation at.
      */
-    @VisibleForTesting
-    public void setValues(float start, float end) {
+    void setValues(float start, float end) {
         mStartValue = start;
         mEndValue = end;
     }
@@ -254,7 +253,6 @@ public class CompositorAnimator extends Animator {
     /**
      * @return The current value between the floats set by {@link #setValues(float, float)}.
      */
-    @VisibleForTesting
     public float getAnimatedValue() {
         return mStartValue + (getAnimatedFraction() * (mEndValue - mStartValue));
     }

@@ -353,7 +353,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * @return       Whether or not the {@link LayoutManager} needs more updates.
      */
     @VisibleForTesting
-    public boolean onUpdate(long timeMs, long dtMs) {
+    boolean onUpdate(long timeMs, long dtMs) {
         if (!mUpdateRequested) return false;
         mUpdateRequested = false;
 
