@@ -9213,6 +9213,22 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
     </if>
 
+    <!-- HID (Human Interface Device) chooser -->
+    <if expr="not is_android">
+      <message name="IDS_HID_CHOOSER_PROMPT_ORIGIN" desc="The label that is used to introduce the Human Interface Device (HID) chooser details to the user in a popup when it is from a website.">
+        <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to connect to a HID device
+      </message>
+      <message name="IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME" desc="The label that is used to introduce Human Interface Device (HID) chooser details to the user in a popup when it is from a Chrome extension.">
+        "<ph name="CHROME_EXTENSION_NAME">$1<ex>Chrome Extension Name</ex></ph>" wants to connect to a HID device
+      </message>
+      <message name="IDS_HID_CHOOSER_ITEM_WITHOUT_NAME" desc="User option displaying the vendor ID and product ID for a Human Interface Device (HID) without a device name.">
+        Unknown Device (Vendor: <ph name="VENDOR_ID">$1<ex>0x1234</ex></ph>, Product: <ph name="PRODUCT_ID">$2<ex>0xabcd</ex></ph>)
+      </message>
+      <message name="IDS_HID_CHOOSER_ITEM_WITH_NAME" desc="User option displaying the device name, vendor ID, and product ID for a Human Interface Device (HID).">
+        <ph name="DEVICE_NAME">$1<ex>Wireless Controller</ex></ph> (Vendor: <ph name="VENDOR_ID">$2<ex>0x1234</ex></ph>, Product: <ph name="PRODUCT_ID">$3<ex>0xabcd</ex></ph>)
+      </message>
+    </if>
+
     <!-- Chrome IME API activated bubble. -->
     <message name="IDS_IME_API_ACTIVATED_WARNING" desc="The Warning info when an IME extension is trying to activate.">
       <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> extension may collect all the text you type, including personal data like passwords and credit card numbers. Do you want to use this extension?

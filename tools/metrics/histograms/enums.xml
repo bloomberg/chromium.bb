@@ -9239,6 +9239,8 @@ Called by update_net_error_codes.py.-->
   <int value="48" label="Serial guard"/>
   <int value="49" label="Serial permission data"/>
   <int value="50" label="Periodic background sync"/>
+  <int value="51" label="HID guard"/>
+  <int value="52" label="HID permission data"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">

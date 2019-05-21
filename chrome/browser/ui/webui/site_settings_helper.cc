@@ -13,6 +13,8 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/hid/hid_chooser_context.h"
+#include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -53,6 +55,7 @@ typedef std::map<std::pair<GURL, std::string>, OneOriginObjects>
 // Chooser data group names.
 const char kUsbChooserDataGroupType[] = "usb-devices-data";
 const char kSerialChooserDataGroupType[] = "serial-ports-data";
+const char kHidChooserDataGroupType[] = "hid-devices-data";
 
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     // The following ContentSettingsTypes have UI in Content Settings
@@ -85,6 +88,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, "serial-ports"},
     {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, kSerialChooserDataGroupType},
     {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING, "bluetooth-scanning"},
+    {CONTENT_SETTINGS_TYPE_HID_GUARD, "hid-devices"},
+    {CONTENT_SETTINGS_TYPE_HID_CHOOSER_DATA, kHidChooserDataGroupType},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
@@ -248,11 +253,17 @@ ChooserContextBase* GetSerialChooserContext(Profile* profile) {
   return SerialChooserContextFactory::GetForProfile(profile);
 }
 
+ChooserContextBase* GetHidChooserContext(Profile* profile) {
+  return HidChooserContextFactory::GetForProfile(profile);
+}
+
 const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
     {&GetUsbChooserContext, &UsbChooserContext::GetObjectName,
      kUsbChooserDataGroupType},
     {&GetSerialChooserContext, &SerialChooserContext::GetObjectName,
      kSerialChooserDataGroupType},
+    {&GetHidChooserContext, &HidChooserContext::GetObjectName,
+     kHidChooserDataGroupType},
 };
 
 }  // namespace

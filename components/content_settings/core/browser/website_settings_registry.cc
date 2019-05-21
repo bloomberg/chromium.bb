@@ -199,6 +199,10 @@ void WebsiteSettingsRegistry::Init() {
            WebsiteSettingsInfo::NOT_LOSSY,
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
            DESKTOP, WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
+  Register(CONTENT_SETTINGS_TYPE_HID_CHOOSER_DATA, "hid-chooser-data", nullptr,
+           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           DESKTOP, WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings
