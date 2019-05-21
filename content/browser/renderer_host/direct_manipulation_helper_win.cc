@@ -77,7 +77,8 @@ DirectManipulationHelper::CreateInstanceForTesting(
       base::WrapUnique(new DirectManipulationHelper(0, nullptr));
 
   instance->event_handler_ =
-      Microsoft::WRL::Make<DirectManipulationEventHandler>(event_target);
+      Microsoft::WRL::Make<DirectManipulationEventHandler>(instance.get());
+  instance->event_handler_->SetWindowEventTarget(event_target);
 
   instance->viewport_ = viewport;
 
@@ -156,8 +157,8 @@ bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
     return false;
   }
 
-  event_handler_ =
-      Microsoft::WRL::Make<DirectManipulationEventHandler>(event_target);
+  event_handler_ = Microsoft::WRL::Make<DirectManipulationEventHandler>(this);
+  event_handler_->SetWindowEventTarget(event_target);
 
   // We got Direct Manipulation transform from
   // IDirectManipulationViewportEventHandler.
@@ -169,9 +170,8 @@ bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
   }
 
   // Set default rect for viewport before activate.
-  gfx::Size viewport_size_in_pixels = {1000, 1000};
-  event_handler_->SetViewportSizeInPixels(viewport_size_in_pixels);
-  RECT rect = gfx::Rect(viewport_size_in_pixels).ToRECT();
+  viewport_size_in_pixels_ = {1000, 1000};
+  RECT rect = gfx::Rect(viewport_size_in_pixels_).ToRECT();
   hr = viewport_->SetViewportRect(&rect);
   if (!SUCCEEDED(hr)) {
     DebugLogging("Viewport set rect failed.", hr);
@@ -205,7 +205,7 @@ bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
 
 void DirectManipulationHelper::SetSizeInPixels(
     const gfx::Size& size_in_pixels) {
-  if (!event_handler_->SetViewportSizeInPixels(size_in_pixels))
+  if (viewport_size_in_pixels_ == size_in_pixels)
     return;
 
   HRESULT hr = viewport_->Stop();
@@ -214,7 +214,8 @@ void DirectManipulationHelper::SetSizeInPixels(
     return;
   }
 
-  RECT rect = gfx::Rect(size_in_pixels).ToRECT();
+  viewport_size_in_pixels_ = size_in_pixels;
+  RECT rect = gfx::Rect(viewport_size_in_pixels_).ToRECT();
   hr = viewport_->SetViewportRect(&rect);
   if (!SUCCEEDED(hr))
     DebugLogging("Viewport set rect failed.", hr);
@@ -242,6 +243,21 @@ void DirectManipulationHelper::OnPointerHitTest(WPARAM w_param) {
     if (!SUCCEEDED(hr))
       DebugLogging("Viewport set contact failed.", hr);
   }
+}
+
+HRESULT DirectManipulationHelper::Reset() {
+  // By zooming the primary content to a rect that match the viewport rect, we
+  // reset the content's transform to identity.
+  HRESULT hr = viewport_->ZoomToRect(
+      static_cast<float>(0), static_cast<float>(0),
+      static_cast<float>(viewport_size_in_pixels_.width()),
+      static_cast<float>(viewport_size_in_pixels_.height()), FALSE);
+  if (!SUCCEEDED(hr)) {
+    DebugLogging("Viewport zoom to rect failed.", hr);
+    return hr;
+  }
+
+  return S_OK;
 }
 
 void DirectManipulationHelper::SetDeviceScaleFactorForTesting(float factor) {
