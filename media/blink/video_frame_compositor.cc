@@ -193,7 +193,7 @@ void VideoFrameCompositor::Start(RenderCallback* callback) {
   callback_ = callback;
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoFrameCompositor::OnRendererStateUpdate,
-                                base::Unretained(this), true));
+                                weak_ptr_factory_.GetWeakPtr(), true));
 }
 
 void VideoFrameCompositor::Stop() {
@@ -205,7 +205,7 @@ void VideoFrameCompositor::Stop() {
   callback_ = nullptr;
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoFrameCompositor::OnRendererStateUpdate,
-                                base::Unretained(this), false));
+                                weak_ptr_factory_.GetWeakPtr(), false));
 }
 
 void VideoFrameCompositor::PaintSingleFrame(scoped_refptr<VideoFrame> frame,
@@ -213,8 +213,8 @@ void VideoFrameCompositor::PaintSingleFrame(scoped_refptr<VideoFrame> frame,
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VideoFrameCompositor::PaintSingleFrame,
-                                  base::Unretained(this), std::move(frame),
-                                  repaint_duplicate_frame));
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  std::move(frame), repaint_duplicate_frame));
     return;
   }
   if (ProcessNewFrame(std::move(frame), repaint_duplicate_frame) &&

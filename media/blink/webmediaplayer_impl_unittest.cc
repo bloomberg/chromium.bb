@@ -634,14 +634,14 @@ class WebMediaPlayerImplTest : public testing::Test {
       client->DidFinishLoading();
   }
 
-  void LoadAndWaitForMetadata(std::string data_file) {
+  // This runs until we reach the |ready_state_|. Attempting to wait for ready
+  // states < kReadyStateHaveCurrentData in non-startup-suspend test cases is
+  // unreliable due to asynchronous execution of tasks on the
+  // base::test:ScopedTaskEnvironment.
+  void LoadAndWaitForReadyState(std::string data_file,
+                                blink::WebMediaPlayer::ReadyState ready_state) {
     Load(data_file);
-
-    // This runs until we reach the have current data state. Attempting to wait
-    // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
-    // execution of tasks on the base::test:ScopedTaskEnvironment.
-    while (wmpi_->GetReadyState() <
-           blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
+    while (wmpi_->GetReadyState() < ready_state) {
       base::RunLoop loop;
       EXPECT_CALL(client_, ReadyStateChanged())
           .WillRepeatedly(RunClosure(loop.QuitClosure()));
@@ -654,7 +654,14 @@ class WebMediaPlayerImplTest : public testing::Test {
     // Verify we made it through pipeline startup.
     EXPECT_TRUE(wmpi_->data_source_);
     EXPECT_TRUE(wmpi_->demuxer_);
-    EXPECT_FALSE(wmpi_->seeking_);
+
+    if (ready_state > blink::WebMediaPlayer::kReadyStateHaveCurrentData)
+      EXPECT_FALSE(wmpi_->seeking_);
+  }
+
+  void LoadAndWaitForCurrentData(std::string data_file) {
+    LoadAndWaitForReadyState(data_file,
+                             blink::WebMediaPlayer::kReadyStateHaveCurrentData);
   }
 
   void CycleThreads() {
@@ -727,12 +734,12 @@ TEST_F(WebMediaPlayerImplTest, ConstructAndDestroy) {
   EXPECT_FALSE(IsSuspended());
 }
 
-// Verify LoadAndWaitForMetadata() functions without issue.
+// Verify LoadAndWaitForCurrentData() functions without issue.
 TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
   InitializeWebMediaPlayerImpl();
   EXPECT_FALSE(IsSuspended());
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
-  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  LoadAndWaitForCurrentData(kAudioOnlyTestFile);
   EXPECT_FALSE(IsSuspended());
   CycleThreads();
 
@@ -743,7 +750,7 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
   EXPECT_GT(reported_memory_ - data_source_size, 0);
 }
 
-// Verify LoadAndWaitForMetadata() functions without issue.
+// Verify LoadAndWaitForCurrentData() functions without issue.
 TEST_F(WebMediaPlayerImplTest, LoadAndDestroyDataUrl) {
   InitializeWebMediaPlayerImpl();
   EXPECT_FALSE(IsSuspended());
@@ -831,7 +838,8 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   InitializeWebMediaPlayerImpl();
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
-  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  LoadAndWaitForReadyState(kAudioOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
@@ -855,11 +863,9 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoStreaming) {
   constexpr char kLargeAudioOnlyTestFile[] = "bear_192kHz.wav";
   Load(kLargeAudioOnlyTestFile, LoadType::kStreaming);
 
-  // This runs until we reach the have current data state. Attempting to wait
-  // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
-  // execution of tasks on the base::test:ScopedTaskEnvironment.
+  // This runs until we reach the metadata state.
   while (wmpi_->GetReadyState() <
-         blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
+         blink::WebMediaPlayer::kReadyStateHaveMetadata) {
     base::RunLoop loop;
     EXPECT_CALL(client_, ReadyStateChanged())
         .WillRepeatedly(RunClosure(loop.QuitClosure()));
@@ -896,7 +902,8 @@ TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
-  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+  LoadAndWaitForReadyState(kVideoOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
@@ -930,7 +937,8 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
-  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+  LoadAndWaitForReadyState(kVideoOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
@@ -951,7 +959,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendCouldPlay) {
   InitializeWebMediaPlayerImpl();
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(true));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
-  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  LoadAndWaitForCurrentData(kAudioOnlyTestFile);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   base::RunLoop().RunUntilIdle();
@@ -1373,6 +1381,7 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
 
 TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   InitializeWebMediaPlayerImpl();
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
 
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetCcLayer())
@@ -1394,7 +1403,7 @@ TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
 
   // Use non-encrypted file here since we don't have a CDM. Otherwise pipeline
   // initialization will stall waiting for a CDM to be set.
-  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+  LoadAndWaitForCurrentData(kVideoOnlyTestFile);
 
   EXPECT_CALL(encrypted_client_, DidBlockPlaybackWaitingForKey());
   EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());

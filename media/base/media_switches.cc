@@ -199,9 +199,19 @@ const base::Feature kPictureInPicture {
 #endif
 };
 
-// Only decode preload=metadata elements upon visibility?
-const base::Feature kPreloadMetadataLazyLoad{"PreloadMetadataLazyLoad",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+// Only decode preload=metadata elements upon visibility. Experiment results
+// vary across platforms and are still being analyzed on macOS and CrOS.
+//
+// Android, Windows, and Linux all saw improvements without regressions, so
+// enable by default there.
+const base::Feature kPreloadMetadataLazyLoad {
+  "PreloadMetadataLazyLoad",
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Let videos be resumed via remote controls (for example, the notification)
 // when in background.

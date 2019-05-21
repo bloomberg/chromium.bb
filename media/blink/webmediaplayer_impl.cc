@@ -1148,7 +1148,7 @@ bool WebMediaPlayerImpl::IsPrerollAttemptNeeded() {
   // TODO(sandersd): Replace with |highest_ready_state_since_seek_| if we need
   // to ensure that preroll always gets a chance to complete.
   // See http://crbug.com/671525.
-  if (highest_ready_state_ >= ReadyState::kReadyStateHaveFutureData)
+  if (highest_ready_state_ >= ReadyState::kReadyStateHaveMetadata)
     return false;
 
   // To suspend before we reach kReadyStateHaveCurrentData is only ok
@@ -1528,19 +1528,9 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   // is seeking.
   UpdateBackgroundVideoOptimizationState();
 
-  // If we successfully completed a suspended startup, lie about our buffering
-  // state for the time being. While ultimately we want to avoid lying about the
-  // buffering state, for the initial test of true preload=metadata, signal
-  // BUFFERING_HAVE_ENOUGH so that canplay and canplaythrough fire correctly.
-  //
-  // Later we can experiment with the impact of removing this lie; initial data
-  // suggests high disruption since we've also made preload=metadata the
-  // default. Most sites are not prepared for a lack of canplay; even many of
-  // our own tests don't function correctly. See https://crbug.com/694855.
-  //
-  // Note: This call is dual purpose, it is also responsible for triggering an
-  // UpdatePlayState() call which may need to resume the pipeline once Blink
-  // has been told about the ReadyState change.
+  // If we successfully completed a suspended startup, we need to make a call to
+  // UpdatePlayState() in case any events which should trigger a resume have
+  // occurred during startup.
   if (attempting_suspended_start_ &&
       pipeline_controller_->IsPipelineSuspended()) {
     did_lazy_load_ = !has_poster_ && HasVideo();
@@ -1548,6 +1538,15 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
       DCHECK(base::FeatureList::IsEnabled(kPreloadMetadataLazyLoad));
 
     skip_metrics_due_to_startup_suspend_ = true;
+
+    // If we successfully completed a suspended startup, signal that we have
+    // reached BUFFERING_HAVE_ENOUGH so that canplay and canplaythrough fire
+    // correctly. We must unfortunately always do this because it's valid for
+    // elements to play while not visible nor even in the DOM.
+    //
+    // Note: This call is dual purpose, it is also responsible for triggering an
+    // UpdatePlayState() call which may need to resume the pipeline once Blink
+    // has been told about the ReadyState change.
     OnBufferingStateChangeInternal(BUFFERING_HAVE_ENOUGH, true);
 
     // If |skip_metrics_due_to_startup_suspend_| is unset by a resume started by
@@ -1935,7 +1934,7 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
 
 void WebMediaPlayerImpl::OnProgress() {
   DVLOG(4) << __func__;
-  if (highest_ready_state_ < ReadyState::kReadyStateHaveFutureData) {
+  if (highest_ready_state_ < ReadyState::kReadyStateHaveMetadata) {
     // Reset the preroll attempt clock.
     preroll_attempt_pending_ = true;
     preroll_attempt_start_time_ = base::TimeTicks();
@@ -2853,19 +2852,19 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
   // errors.
   bool has_error = IsNetworkStateError(network_state_);
 
-  // After HaveFutureData, Blink will call play() if the state is not paused;
-  // prior to this point |paused_| is not accurate.
-  bool have_future_data =
-      highest_ready_state_ >= WebMediaPlayer::kReadyStateHaveFutureData;
+  // After kReadyStateHaveMetadata, Blink will call play() if the state is not
+  // paused; prior to this point |paused_| is not accurate.
+  bool have_metadata =
+      highest_ready_state_ >= WebMediaPlayer::kReadyStateHaveMetadata;
 
   // Background suspend is only enabled for paused players.
   // In the case of players with audio the session should be kept.
   bool background_suspended =
-      can_auto_suspend && is_backgrounded && paused_ && have_future_data;
+      can_auto_suspend && is_backgrounded && paused_ && have_metadata;
 
-  // Idle suspension is allowed prior to have future data since there exist
-  // mechanisms to exit the idle state when the player is capable of reaching
-  // the have future data state; see didLoadingProgress().
+  // Idle suspension is allowed prior to kReadyStateHaveMetadata since there
+  // exist mechanisms to exit the idle state when the player is capable of
+  // reaching the kReadyStateHaveMetadata state; see didLoadingProgress().
   //
   // TODO(sandersd): Make the delegate suspend idle players immediately when
   // hidden.
@@ -2873,9 +2872,10 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
                         !overlay_enabled_ && !needs_first_frame_;
 
   // If we're already suspended, see if we can wait for user interaction. Prior
-  // to HaveFutureData, we require |is_stale| to remain suspended. |is_stale|
-  // will be cleared when we receive data which may take us to HaveFutureData.
-  bool can_stay_suspended = (is_stale || have_future_data) && is_suspended &&
+  // to kReadyStateHaveMetadata, we require |is_stale| to remain suspended.
+  // |is_stale| will be cleared when we receive data which may take us to
+  // kReadyStateHaveMetadata.
+  bool can_stay_suspended = (is_stale || have_metadata) && is_suspended &&
                             paused_ && !seeking_ && !needs_first_frame_;
 
   // Combined suspend state.
@@ -2886,8 +2886,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
            << ", idle_suspended=" << idle_suspended
            << ", background_suspended=" << background_suspended
            << ", can_stay_suspended=" << can_stay_suspended
-           << ", is_stale=" << is_stale
-           << ", have_future_data=" << have_future_data
+           << ", is_stale=" << is_stale << ", have_metadata=" << have_metadata
            << ", paused_=" << paused_ << ", seeking_=" << seeking_;
 
   // We do not treat |playback_rate_| == 0 as paused. For the media session,
@@ -2905,14 +2904,14 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
   // suspension does not destroy the media session, because we expect that the
   // notification controls (and audio focus) remain. With some exceptions for
   // background videos, the player only needs to have audio to have controls
-  // (requires |have_future_data|).
+  // (requires |have_current_data|).
   //
   // |alive| indicates if the player should be present (not |GONE|) to the
   // delegate, either paused or playing. The following must be true for the
   // player:
-  //   - |have_future_data|, since we need to know whether we are paused to
-  //     correctly configure the session and also because the tracks and
-  //     duration are passed to DidPlay(),
+  //   - |have_current_data|, since playback can't begin before that point, we
+  //     need to know whether we are paused to correctly configure the session,
+  //     and also because the tracks and duration are passed to DidPlay(),
   //   - |is_flinging| is false (RemotePlayback is not handled by the delegate)
   //   - |has_error| is false as player should have no errors,
   //   - |background_suspended| is false, otherwise |has_remote_controls| must
@@ -2927,7 +2926,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
   bool backgrounded_video_has_no_remote_controls =
       IsBackgroundSuspendEnabled(this) && !IsResumeBackgroundVideosEnabled() &&
       is_backgrounded && HasVideo();
-  bool can_play = !has_error && have_future_data;
+  bool have_current_data = highest_ready_state_ >= kReadyStateHaveCurrentData;
+  bool can_play = !has_error && have_current_data;
   bool has_remote_controls =
       HasAudio() && !backgrounded_video_has_no_remote_controls;
   bool alive = can_play && !is_flinging && !must_suspend &&
