@@ -1138,12 +1138,9 @@ class ChromeSDKCommand(command.CliCommand):
       if extra_ldflags:
         gn_args['cros_target_extra_ldflags'] = ' '.join(ld_flags_list)
 
-    # We removed webcore debug symbols on release builds on arm.
-    # See crbug.com/792999. However, we want to keep the symbols
+    # We removed blink symbols on release builds on arm, see
+    # https://crbug.com/792999. However, we want to keep the symbols
     # for simplechrome builds.
-    # TODO: remove the 'remove_webcore_debug_symbols' once we
-    # change the ebuild file.
-    gn_args['remove_webcore_debug_symbols'] = False
     gn_args['blink_symbol_level'] = -1
 
     # Remove symbol_level specified in the ebuild to use the default.
