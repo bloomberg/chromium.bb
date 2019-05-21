@@ -87,7 +87,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
           target(target),
           params(params),
           finished(finished),
-          native_sampler(std::move(sampler)),
+          sampler(std::move(sampler)),
           profile_builder(std::move(profile_builder)) {}
     ~CollectionContext() = default;
 
@@ -100,7 +100,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     WaitableEvent* const finished;  // Signaled when all sampling complete.
 
     // Platform-specific module that does the actual sampling.
-    std::unique_ptr<StackSampler> native_sampler;
+    std::unique_ptr<StackSampler> sampler;
 
     // Receives the sampling data and builds a CallStackProfile.
     std::unique_ptr<ProfileBuilder> profile_builder;
@@ -188,9 +188,9 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // Thread:
   void CleanUp() override;
 
-  // A stack-buffer used by the native sampler for its work. This buffer can
-  // be re-used for multiple native sampler objects so long as the API calls
-  // that take it are not called concurrently.
+  // A stack-buffer used by the sampler for its work. This buffer is re-used
+  // across multiple sampler objects since their execution is serialized on the
+  // sampling thread.
   std::unique_ptr<StackSampler::StackBuffer> stack_buffer_;
 
   // A map of collection ids to collection contexts. Because this class is a
@@ -487,7 +487,7 @@ void StackSamplingProfiler::SamplingThread::AddAuxUnwinderTask(
   if (loc == active_collections_.end())
     return;
 
-  loc->second->native_sampler->AddAuxUnwinder(std::move(unwinder));
+  loc->second->sampler->AddAuxUnwinder(std::move(unwinder));
 }
 
 void StackSamplingProfiler::SamplingThread::AddCollectionTask(
@@ -550,8 +550,8 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
   }
 
   // Record a single sample.
-  collection->native_sampler->RecordStackFrames(
-      stack_buffer_.get(), collection->profile_builder.get());
+  collection->sampler->RecordStackFrames(stack_buffer_.get(),
+                                         collection->profile_builder.get());
 
   // Schedule the next sample recording if there is one.
   if (++collection->sample_count < collection->params.samples_per_profile) {
