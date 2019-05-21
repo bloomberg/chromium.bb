@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.compositor.layouts;
+package org.chromium.chrome.browser.compositor.animation;
 
 import android.support.test.filters.SmallTest;
 
@@ -12,11 +12,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
-import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
+import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.MockLayoutUpdateHost;
 
 /**
- * Unit tests for {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation}.
+ * Unit tests for {@link CompositorAnimator}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -24,8 +24,6 @@ public class CompositorAnimationHandlerTest {
     private static final long FAST_DURATION_MS = 100;
     private static final long SLOW_DURATION_MS = 1000;
 
-    private CompositorAnimator mFastAnimation;
-    private CompositorAnimator mSlowAnimation;
     private CompositorAnimationHandler mAnimations;
     private LayoutUpdateHost mUpdateHost;
 
