@@ -117,6 +117,8 @@ std::unique_ptr<GPUDevice> GPUDeviceToProtocol(
                             .SetDeviceId(device.device_id)
                             .SetVendorString(device.vendor_string)
                             .SetDeviceString(device.device_string)
+                            .SetDriverVendor(device.driver_vendor)
+                            .SetDriverVersion(device.driver_version)
                             .Build();
 }
 
