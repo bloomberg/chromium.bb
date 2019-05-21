@@ -1004,6 +1004,9 @@ class BBJSONGenerator(object):
       'Linux Tests Code Coverage',
       'GPU Linux Builder Code Coverage',
       'Linux Release Code Coverage (NVIDIA)',
+      # chromium.memory. exists, but is omitted from consoles for now.
+      # https://crbug.com/790202
+      'android-asan'
     ]
 
   def check_input_file_consistency(self, verbose=False):
