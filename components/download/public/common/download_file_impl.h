@@ -188,11 +188,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
  private:
   friend class DownloadFileTest;
 
-  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
-                   const base::FilePath& default_downloads_directory,
-                   uint32_t download_id,
-                   base::WeakPtr<DownloadDestinationObserver> observer);
-
   // Options for RenameWithRetryInternal.
   enum RenameOption {
     UNIQUIFY = 1 << 0,  // If there's already a file on disk that conflicts with

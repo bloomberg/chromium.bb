@@ -129,19 +129,6 @@ DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<InputStream> stream,
     uint32_t download_id,
     base::WeakPtr<DownloadDestinationObserver> observer)
-    : DownloadFileImpl(std::move(save_info),
-                       default_download_directory,
-                       download_id,
-                       observer) {
-  source_streams_[save_info_->offset] = std::make_unique<SourceStream>(
-      save_info_->offset, save_info_->length, std::move(stream));
-}
-
-DownloadFileImpl::DownloadFileImpl(
-    std::unique_ptr<DownloadSaveInfo> save_info,
-    const base::FilePath& default_download_directory,
-    uint32_t download_id,
-    base::WeakPtr<DownloadDestinationObserver> observer)
     : file_(download_id),
       save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
@@ -160,6 +147,9 @@ DownloadFileImpl::DownloadFileImpl(
                        TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("download", "DownloadFileActive",
                                     download_id);
+
+  source_streams_[save_info_->offset] = std::make_unique<SourceStream>(
+      save_info_->offset, save_info_->length, std::move(stream));
 
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
