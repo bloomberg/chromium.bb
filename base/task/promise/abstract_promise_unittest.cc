@@ -33,7 +33,7 @@ using PrerequisitePolicy =
 namespace base {
 namespace internal {
 
-class TestExecutor : public AbstractPromise::Executor {
+class TestExecutor {
  public:
   TestExecutor(PrerequisitePolicy policy,
 #if DCHECK_IS_ON()
@@ -53,24 +53,24 @@ class TestExecutor : public AbstractPromise::Executor {
   }
 
 #if DCHECK_IS_ON()
-  ArgumentPassingType ResolveArgumentPassingType() const override {
+  ArgumentPassingType ResolveArgumentPassingType() const {
     return resolve_argument_passing_type_;
   }
 
-  ArgumentPassingType RejectArgumentPassingType() const override {
+  ArgumentPassingType RejectArgumentPassingType() const {
     return reject_argument_passing_type_;
   }
 
-  bool CanResolve() const override { return resolve_flags_ & 1; }
+  bool CanResolve() const { return resolve_flags_ & 1; }
 
-  bool CanReject() const override { return resolve_flags_ & 2; }
+  bool CanReject() const { return resolve_flags_ & 2; }
 #endif
 
-  PrerequisitePolicy GetPrerequisitePolicy() override { return policy_; }
+  PrerequisitePolicy GetPrerequisitePolicy() const { return policy_; }
 
-  bool IsCancelled() const override { return false; }
+  bool IsCancelled() const { return false; }
 
-  void Execute(AbstractPromise* p) override { std::move(callback_).Run(p); }
+  void Execute(AbstractPromise* p) { std::move(callback_).Run(p); }
 
  private:
   base::OnceCallback<void(AbstractPromise*)> callback_;

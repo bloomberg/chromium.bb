@@ -12,11 +12,11 @@ namespace base {
 namespace internal {
 
 // An Executor that doesn't do anything.
-class BASE_EXPORT NoOpPromiseExecutor : public AbstractPromise::Executor {
+class BASE_EXPORT NoOpPromiseExecutor {
  public:
   NoOpPromiseExecutor(bool can_resolve, bool can_reject);
 
-  ~NoOpPromiseExecutor() override;
+  ~NoOpPromiseExecutor();
 
   static scoped_refptr<internal::AbstractPromise> Create(
       Location from_here,
@@ -24,16 +24,18 @@ class BASE_EXPORT NoOpPromiseExecutor : public AbstractPromise::Executor {
       bool can_reject,
       RejectPolicy reject_policy);
 
-  PrerequisitePolicy GetPrerequisitePolicy() override;
-  bool IsCancelled() const override;
+  AbstractPromise::Executor::PrerequisitePolicy GetPrerequisitePolicy() const;
+  bool IsCancelled() const;
 
 #if DCHECK_IS_ON()
-  ArgumentPassingType ResolveArgumentPassingType() const override;
-  ArgumentPassingType RejectArgumentPassingType() const override;
-  bool CanResolve() const override;
-  bool CanReject() const override;
+  AbstractPromise::Executor::ArgumentPassingType ResolveArgumentPassingType()
+      const;
+  AbstractPromise::Executor::ArgumentPassingType RejectArgumentPassingType()
+      const;
+  bool CanResolve() const;
+  bool CanReject() const;
 #endif
-  void Execute(AbstractPromise* promise) override;
+  void Execute(AbstractPromise* promise);
 
  private:
 #if DCHECK_IS_ON()

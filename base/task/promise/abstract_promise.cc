@@ -47,6 +47,11 @@ const AbstractPromise* AbstractPromise::FindNonCurriedAncestor() const {
 void AbstractPromise::AddAsDependentForAllPrerequisites() {
   DCHECK(prerequisites_);
 
+  // Note a curried promise will eventually get to all its children and pass
+  // them catch responsibility through AddAsDependentForAllPrerequisites,
+  // although that'll be done lazily (only once they resolve/reject, so there
+  // is a possibility the DCHECKs might be racy.
+
   for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
     node.dependent_node.dependent = this;
 
@@ -196,20 +201,6 @@ void AbstractPromise::MaybeInheritChecks(AbstractPromise* prerequisite) {
   prerequisite->passed_catch_responsibility_ = true;
 }
 
-void AbstractPromise::PassCatchResponsibilityOntoDependentsForCurriedPromise(
-    DependentList::Node* dependent_list) {
-  CheckedAutoLock lock(GetCheckedLock());
-  if (!dependent_list)
-    return;
-
-  if (IsResolvedWithPromise()) {
-    for (DependentList::Node* node = dependent_list; node;
-         node = node->next.load(std::memory_order_relaxed)) {
-      node->dependent->MaybeInheritChecks(this);
-    }
-  }
-}
-
 AbstractPromise::LocationRef::LocationRef(const Location& from_here)
     : from_here_(from_here) {}
 
@@ -225,11 +216,7 @@ AbstractPromise::DoubleMoveDetector::~DoubleMoveDetector() = default;
 #endif
 
 const AbstractPromise::Executor* AbstractPromise::GetExecutor() const {
-  const SmallUniqueObject<Executor>* executor =
-      base::unique_any_cast<SmallUniqueObject<Executor>>(&value_);
-  if (!executor)
-    return nullptr;
-  return executor->get();
+  return base::unique_any_cast<Executor>(&value_);
 }
 
 AbstractPromise::Executor::PrerequisitePolicy
@@ -353,10 +340,6 @@ void AbstractPromise::OnResolvePostReadyDependents() {
   DependentList::Node* dependent_list = dependents_.ConsumeOnceForResolve();
   dependent_list = NonThreadSafeReverseList(dependent_list);
 
-#if DCHECK_IS_ON()
-  PassCatchResponsibilityOntoDependentsForCurriedPromise(dependent_list);
-#endif
-
   // Propagate resolve to dependents.
   DependentList::Node* next;
   for (DependentList::Node* node = dependent_list; node; node = next) {
@@ -373,10 +356,6 @@ void AbstractPromise::OnResolvePostReadyDependents() {
 void AbstractPromise::OnRejectPostReadyDependents() {
   DependentList::Node* dependent_list = dependents_.ConsumeOnceForReject();
   dependent_list = NonThreadSafeReverseList(dependent_list);
-
-#if DCHECK_IS_ON()
-  PassCatchResponsibilityOntoDependentsForCurriedPromise(dependent_list);
-#endif
 
   // Propagate rejection to dependents. We always propagate rejection
   // immediately.
@@ -429,7 +408,8 @@ void AbstractPromise::OnCanceled() {
 
 void AbstractPromise::OnResolved() {
 #if DCHECK_IS_ON()
-  DCHECK(executor_can_resolve_) << from_here_.ToString();
+  DCHECK(executor_can_resolve_ || IsResolvedWithPromise())
+      << from_here_.ToString();
 #endif
   if (IsResolvedWithPromise()) {
     scoped_refptr<AbstractPromise> curried_promise =
@@ -514,6 +494,43 @@ void AbstractPromise::AdjacencyList::ResetWithSingleDependency(
   prerequisite_list.clear();
   prerequisite_list.push_back(AdjacencyListNode{std::move(prerequisite)});
   action_prerequisite_count = 1;
+}
+
+AbstractPromise::Executor::~Executor() {
+  vtable_->destructor(storage_);
+}
+
+AbstractPromise::Executor::PrerequisitePolicy
+AbstractPromise::Executor::GetPrerequisitePolicy() const {
+  return vtable_->get_prerequsite_policy(storage_);
+}
+
+bool AbstractPromise::Executor::IsCancelled() const {
+  return vtable_->is_cancelled(storage_);
+}
+
+#if DCHECK_IS_ON()
+AbstractPromise::Executor::ArgumentPassingType
+AbstractPromise::Executor::ResolveArgumentPassingType() const {
+  return vtable_->resolve_argument_passing_type(storage_);
+}
+
+AbstractPromise::Executor::ArgumentPassingType
+AbstractPromise::Executor::RejectArgumentPassingType() const {
+  return vtable_->reject_argument_passing_type(storage_);
+}
+
+bool AbstractPromise::Executor::CanResolve() const {
+  return vtable_->can_resolve(storage_);
+}
+
+bool AbstractPromise::Executor::CanReject() const {
+  return vtable_->can_reject(storage_);
+}
+#endif
+
+void AbstractPromise::Executor::Execute(AbstractPromise* promise) {
+  return vtable_->execute(storage_, promise);
 }
 
 }  // namespace internal

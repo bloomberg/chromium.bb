@@ -14,7 +14,6 @@
 #include "base/no_destructor.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/promise/dependent_list.h"
-#include "base/task/promise/small_unique_object.h"
 #include "base/thread_annotations.h"
 
 namespace base {
@@ -46,7 +45,7 @@ enum class RejectPolicy {
 // resolved. This lets us disambiguate promises with the same resolve and reject
 // type.
 template <typename T>
-struct BASE_EXPORT Resolved {
+struct Resolved {
   using Type = T;
 
   static_assert(!std::is_same<T, NoReject>::value,
@@ -64,7 +63,7 @@ struct BASE_EXPORT Resolved {
 };
 
 template <>
-struct BASE_EXPORT Resolved<void> {
+struct Resolved<void> {
   using Type = void;
   Void value;
 };
@@ -73,7 +72,7 @@ struct BASE_EXPORT Resolved<void> {
 // rejected. This lets us disambiguate promises with the same resolve and reject
 // type.
 template <typename T>
-struct BASE_EXPORT Rejected {
+struct Rejected {
   using Type = T;
   T value;
 
@@ -93,7 +92,7 @@ struct BASE_EXPORT Rejected {
 };
 
 template <>
-struct BASE_EXPORT Rejected<void> {
+struct Rejected<void> {
   using Type = void;
   Void value;
 };
@@ -124,7 +123,7 @@ class BASE_EXPORT AbstractPromise
                   ExecutorArgs&&... executor_args) noexcept
       : task_runner_(std::move(task_runner)),
         from_here_(std::move(from_here)),
-        value_(in_place_type_t<SmallUniqueObject<Executor>>(),
+        value_(in_place_type_t<Executor>(),
                in_place_type_t<DerivedExecutorType>(),
                std::forward<ExecutorArgs>(executor_args)...),
 #if DCHECK_IS_ON()
@@ -205,9 +204,27 @@ class BASE_EXPORT AbstractPromise
   // Unresolved promises have an executor which invokes one of the callbacks
   // associated with the promise. Once the callback has been invoked the
   // Executor is destroyed.
+  //
+  // Ideally Executor would be a pure virtual class, but we want to store these
+  // inline to reduce the number of memory allocations (small object
+  // optimization). The problem is even though placement new returns the same
+  // address it was allocated at, you have to use the returned pointer.  Casting
+  // the buffer to the derived class is undefined behavior. STL implementations
+  // usually store an extra pointer, but there we have opted for implementing
+  // our own VTable to save a little bit of memory.
   class BASE_EXPORT Executor {
    public:
-    virtual ~Executor() {}
+    // Constructs |Derived| in place.
+    template <typename Derived, typename... Args>
+    explicit Executor(in_place_type_t<Derived>, Args&&... args) {
+      static_assert(sizeof(Derived) <= MaxSize, "Derived is too big");
+      static_assert(sizeof(Executor) <= sizeof(AnyInternal::InlineAlloc),
+                    "Executor is too big");
+      vtable_ = &VTableHelper<Derived>::vtable_;
+      new (storage_) Derived(std::forward<Args>(args)...);
+    }
+
+    ~Executor();
 
     // Controls whether or not a promise should wait for its prerequisites
     // before becoming eligible for execution.
@@ -227,11 +244,11 @@ class BASE_EXPORT AbstractPromise
     };
 
     // Returns the associated PrerequisitePolicy.
-    virtual PrerequisitePolicy GetPrerequisitePolicy() = 0;
+    PrerequisitePolicy GetPrerequisitePolicy() const;
 
     // NB if there is both a resolve and a reject executor we require them to
     // be both canceled at the same time.
-    virtual bool IsCancelled() const = 0;
+    bool IsCancelled() const;
 
     // Describes an executor callback.
     enum class ArgumentPassingType : uint8_t {
@@ -249,10 +266,10 @@ class BASE_EXPORT AbstractPromise
 #if DCHECK_IS_ON()
     // Returns details of the resolve and reject executor callbacks if any. This
     // data is used to diagnose double moves and missing catches.
-    virtual ArgumentPassingType ResolveArgumentPassingType() const = 0;
-    virtual ArgumentPassingType RejectArgumentPassingType() const = 0;
-    virtual bool CanResolve() const = 0;
-    virtual bool CanReject() const = 0;
+    ArgumentPassingType ResolveArgumentPassingType() const;
+    ArgumentPassingType RejectArgumentPassingType() const;
+    bool CanResolve() const;
+    bool CanReject() const;
 #endif
 
     // Invokes the associate callback for |promise|. If the callback was
@@ -263,7 +280,84 @@ class BASE_EXPORT AbstractPromise
     // |promise->OnResolved()|.
     // Caution the Executor will be destructed when |promise->state()| is
     // written to.
-    virtual void Execute(AbstractPromise* promise) = 0;
+    void Execute(AbstractPromise* promise);
+
+   private:
+    static constexpr size_t MaxSize = sizeof(void*) * 2;
+
+    struct VTable {
+      void (*destructor)(void* self);
+      PrerequisitePolicy (*get_prerequsite_policy)(const void* self);
+      bool (*is_cancelled)(const void* self);
+#if DCHECK_IS_ON()
+      ArgumentPassingType (*resolve_argument_passing_type)(const void* self);
+      ArgumentPassingType (*reject_argument_passing_type)(const void* self);
+      bool (*can_resolve)(const void* self);
+      bool (*can_reject)(const void* self);
+#endif
+      void (*execute)(void* self, AbstractPromise* promise);
+
+     private:
+      DISALLOW_COPY_AND_ASSIGN(VTable);
+    };
+
+    template <typename DerivedType>
+    struct VTableHelper {
+      VTableHelper(const VTableHelper& other) = delete;
+      VTableHelper& operator=(const VTableHelper& other) = delete;
+
+      static void Destructor(void* self) {
+        static_cast<DerivedType*>(self)->~DerivedType();
+      }
+
+      static PrerequisitePolicy GetPrerequisitePolicy(const void* self) {
+        return static_cast<const DerivedType*>(self)->GetPrerequisitePolicy();
+      }
+
+      static bool IsCancelled(const void* self) {
+        return static_cast<const DerivedType*>(self)->IsCancelled();
+      }
+
+#if DCHECK_IS_ON()
+      static ArgumentPassingType ResolveArgumentPassingType(const void* self) {
+        return static_cast<const DerivedType*>(self)
+            ->ResolveArgumentPassingType();
+      }
+
+      static ArgumentPassingType RejectArgumentPassingType(const void* self) {
+        return static_cast<const DerivedType*>(self)
+            ->RejectArgumentPassingType();
+      }
+
+      static bool CanResolve(const void* self) {
+        return static_cast<const DerivedType*>(self)->CanResolve();
+      }
+
+      static bool CanReject(const void* self) {
+        return static_cast<const DerivedType*>(self)->CanReject();
+      }
+#endif
+
+      static void Execute(void* self, AbstractPromise* promise) {
+        return static_cast<DerivedType*>(self)->Execute(promise);
+      }
+
+      static constexpr VTable vtable_ = {
+        &VTableHelper::Destructor,
+        &VTableHelper::GetPrerequisitePolicy,
+        &VTableHelper::IsCancelled,
+#if DCHECK_IS_ON()
+        &VTableHelper::ResolveArgumentPassingType,
+        &VTableHelper::RejectArgumentPassingType,
+        &VTableHelper::CanResolve,
+        &VTableHelper::CanReject,
+#endif
+        &VTableHelper::Execute,
+      };
+    };
+
+    const VTable* vtable_;
+    char storage_[MaxSize];
   };
 
   // Signals that this promise was cancelled. If executor hasn't run yet, this
@@ -387,8 +481,8 @@ class BASE_EXPORT AbstractPromise
 
   const Location from_here_;
 
-  // To save memory |value_| contains SmallUniqueObject<Executor> (which is
-  // stored inline) before it has run and afterwards it contains one of:
+  // To save memory |value_| contains Executor (which is stored inline) before
+  // it has run and afterwards it contains one of:
   // * Resolved<T>
   // * Rejected<T>
   // * scoped_refptr<AbstractPromise> (for curried promises - i.e. a promise
@@ -398,10 +492,6 @@ class BASE_EXPORT AbstractPromise
 #if DCHECK_IS_ON()
   void MaybeInheritChecks(AbstractPromise* source)
       EXCLUSIVE_LOCKS_REQUIRED(GetCheckedLock());
-
-  // Does nothing if this promise wasn't resolved by a promise.
-  void PassCatchResponsibilityOntoDependentsForCurriedPromise(
-      DependentList::Node* dependent_list);
 
   // Controls how we deal with unhandled rejection.
   const RejectPolicy reject_policy_;
@@ -486,6 +576,11 @@ class BASE_EXPORT AbstractPromise
   // case of a non-chained PostTask.
   std::unique_ptr<AdjacencyList> prerequisites_;
 };
+
+// static
+template <typename T>
+const AbstractPromise::Executor::VTable
+    AbstractPromise::Executor::VTableHelper<T>::vtable_;
 
 }  // namespace internal
 }  // namespace base

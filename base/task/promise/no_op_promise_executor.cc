@@ -19,8 +19,8 @@ NoOpPromiseExecutor::NoOpPromiseExecutor(bool can_resolve, bool can_reject)
 NoOpPromiseExecutor::~NoOpPromiseExecutor() {}
 
 AbstractPromise::Executor::PrerequisitePolicy
-NoOpPromiseExecutor::GetPrerequisitePolicy() {
-  return PrerequisitePolicy::kNever;
+NoOpPromiseExecutor::GetPrerequisitePolicy() const {
+  return AbstractPromise::Executor::PrerequisitePolicy::kNever;
 }
 
 bool NoOpPromiseExecutor::IsCancelled() const {
@@ -30,12 +30,12 @@ bool NoOpPromiseExecutor::IsCancelled() const {
 #if DCHECK_IS_ON()
 AbstractPromise::Executor::ArgumentPassingType
 NoOpPromiseExecutor::ResolveArgumentPassingType() const {
-  return ArgumentPassingType::kNoCallback;
+  return AbstractPromise::Executor::ArgumentPassingType::kNoCallback;
 }
 
 AbstractPromise::Executor::ArgumentPassingType
 NoOpPromiseExecutor::RejectArgumentPassingType() const {
-  return ArgumentPassingType::kNoCallback;
+  return AbstractPromise::Executor::ArgumentPassingType::kNoCallback;
 }
 
 bool NoOpPromiseExecutor::CanResolve() const {
