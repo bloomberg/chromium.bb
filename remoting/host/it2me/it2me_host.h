@@ -74,6 +74,10 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void set_enable_dialogs(bool enable);
   bool enable_dialogs() const { return enable_dialogs_; }
 
+  // Enable or disable whether or not the session should be terminated if local
+  // input is detected.
+  void set_terminate_upon_input(bool terminate_upon_input);
+
   // Methods called by the script object, from the plugin thread.
 
   // Creates It2Me host structures and starts the host.
@@ -192,6 +196,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   std::string connecting_jid_;
 
   bool enable_dialogs_ = true;
+  bool terminate_upon_input_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHost);
 };

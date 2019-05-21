@@ -270,6 +270,9 @@ void It2MeNativeMessagingHost::ProcessConnect(
   bool no_dialogs = false;
   message->GetBoolean("noDialogs", &no_dialogs);
 
+  bool terminate_upon_input = false;
+  message->GetBoolean("terminateUponInput", &terminate_upon_input);
+
   std::string directory_bot_jid =
       ServiceUrls::GetInstance()->directory_bot_jid();
 
@@ -327,6 +330,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   it2me_host_ = factory_->CreateIt2MeHost();
 #if defined(OS_CHROMEOS) || !defined(NDEBUG)
   it2me_host_->set_enable_dialogs(!no_dialogs);
+  it2me_host_->set_terminate_upon_input(terminate_upon_input);
 #endif
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),
                        std::make_unique<It2MeConfirmationDialogFactory>(),

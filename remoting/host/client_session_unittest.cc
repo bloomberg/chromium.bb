@@ -186,6 +186,8 @@ class ClientSessionTest : public testing::Test {
   protocol::FakeConnectionToClient* connection_;
 
   std::unique_ptr<FakeDesktopEnvironmentFactory> desktop_environment_factory_;
+
+  DesktopEnvironmentOptions desktop_environment_options_;
 };
 
 void ClientSessionTest::SetUp() {
@@ -195,11 +197,13 @@ void ClientSessionTest::SetUp() {
 
   desktop_environment_factory_.reset(
       new FakeDesktopEnvironmentFactory(message_loop_.task_runner()));
+  desktop_environment_options_ = DesktopEnvironmentOptions::CreateDefault();
 }
 
 void ClientSessionTest::TearDown() {
   if (client_session_) {
-    client_session_->DisconnectSession(protocol::OK);
+    if (connection_->is_connected())
+      client_session_->DisconnectSession(protocol::OK);
     client_session_.reset();
     desktop_environment_factory_.reset();
   }
@@ -223,9 +227,8 @@ void ClientSessionTest::CreateClientSession(
 
   client_session_.reset(new ClientSession(
       &session_event_handler_, std::move(connection),
-      desktop_environment_factory_.get(),
-      DesktopEnvironmentOptions::CreateDefault(), base::TimeDelta(), nullptr,
-      extensions_));
+      desktop_environment_factory_.get(), desktop_environment_options_,
+      base::TimeDelta(), nullptr, extensions_));
 }
 
 void ClientSessionTest::CreateClientSession() {
@@ -470,8 +473,22 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   EXPECT_THAT(mouse_events[0], EqualsMouseMoveEvent(100, 101));
   EXPECT_THAT(mouse_events[1], EqualsMouseMoveEvent(200, 201));
 
+  // Verify that we're still connected.
+  EXPECT_TRUE(connection_->is_connected());
+
   // TODO(jamiewalch): Verify that remote inputs are re-enabled
   // eventually (via dependency injection, not sleep!)
+}
+
+TEST_F(ClientSessionTest, DisconnectOnLocalInputTest) {
+  desktop_environment_options_.set_terminate_upon_input(true);
+  CreateClientSession();
+  ConnectClientSession();
+  SetupSingleDisplay();
+
+  client_session_->OnLocalPointerMoved(webrtc::DesktopVector(100, 101),
+                                       ui::ET_MOUSE_MOVED);
+  EXPECT_FALSE(connection_->is_connected());
 }
 
 TEST_F(ClientSessionTest, RestoreEventState) {

@@ -32,7 +32,7 @@ RemoteInputFilter::RemoteInputFilter(protocol::InputEventTracker* event_tracker)
 
 RemoteInputFilter::~RemoteInputFilter() = default;
 
-void RemoteInputFilter::LocalPointerMoved(const webrtc::DesktopVector& pos,
+bool RemoteInputFilter::LocalPointerMoved(const webrtc::DesktopVector& pos,
                                           ui::EventType type) {
   // If this is a genuine local input event (rather than an echo of a remote
   // input event that we've just injected), then ignore remote inputs for a
@@ -57,13 +57,14 @@ void RemoteInputFilter::LocalPointerMoved(const webrtc::DesktopVector& pos,
       // These spurious positions should therefore be discarded.
       injected_mouse_positions_.erase(injected_mouse_positions_.begin(),
                                       ++found_position);
-      return;
+      return false;
     }
   }
 
   // Release all pressed buttons or keys, disable inputs, and note the time.
   event_tracker_->ReleaseAll();
   latest_local_input_time_ = base::TimeTicks::Now();
+  return true;
 }
 
 void RemoteInputFilter::SetExpectLocalEcho(bool expect_local_echo) {

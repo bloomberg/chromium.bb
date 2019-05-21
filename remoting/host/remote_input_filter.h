@@ -27,8 +27,9 @@ class RemoteInputFilter : public protocol::InputStub {
 
   // Informs the filter that local mouse or touch activity has been detected.
   // If the activity does not match events we injected then we assume that it
-  // is local, and block remote input for a short while.
-  void LocalPointerMoved(const webrtc::DesktopVector& pos, ui::EventType type);
+  // is local, and block remote input for a short while. Returns true if the
+  // input was local, or false if it was rejected as an echo.
+  bool LocalPointerMoved(const webrtc::DesktopVector& pos, ui::EventType type);
 
   // Informs the filter that injecting input causes an echo.
   void SetExpectLocalEcho(bool expect_local_echo);

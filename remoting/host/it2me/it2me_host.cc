@@ -73,6 +73,15 @@ void It2MeHost::set_enable_dialogs(bool enable) {
 #endif
 }
 
+void It2MeHost::set_terminate_upon_input(bool terminate_upon_input) {
+#if defined(OS_CHROMEOS) || !defined(NDEBUG)
+  terminate_upon_input_ = terminate_upon_input;
+#else
+  NOTREACHED()
+      << "It2MeHost::set_terminate_upon_input is only supported on ChromeOS";
+#endif
+}
+
 void It2MeHost::Connect(
     std::unique_ptr<ChromotingHostContext> host_context,
     std::unique_ptr<base::DictionaryValue> policies,
@@ -190,6 +199,7 @@ void It2MeHost::ConnectOnNetworkThread(
   // Create the host.
   DesktopEnvironmentOptions options(DesktopEnvironmentOptions::CreateDefault());
   options.set_enable_user_interface(enable_dialogs_);
+  options.set_terminate_upon_input(terminate_upon_input_);
   host_.reset(new ChromotingHost(
       desktop_environment_factory_.get(), std::move(session_manager),
       transport_context, host_context_->audio_task_runner(),
