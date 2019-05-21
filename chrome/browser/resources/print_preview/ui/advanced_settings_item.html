@@ -24,7 +24,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         vertical-align: middle;
-        white-space: nowrap;
       }
 
       .label,
@@ -32,18 +31,20 @@
         align-self: center;
         color: var(--cr-primary-text-color);
         overflow: hidden;
-        text-overflow: ellipsis;
       }
 
       .label {
         flex: 1;
         margin-inline-end: 10px;
+        min-width: 96px;
         opacity: 0.87;
       }
 
       .value {
         flex: 0;
         min-width: 239px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       cr-input {

@@ -11,11 +11,8 @@ Polymer({
     /** @type {!print_preview.VendorCapability} */
     capability: Object,
 
-    /** @private {(number | string | boolean)} */
-    currentValue_: {
-      type: Object,
-      value: null,
-    },
+    /** @private {string} */
+    currentValue_: String,
   },
 
   observers: [
@@ -76,9 +73,9 @@ Polymer({
    * @private
    */
   isOptionSelected_: function(option) {
-    return (this.currentValue_ !== null &&
-            option.value === this.currentValue_) ||
-        (this.currentValue_ == null && !!option.is_default);
+    return this.currentValue_ === undefined ?
+        !!option.is_default :
+        option.value === this.currentValue_;
   },
 
   /**
@@ -140,15 +137,16 @@ Polymer({
   },
 
   /**
-   * @return {(number | string | boolean)} The current value of the setting.
+   * @return {string} The current value of the setting, or the empty string if
+   *     it is not set.
    */
   getCurrentValue: function() {
-    return this.currentValue_;
+    return this.currentValue_ || '';
   },
 
   /**
    * Only used in tests.
-   * @param {(number | string | boolean)} value A value to set the setting to.
+   * @param {string} value A value to set the setting to.
    */
   setCurrentValueForTest: function(value) {
     this.currentValue_ = value;
