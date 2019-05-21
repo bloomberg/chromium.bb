@@ -9,6 +9,7 @@ include_rules = [
   "+chromecast/external_mojo",
   "+chromecast/internal/shell/browser",
   "+chromecast/media",
+  "+chromecast/metrics",
   "+chromecast/net",
   "+chromecast/service",
   "+components/cdm/browser",

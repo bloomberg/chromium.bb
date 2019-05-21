@@ -139,6 +139,7 @@ cast_source_set("browser") {
     ":prefs",
     ":public",
     "//chromecast/browser/metrics",
+    "//chromecast/metrics",
   ]
 
   deps = [

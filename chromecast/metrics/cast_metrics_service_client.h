@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_METRICS_CAST_METRICS_SERVICE_CLIENT_H_
-#define CHROMECAST_BROWSER_METRICS_CAST_METRICS_SERVICE_CLIENT_H_
+#ifndef CHROMECAST_METRICS_CAST_METRICS_SERVICE_CLIENT_H_
+#define CHROMECAST_METRICS_CAST_METRICS_SERVICE_CLIENT_H_
 
 #include <stdint.h>
 
@@ -48,8 +48,6 @@ class CastMetricsServiceDelegate {
   virtual ~CastMetricsServiceDelegate() = default;
 };
 
-class ExternalMetrics;
-
 class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
                                  public ::metrics::EnabledStateProvider {
  public:
@@ -71,7 +69,8 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   // thread.
   void ProcessExternalEvents(const base::Closure& cb);
 
-  void Initialize();
+  void InitializeMetricsService();
+  void StartMetricsService();
   void Finalize();
 
   // ::metrics::MetricsServiceClient:
@@ -101,6 +100,12 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
 
   std::string client_id() const { return client_id_; }
 
+  PrefService* pref_service() const { return pref_service_; }
+  void SetCallbacks(
+      base::RepeatingCallback<void(const base::Closure&)>
+          collect_final_metrics_cb,
+      base::RepeatingCallback<void(const base::Closure&)> external_events_cb);
+
  private:
   std::unique_ptr<::metrics::ClientInfo> LoadClientInfo();
   void StoreClientInfo(const ::metrics::ClientInfo& client_info);
@@ -111,15 +116,13 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   std::string force_client_id_;
   bool client_info_loaded_;
 
-#if defined(OS_LINUX)
-  ExternalMetrics* external_metrics_;
-  ExternalMetrics* platform_metrics_;
-#endif  // defined(OS_LINUX)
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<::metrics::MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<::metrics::MetricsService> metrics_service_;
   std::unique_ptr<::metrics::EnabledStateProvider> enabled_state_provider_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  base::RepeatingCallback<void(const base::Closure&)> collect_final_metrics_cb_;
+  base::RepeatingCallback<void(const base::Closure&)> external_events_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);
 };
@@ -127,4 +130,4 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
 }  // namespace metrics
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_METRICS_CAST_METRICS_SERVICE_CLIENT_H_
+#endif  // CHROMECAST_METRICS_CAST_METRICS_SERVICE_CLIENT_H_

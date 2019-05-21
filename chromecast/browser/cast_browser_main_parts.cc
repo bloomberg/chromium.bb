@@ -40,7 +40,7 @@
 #include "chromecast/browser/cast_net_log.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/media/media_caps_impl.h"
-#include "chromecast/browser/metrics/cast_metrics_service_client.h"
+#include "chromecast/browser/metrics/cast_browser_metrics.h"
 #include "chromecast/browser/tts/tts_controller_impl.h"
 #include "chromecast/browser/tts/tts_platform_stub.h"
 #include "chromecast/browser/url_request_context_factory.h"
@@ -50,6 +50,7 @@
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_plane_controller.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
+#include "chromecast/metrics/cast_metrics_service_client.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/service/cast_service.h"
@@ -613,7 +614,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   // service is initialized because CastMetricsServiceClient,
   // CastURLLoaderThrottle and CastNetworkDelegate may use components
   // initialized by cast service.
-  cast_browser_process_->metrics_service_client()->Initialize();
+  cast_browser_process_->cast_browser_metrics()->Initialize();
   cast_content_browser_client_->InitializeURLLoaderThrottleDelegate();
   url_request_context_factory_->InitializeNetworkDelegates();
 
@@ -700,7 +701,7 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   window_manager_.reset();
 
   cast_browser_process_->cast_service()->Finalize();
-  cast_browser_process_->metrics_service_client()->Finalize();
+  cast_browser_process_->cast_browser_metrics()->Finalize();
   cast_browser_process_.reset();
 
 #if !defined(OS_FUCHSIA)

@@ -12,8 +12,9 @@
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/cast_network_contexts.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
-#include "chromecast/browser/metrics/cast_metrics_service_client.h"
+#include "chromecast/browser/metrics/cast_browser_metrics.h"
 #include "chromecast/browser/tts/tts_controller.h"
+#include "chromecast/metrics/cast_metrics_service_client.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/service/cast_service.h"
 #include "components/prefs/pref_service.h"
@@ -112,8 +113,9 @@ void CastBrowserProcess::ClearAccessibilityManager() {
 
 void CastBrowserProcess::SetMetricsServiceClient(
     std::unique_ptr<metrics::CastMetricsServiceClient> metrics_service_client) {
-  DCHECK(!metrics_service_client_);
-  metrics_service_client_.swap(metrics_service_client);
+  DCHECK(!cast_browser_metrics_);
+  cast_browser_metrics_ = std::make_unique<metrics::CastBrowserMetrics>(
+      std::move(metrics_service_client));
 }
 
 void CastBrowserProcess::SetPrefService(

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/metrics/cast_metrics_service_client.h"
+#include "chromecast/metrics/cast_metrics_service_client.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
@@ -18,7 +19,6 @@
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/base/version.h"
-#include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/public/cast_sys_info.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/enabled_state_provider.h"
@@ -28,19 +28,11 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
-#include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/histogram_fetcher.h"
-#include "content/public/browser/network_service_instance.h"
-#include "content/public/common/content_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-
-#if defined(OS_LINUX)
-#include "chromecast/browser/metrics/external_metrics.h"
-#endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
 #include "chromecast/base/android/dumpstate_writer.h"
@@ -52,7 +44,6 @@ namespace metrics {
 namespace {
 
 const int kStandardUploadIntervalMinutes = 5;
-const int kMetricsFetchTimeoutSeconds = 60;
 
 const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
 
@@ -60,25 +51,20 @@ const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
 const char kClientIdName[] = "Client ID";
 #else
 
-#if defined(OS_LINUX)
-const char kExternalUmaEventsRelativePath[] = "metrics/uma-events";
-const char kPlatformUmaEventsPath[] = "/data/share/chrome/metrics/uma-events";
-#endif  // defined(OS_LINUX)
-
 const struct ChannelMap {
   const char* chromecast_channel;
   const ::metrics::SystemProfileProto::Channel chrome_channel;
 } kMetricsChannelMap[] = {
-  { "canary-channel", ::metrics::SystemProfileProto::CHANNEL_CANARY },
-  { "dev-channel", ::metrics::SystemProfileProto::CHANNEL_DEV },
-  { "developer-channel", ::metrics::SystemProfileProto::CHANNEL_DEV },
-  { "beta-channel", ::metrics::SystemProfileProto::CHANNEL_BETA },
-  { "dogfood-channel", ::metrics::SystemProfileProto::CHANNEL_BETA },
-  { "stable-channel", ::metrics::SystemProfileProto::CHANNEL_STABLE },
+    {"canary-channel", ::metrics::SystemProfileProto::CHANNEL_CANARY},
+    {"dev-channel", ::metrics::SystemProfileProto::CHANNEL_DEV},
+    {"developer-channel", ::metrics::SystemProfileProto::CHANNEL_DEV},
+    {"beta-channel", ::metrics::SystemProfileProto::CHANNEL_BETA},
+    {"dogfood-channel", ::metrics::SystemProfileProto::CHANNEL_BETA},
+    {"stable-channel", ::metrics::SystemProfileProto::CHANNEL_STABLE},
 };
 
-::metrics::SystemProfileProto::Channel
-GetReleaseChannelFromUpdateChannelName(const std::string& channel_name) {
+::metrics::SystemProfileProto::Channel GetReleaseChannelFromUpdateChannelName(
+    const std::string& channel_name) {
   if (channel_name.empty())
     return ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
 
@@ -152,7 +138,7 @@ CastMetricsServiceClient::LoadClientInfo() {
     LOG(ERROR) << "Invalid client id from platform: " << force_client_id_
                << " from platform.";
   }
-  return std::unique_ptr<::metrics::ClientInfo>();
+  return nullptr;
 }
 
 int32_t CastMetricsServiceClient::GetProduct() {
@@ -206,8 +192,7 @@ std::string CastMetricsServiceClient::GetVersionString() {
   CHECK(!CAST_IS_DEBUG_BUILD() ||
         channel != ::metrics::SystemProfileProto::CHANNEL_STABLE);
   const bool is_official_build =
-      build_number > 0 &&
-      !CAST_IS_DEBUG_BUILD() &&
+      build_number > 0 && !CAST_IS_DEBUG_BUILD() &&
       channel != ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
   if (!is_official_build)
     version_string.append("-devel");
@@ -217,12 +202,16 @@ std::string CastMetricsServiceClient::GetVersionString() {
 
 void CastMetricsServiceClient::CollectFinalMetricsForLog(
     const base::Closure& done_callback) {
-  // Asynchronously fetch metrics data from child processes. Since this method
-  // is called on log upload, metrics that occur between log upload and child
-  // process termination will not be uploaded.
-  content::FetchHistogramsAsynchronously(
-      task_runner_, done_callback,
-      base::TimeDelta::FromSeconds(kMetricsFetchTimeoutSeconds));
+  if (collect_final_metrics_cb_)
+    collect_final_metrics_cb_.Run(done_callback);
+}
+
+void CastMetricsServiceClient::SetCallbacks(
+    base::RepeatingCallback<void(const base::Closure&)>
+        collect_final_metrics_cb,
+    base::RepeatingCallback<void(const base::Closure&)> external_events_cb) {
+  collect_final_metrics_cb_ = collect_final_metrics_cb;
+  external_events_cb_ = external_events_cb;
 }
 
 GURL CastMetricsServiceClient::GetMetricsServerUrl() {
@@ -243,10 +232,9 @@ CastMetricsServiceClient::CreateUploader(
     base::StringPiece mime_type,
     ::metrics::MetricsLogUploader::MetricServiceType service_type,
     const ::metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
-  return std::unique_ptr<::metrics::MetricsLogUploader>(
-      new ::metrics::NetMetricsLogUploader(url_loader_factory_, server_url,
-                                           insecure_server_url, mime_type,
-                                           service_type, on_upload_complete));
+  return std::make_unique<::metrics::NetMetricsLogUploader>(
+      url_loader_factory_, server_url, insecure_server_url, mime_type,
+      service_type, on_upload_complete);
 }
 
 base::TimeDelta CastMetricsServiceClient::GetStandardUploadInterval() {
@@ -280,44 +268,23 @@ CastMetricsServiceClient::CastMetricsServiceClient(
     : delegate_(delegate),
       pref_service_(pref_service),
       client_info_loaded_(false),
-#if defined(OS_LINUX)
-      external_metrics_(nullptr),
-      platform_metrics_(nullptr),
-#endif  // defined(OS_LINUX)
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      url_loader_factory_(url_loader_factory) {
-}
+      url_loader_factory_(url_loader_factory) {}
 
-CastMetricsServiceClient::~CastMetricsServiceClient() {
-#if defined(OS_LINUX)
-  DCHECK(!external_metrics_);
-  DCHECK(!platform_metrics_);
-#endif  // defined(OS_LINUX)
-}
+CastMetricsServiceClient::~CastMetricsServiceClient() = default;
 
 void CastMetricsServiceClient::OnApplicationNotIdle() {
   metrics_service_->OnApplicationNotIdle();
 }
 
-void CastMetricsServiceClient::ProcessExternalEvents(const base::Closure& cb) {
-#if defined(OS_LINUX)
-  external_metrics_->ProcessExternalEvents(
-      base::Bind(&ExternalMetrics::ProcessExternalEvents,
-                 base::Unretained(platform_metrics_), cb));
-#else
-  cb.Run();
-#endif  // defined(OS_LINUX)
-}
-
-void CastMetricsServiceClient::SetForceClientId(
-    const std::string& client_id) {
+void CastMetricsServiceClient::SetForceClientId(const std::string& client_id) {
   DCHECK(force_client_id_.empty());
   DCHECK(!client_info_loaded_)
       << "Force client ID must be set before client info is loaded.";
   force_client_id_ = client_id;
 }
 
-void CastMetricsServiceClient::Initialize() {
+void CastMetricsServiceClient::InitializeMetricsService() {
   DCHECK(!metrics_state_manager_);
   metrics_state_manager_ = ::metrics::MetricsStateManager::Create(
       pref_service_, this, base::string16(),
@@ -338,27 +305,9 @@ void CastMetricsServiceClient::Initialize() {
   metrics_state_manager_->ForceClientIdCreation();
   // Populate |client_id| to other component parts.
   SetMetricsClientId(metrics_state_manager_->client_id());
+}
 
-  CastStabilityMetricsProvider* stability_provider =
-      new CastStabilityMetricsProvider(metrics_service_.get(), pref_service_);
-  metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<::metrics::MetricsProvider>(stability_provider));
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableGpu)) {
-    metrics_service_->RegisterMetricsProvider(
-        std::unique_ptr<::metrics::MetricsProvider>(
-            new ::metrics::GPUMetricsProvider));
-
-    // TODO(gfhuang): Does ChromeCast actually need metrics about screen info?
-    // crbug.com/541577
-    metrics_service_->RegisterMetricsProvider(
-        std::unique_ptr<::metrics::MetricsProvider>(
-            new ::metrics::ScreenInfoMetricsProvider));
-  }
-  metrics_service_->RegisterMetricsProvider(
-      std::make_unique<::metrics::NetworkMetricsProvider>(
-          content::CreateNetworkConnectionTrackerAsyncGetter()));
+void CastMetricsServiceClient::StartMetricsService() {
   if (delegate_)
     delegate_->RegisterMetricsProviders(metrics_service_.get());
 
@@ -370,35 +319,15 @@ void CastMetricsServiceClient::Initialize() {
 
   if (IsReportingEnabled())
     metrics_service_->Start();
-
-#if defined(OS_LINUX)
-  // Start external metrics collection, which feeds data from external
-  // processes into the main external metrics.
-  external_metrics_ = new ExternalMetrics(
-      stability_provider,
-      GetHomePathASCII(kExternalUmaEventsRelativePath).value());
-  external_metrics_->Start();
-  platform_metrics_ =
-      new ExternalMetrics(stability_provider, kPlatformUmaEventsPath);
-  platform_metrics_->Start();
-#endif  // defined(OS_LINUX)
 }
 
 void CastMetricsServiceClient::Finalize() {
-#if !defined(OS_ANDROID)
-  // Set clean_shutdown bit.
-  metrics_service_->RecordCompletedSessionEnd();
-#endif  // !defined(OS_ANDROID)
-
-#if defined(OS_LINUX)
-  // Stop metrics service cleanly before destructing CastMetricsServiceClient.
-  // The pointer will be deleted in StopAndDestroy().
-  external_metrics_->StopAndDestroy();
-  external_metrics_ = nullptr;
-  platform_metrics_->StopAndDestroy();
-  platform_metrics_ = nullptr;
-#endif  // defined(OS_LINUX)
   metrics_service_->Stop();
+}
+
+void CastMetricsServiceClient::ProcessExternalEvents(const base::Closure& cb) {
+  if (external_events_cb_)
+    external_events_cb_.Run(cb);
 }
 
 }  // namespace metrics
