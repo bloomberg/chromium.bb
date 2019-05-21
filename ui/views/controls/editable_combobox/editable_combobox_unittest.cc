@@ -80,6 +80,7 @@ class EditableComboboxTest : public ViewsTestBase {
  protected:
   void ClickArrow();
   void ClickMenuItem(int index);
+  void ClickTextfield();
   bool IsMenuOpen();
   void PerformMouseEvent(Widget* widget,
                          const gfx::Point& point,
@@ -141,6 +142,7 @@ void EditableComboboxTest::InitEditableCombobox(
   dummy_focusable_view_->set_id(2);
 
   InitWidget();
+  combobox_->GetTextfieldForTest()->RequestFocus();
   combobox_->RequestFocus();
   combobox_->SizeToPreferredSize();
 }
@@ -181,6 +183,11 @@ void EditableComboboxTest::ClickMenuItem(const int index) {
   Widget::GetAllOwnedWidgets(widget_->GetNativeView(), &child_widgets);
   ASSERT_EQ(1UL, child_widgets.size());
   PerformClick(*child_widgets.begin(), middle_of_item);
+}
+
+void EditableComboboxTest::ClickTextfield() {
+  const gfx::Point textfield(combobox_->x() + 1, combobox_->y() + 1);
+  PerformClick(widget_, textfield);
 }
 
 bool EditableComboboxTest::IsMenuOpen() {
@@ -224,6 +231,7 @@ void EditableComboboxTest::SendKeyEvent(ui::KeyboardCode key_code,
 
 TEST_F(EditableComboboxTest, FocusOnTextfieldOpensMenu) {
   InitEditableCombobox();
+  dummy_focusable_view_->RequestFocus();
   EXPECT_FALSE(IsMenuOpen());
   combobox_->GetTextfieldForTest()->RequestFocus();
   EXPECT_TRUE(IsMenuOpen());
@@ -627,6 +635,7 @@ TEST_F(EditableComboboxTest, PasswordCanBeHiddenAndRevealed) {
 
 TEST_F(EditableComboboxTest, ArrowButtonOpensAndClosesMenu) {
   InitEditableCombobox();
+  dummy_focusable_view_->RequestFocus();
   EXPECT_FALSE(IsMenuOpen());
 
   ClickArrow();
@@ -653,6 +662,21 @@ TEST_F(EditableComboboxTest, ShowMenuOnNextFocusBehavior) {
   EXPECT_FALSE(IsMenuOpen());
   dummy_focusable_view_->RequestFocus();
   combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_TRUE(IsMenuOpen());
+}
+
+TEST_F(EditableComboboxTest, ShowMenuOnClickWhenAlreadyFocused) {
+  std::vector<base::string16> items = {ASCIIToUTF16("item0"),
+                                       ASCIIToUTF16("item1")};
+  InitEditableCombobox(items, /*filter_on_edit=*/false,
+                       /*show_on_empty=*/true);
+
+  dummy_focusable_view_->RequestFocus();
+  combobox_->set_show_menu_on_next_focus(false);
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_FALSE(IsMenuOpen());
+
+  ClickTextfield();
   EXPECT_TRUE(IsMenuOpen());
 }
 
