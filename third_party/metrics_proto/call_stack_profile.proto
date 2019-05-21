@@ -109,6 +109,13 @@ message CallStackProfile {
     // metadata items are specified only when their values change from the
     // previous sample. Items are not guaranteed to be in a particular order.
     repeated MetadataItem metadata = 5;
+
+    // Weight of the sample. When omitted the sample is presumed to have
+    // a weight of 1.
+    // Not currently used for CPU profiles.
+    // For heap profiles it represents the number of bytes attributed to the
+    // sample.
+    optional int64 weight = 6;
   }
 
   // The previous sample encoding. Deprecated 2018/08/04 in favor of
