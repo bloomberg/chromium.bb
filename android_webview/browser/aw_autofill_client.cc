@@ -78,10 +78,6 @@ autofill::payments::PaymentsClient* AwAutofillClient::GetPaymentsClient() {
   return nullptr;
 }
 
-autofill::LegacyStrikeDatabase* AwAutofillClient::GetLegacyStrikeDatabase() {
-  return nullptr;
-}
-
 autofill::StrikeDatabase* AwAutofillClient::GetStrikeDatabase() {
   return nullptr;
 }

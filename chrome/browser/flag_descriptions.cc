@@ -469,12 +469,6 @@ const char kEnableAutofillSaveCardImprovedUserConsentDescription[] =
     "If enabled, adds a [No thanks] button to credit card save bubbles and "
     "updates their title headers.";
 
-const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
-    "Enable limit on offering to save the same credit card repeatedly";
-const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
-    "If enabled, prevents popping up the credit card offer-to-save prompt if "
-    "it has repeatedly been ignored, declined, or failed.";
-
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemV2Name[] =
     "Enable limit on offering to save the same credit card repeatedly using "
     "the updated strike system implementation";

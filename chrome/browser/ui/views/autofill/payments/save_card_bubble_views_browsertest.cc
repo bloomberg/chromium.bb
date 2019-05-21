@@ -643,10 +643,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
     SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
     DCHECK(save_card_bubble_views);
     if (strike_expected &&
-        (base::FeatureList::IsEnabled(
-             features::kAutofillSaveCreditCardUsesStrikeSystem) ||
-         base::FeatureList::IsEnabled(
-             features::kAutofillSaveCreditCardUsesStrikeSystemV2))) {
+        base::FeatureList::IsEnabled(
+            features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
       ResetEventWaiterForSequence(
           {DialogEvent::STRIKE_CHANGE_COMPLETE, DialogEvent::BUBBLE_CLOSED});
     } else {
@@ -800,8 +798,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       // Enabled
       {features::kAutofillSaveCardImprovedUserConsent},
       // Disabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystem,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2});
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Submitting the form and having Payments decline offering to save should
   // show the local save bubble.
@@ -1376,8 +1373,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       {features::kAutofillSaveCardImprovedUserConsent,
        features::kAutofillUpstream},
       // Disabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystem,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2});
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Start sync.
   harness_->SetupSync();
@@ -2437,8 +2433,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       // Enabled
       {features::kAutofillSaveCardImprovedUserConsent},
       // Disabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystem,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2});
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Submitting the form and having Payments decline offering to save should
   // show the local save bubble.
@@ -2469,8 +2464,7 @@ IN_PROC_BROWSER_TEST_F(
       {features::kAutofillUpstream,
        features::kAutofillSaveCardImprovedUserConsent},
       // Disabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystem,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2});
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Start sync.
   harness_->SetupSync();

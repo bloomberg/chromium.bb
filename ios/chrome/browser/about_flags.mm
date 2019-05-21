@@ -262,13 +262,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDownstreamUseGooglePayBrandingOniOS)},
-    {"enable-autofill-save-credit-card-uses-strike-system",
-     flag_descriptions::kEnableAutofillSaveCreditCardUsesStrikeSystemName,
-     flag_descriptions::
-         kEnableAutofillSaveCreditCardUsesStrikeSystemDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSaveCreditCardUsesStrikeSystem)},
     {"enable-autofill-save-credit-card-uses-strike-system-v2",
      flag_descriptions::kEnableAutofillSaveCreditCardUsesStrikeSystemV2Name,
      flag_descriptions::

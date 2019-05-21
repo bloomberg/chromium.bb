@@ -45,9 +45,6 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
   bool credit_card_upload_enabled_ = false;
   bool credit_card_was_uploaded_ = false;
 
-  FRIEND_TEST_ALL_PREFIXES(
-      CreditCardSaveManagerTest,
-      UploadCreditCard_NumLegacyStrikesLoggedOnUploadNotSuccess);
   FRIEND_TEST_ALL_PREFIXES(CreditCardSaveManagerTest,
                            UploadCreditCard_NumStrikesLoggedOnUploadNotSuccess);
 

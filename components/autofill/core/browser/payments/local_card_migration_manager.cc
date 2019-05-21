@@ -49,9 +49,7 @@ LocalCardMigrationManager::LocalCardMigrationManager(
           features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
       base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-    // Only init when |kAutofillSaveCreditCardUsesStrikeSystemV2| is enabled. If
-    // flag is off and LegacyStrikeDatabase instead of StrikeDatabase is used,
-    // this init will cause failure on GetStrikes().
+    // Only init when |kAutofillSaveCreditCardUsesStrikeSystemV2| is enabled.
     client_->GetStrikeDatabase();
   }
 }

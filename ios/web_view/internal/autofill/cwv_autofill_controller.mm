@@ -37,7 +37,6 @@
 #import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
 #include "ios/web_view/internal/autofill/web_view_autocomplete_history_manager_factory.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
-#include "ios/web_view/internal/autofill/web_view_legacy_strike_database_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/autofill/web_view_strike_database_factory.h"
 #import "ios/web_view/internal/passwords/cwv_password_controller.h"
@@ -136,8 +135,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
             GetForBrowserState(browserState),
         _webState, self,
         ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
-            browserState->GetRecordingBrowserState()),
-        ios_web_view::WebViewLegacyStrikeDatabaseFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
         ios_web_view::WebViewStrikeDatabaseFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),

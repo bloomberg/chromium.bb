@@ -57,7 +57,6 @@ class CardUnmaskDelegate;
 class CreditCard;
 class FormDataImporter;
 class FormStructure;
-class LegacyStrikeDatabase;
 class MigratableCreditCard;
 class PersonalDataManager;
 class StrikeDatabase;
@@ -214,10 +213,6 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the payments::PaymentsClient instance owned by the client.
   virtual payments::PaymentsClient* GetPaymentsClient() = 0;
-
-  // Gets the LegacyStrikeDatabase associated with the client.
-  // TODO(crbug.com/884817): Delete this once v2 of StrikeDatabase is launched.
-  virtual LegacyStrikeDatabase* GetLegacyStrikeDatabase() = 0;
 
   // Gets the StrikeDatabase associated with the client.
   virtual StrikeDatabase* GetStrikeDatabase() = 0;

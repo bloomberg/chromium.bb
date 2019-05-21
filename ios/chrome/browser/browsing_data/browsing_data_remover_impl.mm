@@ -22,7 +22,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -39,7 +38,6 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
@@ -437,23 +435,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
               autofill::features::
                   kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
         // Clear out the Autofill StrikeDatabase in its entirety.
-        // Both StrikeDatabase and LegacyStrikeDatabase use data from the same
-        // ProtoDatabase, so only one of them needs to call ClearAllStrikes(~).
         autofill::StrikeDatabase* strike_database =
             autofill::StrikeDatabaseFactory::GetForBrowserState(browser_state_);
         if (strike_database)
           strike_database->ClearAllStrikes();
-      } else if (base::FeatureList::IsEnabled(
-                     autofill::features::
-                         kAutofillSaveCreditCardUsesStrikeSystem)) {
-        // Clear out the Autofill LegacyStrikeDatabase in its entirety.
-        autofill::LegacyStrikeDatabase* legacy_strike_database =
-            autofill::LegacyStrikeDatabaseFactory::GetForBrowserState(
-                browser_state_);
-        if (legacy_strike_database) {
-          legacy_strike_database->ClearAllStrikes(AdaptCallbackForRepeating(
-              IgnoreArgument<bool>(CreatePendingTaskCompletionClosure())));
-        }
       }
 
       // Ask for a call back when the above calls are finished.

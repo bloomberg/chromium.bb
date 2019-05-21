@@ -86,12 +86,6 @@ const base::Feature kAutofillSaveCardImprovedUserConsent{
     "AutofillSaveCardImprovedUserConsent", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether offering to save cards will consider data from the Autofill
-// strike database.
-const base::Feature kAutofillSaveCreditCardUsesStrikeSystem{
-    "AutofillSaveCreditCardUsesStrikeSystem",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether offering to save cards will consider data from the Autofill
 // strike database (new version).
 const base::Feature kAutofillSaveCreditCardUsesStrikeSystemV2{
     "AutofillSaveCreditCardUsesStrikeSystemV2",

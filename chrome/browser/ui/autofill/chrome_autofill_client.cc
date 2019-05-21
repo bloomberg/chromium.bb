@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
-#include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -142,22 +141,13 @@ payments::PaymentsClient* ChromeAutofillClient::GetPaymentsClient() {
   return payments_client_.get();
 }
 
-LegacyStrikeDatabase* ChromeAutofillClient::GetLegacyStrikeDatabase() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  // No need to return a LegacyStrikeDatabase in incognito mode. It is primarily
-  // used to determine whether or not to offer save of Autofill data. However,
-  // we don't allow saving of Autofill data while in incognito anyway, so an
-  // incognito code path should never get far enough to query
-  // LegacyStrikeDatabase.
-  DCHECK(!profile->IsOffTheRecord());
-  return LegacyStrikeDatabaseFactory::GetForProfile(profile);
-}
-
 StrikeDatabase* ChromeAutofillClient::GetStrikeDatabase() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  // Nullptr is returned if browser is in incognito mode.
+  // No need to return a StrikeDatabase in incognito mode. It is primarily
+  // used to determine whether or not to offer save of Autofill data. However,
+  // we don't allow saving of Autofill data while in incognito anyway, so an
+  // incognito code path should never get far enough to query StrikeDatabase.
   return StrikeDatabaseFactory::GetForProfile(profile);
 }
 

@@ -27,7 +27,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -58,7 +57,6 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
@@ -1009,29 +1007,6 @@ class MockReportingService : public net::ReportingService {
 };
 
 namespace autofill {
-// LegacyStrikeDatabaseTester is in the autofill namespace since
-// LegacyStrikeDatabase declares it as a friend in the autofill namespace.
-class LegacyStrikeDatabaseTester {
- public:
-  explicit LegacyStrikeDatabaseTester(Profile* profile)
-      : legacy_strike_database_(
-            autofill::LegacyStrikeDatabaseFactory::GetForProfile(profile)) {}
-
-  bool IsEmpty() {
-    int num_keys;
-    base::RunLoop run_loop;
-    legacy_strike_database_->LoadKeys(base::BindLambdaForTesting(
-        [&](bool success, std::unique_ptr<std::vector<std::string>> keys) {
-          num_keys = keys.get()->size();
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return (num_keys == 0);
-  }
-
- private:
-  autofill::LegacyStrikeDatabase* legacy_strike_database_;
-};
 
 // StrikeDatabaseTester is in the autofill namespace since
 // StrikeDatabase declares it as a friend in the autofill namespace.
@@ -1723,31 +1698,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AutofillRemovalEverything) {
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA, false);
 
-  EXPECT_EQ(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
-            GetRemovalMask());
-  EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-            GetOriginTypeMask());
-  ASSERT_FALSE(tester.HasProfile());
-}
-
-TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       LegacyStrikeDatabaseEmptyOnAutofillRemoveEverything) {
-  GetProfile()->CreateWebDataService();
-  RemoveAutofillTester tester(GetProfile());
-
-  ASSERT_FALSE(tester.HasProfile());
-  tester.AddProfilesAndCards();
-  ASSERT_TRUE(tester.HasProfile());
-
-  autofill::LegacyStrikeDatabaseTester legacy_strike_database_tester(
-      GetProfile());
-  BlockUntilBrowsingDataRemoved(
-      base::Time(), base::Time::Max(),
-      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA, false);
-
-  // LegacyStrikeDatabase should be empty when DATA_TYPE_FORM_DATA browsing data
-  // gets deleted.
-  ASSERT_TRUE(legacy_strike_database_tester.IsEmpty());
   EXPECT_EQ(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
             GetRemovalMask());
   EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,

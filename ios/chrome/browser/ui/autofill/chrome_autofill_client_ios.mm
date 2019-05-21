@@ -25,7 +25,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/autocomplete_history_manager_factory.h"
-#include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/infobars/infobar.h"
@@ -135,11 +134,6 @@ FormDataImporter* ChromeAutofillClientIOS::GetFormDataImporter() {
 
 payments::PaymentsClient* ChromeAutofillClientIOS::GetPaymentsClient() {
   return payments_client_.get();
-}
-
-LegacyStrikeDatabase* ChromeAutofillClientIOS::GetLegacyStrikeDatabase() {
-  return LegacyStrikeDatabaseFactory::GetForBrowserState(
-      browser_state_->GetOriginalChromeBrowserState());
 }
 
 StrikeDatabase* ChromeAutofillClientIOS::GetStrikeDatabase() {
