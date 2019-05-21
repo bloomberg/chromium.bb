@@ -307,13 +307,33 @@ cca.views.ResolutionSettings.prototype.updateResolutions = function(
 
   // Update external camera settings
   this.externalSettings_ = externalSettings;
-  this.resMenu_.querySelectorAll('.menu-item.external-camera')
-      .forEach((element) => element.parentNode.removeChild(element));
 
-  externalSettings.forEach(([deviceId, photoRs, videoRs]) => {
+  // To prevent losing focus on item already exist before update, locate
+  // focused item in both previous and current list, pop out all items in
+  // previous list except those having same deviceId as focused one and
+  // recreate all other items from current list.
+  const prevFocus =
+      this.resMenu_.querySelector('.menu-item.external-camera:focus');
+  const prevFId = prevFocus && prevFocus.dataset.deviceId;
+  const focusIdx = externalSettings.findIndex(([id]) => id === prevFId);
+  const fTitle =
+      this.resMenu_.querySelector(`.menu-item[data-device-id="${prevFId}"]`);
+  const focusedId = focusIdx === -1 ? null : prevFId;
+
+  this.resMenu_.querySelectorAll('.menu-item.external-camera')
+      .forEach(
+          (element) => element.dataset.deviceId !== focusedId &&
+              element.parentNode.removeChild(element));
+
+  externalSettings.forEach(([deviceId, photoRs, videoRs], index) => {
+    if (deviceId === focusedId) {
+      return;
+    }
     const extItem = document.importNode(this.extcamItemTempl_.content, true);
-    const [photoItem, videoItem] = extItem.querySelectorAll('.resol-item');
-    photoItem.dataset.deviceId = videoItem.dataset.deviceId = deviceId;
+    const [titleItem, photoItem, videoItem] =
+        extItem.querySelectorAll('.menu-item');
+    titleItem.dataset.deviceId = photoItem.dataset.deviceId =
+        videoItem.dataset.deviceId = deviceId;
     checkMulti(photoItem, photoRs, this.photoOptTextTempl_);
     checkMulti(videoItem, videoRs, this.videoOptTextTempl_);
 
@@ -327,7 +347,11 @@ cca.views.ResolutionSettings.prototype.updateResolutions = function(
         this.openVideoResSettings_(deviceId, videoRs, videoItem);
       }
     });
-    this.resMenu_.appendChild(extItem);
+    if (index < focusIdx) {
+      this.resMenu_.insertBefore(extItem, fTitle);
+    } else {
+      this.resMenu_.appendChild(extItem);
+    }
   });
 };
 
