@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -55,7 +56,7 @@ void HTMLContentElement::ParseSelect() {
   DCHECK(should_parse_select_);
 
   selector_list_ = CSSParser::ParseSelector(
-      CSSParserContext::Create(GetDocument()), nullptr, select_);
+      MakeGarbageCollected<CSSParserContext>(GetDocument()), nullptr, select_);
   should_parse_select_ = false;
   is_valid_selector_ = ValidateSelect();
   if (!is_valid_selector_)

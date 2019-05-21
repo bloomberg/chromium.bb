@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_custom_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -121,7 +122,7 @@ String CreateShorthandValue(Document* document,
   StyleSheetContents* style_sheet_contents = StyleSheetContents::Create(
       StrictCSSParserContext(document->GetSecureContextMode()));
   String text = " div { " + shorthand + ": " + old_text + "; }";
-  CSSParser::ParseSheet(CSSParserContext::Create(*document),
+  CSSParser::ParseSheet(MakeGarbageCollected<CSSParserContext>(*document),
                         style_sheet_contents, text);
 
   CSSStyleSheet* style_sheet = CSSStyleSheet::Create(style_sheet_contents);

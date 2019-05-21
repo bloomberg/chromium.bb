@@ -192,7 +192,7 @@ SVGParsingError SVGLength::SetValueAsString(const String& string) {
   // NOTE(ikilpatrick): We will always parse svg lengths in the insecure
   // context mode. If a function/unit/etc will require a secure context check
   // in the future, plumbing will need to be added.
-  CSSParserContext* svg_parser_context = CSSParserContext::Create(
+  auto* svg_parser_context = MakeGarbageCollected<CSSParserContext>(
       kSVGAttributeMode, SecureContextMode::kInsecureContext);
   const CSSValue* parsed = CSSParser::ParseSingleValue(
       CSSPropertyID::kX, string, svg_parser_context);

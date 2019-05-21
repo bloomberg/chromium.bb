@@ -32,7 +32,7 @@ class CSSLazyParsingTest : public testing::Test {
 };
 
 TEST_F(CSSLazyParsingTest, Simple) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
@@ -46,7 +46,7 @@ TEST_F(CSSLazyParsingTest, Simple) {
 }
 
 TEST_F(CSSLazyParsingTest, LazyParseBeforeAfter) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
@@ -64,7 +64,7 @@ TEST_F(CSSLazyParsingTest, LazyParseBeforeAfter) {
 // dangerous API because callers will expect the set of matching rules to be
 // identical if the stylesheet is not mutated.
 TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
@@ -89,7 +89,7 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
 // Test the same thing as above with lazy parsing off to ensure that we perform
 // the optimization where possible.
 TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
@@ -110,7 +110,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   auto dummy_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
 
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext,
       CSSParserContext::kLiveProfile, &dummy_holder->GetDocument());
   cached_contents_ = StyleSheetContents::Create(context);

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -151,7 +152,7 @@ void CSSSelectorWatch::WatchCSSSelectors(const Vector<String>& selectors) {
       ImmutableCSSPropertyValueSet::Create(nullptr, 0, kUASheetMode);
 
   // UA stylesheets always parse in the insecure context mode.
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kUASheetMode, SecureContextMode::kInsecureContext);
   for (const auto& selector : selectors) {
     CSSSelectorList selector_list =

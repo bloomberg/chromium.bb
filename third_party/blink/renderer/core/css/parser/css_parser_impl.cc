@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -179,7 +180,7 @@ ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
     const String& string,
     Element* element) {
   Document& document = element->GetDocument();
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       document.ElementSheet().Contents()->ParserContext(), &document);
   CSSParserMode mode = element->IsHTMLElement() && !document.InQuirksMode()
                            ? kHTMLStandardMode
@@ -196,8 +197,8 @@ ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
     const String& string,
     CSSParserMode parser_mode,
     SecureContextMode secure_context_mode) {
-  CSSParserContext* context =
-      CSSParserContext::Create(parser_mode, secure_context_mode);
+  auto* context =
+      MakeGarbageCollected<CSSParserContext>(parser_mode, secure_context_mode);
   CSSParserImpl parser(context);
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);

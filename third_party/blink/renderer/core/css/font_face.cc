@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -75,8 +76,9 @@ const CSSValue* ParseCSSValue(const ExecutionContext* context,
                               const String& value,
                               AtRuleDescriptorID descriptor_id) {
   CSSParserContext* parser_context =
-      IsA<Document>(context) ? CSSParserContext::Create(*To<Document>(context))
-                             : CSSParserContext::Create(*context);
+      IsA<Document>(context)
+          ? MakeGarbageCollected<CSSParserContext>(*To<Document>(context))
+          : MakeGarbageCollected<CSSParserContext>(*context);
   return AtRuleDescriptorParser::ParseFontFaceDescriptor(descriptor_id, value,
                                                          *parser_context);
 }

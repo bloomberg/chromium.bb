@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -208,8 +209,8 @@ WebStyleSheetKey WebDocument::InsertStyleSheet(const WebString& source_code,
                                                CSSOrigin origin) {
   Document* document = Unwrap<Document>();
   DCHECK(document);
-  StyleSheetContents* parsed_sheet =
-      StyleSheetContents::Create(CSSParserContext::Create(*document));
+  StyleSheetContents* parsed_sheet = StyleSheetContents::Create(
+      MakeGarbageCollected<CSSParserContext>(*document));
   parsed_sheet->ParseString(source_code);
   const WebStyleSheetKey& injection_key =
       key && !key->IsNull() ? *key : GenerateStyleSheetKey();

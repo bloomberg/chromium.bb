@@ -412,8 +412,8 @@ void BaseRenderingContext2D::setFilter(
 
   const CSSValue* filter_value = CSSParser::ParseSingleValue(
       CSSPropertyID::kFilter, filter_string,
-      CSSParserContext::Create(kHTMLStandardMode,
-                               execution_context->GetSecureContextMode()));
+      MakeGarbageCollected<CSSParserContext>(
+          kHTMLStandardMode, execution_context->GetSecureContextMode()));
 
   if (!filter_value || filter_value->IsCSSWideKeyword())
     return;

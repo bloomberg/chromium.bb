@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/threaded/multi_threaded_test_util.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -66,7 +67,7 @@ TSAN_TEST_F(CSSParserThreadedTest, ValuePropertyFont) {
 
 TSAN_TEST_F(CSSParserThreadedTest, FontFaceDescriptor) {
   RunOnThreads([]() {
-    CSSParserContext* ctx = CSSParserContext::Create(
+    auto* ctx = MakeGarbageCollected<CSSParserContext>(
         kCSSFontFaceRuleMode, SecureContextMode::kInsecureContext);
     const CSSValue* v = CSSParser::ParseFontFaceDescriptor(
         CSSPropertyID::kSrc, "url(myfont.ttf)", ctx);

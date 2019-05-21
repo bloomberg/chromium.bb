@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #ifndef NDEBUG
@@ -445,11 +446,12 @@ void MutableCSSPropertyValueSet::ParseDeclarationList(
 
   CSSParserContext* context;
   if (context_style_sheet) {
-    context = CSSParserContext::CreateWithStyleSheetContents(
+    context = MakeGarbageCollected<CSSParserContext>(
         context_style_sheet->ParserContext(), context_style_sheet);
     context->SetMode(CssParserMode());
   } else {
-    context = CSSParserContext::Create(CssParserMode(), secure_context_mode);
+    context = MakeGarbageCollected<CSSParserContext>(CssParserMode(),
+                                                     secure_context_mode);
   }
 
   CSSParser::ParseDeclarationList(context, this, style_declaration);

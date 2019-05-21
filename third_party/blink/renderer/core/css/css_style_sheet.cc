@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -102,7 +103,7 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
                                      ExceptionState& exception_state) {
   // Folowing steps at spec draft
   // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
-  CSSParserContext* parser_context = CSSParserContext::Create(document);
+  auto* parser_context = MakeGarbageCollected<CSSParserContext>(document);
   StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
   CSSStyleSheet* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, nullptr);
   sheet->SetAssociatedDocument(&document);
@@ -149,7 +150,7 @@ CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
                                            const KURL& base_url,
                                            const TextPosition& start_position,
                                            const WTF::TextEncoding& encoding) {
-  CSSParserContext* parser_context = CSSParserContext::Create(
+  auto* parser_context = MakeGarbageCollected<CSSParserContext>(
       owner_node.GetDocument(), owner_node.GetDocument().BaseURL(),
       true /* origin_clean */, owner_node.GetDocument().GetReferrerPolicy(),
       encoding);
@@ -359,8 +360,8 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
             ").");
     return 0;
   }
-  const CSSParserContext* context =
-      CSSParserContext::CreateWithStyleSheet(contents_->ParserContext(), this);
+  const auto* context =
+      MakeGarbageCollected<CSSParserContext>(contents_->ParserContext(), this);
   StyleRuleBase* rule =
       CSSParser::ParseRule(context, contents_.Get(), rule_string);
 

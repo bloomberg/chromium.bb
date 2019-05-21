@@ -29,42 +29,36 @@ class CORE_EXPORT CSSParserContext
   // https://drafts.csswg.org/selectors/#profiles
   enum SelectorProfile { kLiveProfile, kSnapshotProfile };
 
-  // All three of these factories copy the context and override the current
+  // All three of these constructors copy the context and override the current
   // Document handle used for UseCounter.
-  static CSSParserContext* CreateWithStyleSheet(const CSSParserContext*,
-                                                const CSSStyleSheet*);
-  static CSSParserContext* CreateWithStyleSheetContents(
-      const CSSParserContext*,
-      const StyleSheetContents*);
+  CSSParserContext(const CSSParserContext*, const CSSStyleSheet*);
+  CSSParserContext(const CSSParserContext*, const StyleSheetContents*);
   // FIXME: This constructor shouldn't exist if we properly piped the UseCounter
   // through the CSS subsystem. Currently the UseCounter life time is too crazy
   // and we need a way to override it.
-  static CSSParserContext* Create(const CSSParserContext* other,
-                                  const Document* use_counter_document);
+  CSSParserContext(const CSSParserContext* other,
+                   const Document* use_counter_document = nullptr);
 
-  static CSSParserContext* Create(
-      const CSSParserContext* other,
-      const KURL& base_url_override,
-      bool origin_clean,
-      network::mojom::ReferrerPolicy referrer_policy_override,
-      const WTF::TextEncoding& charset_override,
-      const Document* use_counter_document);
+  CSSParserContext(const CSSParserContext* other,
+                   const KURL& base_url_override,
+                   bool origin_clean,
+                   network::mojom::ReferrerPolicy referrer_policy_override,
+                   const WTF::TextEncoding& charset_override,
+                   const Document* use_counter_document);
+  CSSParserContext(CSSParserMode,
+                   SecureContextMode,
+                   SelectorProfile = kLiveProfile,
+                   const Document* use_counter_document = nullptr);
+  CSSParserContext(const Document&);
+  CSSParserContext(const Document&,
+                   const KURL& base_url_override,
+                   bool origin_clean,
+                   network::mojom::ReferrerPolicy referrer_policy_override,
+                   const WTF::TextEncoding& charset = WTF::TextEncoding(),
+                   SelectorProfile = kLiveProfile);
 
-  static CSSParserContext* Create(
-      CSSParserMode,
-      SecureContextMode,
-      SelectorProfile = kLiveProfile,
-      const Document* use_counter_document = nullptr);
-  static CSSParserContext* Create(const Document&);
-  static CSSParserContext* Create(
-      const Document&,
-      const KURL& base_url_override,
-      bool origin_clean,
-      network::mojom::ReferrerPolicy referrer_policy_override,
-      const WTF::TextEncoding& charset = WTF::TextEncoding(),
-      SelectorProfile = kLiveProfile);
   // This is used for workers, where we don't have a document.
-  static CSSParserContext* Create(const ExecutionContext&);
+  CSSParserContext(const ExecutionContext& context);
 
   CSSParserContext(const KURL& base_url,
                    bool origin_clean,

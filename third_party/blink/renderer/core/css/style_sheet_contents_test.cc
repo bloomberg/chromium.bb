@@ -6,11 +6,12 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 TEST(StyleSheetContentsTest, InsertMediaRule) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
@@ -34,7 +35,7 @@ TEST(StyleSheetContentsTest, InsertMediaRule) {
 }
 
 TEST(StyleSheetContentsTest, InsertFontFaceRule) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
@@ -58,7 +59,7 @@ TEST(StyleSheetContentsTest, InsertFontFaceRule) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRule) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
@@ -68,7 +69,7 @@ TEST(StyleSheetContentsTest, HasViewportRule) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertion) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
@@ -85,7 +86,7 @@ TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertion) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertionIntoMediaRule) {
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);

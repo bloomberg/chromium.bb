@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -75,14 +76,15 @@ class CSSVariableResolverTest : public PageTestBase {
       const String& value) {
     const auto tokens = CSSTokenizer(value).TokenizeToEOF();
     return CSSVariableParser::ParseDeclarationValue(
-        name, tokens, false, *CSSParserContext::Create(GetDocument()));
+        name, tokens, false,
+        *MakeGarbageCollected<CSSParserContext>(GetDocument()));
   }
 
   const CSSVariableReferenceValue* CreateVariableReference(
       const String& value) {
     const auto tokens = CSSTokenizer(value).TokenizeToEOF();
 
-    const CSSParserContext* context = CSSParserContext::Create(GetDocument());
+    const auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
     const bool is_animation_tainted = false;
     const bool needs_variable_resolution = true;
 
@@ -289,7 +291,7 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   ASSERT_TRUE(token_syntax);
   String initial_value_str("foo");
   const auto tokens = CSSTokenizer(initial_value_str).TokenizeToEOF();
-  const CSSParserContext* context = CSSParserContext::Create(GetDocument());
+  const auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
   const CSSValue* initial_value =
       token_syntax->Parse(CSSParserTokenRange(tokens), context, false);
   ASSERT_TRUE(initial_value);

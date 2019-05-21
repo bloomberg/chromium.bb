@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/parser/css.pb.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -50,7 +51,7 @@ DEFINE_BINARY_PROTO_FUZZER(const Input& input) {
     defer_property_parsing = blink::CSSDeferPropertyParsing::kYes;
   else
     defer_property_parsing = blink::CSSDeferPropertyParsing::kNo;
-  blink::CSSParserContext* context = blink::CSSParserContext::Create(
+  auto* context = blink::MakeGarbageCollected<blink::CSSParserContext>(
       mode, secure_context_mode, selector_profile);
 
   blink::StyleSheetContents* style_sheet =

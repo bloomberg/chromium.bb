@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -197,8 +198,8 @@ CSSStyleSheet& StyleEngine::EnsureInspectorStyleSheet() {
   if (inspector_style_sheet_)
     return *inspector_style_sheet_;
 
-  StyleSheetContents* contents =
-      StyleSheetContents::Create(CSSParserContext::Create(*document_));
+  StyleSheetContents* contents = StyleSheetContents::Create(
+      MakeGarbageCollected<CSSParserContext>(*document_));
   inspector_style_sheet_ = CSSStyleSheet::Create(contents, *document_);
   MarkDocumentDirty();
   // TODO(futhark@chromium.org): Making the active stylesheets up-to-date here

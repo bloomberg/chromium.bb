@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
@@ -66,7 +67,7 @@ namespace {
 
 static const CSSParserContext* ParserContextForDocument(Document* document) {
   // Fallback to an insecure context parser if no document is present.
-  return document ? CSSParserContext::Create(*document)
+  return document ? MakeGarbageCollected<CSSParserContext>(*document)
                   : StrictCSSParserContext(SecureContextMode::kInsecureContext);
 }
 

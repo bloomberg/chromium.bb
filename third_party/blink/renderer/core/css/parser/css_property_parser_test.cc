@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -309,7 +310,7 @@ TEST(CSSPropertyParserTest, ClipPathEllipse) {
   auto dummy_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Document* doc = &dummy_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
-  CSSParserContext* context = CSSParserContext::Create(
+  auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kSecureContext,
       CSSParserContext::kLiveProfile, doc);
 
@@ -439,9 +440,9 @@ class CSSPropertyUseCounterTest : public ::testing::Test {
   void TearDown() override { dummy_page_holder_ = nullptr; }
 
   void ParseProperty(CSSPropertyID property, const char* value_string) {
-    const CSSValue* value =
-        CSSParser::ParseSingleValue(property, String(value_string),
-                                    CSSParserContext::Create(GetDocument()));
+    const CSSValue* value = CSSParser::ParseSingleValue(
+        property, String(value_string),
+        MakeGarbageCollected<CSSParserContext>(GetDocument()));
     DCHECK(value);
   }
 

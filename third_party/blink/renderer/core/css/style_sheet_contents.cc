@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -343,8 +344,8 @@ void StyleSheetContents::ParseAuthorStyleSheet(
     source_map_url_ = response.HttpHeaderField(http_names::kXSourceMap);
   }
 
-  const CSSParserContext* context =
-      CSSParserContext::CreateWithStyleSheetContents(ParserContext(), this);
+  const auto* context =
+      MakeGarbageCollected<CSSParserContext>(ParserContext(), this);
   CSSParser::ParseSheet(context, this, sheet_text,
                         CSSDeferPropertyParsing::kYes);
 }
@@ -359,8 +360,8 @@ ParseSheetResult StyleSheetContents::ParseStringAtPosition(
     const String& sheet_text,
     const TextPosition& start_position,
     bool allow_import_rules) {
-  const CSSParserContext* context =
-      CSSParserContext::CreateWithStyleSheetContents(ParserContext(), this);
+  const auto* context =
+      MakeGarbageCollected<CSSParserContext>(ParserContext(), this);
   return CSSParser::ParseSheet(context, this, sheet_text,
                                CSSDeferPropertyParsing::kNo,
                                allow_import_rules);

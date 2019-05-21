@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 // Uncomment to run the SelectorQueryTests for stats in a release build.
 // #define RELEASE_QUERY_STATS
@@ -533,7 +534,7 @@ SelectorQuery* SelectorQueryCache::Add(const AtomicString& selectors,
     return it->value.get();
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(
+      MakeGarbageCollected<CSSParserContext>(
           document, document.BaseURL(), true /* origin_clean */,
           document.GetReferrerPolicy(), WTF::TextEncoding(),
           CSSParserContext::kSnapshotProfile),
