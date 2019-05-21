@@ -231,12 +231,43 @@ class LocalCardMigrationManagerTest : public testing::Test {
     // will enter below.
     AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
                        test::NextYear().c_str(), "1", "guid1");
-    // Add other invalid local credit cards(invalid card number or expired), so
+    // Add other invalid local credit cards (invalid card number or expired), so
     // it will not trigger migration.
     AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111112", "11",
                        test::NextYear().c_str(), "1", "guid2");
     AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
                        test::LastYear().c_str(), "1", "guid3");
+
+    // Set up our credit card form data.
+    FormData credit_card_form;
+    test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+    FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+    // Edit the data, and submit.
+    EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                       test::NextYear().c_str(), "123");
+    FormSubmitted(credit_card_form);
+  }
+
+  void UseServerCardWithInvalidLocalCardsOnFile() {
+    // Set the billing_customer_number to designate existence of a Payments
+    // account.
+    personal_data_.SetPaymentsCustomerData(
+        std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
+    // Add a masked credit card whose |TypeAndLastFourDigits| matches what we
+    // will enter below.
+    CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+    test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
+                            test::NextYear().c_str(), "1");
+    credit_card.SetNetworkForMaskedCard(kVisaCard);
+    personal_data_.AddServerCreditCard(credit_card);
+    // Add other invalid local credit cards (invalid card number or expired), so
+    // it will not trigger migration.
+    AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111112", "11",
+                       test::NextYear().c_str(), "1", "guid1");
+    AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                       test::LastYear().c_str(), "1", "guid2");
 
     // Set up our credit card form data.
     FormData credit_card_form;
@@ -388,8 +419,8 @@ TEST_F(LocalCardMigrationManagerTest,
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "1", "guid1");
-  // Add other invalid local credit cards(invalid card number or expired), so it
-  // will not trigger migration.
+  // Add other invalid local credit cards (invalid card number or expired), so
+  // it will not trigger migration.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111112", "11",
                      test::NextYear().c_str(), "1", "guid2");
   AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
@@ -459,35 +490,9 @@ TEST_F(LocalCardMigrationManagerTest,
 // cards as long as the other local cards are not eligible for migration.
 TEST_F(LocalCardMigrationManagerTest,
        MigrateCreditCard_UseServerCardWithNoneValidLocal) {
-  // Set the billing_customer_number to designate existence of a Payments
-  // account.
-  personal_data_.SetPaymentsCustomerData(
-      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
-
-  // Add a masked credit card whose |TypeAndLastFourDigits| matches what we will
-  // enter below.
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
-                          test::NextYear().c_str(), "1");
-  credit_card.SetNetworkForMaskedCard(kVisaCard);
-  personal_data_.AddServerCreditCard(credit_card);
-  // Add other invalid local credit cards(invalid card number or expired), so it
-  // will not trigger migration.
-  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111112", "11",
-                     test::NextYear().c_str(), "1", "guid1");
-  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                     test::LastYear().c_str(), "1", "guid2");
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
   base::HistogramTester histogram_tester;
-  // Edit the data, and submit.
-  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
-                     test::NextYear().c_str(), "123");
-  FormSubmitted(credit_card_form);
+  UseServerCardWithInvalidLocalCardsOnFile();
+
   EXPECT_FALSE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
 
   // Verify that metrics are correctly logged to the UseOfServerCard
@@ -1404,7 +1409,7 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_GetUploadDetailsFails) {
 }
 
 // Use new card when submit so migration was not offered. Verify the migration
-// decision metic is logged as new card used.
+// decision metric is logged as new card used.
 TEST_F(LocalCardMigrationManagerTest, LogMigrationDecisionMetric_UseNewCard) {
   base::HistogramTester histogram_tester;
   UseNewCardWithLocalCardsOnFile();
@@ -1416,7 +1421,7 @@ TEST_F(LocalCardMigrationManagerTest, LogMigrationDecisionMetric_UseNewCard) {
 
 // Use one local card with more valid local cards available but billing customer
 // number is blank, will not trigger migration. Verify the migration decision
-// metic is logged as failed enablement prerequisites.
+// metric is logged as failed enablement prerequisites.
 TEST_F(LocalCardMigrationManagerTest,
        LogMigrationDecisionMetric_FailedEnablementPrerequisites) {
   base::HistogramTester histogram_tester;
@@ -1444,7 +1449,7 @@ TEST_F(LocalCardMigrationManagerTest,
 }
 
 // All migration requirements are met but max strikes reached. Verify the
-// migration decision metic is logged as max strikes reached.
+// migration decision metric is logged as max strikes reached.
 TEST_F(LocalCardMigrationManagerTest,
        LogMigrationDecisionMetric_MaxStrikesReached) {
   scoped_feature_list_.InitAndEnableFeature(
@@ -1467,11 +1472,24 @@ TEST_F(LocalCardMigrationManagerTest,
 }
 
 // Use one local card with invalid local card so migration was not offered.
-// Verify the migration decision metic is logged as no migratable cards.
+// Verify the migration decision metric is logged as not offered single local
+// card.
+TEST_F(LocalCardMigrationManagerTest,
+       LogMigrationDecisionMetric_NotOfferedSingleLocalCard) {
+  base::HistogramTester histogram_tester;
+  UseLocalCardWithInvalidLocalCardsOnFile();
+
+  ExpectUniqueLocalCardMigrationDecision(
+      histogram_tester, AutofillMetrics::LocalCardMigrationDecisionMetric::
+                            NOT_OFFERED_SINGLE_LOCAL_CARD);
+}
+
+// Use one server card with invalid local card so migration was not offered.
+// Verify the migration decision metric is logged as no migratable cards.
 TEST_F(LocalCardMigrationManagerTest,
        LogMigrationDecisionMetric_NoMigratableCards) {
   base::HistogramTester histogram_tester;
-  UseLocalCardWithInvalidLocalCardsOnFile();
+  UseServerCardWithInvalidLocalCardsOnFile();
 
   ExpectUniqueLocalCardMigrationDecision(
       histogram_tester, AutofillMetrics::LocalCardMigrationDecisionMetric::
@@ -1479,7 +1497,7 @@ TEST_F(LocalCardMigrationManagerTest,
 }
 
 // All migration requirements are met but GetUploadDetails rpc fails. Verify the
-// migration decision metic is logged as get upload details failed.
+// migration decision metric is logged as get upload details failed.
 TEST_F(LocalCardMigrationManagerTest,
        LogMigrationDecisionMetric_GetUploadDetailsFails) {
   // Anything other than "en-US" will cause GetUploadDetails to return a failure
@@ -1495,7 +1513,7 @@ TEST_F(LocalCardMigrationManagerTest,
 }
 
 // Use one unsupported local card with more unsupported local cards will not
-// trigger migration. Verify the migration decision metic is logged as no
+// trigger migration. Verify the migration decision metric is logged as no
 // supported cards.
 TEST_F(LocalCardMigrationManagerTest,
        LogMigrationDecisionMetric_NoSupportedCards) {
@@ -1537,7 +1555,7 @@ TEST_F(LocalCardMigrationManagerTest,
 }
 
 // All migration requirements are met and migration was offered. Verify the
-// migration decision metic is logged as migration offered.
+// migration decision metric is logged as migration offered.
 TEST_F(LocalCardMigrationManagerTest,
        LogMigrationDecisionMetric_MigrationOffered) {
   base::HistogramTester histogram_tester;

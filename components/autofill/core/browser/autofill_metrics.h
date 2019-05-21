@@ -495,7 +495,10 @@ class AutofillMetrics {
     // Abandoned the migration because no supported local cards were left after
     // filtering out unsupported cards.
     NOT_OFFERED_NO_SUPPORTED_CARDS = 6,
-    kMaxValue = NOT_OFFERED_NO_SUPPORTED_CARDS,
+    // User used a local card and they only have a single migratable local card
+    // on file, we will offer Upstream instead.
+    NOT_OFFERED_SINGLE_LOCAL_CARD = 7,
+    kMaxValue = NOT_OFFERED_SINGLE_LOCAL_CARD,
   };
 
   // Metrics to track events when local credit card migration is offered.

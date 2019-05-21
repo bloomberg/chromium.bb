@@ -120,6 +120,13 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
            FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD &&
        !migratable_credit_cards_.empty())) {
     return true;
+  } else if (imported_credit_card_record_type ==
+                 FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD &&
+             migratable_credit_cards_.size() == 1) {
+    AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+        AutofillMetrics::LocalCardMigrationDecisionMetric::
+            NOT_OFFERED_SINGLE_LOCAL_CARD);
+    return false;
   } else {
     AutofillMetrics::LogLocalCardMigrationDecisionMetric(
         AutofillMetrics::LocalCardMigrationDecisionMetric::
