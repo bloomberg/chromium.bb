@@ -166,10 +166,8 @@ static INLINE void init_simple_motion_search_mvs(PC_TREE *pc_tree) {
   av1_zero(pc_tree->mv_ref_fulls);
 
   av1_zero(pc_tree->sms_none_feat);
-  av1_zero(pc_tree->sms_split_feat);
   av1_zero(pc_tree->sms_rect_feat);
   av1_zero(pc_tree->sms_none_valid);
-  av1_zero(pc_tree->sms_split_valid);
   av1_zero(pc_tree->sms_rect_valid);
 
   if (pc_tree->block_size >= BLOCK_8X8) {
