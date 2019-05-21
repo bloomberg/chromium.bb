@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant.carousel;
 
 import android.content.Context;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -56,6 +57,10 @@ public class AssistantActionsCarouselCoordinator implements AssistantCarouselCoo
                 new SimpleRecyclerViewMcp<>(model.getChipsModel(),
                         AssistantChipViewHolder::getViewType, AssistantChipViewHolder::bind),
                 AssistantChipViewHolder::create));
+
+        // Disabling change animations to avoid chips that blink when setting the same, unchanged,
+        // set of chips.
+        ((DefaultItemAnimator) mView.getItemAnimator()).setSupportsChangeAnimations(false);
     }
 
     @Override
