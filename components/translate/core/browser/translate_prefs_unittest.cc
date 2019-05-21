@@ -20,6 +20,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/common/translate_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,6 +75,9 @@ class TranslatePrefsTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     prefs_->SetString(kPreferredLanguagesPref, std::string());
 #endif
+    prefs_->registry()->RegisterBooleanPref(
+        prefs::kOfferTranslateEnabled, true,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   }
 
   void SetLastDeniedTime(const std::string& language, base::Time time) {

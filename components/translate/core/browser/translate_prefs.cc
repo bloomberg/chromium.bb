@@ -201,6 +201,8 @@ void TranslatePrefs::ResetToDefaults() {
 
   prefs_->ClearPref(kPrefTranslateLastDeniedTimeForLanguage);
   prefs_->ClearPref(kPrefTranslateTooOftenDeniedForLanguage);
+
+  prefs_->ClearPref(prefs::kOfferTranslateEnabled);
 }
 
 bool TranslatePrefs::IsBlockedLanguage(
