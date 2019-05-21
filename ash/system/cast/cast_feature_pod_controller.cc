@@ -39,6 +39,7 @@ FeaturePodButton* CastFeaturePodController::CreateButton() {
     CastConfigController::Get()->RequestDeviceRefresh();
   }
 
+  Update();
   return button_;
 }
 
