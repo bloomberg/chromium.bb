@@ -673,6 +673,11 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockFetches) {
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
   embedded_test_server()->StartAcceptingConnections();
 
+  // TODO(lukasza, nasko): https://crbug.com/888079: Re-enable the test once
+  // initiator origin is stored and reused for history navigations.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
   // Prepare to verify results of a fetch.
   GURL resource_url("http://foo.com/title2.html");
   const char* resource = "title2.html";
