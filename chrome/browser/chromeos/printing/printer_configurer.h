@@ -48,9 +48,10 @@ enum PrinterSetupResult {
 // enums must never be renumbered or deleted and reused.
 // Records the source of a successful USB printer setup.
 enum class UsbPrinterSetupSource {
-  kSettings = 0,      // USB printer installed via Settings.
-  kPrintPreview = 1,  // USB printer installed via Print Preview.
-  kMaxValue = kPrintPreview,
+  kSettings = 0,        // USB printer installed via Settings.
+  kPrintPreview = 1,    // USB printer installed via Print Preview.
+  kAutoconfigured = 2,  // USB printer installed automatically.
+  kMaxValue = kAutoconfigured,
 };
 
 using PrinterSetupCallback = base::OnceCallback<void(PrinterSetupResult)>;

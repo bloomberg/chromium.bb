@@ -97,6 +97,8 @@ void AutomaticUsbPrinterConfigurer::OnSetupComplete(const Printer& printer,
     return;
   }
   installation_manager_->PrinterInstalled(printer, true /* is_automatic */);
+  PrinterConfigurer::RecordUsbPrinterSetupSource(
+      UsbPrinterSetupSource::kAutoconfigured);
   CompleteConfiguration(printer);
 }
 
