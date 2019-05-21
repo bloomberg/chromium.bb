@@ -83,7 +83,13 @@ const base::Feature kTranslateUI{"TranslateUI",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTranslateMobileManualTrigger{
-    "TranslateAndroidManualTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
+  "TranslateAndroidManualTrigger",
+#if defined(OS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kCompactTranslateInfobarIOS{
     "CompactTranslateInfobarIOS", base::FEATURE_DISABLED_BY_DEFAULT};
