@@ -20,7 +20,7 @@ class Unwinder;
 // A thread to target for profiling that will run the supplied closure.
 class TargetThread : public PlatformThread::Delegate {
  public:
-  TargetThread(const Closure& to_run);
+  TargetThread(OnceClosure to_run);
   ~TargetThread() override;
 
   // PlatformThread::Delegate:
@@ -30,7 +30,7 @@ class TargetThread : public PlatformThread::Delegate {
 
  private:
   PlatformThreadId id_ = 0;
-  Closure to_run_;
+  OnceClosure to_run_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetThread);
 };
@@ -49,7 +49,7 @@ class UnwindScenario {
   // calls into the passed closure to wait for a sample to be taken. Returns the
   // address range of the function that sets up the unwind scenario. The passed
   // closure will be null when invoked solely to obtain the address range.
-  using SetupFunction = RepeatingCallback<FunctionAddressRange(const Closure&)>;
+  using SetupFunction = RepeatingCallback<FunctionAddressRange(OnceClosure)>;
 
   // Events to coordinate the sampling.
   struct SampleEvents {
@@ -88,7 +88,7 @@ class UnwindScenario {
 
 // UnwindScenario setup function that calls into |wait_for_sample| without doing
 // any special unwinding setup, to exercise the "normal" unwind scenario.
-FunctionAddressRange CallWithPlainFunction(const Closure& wait_for_sample);
+FunctionAddressRange CallWithPlainFunction(OnceClosure wait_for_sample);
 
 // The callback to perform profiling on the provided thread.
 using ProfileCallback = OnceCallback<void(PlatformThreadId)>;

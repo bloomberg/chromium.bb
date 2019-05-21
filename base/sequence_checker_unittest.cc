@@ -26,17 +26,17 @@ namespace {
 // Runs a callback on another thread.
 class RunCallbackThread : public SimpleThread {
  public:
-  explicit RunCallbackThread(const Closure& callback)
-      : SimpleThread("RunCallbackThread"), callback_(callback) {
+  explicit RunCallbackThread(OnceClosure callback)
+      : SimpleThread("RunCallbackThread"), callback_(std::move(callback)) {
     Start();
     Join();
   }
 
  private:
   // SimpleThread:
-  void Run() override { callback_.Run(); }
+  void Run() override { std::move(callback_).Run(); }
 
-  const Closure callback_;
+  OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RunCallbackThread);
 };
@@ -83,7 +83,7 @@ TEST(SequenceCheckerTest, CallsAllowedOnSameThreadSameSequenceToken) {
 TEST(SequenceCheckerTest, CallsDisallowedOnDifferentThreadsNoSequenceToken) {
   SequenceCheckerImpl sequence_checker;
   RunCallbackThread thread(
-      Bind(&ExpectNotCalledOnValidSequence, Unretained(&sequence_checker)));
+      BindOnce(&ExpectNotCalledOnValidSequence, Unretained(&sequence_checker)));
 }
 
 TEST(SequenceCheckerTest, CallsAllowedOnDifferentThreadsSameSequenceToken) {
@@ -94,8 +94,9 @@ TEST(SequenceCheckerTest, CallsAllowedOnDifferentThreadsSameSequenceToken) {
   SequenceCheckerImpl sequence_checker;
   EXPECT_TRUE(sequence_checker.CalledOnValidSequence());
 
-  RunCallbackThread thread(Bind(&ExpectCalledOnValidSequenceWithSequenceToken,
-                                Unretained(&sequence_checker), sequence_token));
+  RunCallbackThread thread(
+      BindOnce(&ExpectCalledOnValidSequenceWithSequenceToken,
+               Unretained(&sequence_checker), sequence_token));
 }
 
 TEST(SequenceCheckerTest, CallsDisallowedOnSameThreadDifferentSequenceToken) {
@@ -145,7 +146,7 @@ TEST(SequenceCheckerTest, DetachFromSequenceNoSequenceToken) {
   // Verify that CalledOnValidSequence() returns true when called on a
   // different thread after a call to DetachFromSequence().
   RunCallbackThread thread(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)));
+      BindOnce(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)));
 
   EXPECT_FALSE(sequence_checker.CalledOnValidSequence());
 }

@@ -56,13 +56,13 @@ class TestProfileBuilder : public ProfileBuilder {
 
 }  // namespace
 
-TargetThread::TargetThread(const Closure& to_run) : to_run_(to_run) {}
+TargetThread::TargetThread(OnceClosure to_run) : to_run_(std::move(to_run)) {}
 
 TargetThread::~TargetThread() = default;
 
 void TargetThread::ThreadMain() {
   id_ = PlatformThread::CurrentId();
-  to_run_.Run();
+  std::move(to_run_).Run();
 }
 
 UnwindScenario::UnwindScenario(const SetupFunction& setup_function)
@@ -75,7 +75,7 @@ FunctionAddressRange UnwindScenario::GetWaitForSampleAddressRange() const {
 }
 
 FunctionAddressRange UnwindScenario::GetSetupFunctionAddressRange() const {
-  return setup_function_.Run(Closure());
+  return setup_function_.Run(OnceClosure());
 }
 
 FunctionAddressRange UnwindScenario::GetOuterFunctionAddressRange() const {
@@ -122,11 +122,11 @@ UnwindScenario::WaitForSample(SampleEvents* events) {
 
 // Disable inlining for this function so that it gets its own stack frame.
 NOINLINE FunctionAddressRange
-CallWithPlainFunction(const Closure& wait_for_sample) {
+CallWithPlainFunction(OnceClosure wait_for_sample) {
   const void* start_program_counter = GetProgramCounter();
 
   if (!wait_for_sample.is_null())
-    wait_for_sample.Run();
+    std::move(wait_for_sample).Run();
 
   // Volatile to prevent a tail call to GetProgramCounter().
   const void* volatile end_program_counter = GetProgramCounter();

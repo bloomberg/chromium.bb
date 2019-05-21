@@ -612,7 +612,7 @@ TEST_P(RunLoopTest, NestingObservers) {
 
   RunLoop::AddNestingObserverOnCurrentThread(&nesting_observer);
 
-  const RepeatingClosure run_nested_loop = Bind([]() {
+  const RepeatingClosure run_nested_loop = BindRepeating([]() {
     RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
     ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                             nested_run_loop.QuitClosure());

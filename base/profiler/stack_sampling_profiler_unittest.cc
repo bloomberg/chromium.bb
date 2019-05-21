@@ -67,7 +67,7 @@ namespace {
 // Calls into |wait_for_sample| after using alloca(), to test unwinding with a
 // frame pointer.
 // Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange CallWithAlloca(const Closure& wait_for_sample) {
+NOINLINE FunctionAddressRange CallWithAlloca(OnceClosure wait_for_sample) {
   const void* start_program_counter = GetProgramCounter();
 
   // Volatile to force a dynamic stack allocation.
@@ -80,7 +80,7 @@ NOINLINE FunctionAddressRange CallWithAlloca(const Closure& wait_for_sample) {
     *p = '\0';
 
   if (!wait_for_sample.is_null())
-    wait_for_sample.Run();
+    std::move(wait_for_sample).Run();
 
   // Volatile to prevent a tail call to GetProgramCounter().
   const void* volatile end_program_counter = GetProgramCounter();
@@ -89,9 +89,9 @@ NOINLINE FunctionAddressRange CallWithAlloca(const Closure& wait_for_sample) {
 
 // The function to be executed by the code in the other library.
 void OtherLibraryCallback(void* arg) {
-  const Closure* wait_for_sample = static_cast<const Closure*>(arg);
+  OnceClosure* wait_for_sample = static_cast<OnceClosure*>(arg);
 
-  wait_for_sample->Run();
+  std::move(*wait_for_sample).Run();
 
   // Prevent tail call.
   volatile int i = 0;
@@ -103,7 +103,7 @@ void OtherLibraryCallback(void* arg) {
 // modules.
 // Disable inlining for this function so that it gets its own stack frame.
 NOINLINE FunctionAddressRange
-CallThroughOtherLibrary(NativeLibrary library, const Closure& wait_for_sample) {
+CallThroughOtherLibrary(NativeLibrary library, OnceClosure wait_for_sample) {
   const void* start_program_counter = GetProgramCounter();
 
   if (!wait_for_sample.is_null()) {
@@ -114,9 +114,7 @@ CallThroughOtherLibrary(NativeLibrary library, const Closure& wait_for_sample) {
         GetFunctionPointerFromNativeLibrary(library, "InvokeCallbackFunction"));
     EXPECT_TRUE(function);
 
-    // This copy avoids the need for a const_cast.
-    Closure wait_for_sample_copy = wait_for_sample;
-    (*function)(&OtherLibraryCallback, &wait_for_sample_copy);
+    (*function)(&OtherLibraryCallback, &wait_for_sample);
   }
 
   // Volatile to prevent a tail call to GetProgramCounter().
@@ -162,13 +160,13 @@ Profile::Profile(const std::vector<std::vector<Frame>>& samples,
 // The callback type used to collect a profile. The passed Profile is move-only.
 // Other threads, including the UI thread, may block on callback completion so
 // this should run as quickly as possible.
-using ProfileCompletedCallback = Callback<void(Profile)>;
+using ProfileCompletedCallback = OnceCallback<void(Profile)>;
 
 // TestProfileBuilder collects samples produced by the profiler.
 class TestProfileBuilder : public ProfileBuilder {
  public:
   TestProfileBuilder(ModuleCache* module_cache,
-                     const ProfileCompletedCallback& callback);
+                     ProfileCompletedCallback callback);
 
   ~TestProfileBuilder() override;
 
@@ -189,14 +187,14 @@ class TestProfileBuilder : public ProfileBuilder {
   int metadata_count_ = 0;
 
   // Callback made when sampling a profile completes.
-  const ProfileCompletedCallback callback_;
+  ProfileCompletedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestProfileBuilder);
 };
 
 TestProfileBuilder::TestProfileBuilder(ModuleCache* module_cache,
-                                       const ProfileCompletedCallback& callback)
-    : module_cache_(module_cache), callback_(callback) {}
+                                       ProfileCompletedCallback callback)
+    : module_cache_(module_cache), callback_(std::move(callback)) {}
 
 TestProfileBuilder::~TestProfileBuilder() = default;
 
@@ -214,7 +212,7 @@ void TestProfileBuilder::OnSampleCompleted(std::vector<Frame> sample) {
 
 void TestProfileBuilder::OnProfileCompleted(TimeDelta profile_duration,
                                             TimeDelta sampling_period) {
-  callback_.Run(
+  std::move(callback_).Run(
       Profile(samples_, metadata_count_, profile_duration, sampling_period));
 }
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// CancelableTaskTracker posts tasks (in the form of a Closure) to a
+// CancelableTaskTracker posts tasks (in the form of a OnceClosure) to a
 // TaskRunner, and is able to cancel the task later if it's not needed
 // anymore.  On destruction, CancelableTaskTracker will cancel all
 // tracked tasks.
 //
-// Each cancelable task can be associated with a reply (also a Closure). After
-// the task is run on the TaskRunner, |reply| will be posted back to
+// Each cancelable task can be associated with a reply (also a OnceClosure).
+// After the task is run on the TaskRunner, |reply| will be posted back to
 // originating TaskRunner.
 //
 // NOTE:
@@ -64,7 +64,7 @@ class BASE_EXPORT CancelableTaskTracker {
   typedef int64_t TaskId;
   static const TaskId kBadTaskId;
 
-  typedef Callback<bool()> IsCanceledCallback;
+  using IsCanceledCallback = RepeatingCallback<bool()>;
 
   CancelableTaskTracker();
 

@@ -255,7 +255,7 @@ void ImportantFileWriter::WriteNow(std::unique_ptr<std::string> data) {
     return;
   }
 
-  Closure task = AdaptCallbackForRepeating(
+  RepeatingClosure task = AdaptCallbackForRepeating(
       BindOnce(&WriteScopedStringToFileAtomically, path_, std::move(data),
                std::move(before_next_write_callback_),
                std::move(after_next_write_callback_), histogram_suffix_));
@@ -266,7 +266,7 @@ void ImportantFileWriter::WriteNow(std::unique_ptr<std::string> data) {
     // on the current thread.
     NOTREACHED();
 
-    task.Run();
+    std::move(task).Run();
   }
   ClearPendingWrite();
 }

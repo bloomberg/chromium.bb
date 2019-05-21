@@ -79,11 +79,10 @@ class ScopedV8Environment {
 // C++ function to be invoked from V8 which calls back into the provided closure
 // pointer (passed via a holder object) to wait for a stack sample to be taken.
 void WaitForSampleNative(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  const base::RepeatingClosure* wait_for_sample =
-      GetPointerFromHolder<const base::RepeatingClosure>(
-          info[0].As<v8::Object>());
+  base::OnceClosure* wait_for_sample =
+      GetPointerFromHolder<base::OnceClosure>(info[0].As<v8::Object>());
   if (wait_for_sample)
-    wait_for_sample->Run();
+    std::move(*wait_for_sample).Run();
 }
 
 // Causes a stack sample to be taken after setting up a call stack from C++ to
@@ -91,7 +90,7 @@ void WaitForSampleNative(const v8::FunctionCallbackInfo<v8::Value>& info) {
 base::FunctionAddressRange CallThroughV8(
     const base::RepeatingCallback<void(const v8::UnwindState&)>&
         report_unwind_state,
-    const base::RepeatingClosure& wait_for_sample) {
+    base::OnceClosure wait_for_sample) {
   const void* start_program_counter = base::GetProgramCounter();
 
   if (wait_for_sample) {
