@@ -123,7 +123,7 @@ void AnimationWorkletMutatorDispatcherImpl::MutateSynchronously(
     return;
 
   base::WaitableEvent event;
-  WTF::CrossThreadClosure on_done = CrossThreadBind(
+  CrossThreadOnceClosure on_done = CrossThreadBindOnce(
       &base::WaitableEvent::Signal, WTF::CrossThreadUnretained(&event));
   RequestMutations(std::move(on_done));
   event.Wait();
@@ -188,7 +188,7 @@ void AnimationWorkletMutatorDispatcherImpl::MutateAsynchronouslyInternal(
                            "AnimationWorkletMutatorDispatcherImpl::MutateAsync",
                            next_async_mutation_id);
 
-  WTF::CrossThreadClosure on_done = CrossThreadBind(
+  CrossThreadOnceClosure on_done = CrossThreadBindOnce(
       [](scoped_refptr<base::SingleThreadTaskRunner> host_queue,
          base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> dispatcher,
          int next_async_mutation_id) {
@@ -278,7 +278,7 @@ AnimationWorkletMutatorDispatcherImpl::CreateInputMap(
 }
 
 void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
-    WTF::CrossThreadClosure done_callback) {
+    CrossThreadOnceClosure done_callback) {
   DCHECK(client_);
   DCHECK(outputs_->get().IsEmpty());
 
@@ -291,7 +291,7 @@ void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
   int next_request_index = 0;
   outputs_->get().Grow(num_requests);
   base::RepeatingClosure on_mutator_done = base::BarrierClosure(
-      num_requests, ConvertToBaseCallback(std::move(done_callback)));
+      num_requests, ConvertToBaseOnceCallback(std::move(done_callback)));
 
   for (const auto& pair : mutator_map_) {
     AnimationWorkletMutator* mutator = pair.key;

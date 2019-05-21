@@ -96,7 +96,7 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // Dispatches mutation update requests. The callback is triggered once all
   // mutation updates have been computed and it runs on the animation worklet
   // thread associated with the last mutation to complete.
-  void RequestMutations(WTF::CrossThreadClosure done_callback);
+  void RequestMutations(CrossThreadOnceClosure done_callback);
 
   void MutateAsynchronouslyInternal(AsyncMutationCompleteCallback);
 
