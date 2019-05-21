@@ -1,5 +1,4 @@
 AuraWindowVideoCaptureDeviceBrowserTestP.*
 CaptureScreenshotTest.*
-OOPBrowserTest.Basic
 SnapshotBrowserTest.*
 WebContentsVideoCaptureDeviceBrowserTestP.*
