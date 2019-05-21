@@ -94,8 +94,9 @@ class SadTabTabHelperTest : public PlatformTest {
   SadTabTabHelperTestDelegate* sad_tab_delegate_;
 };
 
-// Tests that SadTab is not presented for not shown web states and navigation
-// item is reloaded once web state was shown.
+// Tests that SadTab is not presented for not shown web states. Navigation
+// item is reloaded once web state was shown, and displays the page placeholder
+// during the load.
 TEST_F(SadTabTabHelperTest, ReloadedWhenWebStateWasShown) {
   OCMStub([application_ applicationState]).andReturn(UIApplicationStateActive);
   web_state_.WasHidden();
@@ -110,11 +111,12 @@ TEST_F(SadTabTabHelperTest, ReloadedWhenWebStateWasShown) {
   EXPECT_FALSE(tab_helper()->is_showing_sad_tab());
   EXPECT_FALSE(sad_tab_delegate_.showingSadTab);
 
-  // Navigation item must be reloaded once web state is shown.
+  // Navigation item must be reloaded once web state is shown, while displaying
+  // the page placeholder during the load.
   EXPECT_FALSE(navigation_manager_->LoadIfNecessaryWasCalled());
   web_state_.WasShown();
   EXPECT_TRUE(PagePlaceholderTabHelper::FromWebState(&web_state_)
-                  ->will_add_placeholder_for_next_navigation());
+                  ->displaying_placeholder());
   EXPECT_TRUE(navigation_manager_->LoadIfNecessaryWasCalled());
 }
 
