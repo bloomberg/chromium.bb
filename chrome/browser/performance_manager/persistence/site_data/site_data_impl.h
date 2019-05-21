@@ -24,6 +24,14 @@
 
 namespace performance_manager {
 
+class SiteDataReaderTest;
+
+FORWARD_DECLARE_TEST(SiteDataReaderTest,
+                     DestroyingReaderCancelsPendingCallbacks);
+FORWARD_DECLARE_TEST(SiteDataReaderTest,
+                     FreeingReaderDoesntCauseWriteOperation);
+FORWARD_DECLARE_TEST(SiteDataReaderTest, OnDataLoadedCallbackInvoked);
+
 namespace internal {
 
 FORWARD_DECLARE_TEST(SiteDataImplTest, LateAsyncReadDoesntBypassClearEvent);
@@ -144,6 +152,7 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
 
   // Friend all the tests.
   friend class SiteDataImplTest;
+  friend class performance_manager::SiteDataReaderTest;
 
   SiteDataImpl(const url::Origin& origin,
                OnDestroyDelegate* delegate,
@@ -173,6 +182,12 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
                            FlushingStateToProtoDoesntAffectData);
   FRIEND_TEST_ALL_PREFIXES(SiteDataImplTest,
                            LateAsyncReadDoesntBypassClearEvent);
+  FRIEND_TEST_ALL_PREFIXES(performance_manager::SiteDataReaderTest,
+                           DestroyingReaderCancelsPendingCallbacks);
+  FRIEND_TEST_ALL_PREFIXES(performance_manager::SiteDataReaderTest,
+                           FreeingReaderDoesntCauseWriteOperation);
+  FRIEND_TEST_ALL_PREFIXES(performance_manager::SiteDataReaderTest,
+                           OnDataLoadedCallbackInvoked);
 
   // Add |extra_observation_duration| to the observation window of a given
   // feature if it hasn't been used yet, do nothing otherwise.
