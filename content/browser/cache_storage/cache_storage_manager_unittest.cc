@@ -33,6 +33,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
+#include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -122,6 +123,32 @@ class DelayedBlob : public storage::FakeBlob {
   blink::mojom::BlobReaderClientPtr client_;
   mojo::ScopedDataPipeProducerHandle producer_handle_;
   bool paused_ = true;
+};
+
+// Scheduler implementation that will invoke a callback after the
+// next operation has been started.
+class CallbackScheduler : public CacheStorageScheduler {
+ public:
+  explicit CallbackScheduler(base::OnceClosure callback)
+      : CacheStorageScheduler(CacheStorageSchedulerClient::kCache,
+                              base::ThreadTaskRunnerHandle::Get()),
+        callback_(std::move(callback)) {}
+
+ protected:
+  void DispatchOperationTask(base::OnceClosure task) override {
+    auto wrapped = base::BindOnce(&CallbackScheduler::ExecuteTask,
+                                  base::Unretained(this), std::move(task));
+    CacheStorageScheduler::DispatchOperationTask(std::move(wrapped));
+  }
+
+ private:
+  void ExecuteTask(base::OnceClosure task) {
+    std::move(task).Run();
+    if (callback_)
+      std::move(callback_).Run();
+  }
+
+  base::OnceClosure callback_;
 };
 
 class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
@@ -273,6 +300,13 @@ class CacheStorageManagerTest : public testing::Test {
                           blink::mojom::FetchAPIResponsePtr response) {
     callback_error_ = error;
     callback_cache_handle_response_ = std::move(response);
+    run_loop->Quit();
+  }
+
+  void CacheMatchAllCallback(base::RunLoop* run_loop,
+                             CacheStorageError error,
+                             std::vector<blink::mojom::FetchAPIResponsePtr>) {
+    callback_error_ = error;
     run_loop->Quit();
   }
 
@@ -1180,6 +1214,40 @@ TEST_F(CacheStorageManagerTest, DropReferenceAndMemoryPressure) {
       << "unreferenced cache not destroyed on critical memory pressure";
 }
 
+TEST_F(CacheStorageManagerTest, DropReferenceDuringQuery) {
+  // Setup the cache and execute an operation to make sure all initialization
+  // is complete.
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  base::WeakPtr<LegacyCacheStorageCache> cache =
+      LegacyCacheStorageCache::From(callback_cache_handle_)->AsWeakPtr();
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(),
+                          GURL("http://example.com/foo")));
+
+  // Override the cache scheduler so that we can take an action below
+  // after the query operation begins.
+  base::RunLoop scheduler_loop;
+  auto scheduler =
+      std::make_unique<CallbackScheduler>(scheduler_loop.QuitClosure());
+  cache->SetSchedulerForTesting(std::move(scheduler));
+
+  // Perform a MatchAll() operation to trigger a full query of the cache
+  // that does not hit the fast path optimization.
+  base::RunLoop match_loop;
+  cache->MatchAll(
+      nullptr, nullptr, /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageManagerTest::CacheMatchAllCallback,
+                     base::Unretained(this), base::Unretained(&match_loop)));
+
+  // Wait for the MatchAll operation to begin.
+  scheduler_loop.Run();
+
+  // Clear the external cache handle.
+  callback_cache_handle_ = CacheStorageCacheHandle();
+
+  // Wait for the MatchAll operation to complete as expected.
+  match_loop.Run();
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
 // A cache continues to work so long as there is a handle to it. Only after the
 // last cache handle is deleted can the cache be freed.
 TEST_P(CacheStorageManagerTestP, CacheWorksAfterDelete) {

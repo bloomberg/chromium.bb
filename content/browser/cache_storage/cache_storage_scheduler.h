@@ -53,6 +53,10 @@ class CONTENT_EXPORT CacheStorageScheduler {
                           weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   }
 
+ protected:
+  // virtual for testing
+  virtual void DispatchOperationTask(base::OnceClosure task);
+
  private:
   void RunOperationIfIdle();
 

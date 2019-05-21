@@ -901,6 +901,12 @@ LegacyCacheStorageCache::~LegacyCacheStorageCache() {
   quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_);
 }
 
+void LegacyCacheStorageCache::SetSchedulerForTesting(
+    std::unique_ptr<CacheStorageScheduler> scheduler) {
+  DCHECK(!scheduler_->ScheduledOperations());
+  scheduler_ = std::move(scheduler);
+}
+
 LegacyCacheStorageCache::LegacyCacheStorageCache(
     const url::Origin& origin,
     CacheStorageOwner owner,

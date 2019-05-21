@@ -198,6 +198,10 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   void DropHandleRef() override;
   bool IsUnreferenced() const override;
 
+  // Override the default scheduler with a customized scheduler for testing.
+  // The current scheduler must be idle.
+  void SetSchedulerForTesting(std::unique_ptr<CacheStorageScheduler> scheduler);
+
   static LegacyCacheStorageCache* From(const CacheStorageCacheHandle& handle) {
     return static_cast<LegacyCacheStorageCache*>(handle.value());
   }

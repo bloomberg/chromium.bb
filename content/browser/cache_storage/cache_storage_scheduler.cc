@@ -49,6 +49,10 @@ bool CacheStorageScheduler::ScheduledOperations() const {
   return running_operation_ || !pending_operations_.empty();
 }
 
+void CacheStorageScheduler::DispatchOperationTask(base::OnceClosure task) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
+}
+
 void CacheStorageScheduler::RunOperationIfIdle() {
   if (!running_operation_ && !pending_operations_.empty()) {
     // TODO(jkarlin): Run multiple operations in parallel where allowed.
@@ -60,9 +64,8 @@ void CacheStorageScheduler::RunOperationIfIdle() {
         running_operation_->op_type(),
         base::TimeTicks::Now() - running_operation_->creation_ticks());
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&CacheStorageOperation::Run,
-                                  running_operation_->AsWeakPtr()));
+    DispatchOperationTask(base::BindOnce(&CacheStorageOperation::Run,
+                                         running_operation_->AsWeakPtr()));
   }
 }
 
