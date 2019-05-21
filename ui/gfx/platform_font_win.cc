@@ -76,10 +76,8 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
 
   Microsoft::WRL::ComPtr<IDWriteFontCollection> font_collection;
   hr = factory->GetSystemFontCollection(font_collection.GetAddressOf());
-  if (FAILED(hr)) {
-    CHECK(false);
+  if (FAILED(hr))
     return hr;
-  }
 
   // We try to find a matching font by triggering DirectWrite to substitute the
   // font passed in with a matching font (FontSubstitutes registry key)
@@ -129,7 +127,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   Microsoft::WRL::ComPtr<IDWriteFontCollection> font_collection;
   hr = factory->GetSystemFontCollection(font_collection.GetAddressOf());
   if (FAILED(hr)) {
-    CHECK(false);
+    // On some old windows, the call to GetSystemFontCollection may fail.
     return hr;
   }
 
@@ -474,8 +472,9 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   HRESULT hr = GetMatchingDirectWriteFont(
       &font_info, italic, win::GetDirectWriteFactory(), &dwrite_font);
   if (FAILED(hr)) {
-    CHECK(false);
-    return nullptr;
+    // If we are not able to find a font using Direct Write, fallback to
+    // the old GDI font.
+    return CreateHFontRefFromGDI(gdi_font, font_metrics);
   }
 
   DWRITE_FONT_METRICS dwrite_font_metrics = {0};
