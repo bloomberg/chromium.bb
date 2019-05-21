@@ -28,7 +28,7 @@ namespace data_decoder {
 // deletes itself.
 class SafeJsonParser {
  public:
-  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
+  using SuccessCallback = base::Callback<void(base::Value)>;
   using ErrorCallback = base::Callback<void(const std::string&)>;
 
   using Factory = SafeJsonParser* (*)(const std::string& unsafe_json,

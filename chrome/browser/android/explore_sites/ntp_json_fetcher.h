@@ -47,7 +47,7 @@ class NTPJsonFetcher {
   // Invoked from SimpleURLLoader after download is complete.
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
   // Callbacks for SafeJsonParser.
-  void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
+  void OnJsonParseSuccess(base::Value parsed_json);
   void OnJsonParseError(const std::string& error);
 
   Callback callback_;

@@ -23,7 +23,7 @@ namespace ntp_tiles {
 // iOS), then this class mimics its API without its safety.
 class JsonUnsafeParser {
  public:
-  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
+  using SuccessCallback = base::Callback<void(base::Value)>;
   using ErrorCallback = base::Callback<void(const std::string&)>;
 
   // As with SafeJsonParser, runs either success_callback or error_callback on

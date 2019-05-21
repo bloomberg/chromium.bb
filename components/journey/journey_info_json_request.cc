@@ -77,10 +77,11 @@ void JourneyInfoJsonRequest::OnSimpleURLLoaderComplete(
 
   if (net_error != net::OK) {
     std::move(completed_callback_)
-        .Run(nullptr, base::StringPrintf("Network error code: %d", net_error));
+        .Run(base::nullopt,
+             base::StringPrintf("Network error code: %d", net_error));
   } else if (response_code / 100 != 2) {
     std::move(completed_callback_)
-        .Run(nullptr,
+        .Run(base::nullopt,
              base::StringPrintf("Http response error code: %d", response_code));
   } else {
     last_response_string_ = std::move(*response_body);
@@ -93,14 +94,14 @@ void JourneyInfoJsonRequest::OnSimpleURLLoaderComplete(
   }
 }
 
-void JourneyInfoJsonRequest::OnJsonParsed(std::unique_ptr<base::Value> result) {
+void JourneyInfoJsonRequest::OnJsonParsed(base::Value result) {
   std::move(completed_callback_).Run(std::move(result), std::string());
 }
 
 void JourneyInfoJsonRequest::OnJsonError(const std::string& error) {
   DLOG(WARNING) << "Received invalid JSON (" << error
                 << "): " << last_response_string_;
-  std::move(completed_callback_).Run(nullptr, error);
+  std::move(completed_callback_).Run(base::nullopt, error);
 }
 
 JourneyInfoJsonRequest::Builder::Builder()

@@ -277,9 +277,9 @@ void SearchSuggestLoaderImpl::LoadDone(
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SearchSuggestLoaderImpl::JsonParsed(std::unique_ptr<base::Value> value) {
+void SearchSuggestLoaderImpl::JsonParsed(base::Value value) {
   base::Optional<SearchSuggestData> result;
-  if (JsonToSearchSuggestionData(*value, result)) {
+  if (JsonToSearchSuggestionData(value, result)) {
     Respond(Status::OK_WITH_SUGGESTIONS, result);
   } else if (result.has_value()) {
     Respond(Status::OK_WITHOUT_SUGGESTIONS, result);

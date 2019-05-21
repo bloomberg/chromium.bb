@@ -326,8 +326,8 @@ void CastMessageHandler::HandleCastInternalMessage(
     int channel_id,
     const std::string& source_id,
     const std::string& destination_id,
-    std::unique_ptr<base::Value> payload) {
-  if (!payload->is_dict()) {
+    base::Value payload) {
+  if (!payload.is_dict()) {
     ReportParseError("Parsed message not a dictionary");
     return;
   }
@@ -339,16 +339,16 @@ void CastMessageHandler::HandleCastInternalMessage(
     return;
   }
 
-  base::Optional<int> request_id = GetRequestIdFromResponse(*payload);
+  base::Optional<int> request_id = GetRequestIdFromResponse(payload);
   if (request_id) {
     auto requests_it = pending_requests_.find(channel_id);
     if (requests_it != pending_requests_.end())
-      requests_it->second->HandlePendingRequest(*request_id, *payload);
+      requests_it->second->HandlePendingRequest(*request_id, payload);
   }
 
-  CastMessageType type = ParseMessageTypeFromPayload(*payload);
+  CastMessageType type = ParseMessageTypeFromPayload(payload);
   if (type == CastMessageType::kOther) {
-    DVLOG(2) << "Unknown message type: " << *payload;
+    DVLOG(2) << "Unknown message type: " << payload;
     return;
   }
 
@@ -359,7 +359,7 @@ void CastMessageHandler::HandleCastInternalMessage(
     return;
   }
 
-  InternalMessage internal_message(type, std::move(*payload));
+  InternalMessage internal_message(type, std::move(payload));
   for (auto& observer : observers_)
     observer.OnInternalMessage(channel_id, internal_message);
 }

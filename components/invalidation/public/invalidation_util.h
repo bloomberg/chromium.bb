@@ -50,8 +50,7 @@ class InvalidationHandler;
 // TODO(https://crbug.com/842655): Convert Repeating to Once.
 using ParseJSONCallback = base::RepeatingCallback<void(
     const std::string& unsafe_json,
-    const base::RepeatingCallback<void(std::unique_ptr<base::Value>)>&
-        success_callback,
+    const base::RepeatingCallback<void(base::Value)>& success_callback,
     const base::RepeatingCallback<void(const std::string&)>& error_callback)>;
 
 struct INVALIDATION_EXPORT ObjectIdLessThan {

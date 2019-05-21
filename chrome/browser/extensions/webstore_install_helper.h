@@ -78,7 +78,7 @@ class WebstoreInstallHelper : public base::RefCounted<WebstoreInstallHelper>,
   ~WebstoreInstallHelper() override;
 
   // Callbacks for the SafeJsonParser.
-  void OnJSONParseSucceeded(std::unique_ptr<base::Value> result);
+  void OnJSONParseSucceeded(base::Value result);
   void OnJSONParseFailed(const std::string& error_message);
 
   // Implementing the BitmapFetcherDelegate interface.

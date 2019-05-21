@@ -48,7 +48,7 @@ class SearchSuggestLoaderImpl : public SearchSuggestLoader {
   void LoadDone(const network::SimpleURLLoader* simple_loader,
                 std::unique_ptr<std::string> response_body);
 
-  void JsonParsed(std::unique_ptr<base::Value> value);
+  void JsonParsed(base::Value value);
   void JsonParseFailed(const std::string& message);
 
   void Respond(Status status, const base::Optional<SearchSuggestData>& data);

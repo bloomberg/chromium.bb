@@ -148,11 +148,11 @@ void ZipFileInstaller::ManifestParsingFailed(const std::string& error) {
   ReportFailure(std::string(kExtensionHandlerFileUnzipError));
 }
 
-void ZipFileInstaller::ManifestParsed(
-    const base::FilePath& unzip_dir,
-    std::unique_ptr<base::Value> manifest_value) {
+void ZipFileInstaller::ManifestParsed(const base::FilePath& unzip_dir,
+                                      base::Value manifest_value) {
   std::unique_ptr<base::DictionaryValue> manifest_dictionary =
-      base::DictionaryValue::From(std::move(manifest_value));
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(std::move(manifest_value)));
   if (!manifest_dictionary) {
     ReportFailure(std::string(kExtensionHandlerFileUnzipError));
     return;

@@ -25,9 +25,6 @@
 
 // No anonymous namespace, because const variables automatically get internal
 // linkage.
-const char kInvalidDataTypeError[] =
-    "Data from web resource server is missing or not valid JSON.";
-
 const char kUnexpectedJSONFormatError[] =
     "Data from web resource server does not have expected format.";
 
@@ -84,7 +81,7 @@ void WebResourceService::OnSimpleLoaderComplete(
     // (on Android in particular) we short-cut the full parsing in the case of
     // trivially "empty" JSONs.
     if (response_body->empty() || *response_body == "{}") {
-      OnUnpackFinished(std::make_unique<base::DictionaryValue>());
+      OnUnpackFinished(base::Value(base::Value::Type::DICTIONARY));
     } else {
       parse_json_callback_.Run(*response_body,
                                base::Bind(&WebResourceService::OnUnpackFinished,
@@ -172,14 +169,9 @@ void WebResourceService::EndFetch() {
   in_fetch_ = false;
 }
 
-void WebResourceService::OnUnpackFinished(std::unique_ptr<base::Value> value) {
-  if (!value) {
-    // Page information not properly read, or corrupted.
-    OnUnpackError(kInvalidDataTypeError);
-    return;
-  }
+void WebResourceService::OnUnpackFinished(base::Value value) {
   const base::DictionaryValue* dict = nullptr;
-  if (!value->GetAsDictionary(&dict)) {
+  if (!value.GetAsDictionary(&dict)) {
     OnUnpackError(kUnexpectedJSONFormatError);
     return;
   }

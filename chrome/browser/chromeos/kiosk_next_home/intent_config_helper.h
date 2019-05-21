@@ -51,7 +51,7 @@ class IntentConfigHelper {
   void ParseConfig(const std::string& json_config);
 
   // Receives parsed JSON config when ready.
-  void ParseConfigDone(std::unique_ptr<base::Value> config);
+  void ParseConfigDone(base::Value config);
 
   // Called if config could not be parsed.
   void ParseConfigFailed(const std::string& error);

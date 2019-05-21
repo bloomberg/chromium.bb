@@ -41,7 +41,7 @@ namespace ntp_tiles {
 
 using ParseJSONCallback = base::Callback<void(
     const std::string& unsafe_json,
-    const base::Callback<void(std::unique_ptr<base::Value>)>& success_callback,
+    const base::Callback<void(base::Value)>& success_callback,
     const base::Callback<void(const std::string&)>& error_callback)>;
 
 // Actual (non-test) implementation of the PopularSites interface. Caches the
@@ -80,7 +80,7 @@ class PopularSitesImpl : public PopularSites {
   // Called once SimpleURLLoader completes the network request.
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  void OnJsonParsed(std::unique_ptr<base::Value> json);
+  void OnJsonParsed(base::Value json);
   void OnJsonParseFailed(const std::string& error_message);
   void OnDownloadFailed();
 

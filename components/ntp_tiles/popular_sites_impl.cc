@@ -471,9 +471,9 @@ void PopularSitesImpl::OnSimpleLoaderComplete(
                              weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PopularSitesImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
+void PopularSitesImpl::OnJsonParsed(base::Value json) {
   std::unique_ptr<base::ListValue> list =
-      base::ListValue::From(std::move(json));
+      base::ListValue::From(base::Value::ToUniquePtrValue(std::move(json)));
   if (!list) {
     DLOG(WARNING) << "JSON is not a list";
     OnDownloadFailed();

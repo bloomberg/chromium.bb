@@ -35,7 +35,7 @@ class OopJsonSanitizer : public JsonSanitizer {
   friend std::default_delete<OopJsonSanitizer>;
   ~OopJsonSanitizer() {}
 
-  void OnParseSuccess(std::unique_ptr<base::Value> value);
+  void OnParseSuccess(base::Value value);
   void OnParseError(const std::string& error);
 
   StringCallback success_callback_;
@@ -55,13 +55,13 @@ OopJsonSanitizer::OopJsonSanitizer(service_manager::Connector* connector,
       base::Bind(&OopJsonSanitizer::OnParseError, base::Unretained(this)));
 }
 
-void OopJsonSanitizer::OnParseSuccess(std::unique_ptr<base::Value> value) {
+void OopJsonSanitizer::OnParseSuccess(base::Value value) {
   // Self-destruct at the end of this method.
   std::unique_ptr<OopJsonSanitizer> deleter(this);
 
   // A valid JSON document may only have a dictionary or list as its top-level
   // type, but the JSON parser also accepts other types, so we filter them out.
-  base::Value::Type type = value->type();
+  base::Value::Type type = value.type();
   if (type != base::Value::Type::DICTIONARY &&
       type != base::Value::Type::LIST) {
     error_callback_.Run("Invalid top-level type");
@@ -69,7 +69,7 @@ void OopJsonSanitizer::OnParseSuccess(std::unique_ptr<base::Value> value) {
   }
 
   std::string json;
-  if (!base::JSONWriter::Write(*value, &json)) {
+  if (!base::JSONWriter::Write(value, &json)) {
     error_callback_.Run("Encoding error");
     return;
   }

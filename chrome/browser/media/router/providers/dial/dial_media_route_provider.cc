@@ -214,10 +214,10 @@ void DialMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
 
 void DialMediaRouteProvider::HandleParsedRouteMessage(
     const MediaRoute::Id& route_id,
-    std::unique_ptr<base::Value> message) {
+    base::Value message) {
   std::string error;
   std::unique_ptr<DialInternalMessage> internal_message =
-      DialInternalMessage::From(std::move(*message), &error);
+      DialInternalMessage::From(std::move(message), &error);
   if (!internal_message) {
     ReportParseError(DialParseMessageResult::kInvalidMessage, error);
     return;

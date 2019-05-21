@@ -23,14 +23,12 @@ namespace {
 const char kPublicTopicNameKey[] = "publicTopicName";
 const char kPrivateTopicNameKey[] = "privateTopicName";
 
-base::Value* GetTopicName(base::Value* value) {
-  if (!value || !value->is_dict()) {
+const std::string* GetTopicName(base::Value& value) {
+  if (!value.is_dict())
     return nullptr;
-  }
-  if (value->FindBoolKey("isPublic").value_or(false)) {
-    return value->FindKeyOfType(kPublicTopicNameKey, base::Value::Type::STRING);
-  }
-  return value->FindKeyOfType(kPrivateTopicNameKey, base::Value::Type::STRING);
+  if (value.FindBoolKey("isPublic").value_or(false))
+    return value.FindStringKey(kPublicTopicNameKey);
+  return value.FindStringKey(kPrivateTopicNameKey);
 }
 
 // Subscription status values for UMA_HISTOGRAM.
@@ -181,14 +179,12 @@ void PerUserTopicRegistrationRequest::OnJsonParseFailure(
            std::string());
 }
 
-void PerUserTopicRegistrationRequest::OnJsonParseSuccess(
-    std::unique_ptr<base::Value> value) {
-  const base::Value* private_topic_name_value = GetTopicName(value.get());
+void PerUserTopicRegistrationRequest::OnJsonParseSuccess(base::Value value) {
+  const std::string* private_topic_name = GetTopicName(value);
   RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
-  if (private_topic_name_value) {
+  if (private_topic_name) {
     std::move(request_completed_callback_)
-        .Run(Status(StatusCode::SUCCESS, std::string()),
-             private_topic_name_value->GetString());
+        .Run(Status(StatusCode::SUCCESS, std::string()), *private_topic_name);
   } else {
     RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
     std::move(request_completed_callback_)

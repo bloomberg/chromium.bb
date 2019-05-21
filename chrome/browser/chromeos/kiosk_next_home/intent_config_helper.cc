@@ -132,11 +132,10 @@ void IntentConfigHelper::ParseConfig(const std::string& json_config) {
                           weak_factory_.GetWeakPtr()));
 }
 
-void IntentConfigHelper::ParseConfigDone(
-    std::unique_ptr<base::Value> config_value) {
+void IntentConfigHelper::ParseConfigDone(base::Value config_value) {
   base::JSONValueConverter<IntentConfig> converter;
   IntentConfig parsed_config;
-  if (converter.Convert(*config_value, &parsed_config)) {
+  if (converter.Convert(config_value, &parsed_config)) {
     for (const auto& allowed_host_ptr : parsed_config.allowed_hosts)
       allowed_hosts_.emplace(std::move(*allowed_host_ptr));
 

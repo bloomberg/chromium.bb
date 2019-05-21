@@ -131,11 +131,10 @@ class WebResourceServiceTest : public testing::Test {
   static void Parse(const std::string& unsafe_json,
                     const WebResourceService::SuccessCallback& success_callback,
                     const WebResourceService::ErrorCallback& error_callback) {
-    std::unique_ptr<base::Value> value;
     if (!error_message_.empty())
       error_callback.Run(error_message_);
     else
-      success_callback.Run(std::move(value));
+      success_callback.Run(base::Value());
   }
 
   WebResourceService* web_resource_service() {

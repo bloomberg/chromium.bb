@@ -79,7 +79,7 @@ class ManagementGetPermissionWarningsByManifestFunction
                              MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST)
 
   // Called when utility process finishes.
-  void OnParseSuccess(std::unique_ptr<base::Value> value);
+  void OnParseSuccess(base::Value value);
   void OnParseFailure(const std::string& error);
 
  protected:

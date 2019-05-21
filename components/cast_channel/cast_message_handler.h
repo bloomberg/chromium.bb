@@ -280,7 +280,7 @@ class CastMessageHandler : public CastSocket::Observer {
   void HandleCastInternalMessage(int channel_id,
                                  const std::string& source_id,
                                  const std::string& destination_id,
-                                 std::unique_ptr<base::Value> payload);
+                                 base::Value payload);
 
   // Set of pending requests keyed by socket ID.
   base::flat_map<int, std::unique_ptr<PendingRequests>> pending_requests_;

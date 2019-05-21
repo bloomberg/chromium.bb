@@ -110,15 +110,15 @@ void WebstoreInstallHelper::OnFetchComplete(const GURL& url,
   Release();  // Balanced in Start().
 }
 
-void WebstoreInstallHelper::OnJSONParseSucceeded(
-    std::unique_ptr<base::Value> result) {
+void WebstoreInstallHelper::OnJSONParseSucceeded(base::Value result) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   manifest_parse_complete_ = true;
-  const base::DictionaryValue* value;
-  if (result->GetAsDictionary(&value))
-    parsed_manifest_.reset(value->DeepCopy());
-  else
+  if (result.is_dict()) {
+    parsed_manifest_ = base::DictionaryValue::From(
+        base::Value::ToUniquePtrValue(std::move(result)));
+  } else {
     parse_error_ = Delegate::MANIFEST_ERROR;
+  }
 
   ReportResultsIfComplete();
 }

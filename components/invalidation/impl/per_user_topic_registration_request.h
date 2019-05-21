@@ -93,7 +93,7 @@ class PerUserTopicRegistrationRequest {
                                   std::unique_ptr<std::string> response_body);
 
   void OnJsonParseFailure(const std::string& error);
-  void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
+  void OnJsonParseSuccess(base::Value parsed_json);
 
   // For tests only. Returns the full URL of the request.
   GURL getUrl() const { return url_; }

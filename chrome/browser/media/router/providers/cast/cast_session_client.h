@@ -146,7 +146,7 @@ class CastSessionClientImpl : public CastSessionClient,
       blink::mojom::PresentationConnectionCloseReason reason) override;
 
  private:
-  void HandleParsedClientMessage(std::unique_ptr<base::Value> message);
+  void HandleParsedClientMessage(base::Value message);
   void HandleV2ProtocolMessage(const CastInternalMessage& cast_message);
 
   // Resets the PresentationConnection Mojo message pipes.

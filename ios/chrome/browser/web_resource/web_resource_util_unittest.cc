@@ -35,7 +35,7 @@ class WebResourceUtilTest : public PlatformTest {
   }
 
   // Called on success.
-  void OnParseSuccess(std::unique_ptr<base::Value> value) {
+  void OnParseSuccess(base::Value value) {
     success_called_ = true;
     value_ = std::move(value);
   }
@@ -57,7 +57,7 @@ class WebResourceUtilTest : public PlatformTest {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string error_;
-  std::unique_ptr<base::Value> value_;
+  base::Optional<base::Value> value_;
   bool error_called_;
   bool success_called_;
 };

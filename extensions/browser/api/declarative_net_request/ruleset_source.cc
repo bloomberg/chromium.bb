@@ -146,12 +146,10 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
 void OnSafeJSONParserSuccess(
     const RulesetSource& source,
     RulesetSource::IndexAndPersistJSONRulesetCallback callback,
-    std::unique_ptr<base::Value> root) {
-  DCHECK(root);
-
+    base::Value root) {
   base::ElapsedTimer timer;
   ReadJSONRulesResult result =
-      ParseRulesFromJSON(*root, source.rule_count_limit());
+      ParseRulesFromJSON(root, source.rule_count_limit());
   if (result.status != Status::kSuccess) {
     std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
         GetErrorWithFilename(source.json_path(), result.error)));

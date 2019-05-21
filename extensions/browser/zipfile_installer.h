@@ -68,8 +68,7 @@ class ZipFileInstaller : public base::RefCountedThreadSafe<ZipFileInstaller> {
   void ManifestRead(const base::FilePath& unzip_dir,
                     base::Optional<std::string> manifest_content);
   void ManifestParsingFailed(const std::string& error);
-  void ManifestParsed(const base::FilePath& unzip_dir,
-                      std::unique_ptr<base::Value> manifest);
+  void ManifestParsed(const base::FilePath& unzip_dir, base::Value manifest);
   void UnzipDone(const base::FilePath& unzip_dir, bool success);
 
   // On failure, report the |error| reason.

@@ -106,14 +106,13 @@ void NTPJsonFetcher::OnSimpleLoaderComplete(
                           weak_factory_.GetWeakPtr()));
 }
 
-void NTPJsonFetcher::OnJsonParseSuccess(
-    std::unique_ptr<base::Value> parsed_json) {
-  if (!parsed_json || !parsed_json->is_dict()) {
+void NTPJsonFetcher::OnJsonParseSuccess(base::Value parsed_json) {
+  if (!parsed_json.is_dict()) {
     OnJsonParseError("Parsed JSON is not a dictionary.");
     return;
   }
 
-  auto catalog = NTPCatalog::create(*parsed_json);
+  auto catalog = NTPCatalog::create(parsed_json);
   std::move(callback_).Run(std::move(catalog));
 }
 

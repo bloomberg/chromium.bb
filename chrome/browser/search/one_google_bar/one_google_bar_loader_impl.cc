@@ -342,8 +342,8 @@ void OneGoogleBarLoaderImpl::LoadDone(
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OneGoogleBarLoaderImpl::JsonParsed(std::unique_ptr<base::Value> value) {
-  base::Optional<OneGoogleBarData> result = JsonToOGBData(*value);
+void OneGoogleBarLoaderImpl::JsonParsed(base::Value value) {
+  base::Optional<OneGoogleBarData> result = JsonToOGBData(value);
   Respond(result.has_value() ? Status::OK : Status::FATAL_ERROR, result);
 }
 

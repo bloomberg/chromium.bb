@@ -50,10 +50,8 @@ void ParseJSONOnBackgroundThread(
     return;
   }
 
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(success_callback,
-                     base::Value::ToUniquePtrValue(std::move(value).value())));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(success_callback, std::move(*value)));
 }
 
 // Starts the parsing of |data| as a JSON string asynchronously on a background

@@ -147,7 +147,7 @@ class ArcPolicyBridge : public KeyedService,
   // Called when the compliance report from ARC is parsed.
   void OnReportComplianceParseSuccess(
       base::OnceCallback<void(const std::string&)> callback,
-      std::unique_ptr<base::Value> parsed_json);
+      base::Value parsed_json);
 
   void UpdateComplianceReportMetrics(const base::DictionaryValue* report);
 

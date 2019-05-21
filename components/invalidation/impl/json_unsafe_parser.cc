@@ -22,17 +22,15 @@ void JsonUnsafeParser::Parse(const std::string& unsafe_json,
           [](const std::string& unsafe_json,
              const SuccessCallback& success_callback,
              const ErrorCallback& error_callback) {
-            std::string error_msg;
-            int error_line, error_column;
-            std::unique_ptr<base::Value> value =
-                base::JSONReader::ReadAndReturnErrorDeprecated(
-                    unsafe_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-                    &error_msg, &error_line, &error_column);
-            if (value) {
-              success_callback.Run(std::move(value));
+            base::JSONReader::ValueWithError value_with_error =
+                base::JSONReader::ReadAndReturnValueWithError(
+                    unsafe_json, base::JSON_ALLOW_TRAILING_COMMAS);
+            if (value_with_error.value) {
+              success_callback.Run(std::move(*value_with_error.value));
             } else {
               error_callback.Run(base::StringPrintf(
-                  "%s (%d:%d)", error_msg.c_str(), error_line, error_column));
+                  "%s (%d:%d)", value_with_error.error_message.c_str(),
+                  value_with_error.error_line, value_with_error.error_column));
             }
           },
           unsafe_json, success_callback, error_callback));

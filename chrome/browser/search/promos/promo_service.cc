@@ -167,10 +167,10 @@ void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PromoService::OnJsonParsed(std::unique_ptr<base::Value> value) {
+void PromoService::OnJsonParsed(base::Value value) {
   const GURL google_base_url = GetGoogleBaseUrl();
   base::Optional<PromoData> result;
-  if (JsonToPromoData(*value, google_base_url, result)) {
+  if (JsonToPromoData(value, google_base_url, result)) {
     PromoDataLoaded(Status::OK_WITH_PROMO, result);
   } else {
     if (result.has_value()) {

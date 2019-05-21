@@ -28,8 +28,7 @@ namespace syncer {
 // parser is refactored.
 class JsonUnsafeParser {
  public:
-  using SuccessCallback =
-      base::RepeatingCallback<void(std::unique_ptr<base::Value>)>;
+  using SuccessCallback = base::RepeatingCallback<void(base::Value)>;
   using ErrorCallback = base::RepeatingCallback<void(const std::string&)>;
 
   // As with SafeJsonParser, runs either success_callback or error_callback on

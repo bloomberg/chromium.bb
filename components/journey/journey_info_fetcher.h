@@ -31,7 +31,7 @@ namespace journey {
 class JourneyInfoJsonRequest;
 
 using FetchResponseAvailableCallback =
-    base::OnceCallback<void(std::unique_ptr<base::Value>, const std::string&)>;
+    base::OnceCallback<void(base::Optional<base::Value>, const std::string&)>;
 
 // This class is used to fetch SwitcherJourney information from the server.
 class JourneyInfoFetcher {
@@ -65,12 +65,12 @@ class JourneyInfoFetcher {
   void AccessTokenError(const GoogleServiceAuthError& error);
 
   void FetchFinished(FetchResponseAvailableCallback callback,
-                     std::unique_ptr<base::Value> result,
+                     base::Optional<base::Value> result,
                      const std::string& error_detail);
 
   void JsonRequestDone(std::unique_ptr<JourneyInfoJsonRequest> request,
                        FetchResponseAvailableCallback callback,
-                       std::unique_ptr<base::Value> result,
+                       base::Optional<base::Value> result,
                        const std::string& error_detail);
 
   identity::IdentityManager* identity_manager_;

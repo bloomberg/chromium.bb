@@ -533,17 +533,17 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
 
 void ArcPolicyBridge::OnReportComplianceParseSuccess(
     base::OnceCallback<void(const std::string&)> callback,
-    std::unique_ptr<base::Value> parsed_json) {
+    base::Value parsed_json) {
   // Always returns "compliant".
   std::move(callback).Run(kPolicyCompliantJson);
   Profile::FromBrowserContext(context_)->GetPrefs()->SetBoolean(
       prefs::kArcPolicyComplianceReported, true);
 
   const base::DictionaryValue* dict = nullptr;
-  if (parsed_json->GetAsDictionary(&dict)) {
+  if (parsed_json.GetAsDictionary(&dict)) {
     UpdateComplianceReportMetrics(dict);
     for (Observer& observer : observers_) {
-      observer.OnComplianceReportReceived(parsed_json.get());
+      observer.OnComplianceReportReceived(&parsed_json);
     }
   }
 }

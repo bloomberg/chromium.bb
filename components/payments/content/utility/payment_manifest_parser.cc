@@ -335,9 +335,10 @@ class JsonParserCallback
       : parser_callback_(std::move(parser_callback)),
         client_callback_(std::move(client_callback)) {}
 
-  void OnSuccess(std::unique_ptr<base::Value> value) {
+  void OnSuccess(base::Value value) {
     std::move(parser_callback_)
-        .Run(std::move(client_callback_), std::move(value),
+        .Run(std::move(client_callback_),
+             base::Value::ToUniquePtrValue(std::move(value)),
              /*error_message=*/std::string());
   }
 

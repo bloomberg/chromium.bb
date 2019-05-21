@@ -136,10 +136,9 @@ void CastSessionClientImpl::SendErrorToClient(int sequence_number,
       CreateErrorMessage(client_id(), std::move(error), sequence_number));
 }
 
-void CastSessionClientImpl::HandleParsedClientMessage(
-    std::unique_ptr<base::Value> message) {
+void CastSessionClientImpl::HandleParsedClientMessage(base::Value message) {
   std::unique_ptr<CastInternalMessage> cast_message =
-      CastInternalMessage::From(std::move(*message));
+      CastInternalMessage::From(std::move(message));
   if (!cast_message) {
     ReportClientMessageParseError(activity_->route().media_route_id(),
                                   "Not a Cast message");

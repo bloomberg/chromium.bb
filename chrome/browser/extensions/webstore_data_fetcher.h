@@ -43,7 +43,7 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher> {
   }
 
  private:
-  void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
+  void OnJsonParseSuccess(base::Value parsed_json);
   void OnJsonParseFailure(const std::string& error);
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
