@@ -574,7 +574,7 @@ bool BrowserView::IsTabStripVisible() const {
 }
 
 bool BrowserView::IsIncognito() const {
-  return browser_->profile()->IsIncognito();
+  return browser_->profile()->IsIncognitoProfile();
 }
 
 bool BrowserView::IsGuestSession() const {

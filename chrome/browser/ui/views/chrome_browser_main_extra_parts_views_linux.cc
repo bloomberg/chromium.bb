@@ -45,7 +45,7 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
 
   // Use a dark theme for incognito browser windows that aren't
   // custom-themed. Otherwise, normal Aura theme.
-  if (profile->IsIncognito() &&
+  if (profile->IsIncognitoProfile() &&
       ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme() &&
       BrowserView::GetBrowserViewForNativeWindow(window)) {
     return ui::NativeThemeDarkAura::instance();

@@ -29,7 +29,7 @@ IncognitoMenuView::IncognitoMenuView(views::Button* anchor_button,
                                      gfx::NativeView parent_window,
                                      Browser* browser)
     : ProfileMenuViewBase(anchor_button, anchor_rect, parent_window, browser) {
-  DCHECK(browser->profile()->IsIncognito());
+  DCHECK(browser->profile()->IsIncognitoProfile());
   GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
 
   chrome::RecordDialogCreation(

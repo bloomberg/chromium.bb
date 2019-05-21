@@ -54,5 +54,5 @@ void AutofillInternalsUI::DidStopLoading() {
   web_ui()->CallJavascriptFunctionUnsafe("setUpAutofillInternals");
   web_ui()->CallJavascriptFunctionUnsafe(
       "notifyAboutIncognito",
-      base::Value(Profile::FromWebUI(web_ui())->IsIncognito()));
+      base::Value(Profile::FromWebUI(web_ui())->IsIncognitoProfile()));
 }

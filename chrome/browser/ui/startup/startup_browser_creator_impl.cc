@@ -356,7 +356,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // If being started for credential provider logon purpose, only show the
   // signin page.
   if (command_line_.HasSwitch(credential_provider::kGcpwSigninSwitch)) {
-    DCHECK(profile_->IsIncognito());
+    DCHECK(profile_->IsIncognitoProfile());
     // NOTE: All launch urls are ignored when running with --gcpw-logon since
     // this mode only loads Google's sign in page.
     StartGCPWSignin(command_line_, profile_);

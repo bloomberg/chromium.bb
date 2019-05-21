@@ -76,7 +76,7 @@ void ProfileMenuViewBase::ShowBubble(
   if (IsShowing())
     return;
 
-  DCHECK_EQ(browser->profile()->IsIncognito(),
+  DCHECK_EQ(browser->profile()->IsIncognitoProfile(),
             view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO);
 
   ProfileMenuViewBase* bubble;

@@ -357,7 +357,10 @@ gfx::Size FindBarView::CalculatePreferredSize() const {
 void FindBarView::AddedToWidget() {
   // Since the find bar now works/looks like a location bar bubble, make sure it
   // doesn't get dark themed in incognito mode.
-  if (find_bar_host_->browser_view()->browser()->profile()->IsIncognito())
+  if (find_bar_host_->browser_view()
+          ->browser()
+          ->profile()
+          ->IsIncognitoProfile())
     SetNativeTheme(ui::NativeTheme::GetInstanceForNativeUi());
 }
 

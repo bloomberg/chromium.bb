@@ -233,7 +233,7 @@ bool Profile::IsRegularProfile() const {
   return GetProfileType() == REGULAR_PROFILE;
 }
 
-bool Profile::IsIncognito() const {
+bool Profile::IsIncognitoProfile() const {
   return GetProfileType() == INCOGNITO_PROFILE;
 }
 

@@ -424,7 +424,8 @@ void CredentialProviderSigninDialogWinIntegrationTest::WaitForDialogToLoad() {
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinIntegrationTest,
                        ShowDialogOnlyTest) {
   WaitForDialogToLoad();
-  EXPECT_TRUE(((Profile*)(web_contents_->GetBrowserContext()))->IsIncognito());
+  EXPECT_TRUE(
+      ((Profile*)(web_contents_->GetBrowserContext()))->IsIncognitoProfile());
   views::Widget::Widgets all_widgets = views::test::WidgetTest::GetAllWidgets();
   (*all_widgets.begin())->Close();
   RunUntilBrowserProcessQuits();

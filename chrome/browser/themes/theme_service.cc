@@ -533,16 +533,16 @@ ThemeSyncableService* ThemeService::GetThemeSyncableService() const {
 const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
     Profile* profile) {
   ThemeService* service = ThemeServiceFactory::GetForProfile(profile);
-  return profile->IsIncognito() ? service->incognito_theme_provider_
-                                : service->original_theme_provider_;
+  return profile->IsIncognitoProfile() ? service->incognito_theme_provider_
+                                       : service->original_theme_provider_;
 }
 
 // static
 const ui::ThemeProvider& ThemeService::GetDefaultThemeProviderForProfile(
     Profile* profile) {
   ThemeService* service = ThemeServiceFactory::GetForProfile(profile);
-  return profile->IsIncognito() ? service->incognito_theme_provider_
-                                : service->default_theme_provider_;
+  return profile->IsIncognitoProfile() ? service->incognito_theme_provider_
+                                       : service->default_theme_provider_;
 }
 
 void ThemeService::BuildFromColor(SkColor color) {

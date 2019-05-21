@@ -77,12 +77,14 @@ scoped_refptr<RefcountedKeyedService>
   // profile in order to ensure the preferences have been migrated.
   // TODO(crbug.com/277296): Remove check that profile does not equal the
   // original profile once TestingProfile::ForceIncognito is gone.
-  if (profile->IsIncognito() && profile != profile->GetOriginalProfile()) {
+  if (profile->IsIncognitoProfile() &&
+      profile != profile->GetOriginalProfile()) {
     GetForProfile(profile->GetOriginalProfile());
   }
 
   scoped_refptr<HostContentSettingsMap> settings_map(new HostContentSettingsMap(
-      profile->GetPrefs(), profile->IsIncognito(), profile->IsGuestProfile(),
+      profile->GetPrefs(), profile->IsIncognitoProfile(),
+      profile->IsGuestProfile(),
       /*store_last_modified=*/true,
       base::FeatureList::IsEnabled(features::kPermissionDelegation)));
 

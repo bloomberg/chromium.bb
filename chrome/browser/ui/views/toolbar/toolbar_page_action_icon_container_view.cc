@@ -21,7 +21,7 @@
 ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
     Browser* browser)
     : ToolbarIconContainerView(
-          /*uses_highlight=*/!browser->profile()->IsIncognito()),
+          /*uses_highlight=*/!browser->profile()->IsIncognitoProfile()),
       browser_(browser) {
   manage_passwords_icon_views_ =
       new ManagePasswordsIconViews(browser->command_controller(), this);

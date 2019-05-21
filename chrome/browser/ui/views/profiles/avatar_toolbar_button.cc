@@ -251,7 +251,7 @@ void AvatarToolbarButton::OnTouchUiChanged() {
 }
 
 bool AvatarToolbarButton::IsIncognito() const {
-  return profile_->IsIncognito();
+  return profile_->IsIncognitoProfile();
 }
 
 bool AvatarToolbarButton::IsIncognitoCounterActive() const {
