@@ -1137,6 +1137,12 @@ QuicStreamFactory::QuicStreamFactory(
   if (migrate_sessions_early_v2 || retry_on_alternate_network_before_handshake)
     DCHECK(migrate_sessions_on_network_change_v2);
 
+  if (retransmittable_on_wire_timeout_milliseconds == 0 &&
+      migrate_sessions_early_v2) {
+    retransmittable_on_wire_timeout_ = quic::QuicTime::Delta::FromMilliseconds(
+        kDefaultRetransmittableOnWireTimeoutMillisecs);
+  }
+
   // goaway_sessions_on_ip_change and close_sessions_on_ip_change should never
   // be simultaneously set to true.
   DCHECK(!(close_sessions_on_ip_change_ && goaway_sessions_on_ip_change_));

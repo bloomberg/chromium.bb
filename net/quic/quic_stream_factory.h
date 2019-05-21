@@ -83,8 +83,8 @@ const int kIdleConnectionTimeoutSeconds = 30;
 // Sessions can migrate if they have been idle for less than this period.
 const int kDefaultIdleSessionMigrationPeriodSeconds = 30;
 
-// The maximum time allowed to have no retransmittable packets on the wire
-// (after sending the first retransmittable packet) if
+// The default maximum time allowed to have no retransmittable packets on the
+// wire (after sending the first retransmittable packet) if
 // |migrate_session_early_v2_| is true. PING frames will be sent as needed to
 // enforce this.
 const int64_t kDefaultRetransmittableOnWireTimeoutMillisecs = 100;

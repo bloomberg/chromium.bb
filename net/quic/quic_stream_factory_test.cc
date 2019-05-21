@@ -804,6 +804,27 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         version_.transport_version, n);
   }
 
+  std::string ConstructDataHeader(size_t body_len) {
+    if (version_.transport_version != quic::QUIC_VERSION_99) {
+      return "";
+    }
+    quic::HttpEncoder encoder;
+    std::unique_ptr<char[]> buffer;
+    auto header_length = encoder.SerializeDataFrameHeader(body_len, &buffer);
+    return std::string(buffer.get(), header_length);
+  }
+
+  std::unique_ptr<quic::QuicEncryptedPacket> ConstructServerDataPacket(
+      uint64_t packet_number,
+      quic::QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      quic::QuicStreamOffset offset,
+      quic::QuicStringPiece data) {
+    return server_maker_.MakeDataPacket(
+        packet_number, stream_id, should_include_version, fin, offset, data);
+  }
+
   quic::QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(int n) {
     return quic::test::GetNthServerInitiatedUnidirectionalStreamId(
         version_.transport_version, n);
@@ -7207,8 +7228,876 @@ TEST_P(QuicStreamFactoryTest, IgnoreReadErrorOnOldReaderDuringMigration) {
   EXPECT_EQ(200, response.headers->response_code());
 
   stream.reset();
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+// This test verifies that when connection migration on path degrading is
+// enabled, and no custom retransmittable on wire timeout is specified, the
+// default value is used.
+TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      factory_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+
+  MockQuicData socket_data;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  socket_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  socket_data.AddRead(ASYNC, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up second socket data provider that is used after
+  // migration. The request is written to this new socket, and the
+  // response to the request is read on this new socket.
+  MockQuicData socket_data1;
+  // The PING packet sent post migration.
+  socket_data1.AddWrite(SYNCHRONOUS, client_maker_.MakePingPacket(2, true));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       3, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       true, &header_stream_offset));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  // Read two packets so that client will send ACK immedaitely.
+  spdy::SpdyHeaderBlock response_headers =
+      server_maker_.GetResponseHeaders("200 OK");
+  response_headers["key1"] = std::string(2000, 'A');
+  spdy::SpdyHeadersIR headers_frame(
+      GetNthClientInitiatedBidirectionalStreamId(0),
+      std::move(response_headers));
+  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+  spdy::SpdySerializedFrame spdy_frame =
+      response_framer.SerializeFrame(headers_frame);
+  size_t chunk_size = 1200;
+  unsigned int packet_number = 1;
+  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
+    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+    socket_data1.AddRead(
+        ASYNC,
+        server_maker_.MakeDataPacket(
+            packet_number++,
+            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
+            false, false, offset,
+            base::StringPiece(spdy_frame.data() + offset, len)));
+  }
+  // Read an ACK from server which acks all client data.
+  socket_data1.AddRead(SYNCHRONOUS,
+                       server_maker_.MakeAckPacket(3, 3, 1, 1, false));
+  socket_data1.AddWrite(ASYNC, client_maker_.MakeAckPacket(4, 2, 1, 1, false));
+  // The PING packet sent for retransmittable on wire.
+  socket_data1.AddWrite(SYNCHRONOUS, client_maker_.MakePingPacket(5, false));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  std::string header = ConstructDataHeader(6);
+  socket_data1.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 0, header + "hello!"));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRstPacket(
+                       6, false, GetNthClientInitiatedBidirectionalStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_.transport_version, privacy_mode_,
+                DEFAULT_PRIORITY, SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Now notify network is disconnected, cause the migration to complete
+  // immediately.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+
+  // Complete migration.
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+  socket_data1.Resume();
+  // Spin up the message loop to read incoming data from server till the ACK.
+  base::RunLoop().RunUntilIdle();
+
+  // Ack delay time.
+  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  EXPECT_GT(kDefaultRetransmittableOnWireTimeoutMillisecs, delay);
+  // Fire the ack alarm, since ack has been sent, no ack will be sent.
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
+  delay = kDefaultRetransmittableOnWireTimeoutMillisecs - delay;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(delay),
+            task_runner->NextPendingTaskDelay());
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  socket_data1.Resume();
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Resume the old socket data, a read error will be delivered to the old
+  // packet reader. Verify that the session is not affected.
+  socket_data.Resume();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  stream.reset();
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+// This test verifies that when connection migration on path degrading is
+// enabled, and a custom retransmittable on wire timeout is specified, the
+// custom value is used.
+TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
+  int custom_timeout_value = 200;
+  test_params_.quic_retransmittable_on_wire_timeout_milliseconds =
+      custom_timeout_value;
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      factory_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+
+  MockQuicData socket_data;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  socket_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  socket_data.AddRead(ASYNC, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up second socket data provider that is used after
+  // migration. The request is written to this new socket, and the
+  // response to the request is read on this new socket.
+  MockQuicData socket_data1;
+  // The PING packet sent post migration.
+  socket_data1.AddWrite(SYNCHRONOUS, client_maker_.MakePingPacket(2, true));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       3, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       true, &header_stream_offset));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  // Read two packets so that client will send ACK immedaitely.
+  spdy::SpdyHeaderBlock response_headers =
+      server_maker_.GetResponseHeaders("200 OK");
+  response_headers["key1"] = std::string(2000, 'A');
+  spdy::SpdyHeadersIR headers_frame(
+      GetNthClientInitiatedBidirectionalStreamId(0),
+      std::move(response_headers));
+  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+  spdy::SpdySerializedFrame spdy_frame =
+      response_framer.SerializeFrame(headers_frame);
+  size_t chunk_size = 1200;
+  unsigned int packet_number = 1;
+  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
+    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+    socket_data1.AddRead(
+        ASYNC,
+        server_maker_.MakeDataPacket(
+            packet_number++,
+            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
+            false, false, offset,
+            base::StringPiece(spdy_frame.data() + offset, len)));
+  }
+  // Read an ACK from server which acks all client data.
+  socket_data1.AddRead(SYNCHRONOUS,
+                       server_maker_.MakeAckPacket(3, 3, 1, 1, false));
+  socket_data1.AddWrite(ASYNC, client_maker_.MakeAckPacket(4, 2, 1, 1, false));
+  // The PING packet sent for retransmittable on wire.
+  socket_data1.AddWrite(SYNCHRONOUS, client_maker_.MakePingPacket(5, false));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  std::string header = ConstructDataHeader(6);
+  socket_data1.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 0, header + "hello!"));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRstPacket(
+                       6, false, GetNthClientInitiatedBidirectionalStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_.transport_version, privacy_mode_,
+                DEFAULT_PRIORITY, SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Now notify network is disconnected, cause the migration to complete
+  // immediately.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+
+  // Complete migration.
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+  socket_data1.Resume();
+  // Spin up the message loop to read incoming data from server till the ACK.
+  base::RunLoop().RunUntilIdle();
+
+  // Ack delay time.
+  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  EXPECT_GT(custom_timeout_value, delay);
+  // Fire the ack alarm, since ack has been sent, no ack will be sent.
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
+  delay = custom_timeout_value - delay;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(delay),
+            task_runner->NextPendingTaskDelay());
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  socket_data1.Resume();
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Resume the old socket data, a read error will be delivered to the old
+  // packet reader. Verify that the session is not affected.
+  socket_data.Resume();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  stream.reset();
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+// This test verifies that when no migration is enabled, but a custom value for
+// retransmittable-on-wire timeout is specified, the ping alarm is set up to
+// send retransmittable pings with the custom value.
+TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
+  int custom_timeout_value = 200;
+  test_params_.quic_retransmittable_on_wire_timeout_milliseconds =
+      custom_timeout_value;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      factory_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+
+  MockQuicData socket_data1;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       true, &header_stream_offset));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  // Read two packets so that client will send ACK immedaitely.
+  spdy::SpdyHeaderBlock response_headers =
+      server_maker_.GetResponseHeaders("200 OK");
+  response_headers["key1"] = std::string(2000, 'A');
+  spdy::SpdyHeadersIR headers_frame(
+      GetNthClientInitiatedBidirectionalStreamId(0),
+      std::move(response_headers));
+  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+  spdy::SpdySerializedFrame spdy_frame =
+      response_framer.SerializeFrame(headers_frame);
+  size_t chunk_size = 1200;
+  unsigned int packet_number = 1;
+  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
+    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+    socket_data1.AddRead(
+        ASYNC,
+        server_maker_.MakeDataPacket(
+            packet_number++,
+            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
+            false, false, offset,
+            base::StringPiece(spdy_frame.data() + offset, len)));
+  }
+  // Read an ACK from server which acks all client data.
+  socket_data1.AddRead(SYNCHRONOUS,
+                       server_maker_.MakeAckPacket(3, 2, 1, 1, false));
+  socket_data1.AddWrite(ASYNC, client_maker_.MakeAckPacket(3, 2, 1, 1, false));
+  // The PING packet sent for retransmittable on wire.
+  socket_data1.AddWrite(SYNCHRONOUS, client_maker_.MakePingPacket(4, false));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  std::string header = ConstructDataHeader(6);
+  socket_data1.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 0, header + "hello!"));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRstPacket(
+                       5, false, GetNthClientInitiatedBidirectionalStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_.transport_version, privacy_mode_,
+                DEFAULT_PRIORITY, SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Complete migration.
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+  socket_data1.Resume();
+  // Spin up the message loop to read incoming data from server till the ACK.
+  base::RunLoop().RunUntilIdle();
+
+  // Ack delay time.
+  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  EXPECT_GT(custom_timeout_value, delay);
+  // Fire the ack alarm, since ack has been sent, no ack will be sent.
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
+  delay = custom_timeout_value - delay;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(delay),
+            task_runner->NextPendingTaskDelay());
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  socket_data1.Resume();
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Resume the old socket data, a read error will be delivered to the old
+  // packet reader. Verify that the session is not affected.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  stream.reset();
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+// This test verifies that when no migration is enabled, and no custom value
+// for retransmittable-on-wire timeout is specified, the ping alarm will not
+// send any retransmittable pings.
+TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      factory_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+
+  MockQuicData socket_data1;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       true, &header_stream_offset));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  // Read two packets so that client will send ACK immedaitely.
+  spdy::SpdyHeaderBlock response_headers =
+      server_maker_.GetResponseHeaders("200 OK");
+  response_headers["key1"] = std::string(2000, 'A');
+  spdy::SpdyHeadersIR headers_frame(
+      GetNthClientInitiatedBidirectionalStreamId(0),
+      std::move(response_headers));
+  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+  spdy::SpdySerializedFrame spdy_frame =
+      response_framer.SerializeFrame(headers_frame);
+  size_t chunk_size = 1200;
+  unsigned int packet_number = 1;
+  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
+    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+    socket_data1.AddRead(
+        ASYNC,
+        server_maker_.MakeDataPacket(
+            packet_number++,
+            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
+            false, false, offset,
+            base::StringPiece(spdy_frame.data() + offset, len)));
+  }
+  // Read an ACK from server which acks all client data.
+  socket_data1.AddRead(SYNCHRONOUS,
+                       server_maker_.MakeAckPacket(3, 2, 1, 1, false));
+  socket_data1.AddWrite(ASYNC, client_maker_.MakeAckPacket(3, 2, 1, 1, false));
+  std::string header = ConstructDataHeader(6);
+  socket_data1.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 0, header + "hello!"));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRstPacket(
+                       4, false, GetNthClientInitiatedBidirectionalStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_.transport_version, privacy_mode_,
+                DEFAULT_PRIORITY, SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Complete migration.
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+  socket_data1.Resume();
+  // Spin up the message loop to read incoming data from server till the ACK.
+  base::RunLoop().RunUntilIdle();
+
+  // Ack delay time.
+  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  EXPECT_GT(kDefaultRetransmittableOnWireTimeoutMillisecs, delay);
+  // Fire the ack alarm, since ack has been sent, no ack will be sent.
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  // Verify that the ping alarm is not set with any default value.
+  int wrong_delay = kDefaultRetransmittableOnWireTimeoutMillisecs - delay;
+  delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  EXPECT_NE(wrong_delay, delay);
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Resume the old socket data, a read error will be delivered to the old
+  // packet reader. Verify that the session is not affected.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  stream.reset();
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+// This test verifies that when only migration on network change is enabled, and
+// a custom value for retransmittable-on-wire is specified, the ping alarm will
+// send retransmittable pings to the peer with custom value.
+TEST_P(QuicStreamFactoryTest,
+       CustomeRetransmittableOnWireTimeoutWithMigrationOnNetworkChangeOnly) {
+  int custom_timeout_value = 200;
+  test_params_.quic_retransmittable_on_wire_timeout_milliseconds =
+      custom_timeout_value;
+  test_params_.quic_migrate_sessions_on_network_change_v2 = true;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      factory_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+
+  MockQuicData socket_data1;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       true, &header_stream_offset));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  // Read two packets so that client will send ACK immedaitely.
+  spdy::SpdyHeaderBlock response_headers =
+      server_maker_.GetResponseHeaders("200 OK");
+  response_headers["key1"] = std::string(2000, 'A');
+  spdy::SpdyHeadersIR headers_frame(
+      GetNthClientInitiatedBidirectionalStreamId(0),
+      std::move(response_headers));
+  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+  spdy::SpdySerializedFrame spdy_frame =
+      response_framer.SerializeFrame(headers_frame);
+  size_t chunk_size = 1200;
+  unsigned int packet_number = 1;
+  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
+    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+    socket_data1.AddRead(
+        ASYNC,
+        server_maker_.MakeDataPacket(
+            packet_number++,
+            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
+            false, false, offset,
+            base::StringPiece(spdy_frame.data() + offset, len)));
+  }
+  // Read an ACK from server which acks all client data.
+  socket_data1.AddRead(SYNCHRONOUS,
+                       server_maker_.MakeAckPacket(3, 2, 1, 1, false));
+  socket_data1.AddWrite(ASYNC, client_maker_.MakeAckPacket(3, 2, 1, 1, false));
+  // The PING packet sent for retransmittable on wire.
+  socket_data1.AddWrite(SYNCHRONOUS, client_maker_.MakePingPacket(4, false));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  std::string header = ConstructDataHeader(6);
+  socket_data1.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 0, header + "hello!"));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRstPacket(
+                       5, false, GetNthClientInitiatedBidirectionalStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_.transport_version, privacy_mode_,
+                DEFAULT_PRIORITY, SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Complete migration.
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+  socket_data1.Resume();
+  // Spin up the message loop to read incoming data from server till the ACK.
+  base::RunLoop().RunUntilIdle();
+
+  // Ack delay time.
+  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  EXPECT_GT(custom_timeout_value, delay);
+  // Fire the ack alarm, since ack has been sent, no ack will be sent.
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
+  delay = custom_timeout_value - delay;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(delay),
+            task_runner->NextPendingTaskDelay());
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  socket_data1.Resume();
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Resume the old socket data, a read error will be delivered to the old
+  // packet reader. Verify that the session is not affected.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  stream.reset();
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+// This test verifies that when only migration on network change is enabled, and
+// no custom value for retransmittable-on-wire is specified, the ping alarm will
+// NOT send retransmittable pings to the peer with custom value.
+TEST_P(QuicStreamFactoryTest,
+       NoRetransmittableOnWireTimeoutWithMigrationOnNetworkChangeOnly) {
+  test_params_.quic_migrate_sessions_on_network_change_v2 = true;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+  QuicStreamFactoryPeer::SetAlarmFactory(
+      factory_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+
+  MockQuicData socket_data1;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       true, &header_stream_offset));
+  socket_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  // Read two packets so that client will send ACK immedaitely.
+  spdy::SpdyHeaderBlock response_headers =
+      server_maker_.GetResponseHeaders("200 OK");
+  response_headers["key1"] = std::string(2000, 'A');
+  spdy::SpdyHeadersIR headers_frame(
+      GetNthClientInitiatedBidirectionalStreamId(0),
+      std::move(response_headers));
+  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+  spdy::SpdySerializedFrame spdy_frame =
+      response_framer.SerializeFrame(headers_frame);
+  size_t chunk_size = 1200;
+  unsigned int packet_number = 1;
+  for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
+    size_t len = std::min(chunk_size, spdy_frame.size() - offset);
+    socket_data1.AddRead(
+        ASYNC,
+        server_maker_.MakeDataPacket(
+            packet_number++,
+            quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
+            false, false, offset,
+            base::StringPiece(spdy_frame.data() + offset, len)));
+  }
+  // Read an ACK from server which acks all client data.
+  socket_data1.AddRead(SYNCHRONOUS,
+                       server_maker_.MakeAckPacket(3, 2, 1, 1, false));
+  socket_data1.AddWrite(ASYNC, client_maker_.MakeAckPacket(3, 2, 1, 1, false));
+  std::string header = ConstructDataHeader(6);
+  socket_data1.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 0, header + "hello!"));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRstPacket(
+                       4, false, GetNthClientInitiatedBidirectionalStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_.transport_version, privacy_mode_,
+                DEFAULT_PRIORITY, SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Complete migration.
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+  socket_data1.Resume();
+  // Spin up the message loop to read incoming data from server till the ACK.
+  base::RunLoop().RunUntilIdle();
+
+  // Ack delay time.
+  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  EXPECT_GT(kDefaultRetransmittableOnWireTimeoutMillisecs, delay);
+  // Fire the ack alarm, since ack has been sent, no ack will be sent.
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  // Verify ping alarm is not set with default value.
+  int wrong_delay = kDefaultRetransmittableOnWireTimeoutMillisecs - delay;
+  delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  EXPECT_NE(wrong_delay, delay);
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Resume the old socket data, a read error will be delivered to the old
+  // packet reader. Verify that the session is not affected.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  stream.reset();
   EXPECT_TRUE(socket_data1.AllReadDataConsumed());
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
 }

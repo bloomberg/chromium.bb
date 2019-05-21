@@ -108,8 +108,7 @@ HttpNetworkSession::Params::Params()
       quic_goaway_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_reduced_ping_timeout_seconds(quic::kPingTimeoutSecs),
-      quic_retransmittable_on_wire_timeout_milliseconds(
-          kDefaultRetransmittableOnWireTimeoutMillisecs),
+      quic_retransmittable_on_wire_timeout_milliseconds(0),
       quic_max_time_before_crypto_handshake_seconds(
           quic::kMaxTimeForCryptoHandshakeSecs),
       quic_max_idle_time_before_crypto_handshake_seconds(

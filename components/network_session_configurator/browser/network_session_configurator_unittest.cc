@@ -127,8 +127,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(0, params_.quic_initial_rtt_for_handshake_milliseconds);
   EXPECT_FALSE(params_.quic_allow_server_migration);
   EXPECT_TRUE(params_.quic_host_whitelist.empty());
-  EXPECT_EQ(net::kDefaultRetransmittableOnWireTimeoutMillisecs,
-            params_.quic_retransmittable_on_wire_timeout_milliseconds);
+  EXPECT_EQ(0, params_.quic_retransmittable_on_wire_timeout_milliseconds);
 
   net::HttpNetworkSession::Params default_params;
   EXPECT_EQ(default_params.quic_supported_versions,

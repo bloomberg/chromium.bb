@@ -1277,6 +1277,8 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
   CreateSession();
 
   SendRequestAndExpectQuicResponse("hello!");
+  EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
