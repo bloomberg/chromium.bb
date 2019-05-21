@@ -728,7 +728,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
                  std::string(test_case.claimed_authority));
 
-    EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
   }
@@ -1084,7 +1084,7 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
     if (should_be_valid) {
       EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
     } else {
-      EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
                 callback_receiver.status());
     }
   }
@@ -1169,7 +1169,7 @@ TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
       // The virtual device will return an error because
       // |reject_silent_authentication_requests| is true and then it'll
       // immediately resolve the touch request.
-      EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
                 callback_receiver.status());
     }
   }
@@ -1394,7 +1394,7 @@ TEST_F(AuthenticatorImplTest, Ctap2AssertionWithUnknownCredential) {
     authenticator->GetAssertion(GetTestPublicKeyCredentialRequestOptions(),
                                 callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
               callback_receiver.status());
     // The user must have pressed the authenticator for the operation to
     // resolve.
@@ -2505,8 +2505,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
                               callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
-            callback_receiver.status());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 
   ASSERT_TRUE(failure_reason_receiver.was_called());
   EXPECT_EQ(content::AuthenticatorRequestClientDelegate::
@@ -2662,9 +2661,8 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
     base::RunLoop().RunUntilIdle();
     callback_receiver.WaitForCallback();
     EXPECT_EQ(callback_receiver.status(),
-              has_allowed_credential
-                  ? AuthenticatorStatus::SUCCESS
-                  : AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED);
+              has_allowed_credential ? AuthenticatorStatus::SUCCESS
+                                     : AuthenticatorStatus::NOT_ALLOWED_ERROR);
   }
 }
 
@@ -3083,7 +3081,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertion) {
 
         switch (expected[support_level][uv_level]) {
           case kFailure:
-            EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+            EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
                       callback_receiver.status());
             break;
 
@@ -3270,7 +3268,7 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
       callback_receiver.WaitForCallback();
 
       if (should_be_unrecognized) {
-        EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
                   callback_receiver.status());
       } else {
         EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
