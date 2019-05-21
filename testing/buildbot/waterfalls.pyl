@@ -776,7 +776,16 @@
           'gtest_tests': 'chromium_android_asan_gtests',
           'junit_tests': 'chromium_android_asan_junit_tests',
         },
-        'use_swarming': False,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
       },
       'ToTAndroidCFI': {
         'swarming': {
