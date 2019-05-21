@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace send_tab_to_self {
@@ -14,7 +15,8 @@ namespace send_tab_to_self {
 struct TargetDeviceInfo {
  public:
   TargetDeviceInfo(const std::string& cache_guid,
-                   const sync_pb::SyncEnums::DeviceType device_type);
+                   const sync_pb::SyncEnums::DeviceType device_type,
+                   base::Time last_updated_timestamp);
   TargetDeviceInfo(const TargetDeviceInfo& other) = default;
   ~TargetDeviceInfo() = default;
 
@@ -24,6 +26,8 @@ struct TargetDeviceInfo {
   std::string cache_guid;
   // Device type.
   sync_pb::SyncEnums::DeviceType device_type;
+  // Last updated timestamp.
+  base::Time last_updated_timestamp;
 };
 
 }  // namespace send_tab_to_self

@@ -647,7 +647,8 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
 
     // Only keep one device per device name. We only keep the first occurrence
     // which is the most recent.
-    TargetDeviceInfo target_device_info(device->guid(), device->device_type());
+    TargetDeviceInfo target_device_info(device->guid(), device->device_type(),
+                                        device->last_updated_timestamp());
     target_device_name_to_cache_info_.emplace(device->client_name(),
                                               target_device_info);
     oldest_non_expired_device_timestamp_ = device->last_updated_timestamp();

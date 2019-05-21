@@ -705,11 +705,13 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&older_device);
 
-  TargetDeviceInfo target_device_info(kRecentGuid,
-                                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  TargetDeviceInfo target_device_info(recent_device.guid(),
+                                      recent_device.device_type(),
+                                      recent_device.last_updated_timestamp());
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              ElementsAre(Pair("device_name", target_device_info)));
+  EXPECT_THAT(
+      bridge()->GetTargetDeviceNameToCacheInfoMap(),
+      ElementsAre(Pair(recent_device.client_name(), target_device_info)));
 }
 
 // Tests that only devices that have the send tab to self receiving feature
@@ -732,11 +734,13 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/false);
   AddTestDevice(&disabled_device);
 
-  TargetDeviceInfo target_device_info("enabled_guid",
-                                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  TargetDeviceInfo target_device_info(enabled_device.guid(),
+                                      enabled_device.device_type(),
+                                      enabled_device.last_updated_timestamp());
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              ElementsAre(Pair("enabled_device_name", target_device_info)));
+  EXPECT_THAT(
+      bridge()->GetTargetDeviceNameToCacheInfoMap(),
+      ElementsAre(Pair(enabled_device.client_name(), target_device_info)));
 }
 
 // TODO(crbug/959487):
@@ -759,11 +763,13 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&valid_device);
 
-  TargetDeviceInfo target_device_info("valid_guid",
-                                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  TargetDeviceInfo target_device_info(valid_device.guid(),
+                                      valid_device.device_type(),
+                                      valid_device.last_updated_timestamp());
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              ElementsAre(Pair("valid_device_name", target_device_info)));
+  EXPECT_THAT(
+      bridge()->GetTargetDeviceNameToCacheInfoMap(),
+      ElementsAre(Pair(valid_device.client_name(), target_device_info)));
 }
 
 // Tests that the local device is not returned.
@@ -785,11 +791,13 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&other_device);
 
-  TargetDeviceInfo target_device_info("other_guid",
-                                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  TargetDeviceInfo target_device_info(other_device.guid(),
+                                      other_device.device_type(),
+                                      other_device.last_updated_timestamp());
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              ElementsAre(Pair("other_device_name", target_device_info)));
+  EXPECT_THAT(
+      bridge()->GetTargetDeviceNameToCacheInfoMap(),
+      ElementsAre(Pair(other_device.client_name(), target_device_info)));
 }
 
 // TODO(crbug/959487):
@@ -813,22 +821,26 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&recent_device);
 
-  TargetDeviceInfo device_info_1("older_guid",
-                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
-  TargetDeviceInfo device_info_2("recent_guid",
-                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  TargetDeviceInfo older_device_info(older_device.guid(),
+                                     older_device.device_type(),
+                                     older_device.last_updated_timestamp());
+  TargetDeviceInfo recent_device_info(recent_device.guid(),
+                                      recent_device.device_type(),
+                                      recent_device.last_updated_timestamp());
 
   // Set the map by calling it. Make sure it has the 2 devices.
   EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              UnorderedElementsAre(Pair("older_name", device_info_1),
-                                   Pair("recent_name", device_info_2)));
+              UnorderedElementsAre(
+                  Pair(older_device.client_name(), older_device_info),
+                  Pair(recent_device.client_name(), recent_device_info)));
 
   // Advance the time so that the older device expires.
   clock()->Advance(base::TimeDelta::FromDays(5));
 
   // Make sure only the recent device is in the map.
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              ElementsAre(Pair("recent_name", device_info_2)));
+  EXPECT_THAT(
+      bridge()->GetTargetDeviceNameToCacheInfoMap(),
+      ElementsAre(Pair(recent_device.client_name(), recent_device_info)));
 }
 
 // Tests that the local device is not returned.
@@ -844,11 +856,11 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&device);
 
   // Set the map by calling it. Make sure it has the device.
-  TargetDeviceInfo device_info_1("guid",
-                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  TargetDeviceInfo device_info(device.guid(), device.device_type(),
+                               device.last_updated_timestamp());
 
   EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              ElementsAre(Pair("name", device_info_1)));
+              ElementsAre(Pair(device.client_name(), device_info)));
 
   // Add a new device.
   syncer::DeviceInfo new_device("new_guid", "new_name", "72", "agent",
@@ -859,12 +871,13 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&new_device);
 
   // Make sure both devices are in the map.
-  TargetDeviceInfo device_info_2("new_guid",
-                                 sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  TargetDeviceInfo new_device_info(new_device.guid(), new_device.device_type(),
+                                   new_device.last_updated_timestamp());
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              UnorderedElementsAre(Pair("name", device_info_1),
-                                   Pair("new_name", device_info_2)));
+  EXPECT_THAT(
+      bridge()->GetTargetDeviceNameToCacheInfoMap(),
+      UnorderedElementsAre(Pair(device.client_name(), device_info),
+                           Pair(new_device.client_name(), new_device_info)));
 }
 
 TEST_F(SendTabToSelfBridgeTest, NotifyRemoteSendTabToSelfEntryOpened) {
