@@ -235,7 +235,8 @@ void WebAppProvider::ProfileDestroyed() {
   // but after DCHECK'ing that no RenderProcessHosts are being leaked. The
   // "chrome::NOTIFICATION_PROFILE_DESTROYED" notification gets sent before the
   // DCHECK so we use that to clean up RenderProcessHosts instead.
-  pending_app_manager_->Shutdown();
+  if (pending_app_manager_)
+    pending_app_manager_->Shutdown();
 }
 
 void WebAppProvider::SetRegistryReadyCallback(base::OnceClosure callback) {
