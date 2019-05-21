@@ -498,6 +498,28 @@ TEST_F('CrElementsIconButtonTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsLinkRowTest() {}
+
+CrElementsLinkRowTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_link_row/cr_link_row.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_link_row_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsLinkRowTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 /**
  * @constructor
