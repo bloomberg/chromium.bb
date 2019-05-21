@@ -183,6 +183,14 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                       int cursor,
                       const std::vector<SegmentInfo>& segments,
                       std::string* error);
+
+  // Set the current composition range.
+  bool SetCompositionRange(int context_id,
+                           int selection_before,
+                           int selection_after,
+                           const std::vector<SegmentInfo>& segments,
+                           std::string* error);
+
   // Called when a key event is handled.
   void KeyEventHandled(const std::string& extension_id,
                        const std::string& request_id,
@@ -208,6 +216,11 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   virtual void UpdateComposition(const ui::CompositionText& composition_text,
                                  uint32_t cursor_pos,
                                  bool is_visible) = 0;
+  // Notifies InputContextHandler to change the composition range.
+  virtual bool SetCompositionRange(
+      uint32_t before,
+      uint32_t after,
+      const std::vector<ui::ImeTextSpan>& text_spans) = 0;
   // Notifies InputContextHanlder to commit |text|.
   virtual void CommitTextToInputContext(int context_id,
                                         const std::string& text) = 0;

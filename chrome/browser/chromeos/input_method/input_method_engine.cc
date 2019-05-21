@@ -411,6 +411,22 @@ void InputMethodEngine::UpdateComposition(
   }
 }
 
+bool InputMethodEngine::SetCompositionRange(
+    uint32_t before,
+    uint32_t after,
+    const std::vector<ui::ImeTextSpan>& text_spans) {
+  if (mojo_helper_->IsConnected()) {
+    // TODO(https://crbug.com/952757): Implement this in Mojo.
+    return false;
+  } else {
+    ui::IMEInputContextHandlerInterface* input_context =
+        ui::IMEBridge::Get()->GetInputContextHandler();
+    if (!input_context)
+      return false;
+    return input_context->SetCompositionRange(before, after, text_spans);
+  }
+}
+
 void InputMethodEngine::CommitTextToInputContext(int context_id,
                                                  const std::string& text) {
   bool committed = false;

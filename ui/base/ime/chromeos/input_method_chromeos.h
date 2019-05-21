@@ -56,6 +56,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
                                  TextInputClient* focused) override;
   void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                 TextInputClient* focused) override;
+  bool SetCompositionRange(
+      uint32_t before,
+      uint32_t after,
+      const std::vector<ui::ImeTextSpan>& text_spans) override;
 
  protected:
   // Converts |text| into CompositionText.
@@ -78,6 +82,17 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   class MojoHelper;
   class PendingKeyEvent;
   friend TestableInputMethodChromeOS;
+
+  // Representings a pending SetCompositionRange operation.
+  struct PendingSetCompositionRange {
+    PendingSetCompositionRange(const gfx::Range& range,
+                               const std::vector<ui::ImeTextSpan>& text_spans);
+    PendingSetCompositionRange(const PendingSetCompositionRange& other);
+    ~PendingSetCompositionRange();
+
+    gfx::Range range;
+    std::vector<ui::ImeTextSpan> text_spans;
+  };
 
   ui::EventDispatchDetails DispatchKeyEventInternal(ui::KeyEvent* event,
                                                     AckCallback ack_callback);
@@ -177,6 +192,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
 
   // Indicates if the composition text is changed or deleted.
   bool composition_changed_;
+
+  // Indicates whether there is a pending SetCompositionRange operation.
+  base::Optional<PendingSetCompositionRange> pending_composition_range_;
 
   // An object to compose a character from a sequence of key presses
   // including dead key etc.

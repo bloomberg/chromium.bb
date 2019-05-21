@@ -254,6 +254,15 @@ void InputMethodBase::UpdateCompositionText(const CompositionText& composition_,
   SendFakeProcessKeyEvent(false);
 }
 
+#if defined(OS_CHROMEOS)
+bool InputMethodBase::SetCompositionRange(
+    uint32_t before,
+    uint32_t after,
+    const std::vector<ui::ImeTextSpan>& text_spans) {
+  return false;
+}
+#endif
+
 void InputMethodBase::DeleteSurroundingText(int32_t offset, uint32_t length) {}
 
 SurroundingTextInfo InputMethodBase::GetSurroundingTextInfo() {

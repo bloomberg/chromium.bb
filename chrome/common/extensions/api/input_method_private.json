@@ -34,6 +34,12 @@
         }
       },
       {
+        "id": "UnderlineStyle",
+        "type": "string",
+        "description": "The type of the underline to modify a composition segment.",
+        "enum": ["underline"]
+      },
+      {
         "id": "FocusReason",
         "type": "string",
         "description": "Describes how the text field was focused",
@@ -391,6 +397,64 @@
             "optional": true,
             "description": "Callback to notify that the new value has been set",
             "parameters": []
+          }
+        ]
+      }, {
+        "name": "setCompositionRange",
+        "type": "function",
+        "description": "Set the composition range. If this extension does not own the active IME, this fails.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context where the composition text will be set",
+                "type": "integer"
+              },
+              "selectionBefore": {
+                "description": "How much before the current selection to set as composition.",
+                "type": "integer"
+              },
+              "selectionAfter": {
+                "description": "How much after the current selection to set as composition.",
+                "type": "integer"
+              },
+              "segments": {
+                "description": "List of segments and their associated types.",
+                "type": "array",
+                "optional": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "start": {
+                      "description": "Index of the character to start this segment at",
+                      "type": "integer"
+                    },
+                    "end": {
+                      "description": "Index of the character to end this segment after.",
+                      "type": "integer"
+                    },
+                    "style": {
+                      "$ref": "UnderlineStyle",
+                      "description": "The type of the underline to modify this segment."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes with a boolean indicating if the text was accepted or not. On failure, chrome.runtime.lastError is set.",
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean"
+              }
+            ]
           }
         ]
       }

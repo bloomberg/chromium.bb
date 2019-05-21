@@ -151,6 +151,17 @@ InputMethodChromeOS::~InputMethodChromeOS() {
   }
 }
 
+InputMethodChromeOS::PendingSetCompositionRange::PendingSetCompositionRange(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& text_spans)
+    : range(range), text_spans(text_spans) {}
+
+InputMethodChromeOS::PendingSetCompositionRange::PendingSetCompositionRange(
+    const PendingSetCompositionRange& other) = default;
+
+InputMethodChromeOS::PendingSetCompositionRange::~PendingSetCompositionRange() =
+    default;
+
 void InputMethodChromeOS::DispatchKeyEventAsync(ui::KeyEvent* event,
                                                 AckCallback ack_callback) {
   ignore_result(DispatchKeyEventInternal(event, std::move(ack_callback)));
@@ -466,6 +477,34 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
   OnCaretBoundsChanged(GetTextInputClient());
 }
 
+bool InputMethodChromeOS::SetCompositionRange(
+    uint32_t before,
+    uint32_t after,
+    const std::vector<ui::ImeTextSpan>& text_spans) {
+  if (IsTextInputTypeNone())
+    return false;
+
+  // The given range and spans are relative to the current selection.
+  gfx::Range range;
+  if (!GetTextInputClient()->GetEditableSelectionRange(&range))
+    return false;
+
+  const gfx::Range composition_range(range.start() - before,
+                                     range.end() + after);
+
+  // If we have pending key events, then delay the operation until
+  // |ProcessKeyEventPostIME|. Otherwise, process it immediately.
+  if (handling_key_event_) {
+    composition_changed_ = true;
+    pending_composition_range_ =
+        PendingSetCompositionRange{composition_range, text_spans};
+    return true;
+  } else {
+    return GetTextInputClient()->SetCompositionFromExistingText(
+        composition_range, text_spans);
+  }
+}
+
 void InputMethodChromeOS::ConfirmCompositionText() {
   TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
@@ -673,13 +712,22 @@ void InputMethodChromeOS::ProcessInputMethodResult(ui::KeyEvent* event,
     }
   }
 
+  // TODO(https://crbug.com/952757): Refactor this code to be clearer and less
+  // error-prone.
   if (composition_changed_ && !IsTextInputTypeNone()) {
+    if (pending_composition_range_) {
+      client->SetCompositionFromExistingText(
+          pending_composition_range_->range,
+          pending_composition_range_->text_spans);
+    }
     if (composition_.text.length()) {
       composing_text_ = true;
       client->SetCompositionText(composition_);
-    } else if (result_text_.empty()) {
+    } else if (result_text_.empty() && !pending_composition_range_) {
       client->ClearCompositionText();
     }
+
+    pending_composition_range_.reset();
   }
 
   // We should not clear composition text here, as it may belong to the next

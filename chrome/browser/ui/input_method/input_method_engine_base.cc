@@ -404,6 +404,50 @@ bool InputMethodEngineBase::SetComposition(
   return true;
 }
 
+bool InputMethodEngineBase::SetCompositionRange(
+    int context_id,
+    int selection_before,
+    int selection_after,
+    const std::vector<SegmentInfo>& segments,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  // Can't change composition range when there's pending composition text.
+  if (!composition_text_->text.empty())
+    return false;
+
+  std::vector<ui::ImeTextSpan> text_spans;
+  for (const auto& segment : segments) {
+    ui::ImeTextSpan text_span;
+
+    text_span.underline_color = SK_ColorTRANSPARENT;
+    switch (segment.style) {
+      case SEGMENT_STYLE_UNDERLINE:
+        text_span.thickness = ui::ImeTextSpan::Thickness::kThin;
+        break;
+      case SEGMENT_STYLE_DOUBLE_UNDERLINE:
+        text_span.thickness = ui::ImeTextSpan::Thickness::kThick;
+        break;
+      case SEGMENT_STYLE_NO_UNDERLINE:
+        text_span.thickness = ui::ImeTextSpan::Thickness::kNone;
+        break;
+    }
+
+    text_span.start_offset = segment.start;
+    text_span.end_offset = segment.end;
+    text_spans.push_back(text_span);
+  }
+
+  return SetCompositionRange(selection_before, selection_after, text_spans);
+}
+
 void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
                                             const std::string& request_id,
                                             bool handled) {

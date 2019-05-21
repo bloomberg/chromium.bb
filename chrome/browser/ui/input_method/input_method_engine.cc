@@ -89,6 +89,14 @@ void InputMethodEngine::UpdateComposition(
   }
 }
 
+bool InputMethodEngine::SetCompositionRange(
+    uint32_t before,
+    uint32_t after,
+    const std::vector<ui::ImeTextSpan>& text_spans) {
+  // Not supported on non-Chrome OS platforms.
+  return false;
+}
+
 void InputMethodEngine::CommitTextToInputContext(int context_id,
                                                  const std::string& text) {
   ui::IMEInputContextHandlerInterface* input_context =

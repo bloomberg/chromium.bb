@@ -1399,6 +1399,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_SETSHELFALIGNMENT = 1336,
   BLUETOOTH_RECORDPAIRING = 1337,
   FILEMANAGERPRIVATE_SETARCSTORAGETOASTSHOWNFLAG = 1338,
+  INPUTMETHODPRIVATE_SETCOMPOSITIONRANGE = 1339,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
