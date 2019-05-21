@@ -1305,6 +1305,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       display_label=config_lib.DISPLAY_LABEL_PRECQ,
       luci_builder=config_lib.LUCI_BUILDER_PRECQ,
       build_type=constants.PRE_CQ_TYPE,
+      build_timeout=4 * 60 * 60,
       pre_cq=True,
       archive=False,
       chrome_sdk=False,
