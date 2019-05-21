@@ -165,7 +165,7 @@ void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
 void ContentAutofillDriver::PopupHidden() {
   // If the unmask prompt is showing, keep showing the preview. The preview
   // will be cleared when the prompt closes.
-  if (autofill_manager_ && !autofill_manager_->IsShowingUnmaskPrompt())
+  if (autofill_manager_ && autofill_manager_->ShouldClearPreviewedForm())
     RendererShouldClearPreviewedForm();
 }
 

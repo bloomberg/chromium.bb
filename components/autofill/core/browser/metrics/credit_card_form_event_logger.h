@@ -45,9 +45,9 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
     is_context_secure_ = is_context_secure;
   }
 
-  void OnDidSelectMaskedServerCardSuggestion(
-      const FormStructure& form,
-      AutofillSyncSigninState sync_state);
+  void OnDidSelectCardSuggestion(const CreditCard& credit_card,
+                                 const FormStructure& form,
+                                 AutofillSyncSigninState sync_state);
 
   void SetBankNameAvailable();
 

@@ -139,6 +139,15 @@ class AutofillAssistantTest : public testing::Test {
     return form_structure;
   }
 
+  // Convenience method to cast the FullCardRequest into a CardUnmaskDelegate.
+  CardUnmaskDelegate* full_card_unmask_delegate() {
+    payments::FullCardRequest* full_card_request =
+        autofill_manager_->credit_card_access_manager_->cvc_authenticator_
+            ->full_card_request_.get();
+    DCHECK(full_card_request);
+    return static_cast<CardUnmaskDelegate*>(full_card_request);
+  }
+
   base::test::ScopedTaskEnvironment task_environment_;
   TestAutofillClient autofill_client_;
   testing::NiceMock<TestAutofillDriver> autofill_driver_;
@@ -279,9 +288,7 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_CancelCvc) {
   EXPECT_CALL(*autofill_manager_, FillCreditCardForm(_, _, _, _, _)).Times(0);
 
   autofill_assistant_->ShowAssistForCreditCard(card);
-  static_cast<CardUnmaskDelegate*>(
-      autofill_manager_->GetOrCreateFullCardRequest())
-      ->OnUnmaskPromptClosed();
+  full_card_unmask_delegate()->OnUnmaskPromptClosed();
 }
 
 TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_SubmitCvc) {
@@ -310,9 +317,7 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_SubmitCvc) {
 
   CardUnmaskDelegate::UnmaskResponse unmask_response;
   unmask_response.cvc = base::ASCIIToUTF16("123");
-  static_cast<CardUnmaskDelegate*>(
-      autofill_manager_->GetOrCreateFullCardRequest())
-      ->OnUnmaskResponse(unmask_response);
+  full_card_unmask_delegate()->OnUnmaskResponse(unmask_response);
 }
 
 }  // namespace autofill

@@ -262,6 +262,10 @@ class AutofillMetricsTest : public testing::Test {
                            bool include_masked_server_credit_card,
                            bool include_full_server_credit_card);
 
+  // Mocks a RPC response from payments.
+  void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
+                       const std::string& real_pan);
+
   // Removes all existing credit cards and creates 1 masked server card with a
   // bank name.
   void RecreateMaskedServerCreditCardWithBankName();
@@ -379,6 +383,17 @@ void AutofillMetricsTest::RecreateProfile(bool is_server) {
   }
 
   personal_data_->Refresh();
+}
+
+void AutofillMetricsTest::OnDidGetRealPan(
+    AutofillClient::PaymentsRpcResult result,
+    const std::string& real_pan) {
+  payments::FullCardRequest* full_card_request =
+      autofill_manager_->credit_card_access_manager_
+          ->credit_card_cvc_authenticator()
+          ->full_card_request_.get();
+  DCHECK(full_card_request);
+  full_card_request->OnDidGetRealPan(result, real_pan);
 }
 
 void AutofillMetricsTest::RecreateCreditCards(
@@ -4051,8 +4066,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
         autofill_manager_->MakeFrontendID(guid, std::string()));
-    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                       "6011000990139424");
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
     histogram_tester.ExpectBucketCount(
@@ -4147,8 +4161,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
         autofill_manager_->MakeFrontendID(guid, std::string()));
-    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                       "4444333322221111");
+    OnDidGetRealPan(AutofillClient::SUCCESS, "4444333322221111");
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
     histogram_tester.ExpectBucketCount(
@@ -4172,8 +4185,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
         autofill_manager_->MakeFrontendID(guid, std::string()));
-    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                       "4444333322221111");
+    OnDidGetRealPan(AutofillClient::SUCCESS, "4444333322221111");
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
     histogram_tester.ExpectBucketCount(
@@ -4269,8 +4281,7 @@ TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration) {
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
         autofill_manager_->MakeFrontendID(guid, std::string()));
-    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                       "6011000990139424");
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
     histogram_tester.ExpectTotalCount(
         "Autofill.UnmaskPrompt.GetRealPanDuration", 1);
     histogram_tester.ExpectTotalCount(
@@ -4293,8 +4304,7 @@ TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration) {
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
         autofill_manager_->MakeFrontendID(guid, std::string()));
-    autofill_manager_->OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE,
-                                       std::string());
+    OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE, std::string());
     histogram_tester.ExpectTotalCount(
         "Autofill.UnmaskPrompt.GetRealPanDuration", 1);
     histogram_tester.ExpectTotalCount(
@@ -4893,8 +4903,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
         autofill_manager_->MakeFrontendID(guid, std::string()));
-    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                       "6011000990139424");
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
     histogram_tester.ExpectBucketCount(
@@ -5287,8 +5296,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardWillSubmitFormEvents) {
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
         autofill_manager_->MakeFrontendID(guid, std::string()));
-    autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                       "6011000990139424");
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED, 1);

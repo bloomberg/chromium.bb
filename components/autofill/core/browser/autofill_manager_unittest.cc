@@ -529,14 +529,26 @@ class AutofillManagerTest : public testing::Test {
         .Times(AtLeast(1));
     autofill_manager_->FillOrPreviewCreditCardForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
-        form->fields[0], *card);
+        form->fields[0], card);
+  }
+
+  void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
+                       const std::string& real_pan) {
+    payments::FullCardRequest* full_card_request =
+        autofill_manager_->credit_card_access_manager_->cvc_authenticator_
+            ->full_card_request_.get();
+    DCHECK(full_card_request);
+    full_card_request->OnDidGetRealPan(result, real_pan);
   }
 
   // Convenience method to cast the FullCardRequest into a CardUnmaskDelegate.
   CardUnmaskDelegate* full_card_unmask_delegate() {
-    DCHECK(autofill_manager_->full_card_request_);
-    return static_cast<CardUnmaskDelegate*>(
-        autofill_manager_->full_card_request_.get());
+    payments::FullCardRequest* full_card_request =
+        autofill_manager_->credit_card_access_manager_
+            ->credit_card_cvc_authenticator()
+            ->full_card_request_.get();
+    DCHECK(full_card_request);
+    return static_cast<CardUnmaskDelegate*>(full_card_request);
   }
 
   void DisableCreditCardAutofill() {
@@ -5352,8 +5364,7 @@ TEST_F(AutofillManagerTest, DontOfferToSavePaymentsCard) {
   response.should_store_pan = false;
   response.cvc = ASCIIToUTF16("123");
   full_card_unmask_delegate()->OnUnmaskResponse(response);
-  autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                     "4012888888881881");
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4012888888881881");
   autofill_manager_->OnFormSubmitted(form, false,
                                      SubmissionSource::FORM_SUBMISSION);
 }
@@ -5369,8 +5380,7 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
   response.exp_month = ASCIIToUTF16("02");
   response.exp_year = ASCIIToUTF16("2018");
   full_card_unmask_delegate()->OnUnmaskResponse(response);
-  autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
-                                     "4012888888881881");
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4012888888881881");
 }
 
 TEST_F(AutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
