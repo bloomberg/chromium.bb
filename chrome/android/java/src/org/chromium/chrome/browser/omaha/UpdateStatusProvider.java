@@ -6,11 +6,8 @@ package org.chromium.chrome.browser.omaha;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -37,8 +34,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateController;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateControllerFactory;
-import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics;
-import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics.UpdateType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -126,7 +121,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
          */
         private boolean mIsInlineSimulated;
 
-        public UpdateStatus() {}
+        UpdateStatus() {}
 
         UpdateStatus(UpdateStatus other) {
             updateState = other.updateState;
@@ -142,7 +137,6 @@ public class UpdateStatusProvider implements ActivityStateListener {
 
     private final InlineUpdateController mInlineController;
     private final UpdateQuery mOmahaQuery;
-    private final UpdateSuccessMetrics mMetrics;
     private @Nullable UpdateStatus mStatus;
 
     /** Whether or not we've recorded the initial update status yet. */
@@ -217,7 +211,6 @@ public class UpdateStatusProvider implements ActivityStateListener {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
         RecordHistogram.recordEnumeratedHistogram(
                 "GoogleUpdate.Inline.UI.Start.Source", source, UpdateInteractionSource.NUM_ENTRIES);
-        mMetrics.startUpdate(UpdateType.INLINE, source);
         mInlineController.startUpdate(activity);
     }
 
@@ -229,7 +222,6 @@ public class UpdateStatusProvider implements ActivityStateListener {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
         RecordHistogram.recordEnumeratedHistogram(
                 "GoogleUpdate.Inline.UI.Retry.Source", source, UpdateInteractionSource.NUM_ENTRIES);
-        mMetrics.startUpdate(UpdateType.INLINE, source);
         mInlineController.startUpdate(activity);
     }
 
@@ -239,31 +231,6 @@ public class UpdateStatusProvider implements ActivityStateListener {
         RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Inline.UI.Install.Source", source,
                 UpdateInteractionSource.NUM_ENTRIES);
         mInlineController.completeUpdate();
-    }
-
-    /**
-     * Starts the intent update process, if possible
-     * @param context An {@link Context} that will be used to fire off the update intent.
-     * @param source  The source of the action (the UI that caused it).
-     * @param newTask Whether or not to make the intent a new task.
-     * @return        Whether or not the update intent was sent and had a valid handler.
-     */
-    public boolean startIntentUpdate(
-            Context context, @UpdateInteractionSource int source, boolean newTask) {
-        if (mStatus == null || mStatus.updateState != UpdateState.UPDATE_AVAILABLE) return false;
-        if (TextUtils.isEmpty(mStatus.updateUrl)) return false;
-
-        try {
-            mMetrics.startUpdate(UpdateType.INTENT, source);
-
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mStatus.updateUrl));
-            if (newTask) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            return false;
-        }
-
-        return true;
     }
 
     // ApplicationStateListener implementation.
@@ -285,7 +252,6 @@ public class UpdateStatusProvider implements ActivityStateListener {
     private UpdateStatusProvider() {
         mInlineController = InlineUpdateControllerFactory.create(this::resolveStatus);
         mOmahaQuery = new UpdateQuery(this::resolveStatus);
-        mMetrics = new UpdateSuccessMetrics(OmahaBase.getSharedPreferences());
 
         // Note that as a singleton this class never unregisters.
         ApplicationStatus.registerStateListenerForAllActivities(this);
@@ -326,7 +292,6 @@ public class UpdateStatusProvider implements ActivityStateListener {
         if (!mRecordedInitialStatus) {
             RecordHistogram.recordEnumeratedHistogram(
                     "GoogleUpdate.StartUp.State", mStatus.updateState, UpdateState.NUM_ENTRIES);
-            mMetrics.analyzeFirstStatus(mStatus);
             mRecordedInitialStatus = true;
         }
 
