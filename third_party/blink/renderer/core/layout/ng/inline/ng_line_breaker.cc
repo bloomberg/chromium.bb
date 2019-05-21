@@ -648,6 +648,9 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
   }
   DCHECK_EQ(shape_result->NumCharacters(),
             result.break_offset - item_result->start_offset);
+  // It is critical to move the offset forward, or NGLineBreaker may keep adding
+  // NGInlineItemResult until all the memory is consumed.
+  CHECK_GT(result.break_offset, item_result->start_offset);
 
   LayoutUnit inline_size = shape_result->SnappedWidth().ClampNegativeToZero();
   item_result->inline_size = inline_size;
@@ -663,9 +666,6 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
   item_result->inline_size = shape_result->SnappedWidth().ClampNegativeToZero();
   item_result->end_offset = result.break_offset;
   item_result->shape_result = std::move(shape_result);
-  // It is critical to move offset forward, or NGLineBreaker may keep adding
-  // NGInlineItemResult until all the memory is consumed.
-  CHECK_GT(item_result->end_offset, item_result->start_offset) << Text();
 
   // * If width <= available_width:
   //   * If offset < item.EndOffset(): the break opportunity to fit is found.
