@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -40,6 +39,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     private static final int MAX_TILE_COUNT = 8;
     private static final int MAX_ROWS = 2;
 
+    private final ExploreSitesSiteViewBinder mSiteViewBinder;
     private TextView mTitleView;
     private TileGridLayout mTileView;
     private RoundedIconGenerator mIconGenerator;
@@ -148,6 +148,11 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         }
     }
 
+    protected CategoryCardInteractionDelegate createInteractionDelegate(PropertyModel model) {
+        return new CategoryCardInteractionDelegate(
+                model.get(ExploreSitesSite.URL_KEY), model.get(ExploreSitesSite.TILE_INDEX_KEY));
+    }
+
     // We use the MVC paradigm for the site tiles inside the category card.  We don't use the MVC
     // paradigm for the category card view itself since it is mismatched to the needs of the
     // recycler view that we use for category cards.  The controller for MVC is actually here, the
@@ -172,16 +177,12 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
                 view.setOnFocusChangeListener(interactionDelegate);
             }
         }
-
-        protected CategoryCardInteractionDelegate createInteractionDelegate(PropertyModel model) {
-            return new CategoryCardInteractionDelegate(model.get(ExploreSitesSite.URL_KEY),
-                    model.get(ExploreSitesSite.TILE_INDEX_KEY));
-        }
     }
 
     public ExploreSitesCategoryCardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mModelChangeProcessors = new ArrayList<>(MAX_TILE_COUNT);
+        mSiteViewBinder = new ExploreSitesSiteViewBinder();
     }
 
     @Override
@@ -254,8 +255,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
             siteModel.set(ExploreSitesSite.TILE_INDEX_KEY, tileIndex);
 
-            mModelChangeProcessors.add(PropertyModelChangeProcessor.create(
-                    siteModel, tileView, createViewBinder((Activity) getContext())));
+            mModelChangeProcessors.add(
+                    PropertyModelChangeProcessor.create(siteModel, tileView, mSiteViewBinder));
 
             // Fetch icon if not present already.
             if (siteModel.get(ExploreSitesSite.ICON_KEY) == null) {
@@ -285,9 +286,5 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         // of using MAX_TILE_COUNT?
         RecordHistogram.recordLinearCountHistogram("ExploreSites.SiteTilesClickIndex",
                 cardIndex * MAX_TILE_COUNT + tileIndex, 1, 100, 100);
-    }
-
-    protected ExploreSitesSiteViewBinder createViewBinder(Activity activity) {
-        return new ExploreSitesSiteViewBinder();
     }
 }

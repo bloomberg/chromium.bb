@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
@@ -34,11 +33,6 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
      */
     public interface Delegate extends ContextMenuManager.Delegate {
         /**
-         * @return Activity associated with this delegate. Used to display prompts.
-         */
-        Activity getActivity();
-
-        /**
          * @return Title associated with this delegate.
          */
         String getTitle();
@@ -49,41 +43,42 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         Bitmap getIconBitmap();
     }
 
+    private final Context mContext;
     private PropertyModel mTouchlessMenuModel;
     private ModalDialogManager mModalDialogManager;
 
-    public TouchlessContextMenuManager(NativePageNavigationDelegate navigationDelegate,
+    public TouchlessContextMenuManager(Context context,
+            NativePageNavigationDelegate navigationDelegate,
             TouchEnabledDelegate touchEnabledDelegate, Runnable closeContextMenuCallback,
             String userActionPrefix) {
         super(navigationDelegate, touchEnabledDelegate, closeContextMenuCallback, userActionPrefix);
+        mContext = context;
     }
 
     /**
      * Creates PropertyModel for touchless context menu and displays it through modalDialogManager.
      *
      * @param modalDialogManager The ModalDialogManager to display context menu.
-     * @param context The Context used for loading resources (strings, drawables).
      * @param delegate Delegate defines filter for displayed menu items and behavior for selects
      *                 item.
      */
-    public void showTouchlessContextMenu(ModalDialogManager modalDialogManager, Context context,
-            ContextMenuManager.Delegate delegate) {
+    public void showTouchlessContextMenu(
+            ModalDialogManager modalDialogManager, ContextMenuManager.Delegate delegate) {
         ArrayList<PropertyModel> menuItems = new ArrayList();
         for (@ContextMenuItemId int itemId = 0; itemId < ContextMenuItemId.NUM_ENTRIES; itemId++) {
             if (!shouldShowItem(itemId, delegate)) continue;
 
             // Each menu item is assigned its own instance of TouchlessItemClickListener where
             // itemId of this item is maintained.
-            PropertyModel menuItem = buildMenuItem(
-                    context, itemId, new TouchlessItemClickListener(delegate, itemId));
+            PropertyModel menuItem =
+                    buildMenuItem(itemId, new TouchlessItemClickListener(delegate, itemId));
             menuItems.add(menuItem);
         }
         if (menuItems.size() == 0) return;
 
         PropertyModel[] menuItemsArray = new PropertyModel[menuItems.size()];
         menuItemsArray = menuItems.toArray(menuItemsArray);
-        mTouchlessMenuModel =
-                buildMenuModel(context, delegate.getContextMenuTitle(), menuItemsArray);
+        mTouchlessMenuModel = buildMenuModel(delegate.getContextMenuTitle(), menuItemsArray);
         mModalDialogManager = modalDialogManager;
         mModalDialogManager.showDialog(mTouchlessMenuModel, ModalDialogManager.ModalDialogType.APP);
 
@@ -105,9 +100,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         if (itemId == ContextMenuItemId.ADD_TO_MY_APPS) {
             Delegate touchlessDelegate = (Delegate) delegate;
             TouchlessAddToHomescreenManager touchlessAddToHomescreenManager =
-                    new TouchlessAddToHomescreenManager(touchlessDelegate.getActivity(),
-                            touchlessDelegate.getUrl(), touchlessDelegate.getTitle(),
-                            touchlessDelegate.getIconBitmap());
+                    new TouchlessAddToHomescreenManager(mContext, touchlessDelegate.getUrl(),
+                            touchlessDelegate.getTitle(), touchlessDelegate.getIconBitmap());
             touchlessAddToHomescreenManager.start();
             return false;
         }
@@ -143,18 +137,17 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
      * Builds PropertyModel for individual menu item. String for item's label is loaded from
      * resources by PropertyModel.Builder.
      */
-    private PropertyModel buildMenuItem(
-            Context context, @ContextMenuItemId int itemId, OnClickListener listener) {
+    private PropertyModel buildMenuItem(@ContextMenuItemId int itemId, OnClickListener listener) {
         return new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                .with(DialogListItemProperties.TEXT, context.getResources(),
+                .with(DialogListItemProperties.TEXT, mContext.getResources(),
                         getResourceIdForMenuItem(itemId))
-                .with(DialogListItemProperties.ICON, context, getIconIdForMenuItem(itemId))
+                .with(DialogListItemProperties.ICON, mContext, getIconIdForMenuItem(itemId))
                 .with(DialogListItemProperties.CLICK_LISTENER, listener)
                 .build();
     }
 
     /** Builds PropertyModel for context menu from list of PropertyModels for individual items. */
-    private PropertyModel buildMenuModel(Context context, String title, PropertyModel[] menuItems) {
+    private PropertyModel buildMenuModel(String title, PropertyModel[] menuItems) {
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS);
         ActionNames names = new ActionNames();

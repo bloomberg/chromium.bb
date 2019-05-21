@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
@@ -14,6 +14,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -72,13 +73,13 @@ public class AddToHomescreenDialog implements View.OnClickListener {
     private RatingBar mAppRatingBar;
     private ImageView mPlayLogoView;
 
-    private Activity mActivity;
+    private Context mContext;
     private Delegate mDelegate;
 
     private boolean mHasIcon;
 
-    public AddToHomescreenDialog(Activity activity, Delegate delegate) {
-        mActivity = activity;
+    public AddToHomescreenDialog(Context context, Delegate delegate) {
+        mContext = context;
         mDelegate = delegate;
     }
 
@@ -89,12 +90,11 @@ public class AddToHomescreenDialog implements View.OnClickListener {
 
     /**
      * Shows the dialog for adding a shortcut to the home screen.
-     * @param activity The current activity in which to create the dialog.
      */
     public void show() {
-        View view = mActivity.getLayoutInflater().inflate(R.layout.add_to_homescreen_dialog, null);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.add_to_homescreen_dialog, null);
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(mActivity, R.style.Theme_Chromium_AlertDialog)
+                new AlertDialog.Builder(mContext, R.style.Theme_Chromium_AlertDialog)
                         .setTitle(AppBannerManager.getHomescreenLanguageOption())
                         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
@@ -154,7 +154,7 @@ public class AddToHomescreenDialog implements View.OnClickListener {
 
         mDialog.setView(view);
         mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
-                mActivity.getResources().getString(R.string.add),
+                mContext.getResources().getString(R.string.add),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
@@ -222,7 +222,7 @@ public class AddToHomescreenDialog implements View.OnClickListener {
         // Update the text on the primary button.
         Button button = mDialog.getButton(DialogInterface.BUTTON_POSITIVE);
         button.setText(installText);
-        button.setContentDescription(mActivity.getString(
+        button.setContentDescription(mContext.getString(
                 R.string.app_banner_view_native_app_install_accessibility, installText));
 
         // Clicking on the app title or the icon will open the Play Store for more details.

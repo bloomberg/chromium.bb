@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.content.Context;
 import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,7 +44,6 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 public class TouchlessNewTabPage extends BasicNativePage {
     private static final String TAG = "TouchlessNewTabPage";
 
-    private Context mContext;
     private ModalDialogManager mModalDialogManager;
     private String mTitle;
     private int mBackgroundColor;
@@ -68,7 +66,6 @@ public class TouchlessNewTabPage extends BasicNativePage {
     protected void initialize(ChromeActivity activity, NativePageHost nativePageHost) {
         TraceEvent.begin(TAG);
 
-        mContext = activity;
         mModalDialogManager = activity.getModalDialogManager();
         mTab = activity.getActivityTab();
         Profile profile = mTab.getProfile();
@@ -127,7 +124,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
-        mContextMenuManager = new TouchlessContextMenuManager(
+        mContextMenuManager = new TouchlessContextMenuManager(activity,
                 suggestionsUiDelegate.getNavigationDelegate(), mRecyclerView::setTouchEnabled,
                 closeContextMenuCallback, NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
@@ -198,6 +195,6 @@ public class TouchlessNewTabPage extends BasicNativePage {
         ContextMenuManager.Delegate delegate =
                 ContextMenuManager.getDelegateFromFocusedView(focusedView);
         if (delegate == null) return;
-        mContextMenuManager.showTouchlessContextMenu(mModalDialogManager, mContext, delegate);
+        mContextMenuManager.showTouchlessContextMenu(mModalDialogManager, delegate);
     }
 }
