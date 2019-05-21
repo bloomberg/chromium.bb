@@ -6,7 +6,7 @@
 #define COMPONENTS_PREVIEWS_CONTENT_PROTO_DATABASE_PROVIDER_TEST_BASE_H_
 
 #include "base/files/scoped_temp_dir.h"
-#include "components/keyed_service/core/test_simple_factory_key.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +26,7 @@ class ProtoDatabaseProviderTestBase : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<TestSimpleFactoryKey> simple_factory_key_;
+  std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
   leveldb_proto::ProtoDatabaseProvider* db_provider_;
 };
 

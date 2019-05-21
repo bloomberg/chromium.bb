@@ -15,8 +15,7 @@ void ProtoDatabaseProviderTestBase::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   // Create a SimpleFactoryKey, to be used to retrieve a ProtoDatabaseProvider
   // to initialize a HintCacheStore.
-  simple_factory_key_ =
-      std::make_unique<TestSimpleFactoryKey>(temp_dir_.GetPath());
+  simple_factory_key_ = std::make_unique<SimpleFactoryKey>(temp_dir_.GetPath());
   db_provider_ =
       leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()->GetForKey(
           simple_factory_key_.get());

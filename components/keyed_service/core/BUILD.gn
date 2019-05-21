@@ -45,23 +45,6 @@ component("core") {
   ]
 }
 
-component("test_support") {
-  testonly = true
-
-  output_name = "keyed_service_test_support"
-  sources = [
-    "test_simple_factory_key.cc",
-    "test_simple_factory_key.h",
-  ]
-
-  defines = [ "KEYED_SERVICE_IMPLEMENTATION" ]
-
-  deps = [
-    ":core",
-    "//base",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [

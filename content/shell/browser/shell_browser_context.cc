@@ -17,8 +17,8 @@
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/keyed_service/core/simple_key_map.h"
-#include "components/keyed_service/core/test_simple_factory_key.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -143,7 +143,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
 
 void ShellBrowserContext::FinishInitWhileIOAllowed() {
   BrowserContext::Initialize(this, path_);
-  key_ = std::make_unique<TestSimpleFactoryKey>(path_, off_the_record_);
+  key_ = std::make_unique<SimpleFactoryKey>(path_, off_the_record_);
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 }
 

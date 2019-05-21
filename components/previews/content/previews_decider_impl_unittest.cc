@@ -37,7 +37,6 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/keyed_service/core/test_simple_factory_key.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/prefs/testing_pref_service.h"

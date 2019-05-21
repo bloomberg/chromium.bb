@@ -15,7 +15,6 @@
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_clock.h"
-#include "components/keyed_service/core/test_simple_factory_key.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"

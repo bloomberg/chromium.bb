@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/keyed_service/core/test_simple_factory_key.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/proto_database_provider_test_base.h"

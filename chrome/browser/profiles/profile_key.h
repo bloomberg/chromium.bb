@@ -26,9 +26,6 @@ class ProfileKey : public SimpleFactoryKey {
 
   static ProfileKey* FromSimpleFactoryKey(SimpleFactoryKey* key);
 
-  // SimpleFactoryKey implementation.
-  bool IsOffTheRecord() const override;
-
  private:
   PrefService* prefs_;
 
