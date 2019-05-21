@@ -1950,4 +1950,17 @@ TEST_F(TextfieldModelTest, Yank) {
   EXPECT_STR_EQ("aad", model.text());
 }
 
+TEST_F(TextfieldModelTest, SetCompositionFromExistingText) {
+  TextfieldModel model(nullptr);
+  model.SetText(base::ASCIIToUTF16("abcde"));
+
+  model.SetCompositionFromExistingText(gfx::Range(1, 3));
+  EXPECT_TRUE(model.HasCompositionText());
+
+  ui::CompositionText composition;
+  composition.text = base::ASCIIToUTF16("123");
+  model.SetCompositionText(composition);
+  EXPECT_STR_EQ("a123de", model.text());
+}
+
 }  // namespace views

@@ -219,6 +219,10 @@ class VIEWS_EXPORT TextfieldModel {
   // composition text.
   void SetCompositionText(const ui::CompositionText& composition);
 
+  // Puts the text in the specified range into composition mode.
+  // This method should not be called with composition text or an invalid range.
+  void SetCompositionFromExistingText(const gfx::Range& range);
+
   // Converts current composition text into final content.
   void ConfirmCompositionText();
 

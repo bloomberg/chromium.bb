@@ -1758,8 +1758,12 @@ bool Textfield::ShouldDoLearning() {
 bool Textfield::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  // TODO(https://crbug.com/952355): Support custom text spans.
+  DCHECK(!model_->HasCompositionText());
+  model_->SetCompositionFromExistingText(range);
+  SchedulePaint();
+  OnAfterUserAction();
+  return true;
 }
 #endif
 

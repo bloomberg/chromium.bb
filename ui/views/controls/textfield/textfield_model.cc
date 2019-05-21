@@ -669,6 +669,12 @@ void TextfieldModel::SetCompositionText(
   }
 }
 
+void TextfieldModel::SetCompositionFromExistingText(const gfx::Range& range) {
+  DCHECK(!HasCompositionText());
+  composition_range_ = range;
+  render_text_->SetCompositionRange(range);
+}
+
 void TextfieldModel::ConfirmCompositionText() {
   DCHECK(HasCompositionText());
   base::string16 composition = text().substr(
