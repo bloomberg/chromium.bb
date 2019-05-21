@@ -622,6 +622,18 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         disk_info->set_size(storage.values().size());
       }
     }
+    if (probe_result.value().vpd_cached_size() > 0) {
+      em::SystemStatus* const system_status =
+          response_params_.device_status->mutable_system_status();
+      // vpd_cached values are a repeated field in ProbeResult protobuf,
+      // while logically it should be optional. Using iteration + value checks
+      // just for future-proofing code.
+      for (const auto& vpd_values : probe_result.value().vpd_cached()) {
+        const std::string& sku_number = vpd_values.values().vpd_sku_number();
+        if (!sku_number.empty())
+          system_status->set_vpd_sku_number(sku_number);
+      }
+    }
   }
 
   void OnEMMCLifetimeReceived(const em::DiskLifetimeEstimation& est) {
@@ -1248,6 +1260,7 @@ void DeviceStatusCollector::FetchProbeData(ProbeDataReceiver callback) {
     request.add_categories(runtime_probe::ProbeRequest::battery);
   if (report_storage_status_)
     request.add_categories(runtime_probe::ProbeRequest::storage);
+  request.add_categories(runtime_probe::ProbeRequest::vpd_cached);
 
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
