@@ -69,6 +69,9 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   const NGPhysicalFragment* FirstLogicalLeaf() const;
   const NGPhysicalFragment* LastLogicalLeaf() const;
 
+  const LayoutObject* ClosestLeafChildForPoint(const PhysicalOffset&,
+                                               bool only_editable_leaves) const;
+
   // Returns a point at the visual start/end of the line.
   // Encapsulates the handling of text direction and writing mode.
   PhysicalOffset LineStartPoint() const;

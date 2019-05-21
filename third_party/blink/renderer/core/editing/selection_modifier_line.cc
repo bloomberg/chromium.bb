@@ -34,22 +34,210 @@
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
 namespace {
 
-const RootInlineBox* ComputeContainingLineBox(const VisiblePosition& position) {
+// Abstracts similarities between RootInlineBox and NGPhysicalLineBoxFragment
+class AbstractLineBox {
+  STACK_ALLOCATED();
+
+ public:
+  AbstractLineBox() = default;
+
+  static AbstractLineBox CreateFor(const VisiblePosition&);
+
+  bool IsNull() const { return type_ == Type::kNull; }
+
+  bool CanBeCaretContainer() const {
+    DCHECK(!IsNull());
+    // We want to skip zero height boxes.
+    // This could happen in case it is a TrailingFloatsRootInlineBox.
+    if (IsOldLayout()) {
+      return GetRootInlineBox().LogicalHeight() &&
+             GetRootInlineBox().FirstLeafChild();
+    }
+    if (GetLineBoxFragment().IsEmptyLineBox())
+      return false;
+    const PhysicalSize physical_size = GetLineBoxFragment().Size();
+    const LogicalSize logical_size = physical_size.ConvertToLogical(
+        GetLineBoxFragment().Style().GetWritingMode());
+    if (!logical_size.block_size)
+      return false;
+    // Use |ClosestLeafChildForPoint| to check if there's any leaf child.
+    return GetLineBoxFragment().ClosestLeafChildForPoint(PhysicalOffset(),
+                                                         false);
+  }
+
+  AbstractLineBox PreviousLine() const {
+    DCHECK(!IsNull());
+    if (IsOldLayout()) {
+      const RootInlineBox* previous_root = GetRootInlineBox().PrevRootBox();
+      return previous_root ? AbstractLineBox(*previous_root)
+                           : AbstractLineBox();
+    }
+    const auto children = ng_box_fragment_->Children();
+    for (wtf_size_t i = ng_child_index_; i;) {
+      --i;
+      if (!children[i]->IsLineBox())
+        continue;
+      return AbstractLineBox(*ng_box_fragment_, i);
+    }
+    return AbstractLineBox();
+  }
+
+  AbstractLineBox NextLine() const {
+    DCHECK(!IsNull());
+    if (IsOldLayout()) {
+      const RootInlineBox* next_root = GetRootInlineBox().NextRootBox();
+      return next_root ? AbstractLineBox(*next_root) : AbstractLineBox();
+    }
+    const auto children = ng_box_fragment_->Children();
+    for (wtf_size_t i = ng_child_index_ + 1; i < children.size(); ++i) {
+      if (!children[i]->IsLineBox())
+        continue;
+      return AbstractLineBox(*ng_box_fragment_, i);
+    }
+    return AbstractLineBox();
+  }
+
+  LayoutPoint AbsoluteLineDirectionPointToLocalPointInBlock(
+      LayoutUnit line_direction_point) {
+    DCHECK(!IsNull());
+    const LayoutBlockFlow& containing_block = GetBlock();
+    FloatPoint absolute_block_point =
+        containing_block.LocalToAbsolute(FloatPoint());
+    if (containing_block.HasOverflowClip()) {
+      absolute_block_point -=
+          FloatSize(containing_block.ScrolledContentOffset());
+    }
+
+    if (containing_block.Style()->IsHorizontalWritingMode()) {
+      return LayoutPoint(
+          LayoutUnit(line_direction_point - absolute_block_point.X()),
+          BlockDirectionPointInLine());
+    }
+
+    return LayoutPoint(
+        BlockDirectionPointInLine(),
+        LayoutUnit(line_direction_point - absolute_block_point.Y()));
+  }
+
+  const LayoutObject* ClosestLeafChildForPoint(
+      const LayoutPoint& point,
+      bool only_editable_leaves) const {
+    DCHECK(!IsNull());
+    if (IsOldLayout()) {
+      return GetRootInlineBox().ClosestLeafChildForPoint(point,
+                                                         only_editable_leaves);
+    }
+    const LayoutSize unit_square(1, 1);
+    const PhysicalRect physical_rect =
+        GetBlock().FlipForWritingMode(LayoutRect(point, unit_square));
+    const PhysicalOffset physical_point = physical_rect.offset;
+    const PhysicalOffset local_physical_point =
+        physical_point - ng_box_fragment_->Children()[ng_child_index_].offset;
+    return GetLineBoxFragment().ClosestLeafChildForPoint(local_physical_point,
+                                                         only_editable_leaves);
+  }
+
+ private:
+  explicit AbstractLineBox(const RootInlineBox& root_inline_box)
+      : root_inline_box_(&root_inline_box), type_(Type::kOldLayout) {}
+
+  AbstractLineBox(const NGPhysicalBoxFragment& box_fragment,
+                  wtf_size_t child_index)
+      : ng_box_fragment_(&box_fragment),
+        ng_child_index_(child_index),
+        type_(Type::kLayoutNG) {
+    DCHECK_LT(child_index, box_fragment.Children().size());
+    DCHECK(box_fragment.Children()[child_index]->IsLineBox());
+  }
+
+  const LayoutBlockFlow& GetBlock() const {
+    DCHECK(!IsNull());
+    if (IsOldLayout()) {
+      return *To<LayoutBlockFlow>(
+          LineLayoutAPIShim::LayoutObjectFrom(GetRootInlineBox().Block()));
+    }
+    DCHECK(ng_box_fragment_->GetLayoutObject());
+    return *To<LayoutBlockFlow>(ng_box_fragment_->GetLayoutObject());
+  }
+
+  LayoutUnit BlockDirectionPointInLine() const {
+    DCHECK(!IsNull());
+    if (IsOldLayout())
+      return GetRootInlineBox().BlockDirectionPointInLine();
+    const PhysicalOffset physical_offset =
+        ng_box_fragment_->Children()[ng_child_index_].offset;
+    const LogicalOffset logical_offset = physical_offset.ConvertToLogical(
+        ng_box_fragment_->Style().GetWritingMode(),
+        GetLineBoxFragment().BaseDirection(), ng_box_fragment_->Size(),
+        GetLineBoxFragment().Size());
+    return logical_offset.block_offset;
+  }
+
+  bool IsOldLayout() const { return type_ == Type::kOldLayout; }
+
+  bool IsLayoutNG() const { return type_ == Type::kLayoutNG; }
+
+  const RootInlineBox& GetRootInlineBox() const {
+    DCHECK(IsOldLayout());
+    return *root_inline_box_;
+  }
+
+  const NGPhysicalLineBoxFragment& GetLineBoxFragment() const {
+    DCHECK(IsLayoutNG());
+    return To<NGPhysicalLineBoxFragment>(
+        *ng_box_fragment_->Children()[ng_child_index_]);
+  }
+
+  enum class Type { kNull, kOldLayout, kLayoutNG };
+
+  const RootInlineBox* root_inline_box_ = nullptr;
+  const NGPhysicalBoxFragment* ng_box_fragment_ = nullptr;
+  wtf_size_t ng_child_index_ = 0u;
+  Type type_ = Type::kNull;
+};
+
+// static
+AbstractLineBox AbstractLineBox::CreateFor(const VisiblePosition& position) {
   if (position.IsNull() ||
       !position.DeepEquivalent().AnchorNode()->GetLayoutObject()) {
-    return nullptr;
+    return AbstractLineBox();
   }
-  const InlineBox* box = ComputeInlineBoxPosition(position).inline_box;
+
+  const PositionWithAffinity adjusted = ComputeInlineAdjustedPosition(position);
+  if (adjusted.IsNull())
+    return AbstractLineBox();
+
+  if (const NGPaintFragment* line_paint_fragment =
+          NGContainingLineBoxOf(adjusted)) {
+    const NGPhysicalBoxFragment& box_fragment = To<NGPhysicalBoxFragment>(
+        line_paint_fragment->Parent()->PhysicalFragment());
+    const NGPhysicalFragment& line_box_fragment =
+        line_paint_fragment->PhysicalFragment();
+    for (wtf_size_t i = 0; i < box_fragment.Children().size(); ++i) {
+      if (box_fragment.Children()[i].get() == &line_box_fragment)
+        return AbstractLineBox(box_fragment, i);
+    }
+    NOTREACHED();
+    return AbstractLineBox();
+  }
+
+  const InlineBox* box =
+      ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted).inline_box;
   if (!box)
-    return nullptr;
-  return &box->Root();
+    return AbstractLineBox();
+  return AbstractLineBox(box->Root());
 }
 
 ContainerNode* HighestEditableRootOfNode(const Node& node) {
@@ -123,27 +311,6 @@ Node* NextLeafWithGivenEditability(Node* node, bool editable) {
       return runner;
   }
   return nullptr;
-}
-
-LayoutPoint AbsoluteLineDirectionPointToLocalPointInBlock(
-    const RootInlineBox* root,
-    LayoutUnit line_direction_point) {
-  DCHECK(root);
-  LineLayoutBlockFlow containing_block = root->Block();
-  FloatPoint absolute_block_point =
-      containing_block.LocalToAbsolute(FloatPoint());
-  if (containing_block.HasOverflowClip())
-    absolute_block_point -= FloatSize(containing_block.ScrolledContentOffset());
-
-  if (containing_block.IsHorizontalWritingMode()) {
-    return LayoutPoint(
-        LayoutUnit(line_direction_point - absolute_block_point.X()),
-        root->BlockDirectionPointInLine());
-  }
-
-  return LayoutPoint(
-      root->BlockDirectionPointInLine(),
-      LayoutUnit(line_direction_point - absolute_block_point.Y()));
 }
 
 bool InSameLine(const Node& node, const VisiblePosition& visible_position) {
@@ -234,22 +401,20 @@ VisiblePosition SelectionModifier::PreviousLinePosition(
   if (!layout_object)
     return VisiblePosition();
 
-  const RootInlineBox* root = ComputeContainingLineBox(visible_position);
-  if (root) {
-    root = root->PrevRootBox();
-    // We want to skip zero height boxes.
-    // This could happen in case it is a TrailingFloatsRootInlineBox.
-    if (!root || !root->LogicalHeight() || !root->FirstLeafChild())
-      root = nullptr;
+  AbstractLineBox line = AbstractLineBox::CreateFor(visible_position);
+  if (!line.IsNull()) {
+    line = line.PreviousLine();
+    if (line.IsNull() || !line.CanBeCaretContainer())
+      line = AbstractLineBox();
   }
 
-  if (!root) {
+  if (line.IsNull()) {
     Position position =
         PreviousRootInlineBoxCandidatePosition(node, visible_position);
     if (position.IsNotNull()) {
       const VisiblePosition candidate = CreateVisiblePosition(position);
-      root = ComputeContainingLineBox(candidate);
-      if (!root) {
+      line = AbstractLineBox::CreateFor(candidate);
+      if (line.IsNull()) {
         // TODO(editing-dev): Investigate if this is correct for null
         // |candidate|.
         return candidate;
@@ -257,17 +422,20 @@ VisiblePosition SelectionModifier::PreviousLinePosition(
     }
   }
 
-  if (root) {
+  if (!line.IsNull()) {
     // FIXME: Can be wrong for multi-column layout and with transforms.
-    LayoutPoint point_in_line = AbsoluteLineDirectionPointToLocalPointInBlock(
-        root, line_direction_point);
+    LayoutPoint point_in_line =
+        line.AbsoluteLineDirectionPointToLocalPointInBlock(
+            line_direction_point);
     const LayoutObject* closest_leaf_child =
-        root->ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p));
-    const Node* node = closest_leaf_child->GetNode();
-    if (node && EditingIgnoresContent(*node))
-      return VisiblePosition::InParentBeforeNode(*node);
-    return CreateVisiblePosition(
-        closest_leaf_child->PositionForPoint(point_in_line));
+        line.ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p));
+    if (closest_leaf_child) {
+      const Node* node = closest_leaf_child->GetNode();
+      if (node && EditingIgnoresContent(*node))
+        return VisiblePosition::InParentBeforeNode(*node);
+      return CreateVisiblePosition(
+          closest_leaf_child->PositionForPoint(point_in_line));
+    }
   }
 
   // Could not find a previous line. This means we must already be on the first
@@ -299,16 +467,14 @@ VisiblePosition SelectionModifier::NextLinePosition(
   if (!layout_object)
     return VisiblePosition();
 
-  const RootInlineBox* root = ComputeContainingLineBox(visible_position);
-  if (root) {
-    root = root->NextRootBox();
-    // We want to skip zero height boxes.
-    // This could happen in case it is a TrailingFloatsRootInlineBox.
-    if (!root || !root->LogicalHeight() || !root->FirstLeafChild())
-      root = nullptr;
+  AbstractLineBox line = AbstractLineBox::CreateFor(visible_position);
+  if (!line.IsNull()) {
+    line = line.NextLine();
+    if (line.IsNull() || !line.CanBeCaretContainer())
+      line = AbstractLineBox();
   }
 
-  if (!root) {
+  if (line.IsNull()) {
     // FIXME: We need do the same in previousLinePosition.
     Node* child = NodeTraversal::ChildAt(*node, p.ComputeEditingOffset());
     Node* search_start_node =
@@ -317,8 +483,8 @@ VisiblePosition SelectionModifier::NextLinePosition(
         NextRootInlineBoxCandidatePosition(search_start_node, visible_position);
     if (position.IsNotNull()) {
       const VisiblePosition candidate = CreateVisiblePosition(position);
-      root = ComputeContainingLineBox(candidate);
-      if (!root) {
+      line = AbstractLineBox::CreateFor(candidate);
+      if (line.IsNull()) {
         // TODO(editing-dev): Investigate if this is correct for null
         // |candidate|.
         return candidate;
@@ -326,17 +492,20 @@ VisiblePosition SelectionModifier::NextLinePosition(
     }
   }
 
-  if (root) {
+  if (!line.IsNull()) {
     // FIXME: Can be wrong for multi-column layout and with transforms.
-    LayoutPoint point_in_line = AbsoluteLineDirectionPointToLocalPointInBlock(
-        root, line_direction_point);
+    LayoutPoint point_in_line =
+        line.AbsoluteLineDirectionPointToLocalPointInBlock(
+            line_direction_point);
     const LayoutObject* closest_leaf_child =
-        root->ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p));
-    const Node* node = closest_leaf_child->GetNode();
-    if (node && EditingIgnoresContent(*node))
-      return VisiblePosition::InParentBeforeNode(*node);
-    return CreateVisiblePosition(
-        closest_leaf_child->PositionForPoint(point_in_line));
+        line.ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p));
+    if (closest_leaf_child) {
+      const Node* node = closest_leaf_child->GetNode();
+      if (node && EditingIgnoresContent(*node))
+        return VisiblePosition::InParentBeforeNode(*node);
+      return CreateVisiblePosition(
+          closest_leaf_child->PositionForPoint(point_in_line));
+    }
   }
 
   // Could not find a next line. This means we must already be on the last line.
