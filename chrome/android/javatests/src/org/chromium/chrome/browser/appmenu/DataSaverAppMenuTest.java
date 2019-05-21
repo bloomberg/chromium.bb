@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -109,7 +108,6 @@ public class DataSaverAppMenuTest {
     @Feature({"Browser", "Main"})
     public void testMenuDataSaver() throws Throwable {
         mActivityTestRule.runOnUiThread((Runnable) () -> {
-            ContextUtils.getAppSharedPreferences().edit().clear().apply();
             // Data Saver hasn't been turned on, the footer shouldn't show.
             Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
 

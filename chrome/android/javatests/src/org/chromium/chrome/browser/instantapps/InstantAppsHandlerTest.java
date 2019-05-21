@@ -15,7 +15,6 @@ import android.provider.Browser;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -66,11 +65,6 @@ public class InstantAppsHandlerTest {
         editor.putBoolean("applink.app_link_enabled", true);
         editor.putBoolean("applink.chrome_default_browser", true);
         editor.apply();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        ContextUtils.getAppSharedPreferences().edit().clear().apply();
     }
 
     @Test
