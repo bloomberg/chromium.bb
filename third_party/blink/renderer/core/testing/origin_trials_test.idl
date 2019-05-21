@@ -51,4 +51,7 @@ interface OriginTrialsTest {
 
     // These are not available even with the token present.
     [RuntimeEnabled=OriginTrialsSampleAPIInvalidOS] readonly attribute boolean invalidOSAttribute;
+
+    // These are available if the associated navigation trial is available.
+    [RuntimeEnabled=OriginTrialsSampleAPINavigation] boolean navigationMethod();
 };
