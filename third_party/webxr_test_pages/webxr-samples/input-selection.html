@@ -75,8 +75,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // XR globals.
       let xrButton = null;
-      let xrImmersiveRefSpace = null;
-      let xrNonImmersiveRefSpace = null;
+      let xrImmersiveRefSpaceBase = null;
+      let xrImmersiveRefSpaceOffset = null;
+      let xrNonImmersiveRefSpaceBase = null;
+      let xrNonImmersiveRefSpaceOffset = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -327,12 +329,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             throw e;
           }
         }).then((refSpace) => {
-          if (session.mode.startsWith('immersive')) {
-            xrImmersiveRefSpace = refSpace;
-          } else {
-            xrNonImmersiveRefSpace = refSpace;
-          }
-
+          // Save the session-specific reference space, and apply the
+          // current player orientation/position as originOffset.
+          setRefSpace(session, refSpace, false);
+          updateOriginOffset(session);
           session.requestAnimationFrame(onXRFrame);
         });
       }
@@ -345,7 +345,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onSelect(ev) {
         let session = ev.frame.session;
-        let refSpace = getRefSpace(session);
+        let refSpace = getRefSpace(session, true);
 
         let headPose = ev.frame.getPose(session.viewerSpace, refSpace);
         if (!headPose) return;
@@ -388,13 +388,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               }
               console.log('rotate by', rotationDelta);
             }
-            if (hitResult.node == floorNode) {
-               // New position uses x/z values of the hit test result, keeping y at 0 (floor level)
-               playerInWorldSpaceNew[0] = hitResult.intersection[0];
-               playerInWorldSpaceNew[1] = 0;
-               playerInWorldSpaceNew[2] = hitResult.intersection[2];
-               console.log('teleport to', playerInWorldSpaceNew);
-            }
+          }
+          if (hitResult.node == floorNode) {
+             // New position uses x/z values of the hit test result, keeping y at 0 (floor level)
+             playerInWorldSpaceNew[0] = hitResult.intersection[0];
+             playerInWorldSpaceNew[1] = 0;
+             playerInWorldSpaceNew[2] = hitResult.intersection[2];
+             console.log('teleport to', playerInWorldSpaceNew);
           }
         }
 
@@ -417,7 +417,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Update tracking space origin so that origin + playerOffset == player location in world space
         vec3.sub(trackingSpaceOriginInWorldSpace, playerInWorldSpaceNew, playerOffsetInWorldSpaceNew);
 
-        // Compute the origin offset
+        updateOriginOffset(session);
+      }
+
+      function updateOriginOffset(session) {
+        // Compute the origin offset based on player position/orientation.
         quat.identity(invOrientation);
         quat.rotateY(invOrientation, invOrientation, -trackingSpaceHeadingDegrees * Math.PI / 180);
         vec3.negate(invPosition, trackingSpaceOriginInWorldSpace);
@@ -426,8 +430,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           {x: invPosition[0], y: invPosition[1], z: invPosition[2]},
           {x: invOrientation[0], y: invOrientation[1], z: invOrientation[2], w: invOrientation[3]});
 
-        // Update refSpace to use a new originOffset with the teleported player position and orientation
-        refSpace = refSpace.getOffsetReferenceSpace(xform);
+        // Update offset reference to use a new originOffset with the teleported player position and orientation.
+        // This new offset needs to be applied to the base ref space.
+        let refSpace = getRefSpace(session, false).getOffsetReferenceSpace(xform);
+        setRefSpace(session, refSpace, true);
 
         console.log('teleport to', trackingSpaceOriginInWorldSpace);
       }
@@ -449,15 +455,31 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let invPosition = vec3.create();
       let invOrientation = quat.create();
 
-      function getRefSpace(session) {
+      function getRefSpace(session, isOffset) {
         return session.mode.startsWith('immersive') ?
-               xrImmersiveRefSpace :
-               xrNonImmersiveRefSpace;
+              (isOffset ? xrImmersiveRefSpaceOffset : xrImmersiveRefSpaceBase) :
+              (isOffset ? xrNonImmersiveRefSpaceOffset : xrNonImmersiveRefSpaceBase);
+      }
+
+      function setRefSpace(session, refSpace, isOffset) {
+        if (session.mode.startsWith('immersive')) {
+          if (isOffset) {
+            xrImmersiveRefSpaceOffset = refSpace;
+          } else {
+            xrImmersiveRefSpaceBase = refSpace;
+          }
+        } else {
+          if (isOffset) {
+            xrNonImmersiveRefSpaceOffset = refSpace;
+          } else {
+            xrNonImmersiveRefSpaceBase = refSpace;
+          }
+        }
       }
 
       function onXRFrame(time, frame) {
         let session = frame.session;
-        let refSpace = getRefSpace(session);
+        let refSpace = getRefSpace(session, true);
 
         let pose = frame.getViewerPose(refSpace);
         scene.startFrame();
