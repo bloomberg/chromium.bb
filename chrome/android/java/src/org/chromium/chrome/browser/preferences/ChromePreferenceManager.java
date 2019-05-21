@@ -110,6 +110,13 @@ public class ChromePreferenceManager {
             "contextual_search_previous_interaction_timestamp";
 
     /**
+     * Key to cache whether
+     * {@link ChromeFeatureList#SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT} is enabled.
+     */
+    public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
+            "swap_pixel_format_to_fix_convert_from_translucent";
+
+    /**
      * Whether the promotion for data reduction has been skipped on first invocation.
      * Default value is false.
      */

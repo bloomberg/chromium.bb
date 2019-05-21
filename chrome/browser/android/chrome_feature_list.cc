@@ -166,6 +166,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
+    &kSwapPixelFormatToFixConvertFromTranslucent,
     &kTabEngagementReportingAndroid,
     &kTabGroupsAndroid,
     &kTabGroupsUiImprovementsAndroid,
@@ -499,6 +500,10 @@ const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
 
 const base::Feature kSpecialUserDecision{"SpecialUserDecision",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSwapPixelFormatToFixConvertFromTranslucent{
+    "SwapPixelFormatToFixConvertFromTranslucent",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabEngagementReportingAndroid{
     "TabEngagementReportingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};

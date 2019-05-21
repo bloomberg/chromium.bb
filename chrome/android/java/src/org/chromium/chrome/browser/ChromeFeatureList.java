@@ -294,6 +294,7 @@ public abstract class ChromeFeatureList {
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
     public static final String PROGRESS_BAR_THROTTLE = "ProgressBarThrottle";
     public static final String PWA_PERSISTENT_NOTIFICATION = "PwaPersistentNotification";
+    public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
@@ -308,7 +309,8 @@ public abstract class ChromeFeatureList {
     public static final String SSL_COMMITTED_INTERSTITIALS = "SSLCommittedInterstitials";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
     public static final String SUBRESOURCE_FILTER = "SubresourceFilter";
-    public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
+    public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
+            "SwapPixelFormatToFixConvertFromTranslucent";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
     public static final String TAB_GROUPS_ANDROID = "TabGroupsAndroid";
     public static final String TAB_GROUPS_UI_IMPROVEMENTS_ANDROID =

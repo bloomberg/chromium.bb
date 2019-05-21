@@ -212,6 +212,7 @@ public class FeatureUtilities {
         cacheServiceManagerForBackgroundPrefetch();
         cacheNetworkServiceWarmUpEnabled();
         cacheImmersiveUiModeEnabled();
+        cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
         cacheTabPersistentStoreTaskRunnerVariant();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
@@ -766,6 +767,22 @@ public class FeatureUtilities {
         }
 
         return sIsImmersiveUiModeEnabled;
+    }
+
+    /**
+     * Returns whether to use {@link Window#setFormat()} to undo opacity change caused by
+     * {@link Activity#convertFromTranslucent()}.
+     */
+    public static boolean isSwapPixelFormatToFixConvertFromTranslucentEnabled() {
+        return ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true);
+    }
+
+    public static void cacheSwapPixelFormatToFixConvertFromTranslucentEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT));
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);

@@ -101,6 +101,7 @@ extern const base::Feature kShoppingAssist;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kSpecialUserDecision;
+extern const base::Feature kSwapPixelFormatToFixConvertFromTranslucent;
 extern const base::Feature kTabEngagementReportingAndroid;
 extern const base::Feature kTabGroupsAndroid;
 extern const base::Feature kTabGroupsUiImprovementsAndroid;

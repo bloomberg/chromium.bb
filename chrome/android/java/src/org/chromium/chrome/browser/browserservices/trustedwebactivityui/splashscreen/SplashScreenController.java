@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.customtabs.TrustedWebUtils;
@@ -22,6 +24,7 @@ import android.widget.ImageView;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -33,6 +36,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.reflect.Method;
@@ -88,12 +92,16 @@ public class SplashScreenController implements InflationObserver, Destroyable {
     @Nullable
     private ViewPropertyAnimator mFadeOutAnimator;
 
+    /**
+     * Whether to use {@link Window#setFormat()} to undo the opacity change caused by
+     * {@link Activity#convertFromTranslucent()}.
+     */
+    private boolean mSwapPixelFormatToFixConvertFromTranslucent;
+
     @Inject
     public SplashScreenController(TabObserverRegistrar tabObserverRegistrar,
-            Activity activity,
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            Lazy<CompositorViewHolder> compositorViewHolder,
-            SplashImageHolder splashImageCache,
+            ChromeActivity activity, ActivityLifecycleDispatcher lifecycleDispatcher,
+            Lazy<CompositorViewHolder> compositorViewHolder, SplashImageHolder splashImageCache,
             CustomTabIntentDataProvider intentDataProvider,
             TrustedWebActivityUmaRecorder umaRecorder) {
         mSplashImageCache = splashImageCache;
@@ -105,12 +113,26 @@ public class SplashScreenController implements InflationObserver, Destroyable {
         mUmaRecorder = umaRecorder;
 
         lifecycleDispatcher.register(this);
+
+        // Activity#convertFromTranslucent() incorrectly makes the Window opaque when a surface view
+        // is attached. This is fixed in http://b/126897750#comment14 The bug causes the SurfaceView
+        // to become black. We need to manually swap the pixel format to restore it. When hardware
+        // acceleration is disabled, swapping the pixel format causes the surface to get recreated.
+        // A bug fix in Android N http://b/25672053#comment4 preserves the old surface till the new
+        // one is drawn.
+        mSwapPixelFormatToFixConvertFromTranslucent =
+                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                        && FeatureUtilities.isSwapPixelFormatToFixConvertFromTranslucentEnabled());
     }
 
     @Override
     public void onPreInflationStartup() {
         createAndAttachSplashView();
-        removeTranslucency();
+        if (!mSwapPixelFormatToFixConvertFromTranslucent) {
+            // Without swapping the pixel format, removing translucency is only safe before
+            // SurfaceView is attached.
+            removeTranslucency();
+        }
     }
 
     private void removeTranslucency() {
@@ -180,8 +202,10 @@ public class SplashScreenController implements InflationObserver, Destroyable {
             return;
         }
 
-        // In rare cases I see toolbar flickering. TODO(pshmakov): investigate why.
-        mActivity.findViewById(R.id.coordinator).setVisibility(View.INVISIBLE);
+        if (!mSwapPixelFormatToFixConvertFromTranslucent) {
+            // In rare cases I see toolbar flickering. TODO(pshmakov): investigate why.
+            mActivity.findViewById(R.id.coordinator).setVisibility(View.INVISIBLE);
+        }
 
         getRootView().addView(mSplashView);
         observeTab();
@@ -218,6 +242,21 @@ public class SplashScreenController implements InflationObserver, Destroyable {
             private void onPageReady(Tab tab) {
                 tab.removeObserver(this); // TODO(pshmakov): make TabObserverRegistrar do this.
                 mTabObserverRegistrar.unregisterTabObserver(this);
+
+                if (mSwapPixelFormatToFixConvertFromTranslucent) {
+                    removeTranslucency();
+
+                    // Activity#convertFromTranslucent() incorrectly makes the Window opaque -
+                    // WindowStateAnimator#setOpaqueLocked(true) - when a surface view is
+                    // attached. This is fixed in http://b/126897750#comment14
+                    // The Window currently has format PixelFormat.TRANSLUCENT (Set by the
+                    // SurfaceView's ViewParent#requestTransparentRegion() call). Swap the pixel
+                    // format to force an opacity change back to non-opaque.
+                    mActivity.getWindow().setFormat(PixelFormat.TRANSPARENT);
+
+                    getRootView().invalidate();
+                }
+
                 mCompositorViewHolder.get().getCompositorView().surfaceRedrawNeededAsync(
                         SplashScreenController.this::removeSplashScreen);
             }
@@ -233,6 +272,7 @@ public class SplashScreenController implements InflationObserver, Destroyable {
         final View splashView = mSplashView;
         mSplashView = null;
 
+        // Show browser UI in case we hid it in onPostInflationStartup().
         mActivity.findViewById(R.id.coordinator).setVisibility(View.VISIBLE);
 
         int fadeOutDuration = IntentUtils.safeGetInt(getSplashScreenParamsFromIntent(),
