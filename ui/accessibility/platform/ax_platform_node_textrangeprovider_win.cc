@@ -513,16 +513,30 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
   HRESULT hr = MoveEndpointByUnit(TextPatternRangeEndpoint_Start, unit, count,
                                   &start_units_moved);
 
-  bool succeeded_move = SUCCEEDED(hr) && start_units_moved == count;
+  bool succeeded_move = SUCCEEDED(hr) && start_units_moved != 0;
   if (succeeded_move) {
     end_ = start_->Clone();
     if (!is_degenerate_range) {
-      // Expand the text range from the degenerate state by moving the
-      // endpoint forward by one text unit.
-      int end_units_moved = 0;
-      hr = MoveEndpointByUnit(TextPatternRangeEndpoint_End, unit, 1,
-                              &end_units_moved);
-      succeeded_move = SUCCEEDED(hr) && end_units_moved == 1;
+      bool forwards = count > 0;
+      if (forwards && start_->AtEndOfDocument()) {
+        // The start is at the end of the document, so move the start backward
+        // by one text unit to expand the text range from the degenerate range
+        // state.
+        int current_start_units_moved = 0;
+        hr = MoveEndpointByUnit(TextPatternRangeEndpoint_Start, unit, -1,
+                                &current_start_units_moved);
+        start_units_moved -= 1;
+        succeeded_move = SUCCEEDED(hr) && current_start_units_moved == -1 &&
+                         start_units_moved > 0;
+      } else {
+        // The start is not at the end of the document, so move the endpoint
+        // forward by one text unit to expand the text range from the degenerate
+        // state.
+        int end_units_moved = 0;
+        hr = MoveEndpointByUnit(TextPatternRangeEndpoint_End, unit, 1,
+                                &end_units_moved);
+        succeeded_move = SUCCEEDED(hr) && end_units_moved == 1;
+      }
     }
   }
 

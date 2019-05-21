@@ -1157,7 +1157,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*expected_text*/ L"b",
                   /*expected_count*/ 16);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
-                  /*count*/ 30,
+                  /*count*/ 60,
                   /*expected_text*/ L"2",
                   /*expected_count*/ 30);
 
@@ -1177,7 +1177,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*expected_text*/ L"1",
                   /*expected_count*/ -9);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
-                  /*count*/ -54,
+                  /*count*/ -60,
                   /*expected_text*/ L"F",
                   /*expected_count*/ -54);
 
@@ -1199,6 +1199,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*count*/ 4,
                   /*expected_text*/ L"",
                   /*expected_count*/ 4);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
+                  /*count*/ 70,
+                  /*expected_text*/ L"",
+                  /*expected_count*/ 62);
 
   // Trying to move past the last character should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
@@ -1327,6 +1331,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
                   /*count*/ 3,
                   /*expected_text*/ L"",
                   /*expected_count*/ 3);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
+                  /*count*/ 70,
+                  /*expected_text*/ L"",
+                  /*expected_count*/ 3);
 
   // Trying to move past the last format should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Format,
@@ -1375,7 +1383,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
                   /*expected_text*/ L"Paragraph",
                   /*expected_count*/ 3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
-                  /*count*/ 3,
+                  /*count*/ 6,
                   /*expected_text*/ L"2",
                   /*expected_count*/ 3);
 
@@ -1399,7 +1407,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
                   /*expected_text*/ L"text",
                   /*expected_count*/ -2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
-                  /*count*/ -3,
+                  /*count*/ -6,
                   /*expected_text*/ L"First",
                   /*expected_count*/ -3);
 
@@ -1411,15 +1419,19 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
                   /*expected_count*/ 0);
 
   // Degenerate range moves.
-  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
-      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Document,
-      /*count*/ -1,
-      /*expected_text*/ L"",
-      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Word,
+                                   /*count*/ -1,
+                                   /*expected_text*/ L"",
+                                   /*expected_count*/ -1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 4,
                   /*expected_text*/ L"",
                   /*expected_count*/ 4);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
+                  /*count*/ 70,
+                  /*expected_text*/ L"",
+                  /*expected_count*/ 8);
 
   // Trying to move past the last word should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
@@ -1460,7 +1472,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
                   /*expected_text*/ L"bold text",
                   /*expected_count*/ 1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
-                  /*count*/ 2,
+                  /*count*/ 10,
                   /*expected_text*/ L"Paragraph 2",
                   /*expected_count*/ 2);
 
@@ -1476,7 +1488,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
                   /*expected_text*/ L"Paragraph 1",
                   /*expected_count*/ -1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
-                  /*count*/ -4,
+                  /*count*/ -5,
                   /*expected_text*/ L"First line of text",
                   /*expected_count*/ -4);
 
@@ -1488,15 +1500,19 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
                   /*expected_count*/ 0);
 
   // Degenerate range moves.
-  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
-      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Document,
-      /*count*/ -1,
-      /*expected_text*/ L"",
-      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Line,
+                                   /*count*/ -1,
+                                   /*expected_text*/ L"",
+                                   /*expected_count*/ -1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
                   /*count*/ 4,
                   /*expected_text*/ L"",
                   /*expected_count*/ 4);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
+                  /*count*/ 70,
+                  /*expected_text*/ L"",
+                  /*expected_count*/ 2);
 
   // Trying to move past the last line should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
@@ -1575,21 +1591,21 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
                   /*count*/ 4,
                   /*expected_text*/ L"",
-                  /*expected_count*/ 0);
+                  /*expected_count*/ 1);
 
   // Trying to move past the last character should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Document,
                   /*count*/ 1,
                   /*expected_text*/ L"",
-                  /*expected_count*/ 1);
+                  /*expected_count*/ 0);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
                   /*count*/ -2,
                   /*expected_text*/ L"",
-                  /*expected_count*/ 0);
+                  /*expected_count*/ -1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Document,
                   /*count*/ -1,
                   /*expected_text*/ L"",
-                  /*expected_count*/ -1);
+                  /*expected_count*/ 0);
 
   AXNodePosition::SetTreeForTesting(nullptr);
 }
