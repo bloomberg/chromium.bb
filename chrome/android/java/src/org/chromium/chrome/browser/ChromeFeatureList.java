@@ -194,6 +194,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_DUET = "ChromeDuet";
     public static final String CHROME_DUET_ADAPTIVE = "ChromeDuetAdaptive";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
+    public static final String CHROME_DUET_LABELED = "ChromeDuetLabeled";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";

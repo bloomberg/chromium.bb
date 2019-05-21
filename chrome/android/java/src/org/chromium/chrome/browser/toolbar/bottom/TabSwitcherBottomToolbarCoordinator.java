@@ -56,7 +56,7 @@ public class TabSwitcherBottomToolbarCoordinator {
             OnClickListener newTabClickListener, OnClickListener closeTabsClickListener,
             AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
             TabCountProvider tabCountProvider) {
-        final View root = stub.inflate();
+        final ViewGroup root = (ViewGroup) stub.inflate();
 
         TabSwitcherBottomToolbarModel model = new TabSwitcherBottomToolbarModel();
 
@@ -75,12 +75,14 @@ public class TabSwitcherBottomToolbarCoordinator {
         mCloseAllTabsButton.setVisibility(View.INVISIBLE);
 
         mNewTabButton = root.findViewById(R.id.tab_switcher_new_tab_button);
+        mNewTabButton.setWrapperView(root.findViewById(R.id.new_tab_button_wrapper));
         mNewTabButton.setOnClickListener(newTabClickListener);
         mNewTabButton.setIncognitoStateProvider(incognitoStateProvider);
         mNewTabButton.setThemeColorProvider(themeColorProvider);
 
         assert menuButtonHelper != null;
         mMenuButton = root.findViewById(R.id.menu_button_wrapper);
+        mMenuButton.setWrapperView(root.findViewById(R.id.labeled_menu_button_wrapper));
         mMenuButton.setThemeColorProvider(themeColorProvider);
         mMenuButton.setAppMenuButtonHelper(menuButtonHelper);
     }

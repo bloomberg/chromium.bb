@@ -10,6 +10,9 @@ import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -19,6 +22,7 @@ import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.widget.ChromeImageButton;
 
 /**
@@ -38,6 +42,12 @@ class SearchAccelerator extends ChromeImageButton
     /** A provider that notifies when incognito mode is entered or exited. */
     private IncognitoStateProvider mIncognitoStateProvider;
 
+    /** The search accelerator text label. */
+    private TextView mLabel;
+
+    /** The wrapper View that contains the search accelerator and the label. */
+    private View mWrapper;
+
     public SearchAccelerator(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -46,6 +56,24 @@ class SearchAccelerator extends ChromeImageButton
         mBackground = ApiCompatibilityUtils.getDrawable(mResources, R.drawable.ntp_search_box);
         mBackground.mutate();
         setBackground(mBackground);
+    }
+
+    /**
+     * @param wrapper The wrapping View of this button.
+     */
+    public void setWrapperView(ViewGroup wrapper) {
+        mWrapper = wrapper;
+        mLabel = mWrapper.findViewById(R.id.search_accelerator_label);
+        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) mLabel.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void setOnClickListener(OnClickListener listener) {
+        if (mWrapper != null) {
+            mWrapper.setOnClickListener(listener);
+        } else {
+            super.setOnClickListener(listener);
+        }
     }
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
@@ -80,6 +108,7 @@ class SearchAccelerator extends ChromeImageButton
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
+        if (mLabel != null) mLabel.setTextColor(tint);
     }
 
     @Override

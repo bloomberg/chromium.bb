@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabSwitcherButtonCoordinator;
+import org.chromium.chrome.browser.toolbar.TabSwitcherButtonView;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -69,19 +70,27 @@ public class BrowsingModeBottomToolbarCoordinator {
         mMediator = new BrowsingModeBottomToolbarMediator(model);
 
         mHomeButton = toolbarRoot.findViewById(R.id.home_button);
+        mHomeButton.setWrapperView(toolbarRoot.findViewById(R.id.home_button_wrapper));
         mHomeButton.setOnClickListener(homeButtonListener);
         mHomeButton.setActivityTabProvider(tabProvider);
 
         mShareButton = toolbarRoot.findViewById(R.id.share_button);
+        mShareButton.setWrapperView(toolbarRoot.findViewById(R.id.share_button_wrapper));
         mShareButton.setOnClickListener(shareButtonListener);
         mShareButton.setActivityTabProvider(tabProvider);
 
         mSearchAccelerator = toolbarRoot.findViewById(R.id.search_accelerator);
+        mSearchAccelerator.setWrapperView(
+                toolbarRoot.findViewById(R.id.search_accelerator_wrapper));
         mSearchAccelerator.setOnClickListener(searchAcceleratorListener);
 
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
+        // TODO(amaralp): Make this adhere to MVC framework.
+        ((TabSwitcherButtonView) toolbarRoot.findViewById(R.id.tab_switcher_button))
+                .setWrapperView(toolbarRoot.findViewById(R.id.tab_switcher_button_wrapper));
 
         mMenuButton = toolbarRoot.findViewById(R.id.menu_button_wrapper);
+        mMenuButton.setWrapperView(toolbarRoot.findViewById(R.id.labeled_menu_button_wrapper));
 
         tabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override

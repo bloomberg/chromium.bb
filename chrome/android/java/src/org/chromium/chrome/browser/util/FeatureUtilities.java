@@ -77,6 +77,7 @@ public class FeatureUtilities {
     private static Boolean sIsNewTabPageButtonEnabled;
     private static Boolean sIsBottomToolbarEnabled;
     private static Boolean sIsAdaptiveToolbarEnabled;
+    private static Boolean sIsLabeledBottomToolbarEnabled;
     private static Boolean sIsNightModeAvailable;
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
@@ -202,6 +203,7 @@ public class FeatureUtilities {
         cacheNewTabPageButtonEnabled();
         cacheBottomToolbarEnabled();
         cacheAdaptiveToolbarEnabled();
+        cacheLabeledBottomToolbarEnabled();
         cacheNightModeAvailable();
         cacheNightModeForCustomTabsAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
@@ -475,6 +477,16 @@ public class FeatureUtilities {
     }
 
     /**
+     * Cache whether or not the labeled bottom toolbar is enabled so on next startup, the value can
+     * be made available immediately.
+     */
+    public static void cacheLabeledBottomToolbarEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.LABELED_BOTTOM_TOOLBAR_ENABLED_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUET_LABELED));
+    }
+
+    /**
      * Cache whether or not download auto-resumptions are enabled in native so on next startup, the
      * value can be made available immediately.
      */
@@ -512,6 +524,19 @@ public class FeatureUtilities {
                     ChromePreferenceManager.ADAPTIVE_TOOLBAR_ENABLED_KEY, true);
         }
         return sIsAdaptiveToolbarEnabled && isBottomToolbarEnabled() && !isGridTabSwitcherEnabled();
+    }
+
+    /**
+     * @return Whether or not the labeled bottom toolbar is enabled.
+     */
+    public static boolean isLabeledBottomToolbarEnabled() {
+        if (sIsLabeledBottomToolbarEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sIsLabeledBottomToolbarEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.LABELED_BOTTOM_TOOLBAR_ENABLED_KEY, false);
+        }
+        return sIsLabeledBottomToolbarEnabled && isBottomToolbarEnabled();
     }
 
     /**

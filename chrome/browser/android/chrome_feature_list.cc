@@ -112,6 +112,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeDuetFeature,
     &kChromeDuetAdaptive,
     &kDontAutoHideBrowserControls,
+    &kChromeDuetLabeled,
     &kChromeSmartSelection,
     &kCommandLineOnNonRooted,
     &kContactsPickerSelectAll,
@@ -327,6 +328,9 @@ const base::Feature kChromeDuetAdaptive{"ChromeDuetAdaptive",
 
 const base::Feature kDontAutoHideBrowserControls{
     "DontAutoHideBrowserControls", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kChromeDuetLabeled{"ChromeDuetLabeled",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
