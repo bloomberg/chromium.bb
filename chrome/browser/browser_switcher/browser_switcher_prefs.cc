@@ -19,6 +19,7 @@
 namespace browser_switcher {
 
 RuleSet::RuleSet() = default;
+RuleSet::RuleSet(const RuleSet&) = default;
 RuleSet::~RuleSet() = default;
 
 BrowserSwitcherPrefs::BrowserSwitcherPrefs(Profile* profile)
@@ -106,9 +107,12 @@ void BrowserSwitcherPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kUrlList);
   registry->RegisterListPref(prefs::kUrlGreylist);
   registry->RegisterStringPref(prefs::kExternalSitelistUrl, "");
+  registry->RegisterListPref(prefs::kCachedExternalSitelist);
   registry->RegisterStringPref(prefs::kExternalGreylistUrl, "");
+  registry->RegisterListPref(prefs::kCachedExternalGreylist);
 #if defined(OS_WIN)
   registry->RegisterBooleanPref(prefs::kUseIeSitelist, false);
+  registry->RegisterListPref(prefs::kCachedIeSitelist);
   registry->RegisterStringPref(prefs::kChromePath, "");
   registry->RegisterListPref(prefs::kChromeParameters);
 #endif
@@ -139,6 +143,42 @@ int BrowserSwitcherPrefs::GetDelay() const {
 const RuleSet& BrowserSwitcherPrefs::GetRules() const {
   return rules_;
 }
+
+RuleSet BrowserSwitcherPrefs::GetCachedExternalRules() const {
+  RuleSet rules;
+  for (const auto& url : *prefs_->GetList(prefs::kCachedExternalSitelist))
+    rules.sitelist.push_back(url.GetString());
+  for (const auto& url : *prefs_->GetList(prefs::kCachedExternalGreylist))
+    rules.greylist.push_back(url.GetString());
+  return rules;
+}
+
+void BrowserSwitcherPrefs::SetCachedExternalRules(const RuleSet& rules) const {
+  base::ListValue sitelist;
+  for (const auto& url : rules.sitelist)
+    sitelist.GetList().push_back(base::Value(url));
+  prefs_->Set(prefs::kCachedExternalSitelist, sitelist);
+  base::ListValue greylist;
+  for (const auto& url : rules.greylist)
+    greylist.GetList().push_back(base::Value(url));
+  prefs_->Set(prefs::kCachedExternalGreylist, greylist);
+}
+
+#if defined(OS_WIN)
+RuleSet BrowserSwitcherPrefs::GetCachedIeemRules() const {
+  RuleSet rules;
+  for (const auto& url : *prefs_->GetList(prefs::kCachedIeSitelist))
+    rules.sitelist.push_back(url.GetString());
+  return rules;
+}
+
+void BrowserSwitcherPrefs::SetCachedIeemRules(const RuleSet& rules) const {
+  base::ListValue sitelist;
+  for (const auto& url : rules.sitelist)
+    sitelist.GetList().push_back(base::Value(url));
+  prefs_->Set(prefs::kCachedIeSitelist, sitelist);
+}
+#endif
 
 GURL BrowserSwitcherPrefs::GetExternalSitelistUrl() const {
   if (!prefs_->IsManagedPreference(prefs::kExternalSitelistUrl))
@@ -301,13 +341,18 @@ const char kUrlGreylist[] = "browser_switcher.url_greylist";
 
 // URL with an external XML sitelist file to load.
 const char kExternalSitelistUrl[] = "browser_switcher.external_sitelist_url";
+const char kCachedExternalSitelist[] =
+    "browser_switcher.cached_external_sitelist";
 
 // URL with an external XML greylist file to load.
 const char kExternalGreylistUrl[] = "browser_switcher.external_greylist_url";
+const char kCachedExternalGreylist[] =
+    "browser_switcher.cached_external_greylist";
 
 #if defined(OS_WIN)
 // If set to true, use the IE Enterprise Mode Sitelist policy.
 const char kUseIeSitelist[] = "browser_switcher.use_ie_sitelist";
+const char kCachedIeSitelist[] = "browser_switcher.cached_ie_sitelist";
 
 // Path to the Chrome executable for the alternative browser.
 const char kChromePath[] = "browser_switcher.chrome_path";

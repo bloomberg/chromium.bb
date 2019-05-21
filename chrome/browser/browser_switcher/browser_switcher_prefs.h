@@ -30,6 +30,7 @@ namespace browser_switcher {
 // A named pair type.
 struct RuleSet {
   RuleSet();
+  RuleSet(const RuleSet&);
   ~RuleSet();
 
   std::vector<std::string> sitelist;
@@ -76,6 +77,16 @@ class BrowserSwitcherPrefs : public KeyedService,
   // Returns the sitelist + greylist configured directly through Chrome
   // policies. If the pref is not managed, returns an empty vector.
   const RuleSet& GetRules() const;
+
+  // Returns (or sets) the sitelist + greylist that were used by a previous
+  // browser session.
+  RuleSet GetCachedExternalRules() const;
+  void SetCachedExternalRules(const RuleSet& rules) const;
+
+#if defined(OS_WIN)
+  RuleSet GetCachedIeemRules() const;
+  void SetCachedIeemRules(const RuleSet& rules) const;
+#endif
 
   // Returns the URL to download for an external XML sitelist. If the pref is
   // not managed, returns an invalid URL.
@@ -171,10 +182,13 @@ extern const char kKeepLastTab[];
 extern const char kUrlList[];
 extern const char kUrlGreylist[];
 extern const char kExternalSitelistUrl[];
+extern const char kCachedExternalSitelist[];
 extern const char kExternalGreylistUrl[];
+extern const char kCachedExternalGreylist[];
 
 #if defined(OS_WIN)
 extern const char kUseIeSitelist[];
+extern const char kCachedIeSitelist[];
 extern const char kChromePath[];
 extern const char kChromeParameters[];
 #endif
