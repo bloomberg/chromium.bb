@@ -126,7 +126,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit ChildUnstretchedLogicalHeight(const LayoutBox& child) const;
   LayoutUnit ChildUnstretchedLogicalWidth(const LayoutBox& child) const;
   LayoutUnit MainAxisExtentForChild(const LayoutBox& child) const;
-  LayoutUnit MainAxisContentExtentForChild(const LayoutBox& child) const;
+  LayoutUnit MainAxisContentExtentForChildIncludingScrollbar(
+      const LayoutBox& child) const;
   LayoutUnit CrossAxisExtent() const;
   LayoutUnit MainAxisContentExtent(LayoutUnit content_logical_height);
   LayoutUnit ComputeMainAxisExtentForChild(
@@ -162,8 +163,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool CrossAxisLengthIsDefinite(const LayoutBox& child,
                                  const Length& flex_basis) const;
   bool NeedToStretchChildLogicalHeight(const LayoutBox& child) const;
-  bool ChildHasIntrinsicMainAxisSize(const FlexLayoutAlgorithm&,
-                                     const LayoutBox& child) const;
+  bool ChildHasIntrinsicMainAxisSize(const LayoutBox& child) const;
   EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
   EOverflow CrossAxisOverflowForChild(const LayoutBox& child) const;
   void CacheChildMainSize(const LayoutBox& child);
