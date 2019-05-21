@@ -18,6 +18,11 @@
 
 namespace content {
 namespace {
+
+using QueuePriority = ::base::sequence_manager::TaskQueue::QueuePriority;
+using InsertFencePosition =
+    ::base::sequence_manager::TaskQueue::InsertFencePosition;
+
 const char* GetControlTaskQueueName(BrowserThread::ID thread_id) {
   switch (thread_id) {
     case BrowserThread::UI:
@@ -88,6 +93,19 @@ const char* GetTaskQueueName(BrowserThread::ID thread_id,
   return "";
 }
 
+const char* GetDefaultQueueName(BrowserThread::ID thread_id) {
+  switch (thread_id) {
+    case BrowserThread::UI:
+      return "ui_thread_tq";
+    case BrowserThread::IO:
+      return "io_thread_tq";
+    case BrowserThread::ID_COUNT:
+      break;
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 BrowserTaskQueues::Handle::Handle(Handle&&) = default;
@@ -101,7 +119,8 @@ BrowserTaskQueues::Handle& BrowserTaskQueues::Handle::operator=(const Handle&) =
 BrowserTaskQueues::Handle::Handle(BrowserTaskQueues* outer)
     : outer_(outer),
       control_task_runner_(outer_->control_queue_->task_runner()),
-      regular_task_runners_(outer_->CreateRegularTaskRunners()) {}
+      default_task_runner_(outer_->default_task_queue_->task_runner()),
+      browser_task_runners_(outer_->CreateBrowserTaskRunners()) {}
 
 void BrowserTaskQueues::Handle::PostFeatureListInitializationSetup() {
   control_task_runner_->PostTask(
@@ -110,10 +129,17 @@ void BrowserTaskQueues::Handle::PostFeatureListInitializationSetup() {
                      base::Unretained(outer_)));
 }
 
-void BrowserTaskQueues::Handle::EnableBestEffortQueues() {
+void BrowserTaskQueues::Handle::EnableAllQueues() {
   control_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserTaskQueues::EnableBestEffortQueues,
+      FROM_HERE, base::BindOnce(&BrowserTaskQueues::EnableAllQueues,
                                 base::Unretained(outer_)));
+}
+
+void BrowserTaskQueues::Handle::EnableAllExceptBestEffortQueues() {
+  control_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserTaskQueues::EnableAllExceptBestEffortQueues,
+                     base::Unretained(outer_)));
 }
 
 void BrowserTaskQueues::Handle::ScheduleRunAllPendingTasksForTesting(
@@ -130,28 +156,31 @@ BrowserTaskQueues::BrowserTaskQueues(
     BrowserThread::ID thread_id,
     base::sequence_manager::SequenceManager* sequence_manager,
     base::sequence_manager::TimeDomain* time_domain) {
-  for (size_t i = 0; i < regular_queues_.size(); ++i) {
-    regular_queues_[i] = sequence_manager->CreateTaskQueue(
+  for (size_t i = 0; i < browser_queues_and_voters_.size(); ++i) {
+    browser_queues_and_voters_[i].first = sequence_manager->CreateTaskQueue(
         base::sequence_manager::TaskQueue::Spec(
             GetTaskQueueName(thread_id, static_cast<QueueType>(i)))
             .SetTimeDomain(time_domain));
+    browser_queues_and_voters_[i].second =
+        browser_queues_and_voters_[i].first->CreateQueueEnabledVoter();
+    browser_queues_and_voters_[i].second->SetVoteToEnable(false);
   }
 
+  // Default task queue
+  default_task_queue_ = sequence_manager->CreateTaskQueue(
+      base::sequence_manager::TaskQueue::Spec(GetDefaultQueueName(thread_id))
+          .SetTimeDomain(time_domain));
+
   // Best effort queue
-  best_effort_voter_ =
-      regular_queue(QueueType::kBestEffort)->CreateQueueEnabledVoter();
-  regular_queue(QueueType::kBestEffort)
-      ->SetQueuePriority(
-          base::sequence_manager::TaskQueue::kBestEffortPriority);
-  best_effort_voter_->SetVoteToEnable(false);
+  GetBrowserTaskQueue(QueueType::kBestEffort)
+      ->SetQueuePriority(QueuePriority::kBestEffortPriority);
 
   // Control queue
   control_queue_ =
       sequence_manager->CreateTaskQueue(base::sequence_manager::TaskQueue::Spec(
                                             GetControlTaskQueueName(thread_id))
                                             .SetTimeDomain(time_domain));
-  control_queue_->SetQueuePriority(
-      base::sequence_manager::TaskQueue::kControlPriority);
+  control_queue_->SetQueuePriority(QueuePriority::kControlPriority);
 
   // Run all pending queue
   run_all_pending_tasks_queue_ = sequence_manager->CreateTaskQueue(
@@ -159,42 +188,52 @@ BrowserTaskQueues::BrowserTaskQueues(
           GetRunAllPendingTaskQueueName(thread_id))
           .SetTimeDomain(time_domain));
   run_all_pending_tasks_queue_->SetQueuePriority(
-      base::sequence_manager::TaskQueue::kBestEffortPriority);
+      QueuePriority::kBestEffortPriority);
 }
 
 BrowserTaskQueues::~BrowserTaskQueues() {
-  for (auto& queue : regular_queues_) {
-    queue->ShutdownTaskQueue();
+  for (auto& queue : browser_queues_and_voters_) {
+    queue.first->ShutdownTaskQueue();
   }
   control_queue_->ShutdownTaskQueue();
+  default_task_queue_->ShutdownTaskQueue();
   run_all_pending_tasks_queue_->ShutdownTaskQueue();
 }
 
 std::array<scoped_refptr<base::SingleThreadTaskRunner>,
            BrowserTaskQueues::kNumQueueTypes>
-BrowserTaskQueues::CreateRegularTaskRunners() const {
+BrowserTaskQueues::CreateBrowserTaskRunners() const {
   std::array<scoped_refptr<base::SingleThreadTaskRunner>, kNumQueueTypes>
       task_runners;
-  for (size_t i = 0; i < regular_queues_.size(); ++i) {
-    task_runners[i] = regular_queues_[i]->task_runner();
+  for (size_t i = 0; i < browser_queues_and_voters_.size(); ++i) {
+    task_runners[i] = browser_queues_and_voters_[i].first->task_runner();
   }
   return task_runners;
 }
 
 void BrowserTaskQueues::PostFeatureListInitializationSetup() {
   if (base::FeatureList::IsEnabled(features::kPrioritizeBootstrapTasks)) {
-    regular_queue(QueueType::kBootstrap)
-        ->SetQueuePriority(base::sequence_manager::TaskQueue::kHighestPriority);
+    GetBrowserTaskQueue(QueueType::kBootstrap)
+        ->SetQueuePriority(QueuePriority::kHighestPriority);
 
     // Navigation and preconnection tasks are also important during startup so
     // prioritize them too.
-    regular_queue(QueueType::kNavigationAndPreconnection)
-        ->SetQueuePriority(base::sequence_manager::TaskQueue::kHighPriority);
+    GetBrowserTaskQueue(QueueType::kNavigationAndPreconnection)
+        ->SetQueuePriority(QueuePriority::kHighPriority);
   }
 }
 
-void BrowserTaskQueues::EnableBestEffortQueues() {
-  best_effort_voter_->SetVoteToEnable(true);
+void BrowserTaskQueues::EnableAllQueues() {
+  for (size_t i = 0; i < browser_queues_and_voters_.size(); ++i) {
+    browser_queues_and_voters_[i].second->SetVoteToEnable(true);
+  }
+}
+
+void BrowserTaskQueues::EnableAllExceptBestEffortQueues() {
+  for (size_t i = 0; i < browser_queues_and_voters_.size(); ++i) {
+    if (i != static_cast<size_t>(QueueType::kBestEffort))
+      browser_queues_and_voters_[i].second->SetVoteToEnable(true);
+  }
 }
 
 // To run all pending tasks we do the following. We insert a fence in all queues
@@ -211,10 +250,10 @@ void BrowserTaskQueues::EnableBestEffortQueues() {
 void BrowserTaskQueues::StartRunAllPendingTasksForTesting(
     base::ScopedClosureRunner on_pending_task_ran) {
   ++run_all_pending_nesting_level_;
-  for (const auto& queue : regular_queues_) {
-    queue->InsertFence(
-        base::sequence_manager::TaskQueue::InsertFencePosition::kNow);
+  for (const auto& queue : browser_queues_and_voters_) {
+    queue.first->InsertFence(InsertFencePosition::kNow);
   }
+  default_task_queue_->InsertFence(InsertFencePosition::kNow);
   run_all_pending_tasks_queue_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&BrowserTaskQueues::EndRunAllPendingTasksForTesting,
@@ -225,9 +264,10 @@ void BrowserTaskQueues::EndRunAllPendingTasksForTesting(
     base::ScopedClosureRunner on_pending_task_ran) {
   --run_all_pending_nesting_level_;
   if (run_all_pending_nesting_level_ == 0) {
-    for (const auto& queue : regular_queues_) {
-      queue->RemoveFence();
+    for (const auto& queue : browser_queues_and_voters_) {
+      queue.first->RemoveFence();
     }
+    default_task_queue_->RemoveFence();
   }
 }
 

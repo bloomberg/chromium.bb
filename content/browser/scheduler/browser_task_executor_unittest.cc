@@ -70,23 +70,18 @@ class BrowserTaskExecutorTest : public testing::Test {
   ContentBrowserClient* old_browser_client_;
 };
 
-TEST_F(BrowserTaskExecutorTest, EnsureUIThreadTraitPointsToExpectedQueue) {
-  EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-            thread_bundle_.GetMainThreadTaskRunner());
-}
-
 TEST_F(BrowserTaskExecutorTest, EnsureIOThreadTraitPointsToExpectedQueue) {
   EXPECT_EQ(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
       BrowserTaskExecutor::GetProxyTaskRunnerForThread(BrowserThread::IO));
 }
 
-using MockTask =
+using StrictMockTask =
     testing::StrictMock<base::MockCallback<base::RepeatingCallback<void()>>>;
 
 TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnUI) {
-  MockTask task_1;
-  MockTask task_2;
+  StrictMockTask task_1;
+  StrictMockTask task_2;
   EXPECT_CALL(task_1, Run).WillOnce(testing::Invoke([&]() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_2.Get());
   }));
@@ -102,8 +97,8 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnUI) {
 }
 
 TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIO) {
-  MockTask task_1;
-  MockTask task_2;
+  StrictMockTask task_1;
+  StrictMockTask task_2;
   EXPECT_CALL(task_1, Run).WillOnce(testing::Invoke([&]() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_2.Get());
   }));
@@ -119,9 +114,9 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIO) {
 }
 
 TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
-  MockTask task_1;
-  MockTask task_2;
-  MockTask task_3;
+  StrictMockTask task_1;
+  StrictMockTask task_2;
+  StrictMockTask task_3;
 
   EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_2.Get());
@@ -155,7 +150,7 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
           BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                      GetTimeDomain());
       DeferredInitFromSubclass(
-          browser_ui_thread_scheduler->GetHandle().task_runner(
+          browser_ui_thread_scheduler->GetHandle().GetBrowserTaskRunner(
               QueueType::kDefault));
       browser_ui_thread_scheduler_ = browser_ui_thread_scheduler.get();
       BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
@@ -186,16 +181,16 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
             scoped_task_environment_.browser_ui_thread_scheduler()
                 ->GetHandle()
-                .task_runner(QueueType::kDefault));
+                .GetBrowserTaskRunner(QueueType::kDefault));
   EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
             scoped_task_environment_.GetMainThreadTaskRunner());
 }
 
 TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
        UserVisibleOrBlockingTasksRunDuringStartup) {
-  MockTask best_effort;
-  MockTask user_visible;
-  MockTask user_blocking;
+  StrictMockTask best_effort;
+  StrictMockTask user_visible;
+  StrictMockTask user_blocking;
 
   base::PostTaskWithTraits(FROM_HERE,
                            {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
@@ -218,7 +213,7 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   auto ui_best_effort_runner = base::CreateSingleThreadTaskRunnerWithTraits(
       {BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
 
-  MockTask best_effort;
+  StrictMockTask best_effort;
 
   ui_best_effort_runner->PostTask(FROM_HERE, best_effort.Get());
   ui_best_effort_runner->PostDelayedTask(
@@ -231,7 +226,7 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
                            best_effort.Get());
   scoped_task_environment_.RunUntilIdle();
 
-  BrowserTaskExecutor::EnableBestEffortQueues();
+  BrowserTaskExecutor::EnableAllQueues();
   EXPECT_CALL(best_effort, Run).Times(4);
   scoped_task_environment_.FastForwardBy(
       base::TimeDelta::FromMilliseconds(100));

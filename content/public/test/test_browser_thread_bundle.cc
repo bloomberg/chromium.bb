@@ -89,9 +89,8 @@ void TestBrowserThreadBundle::Init() {
   std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
       BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                  GetTimeDomain());
-  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner =
-      browser_ui_thread_scheduler->GetHandle().task_runner(
-          BrowserUIThreadScheduler::QueueType::kDefault);
+  auto default_task_runner =
+      browser_ui_thread_scheduler->GetHandle().GetDefaultTaskRunner();
   BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
       std::move(browser_ui_thread_scheduler));
   DeferredInitFromSubclass(std::move(default_task_runner));

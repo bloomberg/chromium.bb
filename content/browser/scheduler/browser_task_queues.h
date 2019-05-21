@@ -32,8 +32,8 @@ namespace content {
 // associated thread unless noted otherwise. If you need to perform operations
 // from a different thread use the a Handle instance instead.
 //
-// Best effort queues are initially disabled, that is, tasks will not be run for
-// them.
+// Attention: All queues are initially disabled, that is, tasks will not be run
+// for them.
 class CONTENT_EXPORT BrowserTaskQueues {
  public:
   enum class QueueType {
@@ -78,9 +78,15 @@ class CONTENT_EXPORT BrowserTaskQueues {
     Handle& operator=(Handle&&) noexcept;
     Handle& operator=(const Handle&);
 
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner(
+    // Returns the task runner that should be returned by
+    // ThreadTaskRunnerHandle::Get().
+    const scoped_refptr<base::SingleThreadTaskRunner>& GetDefaultTaskRunner() {
+      return default_task_runner_;
+    }
+
+    const scoped_refptr<base::SingleThreadTaskRunner>& GetBrowserTaskRunner(
         QueueType queue_type) const {
-      return regular_task_runners_[static_cast<size_t>(queue_type)];
+      return browser_task_runners_[static_cast<size_t>(queue_type)];
     }
 
     // Initializes any scheduler experiments. Should be called after
@@ -88,8 +94,12 @@ class CONTENT_EXPORT BrowserTaskQueues {
     // queues are set up).
     void PostFeatureListInitializationSetup();
 
-    // Enables best effort tasks queues. Can be called multiple times.
-    void EnableBestEffortQueues();
+    // Enables all tasks queues. Can be called multiple times.
+    void EnableAllQueues();
+
+    // Enables all task queues except the effort ones. Can be called multiple
+    // times.
+    void EnableAllExceptBestEffortQueues();
 
     // Schedules |on_pending_task_ran| to run when all pending tasks (at the
     // time this method was invoked) have run. Only "runnable" tasks are taken
@@ -117,8 +127,9 @@ class CONTENT_EXPORT BrowserTaskQueues {
     // runners.
     BrowserTaskQueues* outer_ = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
     std::array<scoped_refptr<base::SingleThreadTaskRunner>, kNumQueueTypes>
-        regular_task_runners_;
+        browser_task_runners_;
   };
 
   // |sequence_manager| and |time_domain| must outlive this instance.
@@ -140,23 +151,31 @@ class CONTENT_EXPORT BrowserTaskQueues {
       base::ScopedClosureRunner on_pending_task_ran);
   void EndRunAllPendingTasksForTesting(
       base::ScopedClosureRunner on_pending_task_ran);
-  void EnableBestEffortQueues();
+  void EnableAllQueues();
+  void EnableAllExceptBestEffortQueues();
   void PostFeatureListInitializationSetup();
 
-  base::sequence_manager::TaskQueue* regular_queue(QueueType type) const {
-    return regular_queues_[static_cast<size_t>(type)].get();
+  base::sequence_manager::TaskQueue* GetBrowserTaskQueue(QueueType type) const {
+    return browser_queues_and_voters_[static_cast<size_t>(type)].first.get();
   }
 
   std::array<scoped_refptr<base::SingleThreadTaskRunner>, kNumQueueTypes>
-  CreateRegularTaskRunners() const;
+  CreateBrowserTaskRunners() const;
 
-  std::array<scoped_refptr<base::sequence_manager::TaskQueue>, kNumQueueTypes>
-      regular_queues_;
-  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
-      best_effort_voter_;
+  using QueueVoterPair = std::pair<
+      scoped_refptr<base::sequence_manager::TaskQueue>,
+      std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>>;
+
+  std::array<QueueVoterPair, kNumQueueTypes> browser_queues_and_voters_;
   // Helper queue to make sure private methods run on the associated thread. the
   // control queue has maximum priority and will never be disabled.
   scoped_refptr<base::sequence_manager::TaskQueue> control_queue_;
+
+  // Queue that backs the default TaskRunner registered with SequenceManager.
+  // This will be the one returned by ThreadTaskRunnerHandle::Get(). Note this
+  // is different from QueueType:kDefault as this queue needs to be enabled from
+  // the beginning.
+  scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
 
   // Helper queue to run all pending tasks.
   scoped_refptr<base::sequence_manager::TaskQueue> run_all_pending_tasks_queue_;

@@ -14,11 +14,15 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/mock_callback.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 namespace {
+
+using StrictMockTask =
+    testing::StrictMock<base::MockCallback<base::RepeatingCallback<void()>>>;
 
 base::OnceClosure RunOnDestruction(base::OnceClosure task) {
   return base::BindOnce(
@@ -40,8 +44,10 @@ base::OnceClosure PostOnDestruction(
 TEST(BrowserUIThreadSchedulerTest, DestructorPostChainDuringShutdown) {
   auto browser_ui_thread_scheduler_ =
       std::make_unique<BrowserUIThreadScheduler>();
-  auto task_queue = browser_ui_thread_scheduler_->GetHandle().task_runner(
-      BrowserUIThreadScheduler::QueueType::kDefault);
+  browser_ui_thread_scheduler_->GetHandle().EnableAllQueues();
+  auto task_queue =
+      browser_ui_thread_scheduler_->GetHandle().GetBrowserTaskRunner(
+          BrowserUIThreadScheduler::QueueType::kDefault);
 
   bool run = false;
   task_queue->PostTask(
@@ -56,6 +62,18 @@ TEST(BrowserUIThreadSchedulerTest, DestructorPostChainDuringShutdown) {
   browser_ui_thread_scheduler_.reset();
 
   EXPECT_TRUE(run);
+}
+
+TEST(BrowserUIThreadSchedulerTest,
+     TaskPostedWithThreadHandleRunBeforeQueuesAreEnabled) {
+  auto browser_ui_thread_scheduler_ =
+      std::make_unique<BrowserUIThreadScheduler>();
+
+  StrictMockTask task;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task.Get());
+
+  EXPECT_CALL(task, Run);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace

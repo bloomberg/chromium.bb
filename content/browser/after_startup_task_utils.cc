@@ -11,7 +11,7 @@
 namespace content {
 
 void SetBrowserStartupIsCompleteForTesting() {
-  content::BrowserTaskExecutor::EnableBestEffortQueues();
+  content::BrowserTaskExecutor::EnableAllQueues();
   // Forward the message to ContentBrowserClient if one is registered (there are
   // many tests where one isn't but that's fine as that also means they get the
   // default ContentBrowserClient::IsBrowserStartupComplete() which is always

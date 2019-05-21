@@ -169,6 +169,8 @@ void BrowserTaskExecutor::Create() {
   DCHECK(!base::ThreadTaskRunnerHandle::IsSet());
   g_browser_task_executor =
       new BrowserTaskExecutor(std::make_unique<BrowserUIThreadScheduler>());
+  g_browser_task_executor->browser_ui_thread_handle_
+      .EnableAllExceptBestEffortQueues();
   base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
                              g_browser_task_executor);
 #if defined(OS_ANDROID)
@@ -182,6 +184,8 @@ void BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
   DCHECK(!g_browser_task_executor);
   g_browser_task_executor =
       new BrowserTaskExecutor(std::move(browser_ui_thread_scheduler));
+  g_browser_task_executor->browser_ui_thread_handle_
+      .EnableAllExceptBestEffortQueues();
   base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
                              g_browser_task_executor);
 #if defined(OS_ANDROID)
@@ -328,13 +332,14 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
   switch (task_type) {
     case BrowserTaskType::kBootstrap:
       // Note we currently ignore the priority for bootstrap tasks.
-      return browser_ui_thread_handle_.task_runner(QueueType::kBootstrap);
+      return browser_ui_thread_handle_.GetBrowserTaskRunner(
+          QueueType::kBootstrap);
 
     case BrowserTaskType::kNavigation:
     case BrowserTaskType::kPreconnect:
       // Note we currently ignore the priority for navigation and preconnection
       // tasks.
-      return browser_ui_thread_handle_.task_runner(
+      return browser_ui_thread_handle_.GetBrowserTaskRunner(
           QueueType::kNavigationAndPreconnection);
 
     case BrowserTaskType::kDefault:
@@ -347,13 +352,16 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
 
   switch (traits.priority()) {
     case base::TaskPriority::BEST_EFFORT:
-      return browser_ui_thread_handle_.task_runner(QueueType::kBestEffort);
+      return browser_ui_thread_handle_.GetBrowserTaskRunner(
+          QueueType::kBestEffort);
 
     case base::TaskPriority::USER_VISIBLE:
-      return browser_ui_thread_handle_.task_runner(QueueType::kDefault);
+      return browser_ui_thread_handle_.GetBrowserTaskRunner(
+          QueueType::kDefault);
 
     case base::TaskPriority::USER_BLOCKING:
-      return browser_ui_thread_handle_.task_runner(QueueType::kUserBlocking);
+      return browser_ui_thread_handle_.GetBrowserTaskRunner(
+          QueueType::kUserBlocking);
   }
 }
 
@@ -370,9 +378,9 @@ BrowserTaskExecutor::GetAfterStartupTaskRunnerForThread(BrowserThread::ID id) {
 }
 
 // static
-void BrowserTaskExecutor::EnableBestEffortQueues() {
+void BrowserTaskExecutor::EnableAllQueues() {
   DCHECK(g_browser_task_executor);
-  g_browser_task_executor->browser_ui_thread_handle_.EnableBestEffortQueues();
+  g_browser_task_executor->browser_ui_thread_handle_.EnableAllQueues();
 }
 
 }  // namespace content

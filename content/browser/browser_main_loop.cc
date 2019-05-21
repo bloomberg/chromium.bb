@@ -1190,7 +1190,8 @@ void BrowserMainLoop::InitializeMainThread() {
   // TODO(https://crbug.com/863341): Replace with a better API
   GetContentClient()->browser()->PostAfterStartupTask(
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(), base::BindOnce([]() {
-        content::BrowserTaskExecutor::EnableBestEffortQueues();
+        // Non best effort queues will already have been enabled
+        content::BrowserTaskExecutor::EnableAllQueues();
       }));
 }
 

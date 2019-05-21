@@ -27,7 +27,15 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // Creates and registers a BrowserTaskExecutor on the current thread which
   // owns a BrowserUIThreadScheduler. This facilitates posting tasks to a
   // BrowserThread via //base/task/post_task.h.
+  // All BrowserThread::UI task queues except best effort ones are also enabled.
+  // TODO(carlscab): These queues should be enabled in
+  // BrowserMainLoop::InitializeMainThread() but some Android tests fail if we
+  // do so.
   static void Create();
+
+  // Enables all queues on all threads.
+  // Can be called multiple times.
+  static void EnableAllQueues();
 
   // As Create but with the user provided |browser_ui_thread_scheduler|.
   static void CreateWithBrowserUIThreadSchedulerForTesting(
@@ -41,8 +49,6 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // and the base::TaskExecutor APIs are non-functional but won't crash if
   // called.
   static void Shutdown();
-
-  static void EnableBestEffortQueues();
 
   // Unregister and delete the TaskExecutor after a test.
   static void ResetForTesting();

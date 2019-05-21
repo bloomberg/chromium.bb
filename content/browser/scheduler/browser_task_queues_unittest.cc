@@ -26,7 +26,7 @@ using ::base::sequence_manager::SequenceManager;
 using ::testing::Invoke;
 using ::testing::Mock;
 
-using MockTask =
+using StrictMockTask =
     testing::StrictMock<base::MockCallback<base::RepeatingCallback<void()>>>;
 
 using QueueType = BrowserTaskQueues::QueueType;
@@ -41,8 +41,7 @@ class BrowserTaskQueuesTest : public testing::Test {
             sequence_manager_.get(),
             sequence_manager_->GetRealTimeDomain())),
         handle_(queues_->CreateHandle()) {
-    sequence_manager_->SetDefaultTaskRunner(
-        handle_.task_runner(QueueType::kDefault));
+    sequence_manager_->SetDefaultTaskRunner(handle_.GetDefaultTaskRunner());
   }
 
   std::unique_ptr<SequenceManager> sequence_manager_;
@@ -50,13 +49,78 @@ class BrowserTaskQueuesTest : public testing::Test {
   BrowserTaskQueues::Handle handle_;
 };
 
-TEST_F(BrowserTaskQueuesTest, SimplePosting) {
-  scoped_refptr<base::SingleThreadTaskRunner> tq =
-      handle_.task_runner(QueueType::kDefault);
+TEST_F(BrowserTaskQueuesTest, NoTaskRunsUntilQueuesAreEnabled) {
+  StrictMockTask task;
+  for (size_t i = 0; i < BrowserTaskQueues::kNumQueueTypes; ++i) {
+    handle_.GetBrowserTaskRunner(static_cast<QueueType>(i))
+        ->PostTask(FROM_HERE, task.Get());
+  }
 
-  MockTask task_1;
-  MockTask task_2;
-  MockTask task_3;
+  {
+    RunLoop run_loop;
+    handle_.ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  handle_.EnableAllQueues();
+
+  {
+    RunLoop run_loop;
+    handle_.ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
+    EXPECT_CALL(task, Run).Times(BrowserTaskQueues::kNumQueueTypes);
+    run_loop.Run();
+  }
+}
+
+TEST_F(BrowserTaskQueuesTest, OnlyDefaultQueueRunsTasksOnCreation) {
+  StrictMockTask task;
+  for (size_t i = 0; i < BrowserTaskQueues::kNumQueueTypes; ++i) {
+    handle_.GetBrowserTaskRunner(static_cast<QueueType>(i))
+        ->PostTask(FROM_HERE, task.Get());
+  }
+
+  StrictMockTask default_task;
+  handle_.GetDefaultTaskRunner()->PostTask(FROM_HERE, default_task.Get());
+
+  {
+    RunLoop run_loop;
+    handle_.ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
+    EXPECT_CALL(default_task, Run);
+    run_loop.Run();
+  }
+}
+
+TEST_F(BrowserTaskQueuesTest, TasksRunWhenQueuesAreEnabled) {
+  StrictMockTask task;
+  for (size_t i = 0; i < BrowserTaskQueues::kNumQueueTypes; ++i) {
+    handle_.GetBrowserTaskRunner(static_cast<QueueType>(i))
+        ->PostTask(FROM_HERE, task.Get());
+  }
+
+  {
+    RunLoop run_loop;
+    handle_.ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  handle_.EnableAllQueues();
+
+  {
+    RunLoop run_loop;
+    handle_.ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
+    EXPECT_CALL(task, Run).Times(BrowserTaskQueues::kNumQueueTypes);
+    run_loop.Run();
+  }
+}
+
+TEST_F(BrowserTaskQueuesTest, SimplePosting) {
+  handle_.EnableAllQueues();
+  scoped_refptr<base::SingleThreadTaskRunner> tq =
+      handle_.GetBrowserTaskRunner(QueueType::kDefault);
+
+  StrictMockTask task_1;
+  StrictMockTask task_2;
+  StrictMockTask task_3;
 
   {
     testing::InSequence s;
@@ -73,18 +137,19 @@ TEST_F(BrowserTaskQueuesTest, SimplePosting) {
 }
 
 TEST_F(BrowserTaskQueuesTest, RunAllPendingTasksForTesting) {
-  handle_.EnableBestEffortQueues();
+  handle_.EnableAllQueues();
 
-  MockTask task;
-  MockTask followup_task;
+  StrictMockTask task;
+  StrictMockTask followup_task;
   EXPECT_CALL(task, Run).WillOnce(Invoke([&]() {
     for (size_t i = 0; i < BrowserTaskQueues::kNumQueueTypes; ++i) {
-      handle_.task_runner(static_cast<QueueType>(i))
+      handle_.GetBrowserTaskRunner(static_cast<QueueType>(i))
           ->PostTask(FROM_HERE, followup_task.Get());
     }
   }));
 
-  handle_.task_runner(QueueType::kDefault)->PostTask(FROM_HERE, task.Get());
+  handle_.GetBrowserTaskRunner(QueueType::kDefault)
+      ->PostTask(FROM_HERE, task.Get());
 
   {
     RunLoop run_loop;
@@ -102,14 +167,14 @@ TEST_F(BrowserTaskQueuesTest, RunAllPendingTasksForTesting) {
 
 TEST_F(BrowserTaskQueuesTest, RunAllPendingTasksForTestingRunsAllTasks) {
   constexpr size_t kTasksPerPriority = 100;
-  handle_.EnableBestEffortQueues();
+  handle_.EnableAllQueues();
 
-  MockTask task;
+  StrictMockTask task;
   EXPECT_CALL(task, Run).Times(BrowserTaskQueues::kNumQueueTypes *
                                kTasksPerPriority);
   for (size_t i = 0; i < BrowserTaskQueues::kNumQueueTypes; ++i) {
     for (size_t j = 0; j < kTasksPerPriority; ++j) {
-      handle_.task_runner(static_cast<QueueType>(i))
+      handle_.GetBrowserTaskRunner(static_cast<QueueType>(i))
           ->PostTask(FROM_HERE, task.Get());
     }
   }
@@ -120,22 +185,26 @@ TEST_F(BrowserTaskQueuesTest, RunAllPendingTasksForTestingRunsAllTasks) {
 }
 
 TEST_F(BrowserTaskQueuesTest, RunAllPendingTasksForTestingIsReentrant) {
-  MockTask task_1;
-  MockTask task_2;
-  MockTask task_3;
+  handle_.EnableAllQueues();
+  StrictMockTask task_1;
+  StrictMockTask task_2;
+  StrictMockTask task_3;
 
   EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
-    handle_.task_runner(QueueType::kDefault)->PostTask(FROM_HERE, task_2.Get());
+    handle_.GetBrowserTaskRunner(QueueType::kDefault)
+        ->PostTask(FROM_HERE, task_2.Get());
     RunLoop run_loop(RunLoop::Type::kNestableTasksAllowed);
     handle_.ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
     run_loop.Run();
   }));
 
   EXPECT_CALL(task_2, Run).WillOnce(Invoke([&]() {
-    handle_.task_runner(QueueType::kDefault)->PostTask(FROM_HERE, task_3.Get());
+    handle_.GetBrowserTaskRunner(QueueType::kDefault)
+        ->PostTask(FROM_HERE, task_3.Get());
   }));
 
-  handle_.task_runner(QueueType::kDefault)->PostTask(FROM_HERE, task_1.Get());
+  handle_.GetBrowserTaskRunner(QueueType::kDefault)
+      ->PostTask(FROM_HERE, task_1.Get());
 
   RunLoop run_loop;
   handle_.ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
@@ -144,12 +213,13 @@ TEST_F(BrowserTaskQueuesTest, RunAllPendingTasksForTestingIsReentrant) {
 
 TEST_F(BrowserTaskQueuesTest,
        RunAllPendingTasksForTestingIgnoresBestEffortIfNotEnabled) {
-  MockTask best_effort_task;
-  MockTask default_task;
+  handle_.EnableAllExceptBestEffortQueues();
+  StrictMockTask best_effort_task;
+  StrictMockTask default_task;
 
-  handle_.task_runner(QueueType::kBestEffort)
+  handle_.GetBrowserTaskRunner(QueueType::kBestEffort)
       ->PostTask(FROM_HERE, best_effort_task.Get());
-  handle_.task_runner(QueueType::kDefault)
+  handle_.GetBrowserTaskRunner(QueueType::kDefault)
       ->PostTask(FROM_HERE, default_task.Get());
 
   EXPECT_CALL(default_task, Run);
@@ -161,21 +231,23 @@ TEST_F(BrowserTaskQueuesTest,
 
 TEST_F(BrowserTaskQueuesTest,
        RunAllPendingTasksForTestingRunsBestEffortTasksWhenEnabled) {
-  MockTask task_1;
-  MockTask task_2;
-  MockTask task_3;
+  handle_.EnableAllExceptBestEffortQueues();
+  StrictMockTask task_1;
+  StrictMockTask task_2;
+  StrictMockTask task_3;
 
   EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
     // This task should not run as it is posted after the
     // RunAllPendingTasksForTesting() call
-    handle_.task_runner(QueueType::kBestEffort)
+    handle_.GetBrowserTaskRunner(QueueType::kBestEffort)
         ->PostTask(FROM_HERE, task_3.Get());
-    handle_.EnableBestEffortQueues();
+    handle_.EnableAllQueues();
   }));
   EXPECT_CALL(task_2, Run);
 
-  handle_.task_runner(QueueType::kDefault)->PostTask(FROM_HERE, task_1.Get());
-  handle_.task_runner(QueueType::kBestEffort)
+  handle_.GetBrowserTaskRunner(QueueType::kDefault)
+      ->PostTask(FROM_HERE, task_1.Get());
+  handle_.GetBrowserTaskRunner(QueueType::kBestEffort)
       ->PostTask(FROM_HERE, task_2.Get());
 
   RunLoop run_loop;
@@ -184,16 +256,16 @@ TEST_F(BrowserTaskQueuesTest,
 }
 
 TEST_F(BrowserTaskQueuesTest, HandleStillWorksWhenQueuesDestroyed) {
-  MockTask task;
+  handle_.EnableAllQueues();
+  StrictMockTask task;
   queues_.reset();
 
   for (size_t i = 0; i < BrowserTaskQueues::kNumQueueTypes; ++i) {
     EXPECT_FALSE(
-        handle_.task_runner(static_cast<QueueType>(i))
+        handle_.GetBrowserTaskRunner(static_cast<QueueType>(i))
             ->PostTask(FROM_HERE, base::BindLambdaForTesting([]() {})));
   }
 
-  handle_.EnableBestEffortQueues();
   RunLoop run_loop;
   handle_.ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
   run_loop.Run();

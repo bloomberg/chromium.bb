@@ -45,8 +45,7 @@ BrowserUIThreadScheduler::BrowserUIThreadScheduler()
                    owned_sequence_manager_->GetRealTimeDomain()),
       handle_(task_queues_.CreateHandle()) {
   CommonSequenceManagerSetup(owned_sequence_manager_.get());
-  owned_sequence_manager_->SetDefaultTaskRunner(
-      handle_.task_runner(QueueType::kDefault));
+  owned_sequence_manager_->SetDefaultTaskRunner(handle_.GetDefaultTaskRunner());
 
   owned_sequence_manager_->BindToMessagePump(
       base::MessageLoop::CreateMessagePumpForType(base::MessageLoop::TYPE_UI));
