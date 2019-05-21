@@ -109,7 +109,8 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
   using EntryMap = std::map<GURL /* outer_url */, std::unique_ptr<const Entry>>;
 
   ~PrefetchedSignedExchangeCache();
-  std::vector<PrefetchedSignedExchangeInfo> GetInfoList() const;
+  std::vector<PrefetchedSignedExchangeInfo> GetInfoListForNavigation(
+      const GURL& outer_url) const;
 
   EntryMap exchanges_;
 

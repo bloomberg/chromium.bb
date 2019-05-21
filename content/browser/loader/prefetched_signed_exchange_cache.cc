@@ -447,21 +447,30 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
   if (it == exchanges_.end())
     return nullptr;
   return std::make_unique<PrefetchedNavigationLoaderInterceptor>(
-      it->second->Clone(), GetInfoList());
+      it->second->Clone(), GetInfoListForNavigation(outer_url));
 }
 
 std::vector<PrefetchedSignedExchangeInfo>
-PrefetchedSignedExchangeCache::GetInfoList() const {
+PrefetchedSignedExchangeCache::GetInfoListForNavigation(
+    const GURL& outer_url) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<PrefetchedSignedExchangeInfo> info_list;
+  const url::Origin outer_url_origin = url::Origin::Create(outer_url);
 
-  for (const auto& exchange : exchanges_) {
+  for (const auto& exchanges_it : exchanges_) {
+    const std::unique_ptr<const Entry>& exchange = exchanges_it.second;
+    if (!outer_url_origin.IsSameOriginWith(
+            url::Origin::Create(exchange->outer_url()))) {
+      // Restrict the main SXG and the subresources SXGs to be served from the
+      // same origin.
+      continue;
+    }
     network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
     new SubresourceSignedExchangeURLLoaderFactory(
-        mojo::MakeRequest(&loader_factory_info), exchange.second->Clone());
+        mojo::MakeRequest(&loader_factory_info), exchange->Clone());
     info_list.emplace_back(
-        exchange.second->outer_url(), *exchange.second->header_integrity(),
-        exchange.second->inner_url(), *exchange.second->inner_response(),
+        exchange->outer_url(), *exchange->header_integrity(),
+        exchange->inner_url(), *exchange->inner_response(),
         std::move(loader_factory_info).PassHandle().release());
   }
   return info_list;
