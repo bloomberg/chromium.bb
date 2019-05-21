@@ -11,6 +11,7 @@
 
 #include "base/bits.h"
 #include "base/process/process_metrics.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/simple_thread.h"
 #include "build/build_config.h"
@@ -25,7 +26,9 @@ static constexpr size_t kMaxSlots = AllocatorState::kMaxSlots;
 class GuardedPageAllocatorTest : public testing::Test {
  protected:
   explicit GuardedPageAllocatorTest(size_t max_allocated_pages = kMaxMetadata) {
-    gpa_.Init(max_allocated_pages, kMaxMetadata, kMaxSlots);
+    gpa_.Init(max_allocated_pages, kMaxMetadata, kMaxSlots,
+              base::BindLambdaForTesting(
+                  [&](size_t allocations) { allocator_oom_ = true; }));
   }
 
   // Get a left- or right- aligned allocation (or nullptr on error.)
@@ -60,6 +63,7 @@ class GuardedPageAllocatorTest : public testing::Test {
   }
 
   GuardedPageAllocator gpa_;
+  bool allocator_oom_ = false;
 };
 
 TEST_F(GuardedPageAllocatorTest, SingleAllocDealloc) {
@@ -138,6 +142,17 @@ TEST_F(GuardedPageAllocatorTest, AllocationAlignment) {
 
   // We don't support aligning by more than a page.
   EXPECT_EQ(GetAlignedAllocation(false, 5, page_size * 2), nullptr);
+}
+
+TEST_F(GuardedPageAllocatorTest, OutOfMemoryCallback) {
+  for (size_t i = 0; i < kMaxMetadata; i++)
+    EXPECT_NE(gpa_.Allocate(1), nullptr);
+
+  for (size_t i = 0; i < GuardedPageAllocator::kOutOfMemoryCount - 1; i++)
+    EXPECT_EQ(gpa_.Allocate(1), nullptr);
+  EXPECT_FALSE(allocator_oom_);
+  EXPECT_EQ(gpa_.Allocate(1), nullptr);
+  EXPECT_TRUE(allocator_oom_);
 }
 
 class GuardedPageAllocatorParamTest

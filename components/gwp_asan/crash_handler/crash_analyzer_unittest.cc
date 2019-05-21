@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/debug/stack_trace.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -43,7 +44,7 @@ constexpr const char* kPartitionAllocHistogramName =
 class CrashAnalyzerTest : public testing::Test {
  protected:
   void SetUp() final {
-    gpa_.Init(1, 1, 1);
+    gpa_.Init(1, 1, 1, base::DoNothing());
     InitializeSnapshot();
   }
 

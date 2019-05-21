@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -77,7 +78,7 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   base::NoDestructor<GuardedPageAllocator> gpa;
   gpa->Init(AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
-            kTotalPages);
+            kTotalPages, base::DoNothing());
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   base::FilePath directory = cmd_line->GetSwitchValuePath("directory");

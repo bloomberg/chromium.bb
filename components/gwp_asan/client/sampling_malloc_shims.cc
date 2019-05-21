@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/allocator/allocator_shim.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -254,7 +255,7 @@ void InstallMallocHooks(size_t max_allocated_pages,
                         size_t sampling_frequency) {
   static crash_reporter::CrashKeyString<24> malloc_crash_key(kMallocCrashKey);
   gpa = new GuardedPageAllocator();
-  gpa->Init(max_allocated_pages, num_metadata, total_pages);
+  gpa->Init(max_allocated_pages, num_metadata, total_pages, base::DoNothing());
   malloc_crash_key.Set(gpa->GetCrashKey());
   sampling_state.Init(sampling_frequency);
   base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);

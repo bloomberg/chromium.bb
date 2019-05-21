@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/partition_alloc_buildflags.h"
 #include "components/crash/core/common/crash_key.h"
@@ -85,7 +86,7 @@ void InstallPartitionAllocHooks(size_t max_allocated_pages,
   static crash_reporter::CrashKeyString<24> pa_crash_key(
       kPartitionAllocCrashKey);
   gpa = new GuardedPageAllocator();
-  gpa->Init(max_allocated_pages, num_metadata, total_pages);
+  gpa->Init(max_allocated_pages, num_metadata, total_pages, base::DoNothing());
   pa_crash_key.Set(gpa->GetCrashKey());
   sampling_state.Init(sampling_frequency);
   total_allocations = total_pages;

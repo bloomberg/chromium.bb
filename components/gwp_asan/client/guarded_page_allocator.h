@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/no_destructor.h"
@@ -29,8 +30,15 @@ namespace internal {
 // initialization-time so there is no risk of malloc reentrancy.
 class GWP_ASAN_EXPORT GuardedPageAllocator {
  public:
+  // Number of consecutive allocations that fail due to lack of available pages
+  // before we call the OOM callback.
+  static constexpr size_t kOutOfMemoryCount = 100;
   // Default maximum alignment for all returned allocations.
   static constexpr size_t kGpaAllocAlignment = 16;
+
+  // Callback used to report the allocator running out of memory, reports the
+  // number of successful allocations before running out of memory.
+  using OutOfMemoryCallback = base::OnceCallback<void(size_t)>;
 
   // Does not allocate any memory for the allocator, to finish initializing call
   // Init().
@@ -41,7 +49,13 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // total_pages pages, where:
   //   1 <= max_alloced_pages <= num_metadata <= kMaxMetadata
   //   num_metadata <= total_pages <= kMaxSlots
-  void Init(size_t max_alloced_pages, size_t num_metadata, size_t total_pages);
+  //
+  // The OOM callback is called the first time the allocator fails to allocate
+  // kOutOfMemoryCount allocations consecutively due to lack of memory.
+  void Init(size_t max_alloced_pages,
+            size_t num_metadata,
+            size_t total_pages,
+            OutOfMemoryCallback oom_callback);
 
   // On success, returns a pointer to size bytes of page-guarded memory. On
   // failure, returns nullptr. The allocation is not guaranteed to be
@@ -152,6 +166,13 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Maps a slot index to a metadata index (or kInvalidMetadataIdx if no such
   // mapping exists.)
   std::vector<AllocatorState::MetadataIdx> slot_to_metadata_idx_;
+
+  // Maintain a count of total allocations and consecutive failed allocations
+  // to report allocator OOM.
+  size_t total_allocations_ GUARDED_BY(lock_) = 0;
+  size_t consecutive_failed_allocations_ GUARDED_BY(lock_) = 0;
+  bool oom_hit_ GUARDED_BY(lock_) = false;
+  OutOfMemoryCallback oom_callback_;
 
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;

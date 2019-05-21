@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bits.h"
 #include "base/debug/stack_trace.h"
@@ -54,6 +55,7 @@ T RandomEviction(std::vector<T>* list) {
 }  // namespace
 
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
+constexpr size_t GuardedPageAllocator::kOutOfMemoryCount;
 constexpr size_t GuardedPageAllocator::kGpaAllocAlignment;
 
 template <typename T>
@@ -81,7 +83,8 @@ GuardedPageAllocator::GuardedPageAllocator() {}
 
 void GuardedPageAllocator::Init(size_t max_alloced_pages,
                                 size_t num_metadata,
-                                size_t total_pages) {
+                                size_t total_pages,
+                                OutOfMemoryCallback oom_callback) {
   CHECK_GT(max_alloced_pages, 0U);
   CHECK_LE(max_alloced_pages, num_metadata);
   CHECK_LE(num_metadata, AllocatorState::kMaxMetadata);
@@ -90,6 +93,7 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
   max_alloced_pages_ = max_alloced_pages;
   state_.num_metadata = num_metadata;
   state_.total_pages = total_pages;
+  oom_callback_ = std::move(oom_callback);
 
   state_.page_size = base::GetPageSize();
 
@@ -230,8 +234,16 @@ bool GuardedPageAllocator::ReserveSlotAndMetadata(
     AllocatorState::SlotIdx* slot,
     AllocatorState::MetadataIdx* metadata_idx) {
   base::AutoLock lock(lock_);
-  if (num_alloced_pages_ == max_alloced_pages_)
+  if (num_alloced_pages_ == max_alloced_pages_) {
+    if (++consecutive_failed_allocations_ == kOutOfMemoryCount) {
+      if (!oom_hit_) {
+        oom_hit_ = true;
+        base::AutoUnlock unlock(lock_);
+        std::move(oom_callback_).Run(total_allocations_ - kOutOfMemoryCount);
+      }
+    }
     return false;
+  }
 
   *slot = free_slots_.Allocate();
   *metadata_idx = free_metadata_.Allocate();
@@ -245,6 +257,8 @@ bool GuardedPageAllocator::ReserveSlotAndMetadata(
   }
 
   num_alloced_pages_++;
+  total_allocations_++;
+  consecutive_failed_allocations_ = 0;
   return true;
 }
 
