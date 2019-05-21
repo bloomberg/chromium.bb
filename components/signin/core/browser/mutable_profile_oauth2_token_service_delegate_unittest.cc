@@ -204,12 +204,12 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   }
 
   // OAuth2TokenService::DiagnosticsObserver implementation
-  void OnRefreshTokenAvailableFromSource(const std::string& account_id,
+  void OnRefreshTokenAvailableFromSource(const CoreAccountId& account_id,
                                          bool is_refresh_token_valid,
                                          const std::string& source) override {
     source_for_refresh_token_available_ = source;
   }
-  void OnRefreshTokenRevokedFromSource(const std::string& account_id,
+  void OnRefreshTokenRevokedFromSource(const CoreAccountId& account_id,
                                        const std::string& source) override {
     source_for_refresh_token_revoked_ = source;
   }

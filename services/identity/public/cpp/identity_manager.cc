@@ -564,7 +564,7 @@ void IdentityManager::OnGaiaCookieDeletedByUserAction() {
 }
 
 void IdentityManager::OnAccessTokenRequested(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& consumer_id,
     const OAuth2TokenService::ScopeSet& scopes) {
   for (auto& observer : diagnostics_observer_list_) {
@@ -572,24 +572,25 @@ void IdentityManager::OnAccessTokenRequested(
   }
 }
 
-void IdentityManager::OnFetchAccessTokenComplete(const std::string& account_id,
-                                                 const std::string& consumer_id,
-                                                 const ScopeSet& scopes,
-                                                 GoogleServiceAuthError error,
-                                                 base::Time expiration_time) {
+void IdentityManager::OnFetchAccessTokenComplete(
+    const CoreAccountId& account_id,
+    const std::string& consumer_id,
+    const ScopeSet& scopes,
+    GoogleServiceAuthError error,
+    base::Time expiration_time) {
   for (auto& observer : diagnostics_observer_list_)
     observer.OnAccessTokenRequestCompleted(account_id, consumer_id, scopes,
                                            error, expiration_time);
 }
 
-void IdentityManager::OnAccessTokenRemoved(const std::string& account_id,
+void IdentityManager::OnAccessTokenRemoved(const CoreAccountId& account_id,
                                            const ScopeSet& scopes) {
   for (auto& observer : diagnostics_observer_list_)
     observer.OnAccessTokenRemovedFromCache(account_id, scopes);
 }
 
 void IdentityManager::OnRefreshTokenAvailableFromSource(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     bool is_refresh_token_valid,
     const std::string& source) {
   for (auto& observer : diagnostics_observer_list_)
@@ -598,7 +599,7 @@ void IdentityManager::OnRefreshTokenAvailableFromSource(
 }
 
 void IdentityManager::OnRefreshTokenRevokedFromSource(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& source) {
   for (auto& observer : diagnostics_observer_list_)
     observer.OnRefreshTokenRemovedForAccountFromSource(account_id, source);

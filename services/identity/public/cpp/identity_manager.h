@@ -609,20 +609,20 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   // OAuth2TokenService::DiagnosticsObserver:
   void OnAccessTokenRequested(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
-  void OnFetchAccessTokenComplete(const std::string& account_id,
+  void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
                                   const std::string& consumer_id,
                                   const ScopeSet& scopes,
                                   GoogleServiceAuthError error,
                                   base::Time expiration_time) override;
-  void OnAccessTokenRemoved(const std::string& account_id,
+  void OnAccessTokenRemoved(const CoreAccountId& account_id,
                             const ScopeSet& scopes) override;
-  void OnRefreshTokenAvailableFromSource(const std::string& account_id,
+  void OnRefreshTokenAvailableFromSource(const CoreAccountId& account_id,
                                          bool is_refresh_token_valid,
                                          const std::string& source) override;
-  void OnRefreshTokenRevokedFromSource(const std::string& account_id,
+  void OnRefreshTokenRevokedFromSource(const CoreAccountId& account_id,
                                        const std::string& source) override;
 
   // AccountTrackerService::Observer:
