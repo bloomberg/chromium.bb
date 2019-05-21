@@ -33,7 +33,7 @@ IndividualSettings::IndividualSettings() {
 IndividualSettings::IndividualSettings(
     const IndividualSettings* default_settings) {
   installation_mode = default_settings->installation_mode;
-  update_url = default_settings->installation_mode;
+  update_url = default_settings->update_url;
   blocked_permissions = default_settings->blocked_permissions.Clone();
   // We are not initializing |minimum_version_required| from |default_settings|
   // here since it's not applicable to default settings.
