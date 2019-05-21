@@ -61,6 +61,8 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   results.extend(input_api.canned_checks.CheckOwnersFormat(
       input_api, output_api))
+  results.extend(input_api.canned_checks.CheckJsonParses(
+      input_api, output_api))
 
   # Run only selected tests on Windows.
   tests_to_white_list = [r'.*test\.py$']
