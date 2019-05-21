@@ -13,6 +13,7 @@ import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -48,6 +49,11 @@ public class AutofillAssistantPreferencesTest {
     public IntentsTestRule<HistoryActivity> mHistoryActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
 
+    @Before
+    public void setUp() {
+        clearAutofillAssistantSwitch();
+    }
+
     /**
      * Set the |PREF_AUTOFILL_ASSISTANT_SWITCH| shared preference to the given |value|.
      * @param value The value to set the preference to.
@@ -67,6 +73,16 @@ public class AutofillAssistantPreferencesTest {
     private boolean getAutofillAssistantSwitch(boolean defaultValue) {
         return ContextUtils.getAppSharedPreferences().getBoolean(
                 AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, defaultValue);
+    }
+
+    /**
+     * Removes the |PREF_AUTOFILL_ASSISTANT_SWITCH| shared preference.
+     */
+    private void clearAutofillAssistantSwitch() {
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .remove(AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH)
+                .apply();
     }
 
     /**

@@ -24,11 +24,9 @@ import android.support.test.runner.AndroidJUnitRunner;
 import dalvik.system.DexFile;
 
 import org.chromium.base.BuildConfig;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
-import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -77,14 +75,12 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     private static final String ARGUMENT_LOG_ONLY = "log";
 
     private static final String TAG = "BaseJUnitRunner";
-    static InMemorySharedPreferencesContext sInMemorySharedPreferencesContext;
 
     @Override
     public Application newApplication(ClassLoader cl, String className, Context context)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        Context targetContext = super.getTargetContext();
         boolean hasUnderTestApk =
-                !getContext().getPackageName().equals(targetContext.getPackageName());
+                !getContext().getPackageName().equals(getTargetContext().getPackageName());
         // When there is an under-test APK, BuildConfig belongs to it and does not indicate whether
         // the test apk is multidex. In this case, just assume it is.
         boolean isTestMultidex = hasUnderTestApk || BuildConfig.IS_MULTIDEX_ENABLED;
@@ -93,28 +89,14 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 // Need hacks to have multidex work when there is an under-test apk :(.
                 ChromiumMultiDexInstaller.install(
                         new BaseChromiumRunnerCommon.MultiDexContextWrapper(
-                                getContext(), targetContext));
-                BaseChromiumRunnerCommon.reorderDexPathElements(cl, getContext(), targetContext);
+                                getContext(), getTargetContext()));
+                BaseChromiumRunnerCommon.reorderDexPathElements(
+                        cl, getContext(), getTargetContext());
             } else {
                 ChromiumMultiDexInstaller.install(getContext());
             }
         }
-
-        // We would ideally be able to wrap |context| here, and pass that to newApplication.
-        // However, there is framework code that assumes Application.getBaseContext() can be
-        // casted to ContextImpl (on KitKat for broadcast receivers. Refer to ActivityThread.java).
-        Application ret = super.newApplication(cl, className, context);
-        sInMemorySharedPreferencesContext = new InMemorySharedPreferencesContext(ret);
-        // Set this as early as possible since Application start-up could access prefs.
-        ContextUtils.initApplicationContextForTests(sInMemorySharedPreferencesContext);
-        return ret;
-    }
-
-    @Override
-    public Context getTargetContext() {
-        // The target context by default points directly at the ContextImpl, which we can't wrap.
-        // Make it instead point at the Application.
-        return sInMemorySharedPreferencesContext;
+        return super.newApplication(cl, className, context);
     }
 
     /**
