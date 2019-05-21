@@ -633,6 +633,23 @@ static void read_metadata_timecode(struct aom_read_bit_buffer *rb) {
   }
 }
 
+// Returns the last nonzero byte in 'data'. If there is no nonzero byte in
+// 'data', returns 0.
+//
+// Call this function to check the following requirement in the spec:
+//   This implies that when any payload data is present for this OBU type, at
+//   least one byte of the payload data (including the trailing bit) shall not
+//   be equal to 0.
+static uint8_t get_last_nonzero_byte(const uint8_t *data, size_t sz) {
+  // Scan backward and return on the first nonzero byte.
+  size_t i = sz;
+  while (i != 0) {
+    --i;
+    if (data[i] != 0) return data[i];
+  }
+  return 0;
+}
+
 // Checks the metadata for correct syntax but ignores the parsed metadata.
 //
 // On success, returns the number of bytes read from 'data'. On failure, sets
@@ -648,17 +665,19 @@ static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
   const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)type_value;
   if (metadata_type == 0 || metadata_type >= 6) {
     // If metadata_type is reserved for future use or a user private value,
-    // ignore the entire OBU. Don't check the trailing bit because the spec's
-    // description of the payload data in Section 5.8.1 is not very clear.
+    // ignore the entire OBU.
+    if (get_last_nonzero_byte(data + type_length, sz - type_length) == 0) {
+      pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
     return sz;
   }
   struct aom_read_bit_buffer rb;
   av1_init_read_bit_buffer(pbi, &rb, data + type_length, data + sz);
   if (metadata_type == OBU_METADATA_TYPE_ITUT_T35) {
     read_metadata_itut_t35(&rb);
-    // Ignore itu_t_t35_payload_bytes. Don't check the trailing bit because
-    // the spec's description of itu_t_t35_payload_bytes in Section 5.8.2 is
-    // not very clear.
+    // Ignore itu_t_t35_payload_bytes.
+    // TODO(wtc): Check trailing bits.
     return sz;
   }
   if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
@@ -874,8 +893,16 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         if (cm->error.error_code != AOM_CODEC_OK) return -1;
         break;
       case OBU_PADDING:
+        // TODO(wtc): Check trailing bits.
+        decoded_payload_size = payload_size;
+        break;
       default:
         // Skip unrecognized OBUs
+        if (payload_size > 0 &&
+            get_last_nonzero_byte(data, payload_size) == 0) {
+          cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+          return -1;
+        }
         decoded_payload_size = payload_size;
         break;
     }
