@@ -42,19 +42,19 @@ class TransientFileUtilTest : public testing::Test {
 
   void CreateAndRegisterTemporaryFile(
       FileSystemURL* file_url,
-      base::FilePath* file_path) {
+      base::FilePath* file_path,
+      storage::IsolatedContext::ScopedFSHandle* filesystem) {
     EXPECT_TRUE(base::CreateTemporaryFileInDir(data_dir_.GetPath(), file_path));
     storage::IsolatedContext* isolated_context =
         storage::IsolatedContext::GetInstance();
     std::string name = "tmp";
-    std::string fsid = isolated_context->RegisterFileSystemForPath(
-        storage::kFileSystemTypeForTransientFile,
-        std::string(),
-        *file_path,
+    *filesystem = isolated_context->RegisterFileSystemForPath(
+        storage::kFileSystemTypeForTransientFile, std::string(), *file_path,
         &name);
-    ASSERT_TRUE(!fsid.empty());
-    base::FilePath virtual_path = isolated_context->CreateVirtualRootPath(
-        fsid).AppendASCII(name);
+    ASSERT_TRUE(filesystem->is_valid());
+    base::FilePath virtual_path =
+        isolated_context->CreateVirtualRootPath(filesystem->id())
+            .AppendASCII(name);
     *file_url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://foo"), storage::kFileSystemTypeIsolated, virtual_path);
   }
@@ -80,8 +80,9 @@ class TransientFileUtilTest : public testing::Test {
 TEST_F(TransientFileUtilTest, TransientFile) {
   FileSystemURL temp_url;
   base::FilePath temp_path;
+  storage::IsolatedContext::ScopedFSHandle filesystem;
 
-  CreateAndRegisterTemporaryFile(&temp_url, &temp_path);
+  CreateAndRegisterTemporaryFile(&temp_url, &temp_path, &filesystem);
 
   base::File::Error error;
   base::File::Info file_info;
@@ -103,8 +104,8 @@ TEST_F(TransientFileUtilTest, TransientFile) {
     // The file should be still there.
     ASSERT_TRUE(base::PathExists(temp_path));
     ASSERT_EQ(base::File::FILE_OK,
-              file_util()->GetFileInfo(NewOperationContext().get(),
-                                       temp_url, &file_info, &path));
+              file_util()->GetFileInfo(NewOperationContext().get(), temp_url,
+                                       &file_info, &path));
     ASSERT_EQ(temp_path, path);
     ASSERT_FALSE(file_info.is_directory);
   }
@@ -115,8 +116,8 @@ TEST_F(TransientFileUtilTest, TransientFile) {
   // Now the temporary file and the transient filesystem must be gone too.
   ASSERT_FALSE(base::PathExists(temp_path));
   ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND,
-            file_util()->GetFileInfo(NewOperationContext().get(),
-                                     temp_url, &file_info, &path));
+            file_util()->GetFileInfo(NewOperationContext().get(), temp_url,
+                                     &file_info, &path));
 }
 
 }  // namespace content

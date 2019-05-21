@@ -304,12 +304,20 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
         return;
       }
 
-      const GURL url = CreateIsolatedURLFromVirtualPath(
-                           *context_, origin, virtual_path).ToGURL();
+      storage::FileSystemURL file_system_url;
+      storage::IsolatedContext::ScopedFSHandle file_system;
+      std::tie(file_system_url, file_system) =
+          CreateIsolatedURLFromVirtualPath(*context_, origin, virtual_path);
+      const GURL url = file_system_url.ToGURL();
       if (!url.is_valid()) {
         NotifyError(std::move(lifetime));
         return;
       }
+
+      // Increase ref count of file system to keep it alive after |file_system|
+      // goes out of scope. Our destructor will eventually revoke the file
+      // system.
+      storage::IsolatedContext::GetInstance()->AddReference(file_system.id());
 
       auto fs_info = FileSystemFileInfo::New();
       fs_info->url = url;
@@ -627,27 +635,23 @@ void GetMetadataForPath(
                      google_apis::CreateRelayCallback(std::move(callback))));
 }
 
-storage::FileSystemURL CreateIsolatedURLFromVirtualPath(
-    const storage::FileSystemContext& context,
-    const GURL& origin,
-    const base::FilePath& virtual_path) {
+std::pair<storage::FileSystemURL, storage::IsolatedContext::ScopedFSHandle>
+CreateIsolatedURLFromVirtualPath(const storage::FileSystemContext& context,
+                                 const GURL& origin,
+                                 const base::FilePath& virtual_path) {
   const storage::FileSystemURL original_url =
       context.CreateCrackedFileSystemURL(
           origin, storage::kFileSystemTypeExternal, virtual_path);
 
   std::string register_name;
-  const std::string isolated_file_system_id =
+  storage::IsolatedContext::ScopedFSHandle file_system =
       storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-          original_url.type(),
-          original_url.filesystem_id(),
-          original_url.path(),
-          &register_name);
-  const storage::FileSystemURL isolated_url =
-      context.CreateCrackedFileSystemURL(
-          origin,
-          storage::kFileSystemTypeIsolated,
-          base::FilePath(isolated_file_system_id).Append(register_name));
-  return isolated_url;
+          original_url.type(), original_url.filesystem_id(),
+          original_url.path(), &register_name);
+  storage::FileSystemURL isolated_url = context.CreateCrackedFileSystemURL(
+      origin, storage::kFileSystemTypeIsolated,
+      base::FilePath(file_system.id()).Append(register_name));
+  return {isolated_url, file_system};
 }
 
 }  // namespace util

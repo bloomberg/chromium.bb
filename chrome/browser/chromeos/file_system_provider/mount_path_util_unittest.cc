@@ -211,15 +211,13 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_IsolatedURL) {
   // Create an isolated URL for the original one.
   storage::IsolatedContext* const isolated_context =
       storage::IsolatedContext::GetInstance();
-  const std::string isolated_file_system_id =
+  const storage::IsolatedContext::ScopedFSHandle isolated_file_system =
       isolated_context->RegisterFileSystemForPath(
-          storage::kFileSystemTypeProvided,
-          url.filesystem_id(),
-          url.path(),
+          storage::kFileSystemTypeProvided, url.filesystem_id(), url.path(),
           NULL);
 
   const base::FilePath isolated_virtual_path =
-      isolated_context->CreateVirtualRootPath(isolated_file_system_id)
+      isolated_context->CreateVirtualRootPath(isolated_file_system.id())
           .Append(kFilePath.BaseName().value());
 
   const storage::FileSystemURL isolated_url =

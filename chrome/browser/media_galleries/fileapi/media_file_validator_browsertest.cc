@@ -153,18 +153,16 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
 
     base::FilePath dest_path = base.AppendASCII("dest_fs");
     ASSERT_TRUE(base::CreateDirectory(dest_path));
-    std::string dest_fsid =
+    dest_fs_ =
         storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-            storage::kFileSystemTypeNativeMedia,
-            std::string(),
-            dest_path,
+            storage::kFileSystemTypeNativeMedia, std::string(), dest_path,
             NULL);
 
     size_t extension_index = filename.find_last_of(".");
     ASSERT_NE(std::string::npos, extension_index);
     std::string extension = filename.substr(extension_index);
     std::string dest_root_fs_url = storage::GetIsolatedFileSystemRootURIString(
-        GURL(kOrigin), dest_fsid, "dest_fs/");
+        GURL(kOrigin), dest_fs_.id(), "dest_fs/");
     move_dest_ = file_system_context_->CrackURL(GURL(
           dest_root_fs_url + "move_dest" + extension));
 
@@ -262,6 +260,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
 
   storage::FileSystemURL move_src_;
   storage::FileSystemURL move_dest_;
+  storage::IsolatedContext::ScopedFSHandle dest_fs_;
 
   base::OnceClosure quit_closure_;
   scoped_refptr<base::SequencedTaskRunner> file_system_runner_;

@@ -157,13 +157,19 @@ void FileSystemChooser::MultiFilesSelected(
   result.reserve(files.size());
   for (const auto& path : files) {
     std::string base_name;
-    std::string file_system_id = isolated_context->RegisterFileSystemForPath(
-        storage::kFileSystemTypeNativeLocal, std::string(), path, &base_name);
+    storage::IsolatedContext::ScopedFSHandle file_system =
+        isolated_context->RegisterFileSystemForPath(
+            storage::kFileSystemTypeNativeLocal, std::string(), path,
+            &base_name);
+
+    // TODO(https://crbug.com/955185): Properly refcount file system in handle
+    // implementations, rather than just leaking them like this.
+    storage::IsolatedContext::GetInstance()->AddReference(file_system.id());
 
     base::FilePath root_path =
-        isolated_context->CreateVirtualRootPath(file_system_id);
+        isolated_context->CreateVirtualRootPath(file_system.id());
     base::FilePath isolated_path = root_path.AppendASCII(base_name);
-    result.push_back({file_system_id, isolated_path});
+    result.push_back({file_system.id(), isolated_path});
   }
 
   if (type_ == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
