@@ -1,15 +1,19 @@
 # XR Browser Tests
 
+[TOC]
+
 ## Introduction
 
 This documentation concerns `xr_browser_test.h`, `xr_browser_test.cc`, and files
 that use them or their subclasses.
 
 These files port the framework used by XR instrumentation tests (located in
-[`//chrome/android/javatests/src/org/chromium/chrome/browser/vr/`][1] and
-documented in
+[`//chrome/android/javatests/src/org/chromium/chrome/browser/vr/`][vr android dir]
+and documented in
 `//chrome/android/javatests/src/org/chromium/chrome/browser/vr/*.md`) for
 use in browser tests in order to test XR features on desktop platforms.
+
+[vr android dir]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr
 
 This is pretty much a direct port, with the same JavaScript/HTML files being
 used for both and the Java/C++ code being functionally equivalent to each other,
@@ -71,4 +75,56 @@ Because the "test" is actually a Python wrapper script, you may need to prepend
 `python` to the front of the command on Windows if Python file association is
 not set up on your machine.
 
-[1]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr
+## Controller and Head Input
+
+The XR browser tests provide a way to plumb controller and headset data (e.g.
+currently touched/pressed buttons and poses) from the test through the runtime
+being tested. Details about what goes on under the hood can be found in
+[`//chrome/browser/vr/test/xr_browser_test_details.md`][xr details], but below
+is a quick guide on how to use them.
+
+[xr details]: https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/vr/test/xr_browser_test_details.md
+
+In order to let a test provide data to a runtime, it must create an instance of
+[`MockXRDeviceHookBase`][xr hook base] or some subclass of it. This should be
+created at the beginning of the test before any attempts to enter VR are made,
+as there are currently assumptions that prevent switching to or from the mock
+runtimes once they have been attempted to be started.
+
+[xr hook base]: https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/vr/test/mock_xr_device_hook_base.h
+
+Once created, the runtime being used will call the various functions inherited
+from [`VRTestHook`][vr test hook] whenever it would normally acquire or submit
+data from or to an actual device. For example, `WaitGetControllerData()` will be
+called every time the runtime would normally check the state of a real
+controller, and `OnFrameSubmitted()` will be called each time the runtime
+submits a finished frame to the headset.
+
+[vr test hook]: https://chromium.googlesource.com/chromium/src/+/master/device/vr/test/test_hook.h
+
+For real examples on how to use the input capabilities, look at the tests in
+[`//chrome/browser/vr/webxr_vr_input_browser_test.cc`][input test].
+
+[input test]: https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/vr/webxr_vr_input_browser_test.cc
+
+### Assumptions
+
+There are currently several assumptions made that must be adhered to in order
+for input to work properly in both OpenVR and Windows Mixed Reality.
+
+#### Primary Axes
+
+OpenVR assumes that axis 0 is the primary axis (usually a touchpad). However,
+WMR assumes that axis 2 is the primary axis (must be a joystick). This will
+eventually be abstracted away, but in the meantime, if you care about the
+primary axis (i.e. which one shows up as axis 0 in WebXR), you'll need to
+conditionally change which axis you set based on runtime.
+
+#### WMR and Incomplete Gamepads
+
+OpenVR supports arbitrary controller mappings, but WMR only supports one actual
+controller type (+ voice input). What this means is that WMR will always report
+a certain set of buttons and axes when a controller is connected, regardless of
+which buttons and axes are set as supported. This means that tests involving
+things not supported by WMR (e.g. a third touchpad/joystick) must be restricted
+to OpenVR.
