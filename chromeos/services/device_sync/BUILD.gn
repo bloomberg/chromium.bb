@@ -86,6 +86,8 @@ static_library("device_sync") {
     "sync_scheduler.h",
     "sync_scheduler_impl.cc",
     "sync_scheduler_impl.h",
+    "value_string_encoding.cc",
+    "value_string_encoding.h",
   ]
 
   public_deps = [

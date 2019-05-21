@@ -6,19 +6,20 @@
 
 #include <utility>
 
-#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/public/cpp/client_app_metadata_provider.h"
+#include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -466,25 +467,25 @@ void CryptAuthV2EnrollmentManagerImpl::SetState(State state) {
 }
 
 std::string CryptAuthV2EnrollmentManagerImpl::GetV1UserPublicKey() const {
-  std::string public_key;
-  if (!base::Base64UrlDecode(
-          pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPublicKey),
-          base::Base64UrlDecodePolicy::REQUIRE_PADDING, &public_key)) {
+  base::Optional<std::string> public_key = util::DecodeFromValueString(
+      pref_service_->Get(prefs::kCryptAuthEnrollmentUserPublicKey));
+  if (!public_key) {
     PA_LOG(ERROR) << "Invalid public key stored in user prefs.";
     return std::string();
   }
-  return public_key;
+
+  return *public_key;
 }
 
 std::string CryptAuthV2EnrollmentManagerImpl::GetV1UserPrivateKey() const {
-  std::string private_key;
-  if (!base::Base64UrlDecode(
-          pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPrivateKey),
-          base::Base64UrlDecodePolicy::REQUIRE_PADDING, &private_key)) {
+  base::Optional<std::string> private_key = util::DecodeFromValueString(
+      pref_service_->Get(prefs::kCryptAuthEnrollmentUserPrivateKey));
+  if (!private_key) {
     PA_LOG(ERROR) << "Invalid private key stored in user prefs.";
     return std::string();
   }
-  return private_key;
+
+  return *private_key;
 }
 
 void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {

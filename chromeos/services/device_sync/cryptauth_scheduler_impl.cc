@@ -14,6 +14,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/device_sync/pref_names.h"
+#include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -70,50 +71,20 @@ cryptauthv2::ClientDirective CreateDefaultClientDirective() {
   return client_directive;
 }
 
-// Decodes and parses the base64-encoded serialized ClientDirective string.
-// TODO(https://crbug.com/964563): Replace when utility functions are added.
-base::Optional<cryptauthv2::ClientDirective> ClientDirectiveFromPrefString(
-    const std::string& encoded_serialized_client_directive) {
-  if (encoded_serialized_client_directive == kNoClientDirective)
-    return base::nullopt;
-
-  std::string decoded_serialized_client_directive;
-  if (!base::Base64Decode(encoded_serialized_client_directive,
-                          &decoded_serialized_client_directive)) {
-    PA_LOG(ERROR) << "Error decoding ClientDirective pref string";
-    return base::nullopt;
-  }
-
-  cryptauthv2::ClientDirective client_directive;
-  if (!client_directive.ParseFromString(decoded_serialized_client_directive)) {
-    PA_LOG(ERROR) << "Error parsing ClientDirective from pref string";
-    return base::nullopt;
-  }
-
-  return client_directive;
-}
-
-// Serializes and base64 encodes the input ClientDirective.
-// TODO(https://crbug.com/964563): Replace when utility functions are added.
-std::string ClientDirectiveToPrefString(
-    const cryptauthv2::ClientDirective& client_directive) {
-  std::string encoded_serialized_client_directive;
-  base::Base64Encode(client_directive.SerializeAsString(),
-                     &encoded_serialized_client_directive);
-
-  return encoded_serialized_client_directive;
-}
-
 cryptauthv2::ClientDirective BuildClientDirective(PrefService* pref_service) {
   DCHECK(pref_service);
+  const base::Value* encoded_client_directive =
+      pref_service->Get(prefs::kCryptAuthSchedulerClientDirective);
+  if (encoded_client_directive &&
+      encoded_client_directive->GetString() == kNoClientDirective) {
+    return CreateDefaultClientDirective();
+  }
 
   base::Optional<cryptauthv2::ClientDirective> client_directive_from_pref =
-      ClientDirectiveFromPrefString(
-          pref_service->GetString(prefs::kCryptAuthSchedulerClientDirective));
-  if (client_directive_from_pref)
-    return *client_directive_from_pref;
+      util::DecodeProtoMessageFromValueString<cryptauthv2::ClientDirective>(
+          encoded_client_directive);
 
-  return CreateDefaultClientDirective();
+  return client_directive_from_pref.value_or(CreateDefaultClientDirective());
 }
 
 cryptauthv2::ClientMetadata BuildClientMetadata(
@@ -127,38 +98,6 @@ cryptauthv2::ClientMetadata BuildClientMetadata(
     client_metadata.set_session_id(*session_id);
 
   return client_metadata;
-}
-
-// TODO(https://crbug.com/964563): Replace when utility functions are added.
-base::Optional<cryptauthv2::ClientMetadata> ClientMetadataFromPrefString(
-    const std::string& encoded_serialized_client_metadata) {
-  if (encoded_serialized_client_metadata == kNoClientMetadata)
-    return base::nullopt;
-
-  std::string decoded_serialized_client_metadata;
-  if (!base::Base64Decode(encoded_serialized_client_metadata,
-                          &decoded_serialized_client_metadata)) {
-    PA_LOG(ERROR) << "Error decoding ClientMetadata pref string";
-    return base::nullopt;
-  }
-
-  cryptauthv2::ClientMetadata client_metadata;
-  if (!client_metadata.ParseFromString(decoded_serialized_client_metadata)) {
-    PA_LOG(ERROR) << "Error parsing ClientMetadata from pref string";
-    return base::nullopt;
-  }
-
-  return client_metadata;
-}
-
-// TODO(https://crbug.com/964563): Replace when utility functions are added.
-std::string ClientMetadataToPrefString(
-    const cryptauthv2::ClientMetadata& client_metadata) {
-  std::string encoded_serialized_client_metadata;
-  base::Base64Encode(client_metadata.SerializeAsString(),
-                     &encoded_serialized_client_metadata);
-
-  return encoded_serialized_client_metadata;
 }
 
 }  // namespace
@@ -223,9 +162,14 @@ CryptAuthSchedulerImpl::CryptAuthSchedulerImpl(
   DCHECK(IsClientDirectiveValid(client_directive_));
 
   // Queue up the most recently scheduled enrollment request if applicable.
-  pending_enrollment_request_ =
-      ClientMetadataFromPrefString(pref_service_->GetString(
-          prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata));
+  const base::Value* client_metadata_from_pref = pref_service_->Get(
+      prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata);
+  if (client_metadata_from_pref &&
+      client_metadata_from_pref->GetString() != kNoClientMetadata) {
+    pending_enrollment_request_ =
+        util::DecodeProtoMessageFromValueString<cryptauthv2::ClientMetadata>(
+            client_metadata_from_pref);
+  }
 
   // If we are recovering from a failure, reset the failure count to 1 in the
   // hopes that the restart solved the issue. This will allow for immediate
@@ -283,8 +227,9 @@ void CryptAuthSchedulerImpl::HandleEnrollmentResult(
       IsClientDirectiveValid(*enrollment_result.client_directive())) {
     client_directive_ = *enrollment_result.client_directive();
 
-    pref_service_->SetString(prefs::kCryptAuthSchedulerClientDirective,
-                             ClientDirectiveToPrefString(client_directive_));
+    pref_service_->Set(
+        prefs::kCryptAuthSchedulerClientDirective,
+        util::EncodeProtoMessageAsValueString(&client_directive_));
   }
 
   current_enrollment_request_.reset();
@@ -410,9 +355,10 @@ void CryptAuthSchedulerImpl::ScheduleNextEnrollment() {
   }
 
   DCHECK(pending_enrollment_request_);
-  pref_service_->SetString(
+  pref_service_->Set(
       prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata,
-      ClientMetadataToPrefString(*pending_enrollment_request_));
+      util::EncodeProtoMessageAsValueString(
+          &pending_enrollment_request_.value()));
 
   if (!HasEnrollmentSchedulingStarted())
     return;

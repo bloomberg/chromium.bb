@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "base/base64url.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -35,6 +34,7 @@
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_client_app_metadata_provider.h"
 #include "chromeos/services/device_sync/public/cpp/gcm_constants.h"
+#include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,18 +155,10 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
 
   void AddV1UserKeyPairToV1Prefs(const std::string& public_key,
                                  const std::string& private_key) {
-    std::string public_key_b64, private_key_b64;
-    base::Base64UrlEncode(public_key,
-                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                          &public_key_b64);
-    base::Base64UrlEncode(private_key,
-                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                          &private_key_b64);
-
-    test_pref_service_.SetString(prefs::kCryptAuthEnrollmentUserPublicKey,
-                                 public_key_b64);
-    test_pref_service_.SetString(prefs::kCryptAuthEnrollmentUserPrivateKey,
-                                 private_key_b64);
+    test_pref_service_.Set(prefs::kCryptAuthEnrollmentUserPublicKey,
+                           util::EncodeAsValueString(public_key));
+    test_pref_service_.Set(prefs::kCryptAuthEnrollmentUserPrivateKey,
+                           util::EncodeAsValueString(private_key));
   }
 
   void CreateEnrollmentManager() {

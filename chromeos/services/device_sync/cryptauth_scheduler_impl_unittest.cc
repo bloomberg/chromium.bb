@@ -19,6 +19,7 @@
 #include "chromeos/services/device_sync/fake_cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
+#include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -36,28 +37,6 @@ constexpr base::TimeDelta kImmediateRetryDelay =
     base::TimeDelta::FromMinutes(5);
 const char kWifiServiceGuid[] = "wifiGuid";
 const char kSessionId[] = "sessionId";
-
-// Serializes and base64 encodes the input ClientDirective.
-// Copied from cryptauth_enrollment_scheduler_impl.cc.
-// TODO(https://crbug.com/964563): Replace when utility functions are added.
-std::string ClientDirectiveToPrefString(
-    const cryptauthv2::ClientDirective& client_directive) {
-  std::string encoded_serialized_client_directive;
-  base::Base64Encode(client_directive.SerializeAsString(),
-                     &encoded_serialized_client_directive);
-
-  return encoded_serialized_client_directive;
-}
-
-// TODO(https://crbug.com/964563): Replace when utility functions are added.
-std::string ClientMetadataToPrefString(
-    const cryptauthv2::ClientMetadata& client_metadata) {
-  std::string encoded_serialized_client_metadata;
-  base::Base64Encode(client_metadata.SerializeAsString(),
-                     &encoded_serialized_client_metadata);
-
-  return encoded_serialized_client_metadata;
-}
 
 }  // namespace
 
@@ -80,15 +59,16 @@ class DeviceSyncCryptAuthSchedulerImplTest : public testing::Test {
       const base::Optional<base::Time>&
           persisted_last_successful_enrollment_time) {
     if (persisted_client_directive) {
-      pref_service_.SetString(
-          prefs::kCryptAuthSchedulerClientDirective,
-          ClientDirectiveToPrefString(*persisted_client_directive));
+      pref_service_.Set(prefs::kCryptAuthSchedulerClientDirective,
+                        util::EncodeProtoMessageAsValueString(
+                            &persisted_client_directive.value()));
     }
 
     if (persisted_client_metadata) {
-      pref_service_.SetString(
+      pref_service_.Set(
           prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata,
-          ClientMetadataToPrefString(*persisted_client_metadata));
+          util::EncodeProtoMessageAsValueString(
+              &persisted_client_metadata.value()));
     }
 
     if (persisted_last_enrollment_attempt_time) {
@@ -226,9 +206,8 @@ class DeviceSyncCryptAuthSchedulerImplTest : public testing::Test {
 
   void VerifyClientDirective(
       const cryptauthv2::ClientDirective& expected_client_directive) {
-    EXPECT_EQ(
-        ClientDirectiveToPrefString(expected_client_directive),
-        pref_service_.GetString(prefs::kCryptAuthSchedulerClientDirective));
+    EXPECT_EQ(util::EncodeProtoMessageAsValueString(&expected_client_directive),
+              *pref_service_.Get(prefs::kCryptAuthSchedulerClientDirective));
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(
                   expected_client_directive.checkin_delay_millis()),
               scheduler()->GetRefreshPeriod());
@@ -270,8 +249,8 @@ class DeviceSyncCryptAuthSchedulerImplTest : public testing::Test {
   void VerifyNextEnrollmentRequest(
       const cryptauthv2::ClientMetadata& expected_enrollment_request) {
     EXPECT_EQ(
-        ClientMetadataToPrefString(expected_enrollment_request),
-        pref_service_.GetString(
+        util::EncodeProtoMessageAsValueString(&expected_enrollment_request),
+        *pref_service_.Get(
             prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata));
   }
 

@@ -64,8 +64,8 @@ const char kCryptAuthGCMRegistrationId[] = "cryptauth.gcm_registration_id";
 // populate and persist the CryptAuthKeyRegistry.
 const char kCryptAuthKeyRegistry[] = "cryptauth.key_registry";
 
-// (CryptAuth v2) The most recent ClientDirective--serialized to a string and
-// base64 encoded--sent to the CryptAuthScheduler.
+// (CryptAuth v2) The most recent ClientDirective sent to the
+// CryptAuthScheduler.
 const char kCryptAuthSchedulerClientDirective[] =
     "cryptauth.scheduler.client_directive";
 

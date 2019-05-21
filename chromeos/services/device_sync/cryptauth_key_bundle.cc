@@ -4,11 +4,12 @@
 
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
 
-#include "base/base64.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_constants.h"
+#include "chromeos/services/device_sync/value_string_encoding.h"
 
 namespace chromeos {
 
@@ -21,30 +22,6 @@ const char kDeviceSyncBetterTogetherGroupKeyName[] =
 const char kBundleNameDictKey[] = "name";
 const char kKeyListDictKey[] = "keys";
 const char kKeyDirectiveDictKey[] = "key_directive";
-
-base::Optional<cryptauthv2::KeyDirective> KeyDirectiveFromPrefString(
-    const std::string& encoded_serialized_key_directive) {
-  std::string decoded_serialized_key_directive;
-  base::Base64Decode(encoded_serialized_key_directive,
-                     &decoded_serialized_key_directive);
-
-  cryptauthv2::KeyDirective key_directive;
-  if (!key_directive.ParseFromString(decoded_serialized_key_directive)) {
-    PA_LOG(ERROR) << "Error parsing KeyDirective from pref string";
-    return base::nullopt;
-  }
-
-  return key_directive;
-}
-
-std::string KeyDirectiveToPrefString(
-    const cryptauthv2::KeyDirective& key_directive) {
-  std::string encoded_serialized_key_directive;
-  base::Base64Encode(key_directive.SerializeAsString(),
-                     &encoded_serialized_key_directive);
-
-  return encoded_serialized_key_directive;
-}
 
 }  // namespace
 
@@ -139,11 +116,12 @@ base::Optional<CryptAuthKeyBundle> CryptAuthKeyBundle::FromDictionary(
     bundle.AddKey(*key);
   }
 
-  const std::string* encoded_serialized_key_directive =
-      dict.FindStringKey(kKeyDirectiveDictKey);
+  const base::Value* encoded_serialized_key_directive =
+      dict.FindKey(kKeyDirectiveDictKey);
   if (encoded_serialized_key_directive) {
     base::Optional<cryptauthv2::KeyDirective> key_directive =
-        KeyDirectiveFromPrefString(*encoded_serialized_key_directive);
+        util::DecodeProtoMessageFromValueString<cryptauthv2::KeyDirective>(
+            encoded_serialized_key_directive);
     if (!key_directive)
       return base::nullopt;
 
@@ -220,7 +198,7 @@ base::Value CryptAuthKeyBundle::AsDictionary() const {
 
   if (key_directive_) {
     dict.SetKey(kKeyDirectiveDictKey,
-                base::Value(KeyDirectiveToPrefString(*key_directive_)));
+                util::EncodeProtoMessageAsValueString(&key_directive_.value()));
   }
 
   return dict;
