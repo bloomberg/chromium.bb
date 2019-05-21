@@ -37,7 +37,6 @@ scheduling_metrics::ThreadType ConvertBlinkThreadType(
     case WebThreadType::kReverbConvolutionBackgroundThread:
     case WebThreadType::kSharedWorkerThread:
     case WebThreadType::kUnspecifiedWorkerThread:
-    case WebThreadType::kWebAudioThread:
     case WebThreadType::kTestThread:
       return scheduling_metrics::ThreadType::kRendererOtherBlinkThread;
     case WebThreadType::kCount:
