@@ -60,8 +60,7 @@ class TestActivityLogger : public V8DOMActivityLogger {
     EXPECT_EQ(expected.size(), logged_activities_.size());
     for (wtf_size_t i = 0;
          i < std::min(expected.size(), logged_activities_.size()); ++i) {
-      EXPECT_STREQ(expected[i].Utf8().data(),
-                   logged_activities_[i].Utf8().data());
+      EXPECT_EQ(expected[i], logged_activities_[i]);
     }
     return logged_activities_ == expected;
   }

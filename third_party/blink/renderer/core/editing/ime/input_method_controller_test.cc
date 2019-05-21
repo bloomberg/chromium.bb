@@ -370,12 +370,10 @@ TEST_F(InputMethodControllerTest, FinishComposingTextKeepingStyle) {
   Controller().SetCompositionFromExistingText(ime_text_spans, 3, 12);
 
   Controller().SetComposition(String("123hello789"), ime_text_spans, 11, 11);
-  EXPECT_STREQ("abc1<b>2</b>3hello7<b>8</b>9",
-               div->InnerHTMLAsString().Utf8().data());
+  EXPECT_EQ("abc1<b>2</b>3hello7<b>8</b>9", div->InnerHTMLAsString());
 
   Controller().FinishComposingText(InputMethodController::kKeepSelection);
-  EXPECT_STREQ("abc1<b>2</b>3hello7<b>8</b>9",
-               div->InnerHTMLAsString().Utf8().data());
+  EXPECT_EQ("abc1<b>2</b>3hello7<b>8</b>9", div->InnerHTMLAsString());
 }
 
 TEST_F(InputMethodControllerTest, CommitTextKeepingStyle) {
@@ -391,8 +389,7 @@ TEST_F(InputMethodControllerTest, CommitTextKeepingStyle) {
   Controller().SetCompositionFromExistingText(ime_text_spans, 3, 12);
 
   Controller().CommitText(String("123789"), ime_text_spans, 0);
-  EXPECT_STREQ("abc1<b>2</b>37<b>8</b>9",
-               div->InnerHTMLAsString().Utf8().data());
+  EXPECT_EQ("abc1<b>2</b>37<b>8</b>9", div->InnerHTMLAsString());
 }
 
 TEST_F(InputMethodControllerTest, InsertTextWithNewLine) {
@@ -404,7 +401,7 @@ TEST_F(InputMethodControllerTest, InsertTextWithNewLine) {
                                        ImeTextSpanThickness::kThin, 0));
 
   Controller().CommitText(String("hello\nworld"), ime_text_spans, 0);
-  EXPECT_STREQ("hello<div>world</div>", div->InnerHTMLAsString().Utf8().data());
+  EXPECT_EQ("hello<div>world</div>", div->InnerHTMLAsString());
 }
 
 TEST_F(InputMethodControllerTest, InsertTextWithNewLineIncrementally) {
@@ -417,8 +414,7 @@ TEST_F(InputMethodControllerTest, InsertTextWithNewLineIncrementally) {
   EXPECT_EQ("abcd", div->InnerHTMLAsString());
 
   Controller().CommitText(String("bcd\nefgh\nijkl"), ime_text_spans, 0);
-  EXPECT_STREQ("abcd<div>efgh</div><div>ijkl</div>",
-               div->InnerHTMLAsString().Utf8().data());
+  EXPECT_EQ("abcd<div>efgh</div><div>ijkl</div>", div->InnerHTMLAsString());
 }
 
 TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
@@ -1276,8 +1272,8 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForDelete) {
   // Delete the existing composition.
   GetDocument().setTitle(g_empty_string);
   Controller().SetComposition("", ime_text_spans, 0, 0);
-  EXPECT_STREQ("beforeinput.data:;input.data:null;compositionend.data:;",
-               GetDocument().title().Utf8().data());
+  EXPECT_EQ("beforeinput.data:;input.data:null;compositionend.data:;",
+            GetDocument().title());
 }
 
 TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
@@ -1303,9 +1299,9 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
   GetDocument().setTitle(g_empty_string);
   GetDocument().UpdateStyleAndLayout();
   Controller().CommitText("hello", ime_text_spans, 1);
-  EXPECT_STREQ(
+  EXPECT_EQ(
       "beforeinput.data:hello;input.data:hello;compositionend.data:hello;",
-      GetDocument().title().Utf8().data());
+      GetDocument().title());
 }
 
 TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
@@ -1621,10 +1617,8 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ(
       1u,
       GetDocument().Markers().MarkersFor(To<Text>(*div->firstChild())).size());
-  EXPECT_STREQ("text",
-               GetMarkedText(GetDocument().Markers(), div->firstChild(), 0)
-                   .Utf8()
-                   .data());
+  EXPECT_EQ("text",
+            GetMarkedText(GetDocument().Markers(), div->firstChild(), 0));
 }
 
 TEST_F(InputMethodControllerTest,
@@ -1874,7 +1868,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetCompositionFromExistingText(empty_ime_text_spans, 13, 25);
   Controller().CommitText(String("content"), empty_ime_text_spans, 0);
 
-  EXPECT_STREQ("This is some content", div->InnerHTMLAsString().Utf8().data());
+  EXPECT_EQ("This is some content", div->InnerHTMLAsString());
 
   // Verify marker is under "some "
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
