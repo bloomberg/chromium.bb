@@ -2272,8 +2272,8 @@
   },
   {
     "name": "no-credit-card-abort",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//components/payments/OWNERS" ],
+    "expiry_milestone": 79
   },
   {
     "name": "ntp-customization-menu-v2",
