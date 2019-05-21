@@ -620,7 +620,8 @@ WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
     const AtomicString& mouse_event_name,
     const WebMouseEvent& mouse_event,
     const Vector<WebMouseEvent>& coalesced_events,
-    const Vector<WebMouseEvent>& predicted_events) {
+    const Vector<WebMouseEvent>& predicted_events,
+    const String& canvas_region_id) {
   WebInputEvent::Type event_type;
   // TODO(crbug.com/665924): The following ifs skip the mouseover/leave cases,
   // we should fixed them when further merge the code path.
@@ -644,6 +645,10 @@ WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
   PointerEvent* pointer_event = pointer_event_factory_.Create(
       web_pointer_event, pointer_coalesced_events, pointer_predicted_events,
       target->GetDocument().domWindow());
+
+  ProcessCaptureAndPositionOfPointerEvent(pointer_event, target,
+                                          canvas_region_id, &mouse_event);
+
   return DispatchPointerEvent(target, pointer_event);
 }
 
@@ -662,7 +667,8 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
       pointer_event_factory_.GetLastPointerPosition(
           PointerEventFactory::kMouseId, event);
   WebInputEventResult result = CreateAndDispatchPointerEvent(
-      target, mouse_event_type, event, coalesced_events, predicted_events);
+      target, mouse_event_type, event, coalesced_events, predicted_events,
+      canvas_region_id);
 
   result = event_handling_util::MergeEventResult(
       result, mouse_event_manager_->DispatchMouseEvent(
@@ -907,15 +913,6 @@ void PointerEventManager::ProcessPendingPointerCapture(
   } else {
     pointer_capture_target_.erase(pointer_id);
   }
-}
-
-void PointerEventManager::ProcessPendingPointerCaptureForPointerLock(
-    const WebMouseEvent& mouse_event) {
-  PointerEvent* pointer_event = pointer_event_factory_.Create(
-      WebPointerEvent(WebInputEvent::kPointerMove, mouse_event),
-      Vector<WebPointerEvent>(), Vector<WebPointerEvent>(),
-      frame_->GetDocument()->domWindow());
-  ProcessPendingPointerCapture(pointer_event);
 }
 
 void PointerEventManager::RemoveTargetFromPointerCapturingMapping(

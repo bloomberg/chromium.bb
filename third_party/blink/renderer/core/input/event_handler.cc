@@ -1337,12 +1337,6 @@ bool EventHandler::HasPointerCapture(PointerId pointer_id,
   }
 }
 
-void EventHandler::ProcessPendingPointerCaptureForPointerLock(
-    const WebMouseEvent& mouse_event) {
-  pointer_event_manager_->ProcessPendingPointerCaptureForPointerLock(
-      mouse_event);
-}
-
 void EventHandler::ElementRemoved(Element* target) {
   pointer_event_manager_->ElementRemoved(target);
   if (target)

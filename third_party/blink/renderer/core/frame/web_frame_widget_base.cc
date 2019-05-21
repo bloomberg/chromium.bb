@@ -363,12 +363,6 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(local_root_->GetFrameView(), mouse_event);
 
-  LocalFrame* focusedFrame = FocusedLocalFrameInWidget();
-  if (focusedFrame) {
-    focusedFrame->GetEventHandler().ProcessPendingPointerCaptureForPointerLock(
-        transformed_event);
-  }
-
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   AtomicString event_type;
   switch (input_event.GetType()) {
