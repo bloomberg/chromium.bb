@@ -249,7 +249,7 @@ void DialMediaRouteProvider::HandleParsedRouteMessage(
   } else if (internal_message->type ==
              DialInternalMessageType::kCustomDialLaunch) {
     HandleCustomDialLaunchResponse(*activity, *internal_message);
-  } else if (internal_message_util_.IsStopSessionMessage(*internal_message)) {
+  } else if (DialInternalMessageUtil::IsStopSessionMessage(*internal_message)) {
     DoTerminateRoute(*activity, *sink, base::DoNothing());
   }
 }

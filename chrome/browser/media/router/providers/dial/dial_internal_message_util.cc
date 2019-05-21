@@ -182,8 +182,9 @@ DialInternalMessageUtil::DialInternalMessageUtil(const std::string& hash_token)
     : hash_token_(hash_token) {}
 DialInternalMessageUtil::~DialInternalMessageUtil() = default;
 
+// static
 bool DialInternalMessageUtil::IsStopSessionMessage(
-    const DialInternalMessage& message) const {
+    const DialInternalMessage& message) {
   if (message.type != DialInternalMessageType::kV2Message)
     return false;
 
