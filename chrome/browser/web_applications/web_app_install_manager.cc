@@ -98,8 +98,14 @@ void WebAppInstallManager::InstallWebAppWithOptions(
     content::WebContents* web_contents,
     const InstallOptions& install_options,
     OnceInstallCallback callback) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
+  auto task = std::make_unique<WebAppInstallTask>(
+      profile(), install_finalizer_, data_retriever_factory_.Run());
+  task->InstallWebAppWithOptions(
+      web_contents, install_options,
+      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
+                     base::Unretained(this), task.get(), std::move(callback)));
+
+  tasks_.insert(std::move(task));
 }
 
 void WebAppInstallManager::InstallOrUpdateWebAppFromSync(

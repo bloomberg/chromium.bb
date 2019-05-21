@@ -12,6 +12,8 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/installable/installable_data.h"
+#include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -198,6 +200,30 @@ void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {
       contents, app_url, app_url.spec(),
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
       base::Time::Now());
+}
+
+WebappInstallSource ConvertOptionsToMetricsInstallSource(
+    const InstallOptions& options) {
+  auto metrics_install_source = WebappInstallSource::COUNT;
+  switch (options.install_source) {
+    case InstallSource::kInternal:
+      metrics_install_source = WebappInstallSource::INTERNAL_DEFAULT;
+      break;
+    case InstallSource::kExternalDefault:
+      metrics_install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+      break;
+    case InstallSource::kExternalPolicy:
+      metrics_install_source = WebappInstallSource::EXTERNAL_POLICY;
+      break;
+    case InstallSource::kSystemInstalled:
+      metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
+      break;
+    case InstallSource::kArc:
+      NOTREACHED();
+      break;
+  }
+
+  return metrics_install_source;
 }
 
 }  // namespace web_app

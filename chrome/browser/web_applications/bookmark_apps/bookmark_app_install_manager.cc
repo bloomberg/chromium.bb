@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -142,30 +143,6 @@ void OnBookmarkAppInstalled(std::unique_ptr<InstallTask> install_task,
       FROM_HERE, base::BindOnce(DestroyInstallTask, std::move(install_task)));
 }
 
-WebappInstallSource ConvertOptionsToMetricsInstallSource(
-    const web_app::InstallOptions& options) {
-  WebappInstallSource metrics_install_source = WebappInstallSource::COUNT;
-  switch (options.install_source) {
-    case web_app::InstallSource::kInternal:
-      metrics_install_source = WebappInstallSource::INTERNAL_DEFAULT;
-      break;
-    case web_app::InstallSource::kExternalDefault:
-      metrics_install_source = WebappInstallSource::EXTERNAL_DEFAULT;
-      break;
-    case web_app::InstallSource::kExternalPolicy:
-      metrics_install_source = WebappInstallSource::EXTERNAL_POLICY;
-      break;
-    case web_app::InstallSource::kSystemInstalled:
-      metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
-      break;
-    case web_app::InstallSource::kArc:
-      NOTREACHED();
-      break;
-  }
-
-  return metrics_install_source;
-}
-
 void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
                                  BookmarkAppHelper* helper) {
   switch (options.launch_container) {
@@ -229,7 +206,7 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
   }
 
   WebappInstallSource metrics_install_source =
-      ConvertOptionsToMetricsInstallSource(install_options);
+      web_app::ConvertOptionsToMetricsInstallSource(install_options);
 
   Profile* profile = Profile::FromBrowserContext(
       install_task->web_contents()->GetBrowserContext());

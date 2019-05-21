@@ -11,6 +11,7 @@
 
 #include "url/gurl.h"
 
+enum class WebappInstallSource;
 struct InstallableData;
 struct WebApplicationInfo;
 class SkBitmap;
@@ -26,6 +27,7 @@ class WebContents;
 namespace web_app {
 
 struct BitmapAndSource;
+struct InstallOptions;
 
 enum class ForInstallableSite {
   kYes,
@@ -91,6 +93,9 @@ void UpdateWebAppIconsWithoutChangingLinks(
 // Record an app banner added to homescreen event to ensure banners are not
 // shown for this app.
 void RecordAppBanner(content::WebContents* contents, const GURL& app_url);
+
+WebappInstallSource ConvertOptionsToMetricsInstallSource(
+    const InstallOptions& options);
 
 }  // namespace web_app
 

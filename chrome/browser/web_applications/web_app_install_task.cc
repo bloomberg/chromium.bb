@@ -87,6 +87,8 @@ void WebAppInstallTask::InstallWebAppFromInfo(
                                        web_application_info.get());
 
   install_source_ = install_source;
+  background_installation_ = true;
+
   // |for_installable_site| arg is determined by fetching a manifest and running
   // the eligibility check on it. If we don't hit the network, assume that the
   // app represetned by |web_application_info| is installable.
@@ -104,6 +106,24 @@ void WebAppInstallTask::InstallWebAppFromInfo(
                                       std::move(callback));
 }
 
+void WebAppInstallTask::InstallWebAppWithOptions(
+    content::WebContents* contents,
+    const InstallOptions& install_options,
+    InstallManager::OnceInstallCallback install_callback) {
+  CheckInstallPreconditions();
+
+  Observe(contents);
+  install_callback_ = std::move(install_callback);
+  install_source_ = ConvertOptionsToMetricsInstallSource(install_options);
+  install_options_ = install_options;
+  background_installation_ = true;
+
+  data_retriever_->GetWebApplicationInfo(
+      web_contents(),
+      base::BindOnce(&WebAppInstallTask::OnGetWebApplicationInfo,
+                     base::Unretained(this), /*force_shortcut_app=*/false));
+}
+
 void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
     content::WebContents* web_contents,
     std::unique_ptr<WebApplicationInfo> web_application_info,
@@ -115,6 +135,7 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
   Observe(web_contents);
   install_callback_ = std::move(callback);
   install_source_ = install_source;
+  background_installation_ = true;
 
   std::vector<GURL> icon_urls =
       GetValidIconUrlsToDownload(*web_application_info, /*data=*/nullptr);
@@ -194,8 +215,12 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
     return;
   }
 
+  bool bypass_service_worker_check = false;
+  if (install_options_)
+    bypass_service_worker_check = install_options_->bypass_service_worker_check;
+
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
-      web_contents(), /*bypass_service_worker_check=*/false,
+      web_contents(), bypass_service_worker_check,
       base::BindOnce(&WebAppInstallTask::OnDidPerformInstallableCheck,
                      base::Unretained(this), std::move(web_app_info),
                      force_shortcut_app));
@@ -212,6 +237,14 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 
   DCHECK(web_app_info);
 
+  if (install_options_ && install_options_->require_manifest &&
+      !valid_manifest_for_web_app) {
+    LOG(WARNING) << "Did not install " << web_app_info->app_url.spec()
+                 << " because it didn't have a manifest for web app";
+    CallInstallCallback(AppId(), InstallResultCode::kNotValidManifestForWebApp);
+    return;
+  }
+
   const auto for_installable_site = is_installable && !force_shortcut_app
                                         ? ForInstallableSite::kYes
                                         : ForInstallableSite::kNo;
@@ -221,6 +254,12 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 
   std::vector<GURL> icon_urls =
       GetValidIconUrlsToDownload(*web_app_info, /*data=*/nullptr);
+
+  // A system app should always have a manifest icon.
+  if (install_options_ &&
+      install_options_->install_source == InstallSource::kSystemInstalled) {
+    DCHECK(!manifest.icons.empty());
+  }
 
   // If the manifest specified icons, don't use the page icons.
   const bool skip_page_favicons = !manifest.icons.empty();
@@ -288,11 +327,18 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
   ResizeDownloadedIconsGenerateMissing(std::move(downloaded_icons),
                                        web_app_info.get());
 
-  std::move(dialog_callback_)
-      .Run(
-          web_contents(), std::move(web_app_info), for_installable_site,
-          base::BindOnce(&WebAppInstallTask::OnDialogCompleted,
-                         weak_ptr_factory_.GetWeakPtr(), for_installable_site));
+  if (background_installation_) {
+    DCHECK(!dialog_callback_);
+    OnDialogCompleted(for_installable_site, /*user_accepted=*/true,
+                      std::move(web_app_info));
+  } else {
+    DCHECK(dialog_callback_);
+    std::move(dialog_callback_)
+        .Run(web_contents(), std::move(web_app_info), for_installable_site,
+             base::BindOnce(&WebAppInstallTask::OnDialogCompleted,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            for_installable_site));
+  }
 }
 
 void WebAppInstallTask::OnDialogCompleted(
@@ -312,10 +358,32 @@ void WebAppInstallTask::OnDialogCompleted(
   // This metric is recorded regardless of the installation result.
   RecordInstallEvent(for_installable_site);
 
-  InstallFinalizer::FinalizeOptions options;
+  InstallFinalizer::FinalizeOptions finalize_options;
+  if (install_options_) {
+    finalize_options.force_launch_container =
+        install_options_->launch_container;
+
+    switch (install_options_->install_source) {
+      // TODO(nigeltao/ortuno): should these two cases lead to different
+      // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
+      case InstallSource::kInternal:
+      case InstallSource::kExternalDefault:
+        finalize_options.source = InstallFinalizer::Source::kDefaultInstalled;
+        break;
+      case InstallSource::kExternalPolicy:
+        finalize_options.source = InstallFinalizer::Source::kPolicyInstalled;
+        break;
+      case InstallSource::kSystemInstalled:
+        finalize_options.source = InstallFinalizer::Source::kSystemInstalled;
+        break;
+      case InstallSource::kArc:
+        NOTREACHED();
+        break;
+    }
+  }
 
   install_finalizer_->FinalizeInstall(
-      web_app_info_copy, options,
+      web_app_info_copy, finalize_options,
       base::BindOnce(&WebAppInstallTask::OnInstallFinalizedCreateShortcuts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info)));
 
@@ -348,12 +416,22 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
   RecordWebAppInstallationTimestamp(profile_->GetPrefs(), app_id,
                                     install_source_);
 
-  // TODO(loyso): Implement |create_shortcuts| to skip OS shortcuts creation.
+  bool add_to_applications_menu = true;
+  bool add_to_desktop = true;
+
+  if (install_options_) {
+    add_to_applications_menu = install_options_->add_to_applications_menu;
+    add_to_desktop = install_options_->add_to_desktop;
+  }
+
   auto create_shortcuts_callback = base::BindOnce(
       &WebAppInstallTask::OnShortcutsCreated, weak_ptr_factory_.GetWeakPtr(),
       std::move(web_app_info), app_id);
-  if (install_finalizer_->CanCreateOsShortcuts()) {
-    install_finalizer_->CreateOsShortcuts(app_id, /*add_to_dekstop=*/true,
+
+  if (add_to_applications_menu && install_finalizer_->CanCreateOsShortcuts()) {
+    // TODO(ortuno): Make adding a shortcut to the applications menu independent
+    // from adding a shortcut to desktop.
+    install_finalizer_->CreateOsShortcuts(app_id, add_to_desktop,
                                           std::move(create_shortcuts_callback));
   } else {
     std::move(create_shortcuts_callback).Run(false /* created_shortcuts */);
@@ -367,17 +445,25 @@ void WebAppInstallTask::OnShortcutsCreated(
   if (ShouldStopInstall())
     return;
 
-  if (install_finalizer_->CanPinAppToShelf())
+  bool add_to_quick_launch_bar = true;
+  if (install_options_)
+    add_to_quick_launch_bar = install_options_->add_to_quick_launch_bar;
+
+  if (add_to_quick_launch_bar && install_finalizer_->CanPinAppToShelf())
     install_finalizer_->PinAppToShelf(app_id);
 
-  // TODO(loyso): Implement |reparent_tab| to skip tab reparenting logic.
-  if (web_app_info->open_as_window &&
-      install_finalizer_->CanReparentTab(app_id, shortcut_created)) {
-    install_finalizer_->ReparentTab(app_id, web_contents());
-  }
+  // TODO(loyso): Reparenting must be implemented in
+  // chrome/browser/ui/web_applications/ UI layer as a post-install step.
+  if (!background_installation_) {
+    const bool can_reparent_tab =
+        install_finalizer_->CanReparentTab(app_id, shortcut_created);
+    if (can_reparent_tab && web_app_info->open_as_window)
+      install_finalizer_->ReparentTab(app_id, web_contents());
 
-  if (install_finalizer_->CanRevealAppShim())
-    install_finalizer_->RevealAppShim(app_id);
+    // TODO(loyso): Make revealing app shim independent from CanReparentTab.
+    if (can_reparent_tab && install_finalizer_->CanRevealAppShim())
+      install_finalizer_->RevealAppShim(app_id);
+  }
 
   CallInstallCallback(app_id, InstallResultCode::kSuccess);
 }

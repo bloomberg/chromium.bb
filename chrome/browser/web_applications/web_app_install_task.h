@@ -10,8 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -39,7 +41,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   ~WebAppInstallTask() override;
 
   // Checks a WebApp installability, retrieves manifest and icons and
-  // than performs the actual installation.
+  // then performs the actual installation.
   void InstallWebAppFromManifest(
       content::WebContents* web_contents,
       WebappInstallSource install_source,
@@ -47,7 +49,7 @@ class WebAppInstallTask : content::WebContentsObserver {
       InstallManager::OnceInstallCallback callback);
 
   // This method infers WebApp info from the blink renderer process
-  // and than retrieves a manifest in a way similar to
+  // and then retrieves a manifest in a way similar to
   // |InstallWebAppFromManifest|. If manifest is incomplete or missing, the
   // inferred info is used.
   void InstallWebAppFromManifestWithFallback(
@@ -67,6 +69,14 @@ class WebAppInstallTask : content::WebContentsObserver {
       bool no_network_install,
       WebappInstallSource install_source,
       InstallManager::OnceInstallCallback callback);
+
+  // Starts a background web app installation process for a given
+  // |web_contents|. This method infers WebApp info from the blink renderer
+  // process and then retrieves a manifest in a way similar to
+  // |InstallWebAppFromManifestWithFallback|.
+  void InstallWebAppWithOptions(content::WebContents* web_contents,
+                                const InstallOptions& install_options,
+                                InstallManager::OnceInstallCallback callback);
 
   // Starts background installation of a web app: does not show UI dialog.
   // |web_application_info| contains all the data needed for installation. Icons
@@ -128,6 +138,8 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   InstallManager::WebAppInstallDialogCallback dialog_callback_;
   InstallManager::OnceInstallCallback install_callback_;
+  base::Optional<InstallOptions> install_options_;
+  bool background_installation_ = false;
 
   // The mechanism via which the app creation was triggered.
   static constexpr WebappInstallSource kNoInstallSource =
