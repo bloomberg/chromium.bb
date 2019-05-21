@@ -1512,8 +1512,12 @@
       'filepath': 'select_to_speak',
     },
     'send_tab_to_self': {
-      'filepath': 'components/send_tab_to_self' \
-        '|chrome/android/java/src/org/chromium/chrome/browser/send_tab_to_self/',
+      'filepath': 'components/send_tab_to_self'\
+                  '|chrome/android/java/src/org/chromium/chrome/browser/send_tab_to_self/'\
+                  '|chrome/browser/android/send_tab_to_self/'\
+                  '|chrome/browser/send_tab_to_self/'\
+                  '|chrome/browser/ui/send_tab_to_self'\
+                  '|ios/chrome/browser/send_tab_to_self/',
     },
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
