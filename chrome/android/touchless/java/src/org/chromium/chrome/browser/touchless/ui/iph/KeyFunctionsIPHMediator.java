@@ -27,6 +27,7 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
     private final KeyFunctionsIPHTabObserver mKeyFunctionsIPHTabObserver;
     private FutureTask mHideTask;
     private int mPageLoadCount;
+    private DisplayLockHandle mDisplayLockHandle;
 
     private static final long DISPLAY_DURATION_MS = 3000;
 
@@ -62,16 +63,18 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
             if (totalSessionCount > INTRODUCTORY_SESSIONS && mPageLoadCount > 1) return;
         }
 
-        // This ensures that no other in-product help UI is currently shown.
-        DisplayLockHandle displayLockHandle =
-                TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile())
-                        .acquireDisplayLock();
-        if (displayLockHandle == null) return;
+        // If we are already showing this IPH, we should release the lock.
+        if (mDisplayLockHandle != null) mDisplayLockHandle.release();
+        mDisplayLockHandle = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile())
+                                     .acquireDisplayLock();
+        // If another IPH UI is currently shown, return.
+        if (mDisplayLockHandle == null) return;
 
         if (mHideTask != null) mHideTask.cancel(false);
         mHideTask = new FutureTask<Void>(() -> {
             mModel.set(KeyFunctionsIPHProperties.IS_VISIBLE, false);
-            displayLockHandle.release();
+            mDisplayLockHandle.release();
+            mDisplayLockHandle = null;
             return null;
         });
         PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, mHideTask, DISPLAY_DURATION_MS);

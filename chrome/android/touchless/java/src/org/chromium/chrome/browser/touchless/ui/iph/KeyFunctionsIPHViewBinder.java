@@ -16,10 +16,14 @@ public class KeyFunctionsIPHViewBinder {
         if (KeyFunctionsIPHProperties.TOOLTIP_VIEW == propertyKey) {
             keyFunctionsIPHView.setTooltipView(model.get(KeyFunctionsIPHProperties.TOOLTIP_VIEW));
         } else if (KeyFunctionsIPHProperties.IS_VISIBLE == propertyKey) {
-            if (model.get(KeyFunctionsIPHProperties.IS_VISIBLE))
-                keyFunctionsIPHView.show(model.get(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE));
-            else
+            if (model.get(KeyFunctionsIPHProperties.IS_VISIBLE)) {
+                keyFunctionsIPHView.show();
+            } else {
                 keyFunctionsIPHView.hide();
+            }
+        } else if (KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE == propertyKey) {
+            keyFunctionsIPHView.setCursorVisibility(
+                    model.get(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE));
         }
     }
 }
