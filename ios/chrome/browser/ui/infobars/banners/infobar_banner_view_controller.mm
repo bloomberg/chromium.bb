@@ -42,6 +42,7 @@ const int kSubTitleLabelColor = 0x7F868C;
 const CGFloat kButtonWidth = 100.0;
 const CGFloat kButtonSeparatorWidth = 1.0;
 const int kButtonSeparatorColor = 0xF1F3F4;
+const CGFloat kButtonMaxFontSize = 45;
 
 // Container Stack constants.
 const CGFloat kContainerStackSpacing = 18.0;
@@ -152,8 +153,10 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   // Button setup.
   self.infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
   [self.infobarButton setTitle:self.buttonText forState:UIControlStateNormal];
-  self.infobarButton.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  self.infobarButton.titleLabel.font = [[UIFontMetrics defaultMetrics]
+      scaledFontForFont:[UIFont
+                            preferredFontForTextStyle:UIFontTextStyleHeadline]
+       maximumPointSize:kButtonMaxFontSize];
   [self.infobarButton addTarget:self
                          action:@selector(bannerInfobarButtonWasPressed:)
                forControlEvents:UIControlEventTouchUpInside];
