@@ -5645,7 +5645,7 @@ crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ 
 crbug.com/964158 [ Linux ] external/wpt/payment-handler/change-payment-method.https.html [ Pass Crash ]
 crbug.com/899710 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
 crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
-crbug.com/965137 [ Linux Win ] external/wpt/css/css-overflow/webkit-line-clamp-026.html [ Failure ]
+crbug.com/965137 [ Debug ] external/wpt/css/css-overflow/webkit-line-clamp-026.html [ Failure ]
 crbug.com/965134 [ Linux ] fast/events/pointerevents/multi-touch-events.html [ Failure ]
 crbug.com/965134 [ Linux ] virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-in-slop-region.html [ Failure ]
 crbug.com/965134 [ Linux ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Pass Failure ]
