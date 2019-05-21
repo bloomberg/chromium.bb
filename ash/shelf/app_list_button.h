@@ -11,6 +11,7 @@
 #include "ash/shelf/app_list_button_controller.h"
 #include "ash/shelf/shelf_control_button.h"
 #include "base/macros.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace ash {
 
@@ -24,7 +25,8 @@ class ShelfView;
 //
 // If Assistant is enabled, the button is filled in; long-pressing it will
 // launch Assistant.
-class ASH_EXPORT AppListButton : public ShelfControlButton {
+class ASH_EXPORT AppListButton : public ShelfControlButton,
+                                 public views::ViewTargeterDelegate {
  public:
   static const char kViewClassName[];
 
@@ -47,6 +49,10 @@ class ASH_EXPORT AppListButton : public ShelfControlButton {
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
+
   // The controller used to determine the button's behavior.
   AppListButtonController controller_;
 

@@ -36,6 +36,8 @@ AppListButton::AppListButton(ShelfView* shelf_view, Shelf* shelf)
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
   set_notify_action(Button::NOTIFY_ON_PRESS);
   set_has_ink_drop_action_on_click(false);
+
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
 AppListButton::~AppListButton() = default;
@@ -99,6 +101,19 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
                          fg_flags);
     }
   }
+}
+
+bool AppListButton::DoesIntersectRect(const views::View* target,
+                                      const gfx::Rect& rect) const {
+  DCHECK_EQ(target, this);
+  gfx::Rect button_bounds = target->GetLocalBounds();
+  // Increase clickable area for the button from
+  // (kShelfControlSize x kShelfButtonSize) to
+  // (kShelfButtonSize x kShelfButtonSize).
+  int left_offset = button_bounds.width() - kShelfButtonSize;
+  int bottom_offset = button_bounds.height() - kShelfButtonSize;
+  button_bounds.Inset(gfx::Insets(0, left_offset, bottom_offset, 0));
+  return button_bounds.Intersects(rect);
 }
 
 }  // namespace ash
