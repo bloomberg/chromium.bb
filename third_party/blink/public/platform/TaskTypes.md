@@ -65,4 +65,4 @@ All specified (in W3C, HTML, DOM, etc) task queues are pausable. Some internal t
 | Worker V8            | No       | No          | No           |  No      |
 | Worker Compositor    | No       | No          | No           |  No      |
 
-Internal Translation queue supports concept of it running only in the foreground. It is paused if page that owns it goes in background.
+Internal Translation queue supports concept of it running only in the foreground. It is disabled if the page that owns it goes in background.
