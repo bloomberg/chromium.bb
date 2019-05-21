@@ -282,9 +282,15 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // and the matched form manager has not recieved yet response from the
   // password store, then nullptr is returned. Returns manager which manages
   // |form|.
-  NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
-                                                PasswordManagerDriver* driver,
-                                                bool is_manual_fallback);
+  // |is_gaia_with_skip_save_password_form| is true iff this is Gaia form which
+  // should be skipped on saving.
+  // TODO(https://crbug.com/949519): move |is_gaia_with_skip_save_password_form|
+  // from PasswordForm to FormData, and remove it from arguments.
+  NewPasswordFormManager* ProvisionallySaveForm(
+      const autofill::FormData& form,
+      PasswordManagerDriver* driver,
+      bool is_manual_fallback,
+      bool is_gaia_with_skip_save_password_form);
 
   // Passes |form| to NewPasswordFormManager that manages it for using it after
   // detecting submission success for saving.
