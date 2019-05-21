@@ -154,7 +154,7 @@ class FakeUsbPrinterNotificationController
     open_notifications_.erase(printer_id);
   }
 
-  bool IsNotification(const std::string& printer_id) const override {
+  bool IsNotificationDisplayed(const std::string& printer_id) const override {
     return open_notifications_.contains(printer_id);
   }
 
@@ -310,7 +310,8 @@ TEST_F(AutomaticUsbPrinterConfigurerTest, NotificationOpenedForNewAutomatic) {
 
   fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer);
 
-  EXPECT_TRUE(fake_notification_controller_->IsNotification(printer_id));
+  EXPECT_TRUE(
+      fake_notification_controller_->IsNotificationDisplayed(printer_id));
 }
 
 TEST_F(AutomaticUsbPrinterConfigurerTest,
@@ -325,7 +326,8 @@ TEST_F(AutomaticUsbPrinterConfigurerTest,
   // result in a notification being shown.
   fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer);
 
-  EXPECT_TRUE(fake_notification_controller_->IsNotification(printer_id));
+  EXPECT_TRUE(
+      fake_notification_controller_->IsNotificationDisplayed(printer_id));
 }
 
 TEST_F(AutomaticUsbPrinterConfigurerTest, NotificationClosed) {
@@ -334,11 +336,13 @@ TEST_F(AutomaticUsbPrinterConfigurerTest, NotificationClosed) {
 
   fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer);
 
-  EXPECT_TRUE(fake_notification_controller_->IsNotification(printer_id));
+  EXPECT_TRUE(
+      fake_notification_controller_->IsNotificationDisplayed(printer_id));
 
   fake_observable_printers_manager_.RemoveAutomaticPrinter(printer_id);
 
-  EXPECT_FALSE(fake_notification_controller_->IsNotification(printer_id));
+  EXPECT_FALSE(
+      fake_notification_controller_->IsNotificationDisplayed(printer_id));
 }
 
 TEST_F(AutomaticUsbPrinterConfigurerTest, NotificationOpenedForNewDiscovered) {
@@ -347,7 +351,8 @@ TEST_F(AutomaticUsbPrinterConfigurerTest, NotificationOpenedForNewDiscovered) {
 
   fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer);
 
-  EXPECT_TRUE(fake_notification_controller_->IsNotification(printer_id));
+  EXPECT_TRUE(
+      fake_notification_controller_->IsNotificationDisplayed(printer_id));
 }
 
 }  // namespace chromeos

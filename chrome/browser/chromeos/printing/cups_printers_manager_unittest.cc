@@ -316,7 +316,7 @@ class FakeUsbPrinterNotificationController
     saved_notifications_.erase(printer_id);
     configuration_notifications_.erase(printer_id);
   }
-  bool IsNotification(const std::string& printer_id) const override {
+  bool IsNotificationDisplayed(const std::string& printer_id) const override {
     return configuration_notifications_.contains(printer_id) ||
            saved_notifications_.contains(printer_id);
   }

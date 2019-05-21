@@ -42,7 +42,7 @@ class UsbPrinterNotificationController {
   virtual void RemoveNotification(const std::string& printer_id) = 0;
 
   // Returns true if there is an existing notification for |printer_id|.
-  virtual bool IsNotification(const std::string& printer_id) const = 0;
+  virtual bool IsNotificationDisplayed(const std::string& printer_id) const = 0;
 
  protected:
   UsbPrinterNotificationController() = default;

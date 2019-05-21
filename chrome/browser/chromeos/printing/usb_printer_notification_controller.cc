@@ -30,7 +30,7 @@ class UsbPrinterNotificationControllerImpl
     notifications_.erase(printer_id);
   }
 
-  bool IsNotification(const std::string& printer_id) const override {
+  bool IsNotificationDisplayed(const std::string& printer_id) const override {
     return base::ContainsKey(notifications_, printer_id);
   }
 
