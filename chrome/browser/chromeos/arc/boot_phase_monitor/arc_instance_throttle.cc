@@ -46,21 +46,34 @@ ArcInstanceThrottle::~ArcInstanceThrottle() {
 void ArcInstanceThrottle::OnWindowActivated(ActivationReason reason,
                                             aura::Window* gained_active,
                                             aura::Window* lost_active) {
+  // The current active window defines whether the instance should be throttled
+  // or not i.e. if it's a native window then throttle Android, if it's an
+  // Android window then unthrottle it.
+  //
+  // However, the app list needs to be handled differently. The app list is
+  // deemed as an temporary overlay over the user's main window for browsing
+  // through or selecting an app. Consequently, if the app list is brought over
+  // a Chrome window then IsAppListWindow(gained_active) is true and this event
+  // is ignored. The instance continues to be throttled. Once the app list is
+  // closed then IsAppListWindow(lost_active) is true and the instance continues
+  // to be throttled. Similarly, if the app list is brought over an Android
+  // window, the instance continues to be unthrottled.
+  //
   // On launching an app from the app list on Chrome OS the following events
   // happen -
   //
-  // 1. When app list is brought up it's treated as a Chrome window and the
-  // instance is throttled.
+  // - When an Android app icon is clicked the instance is unthrottled. This
+  // logic resides in |LaunchAppWithIntent| in
+  // src/chrome/browser/ui/app_list/arc/arc_app_utils.cc.
   //
-  // 2. When an app icon is clicked the instance is unthrottled.
-  //
-  // 3. Between the time the app opens there is a narrow slice of time where
+  // - Between the time the app opens there is a narrow slice of time where
   // this callback is triggered with |lost_active| equal to the app list window
   // and the gained active possibly a native window. Without the check below the
   // instance will be throttled again, further delaying the app launch. If the
-  // app was a native one then the instance was throttled anyway in step 1.
-  if (IsAppListWindow(lost_active))
+  // app was a native one then the instance was throttled anyway.
+  if (IsAppListWindow(lost_active) || IsAppListWindow(gained_active))
     return;
+
   ThrottleInstance(gained_active);
 }
 
