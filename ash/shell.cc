@@ -112,7 +112,6 @@
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
-#include "ash/system/power/notification_reporter.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_event_observer.h"
@@ -932,7 +931,6 @@ Shell::~Shell() {
   PowerStatus::Shutdown();
   // Depends on SessionController.
   power_event_observer_.reset();
-  notification_reporter_.reset();
 
   session_controller_->RemoveObserver(this);
   // BluetoothPowerController depends on the PrefService and must be destructed
@@ -1314,8 +1312,6 @@ void Shell::Init(
     observer.OnShellInitialized();
 
   user_metrics_recorder_->OnShellInitialized();
-
-  notification_reporter_ = std::make_unique<NotificationReporter>();
 
   // Initialize the D-Bus bus and services for ash.
   if (!::features::IsMultiProcessMash())
