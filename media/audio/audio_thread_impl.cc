@@ -4,6 +4,7 @@
 
 #include "media/audio/audio_thread_impl.h"
 
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
@@ -37,7 +38,8 @@ AudioThreadImpl::AudioThreadImpl()
   // https://crbug.com/946968: The hang monitor possibly causes crashes on
   // Android
   hang_monitor_ = AudioThreadHangMonitor::Create(
-      false, base::DefaultTickClock::GetInstance(), task_runner_);
+      AudioThreadHangMonitor::HangAction::kDoNothing, base::nullopt,
+      base::DefaultTickClock::GetInstance(), task_runner_);
 #endif
 }
 
