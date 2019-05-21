@@ -510,3 +510,19 @@ std::ostream& operator<<(std::ostream& o, id obj) {
 std::ostream& operator<<(std::ostream& o, NSRange range) {
   return o << NSStringFromRange(range);
 }
+
+std::ostream& operator<<(std::ostream& o, SEL selector) {
+  return o << NSStringFromSelector(selector);
+}
+
+#if !defined(OS_IOS)
+std::ostream& operator<<(std::ostream& o, NSPoint point) {
+  return o << NSStringFromPoint(point);
+}
+std::ostream& operator<<(std::ostream& o, NSRect rect) {
+  return o << NSStringFromRect(rect);
+}
+std::ostream& operator<<(std::ostream& o, NSSize size) {
+  return o << NSStringFromSize(size);
+}
+#endif
