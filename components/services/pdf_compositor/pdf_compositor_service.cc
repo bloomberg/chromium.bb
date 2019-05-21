@@ -18,7 +18,6 @@
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 
 #if defined(OS_WIN)
 #include "content/public/child/dwrite_font_proxy_init_win.h"

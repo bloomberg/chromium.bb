@@ -1525,8 +1525,6 @@ jumbo_split_static_library("ui") {
       "views/frame/native_browser_frame_factory_chromeos.cc",
       "views/frame/top_controls_slide_controller_chromeos.cc",
       "views/frame/top_controls_slide_controller_chromeos.h",
-      "views/ime_driver/input_method_bridge_chromeos.cc",
-      "views/ime_driver/input_method_bridge_chromeos.h",
       "views/platform_keys_certificate_selector_chromeos.cc",
       "views/platform_keys_certificate_selector_chromeos.h",
       "views/profiles/profile_indicator_icon.cc",
@@ -3070,17 +3068,6 @@ jumbo_split_static_library("ui") {
         "views/create_application_shortcut_view.h",
         "views/ssl_client_certificate_selector.cc",
         "views/ssl_client_certificate_selector.h",
-      ]
-    }
-
-    if (enable_mus) {
-      sources += [
-        "views/ime_driver/ime_driver_mus.cc",
-        "views/ime_driver/ime_driver_mus.h",
-        "views/ime_driver/remote_text_input_client.cc",
-        "views/ime_driver/remote_text_input_client.h",
-        "views/ime_driver/simple_input_method.cc",
-        "views/ime_driver/simple_input_method.h",
       ]
     }
 

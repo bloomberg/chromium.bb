@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace ws {

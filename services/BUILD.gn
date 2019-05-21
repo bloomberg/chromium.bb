@@ -48,7 +48,6 @@ test("services_unittests") {
     deps += [
       "//services/ws/input_devices:tests",
       "//services/ws/public/cpp/tests",
-      "//services/ws/public/mojom:tests",
     ]
   }
 

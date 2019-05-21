@@ -8,7 +8,6 @@
 
 #include "base/bind_helpers.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 
 namespace ws {
 
@@ -16,9 +15,8 @@ InputDeviceControllerClient::InputDeviceControllerClient(
     service_manager::Connector* connector,
     const std::string& service_name)
     : binding_(this) {
-  connector->BindInterface(
-      service_name.empty() ? mojom::kServiceName : service_name,
-      &input_device_controller_);
+  DCHECK(!service_name.empty());
+  connector->BindInterface(service_name, &input_device_controller_);
   mojom::KeyboardDeviceObserverPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   input_device_controller_->AddKeyboardDeviceObserver(std::move(ptr));

@@ -27,7 +27,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/cpp/gpu/gpu.h"  // nogncheck
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"

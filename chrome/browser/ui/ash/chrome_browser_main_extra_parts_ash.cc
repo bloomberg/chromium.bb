@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chromeos/network/network_connect.h"
@@ -62,7 +61,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/user_activity_monitor.mojom.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ui_base_features.h"
 
@@ -120,9 +118,6 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
-  // IME driver must be available at login screen, so initialize before profile.
-  IMEDriverMus::Register();
-
   // NetworkConnect handles the network connection state machine for the UI.
   network_connect_delegate_ =
       std::make_unique<NetworkConnectDelegateChromeOS>();

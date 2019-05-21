@@ -19,7 +19,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
 
 namespace ws {
