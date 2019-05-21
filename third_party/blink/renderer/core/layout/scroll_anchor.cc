@@ -98,6 +98,9 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
     }
   } else if (layout_object->IsText()) {
     const auto* text = ToLayoutText(layout_object);
+    // TODO(kojii): |PhysicalLinesBoundingBox()| cannot compute, and thus
+    // returns (0, 0) when changes are made that |DeleteLineBoxes()| or clear
+    // |SetPaintFragment()|, e.g., |SplitFlow()|. crbug.com/965352
     PhysicalRect bounds = text->PhysicalLinesBoundingBox();
     local_bounds.Unite(text->FlipForWritingMode(bounds));
   } else {
