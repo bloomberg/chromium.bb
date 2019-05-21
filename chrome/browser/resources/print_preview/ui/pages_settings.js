@@ -273,7 +273,7 @@ Polymer({
   computeRangesToPrint_: function() {
     if (!this.pagesToPrint_ || this.pagesToPrint_.length == 0 ||
         this.pagesToPrint_[0] == -1 ||
-        this.pagesToPrint_ == this.allPagesArray_) {
+        this.pagesToPrint_.length == this.allPagesArray_.length) {
       return [];
     }
 
