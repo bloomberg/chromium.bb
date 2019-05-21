@@ -1468,3 +1468,21 @@ def CheckLucicfgGenOutput(input_api, output_api, entry_script):
         },
         output_api.PresubmitError)
   ]
+
+# TODO(agable): Add this to PanProjectChecks.
+def CheckJsonParses(input_api, output_api):
+  """Verifies that all JSON files at least parse as valid JSON."""
+  import json
+  affected_files = input_api.AffectedFiles(
+      include_deletes=False,
+      file_filter=lambda x: x.LocalPath().endswith('.json'))
+  warnings = []
+  for f in affected_files:
+    with open(f.AbsoluteLocalPath()) as j:
+      try:
+        json.load(j)
+      except ValueError:
+        # Just a warning for now, in case people are using JSON5 somewhere.
+        warnings.append(output_api.PresubmitPromptWarning(
+            '%s does not appear to be valid JSON.' % f.LocalPath()))
+  return warnings

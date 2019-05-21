@@ -1670,7 +1670,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'GetPythonUnitTests', 'GetPylint',
       'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
       'CheckCIPDManifest', 'CheckCIPDPackages', 'CheckCIPDClientDigests',
-      'CheckChangedLUCIConfigs', 'CheckLucicfgGenOutput',
+      'CheckChangedLUCIConfigs', 'CheckLucicfgGenOutput', 'CheckJsonParses',
       'print_function',
     ]
     # If this test fails, you should add the relevant test.
