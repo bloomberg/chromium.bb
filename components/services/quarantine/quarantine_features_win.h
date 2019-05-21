@@ -11,6 +11,8 @@ namespace quarantine {
 
 extern const base::Feature kOutOfProcessQuarantine;
 
+extern const base::Feature kInvokeAttachmentServices;
+
 }  // namespace quarantine
 
 #endif  // COMPONENTS_SERVICES_QUARANTINE_QUARANTINE_FEATURES_WIN_H_

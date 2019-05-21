@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/quarantine.h"
+#include "components/services/quarantine/quarantine.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Foundation/Foundation.h>
@@ -17,7 +17,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "components/download/quarantine/common_mac.h"
+#include "components/services/quarantine/common_mac.h"
 #include "url/gurl.h"
 
 namespace {
@@ -44,7 +44,7 @@ bool SetQuarantineProperties(const base::FilePath& file,
 
 }  // namespace
 
-namespace download {
+namespace quarantine {
 
 namespace {
 
@@ -208,4 +208,4 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
                               : QuarantineFileResult::ANNOTATION_FAILED;
 }
 
-}  // namespace download
+}  // namespace quarantine

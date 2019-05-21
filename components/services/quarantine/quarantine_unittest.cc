@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/quarantine.h"
+#include "components/services/quarantine/quarantine.h"
 
 #include <iterator>
 #include <string>
@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace download {
+namespace quarantine {
 
 namespace {
 
@@ -55,4 +55,4 @@ TEST(QuarantineTest, FileCanBeAnnotatedWithNoGUID) {
                            GURL(kInternetReferrerURL), std::string()));
 }
 
-}  // namespace download
+}  // namespace quarantine

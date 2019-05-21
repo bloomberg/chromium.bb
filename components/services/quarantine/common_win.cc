@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/common_win.h"
+#include "components/services/quarantine/common_win.h"
 
-namespace download {
+namespace quarantine {
 
 // [MS-FSCC] Section 5.6.1
 const base::FilePath::CharType kZoneIdentifierStreamSuffix[] =
     FILE_PATH_LITERAL(":Zone.Identifier");
 
-}  // namespace download
+}  // namespace quarantine

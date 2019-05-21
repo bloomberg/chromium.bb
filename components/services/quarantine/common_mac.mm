@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/common_mac.h"
+#include "components/services/quarantine/common_mac.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 
@@ -15,7 +15,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 
-namespace download {
+namespace quarantine {
 
 bool GetQuarantineProperties(
     const base::FilePath& file,
@@ -53,4 +53,4 @@ bool GetQuarantineProperties(
   return true;
 }
 
-}  // namespace download
+}  // namespace quarantine

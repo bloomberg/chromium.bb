@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/test_support.h"
+#include "components/services/quarantine/test_support.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Foundation/Foundation.h>
@@ -12,10 +12,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "components/download/quarantine/common_mac.h"
+#include "components/services/quarantine/common_mac.h"
 #include "url/gurl.h"
 
-namespace download {
+namespace quarantine {
 
 bool IsFileQuarantined(const base::FilePath& file,
                        const GURL& expected_source_url,
@@ -49,4 +49,4 @@ bool IsFileQuarantined(const base::FilePath& file,
              isEqualToString:base::SysUTF8ToNSString(referrer_url.spec())];
 }
 
-}  // namespace download
+}  // namespace quarantine

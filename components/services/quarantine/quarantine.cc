@@ -2,16 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/quarantine.h"
+#include "components/services/quarantine/quarantine.h"
 
-namespace download {
+#include "build/build_config.h"
+
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+
+namespace quarantine {
 
 QuarantineFileResult QuarantineFile(const base::FilePath& file,
                                     const GURL& source_url,
                                     const GURL& referrer_url,
                                     const std::string& client_guid) {
-  return quarantine::QuarantineFile(file, source_url, referrer_url,
-                                    client_guid);
+  return QuarantineFileResult::OK;
 }
 
-}  // namespace download
+}  // namespace quarantine
+
+#endif  // !WIN && !MAC

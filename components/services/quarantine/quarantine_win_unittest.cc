@@ -16,13 +16,13 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "components/download/quarantine/quarantine.h"
-#include "components/download/quarantine/quarantine_features_win.h"
+#include "components/services/quarantine/quarantine.h"
+#include "components/services/quarantine/quarantine_features_win.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace download {
+namespace quarantine {
 
 namespace {
 
@@ -404,4 +404,4 @@ TEST_F(QuarantineWinTest, RestrictedSite_AlreadyQuarantined) {
   EXPECT_FALSE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
 }
 
-}  // namespace download
+}  // namespace quarantine

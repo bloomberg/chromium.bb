@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/quarantine.h"
+#include "components/services/quarantine/quarantine.h"
 
 #include <windows.h>
 #include <wrl/client.h>
@@ -30,11 +30,11 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "components/download/quarantine/common_win.h"
-#include "components/download/quarantine/quarantine_features_win.h"
+#include "components/services/quarantine/common_win.h"
+#include "components/services/quarantine/quarantine_features_win.h"
 #include "url/gurl.h"
 
-namespace download {
+namespace quarantine {
 namespace {
 
 // Returns true for a valid |url| whose length does not exceed
@@ -276,4 +276,4 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
   return SetInternetZoneIdentifierDirectly(file, source_url, referrer_url);
 }
 
-}  // namespace download
+}  // namespace quarantine

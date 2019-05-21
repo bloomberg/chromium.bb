@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/test_support.h"
+#include "components/services/quarantine/test_support.h"
 
 #include "build/build_config.h"
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
 
-namespace download {
+namespace quarantine {
 
 bool IsFileQuarantined(const base::FilePath& file,
                        const GURL& source_url,
@@ -16,6 +16,6 @@ bool IsFileQuarantined(const base::FilePath& file,
   return false;
 }
 
-}  // namespace download
+}  // namespace quarantine
 
 #endif  // !WIN && !MAC

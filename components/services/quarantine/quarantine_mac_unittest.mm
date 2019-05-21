@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/quarantine.h"
+#include "components/services/quarantine/quarantine.h"
 
 #include <sys/xattr.h>
 
@@ -17,12 +17,12 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/download/quarantine/test_support.h"
+#include "components/services/quarantine/test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
-namespace download {
+namespace quarantine {
 namespace {
 
 class QuarantineMacTest : public testing::Test {
@@ -126,4 +126,4 @@ TEST_F(QuarantineMacTest, NoWhereFromsKeyIfNoURLs) {
 }
 
 }  // namespace
-}  // namespace download
+}  // namespace quarantine

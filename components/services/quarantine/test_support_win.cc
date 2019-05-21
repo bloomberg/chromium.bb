@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/quarantine/test_support.h"
+#include "components/services/quarantine/test_support.h"
 
 #include <windows.h>
 
@@ -13,9 +13,9 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/win/scoped_handle.h"
-#include "components/download/quarantine/common_win.h"
+#include "components/services/quarantine/common_win.h"
 
-namespace download {
+namespace quarantine {
 
 namespace {
 
@@ -58,4 +58,4 @@ bool IsFileQuarantined(const base::FilePath& file,
   return ZoneIdentifierPresentForFile(file);
 }
 
-}  // namespace download
+}  // namespace quarantine

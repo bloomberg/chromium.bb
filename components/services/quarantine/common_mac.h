@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_QUARANTINE_COMMON_MAC_H_
-#define COMPONENTS_DOWNLOAD_QUARANTINE_COMMON_MAC_H_
+#ifndef COMPONENTS_SERVICES_QUARANTINE_COMMON_MAC_H_
+#define COMPONENTS_SERVICES_QUARANTINE_COMMON_MAC_H_
 
 #import <Foundation/Foundation.h>
 
@@ -13,12 +13,12 @@ namespace base {
 class FilePath;
 }
 
-namespace download {
+namespace quarantine {
 
 bool GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties);
 
-}  // namespace download
+}  // namespace quarantine
 
-#endif  // COMPONENTS_DOWNLOAD_QUARANTINE_COMMON_MAC_H_
+#endif  // COMPONENTS_SERVICES_QUARANTINE_COMMON_MAC_H_

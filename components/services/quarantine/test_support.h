@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_QUARANTINE_TEST_SUPPORT_H_
-#define COMPONENTS_DOWNLOAD_QUARANTINE_TEST_SUPPORT_H_
+#ifndef COMPONENTS_SERVICES_QUARANTINE_TEST_SUPPORT_H_
+#define COMPONENTS_SERVICES_QUARANTINE_TEST_SUPPORT_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@ namespace base {
 class FilePath;
 }
 
-namespace download {
+namespace quarantine {
 
 // Determine if a file has quarantine metadata attached to it.
 //
@@ -39,6 +39,6 @@ bool IsFileQuarantined(const base::FilePath& file,
                        const GURL& source_url,
                        const GURL& referrer_url);
 
-}  // namespace download
+}  // namespace quarantine
 
-#endif  // COMPONENTS_DOWNLOAD_QUARANTINE_TEST_SUPPORT_H_
+#endif  // COMPONENTS_SERVICES_QUARANTINE_TEST_SUPPORT_H_
