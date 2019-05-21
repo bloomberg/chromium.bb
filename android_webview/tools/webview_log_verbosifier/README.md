@@ -13,6 +13,13 @@ autoninja -C out/Default webview_log_verbosifier_apk
 out/Default/bin/webview_log_verbosifier_apk install
 ```
 
+Alternatively, if you do not have a fully set up Chromium build
+environment, you can build with gradle:
+
+```shell
+ANDROID_SDK_ROOT=/path/to/sdk ./gradlew build
+```
+
 ## Searching logcat
 
 You can `grep` the logcat like so:
