@@ -44,13 +44,14 @@ class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
   // WebUI "addKerberosAccount" message callback.
   void HandleAddKerberosAccount(const base::ListValue* args);
 
-  // WebUI "reauthenticateKerberosAccount" message callback.
-  void HandleReauthenticateKerberosAccount(const base::ListValue* args);
+  // Callback for the credential manager's AddAccountAndAuthenticate method.
+  void OnAddAccountAndAuthenticate(const std::string& callback_id,
+                                   kerberos::ErrorType error);
 
   // WebUI "removeKerberosAccount" message callback.
   void HandleRemoveKerberosAccount(const base::ListValue* args);
 
-  // Callback for the Kerberos daemon's ListAccounts D-Bus method.
+  // Callback for the credential manager's ListAccounts method.
   void OnListAccounts(base::Value callback_id,
                       const kerberos::ListAccountsResponse& response);
 
