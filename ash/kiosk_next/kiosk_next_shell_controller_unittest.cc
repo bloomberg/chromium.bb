@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 
 namespace ash {
@@ -53,6 +54,7 @@ class KioskNextShellControllerTest : public AshTestBase {
  protected:
   std::unique_ptr<MockKioskNextShellClient> client_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KioskNextShellControllerTest);
@@ -75,6 +77,7 @@ TEST_F(KioskNextShellControllerTest, TestKioskNextLaunchShellWhenEnabled) {
   EXPECT_CALL(*client_, LaunchKioskNextShell(::testing::_)).Times(1);
   LogInKioskNextUser(GetSessionControllerClient());
   EXPECT_TRUE(GetKioskNextShellController()->IsEnabled());
+  histogram_tester_.ExpectUniqueSample("KioskNextShell.Launched", true, 1);
 }
 
 // Ensures that observers are notified when KioskNextUser logs in.

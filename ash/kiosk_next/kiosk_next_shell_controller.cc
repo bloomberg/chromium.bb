@@ -17,6 +17,7 @@
 #include "ash/shelf/home_button_delegate.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -120,6 +121,7 @@ void KioskNextShellController::LaunchKioskNextShellIfEnabled() {
 
   kiosk_next_shell_client_->LaunchKioskNextShell(
       session_controller->GetPrimaryUserSession()->user_info.account_id);
+  UMA_HISTOGRAM_BOOLEAN("KioskNextShell.Launched", true);
 
   shelf_model_ = CreateKioskNextShelfModel();
 
