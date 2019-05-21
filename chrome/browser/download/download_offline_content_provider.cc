@@ -77,8 +77,8 @@ DownloadOfflineContentProvider::~DownloadOfflineContentProvider() {
     manager_->RemoveObserver(this);
 }
 
-void DownloadOfflineContentProvider::SetDownloadManager(
-    DownloadManager* manager) {
+void DownloadOfflineContentProvider::SetSimpleDownloadManagerCoordinator(
+    SimpleDownloadManagerCoordinator* manager) {
   DCHECK(manager);
   manager_ = manager;
   manager_->AddObserver(this);
@@ -133,7 +133,7 @@ void DownloadOfflineContentProvider::GetItemById(
 
 void DownloadOfflineContentProvider::GetAllItems(
     OfflineContentProvider::MultipleItemCallback callback) {
-  DownloadManager::DownloadVector all_items;
+  std::vector<DownloadItem*> all_items;
   GetAllDownloads(&all_items);
 
   std::vector<OfflineItem> items;
@@ -236,9 +236,8 @@ void DownloadOfflineContentProvider::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void DownloadOfflineContentProvider::ManagerGoingDown(
-    DownloadManager* manager) {
-  DownloadManager::DownloadVector all_items;
+void DownloadOfflineContentProvider::OnManagerGoingDown() {
+  std::vector<DownloadItem*> all_items;
   GetAllDownloads(&all_items);
 
   for (auto* item : all_items) {
@@ -322,7 +321,7 @@ DownloadItem* DownloadOfflineContentProvider::GetDownload(
 }
 
 void DownloadOfflineContentProvider::GetAllDownloads(
-    DownloadManager::DownloadVector* all_items) {
+    std::vector<DownloadItem*>* all_items) {
   if (manager_)
     manager_->GetAllDownloads(all_items);
 }

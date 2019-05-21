@@ -75,7 +75,7 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   }
 
   auto* download_provider = CreateDownloadOfflineContentProvider();
-  download_provider->SetDownloadManager(manager);
+  download_provider->SetSimpleDownloadManagerCoordinator(coordinator);
 
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
