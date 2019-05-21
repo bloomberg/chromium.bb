@@ -44,18 +44,10 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-
-KeyframeEffect* KeyframeEffect::Create(Element* target,
-                                       KeyframeEffectModelBase* model,
-                                       const Timing& timing,
-                                       Priority priority,
-                                       EventDelegate* event_delegate) {
-  return MakeGarbageCollected<KeyframeEffect>(target, model, timing, priority,
-                                              event_delegate);
-}
 
 KeyframeEffect* KeyframeEffect::Create(
     ScriptState* script_state,
@@ -84,7 +76,7 @@ KeyframeEffect* KeyframeEffect::Create(
       element, keyframes, composite, script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;
-  return Create(element, model, timing);
+  return MakeGarbageCollected<KeyframeEffect>(element, model, timing);
 }
 
 KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
@@ -101,7 +93,7 @@ KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,
                            script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;
-  return Create(element, model, Timing());
+  return MakeGarbageCollected<KeyframeEffect>(element, model, Timing());
 }
 
 KeyframeEffect* KeyframeEffect::Create(ScriptState* script_state,

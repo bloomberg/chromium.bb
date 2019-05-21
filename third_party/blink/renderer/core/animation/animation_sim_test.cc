@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -66,7 +67,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   EXPECT_FALSE(exception_state.HadException());
 
   // target.animate({'--x': '100%'}, 1000);
-  StringKeyframe* keyframe = StringKeyframe::Create();
+  auto* keyframe = MakeGarbageCollected<StringKeyframe>();
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
                                 "100%", GetDocument().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
@@ -75,7 +76,8 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   ElementAnimation::animateInternal(
-      *target, StringKeyframeEffectModel::Create(keyframes), timing);
+      *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
+      timing);
 
   // This sets the baseComputedStyle on the animation exit frame.
   Compositor().BeginFrame(1);
@@ -87,7 +89,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   EXPECT_FALSE(exception_state.HadException());
 
   // target.animate({'--x': '100%'}, 1000);
-  keyframe = StringKeyframe::Create();
+  keyframe = MakeGarbageCollected<StringKeyframe>();
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
                                 "100%", GetDocument().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
@@ -96,7 +98,8 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   timing = Timing::Defaults();
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   ElementAnimation::animateInternal(
-      *target, StringKeyframeEffectModel::Create(keyframes), timing);
+      *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
+      timing);
 
   // This (previously) would not clear the existing baseComputedStyle and would
   // crash on the equality assertion in the exit frame when it tried to update

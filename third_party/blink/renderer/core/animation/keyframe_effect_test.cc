@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "v8/include/v8.h"
 
@@ -37,7 +38,8 @@ class KeyframeEffectTest : public PageTestBase {
   }
 
   KeyframeEffectModelBase* CreateEmptyEffectModel() {
-    return StringKeyframeEffectModel::Create(StringKeyframeVector());
+    return MakeGarbageCollected<StringKeyframeEffectModel>(
+        StringKeyframeVector());
   }
 
   Persistent<Element> element;
@@ -339,8 +341,8 @@ TEST_F(KeyframeEffectTest, TimeToEffectChange) {
   timing.start_delay = 100;
   timing.end_delay = 100;
   timing.fill_mode = Timing::FillMode::NONE;
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
+  auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      nullptr, CreateEmptyEffectModel(), timing);
   Animation* animation = GetDocument().Timeline().Play(keyframe_effect);
   double inf = std::numeric_limits<double>::infinity();
 
@@ -373,8 +375,8 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoKeyframes) {
 
   // No keyframes results in an invalid animation.
   {
-    KeyframeEffect* keyframe_effect =
-        KeyframeEffect::Create(element, CreateEmptyEffectModel(), timing);
+    auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+        element, CreateEmptyEffectModel(), timing);
     EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
                     nullptr, animation_playback_rate) &
                 CompositorAnimations::kInvalidAnimationOrEffect);
@@ -383,15 +385,15 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoKeyframes) {
   // Keyframes but no properties results in an invalid animation.
   {
     StringKeyframeVector keyframes(2);
-    keyframes[0] = StringKeyframe::Create();
+    keyframes[0] = MakeGarbageCollected<StringKeyframe>();
     keyframes[0]->SetOffset(0.0);
-    keyframes[1] = StringKeyframe::Create();
+    keyframes[1] = MakeGarbageCollected<StringKeyframe>();
     keyframes[1]->SetOffset(1.0);
-    StringKeyframeEffectModel* effect_model =
-        StringKeyframeEffectModel::Create(keyframes);
+    auto* effect_model =
+        MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
 
-    KeyframeEffect* keyframe_effect =
-        KeyframeEffect::Create(element, effect_model, timing);
+    auto* keyframe_effect =
+        MakeGarbageCollected<KeyframeEffect>(element, effect_model, timing);
     EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
                     nullptr, animation_playback_rate) &
                 CompositorAnimations::kInvalidAnimationOrEffect);
@@ -404,21 +406,21 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoTarget) {
 
   // No target results in an invalid animation.
   StringKeyframeVector keyframes(2);
-  keyframes[0] = StringKeyframe::Create();
+  keyframes[0] = MakeGarbageCollected<StringKeyframe>();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kLeft, "0px",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
-  keyframes[1] = StringKeyframe::Create();
+  keyframes[1] = MakeGarbageCollected<StringKeyframe>();
   keyframes[1]->SetOffset(1.0);
   keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kLeft, "10px",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
-  StringKeyframeEffectModel* effect_model =
-      StringKeyframeEffectModel::Create(keyframes);
+  auto* effect_model =
+      MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
 
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(nullptr, effect_model, timing);
+  auto* keyframe_effect =
+      MakeGarbageCollected<KeyframeEffect>(nullptr, effect_model, timing);
   EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
                   nullptr, animation_playback_rate) &
               CompositorAnimations::kInvalidAnimationOrEffect);
@@ -429,20 +431,20 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
   Timing timing;
 
   StringKeyframeVector keyframes(2);
-  keyframes[0] = StringKeyframe::Create();
+  keyframes[0] = MakeGarbageCollected<StringKeyframe>();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kLeft, "0px",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
-  keyframes[1] = StringKeyframe::Create();
+  keyframes[1] = MakeGarbageCollected<StringKeyframe>();
   keyframes[1]->SetOffset(1.0);
   keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kLeft, "10px",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
-  StringKeyframeEffectModel* effect_model =
-      StringKeyframeEffectModel::Create(keyframes);
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(element, effect_model, timing);
+  auto* effect_model =
+      MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+  auto* keyframe_effect =
+      MakeGarbageCollected<KeyframeEffect>(element, effect_model, timing);
 
   // If the target has a CSS offset we can't composite it.
   UpdateAllLifecyclePhasesForTest();

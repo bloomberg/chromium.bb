@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -49,21 +50,21 @@ class AnimationEffectStackTest : public PageTestBase {
   KeyframeEffectModelBase* MakeEffectModel(CSSPropertyID id,
                                            const String& value) {
     StringKeyframeVector keyframes(2);
-    keyframes[0] = StringKeyframe::Create();
+    keyframes[0] = MakeGarbageCollected<StringKeyframe>();
     keyframes[0]->SetOffset(0.0);
     keyframes[0]->SetCSSPropertyValue(
         id, value, SecureContextMode::kInsecureContext, nullptr);
-    keyframes[1] = StringKeyframe::Create();
+    keyframes[1] = MakeGarbageCollected<StringKeyframe>();
     keyframes[1]->SetOffset(1.0);
     keyframes[1]->SetCSSPropertyValue(
         id, value, SecureContextMode::kInsecureContext, nullptr);
-    return StringKeyframeEffectModel::Create(keyframes);
+    return MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   }
 
   InertEffect* MakeInertEffect(KeyframeEffectModelBase* effect) {
     Timing timing;
     timing.fill_mode = Timing::FillMode::BOTH;
-    return InertEffect::Create(effect, timing, false, 0);
+    return MakeGarbageCollected<InertEffect>(effect, timing, false, 0);
   }
 
   KeyframeEffect* MakeKeyframeEffect(KeyframeEffectModelBase* effect,
@@ -71,7 +72,7 @@ class AnimationEffectStackTest : public PageTestBase {
     Timing timing;
     timing.fill_mode = Timing::FillMode::BOTH;
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(duration);
-    return KeyframeEffect::Create(element.Get(), effect, timing);
+    return MakeGarbageCollected<KeyframeEffect>(element.Get(), effect, timing);
   }
 
   double GetFontSizeValue(

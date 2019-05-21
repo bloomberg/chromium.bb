@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
@@ -273,7 +274,8 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
       StringKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
         new_keyframes.push_back(ToStringKeyframe(old_keyframe));
-      new_model = StringKeyframeEffectModel::Create(new_keyframes);
+      new_model =
+          MakeGarbageCollected<StringKeyframeEffectModel>(new_keyframes);
     } else if (old_model->IsTransitionKeyframeEffectModel()) {
       TransitionKeyframeEffectModel* old_transition_keyframe_model =
           ToTransitionKeyframeEffectModel(old_model);
@@ -281,10 +283,11 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
       TransitionKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
         new_keyframes.push_back(ToTransitionKeyframe(old_keyframe));
-      new_model = TransitionKeyframeEffectModel::Create(new_keyframes);
+      new_model =
+          MakeGarbageCollected<TransitionKeyframeEffectModel>(new_keyframes);
     }
 
-    KeyframeEffect* new_effect = KeyframeEffect::Create(
+    auto* new_effect = MakeGarbageCollected<KeyframeEffect>(
         old_effect->target(), new_model, old_effect->SpecifiedTiming());
     is_cloning_ = true;
     blink::Animation* clone =

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 
 #include <memory>
+
 #include "base/bits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -102,7 +104,7 @@ class AnimationAnimationTest : public RenderingTest {
     keyframes.push_back(start_keyframe);
     keyframes.push_back(end_keyframe);
 
-    return TransitionKeyframeEffectModel::Create(keyframes);
+    return MakeGarbageCollected<TransitionKeyframeEffectModel>(keyframes);
   }
 
   void ResetWithCompositedAnimation() {
@@ -117,11 +119,13 @@ class AnimationAnimationTest : public RenderingTest {
     Timing timing;
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
 
-    Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
+    Persistent<StringKeyframe> start_keyframe =
+        MakeGarbageCollected<StringKeyframe>();
     start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
                                         SecureContextMode::kInsecureContext,
                                         nullptr);
-    Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
+    Persistent<StringKeyframe> end_keyframe =
+        MakeGarbageCollected<StringKeyframe>();
     end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
                                       SecureContextMode::kInsecureContext,
                                       nullptr);
@@ -131,9 +135,9 @@ class AnimationAnimationTest : public RenderingTest {
     keyframes.push_back(end_keyframe);
 
     Element* element = GetElementById("target");
-    StringKeyframeEffectModel* model =
-        StringKeyframeEffectModel::Create(keyframes);
-    animation = timeline->Play(KeyframeEffect::Create(element, model, timing));
+    auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+    animation = timeline->Play(
+        MakeGarbageCollected<KeyframeEffect>(element, model, timing));
 
     // After creating the animation we need to clean the lifecycle so that the
     // animation can be pushed to the compositor.
@@ -144,13 +148,15 @@ class AnimationAnimationTest : public RenderingTest {
   }
 
   KeyframeEffectModelBase* MakeEmptyEffectModel() {
-    return StringKeyframeEffectModel::Create(StringKeyframeVector());
+    return MakeGarbageCollected<StringKeyframeEffectModel>(
+        StringKeyframeVector());
   }
 
   KeyframeEffect* MakeAnimation(double duration = 30) {
     Timing timing;
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(duration);
-    return KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
+    return MakeGarbageCollected<KeyframeEffect>(nullptr, MakeEmptyEffectModel(),
+                                                timing);
   }
 
   bool SimulateFrame(double time) {
@@ -530,8 +536,8 @@ TEST_F(AnimationAnimationTest, FinishRaisesException) {
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   timing.iteration_count = std::numeric_limits<double>::infinity();
-  animation->setEffect(
-      KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing));
+  animation->setEffect(MakeGarbageCollected<KeyframeEffect>(
+      nullptr, MakeEmptyEffectModel(), timing));
   animation->SetCurrentTimeInternal(10);
 
   DummyExceptionStateForTesting exception_state;
@@ -744,8 +750,8 @@ TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect) {
   timing.start_delay = 1;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   timing.end_delay = 1;
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
+  auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      nullptr, MakeEmptyEffectModel(), timing);
   animation = timeline->Play(keyframe_effect);
   animation->setStartTime(0, false);
 
@@ -849,8 +855,8 @@ TEST_F(AnimationAnimationTest, AttachedAnimations) {
   Persistent<Element> element = document->CreateElementForBinding("foo");
 
   Timing timing;
-  KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(element.Get(), MakeEmptyEffectModel(), timing);
+  auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
+      element.Get(), MakeEmptyEffectModel(), timing);
   Animation* animation = timeline->Play(keyframe_effect);
   SimulateFrame(0);
   timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
@@ -952,12 +958,12 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
 
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
-  KeyframeEffect* keyframe_effect_composited = KeyframeEffect::Create(
+  auto* keyframe_effect_composited = MakeGarbageCollected<KeyframeEffect>(
       ToElement(object_composited->GetNode()), MakeSimpleEffectModel(), timing);
   Animation* animation_composited = timeline->Play(keyframe_effect_composited);
-  KeyframeEffect* keyframe_effect_not_composited =
-      KeyframeEffect::Create(ToElement(object_not_composited->GetNode()),
-                             MakeSimpleEffectModel(), timing);
+  auto* keyframe_effect_not_composited = MakeGarbageCollected<KeyframeEffect>(
+      ToElement(object_not_composited->GetNode()), MakeSimpleEffectModel(),
+      timing);
   Animation* animation_not_composited =
       timeline->Play(keyframe_effect_not_composited);
 
@@ -1064,10 +1070,12 @@ TEST_F(AnimationAnimationTest, PreCommitRecordsHistograms) {
   animation->setPlaybackRate(1);
 
   // Finally, change the keyframes to something unsupported by the compositor.
-  Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> start_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
   start_keyframe->SetCSSPropertyValue(
       CSSPropertyID::kLeft, "0", SecureContextMode::kInsecureContext, nullptr);
-  Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> end_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
   end_keyframe->SetCSSPropertyValue(CSSPropertyID::kLeft, "100px",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
@@ -1095,11 +1103,13 @@ TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
 
   // Now change the keyframes; this should mark the animation as compositor
   // pending as we need to sync the compositor side.
-  Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> start_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
   start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
                                       SecureContextMode::kInsecureContext,
                                       nullptr);
-  Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> end_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
   end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);

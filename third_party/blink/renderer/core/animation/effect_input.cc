@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -345,7 +346,7 @@ StringKeyframeVector ConvertArrayForm(Element* element,
     // offset and composite values; conceptually these were actually added in
     // step 5 above but we didn't have a keyframe object then.
     const BaseKeyframe* base_keyframe = processed_base_keyframes[i];
-    StringKeyframe* keyframe = StringKeyframe::Create();
+    auto* keyframe = MakeGarbageCollected<StringKeyframe>();
     if (base_keyframe->hasOffset()) {
       keyframe->SetOffset(base_keyframe->offset());
     }
@@ -518,7 +519,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
 
       auto result = keyframes.insert(computed_offset, nullptr);
       if (result.is_new_entry)
-        result.stored_value->value = StringKeyframe::Create();
+        result.stored_value->value = MakeGarbageCollected<StringKeyframe>();
 
       SetKeyframeValue(element, document, *result.stored_value->value, property,
                        values[i], execution_context);
@@ -662,9 +663,8 @@ KeyframeEffectModelBase* EffectInput::Convert(
 
   composite = ResolveCompositeOperation(composite, parsed_keyframes);
 
-  StringKeyframeEffectModel* keyframe_effect_model =
-      StringKeyframeEffectModel::Create(parsed_keyframes, composite,
-                                        LinearTimingFunction::Shared());
+  auto* keyframe_effect_model = MakeGarbageCollected<StringKeyframeEffectModel>(
+      parsed_keyframes, composite, LinearTimingFunction::Shared());
 
   if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled()) {
     // This should be enforced by the parsing code.

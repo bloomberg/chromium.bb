@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/animation/keyframe.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
-
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -27,15 +27,12 @@ class StyleSheetContents;
 // expand shorthand properties; that is done for computed keyframes.
 class CORE_EXPORT StringKeyframe : public Keyframe {
  public:
-  static StringKeyframe* Create() {
-    return MakeGarbageCollected<StringKeyframe>();
-  }
-
   StringKeyframe()
-      : css_property_map_(
-            MutableCSSPropertyValueSet::Create(kHTMLStandardMode)),
+      : css_property_map_(MakeGarbageCollected<MutableCSSPropertyValueSet>(
+            kHTMLStandardMode)),
         presentation_attribute_map_(
-            MutableCSSPropertyValueSet::Create(kHTMLStandardMode)) {}
+            MakeGarbageCollected<MutableCSSPropertyValueSet>(
+                kHTMLStandardMode)) {}
   StringKeyframe(const StringKeyframe& copy_from);
 
   MutableCSSPropertyValueSet::SetResult SetCSSPropertyValue(
@@ -92,15 +89,6 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
   class CSSPropertySpecificKeyframe
       : public Keyframe::PropertySpecificKeyframe {
    public:
-    static CSSPropertySpecificKeyframe* Create(
-        double offset,
-        scoped_refptr<TimingFunction> easing,
-        const CSSValue* value,
-        EffectModel::CompositeOperation composite) {
-      return MakeGarbageCollected<CSSPropertySpecificKeyframe>(
-          offset, std::move(easing), value, composite);
-    }
-
     CSSPropertySpecificKeyframe(double offset,
                                 scoped_refptr<TimingFunction> easing,
                                 const CSSValue* value,
@@ -140,15 +128,6 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
   class SVGPropertySpecificKeyframe
       : public Keyframe::PropertySpecificKeyframe {
    public:
-    static SVGPropertySpecificKeyframe* Create(
-        double offset,
-        scoped_refptr<TimingFunction> easing,
-        const String& value,
-        EffectModel::CompositeOperation composite) {
-      return MakeGarbageCollected<SVGPropertySpecificKeyframe>(
-          offset, std::move(easing), value, composite);
-    }
-
     SVGPropertySpecificKeyframe(double offset,
                                 scoped_refptr<TimingFunction> easing,
                                 const String& value,

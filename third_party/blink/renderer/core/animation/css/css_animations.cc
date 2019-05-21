@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <bitset>
+
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
@@ -69,6 +70,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -102,7 +104,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   PropertySet specified_properties_for_use_counter;
   for (wtf_size_t i = 0; i < style_keyframes.size(); ++i) {
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
-    StringKeyframe* keyframe = StringKeyframe::Create();
+    auto* keyframe = MakeGarbageCollected<StringKeyframe>();
     const Vector<double>& offsets = style_keyframe->Keys();
     DCHECK(!offsets.IsEmpty());
     keyframe->SetOffset(offsets[0]);
@@ -168,14 +170,14 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   // Add 0% and 100% keyframes if absent.
   StringKeyframe* start_keyframe = keyframes.IsEmpty() ? nullptr : keyframes[0];
   if (!start_keyframe || keyframes[0]->CheckedOffset() != 0) {
-    start_keyframe = StringKeyframe::Create();
+    start_keyframe = MakeGarbageCollected<StringKeyframe>();
     start_keyframe->SetOffset(0);
     start_keyframe->SetEasing(default_timing_function);
     keyframes.push_front(start_keyframe);
   }
   StringKeyframe* end_keyframe = keyframes[keyframes.size() - 1];
   if (end_keyframe->CheckedOffset() != 1) {
-    end_keyframe = StringKeyframe::Create();
+    end_keyframe = MakeGarbageCollected<StringKeyframe>();
     end_keyframe->SetOffset(1);
     end_keyframe->SetEasing(default_timing_function);
     keyframes.push_back(end_keyframe);
@@ -184,7 +186,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   DCHECK_EQ(keyframes.front()->CheckedOffset(), 0);
   DCHECK_EQ(keyframes.back()->CheckedOffset(), 1);
 
-  StringKeyframeEffectModel* model = StringKeyframeEffectModel::Create(
+  auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(
       keyframes, EffectModel::kCompositeReplace, &keyframes[0]->Easing());
   if (animation_index > 0 && model->HasSyntheticKeyframes()) {
     UseCounter::Count(element_for_scoping->GetDocument(),
@@ -199,7 +201,7 @@ std::unique_ptr<TypedInterpolationValue> SampleAnimation(
     Animation* animation,
     double inherited_time) {
   KeyframeEffect* effect = ToKeyframeEffect(animation->effect());
-  InertEffect* inert_animation_for_sampling = InertEffect::Create(
+  auto* inert_animation_for_sampling = MakeGarbageCollected<InertEffect>(
       effect->Model(), effect->SpecifiedTiming(), false, inherited_time);
   HeapVector<Member<Interpolation>> sample;
   inert_animation_for_sampling->Sample(sample);
@@ -413,7 +415,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
           DCHECK(!is_animation_style_change);
           update.UpdateAnimation(
               existing_animation_index, animation,
-              *InertEffect::Create(
+              *MakeGarbageCollected<InertEffect>(
                   CreateKeyframeEffectModel(resolver, animating_element,
                                             element, &style, parent_style, name,
                                             keyframe_timing_function.get(), i),
@@ -427,7 +429,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
         DCHECK(!is_animation_style_change);
         update.StartAnimation(
             name, name_index,
-            *InertEffect::Create(
+            *MakeGarbageCollected<InertEffect>(
                 CreateKeyframeEffectModel(resolver, animating_element, element,
                                           &style, parent_style, name,
                                           keyframe_timing_function.get(), i),
@@ -536,7 +538,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     const InertEffect* inert_animation = entry.effect.Get();
     AnimationEventDelegate* event_delegate =
         MakeGarbageCollected<AnimationEventDelegate>(element, entry.name);
-    KeyframeEffect* effect = KeyframeEffect::Create(
+    auto* effect = MakeGarbageCollected<KeyframeEffect>(
         element, inert_animation->Model(), inert_animation->SpecifiedTiming(),
         KeyframeEffect::kDefaultPriority, event_delegate);
     Animation* animation = element->GetDocument().Timeline().Play(effect);
@@ -604,7 +606,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
     KeyframeEffectModelBase* model = inert_animation->Model();
 
-    KeyframeEffect* transition = KeyframeEffect::Create(
+    auto* transition = MakeGarbageCollected<KeyframeEffect>(
         element, model, inert_animation->SpecifiedTiming(),
         KeyframeEffect::kTransitionPriority, event_delegate);
     Animation* animation = element->GetDocument().Timeline().Play(transition);
@@ -817,15 +819,14 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     end_keyframe->SetCompositorValue(to);
   }
 
-  TransitionKeyframeEffectModel* model =
-      TransitionKeyframeEffectModel::Create(keyframes);
+  auto* model = MakeGarbageCollected<TransitionKeyframeEffectModel>(keyframes);
   if (!state.cloned_style) {
     state.cloned_style = ComputedStyle::Clone(state.style);
   }
-  state.update.StartTransition(property, &state.old_style, state.cloned_style,
-                               reversing_adjusted_start_value,
-                               reversing_shortening_factor,
-                               *InertEffect::Create(model, timing, false, 0));
+  state.update.StartTransition(
+      property, &state.old_style, state.cloned_style,
+      reversing_adjusted_start_value, reversing_shortening_factor,
+      *MakeGarbageCollected<InertEffect>(model, timing, false, 0));
   DCHECK(!state.animating_element->GetElementAnimations() ||
          !state.animating_element->GetElementAnimations()
               ->IsAnimationStyleChange());

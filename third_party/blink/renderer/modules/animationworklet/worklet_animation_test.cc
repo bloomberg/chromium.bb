@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation.h"
 
 #include <memory>
+#include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
@@ -17,6 +19,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -32,23 +35,25 @@ static constexpr double time_error_ms = 0.001 + 1e-13;
 
 KeyframeEffectModelBase* CreateEffectModel() {
   StringKeyframeVector frames_mixed_properties;
-  Persistent<StringKeyframe> keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> keyframe = MakeGarbageCollected<StringKeyframe>();
   keyframe->SetOffset(0);
   keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0",
                                 SecureContextMode::kInsecureContext, nullptr);
   frames_mixed_properties.push_back(keyframe);
-  keyframe = StringKeyframe::Create();
+  keyframe = MakeGarbageCollected<StringKeyframe>();
   keyframe->SetOffset(1);
   keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1",
                                 SecureContextMode::kInsecureContext, nullptr);
   frames_mixed_properties.push_back(keyframe);
-  return StringKeyframeEffectModel::Create(frames_mixed_properties);
+  return MakeGarbageCollected<StringKeyframeEffectModel>(
+      frames_mixed_properties);
 }
 
 KeyframeEffect* CreateKeyframeEffect(Element* element) {
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
-  return KeyframeEffect::Create(element, CreateEffectModel(), timing);
+  return MakeGarbageCollected<KeyframeEffect>(element, CreateEffectModel(),
+                                              timing);
 }
 
 WorkletAnimation* CreateWorkletAnimation(

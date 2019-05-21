@@ -54,11 +54,6 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
  public:
   enum Priority { kDefaultPriority, kTransitionPriority };
 
-  static KeyframeEffect* Create(Element*,
-                                KeyframeEffectModelBase*,
-                                const Timing&,
-                                Priority = kDefaultPriority,
-                                EventDelegate* = nullptr);
   // Web Animations API Bindings constructors.
   static KeyframeEffect* Create(
       ScriptState*,
@@ -75,8 +70,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   KeyframeEffect(Element*,
                  KeyframeEffectModelBase*,
                  const Timing&,
-                 Priority,
-                 EventDelegate*);
+                 Priority = kDefaultPriority,
+                 EventDelegate* = nullptr);
   ~KeyframeEffect() override;
 
   bool IsKeyframeEffect() const override { return true; }

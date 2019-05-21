@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -152,19 +153,19 @@ StringKeyframe::CreatePropertySpecificKeyframe(
   EffectModel::CompositeOperation composite =
       composite_.value_or(effect_composite);
   if (property.IsCSSProperty()) {
-    return CSSPropertySpecificKeyframe::Create(
+    return MakeGarbageCollected<CSSPropertySpecificKeyframe>(
         offset, &Easing(), &CssPropertyValue(property), composite);
   }
 
   if (property.IsPresentationAttribute()) {
-    return CSSPropertySpecificKeyframe::Create(
+    return MakeGarbageCollected<CSSPropertySpecificKeyframe>(
         offset, &Easing(),
         &PresentationAttributeValue(property.PresentationAttribute()),
         composite);
   }
 
   DCHECK(property.IsSVGAttribute());
-  return SVGPropertySpecificKeyframe::Create(
+  return MakeGarbageCollected<SVGPropertySpecificKeyframe>(
       offset, &Easing(), SvgPropertyValue(property.SvgAttribute()), composite);
 }
 
@@ -183,7 +184,8 @@ Keyframe::PropertySpecificKeyframe*
 StringKeyframe::CSSPropertySpecificKeyframe::NeutralKeyframe(
     double offset,
     scoped_refptr<TimingFunction> easing) const {
-  return Create(offset, std::move(easing), nullptr, EffectModel::kCompositeAdd);
+  return MakeGarbageCollected<CSSPropertySpecificKeyframe>(
+      offset, std::move(easing), nullptr, EffectModel::kCompositeAdd);
 }
 
 void StringKeyframe::CSSPropertySpecificKeyframe::Trace(Visitor* visitor) {
@@ -195,23 +197,24 @@ void StringKeyframe::CSSPropertySpecificKeyframe::Trace(Visitor* visitor) {
 Keyframe::PropertySpecificKeyframe*
 StringKeyframe::CSSPropertySpecificKeyframe::CloneWithOffset(
     double offset) const {
-  CSSPropertySpecificKeyframe* clone =
-      Create(offset, easing_, value_.Get(), composite_);
+  auto* clone = MakeGarbageCollected<CSSPropertySpecificKeyframe>(
+      offset, easing_, value_.Get(), composite_);
   clone->compositor_keyframe_value_cache_ = compositor_keyframe_value_cache_;
   return clone;
 }
 
 Keyframe::PropertySpecificKeyframe*
 SVGPropertySpecificKeyframe::CloneWithOffset(double offset) const {
-  return Create(offset, easing_, value_, composite_);
+  return MakeGarbageCollected<SVGPropertySpecificKeyframe>(offset, easing_,
+                                                           value_, composite_);
 }
 
 Keyframe::PropertySpecificKeyframe*
 SVGPropertySpecificKeyframe::NeutralKeyframe(
     double offset,
     scoped_refptr<TimingFunction> easing) const {
-  return Create(offset, std::move(easing), String(),
-                EffectModel::kCompositeAdd);
+  return MakeGarbageCollected<SVGPropertySpecificKeyframe>(
+      offset, std::move(easing), String(), EffectModel::kCompositeAdd);
 }
 
 }  // namespace blink
