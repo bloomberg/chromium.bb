@@ -173,13 +173,9 @@ Polymer({
   /**
    * Returns the root page (if it exists) for a route.
    * @param {!settings.Route} route
-   * @return {(?SettingsAboutPageElement|?OsSettingsPageElement)}
+   * @return {?OsSettingsPageElement}
    */
   getPage_: function(route) {
-    if (settings.routes.ABOUT.contains(route)) {
-      return /** @type {?SettingsAboutPageElement} */ (
-          this.$$('settings-about-page'));
-    }
     if (settings.routes.BASIC.contains(route) ||
         (settings.routes.ADVANCED &&
          settings.routes.ADVANCED.contains(route))) {
