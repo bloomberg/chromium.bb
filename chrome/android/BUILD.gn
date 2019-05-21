@@ -1138,7 +1138,7 @@ template("libchrome_apk_or_bundle_tmpl") {
     if (enable_vr) {
       if (defined(invoker.is_bundle) && invoker.is_bundle) {
         if (modularize_vr_native) {
-          public_deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+          deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
         } else {
           deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
         }
@@ -1454,7 +1454,7 @@ template("libmonochrome_apk_or_bundle_tmpl") {
     if (enable_vr) {
       if (defined(invoker.is_bundle) && invoker.is_bundle) {
         if (modularize_vr_native) {
-          public_deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+          deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
         } else {
           deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
         }

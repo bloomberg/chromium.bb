@@ -6,6 +6,8 @@ import("//base/android/linker/config.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/linker_version_script.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/partitioned_shared_library.gni")
+import("//chrome/android/features/dynamic_feature_modules.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
 # These variables control whether app bundles use the same native libraries as
@@ -31,8 +33,6 @@ declare_args() {
 # and libchromefortest (used by chrome_public_test_apk).
 #
 # Variables:
-#    export_symbol_whitelist: Optional. If set, a pre-determined list of additional
-#      methods are exposed by the resulting library.
 #    is_monochrome: Optional. If set, the library is for use in monochrome.
 #    is_webview: If true, the library is for webview, and browser-specific
 #      config is skipped.
@@ -48,14 +48,20 @@ template("chrome_common_shared_library") {
   generate_linker_version_script(_linker_script_target) {
     linker_script = _linker_script
     export_java_symbols = _export_java_symbols
-    if (defined(invoker.export_symbol_whitelist)) {
-      export_symbol_whitelist_file =
-          "//chrome/android/feature_module_exports.lst"
+    if (use_native_modules) {
+      export_symbol_whitelist_files = native_feature_module_entrypoint_files
     }
   }
 
-  shared_library(target_name) {
-    forward_variables_from(invoker, "*", [ "export_symbol_whitelist" ])
+  if (use_native_modules) {
+    _target_type = "partitioned_shared_library"
+  } else {
+    _target_type = "shared_library"
+  }
+
+  target(_target_type, target_name) {
+    forward_variables_from(invoker, "*")
+
     if (!_is_webview) {
       deps += [ "//chrome:chrome_android_core" ]
     }
@@ -76,7 +82,7 @@ template("chrome_common_shared_library") {
     ldflags += [ "-Wl,--version-script=" +
                  rebase_path(_linker_script, root_build_dir) ]
 
-    # Handle VR JNI regisration and dependencies.
+    # Handle VR JNI registration and dependencies.
     if (!_is_webview && enable_vr) {
       if (_export_java_symbols) {
         # NOTE: While this is file is named *_monochrome.cc, it just contains
@@ -88,6 +94,11 @@ template("chrome_common_shared_library") {
           "//chrome/browser/android/vr:jni_registration($default_toolchain)",
         ]
       }
+    }
+
+    if (use_native_modules) {
+      partitions = native_feature_modules
+      deps += feature_module_base_lib_deps
     }
 
     # Compress relocations if needed.

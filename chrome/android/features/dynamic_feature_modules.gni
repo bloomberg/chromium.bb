@@ -25,3 +25,18 @@ if (is_clang && use_lld && !is_component_build) {
 } else {
   use_native_modules = false
 }
+
+# This block aggregates parameters from multiple modules, for use by targets
+# responsible for assembling bundles. In the future, these lists may be
+# replaced by a list of module descriptors, or a similar restructuring. See
+# http://crbug.com/950056.
+native_feature_modules = []
+feature_module_base_lib_deps = []
+native_feature_module_entrypoint_files = []
+
+if (enable_vr && modularize_vr_native) {
+  native_feature_modules += [ "vr" ]
+  feature_module_base_lib_deps += [ "//chrome/browser/vr:vr_ui" ]
+  native_feature_module_entrypoint_files +=
+      [ "//chrome/browser/vr/module_exports.lst" ]
+}
