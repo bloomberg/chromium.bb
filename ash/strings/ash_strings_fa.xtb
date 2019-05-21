@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">نور شب</translation>
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME" />، ‏<ph name="BATTERY" /></translation>
-<translation id="277257480934873581">اتصال مجدد به <ph name="NAME" /></translation>
 <translation id="2792498699870441125">‏Alt+جستجو</translation>
 <translation id="2803734122639935495">برای باز کردن قفل، گذرواژه‌تان را وارد کنید</translation>
 <translation id="2819276065543622893">هم‌اکنون از سیستم خارج خواهید شد.</translation>
@@ -236,7 +235,6 @@
 <translation id="4477350412780666475">آهنگ بعدی</translation>
 <translation id="4479639480957787382">اترنت</translation>
 <translation id="4481530544597605423">دستگاه‌های لغو ارتباط‌شده</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: در حال اتصال...</translation>
 <translation id="4513946894732546136">بازخورد</translation>
 <translation id="4527045527269911712">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> مانده تا کامل شود</translation>

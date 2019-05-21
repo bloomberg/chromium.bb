@@ -265,7 +265,6 @@
 <translation id="140723521119632973">移动网络激活</translation>
 <translation id="1407489512183974736">居中并裁剪</translation>
 <translation id="1408504635543854729">在“文件”应用中浏览此设备上的内容。相关内容受到管理员的限制，无法修改。</translation>
-<translation id="1408789165795197664">高级...</translation>
 <translation id="1409390508152595145">创建受监管用户</translation>
 <translation id="1410197035576869800">应用图标</translation>
 <translation id="1410616244180625362">继续允许 <ph name="HOST" /> 使用您的摄像头</translation>
@@ -2650,7 +2649,6 @@
 <translation id="5184063094292164363">JavaScript 控制台(&amp;J)</translation>
 <translation id="5184662919967270437">正在更新设备</translation>
 <translation id="5185386675596372454">由于最新版的“<ph name="EXTENSION_NAME" />”需要更多权限，因此已将其停用。</translation>
-<translation id="5187295959347858724">您现在已登录 <ph name="SHORT_PRODUCT_NAME" />。系统正在将您的书签、浏览记录和其他设置与您的 Google 帐号同步。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想下载多个文件</translation>
 <translation id="5204673965307125349">请对此设备执行 Powerwash，然后重试。</translation>
@@ -4126,7 +4124,6 @@
 <translation id="7481312909269577407">前进</translation>
 <translation id="748138892655239008">证书基本约束</translation>
 <translation id="7487067081878637334">技术</translation>
-<translation id="7487099628810939106">点击前延迟：</translation>
 <translation id="7487141338393529395">开启增强的“拼写检查”功能</translation>
 <translation id="7487969577036436319">没有安装任何组件</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{全部打开(&amp;O)}=1{打开 1 个书签(&amp;O)}other{打开全部（# 个）书签(&amp;O)}}</translation>

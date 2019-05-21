@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Активація мобільної мережі</translation>
 <translation id="1407489512183974736">Обрізати по центру</translation>
 <translation id="1408504635543854729">Перегляньте вміст пристрою в додатку Файли. Вміст не можна змінювати, доступ до нього обмежено адміністратором.</translation>
-<translation id="1408789165795197664">Розширені...</translation>
 <translation id="1409390508152595145">Створити користувача, яким керує адміністратор</translation>
 <translation id="1410197035576869800">Значок додатка</translation>
 <translation id="1410616244180625362">Продовжити надавати хосту <ph name="HOST" /> доступ до вашої камери</translation>
@@ -2658,7 +2657,6 @@
 <translation id="5184063094292164363">Консоль &amp;JavaScript</translation>
 <translation id="5184662919967270437">Оновлення пристрою</translation>
 <translation id="5185386675596372454">Нову версію розширення "<ph name="EXTENSION_NAME" />" вимкнено, оскільки для неї потрібно більше дозволів.</translation>
-<translation id="5187295959347858724">Зараз ви ввійшли в <ph name="SHORT_PRODUCT_NAME" />. Ваші закладки, історія й інші налаштування синхронізуються з обліковим записом Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> хоче завантажити кілька файлів</translation>
 <translation id="5204673965307125349">Виконайте Powerwash на пристрої та повторіть спробу.</translation>
@@ -4134,7 +4132,6 @@
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="748138892655239008">Базові обмеження сертифіката</translation>
 <translation id="7487067081878637334">Технології</translation>
-<translation id="7487099628810939106">Затримка перед кліком:</translation>
 <translation id="7487141338393529395">Увімкнути покращену перевірку орфографії</translation>
 <translation id="7487969577036436319">Немає встановлених компонентів</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Відкрити всі}=1{&amp;Відкрити закладку}one{&amp;Відкрити всі (#)}few{&amp;Відкрити всі (#)}many{&amp;Відкрити всі (#)}other{&amp;Відкрити всі (#)}}</translation>

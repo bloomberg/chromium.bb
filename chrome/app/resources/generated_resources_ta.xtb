@@ -264,7 +264,6 @@
 <translation id="140723521119632973">செல்லுலார் செயல்படுத்தல்</translation>
 <translation id="1407489512183974736">மையமாக வெட்டப்பட்டது</translation>
 <translation id="1408504635543854729">கோப்புகள் பயன்பாட்டில் சாதனத்தின் உள்ளடக்கத்தைத் தேடவும். உள்ளடக்கத்தை நிர்வாகி கட்டுப்படுத்துவதால் அதைத் திருத்த முடியாது.</translation>
-<translation id="1408789165795197664">மேம்பட்டவை...</translation>
 <translation id="1409390508152595145">மேற்பார்வையிடப்படும் பயனரை உருவாக்கு</translation>
 <translation id="1410197035576869800">ஆப்ஸின் ஐகான்</translation>
 <translation id="1410616244180625362">உங்கள் கேமராவை அணுக <ph name="HOST" /> ஐத் தொடர்ந்து அனுமதிக்கவும்</translation>
@@ -485,6 +484,7 @@
 <translation id="1744060673522309905">சாதனத்தை டொமைனுடன் இணைக்க முடியவில்லை. நீங்கள் சேர்க்கக்கூடிய சாதனங்களின் அதிகபட்ச எண்ணிக்கையை மீறவில்லை என்பதை உறுதிசெய்யவும்.</translation>
 <translation id="1744108098763830590">பின்புலப் பக்கம்</translation>
 <translation id="1745520510852184940">எப்போதும் இதைச் செய்</translation>
+<translation id="1746402432151920942">பாதுகாக்கப்பட்ட மீடியா அடையாளங்காட்டி</translation>
 <translation id="175196451752279553">மூடிய தாவலை ம&amp;றுபடி திறக்கவும்</translation>
 <translation id="1753905327828125965">அதிகமாகப் பார்க்கப்பட்டவை</translation>
 <translation id="1756681705074952506">உள்ளீட்டு முறை</translation>
@@ -542,6 +542,7 @@
 <translation id="1830550083491357902">உள்நுழைந்திருக்கவில்லை</translation>
 <translation id="1832511806131704864">ஃபோன் மாற்றம் புதுப்பிக்கப்பட்டது</translation>
 <translation id="1834503245783133039">பதிவிறக்க முடியவில்லை: <ph name="FILE_NAME" /></translation>
+<translation id="1834583737373831634">MIDI சாதனங்கள்</translation>
 <translation id="1838374766361614909">தேடலை அழி</translation>
 <translation id="1841545962859478868">பின்வருவனவற்றைச் சாதன நிர்வாகி கண்காணிக்கக்கூடும்:</translation>
 <translation id="1841616161104323629">சாதனத்தின் பதிவு இல்லை.</translation>
@@ -784,6 +785,7 @@
 <translation id="2220529011494928058">சிக்கல் குறித்துப் புகார் செய்</translation>
 <translation id="2220572644011485463">பின் அல்லது கடவுச்சொல்</translation>
 <translation id="2224444042887712269">இந்த அமைப்பானது <ph name="OWNER_EMAIL" /> க்கு உரியதாகும்.</translation>
+<translation id="2224471211857467033">அணுகல்தன்மை நிகழ்வுகள்</translation>
 <translation id="2224551243087462610">கோப்புறை பெயரை மாற்று</translation>
 <translation id="2226449515541314767">MIDI சாதனங்களை முழுமையாக கட்டுப்படுத்துவதிலிருந்து இந்தத் தளம் தடுக்கப்பட்டுள்ளது.</translation>
 <translation id="2226720438730111184">என்ன நடக்கிறது என்பதை எங்களிடம் கூறவும்</translation>
@@ -2649,7 +2651,6 @@
 <translation id="5184063094292164363">&amp;JavaScript கன்சோல்</translation>
 <translation id="5184662919967270437">சாதனத்தைப் புதுப்பிக்கிறது</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" இன் புதிய பதிப்பு முடக்கப்பட்டது, ஏனெனில் அதற்கு கூடுதல் அனுமதி தேவை.</translation>
-<translation id="5187295959347858724">நீங்கள் இப்போது <ph name="SHORT_PRODUCT_NAME" /> இல் உள்நுழைந்துள்ளீர்கள். உங்களுடைய புக்மார்க்குகள், வரலாறு மற்றும் இதர அமைப்புகள் Google கணக்குடன் ஒத்திசைக்கப்படுகிறது.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> பல கோப்புகளைப் பதிவிறக்க விரும்புகிறது</translation>
 <translation id="5204673965307125349">சாதனத்தைப் பவர்வாஷ் செய்து, மீண்டும் முயலவும்.</translation>
@@ -4123,7 +4124,6 @@
 <translation id="7481312909269577407">அடுத்த பக்கம்</translation>
 <translation id="748138892655239008">சான்றிதழ் அடிப்படை கட்டுப்பாடுகள்</translation>
 <translation id="7487067081878637334">தொழில்நுட்பம்</translation>
-<translation id="7487099628810939106">கிளிக் செய்யுமுன் தாமதிக்க:</translation>
 <translation id="7487141338393529395">'மேம்பட்ட எழுத்துப் பிழை சரிபார்க்கும்' அம்சத்தை இயக்கு</translation>
 <translation id="7487969577036436319">கூறுகள் எதுவும் நிறுவப்படவில்லை</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;எல்லாம் திற}=1{&amp;புத்தகக்குறியைத் திற}other{&amp;எல்லாவற்றையும் (#) திற}}</translation>

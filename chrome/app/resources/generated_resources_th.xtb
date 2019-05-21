@@ -265,7 +265,6 @@
 <translation id="140723521119632973">การเปิดใช้งานเครือข่ายมือถือ</translation>
 <translation id="1407489512183974736">ครอบตัดที่กึ่งกลาง</translation>
 <translation id="1408504635543854729">สำรวจเนื้อหาของอุปกรณ์ในแอปไฟล์ เนื้อหาถูกผู้ดูแลระบบจำกัดไว้และไม่สามารถแก้ไขได้</translation>
-<translation id="1408789165795197664">ขั้นสูง...</translation>
 <translation id="1409390508152595145">สร้างผู้ใช้ภายใต้การดูแล</translation>
 <translation id="1410197035576869800">ไอคอนของแอป</translation>
 <translation id="1410616244180625362">อนุญาตให้ <ph name="HOST" /> เข้าถึงกล้องต่อไป</translation>
@@ -2658,7 +2657,6 @@
 <translation id="5184063094292164363">&amp;คอนโซล JavaScript</translation>
 <translation id="5184662919967270437">กำลังอัปเดตอุปกรณ์</translation>
 <translation id="5185386675596372454">รุ่นใหม่ล่าสุดของ "<ph name="EXTENSION_NAME" />" ถูกปิดใช้งาน เนื่องจากต้องได้รับการอนุญาตมากกว่านี้</translation>
-<translation id="5187295959347858724">คุณได้ลงชื่อเข้าใช้ <ph name="SHORT_PRODUCT_NAME" /> แล้วในตอนนี้ บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ ของคุณจะได้รับการซิงค์กับบัญชี Google</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ต้องการดาวน์โหลดหลายไฟล์</translation>
 <translation id="5204673965307125349">โปรดทำ Powerwash อุปกรณ์และลองอีกครั้ง</translation>
@@ -4134,7 +4132,6 @@
 <translation id="7481312909269577407">ส่งต่อ</translation>
 <translation id="748138892655239008">ข้อจำกัดพื้นฐานของใบรับรอง</translation>
 <translation id="7487067081878637334">เทคโนโลยี</translation>
-<translation id="7487099628810939106">หน่วงเวลาก่อนการคลิก:</translation>
 <translation id="7487141338393529395">เปิดฟีเจอร์ตรวจตัวสะกดที่ได้รับการปรับปรุง</translation>
 <translation id="7487969577036436319">ไม่มีคอมโพเนนต์ที่ได้รับการติดตั้ง</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;เปิดทั้งหมด}=1{&amp;เปิดบุ๊กมาร์ก}other{&amp;เปิดทั้งหมด (#)}}</translation>

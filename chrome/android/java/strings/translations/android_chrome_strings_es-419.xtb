@@ -71,7 +71,6 @@
 <translation id="1446450296470737166">Control de dispositivos MIDI</translation>
 <translation id="1449080968331948513">El "Ahorro de datos" está en modo lite</translation>
 <translation id="145097072038377568">Desactivado en la configuración de Android</translation>
-<translation id="146329143005354472">Agregar a Mis apps</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> no se pudo descargar debido a problemas del servidor.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (1 más)}other{ (# más)}}</translation>
 <translation id="1501480321619201731">Borrar grupo</translation>
@@ -861,8 +860,8 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparte 1 elemento seleccionado}other{Comparte # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceder a formas de pago</translation>
 <translation id="7365126855094612066">Durante esta sesión, el sitio podrá hacer lo siguiente:
-• Crear un mapa 3D de tu entorno.
-• Hacer un seguimiento del movimiento de la cámara.
+• Crear un mapa 3D de tu entorno
+• Hacer un seguimiento del movimiento de la cámara
 
 El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de la cámara.</translation>
 <translation id="7375125077091615385">Tipo:</translation>

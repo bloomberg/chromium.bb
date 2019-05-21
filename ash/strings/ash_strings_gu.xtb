@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">રાત્રિ પ્રકાશ</translation>
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
 <translation id="2761704814324807722">સ્થિતિ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581"><ph name="NAME" /> થી ફરીથી કનેક્ટ કરી રહ્યાં છે</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">અનલૉક કરવા માટે, તમારો પાસવર્ડ દાખલ કરો</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">આગલો ટ્રૅક</translation>
 <translation id="4479639480957787382">ઇથરનેટ</translation>
 <translation id="4481530544597605423">જોડીથી અલગ કરેલા ઉપકરણો</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: કનેક્ટ કરી રહ્યું છે...</translation>
 <translation id="4513946894732546136">પ્રતિસાદ</translation>
 <translation id="4527045527269911712">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે.</translation>
 <translation id="453661520163887813">પૂર્ણપણે ચાર્જ થવામાં <ph name="TIME" /></translation>

@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Modo noturno</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Reconectando-se a <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
 <translation id="2803734122639935495">Para desbloquear, digite sua senha</translation>
 <translation id="2819276065543622893">Você sairá agora.</translation>
@@ -236,7 +235,6 @@
 <translation id="4477350412780666475">Próxima faixa</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositvos não pareados</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: conectando...</translation>
 <translation id="4513946894732546136">Comentários</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> até completar</translation>

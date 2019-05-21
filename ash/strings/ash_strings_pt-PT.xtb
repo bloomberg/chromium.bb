@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Luz noturna</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
 <translation id="2761704814324807722">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">A restabelecer ligação a <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
 <translation id="2803734122639935495">Para desbloquear, introduza a palavra-passe.</translation>
 <translation id="2819276065543622893">A sessão será terminada agora.</translation>
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">Faixa seguinte</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositivos dessincronizados</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: A ligar...</translation>
 <translation id="4513946894732546136">Comentários</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> até estar totalmente carregada</translation>

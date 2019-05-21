@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Νυχτερινός φωτισμός</translation>
 <translation id="2727977024730340865">Σύνδεση με φορτιστή χαμηλής ισχύος. Η φόρτιση της μπαταρίας ενδέχεται να μη γίνεται με αξιόπιστο τρόπο.</translation>
 <translation id="2761704814324807722">Δίσκος κατάστασης, ώρα <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Επανασύνδεση στο δίκτυο <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">Για να ξεκλειδώσετε, πληκτρολογήστε τον κωδικό πρόσβασης</translation>
 <translation id="2819276065543622893">Θα αποσυνδεθείτε τώρα.</translation>
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">Επόμενο κομμάτι</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Συσκευές στις οποίες διακόπηκε η σύζευξη</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Σύνδεση…</translation>
 <translation id="4513946894732546136">Σχόλια</translation>
 <translation id="4527045527269911712">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> για να ολοκληρωθεί η φόρτιση</translation>

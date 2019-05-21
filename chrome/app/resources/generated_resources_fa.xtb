@@ -265,7 +265,6 @@
 <translation id="140723521119632973">فعال‌سازی شبکه داده تلفن همراه</translation>
 <translation id="1407489512183974736">برش خورده در مرکز</translation>
 <translation id="1408504635543854729">‏محتوای دستگاه را در برنامه Files کاوش کنید. محتوا توسط سرپرست محدود شده است و قابل ویرایش نیست.</translation>
-<translation id="1408789165795197664">پیشرفته...</translation>
 <translation id="1409390508152595145">ایجاد کاربر نظارت شده</translation>
 <translation id="1410197035576869800">نماد برنامه</translation>
 <translation id="1410616244180625362">ادامه اجازه به <ph name="HOST" /> برای دسترسی به دوربین</translation>
@@ -2654,7 +2653,6 @@
 <translation id="5184063094292164363">کنسول &amp;جاوا اسکریپت</translation>
 <translation id="5184662919967270437">درحال به‌روزرسانی دستگاه</translation>
 <translation id="5185386675596372454">جدیدترین نسخه از "<ph name="EXTENSION_NAME" />" غیر فعال شده است زیرا به مجوزهای بیشتری نیاز دارد.</translation>
-<translation id="5187295959347858724">‏شما اکنون به سیستم <ph name="SHORT_PRODUCT_NAME" /> وارد شدید. نشانک‌ها، سابقه و سایر تنظیمات شما با حساب Google  شما همگام‌سازی می‌شوند.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> می‌خواهد چند فایل را بارگیری کند</translation>
 <translation id="5204673965307125349">لطفاً دستگاه را پاورواش کنید و دوباره امتحان کنید.</translation>
@@ -4130,7 +4128,6 @@
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="748138892655239008">محدودیت‌های اصلی گواهی</translation>
 <translation id="7487067081878637334">فناوری</translation>
-<translation id="7487099628810939106">تأخیر قبل از کلیک:</translation>
 <translation id="7487141338393529395">روشن کردن غلط‌گیر املای بهبود‌یافته</translation>
 <translation id="7487969577036436319">هیچ مؤلفه‌ای نصب نشده است</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{باز کردن همه}=1{باز کردن نشانک}one{باز کردن همه (#)}other{باز کردن همه (#)}}</translation>

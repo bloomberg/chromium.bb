@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Aktivering av mobilnätverk</translation>
 <translation id="1407489512183974736">Centrera och beskär</translation>
 <translation id="1408504635543854729">Utforska innehållet på den här enheten i appen Filer. Innehållet har skrivskyddats av en administratör och kan inte ändras.</translation>
-<translation id="1408789165795197664">Avancerat ...</translation>
 <translation id="1409390508152595145">Skapa en kontrollerad användare</translation>
 <translation id="1410197035576869800">Appikon</translation>
 <translation id="1410616244180625362">Fortsätt tillåta att <ph name="HOST" /> använder kameran</translation>
@@ -2657,7 +2656,6 @@
 <translation id="5184063094292164363">&amp;JavaScript-konsol</translation>
 <translation id="5184662919967270437">Enheten uppdateras</translation>
 <translation id="5185386675596372454">Den senaste versionen av <ph name="EXTENSION_NAME" /> har inaktiverats eftersom ytterligare rättigheter krävs.</translation>
-<translation id="5187295959347858724">Du är nu inloggad i <ph name="SHORT_PRODUCT_NAME" />. Bokmärken, historik och andra inställningar synkroniseras med ditt Google-konto.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vill ladda ned flera filer</translation>
 <translation id="5204673965307125349">Gör en powerwash på enheten och försök igen.</translation>
@@ -4133,7 +4131,6 @@
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="748138892655239008">Grundbegränsningar för certifikat</translation>
 <translation id="7487067081878637334">Teknik</translation>
-<translation id="7487099628810939106">Fördröjning före klick:</translation>
 <translation id="7487141338393529395">Aktivera förbättrad stavningskontroll</translation>
 <translation id="7487969577036436319">Det finns inga installerade komponenter</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Öppna alla}=1{&amp;Öppna bokmärke}other{&amp;Öppna alla (#)}}</translation>

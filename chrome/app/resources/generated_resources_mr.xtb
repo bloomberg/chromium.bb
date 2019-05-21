@@ -265,7 +265,6 @@
 <translation id="140723521119632973">सेल्युलर अ‍ॅक्टिव्हेशन</translation>
 <translation id="1407489512183974736">मध्यभागी क्रॉप केला</translation>
 <translation id="1408504635543854729">Files अॅपमध्ये डिव्हाइसचा आशय एक्सप्लोर करा. अॅडमिनिस्ट्रेटरने आशय प्रतिबंधित केला आहे आणि त्यात बदल केला जाऊ शकत नाही.</translation>
-<translation id="1408789165795197664">प्रगत...</translation>
 <translation id="1409390508152595145">पर्यवेक्षित वापरकर्ता तयार करा</translation>
 <translation id="1410197035576869800">अ‍ॅप आयकन</translation>
 <translation id="1410616244180625362">तुमचा कॅमेरा अॅक्सेस करण्यासाठी <ph name="HOST" /> ला परवानगी  देणे सुरू ठेवा</translation>
@@ -2657,7 +2656,6 @@
 <translation id="5184063094292164363">&amp;JavaScript कन्सोल</translation>
 <translation id="5184662919967270437">तुमचे डिव्हाइस अपडेट करीत आहे</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" ची नवीनतम आवृत्ती अक्षम केली गेली कारण यासाठी अधिक परवानग्या आवश्यक आहेत.</translation>
-<translation id="5187295959347858724">तुम्ही आता <ph name="SHORT_PRODUCT_NAME" />मध्‍ये साइन इन केले आहे. तुमचे बुकमार्क, इतिहास, आणि इतर सेटिंग्ज आपल्या Google खात्यात समक्रमीत केल्या जात आहेत.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ला एकाहून अधिक फायली डाउनलोड करायच्या आहेत</translation>
 <translation id="5204673965307125349">कृपया डिव्हाइस पॉवरवॉश करा आणि पुन्हा प्रयत्न करा.</translation>
@@ -4134,7 +4132,6 @@
 <translation id="7481312909269577407">पुढील</translation>
 <translation id="748138892655239008">सर्टिफिकेट मूळ प्रतिबंध</translation>
 <translation id="7487067081878637334">तंत्रज्ञान</translation>
-<translation id="7487099628810939106">क्लिक करण्यापूर्वी विलंब:</translation>
 <translation id="7487141338393529395">वर्धित केलेले स्पेल चेक सुरू करा</translation>
 <translation id="7487969577036436319">कोणतेही घटक इंस्टॉल केलेले नाहीत</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{आणि सर्व उघडा}=1{आणि बुकमार्क उघडा}other{आणि सर्व (#) उघडा}}</translation>

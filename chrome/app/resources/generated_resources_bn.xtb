@@ -265,7 +265,6 @@
 <translation id="140723521119632973">সেলুলার চালু করা</translation>
 <translation id="1407489512183974736">মাঝ খান থেকে ক্রপ করা</translation>
 <translation id="1408504635543854729">ফাইল অ্যাপে ডিভাইসের কন্টেন্ট খুঁজে দেখুন। একজন অ্যাডমিনিস্ট্রেটর কন্টেন্টটি সীমাবদ্ধ করে আছে এবং মডিফাই করা যাবে না।</translation>
-<translation id="1408789165795197664">উন্নত...</translation>
 <translation id="1409390508152595145">তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি করুন</translation>
 <translation id="1410197035576869800">অ্যাপ আইকন</translation>
 <translation id="1410616244180625362">আপনার ক্যামেরা অ্যাক্সেস করতে <ph name="HOST" /> এর মঞ্জুরি অবিরত রাখুন</translation>
@@ -2654,7 +2653,6 @@
 <translation id="5184063094292164363">&amp;JavaScript কনসোল</translation>
 <translation id="5184662919967270437">আপনার ডিভাইস আপডেট করা হচ্ছে</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"-এর নতুনতম ভার্সনটি বন্ধ হয়েছে কারণ এটির আরও বেশি অনুমতির প্রয়োজন৷</translation>
-<translation id="5187295959347858724">আপনি এখন <ph name="SHORT_PRODUCT_NAME" />এ সাইন-ইন করেছেন৷ আপনার বুকমার্ক, ইতিহাস এবং অন্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক করা হচ্ছে৷</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> একাধিক ফাইল ডাউনলোড করতে চায়</translation>
 <translation id="5204673965307125349">ডিভাইস পাওয়ারওয়াশ করে আবার চেষ্টা করুন।</translation>
@@ -4132,7 +4130,6 @@
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
 <translation id="748138892655239008">সার্টিফিকেট প্রাথমিক বাধ্যবাধকতা</translation>
 <translation id="7487067081878637334">প্রযুক্তি</translation>
-<translation id="7487099628810939106">ক্লিক করার আগে দেরি:</translation>
 <translation id="7487141338393529395">উন্নত বানান পরীক্ষা চালু করুন</translation>
 <translation id="7487969577036436319">কোন উপাদান ইনস্টল ইনস্টল নেই</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{সবগুলি &amp;খুলুন}=1{বুকমার্ক &amp;খুলুন}one{সবগুলি (#টি) &amp;খুলুন}other{সবগুলি (#টি) &amp;খুলুন}}</translation>

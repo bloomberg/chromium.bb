@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Viga</translation>
 <translation id="1172898394251786223">Järgmine väli</translation>
 <translation id="1176932207622159128">Ei saa salvestada</translation>
+<translation id="1180526666083833456">Kasutage eri seadmete vahel sünkroonimist ja isikupärastamist.</translation>
 <translation id="1181037720776840403">Eemalda</translation>
 <translation id="1201530049782216880">Uus inkognito vaheleht</translation>
 <translation id="1209206284964581585">Peida praeguseks</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Viimased neli nädalat</translation>
 <translation id="1407135791313364759">Ava kõik</translation>
 <translation id="1430915738399379752">Printimine</translation>
+<translation id="1436290164580597469">Sünkroonimise alustamiseks sisestage parool.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> üksust</translation>
 <translation id="1491277525950327607">Seade vahetamiseks topeltpuudutage</translation>
 <translation id="152234381334907219">Ei ole kunagi salvestatud</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Kuva parool</translation>
 <translation id="2481538920734869610">LISA KONTO</translation>
 <translation id="2497852260688568942">Administraator on sünkroonimise keelanud</translation>
+<translation id="2500374554657206846">Valikud parooli salvestamiseks</translation>
 <translation id="2523363575747517183">See veebisait üritab korduvalt avada teist rakendust.</translation>
 <translation id="2529021024822217800">Ava kõik</translation>
+<translation id="2570206273416014374">Saadab teie vaikeotsingumootorile mõned küpsisefailid ja otsingud teie aadressiribalt ning otsingukastist.</translation>
 <translation id="2572712655377361602">Seadme reegel blokeeris juurdepääsu teie fotodele</translation>
 <translation id="2584132361465095047">Lisa konto …</translation>
 <translation id="2625189173221582860">Parool on kopeeritud</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Sule kõik inkognito vahelehed</translation>
 <translation id="3533436815740441613">Uus vaheleht</translation>
 <translation id="3551320343578183772">Sule vaheleht</translation>
+<translation id="3581564640715911333">Paku muudes keeltes olevate lehtede tõlkimist</translation>
 <translation id="3588820906588687999">Ava kujutis uuel vahelehel</translation>
 <translation id="3603009562372709545">Kopeeri lingi URL</translation>
 <translation id="3607167657931203000">Automaattäite andmed</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Lehtede eellaadimine</translation>
 <translation id="3691593122358196899">Lisatud järjehoidjana kausta <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkogn. vahelehed</translation>
+<translation id="3775743491439407556">Sünkroonimine ei tööta</translation>
 <translation id="3779810277399252432">Interneti-ühendus puudub.</translation>
 <translation id="3783017676699494206">Salvesta kujutis</translation>
 <translation id="3789841737615482174">Installi</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">QR-koodi skannimiseks lubage seadetes kaamera</translation>
 <translation id="4281844954008187215">Teenusetingimused</translation>
 <translation id="430793432425771671">Sünkrooni kõik</translation>
+<translation id="4338650699862464074">Saadab Google'ile teie külastatud lehtede URL-id.</translation>
 <translation id="4359125752503270327">See leht avatakse teises rakenduses.</translation>
 <translation id="4370827530403103842">Sünkroonimine ei tööta. Puudutage parandamiseks.</translation>
 <translation id="4375040482473363939">QR-koodi otsing</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Privaatsusteatis</translation>
+<translation id="4454246407045105932">Lisa keel</translation>
 <translation id="4476574785019001431">Seaded</translation>
 <translation id="4496373720959965247">Lisage vahelehti ja vahetage lehti</translation>
 <translation id="4508750114462689118">Sule sisselogimisviip</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Otsimine Google'iga</translation>
 <translation id="4619615317237390068">Muudest seadmetest pärinevad vahelehed</translation>
 <translation id="4620246317052452550">Teie loetud lehed</translation>
+<translation id="4630540211544979320">Tõlgi lehed</translation>
 <translation id="4636930964841734540">Teave</translation>
 <translation id="4659667755519643272">Ava vahelehtede vaheti</translation>
 <translation id="4666531726415300315">Sisse logitud kasutajana <ph name="EMAIL" />.
@@ -248,7 +257,9 @@ Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroo
 
 Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">Lugemisloendis on 1 lugemata artikkel.</translation>
+<translation id="4818522717893377262">Lisa keel …</translation>
 <translation id="481968316161811770">Küpsis., saidi andm.</translation>
+<translation id="4833786495304741580">Google'ile saadetakse automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="4840495572919996524">Teie järjehoidjaid, ajalugu, paroole ja muud sisu ei sünkroonita enam teie Google'i kontoga.</translation>
 <translation id="4854345657858711387">Pääsukoodi seadistamine</translation>
 <translation id="4860895144060829044">Helistage</translation>
@@ -289,6 +300,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5548760955356983418">Handoffi abil saate alustada veebisaidi sirvimist selles seadmes ja jätkata seda hõlpsalt Macis. Praegu avatud veebisait kuvatakse Maci Dockis.
 
 Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama sama iCloudi kontot.</translation>
+<translation id="5551897871312988470">Paku tõlkimist</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5614553682702429503">Kas salvestada parool?</translation>
 <translation id="5626245204502895507">Faili ei õnnestunud praegu alla laadida.</translation>
@@ -336,6 +348,7 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="6187302354554850004">Viimati sünkr.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Lugemata</translation>
 <translation id="6196207969502475924">Häälotsing</translation>
+<translation id="6219688215832490856">Ära kunagi tõlgi:</translation>
 <translation id="6254066287920239840">Avage lingid brauseri asemel rakenduses.</translation>
 <translation id="6255097610484507482">Muuda krediitkaarti</translation>
 <translation id="6303969859164067831">Logi välja ja lülita sünkroonimine välja</translation>
@@ -390,6 +403,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="6945221475159498467">Vali</translation>
 <translation id="6973630695168034713">Kaustad</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">Google'i konto haldamine</translation>
 <translation id="7004499039102548441">Hiljutised vahelehed</translation>
 <translation id="7006788746334555276">Sisu seaded</translation>
 <translation id="7015203776128479407">Sünkroonimise algseadistust ei viidud lõpule. Sünkroonimine on välja lülitatud.</translation>
@@ -460,6 +474,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="8059533439631660104">Ahendab jaotist.</translation>
 <translation id="806745655614357130">Hoia minu andmed eraldi</translation>
 <translation id="8073670137947914548">Allalaadimine jõudis lõpule</translation>
+<translation id="8073872304774253879">Otsingute ja sirvimise paremaks muutmine</translation>
 <translation id="8076014560081431679">Saitide salvestatud seadeid ei kustutata ja need võivad kajastada teie sirvimisharjumusi. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Allalaaditav fail on saadaval. Valikud kuvatakse ekraani alaosas.</translation>
 <translation id="8131740175452115882">Kinnita</translation>

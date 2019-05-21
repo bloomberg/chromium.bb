@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Hücresel Etkinleştirme</translation>
 <translation id="1407489512183974736">Ortala ve Kırp</translation>
 <translation id="1408504635543854729">Cihazın içeriğini Dosyalar uygulamasında keşfedin. İçerik, bir yönetici tarafından kısıtlanmış ve üzerinde değişiklik yapılamaz.</translation>
-<translation id="1408789165795197664">Gelişmiş...</translation>
 <translation id="1409390508152595145">Denetlenen kullanıcı oluştur</translation>
 <translation id="1410197035576869800">Uygulama Simgesi</translation>
 <translation id="1410616244180625362">Kameranıza <ph name="HOST" /> tarafından erişilmesine izin vermeye devam edin</translation>
@@ -2658,7 +2657,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5184063094292164363">&amp;JavaScript Konsolu</translation>
 <translation id="5184662919967270437">Cihazınız güncelleniyor</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" adlı uzantının en yeni sürümü daha fazla izin gerektirdiğinden devre dışı bırakıldı.</translation>
-<translation id="5187295959347858724">Şu anda <ph name="SHORT_PRODUCT_NAME" /> uygulamasında oturum açmış bulunuyorsunuz. Yer işaretleriniz, geçmişiniz ve diğer ayarlarınız Google Hesabınızla senkronize ediliyor.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> birden fazla dosya indirmek istiyor</translation>
 <translation id="5204673965307125349">Lütfen cihazda powerwash işlemi gerçekleştirin ve tekrar deneyin.</translation>
@@ -4135,7 +4133,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7481312909269577407">İleri</translation>
 <translation id="748138892655239008">Sertifika Temel Kısıtlamaları</translation>
 <translation id="7487067081878637334">Teknoloji</translation>
-<translation id="7487099628810939106">Tıklama öncesi gecikme:</translation>
 <translation id="7487141338393529395">Gelişmiş Yazım Denetimini Etkinleştirin</translation>
 <translation id="7487969577036436319">Yüklü hiç bileşen yok</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{Tümünü &amp;aç}=1{Yer işaretini &amp;aç}other{Tümünü (#) &amp;aç}}</translation>

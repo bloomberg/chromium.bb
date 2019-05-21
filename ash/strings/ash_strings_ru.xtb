@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Ночной режим</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
 <translation id="2803734122639935495">Чтобы разблокировать устройство, введите пароль</translation>
 <translation id="2819276065543622893">Сеанс завершен.</translation>
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">Следующий трек</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Отключенные устройства</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: соединение...</translation>
 <translation id="4513946894732546136">Отзыв</translation>
 <translation id="4527045527269911712">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth.</translation>
 <translation id="453661520163887813">До полной зарядки <ph name="TIME" /></translation>

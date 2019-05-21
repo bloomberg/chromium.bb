@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Aktivasi Seluler</translation>
 <translation id="1407489512183974736">Dipangkas di Tengah</translation>
 <translation id="1408504635543854729">Jelajahi konten perangkat di aplikasi File. Konten dibatasi oleh admin dan tidak dapat diubah.</translation>
-<translation id="1408789165795197664">Lanjutan...</translation>
 <translation id="1409390508152595145">Membuat pengguna yang dilindungi</translation>
 <translation id="1410197035576869800">Ikon Aplikasi</translation>
 <translation id="1410616244180625362">Terus izinkan <ph name="HOST" /> mengakses kamera Anda</translation>
@@ -2656,7 +2655,6 @@
 <translation id="5184063094292164363">Konsol &amp;JavaScript</translation>
 <translation id="5184662919967270437">Memperbarui perangkat</translation>
 <translation id="5185386675596372454">Versi terbaru dari "<ph name="EXTENSION_NAME" />" telah dinonaktifkan karena versi tersebut memerlukan tingkat izin yang lebih tinggi.</translation>
-<translation id="5187295959347858724">Sekarang Anda masuk pada <ph name="SHORT_PRODUCT_NAME" />. Bookmark, histori, dan setelan lainnya sedang disinkronkan ke Akun Google Anda.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ingin mendownload beberapa file</translation>
 <translation id="5204673965307125349">Harap powerwash perangkat, lalu coba lagi.</translation>
@@ -4132,7 +4130,6 @@
 <translation id="7481312909269577407">Maju</translation>
 <translation id="748138892655239008">Kendala Dasar Sertifikat</translation>
 <translation id="7487067081878637334">Teknologi</translation>
-<translation id="7487099628810939106">Penundaan sebelum klik:</translation>
 <translation id="7487141338393529395">Aktifkan fitur Periksa Ejaan yang Disempurnakan</translation>
 <translation id="7487969577036436319">Tidak ada komponen yang dipasang</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Buka semua}=1{&amp;Buka bookmark}other{&amp;Buka semua (#)}}</translation>

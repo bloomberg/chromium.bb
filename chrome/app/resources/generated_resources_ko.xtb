@@ -265,7 +265,6 @@
 <translation id="140723521119632973">모바일 활성화</translation>
 <translation id="1407489512183974736">가운데 부분 자르기</translation>
 <translation id="1408504635543854729">파일 앱에서 기기의 콘텐츠를 탐색합니다. 콘텐츠는 관리자에 의해 제한되며 수정할 수 없습니다.</translation>
-<translation id="1408789165795197664">고급...</translation>
 <translation id="1409390508152595145">관리 대상 사용자 만들기</translation>
 <translation id="1410197035576869800">앱 아이콘</translation>
 <translation id="1410616244180625362"><ph name="HOST" />에서 카메라에 액세스하도록 계속 허용</translation>
@@ -2656,7 +2655,6 @@
 <translation id="5184063094292164363">자바스크립트 콘솔(&amp;J)</translation>
 <translation id="5184662919967270437">기기 업데이트 중</translation>
 <translation id="5185386675596372454">'<ph name="EXTENSION_NAME" />'의 최신 버전에 더 많은 권한이 필요하여 사용이 중지되었습니다.</translation>
-<translation id="5187295959347858724">이제 <ph name="SHORT_PRODUCT_NAME" />에 로그인되었으며 북마크와 방문기록, 기타 설정이 내 Google 계정과 동기화됩니다.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" />(<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" />에서 여러 파일을 다운로드하려고 합니다.</translation>
 <translation id="5204673965307125349">기기를 파워워시한 후 다시 시도해 주세요.</translation>
@@ -4132,7 +4130,6 @@
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="748138892655239008">인증서 기본 제약조건</translation>
 <translation id="7487067081878637334">테크놀로지</translation>
-<translation id="7487099628810939106">클릭하기 전 지연:</translation>
 <translation id="7487141338393529395">향상된 맞춤법 검사 기능 사용 설정</translation>
 <translation id="7487969577036436319">설치된 구성요소가 없습니다.</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{모두 열기(O)}=1{북마크 열기(O)}other{#개 모두 열기(O)}}</translation>

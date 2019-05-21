@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">&amp;Undo reorder</translation>
 <translation id="1125573121925420732">Warnings may be common while websites update their security. This should improve soon.</translation>
 <translation id="1126551341858583091">The size on the local storage is <ph name="CRASH_SIZE" />.</translation>
+<translation id="1127259989763091435">Confirm &amp; save card to Google Account?</translation>
 <translation id="112840717907525620">Policy cache OK</translation>
 <translation id="1131264053432022307">Image that you copied</translation>
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -143,6 +144,7 @@
 <translation id="1656489000284462475">Pick up</translation>
 <translation id="1662550410081243962">Save and fill payment methods</translation>
 <translation id="1663943134801823270">Cards and addresses are from Chrome. You can manage them in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
+<translation id="1669987054044193553">Confirm &amp; save</translation>
 <translation id="1671391448414634642">Pages in <ph name="SOURCE_LANGUAGE" /> will be translated to <ph name="TARGET_LANGUAGE" /> from now on.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> normally uses encryption to protect your information. When Google Chrome tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Google Chrome stopped the connection before any data was exchanged.</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
@@ -201,6 +203,7 @@
 <translation id="2003709556000175978">Reset your password now</translation>
 <translation id="20053308747750172">The server that you are going to, <ph name="ORIGIN" />, has requested that a security policy will be applied to all requests to it. But it has now delivered an invalid policy, which prevents the browser from fulfilling your request for <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Proxy is set to auto-configured.</translation>
+<translation id="202813660234680402">No, don't add</translation>
 <translation id="2030481566774242610">Did you mean <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Checking the proxy and the firewall<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">Pages in <ph name="LANGUAGE" /> will not be translated.</translation>
@@ -363,6 +366,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is from <ph name="DOMAIN2" />. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="2948083400971632585">You can disable any proxies configured for a connection from the settings page.</translation>
+<translation id="295526156371527179">Warning: This policy was not merged as a dictionary as specified by policy because it is not a dictionary.</translation>
 <translation id="2955913368246107853">Close find bar</translation>
 <translation id="2969319727213777354">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Google Chrome cannot verify these certificates.</translation>
 <translation id="2970515157925768593">Can remotely change your device and account setup.</translation>
@@ -683,6 +687,7 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> search suggestion</translation>
 <translation id="4742407542027196863">Manage passwords…</translation>
 <translation id="4744603770635761495">Executable Path</translation>
+<translation id="47454865135383664">Add card to Google Account?</translation>
 <translation id="4750917950439032686">Your information (for example, passwords or credit card numbers) is private when it is sent to this site.</translation>
 <translation id="4756388243121344051">&amp;History</translation>
 <translation id="4758311279753947758">Add contact info</translation>
@@ -778,6 +783,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">Warning: This policy was not merged as specified in PolicyDictionaryMultipleSourceMergeList policy because it is not part of the dictionary policies that can be merged.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5284909709419567258">Network addresses</translation>
@@ -901,6 +907,7 @@
 <translation id="5922853866070715753">Almost finished</translation>
 <translation id="5932224571077948991">Site shows intrusive or misleading ads</translation>
 <translation id="5946937721014915347">Opening <ph name="SITE_NAME" />…</translation>
+<translation id="5947933617628957894">Yes, add</translation>
 <translation id="5951495562196540101">Can't enrol with consumer account (packaged licence available).</translation>
 <translation id="5967592137238574583">Edit Contact Info</translation>
 <translation id="5967867314010545767">Remove from history</translation>
@@ -978,6 +985,7 @@
 <translation id="6414888972213066896">You asked your parent if it's OK to visit this site</translation>
 <translation id="6415778972515849510">Chromium can help you protect your Google account and change your password.</translation>
 <translation id="6417515091412812850">Unable to check whether the certificate has been revoked.</translation>
+<translation id="6431585503458005759">Don't store</translation>
 <translation id="6433490469411711332">Edit contact info</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> refused to connect.</translation>
 <translation id="6434309073475700221">Discard</translation>
@@ -991,7 +999,9 @@
 <translation id="6489534406876378309">Start uploading crashes</translation>
 <translation id="6499038740797743453">Reset password?</translation>
 <translation id="6507833130742554667">Credit and debit cards are accepted.</translation>
+<translation id="650855688985305916">Yes, store</translation>
 <translation id="6508722015517270189">Restart Chrome</translation>
+<translation id="6517596291481585650">Warning: This policy was not merged as a list as specified by policy because it is not a list.</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6534179046333460208">Physical Web suggestions</translation>
 <translation id="6554795675067793129">Your account is managed by <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1017,6 +1027,7 @@
 <translation id="6670613747977017428">Back to safety.</translation>
 <translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
 <translation id="6685834062052613830">Sign out and complete setup</translation>
+<translation id="6689271823431384964">Chrome is offering to save your cards in your Google account because you are signed in. You can change this behaviour in settings. The cardholder name comes from your account.</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6710594484020273272">&lt;Type search term&gt;</translation>
 <translation id="671076103358959139">Enrolment Token:</translation>
@@ -1123,6 +1134,7 @@ Additional details:
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /> warnings</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Connection Help</translation>
+<translation id="733354035281974745">Device local account override</translation>
 <translation id="7334320624316649418">&amp;Redo reorder</translation>
 <translation id="733923710415886693">The server's certificate was not disclosed via Certificate Transparency.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1328,6 +1340,7 @@ Additional details:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this site<ph name="END_LINK" /> before the harmful programs have been removed.</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
+<translation id="836241887727198552">Store card in Google Account?</translation>
 <translation id="8363502534493474904">Turning off aeroplane mode</translation>
 <translation id="8364627913115013041">Not set.</translation>
 <translation id="8368476060205742148">Google Play services</translation>
@@ -1369,6 +1382,7 @@ Additional details:
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Save This Card to This Device</translation>
+<translation id="8626112503828625890">Store billing details in Google Account?</translation>
 <translation id="8663226718884576429">Order Summary, <ph name="TOTAL_LABEL" />, More Details</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, answer, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>

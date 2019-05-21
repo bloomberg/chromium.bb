@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Ενεργοποίηση δικτύου κινητής τηλεφωνίας</translation>
 <translation id="1407489512183974736">Περικοπή στο κέντρο</translation>
 <translation id="1408504635543854729">Εξερευνήστε το περιεχόμενο της συσκευής στην εφαρμογή "Αρχεία". Το περιεχόμενο περιορίζεται από κάποιον διαχειριστή και δεν είναι δυνατή η τροποποίησή του.</translation>
-<translation id="1408789165795197664">Για προχωρημένους...</translation>
 <translation id="1409390508152595145">Δημιουργία εποπτευόμενου χρήστη</translation>
 <translation id="1410197035576869800">Εικονίδιο εφαρμογής</translation>
 <translation id="1410616244180625362">Να συνεχίσει να επιτρέπεται στο <ph name="HOST" /> η πρόσβαση στην κάμερά σας</translation>
@@ -2658,7 +2657,6 @@
 <translation id="5184063094292164363">Κονσόλα &amp;JavaScript</translation>
 <translation id="5184662919967270437">Ενημέρωση της συσκευής σας</translation>
 <translation id="5185386675596372454">Η τελευταία έκδοση του " <ph name="EXTENSION_NAME" /> "έχει απενεργοποιηθεί, επειδή απαιτούνται περισσότερα δικαιώματα.</translation>
-<translation id="5187295959347858724">Είστε πλέον συνδεδεμένοι στο <ph name="SHORT_PRODUCT_NAME" />. Οι σελιδοδείκτες, το ιστορικό και διάφορες άλλες ρυθμίσεις συγχρονίζονται με τον Λογαριασμό σας Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422">Ο ιστότοπος <ph name="ORIGIN" /> θέλει να κατεβάσει πολλά αρχεία</translation>
 <translation id="5204673965307125349">Κάντε powerwash στη συσκευή και δοκιμάστε ξανά.</translation>
@@ -4135,7 +4133,6 @@
 <translation id="7481312909269577407">Προώθηση</translation>
 <translation id="748138892655239008">Βασικοί περιορισμοί πιστοποιητικού</translation>
 <translation id="7487067081878637334">Τεχνολογία</translation>
-<translation id="7487099628810939106">Καθυστέρηση πριν από το κλικ:</translation>
 <translation id="7487141338393529395">Ενεργοποίηση βελτιωμένου ορθογραφικού ελέγχου</translation>
 <translation id="7487969577036436319">Δεν έχουν εγκατασταθεί στοιχεία</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Άνοιγμα όλων}=1{&amp;Άνοιγμα σελιδοδείκτη}other{&amp;Άνοιγμα όλων (#)}}</translation>

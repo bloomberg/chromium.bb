@@ -1062,6 +1062,7 @@
       Ja politikai AutoplayAllowed ir iestatīta vērtība “False”, joprojām būs atļauts atskaņot jebkurus šajā politikā iestatītos URL rakstus.
 
       Ņemiet vērā: ja <ph name="PRODUCT_NAME" /> darbojas un tiek mainīta šī politika, tā būs spēkā tikai jaunās atvērtās cilnēs. Tādēļ noteiktās cilnēs, iespējams, joprojām notiks iepriekšējā darbība.</translation>
+<translation id="284288632677954003">URL no tāda XML faila, kurā ir vietrāži URL, kam nekad nebūtu jāaktivizē pārlūkprogrammas pārslēgšana.</translation>
 <translation id="285480231336205327">Iespējot augsta kontrasta režīmu</translation>
 <translation id="2854919890879212089">Šī politika nosaka, ka pēc noklusējuma pārlūkprogrammas <ph name="PRODUCT_NAME" /> drukas priekšskatījumā jāizmanto sistēmas noklusējuma printeris, nevis pēdējais lietotais printeris.
 
@@ -1234,6 +1235,15 @@
 <translation id="3096595567015595053">Iespējoto spraudņu saraksts</translation>
 <translation id="3101501961102569744">Izvēlas, kā jānorāda starpniekservera iestatījumi</translation>
 <translation id="3101709781009526431">Datums un laiks</translation>
+<translation id="3114411414586006215">Šī politika kontrolē to vietņu sarakstu, kuras nekad nepārslēgs pārlūkprogrammu.
+
+      Ņemiet vērā, ka elementus var pievienot šim sarakstam, izmantojot arī politiku <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Ja šī politika nav iestatīta, sarakstam nepievieno nevienu vietni.
+
+      Ja šī politika ir iestatīta, katrs vienums tiek uzskatīts par kārtulu, kas līdzinās politikai <ph name="URL_LIST_POLICY_NAME" />. Tomēr loģika ir pretēja: atbilstošās kārtulas neatver citu pārlūkprogrammu.
+
+      Pretēji politikai <ph name="URL_LIST_POLICY_NAME" /> kārtulas tiek lietotas abos virzienos: ja pārlūkprogrammas Internet Explorer papildinājums ir iespējots, tas kontrolē arī to, vai pārlūkprogrammai <ph name="IE_PRODUCT_NAME" /> attiecīgie vietrāži URL ir jāatver arī pārlūkprogrammā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Brīdinājums: DHE tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 57. versijas (aptuveni 2017. gada martā), un šī politika vairs nebūs spēkā.
 
       Ja politika nav iestatīta vai ir iestatīta vērtība Nepatiesa, DHE šifra komplekti standartā TLS netiks iespējoti. Politikai var iestatīt vērtību Patiesa, lai iespējotu DHE šifra komplektus un saglabātu saderību ar novecojušu serveri. Tas ir pagaidu risinājums, un serveris ir jākonfigurē atkārtoti.
@@ -1430,6 +1440,17 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3550875587920006460">Šī politika ļauj iestatīt pielāgotu grafiku atjauninājumu pieejamības pārbaudēm. Tā attiecas uz visiem ierīces lietotājiem un saskarnēm. Kad grafiks būs iestatīts, atjauninājumu pieejamība ierīcē tiks pārbaudīta saskaņā ar grafiku. Lai atceltu turpmāk ieplānotas atjauninājumu pieejamības pārbaudes, politika jānoņem.</translation>
 <translation id="355118380775352753">Vietnes, kas atveramas citā pārlūkprogrammā</translation>
 <translation id="3554984410014457319">Atļaut Google asistentam noklausīties balss aktivizēšanas frāzi</translation>
+<translation id="3557208865710006939">Piespiedu kārtā iespējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautās neatpazītās valodas.
+
+      Ja iespējosiet šo politiku, pareizrakstības pārbaude tiks iespējota gan norādītajām valodām, gan tām valodām, kurām lietotājs ir iespējojis pareizrakstības pārbaudi.
+
+      Ja šī politika nav iestatīta vai tā tiek atspējota, lietotāja pareizrakstības pārbaudes preferencēs netiek ieviestas izmaiņas.
+
+      Ja politikai <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> ir iestatīta vērtība “False”, šī politika nedarbojas.
+
+      Ja valoda ir ietverta gan šajā politikā, gan politikā <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, prioritāte ir šai politikai un pareizrakstības pārbaudes valoda tiek iespējota.
+
+      Pašreiz atbalstītās valodas: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Lietotāji var konfigurēt Chrome OS laidiena versiju</translation>
 <translation id="3575011234198230041">HTTP autentificēšana</translation>
 <translation id="3577251398714997599">Reklāmu iestatījumi vietnēm, kurās tiek rādītas traucējošas reklāmas</translation>
@@ -1780,6 +1801,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt un ignorēt.
 
           Ja šī politika nav iestatīta, taustiņu ķēde sākotnēji būs atspējota, taču lietotājs var jebkurā brīdī to iespējot.</translation>
+<translation id="4171331498167688968">Ja politikai ir iestatīta vērtība “False”, trešās puses programmatūra pārlūkprogrammas Chrome procesos varēs ievietot izpildāmo kodu. Ja politikai nav iestatīta vērtība vai ir iestatīta vērtība “True”, trešās puses programmatūrai tiek liegts ievietot izpildāmo kodu pārlūkprogrammas Chrome procesos.
+
+      Neatkarīgi no šai politikai iestatītās vērtības šobrīd pārlūkprogrammā netiks bloķēta trešās puses programmatūras iespēja ievietot izpildāmu kodu tās procesos ierīcē, kas ir pievienota domēnam <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> noklusējuma iestatījums</translation>
 <translation id="4192388905594723944">Vietrādis URL attālās piekļuves klienta autentifikācijas pilnvaras apstiprināšanai</translation>
 <translation id="4203389617541558220">Ierobežojiet ierīces darbspējas laiku, plānojot automātiskas atkārtotas palaišanas gadījumus.
@@ -2147,6 +2171,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Šī politika ir pieejama tikai Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu, vai Windows 10 Pro vai Enterprise instancēs, kas ir reģistrētas ierīču pārvaldībai.</translation>
 <translation id="5085647276663819155">Atspējot drukas priekšskatījumu</translation>
 <translation id="5090209345759901501">Izvērst Flash satura iestatījumu visam saturam</translation>
+<translation id="5090791951240382356">Ļaut apvienot vārdnīcu politikas no dažādiem avotiem</translation>
 <translation id="5093540029655764852">Šī politika nosaka, cik bieži (izsakot dienās) klientdators maina datora konta paroli. Paroli ģenerē klientdators pēc nejaušības principa, un tā nav redzama lietotājam.
 
       Datoru paroles ir regulāri jāmaina, tāpat kā lietotāju paroles. Šīs politikas atspējošana vai liela dienu skaita iestatīšana var negatīvi ietekmēt drošību, jo tādā gadījumā potenciālajiem uzbrucējiem ir vairāk laika, lai atrastu datora konta paroli un to izmantotu.
@@ -3079,6 +3104,17 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6923366716660828830">Norāda noklusējuma meklētājprogrammas nosaukumu. Ja nekas nav ievadīts vai šī politika nav iestatīta, tiks lietots ar meklēšanas URL norādītais saimniekdatora nosaukums.
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
+<translation id="6924223708804692571">Piespiedu kārtā atspējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautas neatpazītas valodas.
+
+      Ja iespējosiet šo politiku, pareizrakstības pārbaude norādītajās valodās tiks atspējota. Lietotājs joprojām var iespējot vai atspējot pareizrakstības pārbaudi valodās, kas nav iekļautas sarakstā.
+
+      Ja šī politika nav iestatīta vai tā tiek atspējota, lietotāja pareizrakstības pārbaudes preferencēs netiek ieviestas izmaiņas.
+
+      Ja politikai <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> ir iestatīta vērtība “False”, šī politika nedarbojas.
+
+      Ja valoda ir iekļauta šajā politikā un politikā <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, šai politikai nav prioritātes un pareizrakstības pārbaudes valoda tiek iespējota.
+
+      Pašreiz atbalstītās valodas: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Iespējot garmalu divpusējo drukāšanu</translation>
 <translation id="6931242315485576290">Atspējo datu sinhronizāciju ar Google</translation>
 <translation id="6936894225179401731">Norāda maksimālo vienlaicīgo savienojumu skaitu ar starpniekserveri.
@@ -3228,6 +3264,15 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Konfigurējot šo politiku, lietojumprogrammu kopa tiek fiksēta un lietotājs to nevar mainīt.
 
       Ja šī politika netiek iestatīta, lietotājs var mainīt piesprausto lietotņu sarakstu palaišanas lapā.</translation>
+<translation id="713121532817834879">Šī politika ir vietrādis URL, kas norāda uz XML failu tādā pašā formātā kā Internet Explorer politika <ph name="IEEM_SITELIST_POLICY" />. Kārtulas tiek ielādētas no XML faila, nekopīgojot šīs kārtulas ar pārlūkprogrammu Internet Explorer.
+
+      Šī XML faila kārtulas tiek lietotas tāpat kā politika <ph name="GREYLIST_POLICY_NAME" />. Tas nozīmē, ka šīs kārtulas novērš citas pārlūkprogrammas atvēršanu produktā <ph name="PRODUCT_NAME" />, kā arī produkta <ph name="PRODUCT_NAME" /> atvēršanu citā pārlūkprogrammā.
+
+      Ja šī politika nav iestatīta vai tai nav iestatīts derīgs URL, produktā <ph name="PRODUCT_NAME" /> tā netiek izmantota kā kārtulu avots un netiek aktivizēta pārlūkprogrammas pārslēgšana.
+
+      Ja šai politikai ir iestatīts derīgs URL, produktā <ph name="PRODUCT_NAME" /> tiek lejupielādēts vietņu saraksts no attiecīgā URL un tiek lietotas attiecīgās kārtulas tā, it kā tās būtu konfigurētas politikai <ph name="SITELIST_POLICY_NAME" />.
+
+      Plašāku informāciju par Internet Explorer politiku <ph name="IEEM_SITELIST_POLICY" /> skatiet vietnē https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Vietrāži URL, kuriem tiks nodrošināta piekļuve video tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="7138678301420049075">Cits</translation>
 <translation id="7140629953254369759">Norāda <ph name="PRODUCT_OS_NAME" /> lietotājam izmantot uzdevumu plānotāja konfigurāciju, kas noteikta norādītajā nosaukumā.
@@ -3276,6 +3321,15 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
           Automātiska atskaņošana ir atļauta tikai tiem domēniem, kas skaidri norādīti politikā <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Ja vēlaties iespējot automātisko atskaņošanu visām vietnēm, pievienojiet šim sarakstam http://* un https://*.
 
           Ja šī politika nav iestatīta, lietotājs varēs mainīt šo iestatījumu manuāli.</translation>
+<translation id="7222749588229362483">Ļauj apvienot atlasītās politikas, ja tās ir no dažādiem avotiem, bet ar vienādiem tvērumiem un līmeni.
+
+        Tiek apvienotas vārdnīcas pirmā līmeņa atslēgas no katra avota. Ja rodas konflikts starp atslēgām, tiek lietota atslēga no avota, kam ir visaugstākā prioritāte.
+
+        Ja politika ir sarakstā un ja rodas konflikts starp diviem avotiem, ņemot vērā to, ka politikām ir vienādi tvērumi un līmenis, vērtības tiek apvienotas jaunā politiku vārdnīcā.
+
+        Ja politika ir sarakstā un ja rodas konflikts starp diviem avotiem, bet politikām ir dažādi tvērumi un/vai līmenis, tiek lietota politika ar visaugstāko prioritāti.
+
+        Ja politika nav sarakstā un ja rodas konflikts starp diviem avotiem, tvērumiem un/vai līmeni, tiek lietota politika ar visaugstāko prioritāti.</translation>
 <translation id="7229975860249300121">Satur parastu izteiksmi, kas tiek izmantota, lai noteiktu, kuri Google konti var tikt iestatīti kā pārlūka primārie konti produktam <ph name="PRODUCT_NAME" /> (piemēram, konts, kas ir atlasīts sinhronizācijas izvēles plūsmā).
 
       Ja lietotājs mēģina iestatīt pārlūka primāro kontu, izmantojot lietotājvārdu, kas neatbilst paraugam, tiek parādīts atbilstošs kļūdas ziņojums.
@@ -3910,6 +3964,12 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
       Ja politikai ir iestatīta vērtība “Replace”, lietotāja politika no lietotāja GPO tiek aizstāta ar lietotāja politiku no datora GPO (lietotāja GPO tiek ignorēti).</translation>
 <translation id="8465065632133292531">Parametri dinamiskās meklēšanas vietrādim URL, kurā izmantota metode POST</translation>
+<translation id="8465746466645315861">Ja šī politika nav iestatīta, lietotājs var iespējot vai atspējot pareizrakstības pārbaudi valodas iestatījumos.
+
+      Ja šai politikai ir iestatīta vērtība “True”, pareizrakstības pārbaude ir iespējota un lietotājs nevar to atspējot. Operētājsistēmās <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> un <ph name="LINUX_OS_NAME" /> pareizrakstības pārbaudes valodas var atsevišķi ieslēgt vai izslēgt, tādējādi lietotājs joprojām var atspējot pareizrakstības pārbaudi, izslēdzot katru pareizrakstības pārbaudes valodu. Lai to nepieļautu, ar politikas <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> palīdzību var piespiedu kārtā iespējot konkrētas pareizrakstības pārbaudes valodas.
+
+      Ja šai politikai ir iespējota vērtība “False”, pareizrakstības pārbaude ir atspējota un lietotājs nevar to iespējot. Ja šai politikai ir iestatīta vērtība “False”, politikas <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> un <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nedarbojas.
+      </translation>
 <translation id="847472800012384958">Neļaut nevienai vietnei rādīt uznirstošos logus</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Noņem no vietrāžiem URL protokola https:// daļas, kurās ietverta neizpaužama konfidencialitātes un drošības informācija, pirms to nodošanas PAC (Proxy Auto Config — starpniekservera automātiskā konfigurēšana) skriptiem, ko izmanto <ph name="PRODUCT_NAME" /> starpniekservera atrisināšanas laikā.

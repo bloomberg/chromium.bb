@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Activación del teléfono celular</translation>
 <translation id="1407489512183974736">Centrar imagen recortada</translation>
 <translation id="1408504635543854729">Explora el contenido del dispositivo en la app de Archivos. Un administrador restringió el contenido, por lo que no puede modificarse.</translation>
-<translation id="1408789165795197664">Avanzado...</translation>
 <translation id="1409390508152595145">Crear usuario supervisado</translation>
 <translation id="1410197035576869800">Ícono de la app</translation>
 <translation id="1410616244180625362">Seguir permitiendo que <ph name="HOST" /> acceda a la cámara</translation>
@@ -2655,7 +2654,6 @@
 <translation id="5184063094292164363">&amp;Consola de JavaScript</translation>
 <translation id="5184662919967270437">Actualizando tu dispositivo</translation>
 <translation id="5185386675596372454">Se ha desactivado la versión más reciente de "<ph name="EXTENSION_NAME" />" porque requiere más permisos.</translation>
-<translation id="5187295959347858724">Accediste a <ph name="SHORT_PRODUCT_NAME" />. Tus favoritos, historial y demás parámetros de configuración se están sincronizando con tu cuenta de Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> quiere descargar varios archivos</translation>
 <translation id="5204673965307125349">Aplica la función "Powerwash" en el dispositivo y vuelve a intentarlo.</translation>
@@ -4131,7 +4129,6 @@
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="748138892655239008">Restricciones básicas del certificado</translation>
 <translation id="7487067081878637334">Tecnología</translation>
-<translation id="7487099628810939106">Demora antes de hacer clic:</translation>
 <translation id="7487141338393529395">Activa el corrector ortográfico mejorado</translation>
 <translation id="7487969577036436319">No hay componentes instalados.</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Abrir todo}=1{&amp;Abrir favorito}other{&amp;Abrir todo (#)}}</translation>

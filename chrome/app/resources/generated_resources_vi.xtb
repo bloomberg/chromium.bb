@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Kích hoạt mạng di động</translation>
 <translation id="1407489512183974736">Cắt giữa</translation>
 <translation id="1408504635543854729">Khám phá nội dung của thiết bị trong ứng dụng Tệp. Quản trị viên đã hạn chế nội dung và bạn không thể sửa đổi nội dung này.</translation>
-<translation id="1408789165795197664">Nâng cao...</translation>
 <translation id="1409390508152595145">Tạo người dùng được giám sát</translation>
 <translation id="1410197035576869800">Biểu tượng ứng dụng</translation>
 <translation id="1410616244180625362">Tiếp tục cho phép <ph name="HOST" /> truy cập máy ảnh của bạn</translation>
@@ -789,7 +788,7 @@
 <translation id="2220529011494928058">Báo cáo sự cố</translation>
 <translation id="2220572644011485463">Mã PIN hoặc mật khẩu</translation>
 <translation id="2224444042887712269">Cài đặt này thuộc về <ph name="OWNER_EMAIL" />.</translation>
-<translation id="2224471211857467033">Sự kiện hỗ trợ tiếp cận</translation>
+<translation id="2224471211857467033">Sự kiện về dịch vụ Hỗ trợ tiếp cận</translation>
 <translation id="2224551243087462610">Chỉnh sửa tên thư mục</translation>
 <translation id="2226449515541314767">Trang web này đã bị chặn quyền kiểm soát hoàn toàn thiết bị MIDI.</translation>
 <translation id="2226720438730111184">Cho chúng tôi biết điều gì đang xảy ra</translation>
@@ -2658,7 +2657,6 @@
 <translation id="5184063094292164363">Bảng điều khiển &amp;JavaScript</translation>
 <translation id="5184662919967270437">Đang cập nhật thiết bị của bạn</translation>
 <translation id="5185386675596372454">Phiên bản mới nhất của "<ph name="EXTENSION_NAME" />" đã bị tắt vì phiên bản đó yêu cầu nhiều giấy phép hơn.</translation>
-<translation id="5187295959347858724">Bạn hiện đã đăng nhập vào <ph name="SHORT_PRODUCT_NAME" />. Dấu trang, lịch sử và các cài đặt khác của bạn đang được đồng bộ hóa với Tài khoản Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> muốn tải nhiều tệp xuống</translation>
 <translation id="5204673965307125349">Vui lòng powerwash thiết bị và thử lại.</translation>
@@ -4134,7 +4132,6 @@
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="748138892655239008">Giới hạn Cơ bản của Chứng chỉ</translation>
 <translation id="7487067081878637334">Công nghệ</translation>
-<translation id="7487099628810939106">Độ trễ trước khi nhấp chuột:</translation>
 <translation id="7487141338393529395">Bật tính năng kiểm tra lỗi chính tả nâng cao</translation>
 <translation id="7487969577036436319">Không có thành phần nào được cài đặt</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Mở tất cả}=1{&amp;Mở dấu trang}other{&amp;Mở tất cả (#)}}</translation>

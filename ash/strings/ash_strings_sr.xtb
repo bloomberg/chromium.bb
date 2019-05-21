@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Ноћно светло</translation>
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
 <translation id="2761704814324807722">Статусна трака, време <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Поново се повезујете са мрежом <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + тастер за претрагу</translation>
 <translation id="2803734122639935495">Да бисте откључали, унесите лозинку</translation>
 <translation id="2819276065543622893">Бићете одмах одјављени.</translation>
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">Следећа песма</translation>
 <translation id="4479639480957787382">Етернет</translation>
 <translation id="4481530544597605423">Уређаји чије је упаривање опозвано</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Повезује се...</translation>
 <translation id="4513946894732546136">Повратне информације</translation>
 <translation id="4527045527269911712">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> до краја пуњења</translation>

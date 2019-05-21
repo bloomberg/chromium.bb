@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Activare celulară</translation>
 <translation id="1407489512183974736">Pe centru, decupat</translation>
 <translation id="1408504635543854729">Explorează conținutul dispozitivului în aplicația Fișiere. Conținutul este restricționat de un administrator și nu poate fi modificat.</translation>
-<translation id="1408789165795197664">Avansate...</translation>
 <translation id="1409390508152595145">Creați un utilizator monitorizat</translation>
 <translation id="1410197035576869800">Pictograma aplicației</translation>
 <translation id="1410616244180625362">Permiteți în continuare accesul <ph name="HOST" /> la camera dvs.</translation>
@@ -2658,7 +2657,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5184063094292164363">Consolă &amp;JavaScript</translation>
 <translation id="5184662919967270437">Se actualizează dispozitivul</translation>
 <translation id="5185386675596372454">Cea mai nouă versiune a „<ph name="EXTENSION_NAME" />” a fost dezactivată, deoarece necesită permisiuni suplimentare.</translation>
-<translation id="5187295959347858724">Acum sunteți conectat(ă) la <ph name="SHORT_PRODUCT_NAME" />. Marcajele dvs., istoricul și alte setări sunt sincronizate cu Contul dvs. Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vrea să descarce mai multe fișiere</translation>
 <translation id="5204673965307125349">Folosește funcția Powerwash pe dispozitiv și încearcă din nou.</translation>
@@ -4134,7 +4132,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="748138892655239008">Limitări de bază pentru certificate</translation>
 <translation id="7487067081878637334">Tehnologie</translation>
-<translation id="7487099628810939106">Întârziere înaintea clicului:</translation>
 <translation id="7487141338393529395">Activează verificarea îmbunătățită a ortografiei</translation>
 <translation id="7487969577036436319">Nu există componente instalate</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Deschide-le pe toate}=1{&amp;Deschide marcajul}few{&amp;Deschide-le pe toate (#)}other{&amp;Deschide-le pe toate (#)}}</translation>

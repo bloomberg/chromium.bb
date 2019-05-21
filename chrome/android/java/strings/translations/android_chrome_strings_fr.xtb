@@ -71,7 +71,6 @@
 <translation id="1446450296470737166">Autoriser le contrôle complet des appareils MIDI</translation>
 <translation id="1449080968331948513">L'économiseur de données est passé en mode simplifié</translation>
 <translation id="145097072038377568">Désactivée dans les paramètres Android</translation>
-<translation id="146329143005354472">Ajouter à mes applications</translation>
 <translation id="1477626028522505441">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de problèmes liés au serveur.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 autre)}one{ (+ # autre)}other{ (+ # autres)}}</translation>
 <translation id="1501480321619201731">Supprimer le groupe</translation>
@@ -543,7 +542,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
-<translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs (recommandé)</translation>
+<translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs de mouvement (recommandé)</translation>
 <translation id="5063480226653192405">Utilisation</translation>
 <translation id="5073204694187207510">Masquer la grille en plein écran</translation>
 <translation id="5082793167783849073">Comparez rapidement des pages en créant un groupe. Commencez par appuyer de manière prolongée sur un lien.</translation>
@@ -648,7 +647,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5797070761912323120">Google peut utiliser votre historique pour personnaliser la recherche, les annonces et d'autres services Google</translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Il y a # heure}one{Il y a # heure}other{Il y a # heures}}</translation>
-<translation id="5810288467834065221">© <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
+<translation id="5810288467834065221">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
 <translation id="5817918615728894473">Associer</translation>
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="5833984609253377421">Partager le lien</translation>

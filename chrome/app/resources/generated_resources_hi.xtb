@@ -265,7 +265,6 @@
 <translation id="140723521119632973">सेल्युलर एक्टिवेशन</translation>
 <translation id="1407489512183974736">मध्य में काटा गया</translation>
 <translation id="1408504635543854729">डिवाइस की सामग्री फ़ाइल ऐप्लिकेशन में एक्सप्लोर करें. सामग्री किसी एडमिन ने प्रतिबंधित की है और उसे बदला नहीं जा सकता.</translation>
-<translation id="1408789165795197664">बेहतर...</translation>
 <translation id="1409390508152595145">'निगरानी में रखा गया उपयोगकर्ता' बनाएं</translation>
 <translation id="1410197035576869800">ऐप्लिकेशन आइकॉन</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> को अपना कैमरा एक्सेस करते रहने दें</translation>
@@ -2657,7 +2656,6 @@
 <translation id="5184063094292164363">&amp;JavaScript कंसोल</translation>
 <translation id="5184662919967270437">आपका डिवाइस अपडेट हो रहा है</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" का नवीनतम वर्शन अक्षम कर दिया गया है क्‍योंकि इसे ज़्यादा अनुमतियों की आवश्‍यकता है.</translation>
-<translation id="5187295959347858724">आप अब <ph name="SHORT_PRODUCT_NAME" /> में प्रवेश हो गए हैं. आपके बुकमार्क, इतिहास, और अन्‍य सेटिंग आपके Google खाते में समन्‍वयित की जा रही हैं.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> एक से ज़्यादा फ़ाइलें डाउनलोड करना चाहते हैं</translation>
 <translation id="5204673965307125349">कृपया डिवाइस को पावरवॉश करें और फिर से कोशिश करें.</translation>
@@ -4133,7 +4131,6 @@
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="748138892655239008">प्रमाणपत्र मूल बाध्यताएं</translation>
 <translation id="7487067081878637334">तकनीक</translation>
-<translation id="7487099628810939106">क्‍लिक से पहले देरी:</translation>
 <translation id="7487141338393529395">'बेहतर वर्तनी जाँच' चालू करें</translation>
 <translation id="7487969577036436319">कोई घटक इंस्टॉल नहीं हैं</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;सभी खोलें}=1{&amp;बुकमार्क खोलें}one{&amp;सभी (#) खोलें}other{&amp;सभी (#) खोलें}}</translation>

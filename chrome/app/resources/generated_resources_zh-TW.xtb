@@ -265,7 +265,6 @@
 <translation id="140723521119632973">啟用行動網路</translation>
 <translation id="1407489512183974736">置中並剪裁</translation>
 <translation id="1408504635543854729">在「檔案」應用程式中探索裝置內容。內容受管理員限制，使用者無法修改。</translation>
-<translation id="1408789165795197664">進階...</translation>
 <translation id="1409390508152595145">建立受監管使用者</translation>
 <translation id="1410197035576869800">應用程式圖示</translation>
 <translation id="1410616244180625362">繼續允許 <ph name="HOST" /> 存取你的攝影機</translation>
@@ -2656,7 +2655,6 @@
 <translation id="5184063094292164363">JavaScript 控制台(&amp;J)</translation>
 <translation id="5184662919967270437">正在更新您的裝置</translation>
 <translation id="5185386675596372454">由於最新版本的 <ph name="EXTENSION_NAME" /> 需要更多權限，因此已經停用。</translation>
-<translation id="5187295959347858724">你已登入 <ph name="SHORT_PRODUCT_NAME" />，系統正在將你的書籤、瀏覽記錄和其他設定與「Google 帳戶」進行同步處理。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想要下載多個檔案</translation>
 <translation id="5204673965307125349">請在裝置上執行 Powerwash，然後再試一次。</translation>
@@ -4132,7 +4130,6 @@
 <translation id="7481312909269577407">往前</translation>
 <translation id="748138892655239008">憑證基本限制</translation>
 <translation id="7487067081878637334">科技資訊</translation>
-<translation id="7487099628810939106">點擊前延遲：</translation>
 <translation id="7487141338393529395">開啟進階拼字檢查功能</translation>
 <translation id="7487969577036436319">未安裝任何元件</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{開啟所有書籤(&amp;O)}=1{開啟書籤(&amp;O)}other{開啟全部 # 個書籤(&amp;O)}}</translation>

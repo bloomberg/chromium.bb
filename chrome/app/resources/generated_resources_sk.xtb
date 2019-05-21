@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Aktivácia mobilnej siete</translation>
 <translation id="1407489512183974736">Orezať na stred</translation>
 <translation id="1408504635543854729">Preskúmajte obsah zariadenia v aplikácii Súbory. Tento obsah bol obmedzený správcom a nedá sa upraviť.</translation>
-<translation id="1408789165795197664">Rozšírené...</translation>
 <translation id="1409390508152595145">Vytvoriť kontrolovaného používateľa</translation>
 <translation id="1410197035576869800">Ikona aplikácie</translation>
 <translation id="1410616244180625362">Aj naďalej povoliť stránkam <ph name="HOST" /> prístup ku kamere</translation>
@@ -2656,7 +2655,6 @@
 <translation id="5184063094292164363">Konzola &amp;JavaScript</translation>
 <translation id="5184662919967270437">Zariadenie sa aktualizuje</translation>
 <translation id="5185386675596372454">Najnovšia verzia doplnku „<ph name="EXTENSION_NAME" />“ bola zakázaná, pretože vyžaduje viac povolení.</translation>
-<translation id="5187295959347858724">Ste prihlásený/-á do prehliadača <ph name="SHORT_PRODUCT_NAME" />. Vaše záložky, história a ďalšie nastavenia sa synchronizujú s účtom Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> chce stiahnuť viacero súborov</translation>
 <translation id="5204673965307125349">Vykonajte v zariadení obnovu Powerwash a skúste to znova.</translation>
@@ -4132,7 +4130,6 @@
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="748138892655239008">Základné obmedzenia certifikátu</translation>
 <translation id="7487067081878637334">Technológia</translation>
-<translation id="7487099628810939106">Oneskorenie pred kliknutím:</translation>
 <translation id="7487141338393529395">Zapnutie rozšírenej kontroly pravopisu</translation>
 <translation id="7487969577036436319">Nie sú nainštalované žiadne komponenty</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Otvoriť všetky}=1{&amp;Otvoriť záložku}few{&amp;Otvoriť všetky (#)}many{&amp;Otvoriť všetky (#)}other{&amp;Otvoriť všetky (#)}}</translation>

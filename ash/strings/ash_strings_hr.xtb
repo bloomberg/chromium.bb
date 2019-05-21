@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Noćno svjetlo</translation>
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
 <translation id="2761704814324807722">Traka statusa, vrijeme <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Ponovno povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Pretraživanje</translation>
 <translation id="2803734122639935495">Za otključavanje unesite zaporku</translation>
 <translation id="2819276065543622893">Odjavit ćete se sada.</translation>
@@ -236,7 +235,6 @@
 <translation id="4477350412780666475">Sljedeća pjesma</translation>
 <translation id="4479639480957787382">Eternet</translation>
 <translation id="4481530544597605423">Neupareni uređaji</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: povezivanje...</translation>
 <translation id="4513946894732546136">Povratne informacije</translation>
 <translation id="4527045527269911712">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do potpune napunjenosti</translation>

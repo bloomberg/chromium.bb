@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Activation mobile</translation>
 <translation id="1407489512183974736">Recadrer et centrer</translation>
 <translation id="1408504635543854729">Explorez le contenu de l'appareil dans l'application Fichiers. L'accès à ce contenu étant limité par un administrateur, vous ne pouvez pas le modifier.</translation>
-<translation id="1408789165795197664">Paramètres avancés…</translation>
 <translation id="1409390508152595145">Créer un utilisateur supervisé</translation>
 <translation id="1410197035576869800">Icône de l'application</translation>
 <translation id="1410616244180625362">Continuer à autoriser <ph name="HOST" /> à accéder à votre caméra</translation>
@@ -2026,7 +2025,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4099060993766194518">Restaurer le moteur de recherche par défaut ?</translation>
 <translation id="4099874310852108874">Une erreur réseau s'est produite.</translation>
 <translation id="4100733287846229632">Très peu d'espace disponible sur l'appareil</translation>
-<translation id="4100853287411968461">Nouvelle limite d'utilisation</translation>
+<translation id="4100853287411968461">Nouvelle limite du temps d'utilisation</translation>
 <translation id="4103091233824664032">Saisissez votre mot de passe pour configurer le verrouillage de l'écran et la connexion</translation>
 <translation id="4104163789986725820">E&amp;xporter...</translation>
 <translation id="4107048419833779140">Identifier et exclure des périphériques de stockage</translation>
@@ -2658,7 +2657,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5184063094292164363">Console &amp;JavaScript</translation>
 <translation id="5184662919967270437">Mise à jour de l'appareil...</translation>
 <translation id="5185386675596372454">La nouvelle version de "<ph name="EXTENSION_NAME" />" a été désactivée, car elle nécessite davantage d'autorisations.</translation>
-<translation id="5187295959347858724">Vous êtes maintenant connecté à <ph name="SHORT_PRODUCT_NAME" />. Vos favoris, votre historique et d'autres paramètres sont synchronisés avec votre compte Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> souhaite télécharger plusieurs fichiers</translation>
 <translation id="5204673965307125349">Veuillez effectuer un Powerwash de l'appareil, puis réessayer.</translation>
@@ -4135,7 +4133,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="748138892655239008">Contraintes de base du certificat</translation>
 <translation id="7487067081878637334">Technologie</translation>
-<translation id="7487099628810939106">Délai avant un clic :</translation>
 <translation id="7487141338393529395">Activer le correcteur orthographique amélioré</translation>
 <translation id="7487969577036436319">Aucun composant installé</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{Tout &amp;ouvrir}=1{&amp;Ouvrir le favori}one{Tout &amp;ouvrir (#)}other{Tout &amp;ouvrir (#)}}</translation>
@@ -4277,7 +4274,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7704628569466676326">Associez votre clé de sécurité à cet appareil afin de pouvoir l'utiliser pour vous connecter à votre compte</translation>
 <translation id="7705276765467986571">Impossible de charger le modèle du favori.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7707108266051544351">L'utilisation des capteurs de mouvement ou de lumière a été bloquée pour ce site.</translation>
+<translation id="7707108266051544351">L'utilisation des capteurs de mouvement a été bloquée pour ce site.</translation>
 <translation id="7707922173985738739">Utiliser les données mobiles</translation>
 <translation id="7709152031285164251">Échec – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Caster…</translation>

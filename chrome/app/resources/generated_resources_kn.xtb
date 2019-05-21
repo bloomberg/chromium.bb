@@ -265,7 +265,6 @@
 <translation id="140723521119632973">ಸೆಲ್ಯುಲರ್ ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ</translation>
 <translation id="1407489512183974736">ಮಧ್ಯಕ್ಕೆ ಕತ್ತರಿಸಲಾಗಿರುವುದು</translation>
 <translation id="1408504635543854729">ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಸಾಧನದ ವಿಷಯವನ್ನು ಅನ್ವೇಷಿಸಿ. ನಿರ್ವಾಹಕರಿಂದ ವಿಷಯವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ ಮತ್ತು ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
-<translation id="1408789165795197664">ಸುಧಾರಿತ...</translation>
 <translation id="1409390508152595145">ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ</translation>
 <translation id="1410197035576869800">ಅಪ್ಲಿಕೇಶನ್ ಐಕಾನ್</translation>
 <translation id="1410616244180625362">ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಪ್ರವೇಶಿಸಲು <ph name="HOST" /> ಗೆ ಅನುಮತಿಸುವುದನ್ನು ಮುಂದುವರೆಸಿ</translation>
@@ -2659,7 +2658,6 @@
 <translation id="5184063094292164363">&amp;JavaScript ಕನ್ಸೋಲ್</translation>
 <translation id="5184662919967270437">ನಿಮ್ಮ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" ನ ಹೊಸ ಆವೃತ್ತಿಗೆ ಹೆಚ್ಚಿನ ಅನುಮತಿಗಳ ಅಗತ್ಯವಿರುವ ಕಾರಣ ಅದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
-<translation id="5187295959347858724">ಇದೀಗ ನೀವು<ph name="SHORT_PRODUCT_NAME" /> ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ. ನಿಮ್ಮ Google ಖಾತೆ ಜೊತೆ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ ಮತ್ತು ಇತರೆ ಸೆಟ್ಟಿಂಗ್‌‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ಬಹು ಫೈಲ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="5204673965307125349">ಸಾಧನವನ್ನು ಪವರ್‌ವಾಷ್ ಮಾಡಿ, ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -4138,7 +4136,6 @@
 <translation id="7481312909269577407">ಫಾರ್ವರ್ಡ್</translation>
 <translation id="748138892655239008">ಪ್ರಮಾಣಪತ್ರ ಆಧಾರಿತ ನಿರ್ಬಂಧಗಳು</translation>
 <translation id="7487067081878637334">ತಂತ್ರಜ್ಞಾನ</translation>
-<translation id="7487099628810939106">ಕ್ಲಿಕ್ ಮಾಡುವ ಮೊದಲು ವಿಳಂಬ:</translation>
 <translation id="7487141338393529395">ವರ್ಧಿತ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="7487969577036436319">ಯಾವುದೇ ಕಾಂಪೊನೆಂಟ್‌ಗಳನ್ನು ಸ್ಥಾಪಿಸಿಲ್ಲ</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;ಎಲ್ಲವನ್ನೂ ತೆರೆಯಿರಿ}=1{&amp;ಬುಕ್‌ಮಾರ್ಕ್ ತರೆಯಿರಿ}one{&amp;ಎಲ್ಲಾ (#) ಅನ್ನು ತೆರೆಯಿರಿ}other{&amp;ಎಲ್ಲಾ (#) ಅನ್ನು ತೆರೆಯಿರಿ}}</translation>

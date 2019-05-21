@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Ánh sáng đêm</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Đang kết nối lại với <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">Nhập mật khẩu để mở khóa</translation>
 <translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
@@ -236,7 +235,6 @@
 <translation id="4477350412780666475">Bản nhạc tiếp theo</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Thiết bị được hủy ghép nối</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Đang kết nối...</translation>
 <translation id="4513946894732546136">Phản hồi</translation>
 <translation id="4527045527269911712">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"muốn được phép ghép nối.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> cho đến khi đầy</translation>

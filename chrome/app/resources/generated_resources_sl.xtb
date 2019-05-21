@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Aktiviranje mobilnega omrežja</translation>
 <translation id="1407489512183974736">Na sredino in obrezano</translation>
 <translation id="1408504635543854729">Vsebino naprave raziščite z aplikacijo Datoteke. Vsebina je omejena glede na skrbnika in je ni mogoče spreminjati.</translation>
-<translation id="1408789165795197664">Dodatno ...</translation>
 <translation id="1409390508152595145">Ustvari zaščitenega uporabnika</translation>
 <translation id="1410197035576869800">Ikona aplikacije</translation>
 <translation id="1410616244180625362">Gostitelju <ph name="HOST" /> še naprej omogočaj dostop do kamere</translation>
@@ -2658,7 +2657,6 @@
 <translation id="5184063094292164363">Konzola &amp;JavaScript</translation>
 <translation id="5184662919967270437">Posodabljanje naprave</translation>
 <translation id="5185386675596372454">Najnovejša različica razširitve »<ph name="EXTENSION_NAME" />« je bila onemogočena, ker zahteva več dovoljenj.</translation>
-<translation id="5187295959347858724">Zdaj ste prijavljeni v <ph name="SHORT_PRODUCT_NAME" />. Zaznamki, zgodovina in druge nastavitve se sinhronizirajo z vašim Google Računom.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> želi prenesti več datotek</translation>
 <translation id="5204673965307125349">Opravite postopek »powerwash« v napravi in poskusite znova.</translation>
@@ -4136,7 +4134,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="748138892655239008">Osnovne omejitve potrdila</translation>
 <translation id="7487067081878637334">Tehnologija</translation>
-<translation id="7487099628810939106">Zakasnitev pred klikom:</translation>
 <translation id="7487141338393529395">Vklop izboljšanega preverjanja črkovanja</translation>
 <translation id="7487969577036436319">Ni nameščenih komponent</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Odpiranje vseh}=1{&amp;Odpiranje zaznamka}one{&amp;Odpiranje vseh (#)}two{&amp;Odpiranje vseh (#)}few{&amp;Odpiranje vseh (#)}other{&amp;Odpiranje vseh (#)}}</translation>

@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Nakties šviesa</translation>
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="2761704814324807722">Būsenos dėklas, laikas <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Iš naujo prisijungiama prie „<ph name="NAME" />“</translation>
 <translation id="2792498699870441125">„Alt“ + paieškos klavišas</translation>
 <translation id="2803734122639935495">Kad atrakintumėte, įveskite slaptažodį</translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
@@ -236,7 +235,6 @@
 <translation id="4477350412780666475">Kitas takelis</translation>
 <translation id="4479639480957787382">Eternetas</translation>
 <translation id="4481530544597605423">Atsieti įrenginiai</translation>
-<translation id="4508225577814909926">„<ph name="NAME" />“: jungiamasi...</translation>
 <translation id="4513946894732546136">Atsiliepimai</translation>
 <translation id="4527045527269911712">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti.</translation>
 <translation id="453661520163887813">Liko <ph name="TIME" />, kol bus visiškai įkrautas</translation>

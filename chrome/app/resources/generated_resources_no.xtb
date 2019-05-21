@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Aktivering med mobiltelefon</translation>
 <translation id="1407489512183974736">Midstill og beskjær</translation>
 <translation id="1408504635543854729">Utforsk innholdet på enheten med Filer-appen. En administrator har gjort innholdet tilgangsbegrenset, så det kan ikke endres.</translation>
-<translation id="1408789165795197664">Avansert</translation>
 <translation id="1409390508152595145">Opprett administrert bruker</translation>
 <translation id="1410197035576869800">Appikon</translation>
 <translation id="1410616244180625362">Fortsett å tillate <ph name="HOST" /> å bruke kameraet ditt</translation>
@@ -2651,7 +2650,6 @@
 <translation id="5184063094292164363">&amp;JavaScript-konsoll</translation>
 <translation id="5184662919967270437">Oppdaterer enheten</translation>
 <translation id="5185386675596372454">Den nyeste versjonen av <ph name="EXTENSION_NAME" /> er deaktivert fordi den krever ytterligere tillatelser.</translation>
-<translation id="5187295959347858724">Du er nå pålogget <ph name="SHORT_PRODUCT_NAME" />. Bokmerkene, loggen og de andre innstillingene dine blir synkronisert med Google-kontoen din.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ber om å laste ned flere filer</translation>
 <translation id="5204673965307125349">Utfør Powerwash på enheten, og prøv på nytt.</translation>
@@ -4127,7 +4125,6 @@
 <translation id="7481312909269577407">Frem</translation>
 <translation id="748138892655239008">Hovedbegrensninger for sertifikat</translation>
 <translation id="7487067081878637334">Teknologi</translation>
-<translation id="7487099628810939106">Forsinkelse før klikk:</translation>
 <translation id="7487141338393529395">Slå på forbedret stavekontroll</translation>
 <translation id="7487969577036436319">Ingen komponenter er installert</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Åpne alle}=1{&amp;Åpne bokmerket}other{&amp;Åpne alle (#)}}</translation>

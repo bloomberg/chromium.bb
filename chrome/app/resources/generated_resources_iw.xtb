@@ -265,7 +265,6 @@
 <translation id="140723521119632973">הפעלה סלולרית</translation>
 <translation id="1407489512183974736">חתוך במרכז</translation>
 <translation id="1408504635543854729">עיין בתוכן של המכשיר באמצעות האפליקציה 'קבצים'. התוכן מוגבל על-ידי מנהל מערכת, ואי אפשר לשנות אותו.</translation>
-<translation id="1408789165795197664">מתקדם...</translation>
 <translation id="1409390508152595145">צור משתמש בפיקוח</translation>
 <translation id="1410197035576869800">סמל האפליקציה</translation>
 <translation id="1410616244180625362">המשך לאפשר ל-<ph name="HOST" /> לגשת למצלמה שלך</translation>
@@ -2655,7 +2654,6 @@
 <translation id="5184063094292164363">‏קונסולת JavaScript&amp; </translation>
 <translation id="5184662919967270437">מעדכן את המכשיר שלך</translation>
 <translation id="5185386675596372454">הגרסה החדשה ביותר של "<ph name="EXTENSION_NAME" />" הושבתה מכיוון שהיא דורשת הרשאות נרחבות יותר.</translation>
-<translation id="5187295959347858724">‏נכנסת ל-<ph name="SHORT_PRODUCT_NAME" />. הסימניות, ההיסטוריה והגדרות אחרות שלך מסתנכרנות עם חשבון Google שלך.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> ‏(<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> רוצה להוריד מספר קבצים</translation>
 <translation id="5204673965307125349">‏אפשר לבצע Powerwash במכשיר ולנסות שוב.</translation>
@@ -4131,7 +4129,6 @@
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="748138892655239008">מגבלות בסיסיות של אישור </translation>
 <translation id="7487067081878637334">טכנולוגיה</translation>
-<translation id="7487099628810939106">השהיה לפני לחיצה:</translation>
 <translation id="7487141338393529395">הפעלה של בדיקת איות משופרת</translation>
 <translation id="7487969577036436319">לא מותקנים רכיבים</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;פתח הכל}=1{&amp;פתח סימניה}two{&amp;פתח הכל (2)}many{&amp;פתח הכל (#)}other{&amp;פתח הכל (#)}}</translation>

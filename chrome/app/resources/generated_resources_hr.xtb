@@ -266,7 +266,6 @@
 <translation id="140723521119632973">Mobilna aktivacija</translation>
 <translation id="1407489512183974736">Centriraj obrezano</translation>
 <translation id="1408504635543854729">Istražite sadržaj ovog uređaja u aplikaciji Datoteke. Administrator nameće ograničenja za sadržaj, pa se sadržaj ne može mijenjati.</translation>
-<translation id="1408789165795197664">Napredno...</translation>
 <translation id="1409390508152595145">Izradi nadziranog korisnika</translation>
 <translation id="1410197035576869800">Ikona aplikacije</translation>
 <translation id="1410616244180625362">Nastavi dopuštati hostu <ph name="HOST" /> pristup kameri</translation>
@@ -2671,7 +2670,6 @@
 <translation id="5184063094292164363">&amp;Konzola JavaScripta</translation>
 <translation id="5184662919967270437">Ažuriranje uređaja</translation>
 <translation id="5185386675596372454">Najnovija verzija "<ph name="EXTENSION_NAME" />" onemogućena je jer zahtijeva više dozvola.</translation>
-<translation id="5187295959347858724">Sada ste prijavljeni na uslugu <ph name="SHORT_PRODUCT_NAME" />. Vaše oznake, povijest i druge postavke sinkroniziraju se s vašim Google računom.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> želi preuzeti više datoteka</translation>
 <translation id="5202089186707505116">Želite li omogućiti toj web-lokaciji pristup vašim VR senzorima?</translation>
@@ -4153,7 +4151,6 @@
 <translation id="7481312909269577407">Naprijed</translation>
 <translation id="748138892655239008">Osnovno ograničenje certifikata</translation>
 <translation id="7487067081878637334">Tehnologija</translation>
-<translation id="7487099628810939106">Odgoda prije klika:</translation>
 <translation id="7487141338393529395">Uključivanje poboljšane provjere pravopisa</translation>
 <translation id="7487969577036436319">Nema instaliranih komponenti</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Otvori sve}=1{&amp;Otvori oznaku}one{&amp;Otvori sve (#)}few{&amp;Otvori sve (#)}other{&amp;Otvori sve (#)}}</translation>

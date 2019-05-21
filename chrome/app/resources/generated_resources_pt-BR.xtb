@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Ativação da rede celular</translation>
 <translation id="1407489512183974736">Cortar para centralizar</translation>
 <translation id="1408504635543854729">Explore o conteúdo do dispositivo no app Arquivos. O conteúdo é restrito por um administrador e não pode ser modificado.</translation>
-<translation id="1408789165795197664">Avançado...</translation>
 <translation id="1409390508152595145">Criar usuário supervisionado</translation>
 <translation id="1410197035576869800">Ícone do app</translation>
 <translation id="1410616244180625362">Continuar permitindo que <ph name="HOST" /> acesse sua câmera</translation>
@@ -2658,7 +2657,6 @@
 <translation id="5184063094292164363">&amp;Console JavaScript</translation>
 <translation id="5184662919967270437">Atualizando o dispositivo</translation>
 <translation id="5185386675596372454">A versão mais recente de "<ph name="EXTENSION_NAME" />" foi desativada porque requer mais permissões.</translation>
-<translation id="5187295959347858724">Você está conectado a <ph name="SHORT_PRODUCT_NAME" />. Seus favoritos, o histórico e outras configurações estão sendo sincronizados com sua Conta do Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422">Solicitação do download de vários arquivos feita por <ph name="ORIGIN" /></translation>
 <translation id="5204673965307125349">Execute o Powerwash do dispositivo e tente novamente.</translation>
@@ -4136,7 +4134,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="748138892655239008">Restrições básicas do certificado </translation>
 <translation id="7487067081878637334">Tecnologia</translation>
-<translation id="7487099628810939106">Atraso antes de clicar:</translation>
 <translation id="7487141338393529395">Ativar a verificação ortográfica aprimorada</translation>
 <translation id="7487969577036436319">Nenhum componente instalado</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Abrir tudo}=1{&amp;Abrir favorito}one{&amp;Abrir tudo (#)}other{&amp;Abrir tudo (#)}}</translation>

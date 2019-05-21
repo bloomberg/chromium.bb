@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Activació d'una xarxa mòbil</translation>
 <translation id="1407489512183974736">Retallat al centre</translation>
 <translation id="1408504635543854729">Explora el contingut del dispositiu a l'aplicació Fitxers. L'administrador ha restringit el contingut i no es pot modificar.</translation>
-<translation id="1408789165795197664">Configuració avançada...</translation>
 <translation id="1409390508152595145">Crea un usuari supervisat</translation>
 <translation id="1410197035576869800">Icona de l'aplicació</translation>
 <translation id="1410616244180625362">Continua permetent que <ph name="HOST" /> accedeixi a la càmera</translation>
@@ -2653,7 +2652,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5184063094292164363">Consola de &amp;JavaScript</translation>
 <translation id="5184662919967270437">S'està actualitzant el dispositiu</translation>
 <translation id="5185386675596372454">La darrera versió de "<ph name="EXTENSION_NAME" />" s'ha desactivat perquè necessita més permisos.</translation>
-<translation id="5187295959347858724">Ara teniu la sessió iniciada a <ph name="SHORT_PRODUCT_NAME" />. Les vostres adreces d'interès, l'historial i altres opcions de configuració s'estan sincronitzant amb el vostre compte de Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vol baixar diversos fitxers</translation>
 <translation id="5204673965307125349">Fes un Powerwash del dispositiu i torna-ho a provar.</translation>
@@ -4131,7 +4129,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="748138892655239008">Restriccions bàsiques de certificats</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
-<translation id="7487099628810939106">Retard abans de fer clic:</translation>
 <translation id="7487141338393529395">Activa el corrector ortogràfic millorat</translation>
 <translation id="7487969577036436319">No hi ha cap component instal·lat</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Obre-les totes}=1{&amp;Obre una adreça d'interès}other{&amp;Obre-les totes (#)}}</translation>

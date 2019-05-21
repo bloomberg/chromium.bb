@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Мобилна активација</translation>
 <translation id="1407489512183974736">Опсеци централно</translation>
 <translation id="1408504635543854729">Истражите садржај уређаја у апликацији Датотеке. Администратор ограничава садржај и садржај не може да се мења.</translation>
-<translation id="1408789165795197664">Напредне опције</translation>
 <translation id="1409390508152595145">Направи корисника под надзором</translation>
 <translation id="1410197035576869800">Икона апликације</translation>
 <translation id="1410616244180625362">И даље дозвољавај да <ph name="HOST" /> приступа камери</translation>
@@ -2654,7 +2653,6 @@
 <translation id="5184063094292164363">&amp;JavaScript конзола</translation>
 <translation id="5184662919967270437">Ажурирање уређаја</translation>
 <translation id="5185386675596372454">Најновија верзија додатка „<ph name="EXTENSION_NAME" />“ је онемогућена јер захтева још дозвола.</translation>
-<translation id="5187295959347858724">Сада сте пријављени на <ph name="SHORT_PRODUCT_NAME" />. Обележивачи, историја и друга подешавања се синхронизују са Google налогом.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> жели да преузме више датотека</translation>
 <translation id="5204673965307125349">Обавите Powerwash на уређају и пробајте поново.</translation>
@@ -4132,7 +4130,6 @@
 <translation id="7481312909269577407">Проследи</translation>
 <translation id="748138892655239008">Основна ограничења сертификата</translation>
 <translation id="7487067081878637334">Технологија</translation>
-<translation id="7487099628810939106">Одлагање клика:</translation>
 <translation id="7487141338393529395">Укључите побољшану проверу правописа</translation>
 <translation id="7487969577036436319">Није инсталирана ниједна компонента</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Отвори све}=1{&amp;Отвори обележивач}one{&amp;Отвори све (#)}few{&amp;Отвори све (#)}other{&amp;Отвори све (#)}}</translation>

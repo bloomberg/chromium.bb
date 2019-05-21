@@ -116,7 +116,6 @@
 <translation id="2718395828230677721">நைட் லைட்</translation>
 <translation id="2727977024730340865">குறைந்த சக்தியிலான சார்ஜர் செருகப்பட்டுள்ளது. பேட்டரி சார்ஜிங் நம்பகமானதாக இல்லாமல் இருக்கலாம்.</translation>
 <translation id="2761704814324807722">நிலைத் தட்டு, நேரம் <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581"><ph name="NAME" /> உடன் மீண்டும் இணைக்கிறது</translation>
 <translation id="2792498699870441125">Alt+தேடல்</translation>
 <translation id="2803734122639935495">திறக்க, உங்கள் கடவுச்சொல்லை உள்ளிடவும்</translation>
 <translation id="2819276065543622893">இப்போது வெளியேற்றப்படுவீர்கள்.</translation>
@@ -234,7 +233,6 @@
 <translation id="4477350412780666475">அடுத்த ட்ராக்</translation>
 <translation id="4479639480957787382">ஈத்தர்நெட்</translation>
 <translation id="4481530544597605423">இணைக்காத சாதனங்கள்</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: இணைக்கிறது...</translation>
 <translation id="4513946894732546136">கருத்து</translation>
 <translation id="4527045527269911712">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ஆகும் 100% சார்ஜாக</translation>

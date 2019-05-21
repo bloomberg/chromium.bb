@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Aktivering af mobildata</translation>
 <translation id="1407489512183974736">Centrér, beskær</translation>
 <translation id="1408504635543854729">Udforsk enhedens indhold i appen Filer. Indholdet er begrænset af en administrator og kan ikke redigeres.</translation>
-<translation id="1408789165795197664">Avanceret...</translation>
 <translation id="1409390508152595145">Opret administreret bruger</translation>
 <translation id="1410197035576869800">Appikon</translation>
 <translation id="1410616244180625362">Tillad fortsat, at <ph name="HOST" /> har adgang til dit kamera</translation>
@@ -786,7 +785,7 @@
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2220572644011485463">Pin- eller adgangskode</translation>
 <translation id="2224444042887712269">Denne indstilling tilhører <ph name="OWNER_EMAIL" />.</translation>
-<translation id="2224471211857467033">Handlinger foretaget i hjælpetilstand</translation>
+<translation id="2224471211857467033">Hjælpefunktioner</translation>
 <translation id="2224551243087462610">Rediger mappenavn</translation>
 <translation id="2226449515541314767">Dette website er blevet blokeret fra at have fuld kontrol over MIDI-enheder.</translation>
 <translation id="2226720438730111184">Fortæl os, hvad der sker</translation>
@@ -2656,7 +2655,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5184063094292164363">&amp;JavaScript-konsol</translation>
 <translation id="5184662919967270437">Opdaterer din enhed</translation>
 <translation id="5185386675596372454">Den nyeste version af "<ph name="EXTENSION_NAME" />" er blevet deaktiveret, fordi den kræver flere tilladelser.</translation>
-<translation id="5187295959347858724">Du er nu logget ind på <ph name="SHORT_PRODUCT_NAME" />. Dine bogmærker, din historik og dine andre indstillinger synkroniseres med din Google-konto.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vil downloade flere filer</translation>
 <translation id="5204673965307125349">Udfør en powerwash på enheden, og prøv igen.</translation>
@@ -4133,7 +4131,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7481312909269577407">Frem</translation>
 <translation id="748138892655239008">Grundlæggende begrænsninger for certifikat</translation>
 <translation id="7487067081878637334">Teknologi</translation>
-<translation id="7487099628810939106">Forsinkelse før klik:</translation>
 <translation id="7487141338393529395">Aktivér forbedret stavekontrol</translation>
 <translation id="7487969577036436319">Der er ikke installeret nogen komponenter</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Åbn alle}=1{&amp;Åbn bogmærke}one{&amp;Åbn (#)}other{&amp;Åbn alle (#)}}</translation>

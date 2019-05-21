@@ -1077,6 +1077,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui reegel AutoplayAllowed on seatud väärtusele Väär, on selles reeglis määratud URL-i mustrite esitamine lubatud.
 
       Pange tähele, et kui <ph name="PRODUCT_NAME" /> töötab ja reeglit muudetakse, rakendub see ainult uutele vahelehtedele. Seetõttu võite teatud vahelehtedel märgata eelmist käitumismustrit.</translation>
+<translation id="284288632677954003">Selle XML-faili URL, mis sisaldab URL-e, mis ei tohi kunagi aktiveerida brauseri vahetamist.</translation>
 <translation id="285480231336205327">Luba kõrge kontrastiga režiim</translation>
 <translation id="2854919890879212089"><ph name="PRODUCT_NAME" /> kasutab selle seade puhul printimise eelvaates vaikevalikuna süsteemi vaikeprinterit, mitte viimati kasutatud printerit.
 
@@ -1249,6 +1250,15 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="3096595567015595053">Lubatud pistikprogrammide loend</translation>
 <translation id="3101501961102569744">Valimine, kuidas määrata puhverserveri seaded</translation>
 <translation id="3101709781009526431">Kuupäev ja kellaaeg</translation>
+<translation id="3114411414586006215">Reegel haldab loendit veebisaitidest, mis ei põhjusta kunagi brauserivahetust.
+
+      Pange tähele, et reegliga <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> saab elemente sellesse loendisse ka lisada.
+
+      Kui reegel on määramata, ei lisata loendisse ühtki veebisaiti.
+
+      Kui reegel on määratud, käsitletakse iga üksust reeglina (sarnaselt reegliga <ph name="URL_LIST_POLICY_NAME" />). Loogika on aga vastupidine: kattuvaid reegleid ei avata alternatiivses brauseris.
+
+      Erinevalt reeglist <ph name="URL_LIST_POLICY_NAME" /> kehtivad reeglid mõlemas suunas. See tähendab, et kui Internet Exploreri pistikprogramm on olemas ja lubatud, haldab see ka seda, kas<ph name="IE_PRODUCT_NAME" /> peaks avama need URL-id teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Hoiatus. DHE eemaldatakse teenusest <ph name="PRODUCT_NAME" /> pärast versiooni 57 täielikult (umbes 2017. aasta märtsis) ja edaspidi see reegel enam ei tööta.
 
       Kui reegel on määramata või selle väärtuseks on määratud Väär, ei ole DHE šifreerimiskomplektid TLS-is lubatud. Selle väärtuseks võib olla määratud ka Tõene, et lubada DHE šifreerimiskomplektid ja et säilitada ühilduvus aegunud serveriga. See on ajutine meede ja server tuleks ümber seadistada.
@@ -1442,6 +1452,17 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="3550875587920006460">Lubab värskenduste kontrollimiseks kohandatud ajakava määramise. See kehtib seadme kõigi kasutajate ja liideste puhul. Kui see on määratud, otsib seade värskendusi selle ajakava järgi. See reegel tuleb eemaldada, et ajastatud värskenduste otsimine tühistada.</translation>
 <translation id="355118380775352753">Alternatiivses brauseris avatavad veebisaidid</translation>
 <translation id="3554984410014457319">Google'i assistendile loa andmine kuulata häälega aktiveerimise fraasi</translation>
+<translation id="3557208865710006939">Sundlubab õigekirjakontrolli keeled. Loendis olevaid tundmatuid keeli eiratakse.
+
+      Kui selle reegli lubate, lubatakse õigekirjakontroll määratud keelte jaoks, mis lisanduvad keeltele, mille jaoks kasutaja on õigekirjakontrolli lubanud.
+
+      Kui jätate reegli määramata või keelate selle, ei mõjuta see kasutaja õigekirjakontrolli eelistusi.
+
+      Kui reegli <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> väärtuseks määratakse Väär, siis ei ole sellel reeglil mõju.
+
+      Kui keel on lisatud nii sellesse reeglisse kui ka reeglisse <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, prioriseeritakse seda reeglit ja õigekirjakontrolli keel lubatakse.
+
+      Praegu toetatakse järgmisi keeli: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Kasutajad saavad Chrome OS-i väljalaskekanalit seadistada</translation>
 <translation id="3575011234198230041">HTTP autentimine</translation>
 <translation id="3577251398714997599">Sekkuvate reklaamidega saitide reklaamiseaded</translation>
@@ -1795,6 +1816,9 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
 
           Kui reegel on määramata, on nakkeklahvid algselt keelatud, kuid kasutaja võib need igal ajal lubada.</translation>
+<translation id="4171331498167688968">Kui reegel on määratud väärtusele Väär, on kolmanda osapoole tarkvaral lubatud sisestada Chrome'i protsessidesse täitmiskoodi. Kui reegel on määramata või seatud väärtusele Tõene, on kolmandal osapoolel keelatud täitmiskoodi Chrome'i protsessidesse sisestada.
+
+      Olenemata selle reegli väärtusest ei blokeeri brauser praegu kolmanda osapoole tarkvara puhul täitmiskoodi sisestamist selle protsessidesse seadmes, mis on liitunud üksuse <ph name="MS_AD_NAME" /> domeeniga.</translation>
 <translation id="4183229833636799228">Pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> vaikeseade</translation>
 <translation id="4192388905594723944">URL kaugjuurdepääsuga kliendi autentimismärgi kinnitamiseks</translation>
 <translation id="4203389617541558220">Seadme tööaja piiramine, ajastades automaatsed taaskäivitused.
@@ -2163,6 +2187,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
 <translation id="5085647276663819155">Printimise eelvaate keelamine</translation>
 <translation id="5090209345759901501">Flash-sisu seade laiendamine kogu sisule</translation>
+<translation id="5090791951240382356">Eri allikatest pärinevate sõnastiku reeglite liitmise lubamine</translation>
 <translation id="5093540029655764852">Määrab sageduse (päevades), kui tihti klient seadme konto parooli muudab. Klient loob parooli juhuslikult ja see pole kasutajale nähtav.
 
       Sarnaselt kasutaja paroolidele tuleb seadme paroole regulaarselt muuta. Kui see reegel keelatakse või määratakse suur päevade arv, võib see turvalisusele negatiivselt mõjuda, kuna see annab võimalikele ründajatele rohkem aega seadme konto parool välja uurida ja seda kasutada.
@@ -3105,6 +3130,17 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="6923366716660828830">Määrab vaikeotsingupakkuja nime. Kui see jäetakse tühjaks või määramata, siis kasutatakse otsingu URL-i määratud hosti nime.
 
           See reegel kehtib vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
+<translation id="6924223708804692571">Sundkeelab õigekirjakontrolli keeled. Loendis olevaid tundmatuid keeli eiratakse.
+
+      Kui lubate reegli, keelatakse õigekirjakontroll määratud keelte jaoks. Kasutaja saab siiski loendist puuduvate keelte jaoks õigekirjakontrolli lubada või keelata.
+
+      Kui jätate reegli määramata või keelate selle, ei mõjuta see kasutaja õigekirjakontrolli eelistusi.
+
+      Kui reegli <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> väärtuseks määratakse Väär, siis ei ole sellel reeglil mõju.
+
+      Kui keel on lisatud nii sellesse reeglisse kui ka reeglisse <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, prioriseeritakse seda reeglit ja õigekirjakontrolli keel lubatakse.
+
+      Praegu toetatakse järgmisi keeli: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Pikema külje dupleksprintimise lubamine</translation>
 <translation id="6931242315485576290">Keela andmete sünkroonimine Google'iga</translation>
 <translation id="6936894225179401731">Määrab puhverserveri samaaegsete ühenduste maksimumarvu.
@@ -3253,6 +3289,15 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
       Kui eeskiri on seadistatud, on rakenduste kogum fikseeritud ja kasutaja ei saa seda muuta.
 
       Kui jätate eeskirja määramata, siis võib kasutaja käivitis kinnitatud rakenduste loendit muuta.</translation>
+<translation id="713121532817834879">Reegel on URL, mis viitab XML-failile, mis on Internet Exploreri reegliga <ph name="IEEM_SITELIST_POLICY" /> samas vormingus. See laadib reeglid XML-failist ega jaga reegleid Internet Exploreriga.
+
+      XML-failis olevad reeglid rakendatakse samal viisil kui reegel <ph name="GREYLIST_POLICY_NAME" />. See tähendab, et need reeglid takistavad teenusel <ph name="PRODUCT_NAME" /> avamast alternatiivset brauserit. Samuti takistavad need alternatiivsel brauseril avamast teenust <ph name="PRODUCT_NAME" />.
+
+      Kui see reegel on määramata või selleks pole määratud kehtivat URL-i, ei kasuta teenus <ph name="PRODUCT_NAME" /> seda selliste reeglite allikana, mis ei aktiveeri brauseri vahetamist.
+
+      Kui reeglis on määratud kehtiv URL, laadib <ph name="PRODUCT_NAME" /> URL-ilt saitide loendi alla ja rakendab reeglid samamoodi kui reegliga <ph name="SITELIST_POLICY_NAME" /> seadistamise korral.
+
+      Vaadake lisateavet Internet Exploreri reegli <ph name="IEEM_SITELIST_POLICY" /> kohta: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL-id, millele antakse ilma küsimata juurdepääs videojäädvustusseadmetele</translation>
 <translation id="7138678301420049075">Muu</translation>
 <translation id="7140629953254369759">Juhendab operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kasutama konkreetse nimega tegumite ajakava koostaja konfiguratsiooni.
@@ -3300,6 +3345,15 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
           Automaatne taasesitus on lubatud ainult domeenidel, mis on reeglis <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> selgesõnaliselt loetletud. Kui soovite lubada automaatse taasesituse kõigil saitidel, kaaluge sellesse loendisse protokollide http://* ja https://* lisamist.
 
           Kui see reegel on määramata, saab kasutaja seda seadet käsitsi muuta.</translation>
+<translation id="7222749588229362483">Lubab valitud reeglite liitmise, kui need pärinevad eri allikatest ning neil on sama ulatus ja tase.
+
+        Liitmine hõlmab iga allika sõnastiku esmataseme klahvide liitmist. Kui klahvide vahel on konflikt, rakendatakse kõige kõrgema prioriteediga allikast pärinev klahv.
+
+        Kui reegel on loendis ja kahe allika vahel, millel on sama ulatus ja tase, ilmneb konflikt, liidetakse väärtused uude reeglisõnastikku.
+
+        Kui reegel on loendis ja kahe allika vahel, millel on erinev ulatus ja tase, ilmneb konflikt, rakendatakse kõrgeima prioriteediga reegel.
+
+        Kui reegel puudub loendist ning allikate, ulatuste ja/või tasemete vahel ilmneb konflikt, rakendatakse kõrgeima prioriteediga reegel.</translation>
 <translation id="7229975860249300121">Sisaldab regulaaravaldist, mis määrab, millised Google'i kontod saab teenuses <ph name="PRODUCT_NAME" /> brauseri peamisteks kontodeks seadistada.
 
       Kui kasutaja üritab määrata brauseri peamist kontot, mille kasutajanimi ei kattu mustriga, kuvatakse vastav veasõnum.
@@ -3936,6 +3990,12 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Kui reegli väärtuseks määratakse „Replace”, asendatakse kasutaja GPO-des olevad kasutajareeglid arvuti GPO-des olevate kasutajareeglitega (kasutaja GPO-sid eiratakse).</translation>
 <translation id="8465065632133292531">Parameetrid Instant-URL-i jaoks, mis kasutab POST-meetodit</translation>
+<translation id="8465746466645315861">Kui see reegel on määramata, saab kasutaja õigekirjakontrolli keeleseadetes lubada või keelata.
+
+      Kui selle reegli väärtuseks määratakse Tõene, siis on õigekirjakontroll lubatud ja kasutaja ei saa seda keelata. Operatsioonisüsteemides <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> ja <ph name="LINUX_OS_NAME" /> saab õigekirjakontrolli keeled eraldi sisse või välja lülitada, et kasutaja saaks õigekirjakontrolli keelata, lülitades iga õigekirjakontrolli keele välja. Selle vältimiseks saab teatud õigekirjakontrolli keeled reegliga <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> sundlubada.
+
+      Kui selle reegli väärtuseks määratakse Väär, siis on õigekirjakontroll keelatud ja kasutaja ei saa seda lubada. Kui selle reegli väärtuseks on määratud Väär, siis puudub reeglitel <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> ja <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> mõju.
+      </translation>
 <translation id="847472800012384958">Keela kõikidel saitidel hüpikakende näitamine</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Eemaldatakse protokolli https:// URL-ide privaatsuse ja turvalisusega seotud tundlikud osad enne, kui need saadetakse PAC-skriptidele (puhverserveri automaatne seadistamine), mida teenus <ph name="PRODUCT_NAME" /> puhverserveri lahendamisel kasutab.

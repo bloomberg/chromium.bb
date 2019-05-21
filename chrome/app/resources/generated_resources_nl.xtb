@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Mobiele activering</translation>
 <translation id="1407489512183974736">Midden bijsnijden</translation>
 <translation id="1408504635543854729">Verken de content op het apparaat in de app Bestanden. De content wordt beperkt door een beheerder en kan niet worden aangepast.</translation>
-<translation id="1408789165795197664">Geavanceerd...</translation>
 <translation id="1409390508152595145">Gebruiker met beperkte rechten maken</translation>
 <translation id="1410197035576869800">App-pictogram</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> toegang tot je camera blijven geven</translation>
@@ -2658,7 +2657,6 @@
 <translation id="5184063094292164363">&amp;JavaScript-console</translation>
 <translation id="5184662919967270437">Je apparaat updaten</translation>
 <translation id="5185386675596372454">De nieuwste versie van '<ph name="EXTENSION_NAME" />' is uitgeschakeld omdat er meer rechten voor nodig zijn.</translation>
-<translation id="5187295959347858724">Je bent nu ingelogd bij <ph name="SHORT_PRODUCT_NAME" />. Je bladwijzers, geschiedenis en andere instellingen worden gesynchroniseerd met je Google-account.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> wil meerdere bestanden downloaden</translation>
 <translation id="5204673965307125349">Voer een powerwash uit op het apparaat en probeer het opnieuw.</translation>
@@ -4134,7 +4132,6 @@
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="748138892655239008">Basisvereisten voor certificaten</translation>
 <translation id="7487067081878637334">Technologie</translation>
-<translation id="7487099628810939106">Vertragen vóór klikken:</translation>
 <translation id="7487141338393529395">Verbeterde spellingcontrole inschakelen</translation>
 <translation id="7487969577036436319">Er zijn geen componenten geïnstalleerd</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{Alles &amp;openen}=1{Bladwijzer &amp;openen}other{Alles (#) &amp;openen}}</translation>

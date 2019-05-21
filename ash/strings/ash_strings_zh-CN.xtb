@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">夜间模式</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
-<translation id="277257480934873581">正在重新连接到 <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="2803734122639935495">要解锁此设备，请输入您的密码</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>
@@ -236,7 +235,6 @@
 <translation id="4477350412780666475">下一曲</translation>
 <translation id="4479639480957787382">以太网</translation>
 <translation id="4481530544597605423">未配对的设备</translation>
-<translation id="4508225577814909926"><ph name="NAME" />：正在连接...</translation>
 <translation id="4513946894732546136">反馈</translation>
 <translation id="4527045527269911712">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。</translation>
 <translation id="453661520163887813"><ph name="TIME" /> 后充满</translation>

@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Attivazione della rete mobile</translation>
 <translation id="1407489512183974736">Ritagliato al centro</translation>
 <translation id="1408504635543854729">Esplora i contenuti del dispositivo nell'app File. I contenuti sono limitati da un amministratore e non possono essere modificati.</translation>
-<translation id="1408789165795197664">Avanzate...</translation>
 <translation id="1409390508152595145">Crea utente supervisionato</translation>
 <translation id="1410197035576869800">Icona dell'app</translation>
 <translation id="1410616244180625362">Continua a consentire l'accesso di <ph name="HOST" /> alla webcam</translation>
@@ -2654,7 +2653,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5184063094292164363">Console &amp;JavaScript</translation>
 <translation id="5184662919967270437">Aggiornamento del dispositivo in corso</translation>
 <translation id="5185386675596372454">La versione più recente di "<ph name="EXTENSION_NAME" />" è stata disattivata perché richiede altre autorizzazioni.</translation>
-<translation id="5187295959347858724">Hai eseguito l'accesso a <ph name="SHORT_PRODUCT_NAME" />. I tuoi Preferiti, la tua cronologia e le altre impostazioni sono in fase di sincronizzazione con il tuo Account Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vuole scaricare più file</translation>
 <translation id="5204673965307125349">Esegui il powerwash del dispositivo e riprova.</translation>
@@ -4130,7 +4128,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="748138892655239008">Limitazioni di base certificato</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
-<translation id="7487099628810939106">Ritardo prima del clic:</translation>
 <translation id="7487141338393529395">Attiva il controllo ortografico avanzato</translation>
 <translation id="7487969577036436319">Nessun componente installato</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Apri tutti}=1{&amp;Apri preferito}other{&amp;Apri tutti (#)}}</translation>

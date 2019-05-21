@@ -71,7 +71,6 @@
 <translation id="1446450296470737166">Пуна контрола над MIDI уређајима</translation>
 <translation id="1449080968331948513">Уштеда података је сада Lite режим</translation>
 <translation id="145097072038377568">Искључено је у Android подешавањима</translation>
-<translation id="146329143005354472">Додај у Моје апликације</translation>
 <translation id="1477626028522505441">Преузимање датотеке <ph name="FILE_NAME" /> није успело због проблема на серверу.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (и још 1)}one{ (и још #)}few{ (и још #)}other{ (и још #)}}</translation>
 <translation id="1501480321619201731">Избриши групу</translation>

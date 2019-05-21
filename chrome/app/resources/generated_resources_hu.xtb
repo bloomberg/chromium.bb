@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Mobilhálózati aktiválás</translation>
 <translation id="1407489512183974736">Középre, levágva</translation>
 <translation id="1408504635543854729">Fedezze fel az eszköz tartalmait a Fájlok alkalmazásban. A rendszergazda korlátozta a tartalmakat, így nem lehet módosítani őket.</translation>
-<translation id="1408789165795197664">Speciális...</translation>
 <translation id="1409390508152595145">Felügyelt felhasználó létrehozása</translation>
 <translation id="1410197035576869800">Alkalmazás ikonja</translation>
 <translation id="1410616244180625362">A(z) <ph name="HOST" /> továbbra is hozzáférhet az Ön kamerájához</translation>
@@ -2658,7 +2657,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5184063094292164363">&amp;JavaScript-konzol</translation>
 <translation id="5184662919967270437">Az eszköz frissítése folyamatban van</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" legújabb verziója ki van kapcsolva, mert több jogosultság kell hozzá.</translation>
-<translation id="5187295959347858724">Bejelentkezett a <ph name="SHORT_PRODUCT_NAME" /> szolgáltatásba. A rendszer most szinkronizálja a könyvjelzőket, előzményeket és egyéb beállításokat Google Fiókjával.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422">A(z) <ph name="ORIGIN" /> több fájlt szeretne letölteni</translation>
 <translation id="5204673965307125349">Hajtson végre powerwash műveletet az eszközön, majd próbálja újra.</translation>
@@ -4136,7 +4134,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="748138892655239008">Tanúsítvány alapvető típusmegkötései</translation>
 <translation id="7487067081878637334">Technológia</translation>
-<translation id="7487099628810939106">Kattintás előtti késleltetés:</translation>
 <translation id="7487141338393529395">A továbbfejlesztett helyesírás-ellenőrzés bekapcsolása</translation>
 <translation id="7487969577036436319">Nincsenek összetevők telepítve</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{Összes &amp;megnyitása}=1{Könyvjelző &amp;megnyitása}other{Összes (#) &amp;megnyitása}}</translation>

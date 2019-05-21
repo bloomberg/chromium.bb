@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Luminosità notturna</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
 <translation id="2761704814324807722">Barra di stato, ora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Riconnessione a <ph name="NAME" /> in corso</translation>
 <translation id="2792498699870441125">Alt+tasto per la ricerca</translation>
 <translation id="2803734122639935495">Per sbloccare inserisci la password</translation>
 <translation id="2819276065543622893">Verrai disconnesso ora.</translation>
@@ -236,7 +235,6 @@
 <translation id="4477350412780666475">Traccia successiva</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositivi disaccoppiati</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: connessione...</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4527045527269911712">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> alla ricarica completa</translation>

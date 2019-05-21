@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">नाइट लाइट</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="2761704814324807722">स्थिति ट्रे, समय <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581"><ph name="NAME" /> से पुनः कनेक्ट कर रहा है</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">अनलॉक करने के लिए, अपना पासवर्ड डालें</translation>
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
@@ -236,7 +235,6 @@
 <translation id="4477350412780666475">अगला ट्रैक</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4481530544597605423">अयुग्मित किए गए डिवाइस</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: कनेक्ट हो रहा है...</translation>
 <translation id="4513946894732546136">सुझाव</translation>
 <translation id="4527045527269911712">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है.</translation>
 <translation id="453661520163887813">पूरी तरह चार्ज होने में <ph name="TIME" /></translation>

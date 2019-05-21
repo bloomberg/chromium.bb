@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Aktivace mobilní sítě</translation>
 <translation id="1407489512183974736">Ořezat na střed</translation>
 <translation id="1408504635543854729">Prozkoumejte obsah zařízení v aplikaci Soubory. Přístup k obsahu je administrátorem omezen a nelze jej upravovat.</translation>
-<translation id="1408789165795197664">Rozšířená nastavení...</translation>
 <translation id="1409390508152595145">Vytvořit dozorovaného uživatele</translation>
 <translation id="1410197035576869800">Ikona aplikace</translation>
 <translation id="1410616244180625362">Povolit webu <ph name="HOST" /> přístup ke kameře i nadále</translation>
@@ -2654,7 +2653,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5184063094292164363">Konzole &amp;JavaScriptu</translation>
 <translation id="5184662919967270437">Aktualizace zařízení</translation>
 <translation id="5185386675596372454">Nejnovější verze rozšíření <ph name="EXTENSION_NAME" /> byla zakázána, protože vyžaduje další oprávnění.</translation>
-<translation id="5187295959347858724">Nyní jste přihlášeni do prohlížeče <ph name="SHORT_PRODUCT_NAME" />. Vaše záložky, historie a další nastavení se synchronizují s účtem Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> se pokouší stáhnout několik souborů</translation>
 <translation id="5204673965307125349">Vymažte zařízení pomocí funkce Powerwash a zkuste to znovu.</translation>
@@ -4130,7 +4128,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="748138892655239008">Základní omezení certifikátu</translation>
 <translation id="7487067081878637334">Technologie</translation>
-<translation id="7487099628810939106">Zpoždění před kliknutím:</translation>
 <translation id="7487141338393529395">Zapnout vylepšenou kontrolu pravopisu</translation>
 <translation id="7487969577036436319">Nejsou nainstalovány žádné komponenty</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Otevřít vše}=1{&amp;Otevřít záložku}few{&amp;Otevřít vše (#)}many{&amp;Otevřít vše (#)}other{&amp;Otevřít vše (#)}}</translation>

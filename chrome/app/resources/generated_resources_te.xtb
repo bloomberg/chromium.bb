@@ -265,7 +265,6 @@
 <translation id="140723521119632973">సెల్యులార్ యాక్టివేషన్</translation>
 <translation id="1407489512183974736">మధ్యకు కత్తిరించు</translation>
 <translation id="1408504635543854729">ఫైల్స్ యాప్‌లో పరికర కంటెంట్‌ను విశ్లేషించండి. కంటెంట్‌ను నిర్వాహకులు పరిమితం చేశారు మరియు దాన్ని సవరించడం సాధ్యపడదు.</translation>
-<translation id="1408789165795197664">అధునాతన...</translation>
 <translation id="1409390508152595145">పర్యవేక్షించబడే వినియోగదారును సృష్టించు</translation>
 <translation id="1410197035576869800">యాప్ చిహ్నం</translation>
 <translation id="1410616244180625362">మీ కెమెరాను యాక్సెస్ చేయడానికి <ph name="HOST" />కు అనుమతిని కొనసాగించండి</translation>
@@ -2657,7 +2656,6 @@
 <translation id="5184063094292164363">&amp;JavaScript కన్సోల్</translation>
 <translation id="5184662919967270437">మీ పరికరాన్ని అప్‌డేట్ చేస్తోంది</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" కొత్త వెర్షన్ నిలిపివేయబడింది ఎందుకంటే దానికి మరిన్ని అనుమతులు అవసరం.</translation>
-<translation id="5187295959347858724"><ph name="SHORT_PRODUCT_NAME" />కు మీరు ఇప్పుడు సైన్‌ఇన్ చేశారు. మీ బుక్‌మార్క్‌లు, చరిత్ర, మరియు ఇతర సెట్టింగ్‌లు మీ Google ఖాతాకు సమకాలీకరించబడుతున్నాయి.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> పలు ఫైల్‌లను డౌన్‌లోడ్ చేయాలనుకుంటోంది</translation>
 <translation id="5204673965307125349">దయచేసి పరికరాన్ని పవర్‌వాష్ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
@@ -4133,7 +4131,6 @@
 <translation id="7481312909269577407">ఫార్వర్డ్</translation>
 <translation id="748138892655239008">సర్టిఫికెట్ ఆధార పరిమితులు</translation>
 <translation id="7487067081878637334">సాంకేతికం</translation>
-<translation id="7487099628810939106">క్లిక్ చేయడానికి ముందు జరగాల్సిన ఆలస్యం:</translation>
 <translation id="7487141338393529395">మెరుగైన స్పెల్ చెక్‌ను ఆన్ చేయండి</translation>
 <translation id="7487969577036436319">భాగాలు ఇన్‌స్టాల్ చేయబడలేదు</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;అన్నింటినీ తెరువండి}=1{&amp;బుక్‌మార్క్‌ని తెరవండి}other{&amp;అన్నింటినీ (#) తెరవండి}}</translation>

@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Mobiiliyhteyden aktivointi</translation>
 <translation id="1407489512183974736">Rajaa keskelle</translation>
 <translation id="1408504635543854729">Tutustu laitteen sisältöön Tiedostot-sovelluksen kautta. Ylläpitäjä on rajoittanut sisältöä eikä sitä voi muokata.</translation>
-<translation id="1408789165795197664">Lisäasetukset...</translation>
 <translation id="1409390508152595145">Luo valvottu käyttäjä</translation>
 <translation id="1410197035576869800">Sovelluskuvake</translation>
 <translation id="1410616244180625362">Anna sivuston <ph name="HOST" /> käyttää edelleen kameraasi</translation>
@@ -1107,7 +1106,7 @@
 <translation id="2705736684557713153">Vieritä näytön alareunaan ja ota yhteyden pikajakaminen käyttöön, jos vaihtoehto tulee näkyviin. Jos ei, sinun ei tarvitse tehdä mitään.</translation>
 <translation id="2707024448553392710">Komponenttia ladataan</translation>
 <translation id="270921614578699633">Keskimäärin</translation>
-<translation id="2709453993673701466">Haluatko hallinnoida synkronointia ja räätälöintiä ennen kuin ne otetaan käyttöön? Siirry <ph name="BEGIN_LINK" />Asetuksiin<ph name="END_LINK" />.</translation>
+<translation id="2709453993673701466">Haluatko hallinnoida synkronointia ja personointia ennen kuin ne otetaan käyttöön? Siirry <ph name="BEGIN_LINK" />Asetuksiin<ph name="END_LINK" />.</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="271033894570825754">Uusi</translation>
 <translation id="2714393097308983682">Google Play Kauppa</translation>
@@ -2656,7 +2655,6 @@
 <translation id="5184063094292164363">&amp;JavaScript-konsoli</translation>
 <translation id="5184662919967270437">Päivitetään laitetta.</translation>
 <translation id="5185386675596372454">Laajennuksen <ph name="EXTENSION_NAME" /> uusin versio on poistettu käytöstä, koska se vaatii enemmän käyttöoikeuksia.</translation>
-<translation id="5187295959347858724">Olet kirjautunut tuotteeseen <ph name="SHORT_PRODUCT_NAME" />. Kirjanmerkkisi, historiasi ja muut asetuksesi synkronoidaan Google-tiliisi.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> haluaa ladata useita tiedostoja</translation>
 <translation id="5204673965307125349">Suorita powerwash ja yritä uudelleen.</translation>
@@ -3443,7 +3441,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6393156038355142111">Ehdota vahvaa salasanaa</translation>
 <translation id="6395423953133416962">Lähetä <ph name="BEGIN_LINK1" />järjestelmän tiedot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tilastot<ph name="END_LINK2" /></translation>
 <translation id="6396988158856674517">Estä sivustoja käyttämästä liiketunnistimia</translation>
-<translation id="6397094776139756010">Synkronoinnin ja räätälöinnin asetukset</translation>
+<translation id="6397094776139756010">Synkronoinnin ja personoinnin asetukset</translation>
 <translation id="6398715114293939307">Poista Google Play Kauppa</translation>
 <translation id="6398765197997659313">Poistu koko näytön tilasta</translation>
 <translation id="6399774419735315745">Vakooja</translation>
@@ -4134,7 +4132,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="748138892655239008">Varmenteen perusrajoitukset</translation>
 <translation id="7487067081878637334">Tekniikka</translation>
-<translation id="7487099628810939106">Viive ennen klikkausta:</translation>
 <translation id="7487141338393529395">Ota käyttöön parannettu oikeinkirjoituksen tarkistus</translation>
 <translation id="7487969577036436319">Ei asennettuja osia</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{Avaa kaikki}=1{Avaa kirjanmerkki}other{Avaa kaikki #}}</translation>

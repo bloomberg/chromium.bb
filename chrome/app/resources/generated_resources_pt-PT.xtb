@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Ativação de rede móvel</translation>
 <translation id="1407489512183974736">Cortado no centro</translation>
 <translation id="1408504635543854729">Explore o conteúdo do dispositivo na aplicação Ficheiros. O conteúdo é restringido por um gestor e não é possível modificá-lo.</translation>
-<translation id="1408789165795197664">Avançadas...</translation>
 <translation id="1409390508152595145">Criar utilizador supervisionado.</translation>
 <translation id="1410197035576869800">Ícone da aplicação</translation>
 <translation id="1410616244180625362">Continuar a permitir que <ph name="HOST" /> aceda à sua câmara</translation>
@@ -2658,7 +2657,6 @@ Pretende pará-lo?</translation>
 <translation id="5184063094292164363">Consola de &amp;JavaScript</translation>
 <translation id="5184662919967270437">A atualizar o dispositivo…</translation>
 <translation id="5185386675596372454">A versão mais recente de "<ph name="EXTENSION_NAME" />" foi desativada porque necessita de mais permissões.</translation>
-<translation id="5187295959347858724">Está com sessão iniciada no <ph name="SHORT_PRODUCT_NAME" />. Os seus marcadores, histórico e outras definições estão a ser sincronizados com a sua Conta Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> pretende transferir vários ficheiros.</translation>
 <translation id="5204673965307125349">Efetue um Powerwash ao dispositivo e tente novamente.</translation>
@@ -4135,7 +4133,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="748138892655239008">Restrições básicas do certificado</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
-<translation id="7487099628810939106">Atraso antes do clique:</translation>
 <translation id="7487141338393529395">Ative a verificação ortográfica avançada</translation>
 <translation id="7487969577036436319">Não existem componentes instalados</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Abrir todos}=1{&amp;Abrir marcador}other{&amp;Abrir todos (#)}}</translation>

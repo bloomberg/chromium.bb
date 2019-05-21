@@ -265,7 +265,6 @@
 <translation id="140723521119632973">Pengaktifan Selular</translation>
 <translation id="1407489512183974736">Tengah Dipotong</translation>
 <translation id="1408504635543854729">Teroka kandungan peranti dalam apl Fail. Kandungan dihadkan oleh pentadbir dan tidak boleh diubah suai.</translation>
-<translation id="1408789165795197664">Lanjutan...</translation>
 <translation id="1409390508152595145">Buat pengguna diselia</translation>
 <translation id="1410197035576869800">Ikon Apl</translation>
 <translation id="1410616244180625362">Terus benarkan <ph name="HOST" /> mengakses kamera anda</translation>
@@ -2659,7 +2658,6 @@
 <translation id="5184063094292164363">&amp;Konsol JavaScript</translation>
 <translation id="5184662919967270437">Mengemas kini peranti anda</translation>
 <translation id="5185386675596372454">Versi terbaharu "<ph name="EXTENSION_NAME" />" telah dilumpuhkan kerana ia memerlukan lebih banyak kebenaran.</translation>
-<translation id="5187295959347858724">Anda sekarang dilog masuk ke <ph name="SHORT_PRODUCT_NAME" />. Penanda halaman, sejarah dan tetapan anda yang lain sedang disegerakkan dengan Akaun Google anda.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> mahu memuat turun berbilang fail</translation>
 <translation id="5204673965307125349">Sila lakukan powerwash pada peranti dan cuba lagi.</translation>
@@ -4135,7 +4133,6 @@
 <translation id="7481312909269577407">Majukan</translation>
 <translation id="748138892655239008">Kekangan Asas Sijil</translation>
 <translation id="7487067081878637334">Teknologi</translation>
-<translation id="7487099628810939106">Lengahan sebelum klik:</translation>
 <translation id="7487141338393529395">Hidupkan Semak Ejaan yang Dipertingkatkan</translation>
 <translation id="7487969577036436319">Tiada komponen dipasang</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;Buka semua}=1{&amp;Buka penanda halaman}other{&amp;Buka semua (#)}}</translation>

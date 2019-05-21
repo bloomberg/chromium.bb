@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">Noční režim</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2761704814324807722">Systémový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">Obnovování připojení k síti <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
 <translation id="2803734122639935495">Chcete-li zařízení odemknout, zadejte heslo</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">Další skladba</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Nespárovaná zařízení</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: Připojování...</translation>
 <translation id="4513946894732546136">Zpětná vazba</translation>
 <translation id="4527045527269911712">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do úplného nabití</translation>

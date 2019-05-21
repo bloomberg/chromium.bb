@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">የምሽት ብርሃን</translation>
 <translation id="2727977024730340865">አነስተኛ ኃይል ወዳለው ባትሪ መሙያ ተሰክቷል። የባትሪ መሙላት አስተማማኝ ላይሆን ይችላል።</translation>
 <translation id="2761704814324807722">የሁኔታ መሣቢያ፣ ሰዓት <ph name="TIME" />፣ <ph name="BATTERY" /></translation>
-<translation id="277257480934873581">ከ<ph name="NAME" /> ጋር ዳግም በማገናኘት ላይ</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">ለመክፈት የይለፍ ቃልዎን ያስገቡ</translation>
 <translation id="2819276065543622893">አሁን ዘግተው እንዲወጡ ይደረጋሉ።</translation>
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">ቀጣይ ትራክ</translation>
 <translation id="4479639480957787382">ኢተርኔት</translation>
 <translation id="4481530544597605423">ያልተጣመሩ መሣሪያዎች</translation>
-<translation id="4508225577814909926"><ph name="NAME" />፦ በመገናኘት ላይ...</translation>
 <translation id="4513946894732546136">ግብረ መልስ</translation>
 <translation id="4527045527269911712">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል።</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ሙሉ እስከሚሆን ድረስ</translation>

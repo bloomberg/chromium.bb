@@ -265,7 +265,6 @@
 <translation id="140723521119632973">સેલ્યુલર સક્રિયકરણ</translation>
 <translation id="1407489512183974736">મધ્યમાં કાપેલું</translation>
 <translation id="1408504635543854729">Files ઍપ્લિકેશનમાં ડિવાઇસના કન્ટેન્ટમાં નવું શોધો. કન્ટેન્ટ એડમિન દ્વારા પ્રતિબંધિત છે અને બદલી શકતા નથી.</translation>
-<translation id="1408789165795197664">વિગતવાર...</translation>
 <translation id="1409390508152595145">નિરીક્ષણ કરેલ વપરાશકર્તા બનાવો</translation>
 <translation id="1410197035576869800">ઍપ આઇકન</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> ને તમારા કૅમેરાને ઍક્સેસ કરવા દેવાનું ચાલુ રાખો</translation>
@@ -2654,7 +2653,6 @@
 <translation id="5184063094292164363">&amp;JavaScript કન્સોલ</translation>
 <translation id="5184662919967270437">તમારા ઉપકરણને અપડેટ કરી રહ્યાં છે</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"નું સૌથી નવું વર્ઝન બંધ કરવામાં આવ્યું છે, કારણ કે એને વધુ પરવાનગીઓની જરૂર છે.</translation>
-<translation id="5187295959347858724">તમે હવે <ph name="SHORT_PRODUCT_NAME" /> પર સાઇન ઇન થયેલા છો. તમારા બુકમાર્ક, ઇતિહાસ, અને બીજા સેટિંગ તમારા Google એકાઉન્ટ સાથે સિંક થાય છે.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> એકથી વધુ ફાઇલો ડાઉનલોડ કરવા માગે છે</translation>
 <translation id="5204673965307125349">કૃપા કરીને ડિવાઇસને પાવરવોશ કરો અને ફરી પ્રયાસ કરો.</translation>
@@ -4132,7 +4130,6 @@ USB ડિવાઇસ</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
 <translation id="748138892655239008">પ્રમાણપત્રની મૂળભૂત મર્યાદાઓ</translation>
 <translation id="7487067081878637334">તકનીક</translation>
-<translation id="7487099628810939106">ક્લિક પહેલાં વિલંબ:</translation>
 <translation id="7487141338393529395">વધુ સારી બનાવાયેલી જોડણીની તપાસ ચાલુ કરો</translation>
 <translation id="7487969577036436319">કોઈ ઘટકો ઇન્સ્ટોલ કરેલા નથી</translation>
 <translation id="7489355918927585587">{COUNT,plural, =0{&amp;તમામ URL ખોલો}=1{&amp;બુકમાર્ક ખોલો}one{&amp;તમામ (#) URLને ખોલો}other{&amp;તમામ (#) URLને ખોલો}}</translation>

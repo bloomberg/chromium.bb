@@ -1042,6 +1042,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
       Jeśli zasada AutoplayAllowed ma wartość Fałsz, dozwolone jest odtwarzanie filmów z adresów URL pasujących do wzorców ustawionych w tej zasadzie.
 
       Uwaga: jeśli <ph name="PRODUCT_NAME" /> jest uruchomiony w momencie zmiany konfiguracji tej zasady, nowa konfiguracja zostanie zastosowana tylko do nowo otwartych kart. Z tego powodu na niektórych kartach może obowiązywać poprzednia konfiguracja.</translation>
+<translation id="284288632677954003">URL pliku XML zawierającego adresy URL, które nigdy nie powinny powodować zmiany przeglądarki.</translation>
 <translation id="285480231336205327">Włącz tryb wysokiego kontrastu</translation>
 <translation id="2854919890879212089">Sprawia, że w podglądzie wydruku w <ph name="PRODUCT_NAME" /> zostanie wybrana domyślna drukarka systemowa, a nie ostatnio użyta.
 
@@ -1209,6 +1210,15 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 <translation id="3096595567015595053">Lista włączonych wtyczek</translation>
 <translation id="3101501961102569744">Wybierz sposób określenia ustawień serwera proxy</translation>
 <translation id="3101709781009526431">Data i godzina</translation>
+<translation id="3114411414586006215">Ta zasada kontroluje listę stron, które nigdy nie będą powodować zmiany przeglądarki.
+
+      Pamiętaj, że pozycje do tej listy można też dodawać za pomocą zasady <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Jeśli ta zasada jest nieskonfigurowana, żadne strony nie będą dodawane do listy.
+
+      Jeśli ta zasada jest skonfigurowana, każdy element jest traktowany jako reguła, podobnie jak w zasadzie <ph name="URL_LIST_POLICY_NAME" />. Logika działania jest odwrotna: dopasowanie do reguły powoduje, że alternatywna przeglądarka nie zostanie otwarta.
+
+      W odróżnieniu od zasady <ph name="URL_LIST_POLICY_NAME" /> reguły są stosowane w obu kierunkach: gdy zainstalowany i włączony jest dodatek do Internet Explorera, reguły określają też, czy <ph name="IE_PRODUCT_NAME" /> ma otwierać te adresy URL w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Ostrzeżenie: DHE zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 57 (około marca 2017 r.) i wtedy ta zasada przestanie działać.
 
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, mechanizmy szyfrowania DHE w TLS będą wyłączone. Można ją włączyć, by mechanizmy szyfrowania pozostały aktywne oraz w celu zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.
@@ -1402,6 +1412,17 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3550875587920006460">Umożliwia ustawienie niestandardowego harmonogramu sprawdzania dostępności aktualizacji. Dotyczy to wszystkich użytkowników oraz wszystkich interfejsów na urządzeniu. Po skonfigurowaniu zasady urządzenie sprawdza dostępność aktualizacji zgodnie z harmonogramem. Aby anulować kolejne zaplanowane sprawdzanie dostępności aktualizacji, musisz usunąć tę zasadę.</translation>
 <translation id="355118380775352753">Witryny otwierane w alternatywnej przeglądarce</translation>
 <translation id="3554984410014457319">Zezwól Asystentowi Google nasłuchiwać wyrażenia aktywującego obsługę komend głosowych</translation>
+<translation id="3557208865710006939">Wymusza włączenie sprawdzania pisowni w wybranych językach. Nierozpoznane języki z tej listy będą ignorowane.
+
+      Jeśli ta zasada jest włączona, sprawdzanie pisowni będzie dostępne także w wybranych językach, a nie tylko w tych, dla których funkcję tę włączył użytkownik.
+
+      Jeśli nie skonfigurujesz tej zasady lub ją wyłączysz, nic nie zmieni się w ustawieniach użytkownika dotyczących sprawdzania pisowni.
+
+      Jeśli zasada <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> ma wartość Fałsz, ta zasada nie ma żadnych skutków.
+
+      Jeśli dany język występuje na liście zarówno w tej zasadzie, jak i w zasadzie <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, ta zasada ma priorytet i sprawdzanie pisowni w tym języku będzie włączone.
+
+      Aktualnie obsługiwane języki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk oraz vi.</translation>
 <translation id="356579196325389849">Użytkownicy mogą skonfigurować kanał wersji Chrome OS</translation>
 <translation id="3575011234198230041">Uwierzytelnianie HTTP</translation>
 <translation id="3577251398714997599">Ustawienia reklam dla stron zawierających uciążliwe reklamy</translation>
@@ -1743,6 +1764,9 @@ Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działan
           Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
 
           Jeśli ta zasada jest nieskonfigurowana, klawisze trwałe są początkowo wyłączone, ale użytkownik może je swobodnie włączyć.</translation>
+<translation id="4171331498167688968">Jeśli ta zasada ma ustawienie Fałsz, oprogramowanie innych firm będzie mogło wstrzykiwać kod wykonywalny do procesów Chrome. Jeśli ta zasada jest nieskonfigurowana lub ma ustawienie Prawda, oprogramowanie innych firm nie będzie mogło wstrzykiwać takiego kodu do procesów Chrome.
+
+      Bez względu na wartość tej zasady obecnie przeglądarka nie blokuje wstrzykiwania kodu wykonywalnego na komputerach dołączonych do domeny <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Domyślne ustawienie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL pozwalający zweryfikować token uwierzytelniania klienta dostępu zdalnego</translation>
 <translation id="4203389617541558220">Ogranicza czas działania urządzenia przez planowanie automatycznych ponownych uruchomień.
@@ -2100,6 +2124,7 @@ Pole <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> pozwala określić serwer pro
           Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="5085647276663819155">Wyłącz podgląd wydruku</translation>
 <translation id="5090209345759901501">Rozszerz ustawienie treści Flash na całą zawartość</translation>
+<translation id="5090791951240382356">Zezwól na scalanie zasad słownikowych z różnych źródeł</translation>
 <translation id="5093540029655764852">Określa częstotliwość (w dniach), z którą klient zmienia hasło do swojego konta komputera. Hasło jest generowane losowo przez klienta i niewidoczne dla użytkownika.
 
       Hasła do kont komputerów należy zmieniać regularnie tak samo jak hasła do kont użytkowników. Wyłączenie tej zasady lub ustawienie dużej liczby dni może obniżyć bezpieczeństwo, ponieważ daje potencjalnym napastnikom więcej czasu na odkrycie i wykorzystanie hasła do konta komputera.
@@ -3007,6 +3032,17 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       </translation>
 <translation id="6922884955650325312">Blokuj wtyczkę <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Określa nazwę domyślnego dostawcy wyszukiwania. Jeśli ta zasada pozostanie pusta lub nieskonfigurowana, będzie używana nazwa hosta określona w URL-u wyszukiwarki. Ta zasada jest uwzględniana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
+<translation id="6924223708804692571">Wymusza wyłączenie sprawdzania pisowni w wybranych językach. Nierozpoznane języki z tej listy będą ignorowane.
+
+      Po włączeniu tej zasady sprawdzanie pisowni będzie wyłączone w wybranych językach. Użytkownik może nadal włączać i wyłączać sprawdzanie pisowni dla języków, których nie ma na liście.
+
+      Jeśli nie skonfigurujesz tej zasady lub ją wyłączysz, nic nie zmieni się w ustawieniach użytkownika dotyczących sprawdzania pisowni.
+
+      Jeśli zasada <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> ma wartość Fałsz, ta zasada nie ma żadnych skutków.
+
+      Jeśli dany język występuje na liście zarówno w tej zasadzie, jak i w zasadzie <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, priorytet ma ta druga i język będzie włączony.
+
+      Aktualnie obsługiwane języki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk oraz vi.</translation>
 <translation id="6926703471186170050">Włącz drukowanie dwustronne względem długiej krawędzi</translation>
 <translation id="6931242315485576290">Wyłącz synchronizację danych z Google</translation>
 <translation id="6936894225179401731">Określa maksymalną liczbę jednoczesnych połączeń z serwerem proxy. Niektóre serwery proxy nie są w stanie obsłużyć dużej liczby jednoczesnych połączeń z tym samym klientem. W takiej sytuacji można rozwiązać problem, ustawiając dla tej zasady mniejszą wartość. Jej wartość powinna być mniejsza niż 100 i większa niż 6. Wartość domyślna wynosi 32. Niektóre aplikacje sieciowe używają wielu połączeń z oczekującymi żądaniami GET, dlatego zmniejszenie wartości tej zasady poniżej wartości 32 może powodować przerwy w działaniu sieci, jeśli zbyt wiele takich aplikacji będzie otwartych. Zmniejszasz wartości domyślne na własne ryzyko. W przypadku nieskonfigurowania tej zasady będzie używana wartość domyślna, czyli 32.</translation>
@@ -3135,6 +3171,15 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
       Jeśli ta zasada jest skonfigurowana, zestaw aplikacji jest ustalony i nie może być zmieniany przez użytkownika.
 
       Jeśli zasada nie jest ustawiona, użytkownik może zmieniać listę aplikacji przypiętych w programie uruchamiającym.</translation>
+<translation id="713121532817834879">Ta zasada jest adresem URL, który wskazuje plik XML w formacie zgodnym z zasadą <ph name="IEEM_SITELIST_POLICY" /> w Internet Explorerze. Powoduje wczytanie reguł z pliku XML bez udostępniania ich Internet Explorerowi.
+
+      Reguły z tego pliku XML są stosowane w taki sam sposób jak zasada <ph name="GREYLIST_POLICY_NAME" />. Reguły uniemożliwiają <ph name="PRODUCT_NAME" /> otwieranie alternatywnej przeglądarki, a także uniemożliwiają alternatywnej przeglądarce otwieranie <ph name="PRODUCT_NAME" />.
+
+      Gdy ta zasada jest nieskonfigurowana lub jej wartością nie jest prawidłowy URL, <ph name="PRODUCT_NAME" /> nie używa jej jako źródła reguł blokujących zmianę przeglądarki.
+
+      Jeśli w tej zasadzie podany jest prawidłowy adres URL, <ph name="PRODUCT_NAME" /> pobiera z niego listę stron i stosuje reguły, jak gdyby zostały one skonfigurowane za pomocą zasady <ph name="SITELIST_POLICY_NAME" />.
+
+      Więcej informacji o zasadzie <ph name="IEEM_SITELIST_POLICY" /> w Internet Explorerze: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania filmów</translation>
 <translation id="7138678301420049075">Inne</translation>
 <translation id="7140629953254369759">Nakazuje systemowi <ph name="PRODUCT_OS_NAME" /> używać konfiguracji szeregowania zadań o podanej nazwie.
@@ -3182,6 +3227,15 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
           Automatyczne odtwarzanie jest dozwolone tylko w domenach bezpośrednio wskazanych w zasadzie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jeśli chcesz zezwolić na automatyczne odtwarzanie we wszystkich witrynach, dodaj do tej listy http://* i https://*.
 
           Jeśli ta zasada nie jest ustawiona, użytkownik może zmienić to ustawienie ręcznie.</translation>
+<translation id="7222749588229362483">Zezwala na scalanie wybranych zasad, które pochodzą z różnych źródeł, a mają te same zakresy i poziom.
+
+        Scalanie polega na połączeniu pierwszopoziomowych kluczy słowników z poszczególnych źródeł. W przypadku konfliktu między kluczami zastosowany zostanie klucz ze źródła o najwyższym priorytecie.
+
+        Jeśli zasada znajduje się na liście, to w przypadku konfliktu między dwoma źródłami, które mają te same zakresy i poziom, wartości zostaną scalone w nowy słownik zasad.
+
+        Jeśli zasada znajduje się na liście, to w przypadku konfliktu między dwoma źródłami, które mają różne zakresy lub poziom, zostanie zastosowana zasada o najwyższym priorytecie.
+
+        Jeśli zasada nie znajduje się na liście, to w przypadku konfliktu między źródłami, zakresami lub poziomem zostanie zastosowana zasada o najwyższym priorytecie.</translation>
 <translation id="7229975860249300121">Zawiera wyrażenie regularne określające, które konta Google można ustawić jako konta podstawowe przeglądarki w <ph name="PRODUCT_NAME" /> (czyli konta, które można wybrać podczas włączania synchronizacji).
 
       Gdy użytkownik spróbuje ustawić konto podstawowe przeglądarki o nazwie, która nie pasuje do tego wzorca, wyświetli się odpowiedni komunikat o błędzie.
@@ -3804,6 +3858,12 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 
       Jeśli zasada ma ustawioną opcję „Zastąp”, zasady dotyczące użytkowników z obiektów użytkownika są zastępowane zasadami z obiektów komputera (obiekty zasad grupy użytkownika są ignorowane).</translation>
 <translation id="8465065632133292531">Parametry dla URL-i dynamicznych używających POST</translation>
+<translation id="8465746466645315861">Jeśli ta zasada jest nieskonfigurowana, użytkownik może włączyć lub wyłączyć sprawdzanie pisowni w ustawieniach języka.
+
+      Jeśli zasada ma wartość Prawda, sprawdzanie pisowni jest włączone, a użytkownik nie może go wyłączyć. W systemach <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> i <ph name="LINUX_OS_NAME" /> można włączać i wyłączać poszczególne języki sprawdzania pisowni, więc użytkownik może wyłączyć sprawdzanie pisowni przez wyłączenie wszystkich języków. Aby to uniemożliwić, można za pomocą zasady <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> wymusić włączenie określonych języków.
+
+      Jeśli ta zasada ma wartość Fałsz, sprawdzanie pisowni jest wyłączone, a użytkownik nie może go włączyć. Gdy ta zasada ma wartość Fałsz, zasady <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> i <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nie mają żadnych skutków.
+      </translation>
 <translation id="847472800012384958">Nie zezwalaj na pokazywanie wyskakujących okienek w żadnej witrynie</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Wycina poufne pod względem prywatności i bezpieczeństwa fragmenty adresów URL https:// przed przekazaniem tych adresów do skryptów PAC (Proxy Auto Config), których <ph name="PRODUCT_NAME" /> używa podczas rozpoznawania serwerów proxy.

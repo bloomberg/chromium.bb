@@ -117,7 +117,6 @@
 <translation id="2718395828230677721">야간 조명</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME" />, <ph name="BATTERY" /></translation>
-<translation id="277257480934873581"><ph name="NAME" />에 다시 연결</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
 <translation id="2803734122639935495">잠금 해제하려면 비밀번호를 입력하세요.</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
@@ -235,7 +234,6 @@
 <translation id="4477350412780666475">다음 트랙</translation>
 <translation id="4479639480957787382">이더넷</translation>
 <translation id="4481530544597605423">페어링 해제된 기기</translation>
-<translation id="4508225577814909926"><ph name="NAME" />: 연결하는 중...</translation>
 <translation id="4513946894732546136">문제 신고</translation>
 <translation id="4527045527269911712">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> 후 충전 완료</translation>
