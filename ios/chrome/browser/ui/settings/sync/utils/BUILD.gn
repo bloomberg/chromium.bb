@@ -20,6 +20,7 @@ source_set("utils") {
     "//components/signin/core/browser",
     "//components/strings",
     "//components/sync",
+    "//components/unified_consent",
     "//google_apis",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
