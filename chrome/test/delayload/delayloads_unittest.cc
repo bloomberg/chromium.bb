@@ -114,7 +114,7 @@ TEST_F(DelayloadsTest, ChromeDllDelayloadsCheck) {
   }
 }
 
-TEST_F(DelayloadsTest, ChromeDllLoadSanityTest) {
+TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTest) {
   // As a precaution to avoid affecting other tests, we need to ensure this is
   // executed in its own test process. This "test" will re-launch with custom
   // parameters to accomplish that.
@@ -159,7 +159,7 @@ TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTestImpl) {
   EXPECT_TRUE(!!::FreeLibrary(chrome_module_handle));
 }
 
-TEST_F(DelayloadsTest, ChromeChildDllDelayloadsCheck) {
+TEST_F(DelayloadsTest, DISABLED_ChromeChildDllDelayloadsCheck) {
   base::FilePath dll;
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_child.dll");
