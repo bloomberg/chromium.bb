@@ -108,7 +108,8 @@ bool StandardManagementPolicyProvider::UserMayLoad(
     case Manifest::TYPE_HOSTED_APP:
     case Manifest::TYPE_LEGACY_PACKAGED_APP:
     case Manifest::TYPE_PLATFORM_APP:
-    case Manifest::TYPE_SHARED_MODULE: {
+    case Manifest::TYPE_SHARED_MODULE:
+    case Manifest::TYPE_LOGIN_SCREEN_EXTENSION: {
       if (!settings_->IsAllowedManifestType(extension->GetType(),
                                             extension->id()))
         return ReturnLoadError(extension, error);

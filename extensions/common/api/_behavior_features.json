@@ -76,6 +76,19 @@
       "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E",  // ChromeVox
       "7910EAFDAF64B947E1CB31B333A9BD14CA556B6C"   // Feedback extension
     ]
+  }, {
+    // Extensions that are force-installed on the login screen through policy
+    // will receive type "login_screen_extension" and have limited API
+    // capabilities. Nonetheless, we only allow specifically whitelisted
+    // extensions here.
+    "channel": "dev",
+    "component_extensions_auto_granted": false,
+    "extension_types": ["login_screen_extension"],
+    "location": "policy",
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "FA84F98B32AFC3013F5711F8711F8F38DB210AB7" // Sign-in Screen Test Extension
+    ]
   }],
   "allow_deprecated_audio_api": {
     "channel": "stable",

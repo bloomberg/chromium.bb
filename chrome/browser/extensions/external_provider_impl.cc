@@ -579,17 +579,20 @@ void ExternalProviderImpl::CreateExternalProviders(
 
 #if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    // Download apps installed by policy in the login profile. Flags
-    // FROM_WEBSTORE/WAS_INSTALLED_BY_DEFAULT are applied because these apps are
-    // downloaded from the webstore, and we want to treat them as built-in
-    // extensions.
+    // Download extensions/apps installed by policy in the login profile. Flags
+    // FROM_WEBSTORE/WAS_INSTALLED_BY_DEFAULT are applied because these
+    // extension/apps are downloaded from the webstore, and we want to treat
+    // them as built-in extensions. Extensions (not apps) installed through this
+    // path will have type |TYPE_LOGIN_SCREE_EXTENSION| with limited API
+    // capabilities.
     external_loader = new ExternalPolicyLoader(
         ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::FORCED);
     auto signin_profile_provider = std::make_unique<ExternalProviderImpl>(
         service, external_loader, profile, crx_location,
         Manifest::EXTERNAL_POLICY_DOWNLOAD,
-        Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT);
+        Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT |
+            Extension::FOR_LOGIN_SCREEN);
     signin_profile_provider->set_allow_updates(true);
     provider_list->push_back(std::move(signin_profile_provider));
     return;

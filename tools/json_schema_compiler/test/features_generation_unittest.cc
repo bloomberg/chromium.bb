@@ -195,10 +195,13 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
                            Feature::WEB_PAGE_CONTEXT,
                            Feature::WEBUI_CONTEXT,
                            Feature::UNBLESSED_EXTENSION_CONTEXT};
-    comparator.extension_types = {
-        Manifest::TYPE_EXTENSION,           Manifest::TYPE_HOSTED_APP,
-        Manifest::TYPE_LEGACY_PACKAGED_APP, Manifest::TYPE_PLATFORM_APP,
-        Manifest::TYPE_SHARED_MODULE,       Manifest::TYPE_THEME};
+    comparator.extension_types = {Manifest::TYPE_EXTENSION,
+                                  Manifest::TYPE_HOSTED_APP,
+                                  Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                  Manifest::TYPE_PLATFORM_APP,
+                                  Manifest::TYPE_SHARED_MODULE,
+                                  Manifest::TYPE_THEME,
+                                  Manifest::TYPE_LOGIN_SCREEN_EXTENSION};
     comparator.channel = version_info::Channel::BETA;
     comparator.CompareFeature(feature);
   }

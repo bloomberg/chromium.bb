@@ -134,6 +134,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // before they are fully installed and enabled.
     MAY_BE_UNTRUSTED = 1 << 12,
 
+    // |FOR_LOGIN_SCREEN| means that this extension was force-installed through
+    // policy for the login screen. Extensions created with this flag will have
+    // type |TYPE_LOGIN_SCREEN_EXTENSION| (with limited API capabilities)
+    // instead of the usual |TYPE_EXTENSION|.
+    FOR_LOGIN_SCREEN = 1 << 13,
+
     // When adding new flags, make sure to update kInitFromValueFlagBits.
   };
 
@@ -312,6 +318,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_extension() const;            // Regular browser extension, not an app
   bool is_shared_module() const;        // Shared module
   bool is_theme() const;                // Theme
+  bool is_login_screen_extension() const;  // Extension on login screen.
 
   // True if this is a platform app, hosted app, or legacy packaged app.
   bool is_app() const;

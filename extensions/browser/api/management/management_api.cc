@@ -123,6 +123,8 @@ management::ExtensionInfo CreateExtensionInfo(
       info.type = management::EXTENSION_TYPE_PACKAGED_APP;
   } else if (extension.is_theme()) {
     info.type = management::EXTENSION_TYPE_THEME;
+  } else if (extension.is_login_screen_extension()) {
+    info.type = management::EXTENSION_TYPE_LOGIN_SCREEN_EXTENSION;
   } else {
     info.type = management::EXTENSION_TYPE_EXTENSION;
   }

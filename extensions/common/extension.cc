@@ -126,7 +126,7 @@ bool IsManifestSupported(int manifest_version,
 
 }  // namespace
 
-const int Extension::kInitFromValueFlagBits = 13;
+const int Extension::kInitFromValueFlagBits = 14;
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 
@@ -171,8 +171,14 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   base::ElapsedTimer timer;
   DCHECK(utf8_error);
   base::string16 error;
-  std::unique_ptr<extensions::Manifest> manifest(
-      new extensions::Manifest(location, value.CreateDeepCopy()));
+
+  std::unique_ptr<extensions::Manifest> manifest;
+  if (flags & FOR_LOGIN_SCREEN) {
+    manifest = Manifest::CreateManifestForLoginScreen(location,
+                                                      value.CreateDeepCopy());
+  } else {
+    manifest = std::make_unique<Manifest>(location, value.CreateDeepCopy());
+  }
 
   if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
@@ -457,6 +463,10 @@ bool Extension::is_shared_module() const {
 
 bool Extension::is_theme() const {
   return manifest()->is_theme();
+}
+
+bool Extension::is_login_screen_extension() const {
+  return manifest()->is_login_screen_extension();
 }
 
 void Extension::AddWebExtentPattern(const URLPattern& pattern) {

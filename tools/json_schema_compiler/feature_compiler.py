@@ -179,6 +179,7 @@ FEATURE_GRAMMAR = (
           'platform_app': 'Manifest::TYPE_PLATFORM_APP',
           'shared_module': 'Manifest::TYPE_SHARED_MODULE',
           'theme': 'Manifest::TYPE_THEME',
+          'login_screen_extension': 'Manifest::TYPE_LOGIN_SCREEN_EXTENSION',
         },
         'allow_all': True
       },
