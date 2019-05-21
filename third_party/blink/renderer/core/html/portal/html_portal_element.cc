@@ -58,13 +58,6 @@ void HTMLPortalElement::Trace(Visitor* visitor) {
   visitor->Trace(portal_frame_);
 }
 
-HTMLElement* HTMLPortalElement::Create(Document& document) {
-  if (RuntimeEnabledFeatures::PortalsEnabled())
-    return MakeGarbageCollected<HTMLPortalElement>(document);
-  return MakeGarbageCollected<HTMLUnknownElement>(html_names::kPortalTag,
-                                                  document);
-}
-
 void HTMLPortalElement::Navigate() {
   KURL url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
   if (!url.IsEmpty() && portal_ptr_) {

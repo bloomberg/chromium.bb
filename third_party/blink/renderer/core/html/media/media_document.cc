@@ -92,7 +92,7 @@ void MediaDocumentParser::CreateDocumentStructure() {
   meta->setAttribute(kContentAttr, "width=device-width");
   head->AppendChild(meta);
 
-  HTMLVideoElement* media = HTMLVideoElement::Create(*GetDocument());
+  auto* media = MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
   media->setAttribute(kControlsAttr, "");
   media->setAttribute(kAutoplayAttr, "");
   media->setAttribute(kNameAttr, "media");

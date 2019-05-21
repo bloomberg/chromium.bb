@@ -296,14 +296,13 @@ void TextFieldInputType::CreateShadowSubtree() {
     return;
   }
 
-  TextControlInnerContainer* container =
-      TextControlInnerContainer::Create(document);
+  auto* container = MakeGarbageCollected<TextControlInnerContainer>(document);
   container->SetShadowPseudoId(
       AtomicString("-webkit-textfield-decoration-container"));
   shadow_root->AppendChild(container);
 
-  EditingViewPortElement* editing_view_port =
-      EditingViewPortElement::Create(document);
+  auto* editing_view_port =
+      MakeGarbageCollected<EditingViewPortElement>(document);
   editing_view_port->AppendChild(inner_editor);
   container->AppendChild(editing_view_port);
 
@@ -355,12 +354,14 @@ void TextFieldInputType::ListAttributeTargetChanged() {
       // FIXME: The following code is similar to createShadowSubtree(),
       // but they are different. We should simplify the code by making
       // containerElement mandatory.
-      Element* rp_container = TextControlInnerContainer::Create(document);
+      auto* rp_container =
+          MakeGarbageCollected<TextControlInnerContainer>(document);
       rp_container->SetShadowPseudoId(
           AtomicString("-webkit-textfield-decoration-container"));
       Element* inner_editor = GetElement().InnerEditorElement();
       inner_editor->parentNode()->ReplaceChild(rp_container, inner_editor);
-      Element* editing_view_port = EditingViewPortElement::Create(document);
+      auto* editing_view_port =
+          MakeGarbageCollected<EditingViewPortElement>(document);
       editing_view_port->AppendChild(inner_editor);
       rp_container->AppendChild(editing_view_port);
       rp_container->AppendChild(

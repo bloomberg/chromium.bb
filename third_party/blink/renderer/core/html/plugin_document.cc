@@ -54,12 +54,6 @@ using namespace html_names;
 // FIXME: Share more code with MediaDocumentParser.
 class PluginDocumentParser : public RawDataDocumentParser {
  public:
-  static PluginDocumentParser* Create(PluginDocument* document,
-                                      Color background_color) {
-    return MakeGarbageCollected<PluginDocumentParser>(document,
-                                                      background_color);
-  }
-
   PluginDocumentParser(Document* document, Color background_color)
       : RawDataDocumentParser(document),
         embed_element_(nullptr),
@@ -201,7 +195,7 @@ PluginDocument::PluginDocument(const DocumentInit& initializer,
 }
 
 DocumentParser* PluginDocument::CreateParser() {
-  return PluginDocumentParser::Create(this, background_color_);
+  return MakeGarbageCollected<PluginDocumentParser>(this, background_color_);
 }
 
 WebPluginContainerImpl* PluginDocument::GetPluginView() {

@@ -21,7 +21,7 @@ class MediaControlPanelElementTest : public PageTestBase {
   void SetUp() final {
     // Create page and add a video element with controls.
     PageTestBase::SetUp();
-    media_element_ = HTMLVideoElement::Create(GetDocument());
+    media_element_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
     media_element_->SetBooleanAttribute(html_names::kControlsAttr, true);
     GetDocument().body()->AppendChild(media_element_);
 

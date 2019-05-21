@@ -34,8 +34,6 @@ namespace blink {
 
 class TextControlInnerContainer final : public HTMLDivElement {
  public:
-  static TextControlInnerContainer* Create(Document&);
-
   explicit TextControlInnerContainer(Document&);
 
  protected:
@@ -45,8 +43,6 @@ class TextControlInnerContainer final : public HTMLDivElement {
 
 class EditingViewPortElement final : public HTMLDivElement {
  public:
-  static EditingViewPortElement* Create(Document&);
-
   explicit EditingViewPortElement(Document&);
 
  protected:
@@ -59,8 +55,6 @@ class EditingViewPortElement final : public HTMLDivElement {
 
 class TextControlInnerEditorElement final : public HTMLDivElement {
  public:
-  static TextControlInnerEditorElement* Create(Document&);
-
   explicit TextControlInnerEditorElement(Document&);
 
   void DefaultEventHandler(Event&) override;
@@ -78,8 +72,6 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
 
 class SearchFieldCancelButtonElement final : public HTMLDivElement {
  public:
-  static SearchFieldCancelButtonElement* Create(Document&);
-
   explicit SearchFieldCancelButtonElement(Document&);
 
   void DefaultEventHandler(Event&) override;

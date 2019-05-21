@@ -107,10 +107,6 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
   UpdateStateIfNeeded();
 }
 
-HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLVideoElement>(document);
-}
-
 void HTMLVideoElement::Trace(Visitor* visitor) {
   visitor->Trace(image_loader_);
   visitor->Trace(custom_controls_fullscreen_detector_);

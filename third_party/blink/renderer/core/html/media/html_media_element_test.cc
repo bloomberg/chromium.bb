@@ -96,7 +96,8 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
       media_ = MakeGarbageCollected<HTMLAudioElement>(
           dummy_page_holder_->GetDocument());
     } else {
-      media_ = HTMLVideoElement::Create(dummy_page_holder_->GetDocument());
+      media_ = MakeGarbageCollected<HTMLVideoElement>(
+          dummy_page_holder_->GetDocument());
     }
   }
 

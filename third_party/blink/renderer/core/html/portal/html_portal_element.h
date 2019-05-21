@@ -30,8 +30,6 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLElement* Create(Document&);
-
   explicit HTMLPortalElement(
       Document& document,
       const base::UnguessableToken& portal_token = base::UnguessableToken(),

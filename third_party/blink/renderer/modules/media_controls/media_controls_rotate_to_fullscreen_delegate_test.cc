@@ -108,7 +108,7 @@ class MediaControlsRotateToFullscreenDelegateTest
 
     SetupPageWithClients(&clients,
                          MakeGarbageCollected<StubLocalFrameClient>());
-    video_ = HTMLVideoElement::Create(GetDocument());
+    video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
     GetVideo().setAttribute(kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&GetVideo());
     // This is not done automatically, so that tests control timing of `Attach`.
@@ -245,7 +245,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest, DelegateRequiresFlag) {
 
   // No delegate when flag is off.
   ScopedVideoRotateToFullscreenForTest video_rotate_to_fullscreen(false);
-  HTMLVideoElement* video = HTMLVideoElement::Create(GetDocument());
+  auto* video = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
   GetDocument().body()->AppendChild(video);
   EXPECT_FALSE(HasDelegate(*video->GetMediaControls()));
 }

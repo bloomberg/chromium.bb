@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_search_field.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -77,9 +78,9 @@ void SearchInputType::CreateShadowSubtree() {
       shadow_element_names::EditingViewPort());
   DCHECK(container);
   DCHECK(view_port);
-  container->InsertBefore(
-      SearchFieldCancelButtonElement::Create(GetElement().GetDocument()),
-      view_port->nextSibling());
+  container->InsertBefore(MakeGarbageCollected<SearchFieldCancelButtonElement>(
+                              GetElement().GetDocument()),
+                          view_port->nextSibling());
 }
 
 void SearchInputType::HandleKeydownEvent(KeyboardEvent& event) {

@@ -2759,8 +2759,8 @@ WebMediaPlayer::TrackId HTMLMediaElement::AddAudioTrack(
            << (AtomicString)kind_string << "', '" << (String)label << "', '"
            << (String)language << "', " << BoolString(enabled) << ")";
 
-  AudioTrack* audio_track =
-      AudioTrack::Create(id, kind_string, label, language, enabled);
+  auto* audio_track = MakeGarbageCollected<AudioTrack>(id, kind_string, label,
+                                                       language, enabled);
   audioTracks().Add(audio_track);
 
   return audio_track->id();
@@ -3664,7 +3664,7 @@ TextTrackContainer& HTMLMediaElement::EnsureTextTrackContainer() {
     to_be_inserted = second_child;
   }
 
-  TextTrackContainer* text_track_container = TextTrackContainer::Create(*this);
+  auto* text_track_container = MakeGarbageCollected<TextTrackContainer>(*this);
 
   // The text track container should be inserted before the media controls,
   // so that they are rendered behind them.

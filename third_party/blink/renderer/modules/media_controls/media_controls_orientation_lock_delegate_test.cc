@@ -304,7 +304,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
 
     // Reset the <video> element now we've enabled the runtime feature.
     video_->parentElement()->RemoveChild(video_);
-    video_ = HTMLVideoElement::Create(GetDocument());
+    video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
     video_->setAttribute(html_names::kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&Video());
     // This is not done automatically, so that tests control timing of `Attach`,
@@ -434,7 +434,7 @@ TEST_F(MediaControlsOrientationLockDelegateTest, DelegateRequiresFlag) {
   // Same with flag off.
   ScopedVideoFullscreenOrientationLockForTest video_fullscreen_orientation_lock(
       false);
-  HTMLVideoElement* video = HTMLVideoElement::Create(GetDocument());
+  auto* video = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
   GetDocument().body()->AppendChild(video);
   EXPECT_FALSE(HasDelegate(*video->GetMediaControls()));
 }

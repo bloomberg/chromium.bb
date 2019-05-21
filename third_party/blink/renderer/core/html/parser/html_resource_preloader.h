@@ -45,8 +45,6 @@ class CORE_EXPORT HTMLResourcePreloader
   friend class HTMLResourcePreloaderTest;
 
  public:
-  static HTMLResourcePreloader* Create(Document&);
-
   explicit HTMLResourcePreloader(Document&);
 
   void Trace(Visitor*);

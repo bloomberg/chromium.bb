@@ -39,9 +39,8 @@ class HTMLMediaElement;
 
 class TextTrackContainer final : public HTMLDivElement {
  public:
-  static TextTrackContainer* Create(HTMLMediaElement&);
-
   TextTrackContainer(Document&);
+  TextTrackContainer(HTMLMediaElement&);
 
   // Runs the "rules for updating the text track rendering". The
   // ExposingControls enum is used in the WebVTT processing model to reset the

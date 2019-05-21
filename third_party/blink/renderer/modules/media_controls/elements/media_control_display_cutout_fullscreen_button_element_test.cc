@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -52,7 +53,7 @@ class MediaControlDisplayCutoutFullscreenButtonElementTest
 
     RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
 
-    video_ = HTMLVideoElement::Create(GetDocument());
+    video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
     GetDocument().body()->AppendChild(video_);
     controls_ = MakeGarbageCollected<MediaControlsImpl>(*video_);
     controls_->InitializeControls();

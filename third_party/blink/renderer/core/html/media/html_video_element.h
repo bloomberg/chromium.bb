@@ -55,8 +55,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
  public:
   static const int kNoAlreadyUploadedFrame = -1;
 
-  static HTMLVideoElement* Create(Document&);
-
   HTMLVideoElement(Document&);
   void Trace(Visitor*) override;
 

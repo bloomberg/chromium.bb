@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_volume_slider_element.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -1083,8 +1084,8 @@ TEST_F(MediaControlsImplTest,
        RemovingFromDocumentRemovesListenersAndCallbacks) {
   auto page_holder = std::make_unique<DummyPageHolder>();
 
-  HTMLMediaElement* element =
-      HTMLVideoElement::Create(page_holder->GetDocument());
+  auto* element =
+      MakeGarbageCollected<HTMLVideoElement>(page_holder->GetDocument());
   page_holder->GetDocument().body()->AppendChild(element);
 
   RemotePlayback& remote_playback = RemotePlayback::From(*element);
@@ -1115,8 +1116,8 @@ TEST_F(MediaControlsImplTest,
        ReInsertingInDocumentRestoresListenersAndCallbacks) {
   auto page_holder = std::make_unique<DummyPageHolder>();
 
-  HTMLMediaElement* element =
-      HTMLVideoElement::Create(page_holder->GetDocument());
+  auto* element =
+      MakeGarbageCollected<HTMLVideoElement>(page_holder->GetDocument());
   page_holder->GetDocument().body()->AppendChild(element);
 
   RemotePlayback& remote_playback = RemotePlayback::From(*element);

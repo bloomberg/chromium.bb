@@ -41,19 +41,6 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
  public:
   enum ItemType { kItemForContextElement, kItemForDocumentFragmentNode };
 
-  // Used by document fragment node and context element.
-  static HTMLStackItem* Create(ContainerNode* node, ItemType type) {
-    return MakeGarbageCollected<HTMLStackItem>(node, type);
-  }
-
-  // Used by HTMLElementStack and HTMLFormattingElementList.
-  static HTMLStackItem* Create(
-      ContainerNode* node,
-      AtomicHTMLToken* token,
-      const AtomicString& namespace_uri = html_names::xhtmlNamespaceURI) {
-    return MakeGarbageCollected<HTMLStackItem>(node, token, namespace_uri);
-  }
-
   HTMLStackItem(ContainerNode* node, ItemType type) : node_(node) {
     switch (type) {
       case kItemForDocumentFragmentNode:

@@ -69,20 +69,16 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
 TextTrackContainer::TextTrackContainer(Document& document)
     : HTMLDivElement(document), default_font_size_(0) {}
 
+TextTrackContainer::TextTrackContainer(HTMLMediaElement& media_element)
+    : TextTrackContainer(media_element.GetDocument()) {
+  SetShadowPseudoId(AtomicString("-webkit-media-text-track-container"));
+  if (IsHTMLVideoElement(media_element))
+    ObserveSizeChanges(media_element);
+}
+
 void TextTrackContainer::Trace(Visitor* visitor) {
   visitor->Trace(video_size_observer_);
   HTMLDivElement::Trace(visitor);
-}
-
-TextTrackContainer* TextTrackContainer::Create(
-    HTMLMediaElement& media_element) {
-  TextTrackContainer* element =
-      MakeGarbageCollected<TextTrackContainer>(media_element.GetDocument());
-  element->SetShadowPseudoId(
-      AtomicString("-webkit-media-text-track-container"));
-  if (IsHTMLVideoElement(media_element))
-    element->ObserveSizeChanges(media_element);
-  return element;
 }
 
 LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&,

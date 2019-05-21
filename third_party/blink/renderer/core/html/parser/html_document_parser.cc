@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -100,8 +101,8 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document,
     : HTMLDocumentParser(document, kAllowScriptingContent, sync_policy) {
   script_runner_ =
       HTMLParserScriptRunner::Create(ReentryPermit(), &document, this);
-  tree_builder_ =
-      HTMLTreeBuilder::Create(this, document, kAllowScriptingContent, options_);
+  tree_builder_ = MakeGarbageCollected<HTMLTreeBuilder>(
+      this, document, kAllowScriptingContent, options_);
 }
 
 HTMLDocumentParser::HTMLDocumentParser(
@@ -112,8 +113,8 @@ HTMLDocumentParser::HTMLDocumentParser(
                          parser_content_policy,
                          kForceSynchronousParsing) {
   // No script_runner_ in fragment parser.
-  tree_builder_ = HTMLTreeBuilder::Create(this, fragment, context_element,
-                                          parser_content_policy, options_);
+  tree_builder_ = MakeGarbageCollected<HTMLTreeBuilder>(
+      this, fragment, context_element, parser_content_policy, options_);
 
   // For now document fragment parsing never reports errors.
   bool report_errors = false;
@@ -135,10 +136,11 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                      ? std::make_unique<HTMLTokenizer>(options_)
                      : nullptr),
       loading_task_runner_(document.GetTaskRunner(TaskType::kNetworking)),
-      parser_scheduler_(
-          sync_policy == kAllowAsynchronousParsing
-              ? HTMLParserScheduler::Create(this, loading_task_runner_.get())
-              : nullptr),
+      parser_scheduler_(sync_policy == kAllowAsynchronousParsing
+                            ? MakeGarbageCollected<HTMLParserScheduler>(
+                                  this,
+                                  loading_task_runner_.get())
+                            : nullptr),
       xss_auditor_delegate_(&document),
       pending_csp_meta_token_(nullptr),
       should_use_threading_(sync_policy == kAllowAsynchronousParsing),
@@ -170,7 +172,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       !document.IsPrefetchOnly())
     return;
 
-  preloader_ = HTMLResourcePreloader::Create(document);
+  preloader_ = MakeGarbageCollected<HTMLResourcePreloader>(document);
 }
 
 HTMLDocumentParser::~HTMLDocumentParser() = default;
@@ -1130,7 +1132,7 @@ void HTMLDocumentParser::ParseDocumentFragment(
     DocumentFragment* fragment,
     Element* context_element,
     ParserContentPolicy parser_content_policy) {
-  HTMLDocumentParser* parser = HTMLDocumentParser::Create(
+  auto* parser = MakeGarbageCollected<HTMLDocumentParser>(
       fragment, context_element, parser_content_policy);
   parser->Append(source);
   parser->Finish();
