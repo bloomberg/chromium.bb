@@ -87,16 +87,4 @@ SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
 }
 #endif
 
-SHIM_ALWAYS_EXPORT size_t malloc_size(void* address) __THROW {
-  return tc_malloc_size(address);
-}
-
-#if defined(__ANDROID__)
-SHIM_ALWAYS_EXPORT size_t malloc_usable_size(const void* address) __THROW {
-#else
-SHIM_ALWAYS_EXPORT size_t malloc_usable_size(void* address) __THROW {
-#endif
-  return tc_malloc_size(address);
-}
-
 }  // extern "C"
