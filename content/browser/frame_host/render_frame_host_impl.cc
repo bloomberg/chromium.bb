@@ -808,6 +808,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
   g_routing_id_frame_map.Get().emplace(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_), this);
   site_instance_->AddObserver(this);
+  process_->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
 
   if (frame_tree_node_->parent()) {
@@ -920,6 +921,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
     g_token_frame_map.Get().erase(*overlay_routing_token_);
 
   site_instance_->RemoveObserver(this);
+  process_->RemoveObserver(this);
 
   const bool was_created = render_frame_created_;
   render_frame_created_ = false;
@@ -1375,21 +1377,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   // either the FrameHost interface or to interfaces bound by this frame.
   ScopedActiveURL scoped_active_url(this);
 
-  // This message map is for handling internal IPC messages which should not
-  // be dispatched to other objects.
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
-    // This message is synthetic and doesn't come from RenderFrame, but from
-    // RenderProcessHost.
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  // Internal IPCs should not be leaked outside of this object, so return
-  // early.
-  if (handled)
-    return true;
-
   if (delegate_->OnMessageReceived(this, msg))
     return true;
 
@@ -1399,7 +1386,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
       proxy->cross_process_frame_connector()->OnMessageReceived(msg))
     return true;
 
-  handled = true;
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
@@ -1569,6 +1556,71 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
 
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
   return frame_tree_node()->IsMainFrame();
+}
+
+void RenderFrameHostImpl::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
+  if (base::FeatureList::IsEnabled(features::kCrashReporting))
+    MaybeGenerateCrashReport(info.status, info.exit_code);
+
+  // When a frame's process dies, its RenderFrame no longer exists, which means
+  // that its child frames must be cleaned up as well.
+  ResetChildren();
+
+  // Reset state for the current RenderFrameHost once the FrameTreeNode has been
+  // reset.
+  SetRenderFrameCreated(false);
+  InvalidateMojoConnection();
+  document_scoped_interface_provider_binding_.Close();
+  document_interface_broker_content_binding_.Close();
+  document_interface_broker_blink_binding_.Close();
+  SetLastCommittedUrl(GURL());
+
+  // Execute any pending AX tree snapshot callbacks with an empty response,
+  // since we're never going to get a response from this renderer.
+  for (auto& iter : ax_tree_snapshot_callbacks_)
+    std::move(iter.second).Run(ui::AXTreeUpdate());
+
+#if defined(OS_ANDROID)
+  // Execute any pending Samsung smart clip callbacks.
+  for (base::IDMap<std::unique_ptr<ExtractSmartClipDataCallback>>::iterator
+           iter(&smart_clip_callbacks_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    std::move(*iter.GetCurrentValue())
+        .Run(base::string16(), base::string16(), gfx::Rect());
+  }
+  smart_clip_callbacks_.Clear();
+#endif  // defined(OS_ANDROID)
+
+  ax_tree_snapshot_callbacks_.clear();
+  visual_state_callbacks_.clear();
+
+  // Ensure that future remote interface requests are associated with the new
+  // process's channel.
+  remote_associated_interfaces_.reset();
+
+  // Any termination disablers in content loaded by the new process will
+  // be sent again.
+  sudden_termination_disabler_types_enabled_ = 0;
+
+  if (unload_state_ != UnloadState::NotRun) {
+    // If the process has died, we don't need to wait for the ACK. Complete the
+    // deletion immediately.
+    unload_state_ = UnloadState::Completed;
+    DCHECK(children_.empty());
+    PendingDeletionCheckCompleted();
+    // |this| is deleted. Don't add any more code at this point in the function.
+    return;
+  }
+
+  // If this was the current pending or speculative RFH dying, cancel and
+  // destroy it.
+  frame_tree_node_->render_manager()->CancelPendingIfNecessary(this);
+
+  // Note: don't add any more code at this point in the function because
+  // |this| may be deleted. Any additional cleanup should happen before
+  // the last block of code here.
 }
 
 void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
@@ -2564,72 +2616,6 @@ void RenderFrameHostImpl::OnSwapOutACK() {
   DCHECK_EQ(UnloadState::InProgress, unload_state_);
   unload_state_ = UnloadState::Completed;
   PendingDeletionCheckCompleted();  // Can delete |this|.
-}
-
-void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
-  base::TerminationStatus termination_status =
-      static_cast<base::TerminationStatus>(status);
-
-  if (base::FeatureList::IsEnabled(features::kCrashReporting))
-    MaybeGenerateCrashReport(termination_status, exit_code);
-
-  // When a frame's process dies, its RenderFrame no longer exists, which means
-  // that its child frames must be cleaned up as well.
-  ResetChildren();
-
-  // Reset state for the current RenderFrameHost once the FrameTreeNode has been
-  // reset.
-  SetRenderFrameCreated(false);
-  InvalidateMojoConnection();
-  document_scoped_interface_provider_binding_.Close();
-  document_interface_broker_content_binding_.Close();
-  document_interface_broker_blink_binding_.Close();
-  SetLastCommittedUrl(GURL());
-
-  // Execute any pending AX tree snapshot callbacks with an empty response,
-  // since we're never going to get a response from this renderer.
-  for (auto& iter : ax_tree_snapshot_callbacks_)
-    std::move(iter.second).Run(ui::AXTreeUpdate());
-
-#if defined(OS_ANDROID)
-  // Execute any pending Samsung smart clip callbacks.
-  for (base::IDMap<std::unique_ptr<ExtractSmartClipDataCallback>>::iterator
-           iter(&smart_clip_callbacks_);
-       !iter.IsAtEnd(); iter.Advance()) {
-    std::move(*iter.GetCurrentValue())
-        .Run(base::string16(), base::string16(), gfx::Rect());
-  }
-  smart_clip_callbacks_.Clear();
-#endif  // defined(OS_ANDROID)
-
-  ax_tree_snapshot_callbacks_.clear();
-  visual_state_callbacks_.clear();
-
-  // Ensure that future remote interface requests are associated with the new
-  // process's channel.
-  remote_associated_interfaces_.reset();
-
-  // Any termination disablers in content loaded by the new process will
-  // be sent again.
-  sudden_termination_disabler_types_enabled_ = 0;
-
-  if (unload_state_ != UnloadState::NotRun) {
-    // If the process has died, we don't need to wait for the ACK. Complete the
-    // deletion immediately.
-    unload_state_ = UnloadState::Completed;
-    DCHECK(children_.empty());
-    PendingDeletionCheckCompleted();
-    // |this| is deleted. Don't add any more code at this point in the function.
-    return;
-  }
-
-  // If this was the current pending or speculative RFH dying, cancel and
-  // destroy it.
-  frame_tree_node_->render_manager()->CancelPendingIfNecessary(this);
-
-  // Note: don't add any more code at this point in the function because
-  // |this| may be deleted. Any additional cleanup should happen before
-  // the last block of code here.
 }
 
 void RenderFrameHostImpl::OnSwappedOut() {

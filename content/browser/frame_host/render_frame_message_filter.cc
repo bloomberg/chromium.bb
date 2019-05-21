@@ -328,8 +328,6 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_SaveImageFromDataURL,
                         OnSaveImageFromDataURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
-    IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_RenderProcessGone,
-                                OnRenderProcessGone())
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_OpenChannelToPepperPlugin,
@@ -551,15 +549,6 @@ void RenderFrameMessageFilter::OnAre3DAPIsBlocked(int render_frame_id,
                                                   bool* blocked) {
   *blocked = GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(
       top_origin_url, render_process_id_, render_frame_id, requester);
-}
-
-void RenderFrameMessageFilter::OnRenderProcessGone() {
-  // FrameHostMessage_RenderProcessGone is a synthetic IPC message used by
-  // RenderProcessHostImpl to clean things up after a crash (it's injected
-  // downstream of this filter). Allowing it to proceed would enable a renderer
-  // to fake its own death; instead, actually kill the renderer.
-  bad_message::ReceivedBadMessage(
-      this, bad_message::RFMF_RENDERER_FAKED_ITS_OWN_DEATH);
 }
 
 void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,

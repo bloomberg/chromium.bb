@@ -4491,7 +4491,7 @@ Unknown properties are collapsed to zero. -->
   <int value="100" label="OBSOLETE_BDH_EMPTY_OR_INVALID_FILTERS"/>
   <int value="101"
       label="OBSOLETE_WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO"/>
-  <int value="102" label="RFMF_RENDERER_FAKED_ITS_OWN_DEATH"/>
+  <int value="102" label="OBSOLETE_RFMF_RENDERER_FAKED_ITS_OWN_DEATH"/>
   <int value="103" label="DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE"/>
   <int value="104" label="OBSOLETE_DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE"/>
   <int value="105" label="BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN"/>

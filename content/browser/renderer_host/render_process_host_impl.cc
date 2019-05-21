@@ -4109,9 +4109,8 @@ void RenderProcessHostImpl::ProcessDied(
       // May be in case of IPC error, if it takes long time for renderer
       // to exit. Child process will be killed in any case during
       // child_process_launcher_.reset(). Make sure we will not broadcast
-      // FrameHostMsg_RenderProcessGone with status
-      // TERMINATION_STATUS_STILL_RUNNING, since this will break WebContentsImpl
-      // logic.
+      // RenderProcessExited with status TERMINATION_STATUS_STILL_RUNNING, since
+      // this will break WebContentsImpl logic.
       info.status = base::TERMINATION_STATUS_PROCESS_CRASHED;
 
 // TODO(siggi): Remove this once https://crbug.com/806661 is resolved.
@@ -4130,20 +4129,13 @@ void RenderProcessHostImpl::ProcessDied(
 
   UpdateProcessPriority();
 
-  // RenderProcessGone relies on the exit code set during shutdown.
+  // RenderProcessExited relies on the exit code set during shutdown.
   if (shutdown_exit_code_ != -1)
     info.exit_code = shutdown_exit_code_;
 
   within_process_died_observer_ = true;
   for (auto& observer : observers_)
     observer.RenderProcessExited(this, info);
-
-  base::IDMap<IPC::Listener*>::iterator iter(&listeners_);
-  while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
-        iter.GetCurrentKey(), static_cast<int>(info.status), info.exit_code));
-    iter.Advance();
-  }
 
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
