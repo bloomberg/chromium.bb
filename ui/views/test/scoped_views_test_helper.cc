@@ -37,8 +37,7 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
   test_helper_->SetUp();
 
   ui::InitializeInputMethodForTesting();
-  if (!ui::Clipboard::GetForCurrentThread())
-    ui::TestClipboard::CreateForCurrentThread();
+  ui::TestClipboard::CreateForCurrentThread();
 }
 
 ScopedViewsTestHelper::~ScopedViewsTestHelper() {
