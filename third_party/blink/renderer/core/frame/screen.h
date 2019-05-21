@@ -46,10 +46,6 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(Screen);
 
  public:
-  static Screen* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<Screen>(frame);
-  }
-
   explicit Screen(LocalFrame*);
 
   int height() const;

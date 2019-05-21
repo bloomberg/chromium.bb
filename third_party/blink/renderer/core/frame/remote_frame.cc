@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -32,9 +33,9 @@
 
 namespace blink {
 
-inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
-                                Page& page,
-                                FrameOwner* owner)
+RemoteFrame::RemoteFrame(RemoteFrameClient* client,
+                         Page& page,
+                         FrameOwner* owner)
     : Frame(client,
             page,
             owner,
@@ -43,14 +44,8 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
   UpdateInertIfPossible();
   UpdateInheritedEffectiveTouchActionIfPossible();
-}
 
-RemoteFrame* RemoteFrame::Create(RemoteFrameClient* client,
-                                 Page& page,
-                                 FrameOwner* owner) {
-  RemoteFrame* frame = MakeGarbageCollected<RemoteFrame>(client, page, owner);
-  frame->Initialize();
-  return frame;
+  Initialize();
 }
 
 RemoteFrame::~RemoteFrame() {
@@ -214,7 +209,7 @@ void RemoteFrame::CreateView() {
 
   DCHECK(!DeprecatedLocalOwner()->OwnedEmbeddedContentView());
 
-  SetView(RemoteFrameView::Create(this));
+  SetView(MakeGarbageCollected<RemoteFrameView>(this));
 
   if (OwnerLayoutObject())
     DeprecatedLocalOwner()->SetEmbeddedContentView(view_);

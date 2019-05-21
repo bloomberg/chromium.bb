@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
 namespace blink {
@@ -21,8 +22,8 @@ LocalFrame* SingleChildLocalFrameClient::CreateFrame(
   LocalFrame* parent_frame = owner_element->GetDocument().GetFrame();
   auto* child_client =
       MakeGarbageCollected<LocalFrameClientWithParent>(parent_frame);
-  child_ =
-      LocalFrame::Create(child_client, *parent_frame->GetPage(), owner_element);
+  child_ = MakeGarbageCollected<LocalFrame>(
+      child_client, *parent_frame->GetPage(), owner_element);
   child_->CreateView(IntSize(500, 500), Color::kTransparent);
   child_->Init();
 

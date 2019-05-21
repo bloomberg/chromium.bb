@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -789,8 +790,8 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
     DCHECK(!frame_client_);
     frame_client_ = MakeGarbageCollected<SVGImageLocalFrameClient>(this);
-    frame = LocalFrame::Create(frame_client_, *page, nullptr);
-    frame->SetView(LocalFrameView::Create(*frame));
+    frame = MakeGarbageCollected<LocalFrame>(frame_client_, *page, nullptr);
+    frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
     frame->Init();
   }
 

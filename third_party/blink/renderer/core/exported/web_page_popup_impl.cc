@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -287,10 +288,10 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, empty_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  LocalFrame* frame =
-      LocalFrame::Create(empty_local_frame_client, *page_, nullptr);
+  auto* frame = MakeGarbageCollected<LocalFrame>(empty_local_frame_client,
+                                                 *page_, nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
-  frame->SetView(LocalFrameView::Create(*frame));
+  frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);

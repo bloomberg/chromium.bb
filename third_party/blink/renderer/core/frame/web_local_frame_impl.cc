@@ -253,6 +253,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -803,7 +804,7 @@ void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
   DCHECK(GetFrame());
 
   scoped_refptr<DOMWrapperWorld> main_world = &DOMWrapperWorld::MainWorld();
-  PausableScriptExecutor* executor = PausableScriptExecutor::Create(
+  auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
       GetFrame(), std::move(main_world), CreateSourcesVector(&source, 1),
       user_gesture, callback);
   executor->Run();
@@ -835,7 +836,7 @@ void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
 
   scoped_refptr<DOMWrapperWorld> isolated_world =
       DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(GetFrame()), world_id);
-  PausableScriptExecutor* executor = PausableScriptExecutor::Create(
+  auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
       GetFrame(), std::move(isolated_world),
       CreateSourcesVector(sources_in, num_sources), user_gesture, callback);
   switch (option) {
@@ -1617,19 +1618,6 @@ WebLocalFrame* WebLocalFrame::CreateProvisional(
       previous_frame, frame_policy);
 }
 
-WebLocalFrameImpl* WebLocalFrameImpl::Create(
-    WebTreeScopeType scope,
-    WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry,
-    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
-    WebFrame* opener) {
-  WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      scope, client, interface_registry,
-      std::move(document_interface_broker_handle));
-  frame->SetOpener(opener);
-  return frame;
-}
-
 WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebLocalFrameClient* client,
@@ -1661,9 +1649,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     WebFrame* previous_web_frame,
     const FramePolicy& frame_policy) {
   DCHECK(client);
-  WebLocalFrameImpl* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      previous_web_frame, client, interface_registry,
-      std::move(document_interface_broker_handle));
+  auto* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      previous_web_frame->InShadowTree() ? WebTreeScopeType::kShadow
+                                         : WebTreeScopeType::kDocument,
+      client, interface_registry, std::move(document_interface_broker_handle));
   Frame* previous_frame = ToCoreFrame(*previous_web_frame);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
@@ -1734,18 +1723,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(
   client_->BindToFrame(this);
 }
 
-WebLocalFrameImpl::WebLocalFrameImpl(
-    WebFrame* previous_web_frame,
-    WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry,
-    mojo::ScopedMessagePipeHandle document_interface_broker_handle)
-    : WebLocalFrameImpl(previous_web_frame->InShadowTree()
-                            ? WebTreeScopeType::kShadow
-                            : WebTreeScopeType::kDocument,
-                        client,
-                        interface_registry,
-                        std::move(document_interface_broker_handle)) {}
-
 WebLocalFrameImpl::~WebLocalFrameImpl() {
   // The widget for the frame, if any, must have already been closed.
   DCHECK(!frame_widget_);
@@ -1770,8 +1747,8 @@ void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
 void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
                                             FrameOwner* owner,
                                             const AtomicString& name) {
-  SetCoreFrame(LocalFrame::Create(local_frame_client_.Get(), page, owner,
-                                  interface_registry_));
+  SetCoreFrame(MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), page,
+                                                owner, interface_registry_));
   frame_->Tree().SetName(name);
   // We must call init() after frame_ is assigned because it is referenced
   // during init().

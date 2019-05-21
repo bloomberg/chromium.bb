@@ -35,7 +35,6 @@
 #include <set>
 
 #include "base/single_thread_task_runner.h"
-
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
@@ -345,11 +344,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WillBeDetached();
   void WillDetachParent();
 
-  static WebLocalFrameImpl* Create(WebTreeScopeType,
-                                   WebLocalFrameClient*,
-                                   InterfaceRegistry*,
-                                   mojo::ScopedMessagePipeHandle,
-                                   WebFrame* opener);
   static WebLocalFrameImpl* CreateMainFrame(WebView*,
                                             WebLocalFrameClient*,
                                             InterfaceRegistry*,
@@ -365,10 +359,6 @@ class CORE_EXPORT WebLocalFrameImpl final
                                               const FramePolicy&);
 
   WebLocalFrameImpl(WebTreeScopeType,
-                    WebLocalFrameClient*,
-                    blink::InterfaceRegistry*,
-                    mojo::ScopedMessagePipeHandle);
-  WebLocalFrameImpl(WebFrame*,
                     WebLocalFrameClient*,
                     blink::InterfaceRegistry*,
                     mojo::ScopedMessagePipeHandle);

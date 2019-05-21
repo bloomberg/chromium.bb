@@ -118,12 +118,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
-  static LocalFrame* Create(LocalFrameClient*,
-                            Page&,
-                            FrameOwner*,
-                            InterfaceRegistry* = nullptr);
-
-  LocalFrame(LocalFrameClient*, Page&, FrameOwner*, InterfaceRegistry*);
+  LocalFrame(LocalFrameClient*,
+             Page&,
+             FrameOwner*,
+             InterfaceRegistry* = nullptr);
 
   void Init();
   void SetView(LocalFrameView*);

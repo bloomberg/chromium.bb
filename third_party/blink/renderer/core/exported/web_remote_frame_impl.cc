@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -149,9 +150,10 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type,
     WebFrame* opener) {
-  WebLocalFrameImpl* child = WebLocalFrameImpl::Create(
+  auto* child = MakeGarbageCollected<WebLocalFrameImpl>(
       scope, client, interface_registry,
-      std::move(document_interface_broker_handle), opener);
+      std::move(document_interface_broker_handle));
+  child->SetOpener(opener);
   InsertAfter(child, previous_sibling);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, frame_owner_properties, frame_owner_element_type);
@@ -163,7 +165,8 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
 void WebRemoteFrameImpl::InitializeCoreFrame(Page& page,
                                              FrameOwner* owner,
                                              const AtomicString& name) {
-  SetCoreFrame(RemoteFrame::Create(frame_client_.Get(), page, owner));
+  SetCoreFrame(
+      MakeGarbageCollected<RemoteFrame>(frame_client_.Get(), page, owner));
   GetFrame()->CreateView();
   frame_->Tree().SetName(name);
 }

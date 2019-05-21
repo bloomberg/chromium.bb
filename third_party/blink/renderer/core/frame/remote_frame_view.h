@@ -29,8 +29,6 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameView);
 
  public:
-  static RemoteFrameView* Create(RemoteFrame*);
-
   explicit RemoteFrameView(RemoteFrame*);
   ~RemoteFrameView() override;
 

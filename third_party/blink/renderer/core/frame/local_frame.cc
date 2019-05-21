@@ -107,6 +107,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
@@ -209,21 +210,6 @@ UserActivationFrameResultEnum DetermineActivationResultEnum(
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
-// static
-LocalFrame* LocalFrame::Create(LocalFrameClient* client,
-                               Page& page,
-                               FrameOwner* owner,
-                               InterfaceRegistry* interface_registry) {
-  LocalFrame* frame = MakeGarbageCollected<LocalFrame>(
-      client, page, owner,
-      interface_registry ? interface_registry
-                         : InterfaceRegistry::GetEmptyInterfaceRegistry());
-  frame->Initialize();
-
-  probe::FrameAttachedToParent(frame);
-  return frame;
-}
-
 void LocalFrame::Init() {
   CoreInitializer::GetInstance().InitLocalFrame(*this);
 
@@ -252,12 +238,12 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
 
   LocalFrameView* frame_view = nullptr;
   if (is_local_root) {
-    frame_view = LocalFrameView::Create(*this, viewport_size);
+    frame_view = MakeGarbageCollected<LocalFrameView>(*this, viewport_size);
 
     // The layout size is set by WebViewImpl to support @viewport
     frame_view->SetLayoutSizeFixedToFrameSize(false);
   } else {
-    frame_view = LocalFrameView::Create(*this);
+    frame_view = MakeGarbageCollected<LocalFrameView>(*this);
   }
 
   SetView(frame_view);
@@ -902,10 +888,10 @@ bool LocalFrame::ShouldThrottleRendering() const {
   return View() && View()->ShouldThrottleRendering();
 }
 
-inline LocalFrame::LocalFrame(LocalFrameClient* client,
-                              Page& page,
-                              FrameOwner* owner,
-                              InterfaceRegistry* interface_registry)
+LocalFrame::LocalFrame(LocalFrameClient* client,
+                       Page& page,
+                       FrameOwner* owner,
+                       InterfaceRegistry* interface_registry)
     : Frame(client,
             page,
             owner,
@@ -934,7 +920,9 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       in_view_source_mode_(false),
       inspector_task_runner_(InspectorTaskRunner::Create(
           GetTaskRunner(TaskType::kInternalInspector))),
-      interface_registry_(interface_registry),
+      interface_registry_(interface_registry
+                              ? interface_registry
+                              : InterfaceRegistry::GetEmptyInterfaceRegistry()),
       is_save_data_enabled_(
           !(GetSettings() && GetSettings()->GetDataSaverHoldbackWebApi()) &&
           GetNetworkStateNotifier().SaveDataEnabled()) {
@@ -964,6 +952,10 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
   }
   DCHECK(ad_tracker_ ? RuntimeEnabledFeatures::AdTaggingEnabled()
                      : !RuntimeEnabledFeatures::AdTaggingEnabled());
+
+  Initialize();
+
+  probe::FrameAttachedToParent(this);
 }
 
 FrameScheduler* LocalFrame::GetFrameScheduler() {

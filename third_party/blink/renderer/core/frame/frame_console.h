@@ -51,10 +51,6 @@ class SourceLocation;
 class CORE_EXPORT FrameConsole final
     : public GarbageCollectedFinalized<FrameConsole> {
  public:
-  static FrameConsole* Create(LocalFrame& frame) {
-    return MakeGarbageCollected<FrameConsole>(frame);
-  }
-
   explicit FrameConsole(LocalFrame&);
 
   void AddMessage(ConsoleMessage*);

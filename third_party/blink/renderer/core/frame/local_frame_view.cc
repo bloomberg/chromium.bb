@@ -221,6 +221,17 @@ static const unsigned kMaxUpdatePluginsIterations = 2;
 
 static bool g_initial_track_all_paint_invalidations = false;
 
+LocalFrameView::LocalFrameView(LocalFrame& frame)
+    : LocalFrameView(frame, IntRect()) {
+  Show();
+}
+
+LocalFrameView::LocalFrameView(LocalFrame& frame, const IntSize& initial_size)
+    : LocalFrameView(frame, IntRect(IntPoint(), initial_size)) {
+  SetLayoutSizeInternal(initial_size);
+  Show();
+}
+
 LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
     : FrameView(frame_rect),
       frame_(frame),
@@ -278,22 +289,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
   if (frame_->Owner() &&
       frame_->Owner()->ScrollingMode() == kScrollbarAlwaysOff)
     SetCanHaveScrollbars(false);
-}
-
-LocalFrameView* LocalFrameView::Create(LocalFrame& frame) {
-  LocalFrameView* view = MakeGarbageCollected<LocalFrameView>(frame, IntRect());
-  view->Show();
-  return view;
-}
-
-LocalFrameView* LocalFrameView::Create(LocalFrame& frame,
-                                       const IntSize& initial_size) {
-  LocalFrameView* view = MakeGarbageCollected<LocalFrameView>(
-      frame, IntRect(IntPoint(), initial_size));
-  view->SetLayoutSizeInternal(initial_size);
-
-  view->Show();
-  return view;
 }
 
 LocalFrameView::~LocalFrameView() {

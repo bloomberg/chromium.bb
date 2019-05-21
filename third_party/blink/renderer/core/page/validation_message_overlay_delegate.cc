@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -147,9 +148,9 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
   page_->GetSettings().SetMinimumLogicalFontSize(
       main_settings.GetMinimumLogicalFontSize());
 
-  auto* frame = LocalFrame::Create(
+  auto* frame = MakeGarbageCollected<LocalFrame>(
       MakeGarbageCollected<EmptyLocalFrameClient>(), *page_, nullptr);
-  frame->SetView(LocalFrameView::Create(*frame, view_size));
+  frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame, view_size));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);

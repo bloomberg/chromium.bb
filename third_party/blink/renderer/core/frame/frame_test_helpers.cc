@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -54,6 +55,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -255,7 +257,8 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
 WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
-  auto* frame = WebRemoteFrameImpl::Create(WebTreeScopeType::kDocument, client);
+  auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
+      WebTreeScopeType::kDocument, client);
   client->Bind(frame, std::move(owned_client));
   return frame;
 }

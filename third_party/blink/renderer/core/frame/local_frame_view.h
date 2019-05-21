@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_VIEW_H_
 
 #include <memory>
-#include <utility>
 
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
@@ -121,10 +120,8 @@ class CORE_EXPORT LocalFrameView final
     virtual void DidFinishLifecycleUpdate(const LocalFrameView&) = 0;
   };
 
-  static LocalFrameView* Create(LocalFrame&);
-  static LocalFrameView* Create(LocalFrame&, const IntSize& initial_size);
-
-  explicit LocalFrameView(LocalFrame&, IntRect);
+  explicit LocalFrameView(LocalFrame&);
+  LocalFrameView(LocalFrame&, const IntSize& initial_size);
   ~LocalFrameView() override;
 
   void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
@@ -717,6 +714,8 @@ class CORE_EXPORT LocalFrameView final
   }
 
  private:
+  LocalFrameView(LocalFrame&, IntRect);
+
 #if DCHECK_IS_ON()
   class DisallowLayoutInvalidationScope {
     STACK_ALLOCATED();

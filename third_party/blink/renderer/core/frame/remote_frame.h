@@ -24,8 +24,6 @@ struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame final : public Frame {
  public:
-  static RemoteFrame* Create(RemoteFrameClient*, Page&, FrameOwner*);
-
   RemoteFrame(RemoteFrameClient*, Page&, FrameOwner*);
   ~RemoteFrame() override;
 

@@ -24,6 +24,7 @@ namespace blink {
 RemoteFrameView::RemoteFrameView(RemoteFrame* remote_frame)
     : FrameView(IntRect()), remote_frame_(remote_frame) {
   DCHECK(remote_frame);
+  Show();
 }
 
 RemoteFrameView::~RemoteFrameView() = default;
@@ -76,12 +77,6 @@ void RemoteFrameView::DetachFromLayout() {
   DCHECK(IsAttached());
   SetParentVisible(false);
   SetAttached(false);
-}
-
-RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
-  RemoteFrameView* view = MakeGarbageCollected<RemoteFrameView>(remote_frame);
-  view->Show();
-  return view;
 }
 
 bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(

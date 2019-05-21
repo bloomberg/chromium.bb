@@ -80,6 +80,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "v8/include/v8.h"
 
@@ -846,9 +847,9 @@ void InspectorOverlayAgent::EnsureOverlayPageCreated() {
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  LocalFrame* frame =
-      LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
-  frame->SetView(LocalFrameView::Create(*frame));
+  auto* frame = MakeGarbageCollected<LocalFrame>(dummy_local_frame_client,
+                                                 *overlay_page_, nullptr);
+  frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
@@ -862,9 +863,9 @@ void InspectorOverlayAgent::LoadFrameForTool() {
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  LocalFrame* frame =
-      LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
-  frame->SetView(LocalFrameView::Create(*frame));
+  auto* frame = MakeGarbageCollected<LocalFrame>(dummy_local_frame_client,
+                                                 *overlay_page_, nullptr);
+  frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
