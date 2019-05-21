@@ -72,6 +72,7 @@
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
+#include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -1359,6 +1360,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindPresentationServiceRequest(
       blink::mojom::PresentationServiceRequest request);
+
+  void BindIdleManagerRequest(blink::mojom::IdleManagerRequest request);
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,

@@ -203,13 +203,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetLockManager()
             ->CreateService(std::move(request), origin);
       }));
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::IdleManagerRequest request, RenderProcessHost* host,
-         const url::Origin& origin) {
-        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-            ->GetIdleManager()
-            ->CreateService(std::move(request), origin);
-      }));
   if (base::FeatureList::IsEnabled(features::kSmsReceiver) &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {

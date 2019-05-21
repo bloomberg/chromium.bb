@@ -50,9 +50,7 @@ class CONTENT_EXPORT IdleManager : public blink::mojom::IdleManager {
   IdleManager();
   ~IdleManager() override;
 
-  // TODO: Origin for permission check; needed?
-  void CreateService(blink::mojom::IdleManagerRequest request,
-                     const url::Origin& origin);
+  void CreateService(blink::mojom::IdleManagerRequest request);
 
   // blink.mojom.IdleManager:
   void AddMonitor(base::TimeDelta threshold,

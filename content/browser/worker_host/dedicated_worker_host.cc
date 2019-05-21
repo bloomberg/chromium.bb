@@ -117,6 +117,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateDedicatedWorker, base::Unretained(this)));
+    registry_.AddInterface(base::BindRepeating(
+        &DedicatedWorkerHost::CreateIdleManager, base::Unretained(this)));
   }
 
   // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
@@ -250,6 +252,21 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     CreateDedicatedWorkerHostFactory(process_id_, ancestor_render_frame_id_,
                                      origin_, std::move(request));
+  }
+
+  void CreateIdleManager(blink::mojom::IdleManagerRequest request) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    auto* host =
+        RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
+    if (!host->IsFeatureEnabled(
+            blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
+      mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
+      return;
+    }
+    static_cast<StoragePartitionImpl*>(
+        host->GetProcess()->GetStoragePartition())
+        ->GetIdleManager()
+        ->CreateService(std::move(request));
   }
 
   const int process_id_;

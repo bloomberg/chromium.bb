@@ -77,9 +77,7 @@ TEST_F(IdleManagerTest, AddMonitor) {
   auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
   blink::mojom::IdleManagerPtr service_ptr;
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   blink::mojom::IdleMonitorRequest monitor_request =
@@ -119,10 +117,7 @@ TEST_F(IdleManagerTest, Idle) {
   auto impl = std::make_unique<IdleManager>();
   auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   auto monitor_request = mojo::MakeRequest(&monitor_ptr);
@@ -185,10 +180,7 @@ TEST_F(IdleManagerTest, UnlockingScreen) {
   auto impl = std::make_unique<IdleManager>();
   auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   auto monitor_request = mojo::MakeRequest(&monitor_ptr);
@@ -237,10 +229,7 @@ TEST_F(IdleManagerTest, LockingScreen) {
   auto impl = std::make_unique<IdleManager>();
   auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   auto monitor_request = mojo::MakeRequest(&monitor_ptr);
@@ -289,10 +278,7 @@ TEST_F(IdleManagerTest, LockingScreenThenIdle) {
   auto impl = std::make_unique<IdleManager>();
   auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   auto monitor_request = mojo::MakeRequest(&monitor_ptr);
@@ -364,10 +350,7 @@ TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
   auto impl = std::make_unique<IdleManager>();
   auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   auto monitor_request = mojo::MakeRequest(&monitor_ptr);
@@ -378,7 +361,7 @@ TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
   {
     base::RunLoop loop;
 
-    // Simulates a user going idle, but with the screen still unlocked.
+    // Initial state of the system.
     EXPECT_CALL(*mock, CalculateIdleTime())
         .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(0)));
     EXPECT_CALL(*mock, CheckIdleStateIsLocked())
@@ -445,9 +428,7 @@ TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
 
   blink::mojom::IdleManagerPtr service_ptr;
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   blink::mojom::IdleMonitorRequest monitor_request =
@@ -487,9 +468,7 @@ TEST_F(IdleManagerTest, Threshold) {
   auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
   blink::mojom::IdleManagerPtr service_ptr;
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   blink::mojom::IdleMonitorRequest monitor_request =
@@ -519,9 +498,7 @@ TEST_F(IdleManagerTest, BadThreshold) {
   auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
   blink::mojom::IdleManagerPtr service_ptr;
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->CreateService(mojo::MakeRequest(&service_ptr));
 
   blink::mojom::IdleMonitorPtr monitor_ptr;
   blink::mojom::IdleMonitorRequest monitor_request =
