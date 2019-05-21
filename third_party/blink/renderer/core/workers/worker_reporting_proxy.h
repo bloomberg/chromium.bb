@@ -69,12 +69,9 @@ class CORE_EXPORT WorkerReportingProxy {
   virtual void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) {}
 
   // Invoked when the WorkerGlobalScope is initialized on
-  // WorkerThread::InitializeOnWorkerThread.
+  // WorkerThread::InitializeOnWorkerThread. This is synchronously called after
+  // WillInitializeWorkerContext().
   virtual void DidInitializeWorkerContext() {}
-
-  // Invoked when the WorkerGlobalScope initialization failed on
-  // WorkerThread::InitializeOnWorkerThread.
-  virtual void DidFailToInitializeWorkerContext() {}
 
   // Invoked when the worker's main script is loaded on
   // WorkerThread::InitializeOnWorkerThread(). Only invoked when the script was

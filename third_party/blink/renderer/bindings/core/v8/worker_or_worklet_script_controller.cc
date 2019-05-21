@@ -142,7 +142,7 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
   script_state_->DissociateContext();
 }
 
-bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
+void WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   v8::HandleScope handle_scope(isolate_);
 
   DCHECK(!IsContextInitialized());
@@ -154,8 +154,7 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
       script_wrappable->GetWrapperTypeInfo();
   v8::Local<v8::FunctionTemplate> global_interface_template =
       wrapper_type_info->DomTemplate(isolate_, *world_);
-  if (global_interface_template.IsEmpty())
-    return false;
+  DCHECK(!global_interface_template.IsEmpty());
   v8::Local<v8::ObjectTemplate> global_template =
       global_interface_template->InstanceTemplate();
   v8::Local<v8::Context> context;
@@ -174,8 +173,7 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
                                v8::DeserializeInternalFieldsCallback(),
                                agent->event_loop()->microtask_queue());
   }
-  if (context.IsEmpty())
-    return false;
+  DCHECK(!context.IsEmpty());
 
   script_state_ = MakeGarbageCollected<ScriptState>(context, world_);
 
@@ -269,8 +267,6 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
     // call this here.
     PrepareForEvaluation();
   }
-
-  return true;
 }
 
 void WorkerOrWorkletScriptController::PrepareForEvaluation() {

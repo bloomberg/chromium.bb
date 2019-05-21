@@ -543,18 +543,11 @@ void WorkerThread::InitializeOnWorkerThread(
             WorkerThreadDebugger::From(GetIsolate()))
       debugger->WorkerThreadCreated(this);
 
-    if (GlobalScope()->ScriptController()->Initialize(url_for_debugger)) {
-      worker_reporting_proxy_.DidInitializeWorkerContext();
-      v8::HandleScope handle_scope(GetIsolate());
-      Platform::Current()->WorkerContextCreated(
-          GlobalScope()->ScriptController()->GetContext());
-    } else {
-      // TODO(nhiroki): Handle a case where the script controller fails to
-      // initialize the context. Specifically, we need to terminate this worker
-      // thread from the the parent thread. Currently we only record trace
-      // event.
-      worker_reporting_proxy_.DidFailToInitializeWorkerContext();
-    }
+    GlobalScope()->ScriptController()->Initialize(url_for_debugger);
+    worker_reporting_proxy_.DidInitializeWorkerContext();
+    v8::HandleScope handle_scope(GetIsolate());
+    Platform::Current()->WorkerContextCreated(
+        GlobalScope()->ScriptController()->GetContext());
 
     inspector_task_runner_->InitIsolate(GetIsolate());
     SetThreadState(ThreadState::kRunning);

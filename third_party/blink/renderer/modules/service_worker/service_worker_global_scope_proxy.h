@@ -165,7 +165,6 @@ class ServiceWorkerGlobalScopeProxy final
   void WillInitializeWorkerContext() override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void DidInitializeWorkerContext() override;
-  void DidFailToInitializeWorkerContext() override;
   void DidLoadClassicScript() override;
   void DidFailToLoadClassicScript() override;
   void DidFetchScript() override;

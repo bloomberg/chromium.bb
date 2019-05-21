@@ -647,9 +647,8 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
 
 void ServiceWorkerGlobalScopeProxy::WillInitializeWorkerContext() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext",
-      this);
+  TRACE_EVENT_BEGIN0("ServiceWorker",
+                     "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext");
 }
 
 void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
@@ -674,16 +673,8 @@ void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
       WorkerGlobalScope()->ScriptController()->GetScriptState());
   Client().DidInitializeWorkerContext(
       WorkerGlobalScope()->ScriptController()->GetContext());
-  TRACE_EVENT_ASYNC_END1(
-      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext",
-      this, "success", true);
-}
-
-void ServiceWorkerGlobalScopeProxy::DidFailToInitializeWorkerContext() {
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  TRACE_EVENT_ASYNC_END1(
-      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext",
-      this, "success", false);
+  TRACE_EVENT_END0("ServiceWorker",
+                   "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext");
 }
 
 void ServiceWorkerGlobalScopeProxy::DidLoadClassicScript() {

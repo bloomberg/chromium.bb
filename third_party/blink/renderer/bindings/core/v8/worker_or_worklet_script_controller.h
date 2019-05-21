@@ -73,7 +73,7 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
   // For main thread WorkletGlobalScope, WorkerOrWorkletGlobalScope::Name() is
   // used for setting DOMWrapperWorld's human readable name.
   // This should be called only once.
-  bool Initialize(const KURL& url_for_debugger);
+  void Initialize(const KURL& url_for_debugger);
 
   // Prepares for script evaluation. This must be called after Initialize()
   // before Evaluate().

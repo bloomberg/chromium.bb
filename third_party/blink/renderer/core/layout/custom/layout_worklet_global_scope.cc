@@ -32,7 +32,6 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
   auto* global_scope = MakeGarbageCollected<LayoutWorkletGlobalScope>(
       frame, std::move(creation_params), reporting_proxy,
       pending_layout_registry);
-  // TODO(bashi): Handle a case where the script controller fails to initialize.
   global_scope->ScriptController()->Initialize(NullURL());
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
