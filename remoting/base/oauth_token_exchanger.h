@@ -16,7 +16,17 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "remoting/base/oauth_token_getter.h"
 
+namespace grpc {
+class Status;
+}  // namespace grpc
+
 namespace remoting {
+
+namespace apis {
+namespace v1 {
+class UpdateRobotTokenResponse;
+}  // namespace v1
+}  // namespace apis
 
 class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
  public:
@@ -32,15 +42,22 @@ class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
                      TokenCallback on_new_token);
 
   // gaia::GaiaOAuthClient::Delegate interface.
+  void OnGetTokensResponse(const std::string& refresh_token,
+                           const std::string& access_token,
+                           int expires_in_seconds) override;
   void OnGetTokenInfoResponse(
       std::unique_ptr<base::DictionaryValue> token_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
  private:
+  class DirectoryServiceClient;
+
   void NotifyCallbacks(OAuthTokenGetter::Status status,
                        const std::string& access_token);
   void RequestNewToken();
+  void OnRobotTokenResponse(const grpc::Status& status,
+                            const apis::v1::UpdateRobotTokenResponse& response);
 
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   base::queue<TokenCallback> pending_callbacks_;
@@ -52,6 +69,9 @@ class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
   // Unset if the scopes are unknown and the tokeninfo endpoint needs to be
   // queried.
   base::Optional<bool> need_token_exchange_;
+
+  std::unique_ptr<DirectoryServiceClient> directory_service_client_;
+
   DISALLOW_COPY_AND_ASSIGN(OAuthTokenExchanger);
 };
 

@@ -11,7 +11,14 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "google_apis/google_api_keys.h"
+#include "remoting/base/grpc_support/grpc_async_executor.h"
+#include "remoting/base/grpc_support/grpc_async_unary_request.h"
+#include "remoting/base/grpc_support/grpc_channel.h"
+#include "remoting/base/service_urls.h"
+#include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/grpc/src/include/grpcpp/security/credentials.h"
 
 namespace remoting {
 
@@ -38,10 +45,56 @@ bool HasNeededScopes(const std::string& scopes) {
 
 }  // namespace
 
+class OAuthTokenExchanger::DirectoryServiceClient {
+ public:
+  using UpdateRobotTokenCallback =
+      base::OnceCallback<void(const grpc::Status&,
+                              const apis::v1::UpdateRobotTokenResponse&)>;
+
+  DirectoryServiceClient();
+  ~DirectoryServiceClient();
+
+  void UpdateRobotToken(const std::string& access_token,
+                        UpdateRobotTokenCallback callback);
+
+ private:
+  using RemotingDirectoryService = apis::v1::RemotingDirectoryService;
+
+  GrpcAsyncExecutor grpc_executor_;
+  std::unique_ptr<RemotingDirectoryService::Stub> stub_;
+};
+
+OAuthTokenExchanger::DirectoryServiceClient::DirectoryServiceClient() {
+  GrpcChannelSharedPtr channel = CreateSslChannelForEndpoint(
+      ServiceUrls::GetInstance()->remoting_server_endpoint());
+  stub_ = RemotingDirectoryService::NewStub(channel);
+}
+
+OAuthTokenExchanger::DirectoryServiceClient::~DirectoryServiceClient() =
+    default;
+
+void OAuthTokenExchanger::DirectoryServiceClient::UpdateRobotToken(
+    const std::string& access_token,
+    UpdateRobotTokenCallback callback) {
+  auto update_robot_token_request = apis::v1::UpdateRobotTokenRequest();
+  update_robot_token_request.set_client_id(
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING_HOST));
+  update_robot_token_request.set_offline(false);
+
+  auto async_request = CreateGrpcAsyncUnaryRequest(
+      base::BindOnce(&RemotingDirectoryService::Stub::AsyncUpdateRobotToken,
+                     base::Unretained(stub_.get())),
+      update_robot_token_request, std::move(callback));
+  async_request->context()->set_credentials(
+      grpc::AccessTokenCredentials(access_token));
+  grpc_executor_.ExecuteRpc(std::move(async_request));
+}
+
 OAuthTokenExchanger::OAuthTokenExchanger(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : gaia_oauth_client_(std::make_unique<gaia::GaiaOAuthClient>(
-          std::move(url_loader_factory))) {}
+          std::move(url_loader_factory))),
+      directory_service_client_(std::make_unique<DirectoryServiceClient>()) {}
 
 OAuthTokenExchanger::~OAuthTokenExchanger() = default;
 
@@ -62,6 +115,14 @@ void OAuthTokenExchanger::ExchangeToken(const std::string& access_token,
 
   // Return the original token, as it already has required scopes.
   NotifyCallbacks(OAuthTokenGetter::SUCCESS, oauth_access_token_);
+}
+
+void OAuthTokenExchanger::OnGetTokensResponse(const std::string& refresh_token,
+                                              const std::string& access_token,
+                                              int expires_in_seconds) {
+  // |expires_in_seconds| is unused - the exchanged token is assumed to be
+  // valid for at least as long as the original access token.
+  NotifyCallbacks(OAuthTokenGetter::SUCCESS, access_token);
 }
 
 void OAuthTokenExchanger::OnGetTokenInfoResponse(
@@ -105,8 +166,37 @@ void OAuthTokenExchanger::NotifyCallbacks(OAuthTokenGetter::Status status,
 }
 
 void OAuthTokenExchanger::RequestNewToken() {
-  NOTIMPLEMENTED() << "Token exchange not yet implemented.";
-  NotifyCallbacks(OAuthTokenGetter::SUCCESS, oauth_access_token_);
+  directory_service_client_->UpdateRobotToken(
+      oauth_access_token_,
+      base::BindOnce(&OAuthTokenExchanger::OnRobotTokenResponse,
+                     base::Unretained(this)));
+}
+
+void OAuthTokenExchanger::OnRobotTokenResponse(
+    const grpc::Status& status,
+    const apis::v1::UpdateRobotTokenResponse& response) {
+  if (!status.ok()) {
+    LOG(ERROR) << "Received error code: " << status.error_code()
+               << ", message: " << status.error_message();
+    NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string());
+    return;
+  }
+
+  if (!response.has_auth_code()) {
+    LOG(ERROR) << "Received response without auth_code.";
+    NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string());
+    return;
+  }
+
+  // The redirect_uri parameter is required for GetTokensFromAuthCode(), but
+  // "oob" (out of band) can be used for robot accounts.
+  gaia::OAuthClientInfo client_info = {
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING_HOST),
+      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING_HOST),
+      "oob"};
+
+  gaia_oauth_client_->GetTokensFromAuthCode(client_info, response.auth_code(),
+                                            kMaxRetries, this);
 }
 
 }  // namespace remoting

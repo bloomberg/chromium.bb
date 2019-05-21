@@ -111,6 +111,10 @@ source_set("authorization") {
     "//google_apis",
     "//net",
   ]
+
+  deps = [
+    "//remoting/proto/remoting/v1:directory_grpc_library",
+  ]
 }
 
 source_set("breakpad") {

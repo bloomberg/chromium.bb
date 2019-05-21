@@ -98,7 +98,12 @@ message RegisterHostResponse {
 
 // Requests an auth_code with updated OAuth scopes.  Should only be called by
 // robot accounts assigned to a Me2me host.
-message UpdateRobotTokenRequest {}
+message UpdateRobotTokenRequest {
+  // OAuth client ID of the requesting host.
+  optional string client_id = 1;
+  // Whether to request offline access.
+  optional bool offline = 2;
+}
 
 // Response to a UpdateRobotTokenRequest.
 message UpdateRobotTokenResponse {
