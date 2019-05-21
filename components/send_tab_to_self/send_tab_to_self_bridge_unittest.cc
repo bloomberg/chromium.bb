@@ -743,10 +743,9 @@ TEST_F(SendTabToSelfBridgeTest,
       ElementsAre(Pair(enabled_device.client_name(), target_device_info)));
 }
 
-// TODO(crbug/959487):
 // Tests that only devices that are not expired are returned.
 TEST_F(SendTabToSelfBridgeTest,
-       DISABLED_GetTargetDeviceNameToCacheInfoMap_NoExpiredDevices) {
+       GetTargetDeviceNameToCacheInfoMap_NoExpiredDevices) {
   InitializeBridge();
 
   syncer::DeviceInfo expired_device(
@@ -800,10 +799,9 @@ TEST_F(SendTabToSelfBridgeTest,
       ElementsAre(Pair(other_device.client_name(), target_device_info)));
 }
 
-// TODO(crbug/959487):
 // Tests that the local device is not returned.
 TEST_F(SendTabToSelfBridgeTest,
-       DISABLED_GetTargetDeviceNameToCacheInfoMap_Updated_DeviceExpired) {
+       GetTargetDeviceNameToCacheInfoMap_Updated_DeviceExpired) {
   InitializeBridge();
 
   // Set a device that is about to expire and a more recent device.
