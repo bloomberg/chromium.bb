@@ -155,6 +155,25 @@ bool CheckStudyVersion(const Study::Filter& filter,
   return true;
 }
 
+bool CheckStudyOSVersion(const Study::Filter& filter,
+                         const base::Version& version) {
+  if (filter.has_min_os_version()) {
+    if (!version.IsValid() ||
+        version.CompareToWildcardString(filter.min_os_version()) < 0) {
+      return false;
+    }
+  }
+
+  if (filter.has_max_os_version()) {
+    if (!version.IsValid() ||
+        version.CompareToWildcardString(filter.max_os_version()) > 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool CheckStudyCountry(const Study::Filter& filter,
                        const std::string& country) {
   // Empty country and exclude_country matches all.
