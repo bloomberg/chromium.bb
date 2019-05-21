@@ -162,13 +162,10 @@ void NetworkListView::OnGetNetworkStateList(
       wifi_has_networks_ = true;
 
     auto info = std::make_unique<NetworkInfo>(network->guid);
-
-    network_icon::NetworkIconState network_icon_state(network.get());
-    info->label = network_icon::GetLabelForNetworkList(network_icon_state);
+    info->label = network_icon::GetLabelForNetworkList(network.get());
     // |network_list_| only contains non virtual networks.
     info->image = network_icon::GetImageForNonVirtualNetwork(
-        network_icon_state, network_icon::ICON_TYPE_LIST,
-        false /* badge_vpn */);
+        network.get(), network_icon::ICON_TYPE_LIST, false /* badge_vpn */);
     info->disable = activation_state == ActivationStateType::kActivating ||
                     network->prohibited_by_policy;
     if (network->prohibited_by_policy) {

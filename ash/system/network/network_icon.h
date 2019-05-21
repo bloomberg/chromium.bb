@@ -18,26 +18,6 @@
 namespace ash {
 namespace network_icon {
 
-// TODO(stevenjb): Replace with network_config::mojom::NetworkStateProperties.
-struct ASH_EXPORT NetworkIconState {
-  // Constructs a NetworkIconState from mojom::NetworkStateProperties.
-  explicit NetworkIconState(
-      const chromeos::network_config::mojom::NetworkStateProperties* network);
-  NetworkIconState(const NetworkIconState& other);
-  NetworkIconState& operator=(const NetworkIconState& other);
-  ~NetworkIconState();
-
-  std::string guid;
-  std::string name;
-  chromeos::network_config::mojom::NetworkType type;
-  chromeos::network_config::mojom::ConnectionStateType connection_state;
-  chromeos::network_config::mojom::SecurityType security;  // ONC security type
-  std::string network_technology;  // ONC network technology type
-  chromeos::network_config::mojom::ActivationStateType activation_state;
-  int signal_strength = 0;  // 0-100.
-  bool is_roaming = false;
-};
-
 // Type of icon which dictates color theme and VPN badging
 enum IconType {
   ICON_TYPE_TRAY_OOBE,     // dark icons with VPN badges, used during OOBE
@@ -49,12 +29,6 @@ enum IconType {
 
 // Strength of a wireless signal.
 enum class SignalStrength { NONE, WEAK, MEDIUM, STRONG };
-
-// Returns true if |icon_state| is connected or portal.
-bool IsConnected(const NetworkIconState& icon_state);
-
-// Returns true if |icon_state| is connecting.
-bool IsConnecting(const NetworkIconState& icon_state);
 
 // Returns an image to represent either a fully connected network or a
 // disconnected network.
@@ -70,16 +44,17 @@ const gfx::ImageSkia GetBasicImage(
 // |animating| is an optional out parameter that is set to true when the
 // returned image should be animated.
 ASH_EXPORT gfx::ImageSkia GetImageForNonVirtualNetwork(
-    const NetworkIconState& network,
+    const chromeos::network_config::mojom::NetworkStateProperties* network,
     IconType icon_type,
     bool badge_vpn,
     bool* animating = nullptr);
 
 // Similar to above but for displaying only VPN icons, e.g. for the VPN menu
 // or Settings section.
-ASH_EXPORT gfx::ImageSkia GetImageForVPN(const NetworkIconState& vpn,
-                                         IconType icon_type,
-                                         bool* animating = nullptr);
+ASH_EXPORT gfx::ImageSkia GetImageForVPN(
+    const chromeos::network_config::mojom::NetworkStateProperties* vpn,
+    IconType icon_type,
+    bool* animating = nullptr);
 
 // Returns an image for a Wi-Fi network, either full strength or strike-through
 // based on |enabled|.
@@ -95,7 +70,8 @@ gfx::ImageSkia GetConnectingImageForNetworkType(
 // Returns the connected image for |connected_network| and |network_type| with a
 // connecting VPN badge.
 gfx::ImageSkia GetConnectedNetworkWithConnectingVpnImage(
-    const NetworkIconState& connected_network,
+    const chromeos::network_config::mojom::NetworkStateProperties*
+        connected_network,
     IconType icon_type);
 
 // Returns the disconnected image for a shill network type.
@@ -109,7 +85,7 @@ ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
 
 // Returns the label for |network| when displayed in a list.
 ASH_EXPORT base::string16 GetLabelForNetworkList(
-    const NetworkIconState& network);
+    const chromeos::network_config::mojom::NetworkStateProperties* network);
 
 // Called periodically with the current list of network guids. Removes cached
 // entries that are no longer in the list.

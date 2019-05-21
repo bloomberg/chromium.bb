@@ -92,7 +92,7 @@ class NetworkIconTest : public testing::Test {
   gfx::Image GetImageForNonVirtualNetwork(const NetworkStateProperties* network,
                                           bool badge_vpn) {
     return gfx::Image(network_icon::GetImageForNonVirtualNetwork(
-        network_icon::NetworkIconState(network), icon_type_, badge_vpn));
+        network, icon_type_, badge_vpn));
   }
 
   gfx::Image ImageForNetwork(const NetworkStateProperties* network) {

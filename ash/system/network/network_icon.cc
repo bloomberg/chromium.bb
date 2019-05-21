@@ -28,6 +28,7 @@
 
 using chromeos::network_config::mojom::ActivationStateType;
 using chromeos::network_config::mojom::ConnectionStateType;
+using chromeos::network_config::mojom::NetworkStateProperties;
 using chromeos::network_config::mojom::NetworkType;
 using chromeos::network_config::mojom::SecurityType;
 
@@ -45,22 +46,22 @@ class NetworkIconImpl {
 
   // Determines whether or not the associated network might be dirty and if so
   // updates and generates the icon. Does nothing if network no longer exists.
-  void Update(const NetworkIconState& network, bool show_vpn_badge);
+  void Update(const NetworkStateProperties* network, bool show_vpn_badge);
 
   const gfx::ImageSkia& image() const { return image_; }
 
  private:
   // Updates |strength_index_| for wireless networks. Returns true if changed.
-  bool UpdateWirelessStrengthIndex(const NetworkIconState& network);
+  bool UpdateWirelessStrengthIndex(const NetworkStateProperties* network);
 
   // Updates the local state for cellular networks. Returns true if changed.
-  bool UpdateCellularState(const NetworkIconState& network);
+  bool UpdateCellularState(const NetworkStateProperties* network);
 
   // Gets |badges| based on |network| and the current state.
-  void GetBadges(const NetworkIconState& network, Badges* badges);
+  void GetBadges(const NetworkStateProperties* network, Badges* badges);
 
   // Gets the appropriate icon and badges and composites the image.
-  void GenerateImage(const NetworkIconState& network);
+  void GenerateImage(const NetworkStateProperties* network);
 
   // Defines color theme and VPN badging
   const IconType icon_type_;
@@ -250,10 +251,11 @@ int StrengthIndex(int strength) {
   return zero_based_index + 1;
 }
 
-Badge BadgeForNetworkTechnology(const NetworkIconState& network,
+Badge BadgeForNetworkTechnology(const NetworkStateProperties* network,
                                 IconType icon_type) {
+  DCHECK(network->type == NetworkType::kCellular);
   Badge badge = {nullptr, GetDefaultColorForIconType(icon_type)};
-  const std::string& technology = network.network_technology;
+  const std::string& technology = network->cellular->network_technology;
   if (technology == onc::cellular::kTechnologyEvdo) {
     badge.icon = &kNetworkBadgeTechnologyEvdoIcon;
   } else if (technology == onc::cellular::kTechnologyCdma1Xrtt) {
@@ -279,21 +281,22 @@ Badge BadgeForNetworkTechnology(const NetworkIconState& network,
   return badge;
 }
 
-gfx::ImageSkia GetIcon(const NetworkIconState& network,
+gfx::ImageSkia GetIcon(const NetworkStateProperties* network,
                        IconType icon_type,
                        int strength_index) {
-  if (network.type == NetworkType::kEthernet) {
+  if (network->type == NetworkType::kEthernet) {
     return gfx::CreateVectorIcon(vector_icons::kEthernetIcon,
                                  GetDefaultColorForIconType(icon_type));
   }
-  if (network.type == NetworkType::kVPN) {
+  if (network->type == NetworkType::kVPN) {
     DCHECK(!IsTrayIcon(icon_type));
     return gfx::CreateVectorIcon(kNetworkVpnIcon,
                                  GetDefaultColorForIconType(ICON_TYPE_LIST));
   }
-  DCHECK_GE(strength_index, 0) << "Strength not set for type: " << network.type;
+  DCHECK_GE(strength_index, 0)
+      << "Strength not set for type: " << network->type;
   DCHECK_LT(strength_index, kNumNetworkImages);
-  return GetImageForIndex(ImageTypeForNetworkType(network.type), icon_type,
+  return GetImageForIndex(ImageTypeForNetworkType(network->type), icon_type,
                           strength_index);
 }
 
@@ -305,41 +308,6 @@ gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
 
 }  // namespace
 
-NetworkIconState::NetworkIconState(
-    const chromeos::network_config::mojom::NetworkStateProperties* network) {
-  guid = network->guid;
-  name = network->name;
-  type = network->type;
-  connection_state = network->connection_state;
-  if (type == NetworkType::kCellular) {
-    activation_state = network->cellular->activation_state;
-    network_technology = network->cellular->network_technology;
-    is_roaming = network->cellular->roaming;
-    signal_strength = network->cellular->signal_strength;
-  } else {
-    activation_state = ActivationStateType::kUnknown;
-  }
-  if (type == NetworkType::kTether) {
-    signal_strength = network->tether->signal_strength;
-  }
-  if (type == NetworkType::kWiFi) {
-    security = network->wifi->security;
-    signal_strength = network->wifi->signal_strength;
-  } else {
-    security = chromeos::network_config::mojom::SecurityType::kNone;
-  }
-  if (type == NetworkType::kWiMAX) {
-    signal_strength = network->wimax->signal_strength;
-  }
-}
-
-NetworkIconState::NetworkIconState(const NetworkIconState& other) = default;
-
-NetworkIconState& NetworkIconState::operator=(const NetworkIconState& other) =
-    default;
-
-NetworkIconState::~NetworkIconState() = default;
-
 //------------------------------------------------------------------------------
 // NetworkIconImpl
 
@@ -350,19 +318,19 @@ NetworkIconImpl::NetworkIconImpl(const std::string& guid,
   // Default image is null.
 }
 
-void NetworkIconImpl::Update(const NetworkIconState& network,
+void NetworkIconImpl::Update(const NetworkStateProperties* network,
                              bool show_vpn_badge) {
   // Determine whether or not we need to update the icon.
   bool dirty = image_.isNull();
 
-  if (network.connection_state != connection_state_) {
+  if (network->connection_state != connection_state_) {
     VLOG(2) << "Update connection state: "
-            << static_cast<int>(network.connection_state);
-    connection_state_ = network.connection_state;
+            << static_cast<int>(network->connection_state);
+    connection_state_ = network->connection_state;
     dirty = true;
   }
 
-  NetworkType type = network.type;
+  NetworkType type = network->type;
   if (chromeos::network_config::NetworkTypeMatchesType(
           type, NetworkType::kWireless)) {
     dirty |= UpdateWirelessStrengthIndex(network);
@@ -385,8 +353,9 @@ void NetworkIconImpl::Update(const NetworkIconState& network,
 }
 
 bool NetworkIconImpl::UpdateWirelessStrengthIndex(
-    const NetworkIconState& network) {
-  int index = StrengthIndex(network.signal_strength);
+    const NetworkStateProperties* network) {
+  int index = StrengthIndex(
+      chromeos::network_config::GetWirelessSignalStrength(network));
   if (index != strength_index_) {
     VLOG(2) << "New strength index: " << index;
     strength_index_ = index;
@@ -395,7 +364,8 @@ bool NetworkIconImpl::UpdateWirelessStrengthIndex(
   return false;
 }
 
-bool NetworkIconImpl::UpdateCellularState(const NetworkIconState& network) {
+bool NetworkIconImpl::UpdateCellularState(
+    const NetworkStateProperties* network) {
   bool dirty = false;
   if (!features::IsSeparateNetworkIconsEnabled()) {
     const Badge technology_badge =
@@ -407,29 +377,34 @@ bool NetworkIconImpl::UpdateCellularState(const NetworkIconState& network) {
     }
   }
 
-  if (network.is_roaming != is_roaming_) {
-    VLOG(2) << "New is_roaming: " << network.is_roaming;
-    is_roaming_ = network.is_roaming;
+  bool roaming = network->cellular->roaming;
+  if (roaming != is_roaming_) {
+    VLOG(2) << "New is_roaming: " << roaming;
+    is_roaming_ = roaming;
     dirty = true;
   }
   return dirty;
 }
 
-void NetworkIconImpl::GetBadges(const NetworkIconState& network,
+void NetworkIconImpl::GetBadges(const NetworkStateProperties* network,
                                 Badges* badges) {
-  const NetworkType type = network.type;
+  const NetworkType type = network->type;
   const SkColor icon_color = GetDefaultColorForIconType(icon_type_);
+  bool is_connected =
+      chromeos::network_config::StateIsConnected(network->connection_state);
   if (type == NetworkType::kWiFi) {
-    if (network.security != SecurityType::kNone && !IsTrayIcon(icon_type_)) {
+    if (network->wifi->security != SecurityType::kNone &&
+        !IsTrayIcon(icon_type_)) {
       badges->bottom_right = {&kUnifiedNetworkBadgeSecureIcon, icon_color};
     }
   } else if (type == NetworkType::kCellular) {
     // technology_badge_ is set in UpdateCellularState.
-    if (IsConnected(network) && network.is_roaming)
+    if (is_connected && network->cellular->roaming) {
       badges->bottom_right = {&kNetworkBadgeRoamingIcon, icon_color};
+    }
   }
   // Only show technology badge when connected.
-  if (IsConnected(network) && !features::IsSeparateNetworkIconsEnabled())
+  if (is_connected && !features::IsSeparateNetworkIconsEnabled())
     badges->top_left = technology_badge_;
   if (show_vpn_badge_)
     badges->bottom_left = {&kUnifiedNetworkBadgeVpnIcon, icon_color};
@@ -437,7 +412,7 @@ void NetworkIconImpl::GetBadges(const NetworkIconState& network,
     badges->bottom_right = {&kUnifiedNetworkBadgeCaptivePortalIcon, icon_color};
 }
 
-void NetworkIconImpl::GenerateImage(const NetworkIconState& network) {
+void NetworkIconImpl::GenerateImage(const NetworkStateProperties* network) {
   gfx::ImageSkia icon = GetIcon(network, icon_type_, strength_index_);
   Badges badges;
   GetBadges(network, &badges);
@@ -446,19 +421,19 @@ void NetworkIconImpl::GenerateImage(const NetworkIconState& network) {
 
 namespace {
 
-NetworkIconImpl* FindAndUpdateImageImpl(const NetworkIconState& network,
+NetworkIconImpl* FindAndUpdateImageImpl(const NetworkStateProperties* network,
                                         IconType icon_type,
                                         bool show_vpn_badge) {
   // Find or add the icon.
   NetworkIconMap* icon_map = GetIconMap(icon_type);
   NetworkIconImpl* icon;
-  NetworkIconMap::iterator iter = icon_map->find(network.guid);
+  NetworkIconMap::iterator iter = icon_map->find(network->guid);
   if (iter == icon_map->end()) {
-    VLOG(1) << "new NetworkIconImpl: " << network.name;
-    icon = new NetworkIconImpl(network.guid, icon_type, network.type);
-    icon_map->insert(std::make_pair(network.guid, icon));
+    VLOG(1) << "new NetworkIconImpl: " << network->name;
+    icon = new NetworkIconImpl(network->guid, icon_type, network->type);
+    icon_map->insert(std::make_pair(network->guid, icon));
   } else {
-    VLOG(1) << "found NetworkIconImpl: " << network.name;
+    VLOG(1) << "found NetworkIconImpl: " << network->name;
     icon = iter->second;
   }
 
@@ -472,15 +447,6 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkIconState& network,
 //------------------------------------------------------------------------------
 // Public interface
 
-bool IsConnected(const NetworkIconState& icon_state) {
-  return chromeos::network_config::StateIsConnected(
-      icon_state.connection_state);
-}
-
-bool IsConnecting(const NetworkIconState& icon_state) {
-  return icon_state.connection_state == ConnectionStateType::kConnecting;
-}
-
 const gfx::ImageSkia GetBasicImage(IconType icon_type,
                                    NetworkType network_type,
                                    bool connected) {
@@ -489,14 +455,15 @@ const gfx::ImageSkia GetBasicImage(IconType icon_type,
                           connected ? kNumNetworkImages - 1 : 0);
 }
 
-gfx::ImageSkia GetImageForNonVirtualNetwork(const NetworkIconState& network,
-                                            IconType icon_type,
-                                            bool show_vpn_badge,
-                                            bool* animating) {
-  DCHECK_NE(NetworkType::kVPN, network.type);
-  NetworkType network_type = network.type;
+gfx::ImageSkia GetImageForNonVirtualNetwork(
+    const NetworkStateProperties* network,
+    IconType icon_type,
+    bool show_vpn_badge,
+    bool* animating) {
+  DCHECK_NE(NetworkType::kVPN, network->type);
+  NetworkType network_type = network->type;
 
-  if (IsConnecting(network)) {
+  if (network->connection_state == ConnectionStateType::kConnecting) {
     if (animating)
       *animating = true;
     return GetConnectingImageForNetworkType(network_type, icon_type);
@@ -509,11 +476,11 @@ gfx::ImageSkia GetImageForNonVirtualNetwork(const NetworkIconState& network,
   return icon->image();
 }
 
-gfx::ImageSkia GetImageForVPN(const NetworkIconState& vpn,
+gfx::ImageSkia GetImageForVPN(const NetworkStateProperties* vpn,
                               IconType icon_type,
                               bool* animating) {
-  DCHECK_EQ(NetworkType::kVPN, vpn.type);
-  if (IsConnecting(vpn)) {
+  DCHECK_EQ(NetworkType::kVPN, vpn->type);
+  if (vpn->connection_state == ConnectionStateType::kConnecting) {
     if (animating)
       *animating = true;
     return GetConnectingVpnImage(icon_type);
@@ -554,7 +521,7 @@ gfx::ImageSkia GetConnectingImageForNetworkType(NetworkType network_type,
 }
 
 gfx::ImageSkia GetConnectedNetworkWithConnectingVpnImage(
-    const NetworkIconState& connected_network,
+    const NetworkStateProperties* connected_network,
     IconType icon_type) {
   gfx::ImageSkia icon = GetImageForNonVirtualNetwork(
       connected_network, icon_type, false /* show_vpn_badge */);
@@ -581,23 +548,25 @@ gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
   return CreateNetworkIconImage(icon, badges);
 }
 
-base::string16 GetLabelForNetworkList(const NetworkIconState& network) {
-  ActivationStateType activation_state = network.activation_state;
-  if (activation_state == ActivationStateType::kActivating) {
-    return l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING,
-        base::UTF8ToUTF16(network.name));
+base::string16 GetLabelForNetworkList(const NetworkStateProperties* network) {
+  if (network->type == NetworkType::kCellular) {
+    ActivationStateType activation_state = network->cellular->activation_state;
+    if (activation_state == ActivationStateType::kActivating) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING,
+          base::UTF8ToUTF16(network->name));
+    }
+    if (activation_state == ActivationStateType::kNotActivated ||
+        activation_state == ActivationStateType::kPartiallyActivated) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
+          base::UTF8ToUTF16(network->name));
+    }
   }
-  if (activation_state == ActivationStateType::kNotActivated ||
-      activation_state == ActivationStateType::kPartiallyActivated) {
-    return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
-                                      base::UTF8ToUTF16(network.name));
-  }
-
   // Otherwise just show the network name or 'Ethernet'.
-  if (network.type == NetworkType::kEthernet)
+  if (network->type == NetworkType::kEthernet)
     return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ETHERNET);
-  return base::UTF8ToUTF16(network.name);
+  return base::UTF8ToUTF16(network->name);
 }
 
 void PurgeNetworkIconCache(const std::set<std::string>& network_guids) {

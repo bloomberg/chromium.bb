@@ -12,7 +12,6 @@
 #include "ash/system/network/network_icon.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -76,7 +75,8 @@ class ASH_EXPORT ActiveNetworkIcon
   gfx::ImageSkia GetDualImageCellular(network_icon::IconType icon_type,
                                       bool* animating);
   gfx::ImageSkia GetDefaultImageImpl(
-      const base::Optional<network_icon::NetworkIconState>& default_network,
+      const chromeos::network_config::mojom::NetworkStateProperties*
+          default_network,
       network_icon::IconType icon_type,
       bool* animating);
 
@@ -110,10 +110,11 @@ class ASH_EXPORT ActiveNetworkIcon
   base::flat_map<chromeos::network_config::mojom::NetworkType,
                  chromeos::network_config::mojom::DeviceStatePropertiesPtr>
       devices_;
-  base::Optional<network_icon::NetworkIconState> default_network_;
-  base::Optional<network_icon::NetworkIconState> active_non_cellular_;
-  base::Optional<network_icon::NetworkIconState> active_cellular_;
-  base::Optional<network_icon::NetworkIconState> active_vpn_;
+  chromeos::network_config::mojom::NetworkStatePropertiesPtr default_network_;
+  chromeos::network_config::mojom::NetworkStatePropertiesPtr
+      active_non_cellular_;
+  chromeos::network_config::mojom::NetworkStatePropertiesPtr active_cellular_;
+  chromeos::network_config::mojom::NetworkStatePropertiesPtr active_vpn_;
   int cellular_uninitialized_msg_ = 0;
   base::Time uninitialized_state_time_;
   base::OneShotTimer purge_timer_;

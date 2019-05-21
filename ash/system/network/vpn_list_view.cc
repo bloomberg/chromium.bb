@@ -243,10 +243,9 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
   Reset();
   disconnect_button_ = nullptr;
 
-  network_icon::NetworkIconState vpn_icon_state(vpn);
-  gfx::ImageSkia image = network_icon::GetImageForVPN(
-      vpn_icon_state, network_icon::ICON_TYPE_LIST);
-  base::string16 label = network_icon::GetLabelForNetworkList(vpn_icon_state);
+  gfx::ImageSkia image =
+      network_icon::GetImageForVPN(vpn, network_icon::ICON_TYPE_LIST);
+  base::string16 label = network_icon::GetLabelForNetworkList(vpn);
   AddIconAndLabel(image, label);
   if (chromeos::network_config::StateIsConnected(vpn->connection_state)) {
     owner_->SetupConnectedScrollListItem(this);

@@ -117,8 +117,7 @@ class ActiveNetworkIconTest : public testing::Test {
             network_state_helper().CreateStandaloneNetworkProperties(
                 id, type, connection_state, signal_strength);
     return network_icon::GetImageForNonVirtualNetwork(
-        network_icon::NetworkIconState(reference_properties.get()), icon_type_,
-        false /* show_vpn_badge */);
+        reference_properties.get(), icon_type_, false /* show_vpn_badge */);
   }
 
   bool AreImagesEqual(const gfx::ImageSkia& image,

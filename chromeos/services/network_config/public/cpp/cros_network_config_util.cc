@@ -53,5 +53,28 @@ bool StateIsConnected(mojom::ConnectionStateType connection_state) {
   return false;
 }
 
+int GetWirelessSignalStrength(const mojom::NetworkStateProperties* network) {
+  switch (network->type) {
+    case mojom::NetworkType::kCellular:
+      return network->cellular->signal_strength;
+    case mojom::NetworkType::kEthernet:
+      return 0;
+    case mojom::NetworkType::kTether:
+      return network->tether->signal_strength;
+    case mojom::NetworkType::kVPN:
+      return 0;
+    case mojom::NetworkType::kWiFi:
+      return network->wifi->signal_strength;
+    case mojom::NetworkType::kWiMAX:
+      return network->wimax->signal_strength;
+    case mojom::NetworkType::kAll:
+    case mojom::NetworkType::kMobile:
+    case mojom::NetworkType::kWireless:
+      break;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace network_config
 }  // namespace chromeos

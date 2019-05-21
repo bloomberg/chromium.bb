@@ -22,6 +22,9 @@ bool NetworkStateMatchesType(const mojom::NetworkStateProperties* network,
 // Returns true if |connection_state| is in a connected state, including portal.
 bool StateIsConnected(mojom::ConnectionStateType connection_state);
 
+// Returns the signal strength for wireless network types or 0 for other types.
+int GetWirelessSignalStrength(const mojom::NetworkStateProperties* network);
+
 }  // namespace network_config
 }  // namespace chromeos
 

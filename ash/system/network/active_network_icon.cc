@@ -16,16 +16,16 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
+using chromeos::network_config::mojom::ConnectionStateType;
 using chromeos::network_config::mojom::DeviceStateProperties;
 using chromeos::network_config::mojom::DeviceStateType;
 using chromeos::network_config::mojom::FilterType;
 using chromeos::network_config::mojom::NetworkFilter;
 using chromeos::network_config::mojom::NetworkStateProperties;
+using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
 
 namespace ash {
-
-using network_icon::NetworkIconState;
 
 namespace {
 
@@ -44,18 +44,18 @@ SkColor GetDefaultColorForIconType(network_icon::IconType icon_type) {
   return kUnifiedMenuIconColor;
 }
 
-base::Optional<NetworkIconState> GetConnectingOrConnected(
-    const NetworkStateProperties* connecting_network,
-    const NetworkStateProperties* connected_network) {
+NetworkStatePropertiesPtr GetConnectingOrConnected(
+    const NetworkStatePropertiesPtr* connecting_network,
+    const NetworkStatePropertiesPtr* connected_network) {
   if (connecting_network &&
-      (!connected_network || connecting_network->connect_requested)) {
+      (!connected_network || connecting_network->get()->connect_requested)) {
     // If connecting to a network, and there is either no connected network or
     // the connection was user requested, use the connecting network.
-    return base::make_optional<NetworkIconState>(connecting_network);
+    return connecting_network->Clone();
   }
   if (connected_network)
-    return base::make_optional<NetworkIconState>(connected_network);
-  return base::nullopt;
+    return connected_network->Clone();
+  return nullptr;
 }
 
 }  // namespace
@@ -91,20 +91,21 @@ void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
                                                    base::string16* a11y_name,
                                                    base::string16* a11y_desc,
                                                    base::string16* tooltip) {
-  network_icon::NetworkIconState* network = nullptr;
+  const NetworkStateProperties* network = nullptr;
   switch (type) {
     case Type::kSingle:
-      network = default_network_ ? &default_network_.value() : nullptr;
+      network = default_network_.get();
       break;
     case Type::kPrimary:
       // TODO(902409): Provide strings for technology or connecting.
-      network = default_network_ ? &default_network_.value() : nullptr;
+      network = default_network_.get();
       break;
     case Type::kCellular:
-      network = active_cellular_ ? &active_cellular_.value() : nullptr;
+      network = active_cellular_.get();
       break;
   }
-  if (network && network_icon::IsConnected(*network)) {
+  if (network &&
+      chromeos::network_config::StateIsConnected(network->connection_state)) {
     *a11y_name =
         l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
                                    base::UTF8ToUTF16(network->name));
@@ -113,7 +114,9 @@ void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
             network->type, NetworkType::kWireless)) {
       // Retrieve the string describing the signal strength, if it is applicable
       // to |network|.
-      switch (network_icon::GetSignalStrength(network->signal_strength)) {
+      int signal_strength =
+          chromeos::network_config::GetWirelessSignalStrength(network);
+      switch (network_icon::GetSignalStrength(signal_strength)) {
         case network_icon::SignalStrength::NONE:
           break;
         case network_icon::SignalStrength::WEAK:
@@ -137,7 +140,8 @@ void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
             : l10n_util::GetStringFUTF16(
                   IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
                   base::UTF8ToUTF16(network->name), signal_strength_string);
-  } else if (network && network_icon::IsConnecting(*network)) {
+  } else if (network &&
+             network->connection_state == ConnectionStateType::kConnecting) {
     *a11y_name = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y);
     *a11y_desc = base::string16();
@@ -178,14 +182,15 @@ gfx::ImageSkia ActiveNetworkIcon::GetSingleImage(
     return network_icon::GetConnectingImageForNetworkType(
         NetworkType::kCellular, icon_type);
   }
-  return GetDefaultImageImpl(default_network_, icon_type, animating);
+  return GetDefaultImageImpl(default_network_.get(), icon_type, animating);
 }
 
 gfx::ImageSkia ActiveNetworkIcon::GetDualImagePrimary(
     network_icon::IconType icon_type,
     bool* animating) {
   if (default_network_ && default_network_->type == NetworkType::kCellular) {
-    if (network_icon::IsConnected(*default_network_)) {
+    if (chromeos::network_config::StateIsConnected(
+            default_network_->connection_state)) {
       // TODO(902409): Show proper technology badges.
       if (animating)
         *animating = false;
@@ -193,9 +198,10 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImagePrimary(
                                    GetDefaultColorForIconType(icon_type));
     }
     // If Cellular is connecting, use the active non cellular network.
-    return GetDefaultImageImpl(active_non_cellular_, icon_type, animating);
+    return GetDefaultImageImpl(active_non_cellular_.get(), icon_type,
+                               animating);
   }
-  return GetDefaultImageImpl(default_network_, icon_type, animating);
+  return GetDefaultImageImpl(default_network_.get(), icon_type, animating);
 }
 
 gfx::ImageSkia ActiveNetworkIcon::GetDualImageCellular(
@@ -222,20 +228,20 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImageCellular(
   }
 
   return network_icon::GetImageForNonVirtualNetwork(
-      *active_cellular_, icon_type, false /* show_vpn_badge */, animating);
+      active_cellular_.get(), icon_type, false /* show_vpn_badge */, animating);
 }
 
 gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageImpl(
-    const base::Optional<NetworkIconState>& default_network,
+    const NetworkStateProperties* network,
     network_icon::IconType icon_type,
     bool* animating) {
-  if (!default_network) {
+  if (!network) {
     VLOG(1) << __func__ << ": No network";
     return GetDefaultImageForNoNetwork(icon_type, animating);
   }
   // Don't show connected Ethernet in the tray unless a VPN is present.
-  if (default_network->type == NetworkType::kEthernet &&
-      IsTrayIcon(icon_type) && !active_vpn_) {
+  if (network->type == NetworkType::kEthernet && IsTrayIcon(icon_type) &&
+      !active_vpn_) {
     if (animating)
       *animating = false;
     VLOG(1) << __func__ << ": Ethernet: No icon";
@@ -243,20 +249,20 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageImpl(
   }
 
   // Connected network with a connecting VPN.
-  if (network_icon::IsConnected(*default_network) && active_vpn_ &&
-      network_icon::IsConnecting(*active_vpn_)) {
+  if (chromeos::network_config::StateIsConnected(network->connection_state) &&
+      active_vpn_ &&
+      active_vpn_->connection_state == ConnectionStateType::kConnecting) {
     if (animating)
       *animating = true;
     VLOG(1) << __func__ << ": Connected with connecting VPN";
-    return network_icon::GetConnectedNetworkWithConnectingVpnImage(
-        *default_network, icon_type);
+    return network_icon::GetConnectedNetworkWithConnectingVpnImage(network,
+                                                                   icon_type);
   }
 
   // Default behavior: connected or connecting network, possibly with VPN badge.
   bool show_vpn_badge = !!active_vpn_;
-  VLOG(1) << __func__ << ": Network: " << default_network->name
-          << " Strength: " << default_network->signal_strength;
-  return network_icon::GetImageForNonVirtualNetwork(*default_network, icon_type,
+  VLOG(1) << __func__ << ": Network: " << network->name;
+  return network_icon::GetImageForNonVirtualNetwork(network, icon_type,
                                                     show_vpn_badge, animating);
 }
 
@@ -316,52 +322,50 @@ void ActiveNetworkIcon::OnActiveNetworksChanged(
   active_cellular_.reset();
   active_vpn_.reset();
 
-  const NetworkStateProperties* connected_network = nullptr;
-  const NetworkStateProperties* connected_non_cellular = nullptr;
-  const NetworkStateProperties* connecting_network = nullptr;
-  const NetworkStateProperties* connecting_non_cellular = nullptr;
-  for (const auto& network_ptr : networks) {
-    const NetworkStateProperties* network = network_ptr.get();
+  const NetworkStatePropertiesPtr* connected_network = nullptr;
+  const NetworkStatePropertiesPtr* connected_non_cellular = nullptr;
+  const NetworkStatePropertiesPtr* connecting_network = nullptr;
+  const NetworkStatePropertiesPtr* connecting_non_cellular = nullptr;
+  for (const NetworkStatePropertiesPtr& network : networks) {
     if (network->type == NetworkType::kVPN) {
       if (!active_vpn_)
-        active_vpn_ = base::make_optional<NetworkIconState>(network);
+        active_vpn_ = network.Clone();
       continue;
     }
     if (network->type == NetworkType::kCellular) {
       if (!active_cellular_)
-        active_cellular_ = base::make_optional<NetworkIconState>(network);
+        active_cellular_ = network.Clone();
     }
     if (chromeos::network_config::StateIsConnected(network->connection_state)) {
       if (!connected_network)
-        connected_network = network;
+        connected_network = &network;
       if (!connected_non_cellular && network->type != NetworkType::kCellular) {
-        connected_non_cellular = network;
+        connected_non_cellular = &network;
       }
       continue;
     }
     // Active non connected networks are connecting.
     if (chromeos::network_config::NetworkStateMatchesType(
-            network, NetworkType::kWireless)) {
+            network.get(), NetworkType::kWireless)) {
       if (!connecting_network)
-        connecting_network = network;
+        connecting_network = &network;
       if (!connecting_non_cellular && network->type != NetworkType::kCellular) {
-        connecting_non_cellular = network;
+        connecting_non_cellular = &network;
       }
     }
   }
 
   VLOG_IF(2, connected_network)
-      << __func__ << ": Connected network: " << connected_network->name
-      << " State: " << connected_network->connection_state;
+      << __func__ << ": Connected network: " << connected_network->get()->name
+      << " State: " << connected_network->get()->connection_state;
   VLOG_IF(2, connecting_network)
-      << __func__ << ": Connecting network: " << connecting_network->name
-      << " State: " << connecting_network->connection_state;
+      << __func__ << ": Connecting network: " << connecting_network->get()->name
+      << " State: " << connecting_network->get()->connection_state;
 
   default_network_ =
       GetConnectingOrConnected(connecting_network, connected_network);
   VLOG_IF(2, default_network_)
-      << __func__ << ": Default network: " << default_network_->name
-      << " Strength: " << default_network_->signal_strength;
+      << __func__ << ": Default network: " << default_network_->name;
 
   active_non_cellular_ =
       GetConnectingOrConnected(connecting_non_cellular, connected_non_cellular);
