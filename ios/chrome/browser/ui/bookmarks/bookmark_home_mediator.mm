@@ -162,7 +162,7 @@ const int kMaxBookmarksSearchResults = 50;
   // Add "Bookmarks Bar" and "Other Bookmarks" only when they are not empty.
   const BookmarkNode* bookmarkBar =
       self.sharedState.bookmarkModel->bookmark_bar_node();
-  if (!bookmarkBar->empty()) {
+  if (!bookmarkBar->children().empty()) {
     BookmarkHomeNodeItem* barItem =
         [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
                                       bookmarkNode:bookmarkBar];
@@ -173,7 +173,7 @@ const int kMaxBookmarksSearchResults = 50;
 
   const BookmarkNode* otherBookmarks =
       self.sharedState.bookmarkModel->other_node();
-  if (!otherBookmarks->empty()) {
+  if (!otherBookmarks->children().empty()) {
     BookmarkHomeNodeItem* otherItem =
         [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
                                       bookmarkNode:otherBookmarks];
@@ -450,7 +450,7 @@ const int kMaxBookmarksSearchResults = 50;
 
 - (BOOL)hasBookmarksOrFolders {
   return self.sharedState.tableViewDisplayedRootNode &&
-         !self.sharedState.tableViewDisplayedRootNode->empty();
+         !self.sharedState.tableViewDisplayedRootNode->children().empty();
 }
 
 // Delete all items for the given |sectionIdentifier| section, or create it

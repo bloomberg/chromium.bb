@@ -210,7 +210,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
 
   const bookmarks::BookmarkNode* bookmarkbar =
       bookmark_model()->bookmark_bar_node();
-  EXPECT_TRUE(bookmarkbar->empty());
+  EXPECT_TRUE(bookmarkbar->children().empty());
 
   processor()->OnUpdateReceived(CreateDummyModelTypeState(),
                                 std::move(updates));

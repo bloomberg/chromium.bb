@@ -1950,7 +1950,7 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
 }
 
 bool BookmarkBarView::UpdateOtherAndManagedButtonsVisibility() {
-  bool has_other_children = !model_->other_node()->empty();
+  bool has_other_children = !model_->other_node()->children().empty();
   bool update_other =
       has_other_children != other_bookmarks_button_->GetVisible();
   if (update_other) {
@@ -1958,7 +1958,7 @@ bool BookmarkBarView::UpdateOtherAndManagedButtonsVisibility() {
     UpdateBookmarksSeparatorVisibility();
   }
 
-  bool show_managed = !managed_->managed_node()->empty() &&
+  bool show_managed = !managed_->managed_node()->children().empty() &&
                       browser_->profile()->GetPrefs()->GetBoolean(
                           bookmarks::prefs::kShowManagedBookmarksInBookmarkBar);
   bool update_managed = show_managed != managed_bookmarks_button_->GetVisible();

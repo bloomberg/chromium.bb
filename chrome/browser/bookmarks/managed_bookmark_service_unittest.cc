@@ -52,7 +52,7 @@ TEST(ManagedBookmarkServiceNoPolicyTest, EmptyManagedNode) {
   DCHECK(managed);
 
   ASSERT_TRUE(managed->managed_node());
-  EXPECT_TRUE(managed->managed_node()->empty());
+  EXPECT_TRUE(managed->managed_node()->children().empty());
   EXPECT_FALSE(managed->managed_node()->IsVisible());
 }
 
@@ -166,9 +166,9 @@ class ManagedBookmarkServiceTest : public testing::Test {
 
 TEST_F(ManagedBookmarkServiceTest, LoadInitial) {
   // Verifies that the initial load picks up the initial policy too.
-  EXPECT_TRUE(model_->bookmark_bar_node()->empty());
-  EXPECT_TRUE(model_->other_node()->empty());
-  EXPECT_FALSE(managed_->managed_node()->empty());
+  EXPECT_TRUE(model_->bookmark_bar_node()->children().empty());
+  EXPECT_TRUE(model_->other_node()->children().empty());
+  EXPECT_FALSE(managed_->managed_node()->children().empty());
   EXPECT_TRUE(managed_->managed_node()->IsVisible());
 
   std::unique_ptr<base::DictionaryValue> expected(CreateExpectedTree());
@@ -239,7 +239,7 @@ TEST_F(ManagedBookmarkServiceTest, RemoveAllUserBookmarks) {
   prefs_->RemoveManagedPref(bookmarks::prefs::kManagedBookmarks);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_TRUE(managed_->managed_node()->empty());
+  EXPECT_TRUE(managed_->managed_node()->children().empty());
   EXPECT_FALSE(managed_->managed_node()->IsVisible());
 }
 

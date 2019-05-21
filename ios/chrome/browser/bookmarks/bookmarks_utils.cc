@@ -35,7 +35,7 @@ bool RemoveAllUserBookmarksIOS(ios::ChromeBrowserState* browser_state) {
     if (!bookmark_model->client()->CanBeEditedByUser(
             bookmark_model->root_node()->GetChild(i)))
       continue;
-    if (!bookmark_model->root_node()->GetChild(i)->empty())
+    if (!bookmark_model->root_node()->GetChild(i)->children().empty())
       return false;
   }
 

@@ -482,7 +482,7 @@ bool BookmarkContextMenuController::IsCommandIdVisible(int command_id) const {
     // there are any managed bookmarks configured at all.
     bookmarks::ManagedBookmarkService* managed =
         ManagedBookmarkServiceFactory::GetForProfile(profile_);
-    return !managed->managed_node()->empty();
+    return !managed->managed_node()->children().empty();
   }
 
   return true;

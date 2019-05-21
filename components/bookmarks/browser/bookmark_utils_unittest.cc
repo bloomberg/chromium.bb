@@ -580,10 +580,10 @@ TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
 
   std::unique_ptr<BookmarkModel> model(
       TestBookmarkClient::CreateModelWithClient(std::move(client)));
-  EXPECT_TRUE(model->bookmark_bar_node()->empty());
-  EXPECT_TRUE(model->other_node()->empty());
-  EXPECT_TRUE(model->mobile_node()->empty());
-  EXPECT_TRUE(extra_node->empty());
+  EXPECT_TRUE(model->bookmark_bar_node()->children().empty());
+  EXPECT_TRUE(model->other_node()->children().empty());
+  EXPECT_TRUE(model->mobile_node()->children().empty());
+  EXPECT_TRUE(extra_node->children().empty());
 
   const base::string16 title = base::ASCIIToUTF16("Title");
   const GURL url("http://google.com");
@@ -601,9 +601,9 @@ TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   nodes.clear();
   model->GetNodesByURL(url, &nodes);
   ASSERT_EQ(1u, nodes.size());
-  EXPECT_TRUE(model->bookmark_bar_node()->empty());
-  EXPECT_TRUE(model->other_node()->empty());
-  EXPECT_TRUE(model->mobile_node()->empty());
+  EXPECT_TRUE(model->bookmark_bar_node()->children().empty());
+  EXPECT_TRUE(model->other_node()->children().empty());
+  EXPECT_TRUE(model->mobile_node()->children().empty());
   EXPECT_EQ(1, extra_node->child_count());
 }
 

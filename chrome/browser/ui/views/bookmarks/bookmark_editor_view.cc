@@ -204,9 +204,9 @@ void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
     if (node->value != 0) {
       const BookmarkNode* b_node =
           bookmarks::GetBookmarkNodeByID(bb_model_, node->value);
-      if (!b_node->empty() &&
+      if (!b_node->children().empty() &&
           !chrome::ConfirmDeleteBookmarkNode(b_node,
-            GetWidget()->GetNativeWindow())) {
+                                             GetWidget()->GetNativeWindow())) {
         // The folder is not empty and the user didn't confirm.
         return;
       }

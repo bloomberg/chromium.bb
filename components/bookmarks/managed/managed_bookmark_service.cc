@@ -49,7 +49,7 @@ class BookmarkPermanentNodeLoader {
     node_->set_id(*next_node_id);
     *next_node_id = ManagedBookmarksTracker::LoadInitial(
         node_.get(), initial_bookmarks_.get(), node_->id() + 1);
-    node_->set_visible(!node_->empty());
+    node_->set_visible(!node_->children().empty());
     node_->SetTitle(l10n_util::GetStringUTF16(title_id_));
     return std::move(node_);
   }

@@ -108,7 +108,7 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
     bool show_forced_folders = show_options == SHOW_PERMANENT_FOLDERS &&
                                node == model->bookmark_bar_node();
     bool show_managed =
-        show_forced_folders && !managed->managed_node()->empty();
+        show_forced_folders && !managed->managed_node()->children().empty();
     bool has_children =
         (start_child_index < node->child_count()) || show_managed;
     if (has_children && parent->GetSubmenu() &&
@@ -535,7 +535,8 @@ void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
 void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
                                      int start_child_index,
                                      MenuItemView* menu) {
-  DCHECK(parent->empty() || start_child_index < parent->child_count());
+  DCHECK(parent->children().empty() ||
+         start_child_index < parent->child_count());
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia folder_icon =
       chrome::GetBookmarkFolderIcon(TextColorForMenu(menu, parent_));

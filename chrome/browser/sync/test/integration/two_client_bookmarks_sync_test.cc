@@ -2106,18 +2106,18 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   // Verify that there are no managed bookmarks at startup in either profile.
   // The Managed Bookmarks folder should not be visible at this stage.
   const BookmarkNode* managed_node0 = GetManagedNode(0);
-  ASSERT_TRUE(managed_node0->empty());
+  ASSERT_TRUE(managed_node0->children().empty());
   ASSERT_FALSE(managed_node0->IsVisible());
   const BookmarkNode* managed_node1 = GetManagedNode(1);
-  ASSERT_TRUE(managed_node1->empty());
+  ASSERT_TRUE(managed_node1->children().empty());
   ASSERT_FALSE(managed_node1->IsVisible());
 
   // Verify that the bookmark bar node is empty on both profiles too.
   const BookmarkNode* bar_node0 = GetBookmarkBarNode(0);
-  ASSERT_TRUE(bar_node0->empty());
+  ASSERT_TRUE(bar_node0->children().empty());
   ASSERT_TRUE(bar_node0->IsVisible());
   const BookmarkNode* bar_node1 = GetBookmarkBarNode(1);
-  ASSERT_TRUE(bar_node1->empty());
+  ASSERT_TRUE(bar_node1->children().empty());
   ASSERT_TRUE(bar_node1->IsVisible());
 
   // Verify that adding a bookmark is observed by the second Profile.

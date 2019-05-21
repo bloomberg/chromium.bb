@@ -45,7 +45,7 @@ class TreeNodeIterator {
   }
 
   explicit TreeNodeIterator(NodeType* node) {
-    if (!node->empty())
+    if (!node->children().empty())
       positions_.push(Position<NodeType>(node, 0));
   }
 

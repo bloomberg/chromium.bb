@@ -374,7 +374,7 @@ TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
   // Verify that there are no managed nodes yet.
   bookmarks::ManagedBookmarkService* managed =
       ManagedBookmarkServiceFactory::GetForProfile(profile_.get());
-  EXPECT_TRUE(managed->managed_node()->empty());
+  EXPECT_TRUE(managed->managed_node()->children().empty());
 
   // The context menu should not show the option to "Show managed bookmarks".
   EXPECT_FALSE(
@@ -393,9 +393,9 @@ TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
   dict->SetString("url", "http://google.com");
   base::ListValue list;
   list.Append(std::move(dict));
-  EXPECT_TRUE(managed->managed_node()->empty());
+  EXPECT_TRUE(managed->managed_node()->children().empty());
   profile_->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
-  EXPECT_FALSE(managed->managed_node()->empty());
+  EXPECT_FALSE(managed->managed_node()->children().empty());
 
   // New context menus now show the "Show managed bookmarks" option.
   controller.reset(new BookmarkContextMenu(

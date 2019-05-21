@@ -230,13 +230,11 @@ class CookiesTreeModelTest : public testing::Test {
       CookieTreeNode::DetailedInfo::NodeType node_type,
       content_settings::CookieSettings* cookie_settings,
       const GURL& expected_url) {
-    if (!node->empty()) {
-      for (int i = 0; i < node->child_count(); ++i) {
-        const CookieTreeNode* child = node->GetChild(i);
-        CheckContentSettingsUrlForHostNodes(child,
-                                            child->GetDetailedInfo().node_type,
-                                            cookie_settings, expected_url);
-      }
+    for (int i = 0; i < node->child_count(); ++i) {
+      const CookieTreeNode* child = node->GetChild(i);
+      CheckContentSettingsUrlForHostNodes(child,
+                                          child->GetDetailedInfo().node_type,
+                                          cookie_settings, expected_url);
     }
 
     ASSERT_EQ(node_type, node->GetDetailedInfo().node_type);
@@ -261,7 +259,7 @@ class CookiesTreeModelTest : public testing::Test {
   std::string GetNodesOfChildren(
       const CookieTreeNode* node,
       CookieTreeNode::DetailedInfo::NodeType node_type) {
-    if (!node->empty()) {
+    if (!node->children().empty()) {
       std::string retval;
       for (int i = 0; i < node->child_count(); ++i) {
         retval += GetNodesOfChildren(node->GetChild(i), node_type);

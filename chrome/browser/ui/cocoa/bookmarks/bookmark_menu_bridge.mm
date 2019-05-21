@@ -112,31 +112,31 @@ void BookmarkMenuBridge::BuildRootMenu() {
       ManagedBookmarkServiceFactory::GetForProfile(profile_);
   const BookmarkNode* barNode = model->bookmark_bar_node();
   const BookmarkNode* managedNode = managed->managed_node();
-  if (!barNode->empty() || !managedNode->empty())
+  if (!barNode->children().empty() || !managedNode->children().empty())
     [menu_root_ addItem:[NSMenuItem separatorItem]];
-  if (!managedNode->empty()) {
+  if (!managedNode->children().empty()) {
     // Most users never see this node, so the image is only loaded if needed.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     NSImage* image =
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
     AddNodeAsSubmenu(menu_root_, managedNode, image);
   }
-  if (!barNode->empty())
+  if (!barNode->children().empty())
     AddNodeToMenu(barNode, menu_root_);
 
   // If the "Other Bookmarks" folder has any content, make a submenu for it and
   // fill it in.
-  if (!model->other_node()->empty()) {
+  if (!model->other_node()->children().empty()) {
     [menu_root_ addItem:[NSMenuItem separatorItem]];
     AddNodeAsSubmenu(menu_root_, model->other_node(), folder_image_);
   }
 
   // If the "Mobile Bookmarks" folder has any content, make a submenu for it and
   // fill it in.
-  if (!model->mobile_node()->empty()) {
+  if (!model->mobile_node()->children().empty()) {
     // Add a separator if we did not already add one due to a non-empty
     // "Other Bookmarks" folder.
-    if (model->other_node()->empty())
+    if (model->other_node()->children().empty())
       [menu_root_ addItem:[NSMenuItem separatorItem]];
 
     AddNodeAsSubmenu(menu_root_, model->mobile_node(), folder_image_);

@@ -140,7 +140,7 @@ TEST_F(TreeNodeModelTest, DeleteAllNodes) {
   root.DeleteAll();
 
   EXPECT_EQ(0, root.child_count());
-  EXPECT_TRUE(root.empty());
+  EXPECT_TRUE(root.children().empty());
 }
 
 // Verifies if GetIndexOf() returns the correct index for the specified node.
