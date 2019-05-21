@@ -174,9 +174,6 @@ char kTSanDefaultSuppressions[] =
     // https://crbug.com/459429
     "race:randomnessPid\n"
 
-    // https://crbug.com/454655
-    "race:content::BrowserTestBase::PostTaskToInProcessRendererAndWait\n"
-
     // http://crbug.com/582274
     "race:usrsctp_close\n"
 
