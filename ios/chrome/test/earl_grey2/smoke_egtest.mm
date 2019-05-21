@@ -108,4 +108,11 @@
   [ChromeEarlGreyUI reload];
 }
 
+// Tests navigation-related converted helpers in chrome_earl_grey.h.
+- (void)testURLNavigation {
+  [ChromeEarlGrey loadURL:GURL("chrome://terms")];
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+}
+
 @end

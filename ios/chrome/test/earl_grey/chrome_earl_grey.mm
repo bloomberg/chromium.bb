@@ -57,7 +57,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 @implementation ChromeEarlGreyImpl
 
-#pragma mark - History Utilities
+#pragma mark - History Utilities (EG2)
 
 - (void)clearBrowsingHistory {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
@@ -86,6 +86,25 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, kWaitForPageToFinishLoadingError);
 
   return nil;
+}
+
+#pragma mark - Navigation Utilities (EG2)
+
+- (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait {
+  [ChromeEarlGreyAppInterface
+      startLoadingURL:base::SysUTF8ToNSString(URL.spec())];
+  if (wait) {
+    [self waitForPageToFinishLoading];
+    EG_TEST_HELPER_ASSERT_TRUE(
+        [ChromeEarlGreyAppInterface waitForWindowIDInjectionIfNeeded],
+        @"WindowID failed to inject");
+  }
+
+  return nil;
+}
+
+- (NSError*)loadURL:(const GURL&)URL {
+  return [self loadURL:URL waitForCompletion:YES];
 }
 
 @end
@@ -154,25 +173,6 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 #pragma mark - Navigation Utilities
-
-- (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait {
-  chrome_test_util::LoadUrl(URL);
-  if (wait) {
-    [self waitForPageToFinishLoading];
-  }
-
-  web::WebState* webState = chrome_test_util::GetCurrentWebState();
-  if (webState->ContentIsHTML()) {
-    bool windowIDInjected = web::WaitUntilWindowIdInjected(webState);
-    EG_TEST_HELPER_ASSERT_TRUE(windowIDInjected, @"WindowID failed to inject");
-  }
-
-  return nil;
-}
-
-- (NSError*)loadURL:(const GURL&)URL {
-  return [ChromeEarlGrey loadURL:URL waitForCompletion:YES];
-}
 
 - (BOOL)isLoading {
   return chrome_test_util::IsLoading();
