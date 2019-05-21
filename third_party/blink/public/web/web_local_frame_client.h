@@ -196,8 +196,7 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Services ------------------------------------------------------------
 
-  // A frame specific cookie jar.  May return null, in which case
-  // WebKitPlatformSupport::cookieJar() will be called to access cookies.
+  // A frame specific cookie jar.  May return null.
   virtual WebCookieJar* CookieJar() { return nullptr; }
 
   // Returns a blame context for attributing work belonging to this frame.

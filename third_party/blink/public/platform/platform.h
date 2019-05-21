@@ -104,7 +104,6 @@ struct ThreadCreationParams;
 class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
-class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
 class WebDedicatedWorker;
@@ -176,9 +175,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   Platform();
   virtual ~Platform();
-
-  // May return null.
-  virtual WebCookieJar* CookieJar() { return nullptr; }
 
   // May return null if sandbox support is not necessary
   virtual WebSandboxSupport* GetSandboxSupport() { return nullptr; }

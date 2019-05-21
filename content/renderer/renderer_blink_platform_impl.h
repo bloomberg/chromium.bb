@@ -72,7 +72,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // Platform methods:
   blink::WebSandboxSupport* GetSandboxSupport() override;
-  blink::WebCookieJar* CookieJar() override;
   blink::WebThemeEngine* ThemeEngine() override;
   std::unique_ptr<blink::WebSpeechSynthesizer> CreateSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) override;

@@ -333,11 +333,6 @@ blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
 #endif
 }
 
-blink::WebCookieJar* RendererBlinkPlatformImpl::CookieJar() {
-  NOTREACHED() << "Use WebLocalFrameClient::cookieJar() instead!";
-  return nullptr;
-}
-
 blink::WebThemeEngine* RendererBlinkPlatformImpl::ThemeEngine() {
   blink::WebThemeEngine* theme_engine =
       GetContentClient()->renderer()->OverrideThemeEngine();
