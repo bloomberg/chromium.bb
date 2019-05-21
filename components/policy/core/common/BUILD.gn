@@ -331,7 +331,6 @@ source_set("common_constants") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "//extensions/buildflags",
     "cloud/cloud_policy_client_unittest.cc",
     "cloud/cloud_policy_core_unittest.cc",
     "cloud/cloud_policy_manager_unittest.cc",

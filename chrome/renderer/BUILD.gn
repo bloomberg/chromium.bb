@@ -330,20 +330,6 @@ jumbo_static_library("renderer") {
       "media/cast_transport_ipc.h",
       "media/cast_udp_transport.cc",
       "media/cast_udp_transport.h",
-      "resources/extensions/browser_action_custom_bindings.js",
-      "resources/extensions/declarative_content_custom_bindings.js",
-      "resources/extensions/enterprise_platform_keys_custom_bindings.js",
-      "resources/extensions/gcm_custom_bindings.js",
-      "resources/extensions/identity_custom_bindings.js",
-      "resources/extensions/image_writer_private_custom_bindings.js",
-      "resources/extensions/input.ime_custom_bindings.js",
-      "resources/extensions/notifications_custom_bindings.js",
-      "resources/extensions/omnibox_custom_bindings.js",
-      "resources/extensions/page_action_custom_bindings.js",
-      "resources/extensions/page_capture_custom_bindings.js",
-      "resources/extensions/system_indicator_custom_bindings.js",
-      "resources/extensions/tts_custom_bindings.js",
-      "resources/extensions/tts_engine_custom_bindings.js",
     ]
     deps += [
       # TODO(hclam): See crbug.com/298380 for details.

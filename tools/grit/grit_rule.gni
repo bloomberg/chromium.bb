@@ -460,7 +460,12 @@ template("grit") {
 
     # Since we generate a file, we need to be run before the targets that
     # depend on us.
+    set_sources_assignment_filter([
+                                    "*.json",
+                                    "*.pak",
+                                  ])
     sources = grit_outputs
+    set_sources_assignment_filter(sources_assignment_filter)
 
     # Deps set on the template invocation will go on the action that runs
     # grit above rather than this library. This target needs to depend on the

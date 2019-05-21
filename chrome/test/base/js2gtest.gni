@@ -116,7 +116,7 @@ template("js2gtest") {
                              "defines",
                              "visibility",
                            ])
-    sources = get_target_outputs(":$action_name")
+    sources = process_file_template(invoker.sources, [ gen_source_pattern ])
 
     # This empty public header is intentional to remove unnecessary build
     # dependency.

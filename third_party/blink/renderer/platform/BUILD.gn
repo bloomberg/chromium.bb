@@ -1407,8 +1407,10 @@ jumbo_component("platform") {
   sources += get_target_outputs(":character_data") +
              get_target_outputs(":color_data") +
              get_target_outputs(":font_family_names") +
-             get_target_outputs(":instrumentation_probes") +
-             get_target_outputs(":runtime_enabled_features")
+             get_target_outputs(":instrumentation_probes")
+  set_sources_assignment_filter([ "*.pickle" ])
+  sources += get_target_outputs(":runtime_enabled_features")
+  set_sources_assignment_filter(sources_assignment_filter)
 
   if (is_win) {
     jumbo_excluded_sources = [
