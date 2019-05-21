@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -464,9 +465,9 @@ void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {
                           V8BlobCallback>::InvokeAndReportException,
                       WrapPersistent(callback_.Get()), nullptr, nullptr));
   } else {
-    script_promise_resolver_->Reject(
-        DOMException::Create(DOMExceptionCode::kEncodingError,
-                             "Encoding of the source image has failed."));
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kEncodingError,
+        "Encoding of the source image has failed."));
   }
   // Avoid unwanted retention, see dispose().
   Dispose();

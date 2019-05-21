@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/event_interface_modules_names.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -47,16 +48,16 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
   if (observer_ && !observer_->IsEventActive()) {
     // Return a rejected promise as the event is no longer active.
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "ExtendableEvent is no longer active."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "ExtendableEvent is no longer active."));
   }
   if (update_ui_called_) {
     // Return a rejected promise as this method should only be called once.
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "updateUI may only be called once."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "updateUI may only be called once."));
   }
 
   update_ui_called_ = true;
@@ -114,9 +115,9 @@ void BackgroundFetchUpdateUIEvent::DidUpdateUI(
       resolver->Resolve();
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kAbortError,
-                               "Failed to update UI due to I/O error."));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError,
+          "Failed to update UI due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:

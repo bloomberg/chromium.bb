@@ -47,7 +47,8 @@ class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
   }
 
   void Abort() override {
-    resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+    resolver_->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
   // Resource Timing event is not yet added, so delay the resolution timing

@@ -685,14 +685,14 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
   DCHECK(event_target.ToLocalDOMWindow());
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "The provided element has not retrieved data."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "The provided element has not retrieved data."));
   }
   if (getReadyState() <= HTMLMediaElement::kHaveMetadata) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "The provided element's player has no current data."));
   }

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_factories.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/location.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -198,7 +199,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
       bitmap_source->BitmapSourceSize().Height() == 0) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             String::Format("The source image %s is 0.",
                            bitmap_source->BitmapSourceSize().Width()
@@ -273,14 +274,14 @@ void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
     ImageBitmapRejectionReason reason) {
   switch (reason) {
     case kUndecodableImageBitmapRejectionReason:
-      resolver_->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "The source image could not be decoded."));
+      resolver_->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The source image could not be decoded."));
       break;
     case kAllocationFailureImageBitmapRejectionReason:
-      resolver_->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "The ImageBitmap could not be allocated."));
+      resolver_->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The ImageBitmap could not be allocated."));
       break;
     default:
       NOTREACHED();

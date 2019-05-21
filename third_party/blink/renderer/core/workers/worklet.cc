@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -44,7 +45,8 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   DCHECK(IsMainThread());
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            "This frame is already detached"));
   }
   UseCounter::Count(GetExecutionContext(),
@@ -64,9 +66,9 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   // Step 4: "If moduleURLRecord is failure, then reject promise with a
   // "SyntaxError" DOMException and return promise."
   if (!module_url_record.IsValid()) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kSyntaxError,
-                             "'" + module_url + "' is not a valid URL."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSyntaxError,
+        "'" + module_url + "' is not a valid URL."));
     return promise;
   }
 

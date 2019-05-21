@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -165,7 +166,7 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
   if (!ResolveFontStyle(font_string, font)) {
     auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     ScriptPromise promise = resolver->Promise();
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kSyntaxError,
         "Could not resolve '" + font_string + "' as a font."));
     return promise;

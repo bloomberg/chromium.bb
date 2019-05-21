@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -1460,7 +1461,8 @@ void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {
 }
 
 void Animation::RejectAndResetPromise(AnimationPromise* promise) {
-  promise->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+  promise->Reject(
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   promise->Reset();
 }
 

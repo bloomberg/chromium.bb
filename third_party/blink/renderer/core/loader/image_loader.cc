@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -959,7 +960,7 @@ void ImageLoader::DecodeRequest::Resolve() {
 }
 
 void ImageLoader::DecodeRequest::Reject() {
-  resolver_->Reject(DOMException::Create(
+  resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kEncodingError, "The source image cannot be decoded."));
   loader_ = nullptr;
 }

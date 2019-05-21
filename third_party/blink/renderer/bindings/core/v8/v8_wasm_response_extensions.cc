@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
@@ -112,7 +113,8 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
   }
 
   void AbortFromClient() {
-    auto* exception = DOMException::Create(DOMExceptionCode::kAbortError);
+    auto* exception =
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError);
     ScriptState::Scope scope(script_state_);
 
     // Calling ToV8 in a ScriptForbiddenScope will trigger a CHECK and

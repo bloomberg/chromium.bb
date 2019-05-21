@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -27,22 +28,23 @@ namespace {
 DOMException* ToException(WebSetSinkIdError error) {
   switch (error) {
     case WebSetSinkIdError::kNotFound:
-      return DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                  "Requested device not found");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotFoundError, "Requested device not found");
     case WebSetSinkIdError::kNotAuthorized:
-      return DOMException::Create(DOMExceptionCode::kSecurityError,
-                                  "No permission to use requested device");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "No permission to use requested device");
     case WebSetSinkIdError::kAborted:
-      return DOMException::Create(
+      return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kAbortError,
           "The operation could not be performed and was aborted");
     case WebSetSinkIdError::kNotSupported:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "Operation not supported");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, "Operation not supported");
     default:
       NOTREACHED();
-      return DOMException::Create(DOMExceptionCode::kAbortError,
-                                  "Invalid error code");
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                                "Invalid error code");
   }
 }
 
@@ -108,7 +110,7 @@ void SetSinkIdResolver::DoSetSinkId() {
     // Detached contexts shouldn't be playing audio. Note that despite this
     // explicit Reject(), any associated JS callbacks will never be called
     // because the context is already detached...
-    Reject(DOMException::Create(
+    Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kSecurityError,
         "Impossible to authorize device for detached context"));
     return;
@@ -122,7 +124,7 @@ void SetSinkIdResolver::DoSetSinkId() {
     web_frame->Client()->CheckIfAudioSinkExistsAndIsAuthorized(
         sink_id_, std::move(set_sink_id_completion_callback));
   } else {
-    Reject(DOMException::Create(
+    Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kSecurityError,
         "Impossible to authorize device if there is no frame"));
     return;

@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
 
-#include <memory>
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -34,6 +35,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/buffering_bytes_consumer.h"
@@ -634,7 +636,8 @@ void FetchManager::Loader::Dispose() {
 
 void FetchManager::Loader::Abort() {
   if (resolver_) {
-    resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+    resolver_->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
     resolver_.Clear();
   }
   if (threadable_loader_) {
@@ -843,7 +846,8 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
 
   DCHECK(signal);
   if (signal->aborted()) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
     return promise;
   }
 

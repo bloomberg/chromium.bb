@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -141,12 +142,12 @@ void CryptoResultImpl::CompleteWithError(WebCryptoErrorType error_type,
   if (exception_code == ToExceptionCode(ESErrorType::kTypeError)) {
     RejectWithTypeError(error_details, resolver_);
   } else if (IsDOMExceptionCode(exception_code)) {
-    resolver_->Reject(DOMException::Create(
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
         static_cast<DOMExceptionCode>(exception_code), error_details));
   } else {
     NOTREACHED();
-    resolver_->Reject(
-        DOMException::Create(DOMExceptionCode::kUnknownError, error_details));
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kUnknownError, error_details));
   }
   ClearResolver();
 }

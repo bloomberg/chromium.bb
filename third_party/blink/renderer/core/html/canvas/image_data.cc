@@ -552,9 +552,9 @@ ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
                                            const ImageBitmapOptions* options) {
   if (BufferBase()->IsNeutered()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "The source data has been detached."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "The source data has been detached."));
   }
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, ImageBitmap::Create(this, crop_rect, options));

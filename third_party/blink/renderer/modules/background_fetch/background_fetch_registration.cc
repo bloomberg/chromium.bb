@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
@@ -220,7 +221,7 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
   if (!records_available_) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "The records associated with this background fetch are no longer "
             "available."));
@@ -338,7 +339,7 @@ void BackgroundFetchRegistration::DidAbort(
       resolver->Resolve(/* success = */ false);
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kAbortError,
           "Failed to abort registration due to I/O error."));
       return;

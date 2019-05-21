@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_trace_utils.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -92,7 +92,8 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
     return promise;
   }
 
@@ -157,7 +158,8 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
     return promise;
   }
 
@@ -208,7 +210,8 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
     return promise;
   }
 
@@ -259,7 +262,8 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
     return promise;
   }
 
@@ -321,7 +325,8 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   const ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
     return promise;
   }
 

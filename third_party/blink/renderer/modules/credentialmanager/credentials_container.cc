@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_request_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/scoped_promise_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -93,7 +94,7 @@ bool CheckSecurityRequirementsBeforeRequest(
 
   if (required_origin_type == RequiredOriginType::kSecureAndSameWithAncestors &&
       !IsSameOriginWithAncestors(resolver->GetFrame())) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
         "The following credential operations can only occur in a document which"
         " is same-origin with all of its ancestors: "
@@ -132,8 +133,8 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
         "The origin ' " + origin->ToRawString() +
         "' is an opaque origin and hence not allowed to access " +
         "'PublicKeyCredential' objects.";
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                                          error_message));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError, error_message));
     return false;
   }
 
@@ -146,7 +147,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
 
   if (origin->Protocol() != url::kHttpScheme &&
       origin->Protocol() != url::kHttpsScheme) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
         "Public-key credentials are only available to HTTPS origin or "
         "HTTP origins that fall under 'localhost'. See "
@@ -173,9 +174,9 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
     reject_because_invalid_domain = access_entry.HostIsIPAddress();
   }
   if (reject_because_invalid_domain) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kSecurityError,
-                             "Effective domain is not a valid domain."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSecurityError,
+        "Effective domain is not a valid domain."));
     return false;
   }
 
@@ -189,7 +190,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
     if (relying_party_id.IsEmpty() ||
         access_entry.MatchesDomain(*origin) !=
             network::cors::OriginAccessEntry::kMatchesOrigin) {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError,
           "The relying party ID '" + relying_party_id +
               "' is not a registrable domain suffix of, nor equal to '" +
@@ -219,72 +220,82 @@ DOMException* CredentialManagerErrorToDOMException(
     CredentialManagerError reason) {
   switch (reason) {
     case CredentialManagerError::PENDING_REQUEST:
-      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                  "A request is already pending.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "A request is already pending.");
     case CredentialManagerError::PASSWORD_STORE_UNAVAILABLE:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "The password store is unavailable.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "The password store is unavailable.");
     case CredentialManagerError::NOT_ALLOWED:
-      return DOMException::Create(
+      return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
           "The operation either timed out or was not allowed. See: "
           "https://w3c.github.io/webauthn/#sec-assertion-privacy.");
     case CredentialManagerError::INVALID_DOMAIN:
-      return DOMException::Create(DOMExceptionCode::kSecurityError,
-                                  "This is an invalid domain.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError, "This is an invalid domain.");
     case CredentialManagerError::CREDENTIAL_EXCLUDED:
-      return DOMException::Create(
+      return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,
           "The user attempted to register an authenticator that contains one "
           "of the credentials already registered with the relying party.");
     case CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED:
-      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                  "The user attempted to use an authenticator "
-                                  "that recognized none of the provided "
-                                  "credentials.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The user attempted to use an authenticator "
+          "that recognized none of the provided "
+          "credentials.");
     case CredentialManagerError::NOT_IMPLEMENTED:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "Not implemented");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, "Not implemented");
     case CredentialManagerError::NOT_FOCUSED:
-      return DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                                  "The operation is not allowed at this time "
-                                  "because the page does not have focus.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotAllowedError,
+          "The operation is not allowed at this time "
+          "because the page does not have focus.");
     case CredentialManagerError::RESIDENT_CREDENTIALS_UNSUPPORTED:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "Resident credentials or empty "
-                                  "'allowCredentials' lists are not supported "
-                                  "at this time.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Resident credentials or empty "
+          "'allowCredentials' lists are not supported "
+          "at this time.");
     case CredentialManagerError::PROTECTION_POLICY_INCONSISTENT:
-      return DOMException::Create(
+      return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "Requested protection policy is inconsistent or incongurent with "
           "other requested parameters.");
     case CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "None of the algorithms specified in "
-                                  "`pubKeyCredParams` are supported by "
-                                  "this device.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "None of the algorithms specified in "
+          "`pubKeyCredParams` are supported by "
+          "this device.");
     case CredentialManagerError::ANDROID_EMPTY_ALLOW_CREDENTIALS:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "Use of an empty `allowCredentials` list is "
-                                  "not supported on this device.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Use of an empty `allowCredentials` list is "
+          "not supported on this device.");
     case CredentialManagerError::ANDROID_NOT_SUPPORTED_ERROR:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "Either the device has received unexpected "
-                                  "request parameters, or the device "
-                                  "cannot support this request.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Either the device has received unexpected "
+          "request parameters, or the device "
+          "cannot support this request.");
     case CredentialManagerError::ANDROID_USER_VERIFICATION_UNSUPPORTED:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "The specified `userVerification` "
-                                  "requirement cannot be fulfilled by "
-                                  "this device unless the device is secured "
-                                  "with a screen lock.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "The specified `userVerification` "
+          "requirement cannot be fulfilled by "
+          "this device unless the device is secured "
+          "with a screen lock.");
     case CredentialManagerError::ABORT:
-      return DOMException::Create(DOMExceptionCode::kAbortError);
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError);
     case CredentialManagerError::UNKNOWN:
-      return DOMException::Create(DOMExceptionCode::kNotReadableError,
-                                  "An unknown error occurred while talking "
-                                  "to the credential manager.");
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotReadableError,
+          "An unknown error occurred while talking "
+          "to the credential manager.");
     case CredentialManagerError::SUCCESS:
       NOTREACHED();
       break;
@@ -491,16 +502,16 @@ ScriptPromise CredentialsContainer::get(
         if (!appid.IsEmpty()) {
           KURL appid_url(appid);
           if (!appid_url.IsValid()) {
-            resolver->Reject(
-                DOMException::Create(DOMExceptionCode::kSyntaxError,
-                                     "The `appid` extension value is neither "
-                                     "empty/null nor a valid URL"));
+            resolver->Reject(MakeGarbageCollected<DOMException>(
+                DOMExceptionCode::kSyntaxError,
+                "The `appid` extension value is neither "
+                "empty/null nor a valid URL"));
             return promise;
           }
         }
       }
       if (options->publicKey()->extensions()->hasCableRegistration()) {
-        resolver->Reject(DOMException::Create(
+        resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotSupportedError,
             "The 'cableRegistration' extension is only valid when creating "
             "a credential"));
@@ -534,7 +545,7 @@ ScriptPromise CredentialsContainer::get(
               &OnGetAssertionComplete,
               WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver))));
     } else {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "Required parameters missing in 'options.publicKey'."));
     }
@@ -591,7 +602,7 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
 
   if (!(credential->IsFederatedCredential() ||
         credential->IsPasswordCredential())) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "Store operation not permitted for PublicKey credentials."));
     return promise;
@@ -604,8 +615,8 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
           ? static_cast<const FederatedCredential*>(credential)->iconURL()
           : static_cast<const PasswordCredential*>(credential)->iconURL();
   if (!IsIconURLNullOrSecure(url)) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError,
-                                          "'iconURL' should be a secure URL"));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSecurityError, "'iconURL' should be a secure URL"));
     return promise;
   }
 
@@ -636,7 +647,7 @@ ScriptPromise CredentialsContainer::create(
 
   if ((options->hasPassword() + options->hasFederated() +
        options->hasPublicKey()) != 1) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "Only exactly one of 'password', 'federated', and 'publicKey' "
         "credential types are currently supported."));
@@ -673,7 +684,7 @@ ScriptPromise CredentialsContainer::create(
 
     if (options->publicKey()->hasExtensions()) {
       if (options->publicKey()->extensions()->hasAppid()) {
-        resolver->Reject(DOMException::Create(
+        resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotSupportedError,
             "The 'appid' extension is only valid when requesting an assertion "
             "for a pre-existing credential that was registered using the "
@@ -681,7 +692,7 @@ ScriptPromise CredentialsContainer::create(
         return promise;
       }
       if (options->publicKey()->extensions()->hasCableAuthentication()) {
-        resolver->Reject(DOMException::Create(
+        resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotSupportedError,
             "The 'cableAuthentication' extension is only valid when requesting "
             "an assertion"));
@@ -701,7 +712,7 @@ ScriptPromise CredentialsContainer::create(
     auto mojo_options =
         MojoPublicKeyCredentialCreationOptions::From(options->publicKey());
     if (!mojo_options) {
-      resolver->Reject(DOMException::Create(
+      resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "Required parameters missing in `options.publicKey`."));
     } else if (mojo_options->user->id.size() > 64) {
@@ -719,18 +730,18 @@ ScriptPromise CredentialsContainer::create(
 
       if (mojo_options->relying_party->icon) {
         if (!IsIconURLNullOrSecure(mojo_options->relying_party->icon.value())) {
-          resolver->Reject(
-              DOMException::Create(DOMExceptionCode::kSecurityError,
-                                   "'rp.icon' should be a secure URL"));
+          resolver->Reject(MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kSecurityError,
+              "'rp.icon' should be a secure URL"));
           return promise;
         }
       }
 
       if (mojo_options->user->icon) {
         if (!IsIconURLNullOrSecure(mojo_options->user->icon.value())) {
-          resolver->Reject(
-              DOMException::Create(DOMExceptionCode::kSecurityError,
-                                   "'user.icon' should be a secure URL"));
+          resolver->Reject(MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kSecurityError,
+              "'user.icon' should be a secure URL"));
           return promise;
         }
       }

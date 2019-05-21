@@ -125,10 +125,10 @@ FontFace* FontFace::Create(ExecutionContext* context,
 
   const CSSValue* src = ParseCSSValue(context, source, AtRuleDescriptorID::Src);
   if (!src || !src->IsValueList()) {
-    font_face->SetError(
-        DOMException::Create(DOMExceptionCode::kSyntaxError,
-                             "The source provided ('" + source +
-                                 "') could not be parsed as a value list."));
+    font_face->SetError(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSyntaxError,
+        "The source provided ('" + source +
+            "') could not be parsed as a value list."));
   }
 
   font_face->InitCSSFontFace(context, *src);
@@ -307,10 +307,12 @@ void FontFace::SetPropertyFromString(const ExecutionContext* context,
     return;
 
   String message = "Failed to set '" + s + "' as a property value.";
-  if (exception_state)
+  if (exception_state) {
     exception_state->ThrowDOMException(DOMExceptionCode::kSyntaxError, message);
-  else
-    SetError(DOMException::Create(DOMExceptionCode::kSyntaxError, message));
+  } else {
+    SetError(MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                                message));
+  }
 }
 
 bool FontFace::SetPropertyFromStyle(const CSSPropertyValueSet& properties,
@@ -450,8 +452,9 @@ void FontFace::RunCallbacks() {
 
 void FontFace::SetError(DOMException* error) {
   if (!error_) {
-    error_ =
-        error ? error : DOMException::Create(DOMExceptionCode::kNetworkError);
+    error_ = error ? error
+                   : MakeGarbageCollected<DOMException>(
+                         DOMExceptionCode::kNetworkError);
   }
   SetLoadStatus(kError);
 }
@@ -743,11 +746,12 @@ void FontFace::InitCSSFontFace(const unsigned char* data, size_t size) {
   BinaryDataFontFaceSource* source =
       MakeGarbageCollected<BinaryDataFontFaceSource>(buffer.get(),
                                                      ots_parse_message_);
-  if (source->IsValid())
+  if (source->IsValid()) {
     SetLoadStatus(kLoaded);
-  else
-    SetError(DOMException::Create(DOMExceptionCode::kSyntaxError,
-                                  "Invalid font data in ArrayBuffer."));
+  } else {
+    SetError(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kSyntaxError, "Invalid font data in ArrayBuffer."));
+  }
   css_font_face_->AddSource(source);
 }
 

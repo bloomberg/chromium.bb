@@ -2402,7 +2402,7 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
       default:
         NOTREACHED();
     }
-    resolver->Reject(DOMException::Create(code.value(), message));
+    resolver->Reject(MakeGarbageCollected<DOMException>(code.value(), message));
     return promise;
   }
 
@@ -4059,7 +4059,7 @@ void HTMLMediaElement::RejectPlayPromisesInternal(DOMExceptionCode code,
          code == DOMExceptionCode::kNotSupportedError);
 
   for (auto& resolver : play_promise_reject_list_)
-    resolver->Reject(DOMException::Create(code, message));
+    resolver->Reject(MakeGarbageCollected<DOMException>(code, message));
 
   play_promise_reject_list_.clear();
 }

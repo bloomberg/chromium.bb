@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
+#include <utility>
+
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -18,10 +20,8 @@
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_utils.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_uuid.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-
-#include <memory>
-#include <utility>
 
 namespace blink {
 
@@ -190,9 +190,9 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   // InvalidModificationError and abort.
   if (value.ByteLength() > 512) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidModificationError,
-                             "Value can't exceed 512 bytes."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidModificationError,
+                          "Value can't exceed 512 bytes."));
   }
 
   // Let valueVector be a copy of the bytes held by value.

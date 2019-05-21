@@ -208,6 +208,18 @@ String DOMException::GetErrorMessage(DOMExceptionCode exception_code) {
   return entry->message;
 }
 
+DOMException::DOMException(DOMExceptionCode exception_code,
+                           const String& sanitized_message,
+                           const String& unsanitized_message)
+    : DOMException(ToLegacyErrorCode(FindErrorEntry(exception_code)->code),
+                   FindErrorEntry(exception_code)->name
+                       ? FindErrorEntry(exception_code)->name
+                       : "Error",
+                   sanitized_message.IsNull()
+                       ? String(FindErrorEntry(exception_code)->message)
+                       : sanitized_message,
+                   unsanitized_message) {}
+
 DOMException::DOMException(uint16_t legacy_code,
                            const String& name,
                            const String& sanitized_message,

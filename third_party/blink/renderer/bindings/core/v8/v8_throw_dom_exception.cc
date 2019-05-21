@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -54,7 +55,7 @@ v8::Local<v8::Value> V8ThrowDOMException::CreateOrEmpty(
   if (isolate->IsExecutionTerminating())
     return v8::Local<v8::Value>();
 
-  DOMException* dom_exception = DOMException::Create(
+  auto* dom_exception = MakeGarbageCollected<DOMException>(
       exception_code, sanitized_message, unsanitized_message);
   v8::Local<v8::Object> exception_obj =
       ToV8(dom_exception, isolate->GetCurrentContext()->Global(), isolate)

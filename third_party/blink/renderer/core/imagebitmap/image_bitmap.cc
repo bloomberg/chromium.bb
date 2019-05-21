@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
@@ -978,9 +979,9 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, image->BitmapSourceSize());
   if (DstBufferSizeHasOverflow(parsed_options)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "The ImageBitmap could not be allocated."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "The ImageBitmap could not be allocated."));
     return promise;
   }
 
@@ -997,9 +998,9 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       bitmap->BitmapImage()->SetOriginClean(!image->WouldTaintOrigin());
       resolver->Resolve(bitmap);
     } else {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "The ImageBitmap could not be allocated."));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The ImageBitmap could not be allocated."));
     }
     return promise;
   }

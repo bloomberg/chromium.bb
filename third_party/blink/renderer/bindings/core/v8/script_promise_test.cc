@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -347,8 +348,8 @@ TEST(ScriptPromiseTest, RejectWithExceptionState) {
   ScriptValue on_fulfilled, on_rejected;
   ScriptPromise promise = ScriptPromise::RejectWithDOMException(
       scope.GetScriptState(),
-      DOMException::Create(DOMExceptionCode::kSyntaxError,
-                           "some syntax error"));
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                         "some syntax error"));
   promise.Then(FunctionForScriptPromiseTest::CreateFunction(
                    scope.GetScriptState(), &on_fulfilled),
                FunctionForScriptPromiseTest::CreateFunction(

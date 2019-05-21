@@ -497,8 +497,8 @@ void CSSStyleSheet::ResolveReplacePromiseIfNeeded(bool load_error_occured) {
   if (!resolver_)
     return;
   if (load_error_occured) {
-    resolver_->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                                           "Loading @imports failed."));
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError, "Loading @imports failed."));
   } else {
     resolver_->Resolve(this);
   }

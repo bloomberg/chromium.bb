@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -63,8 +64,8 @@ ScriptPromise GetRejectedPromise(ScriptState* script_state,
                                  const char* rejection_reason) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = resolver->Promise();
-  resolver->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                                        rejection_reason));
+  resolver->Reject(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kNotAllowedError, rejection_reason));
   return promise;
 }
 
@@ -340,7 +341,7 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
       break;
     case kReject:
       DCHECK(rejection_reason);
-      (*resolver)->Reject(DOMException::Create(
+      (*resolver)->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError, rejection_reason));
       break;
     case kDetach:
