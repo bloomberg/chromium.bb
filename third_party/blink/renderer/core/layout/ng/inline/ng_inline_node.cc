@@ -442,6 +442,10 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
     LayoutBlockFlow* layout_block_flow) {
   DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate());
 
+  // TODO(crbug.com/962129): Fix the root cause of the missing layout, and turn
+  // this into a DCHECK.
+  CHECK(!layout_block_flow->NeedsLayout()) << layout_block_flow;
+
   // If |layout_block_flow| is LayoutNG, compute from |NGInlineNode|.
   if (layout_block_flow->IsLayoutNGMixin()) {
     NGInlineNode node(layout_block_flow);
