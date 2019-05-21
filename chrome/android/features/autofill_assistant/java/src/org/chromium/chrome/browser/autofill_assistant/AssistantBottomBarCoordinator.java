@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -59,9 +58,6 @@ class AssistantBottomBarCoordinator
             new ObserverList<>();
     private boolean mResizeViewport;
 
-    @Nullable
-    private ScrollView mOnboardingScrollView;
-
     AssistantBottomBarCoordinator(
             Activity activity, AssistantModel model, BottomSheetController controller) {
         mModel = model;
@@ -85,28 +81,28 @@ class AssistantBottomBarCoordinator
                 mContent.mToolbarView, mContent.mBottomBarView, mSuggestionsCoordinator.getView(),
                 mActionsCoordinator.getView(), AssistantPeekHeightCoordinator.PeekMode.HANDLE);
 
-        // Add child views to bottom bar container.
-        mContent.mBottomBarView.addView(mInfoBoxCoordinator.getView());
-        mContent.mBottomBarView.addView(mDetailsCoordinator.getView());
-        mContent.mBottomBarView.addView(mPaymentRequestCoordinator.getView());
-        mContent.mBottomBarView.addView(mFormCoordinator.getView());
-        mContent.mBottomBarView.addView(mSuggestionsCoordinator.getView());
-        mContent.mBottomBarView.addView(mActionsCoordinator.getView());
+        // Add child views to bottom bar container. We put all child views in the scrollable
+        // container, except the actions and suggestions.
+        mContent.mScrollableContentContainer.addView(mInfoBoxCoordinator.getView());
+        mContent.mScrollableContentContainer.addView(mDetailsCoordinator.getView());
+        mContent.mScrollableContentContainer.addView(mPaymentRequestCoordinator.getView());
+        mContent.mScrollableContentContainer.addView(mFormCoordinator.getView());
+        mContent.mCarouselsContainer.addView(mSuggestionsCoordinator.getView());
+        mContent.mCarouselsContainer.addView(mActionsCoordinator.getView());
 
-        // Set children top margins to have a spacing between them. For the carousels, we set their
-        // margin only when they are not empty given that they are always shown, even if empty. We
-        // do not hide them because there is an incompatibility bug between the animateLayoutChanges
-        // attribute set on mBottomBarView and the animations ran by the carousels
-        // RecyclerView.
+        // Set children top margins to have a spacing between them.
         int childSpacing = activity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
         setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
         setChildMarginTop(mFormCoordinator.getView(), childSpacing);
-        setCarouselMarginTop(mSuggestionsCoordinator.getView(),
-                model.getSuggestionsModel().getChipsModel(), childSpacing);
-        setCarouselMarginTop(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel(),
-                childSpacing);
+        setChildMarginTop(mSuggestionsCoordinator.getView(), childSpacing);
+        setChildMarginTop(mActionsCoordinator.getView(), childSpacing);
+
+        // Hide the carousels when they are empty.
+        hideWhenEmpty(
+                mSuggestionsCoordinator.getView(), model.getSuggestionsModel().getChipsModel());
+        hideWhenEmpty(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel());
 
         // Set the horizontal margins of children. We don't set them on the payment request and the
         // carousels to allow them to take the full width of the sheet.
@@ -182,9 +178,8 @@ class AssistantBottomBarCoordinator
         // Show overlay to prevent user from interacting with the page during onboarding.
         mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
 
-        View onboardingView = AssistantOnboardingCoordinator.show(experimentIds,
-                mContent.mBottomBarView.getContext(), mContent.mBottomBarView, accepted -> {
-                    mOnboardingScrollView = null;
+        AssistantOnboardingCoordinator.show(experimentIds, mContent.mBottomBarView.getContext(),
+                mContent.mScrollableContentContainer, accepted -> {
                     if (!accepted) {
                         callback.onResult(false);
                         return;
@@ -198,7 +193,6 @@ class AssistantBottomBarCoordinator
 
                     callback.onResult(true);
                 });
-        mOnboardingScrollView = onboardingView.findViewById(R.id.onboarding_scroll_view);
     }
 
     /** Request showing the Assistant bottom bar view and expand the sheet. */
@@ -227,10 +221,7 @@ class AssistantBottomBarCoordinator
 
     @Override
     public void setShowOnlyCarousels(boolean showOnlyCarousels) {
-        mDetailsCoordinator.setForceInvisible(showOnlyCarousels);
-        mModel.getPaymentRequestModel().set(
-                AssistantPaymentRequestModel.FORCE_INVISIBLE, showOnlyCarousels);
-        mFormCoordinator.setForceInvisible(showOnlyCarousels);
+        mContent.mScrollableContent.setVisibility(showOnlyCarousels ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -245,27 +236,25 @@ class AssistantBottomBarCoordinator
     }
 
     /**
-     * Observe {@code model} such that we set the topMargin of {@code carouselView} to {@code
-     * marginTop} when {@code model} is not empty and set it to 0 otherwise.
+     * Observe {@code model} such that the associated view is made invisible when it is empty.
      */
-    private void setCarouselMarginTop(
-            View carouselView, ListModel<AssistantChip> chipsModel, int marginTop) {
+    private void hideWhenEmpty(View carouselView, ListModel<AssistantChip> chipsModel) {
+        setCarouselVisibility(carouselView, chipsModel);
         chipsModel.addObserver(new AbstractListObserver<Void>() {
             @Override
             public void onDataSetChanged() {
-                setChildMarginTop(carouselView, chipsModel.size() > 0 ? marginTop : 0);
+                setCarouselVisibility(carouselView, chipsModel);
             }
         });
+    }
+
+    private void setCarouselVisibility(View carouselView, ListModel<AssistantChip> chipsModel) {
+        carouselView.setVisibility(chipsModel.size() > 0 ? View.VISIBLE : View.GONE);
     }
 
     @VisibleForTesting
     public AssistantCarouselCoordinator getSuggestionsCoordinator() {
         return mSuggestionsCoordinator;
-    }
-
-    @VisibleForTesting
-    public AssistantCarouselCoordinator getActionsCoordinator() {
-        return mActionsCoordinator;
     }
 
     private void setHorizontalMargins(View view) {
@@ -307,15 +296,22 @@ class AssistantBottomBarCoordinator
     }
 
     // TODO(crbug.com/806868): Move this class at the top of the file once it is a static class.
-    private class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
+    private static class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
         private final ViewGroup mToolbarView;
         private final SizeListenableLinearLayout mBottomBarView;
+        private final ScrollView mScrollableContent;
+        private final LinearLayout mScrollableContentContainer;
+        private final LinearLayout mCarouselsContainer;
 
         public AssistantBottomSheetContent(Context context) {
             mToolbarView = (ViewGroup) LayoutInflater.from(context).inflate(
                     R.layout.autofill_assistant_bottom_sheet_toolbar, /* root= */ null);
             mBottomBarView = (SizeListenableLinearLayout) LayoutInflater.from(context).inflate(
                     R.layout.autofill_assistant_bottom_sheet_content, /* root= */ null);
+            mScrollableContent = mBottomBarView.findViewById(R.id.scrollable_content);
+            mScrollableContentContainer =
+                    mScrollableContent.findViewById(R.id.scrollable_content_container);
+            mCarouselsContainer = mBottomBarView.findViewById(R.id.carousels_container);
         }
 
         @Override
@@ -331,21 +327,7 @@ class AssistantBottomBarCoordinator
 
         @Override
         public int getVerticalScrollOffset() {
-            // TODO(crbug.com/806868): Have a single ScrollView container that contains all child
-            // views (except carousels) instead.
-            if (mOnboardingScrollView != null && mOnboardingScrollView.isShown()) {
-                return mOnboardingScrollView.getScrollY();
-            }
-
-            if (mPaymentRequestCoordinator.getScrollView().isShown()) {
-                return mPaymentRequestCoordinator.getScrollView().getScrollY();
-            }
-
-            if (mFormCoordinator.getView().isShown()) {
-                return mFormCoordinator.getView().getScrollY();
-            }
-
-            return 0;
+            return mScrollableContent.getScrollY();
         }
 
         @Override

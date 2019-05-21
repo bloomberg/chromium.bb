@@ -34,8 +34,6 @@ public class AssistantPaymentRequestModel extends PropertyModel {
             new WritableObjectPropertyKey<>();
 
     public static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
-    public static final WritableBooleanPropertyKey FORCE_INVISIBLE =
-            new WritableBooleanPropertyKey();
 
     /** The chosen shipping address. */
     public static final WritableObjectPropertyKey<AutofillAddress> SHIPPING_ADDRESS =
@@ -78,11 +76,10 @@ public class AssistantPaymentRequestModel extends PropertyModel {
             new WritableObjectPropertyKey<>();
 
     public AssistantPaymentRequestModel() {
-        super(DELEGATE, WEB_CONTENTS, VISIBLE, FORCE_INVISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD,
-                CONTACT_DETAILS, TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL, REQUEST_PHONE,
-                REQUEST_SHIPPING_ADDRESS, REQUEST_PAYMENT, AVAILABLE_PROFILES,
-                AVAILABLE_AUTOFILL_PAYMENT_METHODS, SUPPORTED_BASIC_CARD_NETWORKS,
-                SUPPORTED_PAYMENT_METHODS, EXPANDED_SECTION);
+        super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
+                TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL, REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS,
+                REQUEST_PAYMENT, AVAILABLE_PROFILES, AVAILABLE_AUTOFILL_PAYMENT_METHODS,
+                SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, EXPANDED_SECTION);
     }
 
     @CalledByNative

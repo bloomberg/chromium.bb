@@ -9,7 +9,6 @@ import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AbstractListObserver;
@@ -21,35 +20,26 @@ import org.chromium.chrome.browser.autofill_assistant.AbstractListObserver;
  */
 public class AssistantFormCoordinator {
     private final AssistantFormModel mModel;
-    private final ScrollView mView;
-    private final LinearLayout mContainerView;
-
-    private boolean mForceInvisible;
+    private final LinearLayout mView;
 
     public AssistantFormCoordinator(Context context, AssistantFormModel model) {
         mModel = model;
-        mView = new ScrollView(context);
-        mContainerView = new LinearLayout(context);
-        mView.setLayoutParams(
-                new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
-                        /* height= */ 0, /* weight= */ 1));
-        mContainerView.setLayoutParams(new ViewGroup.LayoutParams(
+        mView = new LinearLayout(context);
+        mView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        mContainerView.setOrientation(LinearLayout.VERTICAL);
-        mContainerView.setDividerDrawable(AppCompatResources.getDrawable(
+        mView.setOrientation(LinearLayout.VERTICAL);
+        mView.setDividerDrawable(AppCompatResources.getDrawable(
                 context, R.drawable.autofill_assistant_form_input_divider));
-        mContainerView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
-        mView.addView(mContainerView);
+        mView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
 
         updateVisibility();
         mModel.getInputsModel().addObserver(new AbstractListObserver<Void>() {
             @Override
             public void onDataSetChanged() {
-                mContainerView.removeAllViews();
+                mView.removeAllViews();
                 for (AssistantFormInput input : mModel.getInputsModel()) {
-                    // Add the views to the linear layout (not the scroll view).
-                    View view = input.createView(context, mContainerView);
-                    mContainerView.addView(view);
+                    View view = input.createView(context, mView);
+                    mView.addView(view);
                 }
                 updateVisibility();
             }
@@ -57,21 +47,12 @@ public class AssistantFormCoordinator {
     }
 
     /** Return the view associated to this coordinator. */
-    public ScrollView getView() {
+    public View getView() {
         return mView;
     }
 
-    /** Force the view of this coordinator to be invisible. */
-    public void setForceInvisible(boolean forceInvisible) {
-        if (mForceInvisible == forceInvisible) return;
-
-        mForceInvisible = forceInvisible;
-        updateVisibility();
-    }
-
     private void updateVisibility() {
-        int visibility =
-                !mForceInvisible && mModel.getInputsModel().size() > 0 ? View.VISIBLE : View.GONE;
+        int visibility = mModel.getInputsModel().size() > 0 ? View.VISIBLE : View.GONE;
         mView.setVisibility(visibility);
     }
 }

@@ -18,7 +18,6 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 public class AssistantDetailsCoordinator {
     private final View mView;
     private final AssistantDetailsModel mModel;
-    private boolean mForceInvisible;
 
     public AssistantDetailsCoordinator(Context context, AssistantDetailsModel model) {
         mView = LayoutInflater.from(context).inflate(
@@ -51,19 +50,10 @@ public class AssistantDetailsCoordinator {
      * listener.
      */
     private void updateVisibility() {
-        int visibility = !mForceInvisible && mModel.get(AssistantDetailsModel.DETAILS) != null
-                ? View.VISIBLE
-                : View.GONE;
+        int visibility =
+                mModel.get(AssistantDetailsModel.DETAILS) != null ? View.VISIBLE : View.GONE;
         if (mView.getVisibility() != visibility) {
             mView.setVisibility(visibility);
         }
-    }
-
-    /** Force the view of this coordinator to be invisible. */
-    public void setForceInvisible(boolean forceInvisible) {
-        if (mForceInvisible == forceInvisible) return;
-
-        mForceInvisible = forceInvisible;
-        updateVisibility();
     }
 }

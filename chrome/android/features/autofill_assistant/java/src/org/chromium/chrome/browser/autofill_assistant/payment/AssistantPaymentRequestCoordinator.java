@@ -9,10 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 // TODO(crbug.com/806868): Use mCarouselCoordinator to show chips.
@@ -24,7 +22,6 @@ public class AssistantPaymentRequestCoordinator {
     private static final String DIVIDER_TAG = "divider";
     private final Activity mActivity;
     private final LinearLayout mPaymentRequestUI;
-    private final FadingEdgeScrollView mPaymentRequestScrollView;
     private final AssistantPaymentRequestModel mModel;
     private AssistantPaymentRequestBinder.ViewHolder mViewHolder;
 
@@ -38,8 +35,8 @@ public class AssistantPaymentRequestCoordinator {
         mPaymentRequestUI = new LinearLayout(mActivity);
         mPaymentRequestUI.setOrientation(LinearLayout.VERTICAL);
         mPaymentRequestUI.setLayoutParams(
-                new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
-                        /* height= */ 0, /* weight= */ 1));
+                new ViewGroup.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
+                        /* height= */ ViewGroup.LayoutParams.WRAP_CONTENT));
 
         AssistantVerticalExpanderAccordion paymentRequestExpanderAccordion =
                 new AssistantVerticalExpanderAccordion(mActivity, null);
@@ -50,13 +47,9 @@ public class AssistantPaymentRequestCoordinator {
         paymentRequestExpanderAccordion.setOnExpandedViewChangedListener(
                 expander -> mModel.set(AssistantPaymentRequestModel.EXPANDED_SECTION, expander));
 
-        mPaymentRequestScrollView = new FadingEdgeScrollView(mActivity, null);
-        mPaymentRequestScrollView.addView(paymentRequestExpanderAccordion,
+        mPaymentRequestUI.addView(paymentRequestExpanderAccordion,
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        mPaymentRequestUI.addView(mPaymentRequestScrollView,
-                new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
-                        /* height= */ 0, /* weight= */ 1));
 
         AssistantPaymentRequestContactDetailsSection contactDetailsSection =
                 new AssistantPaymentRequestContactDetailsSection(
@@ -79,14 +72,13 @@ public class AssistantPaymentRequestCoordinator {
                 paymentMethodSection, shippingAddressSection, termsSection, DIVIDER_TAG, activity);
         AssistantPaymentRequestBinder binder = new AssistantPaymentRequestBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
+
+        // View is initially invisible.
+        model.set(AssistantPaymentRequestModel.VISIBLE, false);
     }
 
     public View getView() {
         return mPaymentRequestUI;
-    }
-
-    public ScrollView getScrollView() {
-        return mPaymentRequestScrollView;
     }
 
     /**

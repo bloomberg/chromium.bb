@@ -232,14 +232,10 @@ class AssistantPaymentRequestBinder
      */
     private boolean updateRootVisibility(
             AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if ((propertyKey != AssistantPaymentRequestModel.VISIBLE)
-                && (propertyKey != AssistantPaymentRequestModel.FORCE_INVISIBLE)) {
+        if (propertyKey != AssistantPaymentRequestModel.VISIBLE) {
             return false;
         }
-        int visibility = model.get(AssistantPaymentRequestModel.VISIBLE)
-                        && !model.get(AssistantPaymentRequestModel.FORCE_INVISIBLE)
-                ? View.VISIBLE
-                : View.GONE;
+        int visibility = model.get(AssistantPaymentRequestModel.VISIBLE) ? View.VISIBLE : View.GONE;
         if (view.mRootView.getVisibility() != visibility) {
             if (visibility == View.VISIBLE) {
                 // Update available profiles and credit cards before PR is made visible.
