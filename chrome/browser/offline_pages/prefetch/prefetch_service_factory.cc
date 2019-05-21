@@ -92,13 +92,6 @@ PrefetchService* PrefetchServiceFactory::GetForKey(SimpleFactoryKey* key) {
       GetInstance()->GetServiceForKey(key, true));
 }
 
-// static
-PrefetchService* PrefetchServiceFactory::GetForBrowserContext(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return GetForKey(profile->GetProfileKey());
-}
-
 std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
   ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);

@@ -674,8 +674,8 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile);
   request_coordinator_ =
       offline_pages::RequestCoordinatorFactory::GetForBrowserContext(profile);
-  prefetch_service_ =
-      offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile);
+  prefetch_service_ = offline_pages::PrefetchServiceFactory::GetForKey(
+      profile->GetProfileKey());
 }
 
 void OfflineInternalsUIMessageHandler::OnJavascriptDisallowed() {

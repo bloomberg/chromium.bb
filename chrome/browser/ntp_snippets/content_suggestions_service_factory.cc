@@ -117,7 +117,7 @@ void RegisterWithPrefetching(ContentSuggestionsService* service,
                              Profile* profile) {
   // There's a circular dependency between ContentSuggestionsService and
   // PrefetchService. This closes the circle.
-  offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile)
+  offline_pages::PrefetchServiceFactory::GetForKey(profile->GetProfileKey())
       ->SetContentSuggestionsService(service);
 }
 

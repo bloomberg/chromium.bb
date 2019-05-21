@@ -34,7 +34,7 @@ static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
   DCHECK(profile);
 
   PrefetchService* prefetch_service =
-      PrefetchServiceFactory::GetForBrowserContext(profile);
+      PrefetchServiceFactory::GetForKey(profile->GetProfileKey());
   if (!prefetch_service)
     return false;
 

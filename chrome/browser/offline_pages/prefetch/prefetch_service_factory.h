@@ -15,10 +15,6 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace offline_pages {
 
 class PrefetchService;
@@ -30,12 +26,6 @@ class PrefetchServiceFactory : public SimpleKeyedServiceFactory {
  public:
   static PrefetchServiceFactory* GetInstance();
   static PrefetchService* GetForKey(SimpleFactoryKey* key);
-
-  // Helper method that calls GetForKey().
-  // Returns the DownloadService associated with the key associated with
-  // |context|.
-  static PrefetchService* GetForBrowserContext(
-      content::BrowserContext* context);
 
  private:
   friend struct base::DefaultSingletonTraits<PrefetchServiceFactory>;
