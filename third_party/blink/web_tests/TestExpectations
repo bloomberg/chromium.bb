@@ -5636,7 +5636,5 @@ crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Fail
 crbug.com/965137 [ Linux ] external/wpt/css/css-overflow/webkit-line-clamp-026.html [ Failure ]
 crbug.com/965134 [ Linux ] fast/events/pointerevents/multi-touch-events.html [ Failure ]
 crbug.com/965134 [ Linux ] virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-in-slop-region.html [ Failure ]
-crbug.com/965356 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-merged-nodes.js [ Pass Failure ]
-crbug.com/965356 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.js [ Pass Failure ]
 crbug.com/965134 [ Linux ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
