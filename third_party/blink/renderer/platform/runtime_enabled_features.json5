@@ -1075,11 +1075,11 @@
     },
     {
       name: "PaymentHandlerChangePaymentMethod",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PaymentMethodChangeEvent",
-      status: "experimental",
+      status: "stable",
     },
     // PaymentRequest is enabled by default on Android
     {
