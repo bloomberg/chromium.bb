@@ -379,6 +379,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
 
     if (attribute_value_variant.type() == VT_EMPTY) {
       attribute_value_variant.Reset(current_variant);
+      if (attribute_value_variant.type() == VT_UNKNOWN) {
+        *value = attribute_value_variant.Release();
+        return S_OK;
+      }
     } else if (0 != attribute_value_variant.Compare(current_variant)) {
       V_VT(value) = VT_UNKNOWN;
       return ::UiaGetReservedMixedAttributeValue(&V_UNKNOWN(value));

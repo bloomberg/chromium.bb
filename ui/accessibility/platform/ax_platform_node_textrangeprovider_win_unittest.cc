@@ -90,6 +90,30 @@ namespace ui {
     EXPECT_EQ(0, scoped_variant.Compare(variant));                         \
   }
 
+#define EXPECT_UIA_TEXTATTRIBUTE_MIXED(provider, attribute)                \
+  {                                                                        \
+    CComPtr<IUnknown> expected_mixed;                                      \
+    EXPECT_HRESULT_SUCCEEDED(                                              \
+        ::UiaGetReservedMixedAttributeValue(&expected_mixed));             \
+    base::win::ScopedVariant scoped_variant;                               \
+    EXPECT_HRESULT_SUCCEEDED(                                              \
+        provider->GetAttributeValue(attribute, scoped_variant.Receive())); \
+    EXPECT_EQ(VT_UNKNOWN, scoped_variant.type());                          \
+    EXPECT_EQ(expected_mixed, V_UNKNOWN(scoped_variant.ptr()));            \
+  }
+
+#define EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(provider, attribute)         \
+  {                                                                        \
+    CComPtr<IUnknown> expected_notsupported;                               \
+    EXPECT_HRESULT_SUCCEEDED(                                              \
+        ::UiaGetReservedNotSupportedValue(&expected_notsupported));        \
+    base::win::ScopedVariant scoped_variant;                               \
+    EXPECT_HRESULT_SUCCEEDED(                                              \
+        provider->GetAttributeValue(attribute, scoped_variant.Receive())); \
+    EXPECT_EQ(VT_UNKNOWN, scoped_variant.type());                          \
+    EXPECT_EQ(expected_notsupported, V_UNKNOWN(scoped_variant.ptr()));     \
+  }
+
 #define EXPECT_UIA_TEXTRANGE_EQ(provider, expected_content) \
   {                                                         \
     base::win::ScopedBstr provider_content;                 \
@@ -2751,15 +2775,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   GetTextRangeProviderFromTextNode(list_item2_text_range_provider,
                                    list_item2_text_node);
 
-  base::win::ScopedVariant expected_mixed_variant;
-  {
-    VARIANT var;
-    V_VT(&var) = VT_UNKNOWN;
-    EXPECT_HRESULT_SUCCEEDED(
-        ::UiaGetReservedMixedAttributeValue(&V_UNKNOWN(&var)));
-    expected_mixed_variant.Reset(var);
-  }
-
   base::win::ScopedVariant expected_variant;
 
   // SkColor is ARGB, COLORREF is 0BGR
@@ -2822,8 +2837,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                               expected_variant);
   expected_variant.Reset();
 
-  EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider, UIA_IsHiddenAttributeId,
-                              expected_mixed_variant);
+  EXPECT_UIA_TEXTATTRIBUTE_MIXED(document_range_provider,
+                                 UIA_IsHiddenAttributeId);
 
   expected_variant.Set(true);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsItalicAttributeId,
@@ -2911,10 +2926,95 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       static_cast<int32_t>(FlowDirections::FlowDirections_RightToLeft));
   EXPECT_UIA_TEXTATTRIBUTE_EQ(
       text_range_provider, UIA_TextFlowDirectionsAttributeId, expected_variant);
-  EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider,
-                              UIA_TextFlowDirectionsAttributeId,
-                              expected_variant);
+  EXPECT_UIA_TEXTATTRIBUTE_MIXED(document_range_provider,
+                                 UIA_TextFlowDirectionsAttributeId);
   expected_variant.Reset();
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderGetAttributeValueNotSupported) {
+  ui::AXNodeData root_data;
+  root_data.id = 0;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids = {1, 2};
+
+  ui::AXNodeData text_data_first;
+  text_data_first.id = 1;
+  text_data_first.role = ax::mojom::Role::kStaticText;
+  text_data_first.SetName("first");
+
+  ui::AXNodeData text_data_second;
+  text_data_second.id = 2;
+  text_data_second.role = ax::mojom::Role::kStaticText;
+  text_data_second.SetName("second");
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data_first);
+  update.nodes.push_back(text_data_second);
+
+  Init(update);
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXTreeManagerMap::GetInstance().AddTreeManager(tree_data.tree_id, this);
+
+  ComPtr<ITextRangeProvider> document_range_provider;
+  GetTextRangeProviderFromTextNode(document_range_provider, GetRootNode());
+
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_AfterParagraphSpacingAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_AnimationStyleAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_AnnotationObjectsAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_AnnotationTypesAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_BeforeParagraphSpacingAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_CapStyleAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_CaretBidiModeAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_CaretPositionAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_HorizontalTextAlignmentAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_IndentationFirstLineAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_IndentationLeadingAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_IndentationTrailingAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_IsActiveAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_LineSpacingAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_LinkAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_MarginBottomAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_MarginLeadingAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_MarginTopAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_MarginTrailingAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_OutlineStylesAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_OverlineColorAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_SelectionActiveEndAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_StrikethroughColorAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_TabsAttributeId);
+  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
+                                        UIA_UnderlineColorAttributeId);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {

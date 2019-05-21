@@ -1135,23 +1135,32 @@ TEST_F(AXPlatformNodeWinTest, TestAccNavigate) {
 
   // Logical directions should be supported.
   EXPECT_EQ(S_OK, ia_root->accNavigate(NAVDIR_FIRSTCHILD, SELF, end.AsInput()));
-  EXPECT_EQ(0, var_child1.Compare(end));
+  EXPECT_EQ(VT_DISPATCH, end.type());
+  EXPECT_EQ(V_DISPATCH(var_child1.ptr()), V_DISPATCH(end.ptr()));
+
   EXPECT_EQ(S_OK, ia_root->accNavigate(NAVDIR_LASTCHILD, SELF, end.AsInput()));
-  EXPECT_EQ(0, var_child2.Compare(end));
+  EXPECT_EQ(VT_DISPATCH, end.type());
+  EXPECT_EQ(V_DISPATCH(var_child2.ptr()), V_DISPATCH(end.ptr()));
 
   EXPECT_EQ(S_OK, ia_child1->accNavigate(NAVDIR_NEXT, SELF, end.AsInput()));
-  EXPECT_EQ(0, var_child2.Compare(end));
+  EXPECT_EQ(VT_DISPATCH, end.type());
+  EXPECT_EQ(V_DISPATCH(var_child2.ptr()), V_DISPATCH(end.ptr()));
+
   EXPECT_EQ(S_OK, ia_child2->accNavigate(NAVDIR_PREVIOUS, SELF, end.AsInput()));
-  EXPECT_EQ(0, var_child1.Compare(end));
+  EXPECT_EQ(VT_DISPATCH, end.type());
+  EXPECT_EQ(V_DISPATCH(var_child1.ptr()), V_DISPATCH(end.ptr()));
 
   // Child indices can also be passed by variant.
   // Indices are one-based.
   EXPECT_EQ(S_OK,
             ia_root->accNavigate(NAVDIR_NEXT, ScopedVariant(1), end.AsInput()));
-  EXPECT_EQ(0, var_child2.Compare(end));
+  EXPECT_EQ(VT_DISPATCH, end.type());
+  EXPECT_EQ(V_DISPATCH(var_child2.ptr()), V_DISPATCH(end.ptr()));
+
   EXPECT_EQ(S_OK, ia_root->accNavigate(NAVDIR_PREVIOUS, ScopedVariant(2),
                                        end.AsInput()));
-  EXPECT_EQ(0, var_child1.Compare(end));
+  EXPECT_EQ(VT_DISPATCH, end.type());
+  EXPECT_EQ(V_DISPATCH(var_child1.ptr()), V_DISPATCH(end.ptr()));
 
   // Test out-of-bounds.
   EXPECT_EQ(S_FALSE,
