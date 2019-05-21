@@ -25,17 +25,25 @@ public final class BackgroundTaskSchedulerExternalUma {
     /**
      * Report metrics for starting a NativeBackgroundTask. This does not consider tasks that are
      * short-circuited before any work is done.
+     * @param taskId An id from {@link TaskIds}.
+     * @param serviceManagerOnlyMode Whether the task will run in Service Manager Only Mode (Reduced
+     *                               Mode) instead of Full Browser Mode.
      */
-    public static void reportNativeTaskStarted(int taskId) {
-        BackgroundTaskSchedulerUma.getInstance().reportNativeTaskStarted(taskId);
+    public static void reportNativeTaskStarted(int taskId, boolean serviceManagerOnlyMode) {
+        BackgroundTaskSchedulerUma.getInstance().reportNativeTaskStarted(
+                taskId, serviceManagerOnlyMode);
     }
 
     /**
      * Reports metrics that a NativeBackgroundTask has been finished cleanly (i.e., no unexpected
      * exits because of chrome crash or OOM). This includes tasks that have been stopped due to
      * timeout.
+     * @param taskId An id from {@link TaskIds}.
+     * @param serviceManagerOnlyMode Whether the task will run in Service Manager Only Mode (Reduced
+     *                               Mode) instead of Full Browser Mode.
      */
-    public static void reportNativeTaskFinished(int taskId) {
-        BackgroundTaskSchedulerUma.getInstance().reportNativeTaskFinished(taskId);
+    public static void reportNativeTaskFinished(int taskId, boolean serviceManagerOnlyMode) {
+        BackgroundTaskSchedulerUma.getInstance().reportNativeTaskFinished(
+                taskId, serviceManagerOnlyMode);
     }
 }
