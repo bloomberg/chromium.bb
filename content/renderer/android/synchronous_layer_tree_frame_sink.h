@@ -164,7 +164,7 @@ class SynchronousLayerTreeFrameSink
   bool did_submit_frame_ = false;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
-  base::CancelableClosure fallback_tick_;
+  base::CancelableOnceClosure fallback_tick_;
   bool fallback_tick_pending_ = false;
   bool fallback_tick_running_ = false;
 

@@ -398,8 +398,8 @@ void SynchronousLayerTreeFrameSink::Invalidate(bool needs_draw) {
 
   if (!fallback_tick_pending_) {
     fallback_tick_.Reset(
-        base::Bind(&SynchronousLayerTreeFrameSink::FallbackTickFired,
-                   base::Unretained(this)));
+        base::BindOnce(&SynchronousLayerTreeFrameSink::FallbackTickFired,
+                       base::Unretained(this)));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, fallback_tick_.callback(),
         base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
