@@ -601,8 +601,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
           .expectBraille('dog img is a cat img test')
           .clearPendingOutput()
           .call(moveByChar)
-          // This is actually wrong; should say space.
-          .expectSpeech('dog')
+          .expectSpeech('dog', 'Image')
           .expectBraille(lineText, {startIndex: 3, endIndex: 3})
           .call(moveByChar)
           .expectSpeech('i')

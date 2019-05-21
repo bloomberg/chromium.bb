@@ -87,11 +87,6 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
                            const ui::AXEvent& event,
                            api::automation::EventType event_type);
 
-  void MaybeSendFocusAndBlur(
-      AutomationAXTreeWrapper* tree,
-      ax::mojom::EventFrom event_from,
-      const ExtensionMsg_AccessibilityEventBundleParams& event_bundle);
-
  private:
   // ObjectBackedNativeHandler overrides:
   void Invalidate() override;
@@ -220,12 +215,6 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   int tree_change_observer_overall_filter_;
   NativeExtensionBindingsSystem* bindings_system_;
   bool should_ignore_context_;
-
-  // The global focused tree id.
-  ui::AXTreeID focus_tree_id_;
-
-  // The global focused node id.
-  int32_t focus_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };

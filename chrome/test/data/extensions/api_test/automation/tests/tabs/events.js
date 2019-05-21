@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-let allTests = [
+var allTests = [
   function testEventListenerTarget() {
-    let cancelButton = rootNode.firstChild.children[2];
+    var cancelButton = rootNode.firstChild.children[2];
     assertEq('Cancel', cancelButton.name);
     cancelButton.addEventListener(EventType.FOCUS,
                                   function onFocusTarget(event) {
@@ -16,26 +16,26 @@ let allTests = [
     cancelButton.focus();
   },
   function testEventListenerBubble() {
-    let okButton = rootNode.firstChild.children[0];
-    assertEq('Ok', okButton.name);
-    let okButtonGotEvent = false;
-    okButton.addEventListener(EventType.FOCUS,
+    var cancelButton = rootNode.firstChild.children[2];
+    assertEq('Cancel', cancelButton.name);
+    var cancelButtonGotEvent = false;
+    cancelButton.addEventListener(EventType.FOCUS,
                                   function onFocusBubble(event) {
-      okButtonGotEvent = true;
-      okButton.removeEventListener(EventType.FOCUS, onFocusBubble);
+      cancelButtonGotEvent = true;
+      cancelButton.removeEventListener(EventType.FOCUS, onFocusBubble);
     });
     rootNode.addEventListener(EventType.FOCUS,
                                function onFocusBubbleRoot(event) {
       assertEq('focus', event.type);
-      assertEq(okButton, event.target);
-      assertTrue(okButtonGotEvent);
+      assertEq(cancelButton, event.target);
+      assertTrue(cancelButtonGotEvent);
       rootNode.removeEventListener(EventType.FOCUS, onFocusBubbleRoot);
       chrome.test.succeed();
     });
-    okButton.focus();
+    cancelButton.focus();
   },
   function testStopPropagation() {
-    let cancelButton = rootNode.firstChild.children[2];
+    var cancelButton = rootNode.firstChild.children[2];
     assertEq('Cancel', cancelButton.name);
     function onFocusStopPropRoot(event) {
       rootNode.removeEventListener(EventType.FOCUS, onFocusStopPropRoot);
@@ -54,31 +54,31 @@ let allTests = [
     cancelButton.focus();
   },
   function testEventListenerCapture() {
-    let okButton = rootNode.firstChild.children[0];
-    assertEq('Ok', okButton.name);
-    let okButtonGotEvent = false;
+    var cancelButton = rootNode.firstChild.children[2];
+    assertEq('Cancel', cancelButton.name);
+    var cancelButtonGotEvent = false;
     function onFocusCapture(event) {
-      okButtonGotEvent = true;
-      okButton.removeEventListener(EventType.FOCUS, onFocusCapture);
+      cancelButtonGotEvent = true;
+      cancelButton.removeEventListener(EventType.FOCUS, onFocusCapture);
       chrome.test.fail("Focus event was not captured by root");
     };
-    okButton.addEventListener(EventType.FOCUS, onFocusCapture);
+    cancelButton.addEventListener(EventType.FOCUS, onFocusCapture);
     rootNode.addEventListener(EventType.FOCUS,
                                function onFocusCaptureRoot(event) {
       assertEq('focus', event.type);
-      assertEq(okButton, event.target);
-      assertFalse(okButtonGotEvent);
+      assertEq(cancelButton, event.target);
+      assertFalse(cancelButtonGotEvent);
       event.stopPropagation();
       rootNode.removeEventListener(EventType.FOCUS, onFocusCaptureRoot);
       rootNode.removeEventListener(EventType.FOCUS, onFocusCapture);
       window.setTimeout(chrome.test.succeed.bind(this), 0);
     }, true);
-    okButton.focus();
+    cancelButton.focus();
   },
   function testHitTestWithReply() {
-    let cancelButton = rootNode.firstChild.children[2];
+    var cancelButton = rootNode.firstChild.children[2];
     assertEq('Cancel', cancelButton.name);
-    let loc = cancelButton.unclippedLocation;
+    var loc = cancelButton.unclippedLocation;
     rootNode.hitTestWithReply(loc.left, loc.top, function(result) {
       assertEq(result, cancelButton);
       chrome.test.succeed();
