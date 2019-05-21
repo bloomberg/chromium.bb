@@ -1308,15 +1308,7 @@ bool VaapiVideoEncodeAccelerator::VP9Accelerator::SubmitFrameParameters(
   pic_param.luma_dc_qindex_delta = frame_header->quant_params.delta_q_y_dc;
   pic_param.chroma_ac_qindex_delta = frame_header->quant_params.delta_q_uv_ac;
   pic_param.chroma_dc_qindex_delta = frame_header->quant_params.delta_q_uv_dc;
-
-  // TODO(crbug.com/924786): Unlike the current vp8 implementation,
-  // SegmentationParams and LoopFilterParams are the part of Parser structure
-  // rather than included them in FrameHeader. So, for now, we are not taking
-  // segmentation and loopfilter related parameter from frame_hdr. But since the
-  // filter level may affect on quality at lower bitrates, we set a constant
-  // value (== 10) which is what other VA-API implementations like libyami and
-  // gstreamer-vaapi are using.
-  pic_param.filter_level = 10;
+  pic_param.filter_level = frame_header->loop_filter.level;
   pic_param.log2_tile_rows = frame_header->tile_rows_log2;
   pic_param.log2_tile_columns = frame_header->tile_cols_log2;
 
