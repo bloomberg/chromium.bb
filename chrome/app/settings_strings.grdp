@@ -1629,18 +1629,6 @@
     <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL" desc="Label of the re-authentication button on Kerberos Accounts Settings page.">
       Sign in
     </message>
-    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT" desc="In Add Kerberos Accounts dialog, the title of the dialog.">
-      Add Kerberos Account
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_USERNAME" desc="Title for the input that lets users specify their username for a Kerberos account.">
-      Username
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_PASSWORD" desc="Title for the input that lets users specify their password for a Kerberos account.">
-      Password
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_GENERAL_ERROR_MESSAGE" desc="Fallback error message displayed in the Add Kerberos.">
-      Oops! Something went wrong (error code <ph name="ERROR_CODE">$1<ex>123</ex></ph>).
-    </message>
   </if>
 
   <!-- Date/Time Page -->

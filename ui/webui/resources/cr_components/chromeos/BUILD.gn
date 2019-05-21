@@ -13,7 +13,6 @@ group("closure_compile") {
     "multidevice_setup:closure_compile",
     "network:closure_compile",
     "quick_unlock:closure_compile",
-    "smb_shares:closure_compile",
   ]
 }
 
