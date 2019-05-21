@@ -1717,8 +1717,8 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
         color_utils::AlphaBlend(default_color, background_color, 0.75f);
   }
 
-  return color_utils::GetColorWithMinimumContrast(default_color,
-                                                  background_color);
+  return color_utils::BlendForMinContrast(default_color, background_color)
+      .color;
 }
 
 // Returns the accessible tab name for the tab.
@@ -2386,14 +2386,14 @@ void TabStrip::UpdateContrastRatioValues() {
     return;
 
   const SkColor inactive_bg = GetTabBackgroundColor(TAB_INACTIVE);
-  const auto get_alpha = [inactive_bg](SkColor target, float contrast) {
-    return color_utils::GetBlendValueWithMinimumContrast(inactive_bg, target,
-                                                         inactive_bg, contrast);
+  const auto get_blend = [inactive_bg](SkColor target, float contrast) {
+    return color_utils::BlendForMinContrast(inactive_bg, inactive_bg, target,
+                                            contrast);
   };
 
   const SkColor active_bg = GetTabBackgroundColor(TAB_ACTIVE);
-  const auto get_hover_opacity = [active_bg, &get_alpha](float contrast) {
-    return get_alpha(active_bg, contrast) / 255.0f;
+  const auto get_hover_opacity = [active_bg, &get_blend](float contrast) {
+    return get_blend(active_bg, contrast).alpha / 255.0f;
   };
 
   // The contrast ratio for the hover effect on standard-width tabs.
@@ -2414,9 +2414,7 @@ void TabStrip::UpdateContrastRatioValues() {
   const SkColor inactive_fg = GetTabForegroundColor(TAB_INACTIVE, inactive_bg);
   // The contrast ratio for the separator between inactive tabs.
   constexpr float kTabSeparatorContrast = 2.5f;
-  const SkAlpha separator_alpha = get_alpha(inactive_fg, kTabSeparatorContrast);
-  separator_color_ =
-      color_utils::AlphaBlend(inactive_fg, inactive_bg, separator_alpha);
+  separator_color_ = get_blend(inactive_fg, kTabSeparatorContrast).color;
 }
 
 void TabStrip::ResizeLayoutTabs() {

@@ -313,11 +313,10 @@ SkColor ToolbarButton::AdjustHighlightColorForContrast(
 
   // Add a fudge factor to the minimum contrast ratio since we'll actually be
   // blending with the adjusted color.
-  const SkAlpha blend_alpha = color_utils::GetBlendValueWithMinimumContrast(
-      contrasting_color, limit, base_color,
-      color_utils::kMinimumReadableContrastRatio * 1.05);
-
-  return color_utils::AlphaBlend(limit, contrasting_color, blend_alpha);
+  return color_utils::BlendForMinContrast(
+             contrasting_color, base_color, limit,
+             color_utils::kMinimumReadableContrastRatio * 1.05)
+      .color;
 }
 
 bool ToolbarButton::ShouldShowMenu() {

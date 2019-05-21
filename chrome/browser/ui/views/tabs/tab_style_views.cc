@@ -400,20 +400,19 @@ TabStyle::TabColors GM2TabStyle::CalculateColors() const {
 
   SkColor title_color = tab_->controller()->GetTabForegroundColor(
       expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE, bg_color);
-  title_color = color_utils::GetColorWithMinimumContrast(title_color, bg_color);
+  title_color = color_utils::BlendForMinContrast(title_color, bg_color).color;
 
   const SkColor base_hovered_color = theme_provider->GetColor(
       ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER);
   const SkColor base_pressed_color = theme_provider->GetColor(
       ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED);
 
-  const auto get_color_for_contrast_ratio = [](SkColor fg_color,
-                                               SkColor bg_color,
-                                               float contrast_ratio) {
-    const SkAlpha blend_alpha = color_utils::GetBlendValueWithMinimumContrast(
-        bg_color, fg_color, bg_color, contrast_ratio);
-    return color_utils::AlphaBlend(fg_color, bg_color, blend_alpha);
-  };
+  const auto get_color_for_contrast_ratio =
+      [](SkColor fg_color, SkColor bg_color, float contrast_ratio) {
+        return color_utils::BlendForMinContrast(bg_color, bg_color, fg_color,
+                                                contrast_ratio)
+            .color;
+      };
 
   const SkColor generated_icon_color = get_color_for_contrast_ratio(
       title_color, bg_color,
@@ -425,11 +424,11 @@ TabStyle::TabColors GM2TabStyle::CalculateColors() const {
       base_pressed_color, bg_color, kMinimumPressedContrastRatio);
 
   const SkColor generated_hovered_icon_color =
-      color_utils::GetColorWithMinimumContrast(title_color,
-                                               generated_hovered_color);
+      color_utils::BlendForMinContrast(title_color, generated_hovered_color)
+          .color;
   const SkColor generated_pressed_icon_color =
-      color_utils::GetColorWithMinimumContrast(title_color,
-                                               generated_pressed_color);
+      color_utils::BlendForMinContrast(title_color, generated_pressed_color)
+          .color;
 
   return {bg_color,
           title_color,
@@ -665,9 +664,9 @@ SkColor GM2TabStyle::GetTabBackgroundColor(TabState active_state) const {
       // Tint with group color. With a dark scheme, the tint needs a higher
       // contrast to stand out effectively.
       const float target_contrast = color_utils::IsDark(color) ? 1.8f : 1.2f;
-      const SkAlpha blend_alpha = color_utils::GetBlendValueWithMinimumContrast(
-          color, group_color.value(), color, target_contrast);
-      color = color_utils::AlphaBlend(group_color.value(), color, blend_alpha);
+      color = color_utils::BlendForMinContrast(
+                  color, color, group_color.value(), target_contrast)
+                  .color;
     }
   }
 

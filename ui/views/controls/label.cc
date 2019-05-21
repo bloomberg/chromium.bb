@@ -873,7 +873,7 @@ gfx::Size Label::GetTextSize() const {
 SkColor Label::GetForegroundColor(SkColor foreground,
                                   SkColor background) const {
   return (auto_color_readability_ && IsOpaque(background))
-             ? color_utils::GetColorWithMinimumContrast(foreground, background)
+             ? color_utils::BlendForMinContrast(foreground, background).color
              : foreground;
 }
 

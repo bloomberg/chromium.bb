@@ -343,10 +343,10 @@ SkColor MediaNotificationBackground::GetBackgroundColor() const {
 }
 
 SkColor MediaNotificationBackground::GetForegroundColor() const {
-  return color_utils::GetColorWithMinimumContrast(
-      foreground_color_.value_or(views::style::GetColor(
-          *owner_, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY)),
-      GetBackgroundColor());
+  const SkColor foreground = foreground_color_.value_or(views::style::GetColor(
+      *owner_, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
+  return color_utils::BlendForMinContrast(foreground, GetBackgroundColor())
+      .color;
 }
 
 int MediaNotificationBackground::GetArtworkWidth(

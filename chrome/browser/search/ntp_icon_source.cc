@@ -229,8 +229,10 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
 
   // If necessary, draw the colored fallback monogram.
   if (favicon.empty()) {
-    SkColor fallback_color = color_utils::GetColorWithMinimumContrast(
-        GetBackgroundColorForUrl(icon_url), kFallbackIconLetterColor);
+    SkColor fallback_color =
+        color_utils::BlendForMinContrast(GetBackgroundColorForUrl(icon_url),
+                                         kFallbackIconLetterColor)
+            .color;
 
     int offset = (icon_size - fallback_size) / 2;
     DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);

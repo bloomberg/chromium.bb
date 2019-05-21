@@ -812,10 +812,10 @@ void BrowserThemePack::GenerateFrameAndTabColors(SkColor color,
     frame_text_color = color_utils::GetColorWithMaxContrast(frame_color);
     SkColor blend_target =
         color_utils::GetColorWithMaxContrast(frame_text_color);
-    SkAlpha alpha = color_utils::GetBlendValueWithMinimumContrast(
-        frame_color, blend_target, frame_text_color,
-        kPreferredReadableContrastRatio);
-    frame_color = color_utils::AlphaBlend(blend_target, frame_color, alpha);
+    frame_color = color_utils::BlendForMinContrast(
+                      frame_color, frame_text_color, blend_target,
+                      kPreferredReadableContrastRatio)
+                      .color;
 
     // Generate active tab color so that it has enough contrast with the
     // |frame_color| to avoid the isolation line in the tab strip.
@@ -1828,9 +1828,9 @@ void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
     }
   }
 
-  const SkColor result_color =
-      color_utils::GetColorWithMinimumContrast(blend_source_color, bg_color);
-  SetColor(text_color_id, result_color);
+  SetColor(
+      text_color_id,
+      color_utils::BlendForMinContrast(blend_source_color, bg_color).color);
 }
 
 void BrowserThemePack::GenerateMissingNtpColors() {

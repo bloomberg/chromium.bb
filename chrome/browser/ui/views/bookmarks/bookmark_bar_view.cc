@@ -2028,7 +2028,8 @@ int BookmarkBarView::GetIndexForButton(views::View* button) {
 
 SkColor BookmarkBarView::GetBookmarkBarTextColor() {
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
-  return color_utils::GetColorWithMinimumContrast(
-      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT),
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
+  return color_utils::BlendForMinContrast(
+             theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT),
+             theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR))
+      .color;
 }

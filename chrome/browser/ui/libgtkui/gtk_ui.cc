@@ -920,17 +920,19 @@ void GtkUi::UpdateColors() {
     color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
         background_tab_text_color;
     color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO] =
-        color_utils::GetColorWithMinimumContrast(
+        color_utils::BlendForMinContrast(
             color_utils::HSLShift(background_tab_text_color,
                                   kDefaultTintFrameIncognito),
-            frame_color_incognito);
+            frame_color_incognito)
+            .color;
     color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
         background_tab_text_color_inactive;
     color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE] =
-        color_utils::GetColorWithMinimumContrast(
+        color_utils::BlendForMinContrast(
             color_utils::HSLShift(background_tab_text_color_inactive,
                                   kDefaultTintFrameIncognito),
-            frame_color_incognito_inactive);
+            frame_color_incognito_inactive)
+            .color;
 
     // These colors represent the border drawn around tabs and between
     // the tabstrip and toolbar.

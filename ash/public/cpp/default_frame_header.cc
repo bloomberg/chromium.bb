@@ -172,7 +172,7 @@ SkColor DefaultFrameHeader::GetTitleColor() const {
   const SkColor desired_color = color_utils::IsDark(frame_color)
                                     ? SK_ColorWHITE
                                     : SkColorSetRGB(40, 40, 40);
-  return color_utils::GetColorWithMinimumContrast(desired_color, frame_color);
+  return color_utils::BlendForMinContrast(desired_color, frame_color).color;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

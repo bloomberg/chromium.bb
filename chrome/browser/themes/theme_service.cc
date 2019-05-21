@@ -770,12 +770,13 @@ SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
     separator_color = color_utils::GetColorWithMaxContrast(separator_color);
   }
 
-  SkAlpha alpha = color_utils::FindBlendValueForContrastRatio(
-      frame_color, separator_color, frame_color, kContrastRatio, 0);
-  if (color_utils::GetContrastRatio(
-          color_utils::AlphaBlend(separator_color, frame_color, alpha),
-          frame_color) >= kContrastRatio) {
-    return SkColorSetA(separator_color, alpha);
+  {
+    const auto result = color_utils::BlendForMinContrast(
+        frame_color, frame_color, separator_color, kContrastRatio);
+    if (color_utils::GetContrastRatio(result.color, frame_color) >=
+        kContrastRatio) {
+      return SkColorSetA(separator_color, result.alpha);
+    }
   }
 
   separator_color = color_utils::GetColorWithMaxContrast(separator_color);
@@ -786,9 +787,9 @@ SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
   // dark or very light, just not quite as much so as the frame color.  Blend
   // towards the opposite separator color, and compute the contrast against the
   // tab instead of the frame to ensure both contrasts hit the desired minimum.
-  alpha = color_utils::FindBlendValueForContrastRatio(
-      frame_color, separator_color, tab_color, kContrastRatio, 0);
-  return SkColorSetA(separator_color, alpha);
+  const auto result = color_utils::BlendForMinContrast(
+      frame_color, tab_color, separator_color, kContrastRatio);
+  return SkColorSetA(separator_color, result.alpha);
 }
 
 void ThemeService::DoSetTheme(const Extension* extension,
