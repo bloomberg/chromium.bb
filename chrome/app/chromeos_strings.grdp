@@ -3947,4 +3947,11 @@
   <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen.">
     Add Supervision
   </message>
+    <!-- Strings for gnubby U2FD authentication UI -->
+  <message name="IDS_GNUBBY_NOTIFICATION_TITLE" desc="Title for notification informing user to press power button for gnubby U2FD.">
+    A security key is being requested
+  </message>
+  <message name="IDS_GNUBBY_NOTIFICATION_MESSAGE" desc="Text for notifications informing user that Chrome is requestor for U2FD.">
+    Please tap your power button
+  </message>
 </grit-part>
