@@ -316,7 +316,13 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
         GetOpenVRString(vr_system, vr::Prop_ModelNumber_String, controller_id);
     std::string manufacturer = GetOpenVRString(
         vr_system, vr::Prop_ManufacturerName_String, controller_id);
-    return (model == "Vive Controller MV") && (manufacturer == "HTC");
+
+    // OpenVR reports different model strings for developer vs released versions
+    // of Vive controllers. In the future, there could be additional iterations
+    // of the Vive controller that we also want to catch here. That's why we
+    // check if the model string contains "Vive" instead of doing an exact match
+    // against specific string(s).
+    return (manufacturer == "HTC") && (model.find("Vive") != std::string::npos);
   }
 
   // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
