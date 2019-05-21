@@ -457,6 +457,8 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
 
 int av1_get_adaptive_rdmult(const struct AV1_COMP *cpi, double beta);
 
+int av1_get_deltaq_offset(const struct AV1_COMP *cpi, int qindex, double beta);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

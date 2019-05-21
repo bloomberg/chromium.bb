@@ -3320,8 +3320,8 @@ BEGIN_PARTITION_SEARCH:
 }
 #undef NUM_SIMPLE_MOTION_FEATURES
 
-static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
-                            int mi_col, int orig_rdmult) {
+static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
+                            int mi_row, int mi_col, int orig_rdmult) {
   assert(IMPLIES(cpi->twopass.gf_group.size > 0,
                  cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
   const int tpl_idx =
@@ -3341,6 +3341,8 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
   if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return orig_rdmult;
 
+  int64_t mc_count = 0, mc_saved = 0;
+  int mi_count = 0;
   for (row = mi_row; row < mi_row + mi_high; ++row) {
     for (col = mi_col; col < mi_col + mi_wide; ++col) {
       TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
@@ -3349,14 +3351,27 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
       intra_cost += this_stats->intra_cost;
       mc_dep_cost += this_stats->intra_cost + this_stats->mc_flow;
+      mc_count += this_stats->mc_count;
+      mc_saved += this_stats->mc_saved;
+      mi_count++;
     }
   }
 
   aom_clear_system_state();
 
-  const double r0 = cpi->rd.r0;
-  const double rk = (double)intra_cost / mc_dep_cost;
-  const double beta = r0 / rk;
+  double beta = 1.0;
+  if (analysis_type == 0) {
+    const double r0 = cpi->rd.r0;
+    const double rk = (double)intra_cost / mc_dep_cost;
+    beta = (r0 / rk);
+  } else if (analysis_type == 1) {
+    const double mc_count_base = (mi_count * cpi->rd.mc_count_base);
+    beta = (mc_count + 10.0) / (mc_count_base + 10.0);
+  } else if (analysis_type == 2) {
+    const double mc_saved_base = (mi_count * cpi->rd.mc_saved_base);
+    beta = (mc_saved + 100.0) / (mc_saved_base + 100.0);
+  }
+
   int rdmult = av1_get_adaptive_rdmult(cpi, beta);
 
   rdmult = AOMMIN(rdmult, orig_rdmult * 3 / 2);
@@ -3388,18 +3403,18 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   int mi_high = mi_size_high[bsize];
   int row, col;
 
-  double r0, rk, beta;
-
   if (cpi->tpl_model_pass == 1) {
     assert(cpi->oxcf.enable_tpl_model == 2);
     return cm->base_qindex;
   }
 
-  if (cm->base_qindex > 200) return cm->base_qindex;
-
   if (tpl_frame->is_valid == 0) return cm->base_qindex;
 
   if (cpi->common.show_frame) return cm->base_qindex;
+
+  if (cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index] <
+      cpi->twopass.gf_group.pyramid_height)
+    return cm->base_qindex;
 
   if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return cm->base_qindex;
 
@@ -3418,33 +3433,26 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   }
 
   int offset = 0;
+  double beta = 1.0;
   if (analysis_type == 0) {
-    r0 = cpi->rd.r0;
-    rk = (double)intra_cost / mc_dep_cost;
-    beta = r0 / rk;
-    offset = -(int)(log(beta) * 8.0);
+    const double r0 = cpi->rd.r0;
+    const double rk = (double)intra_cost / mc_dep_cost;
+    beta = (r0 / rk);
   } else if (analysis_type == 1) {
     const double mc_count_base = (mi_count * cpi->rd.mc_count_base);
-    const double mc_count_beta =
-        mc_count_base != 0.0
-            ? ((double)mc_count - mc_count_base) / mc_count_base
-            : 0.0;
-    offset = -(int)rint(mc_count_beta * 8.0);
-    // printf("mc_count_beta %g, offset %d\n", mc_count_beta, offset);
+    beta = (mc_count + 10.0) / (mc_count_base + 10.0);
   } else if (analysis_type == 2) {
     const double mc_saved_base = (mi_count * cpi->rd.mc_saved_base);
-    const double mc_saved_beta =
-        mc_saved_base != 0.0
-            ? ((double)mc_saved - mc_saved_base) / mc_saved_base
-            : 0.0;
-    offset = -(int)rint(mc_saved_beta * 2.0);
-    // printf("mc_saved_beta %g, offset %d\n", mc_saved_beta, offset);
+    beta = (mc_saved + 100.0) / (mc_saved_base + 100.0);
   }
+  offset = (6 * av1_get_deltaq_offset(cpi, cm->base_qindex, beta)) / 8;
+  // printf("beta %g, offset %d\n", beta, offset);
 
   aom_clear_system_state();
 
-  offset = AOMMIN(offset, DEFAULT_DELTA_Q_RES_OBJECTIVE * 3 - 1);
-  offset = AOMMAX(offset, -DEFAULT_DELTA_Q_RES_OBJECTIVE * 3 + 1);
+  const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
+  offset = AOMMIN(offset, delta_q_info->delta_q_res * 9 - 1);
+  offset = AOMMAX(offset, -delta_q_info->delta_q_res * 9 + 1);
   int qindex = cm->base_qindex + offset;
   qindex = AOMMIN(qindex, MAXQ);
   qindex = AOMMAX(qindex, MINQ);
@@ -3482,7 +3490,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
     assert(cpi->oxcf.enable_tpl_model);
     // Setup deltaq based on tpl stats
     current_qindex =
-        get_q_for_deltaq_objective(cpi, sb_size, 2, mi_row, mi_col);
+        get_q_for_deltaq_objective(cpi, sb_size, 0, mi_row, mi_col);
   }
 
   const int qmask = ~(delta_q_info->delta_q_res - 1);
@@ -3492,7 +3500,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   const int sign_deltaq_index =
       current_qindex - xd->current_qindex >= 0 ? 1 : -1;
 
-  const int deltaq_deadzone = 0;  // delta_q_info->delta_q_res / 2;
+  const int deltaq_deadzone = delta_q_info->delta_q_res / 4;
   int abs_deltaq_index = abs(current_qindex - xd->current_qindex);
   abs_deltaq_index = (abs_deltaq_index + deltaq_deadzone) & qmask;
   current_qindex = xd->current_qindex + sign_deltaq_index * abs_deltaq_index;
@@ -3723,7 +3731,8 @@ static void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   if (cpi->oxcf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ &&
       cpi->oxcf.deltaq_mode == NO_DELTA_Q && gf_group_index > 0 &&
       cpi->twopass.gf_group.update_type[gf_group_index] == ARF_UPDATE) {
-    const int dr = get_rdmult_delta(cpi, sb_size, mi_row, mi_col, orig_rdmult);
+    const int dr =
+        get_rdmult_delta(cpi, sb_size, 0, mi_row, mi_col, orig_rdmult);
     x->rdmult = dr;
   }
 }

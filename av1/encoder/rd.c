@@ -376,6 +376,24 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
   return (int)rdmult;
 }
 
+int av1_get_deltaq_offset(const AV1_COMP *cpi, int qindex, double beta) {
+  int q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
+  int newq = (int)rint(q / sqrt(beta));
+  int orig_qindex = qindex;
+  if (newq < q) {
+    do {
+      qindex--;
+      q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
+    } while (newq < q && qindex > 0);
+  } else {
+    do {
+      qindex++;
+      q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
+    } while (newq > q && qindex < MAXQ);
+  }
+  return qindex - orig_qindex;
+}
+
 int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
   const AV1_COMMON *cm = &cpi->common;
   int64_t q =
