@@ -81,6 +81,7 @@ std::atomic<uint32_t> g_caller_count[kMaxReachedSymbols * kTotalBuckets];
 static_assert(sizeof(g_caller_count) == 16 * (1 << 20), "");
 // Index for |g_caller_offset| and |g_caller_count|.
 std::atomic<uint32_t> g_callers_index;
+std::atomic<uint32_t> g_calls_count;
 std::atomic<bool> g_disabled;
 
 #if BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
@@ -214,6 +215,7 @@ __attribute__((always_inline, no_instrument_function)) void RecordAddress(
     callers_index = expected == 0 ? insertion_index : expected;
   }
 
+  AtomicIncrement(&g_calls_count);
   callers_index *= kTotalBuckets;
   if (caller_address <= start || caller_address > end ||
       !RecordCaller(callers_index, caller_address - start)) {
@@ -239,7 +241,11 @@ NO_INSTRUMENT_FUNCTION bool DumpToFile(const base::FilePath& path) {
 
   // This can get very large as it  constructs the whole data structure in
   // memory before dumping it to the file.
-  ListValue root;
+  DictionaryValue root;
+  uint32_t total_calls_count = g_calls_count.load(std::memory_order_relaxed);
+  root.SetStringKey("total_calls_count",
+                    base::StringPrintf("%" PRIu32, total_calls_count));
+  ListValue call_graph;
   for (size_t i = 0; i < kMaxElements; i++) {
     auto caller_index =
         callee_map[i].load(std::memory_order_relaxed) * kTotalBuckets;
@@ -280,12 +286,12 @@ NO_INSTRUMENT_FUNCTION bool DumpToFile(const base::FilePath& path) {
       callers_list.GetList().push_back(std::move(caller_count));
     }
     callee_element.SetKey("caller_and_count", std::move(callers_list));
-    root.GetList().push_back(std::move(callee_element));
+    call_graph.GetList().push_back(std::move(callee_element));
   }
 
+  root.SetKey("call_graph", std::move(call_graph));
   std::string output_js;
-  if (!JSONWriter::WriteWithOptions(root, JSONWriter::OPTIONS_PRETTY_PRINT,
-                                    &output_js)) {
+  if (!JSONWriter::Write(root, &output_js)) {
     LOG(FATAL) << "Error getting JSON string";
   }
   if (file.WriteAtCurrentPos(output_js.c_str(),
