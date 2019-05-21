@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
@@ -49,6 +50,8 @@ public class LocationBarModel implements ToolbarDataProvider {
     private boolean mIsIncognito;
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
+    private boolean mShouldShowOmniboxInOverviewMode;
+    private OverviewModeBehavior mOverviewModeBehavior;
 
     private long mNativeLocationBarModelAndroid;
 
@@ -264,6 +267,16 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     @Override
+    public boolean isInOverview() {
+        return mOverviewModeBehavior != null && mOverviewModeBehavior.overviewVisible();
+    }
+
+    @Override
+    public boolean shouldShowLocationBarInOverviewMode() {
+        return mShouldShowOmniboxInOverviewMode;
+    }
+
+    @Override
     public Profile getProfile() {
         Profile lastUsedProfile = Profile.getLastUsedProfile();
         if (mIsIncognito) {
@@ -271,6 +284,14 @@ public class LocationBarModel implements ToolbarDataProvider {
             return lastUsedProfile.getOffTheRecordProfile();
         }
         return lastUsedProfile.getOriginalProfile();
+    }
+
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        mOverviewModeBehavior = overviewModeBehavior;
+    }
+
+    public void setShouldShowOmniboxInOverviewMode(boolean shouldShowOmniboxInOverviewMode) {
+        mShouldShowOmniboxInOverviewMode = shouldShowOmniboxInOverviewMode;
     }
 
     /**
@@ -292,12 +313,17 @@ public class LocationBarModel implements ToolbarDataProvider {
 
     @Override
     public int getPrimaryColor() {
-        return mPrimaryColor;
+        Context context = ContextUtils.getApplicationContext();
+        return isInOverview()
+                ? ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito())
+                : mPrimaryColor;
     }
 
     @Override
     public boolean isUsingBrandColor() {
-        return mIsUsingBrandColor;
+        // If the overview is visible, force use of primary color, which is also overridden when the
+        // overview is visible.
+        return isInOverview() || mIsUsingBrandColor;
     }
 
     @Override

@@ -908,6 +908,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private float getExpansionPercentForVisualState(@VisualState int visualState) {
         return visualState == VisualState.NEW_TAB_NORMAL && mTabSwitcherState == STATIC_TAB
+                        || getToolbarDataProvider().isInOverview()
                 ? 1
                 : mUrlExpansionPercent;
     }
@@ -940,7 +941,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // toolbar is not visible (e.g. in tab switcher mode).
         if (isInTabSwitcherMode()) return;
 
-        if (!mIsBottomToolbarVisible) {
+        if (!mIsBottomToolbarVisible && !getToolbarDataProvider().isInOverview()) {
             int toolbarButtonVisibility = getToolbarButtonVisibility();
             mToolbarButtonsContainer.setVisibility(toolbarButtonVisibility);
             if (mHomeButton != null && mHomeButton.getVisibility() != GONE) {
@@ -1006,7 +1007,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 ntp.setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
             }
 
-            if (isLocationBarShownInNTP()) {
+            if (isLocationBarShownInNTP() && !getToolbarDataProvider().isInOverview()) {
                 updateNtpTransitionAnimation();
             } else {
                 // Reset these values in case we transitioned to a different page during the
@@ -1776,6 +1777,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      */
     public void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
             boolean delayAnimation, boolean animate) {
+        if (handleOmniboxInOverviewMode(inTabSwitcherMode)) return;
+
         // If setting tab switcher mode to true and the browser is already animating or in the tab
         // switcher skip.
         if (inTabSwitcherMode
@@ -1842,6 +1845,39 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             getContext().getTheme().resolveAttribute(R.style.ToolbarButton, outValue, true);
             mToggleTabStackButton.setBackgroundResource(outValue.resourceId);
         }
+    }
+
+    /**
+     * Handles animating the omnibox state when switching in or out of the tab switcher when the tab
+     *  switcher is displaying the omnibox.
+     * @param inTabSwitcherMode Whether we are entering tab switcher.
+     * @return Whether we handled showing the omnibox on the tab switcher.
+     */
+    private boolean handleOmniboxInOverviewMode(boolean inTabSwitcherMode) {
+        if (!getToolbarDataProvider().shouldShowLocationBarInOverviewMode()) return false;
+
+        mIsHomeButtonEnabled = !inTabSwitcherMode;
+        mToggleTabStackButton.setVisibility(inTabSwitcherMode ? GONE : VISIBLE);
+        if (getMenuButton() != null)
+            getMenuButton().setVisibility(inTabSwitcherMode ? GONE : VISIBLE);
+
+        triggerUrlFocusAnimation(inTabSwitcherMode && !urlHasFocus());
+
+        if (inTabSwitcherMode) {
+            mUrlBar.setText("");
+            mLocationBar.updateStatusIcon();
+            // Early return here allows the location bar to remain visible and functional while
+            // the tab switcher (overview) is being displayed.
+            return true;
+        }
+
+        if (getToolbarDataProvider() != null && getToolbarDataProvider().getUrlBarData() != null) {
+            // Set the text back to the correct display text in case we've previously cleared
+            // it.
+            mUrlBar.setText(getToolbarDataProvider().getUrlBarData().displayText);
+        }
+
+        return false;
     }
 
     @Override
@@ -2058,6 +2094,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         super.onUrlFocusChange(hasFocus);
 
         if (mToggleTabStackButton != null) mToggleTabStackButton.setClickable(!hasFocus);
+
+        if (getToolbarDataProvider().isInOverview() && !hasFocus) {
+            mUrlBar.setText("");
+            return;
+        }
+
         triggerUrlFocusAnimation(hasFocus);
     }
 
@@ -2105,6 +2147,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 }
                 mLocationBar.finishUrlFocusChange(hasFocus);
                 mUrlFocusChangeInProgress = false;
+
+                if (getToolbarDataProvider().isInOverview()) {
+                    mLocationBar.updateVisualsForState();
+                    mUrlBar.setText("");
+                }
             }
         });
         mUrlFocusLayoutAnimator.start();

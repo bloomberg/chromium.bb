@@ -50,6 +50,16 @@ public interface ToolbarDataProvider {
     boolean isIncognito();
 
     /**
+     * @return Whether the toolbar is currently being displayed in overview mode.
+     */
+    boolean isInOverview();
+
+    /**
+     * @return Whether the location bar should show when in overview mode.
+     */
+    boolean shouldShowLocationBarInOverviewMode();
+
+    /**
      * @return The current {@link Profile}.
      */
     Profile getProfile();

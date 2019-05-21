@@ -85,6 +85,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
@@ -958,6 +959,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         });
 
         mLocationBarModel.initializeWithNative();
+        mLocationBarModel.setShouldShowOmniboxInOverviewMode(
+                ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher());
 
         mFindToolbarManager = findToolbarManager;
 
@@ -972,7 +975,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mOverviewModeBehavior = overviewModeBehavior;
             mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
             mAppThemeColorProvider.setOverviewModeBehavior(mOverviewModeBehavior);
+            mLocationBarModel.setOverviewModeBehavior(mOverviewModeBehavior);
         }
+
         if (layoutManager != null) {
             mLayoutManager = layoutManager;
             mLayoutManager.addSceneChangeObserver(mSceneChangeObserver);

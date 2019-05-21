@@ -196,6 +196,16 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
+        public boolean shouldShowLocationBarInOverviewMode() {
+            return false;
+        }
+
+        @Override
+        public boolean isInOverview() {
+            return false;
+        }
+
+        @Override
         public Profile getProfile() {
             return null;
         }
