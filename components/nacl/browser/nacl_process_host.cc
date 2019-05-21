@@ -409,10 +409,6 @@ void NaClProcessHost::Launch(
     }
   }
 
-  // Create a shared memory region that the renderer and plugin share for
-  // reporting crash information.
-  crash_info_shmem_.CreateAnonymous(kNaClCrashInfoShmemSize);
-
   // Launch the process
   if (!LaunchSelLdr()) {
     delete this;
@@ -629,20 +625,19 @@ void NaClProcessHost::OnResourcesReady() {
 void NaClProcessHost::ReplyToRenderer(
     mojo::ScopedMessagePipeHandle ppapi_channel_handle,
     mojo::ScopedMessagePipeHandle trusted_channel_handle,
-    mojo::ScopedMessagePipeHandle manifest_service_channel_handle) {
+    mojo::ScopedMessagePipeHandle manifest_service_channel_handle,
+    base::ReadOnlySharedMemoryRegion crash_info_shmem_region) {
   // Hereafter, we always send an IPC message with handles created above
   // which, on Windows, are not closable in this process.
   std::string error_message;
-  base::SharedMemoryHandle crash_info_shmem_renderer_handle =
-      crash_info_shmem_.handle().Duplicate();
-  if (!crash_info_shmem_renderer_handle.IsValid()) {
+  if (!uses_nonsfi_mode_ && !crash_info_shmem_region.IsValid()) {
     // On error, we do not send "IPC::ChannelHandle"s to the renderer process.
     // Note that some other FDs/handles still get sent to the renderer, but
     // will be closed there.
     ppapi_channel_handle.reset();
     trusted_channel_handle.reset();
     manifest_service_channel_handle.reset();
-    error_message = "handle duplication failed";
+    error_message = "shared memory region not valid";
   }
 
   const ChildProcessData& data = process_->GetData();
@@ -650,12 +645,8 @@ void NaClProcessHost::ReplyToRenderer(
       NaClLaunchResult(
           ppapi_channel_handle.release(), trusted_channel_handle.release(),
           manifest_service_channel_handle.release(), data.GetProcess().Pid(),
-          data.id, crash_info_shmem_renderer_handle),
+          data.id, std::move(crash_info_shmem_region)),
       error_message);
-
-  // Now that the crash information shmem handles have been shared with the
-  // plugin and the renderer, the browser can close its handle.
-  crash_info_shmem_.Close();
 }
 
 void NaClProcessHost::SendErrorToRenderer(const std::string& error_message) {
@@ -797,9 +788,12 @@ bool NaClProcessHost::StartNaClExecution() {
 #endif
   }
 
-  params.crash_info_shmem_handle = crash_info_shmem_.handle().Duplicate();
-  if (!params.crash_info_shmem_handle.IsValid()) {
-    DLOG(ERROR) << "Failed to duplicate a shared memory buffer";
+  // Create a shared memory region that the renderer and the plugin share to
+  // report crash information.
+  params.crash_info_shmem_region =
+      base::WritableSharedMemoryRegion::Create(kNaClCrashInfoShmemSize);
+  if (!params.crash_info_shmem_region.IsValid()) {
+    DLOG(ERROR) << "Failed to create a shared memory buffer";
     return false;
   }
 
@@ -832,14 +826,16 @@ bool NaClProcessHost::StartNaClExecution() {
       // into the plugin process.
       base::PostTaskWithTraitsAndReplyWithResult(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
-          base::Bind(&NaClProcessHost::StartNaClFileResolved,
-                     weak_factory_.GetWeakPtr(), params, file_path));
+          base::BindOnce(OpenNaClReadExecImpl, file_path,
+                         true /* is_executable */),
+          base::BindOnce(&NaClProcessHost::StartNaClFileResolved,
+                         weak_factory_.GetWeakPtr(), std::move(params),
+                         file_path));
       return true;
     }
   }
 
-  StartNaClFileResolved(params, base::FilePath(), base::File());
+  StartNaClFileResolved(std::move(params), base::FilePath(), base::File());
   return true;
 }
 
@@ -878,10 +874,12 @@ void NaClProcessHost::StartNaClFileResolved(
 
     // On success, send back a success message to the renderer process,
     // and transfer the channel handles for the NaCl loader process to
-    // |params|.
+    // |params|. Also send an invalid shared memory region as nonsfi_mode
+    // does not use the region.
     ReplyToRenderer(std::move(ppapi_renderer_channel.handle1),
                     std::move(trusted_service_channel.handle1),
-                    std::move(manifest_service_channel.handle1));
+                    std::move(manifest_service_channel.handle1),
+                    base::ReadOnlySharedMemoryRegion());
     params.ppapi_browser_channel_handle =
         ppapi_browser_channel.handle0.release();
     params.ppapi_renderer_channel_handle =
@@ -893,7 +891,7 @@ void NaClProcessHost::StartNaClFileResolved(
   }
 #endif
 
-  process_->Send(new NaClProcessMsg_Start(params));
+  process_->Send(new NaClProcessMsg_Start(std::move(params)));
 }
 
 bool NaClProcessHost::StartPPAPIProxy(
@@ -965,7 +963,8 @@ void NaClProcessHost::OnPpapiChannelsCreated(
     const IPC::ChannelHandle& raw_ppapi_browser_channel_handle,
     const IPC::ChannelHandle& raw_ppapi_renderer_channel_handle,
     const IPC::ChannelHandle& raw_trusted_renderer_channel_handle,
-    const IPC::ChannelHandle& raw_manifest_service_channel_handle) {
+    const IPC::ChannelHandle& raw_manifest_service_channel_handle,
+    base::ReadOnlySharedMemoryRegion crash_info_shmem_region) {
   DCHECK(raw_ppapi_browser_channel_handle.is_mojo_channel_handle());
   DCHECK(raw_ppapi_renderer_channel_handle.is_mojo_channel_handle());
   DCHECK(raw_trusted_renderer_channel_handle.is_mojo_channel_handle());
@@ -988,7 +987,8 @@ void NaClProcessHost::OnPpapiChannelsCreated(
   // Let the renderer know that the IPC channels are established.
   ReplyToRenderer(std::move(ppapi_renderer_channel_handle),
                   std::move(trusted_renderer_channel_handle),
-                  std::move(manifest_service_channel_handle));
+                  std::move(manifest_service_channel_handle),
+                  std::move(crash_info_shmem_region));
 }
 
 bool NaClProcessHost::StartWithLaunchedProcess() {
