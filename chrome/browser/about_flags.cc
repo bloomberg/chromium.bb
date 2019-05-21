@@ -3757,7 +3757,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kAutoScreenBrightness)},
 #endif  // defined(OS_CHROMEOS)
 
-     {"audio-worklet-realtime-thread",
+    {"audio-worklet-realtime-thread",
      flag_descriptions::kAudioWorkletRealtimeThreadName,
      flag_descriptions::kAudioWorkletRealtimeThreadDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAudioWorkletRealtimeThread)}
