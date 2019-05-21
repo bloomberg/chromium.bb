@@ -180,7 +180,6 @@ static_library("test_support") {
     "gaia/fake_oauth2_token_service.h",
     "gaia/fake_oauth2_token_service_delegate.cc",
     "gaia/fake_oauth2_token_service_delegate.h",
-    "gaia/mock_url_fetcher_factory.h",
     "gaia/oauth2_token_service_test_util.cc",
     "gaia/oauth2_token_service_test_util.h",
   ]

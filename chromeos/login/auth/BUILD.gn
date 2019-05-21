@@ -92,8 +92,6 @@ source_set("test_support") {
     "mock_auth_attempt_state_resolver.h",
     "mock_auth_status_consumer.cc",
     "mock_auth_status_consumer.h",
-    "mock_url_fetchers.cc",
-    "mock_url_fetchers.h",
   ]
 }
 
