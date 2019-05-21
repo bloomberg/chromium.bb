@@ -132,10 +132,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     /**
      * Whether the dialog could be closed.
      * This is being checked in cancel() when user clicks on signin-back-button
-     * (normal gaia flow) or the buttons in gaia-navigation (used in enterprise
-     * enrollment) etc.
-     * This value also controls the visibility of refresh button and close
-     * button in the gaia-navigation.
+     * (normal gaia flow) or the "Back" button in other authentication frames.
      * @type {boolean}
      */
     get closable() {
@@ -143,34 +140,33 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Returns true if GAIA is at the begging of flow (i.e. the email page).
+     * Returns true if the screen is at the beginning of flow (i.e. the email
+     * page).
      * @type {boolean}
      */
     isAtTheBeginning: function() {
-      return !this.navigation_.backVisible && !this.isSAML() &&
+      return !this.canGoBack_() && !this.isSAML() &&
           !this.classList.contains('whitelist-error') && !this.authCompleted_;
     },
 
     /**
-     * Updates visibility of navigation buttons.
+     * Updates visibility of UI control buttons.
      */
     updateControlsState: function() {
-      var isWhitelistError = this.classList.contains('whitelist-error');
-
-      this.navigation_.backVisible = this.lastBackMessageValue_ &&
-          !isWhitelistError && !this.authCompleted_ && !this.loading &&
-          !this.isSAML();
-
-      this.navigation_.refreshVisible = !this.closable &&
-          this.isAtTheBeginning() &&
-          this.screenMode_ != ScreenMode.SAML_INTERSTITIAL;
-
-      this.navigation_.closeVisible = !this.navigation_.refreshVisible &&
-          !isWhitelistError && !this.authCompleted_ &&
-          this.screenMode_ != ScreenMode.SAML_INTERSTITIAL;
-
       let showGuestInOobe = !this.closable && this.isAtTheBeginning();
       chrome.send('showGuestInOobe', [showGuestInOobe]);
+    },
+
+    /**
+     * Returns whether it's possible to rewind the sign-in frame one step back
+     * (as opposed to cancelling the sign-in flow).
+     * @type {boolean}
+     * @private
+     */
+    canGoBack_: function() {
+      var isWhitelistError = this.classList.contains('whitelist-error');
+      return this.lastBackMessageValue_ && !isWhitelistError &&
+          !this.authCompleted_ && !this.loading && !this.isSAML();
     },
 
     /**
@@ -192,16 +188,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     mostRecentUserActivity_: Date.now(),
 
-    /**
-     * An element containg navigation buttons.
-     */
-    navigation_: undefined,
-
 
     /** @override */
     decorate: function() {
-      this.navigation_ = $('gaia-navigation');
-
       this.authenticator_ = new cr.login.Authenticator($('signin-frame'));
       this.authenticator_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
@@ -267,20 +256,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.authenticator_.addEventListener(
           'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
 
-      this.navigation_.addEventListener(
-          'back', this.onBackButtonClicked_.bind(this, null));
-
       $('signin-back-button')
-          .addEventListener('tap', this.onBackButtonClicked_.bind(this, true));
+          .addEventListener('tap', this.onBackButtonClicked_.bind(this));
       $('offline-gaia')
           .addEventListener('offline-gaia-cancel', this.cancel.bind(this));
-
-      this.navigation_.addEventListener('close', function() {
-        this.cancel();
-      }.bind(this));
-      this.navigation_.addEventListener('refresh', function() {
-        this.cancel();
-      }.bind(this));
 
       $('gaia-whitelist-error').addEventListener('buttonclick', function() {
         this.showWhitelistCheckFailedError(false);
@@ -312,13 +291,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
     /**
      * Handles clicks on "Back" button.
-     * @param {boolean} isDialogButton If event comes from gaia-dialog.
      */
-    onBackButtonClicked_: function(isDialogButton) {
-      if (isDialogButton && !this.navigation_.backVisible) {
+    onBackButtonClicked_: function() {
+      if (!this.canGoBack_()) {
         this.cancel();
       } else {
-        this.navigation_.backVisible = false;
         this.getSigninFrame_().back();
       }
     },
@@ -580,20 +557,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       return $('signin-frame-dialog').onBeforeShow();
     },
 
-    get navigationDisabled_() {
-      return this.navigation_.disabled;
-    },
-
     set navigationDisabled_(value) {
-      this.navigation_.disabled = value;
-
-      if (value)
-        $('gaia-screen-buttons-overlay').removeAttribute('hidden');
-      else
-        $('gaia-screen-buttons-overlay').setAttribute('hidden', null);
-
-      if ($('signin-back-button'))
-        $('signin-back-button').disabled = value;
+      $('gaia-screen-buttons-overlay').hidden = !value;
+      $('signin-back-button').disabled = value;
     },
 
     getSigninFrame_: function() {
@@ -1158,8 +1124,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     cancel: function() {
       this.clearVideoTimer_();
-      if (!this.navigation_.refreshVisible && !this.navigation_.closeVisible)
+
+      const isWhitelistError = this.classList.contains('whitelist-error');
+      // TODO(crbug.com/470893): Figure out whether/which of these exit
+      // conditions are useful.
+      if (this.screenMode_ == ScreenMode.SAML_INTERSTITIAL ||
+          isWhitelistError || this.authCompleted_) {
         return;
+      }
 
       if (this.screenMode_ == ScreenMode.AD_AUTH)
         chrome.send('cancelAdAuthentication');

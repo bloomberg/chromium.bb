@@ -100,20 +100,6 @@
   visibility: visible;
 }
 
-#gaia-navigation {
-  color: white;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 1;
-}
-
-.loading #gaia-navigation {
-  color: rgba(0, 0, 0, .54);
-}
-
-#gaia-signin.v2 #gaia-navigation,
 #gaia-signin.v2 #gaia-step-contents {
   display: none;
 }

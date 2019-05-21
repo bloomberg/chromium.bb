@@ -472,24 +472,25 @@ class SamlTest : public OobeBaseTest {
   DISALLOW_COPY_AND_ASSIGN(SamlTest);
 };
 
-// Tests that signin frame should have 'saml' class and 'cancel' button is
-// visible when SAML IdP page is loaded. And 'cancel' button goes back to
-// gaia on clicking.
+// Tests that signin frame should display the SAML notice and the 'back' button
+// when SAML IdP page is loaded. And the 'back' button goes back to gaia on
+// clicking.
 IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Saml flow UI expectations.
   test::OobeJS().ExpectVisible("saml-notice-container");
+  test::OobeJS().ExpectVisible("signin-back-button");
   std::string js = "$('saml-notice-message').textContent.indexOf('$Host') > -1";
   base::ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
   test::OobeJS().ExpectTrue(js);
 
-  content::DOMMessageQueue message_queue;  // Observe before 'cancel'.
+  content::DOMMessageQueue message_queue;  // Observe before 'back'.
   SetupAuthFlowChangeListener();
-  // Click on 'cancel'.
+  // Click on 'back'.
   content::ExecuteScriptAsync(GetLoginUI()->GetWebContents(),
-                              "$('gaia-navigation').$.closeButton.click();");
+                             "$('signin-back-button').fire('tap');");
 
   // Auth flow should change back to Gaia.
   std::string message;

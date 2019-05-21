@@ -180,21 +180,15 @@ class WebviewLoginTest : public OobeBaseTest {
 
  protected:
   void ExpectIdentifierPage() {
-    // First page: no back button, no close button, refresh button, #identifier
-    // input field.
-    test::OobeJS().ExpectTrue("!$('gaia-navigation').backVisible");
-    test::OobeJS().ExpectTrue("!$('gaia-navigation').closeVisible");
-    test::OobeJS().ExpectTrue("$('gaia-navigation').refreshVisible");
+    // First page: back button, #identifier input field.
+    test::OobeJS().ExpectVisible("signin-back-button");
     test::OobeJS().ExpectTrue(
         "$('signin-frame').src.indexOf('#identifier') != -1");
   }
 
   void ExpectPasswordPage() {
-    // Second page: back button, close button, no refresh button,
-    // #challengepassword input field.
-    test::OobeJS().ExpectTrue("$('gaia-navigation').backVisible");
-    test::OobeJS().ExpectTrue("$('gaia-navigation').closeVisible");
-    test::OobeJS().ExpectTrue("!$('gaia-navigation').refreshVisible");
+    // Second page: back button, #challengepassword input field.
+    test::OobeJS().ExpectVisible("signin-back-button");
     test::OobeJS().ExpectTrue(
         "$('signin-frame').src.indexOf('#challengepassword') != -1");
   }
@@ -276,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   ExpectPasswordPage();
 
   // Click back to identifier page.
-  test::OobeJS().TapOnPath({"gaia-navigation", "backButton"});
+  test::OobeJS().TapOn("signin-back-button");
   WaitForGaiaPageBackButtonUpdate();
   ExpectIdentifierPage();
   // Click next to password page, user id is remembered.
