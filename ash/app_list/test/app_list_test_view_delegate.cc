@@ -40,8 +40,8 @@ bool AppListTestViewDelegate::KeyboardTraversalEngaged() {
 void AppListTestViewDelegate::OpenSearchResult(
     const std::string& result_id,
     int event_flags,
-    ash::mojom::AppListLaunchedFrom launched_from,
-    ash::mojom::AppListLaunchType launch_type,
+    ash::AppListLaunchedFrom launched_from,
+    ash::AppListLaunchType launch_type,
     int suggestion_index) {
   const SearchModel::SearchResults* results = search_model_->results();
   for (size_t i = 0; i < results->item_count(); ++i) {
@@ -56,14 +56,14 @@ void AppListTestViewDelegate::OpenSearchResult(
   }
   ++open_search_result_count_;
 
-  if (launch_type == ash::mojom::AppListLaunchType::kAppSearchResult) {
+  if (launch_type == ash::AppListLaunchType::kAppSearchResult) {
     switch (launched_from) {
-      case ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox:
-      case ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
+      case ash::AppListLaunchedFrom::kLaunchedFromSearchBox:
+      case ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
         RecordAppLaunched(launched_from);
         return;
-      case ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid:
-      case ash::mojom::AppListLaunchedFrom::kLaunchedFromShelf:
+      case ash::AppListLaunchedFrom::kLaunchedFromGrid:
+      case ash::AppListLaunchedFrom::kLaunchedFromShelf:
         return;
     }
   }
@@ -86,7 +86,7 @@ void AppListTestViewDelegate::SetSearchEngineIsGoogle(bool is_google) {
 void AppListTestViewDelegate::ActivateItem(
     const std::string& id,
     int event_flags,
-    ash::mojom::AppListLaunchedFrom launched_from) {
+    ash::AppListLaunchedFrom launched_from) {
   app_list::AppListItem* item = model_->FindItem(id);
   if (!item)
     return;
@@ -168,7 +168,7 @@ void AppListTestViewDelegate::GetAppLaunchedMetricParams(
     app_list::AppLaunchedMetricParams* metric_params) {}
 
 void AppListTestViewDelegate::RecordAppLaunched(
-    ash::mojom::AppListLaunchedFrom launched_from) {
+    ash::AppListLaunchedFrom launched_from) {
   app_list::RecordAppListAppLaunched(launched_from, model_->state_fullscreen(),
                                      false /*tablet mode*/,
                                      false /*home launcher shown*/);

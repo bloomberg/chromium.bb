@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace {
@@ -24,7 +25,7 @@ const char kAppListSuggestionChipOpenTypeHistogramInTablet[] =
 namespace app_list {
 
 void RecordSearchResultOpenTypeHistogram(
-    ash::mojom::AppListLaunchedFrom launch_location,
+    ash::AppListLaunchedFrom launch_location,
     SearchResultType type,
     bool is_tablet_mode) {
   if (type == SEARCH_RESULT_TYPE_BOUNDARY) {
@@ -33,7 +34,7 @@ void RecordSearchResultOpenTypeHistogram(
   }
 
   switch (launch_location) {
-    case ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox:
+    case ash::AppListLaunchedFrom::kLaunchedFromSearchBox:
       UMA_HISTOGRAM_ENUMERATION(kAppListSearchResultOpenTypeHistogram, type,
                                 SEARCH_RESULT_TYPE_BOUNDARY);
       if (is_tablet_mode) {
@@ -45,7 +46,7 @@ void RecordSearchResultOpenTypeHistogram(
             SEARCH_RESULT_TYPE_BOUNDARY);
       }
       break;
-    case ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
+    case ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
       if (is_tablet_mode) {
         UMA_HISTOGRAM_ENUMERATION(
             kAppListSuggestionChipOpenTypeHistogramInTablet, type,
@@ -56,8 +57,8 @@ void RecordSearchResultOpenTypeHistogram(
             SEARCH_RESULT_TYPE_BOUNDARY);
       }
       break;
-    case ash::mojom::AppListLaunchedFrom::kLaunchedFromShelf:
-    case ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid:
+    case ash::AppListLaunchedFrom::kLaunchedFromShelf:
+    case ash::AppListLaunchedFrom::kLaunchedFromGrid:
       // Search results don't live in the shelf or the app grid.
       NOTREACHED();
       break;

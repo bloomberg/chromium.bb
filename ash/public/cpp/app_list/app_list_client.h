@@ -10,20 +10,18 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "components/sync/model/string_ordinal.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace app_list {
 
 class AppListController;
-
-// TODO(crbug.com/958134): Remove the alias and app_list.mojom.h include.
-using AppListLaunchedFrom = ash::mojom::AppListLaunchedFrom;
-using AppListLaunchType = ash::mojom::AppListLaunchType;
 
 // A client interface implemented in Chrome to handle calls from Ash.
 // These include:
@@ -55,8 +53,8 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // page.
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags,
-                                AppListLaunchedFrom launched_from,
-                                AppListLaunchType launch_type,
+                                ash::AppListLaunchedFrom launched_from,
+                                ash::AppListLaunchType launch_type,
                                 int suggestion_index) = 0;
   // Invokes a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an action on the search result,
@@ -131,7 +129,7 @@ class ASH_PUBLIC_EXPORT AppListClient {
           receiver) = 0;
 
  protected:
-  virtual ~AppListClient() {}
+  virtual ~AppListClient() = default;
 };
 
 }  // namespace app_list

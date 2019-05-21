@@ -13,7 +13,6 @@
 
 #include "ash/app_list/model/app_list_model_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"

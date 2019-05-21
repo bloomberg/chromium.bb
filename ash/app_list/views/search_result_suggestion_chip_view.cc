@@ -10,8 +10,8 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -107,8 +107,8 @@ void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(
       result()->id(), event.flags(),
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
-      ash::mojom::AppListLaunchType::kAppSearchResult, index_in_container());
+      ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      ash::AppListLaunchType::kAppSearchResult, index_in_container());
 }
 
 const char* SearchResultSuggestionChipView::GetClassName() const {

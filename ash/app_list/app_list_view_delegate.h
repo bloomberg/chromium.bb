@@ -11,7 +11,6 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
@@ -61,8 +60,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // histograms to log to.
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags,
-                                ash::mojom::AppListLaunchedFrom launched_from,
-                                ash::mojom::AppListLaunchType launch_type,
+                                ash::AppListLaunchedFrom launched_from,
+                                ash::AppListLaunchType launch_type,
                                 int suggestion_index) = 0;
 
   // Called to log UMA metrics for the launch of an item either in the app tile
@@ -116,7 +115,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Activates (opens) the item.
   virtual void ActivateItem(const std::string& id,
                             int event_flags,
-                            ash::mojom::AppListLaunchedFrom launched_from) = 0;
+                            ash::AppListLaunchedFrom launched_from) = 0;
 
   // Returns the context menu model for a ChromeAppListItem with |id|, or NULL
   // if there is currently no menu for the item (e.g. during install).

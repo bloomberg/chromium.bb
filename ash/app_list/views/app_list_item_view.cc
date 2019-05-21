@@ -16,7 +16,7 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -481,7 +481,7 @@ void AppListItemView::OnContextMenuModelReceived(
   views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
 
   AppLaunchedMetricParams metric_params = {
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid};
+      ash::AppListLaunchedFrom::kLaunchedFromGrid};
   delegate_->GetAppLaunchedMetricParams(&metric_params);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(

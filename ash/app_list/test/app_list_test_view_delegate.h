@@ -15,7 +15,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/test/app_list_test_model.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -63,8 +63,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void StartSearch(const base::string16& raw_query) override {}
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
-                        ash::mojom::AppListLaunchedFrom launched_from,
-                        ash::mojom::AppListLaunchType launch_type,
+                        ash::AppListLaunchedFrom launched_from,
+                        ash::AppListLaunchType launch_type,
                         int suggestion_index) override;
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
@@ -84,7 +84,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       GetWallpaperProminentColorsCallback callback) override {}
   void ActivateItem(const std::string& id,
                     int event_flags,
-                    ash::mojom::AppListLaunchedFrom launched_from) override;
+                    ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
@@ -114,7 +114,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   AppListTestModel* GetTestModel() { return model_.get(); }
 
  private:
-  void RecordAppLaunched(ash::mojom::AppListLaunchedFrom launched_from);
+  void RecordAppLaunched(ash::AppListLaunchedFrom launched_from);
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int command_id) const override;

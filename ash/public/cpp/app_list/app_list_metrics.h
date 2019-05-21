@@ -6,7 +6,10 @@
 #define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_METRICS_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+
+namespace ash {
+enum class AppListLaunchedFrom;
+}
 
 namespace app_list {
 // The type of the ChromeSearchResult. This is used for logging so do not
@@ -72,7 +75,7 @@ enum SearchResultType {
 };
 
 ASH_PUBLIC_EXPORT void RecordSearchResultOpenTypeHistogram(
-    ash::mojom::AppListLaunchedFrom launch_location,
+    ash::AppListLaunchedFrom launch_location,
     SearchResultType type,
     bool is_tablet_mode);
 

@@ -233,8 +233,8 @@ void ExampleAppListClient::StartSearch(const base::string16& trimmed_query) {
 void ExampleAppListClient::OpenSearchResult(
     const std::string& result_id,
     int event_flags,
-    ash::mojom::AppListLaunchedFrom launched_from,
-    ash::mojom::AppListLaunchType launch_type,
+    ash::AppListLaunchedFrom launched_from,
+    ash::AppListLaunchType launch_type,
     int suggestion_index) {
   auto it = std::find_if(
       search_results_.begin(), search_results_.end(),

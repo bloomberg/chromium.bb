@@ -17,7 +17,7 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/bind.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -459,8 +459,8 @@ void SearchResultView::OnGetContextMenu(
     return;
 
   AppLaunchedMetricParams metric_params = {
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-      ash::mojom::AppListLaunchType::kSearchResult};
+      ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::AppListLaunchType::kSearchResult};
   view_delegate_->GetAppLaunchedMetricParams(&metric_params);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(

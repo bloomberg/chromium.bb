@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
-// TODO(crbug.com/958134): Remove.
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
 
 namespace app_list {

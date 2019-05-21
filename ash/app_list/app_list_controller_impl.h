@@ -159,8 +159,8 @@ class ASH_EXPORT AppListControllerImpl
   void StartSearch(const base::string16& raw_query) override;
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
-                        ash::mojom::AppListLaunchedFrom launched_from,
-                        ash::mojom::AppListLaunchType launch_type,
+                        AppListLaunchedFrom launched_from,
+                        AppListLaunchType launch_type,
                         int suggestion_index) override;
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
@@ -181,7 +181,7 @@ class ASH_EXPORT AppListControllerImpl
       GetWallpaperProminentColorsCallback callback) override;
   void ActivateItem(const std::string& id,
                     int event_flags,
-                    mojom::AppListLaunchedFrom launched_from) override;
+                    AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
@@ -336,7 +336,7 @@ class ASH_EXPORT AppListControllerImpl
   void Shutdown();
 
   // Record the app launch for AppListAppLaunchedV2 metric.
-  void RecordAppLaunched(mojom::AppListLaunchedFrom launched_from);
+  void RecordAppLaunched(AppListLaunchedFrom launched_from);
 
   app_list::AppListClient* client_ = nullptr;
 

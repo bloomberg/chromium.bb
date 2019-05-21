@@ -226,9 +226,8 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
         SearchResultLaunchLocation::kResultList, view->index_in_container());
     view_delegate_->OpenSearchResult(
         view->result()->id(), event_flags,
-        ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-        ash::mojom::AppListLaunchType::kSearchResult,
-        -1 /* suggestion_index */);
+        ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+        ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */);
   }
 }
 

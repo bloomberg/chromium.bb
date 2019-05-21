@@ -230,7 +230,7 @@ void RecordZeroStateSearchResultRemovalHistogram(
                             removal_decision);
 }
 
-void RecordAppListAppLaunched(ash::mojom::AppListLaunchedFrom launched_from,
+void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
                               ash::mojom::AppListViewState app_list_state,
                               bool is_tablet_mode,
                               bool home_launcher_shown) {

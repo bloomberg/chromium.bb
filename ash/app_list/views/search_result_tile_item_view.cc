@@ -14,9 +14,9 @@
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
@@ -363,8 +363,8 @@ void SearchResultTileItemView::OnGetContextMenuModel(
   anchor_rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
 
   AppLaunchedMetricParams metric_params = {
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-      ash::mojom::AppListLaunchType::kAppSearchResult};
+      ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::AppListLaunchType::kAppSearchResult};
   view_delegate_->GetAppLaunchedMetricParams(&metric_params);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
@@ -392,8 +392,8 @@ void SearchResultTileItemView::ActivateResult(int event_flags) {
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(
       result()->id(), event_flags,
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-      ash::mojom::AppListLaunchType::kAppSearchResult, index_in_container());
+      ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::AppListLaunchType::kAppSearchResult, index_in_container());
   view_delegate_->LogResultLaunchHistogram(
       SearchResultLaunchLocation::kTileList, index_in_container());
 }

@@ -67,6 +67,28 @@ enum class AppListModelStatus {
   kStatusSyncing,  // Syncing apps or installing synced apps.
 };
 
+// The UI component the user launched the search result from. Must match
+// chrome/browser/ui/app_list/app_launch_event_logger.proto.
+// This enum is used in a histogram, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// AppListLaunchedFrom enum listing in tools/metrics/histograms/enums.xml.
+enum class AppListLaunchedFrom {
+  kLaunchedFromGrid = 1,
+  kLaunchedFromSuggestionChip = 2,
+  kLaunchedFromShelf = 3,
+  kLaunchedFromSearchBox = 4,
+  kMaxValue = kLaunchedFromSearchBox,
+};
+
+// The UI representation of the search result. Currently all search results
+// that are not apps (OminboxResult, LauncherSearcResult, etc.) are grouped
+// into kSearchResult. Meanwhile SearchResultTileItemView (shown in zero state)
+// and suggested chips are considered kAppSearchResult.
+enum class AppListLaunchType {
+  kSearchResult = 0,
+  kAppSearchResult,
+};
+
 // Type of the search result, which is set in Chrome.
 enum class SearchResultType {
   kUnknown,         // Unknown type. Don't use over IPC

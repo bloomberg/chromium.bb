@@ -6,7 +6,7 @@
 #define ASH_APP_LIST_APP_LIST_METRICS_H_
 
 #include "ash/app_list/app_list_export.h"
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ui/events/event.h"
 
@@ -257,10 +257,10 @@ enum TabletModeAnimationTransition {
 // Parameters to call RecordAppListAppLaunched. Passed to code that does not
 // directly have access to them, such ash AppListMenuModelAdapter.
 struct AppLaunchedMetricParams {
-  ash::mojom::AppListLaunchedFrom launched_from =
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid;
-  ash::mojom::AppListLaunchType search_launch_type =
-      ash::mojom::AppListLaunchType::kSearchResult;
+  ash::AppListLaunchedFrom launched_from =
+      ash::AppListLaunchedFrom::kLaunchedFromGrid;
+  ash::AppListLaunchType search_launch_type =
+      ash::AppListLaunchType::kSearchResult;
   ash::mojom::AppListViewState app_list_view_state =
       ash::mojom::AppListViewState::kClosed;
   bool is_tablet_mode = false;
@@ -302,7 +302,7 @@ APP_LIST_EXPORT void RecordSearchLaunchIndexAndQueryLength(
     int suggestion_index);
 
 APP_LIST_EXPORT void RecordAppListAppLaunched(
-    ash::mojom::AppListLaunchedFrom launched_from,
+    ash::AppListLaunchedFrom launched_from,
     ash::mojom::AppListViewState app_list_state,
     bool is_tablet_mode,
     bool home_launcher_shown);

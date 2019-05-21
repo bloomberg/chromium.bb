@@ -222,9 +222,8 @@ class SearchResultAnswerCardView::AnswerCardResultView
                                    view_delegate_->GetSearchModel());
       view_delegate_->OpenSearchResult(
           result()->id(), event.flags(),
-          ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-          ash::mojom::AppListLaunchType::kSearchResult,
-          -1 /* suggestion_index */);
+          ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
+          ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */);
     }
   }
 

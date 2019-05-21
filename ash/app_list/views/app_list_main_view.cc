@@ -165,7 +165,7 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
   } else {
     base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
     delegate_->ActivateItem(item->id(), event_flags,
-                            ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid);
+                            ash::AppListLaunchedFrom::kLaunchedFromGrid);
   }
 }
 

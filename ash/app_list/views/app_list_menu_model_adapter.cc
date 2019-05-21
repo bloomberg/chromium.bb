@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -167,9 +168,9 @@ void AppListMenuModelAdapter::MaybeRecordAppLaunched(int command_id) {
   // kLaunchedFromSearchBox. Early out if it is not launched as an app search
   // result.
   if (metric_params_.launched_from ==
-          ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox &&
+          ash::AppListLaunchedFrom::kLaunchedFromSearchBox &&
       metric_params_.search_launch_type !=
-          ash::mojom::AppListLaunchType::kAppSearchResult) {
+          ash::AppListLaunchType::kAppSearchResult) {
     return;
   }
 

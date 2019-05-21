@@ -855,7 +855,7 @@ void AppListControllerImpl::RecordShelfAppLaunched(
     base::Optional<mojom::AppListViewState> recorded_app_list_view_state,
     base::Optional<bool> recorded_home_launcher_shown) {
   app_list::RecordAppListAppLaunched(
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       recorded_app_list_view_state.value_or(GetAppListViewState()),
       IsTabletMode(),
       recorded_home_launcher_shown.value_or(presenter_.home_launcher_shown()));
@@ -886,24 +886,23 @@ void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
   }
 }
 
-void AppListControllerImpl::OpenSearchResult(
-    const std::string& result_id,
-    int event_flags,
-    ash::mojom::AppListLaunchedFrom launched_from,
-    ash::mojom::AppListLaunchType launch_type,
-    int suggestion_index) {
+void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
+                                             int event_flags,
+                                             AppListLaunchedFrom launched_from,
+                                             AppListLaunchType launch_type,
+                                             int suggestion_index) {
   app_list::SearchResult* result = search_model_.FindSearchResult(result_id);
   if (!result)
     return;
 
-  if (launch_type == mojom::AppListLaunchType::kAppSearchResult) {
+  if (launch_type == AppListLaunchType::kAppSearchResult) {
     switch (launched_from) {
-      case mojom::AppListLaunchedFrom::kLaunchedFromSearchBox:
-      case mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
+      case AppListLaunchedFrom::kLaunchedFromSearchBox:
+      case AppListLaunchedFrom::kLaunchedFromSuggestionChip:
         RecordAppLaunched(launched_from);
         break;
-      case mojom::AppListLaunchedFrom::kLaunchedFromGrid:
-      case mojom::AppListLaunchedFrom::kLaunchedFromShelf:
+      case AppListLaunchedFrom::kLaunchedFromGrid:
+      case AppListLaunchedFrom::kLaunchedFromShelf:
         break;
     }
   }
@@ -914,8 +913,7 @@ void AppListControllerImpl::OpenSearchResult(
 
   // Suggestion chips are not represented to the user as search results, so do
   // not record search result metrics for them.
-  if (launched_from !=
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
+  if (launched_from != AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
     base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
 
     UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLength,
@@ -939,8 +937,7 @@ void AppListControllerImpl::OpenSearchResult(
       app_list_features::IsEmbeddedAssistantUIEnabled()) {
     // Record the assistant result. Other types of results are recorded in
     // |client_| where there is richer data on SearchResultType.
-    DCHECK_EQ(ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
-              launched_from)
+    DCHECK_EQ(AppListLaunchedFrom::kLaunchedFromSearchBox, launched_from)
         << "Only log search results which are represented to the user as "
            "search results (ie. search results in the search result page) not "
            "chips.";
@@ -1028,10 +1025,9 @@ void AppListControllerImpl::GetWallpaperProminentColors(
   Shell::Get()->wallpaper_controller()->GetWallpaperColors(std::move(callback));
 }
 
-void AppListControllerImpl::ActivateItem(
-    const std::string& id,
-    int event_flags,
-    mojom::AppListLaunchedFrom launched_from) {
+void AppListControllerImpl::ActivateItem(const std::string& id,
+                                         int event_flags,
+                                         AppListLaunchedFrom launched_from) {
   RecordAppLaunched(launched_from);
 
   if (client_)
@@ -1176,7 +1172,7 @@ void AppListControllerImpl::GetAppLaunchedMetricParams(
 }
 
 void AppListControllerImpl::RecordAppLaunched(
-    mojom::AppListLaunchedFrom launched_from) {
+    AppListLaunchedFrom launched_from) {
   app_list::RecordAppListAppLaunched(launched_from, GetAppListViewState(),
                                      IsTabletMode(),
                                      presenter_.home_launcher_shown());
