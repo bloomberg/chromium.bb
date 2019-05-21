@@ -78,8 +78,11 @@ class MixedRealityInputHelper {
       released_subscription_;
 
   struct ControllerState {
-    bool pressed;
-    bool clicked;
+    bool pressed = false;
+    bool clicked = false;
+    base::Optional<gfx::Transform> grip_from_pointer = base::nullopt;
+    ControllerState();
+    virtual ~ControllerState();
   };
   std::unordered_map<uint32_t, ControllerState> controller_states_;
   HWND hwnd_;

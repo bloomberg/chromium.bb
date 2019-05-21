@@ -40,9 +40,12 @@ using PressKind = ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind;
 using SourceKind =
     ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind;
 
-ParsedInputState::ParsedInputState() {}
-ParsedInputState::~ParsedInputState() {}
+ParsedInputState::ParsedInputState() = default;
+ParsedInputState::~ParsedInputState() = default;
 ParsedInputState::ParsedInputState(ParsedInputState&& other) = default;
+
+MixedRealityInputHelper::ControllerState::ControllerState() = default;
+MixedRealityInputHelper::ControllerState::~ControllerState() = default;
 
 namespace {
 
@@ -176,12 +179,16 @@ mojom::XRGamepadPtr GetWebVRGamepad(ParsedInputState input_state) {
   AddButton(gamepad, nullptr);  // Nothing seems to trigger this button in Edge.
   AddButtonWithAxes(gamepad, input_state.button_data[ButtonName::kTouchpad]);
 
-  gamepad->pose = ConvertToVRPose(input_state.gamepad_pose);
+  gamepad->timestamp = base::TimeTicks::Now();
   gamepad->hand = input_state.source_state->description->handedness;
   gamepad->controller_id = input_state.source_state->source_id;
-  gamepad->can_provide_position = true;
-  gamepad->can_provide_orientation = true;
-  gamepad->timestamp = base::TimeTicks::Now();
+
+  if (input_state.gamepad_pose.not_null) {
+    gamepad->pose = ConvertToVRPose(input_state.gamepad_pose);
+    gamepad->can_provide_position = input_state.gamepad_pose.position.not_null;
+    gamepad->can_provide_orientation =
+        input_state.gamepad_pose.orientation.not_null;
+  }
 
   return gamepad;
 }
@@ -282,30 +289,27 @@ gfx::Transform CreateTransform(GamepadVector position,
   return gfx::ComposeTransform(decomposed_transform);
 }
 
-bool TryGetPointerOffset(const WMRInputSourceState* state,
-                         const WMRInputSource* source,
-                         const WMRCoordinateSystem* origin,
-                         gfx::Transform origin_from_grip,
-                         gfx::Transform* grip_from_pointer) {
-  DCHECK(grip_from_pointer);
-  *grip_from_pointer = gfx::Transform();
-
+base::Optional<gfx::Transform> TryGetGripFromPointer(
+    const WMRInputSourceState* state,
+    const WMRInputSource* source,
+    const WMRCoordinateSystem* origin,
+    gfx::Transform origin_from_grip) {
   if (!origin)
-    return false;
+    return base::nullopt;
 
   // We can get the pointer position, but we'll need to transform it to an
   // offset from the grip position.  If we can't get an inverse of that,
   // then go ahead and bail early.
   gfx::Transform grip_from_origin;
   if (!origin_from_grip.GetInverse(&grip_from_origin))
-    return false;
+    return base::nullopt;
 
   bool pointing_supported = source->IsPointingSupported();
 
   std::unique_ptr<WMRPointerPose> pointer_pose =
       state->TryGetPointerPose(origin);
   if (!pointer_pose)
-    return false;
+    return base::nullopt;
 
   WFN::Vector3 pos;
   WFN::Quaternion rot;
@@ -313,7 +317,7 @@ bool TryGetPointerOffset(const WMRInputSourceState* state,
     std::unique_ptr<WMRPointerSourcePose> pointer_source_pose =
         pointer_pose->TryGetInteractionSourcePose(source);
     if (!pointer_source_pose)
-      return false;
+      return base::nullopt;
 
     pos = pointer_source_pose->Position();
     rot = pointer_source_pose->Orientation();
@@ -323,8 +327,7 @@ bool TryGetPointerOffset(const WMRInputSourceState* state,
 
   gfx::Transform origin_from_pointer = CreateTransform(
       ConvertToGamepadVector(pos), ConvertToGamepadQuaternion(rot));
-  *grip_from_pointer = (grip_from_origin * origin_from_pointer);
-  return true;
+  return (grip_from_origin * origin_from_pointer);
 }
 
 device::mojom::XRHandedness WindowsToMojoHandedness(Handedness handedness) {
@@ -436,9 +439,8 @@ mojom::XRGamepadDataPtr MixedRealityInputHelper::GetWebVRGamepadData(
     auto parsed_source_state =
         LockedParseWindowsSourceState(state.get(), origin);
 
-    // If we have a grip, then we should have enough data.
-    if (parsed_source_state.source_state &&
-        parsed_source_state.source_state->grip)
+    // If we have a source_state, then we should have enough data.
+    if (parsed_source_state.source_state)
       ret->gamepads.push_back(GetWebVRGamepad(std::move(parsed_source_state)));
   }
 
@@ -463,50 +465,56 @@ ParsedInputState MixedRealityInputHelper::LockedParseWindowsSourceState(
   if (!(is_controller || is_voice))
     return input_state;
 
-  // Note that if this is from voice input, we're not supposed to send up the
-  // "grip" position, so this will be left as identity and let us still use
-  // the same code paths, as any transformations by it will leave the original
-  // item unaffected.
+  // Hands may not have the same id especially if they are lost but since we
+  // are only tracking controllers/voice, this id should be consistent.
+  uint32_t id = GetSourceId(source.get());
+
+  // Note that if this is untracked we're not supposed to send up the "grip"
+  // position, so this will be left as identity and let us still use the same
+  // code paths. Any transformations will leave the original item unaffected.
+  // Voice input is always untracked.
   gfx::Transform origin_from_grip;
+  bool is_tracked = false;
   if (is_controller) {
     input_state.button_data = ParseButtonState(state);
     std::unique_ptr<WMRInputLocation> location_in_origin =
         state->TryGetLocation(origin);
-    if (!location_in_origin)
-      return input_state;
+    if (location_in_origin) {
+      auto gamepad_pose = GetGamepadPose(location_in_origin.get());
+      if (gamepad_pose.not_null && gamepad_pose.position.not_null &&
+          gamepad_pose.orientation.not_null) {
+        origin_from_grip =
+            CreateTransform(gamepad_pose.position, gamepad_pose.orientation);
+        is_tracked = true;
+      }
 
-    auto gamepad_pose = GetGamepadPose(location_in_origin.get());
-    if (!(gamepad_pose.not_null && gamepad_pose.position.not_null &&
-          gamepad_pose.orientation.not_null))
-      return input_state;
-
-    origin_from_grip =
-        CreateTransform(gamepad_pose.position, gamepad_pose.orientation);
-    input_state.gamepad_pose = gamepad_pose;
+      input_state.gamepad_pose = gamepad_pose;
+    }
   }
 
-  gfx::Transform grip_from_pointer;
-  if (!TryGetPointerOffset(state, source.get(), origin, origin_from_grip,
-                           &grip_from_pointer))
-    return input_state;
+  base::Optional<gfx::Transform> grip_from_pointer =
+      TryGetGripFromPointer(state, source.get(), origin, origin_from_grip);
 
-  // Now that we know we have tracking for the object, we'll start building.
+  // If we failed to get grip_from_pointer, see if it is cached.  If we did get
+  // it, update the cache.
+  if (!grip_from_pointer) {
+    grip_from_pointer = controller_states_[id].grip_from_pointer;
+  } else {
+    controller_states_[id].grip_from_pointer = grip_from_pointer;
+  }
+
+  // Now that we have calculated information for the object, build it.
   device::mojom::XRInputSourceStatePtr source_state =
       device::mojom::XRInputSourceState::New();
-
-  // Hands may not have the same id especially if they are lost but since we
-  // are only tracking controllers/voice, this id should be consistent.
-  uint32_t id = GetSourceId(source.get());
 
   source_state->source_id = id;
   source_state->primary_input_pressed = controller_states_[id].pressed;
   source_state->primary_input_clicked = controller_states_[id].clicked;
   controller_states_[id].clicked = false;
 
-  // Grip position should *only* be specified for a controller.
-  if (is_controller) {
+  // Grip position should *only* be specified if the controller is tracked.
+  if (is_tracked)
     source_state->grip = origin_from_grip;
-  }
 
   device::mojom::XRInputSourceDescriptionPtr description =
       device::mojom::XRInputSourceDescription::New();
