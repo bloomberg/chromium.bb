@@ -56,7 +56,6 @@ class AccountTrackerService {
    public:
     virtual ~Observer() {}
     virtual void OnAccountUpdated(const AccountInfo& info) {}
-    virtual void OnAccountUpdateFailed(const CoreAccountId& account_id) {}
     virtual void OnAccountRemoved(const AccountInfo& info) {}
   };
 
@@ -159,7 +158,6 @@ class AccountTrackerService {
       const std::string&);
 
   void NotifyAccountUpdated(const AccountInfo& account_info);
-  void NotifyAccountUpdateFailed(const CoreAccountId& account_id);
   void NotifyAccountRemoved(const AccountInfo& account_info);
 
   void StartTrackingAccount(const CoreAccountId& account_id);

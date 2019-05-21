@@ -213,12 +213,6 @@ void AccountTrackerService::NotifyAccountUpdated(
     observer.OnAccountUpdated(account_info);
 }
 
-void AccountTrackerService::NotifyAccountUpdateFailed(
-    const CoreAccountId& account_id) {
-  for (auto& observer : observer_list_)
-    observer.OnAccountUpdateFailed(account_id);
-}
-
 void AccountTrackerService::NotifyAccountRemoved(
     const AccountInfo& account_info) {
   DCHECK(!account_info.gaia.empty());

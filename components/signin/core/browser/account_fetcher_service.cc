@@ -331,7 +331,6 @@ void AccountFetcherService::FetchAccountImage(const std::string& account_id) {
 void AccountFetcherService::OnUserInfoFetchFailure(
     const std::string& account_id) {
   LOG(WARNING) << "Failed to get UserInfo for " << account_id;
-  account_tracker_service_->NotifyAccountUpdateFailed(account_id);
   user_info_requests_.erase(account_id);
 }
 
