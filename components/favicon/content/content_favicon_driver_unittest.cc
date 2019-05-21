@@ -25,7 +25,6 @@
 namespace favicon {
 namespace {
 
-using testing::ElementsAre;
 using testing::Return;
 using testing::SizeIs;
 using testing::_;
@@ -34,15 +33,30 @@ class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
  protected:
   const std::vector<gfx::Size> kEmptyIconSizes;
   const std::vector<SkBitmap> kEmptyIcons;
-  const std::vector<favicon_base::FaviconRawBitmapResult> kEmptyRawBitmapResult;
   const GURL kPageURL = GURL("http://www.google.com/");
   const GURL kIconURL = GURL("http://www.google.com/favicon.ico");
 
   ContentFaviconDriverTest() {
     ON_CALL(favicon_service_, UpdateFaviconMappingsAndFetch(_, _, _, _, _, _))
-        .WillByDefault(PostReply<6>(kEmptyRawBitmapResult));
+        .WillByDefault([](auto, auto, auto, auto,
+                          favicon_base::FaviconResultsCallback callback,
+                          base::CancelableTaskTracker* tracker) {
+          return tracker->PostTask(
+              base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+              base::BindOnce(
+                  std::move(callback),
+                  std::vector<favicon_base::FaviconRawBitmapResult>()));
+        });
     ON_CALL(favicon_service_, GetFaviconForPageURL(_, _, _, _, _))
-        .WillByDefault(PostReply<5>(kEmptyRawBitmapResult));
+        .WillByDefault([](auto, auto, auto,
+                          favicon_base::FaviconResultsCallback callback,
+                          base::CancelableTaskTracker* tracker) {
+          return tracker->PostTask(
+              base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+              base::BindOnce(
+                  std::move(callback),
+                  std::vector<favicon_base::FaviconRawBitmapResult>()));
+        });
   }
 
   ~ContentFaviconDriverTest() override {}

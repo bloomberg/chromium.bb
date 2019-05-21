@@ -55,12 +55,12 @@ base::CancelableTaskTracker::TaskId
 ChromeBookmarkClient::GetFaviconImageForPageURL(
     const GURL& page_url,
     favicon_base::IconType type,
-    const favicon_base::FaviconImageCallback& callback,
+    favicon_base::FaviconImageCallback callback,
     base::CancelableTaskTracker* tracker) {
   return favicon::GetFaviconImageForPageURL(
       FaviconServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS),
-      page_url, type, callback, tracker);
+      page_url, type, std::move(callback), tracker);
 }
 
 bool ChromeBookmarkClient::SupportsTypedCountForUrls() {

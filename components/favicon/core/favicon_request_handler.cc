@@ -38,7 +38,7 @@ FaviconRequestHandler::~FaviconRequestHandler() {}
 void FaviconRequestHandler::GetRawFaviconForPageURL(
     const GURL& page_url,
     int desired_size_in_pixel,
-    const favicon_base::FaviconRawBitmapCallback& callback,
+    favicon_base::FaviconRawBitmapCallback callback,
     FaviconRequestOrigin request_origin,
     FaviconService* favicon_service,
     FaviconRequestHandler::SyncedFaviconGetter synced_favicon_getter,
@@ -46,7 +46,7 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
   if (!favicon_service) {
     RecordFaviconRequestMetric(request_origin,
                                FaviconAvailability::kNotAvailable);
-    callback.Run(favicon_base::FaviconRawBitmapResult());
+    std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
     return;
   }
 
@@ -54,16 +54,16 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
   favicon_service->GetRawFaviconForPageURL(
       page_url, GetIconTypesForLocalQuery(), desired_size_in_pixel,
       kFallbackToHost,
-      base::BindRepeating(&FaviconRequestHandler::OnBitmapLocalDataAvailable,
-                          weak_ptr_factory_.GetWeakPtr(), page_url,
-                          /*response_callback=*/callback, request_origin,
-                          base::Passed(&synced_favicon_getter)),
+      base::BindOnce(&FaviconRequestHandler::OnBitmapLocalDataAvailable,
+                     weak_ptr_factory_.GetWeakPtr(), page_url,
+                     /*response_callback=*/std::move(callback), request_origin,
+                     std::move(synced_favicon_getter)),
       tracker);
 }
 
 void FaviconRequestHandler::GetFaviconImageForPageURL(
     const GURL& page_url,
-    const favicon_base::FaviconImageCallback& callback,
+    favicon_base::FaviconImageCallback callback,
     FaviconRequestOrigin request_origin,
     FaviconService* favicon_service,
     FaviconRequestHandler::SyncedFaviconGetter synced_favicon_getter,
@@ -71,29 +71,29 @@ void FaviconRequestHandler::GetFaviconImageForPageURL(
   if (!favicon_service) {
     RecordFaviconRequestMetric(request_origin,
                                FaviconAvailability::kNotAvailable);
-    callback.Run(favicon_base::FaviconImageResult());
+    std::move(callback).Run(favicon_base::FaviconImageResult());
     return;
   }
 
   // First attempt to find the icon locally.
   favicon_service->GetFaviconImageForPageURL(
       page_url,
-      base::BindRepeating(&FaviconRequestHandler::OnImageLocalDataAvailable,
-                          weak_ptr_factory_.GetWeakPtr(), page_url,
-                          /*response_callback=*/callback, request_origin,
-                          base::Passed(&synced_favicon_getter)),
+      base::BindOnce(&FaviconRequestHandler::OnImageLocalDataAvailable,
+                     weak_ptr_factory_.GetWeakPtr(), page_url,
+                     /*response_callback=*/std::move(callback), request_origin,
+                     std::move(synced_favicon_getter)),
       tracker);
 }
 
 void FaviconRequestHandler::OnBitmapLocalDataAvailable(
     const GURL& page_url,
-    const favicon_base::FaviconRawBitmapCallback& response_callback,
+    favicon_base::FaviconRawBitmapCallback response_callback,
     FaviconRequestOrigin origin,
     FaviconRequestHandler::SyncedFaviconGetter synced_favicon_getter,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) const {
   if (bitmap_result.is_valid()) {
     RecordFaviconRequestMetric(origin, FaviconAvailability::kLocal);
-    response_callback.Run(bitmap_result);
+    std::move(response_callback).Run(bitmap_result);
     return;
   }
 
@@ -102,24 +102,24 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
     RecordFaviconRequestMetric(origin, FaviconAvailability::kSync);
     favicon_base::FaviconRawBitmapResult sync_bitmap_result;
     sync_bitmap_result.bitmap_data = sync_bitmap;
-    response_callback.Run(sync_bitmap_result);
+    std::move(response_callback).Run(sync_bitmap_result);
     return;
   }
 
   // If sync does not have the favicon, send empty response.
   RecordFaviconRequestMetric(origin, FaviconAvailability::kNotAvailable);
-  response_callback.Run(favicon_base::FaviconRawBitmapResult());
+  std::move(response_callback).Run(favicon_base::FaviconRawBitmapResult());
 }
 
 void FaviconRequestHandler::OnImageLocalDataAvailable(
     const GURL& page_url,
-    const favicon_base::FaviconImageCallback& response_callback,
+    favicon_base::FaviconImageCallback response_callback,
     FaviconRequestOrigin origin,
     FaviconRequestHandler::SyncedFaviconGetter synced_favicon_getter,
     const favicon_base::FaviconImageResult& image_result) const {
   if (!image_result.image.IsEmpty()) {
     RecordFaviconRequestMetric(origin, FaviconAvailability::kLocal);
-    response_callback.Run(image_result);
+    std::move(response_callback).Run(image_result);
     return;
   }
 
@@ -130,13 +130,13 @@ void FaviconRequestHandler::OnImageLocalDataAvailable(
     // Convert bitmap to image.
     sync_image_result.image =
         gfx::Image::CreateFrom1xPNGBytes(sync_bitmap.get());
-    response_callback.Run(sync_image_result);
+    std::move(response_callback).Run(sync_image_result);
     return;
   }
 
   // If sync does not have the favicon, send empty response.
   RecordFaviconRequestMetric(origin, FaviconAvailability::kNotAvailable);
-  response_callback.Run(favicon_base::FaviconImageResult());
+  std::move(response_callback).Run(favicon_base::FaviconImageResult());
 }
 
 }  // namespace favicon

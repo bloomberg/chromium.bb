@@ -25,7 +25,7 @@ using testing::Invoke;
 const char kDummyPageUrl[] = "https://www.example.com";
 const int kDesiredSizeInPixel = 16;
 const SkColor kTestColor = SK_ColorRED;
-base::CancelableTaskTracker::TaskId kDummyTaskId;
+base::CancelableTaskTracker::TaskId kDummyTaskId = 1;
 const FaviconRequestOrigin kOrigin = FaviconRequestOrigin::UNKNOWN;
 
 scoped_refptr<base::RefCountedBytes> CreateTestBitmapBytes() {
@@ -47,16 +47,6 @@ favicon_base::FaviconImageResult CreateTestImageResult() {
   favicon_base::FaviconImageResult result;
   result.image = gfx::Image::CreateFrom1xPNGBytes(CreateTestBitmapBytes());
   return result;
-}
-
-ACTION_P(ReturnBitmapFromLocal, bitmap) {
-  arg4.Run(bitmap);
-  return kDummyTaskId;
-}
-
-ACTION_P(ReturnImageFromLocal, image) {
-  arg1.Run(image);
-  return kDummyTaskId;
 }
 
 ACTION_P(ReturnFaviconFromSync, should_return_valid) {
@@ -92,7 +82,11 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyBitmap) {
   EXPECT_CALL(mock_favicon_service_,
               GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
                                       kDesiredSizeInPixel, _, _, &tracker_))
-      .WillOnce(ReturnBitmapFromLocal(favicon_base::FaviconRawBitmapResult()));
+      .WillOnce([](auto, auto, auto, auto,
+                   favicon_base::FaviconRawBitmapCallback callback, auto) {
+        std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
+        return kDummyTaskId;
+      });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _))
       .WillOnce(ReturnFaviconFromSync(/*should_return_valid=*/false));
   favicon_base::FaviconRawBitmapResult result;
@@ -107,7 +101,11 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncBitmap) {
   EXPECT_CALL(mock_favicon_service_,
               GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
                                       kDesiredSizeInPixel, _, _, &tracker_))
-      .WillOnce(ReturnBitmapFromLocal(favicon_base::FaviconRawBitmapResult()));
+      .WillOnce([](auto, auto, auto, auto,
+                   favicon_base::FaviconRawBitmapCallback callback, auto) {
+        std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
+        return kDummyTaskId;
+      });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _))
       .WillOnce(ReturnFaviconFromSync(/*should_return_valid=*/true));
   favicon_base::FaviconRawBitmapResult result;
@@ -122,7 +120,11 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalBitmap) {
   EXPECT_CALL(mock_favicon_service_,
               GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
                                       kDesiredSizeInPixel, _, _, &tracker_))
-      .WillOnce(ReturnBitmapFromLocal(CreateTestBitmapResult()));
+      .WillOnce([](auto, auto, auto, auto,
+                   favicon_base::FaviconRawBitmapCallback callback, auto) {
+        std::move(callback).Run(CreateTestBitmapResult());
+        return kDummyTaskId;
+      });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
@@ -135,7 +137,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalBitmap) {
 TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyImage) {
   EXPECT_CALL(mock_favicon_service_,
               GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, &tracker_))
-      .WillOnce(ReturnImageFromLocal(favicon_base::FaviconImageResult()));
+      .WillOnce([](auto, favicon_base::FaviconImageCallback callback, auto) {
+        std::move(callback).Run(favicon_base::FaviconImageResult());
+        return kDummyTaskId;
+      });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _))
       .WillOnce(ReturnFaviconFromSync(/*should_return_valid=*/false));
   favicon_base::FaviconImageResult result;
@@ -148,7 +153,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyImage) {
 TEST_F(FaviconRequestHandlerTest, ShouldGetSyncImage) {
   EXPECT_CALL(mock_favicon_service_,
               GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, &tracker_))
-      .WillOnce(ReturnImageFromLocal(favicon_base::FaviconImageResult()));
+      .WillOnce([](auto, favicon_base::FaviconImageCallback callback, auto) {
+        std::move(callback).Run(favicon_base::FaviconImageResult());
+        return kDummyTaskId;
+      });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _))
       .WillOnce(ReturnFaviconFromSync(/*should_return_valid=*/true));
   favicon_base::FaviconImageResult result;
@@ -161,7 +169,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncImage) {
 TEST_F(FaviconRequestHandlerTest, ShouldGetLocalImage) {
   EXPECT_CALL(mock_favicon_service_,
               GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, &tracker_))
-      .WillOnce(ReturnImageFromLocal(CreateTestImageResult()));
+      .WillOnce([](auto, favicon_base::FaviconImageCallback callback, auto) {
+        std::move(callback).Run(CreateTestImageResult());
+        return kDummyTaskId;
+      });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _)).Times(0);
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(

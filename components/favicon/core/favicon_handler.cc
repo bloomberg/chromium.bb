@@ -628,12 +628,13 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
 void FaviconHandler::GetFaviconAndUpdateMappingsUnlessIncognito(
     const GURL& icon_url,
     favicon_base::IconType icon_type,
-    const favicon_base::FaviconResultsCallback& callback) {
+    favicon_base::FaviconResultsCallback callback) {
   // We don't know the favicon, but we may have previously downloaded the
   // favicon for another page that shares the same favicon. Ask for the
   // favicon given the favicon URL.
   if (delegate_->IsOffTheRecord()) {
-    service_->GetFavicon(icon_url, icon_type, preferred_icon_size(), callback,
+    service_->GetFavicon(icon_url, icon_type, preferred_icon_size(),
+                         std::move(callback),
                          &cancelable_task_tracker_for_candidates_);
   } else {
     // Ask the history service for the icon. This does two things:
@@ -642,8 +643,8 @@ void FaviconHandler::GetFaviconAndUpdateMappingsUnlessIncognito(
     //    include the mapping between the page url and the favicon url.
     // This is asynchronous. The history service will call back when done.
     service_->UpdateFaviconMappingsAndFetch(
-        page_urls_, icon_url, icon_type, preferred_icon_size(), callback,
-        &cancelable_task_tracker_for_candidates_);
+        page_urls_, icon_url, icon_type, preferred_icon_size(),
+        std::move(callback), &cancelable_task_tracker_for_candidates_);
   }
 }
 

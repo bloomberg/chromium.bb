@@ -167,9 +167,9 @@ void EphemeralTabLayer::GetLocalFaviconImageForURL(Profile* profile,
   if (!favicon_service)
     return;
 
-  favicon_base::FaviconRawBitmapCallback callback_runner = base::BindRepeating(
-      &OnLocalFaviconAvailable, favicon_layer_, panel_icon_, dp_to_px_,
-      panel_width_, bar_height_, bar_margin_side_);
+  favicon_base::FaviconRawBitmapCallback callback_runner =
+      base::BindOnce(&OnLocalFaviconAvailable, favicon_layer_, panel_icon_,
+                     dp_to_px_, panel_width_, bar_height_, bar_margin_side_);
 
   // Set |fallback_to_host|=true so the favicon database will fall back to
   // matching only the hostname to have the best chance of finding a favicon.
@@ -179,7 +179,8 @@ void EphemeralTabLayer::GetLocalFaviconImageForURL(Profile* profile,
       {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
        favicon_base::IconType::kTouchPrecomposedIcon,
        favicon_base::IconType::kWebManifestIcon},
-      size, fallback_to_host, callback_runner, cancelable_task_tracker_.get());
+      size, fallback_to_host, std::move(callback_runner),
+      cancelable_task_tracker_.get());
 }
 
 EphemeralTabLayer::EphemeralTabLayer(ui::ResourceManager* resource_manager)

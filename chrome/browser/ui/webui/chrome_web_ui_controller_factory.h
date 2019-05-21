@@ -49,11 +49,10 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
 
   // Get the favicon for |page_url| and run |callback| with result when loaded.
   // Note. |callback| is always run asynchronously.
-  void GetFaviconForURL(
-      Profile* profile,
-      const GURL& page_url,
-      const std::vector<int>& desired_sizes_in_pixel,
-      const favicon_base::FaviconResultsCallback& callback) const;
+  void GetFaviconForURL(Profile* profile,
+                        const GURL& page_url,
+                        const std::vector<int>& desired_sizes_in_pixel,
+                        favicon_base::FaviconResultsCallback callback) const;
 
  protected:
   ChromeWebUIControllerFactory();

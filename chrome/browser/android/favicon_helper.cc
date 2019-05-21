@@ -110,8 +110,8 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
     return false;
 
   favicon_base::FaviconRawBitmapCallback callback_runner =
-      base::Bind(&OnLocalFaviconAvailable,
-                 ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
+      base::BindOnce(&OnLocalFaviconAvailable,
+                     ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
 
   // |j_page_url| is an origin, and it may not have had a favicon associated
   // with it. A trickier case is when |j_page_url| only has domain-scoped
@@ -127,7 +127,7 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
        favicon_base::IconType::kTouchPrecomposedIcon,
        favicon_base::IconType::kWebManifestIcon},
       static_cast<int>(j_desired_size_in_pixel), fallback_to_host,
-      callback_runner, cancelable_task_tracker_.get());
+      std::move(callback_runner), cancelable_task_tracker_.get());
 
   return true;
 }
@@ -188,13 +188,13 @@ void FaviconHelper::EnsureIconIsAvailable(
   // TODO(treib): Optimize this by creating a FaviconService::HasFavicon method
   // so that we don't have to actually get the image.
   ScopedJavaGlobalRef<jobject> j_scoped_callback(env, j_availability_callback);
-  favicon_base::FaviconImageCallback callback_runner = base::Bind(
+  favicon_base::FaviconImageCallback callback_runner = base::BindOnce(
       &FaviconHelper::OnFaviconImageResultAvailable, j_scoped_callback, profile,
       web_contents, page_url, icon_url, icon_type);
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   favicon::GetFaviconImageForPageURL(service, page_url, icon_type,
-                                     callback_runner,
+                                     std::move(callback_runner),
                                      cancelable_task_tracker_.get());
 }
 

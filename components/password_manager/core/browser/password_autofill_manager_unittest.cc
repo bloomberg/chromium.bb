@@ -254,15 +254,18 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     favicon::MockFaviconService favicon_service;
     EXPECT_CALL(*client, GetFaviconService())
         .WillOnce(Return(&favicon_service));
-    favicon_base::FaviconImageCallback callback;
+    favicon_base::FaviconImageCallback saved_callback;
     EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _))
-        .WillOnce(DoAll(testing::SaveArg<1>(&callback), Return(1)));
+        .WillOnce([&](auto, favicon_base::FaviconImageCallback callback, auto) {
+          saved_callback = std::move(callback);
+          return 1;
+        });
     password_autofill_manager_->OnAddPasswordFillData(data);
 
     // Resolve the favicon.
     favicon_base::FaviconImageResult image_result;
     image_result.image = gfx::test::CreateImage(16, 16);
-    callback.Run(image_result);
+    std::move(saved_callback).Run(image_result);
 
     std::vector<autofill::PopupItemId> ids = {
         is_suggestion_on_password_field

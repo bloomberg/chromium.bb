@@ -41,7 +41,7 @@ class BookmarkClientImpl : public bookmarks::BookmarkClient {
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::IconType type,
-      const favicon_base::FaviconImageCallback& callback,
+      favicon_base::FaviconImageCallback callback,
       base::CancelableTaskTracker* tracker) override;
   bool SupportsTypedCountForUrls() override;
   void GetTypedCountForUrls(UrlTypedCountMap* url_typed_count_map) override;

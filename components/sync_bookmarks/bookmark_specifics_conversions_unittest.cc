@@ -37,11 +37,11 @@ class TestBookmarkClientWithFaviconLoad : public bookmarks::TestBookmarkClient {
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::IconType type,
-      const favicon_base::FaviconImageCallback& callback,
+      favicon_base::FaviconImageCallback callback,
       base::CancelableTaskTracker* tracker) override {
     ++load_favicon_requests;
-    return TestBookmarkClient::GetFaviconImageForPageURL(page_url, type,
-                                                         callback, tracker);
+    return TestBookmarkClient::GetFaviconImageForPageURL(
+        page_url, type, std::move(callback), tracker);
   }
 
   int GetLoadFaviconRequestsForTest() { return load_favicon_requests; }

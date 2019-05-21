@@ -36,24 +36,22 @@ class FaviconRequestHandler {
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
   // Tries to fetch the icon from local storage and falls back to sync if it's
   // not found.
-  void GetRawFaviconForPageURL(
-      const GURL& page_url,
-      int desired_size_in_pixel,
-      const favicon_base::FaviconRawBitmapCallback& callback,
-      FaviconRequestOrigin request_origin,
-      FaviconService* favicon_service,
-      SyncedFaviconGetter synced_favicon_getter,
-      base::CancelableTaskTracker* tracker);
+  void GetRawFaviconForPageURL(const GURL& page_url,
+                               int desired_size_in_pixel,
+                               favicon_base::FaviconRawBitmapCallback callback,
+                               FaviconRequestOrigin request_origin,
+                               FaviconService* favicon_service,
+                               SyncedFaviconGetter synced_favicon_getter,
+                               base::CancelableTaskTracker* tracker);
 
   // Requests favicon image at |page_url|. Tries to fetch the icon from local
   // storage and falls back to sync if it's not found.
-  void GetFaviconImageForPageURL(
-      const GURL& page_url,
-      const favicon_base::FaviconImageCallback& callback,
-      FaviconRequestOrigin request_origin,
-      FaviconService* favicon_service,
-      SyncedFaviconGetter synced_favicon_getter,
-      base::CancelableTaskTracker* tracker);
+  void GetFaviconImageForPageURL(const GURL& page_url,
+                                 favicon_base::FaviconImageCallback callback,
+                                 FaviconRequestOrigin request_origin,
+                                 FaviconService* favicon_service,
+                                 SyncedFaviconGetter synced_favicon_getter,
+                                 base::CancelableTaskTracker* tracker);
 
  private:
   // Called after the first attempt to retrieve the icon bitmap from local
@@ -61,7 +59,7 @@ class FaviconRequestHandler {
   // retrieve from sync.
   void OnBitmapLocalDataAvailable(
       const GURL& page_url,
-      const favicon_base::FaviconRawBitmapCallback& response_callback,
+      favicon_base::FaviconRawBitmapCallback response_callback,
       FaviconRequestOrigin origin,
       SyncedFaviconGetter synced_favicon_getter,
       const favicon_base::FaviconRawBitmapResult& bitmap_result) const;
@@ -71,7 +69,7 @@ class FaviconRequestHandler {
   // retrieve from sync.
   void OnImageLocalDataAvailable(
       const GURL& page_url,
-      const favicon_base::FaviconImageCallback& response_callback,
+      favicon_base::FaviconImageCallback response_callback,
       FaviconRequestOrigin origin,
       SyncedFaviconGetter synced_favicon_getter,
       const favicon_base::FaviconImageResult& image_result) const;

@@ -18,7 +18,6 @@ static_library("core") {
     "favicon_request_handler.h",
     "favicon_server_fetcher_params.cc",
     "favicon_server_fetcher_params.h",
-    "favicon_service.cc",
     "favicon_service.h",
     "favicon_service_impl.cc",
     "favicon_service_impl.h",

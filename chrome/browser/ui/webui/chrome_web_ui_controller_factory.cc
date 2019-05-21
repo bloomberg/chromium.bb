@@ -715,15 +715,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   return NULL;
 }
 
-void RunFaviconCallbackAsync(
-    const favicon_base::FaviconResultsCallback& callback,
-    const std::vector<favicon_base::FaviconRawBitmapResult>* results) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&favicon::FaviconService::FaviconResultsCallbackRunner,
-                     callback, base::Owned(results)));
-}
-
 }  // namespace
 
 WebUI::TypeID ChromeWebUIControllerFactory::GetWebUIType(
@@ -762,7 +753,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
     const GURL& page_url,
     const std::vector<int>& desired_sizes_in_pixel,
-    const favicon_base::FaviconResultsCallback& callback) const {
+    favicon_base::FaviconResultsCallback callback) const {
   // Before determining whether page_url is an extension url, we must handle
   // overrides. This changes urls in |kChromeUIScheme| to extension urls, and
   // allows to use ExtensionWebUI::GetFaviconForURL.
@@ -772,13 +763,12 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
 
   // All extensions get their favicon from the icons part of the manifest.
   if (url.SchemeIs(extensions::kExtensionScheme)) {
-    ExtensionWebUI::GetFaviconForURL(profile, url, callback);
+    ExtensionWebUI::GetFaviconForURL(profile, url, std::move(callback));
     return;
   }
 #endif
 
-  std::vector<favicon_base::FaviconRawBitmapResult>* favicon_bitmap_results =
-      new std::vector<favicon_base::FaviconRawBitmapResult>();
+  std::vector<favicon_base::FaviconRawBitmapResult> favicon_bitmap_results;
 
   // Use ui::GetSupportedScaleFactors instead of
   // favicon_base::GetFaviconScales() because chrome favicons comes from
@@ -812,11 +802,13 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       // Leave |bitmap_result|'s icon URL as the default of GURL().
       bitmap_result.icon_type = favicon_base::IconType::kFavicon;
       bitmap_result.pixel_size = candidate_sizes[selected_index];
-      favicon_bitmap_results->push_back(bitmap_result);
+      favicon_bitmap_results.push_back(bitmap_result);
     }
   }
 
-  RunFaviconCallbackAsync(callback, favicon_bitmap_results);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(favicon_bitmap_results)));
 }
 
 // static

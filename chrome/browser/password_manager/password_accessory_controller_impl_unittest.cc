@@ -582,7 +582,14 @@ TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
 
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
-      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
+      .WillOnce([](auto, auto, auto, auto,
+                   favicon_base::FaviconRawBitmapCallback callback,
+                   base::CancelableTaskTracker* tracker) {
+        return tracker->PostTask(
+            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           favicon_base::FaviconRawBitmapResult()));
+      });
   EXPECT_CALL(mock_callback, Run);
   controller()->GetFavicon(kIconSize, mock_callback.Get());
   base::RunLoop().RunUntilIdle();
@@ -603,7 +610,14 @@ TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
 
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
-      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
+      .WillOnce([](auto, auto, auto, auto,
+                   favicon_base::FaviconRawBitmapCallback callback,
+                   base::CancelableTaskTracker* tracker) {
+        return tracker->PostTask(
+            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           favicon_base::FaviconRawBitmapResult()));
+      });
   EXPECT_CALL(mock_callback, Run).Times(2);
   controller()->GetFavicon(kIconSize, mock_callback.Get());
   // The favicon service should already start to work on the request.
@@ -644,7 +658,13 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
 
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
-      .WillOnce(favicon::PostReply<6>(non_empty_result));
+      .WillOnce([=](auto, auto, auto, auto,
+                    favicon_base::FaviconRawBitmapCallback callback,
+                    base::CancelableTaskTracker* tracker) {
+        return tracker->PostTask(
+            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+            base::BindOnce(std::move(callback), non_empty_result));
+      });
   EXPECT_CALL(mock_callback, Run).Times(1);
   controller()->GetFavicon(kIconSize, mock_callback.Get());
 
@@ -674,7 +694,13 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   // The cache was cleared, so now the service has to be queried again.
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
-      .WillOnce(favicon::PostReply<6>(non_empty_result));
+      .WillOnce([=](auto, auto, auto, auto,
+                    favicon_base::FaviconRawBitmapCallback callback,
+                    base::CancelableTaskTracker* tracker) {
+        return tracker->PostTask(
+            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+            base::BindOnce(std::move(callback), non_empty_result));
+      });
   EXPECT_CALL(mock_callback, Run).Times(1);
   controller()->GetFavicon(kIconSize, mock_callback.Get());
   base::RunLoop().RunUntilIdle();
@@ -697,15 +723,19 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   // has changed.
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
                                                           kIconSize, _, _, _))
-      .WillOnce(testing::DoAll(
-          // Triggering a navigation at this moment ensures that the focused
-          // frame origin changes after the original origin has been sent to the
-          // favicon service, but before checking whether the origins match (and
-          // maybe invoking the callback).
-          testing::InvokeWithoutArgs([this]() {
-            this->NavigateAndCommit(GURL("https://other.frame.com/"));
-          }),
-          favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult())));
+      .WillOnce([=](auto, auto, auto, auto,
+                    favicon_base::FaviconRawBitmapCallback callback,
+                    base::CancelableTaskTracker* tracker) {
+        // Triggering a navigation at this moment ensures that the focused
+        // frame origin changes after the original origin has been sent to the
+        // favicon service, but before checking whether the origins match (and
+        // maybe invoking the callback).
+        this->NavigateAndCommit(GURL("https://other.frame.com/"));
+        return tracker->PostTask(
+            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           favicon_base::FaviconRawBitmapResult()));
+      });
   EXPECT_CALL(mock_callback, Run).Times(0);
   controller()->GetFavicon(kIconSize, mock_callback.Get());
   EXPECT_CALL(mock_manual_filling_controller_,

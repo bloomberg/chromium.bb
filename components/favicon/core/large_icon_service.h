@@ -45,7 +45,7 @@ class LargeIconService : public KeyedService {
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
-      const favicon_base::LargeIconCallback& callback,
+      favicon_base::LargeIconCallback callback,
       base::CancelableTaskTracker* tracker) = 0;
 
   // Behaves the same as GetLargeIconRawBitmapOrFallbackStyleForPageUrl(), only
@@ -55,7 +55,7 @@ class LargeIconService : public KeyedService {
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
-      const favicon_base::LargeIconImageCallback& callback,
+      favicon_base::LargeIconImageCallback callback,
       base::CancelableTaskTracker* tracker) = 0;
 
   // Behaves the same as GetLargeIconRawBitmapOrFallbackStyleForPageUrl, except
@@ -65,7 +65,7 @@ class LargeIconService : public KeyedService {
       const GURL& icon_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
-      const favicon_base::LargeIconCallback& callback,
+      favicon_base::LargeIconCallback callback,
       base::CancelableTaskTracker* tracker) = 0;
 
   // Fetches the best large icon for the page at |page_url| from a Google
@@ -97,7 +97,7 @@ class LargeIconService : public KeyedService {
       std::unique_ptr<FaviconServerFetcherParams> params,
       bool may_page_url_be_private,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      const favicon_base::GoogleFaviconServerCallback& callback) = 0;
+      favicon_base::GoogleFaviconServerCallback callback) = 0;
 
   // Update the time that the icon at |icon_url| was requested. This should be
   // called after obtaining the icon by GetLargeIcon*OrFallbackStyle() for any

@@ -638,7 +638,7 @@ class HistoryService : public KeyedService {
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const std::vector<int>& desired_sizes,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get favicons mapped to |page_url| for
@@ -658,7 +658,7 @@ class HistoryService : public KeyedService {
       const favicon_base::IconTypeSet& icon_types,
       const std::vector<int>& desired_sizes,
       bool fallback_to_host,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Used by FaviconService to find the first favicon bitmap whose width and
@@ -676,7 +676,7 @@ class HistoryService : public KeyedService {
       const GURL& page_url,
       const std::vector<favicon_base::IconTypeSet>& icon_types,
       int minimum_size_in_pixels,
-      const favicon_base::FaviconRawBitmapCallback& callback,
+      favicon_base::FaviconRawBitmapCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get the favicon bitmap which most closely
@@ -686,7 +686,7 @@ class HistoryService : public KeyedService {
   base::CancelableTaskTracker::TaskId GetFaviconForID(
       favicon_base::FaviconID favicon_id,
       int desired_size,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Maps |page_urls| to the favicon at |icon_url| if there is an entry in the
@@ -700,7 +700,7 @@ class HistoryService : public KeyedService {
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const std::vector<int>& desired_sizes,
-      const favicon_base::FaviconResultsCallback& callback,
+      favicon_base::FaviconResultsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Deletes favicon mappings for each URL in |page_urls| and their redirects.

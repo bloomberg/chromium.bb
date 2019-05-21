@@ -48,7 +48,7 @@ class FakeLargeIconService : public favicon::LargeIconServiceImpl {
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
-      const favicon_base::LargeIconCallback& callback,
+      favicon_base::LargeIconCallback callback,
       base::CancelableTaskTracker* tracker) override {
     if (page_url.spec() == kTestFaviconURL) {
       favicon_base::FaviconRawBitmapResult bitmapResult;
@@ -62,13 +62,13 @@ class FakeLargeIconService : public favicon::LargeIconServiceImpl {
       bitmapResult.bitmap_data = data;
 
       favicon_base::LargeIconResult result(bitmapResult);
-      callback.Run(result);
+      std::move(callback).Run(result);
     } else {
       favicon_base::FallbackIconStyle* fallback =
           new favicon_base::FallbackIconStyle();
       favicon_base::LargeIconResult result(fallback);
       fallback = NULL;
-      callback.Run(result);
+      std::move(callback).Run(result);
     }
 
     return 1;
@@ -80,11 +80,11 @@ class FakeLargeIconService : public favicon::LargeIconServiceImpl {
       const GURL& icon_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
-      const favicon_base::LargeIconCallback& callback,
+      favicon_base::LargeIconCallback callback,
       base::CancelableTaskTracker* tracker) override {
     return GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
-        icon_url, min_source_size_in_pixel, desired_size_in_pixel, callback,
-        tracker);
+        icon_url, min_source_size_in_pixel, desired_size_in_pixel,
+        std::move(callback), tracker);
   }
 };
 
