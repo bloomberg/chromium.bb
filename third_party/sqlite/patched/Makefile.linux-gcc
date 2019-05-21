@@ -60,13 +60,6 @@ TLIBS =
 OPTS = -DNDEBUG=1
 OPTS += -DHAVE_FDATASYNC=1
 
-# Support for loading Chromium ICU data in sqlite3.
-ifeq ($(shell uname -s),Darwin)
-SHELL_ICU =
-else
-SHELL_ICU = $(TOP)/src/shell_icu_linux.c -licuuc
-endif
-
 #### The suffix to add to executable files.  ".exe" for windows.
 #    Nothing for unix.
 #

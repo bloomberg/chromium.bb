@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 15 May 2019 18:39:12 -0700
-Subject: [PATCH 7/9] Ensure correct zero-termination of UTF16 strings
+Subject: [PATCH 6/8] Ensure correct zero-termination of UTF16 strings
 
 Backports https://www.sqlite.org/src/info/d612fb7873cf59df
 
@@ -91,5 +91,5 @@ index fbcec0f59c18..78a2e3911ba8 100644
    }
    if( pVal->flags&MEM_Null ){
 -- 
-2.21.0.1020.gf2820cf01a-goog
+2.21.0
 

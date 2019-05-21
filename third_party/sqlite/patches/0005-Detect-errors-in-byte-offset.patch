@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 15 May 2019 18:32:47 -0700
-Subject: [PATCH 6/9] Detect errors in byte offset
+Subject: [PATCH 5/8] Detect errors in byte offset
 
 Backports https://www.sqlite.org/src/vdiff?from=3c75605b4652ae88&to=ad8fc5d8b440c49d
 
@@ -33,5 +33,5 @@ index 1b2cc2f91e62..70c26373baa2 100644
    }
    pPage->nFree = (u16)(nFree - iCellFirst);
 -- 
-2.21.0.1020.gf2820cf01a-goog
+2.21.0
 

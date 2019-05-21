@@ -9106,16 +9106,6 @@ int SQLITE_CDECL wmain(int argc, wchar_t **wargv){
   }
 #endif
 
-  /* Begin evanm patch. */
-#if !defined(__APPLE__)
-  extern int sqlite_shell_init_icu();
-  if( !sqlite_shell_init_icu() ){
-    fprintf(stderr, "%s: warning: couldn't find icudt38.dll; "
-                    "queries against ICU FTS tables will fail.\n", argv[0]);
-  }
-#endif /* !defined(__APPLE__) */
-  /* End evanm patch. */
-
   /* Do an initial pass through the command-line argument to locate
   ** the name of the database file, the name of the initialization file,
   ** the size of the alternative malloc heap,

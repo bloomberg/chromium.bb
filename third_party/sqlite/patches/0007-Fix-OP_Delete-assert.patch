@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Fri, 17 May 2019 16:00:46 -0700
-Subject: [PATCH 8/9] Fix OP_Delete assert
+Subject: [PATCH 7/8] Fix OP_Delete assert
 
 Backports https://www.sqlite.org/src/info/915388ab39ba3ca8
 
@@ -87,5 +87,5 @@ index de0196ecc09e..3a6c1384df1d 100644
 +
  finish_test
 -- 
-2.21.0.1020.gf2820cf01a-goog
+2.21.0
 
