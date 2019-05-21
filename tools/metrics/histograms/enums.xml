@@ -51449,6 +51449,11 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SiteIsolationIsDedicatedProcess">
+  <int value="0" label="Process is not dedicated to a single site"/>
+  <int value="1" label="Process is dedicated to a single site"/>
+</enum>
+
 <enum name="SiteIsolationMimeType">
   <int value="0" label="HTML"/>
   <int value="1" label="XML"/>
