@@ -23,8 +23,7 @@ SkiaTextureHolder::SkiaTextureHolder(
       image_(std::move(image)) {}
 
 SkiaTextureHolder::SkiaTextureHolder(
-    std::unique_ptr<TextureHolder> texture_holder,
-    bool backed_by_shared_image)
+    std::unique_ptr<TextureHolder> texture_holder)
     : TextureHolder(SharedGpuContext::ContextProviderWrapper()) {
   DCHECK(texture_holder->IsMailboxTextureHolder());
   const gpu::Mailbox mailbox = texture_holder->GetMailbox();
@@ -41,7 +40,7 @@ SkiaTextureHolder::SkiaTextureHolder(
 
   shared_gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   GLuint shared_context_texture_id = 0u;
-  if (backed_by_shared_image) {
+  if (mailbox.IsSharedImage()) {
     shared_context_texture_id =
         shared_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
     shared_gl->BeginSharedImageAccessDirectCHROMIUM(

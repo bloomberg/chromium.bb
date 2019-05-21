@@ -27,8 +27,6 @@ class TextureHolder;
 class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
     : public StaticBitmapImage {
  public:
-  enum class MailboxType { kSharedImageId, kDeprecatedMailbox };
-
   ~AcceleratedStaticBitmapImage() override;
   // SkImage with a texture backing.
   static scoped_refptr<AcceleratedStaticBitmapImage> CreateFromSkImage(
@@ -50,7 +48,6 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
       IntSize mailbox_size,
-      MailboxType mailbox_type = MailboxType::kDeprecatedMailbox,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback = nullptr);
 
   bool CurrentFrameKnownToBeOpaque() override;
@@ -115,7 +112,6 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
       IntSize mailbox_size,
-      MailboxType mailbox_type,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   void CreateImageFromMailboxIfNeeded();
@@ -133,7 +129,6 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       original_skia_image_context_provider_wrapper_;
 
-  const MailboxType mailbox_type_;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
 };
 

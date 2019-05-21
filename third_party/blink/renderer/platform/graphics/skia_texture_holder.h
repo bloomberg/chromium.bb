@@ -35,8 +35,7 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
                     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
   // This function consumes the mailbox in the input parameter and turn it into
   // a texture-backed SkImage.
-  SkiaTextureHolder(std::unique_ptr<TextureHolder>,
-                    bool backed_by_shared_image);
+  SkiaTextureHolder(std::unique_ptr<TextureHolder>);
 
  private:
   // The image_ should always be texture-backed.

@@ -797,8 +797,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
   scoped_refptr<StaticBitmapImage> image =
       AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
           shared_image_mailbox_, GetSyncToken(), 0, ContextProviderWrapper(),
-          Size(), AcceleratedStaticBitmapImage::MailboxType::kSharedImageId,
-          std::move(release_callback));
+          Size(), std::move(release_callback));
   DCHECK(image);
   return image;
 }
