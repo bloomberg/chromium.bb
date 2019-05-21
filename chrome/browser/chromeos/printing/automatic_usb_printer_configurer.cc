@@ -13,10 +13,10 @@
 namespace chromeos {
 namespace {
 
-bool IsInAutomaticList(const std::string& printer_id,
-                       const std::vector<Printer>& automatic_printers) {
-  for (const auto& automatic_printer : automatic_printers) {
-    if (automatic_printer.id() == printer_id) {
+bool IsPrinterIdInList(const std::string& printer_id,
+                       const std::vector<Printer>& printer_list) {
+  for (const auto& printer : printer_list) {
+    if (printer.id() == printer_id) {
       return true;
     }
   }
@@ -47,16 +47,33 @@ void AutomaticUsbPrinterConfigurer::OnPrintersChanged(
     return;
   }
 
-  if (printer_class != PrinterClass::kAutomatic) {
+  if (printer_class == PrinterClass::kAutomatic) {
+    // Remove any notifications for printers that are no longer in the automatic
+    // class and setup any USB printers we haven't seen yet.
+    PruneRemovedAutomaticPrinters(printers);
+    for (const Printer& printer : printers) {
+      if (!configured_printers_.contains(printer.id()) &&
+          printer.IsUsbProtocol()) {
+        SetupPrinter(printer);
+      }
+    }
     return;
   }
 
-  PruneRemovedPrinters(printers);
-
-  for (const Printer& printer : printers) {
-    if (!printers_.contains(printer.id()) && printer.IsUsbProtocol()) {
-      SetupPrinter(printer);
+  if (printer_class == PrinterClass::kDiscovered) {
+    // Remove any notifications for printers that are no longer in the
+    // discovered class and show a configuration notification for printers we
+    // haven't seen yet
+    PruneRemovedDiscoveredPrinters(printers);
+    for (const Printer& printer : printers) {
+      if (!unconfigured_printers_.contains(printer.id()) &&
+          printer.IsUsbProtocol()) {
+        notification_controller_->ShowConfigurationNotification(printer);
+        DCHECK(!configured_printers_.contains(printer.id()));
+        unconfigured_printers_.insert(printer.id());
+      }
     }
+    return;
   }
 }
 
@@ -89,15 +106,29 @@ void AutomaticUsbPrinterConfigurer::CompleteConfiguration(
   VLOG(1) << "Auto USB Printer setup successful for " << printer.id();
 
   notification_controller_->ShowEphemeralNotification(printer);
-  printers_.insert(printer.id());
+  DCHECK(!unconfigured_printers_.contains(printer.id()));
+  configured_printers_.insert(printer.id());
+}
+
+void AutomaticUsbPrinterConfigurer::PruneRemovedAutomaticPrinters(
+    const std::vector<Printer>& automatic_printers) {
+  PruneRemovedPrinters(automatic_printers, /*use_configured_printers=*/true);
+}
+
+void AutomaticUsbPrinterConfigurer::PruneRemovedDiscoveredPrinters(
+    const std::vector<Printer>& discovered_printers) {
+  PruneRemovedPrinters(discovered_printers, /*use_configured_printers=*/false);
 }
 
 void AutomaticUsbPrinterConfigurer::PruneRemovedPrinters(
-    const std::vector<Printer>& automatic_printers) {
-  for (auto it = printers_.begin(); it != printers_.end();) {
-    if (!IsInAutomaticList(*it, automatic_printers)) {
+    const std::vector<Printer>& current_printers,
+    bool use_configured_printers) {
+  auto& printers =
+      use_configured_printers ? configured_printers_ : unconfigured_printers_;
+  for (auto it = printers.begin(); it != printers.end();) {
+    if (!IsPrinterIdInList(*it, current_printers)) {
       notification_controller_->RemoveNotification(*it);
-      it = printers_.erase(it);
+      it = printers.erase(it);
     } else {
       ++it;
     }

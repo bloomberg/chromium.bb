@@ -37,8 +37,6 @@ class AutomaticUsbPrinterConfigurer : public CupsPrintersManager::Observer {
  private:
   FRIEND_TEST_ALL_PREFIXES(AutomaticUsbPrinterConfigurerTest,
                            UsbPrinterAddedToSet);
-  FRIEND_TEST_ALL_PREFIXES(AutomaticUsbPrinterConfigurerTest,
-                           UsbPrinterRemovedFromSet);
 
   // Uses |printer_configurer_| to setup |printer| if it is not yet setup.
   void SetupPrinter(const Printer& printer);
@@ -46,19 +44,33 @@ class AutomaticUsbPrinterConfigurer : public CupsPrintersManager::Observer {
   // Callback for PrinterConfiguer::SetUpPrinter().
   void OnSetupComplete(const Printer& printer, PrinterSetupResult result);
 
-  // Completes the configuration for |printer|. Saves printer in |printers_|.
+  // Completes the configuration for |printer|. Saves printer in
+  // |configured_printers_|.
   void CompleteConfiguration(const Printer& printer);
 
-  // Removes any printers from |printers_| that are no longer in
+  // Removes any printers from |configured_printers_| that are no longer in
   // |automatic_printers|.
-  void PruneRemovedPrinters(const std::vector<Printer>& automatic_printers);
+  void PruneRemovedAutomaticPrinters(
+      const std::vector<Printer>& automatic_printers);
+
+  // Removes any printers from |unconfigured_printers_| that are no longer in
+  // |discovered_printers|.
+  void PruneRemovedDiscoveredPrinters(
+      const std::vector<Printer>& discovered_printers);
+
+  // Helper function that removes printers that are no longer in
+  // |current_printers|. If |use_configured_printers|, |configured_printers_| is
+  // pruned. Otherwise, |unconfigured_printers_| is pruned.
+  void PruneRemovedPrinters(const std::vector<Printer>& current_printers,
+                            bool use_configured_printers);
 
   SEQUENCE_CHECKER(sequence_);
 
   std::unique_ptr<PrinterConfigurer> printer_configurer_;
   PrinterInstallationManager* installation_manager_;  // Not owned.
   UsbPrinterNotificationController* notification_controller_;  // Not owned.
-  base::flat_set<std::string> printers_;
+  base::flat_set<std::string> configured_printers_;
+  base::flat_set<std::string> unconfigured_printers_;
 
   base::WeakPtrFactory<AutomaticUsbPrinterConfigurer> weak_factory_;
 

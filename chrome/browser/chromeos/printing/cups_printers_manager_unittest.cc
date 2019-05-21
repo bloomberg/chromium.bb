@@ -307,20 +307,31 @@ class FakeUsbPrinterNotificationController
     NOTIMPLEMENTED();
   }
   void ShowConfigurationNotification(const Printer& printer) override {
-    NOTIMPLEMENTED();
+    configuration_notifications_.insert(printer.id());
   }
   void ShowSavedNotification(const Printer& printer) override {
-    open_notifications_.insert(printer.id());
+    saved_notifications_.insert(printer.id());
   }
   void RemoveNotification(const std::string& printer_id) override {
-    open_notifications_.erase(printer_id);
+    saved_notifications_.erase(printer_id);
+    configuration_notifications_.erase(printer_id);
   }
   bool IsNotification(const std::string& printer_id) const override {
-    return open_notifications_.contains(printer_id);
+    return configuration_notifications_.contains(printer_id) ||
+           saved_notifications_.contains(printer_id);
+  }
+
+  bool IsSavedNotification(const std::string& printer_id) const {
+    return saved_notifications_.contains(printer_id);
+  }
+
+  bool IsConfigurationNotification(const std::string& printer_id) const {
+    return configuration_notifications_.contains(printer_id);
   }
 
  private:
-  base::flat_set<std::string> open_notifications_;
+  base::flat_set<std::string> saved_notifications_;
+  base::flat_set<std::string> configuration_notifications_;
 };
 
 class CupsPrintersManagerTest : public testing::Test,
@@ -833,6 +844,33 @@ TEST_F(CupsPrintersManagerTest, OtherNearbyPrintersNotInstalledAutomatically) {
   ExpectPrintersInClassAre(PrinterClass::kAutomatic, {"Automatic"});
   EXPECT_FALSE(printer_configurer_->IsConfigured("Discovered"));
   EXPECT_FALSE(printer_configurer_->IsConfigured("Automatic"));
+}
+
+TEST_F(CupsPrintersManagerTest, DetectedUsbPrinterConfigurationNotification) {
+  auto discovered_printer = MakeDiscoveredPrinter("Discovered");
+  discovered_printer.printer.set_uri("usb:");
+
+  usb_detector_->AddDetections({discovered_printer});
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(usb_notif_controller_->IsConfigurationNotification("Discovered"));
+
+  usb_detector_->RemoveDetections({"Discovered"});
+
+  EXPECT_FALSE(
+      usb_notif_controller_->IsConfigurationNotification("Discovered"));
+}
+
+TEST_F(CupsPrintersManagerTest,
+       DetectedZeroconfDiscoveredPrinterNoNotification) {
+  auto discovered_printer = MakeDiscoveredPrinter("Discovered");
+  discovered_printer.printer.set_uri("ipp:");
+
+  zeroconf_detector_->AddDetections({discovered_printer});
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(
+      usb_notif_controller_->IsConfigurationNotification("Discovered"));
 }
 
 }  // namespace
