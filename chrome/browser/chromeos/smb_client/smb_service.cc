@@ -464,8 +464,12 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
 }
 
 void SmbService::Premount(const base::FilePath& share_path) {
-  GetSmbProviderClient()->Premount(
-      share_path, IsNTLMAuthenticationEnabled(),
+  // Premounting is equivalent to remounting, but with an empty username and
+  // password.
+  GetSmbProviderClient()->Mount(
+      share_path, IsNTLMAuthenticationEnabled(), "", "",
+      temp_file_manager_->WritePasswordToFile("" /* password */),
+      true /* skip_connect */,
       base::BindOnce(&SmbService::OnPremountResponse, AsWeakPtr(), share_path));
 }
 

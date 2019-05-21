@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -243,6 +245,33 @@ TEST_F(SmbServiceTest, Remount_ActiveDirectory) {
           })));
 
   CreateService(ad_profile_);
+  run_loop.Run();
+
+  // Because the mock is potentially leaked, expectations needs to be manually
+  // verified.
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mock_client_));
+}
+
+TEST_F(SmbServiceTest, Premount) {
+  const char kPremountPath[] = "smb://server/foobar";
+  const char kPreconfiguredShares[] =
+      "[{\"mode\":\"pre_mount\",\"share_url\":\"\\\\\\\\server\\\\foobar\"}]";
+  auto parsed_shares = base::JSONReader::Read(kPreconfiguredShares);
+  ASSERT_TRUE(parsed_shares);
+  profile_->GetPrefs()->Set(prefs::kNetworkFileSharesPreconfiguredShares,
+                            *parsed_shares);
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(*mock_client_, Mount(base::FilePath(kPremountPath), _, "", "", _,
+                                   true /* skip_connect */, _))
+      .WillOnce(WithArg<6>(
+          Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
+            std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
+            run_loop.Quit();
+          })));
+
+  CreateFspRegistry(profile_);
+  CreateService(profile_);
   run_loop.Run();
 
   // Because the mock is potentially leaked, expectations needs to be manually
