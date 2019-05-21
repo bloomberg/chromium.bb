@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/extensions/installation_error_infobar_delegate.h"
+#include "chrome/browser/ui/infobars/tab_sharing_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/startup/automation_infobar_delegate.h"
@@ -231,6 +232,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"automation", IBD::AUTOMATION_INFOBAR_DELEGATE},
       {"previews_lite_page", IBD::LITE_PAGE_PREVIEWS_INFOBAR},
       {"flash_deprecation", IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE},
+      {"tab_sharing", IBD::TAB_SHARING_INFOBAR_DELEGATE},
   };
   auto id = kIdentifiers.find(name);
   expected_identifiers_.push_back((id == kIdentifiers.end()) ? IBD::INVALID
@@ -411,6 +413,11 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
     case IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE:
       FlashDeprecationInfoBarDelegate::Create(GetInfoBarService());
       break;
+    case IBD::TAB_SHARING_INFOBAR_DELEGATE:
+      TabSharingInfoBarDelegate::Create(GetInfoBarService(),
+                                        base::ASCIIToUTF16("example.com"),
+                                        base::ASCIIToUTF16("application.com"));
+      break;
 
     default:
       break;
@@ -575,6 +582,13 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_previews_lite_page) {
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_flash_deprecation) {
   ShowAndVerifyUi();
 }
+
+// TODO(https://crbug.com/965468) Resource generation fails on Windows.
+#if !defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_tab_sharing) {
+  ShowAndVerifyUi();
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_multiple_infobars) {
   ShowAndVerifyUi();

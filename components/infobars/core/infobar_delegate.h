@@ -161,6 +161,7 @@ class InfoBarDelegate {
     INLINE_UPDATE_FAILED_INFOBAR_ANDROID = 90,
     FLASH_DEPRECATION_INFOBAR_DELEGATE = 91,
     SEND_TAB_TO_SELF_INFOBAR_DELEGATE = 92,
+    TAB_SHARING_INFOBAR_DELEGATE = 93,
   };
 
   // Describes navigation events, used to decide whether infobars should be
@@ -185,7 +186,7 @@ class InfoBarDelegate {
 
   // Returns a unique value identifying the infobar.
   // New implementers must append a new value to the InfoBarIdentifier enum here
-  // and in histograms.xml.
+  // and in histograms/enums.xml.
   virtual InfoBarIdentifier GetIdentifier() const = 0;
 
   virtual InfoBarAutomationType GetInfoBarAutomationType() const;
