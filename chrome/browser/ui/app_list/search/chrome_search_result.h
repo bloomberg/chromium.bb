@@ -89,11 +89,11 @@ class ChromeSearchResult {
   void SetPercentDownloaded(int percent_downloaded);
   void NotifyItemInstalled();
 
-  void SetMetadata(ash::mojom::SearchResultMetadataPtr metadata) {
+  void SetMetadata(std::unique_ptr<ash::SearchResultMetadata> metadata) {
     metadata_ = std::move(metadata);
   }
-  ash::mojom::SearchResultMetadataPtr CloneMetadata() const {
-    return metadata_.Clone();
+  std::unique_ptr<ash::SearchResultMetadata> CloneMetadata() const {
+    return std::make_unique<ash::SearchResultMetadata>(*metadata_);
   }
 
   void set_model_updater(AppListModelUpdater* model_updater) {
@@ -151,7 +151,7 @@ class ChromeSearchResult {
   // sorted order, group multiplier and group boost.
   double relevance_ = 0;
 
-  ash::mojom::SearchResultMetadataPtr metadata_;
+  std::unique_ptr<ash::SearchResultMetadata> metadata_;
 
   AppListModelUpdater* model_updater_ = nullptr;
 

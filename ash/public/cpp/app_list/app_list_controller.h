@@ -27,8 +27,6 @@ class AppListClient;
 //   happen while installing/uninstalling apps and the app list gets toggled.
 class ASH_PUBLIC_EXPORT AppListController {
  public:
-  using SearchResultMetadataPtr = ash::mojom::SearchResultMetadataPtr;
-
   // Gets the instance.
   static AppListController* Get();
 
@@ -84,7 +82,7 @@ class ASH_PUBLIC_EXPORT AppListController {
 
   // Publishes search results to Ash to render them.
   virtual void PublishSearchResults(
-      std::vector<SearchResultMetadataPtr> results) = 0;
+      std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) = 0;
 
   // Updates an item's metadata (e.g. name, position, etc).
   virtual void SetItemMetadata(
@@ -110,7 +108,8 @@ class ASH_PUBLIC_EXPORT AppListController {
       bool is_search_engine_google) = 0;
 
   // Updates a search rresult's metadata.
-  virtual void SetSearchResultMetadata(SearchResultMetadataPtr metadata) = 0;
+  virtual void SetSearchResultMetadata(
+      std::unique_ptr<ash::SearchResultMetadata> metadata) = 0;
 
   // Updates whether a search result is being installed.
   virtual void SetSearchResultIsInstalling(const std::string& id,

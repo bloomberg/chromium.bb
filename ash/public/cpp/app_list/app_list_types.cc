@@ -51,4 +51,12 @@ SearchResultAction::SearchResultAction(const SearchResultAction& other) =
 
 SearchResultAction::~SearchResultAction() = default;
 
+////////////////////////////////////////////////////////////////////////////////
+// SearchResultMetadata:
+
+SearchResultMetadata::SearchResultMetadata() = default;
+SearchResultMetadata::SearchResultMetadata(const SearchResultMetadata& rhs) =
+    default;
+SearchResultMetadata::~SearchResultMetadata() = default;
+
 }  // namespace ash

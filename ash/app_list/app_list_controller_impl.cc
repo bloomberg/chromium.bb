@@ -250,7 +250,7 @@ void AppListControllerImpl::UpdateSearchBox(const base::string16& text,
 }
 
 void AppListControllerImpl::PublishSearchResults(
-    std::vector<SearchResultMetadataPtr> results) {
+    std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) {
   std::vector<std::unique_ptr<app_list::SearchResult>> new_results;
   for (auto& result_metadata : results) {
     std::unique_ptr<app_list::SearchResult> result =
@@ -342,7 +342,7 @@ void AppListControllerImpl::SetModelData(
 }
 
 void AppListControllerImpl::SetSearchResultMetadata(
-    SearchResultMetadataPtr metadata) {
+    std::unique_ptr<ash::SearchResultMetadata> metadata) {
   app_list::SearchResult* result = search_model_.FindSearchResult(metadata->id);
   if (result)
     result->SetMetadata(std::move(metadata));

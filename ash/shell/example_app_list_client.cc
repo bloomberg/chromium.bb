@@ -214,7 +214,7 @@ void ExampleAppListClient::StartSearch(const base::string16& trimmed_query) {
   query = base::i18n::ToLower(trimmed_query);
 
   search_results_.clear();
-  std::vector<ash::mojom::SearchResultMetadataPtr> result_data;
+  std::vector<std::unique_ptr<ash::SearchResultMetadata>> result_data;
   for (int i = 0; i < static_cast<int>(WindowTypeShelfItem::LAST_TYPE); ++i) {
     WindowTypeShelfItem::Type type = static_cast<WindowTypeShelfItem::Type>(i);
 

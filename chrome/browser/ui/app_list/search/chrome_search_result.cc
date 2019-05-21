@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
 ChromeSearchResult::ChromeSearchResult()
-    : metadata_(ash::mojom::SearchResultMetadata::New()) {}
+    : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}
 
 ChromeSearchResult::~ChromeSearchResult() = default;
 

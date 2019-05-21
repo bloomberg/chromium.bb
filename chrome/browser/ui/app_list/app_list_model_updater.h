@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
@@ -89,7 +89,7 @@ class AppListModelUpdater {
 
   virtual void SetSearchResultMetadata(
       const std::string& id,
-      ash::mojom::SearchResultMetadataPtr metadata) {}
+      std::unique_ptr<ash::SearchResultMetadata> metadata) {}
   virtual void SetSearchResultIsInstalling(const std::string& id,
                                            bool is_installing) {}
   virtual void SetSearchResultPercentDownloaded(const std::string& id,

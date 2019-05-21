@@ -144,7 +144,7 @@ void ChromeAppListModelUpdater::PublishSearchResults(
     result->set_model_updater(this);
   if (!app_list_controller_)
     return;
-  std::vector<ash::mojom::SearchResultMetadataPtr> result_data;
+  std::vector<std::unique_ptr<ash::SearchResultMetadata>> result_data;
   for (auto* result : results)
     result_data.push_back(result->CloneMetadata());
   app_list_controller_->PublishSearchResults(std::move(result_data));
@@ -276,7 +276,7 @@ void ChromeAppListModelUpdater::SetItemPercentDownloaded(
 
 void ChromeAppListModelUpdater::SetSearchResultMetadata(
     const std::string& id,
-    ash::mojom::SearchResultMetadataPtr metadata) {
+    std::unique_ptr<ash::SearchResultMetadata> metadata) {
   if (!app_list_controller_)
     return;
   app_list_controller_->SetSearchResultMetadata(std::move(metadata));

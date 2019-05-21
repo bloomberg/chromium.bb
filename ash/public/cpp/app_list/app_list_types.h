@@ -9,9 +9,12 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "components/sync/model/string_ordinal.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -143,6 +146,84 @@ struct ASH_PUBLIC_EXPORT SearchResultAction {
   bool visible_on_hover;
 };
 using SearchResultActions = std::vector<SearchResultAction>;
+
+// A structure holding the common information which is sent from chrome to ash,
+// representing a search result.
+struct ASH_PUBLIC_EXPORT SearchResultMetadata {
+  SearchResultMetadata();
+  SearchResultMetadata(const SearchResultMetadata& rhs);
+  ~SearchResultMetadata();
+
+  // The id of the result.
+  std::string id;
+
+  // The title of the result, e.g. an app's name, an autocomplete query, etc.
+  base::string16 title;
+
+  // A detail string of this result.
+  base::string16 details;
+
+  // An text to be announced by a screen reader app.
+  base::string16 accessible_name;
+
+  // How the title matches the query. See the SearchResultTag section for more
+  // details.
+  std::vector<SearchResultTag> title_tags;
+
+  // How the details match the query. See the SearchResultTag section for more
+  // details.
+  std::vector<SearchResultTag> details_tags;
+
+  // Actions that can be performed on this result. See the SearchResultAction
+  // section for more details.
+  std::vector<SearchResultAction> actions;
+
+  // The average rating score of the app corresponding to this result, ranged
+  // from 0 to 5. It's negative if there's no rating for the result.
+  float rating = -1.0;
+
+  // A formatted price string, e.g. "$7.09", "HK$3.94", etc.
+  base::string16 formatted_price;
+
+  // The type of this result.
+  SearchResultType result_type = SearchResultType::kUnknown;
+
+  // How this result is displayed.
+  SearchResultDisplayType display_type = SearchResultDisplayType::kList;
+
+  // A score to determine the result display order.
+  double display_score = 0;
+
+  // Whether this is searched from Omnibox.
+  bool is_omnibox_search = false;
+
+  // Whether this result is installing.
+  bool is_installing = false;
+
+  // A query URL associated with this result. The meaning and treatment of the
+  // URL (e.g. displaying inline web contents) is dependent on the result type.
+  base::Optional<GURL> query_url;
+
+  // An optional id that identifies an equivalent result to this result. Answer
+  // card result has this set to remove the equivalent omnibox
+  // search-what-you-typed result when there is an answer card for the query.
+  base::Optional<std::string> equivalent_result_id;
+
+  // The icon of this result.
+  gfx::ImageSkia icon;
+
+  // The icon of this result in a smaller dimension to be rendered in suggestion
+  // chip view.
+  gfx::ImageSkia chip_icon;
+
+  // The badge icon of this result that indicates its type, e.g. installable
+  // from PlayStore, installable from WebStore, etc.
+  gfx::ImageSkia badge_icon;
+
+  // If set to true, whether or not to send visibility updates through to to
+  // the chrome side when this result is set visible/invisible.
+  bool notify_visibility_change = false;
+};
 
 }  // namespace ash
 

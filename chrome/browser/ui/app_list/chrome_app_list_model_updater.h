@@ -66,7 +66,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   // Methods only used by ChromeSearchResult that talk to ash directly.
   void SetSearchResultMetadata(
       const std::string& id,
-      ash::mojom::SearchResultMetadataPtr metadata) override;
+      std::unique_ptr<ash::SearchResultMetadata> metadata) override;
   void SetSearchResultIsInstalling(const std::string& id,
                                    bool is_installing) override;
   void SetSearchResultPercentDownloaded(const std::string& id,

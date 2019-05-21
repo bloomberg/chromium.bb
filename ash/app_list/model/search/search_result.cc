@@ -14,14 +14,15 @@
 namespace app_list {
 
 SearchResult::SearchResult()
-    : metadata_(ash::mojom::SearchResultMetadata::New()) {}
+    : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}
 
 SearchResult::~SearchResult() {
   for (auto& observer : observers_)
     observer.OnResultDestroying();
 }
 
-void SearchResult::SetMetadata(ash::mojom::SearchResultMetadataPtr metadata) {
+void SearchResult::SetMetadata(
+    std::unique_ptr<ash::SearchResultMetadata> metadata) {
   metadata_ = std::move(metadata);
   for (auto& observer : observers_)
     observer.OnMetadataChanged();

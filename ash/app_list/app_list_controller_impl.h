@@ -25,7 +25,6 @@
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
@@ -95,7 +94,7 @@ class ASH_EXPORT AppListControllerImpl
   void UpdateSearchBox(const base::string16& text,
                        bool initiated_by_user) override;
   void PublishSearchResults(
-      std::vector<SearchResultMetadataPtr> results) override;
+      std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) override;
   void SetItemMetadata(const std::string& id,
                        std::unique_ptr<ash::AppListItemMetadata> data) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
@@ -106,7 +105,8 @@ class ASH_EXPORT AppListControllerImpl
                     std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
                     bool is_search_engine_google) override;
 
-  void SetSearchResultMetadata(SearchResultMetadataPtr metadata) override;
+  void SetSearchResultMetadata(
+      std::unique_ptr<ash::SearchResultMetadata> metadata) override;
   void SetSearchResultIsInstalling(const std::string& id,
                                    bool is_installing) override;
   void SetSearchResultPercentDownloaded(const std::string& id,

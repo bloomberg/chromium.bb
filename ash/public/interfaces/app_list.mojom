@@ -13,62 +13,6 @@ import "ui/gfx/image/mojo/image.mojom";
 import "ui/gfx/range/mojo/range.mojom";
 import "url/mojom/url.mojom";
 
-// A structure holding the common information which is sent from chrome to ash,
-// representing a search result.
-struct SearchResultMetadata {
-  string id;                  // The id of the result.
-  mojo_base.mojom.String16 title;    // The title of the result, e.g. an app's
-                                     // name, an autocomplete query, etc.
-  mojo_base.mojom.String16 details;  // A detail string of this result.
-  mojo_base.mojom.String16 accessible_name;
-                                     // An text to be announced by a screen
-                                     // reader app.
-  array<SearchResultTag> title_tags;    // How the title matches the query. See
-                                        // the SearchResultTag section for
-                                        // more details.
-  array<SearchResultTag> details_tags;  // How the details match the query. See
-                                        // the SearchResultTag section for
-                                        // more details.
-  array<SearchResultAction> actions;    // Actions that can be performed on this
-                                        // result. See the SearchResultAction
-                                        // section for more details.
-  float rating = -1.0;        // The average rating score of the app
-                              // corresponding to this result, ranged from 0 to
-                              // 5. It's negative if there's no rating for the
-                              // result.
-  mojo_base.mojom.String16 formatted_price;  // A formatted price string, e.g.
-                                             // "$7.09", "HK$3.94", etc.
-  SearchResultType result_type;              // The type of this result.
-  SearchResultDisplayType display_type = kList;
-                                             // How this result is displayed.
-  double display_score;       // A score to determine the result display order.
-  bool is_omnibox_search;     // Whether this result is searched from Omnibox.
-  bool is_installing;         // Whether this result is installing.
-
-  url.mojom.Url? query_url;  // A query URL associated with this result. The
-                             // meaning and treatment of the URL
-                             // (e.g. displaying inline web contents) is
-                             // dependent on the result type.
-
-  string? equivalent_result_id;  // An optional id that identifies an equivalent
-                                 // result to this result. Answer card result
-                                 // has this set to remove the equivalent
-                                 // omnibox search-what-you-typed result when
-                                 // there is an answer card for the query.
-
-  gfx.mojom.ImageSkia? icon;  // The icon of this result.
-  gfx.mojom.ImageSkia? chip_icon;  // The icon of this result in a smaller
-                                   // dimension to be rendered in suggestion
-                                   // chip view.
-  gfx.mojom.ImageSkia? badge_icon;  // The badge icon of this result that
-                                    // indicates its type, e.g. installable from
-                                    // PlayStore, installable from WebStore,
-                                    // etc.
-  // If set to true, whether or not to send visibility updates through to to
-  // the chrome side when this result is set visible/invisible.
-  bool notify_visibility_change;
-};
-
 // All possible states of the app list.
 enum AppListState {
   kStateApps = 0,
