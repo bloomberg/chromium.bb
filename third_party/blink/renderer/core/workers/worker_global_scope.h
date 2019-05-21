@@ -123,6 +123,7 @@ class CORE_EXPORT WorkerGlobalScope
   const base::UnguessableToken& GetAgentClusterID() const final {
     return agent_cluster_id_;
   }
+  scheduler::WorkerScheduler* GetScheduler() final;
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }

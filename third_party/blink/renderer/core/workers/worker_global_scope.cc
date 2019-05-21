@@ -113,6 +113,11 @@ const KURL& WorkerGlobalScope::BaseURL() const {
   return Url();
 }
 
+scheduler::WorkerScheduler* WorkerGlobalScope::GetScheduler() {
+  DCHECK(IsContextThread());
+  return GetThread()->GetScheduler();
+}
+
 void WorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
   closing_ = true;

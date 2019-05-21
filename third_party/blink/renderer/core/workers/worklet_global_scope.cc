@@ -185,6 +185,13 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkletGlobalScope::GetTaskRunner(
   return worker_thread_->GetTaskRunner(task_type);
 }
 
+FrameOrWorkerScheduler* WorkletGlobalScope::GetScheduler() {
+  DCHECK(IsContextThread());
+  if (IsMainThreadWorkletGlobalScope())
+    return frame_->GetFrameScheduler();
+  return worker_thread_->GetScheduler();
+}
+
 LocalFrame* WorkletGlobalScope::GetFrame() const {
   DCHECK(IsMainThreadWorkletGlobalScope());
   return frame_;

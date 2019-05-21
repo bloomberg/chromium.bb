@@ -134,7 +134,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   void Trace(blink::Visitor*) override;
 
-  scheduler::WorkerScheduler* GetScheduler() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
   OffMainThreadWorkerScriptFetchOption GetOffMainThreadWorkerScriptFetchOption()

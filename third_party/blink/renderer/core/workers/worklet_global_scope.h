@@ -65,6 +65,7 @@ class CORE_EXPORT WorkletGlobalScope
   void ExceptionThrown(ErrorEvent*) final;
   CoreProbeSink* GetProbeSink() final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) final;
+  FrameOrWorkerScheduler* GetScheduler() final;
 
   // WorkerOrWorkletGlobalScope
   void Dispose() override;
