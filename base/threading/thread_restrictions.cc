@@ -14,12 +14,12 @@
 
 namespace base {
 
-namespace {
-
 std::ostream& operator<<(std::ostream&out, const ThreadLocalBoolean& tl) {
   out << "currently set to " << (tl.Get() ? "true" : "false");
   return out;
 }
+
+namespace {
 
 #if defined(OS_NACL) || defined(OS_ANDROID)
 // NaCL doesn't support stack sampling and Android is slow at stack
