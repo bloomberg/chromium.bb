@@ -1270,19 +1270,16 @@ void VaapiWrapper::DestroyContextAndSurfaces() {
 
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     const scoped_refptr<gfx::NativePixmap>& pixmap) {
-  // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
-  VASurfaceAttribExternalBuffers va_attrib_extbuf;
-  memset(&va_attrib_extbuf, 0, sizeof(va_attrib_extbuf));
+  const gfx::BufferFormat buffer_format = pixmap->GetBufferFormat();
 
-  va_attrib_extbuf.pixel_format =
-      BufferFormatToVAFourCC(pixmap->GetBufferFormat());
-  gfx::Size size = pixmap->GetBufferSize();
+  // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
+  const gfx::Size size = pixmap->GetBufferSize();
+  VASurfaceAttribExternalBuffers va_attrib_extbuf{};
+  va_attrib_extbuf.pixel_format = BufferFormatToVAFourCC(buffer_format);
   va_attrib_extbuf.width = size.width();
   va_attrib_extbuf.height = size.height();
 
-  size_t num_planes =
-      gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
-  std::vector<uintptr_t> fds(num_planes);
+  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(buffer_format);
   for (size_t i = 0; i < num_planes; ++i) {
     va_attrib_extbuf.pitches[i] = pixmap->GetDmaBufPitch(i);
     va_attrib_extbuf.offsets[i] = pixmap->GetDmaBufOffset(i);
@@ -1301,8 +1298,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attrib_extbuf.buffers = &fd;
   va_attrib_extbuf.num_buffers = 1u;
 
-  va_attrib_extbuf.flags = 0;
-  va_attrib_extbuf.private_data = NULL;
+  DCHECK_EQ(va_attrib_extbuf.flags, 0u);
+  DCHECK_EQ(va_attrib_extbuf.private_data, nullptr);
 
   std::vector<VASurfaceAttrib> va_attribs(2);
 
@@ -1316,8 +1313,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attribs[1].value.type = VAGenericValueTypePointer;
   va_attribs[1].value.value.p = &va_attrib_extbuf;
 
-  const unsigned int va_format =
-      BufferFormatToVARTFormat(pixmap->GetBufferFormat());
+  const unsigned int va_format = BufferFormatToVARTFormat(buffer_format);
 
   VASurfaceID va_surface_id = VA_INVALID_ID;
   {
@@ -1328,11 +1324,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     VA_SUCCESS_OR_RETURN(va_res, "Failed to create unowned VASurface", nullptr);
   }
 
-  // It's safe to use Unretained() here, because the caller takes care of the
-  // destruction order. All the surfaces will be destroyed before VaapiWrapper.
-  return new VASurface(
-      va_surface_id, size, va_format,
-      base::Bind(&VaapiWrapper::DestroySurface, base::Unretained(this)));
+  return new VASurface(va_surface_id, size, va_format,
+                       base::BindOnce(&VaapiWrapper::DestroySurface, this));
 }
 
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
