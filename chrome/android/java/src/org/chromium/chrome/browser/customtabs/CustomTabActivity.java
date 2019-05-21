@@ -120,6 +120,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private CustomTabActivityTabProvider mTabProvider;
     private CustomTabActivityTabFactory mTabFactory;
     private CustomTabActivityNavigationController mNavigationController;
+    private CustomTabStatusBarColorProvider mCustomTabStatusBarColorProvider;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -769,17 +770,14 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Override
     public int getBaseStatusBarColor() {
-        if (mIntentDataProvider.isOpenedByChrome()) return super.getBaseStatusBarColor();
-        if (getActivityTab() != null && getActivityTab().isPreview()) {
-            return ColorUtils.getDefaultThemeColor(getResources(), false);
-        }
-        return mIntentDataProvider.getToolbarColor();
+        return mCustomTabStatusBarColorProvider
+                .getBaseStatusBarColor(super.getBaseStatusBarColor());
     }
 
     @Override
     public boolean isStatusBarDefaultThemeColor() {
-        if (mIntentDataProvider.isOpenedByChrome()) return super.isStatusBarDefaultThemeColor();
-        return false;
+        return mCustomTabStatusBarColorProvider
+                .isStatusBarDefaultThemeColor(super.isStatusBarDefaultThemeColor());
     }
 
     @Override
@@ -895,6 +893,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
                         commonsModule, customTabsModule);
 
+        mCustomTabStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mTabController = component.resolveTabController();
         mTabProvider = component.resolveTabProvider();
