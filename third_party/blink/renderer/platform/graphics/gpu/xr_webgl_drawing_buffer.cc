@@ -5,6 +5,9 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 
 #include "build/build_config.h"
+#include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
@@ -22,17 +25,23 @@ namespace blink {
 XRWebGLDrawingBuffer::ColorBuffer::ColorBuffer(
     XRWebGLDrawingBuffer* drawing_buffer,
     const IntSize& size,
+    const gpu::Mailbox& mailbox,
     GLuint texture_id)
-    : drawing_buffer(drawing_buffer), size(size), texture_id(texture_id) {
-  gpu::gles2::GLES2Interface* gl = drawing_buffer->ContextGL();
-  gl->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
-}
+    : drawing_buffer(drawing_buffer),
+      size(size),
+      texture_id(texture_id),
+      mailbox(mailbox) {}
 
 XRWebGLDrawingBuffer::ColorBuffer::~ColorBuffer() {
   gpu::gles2::GLES2Interface* gl = drawing_buffer->ContextGL();
   if (receive_sync_token.HasData())
     gl->WaitSyncTokenCHROMIUM(receive_sync_token.GetConstData());
   gl->DeleteTextures(1, &texture_id);
+  gpu::SyncToken sync_token;
+  gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+  auto* sii = drawing_buffer->drawing_buffer_->ContextProvider()
+                  ->SharedImageInterface();
+  sii->DestroySharedImage(sync_token, mailbox);
 }
 
 scoped_refptr<XRWebGLDrawingBuffer> XRWebGLDrawingBuffer::Create(
@@ -171,7 +180,13 @@ XRWebGLDrawingBuffer::XRWebGLDrawingBuffer(DrawingBuffer* drawing_buffer,
 
 void XRWebGLDrawingBuffer::BeginDestruction() {
   mirror_client_ = nullptr;
-  back_color_buffer_ = nullptr;
+
+  if (back_color_buffer_) {
+    gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+    gl->EndSharedImageAccessDirectCHROMIUM(back_color_buffer_->texture_id);
+    back_color_buffer_ = nullptr;
+  }
+
   front_color_buffer_ = nullptr;
   recycled_color_buffer_queue_.clear();
 }
@@ -204,11 +219,6 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
   }
   DVLOG(2) << __FUNCTION__
            << ": anti_aliasing_mode_=" << static_cast<int>(anti_aliasing_mode_);
-
-  storage_texture_supported_ =
-      (drawing_buffer_->webgl_version() > DrawingBuffer::kWebGL1 ||
-       extensions_util->SupportsExtension("GL_EXT_texture_storage")) &&
-      anti_aliasing_mode_ == kScreenSpaceAntialiasing;
 
 #if defined(OS_ANDROID)
   // On Android devices use a smaller numer of samples to provide more breathing
@@ -453,8 +463,16 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
     gl->BindFramebuffer(GL_FRAMEBUFFER, resolved_framebuffer_);
   }
 
+  if (back_color_buffer_) {
+    gl->EndSharedImageAccessDirectCHROMIUM(back_color_buffer_->texture_id);
+  }
+
   back_color_buffer_ = CreateColorBuffer();
   front_color_buffer_ = nullptr;
+
+  gl->BeginSharedImageAccessDirectCHROMIUM(
+      back_color_buffer_->texture_id,
+      GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
   if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
     gl->FramebufferTexture2DMultisampleEXT(
@@ -478,30 +496,27 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
 
 scoped_refptr<XRWebGLDrawingBuffer::ColorBuffer>
 XRWebGLDrawingBuffer::CreateColorBuffer() {
+  auto* sii = drawing_buffer_->ContextProvider()->SharedImageInterface();
+  uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                   gpu::SHARED_IMAGE_USAGE_GLES2 |
+                   gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+  gpu::Mailbox mailbox =
+      sii->CreateSharedImage(alpha_ ? viz::RGBA_8888 : viz::RGBX_8888,
+                             gfx::Size(size_), gfx::ColorSpace(), usage);
+
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+  gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 
-  GLuint texture_id = 0;
-  gl->GenTextures(1, &texture_id);
-  gl->BindTexture(GL_TEXTURE_2D, texture_id);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  if (storage_texture_supported_) {
-    GLenum internal_storage_format = alpha_ ? GL_RGBA8 : GL_RGB8;
-    gl->TexStorage2DEXT(GL_TEXTURE_2D, 1, internal_storage_format,
-                        size_.Width(), size_.Height());
-  } else {
-    GLenum gl_format = alpha_ ? GL_RGBA : GL_RGB;
-    gl->TexImage2D(GL_TEXTURE_2D, 0, gl_format, size_.Width(), size_.Height(),
-                   0, gl_format, GL_UNSIGNED_BYTE, nullptr);
-  }
+  // The shared image is imported into a texture on the GL context. We take a
+  // read/write access scope whenever the color buffer is used as the back
+  // buffer.
+  GLuint texture_id =
+      gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
 
   DrawingBuffer::Client* client = drawing_buffer_->client();
   client->DrawingBufferClientRestoreTexture2DBinding();
 
-  return base::AdoptRef(new ColorBuffer(this, size_, texture_id));
+  return base::AdoptRef(new ColorBuffer(this, size_, mailbox, texture_id));
 }
 
 scoped_refptr<XRWebGLDrawingBuffer::ColorBuffer>
@@ -571,9 +586,17 @@ void XRWebGLDrawingBuffer::SwapColorBuffers() {
 
   BindAndResolveDestinationFramebuffer();
 
+  if (back_color_buffer_) {
+    gl->EndSharedImageAccessDirectCHROMIUM(back_color_buffer_->texture_id);
+  }
+
   // Swap buffers
   front_color_buffer_ = back_color_buffer_;
   back_color_buffer_ = CreateOrRecycleColorBuffer();
+
+  gl->BeginSharedImageAccessDirectCHROMIUM(
+      back_color_buffer_->texture_id,
+      GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
   if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
     gl->FramebufferTexture2DMultisampleEXT(
@@ -643,12 +666,15 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
   std::unique_ptr<viz::SingleReleaseCallback> release_callback =
       viz::SingleReleaseCallback::Create(std::move(func));
 
-  // Make our own textureId that is a reference on the same texture backing
-  // being used as the front buffer. We do not need to wait on the sync
-  // token since the mailbox was produced on the same GL context that we are
-  // using here. Similarly, the release callback will run on the same context so
-  // we don't need to send a sync token for this consume action back to it.
-  GLuint texture_id = gl->CreateAndConsumeTextureCHROMIUM(buffer->mailbox.name);
+  // Make our own textureId that is a reference on the same shared image being
+  // used as the front buffer.  We do not need a
+  // Begin/EndSharedImageAccessDirectCHROMIUM as the texture id is just for
+  // lifetime, not actual access.  We do not need to wait on the sync token
+  // since the GL context has already waited on it.  Similarly, the release
+  // callback will run on the same context so we don't need to send a sync token
+  // for this consume action back to it.
+  GLuint texture_id =
+      gl->CreateAndTexStorage2DSharedImageCHROMIUM(buffer->mailbox.name);
 
   if (out_release_callback) {
     *out_release_callback = std::move(release_callback);
@@ -706,7 +732,7 @@ void XRWebGLDrawingBuffer::MailboxReleasedToMirror(
       viz::SingleReleaseCallback::Create(std::move(func));
 
   GLuint texture_id =
-      gl->CreateAndConsumeTextureCHROMIUM(color_buffer->mailbox.name);
+      gl->CreateAndTexStorage2DSharedImageCHROMIUM(color_buffer->mailbox.name);
 
   scoped_refptr<StaticBitmapImage> image =
       AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
