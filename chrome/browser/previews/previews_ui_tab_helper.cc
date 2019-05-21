@@ -231,12 +231,6 @@ void PreviewsUITabHelper::SetStalePreviewsStateForTesting(
 
 void PreviewsUITabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  // If reloads are treated as soft opt outs, and this is a main frame reload
-  // from a preview. Report the Preview reload to the decider.
-  if (!base::FeatureList::IsEnabled(
-          previews::features::kPreviewsReloadsAreSoftOptOuts)) {
-    return;
-  }
   if (navigation_handle->GetReloadType() == content::ReloadType::NONE)
     return;
   if (!navigation_handle->IsInMainFrame())

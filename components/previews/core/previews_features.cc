@@ -90,11 +90,6 @@ const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
 const base::Feature kHTTPSServerPreviewsUsingURLLoader{
     "HTTPSServerPreviewsUsingURLLoader", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, reloading on a preview will cause the session (5 minute) rule
-// to trigger.
-const base::Feature kPreviewsReloadsAreSoftOptOuts{
-    "PreviewsReloadsAreSoftOptOuts", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables fetching optimization hints from a remote Optimization Guide Service.
 const base::Feature kOptimizationHintsFetching{
     "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};

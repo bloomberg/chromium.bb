@@ -1701,9 +1701,7 @@ TEST_F(PreviewsDeciderImplTest, IgnoreFlagDoesNotCheckBlacklist) {
 TEST_F(PreviewsDeciderImplTest, ReloadsTriggerFiveMinuteRule) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kClientLoFi,
-       features::kPreviewsReloadsAreSoftOptOuts},
-      {});
+      {features::kPreviews, features::kClientLoFi}, {});
   InitializeUIService();
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
