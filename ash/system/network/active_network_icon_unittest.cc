@@ -9,6 +9,7 @@
 
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,8 +41,10 @@ class ActiveNetworkIconTest : public testing::Test {
   ~ActiveNetworkIconTest() override = default;
 
   void SetUp() override {
-    active_network_icon_ =
-        std::make_unique<ActiveNetworkIcon>(network_config_helper_.connector());
+    network_state_observer_ = std::make_unique<TrayNetworkStateObserver>(
+        network_config_helper_.connector());
+    active_network_icon_ = std::make_unique<ActiveNetworkIcon>(
+        network_config_helper_.connector(), network_state_observer_.get());
   }
 
   void TearDown() override { active_network_icon_.reset(); }
@@ -154,6 +157,7 @@ class ActiveNetworkIconTest : public testing::Test {
  private:
   const base::MessageLoop message_loop_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
+  std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
   std::unique_ptr<ActiveNetworkIcon> active_network_icon_;
 
   std::string eth_path_;

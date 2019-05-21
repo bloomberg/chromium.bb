@@ -5,7 +5,9 @@
 #include "ash/system/network/active_network_icon.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/stl_util.h"
@@ -44,42 +46,27 @@ SkColor GetDefaultColorForIconType(network_icon::IconType icon_type) {
   return kUnifiedMenuIconColor;
 }
 
-NetworkStatePropertiesPtr GetConnectingOrConnected(
-    const NetworkStatePropertiesPtr* connecting_network,
-    const NetworkStatePropertiesPtr* connected_network) {
-  if (connecting_network &&
-      (!connected_network || connecting_network->get()->connect_requested)) {
-    // If connecting to a network, and there is either no connected network or
-    // the connection was user requested, use the connecting network.
-    return connecting_network->Clone();
-  }
-  if (connected_network)
-    return connected_network->Clone();
-  return nullptr;
-}
-
 }  // namespace
 
-ActiveNetworkIcon::ActiveNetworkIcon(service_manager::Connector* connector)
-    : weak_ptr_factory_(this) {
+ActiveNetworkIcon::ActiveNetworkIcon(service_manager::Connector* connector,
+                                     TrayNetworkStateObserver* model)
+    : model_(model), weak_ptr_factory_(this) {
   if (connector)  // May be null in tests.
     BindCrosNetworkConfig(connector);
+  model_->AddObserver(this);
 }
 
-ActiveNetworkIcon::~ActiveNetworkIcon() = default;
+ActiveNetworkIcon::~ActiveNetworkIcon() {
+  model_->RemoveObserver(this);
+}
 
 void ActiveNetworkIcon::BindCrosNetworkConfig(
     service_manager::Connector* connector) {
-  // Ensure bindings are reset in case this is called after a failure.
-  cros_network_config_observer_binding_.Close();
+  // Ensure binding is reset in case this is called after a failure.
   cros_network_config_ptr_.reset();
 
   connector->BindInterface(chromeos::network_config::mojom::kServiceName,
                            &cros_network_config_ptr_);
-  chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-  cros_network_config_observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
-  cros_network_config_ptr_->AddObserver(std::move(observer_ptr));
-  UpdateActiveNetworks();
 
   // If the connection is lost (e.g. due to a crash), attempt to rebind it.
   cros_network_config_ptr_.set_connection_error_handler(
@@ -94,14 +81,14 @@ void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
   const NetworkStateProperties* network = nullptr;
   switch (type) {
     case Type::kSingle:
-      network = default_network_.get();
+      network = model_->default_network();
       break;
     case Type::kPrimary:
       // TODO(902409): Provide strings for technology or connecting.
-      network = default_network_.get();
+      network = model_->default_network();
       break;
     case Type::kCellular:
-      network = active_cellular_.get();
+      network = model_->active_cellular();
       break;
   }
   if (network &&
@@ -176,21 +163,23 @@ gfx::ImageSkia ActiveNetworkIcon::GetSingleImage(
     network_icon::IconType icon_type,
     bool* animating) {
   // If no network, check for cellular initializing.
-  if (!default_network_ && cellular_uninitialized_msg_ != 0) {
+  NetworkStateProperties* default_network = model_->default_network();
+  if (!default_network && cellular_uninitialized_msg_ != 0) {
     if (animating)
       *animating = true;
     return network_icon::GetConnectingImageForNetworkType(
         NetworkType::kCellular, icon_type);
   }
-  return GetDefaultImageImpl(default_network_.get(), icon_type, animating);
+  return GetDefaultImageImpl(default_network, icon_type, animating);
 }
 
 gfx::ImageSkia ActiveNetworkIcon::GetDualImagePrimary(
     network_icon::IconType icon_type,
     bool* animating) {
-  if (default_network_ && default_network_->type == NetworkType::kCellular) {
+  NetworkStateProperties* default_network = model_->default_network();
+  if (default_network && default_network->type == NetworkType::kCellular) {
     if (chromeos::network_config::StateIsConnected(
-            default_network_->connection_state)) {
+            default_network->connection_state)) {
       // TODO(902409): Show proper technology badges.
       if (animating)
         *animating = false;
@@ -198,16 +187,17 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImagePrimary(
                                    GetDefaultColorForIconType(icon_type));
     }
     // If Cellular is connecting, use the active non cellular network.
-    return GetDefaultImageImpl(active_non_cellular_.get(), icon_type,
+    return GetDefaultImageImpl(model_->active_non_cellular(), icon_type,
                                animating);
   }
-  return GetDefaultImageImpl(default_network_.get(), icon_type, animating);
+  return GetDefaultImageImpl(default_network, icon_type, animating);
 }
 
 gfx::ImageSkia ActiveNetworkIcon::GetDualImageCellular(
     network_icon::IconType icon_type,
     bool* animating) {
-  if (!base::ContainsKey(devices_, NetworkType::kCellular)) {
+  if (model_->GetDeviceState(NetworkType::kCellular) ==
+      DeviceStateType::kUnavailable) {
     if (animating)
       *animating = false;
     return gfx::ImageSkia();
@@ -220,7 +210,8 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImageCellular(
         NetworkType::kCellular, icon_type);
   }
 
-  if (!active_cellular_) {
+  NetworkStateProperties* active_cellular = model_->active_cellular();
+  if (!active_cellular) {
     if (animating)
       *animating = false;
     return network_icon::GetDisconnectedImageForNetworkType(
@@ -228,7 +219,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImageCellular(
   }
 
   return network_icon::GetImageForNonVirtualNetwork(
-      active_cellular_.get(), icon_type, false /* show_vpn_badge */, animating);
+      active_cellular, icon_type, false /* show_vpn_badge */, animating);
 }
 
 gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageImpl(
@@ -240,8 +231,9 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageImpl(
     return GetDefaultImageForNoNetwork(icon_type, animating);
   }
   // Don't show connected Ethernet in the tray unless a VPN is present.
+  NetworkStateProperties* active_vpn = model_->active_vpn();
   if (network->type == NetworkType::kEthernet && IsTrayIcon(icon_type) &&
-      !active_vpn_) {
+      !active_vpn) {
     if (animating)
       *animating = false;
     VLOG(1) << __func__ << ": Ethernet: No icon";
@@ -250,8 +242,8 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageImpl(
 
   // Connected network with a connecting VPN.
   if (chromeos::network_config::StateIsConnected(network->connection_state) &&
-      active_vpn_ &&
-      active_vpn_->connection_state == ConnectionStateType::kConnecting) {
+      active_vpn &&
+      active_vpn->connection_state == ConnectionStateType::kConnecting) {
     if (animating)
       *animating = true;
     VLOG(1) << __func__ << ": Connected with connecting VPN";
@@ -260,7 +252,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageImpl(
   }
 
   // Default behavior: connected or connecting network, possibly with VPN badge.
-  bool show_vpn_badge = !!active_vpn_;
+  bool show_vpn_badge = !!active_vpn;
   VLOG(1) << __func__ << ": Network: " << network->name;
   return network_icon::GetImageForNonVirtualNetwork(network, icon_type,
                                                     show_vpn_badge, animating);
@@ -271,8 +263,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageForNoNetwork(
     bool* animating) {
   if (animating)
     *animating = false;
-  DeviceStateProperties* wifi = GetDevice(NetworkType::kWiFi);
-  if (wifi && wifi->state == DeviceStateType::kEnabled) {
+  if (model_->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled) {
     // WiFi is enabled but disconnected, show an empty wedge.
     return network_icon::GetBasicImage(icon_type, NetworkType::kWiFi,
                                        false /* connected */);
@@ -282,17 +273,8 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageForNoNetwork(
                                                    icon_type);
 }
 
-void ActiveNetworkIcon::UpdateActiveNetworks() {
-  DCHECK(cros_network_config_ptr_);
-  cros_network_config_ptr_->GetNetworkStateList(
-      NetworkFilter::New(FilterType::kActive, NetworkType::kAll,
-                         /*limit=*/0),
-      base::BindOnce(&ActiveNetworkIcon::OnActiveNetworksChanged,
-                     base::Unretained(this)));
-}
-
 void ActiveNetworkIcon::SetCellularUninitializedMsg() {
-  DeviceStateProperties* cellular = GetDevice(NetworkType::kCellular);
+  DeviceStateProperties* cellular = model_->GetDevice(NetworkType::kCellular);
   if (cellular && cellular->state == DeviceStateType::kUninitialized) {
     cellular_uninitialized_msg_ = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
     uninitialized_state_time_ = base::Time::Now();
@@ -314,98 +296,19 @@ void ActiveNetworkIcon::SetCellularUninitializedMsg() {
     cellular_uninitialized_msg_ = 0;
 }
 
-// CrosNetworkConfigObserver
+// TrayNetworkStateObserver::Observer
 
-void ActiveNetworkIcon::OnActiveNetworksChanged(
-    std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
-        networks) {
-  active_cellular_.reset();
-  active_vpn_.reset();
-
-  const NetworkStatePropertiesPtr* connected_network = nullptr;
-  const NetworkStatePropertiesPtr* connected_non_cellular = nullptr;
-  const NetworkStatePropertiesPtr* connecting_network = nullptr;
-  const NetworkStatePropertiesPtr* connecting_non_cellular = nullptr;
-  for (const NetworkStatePropertiesPtr& network : networks) {
-    if (network->type == NetworkType::kVPN) {
-      if (!active_vpn_)
-        active_vpn_ = network.Clone();
-      continue;
-    }
-    if (network->type == NetworkType::kCellular) {
-      if (!active_cellular_)
-        active_cellular_ = network.Clone();
-    }
-    if (chromeos::network_config::StateIsConnected(network->connection_state)) {
-      if (!connected_network)
-        connected_network = &network;
-      if (!connected_non_cellular && network->type != NetworkType::kCellular) {
-        connected_non_cellular = &network;
-      }
-      continue;
-    }
-    // Active non connected networks are connecting.
-    if (chromeos::network_config::NetworkStateMatchesType(
-            network.get(), NetworkType::kWireless)) {
-      if (!connecting_network)
-        connecting_network = &network;
-      if (!connecting_non_cellular && network->type != NetworkType::kCellular) {
-        connecting_non_cellular = &network;
-      }
-    }
-  }
-
-  VLOG_IF(2, connected_network)
-      << __func__ << ": Connected network: " << connected_network->get()->name
-      << " State: " << connected_network->get()->connection_state;
-  VLOG_IF(2, connecting_network)
-      << __func__ << ": Connecting network: " << connecting_network->get()->name
-      << " State: " << connecting_network->get()->connection_state;
-
-  default_network_ =
-      GetConnectingOrConnected(connecting_network, connected_network);
-  VLOG_IF(2, default_network_)
-      << __func__ << ": Default network: " << default_network_->name;
-
-  active_non_cellular_ =
-      GetConnectingOrConnected(connecting_non_cellular, connected_non_cellular);
-
+void ActiveNetworkIcon::ActiveNetworkStateChanged() {
   SetCellularUninitializedMsg();
 }
 
-void ActiveNetworkIcon::OnNetworkStateListChanged() {
+void ActiveNetworkIcon::NetworkListChanged() {
   if (purge_timer_.IsRunning())
     return;
   purge_timer_.Start(FROM_HERE,
                      base::TimeDelta::FromMilliseconds(kPurgeDelayMs),
                      base::BindOnce(&ActiveNetworkIcon::PurgeNetworkIconCache,
                                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ActiveNetworkIcon::OnDeviceStateListChanged() {
-  cros_network_config_ptr_->GetDeviceStateList(base::BindOnce(
-      &ActiveNetworkIcon::OnGetDeviceStateList, base::Unretained(this)));
-}
-
-void ActiveNetworkIcon::OnGetDeviceStateList(
-    std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
-        devices) {
-  devices_.clear();
-  for (auto& device : devices) {
-    NetworkType type = device->type;
-    if (base::ContainsKey(devices_, type))
-      continue;  // Ignore multiple entries with the same type.
-    devices_.emplace(std::make_pair(type, std::move(device)));
-  }
-  UpdateActiveNetworks();
-  SetCellularUninitializedMsg();
-}
-
-DeviceStateProperties* ActiveNetworkIcon::GetDevice(NetworkType type) {
-  auto iter = devices_.find(type);
-  if (iter == devices_.end())
-    return nullptr;
-  return iter->second.get();
 }
 
 void ActiveNetworkIcon::PurgeNetworkIconCache() {

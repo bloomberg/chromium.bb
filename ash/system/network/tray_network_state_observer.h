@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "ash/ash_export.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -19,11 +21,12 @@ class Connector;
 
 namespace ash {
 
-class TrayNetworkStateObserver
+// TrayNetworkStateObserver observes the mojo interface and tracks the devices
+// and active networks. It has UI observers that are informed when important
+// changes occur.
+class ASH_EXPORT TrayNetworkStateObserver
     : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
-  // TrayNetworkStateObserver observes the mojo interface, and in turn has UI
-  // observers that only need to be informed when the UI should be refreshed.
   class Observer : public base::CheckedObserver {
    public:
     // The active networks changed or a device enabled state changed.
@@ -39,6 +42,29 @@ class TrayNetworkStateObserver
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Returns DeviceStateProperties for |type| if it exists or null.
+  chromeos::network_config::mojom::DeviceStateProperties* GetDevice(
+      chromeos::network_config::mojom::NetworkType type);
+
+  // Returns the DeviceStateType for |type| if a device exists or kUnavailable.
+  chromeos::network_config::mojom::DeviceStateType GetDeviceState(
+      chromeos::network_config::mojom::NetworkType type);
+
+  chromeos::network_config::mojom::NetworkStateProperties* default_network() {
+    return default_network_.get();
+  }
+  chromeos::network_config::mojom::NetworkStateProperties*
+  active_non_cellular() {
+    return active_non_cellular_.get();
+  }
+  chromeos::network_config::mojom::NetworkStateProperties* active_cellular() {
+    return active_cellular_.get();
+  }
+  chromeos::network_config::mojom::NetworkStateProperties* active_vpn() {
+    return active_vpn_.get();
+  }
+
+ private:
   // CrosNetworkConfigObserver
   void OnActiveNetworksChanged(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>)
@@ -46,12 +72,17 @@ class TrayNetworkStateObserver
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
 
- private:
   void BindCrosNetworkConfig(service_manager::Connector* connector);
-  void UpdateDeviceEnabledStates();
+  void GetDeviceStateList();
   void OnGetDeviceStateList(
       std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
           devices);
+
+  void GetActiveNetworks();
+  void UpdateActiveNetworks(
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks);
+
   void NotifyNetworkListChanged();
   void SendActiveNetworkStateChanged();
   void SendNetworkListChanged();
@@ -71,12 +102,14 @@ class TrayNetworkStateObserver
   // Timer used to limit the frequency of NetworkListChanged updates.
   base::OneShotTimer timer_;
 
-  // The cached states of whether Wi-Fi and Mobile are enabled. The tray
-  // includes expanding network lists of these types, so these cached values
-  // are used to determine when to prioritize updating the tray when they
-  // change.
-  bool wifi_enabled_ = false;
-  bool mobile_enabled_ = false;
+  base::flat_map<chromeos::network_config::mojom::NetworkType,
+                 chromeos::network_config::mojom::DeviceStatePropertiesPtr>
+      devices_;
+  chromeos::network_config::mojom::NetworkStatePropertiesPtr default_network_;
+  chromeos::network_config::mojom::NetworkStatePropertiesPtr
+      active_non_cellular_;
+  chromeos::network_config::mojom::NetworkStatePropertiesPtr active_cellular_;
+  chromeos::network_config::mojom::NetworkStatePropertiesPtr active_vpn_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateObserver);
 };

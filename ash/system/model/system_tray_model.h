@@ -68,11 +68,11 @@ class SystemTrayModel : public mojom::SystemTray {
   TracingModel* tracing() { return tracing_.get(); }
   UpdateModel* update_model() { return update_model_.get(); }
   VirtualKeyboardModel* virtual_keyboard() { return virtual_keyboard_.get(); }
-  ActiveNetworkIcon* active_network_icon() {
-    return active_network_icon_.get();
-  }
   TrayNetworkStateObserver* network_observer() {
     return network_observer_.get();
+  }
+  ActiveNetworkIcon* active_network_icon() {
+    return active_network_icon_.get();
   }
   const mojom::SystemTrayClientPtr& client_ptr() { return client_ptr_; }
 
@@ -84,8 +84,8 @@ class SystemTrayModel : public mojom::SystemTray {
   std::unique_ptr<TracingModel> tracing_;
   std::unique_ptr<UpdateModel> update_model_;
   std::unique_ptr<VirtualKeyboardModel> virtual_keyboard_;
-  std::unique_ptr<ActiveNetworkIcon> active_network_icon_;
   std::unique_ptr<TrayNetworkStateObserver> network_observer_;
+  std::unique_ptr<ActiveNetworkIcon> active_network_icon_;
 
   // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
   // * BluetoothModel

@@ -15,12 +15,33 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
+using chromeos::network_config::mojom::ConnectionStateType;
+using chromeos::network_config::mojom::DeviceStateProperties;
+using chromeos::network_config::mojom::DeviceStatePropertiesPtr;
 using chromeos::network_config::mojom::DeviceStateType;
+using chromeos::network_config::mojom::FilterType;
+using chromeos::network_config::mojom::NetworkFilter;
+using chromeos::network_config::mojom::NetworkStateProperties;
+using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
 
 namespace {
 
 const int kUpdateFrequencyMs = 1000;
+
+NetworkStatePropertiesPtr GetConnectingOrConnected(
+    const NetworkStatePropertiesPtr* connecting_network,
+    const NetworkStatePropertiesPtr* connected_network) {
+  if (connecting_network &&
+      (!connected_network || connecting_network->get()->connect_requested)) {
+    // If connecting to a network, and there is either no connected network or
+    // the connection was user requested, use the connecting network.
+    return connecting_network->Clone();
+  }
+  if (connected_network)
+    return connected_network->Clone();
+  return nullptr;
+}
 
 }  // namespace
 
@@ -47,8 +68,23 @@ void TrayNetworkStateObserver::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+DeviceStateProperties* TrayNetworkStateObserver::GetDevice(NetworkType type) {
+  auto iter = devices_.find(type);
+  if (iter == devices_.end())
+    return nullptr;
+  return iter->second.get();
+}
+
+DeviceStateType TrayNetworkStateObserver::GetDeviceState(NetworkType type) {
+  DeviceStateProperties* device = GetDevice(type);
+  return device ? device->state : DeviceStateType::kUnavailable;
+}
+
+// CrosNetworkConfigObserver
+
 void TrayNetworkStateObserver::OnActiveNetworksChanged(
-    std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>) {
+    std::vector<NetworkStatePropertiesPtr> networks) {
+  UpdateActiveNetworks(std::move(networks));
   SendActiveNetworkStateChanged();
 }
 
@@ -57,10 +93,7 @@ void TrayNetworkStateObserver::OnNetworkStateListChanged() {
 }
 
 void TrayNetworkStateObserver::OnDeviceStateListChanged() {
-  // This observer is triggered when any device state changes. Depending on the
-  // actual state changes, an immediate or delated update may be triggered.
-  // See OnGetDeviceStateList for details.
-  UpdateDeviceEnabledStates();
+  GetDeviceStateList();
 }
 
 void TrayNetworkStateObserver::BindCrosNetworkConfig(
@@ -74,7 +107,7 @@ void TrayNetworkStateObserver::BindCrosNetworkConfig(
   chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
   cros_network_config_observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
   cros_network_config_ptr_->AddObserver(std::move(observer_ptr));
-  UpdateDeviceEnabledStates();
+  GetDeviceStateList();
 
   // If the connection is lost (e.g. due to a crash), attempt to rebind it.
   cros_network_config_ptr_.set_connection_error_handler(
@@ -82,33 +115,85 @@ void TrayNetworkStateObserver::BindCrosNetworkConfig(
                      base::Unretained(this), connector));
 }
 
-void TrayNetworkStateObserver::UpdateDeviceEnabledStates() {
+void TrayNetworkStateObserver::GetDeviceStateList() {
   cros_network_config_ptr_->GetDeviceStateList(base::BindOnce(
       &TrayNetworkStateObserver::OnGetDeviceStateList, base::Unretained(this)));
 }
 
 void TrayNetworkStateObserver::OnGetDeviceStateList(
-    std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
-        devices) {
-  bool wifi_was_enabled = wifi_enabled_;
-  bool mobile_was_enabled = mobile_enabled_;
-  wifi_enabled_ = false;
-  mobile_enabled_ = false;
+    std::vector<DeviceStatePropertiesPtr> devices) {
+  devices_.clear();
   for (auto& device : devices) {
     NetworkType type = device->type;
-    if (type == NetworkType::kWiFi &&
-        device->state == DeviceStateType::kEnabled) {
-      wifi_enabled_ = true;
+    if (base::ContainsKey(devices_, type))
+      continue;  // Ignore multiple entries with the same type.
+    devices_.emplace(std::make_pair(type, std::move(device)));
+  }
+
+  GetActiveNetworks();  // Will trigger an observer event.
+}
+
+void TrayNetworkStateObserver::GetActiveNetworks() {
+  DCHECK(cros_network_config_ptr_);
+  cros_network_config_ptr_->GetNetworkStateList(
+      NetworkFilter::New(FilterType::kActive, NetworkType::kAll,
+                         /*limit=*/0),
+      base::BindOnce(&TrayNetworkStateObserver::OnActiveNetworksChanged,
+                     base::Unretained(this)));
+}
+
+void TrayNetworkStateObserver::UpdateActiveNetworks(
+    std::vector<NetworkStatePropertiesPtr> networks) {
+  active_cellular_.reset();
+  active_vpn_.reset();
+
+  const NetworkStatePropertiesPtr* connected_network = nullptr;
+  const NetworkStatePropertiesPtr* connected_non_cellular = nullptr;
+  const NetworkStatePropertiesPtr* connecting_network = nullptr;
+  const NetworkStatePropertiesPtr* connecting_non_cellular = nullptr;
+  for (const NetworkStatePropertiesPtr& network : networks) {
+    if (network->type == NetworkType::kVPN) {
+      if (!active_vpn_)
+        active_vpn_ = network.Clone();
+      continue;
     }
-    if ((type == NetworkType::kCellular || type == NetworkType::kTether) &&
-        device->state == DeviceStateType::kEnabled) {
-      mobile_enabled_ = true;
+    if (network->type == NetworkType::kCellular) {
+      if (!active_cellular_)
+        active_cellular_ = network.Clone();
+    }
+    if (chromeos::network_config::StateIsConnected(network->connection_state)) {
+      if (!connected_network)
+        connected_network = &network;
+      if (!connected_non_cellular && network->type != NetworkType::kCellular) {
+        connected_non_cellular = &network;
+      }
+      continue;
+    }
+    // Active non connected networks are connecting.
+    if (chromeos::network_config::NetworkStateMatchesType(
+            network.get(), NetworkType::kWireless)) {
+      if (!connecting_network)
+        connecting_network = &network;
+      if (!connecting_non_cellular && network->type != NetworkType::kCellular) {
+        connecting_non_cellular = &network;
+      }
     }
   }
-  if (wifi_was_enabled != wifi_enabled_ ||
-      mobile_was_enabled != mobile_enabled_) {
-    SendActiveNetworkStateChanged();
-  }
+
+  VLOG_IF(2, connected_network)
+      << __func__ << ": Connected network: " << connected_network->get()->name
+      << " State: " << connected_network->get()->connection_state;
+  VLOG_IF(2, connecting_network)
+      << __func__ << ": Connecting network: " << connecting_network->get()->name
+      << " State: " << connecting_network->get()->connection_state;
+
+  default_network_ =
+      GetConnectingOrConnected(connecting_network, connected_network);
+  VLOG_IF(2, default_network_)
+      << __func__ << ": Default network: " << default_network_->name;
+
+  active_non_cellular_ =
+      GetConnectingOrConnected(connecting_non_cellular, connected_non_cellular);
 }
 
 void TrayNetworkStateObserver::NotifyNetworkListChanged() {
