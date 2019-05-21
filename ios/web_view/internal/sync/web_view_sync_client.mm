@@ -200,8 +200,12 @@ WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebViewSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
-  NOTREACHED();
-  // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled.
+  // Even though USER_CONSENTS are disabled, the component factory will create
+  // its controller and ask for a delegate; this client later removes the
+  // controller. No other data type should ask for its delegate.
+  // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled or
+  // find a better way how to disable it.
+  DCHECK_EQ(type, syncer::USER_CONSENTS);
   return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 }
 

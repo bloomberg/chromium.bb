@@ -314,8 +314,17 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
 
   if (!disabled_types.Has(syncer::PREFERENCES)) {
     if (override_prefs_controller_to_uss_for_test_) {
-      controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
-          syncer::PREFERENCES));
+      // TODO(crbug.com/965394) This still uses a proxy delegate even though the
+      // model lives on the UI thread. Remove the code altogether with
+      // |override_prefs_controller_to_uss_for_test_|.
+      controllers.push_back(std::make_unique<ModelTypeController>(
+          syncer::PREFERENCES,
+          std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+              ui_thread_,
+              base::BindRepeating(&browser_sync::BrowserSyncClient::
+                                      GetControllerDelegateForModelType,
+                                  base::Unretained(sync_client_),
+                                  syncer::PREFERENCES))));
     } else {
       controllers.push_back(
           std::make_unique<SyncableServiceBasedModelTypeController>(
@@ -341,8 +350,18 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
 
 #if defined(OS_CHROMEOS)
   if (!disabled_types.Has(syncer::PRINTERS)) {
-    controllers.push_back(
-        CreateModelTypeControllerForModelRunningOnUIThread(syncer::PRINTERS));
+    // TODO(crbug.com/867801) This still uses a proxy delegate even though the
+    // model lives on the UI thread. Switching to forwarding delegate causes
+    // cryptic test failures on chromeos. Fix that and switch to the forwarding
+    // delegate.
+    controllers.push_back(std::make_unique<ModelTypeController>(
+        syncer::PRINTERS,
+        std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+            ui_thread_,
+            base::BindRepeating(&browser_sync::BrowserSyncClient::
+                                    GetControllerDelegateForModelType,
+                                base::Unretained(sync_client_),
+                                syncer::PRINTERS))));
   }
 #endif
 
@@ -355,14 +374,10 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
   if (!disabled_types.Has(syncer::USER_EVENTS)) {
-    // TODO(crbug.com/867801): Switch to forwarding delegate.
     controllers.push_back(
         std::make_unique<syncer::UserEventModelTypeController>(
             sync_service,
-            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-                sync_client_
-                    ->GetControllerDelegateForModelType(syncer::USER_EVENTS)
-                    .get())));
+            CreateForwardingControllerDelegate(syncer::USER_EVENTS)));
   }
 
   if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
@@ -379,22 +394,12 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // Forward both on-disk and in-memory storage modes to the same delegate,
   // since behavior for USER_CONSENTS does not differ (they are always
   // persisted).
-  // TODO(crbug.com/867801): Replace the proxy delegates below with a simpler
-  // forwarding delegate that involves no posting of tasks.
   controllers.push_back(std::make_unique<ModelTypeController>(
       syncer::USER_CONSENTS,
       /*delegate_on_disk=*/
-      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-          ui_thread_, base::BindRepeating(&browser_sync::BrowserSyncClient::
-                                              GetControllerDelegateForModelType,
-                                          base::Unretained(sync_client_),
-                                          syncer::USER_CONSENTS)),
+      CreateForwardingControllerDelegate(syncer::USER_CONSENTS),
       /*delegate_in_memory=*/
-      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-          ui_thread_, base::BindRepeating(&browser_sync::BrowserSyncClient::
-                                              GetControllerDelegateForModelType,
-                                          base::Unretained(sync_client_),
-                                          syncer::USER_CONSENTS))));
+      CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
 
   return controllers;
 }
@@ -455,16 +460,17 @@ void ProfileSyncComponentsFactoryImpl::OverridePrefsForUssTest(bool use_uss) {
 bool ProfileSyncComponentsFactoryImpl::
     override_prefs_controller_to_uss_for_test_ = false;
 
+std::unique_ptr<syncer::ModelTypeControllerDelegate>
+ProfileSyncComponentsFactoryImpl::CreateForwardingControllerDelegate(
+    syncer::ModelType type) {
+  return std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+      sync_client_->GetControllerDelegateForModelType(type).get());
+}
+
 std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
     CreateModelTypeControllerForModelRunningOnUIThread(syncer::ModelType type) {
-  // TODO(crbug.com/867801): Replace the proxy delegate below with a simpler
-  // forwarding delegate that involves no posting of tasks.
   return std::make_unique<ModelTypeController>(
-      type, std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-                ui_thread_,
-                base::BindRepeating(&browser_sync::BrowserSyncClient::
-                                        GetControllerDelegateForModelType,
-                                    base::Unretained(sync_client_), type)));
+      type, CreateForwardingControllerDelegate(type));
 }
 
 std::unique_ptr<ModelTypeController>
