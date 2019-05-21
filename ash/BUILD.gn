@@ -758,8 +758,6 @@ component("ash") {
     "system/network/network_section_header_view.h",
     "system/network/network_state_list_detailed_view.cc",
     "system/network/network_state_list_detailed_view.h",
-    "system/network/network_tray_icon_strategy.cc",
-    "system/network/network_tray_icon_strategy.h",
     "system/network/network_tray_view.cc",
     "system/network/network_tray_view.h",
     "system/network/sms_observer.cc",

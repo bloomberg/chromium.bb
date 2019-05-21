@@ -100,7 +100,8 @@ class NetworkIconTest : public testing::Test {
   }
 
   gfx::ImageSkia GetDefaultNetworkImage(IconType icon_type, bool* animating) {
-    return active_network_icon_->GetSingleImage(icon_type, animating);
+    return active_network_icon_->GetImage(ActiveNetworkIcon::Type::kSingle,
+                                          icon_type, animating);
   }
 
   // The icon for a Tether network should be the same as one for a cellular

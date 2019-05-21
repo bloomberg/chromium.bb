@@ -45,26 +45,36 @@ namespace ash {
 class ASH_EXPORT ActiveNetworkIcon
     : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
+  enum class Type {
+    kSingle,    // A single network icon in the tray.
+    kPrimary,   // Multiple network icons: primary (non mobile) icon.
+    kCellular,  // Multiple network icons: cellular icon.
+  };
+
   explicit ActiveNetworkIcon(service_manager::Connector* connector);
   ~ActiveNetworkIcon() override;
 
-  // Single image mode. Returns a network icon (which may be empty) and sets
-  // |animating| if provided.
-  gfx::ImageSkia GetSingleImage(network_icon::IconType icon_type,
-                                bool* animating);
+  // Provides the a11y and tooltip strings for |type|.
+  void GetConnectionStatusStrings(Type type,
+                                  base::string16* a11y_name,
+                                  base::string16* a11y_desc,
+                                  base::string16* tooltip);
 
-  // Dual image mode. Returns the primary icon (which may be empty) and sets
-  // |animating| if provided.
-  gfx::ImageSkia GetDualImagePrimary(network_icon::IconType icon_type,
-                                     bool* animating);
-
-  // Dual image mode. Returns the Cellular icon (which may be empty) and sets
-  // |animating| if provided.
-  gfx::ImageSkia GetDualImageCellular(network_icon::IconType icon_type,
-                                      bool* animating);
+  // Returns a network icon (which may be empty) and sets |animating| if
+  // provided.
+  gfx::ImageSkia GetImage(Type type,
+                          network_icon::IconType icon_type,
+                          bool* animating);
 
  private:
   void BindCrosNetworkConfig(service_manager::Connector* connector);
+
+  gfx::ImageSkia GetSingleImage(network_icon::IconType icon_type,
+                                bool* animating);
+  gfx::ImageSkia GetDualImagePrimary(network_icon::IconType icon_type,
+                                     bool* animating);
+  gfx::ImageSkia GetDualImageCellular(network_icon::IconType icon_type,
+                                      bool* animating);
   gfx::ImageSkia GetDefaultImageImpl(
       const base::Optional<network_icon::NetworkIconState>& default_network,
       network_icon::IconType icon_type,

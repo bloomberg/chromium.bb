@@ -135,17 +135,14 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   tray_container()->AddChildView(notification_counter_item_);
   tray_container()->AddChildView(quiet_mode_view_);
 
-  // It is possible in unit tests that it's missing.
-  if (chromeos::NetworkHandler::IsInitialized()) {
-    if (features::IsSeparateNetworkIconsEnabled()) {
-      tray_container()->AddChildView(
-          tray::NetworkTrayView::CreateForDefault(shelf));
-      tray_container()->AddChildView(
-          tray::NetworkTrayView::CreateForMobile(shelf));
-    } else {
-      tray_container()->AddChildView(
-          tray::NetworkTrayView::CreateForSingleIcon(shelf));
-    }
+  if (features::IsSeparateNetworkIconsEnabled()) {
+    tray_container()->AddChildView(
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary));
+    tray_container()->AddChildView(
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
+  } else {
+    tray_container()->AddChildView(
+        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle));
   }
 
   tray_container()->AddChildView(new tray::PowerTrayView(shelf));

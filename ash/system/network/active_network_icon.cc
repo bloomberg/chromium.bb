@@ -9,6 +9,7 @@
 #include "ash/system/network/network_icon.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -86,6 +87,87 @@ void ActiveNetworkIcon::BindCrosNetworkConfig(
                      base::Unretained(this), connector));
 }
 
+void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
+                                                   base::string16* a11y_name,
+                                                   base::string16* a11y_desc,
+                                                   base::string16* tooltip) {
+  network_icon::NetworkIconState* network = nullptr;
+  switch (type) {
+    case Type::kSingle:
+      network = default_network_ ? &default_network_.value() : nullptr;
+      break;
+    case Type::kPrimary:
+      // TODO(902409): Provide strings for technology or connecting.
+      network = default_network_ ? &default_network_.value() : nullptr;
+      break;
+    case Type::kCellular:
+      network = active_cellular_ ? &active_cellular_.value() : nullptr;
+      break;
+  }
+  if (network && network_icon::IsConnected(*network)) {
+    *a11y_name =
+        l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
+                                   base::UTF8ToUTF16(network->name));
+    base::string16 signal_strength_string;
+    if (chromeos::network_config::NetworkTypeMatchesType(
+            network->type, NetworkType::kWireless)) {
+      // Retrieve the string describing the signal strength, if it is applicable
+      // to |network|.
+      switch (network_icon::GetSignalStrength(network->signal_strength)) {
+        case network_icon::SignalStrength::NONE:
+          break;
+        case network_icon::SignalStrength::WEAK:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK);
+          break;
+        case network_icon::SignalStrength::MEDIUM:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM);
+          break;
+        case network_icon::SignalStrength::STRONG:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG);
+          break;
+      }
+    }
+    *a11y_desc = signal_strength_string;
+    *tooltip =
+        signal_strength_string.empty()
+            ? *a11y_name
+            : l10n_util::GetStringFUTF16(
+                  IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
+                  base::UTF8ToUTF16(network->name), signal_strength_string);
+  } else if (network && network_icon::IsConnecting(*network)) {
+    *a11y_name = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y);
+    *a11y_desc = base::string16();
+    *tooltip = l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_TOOLTIP,
+        base::UTF8ToUTF16(network->name));
+  } else {
+    *a11y_name = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y);
+    *a11y_desc = base::string16();
+    *tooltip = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP);
+  }
+}
+
+gfx::ImageSkia ActiveNetworkIcon::GetImage(Type type,
+                                           network_icon::IconType icon_type,
+                                           bool* animating) {
+  switch (type) {
+    case Type::kSingle:
+      return GetSingleImage(icon_type, animating);
+    case Type::kPrimary:
+      return GetDualImagePrimary(icon_type, animating);
+    case Type::kCellular:
+      return GetDualImageCellular(icon_type, animating);
+  }
+  NOTREACHED();
+  return gfx::ImageSkia();
+}
+
 gfx::ImageSkia ActiveNetworkIcon::GetSingleImage(
     network_icon::IconType icon_type,
     bool* animating) {
@@ -104,7 +186,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImagePrimary(
     bool* animating) {
   if (default_network_ && default_network_->type == NetworkType::kCellular) {
     if (network_icon::IsConnected(*default_network_)) {
-      // TODO: Show proper technology badges.
+      // TODO(902409): Show proper technology badges.
       if (animating)
         *animating = false;
       return gfx::CreateVectorIcon(kNetworkBadgeTechnologyLteIcon,
