@@ -339,8 +339,15 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 }
 
+// https://crbug.com/965369
+#if defined(OS_CHROMEOS)
+#define MAYBE_ExitWhenServerSendsWrongHeader \
+  DISABLED_ExitWhenServerSendsWrongHeader
+#else
+#define MAYBE_ExitWhenServerSendsWrongHeader ExitWhenServerSendsWrongHeader
+#endif
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
-                       ExitWhenServerSendsWrongHeader) {
+                       MAYBE_ExitWhenServerSendsWrongHeader) {
   ExpectCustomHttpHeaderValue("user-eligible-for-supervision");
   supervision_server()->set_custom_http_header_value("user-not-eligible");
 
