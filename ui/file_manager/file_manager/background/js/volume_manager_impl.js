@@ -125,32 +125,30 @@ class VolumeManagerImpl extends cr.EventTarget {
   initialize(callback) {
     chrome.fileManagerPrivate.onMountCompleted.addListener(
         this.onMountCompleted_.bind(this));
-    console.warn('Requesting volume list.');
+    console.warn('Getting volume list');
     chrome.fileManagerPrivate.getVolumeMetadataList(volumeMetadataList => {
-      console.warn(
-          'Volume list fetched with: ' + volumeMetadataList.length + ' items.');
+      console.warn(`There are ${volumeMetadataList.length} volumes`);
       // We must subscribe to the mount completed event in the callback of
       // getVolumeMetadataList. crbug.com/330061.
       // But volumes reported by onMountCompleted events must be added after the
       // volumes in the volumeMetadataList are mounted. crbug.com/135477.
-      this.mountQueue_.run(inCallback => {
-        // Create VolumeInfo for each volume.
-        Promise
-            .all(volumeMetadataList.map(volumeMetadata => {
-              console.warn('Initializing volume: ' + volumeMetadata.volumeId);
-              return this.addVolumeMetadata_(volumeMetadata)
-                  .then(volumeInfo => {
-                    console.warn('Initialized volume: ' + volumeInfo.volumeId);
-                  });
-            }))
-            .then(() => {
-              console.warn('Initialized all volumes.');
-              // Call the callback of the initialize function.
-              callback();
-              // Call the callback of AsyncQueue. Maybe it invokes callbacks
-              // registered by mountCompleted events.
-              inCallback();
-            });
+      this.mountQueue_.run(async (inCallback) => {
+        try {
+          // Create VolumeInfo for each volume.
+          await Promise.all(volumeMetadataList.map(async (volumeMetadata) => {
+            console.warn(`Initializing volume ${volumeMetadata.volumeId}`);
+            const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
+            console.warn(`Initialized volume ${volumeInfo.volumeId}`);
+          }));
+
+          console.warn('Initialized all volumes');
+        } finally {
+          // Call the callback of the initialize function.
+          callback();
+          // Call the callback of AsyncQueue. Maybe it invokes callbacks
+          // registered by mountCompleted events.
+          inCallback();
+        }
       });
     });
   }
