@@ -522,11 +522,9 @@ public class MediaDrmBridge {
         assert mMediaDrm != null;
         assert !securityLevel.isEmpty();
 
-        String currentSecurityLevel;
-        try {
-            currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
-        } catch (java.lang.IllegalStateException e) {
-            Log.e(TAG, "Failed to get current security level", e);
+        String currentSecurityLevel = getSecurityLevel();
+        if (currentSecurityLevel.equals("")) {
+            // Failure logged by getSecurityLevel().
             return false;
         }
 
@@ -1147,9 +1145,21 @@ public class MediaDrmBridge {
             return "";
         }
 
+        // Any failure in getPropertyString() means we don't know what the current security level
+        // is.
         try {
             return mMediaDrm.getPropertyString(SECURITY_LEVEL);
         } catch (java.lang.IllegalStateException e) {
+            // getPropertyString() may fail with android.media.MediaDrmResetException or
+            // android.media.MediaDrm.MediaDrmStateException. As MediaDrmStateException was added in
+            // API 21, we can't use it directly. However, both of these are IllegalStateExceptions,
+            // so both will be handled here.
+            Log.e(TAG, "Failed to get current security level", e);
+            return "";
+        } catch (Exception e) {
+            // getPropertyString() has been failing with android.media.ResourceBusyException on some
+            // devices. ResourceBusyException is not mentioned as a possible exception nor a runtime
+            // exception and thus can not be listed, so catching all exceptions to handle it here.
             Log.e(TAG, "Failed to get current security level", e);
             return "";
         }
