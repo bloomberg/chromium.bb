@@ -22,7 +22,7 @@
 namespace {
 
 NSString* const kLanguageDetailsTableViewAccessibilityIdentifier =
-    @"language_details_table_view";
+    @"kLanguageDetailsTableViewAccessibilityIdentifier";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierOptions = kSectionIdentifierEnumZero,

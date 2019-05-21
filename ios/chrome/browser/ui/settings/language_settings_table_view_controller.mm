@@ -30,10 +30,11 @@
 namespace {
 
 NSString* const kLanguageSettingsTableViewAccessibilityIdentifier =
-    @"language_settings_table_view";
+    @"kLanguageSettingsTableViewAccessibilityIdentifier";
 NSString* const kAddLanguageButtonAccessibilityIdentifier =
-    @"add_language_button";
-NSString* const kTranslateSwitchAccessibilityIdentifier = @"translate_switch";
+    @"kAddLanguageButtonAccessibilityIdentifier";
+NSString* const kTranslateSwitchAccessibilityIdentifier =
+    @"kTranslateSwitchAccessibilityIdentifier";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierLanguages = kSectionIdentifierEnumZero,
