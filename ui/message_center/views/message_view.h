@@ -92,7 +92,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   virtual bool IsManuallyExpandedOrCollapsed() const;
   virtual void SetManuallyExpandedOrCollapsed(bool value);
   virtual void CloseSwipeControl();
-  virtual void SlideOutAndClose(int direction);
 
   // Update corner radii of the notification. Subclasses will override this to
   // implement rounded corners if they don't use MessageView's default
