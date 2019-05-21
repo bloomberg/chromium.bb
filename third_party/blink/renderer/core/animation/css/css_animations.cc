@@ -277,8 +277,10 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
     return;
 
   const ComputedStyle* old_style = animating_element->GetComputedStyle();
-  if (!old_style || !old_style->ShouldCompositeForCurrentAnimations())
+  if (!old_style || old_style->IsEnsuredInDisplayNone() ||
+      !old_style->ShouldCompositeForCurrentAnimations()) {
     return;
+  }
 
   bool transform_zoom_changed =
       old_style->HasCurrentTransformAnimation() &&
@@ -911,7 +913,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
   bool any_transition_had_transition_all = false;
   const ComputedStyle* old_style = animating_element->GetComputedStyle();
   if (!animation_style_recalc && style.Display() != EDisplay::kNone &&
-      old_style && transition_data) {
+      old_style && !old_style->IsEnsuredInDisplayNone() && transition_data) {
     TransitionUpdateState state = {
         update,  animating_element,  *old_style,        style,
         nullptr, active_transitions, listed_properties, *transition_data};
