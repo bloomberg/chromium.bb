@@ -919,14 +919,17 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 #endif
 
   // Post-startup mitigations.
-  mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
-                sandbox::MITIGATION_DLL_SEARCH_ORDER;
+  mitigations = sandbox::MITIGATION_DLL_SEARCH_ORDER;
   if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules))
     mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
   if (sandbox_type == SANDBOX_TYPE_NETWORK ||
       sandbox_type == SANDBOX_TYPE_AUDIO) {
     mitigations |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
   }
+  // TODO(wfh): Relax strict handle checks for network process until root cause
+  // for this crash can be resolved. See https://crbug.com/939590.
+  if (sandbox_type != SANDBOX_TYPE_NETWORK)
+    mitigations |= sandbox::MITIGATION_STRICT_HANDLE_CHECKS;
 
   result = policy->SetDelayedProcessMitigations(mitigations);
   if (result != sandbox::SBOX_ALL_OK)
