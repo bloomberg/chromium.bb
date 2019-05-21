@@ -502,8 +502,7 @@ void ProfileSyncServiceAndroid::TriggerRefresh(
     const base::android::JavaParamRef<jobject>& obj) {
   // Only allowed to trigger refresh/schedule nudges for protocol types, things
   // like PROXY_TABS are not allowed.
-  sync_service_->TriggerRefresh(syncer::Intersection(
-      sync_service_->GetActiveDataTypes(), syncer::ProtocolTypes()));
+  sync_service_->TriggerRefresh(syncer::ProtocolTypes());
 }
 
 static jlong JNI_ProfileSyncService_Init(JNIEnv* env,
