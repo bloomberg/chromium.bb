@@ -208,7 +208,7 @@ void RecordUmaHistogram(const char* histogram_name,
 
 void RecordImeSwitchByAccelerator() {
   UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch",
-                            ImeSwitchType::kAccelerator, ImeSwitchType::kCount);
+                            ImeSwitchType::kAccelerator);
 }
 
 void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {

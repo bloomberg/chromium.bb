@@ -306,8 +306,7 @@ void ImeListView::HandleViewClicked(views::View* view) {
     std::string ime_id = ime->second;
     last_selected_item_id_ = ime_id;
     ime_controller->SwitchImeById(ime_id, false /* show_message */);
-    UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch", ImeSwitchType::kTray,
-                              ImeSwitchType::kCount);
+    UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch", ImeSwitchType::kTray);
 
   } else {
     std::map<views::View*, std::string>::const_iterator property =

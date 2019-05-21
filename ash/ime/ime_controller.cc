@@ -244,8 +244,7 @@ void ImeController::ShowOrSwitchIme() {
     UMA_HISTOGRAM_ENUMERATION("InputMethod.ModeChangeKeyAction",
                               ModeChangeKeyAction::kSwitchIme);
     UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch",
-                              ImeSwitchType::kModeChangeKey,
-                              ImeSwitchType::kCount);
+                              ImeSwitchType::kModeChangeKey);
   } else {
     client_->ShowModeIndicator();
 
