@@ -400,8 +400,8 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
     PluginModule* module,
     WebPluginContainer* container,
     const GURL& plugin_url) {
-  base::Callback<const void*(const char*)> get_plugin_interface_func =
-      base::Bind(&PluginModule::GetPluginInterface, module);
+  base::RepeatingCallback<const void*(const char*)> get_plugin_interface_func =
+      base::BindRepeating(&PluginModule::GetPluginInterface, module);
   PPP_Instance_Combined* ppp_instance_combined =
       PPP_Instance_Combined::Create(std::move(get_plugin_interface_func));
   if (!ppp_instance_combined)
@@ -2956,8 +2956,8 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   // can shut it down by calling its DidDestroy in our Delete() method.
   original_instance_interface_ = std::move(instance_interface_);
 
-  base::Callback<const void*(const char*)> get_plugin_interface_func =
-      base::Bind(&PluginModule::GetPluginInterface, module_);
+  base::RepeatingCallback<const void*(const char*)> get_plugin_interface_func =
+      base::BindRepeating(&PluginModule::GetPluginInterface, module_);
   PPP_Instance_Combined* ppp_instance_combined =
       PPP_Instance_Combined::Create(std::move(get_plugin_interface_func));
   if (!ppp_instance_combined) {

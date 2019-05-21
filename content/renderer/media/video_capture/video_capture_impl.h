@@ -56,13 +56,11 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   // Get capturing formats supported by this device.
   // |callback| will be invoked with the results.
-  void GetDeviceSupportedFormats(
-      const blink::VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceSupportedFormats(blink::VideoCaptureDeviceFormatsCB callback);
 
   // Get capturing formats currently in use by this device.
   // |callback| will be invoked with the results.
-  void GetDeviceFormatsInUse(
-      const blink::VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceFormatsInUse(blink::VideoCaptureDeviceFormatsCB callback);
 
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
   void OnLog(const std::string& message);
@@ -105,9 +103,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   void StartCaptureInternal();
 
   void OnDeviceSupportedFormats(
-      const blink::VideoCaptureDeviceFormatsCB& callback,
+      blink::VideoCaptureDeviceFormatsCB callback,
       const media::VideoCaptureFormats& supported_formats);
-  void OnDeviceFormatsInUse(const blink::VideoCaptureDeviceFormatsCB& callback,
+  void OnDeviceFormatsInUse(blink::VideoCaptureDeviceFormatsCB callback,
                             const media::VideoCaptureFormats& formats_in_use);
 
   // Tries to remove |client_id| from |clients|, returning false if not found.

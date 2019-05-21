@@ -75,7 +75,7 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
   devices_.clear();
 }
 
-base::Closure VideoCaptureImplManager::UseDevice(
+base::OnceClosure VideoCaptureImplManager::UseDevice(
     media::VideoCaptureSessionId id) {
   DVLOG(1) << __func__ << " session id: " << id;
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
@@ -101,11 +101,11 @@ base::Closure VideoCaptureImplManager::UseDevice(
   if (it->is_individually_suspended)
     Resume(id);
 
-  return base::Bind(&VideoCaptureImplManager::UnrefDevice,
-                    weak_factory_.GetWeakPtr(), id);
+  return base::BindOnce(&VideoCaptureImplManager::UnrefDevice,
+                        weak_factory_.GetWeakPtr(), id);
 }
 
-base::Closure VideoCaptureImplManager::StartCapture(
+base::OnceClosure VideoCaptureImplManager::StartCapture(
     media::VideoCaptureSessionId id,
     const media::VideoCaptureParams& params,
     const blink::VideoCaptureStateUpdateCB& state_update_cb,
@@ -125,8 +125,8 @@ base::Closure VideoCaptureImplManager::StartCapture(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::StartCapture,
                                 base::Unretained(it->impl.get()), client_id,
                                 params, state_update_cb, deliver_frame_cb));
-  return base::Bind(&VideoCaptureImplManager::StopCapture,
-                    weak_factory_.GetWeakPtr(), client_id, id);
+  return base::BindOnce(&VideoCaptureImplManager::StopCapture,
+                        weak_factory_.GetWeakPtr(), client_id, id);
 }
 
 void VideoCaptureImplManager::RequestRefreshFrame(
@@ -183,7 +183,7 @@ void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
 
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
     media::VideoCaptureSessionId id,
-    const blink::VideoCaptureDeviceFormatsCB& callback) {
+    blink::VideoCaptureDeviceFormatsCB callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -192,13 +192,14 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&VideoCaptureImpl::GetDeviceSupportedFormats,
-                                base::Unretained(it->impl.get()), callback));
+      FROM_HERE,
+      base::BindOnce(&VideoCaptureImpl::GetDeviceSupportedFormats,
+                     base::Unretained(it->impl.get()), std::move(callback)));
 }
 
 void VideoCaptureImplManager::GetDeviceFormatsInUse(
     media::VideoCaptureSessionId id,
-    const blink::VideoCaptureDeviceFormatsCB& callback) {
+    blink::VideoCaptureDeviceFormatsCB callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -207,8 +208,9 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&VideoCaptureImpl::GetDeviceFormatsInUse,
-                                base::Unretained(it->impl.get()), callback));
+      FROM_HERE,
+      base::BindOnce(&VideoCaptureImpl::GetDeviceFormatsInUse,
+                     base::Unretained(it->impl.get()), std::move(callback)));
 }
 
 std::unique_ptr<VideoCaptureImpl>

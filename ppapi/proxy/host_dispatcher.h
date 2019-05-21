@@ -110,10 +110,11 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
 
   // Register an observer that will be invoked when the dispatcher begins
   // sending a sync message and finishes sending a sync message.
-  // Returns a Closure that can be used to unregister the observer (the Closure
-  // is bound to a weak pointer, so is safe to call even after the
+  // Returns a OnceClosure that can be used to unregister the observer (the
+  // OnceClosure is bound to a weak pointer, so is safe to call even after the
   // HostDispatcher is gone.)
-  base::Closure AddSyncMessageStatusObserver(SyncMessageStatusObserver* obs);
+  base::OnceClosure AddSyncMessageStatusObserver(
+      SyncMessageStatusObserver* obs);
 
   void AddFilter(IPC::Listener* listener);
 

@@ -194,7 +194,7 @@ class MessageChannel :
 
   // A callback to invoke at shutdown to ensure we unregister ourselves as
   // Observers for sync messages.
-  base::Closure unregister_observer_callback_;
+  base::OnceClosure unregister_observer_callback_;
 
   v8::StdGlobalValueMap<std::string, v8::FunctionTemplate> template_cache_;
 

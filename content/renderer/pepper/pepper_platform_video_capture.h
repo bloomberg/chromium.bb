@@ -54,8 +54,8 @@ class PepperPlatformVideoCapture {
 
   std::string label_;
   int session_id_;
-  base::Closure release_device_cb_;
-  base::Closure stop_capture_cb_;
+  base::OnceClosure release_device_cb_;
+  base::OnceClosure stop_capture_cb_;
 
   PepperVideoCaptureHost* handler_;
 

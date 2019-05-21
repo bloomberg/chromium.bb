@@ -46,7 +46,7 @@ class CAPTURE_EXPORT VideoCapturerSource {
                                    base::TimeTicks estimated_capture_time)>;
 
   using VideoCaptureDeviceFormatsCB =
-      base::Callback<void(const media::VideoCaptureFormats&)>;
+      base::OnceCallback<void(const media::VideoCaptureFormats&)>;
 
   using RunningCallback = base::Callback<void(bool)>;
 

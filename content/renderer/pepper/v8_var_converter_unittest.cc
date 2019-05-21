@@ -58,9 +58,7 @@ class MockResourceConverter : public content::ResourceConverter {
   ~MockResourceConverter() override {}
   void Reset() override {}
   bool NeedsFlush() override { return false; }
-  void Flush(const base::Callback<void(bool)>& callback) override {
-    NOTREACHED();
-  }
+  void Flush(base::OnceCallback<void(bool)> callback) override { NOTREACHED(); }
   bool FromV8Value(v8::Local<v8::Object> val,
                    v8::Local<v8::Context> context,
                    PP_Var* result,
@@ -199,10 +197,8 @@ class V8VarConverterTest : public testing::Test {
   bool FromV8ValueSync(v8::Local<v8::Value> val,
                        v8::Local<v8::Context> context,
                        PP_Var* result) {
-    V8VarConverter::VarResult conversion_result =
-        converter_->FromV8Value(val,
-                                context,
-                                base::Bind(&FromV8ValueComplete));
+    V8VarConverter::VarResult conversion_result = converter_->FromV8Value(
+        val, context, base::BindOnce(&FromV8ValueComplete));
     DCHECK(conversion_result.completed_synchronously);
     if (conversion_result.success)
       *result = conversion_result.var.Release();

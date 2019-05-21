@@ -49,7 +49,7 @@ class PepperPlatformCameraDevice {
 
   std::string label_;
   int session_id_;
-  base::Closure release_device_cb_;
+  base::OnceClosure release_device_cb_;
 
   PepperCameraDeviceHost* handler_;
 

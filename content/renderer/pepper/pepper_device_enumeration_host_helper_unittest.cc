@@ -53,8 +53,8 @@ class TestDelegate : public PepperDeviceEnumerationHostHelper::Delegate,
   ~TestDelegate() override { CHECK(monitoring_callbacks_.empty()); }
 
   void EnumerateDevices(PP_DeviceType_Dev /* type */,
-                        const DevicesCallback& callback) override {
-    callback.Run(TestEnumerationData());
+                        DevicesOnceCallback callback) override {
+    std::move(callback).Run(TestEnumerationData());
   }
 
   size_t StartMonitoringDevices(PP_DeviceType_Dev /* type */,

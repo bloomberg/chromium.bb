@@ -434,8 +434,8 @@ void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
   blink::MediaStreamVideoSink::ConnectToTrack(
       track_,
       media::BindToCurrentLoop(
-          base::Bind(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
-                     weak_factory_.GetWeakPtr())),
+          base::BindRepeating(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
+                              weak_factory_.GetWeakPtr())),
       false);
 }
 
