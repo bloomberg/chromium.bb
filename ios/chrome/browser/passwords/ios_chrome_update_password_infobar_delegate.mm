@@ -64,6 +64,8 @@ IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
   form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save()->GetCredentialSource(),
       password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
+  password_manager::metrics_util::LogUIDisplayDisposition(
+      password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
 }
 
 bool IOSChromeUpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
