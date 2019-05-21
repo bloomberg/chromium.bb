@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/profiler/native_unwinder_win.h"
 #include "build/build_config.h"
@@ -29,9 +30,22 @@ struct TEB {
 };
 
 win::ScopedHandle GetThreadHandle(PlatformThreadId thread_id) {
-  win::ScopedHandle handle(::OpenThread(
-      THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION,
-      FALSE, thread_id));
+  // TODO(http://crbug.com/947459): Remove the test_handle* CHECKs once we
+  // understand which flag is triggering the failure.
+
+  DWORD flags = 0;
+  base::debug::Alias(&flags);
+
+  flags |= THREAD_GET_CONTEXT;
+  win::ScopedHandle test_handle1(::OpenThread(flags, FALSE, thread_id));
+  CHECK(test_handle1.IsValid());
+
+  flags |= THREAD_QUERY_INFORMATION;
+  win::ScopedHandle test_handle2(::OpenThread(flags, FALSE, thread_id));
+  CHECK(test_handle2.IsValid());
+
+  flags |= THREAD_SUSPEND_RESUME;
+  win::ScopedHandle handle(::OpenThread(flags, FALSE, thread_id));
   CHECK(handle.IsValid());
   return handle;
 }
