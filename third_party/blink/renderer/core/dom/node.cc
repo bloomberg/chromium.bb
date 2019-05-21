@@ -1322,11 +1322,8 @@ bool Node::contains(const Node* node) const {
   return this == node || node->IsDescendantOf(this);
 }
 
-bool Node::IsShadowIncludingInclusiveAncestorOf(const Node* node) const {
-  if (!node)
-    return false;
-
-  return this == node || IsShadowIncludingAncestorOf(*node);
+bool Node::IsShadowIncludingInclusiveAncestorOf(const Node& node) const {
+  return this == &node || IsShadowIncludingAncestorOf(node);
 }
 
 bool Node::IsShadowIncludingAncestorOf(const Node& node) const {

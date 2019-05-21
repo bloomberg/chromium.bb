@@ -40,6 +40,7 @@ class NodeChildRemovalTracker {
   explicit NodeChildRemovalTracker(Node&);
   ~NodeChildRemovalTracker();
 
+  // TODO(tkent): The argument should be |const Node&|.
   static bool IsBeingRemoved(Node*);
 
  private:
@@ -63,9 +64,11 @@ inline NodeChildRemovalTracker::~NodeChildRemovalTracker() {
 }
 
 inline bool NodeChildRemovalTracker::IsBeingRemoved(Node* node) {
+  if (!node)
+    return false;
   for (NodeChildRemovalTracker* removal = last_; removal;
        removal = removal->Previous()) {
-    if (removal->GetNode().IsShadowIncludingInclusiveAncestorOf(node))
+    if (removal->GetNode().IsShadowIncludingInclusiveAncestorOf(*node))
       return true;
   }
 

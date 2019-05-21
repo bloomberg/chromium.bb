@@ -4587,8 +4587,7 @@ void Document::RemoveFocusedElementOfSubtree(Node& node,
   // We can't be focused if we're not in the document.
   if (!node.isConnected())
     return;
-  bool contains =
-      node.IsShadowIncludingInclusiveAncestorOf(focused_element_.Get());
+  bool contains = node.IsShadowIncludingInclusiveAncestorOf(*focused_element_);
   if (contains && (focused_element_ != &node || !among_children_only))
     ClearFocusedElement();
 }

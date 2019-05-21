@@ -3367,7 +3367,9 @@ void Element::focus(const FocusParams& params) {
     return;
 
   if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus()) {
-    if (IsShadowIncludingInclusiveAncestorOf(GetDocument().FocusedElement()))
+    Element* focused_element = GetDocument().FocusedElement();
+    if (focused_element &&
+        IsShadowIncludingInclusiveAncestorOf(*focused_element))
       return;
 
     // Slide the focus to its inner node.
@@ -3375,7 +3377,7 @@ void Element::focus(const FocusParams& params) {
                          .GetPage()
                          ->GetFocusController()
                          .FindFocusableElementInShadowHost(*this);
-    if (found && IsShadowIncludingInclusiveAncestorOf(found)) {
+    if (found && IsShadowIncludingInclusiveAncestorOf(*found)) {
       found->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                                kWebFocusTypeForward, nullptr, params.options));
       return;

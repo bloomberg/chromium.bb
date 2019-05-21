@@ -1335,37 +1335,45 @@ Position ComputePositionForNodeRemoval(const Position& position,
                                        const Node& node) {
   if (position.IsNull())
     return position;
+  Node* container_node;
+  Node* anchor_node;
   switch (position.AnchorType()) {
     case PositionAnchorType::kBeforeChildren:
-      if (!node.IsShadowIncludingInclusiveAncestorOf(
-              position.ComputeContainerNode())) {
+      container_node = position.ComputeContainerNode();
+      if (!container_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*container_node)) {
         return position;
       }
       return Position::InParentBeforeNode(node);
     case PositionAnchorType::kAfterChildren:
-      if (!node.IsShadowIncludingInclusiveAncestorOf(
-              position.ComputeContainerNode())) {
+      container_node = position.ComputeContainerNode();
+      if (!container_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*container_node)) {
         return position;
       }
       return Position::InParentAfterNode(node);
     case PositionAnchorType::kOffsetInAnchor:
-      if (position.ComputeContainerNode() == node.parentNode() &&
+      container_node = position.ComputeContainerNode();
+      if (container_node == node.parentNode() &&
           static_cast<unsigned>(position.OffsetInContainerNode()) >
               node.NodeIndex()) {
-        return Position(position.ComputeContainerNode(),
-                        position.OffsetInContainerNode() - 1);
+        return Position(container_node, position.OffsetInContainerNode() - 1);
       }
-      if (!node.IsShadowIncludingInclusiveAncestorOf(
-              position.ComputeContainerNode())) {
+      if (!container_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*container_node)) {
         return position;
       }
       return Position::InParentBeforeNode(node);
     case PositionAnchorType::kAfterAnchor:
-      if (!node.IsShadowIncludingInclusiveAncestorOf(position.AnchorNode()))
+      anchor_node = position.AnchorNode();
+      if (!anchor_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*anchor_node))
         return position;
       return Position::InParentAfterNode(node);
     case PositionAnchorType::kBeforeAnchor:
-      if (!node.IsShadowIncludingInclusiveAncestorOf(position.AnchorNode()))
+      anchor_node = position.AnchorNode();
+      if (!anchor_node ||
+          !node.IsShadowIncludingInclusiveAncestorOf(*anchor_node))
         return position;
       return Position::InParentBeforeNode(node);
   }

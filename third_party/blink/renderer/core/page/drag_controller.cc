@@ -941,8 +941,9 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
       src->GetEventHandler().HitTestResultAtLocation(location);
   // FIXME: Can this even happen? I guess it's possible, but should verify
   // with a web test.
-  if (!state.drag_src_->IsShadowIncludingInclusiveAncestorOf(
-          hit_test_result.InnerNode())) {
+  Node* hit_inner_node = hit_test_result.InnerNode();
+  if (!hit_inner_node ||
+      !state.drag_src_->IsShadowIncludingInclusiveAncestorOf(*hit_inner_node)) {
     // The original node being dragged isn't under the drag origin anymore...
     // maybe it was hidden or moved out from under the cursor. Regardless, we
     // don't want to start a drag on something that's not actually under the
@@ -1183,8 +1184,9 @@ bool DragController::StartDrag(LocalFrame* src,
   HitTestLocation location(drag_origin);
   HitTestResult hit_test_result =
       src->GetEventHandler().HitTestResultAtLocation(location);
-  if (!state.drag_src_->IsShadowIncludingInclusiveAncestorOf(
-          hit_test_result.InnerNode())) {
+  Node* hit_inner_node = hit_test_result.InnerNode();
+  if (!hit_inner_node ||
+      !state.drag_src_->IsShadowIncludingInclusiveAncestorOf(*hit_inner_node)) {
     // The original node being dragged isn't under the drag origin anymore...
     // maybe it was hidden or moved out from under the cursor. Regardless, we
     // don't want to start a drag on something that's not actually under the

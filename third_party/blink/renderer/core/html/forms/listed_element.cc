@@ -404,7 +404,7 @@ void ListedElement::UpdateVisibleValidationMessage() {
     return;
   String message;
   if (element.GetLayoutObject() && WillValidate() &&
-      ToHTMLElement().IsShadowIncludingInclusiveAncestorOf(&element))
+      ToHTMLElement().IsShadowIncludingInclusiveAncestorOf(element))
     message = validationMessage().StripWhiteSpace();
 
   has_validation_message_ = true;

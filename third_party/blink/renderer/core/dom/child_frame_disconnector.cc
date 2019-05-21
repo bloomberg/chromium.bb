@@ -55,7 +55,7 @@ void ChildFrameDisconnector::DisconnectCollectedFrameOwners() {
     HTMLFrameOwnerElement* owner = frame_owners_[i].Get();
     // Don't need to traverse up the tree for the first owner since no
     // script could have moved it.
-    if (!i || Root().IsShadowIncludingInclusiveAncestorOf(owner))
+    if (!i || Root().IsShadowIncludingInclusiveAncestorOf(*owner))
       owner->DisconnectContentFrame();
   }
 }
