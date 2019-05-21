@@ -16,16 +16,18 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_port.h"
 #include "ui/base/class_property.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_delegate.h"
@@ -54,6 +56,10 @@ enum class DomCode;
 class Layer;
 }  // namespace ui
 
+namespace viz {
+class ParentLocalSurfaceIdAllocator;
+}
+
 namespace ws {
 namespace mojom {
 enum class EventTargetingPolicy;
@@ -66,7 +72,6 @@ class LayoutManager;
 class ScopedKeyboardHook;
 class WindowDelegate;
 class WindowObserver;
-class WindowPortForShutdown;
 class WindowTargeter;
 class WindowTreeHost;
 
@@ -80,12 +85,12 @@ class WindowTestApi;
 
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
-// TODO(beng): resolve ownership.
 class AURA_EXPORT Window : public ui::LayerDelegate,
                            public ui::LayerOwner,
                            public ui::EventTarget,
                            public ui::GestureConsumer,
-                           public ui::PropertyHandler {
+                           public ui::PropertyHandler,
+                           public viz::HostFrameSinkClient {
  public:
   // Initial value of id() for newly created windows.
   static constexpr int kInitialId = -1;
@@ -131,9 +136,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   explicit Window(WindowDelegate* delegate,
                   client::WindowType type = client::WINDOW_TYPE_UNKNOWN);
-  Window(WindowDelegate* delegate,
-         std::unique_ptr<WindowPort> port,
-         client::WindowType type = client::WINDOW_TYPE_UNKNOWN);
   ~Window() override;
 
   // Initializes the window. This creates the window's layer.
@@ -316,10 +318,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns the cursor for the specified point, in window coordinates.
   gfx::NativeCursor GetCursor(const gfx::Point& point) const;
 
-  // Returns true if the children of this should be restacked by the
-  // transient window related classes to honor transient window stacking.
-  bool ShouldRestackTransientChildren();
-
   // Add/remove observer.
   void AddObserver(WindowObserver* observer);
   void RemoveObserver(WindowObserver* observer);
@@ -408,7 +406,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink();
 
   // Gets the current viz::SurfaceId.
-  viz::SurfaceId GetSurfaceId() const;
+  viz::SurfaceId GetSurfaceId();
 
   // Forces the window to allocate a new viz::LocalSurfaceId for the next
   // CompositorFrame submission in anticipation of a synchronization operation
@@ -419,7 +417,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
       base::OnceCallback<void()> allocation_task);
 
   // Returns the current viz::LocalSurfaceIdAllocation.
-  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() const;
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation();
 
   // Marks the current viz::LocalSurfaceId as invalid. AllocateLocalSurfaceId
   // must be called before submitting new CompositorFrames.
@@ -497,22 +495,21 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void RemoveOrDestroyChildren();
 
   // Overrides from ui::PropertyHandler
-  std::unique_ptr<ui::PropertyData> BeforePropertyChange(
-      const void* key,
-      bool is_value_changing) override;
-  void AfterPropertyChange(const void* key,
-                           int64_t old_value,
-                           std::unique_ptr<ui::PropertyData> data) override;
+  void AfterPropertyChange(const void* key, int64_t old_value) override;
+
  private:
   friend class DefaultWindowOcclusionChangeBuilder;
   friend class HitTestDataProviderAura;
   friend class LayoutManager;
   friend class PropertyConverter;
-  friend class WindowPort;
-  friend class WindowPortForShutdown;
-  friend class WindowPortMus;
   friend class WindowTargeter;
   friend class test::WindowTestApi;
+
+  // Called by SetEmbedFrameSinkId(). |called_internally| is true if this was
+  // not called from SetEmbedFrameSinkId(), but rather internally; false if
+  // called from client code.
+  void SetEmbedFrameSinkIdImpl(const viz::FrameSinkId& frame_sink_id,
+                               bool called_internally);
 
   // Returns true if the mouse pointer at relative-to-this-Window's-origin
   // |local_point| can trigger an event for this Window.
@@ -612,26 +609,19 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                             ui::LocatedEvent* event) const override;
   gfx::PointF GetScreenLocationF(const ui::LocatedEvent& event) const override;
 
+  // viz::HostFrameSinkClient:
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
+  void OnFrameTokenChanged(uint32_t frame_token) override;
+
   // Updates the layer name based on the window's name and id.
   void UpdateLayerName();
 
   void RegisterFrameSinkId();
   void UnregisterFrameSinkId();
-
-  bool registered_frame_sink_id_ = false;
-  bool disable_frame_sink_id_registration_ = false;
-
-  bool created_layer_tree_frame_sink_ = false;
-
-  // Window owns its corresponding WindowPort, but the ref is held as a raw
-  // pointer in |port_| so that it can still be accessed during destruction.
-  // This is important as deleting the WindowPort may result in trying to lookup
-  // the WindowPort associated with the Window.
-  //
-  // NOTE: this value is reset for windows that exist when WindowTreeClient
-  // is deleted.
-  std::unique_ptr<WindowPort> port_owner_;
-  WindowPort* port_;
+  void UpdateLocalSurfaceId();
+  const viz::LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation()
+      const;
+  bool IsEmbeddingExternalContent() const;
 
   // Bounds of this window relative to the parent. This is cached as the bounds
   // of the Layer and Window are not necessarily the same. In particular bounds
@@ -639,18 +629,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // is relative to the parent Window.
   gfx::Rect bounds_;
 
-  WindowTreeHost* host_;
+  WindowTreeHost* host_ = nullptr;
 
   client::WindowType type_;
 
   // True if the Window is owned by its parent - i.e. it will be deleted by its
-  // parent during its parents destruction. True is the default.
-  bool owned_by_parent_;
+  // parent during its parents destruction.
+  bool owned_by_parent_ = true;
 
   WindowDelegate* delegate_;
 
   // The Window's parent.
-  Window* parent_;
+  Window* parent_ = nullptr;
 
   // Child windows. Topmost is last.
   Windows children_;
@@ -658,26 +648,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // The visibility state of the window as set by Show()/Hide(). This may differ
   // from the visibility of the underlying layer, which may remain visible after
   // the window is hidden (e.g. to animate its disappearance).
-  bool visible_;
+  bool visible_ = false;
 
   // Occlusion state of the window.
-  OcclusionState occlusion_state_;
+  OcclusionState occlusion_state_ = OcclusionState::UNKNOWN;
 
   // Occluded region of the window.
   SkRegion occluded_region_;
 
-  int id_;
-
-  // The FrameSinkId associated with this window. If this window is embedding
-  // another client, then this should be set to the FrameSinkId of that client,
-  // and |embeds_external_client_| is turned on. However, a window can still
-  // have a valid FrameSinkId without embedding another client, to facilitate
-  // hit-testing.
-  viz::FrameSinkId frame_sink_id_;
-  bool embeds_external_client_ = false;
+  int id_ = kInitialId;
 
   // Whether layer is initialized as non-opaque. Defaults to false.
-  bool transparent_;
+  bool transparent_ = false;
 
   // Whether it's in a process of CleanupGestureState() or not.
   bool cleaning_up_gesture_state_ = false;
@@ -693,6 +675,45 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   ws::mojom::EventTargetingPolicy event_targeting_policy_;
 
   base::ReentrantObserverList<WindowObserver, true> observers_;
+
+  // Embedding support ---------------------------------------------------------
+
+  // Used to detect changes in device scale factor that require generating a
+  // new LocalSurfaceId.
+  float last_device_scale_factor_ = 1.0f;
+
+  // The FrameSinkId associated with this window. If this window is embedding
+  // another client, then this should be set to the FrameSinkId of that client,
+  // and |embeds_external_client_| is turned on. However, a window can still
+  // have a valid FrameSinkId without embedding another client, to facilitate
+  // hit-testing.
+  viz::FrameSinkId frame_sink_id_;
+
+  // Set to true if |frame_sink_id_| has been registered in the Compositor
+  // associated this this.
+  bool registered_frame_sink_id_ = false;
+
+  // Used by tests to disable registering the FrameSinkId with the Compositor.
+  bool disable_frame_sink_id_registration_ = false;
+
+  // Set to true if SetEmbedFrameSinkId() has been called.
+  bool embeds_external_client_ = false;
+
+  // Set to true if |frame_sink_id_| was allocated as the result of an internal
+  // call, false if SetEmbedFrameSinkId() was called by client. code.
+  bool frame_sink_id_internally_allocated_ = false;
+
+  // Used to allocate LocalSurfaceIds when this is embedding external content.
+  std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
+      parent_local_surface_id_allocator_;
+
+#if DCHECK_IS_ON()
+  // Set to true if CreateLayerTreeFrameSink() was called.
+  bool created_layer_tree_frame_sink_ = false;
+#endif
+
+  // Used when this is embedding external content.
+  base::WeakPtr<cc::LayerTreeFrameSink> frame_sink_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

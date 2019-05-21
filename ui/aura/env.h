@@ -38,7 +38,6 @@ class InputStateLookup;
 class Window;
 class WindowEventDispatcherObserver;
 class WindowOcclusionTracker;
-class WindowPort;
 class WindowTreeHost;
 
 // A singleton object that tracks general state within Aura.
@@ -55,9 +54,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // CreateInstance() was called.
   static Env* GetInstance();
   static bool HasInstance();
-
-  // Called internally to create the appropriate WindowPort implementation.
-  std::unique_ptr<WindowPort> CreateWindowPort(Window* window);
 
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);

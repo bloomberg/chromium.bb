@@ -13,11 +13,9 @@
 #include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
-#include "ui/aura/local/window_port_local.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
-#include "ui/aura/window_port_for_shutdown.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/event_target_iterator.h"
@@ -111,10 +109,6 @@ Env* Env::GetInstance() {
 // static
 bool Env::HasInstance() {
   return !!g_primary_instance;
-}
-
-std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
-  return std::make_unique<WindowPortLocal>(window);
 }
 
 void Env::AddObserver(EnvObserver* observer) {

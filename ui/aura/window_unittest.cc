@@ -3257,7 +3257,7 @@ TEST_F(WindowTest, LocalSurfaceIdChanges) {
   EXPECT_NE(nullptr, frame_sink.get());
   EXPECT_TRUE(local_surface_id1.is_valid());
 
-  // Resize 0x0 to make sure WindowPort* stores the correct window size before
+  // Resize to 0x0 to make sure the correct window size is stored before
   // creating the frame sink.
   window.SetBounds(gfx::Rect(0, 0));
   viz::LocalSurfaceId local_surface_id2 =
