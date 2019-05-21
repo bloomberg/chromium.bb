@@ -67,6 +67,9 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(
       base::FeatureList::IsEnabled(features::kBlinkHeapIncrementalMarking));
 
+  WebRuntimeFeatures::EnableBlinkHeapUnifiedGCScheduling(
+      base::FeatureList::IsEnabled(features::kBlinkHeapUnifiedGCScheduling));
+
   if (base::FeatureList::IsEnabled(features::kBloatedRendererDetection))
     WebRuntimeFeatures::EnableBloatedRendererDetection(true);
 

@@ -643,6 +643,9 @@
       name: "HeapIncrementalMarkingStress"
     },
     {
+      name: "HeapUnifiedGCScheduling"
+    },
+    {
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
