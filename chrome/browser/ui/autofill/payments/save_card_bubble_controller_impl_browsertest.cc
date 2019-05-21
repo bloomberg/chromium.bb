@@ -78,6 +78,8 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
       bubble_type = BubbleType::SIGN_IN_PROMO;
     if (name.find("Manage") != std::string::npos)
       bubble_type = BubbleType::MANAGE_CARDS;
+    if (name.find("Failure") != std::string::npos)
+      bubble_type = BubbleType::FAILURE;
 
     switch (bubble_type) {
       case BubbleType::LOCAL_SAVE:
@@ -96,6 +98,9 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
         break;
       case BubbleType::MANAGE_CARDS:
         controller_->ShowBubbleForManageCardsForTesting(test::GetCreditCard());
+        break;
+      case BubbleType::FAILURE:
+        controller_->ShowBubbleForSaveCardFailureForTesting();
         break;
       case BubbleType::INACTIVE:
         break;
@@ -147,6 +152,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Promo) {
 // Invokes a bubble displaying the card just saved and an option to
 // manage cards.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Manage) {
+  ShowAndVerifyUi();
+}
+
+// Invokes a bubble displaying the card saving just failed.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Failure) {
   ShowAndVerifyUi();
 }
 

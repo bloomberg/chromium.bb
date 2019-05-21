@@ -85,6 +85,10 @@ class SaveCardBubbleControllerImpl
   // just saved and links the user to manage their other cards.
   void ShowBubbleForManageCardsForTesting(const CreditCard& card);
 
+  // For testing. Sets up the controller for showing the
+  // save card failure bubble.
+  void ShowBubbleForSaveCardFailureForTesting();
+
   void HideBubble();
   void ReshowBubble();
 

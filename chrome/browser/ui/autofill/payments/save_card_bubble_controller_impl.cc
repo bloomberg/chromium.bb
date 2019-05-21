@@ -163,6 +163,11 @@ void SaveCardBubbleControllerImpl::ShowBubbleForManageCardsForTesting(
   ShowBubble();
 }
 
+void SaveCardBubbleControllerImpl::ShowBubbleForSaveCardFailureForTesting() {
+  current_bubble_type_ = BubbleType::FAILURE;
+  ShowBubble();
+}
+
 void SaveCardBubbleControllerImpl::HideBubble() {
   if (save_card_bubble_view_) {
     save_card_bubble_view_->Hide();
@@ -221,6 +226,8 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_SAVED);
     case BubbleType::MANAGE_CARDS:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_SAVED);
+    case BubbleType::FAILURE:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_FAILURE_BUBBLE_TITLE);
     case BubbleType::INACTIVE:
       NOTREACHED();
       return base::string16();
@@ -228,6 +235,9 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
 }
 
 base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
+  if (current_bubble_type_ == BubbleType::FAILURE)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_FAILURE_BUBBLE_EXPLANATION);
+
   if (current_bubble_type_ != BubbleType::UPLOAD_SAVE)
     return base::string16();
 
@@ -336,6 +346,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
           AutofillMetrics::MANAGE_CARDS_DONE, is_upload_save_);
       return;
     case BubbleType::SIGN_IN_PROMO:
+    case BubbleType::FAILURE:
     case BubbleType::INACTIVE:
       NOTREACHED();
   }
@@ -570,6 +581,9 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
       break;
     case BubbleType::SIGN_IN_PROMO:
       break;
+    case BubbleType::FAILURE:
+      // TODO(crbug.com/964127): Add metrics.
+      break;
     case BubbleType::INACTIVE:
       NOTREACHED();
   }
@@ -604,6 +618,9 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
           pref_service_->GetInteger(
               prefs::kAutofillAcceptSaveCreditCardPromptState),
           GetSecurityLevel(), GetSyncState());
+      break;
+    case BubbleType::FAILURE:
+      // TODO(crbug.com/964127): Add metrics.
       break;
     case BubbleType::MANAGE_CARDS:
     case BubbleType::SIGN_IN_PROMO:

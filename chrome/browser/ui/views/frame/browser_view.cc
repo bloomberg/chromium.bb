@@ -70,6 +70,7 @@
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_failure_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_manage_cards_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_offer_bubble_views.h"
@@ -1356,6 +1357,10 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
       break;
     case autofill::BubbleType::MANAGE_CARDS:
       bubble = new autofill::SaveCardManageCardsBubbleViews(
+          anchor_view, gfx::Point(), web_contents, controller);
+      break;
+    case autofill::BubbleType::FAILURE:
+      bubble = new autofill::SaveCardFailureBubbleViews(
           anchor_view, gfx::Point(), web_contents, controller);
       break;
     case autofill::BubbleType::INACTIVE:

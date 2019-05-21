@@ -22,6 +22,9 @@ enum class BubbleType {
   // icon is clicked.
   MANAGE_CARDS,
 
+  // The failure bubble when credit card uploading failed.
+  FAILURE,
+
   // There is no bubble to show anymore. This also
   // indicates that the icon should not be visible.
   INACTIVE
