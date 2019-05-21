@@ -11,9 +11,9 @@ var volumeManagerFactory = (() => {
   let instance = null;
 
   /**
-   * @type {?Promise<!VolumeManager>}
+   * @type {?Promise<void>}
    */
-  let instancePromise = null;
+  let instanceInitialized = null;
 
   /**
    * Returns the VolumeManager instance asynchronously. If it has not been
@@ -22,13 +22,14 @@ var volumeManagerFactory = (() => {
    * @return {!Promise<!VolumeManager>} Promise to be fulfilled with the volume
    *     manager.
    */
-  function getInstance() {
-    if (!instancePromise) {
+  async function getInstance() {
+    if (!instance) {
       instance = new VolumeManagerImpl();
-      instancePromise =
-          new Promise(fulfill => instance.initialize(() => fulfill(instance)));
+      instanceInitialized =
+          new Promise(fulfill => instance.initialize(fulfill));
     }
-    return instancePromise;
+    await instanceInitialized;
+    return instance;
   }
 
   /**
@@ -45,7 +46,7 @@ var volumeManagerFactory = (() => {
    * Revokes the singleton instance for testing.
    */
   function revokeInstanceForTesting() {
-    instancePromise = null;
+    instanceInitialized = null;
     instance = null;
   }
 
