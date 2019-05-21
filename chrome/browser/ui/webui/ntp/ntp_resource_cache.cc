@@ -456,7 +456,6 @@ void NTPResourceCache::CreateNewTabHTML() {
                             CanShowAppInfoDialog());
 
   AppLauncherHandler::GetLocalizedValues(profile_, &load_time_data);
-  AppLauncherLoginHandler::GetLocalizedValues(profile_, &load_time_data);
 
   webui::SetLoadTimeDataDefaults(app_locale, &load_time_data);
 
