@@ -208,12 +208,11 @@ bool RTCVideoDecoderAdapter::InitializeSync(
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
   media::VideoDecoder::InitCB init_cb =
-      base::BindRepeating(&FinishWait, &waiter, &result);
+      base::BindOnce(&FinishWait, &waiter, &result);
   if (media_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
-                         base::Unretained(this), std::cref(config),
-                         std::cref(init_cb)))) {
+                         base::Unretained(this), config, std::move(init_cb)))) {
     waiter.Wait();
   }
   return result;
@@ -337,7 +336,7 @@ const char* RTCVideoDecoderAdapter::ImplementationName() const {
 
 void RTCVideoDecoderAdapter::InitializeOnMediaThread(
     const media::VideoDecoderConfig& config,
-    const media::VideoDecoder::InitCB& init_cb) {
+    media::VideoDecoder::InitCB init_cb) {
   DVLOG(3) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
@@ -353,7 +352,7 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
 
     if (!video_decoder_) {
       media_task_runner_->PostTask(FROM_HERE,
-                                   base::BindRepeating(init_cb, false));
+                                   base::BindOnce(std::move(init_cb), false));
       return;
     }
   }
@@ -367,8 +366,8 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
   media::VideoDecoder::OutputCB output_cb =
       base::BindRepeating(&RTCVideoDecoderAdapter::OnOutput, weak_this_);
 
-  video_decoder_->Initialize(config, low_delay, cdm_context, init_cb, output_cb,
-                             base::DoNothing());
+  video_decoder_->Initialize(config, low_delay, cdm_context, std::move(init_cb),
+                             output_cb, base::DoNothing());
 }
 
 void RTCVideoDecoderAdapter::DecodeOnMediaThread() {
@@ -474,7 +473,7 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
       base::BindRepeating(&FinishWait, &waiter, &result);
   FlushDoneCB flush_success_cb =
       base::BindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
-                     weak_this_, std::cref(config), std::cref(init_cb));
+                     weak_this_, config, std::move(init_cb));
   FlushDoneCB flush_fail_cb =
       base::BindOnce(&FinishWait, &waiter, &result, false);
   if (media_task_runner_->PostTask(

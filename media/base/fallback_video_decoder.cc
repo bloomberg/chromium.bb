@@ -23,19 +23,20 @@ FallbackVideoDecoder::FallbackVideoDecoder(
 void FallbackVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                       bool low_delay,
                                       CdmContext* cdm_context,
-                                      const InitCB& init_cb,
+                                      InitCB init_cb,
                                       const OutputCB& output_cb,
                                       const WaitingCB& waiting_cb) {
   // If we've already fallen back, just reinitialize the selected decoder.
   if (selected_decoder_ && did_fallback_) {
-    selected_decoder_->Initialize(config, low_delay, cdm_context, init_cb,
-                                  output_cb, waiting_cb);
+    selected_decoder_->Initialize(config, low_delay, cdm_context,
+                                  std::move(init_cb), output_cb, waiting_cb);
     return;
   }
 
-  InitCB fallback_initialize_cb = base::BindRepeating(
-      &FallbackVideoDecoder::FallbackInitialize, weak_factory_.GetWeakPtr(),
-      config, low_delay, cdm_context, init_cb, output_cb, waiting_cb);
+  InitCB fallback_initialize_cb =
+      base::BindOnce(&FallbackVideoDecoder::FallbackInitialize,
+                     weak_factory_.GetWeakPtr(), config, low_delay, cdm_context,
+                     std::move(init_cb), output_cb, waiting_cb);
 
   preferred_decoder_->Initialize(config, low_delay, cdm_context,
                                  std::move(fallback_initialize_cb), output_cb,
@@ -45,14 +46,14 @@ void FallbackVideoDecoder::Initialize(const VideoDecoderConfig& config,
 void FallbackVideoDecoder::FallbackInitialize(const VideoDecoderConfig& config,
                                               bool low_delay,
                                               CdmContext* cdm_context,
-                                              const InitCB& init_cb,
+                                              InitCB init_cb,
                                               const OutputCB& output_cb,
                                               const WaitingCB& waiting_cb,
                                               bool success) {
   // The preferred decoder was successfully initialized.
   if (success) {
     selected_decoder_ = preferred_decoder_.get();
-    init_cb.Run(true);
+    std::move(init_cb).Run(true);
     return;
   }
 
@@ -65,8 +66,8 @@ void FallbackVideoDecoder::FallbackInitialize(const VideoDecoderConfig& config,
       base::BindOnce(base::DoNothing::Once<std::unique_ptr<VideoDecoder>>(),
                      std::move(preferred_decoder_)));
   selected_decoder_ = fallback_decoder_.get();
-  fallback_decoder_->Initialize(config, low_delay, cdm_context, init_cb,
-                                output_cb, waiting_cb);
+  fallback_decoder_->Initialize(config, low_delay, cdm_context,
+                                std::move(init_cb), output_cb, waiting_cb);
 }
 
 void FallbackVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

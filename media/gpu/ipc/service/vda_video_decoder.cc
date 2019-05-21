@@ -212,7 +212,7 @@ std::string VdaVideoDecoder::GetDisplayName() const {
 void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool low_delay,
                                  CdmContext* cdm_context,
-                                 const InitCB& init_cb,
+                                 InitCB init_cb,
                                  const OutputCB& output_cb,
                                  const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__ << "(" << config.AsHumanReadableString() << ")";
@@ -224,7 +224,8 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(decode_cbs_.empty());
 
   if (has_error_) {
-    parent_task_runner_->PostTask(FROM_HERE, base::BindOnce(init_cb, false));
+    parent_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
     return;
   }
 
@@ -232,7 +233,7 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Store |init_cb| ASAP so that EnterErrorState() can use it. Leave |config_|
   // alone for now so that the checks can inspect it.
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   output_cb_ = output_cb;
 
   // Verify that the configuration is supported.

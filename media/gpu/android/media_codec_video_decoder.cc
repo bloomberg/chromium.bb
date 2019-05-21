@@ -254,7 +254,7 @@ void MediaCodecVideoDecoder::Destroy() {
 void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         bool low_delay,
                                         CdmContext* cdm_context,
-                                        const InitCB& init_cb,
+                                        InitCB init_cb,
                                         const OutputCB& output_cb,
                                         const WaitingCB& waiting_cb) {
   DCHECK(output_cb);
@@ -265,16 +265,15 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
            << " MCVD with config: " << config.AsHumanReadableString()
            << ", cdm_context = " << cdm_context;
 
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
   if (!ConfigSupported(config, device_info_)) {
-    bound_init_cb.Run(false);
+    BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
   }
 
   // Disallow codec changes when reinitializing.
   if (!first_init && decoder_config_.codec() != config.codec()) {
     DVLOG(1) << "Codec changed: cannot reinitialize";
-    bound_init_cb.Run(false);
+    BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
   }
   decoder_config_ = config;
@@ -295,22 +294,21 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // encrypted config later.
   if (first_init && cdm_context && cdm_context->GetMediaCryptoContext()) {
     DCHECK(media_crypto_.is_null());
-    SetCdm(cdm_context, init_cb);
+    SetCdm(cdm_context, std::move(init_cb));
     return;
   }
 
   if (config.is_encrypted() && media_crypto_.is_null()) {
     DVLOG(1) << "No MediaCrypto to handle encrypted config";
-    bound_init_cb.Run(false);
+    BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
   }
 
   // Do the rest of the initialization lazily on the first decode.
-  init_cb.Run(true);
+  BindToCurrentLoop(std::move(init_cb)).Run(true);
 }
 
-void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
-                                    const InitCB& init_cb) {
+void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context, InitCB init_cb) {
   DVLOG(1) << __func__;
   DCHECK(cdm_context) << "No CDM provided";
   DCHECK(cdm_context->GetMediaCryptoContext());
@@ -320,12 +318,12 @@ void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
   // Register CDM callbacks. The callbacks registered will be posted back to
   // this thread via BindToCurrentLoop.
   media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
-      base::Bind(&MediaCodecVideoDecoder::OnMediaCryptoReady,
-                 weak_factory_.GetWeakPtr(), init_cb)));
+      base::BindOnce(&MediaCodecVideoDecoder::OnMediaCryptoReady,
+                     weak_factory_.GetWeakPtr(), std::move(init_cb))));
 }
 
 void MediaCodecVideoDecoder::OnMediaCryptoReady(
-    const InitCB& init_cb,
+    InitCB init_cb,
     JavaObjectPtr media_crypto,
     bool requires_secure_video_codec) {
   DVLOG(1) << __func__
@@ -335,21 +333,20 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
   DCHECK(media_crypto);
 
   if (media_crypto->is_null()) {
-    media_crypto_context_->SetMediaCryptoReadyCB(
-        MediaCryptoContext::MediaCryptoReadyCB());
+    media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
     media_crypto_context_ = nullptr;
 
     if (decoder_config_.is_encrypted()) {
       LOG(ERROR) << "MediaCrypto is not available";
       EnterTerminalState(State::kError);
-      init_cb.Run(false);
+      std::move(init_cb).Run(false);
       return;
     }
 
     // MediaCrypto is not available, but the stream is clear. So we can still
     // play the current stream. But if we switch to an encrypted stream playback
     // will fail.
-    init_cb.Run(true);
+    std::move(init_cb).Run(true);
     return;
   }
 
@@ -374,7 +371,7 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
           : SurfaceChooserHelper::SecureSurfaceMode::kRequested);
 
   // Signal success, and create the codec lazily on the first decode.
-  init_cb.Run(true);
+  std::move(init_cb).Run(true);
 }
 
 void MediaCodecVideoDecoder::OnKeyAdded() {

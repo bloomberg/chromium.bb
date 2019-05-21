@@ -33,7 +33,7 @@ std::string DecryptingVideoDecoder::GetDisplayName() const {
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         bool /* low_delay */,
                                         CdmContext* cdm_context,
-                                        const InitCB& init_cb,
+                                        InitCB init_cb,
                                         const OutputCB& output_cb,
                                         const WaitingCB& waiting_cb) {
   DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
@@ -46,7 +46,7 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(!reset_cb_);
   DCHECK(config.IsValidConfig());
 
-  init_cb_ = BindToCurrentLoop(init_cb);
+  init_cb_ = BindToCurrentLoop(std::move(init_cb));
   if (!cdm_context) {
     // Once we have a CDM context, one should always be present.
     DCHECK(!support_clear_content_);

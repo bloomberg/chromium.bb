@@ -50,7 +50,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
                          const DecoderConfigType& config,
                          bool low_delay,
                          CdmContext* cdm_context,
-                         const InitCB& init_cb,
+                         InitCB init_cb,
                          const OutputCB& output_cb,
                          const WaitingCB& waiting_cb);
   DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
@@ -94,7 +94,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
                          const DecoderConfigType& config,
                          bool low_delay,
                          CdmContext* cdm_context,
-                         const InitCB& init_cb,
+                         InitCB init_cb,
                          const OutputCB& output_cb,
                          const WaitingCB& waiting_cb);
   void OnDecode(const DecoderBuffer& buffer);

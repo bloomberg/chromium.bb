@@ -26,7 +26,7 @@ class VideoFrame;
 class MEDIA_EXPORT VideoDecoder {
  public:
   // Callback for VideoDecoder initialization.
-  using InitCB = base::Callback<void(bool success)>;
+  using InitCB = base::OnceCallback<void(bool success)>;
 
   // Callback for VideoDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.
@@ -84,7 +84,7 @@ class MEDIA_EXPORT VideoDecoder {
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
                           CdmContext* cdm_context,
-                          const InitCB& init_cb,
+                          InitCB init_cb,
                           const OutputCB& output_cb,
                           const WaitingCB& waiting_cb) = 0;
 

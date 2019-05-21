@@ -139,15 +139,15 @@ std::string AomVideoDecoder::GetDisplayName() const {
 void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool /* low_delay */,
                                  CdmContext* /* cdm_context */,
-                                 const InitCB& init_cb,
+                                 InitCB init_cb,
                                  const OutputCB& output_cb,
                                  const WaitingCB& /* waiting_cb */) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(config.IsValidConfig());
 
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+  InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
   if (config.is_encrypted() || config.codec() != kCodecAV1) {
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -172,7 +172,7 @@ void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
                          0 /* flags */) != AOM_CODEC_OK) {
     MEDIA_LOG(ERROR, media_log_) << "aom_codec_dec_init() failed: "
                                  << aom_codec_error(aom_decoder_.get());
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -184,7 +184,7 @@ void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
           memory_pool_.get()) != AOM_CODEC_OK) {
     DLOG(ERROR) << "Failed to configure external buffers. "
                 << aom_codec_error(context.get());
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -192,7 +192,7 @@ void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
   state_ = DecoderState::kNormal;
   output_cb_ = BindToCurrentLoop(output_cb);
   aom_decoder_ = std::move(context);
-  bound_init_cb.Run(true);
+  std::move(bound_init_cb).Run(true);
 }
 
 void AomVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

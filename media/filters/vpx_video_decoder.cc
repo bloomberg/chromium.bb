@@ -113,7 +113,7 @@ std::string VpxVideoDecoder::GetDisplayName() const {
 void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool /* low_delay */,
                                  CdmContext* /* cdm_context */,
-                                 const InitCB& init_cb,
+                                 InitCB init_cb,
                                  const OutputCB& output_cb,
                                  const WaitingCB& /* waiting_cb */) {
   DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
@@ -122,9 +122,10 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   CloseDecoder();
 
-  InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(init_cb) : init_cb;
+  InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(std::move(init_cb))
+                                         : std::move(init_cb);
   if (config.is_encrypted() || !ConfigureDecoder(config)) {
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -132,7 +133,7 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   config_ = config;
   state_ = kNormal;
   output_cb_ = output_cb;
-  bound_init_cb.Run(true);
+  std::move(bound_init_cb).Run(true);
 }
 
 void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

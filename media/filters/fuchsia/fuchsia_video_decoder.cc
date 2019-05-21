@@ -282,7 +282,7 @@ class FuchsiaVideoDecoder : public VideoDecoder {
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -375,13 +375,13 @@ std::string FuchsiaVideoDecoder::GetDisplayName() const {
 void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      bool low_delay,
                                      CdmContext* cdm_context,
-                                     const InitCB& init_cb,
+                                     InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
   output_cb_ = output_cb;
   container_pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
-  auto done_callback = BindToCurrentLoop(init_cb);
+  auto done_callback = BindToCurrentLoop(std::move(init_cb));
 
   fuchsia::mediacodec::CreateDecoder_Params codec_params;
   codec_params.mutable_input_details()->set_format_details_version_ordinal(0);
@@ -404,7 +404,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
       break;
 
     default:
-      done_callback.Run(false);
+      std::move(done_callback).Run(false);
       return;
   }
 
@@ -440,7 +440,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   codec_->EnableOnStreamFailed();
 
-  done_callback.Run(true);
+  std::move(done_callback).Run(true);
 }
 
 void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

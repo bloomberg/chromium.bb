@@ -75,7 +75,7 @@ bool TestVDAVideoDecoder::IsPlatformDecoder() const {
 void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      bool low_delay,
                                      CdmContext* cdm_context,
-                                     const InitCB& init_cb,
+                                     InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
   output_cb_ = output_cb;
@@ -99,7 +99,7 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!decoder_factory) {
     LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -120,11 +120,11 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!decoder_) {
     LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
-  init_cb.Run(true);
+  std::move(init_cb).Run(true);
 }
 
 void TestVDAVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

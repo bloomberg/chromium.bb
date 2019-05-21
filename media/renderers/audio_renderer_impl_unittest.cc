@@ -65,7 +65,7 @@ static double kOutputMicrosPerFrame =
     kOutputSamplesPerSecond;
 
 ACTION_P(EnterPendingDecoderInitStateAction, test) {
-  test->EnterPendingDecoderInitState(arg2);
+  test->EnterPendingDecoderInitState(std::move(arg2));
 }
 
 class AudioRendererImplTest : public ::testing::Test, public RendererClient {
@@ -73,11 +73,11 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecoderForTest() {
     auto decoder = std::make_unique<MockAudioDecoder>();
     if (!enter_pending_decoder_init_) {
-      EXPECT_CALL(*decoder, Initialize(_, _, _, _, _))
+      EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _))
           .WillOnce(DoAll(SaveArg<3>(&output_cb_),
-                          RunCallback<2>(expected_init_result_)));
+                          RunOnceCallback<2>(expected_init_result_)));
     } else {
-      EXPECT_CALL(*decoder, Initialize(_, _, _, _, _))
+      EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _))
           .WillOnce(EnterPendingDecoderInitStateAction(this));
     }
     EXPECT_CALL(*decoder, Decode(_, _))
@@ -253,8 +253,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     event.RunAndWaitForStatus(PIPELINE_ERROR_ABORT);
   }
 
-  void EnterPendingDecoderInitState(const AudioDecoder::InitCB& cb) {
-    init_decoder_cb_ = cb;
+  void EnterPendingDecoderInitState(AudioDecoder::InitCB cb) {
+    init_decoder_cb_ = std::move(cb);
   }
 
   void FlushDuringPendingRead() {

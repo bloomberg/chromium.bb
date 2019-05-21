@@ -626,12 +626,12 @@ void MediaDrmBridge::RejectPromise(uint32_t promise_id,
 }
 
 void MediaDrmBridge::SetMediaCryptoReadyCB(
-    const MediaCryptoReadyCB& media_crypto_ready_cb) {
+    MediaCryptoReadyCB media_crypto_ready_cb) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MediaDrmBridge::SetMediaCryptoReadyCB,
-                       weak_factory_.GetWeakPtr(), media_crypto_ready_cb));
+        FROM_HERE, base::BindOnce(&MediaDrmBridge::SetMediaCryptoReadyCB,
+                                  weak_factory_.GetWeakPtr(),
+                                  std::move(media_crypto_ready_cb)));
     return;
   }
 
@@ -643,7 +643,7 @@ void MediaDrmBridge::SetMediaCryptoReadyCB(
   }
 
   DCHECK(!media_crypto_ready_cb_);
-  media_crypto_ready_cb_ = media_crypto_ready_cb;
+  media_crypto_ready_cb_ = std::move(media_crypto_ready_cb);
 
   if (!j_media_crypto_)
     return;

@@ -45,7 +45,7 @@ std::string DecryptingAudioDecoder::GetDisplayName() const {
 
 void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                         CdmContext* cdm_context,
-                                        const InitCB& init_cb,
+                                        InitCB init_cb,
                                         const OutputCB& output_cb,
                                         const WaitingCB& waiting_cb) {
   DVLOG(2) << "Initialize()";
@@ -53,7 +53,7 @@ void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
   DCHECK(!decode_cb_);
   DCHECK(!reset_cb_);
 
-  init_cb_ = BindToCurrentLoop(init_cb);
+  init_cb_ = BindToCurrentLoop(std::move(init_cb));
   if (!cdm_context) {
     // Once we have a CDM context, one should always be present.
     DCHECK(!support_clear_content_);

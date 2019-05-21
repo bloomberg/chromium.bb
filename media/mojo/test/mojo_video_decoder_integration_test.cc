@@ -86,7 +86,7 @@ class MockVideoDecoder : public VideoDecoder {
   void Initialize(const VideoDecoderConfig& config,
                   bool /* low_delay */,
                   CdmContext* /* cdm_context */,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override {
     config_ = config;
@@ -103,7 +103,7 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_CONST_METHOD0(GetMaxDecodeRequests, int());
 
   // Mock helpers.
-  MOCK_METHOD1(DoInitialize, void(const InitCB&));
+  MOCK_METHOD1(DoInitialize, void(InitCB&));
   VideoFrame::ReleaseMailboxCB GetReleaseMailboxCB() {
     DidGetReleaseMailboxCB();
     return std::move(release_mailbox_cb);
@@ -227,7 +227,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
   bool Initialize() {
     CreateClient();
 
-    EXPECT_CALL(*decoder_, DoInitialize(_)).WillOnce(RunCallback<0>(true));
+    EXPECT_CALL(*decoder_, DoInitialize(_)).WillOnce(RunOnceCallback<0>(true));
 
     bool result = false;
     StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb;

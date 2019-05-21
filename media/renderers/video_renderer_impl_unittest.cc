@@ -41,6 +41,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::NiceMock;
@@ -61,9 +62,9 @@ class VideoRendererImplTest : public testing::Test {
     decoder_ = new NiceMock<MockVideoDecoder>();
     std::vector<std::unique_ptr<VideoDecoder>> decoders;
     decoders.push_back(base::WrapUnique(decoder_));
-    ON_CALL(*decoder_, Initialize(_, _, _, _, _, _))
+    ON_CALL(*decoder_, Initialize_(_, _, _, _, _, _))
         .WillByDefault(DoAll(SaveArg<4>(&output_cb_),
-                             RunCallback<3>(expect_init_success_)));
+                             RunOnceCallback<3>(expect_init_success_)));
     // Monitor decodes from the decoder.
     ON_CALL(*decoder_, Decode(_, _))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::DecodeRequested));

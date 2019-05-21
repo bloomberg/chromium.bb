@@ -209,11 +209,19 @@ class MockVideoDecoder : public VideoDecoder {
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
-  MOCK_METHOD6(Initialize,
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  CdmContext* cdm_context,
+                  InitCB init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) override {
+    Initialize_(config, low_delay, cdm_context, init_cb, output_cb, waiting_cb);
+  }
+  MOCK_METHOD6(Initialize_,
                void(const VideoDecoderConfig& config,
                     bool low_delay,
                     CdmContext* cdm_context,
-                    const InitCB& init_cb,
+                    InitCB& init_cb,
                     const OutputCB& output_cb,
                     const WaitingCB& waiting_cb));
   MOCK_METHOD2(Decode,
@@ -236,10 +244,17 @@ class MockAudioDecoder : public AudioDecoder {
 
   // AudioDecoder implementation.
   std::string GetDisplayName() const override;
-  MOCK_METHOD5(Initialize,
+  void Initialize(const AudioDecoderConfig& config,
+                  CdmContext* cdm_context,
+                  InitCB init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) override {
+    Initialize_(config, cdm_context, init_cb, output_cb, waiting_cb);
+  }
+  MOCK_METHOD5(Initialize_,
                void(const AudioDecoderConfig& config,
                     CdmContext* cdm_context,
-                    const InitCB& init_cb,
+                    InitCB& init_cb,
                     const OutputCB& output_cb,
                     const WaitingCB& waiting_cb));
   MOCK_METHOD2(Decode,

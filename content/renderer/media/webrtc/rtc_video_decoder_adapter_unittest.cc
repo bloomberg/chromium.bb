@@ -50,11 +50,19 @@ namespace {
 class MockVideoDecoder : public media::VideoDecoder {
  public:
   std::string GetDisplayName() const override { return "MockVideoDecoder"; }
-  MOCK_METHOD6(Initialize,
+  void Initialize(const media::VideoDecoderConfig& config,
+                  bool low_delay,
+                  media::CdmContext* cdm_context,
+                  InitCB init_cb,
+                  const OutputCB& output_cb,
+                  const media::WaitingCB& waiting_cb) override {
+    Initialize_(config, low_delay, cdm_context, init_cb, output_cb, waiting_cb);
+  }
+  MOCK_METHOD6(Initialize_,
                void(const media::VideoDecoderConfig& config,
                     bool low_delay,
                     media::CdmContext* cdm_context,
-                    const InitCB& init_cb,
+                    InitCB& init_cb,
                     const OutputCB& output_cb,
                     const media::WaitingCB& waiting_cb));
   MOCK_METHOD2(Decode,
@@ -148,9 +156,9 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
   }
 
   bool CreateAndInitialize(bool init_cb_result = true) {
-    EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
+    EXPECT_CALL(*video_decoder_, Initialize_(_, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<0>(&vda_config_), SaveArg<4>(&output_cb_),
-                        media::RunCallback<3>(init_cb_result)));
+                        media::RunOnceCallback<3>(init_cb_result)));
     rtc_video_decoder_adapter_ =
         RTCVideoDecoderAdapter::Create(&gpu_factories_, sdp_format_);
     return !!rtc_video_decoder_adapter_;
@@ -345,8 +353,9 @@ TEST_F(RTCVideoDecoderAdapterTest, ReinitializesForHDRColorSpaceInitially) {
   EXPECT_CALL(decoded_cb_, Run(_)).Times(2);
 
   // First Decode() should cause a reinitialize as new color space is given.
-  EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&vda_config_), media::RunCallback<3>(true)));
+  EXPECT_CALL(*video_decoder_, Initialize_(_, _, _, _, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&vda_config_), media::RunOnceCallback<3>(true)));
   webrtc::EncodedImage first_input_image = GetEncodedImageWithColorSpace(0);
   ASSERT_EQ(rtc_video_decoder_adapter_->Decode(first_input_image, false, 0),
             WEBRTC_VIDEO_CODEC_OK);
@@ -377,8 +386,8 @@ TEST_F(RTCVideoDecoderAdapterTest, HandlesReinitializeFailure) {
       .WillOnce(media::RunCallback<1>(media::DecodeStatus::OK));
 
   // Set Initialize() to fail.
-  EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
-      .WillOnce(media::RunCallback<3>(false));
+  EXPECT_CALL(*video_decoder_, Initialize_(_, _, _, _, _, _))
+      .WillOnce(media::RunOnceCallback<3>(false));
   ASSERT_EQ(rtc_video_decoder_adapter_->Decode(input_image, false, 0),
             WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
 }

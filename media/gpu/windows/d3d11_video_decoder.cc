@@ -264,7 +264,7 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
 void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    bool low_delay,
                                    CdmContext* cdm_context,
-                                   const InitCB& init_cb,
+                                   InitCB init_cb,
                                    const OutputCB& output_cb,
                                    const WaitingCB& waiting_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -274,7 +274,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   state_ = State::kInitializing;
 
   config_ = config;
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
 

@@ -75,7 +75,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -92,11 +92,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   // Set up |cdm_context| as part of initialization.  Guarantees that |init_cb|
   // will be called depending on the outcome, though not necessarily before this
   // function returns.
-  void SetCdm(CdmContext* cdm_context, const InitCB& init_cb);
+  void SetCdm(CdmContext* cdm_context, InitCB init_cb);
 
   // Called when the Cdm provides |media_crypto|.  Will signal |init_cb| based
   // on the result, and set the codec config properly.
-  void OnMediaCryptoReady(const InitCB& init_cb,
+  void OnMediaCryptoReady(InitCB init_cb,
                           JavaObjectPtr media_crypto,
                           bool requires_secure_video_codec);
 

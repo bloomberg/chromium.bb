@@ -59,7 +59,7 @@ std::string FakeVideoDecoder::GetDisplayName() const {
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   bool low_delay,
                                   CdmContext* cdm_context,
-                                  const InitCB& init_cb,
+                                  InitCB init_cb,
                                   const OutputCB& output_cb,
                                   const WaitingCB& waiting_cb) {
   DVLOG(1) << decoder_name_ << ": " << __func__;
@@ -70,7 +70,7 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(reset_cb_.IsNull()) << "No reinitialization during pending reset.";
 
   current_config_ = config;
-  init_cb_.SetCallback(BindToCurrentLoop(init_cb));
+  init_cb_.SetCallback(BindToCurrentLoop(std::move(init_cb)));
 
   // Don't need BindToCurrentLoop() because |output_cb_| is only called from
   // RunDecodeCallback() which is posted from Decode().

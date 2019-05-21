@@ -69,22 +69,22 @@ std::string FFmpegAudioDecoder::GetDisplayName() const {
 
 void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                     CdmContext* /* cdm_context */,
-                                    const InitCB& init_cb,
+                                    InitCB init_cb,
                                     const OutputCB& output_cb,
                                     const WaitingCB& /* waiting_cb */) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
 
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+  InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
 
   if (config.is_encrypted()) {
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
   if (!ConfigureDecoder(config)) {
     av_sample_format_ = 0;
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -92,7 +92,7 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
   config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
   state_ = kNormal;
-  bound_init_cb.Run(true);
+  std::move(bound_init_cb).Run(true);
 }
 
 void FFmpegAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

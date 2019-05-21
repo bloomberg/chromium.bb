@@ -83,7 +83,7 @@ std::string OffloadingVideoDecoder::GetDisplayName() const {
 void OffloadingVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         bool low_delay,
                                         CdmContext* cdm_context,
-                                        const InitCB& init_cb,
+                                        InitCB init_cb,
                                         const OutputCB& output_cb,
                                         const WaitingCB& waiting_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -109,7 +109,8 @@ void OffloadingVideoDecoder::Initialize(const VideoDecoderConfig& config,
           // possible for this class to be destroyed during Initialize().
           base::BindOnce(&OffloadingVideoDecoder::Initialize,
                          weak_factory_.GetWeakPtr(), config, low_delay,
-                         cdm_context, init_cb, output_cb, waiting_cb));
+                         cdm_context, std::move(init_cb), output_cb,
+                         waiting_cb));
       return;
     }
 
@@ -124,14 +125,15 @@ void OffloadingVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Offloaded decoders expect asynchronous execution of callbacks; even if we
   // aren't currently using the offload thread.
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+  InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
   OutputCB bound_output_cb = BindToCurrentLoop(output_cb);
 
   // If we're not offloading just pass through to the wrapped decoder.
   if (disable_offloading) {
     offload_task_runner_ = nullptr;
     helper_->decoder()->Initialize(config, low_delay, cdm_context,
-                                   bound_init_cb, bound_output_cb, waiting_cb);
+                                   std::move(bound_init_cb), bound_output_cb,
+                                   waiting_cb);
     return;
   }
 
@@ -144,7 +146,8 @@ void OffloadingVideoDecoder::Initialize(const VideoDecoderConfig& config,
       FROM_HERE,
       base::BindOnce(&OffloadableVideoDecoder::Initialize,
                      base::Unretained(helper_->decoder()), config, low_delay,
-                     cdm_context, bound_init_cb, bound_output_cb, waiting_cb));
+                     cdm_context, std::move(bound_init_cb), bound_output_cb,
+                     waiting_cb));
 }
 
 void OffloadingVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

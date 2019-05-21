@@ -136,7 +136,7 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size,
 // UMA stat reported because the UMA_HISTOGRAM_ENUMERATION API requires a
 // callsite to always be called with the same stat name (can't parameterize it).
 static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
-    const VideoDecoder::InitCB& cb,
+    VideoDecoder::InitCB cb,
     MediaLog* media_log,
     bool success) {
   // TODO(xhwang): Report |success| directly.
@@ -149,7 +149,7 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
         "Media.OriginUrl.GpuVideoDecoderInitFailure");
   }
 
-  cb.Run(success);
+  std::move(cb).Run(success);
 }
 
 bool GpuVideoDecoder::IsPlatformDecoder() const {
@@ -163,7 +163,7 @@ std::string GpuVideoDecoder::GetDisplayName() const {
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool /* low_delay */,
                                  CdmContext* cdm_context,
-                                 const InitCB& init_cb,
+                                 InitCB init_cb,
                                  const OutputCB& output_cb,
                                  const WaitingCB& /* waiting_cb */) {
   DVLOG(3) << "Initialize()";
@@ -171,8 +171,8 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(config.IsValidConfig());
 
   InitCB bound_init_cb =
-      base::Bind(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
-                 BindToCurrentLoop(init_cb), media_log_);
+      base::BindOnce(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
+                     BindToCurrentLoop(std::move(init_cb)), media_log_);
 
   bool previously_initialized = config_.IsValidConfig();
   DVLOG(1) << (previously_initialized ? "Reinitializing" : "Initializing")
@@ -182,14 +182,14 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (encryption_mode != EncryptionScheme::CIPHER_MODE_UNENCRYPTED &&
       encryption_mode != EncryptionScheme::CIPHER_MODE_AES_CTR) {
     DVLOG(1) << "VDAs only support clear or cenc encrypted streams.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
   // Disallow codec changes between configuration changes.
   if (previously_initialized && config_.codec() != config.codec()) {
     DVLOG(1) << "Codec changed, cannot reinitialize.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -197,7 +197,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // hardware decoder which supports alpha formats.
   if (config.format() == PIXEL_FORMAT_I420A) {
     DVLOG(1) << "Alpha transparency formats are not supported.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -209,7 +209,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       VideoDecodeAccelerator::Capabilities::SUPPORTS_ENCRYPTED_STREAMS;
   if (config.is_encrypted() && (!cdm_context || !supports_encrypted_streams)) {
     DVLOG(1) << "Encrypted stream not supported.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -219,7 +219,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
              << ", unsupported coded size " << config.coded_size().ToString()
              << ", or accelerator should only be used for encrypted content. "
              << " is_encrypted: " << (config.is_encrypted() ? "yes." : "no.");
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -258,7 +258,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (config.is_encrypted() && !supports_deferred_initialization_) {
     DVLOG(1) << __func__
              << " Encrypted stream requires deferred initialialization.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -268,14 +268,14 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     // Reinitialization with a different config (but same codec and profile).
     // VDA should handle it by detecting this in-stream by itself,
     // no need to notify it.
-    bound_init_cb.Run(true);
+    std::move(bound_init_cb).Run(true);
     return;
   }
 
   vda_ = factories_->CreateVideoDecodeAccelerator();
   if (!vda_) {
     DVLOG(1) << "Failed to create a VDA.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -284,11 +284,11 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (config.is_encrypted() && cdm_id_ == CdmContext::kInvalidCdmId) {
     DVLOG(1) << "CDM ID not available.";
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
-  init_cb_ = bound_init_cb;
+  init_cb_ = std::move(bound_init_cb);
 
   const bool supports_external_output_surface = !!(
       capabilities.flags &

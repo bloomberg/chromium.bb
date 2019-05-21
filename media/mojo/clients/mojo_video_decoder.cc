@@ -33,7 +33,7 @@ namespace media {
 namespace {
 
 void ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB(
-    const VideoDecoder::InitCB& init_cb,
+    VideoDecoder::InitCB init_cb,
     bool success) {
   // Send the same histogram as GpuVideoDecoder to avoid breaking the existing
   // tests.
@@ -42,7 +42,7 @@ void ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB(
   UMA_HISTOGRAM_ENUMERATION("Media.GpuVideoDecoderInitializeStatus", status,
                             PIPELINE_STATUS_MAX + 1);
 
-  init_cb.Run(success);
+  std::move(init_cb).Run(success);
 }
 
 void ReportMojoVideoDecoderErrorStatusToUMAAndRunCB(
@@ -148,19 +148,19 @@ std::string MojoVideoDecoder::GetDisplayName() const {
 void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   bool low_delay,
                                   CdmContext* cdm_context,
-                                  const InitCB& init_cb,
+                                  InitCB init_cb,
                                   const OutputCB& output_cb,
                                   const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  InitCB bound_init_cb =
-      base::Bind(&ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB, init_cb);
+  InitCB bound_init_cb = base::BindOnce(
+      &ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB, std::move(init_cb));
   // Fail immediately if we know that the remote side cannot support |config|.
   if (gpu_factories_ && !gpu_factories_->IsDecoderConfigSupported(
                             video_decoder_implementation_, config)) {
     task_runner_->PostTask(FROM_HERE,
-                           base::BindRepeating(bound_init_cb, false));
+                           base::BindOnce(std::move(bound_init_cb), false));
     return;
   }
 
@@ -174,7 +174,8 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // is passed for reinitialization.
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(bound_init_cb, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(bound_init_cb), false));
     return;
   }
 
@@ -183,12 +184,12 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (has_connection_error_) {
     task_runner_->PostTask(FROM_HERE,
-                           base::BindRepeating(bound_init_cb, false));
+                           base::BindOnce(std::move(bound_init_cb), false));
     return;
   }
 
   initialized_ = false;
-  init_cb_ = bound_init_cb;
+  init_cb_ = std::move(bound_init_cb);
   output_cb_ = output_cb;
   waiting_cb_ = waiting_cb;
 

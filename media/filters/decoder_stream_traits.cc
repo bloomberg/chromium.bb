@@ -61,7 +61,7 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
     const DecoderConfigType& config,
     bool /* low_delay */,
     CdmContext* cdm_context,
-    const InitCB& init_cb,
+    InitCB init_cb,
     const OutputCB& output_cb,
     const WaitingCB& waiting_cb) {
   DCHECK(config.IsValidConfig());
@@ -71,7 +71,8 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
   config_ = config;
 
   stats_.audio_decoder_name = decoder->GetDisplayName();
-  decoder->Initialize(config, cdm_context, init_cb, output_cb, waiting_cb);
+  decoder->Initialize(config, cdm_context, std::move(init_cb), output_cb,
+                      waiting_cb);
 }
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::OnStreamReset(
@@ -153,14 +154,14 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::InitializeDecoder(
     const DecoderConfigType& config,
     bool low_delay,
     CdmContext* cdm_context,
-    const InitCB& init_cb,
+    InitCB init_cb,
     const OutputCB& output_cb,
     const WaitingCB& waiting_cb) {
   DCHECK(config.IsValidConfig());
   stats_.video_decoder_name = decoder->GetDisplayName();
   DVLOG(2) << stats_.video_decoder_name;
-  decoder->Initialize(config, low_delay, cdm_context, init_cb, output_cb,
-                      waiting_cb);
+  decoder->Initialize(config, low_delay, cdm_context, std::move(init_cb),
+                      output_cb, waiting_cb);
 }
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::OnStreamReset(

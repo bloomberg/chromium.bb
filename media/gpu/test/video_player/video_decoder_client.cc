@@ -154,8 +154,8 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
       kNoTransformation, video_->Resolution(), gfx::Rect(video_->Resolution()),
       video_->Resolution(), std::vector<uint8_t>(0), EncryptionScheme());
 
-  VideoDecoder::InitCB init_cb = BindToCurrentLoop(base::BindRepeating(
-      &VideoDecoderClient::DecoderInitializedTask, weak_this_));
+  VideoDecoder::InitCB init_cb = BindToCurrentLoop(
+      base::BindOnce(&VideoDecoderClient::DecoderInitializedTask, weak_this_));
   VideoDecoder::OutputCB output_cb = BindToCurrentLoop(
       base::BindRepeating(&VideoDecoderClient::FrameReadyTask, weak_this_));
   WaitingCB waiting_cb =
@@ -168,10 +168,10 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
     // The video decoder client expects decoders to use the VD interface. We can
     // use the TestVDAVideoDecoder wrapper here to test VDA-based video
     // decoders.
-    decoder_ = base::WrapUnique(
-        new TestVDAVideoDecoder(decoder_client_config_.allocation_mode,
-                                gfx::ColorSpace(), frame_renderer_.get()));
-    decoder_->Initialize(config, false, nullptr, init_cb, output_cb,
+    decoder_ = std::make_unique<TestVDAVideoDecoder>(
+        decoder_client_config_.allocation_mode, gfx::ColorSpace(),
+        frame_renderer_.get());
+    decoder_->Initialize(config, false, nullptr, std::move(init_cb), output_cb,
                          waiting_cb);
   }
 

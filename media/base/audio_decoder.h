@@ -26,7 +26,7 @@ class CdmContext;
 class MEDIA_EXPORT AudioDecoder {
  public:
   // Callback for VideoDecoder initialization.
-  using InitCB = base::Callback<void(bool success)>;
+  using InitCB = base::OnceCallback<void(bool success)>;
 
   // Callback for AudioDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.
@@ -34,7 +34,7 @@ class MEDIA_EXPORT AudioDecoder {
 
   // Callback for Decode(). Called after the decoder has accepted corresponding
   // DecoderBuffer, indicating that the pipeline can send next buffer to decode.
-  using DecodeCB = base::Callback<void(DecodeStatus)>;
+  using DecodeCB = base::RepeatingCallback<void(DecodeStatus)>;
 
   AudioDecoder();
 
@@ -69,7 +69,7 @@ class MEDIA_EXPORT AudioDecoder {
   // Initialize().
   virtual void Initialize(const AudioDecoderConfig& config,
                           CdmContext* cdm_context,
-                          const InitCB& init_cb,
+                          InitCB init_cb,
                           const OutputCB& output_cb,
                           const WaitingCB& waiting_cb) = 0;
 

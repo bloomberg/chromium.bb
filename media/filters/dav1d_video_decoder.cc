@@ -147,15 +147,16 @@ std::string Dav1dVideoDecoder::GetDisplayName() const {
 void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    bool low_delay,
                                    CdmContext* /* cdm_context */,
-                                   const InitCB& init_cb,
+                                   InitCB init_cb,
                                    const OutputCB& output_cb,
                                    const WaitingCB& /* waiting_cb */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(config.IsValidConfig());
 
-  InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(init_cb) : init_cb;
+  InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(std::move(init_cb))
+                                         : std::move(init_cb);
   if (config.is_encrypted() || config.codec() != kCodecAV1) {
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
@@ -213,14 +214,14 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
   s.frame_size_limit = limits::kMaxCanvas;
 
   if (dav1d_open(&dav1d_decoder_, &s) < 0) {
-    bound_init_cb.Run(false);
+    std::move(bound_init_cb).Run(false);
     return;
   }
 
   config_ = config;
   state_ = DecoderState::kNormal;
   output_cb_ = output_cb;
-  bound_init_cb.Run(true);
+  std::move(bound_init_cb).Run(true);
 }
 
 void Dav1dVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

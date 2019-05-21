@@ -42,7 +42,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   std::string GetDisplayName() const override;
   void Initialize(const AudioDecoderConfig& config,
                   CdmContext* cdm_context,
-                  const InitCB& init_cb,
+                  InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
