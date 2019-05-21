@@ -226,6 +226,7 @@ bool HeadlessDevToolsClientImpl::DispatchMessageReply(
       }
     } else if (message_dict.GetDictionary("error", &result_dict)) {
       auto null_value = std::make_unique<base::Value>();
+      base::Value* null_value_ptr = null_value.get();
       DLOG(ERROR) << "Error in method call result: " << *result_dict;
       if (browser_main_thread_) {
         browser_main_thread_->PostTask(
@@ -233,7 +234,7 @@ bool HeadlessDevToolsClientImpl::DispatchMessageReply(
             base::BindOnce(
                 &HeadlessDevToolsClientImpl::DispatchMessageReplyWithResultTask,
                 weak_ptr_factory_.GetWeakPtr(), std::move(null_value),
-                std::move(callback.callback_with_result), null_value.get()));
+                std::move(callback.callback_with_result), null_value_ptr));
       } else {
         std::move(callback.callback_with_result).Run(*null_value);
       }
