@@ -2186,6 +2186,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         if (mTabSwitcherAnimationTabStackDrawable != null) {
             mTabSwitcherAnimationTabStackDrawable.updateForTabCount(numberOfTabs, isIncognito);
         }
+
+        if (getToolbarDataProvider().isInOverview()
+                && getToolbarDataProvider().shouldShowLocationBarInOverviewMode()) {
+            mUrlBar.setText("");
+        }
     }
 
     /**
