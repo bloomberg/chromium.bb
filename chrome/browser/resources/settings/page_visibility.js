@@ -39,7 +39,8 @@ let AppearancePageVisibility;
 
 /**
  * @typedef {{
- *   googleDrive: boolean
+ *   googleDrive: boolean,
+ *   smbShares: boolean,
  * }}
  */
 let DownloadsPageVisibility;
@@ -115,6 +116,7 @@ cr.define('settings', function() {
       },
       downloads: {
         googleDrive: false,
+        smbShares: false,
       },
       extensions: false,
     };
@@ -153,7 +155,8 @@ cr.define('settings', function() {
         wakeOnWifi: showOSSettings,
       },
       downloads: {
-        googleDrive: true,
+        googleDrive: showOSSettings,
+        smbShares: showOSSettings,
       },
       extensions: true,
     };

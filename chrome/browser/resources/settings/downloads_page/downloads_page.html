@@ -54,7 +54,8 @@
           hidden="[[!pageVisibility.googleDrive]]">
       </settings-toggle-button>
       <cr-link-row id="smbShares" class="hr" on-click="onTapSmbShares_"
-          label="$i18n{smbSharesTitle}"></cr-link-row>
+          hidden="[[!pageVisibility.smbShares]]" label="$i18n{smbSharesTitle}">
+      </cr-link-row>
 </if>
       <template is="dom-if" if="[[autoOpenDownloads_]]" restamp>
         <div class="settings-box">
@@ -73,6 +74,7 @@
 <if expr="chromeos">
     <template is="dom-if" route-path="/smbShares">
       <settings-subpage
+          hidden="[[!pageVisibility.smbShares]]"
           associated-control="[[$$('#smbShares')]]"
           page-title="$i18n{smbSharesTitle}">
         <settings-smb-shares-page prefs="[[prefs]]">
