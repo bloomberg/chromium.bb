@@ -4,6 +4,14 @@
 <script src='call_function.js'></script>
 <script>
 
+function wrap(value) {
+  return jsonSerialize(value, []);
+}
+
+function unwrap(value, opt_cache) {
+  return jsonDeserialize(value, [], opt_cache);
+}
+
 function clearCache() {
   getPageCache().cache_ = {};
 }
@@ -92,9 +100,6 @@ function testCacheWrap() {
   assertEquals(null, unwrap(null));
   assertEquals(undefined, wrap(undefined));
   assertEquals(undefined, unwrap(undefined));
-  function func() {}
-  assertEquals(func, wrap(func));
-  assertEquals(func, unwrap(func));
 
   var cache = getPageCache();
   var arr = [1, new Array(1, new Object({a: 1, b: {a: 1, b: {}, c: 3}}), 3)];
@@ -107,6 +112,25 @@ function testCacheWrap() {
   assertEquals(document, unwrapped[1][1].b.b);
   unwrapped[1][1].b.b = {};
   assertEquals(originalJson, JSON.stringify(unwrapped));
+}
+
+function testObjectWithLengthProperty() {
+  clearCache();
+
+  let obj = {length: 200};
+  assertEquals(200, wrap({length: 200})['length'])
+  assertEquals(JSON.stringify(obj), JSON.stringify(wrap({length: 200})))
+
+  obj = {bar: 'foo', bazz: {length: 150}};
+  let wrappedObj = wrap(obj);
+  assertEquals('foo', wrappedObj['bar'])
+  assertEquals(150, wrappedObj['bazz']['length'])
+  assertEquals(JSON.stringify(obj), JSON.stringify(wrappedObj));
+
+  let unwrappedObj = unwrap(obj);
+  assertEquals('foo', unwrappedObj['bar'])
+  assertEquals(150, unwrappedObj['bazz']['length'])
+  assertEquals(JSON.stringify(obj), JSON.stringify(unwrappedObj));
 }
 
 function testCacheDoubleWrap() {
