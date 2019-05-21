@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -17,15 +19,16 @@
 #include "ui/views/widget/widget.h"
 
 ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
-    CommandUpdater* command_updater,
     Browser* browser)
-    : ToolbarIconContainerView(), browser_(browser) {
+    : ToolbarIconContainerView(
+          /*uses_highlight=*/!browser->profile()->IsIncognito()),
+      browser_(browser) {
   manage_passwords_icon_views_ =
-      new ManagePasswordsIconViews(command_updater, this);
+      new ManagePasswordsIconViews(browser->command_controller(), this);
   page_action_icons_.push_back(manage_passwords_icon_views_);
 
   local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
-      command_updater, browser, this,
+      browser->command_controller(), browser, this,
       // TODO(crbug.com/932818): The font list and the icon color may not be
       // what we want here. Put placeholders for now.
       views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
@@ -33,7 +36,7 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
   page_action_icons_.push_back(local_card_migration_icon_view_);
 
   save_card_icon_view_ = new autofill::SaveCardIconView(
-      command_updater, browser, this,
+      browser->command_controller(), browser, this,
       // TODO(crbug.com/932818): The font list and the icon color may not be
       // what we want here. Put placeholders for now.
       views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,

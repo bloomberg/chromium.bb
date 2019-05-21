@@ -15,7 +15,7 @@ class ToolbarIconContainerView : public views::View,
                                  public views::ButtonObserver,
                                  public views::ViewObserver {
  public:
-  ToolbarIconContainerView();
+  explicit ToolbarIconContainerView(bool uses_highlight);
   ~ToolbarIconContainerView() override;
 
   // Update all the icons it contains. Override by subclass.
@@ -34,7 +34,11 @@ class ToolbarIconContainerView : public views::View,
   void OnViewFocused(views::View* observed_view) override;
   void OnViewBlurred(views::View* observed_view) override;
 
+  bool uses_highlight() { return uses_highlight_; }
+
  private:
+  friend class ToolbarPageActionIconContainerViewBrowserTest;
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
@@ -47,6 +51,9 @@ class ToolbarIconContainerView : public views::View,
 
   // Points to the child view that is currently highlighted.
   views::View* highlighted_view_ = nullptr;
+
+  // Determine whether the container shows its highlight background.
+  const bool uses_highlight_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarIconContainerView);
 };

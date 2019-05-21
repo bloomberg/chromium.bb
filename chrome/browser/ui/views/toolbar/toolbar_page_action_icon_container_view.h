@@ -12,7 +12,6 @@
 
 class AvatarToolbarButton;
 class Browser;
-class CommandUpdater;
 class ManagePasswordsIconViews;
 
 namespace autofill {
@@ -26,8 +25,7 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
                                            public PageActionIconContainer,
                                            public PageActionIconView::Delegate {
  public:
-  ToolbarPageActionIconContainerView(CommandUpdater* command_updater,
-                                     Browser* browser);
+  explicit ToolbarPageActionIconContainerView(Browser* browser);
   ~ToolbarPageActionIconContainerView() override;
 
   PageActionIconView* GetIconView(PageActionIconType icon_type);

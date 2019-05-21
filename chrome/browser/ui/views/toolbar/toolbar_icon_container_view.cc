@@ -14,7 +14,8 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 
-ToolbarIconContainerView::ToolbarIconContainerView() {
+ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
+    : uses_highlight_(uses_highlight) {
   auto layout_manager = std::make_unique<views::FlexLayout>();
   layout_manager->SetCollapseMargins(true).SetDefaultChildMargins(
       gfx::Insets(0, 0, 0, GetLayoutConstant(TOOLBAR_ELEMENT_PADDING)));
@@ -70,6 +71,9 @@ void ToolbarIconContainerView::ChildVisibilityChanged(views::View* child) {
 }
 
 void ToolbarIconContainerView::UpdateHighlight(bool highlighted) {
+  if (!uses_highlight_)
+    return;
+
   SetBackground(highlighted
                     ? views::CreateRoundedRectBackground(
                           SkColorSetA(GetToolbarInkDropBaseColor(this),

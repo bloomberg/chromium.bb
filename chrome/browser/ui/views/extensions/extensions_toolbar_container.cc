@@ -11,7 +11,8 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 
 ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
-    : browser_(browser),
+    : ToolbarIconContainerView(/*uses_highlight=*/true),
+      browser_(browser),
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this),
       extensions_button_(new ExtensionsToolbarButton(browser_, this)) {

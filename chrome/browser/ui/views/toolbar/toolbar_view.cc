@@ -244,8 +244,7 @@ void ToolbarView::Init() {
     // should not be created twice.
     show_avatar_toolbar_button = false;
     toolbar_page_action_container =
-        std::make_unique<ToolbarPageActionIconContainerView>(
-            browser_->command_controller(), browser_);
+        std::make_unique<ToolbarPageActionIconContainerView>(browser_);
   } else {
 #if defined(OS_CHROMEOS)
     // ChromeOS only badges Incognito and Guest icons in the browser window.
