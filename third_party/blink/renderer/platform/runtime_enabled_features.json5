@@ -199,10 +199,6 @@
       status: "experimental",
     },
     {
-      name: "BlockMetaSetCookie",
-      status: "stable"
-    },
-    {
       name: "BuiltInModuleAll",
       implied_by: ["ExperimentalProductivityFeatures"],
     },
