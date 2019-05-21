@@ -829,7 +829,7 @@ bool DisplayLockContext::ElementSupportsDisplayLocking() const {
   // forcing an update from the ancestor locks seems inefficient. For now, we
   // just optimistically assume that we have all of the right containment in
   // place. See crbug.com/926276 for more information.
-  if (IsElementDirtyForStyleRecalc())
+  if (element_->NeedsStyleRecalc())
     return true;
 
   // If we have a layout object, check that since it's a more authoritative

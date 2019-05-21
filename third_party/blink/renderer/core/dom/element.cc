@@ -175,23 +175,28 @@ class DisplayLockStyleScope {
   DisplayLockStyleScope(DisplayLockContext* context)
       : context_(context),
         should_update_self_(!context ||
-                            context->ShouldStyle(DisplayLockContext::kSelf)),
-        should_update_children_(
-            !context || context->ShouldStyle(DisplayLockContext::kChildren)) {}
+                            context->ShouldStyle(DisplayLockContext::kSelf)) {}
+
   ~DisplayLockStyleScope() {
     if (!context_)
       return;
     if (did_update_children_)
       context_->DidStyle(DisplayLockContext::kChildren);
-    // There is no other condition to block us form updating self, so if we
-    // "should" update, then we "did" update.
-    if (should_update_self_)
-      context_->DidStyle(DisplayLockContext::kSelf);
   }
 
   bool ShouldUpdateSelfStyle() const { return should_update_self_; }
-  bool ShouldUpdateChildStyle() const { return should_update_children_; }
+  bool ShouldUpdateChildStyle() const {
+    // We can't calculate this on construction time, because the element might
+    // get unlocked after self-style calculation due to lack of containment,
+    // which might change the value of ShouldStyle(children).
+    return !context_ || context_->ShouldStyle(DisplayLockContext::kChildren);
+  }
   void DidUpdateChildStyle() { did_update_children_ = true; }
+  void DidUpdateSelfStyle() {
+    DCHECK(should_update_self_);
+    if (context_)
+      context_->DidStyle(DisplayLockContext::kSelf);
+  }
 
   void NotifyUpdateWasBlocked(DisplayLockContext::StyleType style) {
     DCHECK(!ShouldUpdateChildStyle());
@@ -201,7 +206,6 @@ class DisplayLockStyleScope {
  private:
   UntracedMember<DisplayLockContext> context_;
   const bool should_update_self_;
-  const bool should_update_children_;
   bool did_update_children_ = false;
 };
 
@@ -2357,6 +2361,9 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       child_change = child_change.ForceRecalcDescendants();
     ClearNeedsStyleRecalc();
   }
+  // We're done with self-style, notify so that containment checks etc for
+  // display locking can happen..
+  display_lock_style_scope.DidUpdateSelfStyle();
 
   if (child_change.TraversePseudoElements(*this)) {
     UpdatePseudoElement(kPseudoIdBackdrop, child_change);
@@ -2374,7 +2381,6 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
     } else {
       RecalcDescendantStyles(child_change);
     }
-    display_lock_style_scope.DidUpdateChildStyle();
   }
 
   if (child_change.TraversePseudoElements(*this)) {
@@ -2389,6 +2395,8 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
 
   if (should_update_child_style) {
     ClearChildNeedsStyleRecalc();
+    // We've updated all the children that needs an update (might be 0).
+    display_lock_style_scope.DidUpdateChildStyle();
   } else if (child_change.RecalcChildren()) {
     // If we should've calculated the style for children but was blocked,
     // notify so that we'd come back.

@@ -1,10 +1,10 @@
-<!doctype html>
+<!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: acquire, containment changes</title>
-<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<title>Display Locking: acquire, no containment</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="pass-no-containment-with-child-ref.html">
+<link rel="match" href="pass-container-with-child-ref.html">
 <script src="/common/reftest-wait.js"></script>
 
 <style>
@@ -21,7 +21,6 @@
 </style>
 
 <div id="log"></div>
-<div id="container" style="contain: style layout;"><div id="child" style="display: none;"></div></div>
 
 <script>
 function finishTest(status_string) {
@@ -31,13 +30,19 @@ function finishTest(status_string) {
 }
 
 function runTest() {
-  const container = document.getElementById("container");
-  // Recalc child and container when acquiring.
-  container.style = "";
-  child.style = "";
+  const container = document.createElement("div");
+  container.id = "container";
+  container.innerHTML = "<div id='child'></div>";
   container.displayLock.acquire({ timeout: Infinity }).then(
-    () => { finishTest("FAIL"); },
-    (e) => { finishTest("PASS " + e.message); });
+    () => {
+      document.body.appendChild(container);
+      container.offsetTop;
+      if (container.displayLock.locked)
+        finishTest("FAIL didn't get unlocked");
+      else
+        finishTest("PASS");
+    },
+    (e) => { finishTest("FAIL" + e.message); });
 }
 
 window.onload = runTest;
