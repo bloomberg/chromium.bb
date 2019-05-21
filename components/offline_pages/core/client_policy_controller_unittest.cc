@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
@@ -226,7 +227,7 @@ TEST_F(ClientPolicyControllerTest, CheckSuggestedArticlesDefined) {
   EXPECT_TRUE(isTemporary(policy));
   EXPECT_TRUE(controller()->IsRemovedOnCacheReset(kSuggestedArticlesNamespace));
   ExpectRemovedOnCacheReset(kSuggestedArticlesNamespace, true);
-  ExpectDownloadSupport(kSuggestedArticlesNamespace, true);
+  ExpectDownloadSupport(kSuggestedArticlesNamespace, IsOfflinePagesEnabled());
   ExpectUserRequestedDownloadSupport(kSuggestedArticlesNamespace, false);
   ExpectRecentTab(kSuggestedArticlesNamespace, false);
   ExpectRestrictedToTabFromClientId(kSuggestedArticlesNamespace, false);

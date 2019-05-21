@@ -228,6 +228,13 @@ public class OfflinePageUtils {
     }
 
     /**
+     * Returns false if offline pages features should be disabled.
+     */
+    public static boolean isEnabled() {
+        return org.chromium.chrome.browser.BuildConfig.ENABLE_OFFLINE_PAGES;
+    }
+
+    /**
      * Returns the number of free bytes on the storage.
      */
     public static long getFreeSpaceInBytes() {

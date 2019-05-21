@@ -21,6 +21,7 @@
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/offline_item_state.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/base/l10n/time_format.h"
@@ -201,7 +202,8 @@ AvailableOfflineContentProvider::AvailableOfflineContentProvider(
 AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 
 void AvailableOfflineContentProvider::List(ListCallback callback) {
-  if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI)) {
+  if (!offline_pages::IsOfflinePagesEnabled() ||
+      !base::FeatureList::IsEnabled(features::kNewNetErrorPageUI)) {
     std::move(callback).Run(true, {});
     return;
   }

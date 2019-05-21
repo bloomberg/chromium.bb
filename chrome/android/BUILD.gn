@@ -549,7 +549,7 @@ java_cpp_template("browser_build_config") {
   package_path = "org/chromium/chrome/browser"
 
   defines = []
-  if (enable_offline_pages) {
+  if (!notouch_build) {
     defines += [ "_ENABLE_OFFLINE_PAGES" ]
   }
 }

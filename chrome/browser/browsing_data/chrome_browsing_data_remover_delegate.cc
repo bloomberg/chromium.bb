@@ -951,7 +951,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if defined(OS_ANDROID)
     // For now we're considering offline pages as cache, so if we're removing
     // cache we should remove offline pages as well.
-    if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE)) {
+    if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE) &&
+        offline_pages::IsOfflinePagesEnabled()) {
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
           ->DeleteCachedPagesByURLPredicate(
               filter,
