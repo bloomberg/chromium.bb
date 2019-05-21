@@ -77,10 +77,12 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.csdn.net/',
       'https://www.alipay.com/',
       'https://www.twitch.tv/',
-      'https://www.ebay.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.ebay.com/',
       # TODO(keishi): Memory dump fails flakily crbug.com/963273
       #'https://www.microsoft.com/',
-      'https://www.xvideos.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.xvideos.com/',
       'https://mail.ru/',
       'https://www.bing.com/',
       'http://www.wikia.com/',
@@ -259,7 +261,8 @@ class LeakDetectionStorySet(story_module.StorySet):
     resource_loading_urls_list = [
       'https://www.hotels.com/',
       'https://www.livejournal.com/',
-      'https://www.yahoo.com',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.yahoo.com',
       'http://www.quora.com',
       'https://www.macys.com',
       'http://infomoney.com.br',
