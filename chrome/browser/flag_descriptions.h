@@ -1346,9 +1346,6 @@ extern const char kIncognitoStringsDescription[];
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 
-extern const char kLanguagesPreferenceName[];
-extern const char kLanguagesPreferenceDescription[];
-
 extern const char kLsdPermissionPromptName[];
 extern const char kLsdPermissionPromptDescription[];
 

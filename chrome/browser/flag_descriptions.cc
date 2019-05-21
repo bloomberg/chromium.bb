@@ -2255,10 +2255,6 @@ const char kInterestFeedContentSuggestionsDescription[] =
 const char kInterestFeedContentSuggestionsName[] =
     "Interest Feed Content Suggestions";
 
-const char kLanguagesPreferenceName[] = "Language Settings";
-const char kLanguagesPreferenceDescription[] =
-    "Enable this option for Language Settings feature on Android.";
-
 const char kLsdPermissionPromptName[] =
     "Location Settings Dialog Permission Prompt";
 const char kLsdPermissionPromptDescription[] =

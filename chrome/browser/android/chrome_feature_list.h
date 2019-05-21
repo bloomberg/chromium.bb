@@ -80,7 +80,6 @@ extern const base::Feature kImprovedA2HS;
 extern const base::Feature kInlineUpdateFlow;
 extern const base::Feature kIntentBlockExternalFormRedirectsNoGesture;
 extern const base::Feature kJellyBeanSupported;
-extern const base::Feature kLanguagesPreference;
 extern const base::Feature kSearchEnginePromoExistingDevice;
 extern const base::Feature kSearchEnginePromoNewDevice;
 extern const base::Feature kNewPhotoPicker;

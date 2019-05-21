@@ -396,21 +396,6 @@
             ]
         }
     ],
-    "AndroidLanguageSettings": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LanguagesPreference"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidMediaProcessPriority": [
         {
             "platforms": [

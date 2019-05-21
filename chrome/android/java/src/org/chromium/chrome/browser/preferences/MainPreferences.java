@@ -151,12 +151,6 @@ public class MainPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PREF_NOTIFICATIONS));
         }
 
-        // This checks whether the Languages Preference *feature* is enabled on the user's device.
-        // If not, remove the languages preference.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.LANGUAGES_PREFERENCE)) {
-            getPreferenceScreen().removePreference(findPreference(PREF_LANGUAGES));
-        }
-
         if (!TemplateUrlService.getInstance().isLoaded()) {
             TemplateUrlService.getInstance().registerLoadListener(this);
             TemplateUrlService.getInstance().load();

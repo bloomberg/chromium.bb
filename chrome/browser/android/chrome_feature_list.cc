@@ -145,7 +145,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kInlineUpdateFlow,
     &kIntentBlockExternalFormRedirectsNoGesture,
     &kJellyBeanSupported,
-    &kLanguagesPreference,
     &kNewPhotoPicker,
     &kNoCreditCardAbort,
     &kNTPButton,
@@ -437,9 +436,6 @@ const base::Feature kIntentBlockExternalFormRedirectsNoGesture{
 
 const base::Feature kJellyBeanSupported{"JellyBeanSupported",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kLanguagesPreference{"LanguagesPreference",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSearchEnginePromoExistingDevice{
     "SearchEnginePromo.ExistingDevice", base::FEATURE_ENABLED_BY_DEFAULT};
