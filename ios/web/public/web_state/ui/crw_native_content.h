@@ -77,7 +77,7 @@ struct ContextMenuParams;
 
 // The URL that will be displayed to the user when presenting this native
 // content.
-- (GURL)virtualURL;
+- (const GURL&)virtualURL;
 
 // The content inset and offset of this native view.
 - (CGPoint)contentOffset;

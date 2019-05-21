@@ -30,6 +30,7 @@
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/web_state/ui/crw_native_content_holder.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/test/test_url_constants.h"
@@ -866,7 +867,8 @@ class WebStateObserverTest
                                            virtualURL:GURL::EmptyGURL()];
 
     WebStateImpl* web_state_impl = reinterpret_cast<WebStateImpl*>(web_state());
-    web_state_impl->GetWebController().nativeProvider = provider_;
+    [web_state_impl->GetWebController() nativeContentHolder].nativeProvider =
+        provider_;
 
     test_server_ = std::make_unique<EmbeddedTestServer>();
     test_server_->RegisterRequestHandler(

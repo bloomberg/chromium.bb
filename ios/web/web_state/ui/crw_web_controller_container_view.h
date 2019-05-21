@@ -9,10 +9,11 @@
 
 #import "ios/web/common/crw_content_view.h"
 
+@protocol CRWNativeContent;
+@protocol CRWNativeContentHolder;
 @class CRWWebControllerContainerView;
 @class CRWWebViewContentView;
 @class CRWWebViewProxyImpl;
-@protocol CRWNativeContent;
 
 @protocol CRWWebControllerContainerViewDelegate<NSObject>
 
@@ -30,10 +31,18 @@
 - (BOOL)shouldKeepRenderProcessAliveForContainerView:
     (CRWWebControllerContainerView*)containerView;
 
-// Instructs the delegate to add the |viewToStash| to the view hieararchy to
+// Instructs the delegate to add the |viewToStash| to the view hierarchy to
 // keep the render process alive.
 - (void)containerView:(CRWWebControllerContainerView*)containerView
     storeWebViewInWindow:(UIView*)viewToStash;
+
+// Resets the native controller.
+- (void)containerViewResetNativeController:
+    (CRWWebControllerContainerView*)containerView;
+
+// Returns the native content holder.
+- (id<CRWNativeContentHolder>)containerViewNativeContentHolder:
+    (CRWWebControllerContainerView*)containerView;
 
 @end
 
@@ -45,8 +54,6 @@
 // The web view content view being displayed.
 @property(nonatomic, strong, readonly)
     CRWWebViewContentView* webViewContentView;
-// The native controller whose content is being displayed.
-@property(nonatomic, strong, readonly) id<CRWNativeContent> nativeController;
 // The currently displayed transient content view.
 @property(nonatomic, strong, readonly) CRWContentView* transientContentView;
 @property(nonatomic, weak) id<CRWWebControllerContainerViewDelegate>
@@ -77,8 +84,8 @@
 // Replaces the currently displayed content with |webViewContentView|.
 - (void)displayWebViewContentView:(CRWWebViewContentView*)webViewContentView;
 
-// Replaces the currently displayed content with |nativeController|'s view.
-- (void)displayNativeContent:(id<CRWNativeContent>)nativeController;
+// Notifies the container that the native content changed
+- (void)nativeContentDidChange:(id<CRWNativeContent>)previousNativeController;
 
 // Adds |transientContentView| as a subview above previously displayed content.
 - (void)displayTransientContent:(CRWContentView*)transientContentView;

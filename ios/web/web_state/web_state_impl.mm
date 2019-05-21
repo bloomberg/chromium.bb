@@ -33,6 +33,7 @@
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
+#import "ios/web/public/web_state/ui/crw_native_content_holder.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -702,7 +703,7 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
       navigation_manager_->GetLastCommittedItemImpl();
   GURL lastCommittedURL;
   if (item) {
-    if ([web_controller_.nativeController
+    if ([[web_controller_ nativeContentHolder].nativeController
             respondsToSelector:@selector(virtualURL)] ||
         item->error_retry_state_machine().state() ==
             ErrorRetryState::kReadyToDisplayErrorForFailedNavigation) {

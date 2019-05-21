@@ -21,8 +21,7 @@ enum class WKNavigationState;
 }  // namespace web
 
 @class CRWJSInjector;
-@protocol CRWNativeContent;
-@protocol CRWNativeContentProvider;
+@protocol CRWNativeContentHolder;
 @protocol CRWSwipeRecognizerProvider;
 @class CRWWebViewContentView;
 @protocol CRWWebViewProxy;
@@ -47,7 +46,6 @@ class WebStateImpl;
 // Defaults to NO; this should be enabled before attempting to access the view.
 @property(nonatomic, assign) BOOL webUsageEnabled;
 
-@property(nonatomic, weak) id<CRWNativeContentProvider> nativeProvider;
 @property(nonatomic, weak) id<CRWSwipeRecognizerProvider>
     swipeRecognizerProvider;
 
@@ -176,8 +174,9 @@ class WebStateImpl;
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
 
-// Returns the native controller (if any) current mananging the content.
-- (id<CRWNativeContent>)nativeController;
+// Returns the object holding the native controller (if any) currently managing
+// the content.
+- (id<CRWNativeContentHolder>)nativeContentHolder;
 
 // Called when NavigationManager has completed go to index same-document
 // navigation. Updates HTML5 history state, current document URL and sends

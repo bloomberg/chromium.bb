@@ -38,7 +38,7 @@
   return _URL;
 }
 
-- (GURL)virtualURL {
+- (const GURL&)virtualURL {
   return _virtualURL;
 }
 

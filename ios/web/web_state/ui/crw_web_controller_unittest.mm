@@ -40,6 +40,7 @@
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
+#import "ios/web/public/web_state/ui/crw_native_content_holder.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -307,7 +308,8 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
   TestNativeContent* content =
       [[TestNativeContent alloc] initWithURL:native_url virtualURL:native_url];
   [mock_native_provider setController:content forURL:native_url];
-  [web_controller() setNativeProvider:mock_native_provider];
+  [[web_controller() nativeContentHolder]
+      setNativeProvider:mock_native_provider];
 
   AddPendingItem(native_url, ui::PAGE_TRANSITION_TYPED);
 
@@ -1003,7 +1005,8 @@ class CRWWebControllerNativeContentTest
   void SetUp() override {
     ProgrammaticWebTestWithWebController::SetUp();
     mock_native_provider_ = [[TestNativeContentProvider alloc] init];
-    [web_controller() setNativeProvider:mock_native_provider_];
+    [[web_controller() nativeContentHolder]
+        setNativeProvider:mock_native_provider_];
   }
 
   void Load(const GURL& URL) {

@@ -210,6 +210,7 @@
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/web_state/ui/crw_native_content_holder.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
@@ -2741,7 +2742,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
 
   // Install the proper CRWWebController delegates.
-  tab.webController.nativeProvider = self;
+  [tab.webController nativeContentHolder].nativeProvider = self;
   tab.webController.swipeRecognizerProvider = self.sideSwipeController;
   tab.webState->SetDelegate(_webStateDelegate.get());
   SadTabTabHelper::FromWebState(webState)->SetDelegate(_sadTabCoordinator);
@@ -2795,7 +2796,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/960950): Remove this once webController is moved out of tab.
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
 
-  tab.webController.nativeProvider = nil;
+  [tab.webController nativeContentHolder].nativeProvider = nil;
   tab.webController.swipeRecognizerProvider = nil;
   webState->SetDelegate(nullptr);
   if (AccountConsistencyService* accountConsistencyService =
@@ -2834,7 +2835,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (id)nativeControllerForTab:(Tab*)tab {
-  id nativeController = tab.webController.nativeController;
+  id nativeController =
+      [tab.webController nativeContentHolder].nativeController;
   return nativeController ? nativeController : _temporaryNativeController;
 }
 
@@ -3649,7 +3651,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   Tab* currentTab = self.tabModel.currentTab;
   if (!self.currentWebState ||
       self.currentWebState->GetLastCommittedURL() != url ||
-      [currentTab.webController.nativeController
+      [[currentTab.webController nativeContentHolder].nativeController
           isKindOfClass:[nativeController class]]) {
     _temporaryNativeController = nativeController;
   }
