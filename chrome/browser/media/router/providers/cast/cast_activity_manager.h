@@ -37,9 +37,18 @@ class MediaSinkServiceBase;
 // CastActivityRecord.
 class CastActivityManagerBase {
  public:
+  CastActivityManagerBase() = default;
+  CastActivityManagerBase(const CastActivityManagerBase&) = delete;
+  CastActivityManagerBase& operator=(const CastActivityManagerBase&) = delete;
+
   virtual cast_channel::ResultCallback MakeResultCallbackForRoute(
       const std::string& route_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback) = 0;
+
+ protected:
+  // The destructor is protected to allow deletion only through a pointer to a
+  // derived type.
+  ~CastActivityManagerBase() = default;
 };
 
 // Handles launching and terminating Cast application on a Cast receiver, and
@@ -237,7 +246,6 @@ class CastActivityManager : public CastActivityManagerBase,
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastActivityManager> weak_ptr_factory_;
   FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest, SendMediaRequestToReceiver);
-  DISALLOW_COPY_AND_ASSIGN(CastActivityManager);
 };
 
 }  // namespace media_router

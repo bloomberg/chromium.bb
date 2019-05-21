@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 
 #include <memory>
@@ -21,7 +20,7 @@ namespace media_router {
 
 CastActivityRecord::CastActivityRecord(const MediaRoute& route,
                                        const std::string& app_id)
-    : route_(route), app_id_(app_id) {}
+    : ActivityRecord(route, app_id) {}
 
 CastActivityRecord::~CastActivityRecord() = default;
 

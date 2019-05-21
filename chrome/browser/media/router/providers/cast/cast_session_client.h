@@ -35,6 +35,8 @@ class CastSessionClient {
   CastSessionClient(const std::string& client_id,
                     const url::Origin& origin,
                     int tab_id);
+  CastSessionClient(const CastSessionClient&) = delete;
+  CastSessionClient& operator=(const CastSessionClient&) = delete;
   virtual ~CastSessionClient();
 
   const std::string& client_id() const { return client_id_; }
@@ -185,7 +187,6 @@ class CastSessionClientImpl : public CastSessionClient,
   blink::mojom::PresentationConnectionPtr connection_;
 
   base::WeakPtrFactory<CastSessionClientImpl> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(CastSessionClientImpl);
 };
 
 }  // namespace media_router

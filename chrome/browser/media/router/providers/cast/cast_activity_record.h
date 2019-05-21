@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/media/router/providers/cast/activity_record.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
@@ -35,16 +36,14 @@ class MediaRoute;
 // are handled by LocalPresentationManager.
 //
 // Instances of this class are associated with a specific session and app.
-class CastActivityRecord {
+class CastActivityRecord : public ActivityRecord {
  public:
   using ClientMap =
       base::flat_map<std::string, std::unique_ptr<CastSessionClient>>;
 
   CastActivityRecord(const MediaRoute& route, const std::string& app_id);
-  virtual ~CastActivityRecord();
+  ~CastActivityRecord() override;
 
-  const MediaRoute& route() const { return route_; }
-  const std::string& app_id() const { return app_id_; }
   const base::Optional<std::string>& session_id() const { return session_id_; }
 
   // TODO(jrw): Get rid of this accessor.
@@ -114,8 +113,6 @@ class CastActivityRecord {
   virtual void TerminatePresentationConnections() = 0;
 
  protected:
-  MediaRoute route_;
-  const std::string app_id_;
   ClientMap connected_clients_;
 
   // Set by CastActivityManager after the session is launched successfully.
@@ -204,8 +201,6 @@ class CastActivityRecordImpl : public CastActivityRecord {
   CastSessionTracker* const session_tracker_;
   DataDecoder* const data_decoder_;
   CastActivityManagerBase* const activity_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastActivityRecordImpl);
 };
 
 }  // namespace media_router
