@@ -432,6 +432,9 @@ float ShapeResultView::ForEachGraphemeClusters(const StringView& text,
   float advance_so_far = initial_advance;
 
   for (const auto& part : parts_) {
+    if (!part->NumGlyphs())
+      continue;
+
     const auto& run = part->run_;
     unsigned graphemes_in_cluster = 1;
     float cluster_advance = 0;
