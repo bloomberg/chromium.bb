@@ -32,6 +32,9 @@ class WebXrVrConsentDialogBrowserTest : public WebXrVrBrowserTestBase {
 WebXrVrConsentDialogBrowserTest::WebXrVrConsentDialogBrowserTest() {
   enable_features_.push_back(features::kOpenVR);
   enable_features_.push_back(features::kWebXr);
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  disable_features_.push_back(features::kWindowsMixedReality);
+#endif
 }
 
 void WebXrVrConsentDialogBrowserTest::SetupFakeConsentManager(
