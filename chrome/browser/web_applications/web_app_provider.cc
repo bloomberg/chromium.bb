@@ -75,12 +75,12 @@ void WebAppProvider::Init() {
     CreateWebAppsSubsystems(profile_);
   else
     CreateBookmarkAppsSubsystems(profile_);
+
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::Source<Profile>(profile_));
 }
 
 void WebAppProvider::StartRegistry() {
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::Source<Profile>(profile_));
-
   registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
                                   weak_ptr_factory_.GetWeakPtr()));
 }
