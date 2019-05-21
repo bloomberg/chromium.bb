@@ -105,8 +105,6 @@ class DirectCompositionSurfaceTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    // Other tests may also initialize GL.
-    gl::init::ShutdownGL(false);
     // Without this, the following check always fails.
     gl::init::InitializeGLNoExtensionsOneOff();
     if (!QueryDirectCompositionDevice(QueryD3D11DeviceObjectFromANGLE())) {
@@ -123,6 +121,7 @@ class DirectCompositionSurfaceTest : public testing::Test {
     context_ = nullptr;
     if (surface_)
       DestroySurface(std::move(surface_));
+    gl::init::ShutdownGL(false);
   }
 
   scoped_refptr<DirectCompositionSurfaceWin>
