@@ -96,6 +96,8 @@ const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules = {
         &kNuxOnboardingForceEnabled, "returning-user-modules",
         "nux-set-as-default"};
+const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowGoogleApp = {
+    &kNuxOnboardingForceEnabled, "app-variation-enabled", false};
 
 // Our current running experiment of testing the nux-ntp-background module
 // depends on the Local NTP feature/experiment being enabled. To avoid polluting
@@ -170,6 +172,11 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   return false;
+}
+
+bool IsAppVariationEnabled() {
+  return kNuxOnboardingForceEnabledShowGoogleApp.Get() ||
+         kNuxOnboardingShowGoogleApp.Get();
 }
 
 const policy::PolicyMap& GetPoliciesFromProfile(Profile* profile) {

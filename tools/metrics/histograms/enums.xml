@@ -41116,6 +41116,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Translate"/>
   <int value="4" label="News"/>
   <int value="5" label="Chrome Web Store"/>
+  <int value="6" label="Search"/>
 </enum>
 
 <enum name="NuxLandingPageInteractions">

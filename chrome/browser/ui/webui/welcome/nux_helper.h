@@ -36,6 +36,8 @@ std::string GetOnboardingGroup(Profile* profile);
 
 bool IsNuxOnboardingEnabled(Profile* profile);
 
+bool IsAppVariationEnabled();
+
 base::DictionaryValue GetNuxOnboardingModules(Profile* profile);
 }  // namespace nux
 
