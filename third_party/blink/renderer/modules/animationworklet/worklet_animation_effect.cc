@@ -14,31 +14,7 @@ WorkletAnimationEffect::WorkletAnimationEffect(
 }
 
 EffectTiming* WorkletAnimationEffect::getTiming() const {
-  EffectTiming* effect_timing = EffectTiming::Create();
-
-  // This logic mirrors the blink side logic contained in
-  // third_party\blink\renderer\core\animation\animation_effect.cc
-
-  // TODO(jortaylo): Extract this logic to Timing.h aso that it can be
-  // shared between blink and animation worklet (https://crbug.com/915344).
-  effect_timing->setDelay(specified_timing_.start_delay * 1000);
-  effect_timing->setEndDelay(specified_timing_.end_delay * 1000);
-  effect_timing->setFill(Timing::FillModeString(specified_timing_.fill_mode));
-  effect_timing->setIterationStart(specified_timing_.iteration_start);
-  effect_timing->setIterations(specified_timing_.iteration_count);
-  UnrestrictedDoubleOrString duration;
-  if (specified_timing_.iteration_duration) {
-    duration.SetUnrestrictedDouble(
-        specified_timing_.iteration_duration->InMillisecondsF());
-  } else {
-    duration.SetString("auto");
-  }
-  effect_timing->setDuration(duration);
-  effect_timing->setDirection(
-      Timing::PlaybackDirectionString(specified_timing_.direction));
-  effect_timing->setEasing(specified_timing_.timing_function->ToString());
-
-  return effect_timing;
+  return specified_timing_.ConvertToEffectTiming();
 }
 
 void WorkletAnimationEffect::setLocalTime(double time_ms, bool is_null) {
