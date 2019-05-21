@@ -157,6 +157,7 @@ void CorsURLLoader::FollowRedirect(
     request_.headers.RemoveHeader(name);
   request_.headers.MergeFrom(modified_headers);
 
+  const std::string original_method = std::move(request_.method);
   request_.url = redirect_info_.new_url;
   request_.method = redirect_info_.new_method;
   request_.referrer = GURL(redirect_info_.new_referrer);
@@ -173,26 +174,32 @@ void CorsURLLoader::FollowRedirect(
   // We cannot use FollowRedirect for a request with preflight (i.e., when both
   // |fetch_cors_flag_| and |NeedsPreflight(request_)| are true).
   //
-  // Additionally, when |original_fetch_cors_flag| is false,
-  // |fetch_cors_flag_| is true and |NeedsPreflight(request)| is false, the net/
-  // implementation won't attach an "origin" header on redirect, as the original
-  // request didn't have one. In such a case we need to re-issue a request
-  // manually in order to attach the correct origin header.
-  // For "no-cors" requests we rely on redirect logic in net/ (specifically
-  // in net/url_request/redirect_util.cc).
-  if ((original_fetch_cors_flag && !NeedsPreflight(request_)) ||
-      !fetch_cors_flag_) {
-    response_tainting_ = CalculateResponseTainting(
-        request_.url, request_.fetch_request_mode, request_.request_initiator,
-        fetch_cors_flag_, tainted_, origin_access_list_);
-    network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
+  // When |original_fetch_cors_flag| is false, |fetch_cors_flag_| is true and
+  // |NeedsPreflight(request)| is false, the net/ implementation won't attach an
+  // "origin" header on redirect, as the original request didn't have one.
+  //
+  // When the request method is changed (due to 302 status code, for example),
+  // the net/ implementation removes the origin header.
+  //
+  // In such cases we need to re-issue a request manually in order to attach the
+  // correct origin header. For "no-cors" requests we rely on redirect logic in
+  // net/ (specifically in net/url_request/redirect_util.cc).
+  //
+  // After both OOR-CORS and network service are fully shipped, we may be able
+  // to remove the logic in net/.
+  if ((fetch_cors_flag_ && NeedsPreflight(request_)) ||
+      (!original_fetch_cors_flag && fetch_cors_flag_) ||
+      (fetch_cors_flag_ && original_method != request_.method)) {
+    DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);
+    network_client_binding_.Unbind();
+    StartRequest();
     return;
   }
-  DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);
 
-  network_client_binding_.Unbind();
-
-  StartRequest();
+  response_tainting_ = CalculateResponseTainting(
+      request_.url, request_.fetch_request_mode, request_.request_initiator,
+      fetch_cors_flag_, tainted_, origin_access_list_);
+  network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
 }
 
 void CorsURLLoader::ProceedWithResponse() {
