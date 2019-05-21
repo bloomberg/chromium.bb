@@ -276,7 +276,8 @@ Polymer({
       this.setSetting('selectionOnly', settings.shouldPrintSelectionOnly);
       this.$.sidebar.init(
           settings.isInAppKioskMode, settings.printerName,
-          settings.serializedDefaultDestinationSelectionRulesStr);
+          settings.serializedDefaultDestinationSelectionRulesStr,
+          settings.userAccounts || null);
       this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
 
       // This is only visible in the task manager.

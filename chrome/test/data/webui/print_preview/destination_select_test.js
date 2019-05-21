@@ -91,9 +91,10 @@ cr.define('destination_select_test', function() {
           JSON.parse(initialSettings.serializedAppStateStr).recentDestinations :
           [];
       destinationSettings.setSetting('recentDestinations', recentDestinations);
-      destinationSettings.initDestinationStore(
+      destinationSettings.init(
           initialSettings.printerName,
-          initialSettings.serializedDefaultDestinationSelectionRulesStr);
+          initialSettings.serializedDefaultDestinationSelectionRulesStr,
+          initialSettings.userAccounts);
       destinationSettings.disabled = false;
       return opt_expectPrinterFailure ? Promise.resolve() : Promise.race([
         nativeLayer.whenCalled('getPrinterCapabilities'), whenCapabilitiesReady
@@ -337,6 +338,7 @@ cr.define('destination_select_test', function() {
         version: 2,
         recentDestinations: [recentDestination],
       });
+      initialSettings.userAccounts = ['foo@chromium.org'];
 
       return setInitialSettings().then(function(args) {
         assertEquals('FooDevice', args.destinationId);
@@ -400,6 +402,7 @@ cr.define('destination_select_test', function() {
         version: 2,
         recentDestinations: recentDestinations,
       });
+      initialSettings.userAccounts = [account1, account2];
 
       return setInitialSettings()
           .then(() => {

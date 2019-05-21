@@ -59,16 +59,7 @@ Polymer({
     this.tracker_.add(
         cloudPrintInterface.getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
-        this.updateUsers_.bind(this));
-  },
-
-  /**
-   * @param {string} user The new active user.
-   * @private
-   */
-  setActiveUser_: function(user) {
-    this.destinationStore.setActiveUser(user);
-    this.activeUser = user;
+        this.onCloudPrintUpdateUsers_.bind(this));
   },
 
   /**
@@ -76,16 +67,30 @@ Polymer({
    *     active user and users.
    * @private
    */
-  updateUsers_: function(e) {
-    this.setActiveUser_(e.detail.activeUser);
+  onCloudPrintUpdateUsers_: function(e) {
+    this.updateActiveUser(e.detail.activeUser, false);
     if (e.detail.users) {
-      this.users = e.detail.users;
+      this.updateUsers(e.detail.users);
     }
   },
 
-  /** @param {string} user The new active user. */
-  updateActiveUser: function(user) {
-    this.setActiveUser_(user);
+  /** @param {!Array<string>} users The full list of signed in users. */
+  updateUsers: function(users) {
+    this.users = users;
+  },
+
+  /**
+   * @param {string} user The new active user.
+   * @param {boolean} reloadCookies Whether to reload cookie based destinations
+   *    and invitations.
+   */
+  updateActiveUser: function(user, reloadCookies) {
+    this.destinationStore.setActiveUser(user);
+    this.activeUser = user;
+    if (!reloadCookies) {
+      return;
+    }
+
     this.destinationStore.reloadUserCookieBasedDestinations(user);
     this.invitationStore.startLoadingInvitations(user);
   },

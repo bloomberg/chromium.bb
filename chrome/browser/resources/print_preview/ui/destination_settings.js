@@ -182,9 +182,17 @@ Polymer({
    * @param {string} defaultPrinter The system default printer ID.
    * @param {string} serializedDefaultDestinationRulesStr String with rules for
    *     selecting a default destination.
+   * @param {?Array<string>} userAccounts The signed in user accounts.
    */
-  initDestinationStore: function(
-      defaultPrinter, serializedDefaultDestinationRulesStr) {
+  init: function(
+      defaultPrinter, serializedDefaultDestinationRulesStr, userAccounts) {
+    if (!!userAccounts && userAccounts.length > 0) {
+      this.$.userInfo.updateActiveUser(userAccounts[0], false);
+      this.$.userInfo.updateUsers(userAccounts);
+    } else if (userAccounts) {
+      this.cloudPrintState_ = print_preview.CloudPrintState.NOT_SIGNED_IN;
+    }
+
     this.destinationStore_.init(
         this.appKioskMode, defaultPrinter, serializedDefaultDestinationRulesStr,
         /** @type {!Array<print_preview.RecentDestination>} */
@@ -199,10 +207,6 @@ Polymer({
 
     assert(this.cloudPrintState_ !== print_preview.CloudPrintState.DISABLED);
     this.cloudPrintState_ = print_preview.CloudPrintState.SIGNED_IN;
-
-    // Load docs, in case the user was not signed in previously and signed in
-    // from the destinations dialog.
-    this.destinationStore_.startLoadDriveDestination();
 
     if (this.destinationState === print_preview.DestinationState.SELECTED &&
         this.destination.origin === print_preview.DestinationOrigin.COOKIES) {
@@ -231,12 +235,6 @@ Polymer({
     // destinationState.
     this.destination = destination;
     this.updateRecentDestinations_();
-    if (this.cloudPrintState_ === print_preview.CloudPrintState.ENABLED) {
-      // Try to load the docs destination. This will trigger a response from
-      // the cloud print server that will tell Print Preview whether the user is
-      // signed in.
-      this.destinationStore_.startLoadDriveDestination();
-    }
   },
 
   /** @private */
@@ -439,7 +437,7 @@ Polymer({
    * @private
    */
   onAccountChange_: function(e) {
-    this.$.userInfo.updateActiveUser(e.detail);
+    this.$.userInfo.updateActiveUser(e.detail, true);
   },
 
   /** @private */

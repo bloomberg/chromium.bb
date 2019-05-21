@@ -35,6 +35,9 @@ cr.define('destination_settings_test', function() {
     /** @type {!Array<!print_preview.Destination>} */
     let destinations = [];
 
+    /** @type {!Array<string>} */
+    let initialAccounts = [];
+
     /** @type {string} */
     const defaultUser = 'foo@chromium.org';
 
@@ -78,9 +81,10 @@ cr.define('destination_settings_test', function() {
 
       // Set up the destination store, but no destination yet. Dropdown is still
       // hidden.
-      destinationSettings.initDestinationStore(
+      destinationSettings.init(
           'FooDevice' /* printerName */,
-          '' /* serializedDefaultDestinationSelectionRulesStr */);
+          '' /* serializedDefaultDestinationSelectionRulesStr */,
+          [] /* userAccounts */);
       assertTrue(dropdown.hidden);
 
       return test_util
@@ -161,15 +165,18 @@ cr.define('destination_settings_test', function() {
       destinationSettings.cloudPrintInterface = cloudPrintInterface;
       destinationSettings.setSetting('recentDestinations', recentDestinations);
       destinationSettings.appKioskMode = false;
-      destinationSettings.initDestinationStore(
+      destinationSettings.init(
           '' /* printerName */,
-          '' /* serializedDefaultDestinationSelectionRulesStr */);
+          '' /* serializedDefaultDestinationSelectionRulesStr */,
+          initialAccounts);
       destinationSettings.state = print_preview.State.READY;
       destinationSettings.disabled = false;
     }
 
     /** Simulates a user signing in to Chrome. */
     function signIn() {
+      destinationSettings.$.userInfo.updateActiveUser(defaultUser, false);
+      destinationSettings.$.userInfo.updateUsers([defaultUser]);
       cloudPrintInterface.setPrinter(
           print_preview_test_utils.getGoogleDriveDestination(defaultUser));
       cr.webUIListenerCallback('reload-printer-list');
@@ -533,6 +540,7 @@ cr.define('destination_settings_test', function() {
         cloudPrinterUser1, cloudPrinterUser2, destinations[0]
       ].map(destination => print_preview.makeRecentDestination(destination));
 
+      initialAccounts = [defaultUser, account2];
       initialize();
       Polymer.dom.flush();
 

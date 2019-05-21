@@ -97,6 +97,7 @@ cr.define('invalid_settings_browsertest', function() {
         ],
       });
       initialSettings.cloudPrintURL = 'cloudprint URL';
+      initialSettings.userAccounts = [printers[0].account];
       localDestinationInfos = [];
 
       loadTimeData.overrideValues({isEnterpriseManaged: false});

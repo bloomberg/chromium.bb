@@ -916,27 +916,27 @@ cr.define('print_preview', function() {
         return true;
       }
 
-      return this.fetchPreselectedDestination_(
-          assert(recentDestinations.find(d => {
-            return print_preview.createRecentDestinationKey(d) === key;
-          })));
-    }
+      const recent = recentDestinations.find(d => {
+        return print_preview.createRecentDestinationKey(d) === key;
+      });
+      if (recent) {
+        return this.fetchPreselectedDestination_(recent);
+      }
 
-    /** Pre-fetches the Google Drive destination for the current active user. */
-    startLoadDriveDestination() {
+      // Should be fetching the Google Drive destination.
       const driveKey = print_preview.createDestinationKey(
           print_preview.Destination.GooglePromotedId.DOCS,
           print_preview.DestinationOrigin.COOKIES, this.activeUser_);
-      if (!this.cloudPrintInterface_ || this.destinationMap_.get(driveKey) ||
-          this.inFlightCloudPrintRequests_.has(driveKey)) {
-        // Already loaded or loading, or no cloud print interface.
-        return;
-      }
-
-      this.inFlightCloudPrintRequests_.add(driveKey);
-      this.cloudPrintInterface_.printer(
-          print_preview.Destination.GooglePromotedId.DOCS,
-          print_preview.DestinationOrigin.COOKIES, this.activeUser_);
+      assert(key === driveKey);
+      return this.fetchPreselectedDestination_({
+        id: print_preview.Destination.GooglePromotedId.DOCS,
+        origin: print_preview.DestinationOrigin.COOKIES,
+        account: this.activeUser_,
+        capabilities: null,
+        displayName: '',
+        extensionId: '',
+        extensionName: '',
+      });
     }
 
     // <if expr="chromeos">

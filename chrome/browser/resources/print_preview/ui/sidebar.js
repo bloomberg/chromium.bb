@@ -110,12 +110,14 @@ Polymer({
    * @param {string} defaultPrinter The system default printer ID.
    * @param {string} serializedDestinationSelectionRulesStr String with rules
    *     for selecting the default destination.
+   * @param {?Array<string>} userAccounts The signed in user accounts.
    */
   init: function(
-      appKioskMode, defaultPrinter, serializedDestinationSelectionRulesStr) {
+      appKioskMode, defaultPrinter, serializedDestinationSelectionRulesStr,
+      userAccounts) {
     this.isInAppKioskMode_ = appKioskMode;
-    this.$.destinationSettings.initDestinationStore(
-        defaultPrinter, serializedDestinationSelectionRulesStr);
+    this.$.destinationSettings.init(
+        defaultPrinter, serializedDestinationSelectionRulesStr, userAccounts);
   },
 
   /**
