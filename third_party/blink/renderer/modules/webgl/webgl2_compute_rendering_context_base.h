@@ -59,6 +59,11 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
   void InitializeNewContext() override;
   ScriptValue getParameter(ScriptState*, GLenum pname) override;
 
+  /* WebGL2RenderingContextBase overrides */
+  ScriptValue getIndexedParameter(ScriptState*,
+                                  GLenum target,
+                                  GLuint index) override;
+
   void Trace(blink::Visitor*) override;
 
  protected:
@@ -72,6 +77,34 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
                            GLint location,
                            WebGLProgram* program,
                            GLenum program_interface);
+
+  /* WebGLRenderingContextBase overrides */
+  bool ValidateShaderType(const char* function_name,
+                          GLenum shader_type) override;
+  bool ValidateBufferTarget(const char* function_name, GLenum target) override;
+  WebGLBuffer* ValidateBufferDataTarget(const char* function_name,
+                                        GLenum target) override;
+  bool ValidateAndUpdateBufferBindTarget(const char* function_name,
+                                         GLenum target,
+                                         WebGLBuffer*) override;
+  void RemoveBoundBuffer(WebGLBuffer*) override;
+
+  /* WebGL2RenderingContextBase overrides */
+  bool ValidateBufferTargetCompatibility(const char* function_name,
+                                         GLenum target,
+                                         WebGLBuffer*) override;
+  bool ValidateBufferBaseTarget(const char* function_name,
+                                GLenum target) override;
+  bool ValidateAndUpdateBufferBindBaseTarget(const char* function_name,
+                                             GLenum target,
+                                             GLuint index,
+                                             WebGLBuffer*) override;
+
+  Member<WebGLBuffer> bound_atomic_counter_buffer_;
+  Member<WebGLBuffer> bound_shader_storage_buffer_;
+
+  HeapVector<Member<WebGLBuffer>> bound_indexed_atomic_counter_buffers_;
+  HeapVector<Member<WebGLBuffer>> bound_indexed_shader_storage_buffers_;
 };
 
 DEFINE_TYPE_CASTS(WebGL2ComputeRenderingContextBase,

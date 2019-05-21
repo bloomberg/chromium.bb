@@ -32,6 +32,24 @@ void WebGL2ComputeRenderingContextBase::DestroyContext() {
 
 void WebGL2ComputeRenderingContextBase::InitializeNewContext() {
   DCHECK(!isContextLost());
+  DCHECK(GetDrawingBuffer());
+
+  bound_atomic_counter_buffer_ = nullptr;
+  bound_shader_storage_buffer_ = nullptr;
+
+  GLint max_atomic_counter_buffer_bindings = 0;
+  ContextGL()->GetIntegerv(GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS,
+                           &max_atomic_counter_buffer_bindings);
+  bound_indexed_atomic_counter_buffers_.clear();
+  bound_indexed_atomic_counter_buffers_.resize(
+      max_atomic_counter_buffer_bindings);
+
+  GLint max_shader_storage_buffer_bindings = 0;
+  ContextGL()->GetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS,
+                           &max_shader_storage_buffer_bindings);
+  bound_indexed_shader_storage_buffers_.clear();
+  bound_indexed_shader_storage_buffers_.resize(
+      max_shader_storage_buffer_bindings);
 
   WebGL2RenderingContextBase::InitializeNewContext();
 }
@@ -333,7 +351,51 @@ ScriptValue WebGL2ComputeRenderingContextBase::getParameter(
   }
 }
 
+ScriptValue WebGL2ComputeRenderingContextBase::getIndexedParameter(
+    ScriptState* script_state,
+    GLenum target,
+    GLuint index) {
+  if (isContextLost())
+    return ScriptValue::CreateNull(script_state);
+
+  switch (target) {
+    case GL_ATOMIC_COUNTER_BUFFER_BINDING:
+      if (index >= bound_indexed_atomic_counter_buffers_.size()) {
+        SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
+                          "index out of range");
+        return ScriptValue::CreateNull(script_state);
+      }
+      return WebGLAny(script_state,
+                      bound_indexed_atomic_counter_buffers_[index].Get());
+    case GL_SHADER_STORAGE_BUFFER_BINDING:
+      if (index >= bound_indexed_shader_storage_buffers_.size()) {
+        SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
+                          "index out of range");
+        return ScriptValue::CreateNull(script_state);
+      }
+      return WebGLAny(script_state,
+                      bound_indexed_shader_storage_buffers_[index].Get());
+    case GL_MAX_COMPUTE_WORK_GROUP_COUNT:
+    case GL_MAX_COMPUTE_WORK_GROUP_SIZE:
+    case GL_ATOMIC_COUNTER_BUFFER_SIZE:
+    case GL_ATOMIC_COUNTER_BUFFER_START:
+    case GL_SHADER_STORAGE_BUFFER_SIZE:
+    case GL_SHADER_STORAGE_BUFFER_START: {
+      GLint64 value = -1;
+      ContextGL()->GetInteger64i_v(target, index, &value);
+      return WebGLAny(script_state, value);
+    }
+    default:
+      return WebGL2RenderingContextBase::getIndexedParameter(
+          script_state, target, index);
+  }
+}
+
 void WebGL2ComputeRenderingContextBase::Trace(blink::Visitor* visitor) {
+  visitor->Trace(bound_atomic_counter_buffer_);
+  visitor->Trace(bound_indexed_atomic_counter_buffers_);
+  visitor->Trace(bound_shader_storage_buffer_);
+  visitor->Trace(bound_indexed_shader_storage_buffers_);
   WebGL2RenderingContextBase::Trace(visitor);
 }
 
@@ -359,6 +421,181 @@ ScriptValue WebGL2ComputeRenderingContextBase::WrapLocation(
       return WebGLAny(script_state, location);
     }
   }
+}
+
+bool WebGL2ComputeRenderingContextBase::ValidateShaderType(
+    const char* function_name,
+    GLenum shader_type) {
+  switch (shader_type) {
+    case GL_COMPUTE_SHADER:
+      return true;
+    default:
+      return WebGL2RenderingContextBase::ValidateShaderType(
+          function_name, shader_type);
+  }
+}
+
+bool WebGL2ComputeRenderingContextBase::ValidateBufferTarget(
+    const char* function_name,
+    GLenum target) {
+  switch (target) {
+    case GL_ATOMIC_COUNTER_BUFFER:
+    case GL_SHADER_STORAGE_BUFFER:
+      return true;
+    default:
+      return WebGL2RenderingContextBase::ValidateBufferTarget(
+          function_name, target);
+  }
+}
+
+WebGLBuffer* WebGL2ComputeRenderingContextBase::ValidateBufferDataTarget(
+    const char* function_name,
+    GLenum target) {
+  WebGLBuffer* buffer = nullptr;
+  switch (target) {
+    case GL_ATOMIC_COUNTER_BUFFER:
+      buffer = bound_atomic_counter_buffer_.Get();
+      break;
+    case GL_SHADER_STORAGE_BUFFER:
+      buffer = bound_shader_storage_buffer_.Get();
+      break;
+    default:
+      return WebGL2RenderingContextBase::ValidateBufferDataTarget(
+          function_name, target);
+  }
+  if (!buffer) {
+    SynthesizeGLError(GL_INVALID_OPERATION, function_name, "no buffer");
+    return nullptr;
+  }
+  return buffer;
+}
+
+bool WebGL2ComputeRenderingContextBase::ValidateAndUpdateBufferBindTarget(
+    const char* function_name,
+    GLenum target,
+    WebGLBuffer* buffer) {
+  if (!ValidateBufferTarget(function_name, target))
+    return false;
+
+  if (buffer &&
+      !ValidateBufferTargetCompatibility(function_name, target, buffer))
+    return false;
+
+  switch (target) {
+    case GL_ATOMIC_COUNTER_BUFFER:
+      bound_atomic_counter_buffer_ = buffer;
+      break;
+    case GL_SHADER_STORAGE_BUFFER:
+      bound_shader_storage_buffer_ = buffer;
+      break;
+    default:
+      return WebGL2RenderingContextBase::ValidateAndUpdateBufferBindTarget(
+          function_name, target, buffer);
+  }
+
+  if (buffer && !buffer->GetInitialTarget())
+    buffer->SetInitialTarget(target);
+  return true;
+}
+
+void WebGL2ComputeRenderingContextBase::RemoveBoundBuffer(WebGLBuffer* buffer) {
+  if (bound_atomic_counter_buffer_ == buffer)
+    bound_atomic_counter_buffer_ = nullptr;
+  if (bound_shader_storage_buffer_ == buffer)
+    bound_shader_storage_buffer_ = nullptr;
+
+  WebGL2RenderingContextBase::RemoveBoundBuffer(buffer);
+}
+
+bool WebGL2ComputeRenderingContextBase::ValidateBufferTargetCompatibility(
+    const char* function_name,
+    GLenum target,
+    WebGLBuffer* buffer) {
+  DCHECK(buffer);
+
+  switch (buffer->GetInitialTarget()) {
+    case GL_ELEMENT_ARRAY_BUFFER:
+      switch (target) {
+        case GL_ATOMIC_COUNTER_BUFFER:
+        case GL_SHADER_STORAGE_BUFFER:
+          SynthesizeGLError(
+              GL_INVALID_OPERATION, function_name,
+              "element array buffers can not be bound to a different target");
+
+          return false;
+        default:
+          break;
+      }
+      break;
+    case GL_ATOMIC_COUNTER_BUFFER:
+    case GL_SHADER_STORAGE_BUFFER:
+      if (target == GL_ELEMENT_ARRAY_BUFFER) {
+        SynthesizeGLError(GL_INVALID_OPERATION, function_name,
+                          "buffers bound to non ELEMENT_ARRAY_BUFFER targets "
+                          "can not be bound to ELEMENT_ARRAY_BUFFER target");
+        return false;
+      }
+      return true;
+    default:
+      break;
+  }
+
+  return WebGL2RenderingContextBase::ValidateBufferTargetCompatibility(
+      function_name, target, buffer);
+}
+
+bool WebGL2ComputeRenderingContextBase::ValidateBufferBaseTarget(
+    const char* function_name,
+    GLenum target) {
+  switch (target) {
+    case GL_ATOMIC_COUNTER_BUFFER:
+    case GL_SHADER_STORAGE_BUFFER:
+      return true;
+    default:
+      return WebGL2RenderingContextBase::ValidateBufferBaseTarget(
+          function_name, target);
+  }
+}
+
+bool WebGL2ComputeRenderingContextBase::ValidateAndUpdateBufferBindBaseTarget(
+    const char* function_name,
+    GLenum target,
+    GLuint index,
+    WebGLBuffer* buffer) {
+  if (!ValidateBufferBaseTarget(function_name, target))
+    return false;
+
+  if (buffer &&
+      !ValidateBufferTargetCompatibility(function_name, target, buffer))
+    return false;
+
+  switch (target) {
+    case GL_ATOMIC_COUNTER_BUFFER:
+      if (index >= bound_indexed_atomic_counter_buffers_.size()) {
+        SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                          "index out of range");
+        return false;
+      }
+      bound_indexed_atomic_counter_buffers_[index] = buffer;
+      bound_atomic_counter_buffer_ = buffer;
+      break;
+    case GL_SHADER_STORAGE_BUFFER:
+      if (index >= bound_indexed_shader_storage_buffers_.size()) {
+        SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                          "index out of range");
+        return false;
+      }
+      bound_indexed_shader_storage_buffers_[index] = buffer;
+      bound_shader_storage_buffer_ = buffer;
+      break;
+    default:
+      return WebGL2RenderingContextBase::ValidateAndUpdateBufferBindBaseTarget(
+          function_name, target, index, buffer);
+  }
+
+  if (buffer && !buffer->GetInitialTarget())
+    buffer->SetInitialTarget(target);
+  return true;
 }
 
 }  // namespace blink

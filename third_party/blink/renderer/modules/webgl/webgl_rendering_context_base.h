@@ -1195,6 +1195,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // 2.0.
   bool ValidateShaderSource(const String&);
 
+  virtual bool ValidateShaderType(const char* function_name,
+                                  GLenum shader_type);
+
   // Helper function to check texture binding target and texture bound to the
   // target.  Generate GL errors and return 0 if target is invalid or texture
   // bound is null.  Otherwise, return the texture bound to the target.
@@ -1716,8 +1719,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                       bool premultiply_alpha,
                       bool flip_y);
   bool CanUseTexImageViaGPU(GLenum format, GLenum type);
-
-  bool ValidateShaderType(const char* function_name, GLenum shader_type);
 
   const Platform::ContextType context_type_;
 

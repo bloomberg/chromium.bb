@@ -907,7 +907,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   /* Uniform Buffer Objects and Transform Feedback Buffers */
   void bindBufferBase(GLenum, GLuint, WebGLBuffer*);
   void bindBufferRange(GLenum, GLuint, WebGLBuffer*, int64_t, int64_t);
-  ScriptValue getIndexedParameter(ScriptState*, GLenum, GLuint);
+  virtual ScriptValue getIndexedParameter(ScriptState*, GLenum, GLuint);
   Vector<GLuint> getUniformIndices(WebGLProgram*, const Vector<String>&);
   ScriptValue getActiveUniforms(ScriptState*,
                                 WebGLProgram*,
@@ -1021,13 +1021,16 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   bool IsBufferBoundToTransformFeedback(WebGLBuffer*);
   bool IsBufferBoundToNonTransformFeedback(WebGLBuffer*);
-  bool ValidateBufferTargetCompatibility(const char*, GLenum, WebGLBuffer*);
+  virtual bool ValidateBufferTargetCompatibility(const char*,
+                                                 GLenum,
+                                                 WebGLBuffer*);
 
-  bool ValidateBufferBaseTarget(const char* function_name, GLenum target);
-  bool ValidateAndUpdateBufferBindBaseTarget(const char* function_name,
-                                             GLenum,
-                                             GLuint,
-                                             WebGLBuffer*);
+  virtual bool ValidateBufferBaseTarget(const char* function_name,
+                                        GLenum target);
+  virtual bool ValidateAndUpdateBufferBindBaseTarget(const char* function_name,
+                                                     GLenum,
+                                                     GLuint,
+                                                     WebGLBuffer*);
 
   WebGLImageConversion::PixelStoreParams GetPackPixelStoreParams() override;
   WebGLImageConversion::PixelStoreParams GetUnpackPixelStoreParams(
@@ -1126,11 +1129,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   Member<WebGLBuffer> bound_pixel_unpack_buffer_;
   Member<WebGLBuffer> bound_transform_feedback_buffer_;
   Member<WebGLBuffer> bound_uniform_buffer_;
-  Member<WebGLBuffer> bound_atomic_counter_buffer_;
-  Member<WebGLBuffer> bound_shader_storage_buffer_;
 
-  HeapVector<Member<WebGLBuffer>> bound_indexed_atomic_counter_buffers_;
-  HeapVector<Member<WebGLBuffer>> bound_indexed_shader_storage_buffers_;
   HeapVector<Member<WebGLBuffer>> bound_indexed_uniform_buffers_;
   GLint max_transform_feedback_separate_attribs_;
   wtf_size_t max_bound_uniform_buffer_index_;
