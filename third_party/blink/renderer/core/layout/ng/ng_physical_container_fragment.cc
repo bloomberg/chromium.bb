@@ -31,7 +31,7 @@ static_assert(sizeof(NGPhysicalContainerFragment) ==
 NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGContainerFragmentBuilder* builder,
     WritingMode block_or_line_writing_mode,
-    NGLinkStorage* buffer,
+    NGLink* buffer,
     NGFragmentType type,
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),

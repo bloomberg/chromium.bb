@@ -191,7 +191,7 @@ void NGSimplifiedLayoutAlgorithm::HandleOutOfFlowPositioned(
 }
 
 void NGSimplifiedLayoutAlgorithm::AddChildFragment(
-    const NGLinkStorage& old_fragment,
+    const NGLink& old_fragment,
     const NGPhysicalContainerFragment& new_fragment) {
   DCHECK_EQ(old_fragment->Size(), new_fragment.Size());
 

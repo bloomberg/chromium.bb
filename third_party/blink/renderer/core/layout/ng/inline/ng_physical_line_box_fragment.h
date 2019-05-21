@@ -32,7 +32,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
       NGLineBoxFragmentBuilder* builder);
 
   ~NGPhysicalLineBoxFragment() {
-    for (const NGLinkStorage& child : Children())
+    for (const NGLink& child : Children())
       child.fragment->Release();
   }
 
@@ -84,7 +84,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
 
   NGLineHeightMetrics metrics_;
-  NGLinkStorage children_[];
+  NGLink children_[];
 };
 
 template <>

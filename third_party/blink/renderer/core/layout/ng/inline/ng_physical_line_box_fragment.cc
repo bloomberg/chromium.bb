@@ -47,7 +47,7 @@ NGPhysicalLineBoxFragment::Create(NGLineBoxFragmentBuilder* builder) {
   // we pass the buffer as a constructor argument.
   void* data = ::WTF::Partitions::FastMalloc(
       sizeof(NGPhysicalLineBoxFragment) +
-          builder->children_.size() * sizeof(NGLinkStorage),
+          builder->children_.size() * sizeof(NGLink),
       ::WTF::GetStringWithTypeName<NGPhysicalLineBoxFragment>());
   new (data) NGPhysicalLineBoxFragment(builder);
   return base::AdoptRef(static_cast<NGPhysicalLineBoxFragment*>(data));

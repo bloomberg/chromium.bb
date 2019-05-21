@@ -13,7 +13,7 @@
 namespace blink {
 
 class NGBlockBreakToken;
-struct NGLinkStorage;
+struct NGLink;
 class NGPhysicalContainerFragment;
 
 // The "simplified" layout algorithm will run in the following circumstances:
@@ -47,7 +47,7 @@ class CORE_EXPORT NGSimplifiedLayoutAlgorithm
  private:
   void HandleOutOfFlowPositioned(const NGBlockNode&);
 
-  void AddChildFragment(const NGLinkStorage& old_fragment,
+  void AddChildFragment(const NGLink& old_fragment,
                         const NGPhysicalContainerFragment& new_fragment);
 
   const NGLayoutResult& previous_result_;

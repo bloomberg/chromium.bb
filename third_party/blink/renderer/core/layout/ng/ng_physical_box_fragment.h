@@ -25,7 +25,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
       WritingMode block_or_line_writing_mode);
 
   ~NGPhysicalBoxFragment() {
-    for (const NGLinkStorage& child : Children())
+    for (const NGLink& child : Children())
       child.fragment->Release();
   }
 
@@ -82,7 +82,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGBaselineList baselines_;
   NGPhysicalBoxStrut borders_;
   NGPhysicalBoxStrut padding_;
-  NGLinkStorage children_[];
+  NGLink children_[];
 };
 
 template <>

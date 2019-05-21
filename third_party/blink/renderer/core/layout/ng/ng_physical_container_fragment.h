@@ -22,24 +22,22 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
  public:
   class ChildLinkList {
    public:
-    ChildLinkList(wtf_size_t count, const NGLinkStorage* buffer)
+    ChildLinkList(wtf_size_t count, const NGLink* buffer)
         : count_(count), buffer_(buffer) {}
 
     wtf_size_t size() const { return count_; }
-    const NGLinkStorage& operator[](wtf_size_t idx) const {
-      return buffer_[idx];
-    }
-    const NGLinkStorage& front() const { return buffer_[0]; }
-    const NGLinkStorage& back() const { return buffer_[count_ - 1]; }
+    const NGLink& operator[](wtf_size_t idx) const { return buffer_[idx]; }
+    const NGLink& front() const { return buffer_[0]; }
+    const NGLink& back() const { return buffer_[count_ - 1]; }
 
-    const NGLinkStorage* begin() const { return buffer_; }
-    const NGLinkStorage* end() const { return begin() + count_; }
+    const NGLink* begin() const { return buffer_; }
+    const NGLink* end() const { return begin() + count_; }
 
     bool IsEmpty() const { return count_ == 0; }
 
    private:
     wtf_size_t count_;
-    const NGLinkStorage* buffer_;
+    const NGLink* buffer_;
   };
 
   ~NGPhysicalContainerFragment();
@@ -73,7 +71,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
   // block_or_line_writing_mode is used for converting the child offsets.
   NGPhysicalContainerFragment(NGContainerFragmentBuilder*,
                               WritingMode block_or_line_writing_mode,
-                              NGLinkStorage* buffer,
+                              NGLink* buffer,
                               NGFragmentType,
                               unsigned sub_type);
 
@@ -95,7 +93,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
   // Because flexible arrays need to be the last member in a class, the actual
   // storage is in the subclass and we just keep a pointer to it here.
-  const NGLinkStorage* buffer_;
+  const NGLink* buffer_;
   wtf_size_t num_children_;
 };
 
