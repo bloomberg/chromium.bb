@@ -1036,4 +1036,58 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadTimeout) {
   delete_B2.WaitUntilDeleted();
 }
 
+// Test that an unloading child can PostMessage its cross-process parent.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       UnloadPostMessageToParentCrossProcess) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_B2(B2);
+  EXPECT_TRUE(ExecJs(B2, R"(
+    window.addEventListener("unload", function() {
+      window.parent.postMessage("B2 message", "*");
+    });
+  )"));
+  EXPECT_TRUE(ExecJs(A1, R"(
+    window.received_message = "nothing received";
+    var received = false;
+    window.addEventListener('message', function(event) {
+      received_message = event.data;
+    });
+    document.querySelector('iframe').remove();
+  )"));
+  delete_B2.WaitUntilDeleted();
+  // TODO(https://crbug.com/964950): PostMessage called from an unloading frame
+  // must work. A1 must received 'B2 message'. This is not the case here.
+  EXPECT_EQ("nothing received", EvalJs(A1, "received_message"));
+}
+
+// Test that an unloading child can PostMessage its same-process parent.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       UnloadPostMessageToParentSameProcess) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* A2 = A1->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_A1(A2);
+  EXPECT_TRUE(ExecJs(A2, R"(
+    window.addEventListener("unload", function() {
+      window.parent.postMessage("A2 message", "*");
+    });
+  )"));
+  EXPECT_TRUE(ExecJs(A1, R"(
+    window.received_message = "nothing received";
+    var received = false;
+    window.addEventListener('message', function(event) {
+      received_message = event.data;
+    });
+    document.querySelector('iframe').remove();
+  )"));
+  delete_A1.WaitUntilDeleted();
+  EXPECT_EQ("A2 message", EvalJs(A1, "received_message"));
+}
+
 }  // namespace content
