@@ -232,7 +232,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
       std::unique_ptr<ContainerBehavior> container_behavior) {
     container_behavior_ = std::move(container_behavior);
   }
-  KeyboardControllerState GetStateForTest() const { return model_.state(); }
+  KeyboardUIState GetStateForTest() const { return model_.state(); }
   ui::InputMethod* GetInputMethodForTest();
   void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds_in_root);
 
@@ -354,11 +354,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void NotifyKeyboardWindowLoaded();
 
   // Validates the state transition. Called from ChangeState.
-  void CheckStateTransition(KeyboardControllerState prev,
-                            KeyboardControllerState next);
+  void CheckStateTransition(KeyboardUIState prev, KeyboardUIState next);
 
   // Changes the current state and validates the transition.
-  void ChangeState(KeyboardControllerState state);
+  void ChangeState(KeyboardUIState state);
 
   // Reports error histogram in case lingering in an intermediate state.
   void ReportLingeringState();

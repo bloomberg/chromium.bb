@@ -13,21 +13,22 @@
 
 namespace keyboard {
 
-// TODO(https://crbug.com/964191): Change this to be part of the model.
-// Represents the current state of the keyboard managed by the controller.
+// Represents the current state of the keyboard UI.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum class KeyboardControllerState {
+enum class KeyboardUIState {
   kUnknown = 0,
   // Keyboard has never been shown.
   kInitial = 1,
   // Waiting for an extension to be loaded. Will move to HIDDEN if this is
   // loading pre-emptively, otherwise will move to SHOWN.
+  // TODO(https://crbug.com/964191): Rename this to |kLoading|, as the UI may
+  // not be extension based in the future.
   kLoadingExtension = 2,
   // kShowing = 3,  // no longer used
   // Keyboard is shown.
   kShown = 4,
-  // Keyboard is still shown, but will move to HIDING in a short period, or if
+  // Keyboard is still shown, but will move to HIDDEN in a short period, or if
   // an input element gets focused again, will move to SHOWN.
   kWillHide = 5,
   // kHiding = 6,  // no longer used
@@ -36,8 +37,8 @@ enum class KeyboardControllerState {
   kMaxValue = kHidden
 };
 
-// Convert a state into a string.
-std::string StateToStr(KeyboardControllerState state);
+// Returns the string representation of a keyboard UI state.
+std::string StateToStr(KeyboardUIState state);
 
 // Model for the virtual keyboard UI.
 class KEYBOARD_EXPORT KeyboardUIModel {
@@ -45,14 +46,14 @@ class KEYBOARD_EXPORT KeyboardUIModel {
   KeyboardUIModel();
 
   // Get the current state of the keyboard UI.
-  KeyboardControllerState state() const { return state_; }
+  KeyboardUIState state() const { return state_; }
 
   // Changes the current state to another. Only accepts valid state transitions.
-  void ChangeState(KeyboardControllerState new_state);
+  void ChangeState(KeyboardUIState new_state);
 
  private:
   // Current state of the keyboard UI.
-  KeyboardControllerState state_ = KeyboardControllerState::kInitial;
+  KeyboardUIState state_ = KeyboardUIState::kInitial;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIModel);
 };

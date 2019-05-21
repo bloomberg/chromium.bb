@@ -55,7 +55,7 @@ bool WaitUntilLoaded() {
   // single RunUntilIdle call.
   base::RunLoop run_loop;
   while (KeyboardController::Get()->GetStateForTest() ==
-         KeyboardControllerState::kLoadingExtension) {
+         KeyboardUIState::kLoadingExtension) {
     run_loop.RunUntilIdle();
   }
   return true;
@@ -82,18 +82,15 @@ bool IsKeyboardShowing() {
   DCHECK(keyboard_controller->IsEnabled());
 
   // KeyboardController sets its state to SHOWN when it is about to show.
-  return keyboard_controller->GetStateForTest() ==
-         KeyboardControllerState::kShown;
+  return keyboard_controller->GetStateForTest() == KeyboardUIState::kShown;
 }
 
 bool IsKeyboardHiding() {
   auto* keyboard_controller = KeyboardController::Get();
   DCHECK(keyboard_controller->IsEnabled());
 
-  return keyboard_controller->GetStateForTest() ==
-             KeyboardControllerState::kWillHide ||
-         keyboard_controller->GetStateForTest() ==
-             KeyboardControllerState::kHidden;
+  return keyboard_controller->GetStateForTest() == KeyboardUIState::kWillHide ||
+         keyboard_controller->GetStateForTest() == KeyboardUIState::kHidden;
 }
 
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,

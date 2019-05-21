@@ -14,43 +14,37 @@ namespace {
 
 // Returns whether a given state transition is valid.
 // See the design document linked in https://crbug.com/71990.
-bool IsAllowedStateTransition(KeyboardControllerState from,
-                              KeyboardControllerState to) {
+bool IsAllowedStateTransition(KeyboardUIState from, KeyboardUIState to) {
   static const base::NoDestructor<
-      std::set<std::pair<KeyboardControllerState, KeyboardControllerState>>>
+      std::set<std::pair<KeyboardUIState, KeyboardUIState>>>
       kAllowedStateTransition({
           // The initial ShowKeyboard scenario
           // INITIAL -> LOADING_EXTENSION -> HIDDEN -> SHOWN.
-          {KeyboardControllerState::kInitial,
-           KeyboardControllerState::kLoadingExtension},
-          {KeyboardControllerState::kLoadingExtension,
-           KeyboardControllerState::kHidden},
-          {KeyboardControllerState::kHidden, KeyboardControllerState::kShown},
+          {KeyboardUIState::kInitial, KeyboardUIState::kLoadingExtension},
+          {KeyboardUIState::kLoadingExtension, KeyboardUIState::kHidden},
+          {KeyboardUIState::kHidden, KeyboardUIState::kShown},
 
           // Hide scenario
           // SHOWN -> WILL_HIDE -> HIDDEN.
-          {KeyboardControllerState::kShown, KeyboardControllerState::kWillHide},
-          {KeyboardControllerState::kWillHide,
-           KeyboardControllerState::kHidden},
+          {KeyboardUIState::kShown, KeyboardUIState::kWillHide},
+          {KeyboardUIState::kWillHide, KeyboardUIState::kHidden},
 
           // Focus transition scenario
           // SHOWN -> WILL_HIDE -> SHOWN.
-          {KeyboardControllerState::kWillHide, KeyboardControllerState::kShown},
+          {KeyboardUIState::kWillHide, KeyboardUIState::kShown},
 
           // HideKeyboard can be called at anytime for example on shutdown.
-          {KeyboardControllerState::kShown, KeyboardControllerState::kHidden},
+          {KeyboardUIState::kShown, KeyboardUIState::kHidden},
 
           // Return to INITIAL when keyboard is disabled.
-          {KeyboardControllerState::kLoadingExtension,
-           KeyboardControllerState::kInitial},
-          {KeyboardControllerState::kHidden, KeyboardControllerState::kInitial},
+          {KeyboardUIState::kLoadingExtension, KeyboardUIState::kInitial},
+          {KeyboardUIState::kHidden, KeyboardUIState::kInitial},
       });
   return kAllowedStateTransition->count(std::make_pair(from, to)) == 1;
 }
 
 // Records a state transition for metrics.
-void RecordStateTransition(KeyboardControllerState prev,
-                           KeyboardControllerState next) {
+void RecordStateTransition(KeyboardUIState prev, KeyboardUIState next) {
   const bool valid_transition = IsAllowedStateTransition(prev, next);
 
   // Emit UMA
@@ -68,26 +62,26 @@ void RecordStateTransition(KeyboardControllerState prev,
 
 }  // namespace
 
-std::string StateToStr(KeyboardControllerState state) {
+std::string StateToStr(KeyboardUIState state) {
   switch (state) {
-    case KeyboardControllerState::kUnknown:
+    case KeyboardUIState::kUnknown:
       return "UNKNOWN";
-    case KeyboardControllerState::kInitial:
+    case KeyboardUIState::kInitial:
       return "INITIAL";
-    case KeyboardControllerState::kLoadingExtension:
+    case KeyboardUIState::kLoadingExtension:
       return "LOADING_EXTENSION";
-    case KeyboardControllerState::kShown:
+    case KeyboardUIState::kShown:
       return "SHOWN";
-    case KeyboardControllerState::kWillHide:
+    case KeyboardUIState::kWillHide:
       return "WILL_HIDE";
-    case KeyboardControllerState::kHidden:
+    case KeyboardUIState::kHidden:
       return "HIDDEN";
   }
 }
 
 KeyboardUIModel::KeyboardUIModel() = default;
 
-void KeyboardUIModel::ChangeState(KeyboardControllerState new_state) {
+void KeyboardUIModel::ChangeState(KeyboardUIState new_state) {
   RecordStateTransition(state_, new_state);
 
   if (new_state == state_)

@@ -379,10 +379,9 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
 
   auto* controller = keyboard::KeyboardController::Get();
   EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::kLoadingExtension);
+            keyboard::KeyboardUIState::kLoadingExtension);
   KeyboardLoadedWaiter().Wait();
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::kHidden);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kHidden);
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
@@ -394,17 +393,15 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
   controller->ShowKeyboard(false);
   // Need to wait the extension to be loaded. Hence LOADING_EXTENSION.
   EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::kLoadingExtension);
+            keyboard::KeyboardUIState::kLoadingExtension);
   KeyboardVisibleWaiter(true).Wait();
 
   controller->HideKeyboardExplicitlyBySystem();
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::kHidden);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kHidden);
 
   controller->ShowKeyboard(false);
   // The extension already has been loaded. Hence SHOWING.
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::kShown);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kShown);
 }
 
 // See crbug.com/755354.
@@ -416,9 +413,8 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
   auto* controller = keyboard::KeyboardController::Get();
 
   EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::kLoadingExtension);
+            keyboard::KeyboardUIState::kLoadingExtension);
 
   controller->Shutdown();
-  EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::kInitial);
+  EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kInitial);
 }
