@@ -25,8 +25,7 @@ var volumeManagerFactory = (() => {
   async function getInstance() {
     if (!instance) {
       instance = new VolumeManagerImpl();
-      instanceInitialized =
-          new Promise(fulfill => instance.initialize(fulfill));
+      instanceInitialized = instance.initialize();
     }
     await instanceInitialized;
     return instance;
