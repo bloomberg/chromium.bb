@@ -27,7 +27,12 @@ CHROMEOS_EXPORT base::Optional<UriComponents> ParseUri(
 
 // Classes of printers tracked.  See doc/cups_printer_management.md for
 // details on what these mean.
-enum class PrinterClass { kEnterprise, kAutomatic, kDiscovered, kSaved };
+enum class CHROMEOS_EXPORT PrinterClass {
+  kEnterprise,
+  kAutomatic,
+  kDiscovered,
+  kSaved
+};
 
 class CHROMEOS_EXPORT Printer {
  public:
