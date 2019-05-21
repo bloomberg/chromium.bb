@@ -2316,7 +2316,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Added to Home screen
       </message>
       <message name="IDS_MENU_ADD_TO_APPS" desc="Text to accompany icon that will navigate to a page showing a categorized view of different applications or sites">
-        Add to My apps
+        Add to my apps
       </message>
 
       <!-- Page info popup -->
