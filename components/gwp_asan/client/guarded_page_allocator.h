@@ -73,6 +73,27 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   }
 
  private:
+  // Manages a free list of slot or metadata indices in the range
+  // [0, max_entries). Access to SimpleFreeList objects must be synchronized.
+  //
+  // SimpleFreeList is specifically designed to pre-allocate data in Initialize
+  // so that it never recurses into malloc/free during Allocate/Free.
+  template <typename T>
+  class SimpleFreeList {
+   public:
+    void Initialize(T max_entries);
+    T Allocate();
+    void Free(T entry);
+
+   private:
+    std::vector<T> free_list_;
+
+    // Number of used entries. This counter ensures all free entries are used
+    // before starting to use random eviction.
+    T num_used_entries_ = 0;
+    T max_entries_ = 0;
+  };
+
   // Unmaps memory allocated by this class, if Init was called.
   ~GuardedPageAllocator();
 
@@ -116,15 +137,8 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Lock that synchronizes allocating/freeing slots between threads.
   base::Lock lock_;
 
-  // Array used to store all free slot indices.
-  std::vector<AllocatorState::SlotIdx> free_slots_ GUARDED_BY(lock_);
-  // Array used to store all free metadata indices.
-  std::vector<AllocatorState::MetadataIdx> free_metadata_ GUARDED_BY(lock_);
-
-  // Number of used slots/metadata. These counters are to make sure we use all
-  // free metadata/slots before starting to use random eviction.
-  size_t num_used_slots_ GUARDED_BY(lock_) = 0;
-  size_t num_used_metadata_ GUARDED_BY(lock_) = 0;
+  SimpleFreeList<AllocatorState::SlotIdx> free_slots_ GUARDED_BY(lock_);
+  SimpleFreeList<AllocatorState::MetadataIdx> free_metadata_ GUARDED_BY(lock_);
 
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;

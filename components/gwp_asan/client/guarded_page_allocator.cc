@@ -41,10 +41,41 @@ uint64_t ReportTid() {
 #endif
 }
 
+template <typename T>
+T RandomEviction(std::vector<T>* list) {
+  DCHECK(!list->empty());
+  size_t rand = base::RandGenerator(list->size());
+  T out = (*list)[rand];
+  (*list)[rand] = list->back();
+  list->pop_back();
+  return out;
+}
+
 }  // namespace
 
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
 constexpr size_t GuardedPageAllocator::kGpaAllocAlignment;
+
+template <typename T>
+void GuardedPageAllocator::SimpleFreeList<T>::Initialize(T max_entries) {
+  max_entries_ = max_entries;
+  free_list_.reserve(max_entries);
+}
+
+template <typename T>
+T GuardedPageAllocator::SimpleFreeList<T>::Allocate() {
+  if (num_used_entries_ < max_entries_)
+    return num_used_entries_++;
+
+  DCHECK_LE(free_list_.size(), max_entries_);
+  return RandomEviction(&free_list_);
+}
+
+template <typename T>
+void GuardedPageAllocator::SimpleFreeList<T>::Free(T entry) {
+  DCHECK_LT(free_list_.size(), max_entries_);
+  free_list_.push_back(entry);
+}
 
 GuardedPageAllocator::GuardedPageAllocator() {}
 
@@ -74,8 +105,8 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
     // Obtain this lock exclusively to satisfy the thread-safety annotations,
     // there should be no risk of a race here.
     base::AutoLock lock(lock_);
-    free_metadata_.reserve(num_metadata);
-    free_slots_.reserve(total_pages);
+    free_metadata_.Initialize(num_metadata);
+    free_slots_.Initialize(total_pages);
   }
 
   slot_to_metadata_idx_.resize(total_pages);
@@ -201,19 +232,10 @@ bool GuardedPageAllocator::ReserveSlotAndMetadata(
   base::AutoLock lock(lock_);
   if (num_alloced_pages_ == max_alloced_pages_)
     return false;
-  num_alloced_pages_++;
 
-  if (num_used_metadata_ < state_.num_metadata) {
-    *metadata_idx = num_used_metadata_++;
-  } else {
-    DCHECK(!free_metadata_.empty());
-    DCHECK_LE(free_metadata_.size(), state_.num_metadata);
-    size_t rand = base::RandGenerator(free_metadata_.size());
-    *metadata_idx = free_metadata_[rand];
-    free_metadata_[rand] = free_metadata_.back();
-    free_metadata_.pop_back();
-    DCHECK_EQ(free_metadata_.size(), state_.num_metadata - num_alloced_pages_);
-
+  *slot = free_slots_.Allocate();
+  *metadata_idx = free_metadata_.Allocate();
+  if (metadata_[*metadata_idx].alloc_ptr) {
     // Overwrite the outdated slot_to_metadata_idx mapping from the previous use
     // of this metadata if it's still valid.
     DCHECK(state_.PointerIsMine(metadata_[*metadata_idx].alloc_ptr));
@@ -222,18 +244,7 @@ bool GuardedPageAllocator::ReserveSlotAndMetadata(
       slot_to_metadata_idx_[old_slot] = AllocatorState::kInvalidMetadataIdx;
   }
 
-  if (num_used_slots_ < state_.total_pages) {
-    *slot = num_used_slots_++;
-  } else {
-    DCHECK(!free_slots_.empty());
-    DCHECK_LE(free_slots_.size(), state_.total_pages);
-    size_t rand = base::RandGenerator(free_slots_.size());
-    *slot = free_slots_[rand];
-    free_slots_[rand] = free_slots_.back();
-    free_slots_.pop_back();
-    DCHECK_EQ(free_slots_.size(), state_.total_pages - num_alloced_pages_);
-  }
-
+  num_alloced_pages_++;
   return true;
 }
 
@@ -244,17 +255,11 @@ void GuardedPageAllocator::FreeSlotAndMetadata(
   DCHECK_LT(metadata_idx, state_.num_metadata);
 
   base::AutoLock lock(lock_);
-  DCHECK_LT(free_slots_.size(), state_.total_pages);
-  free_slots_.push_back(slot);
-
-  DCHECK_LT(free_metadata_.size(), state_.num_metadata);
-  free_metadata_.push_back(metadata_idx);
+  free_slots_.Free(slot);
+  free_metadata_.Free(metadata_idx);
 
   DCHECK_GT(num_alloced_pages_, 0U);
   num_alloced_pages_--;
-
-  DCHECK_EQ(free_metadata_.size(), num_used_metadata_ - num_alloced_pages_);
-  DCHECK_EQ(free_slots_.size(), num_used_slots_ - num_alloced_pages_);
 }
 
 void GuardedPageAllocator::RecordAllocationMetadata(
