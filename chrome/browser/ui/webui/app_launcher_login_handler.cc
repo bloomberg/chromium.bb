@@ -47,9 +47,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
 
-using content::OpenURLParams;
-using content::Referrer;
-
 namespace {
 
 SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
@@ -153,10 +150,7 @@ void AppLauncherLoginHandler::RecordInHistogram(NTPSignInPromoBuckets type) {
 }
 
 void AppLauncherLoginHandler::HandleLoginMessageSeen(
-    const base::ListValue* args) {
-  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kSignInPromoShowNTPBubble, false);
-}
+    const base::ListValue* args) {}
 
 #if !defined(OS_CHROMEOS)
 void AppLauncherLoginHandler::HandleShowAdvancedLoginUI(
@@ -252,20 +246,8 @@ bool AppLauncherLoginHandler::ShouldShow(Profile* profile) {
 // static
 void AppLauncherLoginHandler::GetLocalizedValues(
     Profile* profile, base::DictionaryValue* values) {
-  PrefService* prefs = profile->GetPrefs();
-  bool hide_sync = !prefs->GetBoolean(prefs::kSignInPromoShowNTPBubble);
-
-  base::string16 message = hide_sync ? base::string16() :
-      l10n_util::GetStringFUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
-
-  values->SetString("login_status_message", message);
-  values->SetString("login_status_url",
-      hide_sync ? std::string() : chrome::kSyncLearnMoreURL);
-  values->SetString("login_status_advanced",
-      hide_sync ? base::string16() :
-      l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED));
-  values->SetString("login_status_dismiss",
-      hide_sync ? base::string16() :
-      l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_OK));
+  values->SetString("login_status_message", base::string16());
+  values->SetString("login_status_url", std::string());
+  values->SetString("login_status_advanced", base::string16());
+  values->SetString("login_status_dismiss", base::string16());
 }

@@ -7364,26 +7364,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_SYNC_NTP_SETUP_IN_PROGRESS" desc="The message to display in the New Tab Page sync section when the sync setup is underway.">
           Setup in progress...
         </message>
-        <!-- Sync Promo New Tab Page bubble strings -->
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
-          You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced with your Google Account.
-        </message>
-        <if expr="not use_titlecase">
-          <message name="IDS_SYNC_PROMO_NTP_BUBBLE_OK" desc="The ok button in the sync promo NTP bubble. Clicking on the button will dismiss the bubble.">
-            OK
-          </message>
-          <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED" desc="The advanced link in the sync promo NTP bubble. Clicking the link will take the user to advanced settings.">
-            Advanced...
-          </message>
-        </if>
-        <if expr="use_titlecase">
-          <message name="IDS_SYNC_PROMO_NTP_BUBBLE_OK" desc="In title case. The ok button in the sync promo NTP bubble. Clicking on the button will dismiss the bubble.">
-            OK
-          </message>
-          <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED" desc="In title case. The advanced link in the sync promo NTP bubble. Clicking the link will take the user to advanced settings.">
-            Advanced...
-          </message>
-        </if>
 
         <!-- Spinner dialog for waiting sync backend to start up -->
         <message name="IDS_SYNC_SETUP_SPINNER_TITLE" desc="The title of the sync setup dialog showing spinner.">

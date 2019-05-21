@@ -563,8 +563,6 @@ extern const char kDevToolsTCPDiscoveryConfig[];
 
 #if !defined(OS_ANDROID)
 extern const char kDiceSigninUserMenuPromoCount[];
-extern const char kSignInPromoShowOnFirstRunAllowed[];
-extern const char kSignInPromoShowNTPBubble[];
 #endif
 
 extern const char kWebAppCreateOnDesktop[];

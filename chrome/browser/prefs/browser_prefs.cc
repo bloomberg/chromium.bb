@@ -446,6 +446,13 @@ const char kNotificationIDWithinCategory[] =
     "ContentSuggestionsNotificationIDWithinCategory";
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+// Deprecated 5/2019
+const char kSignInPromoShowOnFirstRunAllowed[] =
+    "sync_promo.show_on_first_run_allowed";
+const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
+#endif  // !defined(OS_ANDROID)
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -502,6 +509,11 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kContentSuggestionsNotificationsSentCount, 0);
   registry->RegisterStringPref(kNotificationIDWithinCategory, std::string());
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+  registry->RegisterBooleanPref(kSignInPromoShowOnFirstRunAllowed, true);
+  registry->RegisterBooleanPref(kSignInPromoShowNTPBubble, false);
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace
@@ -1089,4 +1101,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kContentSuggestionsNotificationsSentCount);
   profile_prefs->ClearPref(kNotificationIDWithinCategory);
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+  // Deprecated 5/2019
+  profile_prefs->ClearPref(kSignInPromoShowOnFirstRunAllowed);
+  profile_prefs->ClearPref(kSignInPromoShowNTPBubble);
+#endif  // !defined(OS_ANDROID)
 }

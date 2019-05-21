@@ -150,8 +150,6 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   profile_pref_change_registrar_.Add(bookmarks::prefs::kShowBookmarkBar,
                                      callback);
   profile_pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
-  profile_pref_change_registrar_.Add(prefs::kSignInPromoShowNTPBubble,
-                                     callback);
   profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
 
   theme_observer_.Add(ui::NativeTheme::GetInstanceForNativeUi());

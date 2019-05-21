@@ -1635,16 +1635,6 @@ const char kDevToolsPreferences[] = "devtools.preferences";
 // Tracks the number of times the dice signin promo has been shown in the user
 // menu.
 const char kDiceSigninUserMenuPromoCount[] = "sync_promo.user_menu_show_count";
-
-// Boolean that specifies if the sign in promo is allowed to show on first run.
-// This preference is specified in the master preference file to suppress the
-// sign in promo for some installations.
-const char kSignInPromoShowOnFirstRunAllowed[] =
-    "sync_promo.show_on_first_run_allowed";
-
-// Boolean that specifies if we should show a bubble in the new tab page.
-// The bubble is used to confirm that the user is signed into sync.
-const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 #endif
 
 // Create web application shortcut dialog preferences.
