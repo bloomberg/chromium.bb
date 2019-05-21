@@ -154,10 +154,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   WebContentsImpl* CreateNewGuestWindow(
       const WebContents::CreateParams& params);
 
-  // Creates, if necessary, and returns the routing ID of a proxy for the guest
-  // in the owner's renderer process.
-  int GetGuestProxyRoutingID();
-
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
   int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
@@ -401,6 +397,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void SendTextInputTypeChangedToView(RenderWidgetHostViewBase* guest_rwhv);
 
+  // Creates, if necessary, and returns the routing ID of a render view for the
+  // guest in the owner's renderer process.
+  int GetGuestRenderViewRoutingID();
+
   // The last tooltip that was set with SetTooltipText().
   base::string16 current_tooltip_text_;
 
@@ -442,7 +442,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // The is the routing ID for a swapped out RenderView for the guest
   // WebContents in the embedder's process.
-  int guest_proxy_routing_id_;
+  int guest_render_view_routing_id_;
   // Last seen state of drag status update.
   blink::WebDragStatus last_drag_status_;
   // Whether or not our embedder has seen a SystemDragEnded() call.
