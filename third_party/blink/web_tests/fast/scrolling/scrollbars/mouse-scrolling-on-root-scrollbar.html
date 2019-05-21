@@ -48,6 +48,35 @@ window.onload = () => {
     await waitForCompositorCommit();
     resetScrollOffset(document.scrollingElement);
 
+    // Click on the track part just above the down arrow.
+    let x = window.innerWidth - BUTTON_WIDTH / 2;
+    let y = window.innerHeight - SCROLL_CORNER - BUTTON_WIDTH - 2;
+    await mouseClickOn(x, y);
+    assert_equals(window.scrollY, 431, "Pressing the down trackpart didn't scroll.");
+
+    // Click on the track part just below the up arrow.
+    x = window.innerWidth - BUTTON_WIDTH / 2;
+    y = BUTTON_WIDTH + 2;
+	await mouseClickOn(x, y);
+    assert_equals(window.scrollY, 0, "Pressing the up trackpart didn't scroll.");
+
+    // Click on the track part just to the left of the right arrow.
+    x = window.innerWidth - SCROLL_CORNER - BUTTON_WIDTH - 2;
+    y = window.innerHeight - BUTTON_WIDTH / 2;
+	await mouseClickOn(x, y);
+    assert_equals(window.scrollX, 223, "Pressing the right trackpart didn't scroll.");
+
+    // Click on the track part just to the right of the left arrow.
+    x = BUTTON_WIDTH + 2;
+    y = window.innerHeight - BUTTON_WIDTH / 2;
+	await mouseClickOn(x, y);
+    assert_equals(window.scrollX, 0, "Pressing the left trackpart didn't scroll.");
+  }, "Test mouse click on non-custom composited root scrollbar empty trackparts.");
+
+  promise_test (async () => {
+    await waitForCompositorCommit();
+    resetScrollOffset(document.scrollingElement);
+
     // Testing the vertical scrollbar thumb.
     let x = window.innerWidth - TRACK_WIDTH / 2;
     let y = BUTTON_WIDTH + 10;

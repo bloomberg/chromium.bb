@@ -114,8 +114,7 @@ InputHandlerPointerResult ScrollbarController::HandleMouseMove(
       currently_captured_scrollbar_->scroll_layer_length();
   float scrollbar_track_length = currently_captured_scrollbar_->TrackLength();
   gfx::Rect thumb_rect(currently_captured_scrollbar_->ComputeThumbQuadRect());
-  float scrollbar_thumb_length = currently_captured_scrollbar_->orientation() ==
-                                         ScrollbarOrientation::VERTICAL
+  float scrollbar_thumb_length = orientation == ScrollbarOrientation::VERTICAL
                                      ? thumb_rect.height()
                                      : thumb_rect.width();
 
@@ -163,6 +162,36 @@ LayerImpl* ScrollbarController::GetLayerHitByPoint(
   return layer_impl;
 }
 
+int ScrollbarController::GetScrollDeltaForScrollbarPart(
+    ScrollbarPart scrollbar_part) {
+  int scroll_delta = 0;
+  int viewport_length = 0;
+  LayerImpl* owner_scroll_layer = nullptr;
+
+  switch (scrollbar_part) {
+    case ScrollbarPart::BACK_BUTTON:
+    case ScrollbarPart::FORWARD_BUTTON:
+      scroll_delta = kPixelsPerLineStep;
+      break;
+    case ScrollbarPart::BACK_TRACK:
+    case ScrollbarPart::FORWARD_TRACK:
+      owner_scroll_layer =
+          layer_tree_host_impl_->active_tree()->ScrollableLayerByElementId(
+              currently_captured_scrollbar_->scroll_element_id());
+      viewport_length =
+          currently_captured_scrollbar_->orientation() ==
+                  ScrollbarOrientation::VERTICAL
+              ? owner_scroll_layer->scroll_container_bounds().height()
+              : (owner_scroll_layer->scroll_container_bounds().width());
+      scroll_delta = viewport_length * kMinFractionToStepWhenPaging;
+      break;
+    default:
+      scroll_delta = 0;
+  }
+  return scroll_delta *
+         layer_tree_host_impl_->active_tree()->device_scale_factor();
+}
+
 // Determines the scroll offsets based on hit test results.
 gfx::ScrollOffset ScrollbarController::GetScrollDeltaFromPointerDown(
     const gfx::PointF position_in_widget) {
@@ -188,9 +217,7 @@ gfx::ScrollOffset ScrollbarController::GetScrollDeltaFromPointerDown(
   scrollbar_part = currently_captured_scrollbar_->IdentifyScrollbarPart(
       scroller_relative_position);
 
-  float scroll_delta =
-      layer_tree_host_impl_->active_tree()->device_scale_factor() *
-      kPixelsPerLineStep;
+  float scroll_delta = GetScrollDeltaForScrollbarPart(scrollbar_part);
 
   // See CreateScrollStateForGesture for more information on how these values
   // will be interpreted.
@@ -205,6 +232,14 @@ gfx::ScrollOffset ScrollbarController::GetScrollDeltaFromPointerDown(
   } else if (scrollbar_part == ScrollbarPart::THUMB) {
     // Offsets are calculated in HandleMouseMove.
     thumb_drag_in_progress_ = true;
+  } else if (scrollbar_part == ScrollbarPart::BACK_TRACK) {
+    return orientation == ScrollbarOrientation::VERTICAL
+               ? gfx::ScrollOffset(0, -scroll_delta)   // Track click up
+               : gfx::ScrollOffset(-scroll_delta, 0);  // Track click left
+  } else if (scrollbar_part == ScrollbarPart::FORWARD_TRACK) {
+    return orientation == ScrollbarOrientation::VERTICAL
+               ? gfx::ScrollOffset(0, scroll_delta)   // Track click down
+               : gfx::ScrollOffset(scroll_delta, 0);  // Track click right
   }
 
   return gfx::ScrollOffset(0, 0);

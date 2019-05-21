@@ -70,6 +70,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   virtual int ThumbLength() const = 0;
   virtual gfx::Rect BackButtonRect() const;
   virtual gfx::Rect ForwardButtonRect() const;
+  virtual gfx::Rect BackTrackRect() const;
+  virtual gfx::Rect ForwardTrackRect() const;
   virtual ScrollbarPart IdentifyScrollbarPart(
       const gfx::PointF position_in_widget) const;
   // Only PaintedOverlayScrollbar(Aura Overlay Scrollbar) need to know

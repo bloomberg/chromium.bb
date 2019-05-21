@@ -51,8 +51,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
-static const float kMinFractionToStepWhenPaging = 0.875f;
-
 namespace blink {
 
 int ScrollableArea::PixelsPerLineStep(ChromeClient* host) {

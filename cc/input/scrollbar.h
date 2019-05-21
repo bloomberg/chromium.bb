@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 static const int kPixelsPerLineStep = 40;
+static const float kMinFractionToStepWhenPaging = 0.875f;
 
 namespace cc {
 
@@ -23,7 +24,9 @@ enum ScrollbarPart {
   TICKMARKS,
   BACK_BUTTON,
   FORWARD_BUTTON,
-  NO_PART
+  BACK_TRACK,
+  FORWARD_TRACK,
+  NO_PART,
 };
 
 class Scrollbar {

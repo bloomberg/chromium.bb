@@ -62,6 +62,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
   gfx::Rect BackButtonRect() const override;
   gfx::Rect ForwardButtonRect() const override;
+  gfx::Rect BackTrackRect() const override;
+  gfx::Rect ForwardTrackRect() const override;
   int ThumbThickness() const override;
 
   LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const override;

@@ -103,6 +103,35 @@ window.onload = () => {
     await waitForCompositorCommit();
     resetScrollOffset(standardDivFast);
 
+    // Click on the track part just above the down arrow.
+    let x = standardRectFast.right - BUTTON_WIDTH / 2;
+    let y = standardRectFast.bottom - SCROLL_CORNER - BUTTON_WIDTH - 2;
+    await mouseClickOn(x, y);
+    assert_equals(standardDivFast.scrollTop, 74, "Pressing the down trackpart didn't scroll.");
+
+    // Click on the track part just below the up arrow.
+    x = standardRectFast.right - BUTTON_WIDTH / 2;
+    y = standardRectFast.top + BUTTON_WIDTH + 2;
+	await mouseClickOn(x, y);
+    assert_equals(standardDivFast.scrollTop, 0, "Pressing the up trackpart didn't scroll.");
+
+    // Click on the track part just to the left of the right arrow.
+    x = standardRectFast.right - SCROLL_CORNER - BUTTON_WIDTH - 2;
+    y = standardRectFast.bottom - BUTTON_WIDTH / 2;
+	await mouseClickOn(x, y);
+    assert_equals(standardDivFast.scrollLeft, 74, "Pressing the right trackpart didn't scroll.");
+
+    // Click on the track part just to the right of the left arrow.
+    x = standardRectFast.left + BUTTON_WIDTH + 2;
+    y = standardRectFast.bottom - BUTTON_WIDTH / 2;
+	await mouseClickOn(x, y);
+    assert_equals(standardDivFast.scrollLeft, 0, "Pressing the left trackpart didn't scroll.");
+  }, "Test mouse click on non-custom composited div scrollbar empty trackparts.");
+
+  promise_test (async () => {
+    await waitForCompositorCommit();
+    resetScrollOffset(standardDivFast);
+
     // Testing the vertical scrollbar thumb.
     let x = standardRectFast.right - TRACK_WIDTH / 2;
     let y = standardRectFast.top + BUTTON_WIDTH + 5;

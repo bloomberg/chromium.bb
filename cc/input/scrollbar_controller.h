@@ -32,6 +32,8 @@ class CC_EXPORT ScrollbarController {
   gfx::ScrollOffset GetScrollDeltaFromPointerDown(
       const gfx::PointF position_in_widget);
   LayerImpl* GetLayerHitByPoint(const gfx::PointF position_in_widget);
+  int GetScrollDeltaForScrollbarPart(ScrollbarPart scrollbar_part);
+
   LayerTreeHostImpl* layer_tree_host_impl_;
 
   // Used to safeguard against firing GSE without firing GSB and GSU. For
