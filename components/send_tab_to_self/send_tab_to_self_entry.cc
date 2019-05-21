@@ -114,7 +114,7 @@ SendTabToSelfLocal SendTabToSelfEntry::AsLocalProto() const {
   pb_entry->set_device_name(GetDeviceName());
   pb_entry->set_target_device_sync_cache_guid(GetTargetDeviceSyncCacheGuid());
   pb_entry->set_opened(IsOpened());
-  local_entry.set_notification_dismissed(GetNotificationDismissed());
+  pb_entry->set_notification_dismissed(GetNotificationDismissed());
 
   return local_entry;
 }
@@ -151,18 +151,18 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
   if (pb_entry.opened()) {
     entry->MarkOpened();
   }
+  if (pb_entry.notification_dismissed()) {
+    entry->SetNotificationDismissed(true);
+  }
+
   return entry;
 }
 
 std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromLocalProto(
     const SendTabToSelfLocal& local_entry,
     base::Time now) {
-  std::unique_ptr<SendTabToSelfEntry> to_return =
-      FromProto(local_entry.specifics(), now);
-  if (to_return) {
-    to_return->SetNotificationDismissed(local_entry.notification_dismissed());
-  }
-  return to_return;
+  // No fields are currently read from the local proto.
+  return FromProto(local_entry.specifics(), now);
 }
 
 bool SendTabToSelfEntry::IsExpired(base::Time current_time) const {

@@ -37,4 +37,6 @@ message SendTabToSelfSpecifics {
   optional string target_device_sync_cache_guid = 7;
   // A boolean to designate if the shared tab been opened on the target device.
   optional bool opened = 8;
+  // Whether the notification for this proto been dismissed.
+  optional bool notification_dismissed = 9;
 }
