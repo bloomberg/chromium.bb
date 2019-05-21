@@ -187,13 +187,15 @@
           </a>
         </div>
         <div class="settings-box two-line">
-          <cr-searchable-drop-down items="[[manufacturerList]]"
+          <cr-searchable-drop-down id="manufacturerDropdown"
+              items="[[manufacturerList]]"
               label="$i18n{printerManufacturer}"
               value="{{activePrinter.ppdManufacturer}}">
           </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line">
-          <cr-searchable-drop-down items="[[modelList]]"
+          <cr-searchable-drop-down id="modelDropdown"
+              items="[[modelList]]"
               label="$i18n{printerModel}"
               value="{{activePrinter.ppdModel}}">
           </cr-searchable-drop-down>
@@ -206,6 +208,9 @@
           <paper-button class="browse-button" on-click="onBrowseFile_">
             $i18n{selectDriverButtonText}
           </paper-button>
+        </div>
+        <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
+          <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
         </div>
       </div>
       <div slot="dialog-buttons">

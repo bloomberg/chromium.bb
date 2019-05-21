@@ -176,6 +176,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void OnPrintersChanged(PrinterClass printer_class,
                          const std::vector<Printer>& printers) override;
 
+  // Handles getting the EULA URL if available.
+  void HandleGetEulaUrl(const base::ListValue* args);
+
   // ui::SelectFileDialog::Listener override:
   void FileSelected(const base::FilePath& path,
                     int index,

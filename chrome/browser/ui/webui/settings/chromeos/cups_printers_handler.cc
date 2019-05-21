@@ -353,6 +353,9 @@ void CupsPrintersHandler::RegisterMessages() {
       "cancelPrinterSetUp",
       base::BindRepeating(&CupsPrintersHandler::HandleSetUpCancel,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getEulaUrl", base::BindRepeating(&CupsPrintersHandler::HandleGetEulaUrl,
+                                        base::Unretained(this)));
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {
@@ -1093,6 +1096,21 @@ void CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel(
   info.SetString("ppdManufacturer", manufacturer);
   info.SetString("ppdModel", model);
   ResolveJavascriptCallback(base::Value(callback_id), info);
+}
+
+void CupsPrintersHandler::HandleGetEulaUrl(const base::ListValue* args) {
+  std::string callback_id;
+  std::string ppdManufacturer;
+  std::string ppdModel;
+  CHECK_EQ(3U, args->GetSize());
+  CHECK(args->GetString(0, &callback_id));
+  CHECK(args->GetString(1, &ppdManufacturer));
+  CHECK(args->GetString(2, &ppdModel));
+
+  // TODO(crbug/958272): Implement this function to check if a |ppdModel| has an
+  // EULA.
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value("" /* eulaUrl */));
 }
 
 void CupsPrintersHandler::FireManuallyAddDiscoveredPrinter(
