@@ -177,6 +177,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   containerStack.layoutMarginsRelativeArrangement = YES;
   containerStack.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(
       kContainerStackVerticalPadding, 0, kContainerStackVerticalPadding, 0);
+  containerStack.insetsLayoutMarginsFromSafeArea = NO;
   [self.view addSubview:containerStack];
 
   // Constraints setup.
