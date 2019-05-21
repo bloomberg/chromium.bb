@@ -49,12 +49,6 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 crbug.com/874620 [ linux nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
 crbug.com/874620 [ opengl win nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
 
-# TODO(shrekshao): Remove the following two Fail expectations
-# (draw-buffers and fs-color-type-mismatch-color-buffer-type)
-# after applying the new draw buffers validation
-crbug.com/927908 conformance2/rendering/draw-buffers.html [ Failure ]
-crbug.com/927908 conformance2/rendering/fs-color-type-mismatch-color-buffer-type.html [ Failure ]
-
 # Unsuppress after both
 # https://chromium-review.googlesource.com/1558678 and
 # https://github.com/KhronosGroup/WebGL/pull/2878 land and are rolled

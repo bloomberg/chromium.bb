@@ -60,11 +60,6 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 # ========================
 # Fails on all platforms
 
-# TODO(shrekshao): Remove this after applying the new draw buffer
-# validation. And then uncomment the failure expectation for
-# angle bug 1523 (L160)
-crbug.com/927908 conformance/extensions/webgl-draw-buffers.html [ Failure ]
-
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
 crbug.com/849572 conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
@@ -91,7 +86,7 @@ crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-a
 crbug.com/735483 conformance/rendering/texture-switch-performance.html [ Skip ]
 crbug.com/951628 [ passthrough ] conformance/rendering/blending.html [ Failure ]
 
-# TODO(shrekhao): Restore failure expectation for
+# TODO(shrekshao): Restore failure expectation for
 # ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016
 # as Flaky after 953120 is fixed.
 # And restore ['linux', 'intel'], bug=928530 as Fail
@@ -105,7 +100,7 @@ crbug.com/angleproject/2952 [ opengl passthrough ] conformance/textures/canvas/t
 crbug.com/665521 [ intel opengl passthrough ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
 
 # Passthrough command decoder / OpenGL / AMD
-# crbug.com/1523 [ amd opengl linux pass through ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
+crbug.com/1523 [ amd opengl linux passthrough ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
 
 crbug.com/665521 [ amd opengl passthrough ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
 crbug.com/665521 [ amd opengl passthrough ] conformance/glsl/constructors/glsl-construct-vec-mat-corner-cases.html [ Failure ]
@@ -276,6 +271,7 @@ crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/textures/misc
 crbug.com/angleproject/2914 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 crbug.com/angleproject/2913 [ win vulkan passthrough ] conformance/textures/misc/texture-hd-dpi.html [ Failure ]
 crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
+crbug.com/angleproject/3469 [ win vulkan passthrough ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
 
 # Note: the following test crashes so it's skipped.  http://anglebug.com/3352
 crbug.com/angleproject/2921 [ win vulkan passthrough ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]
