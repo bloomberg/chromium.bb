@@ -23,7 +23,8 @@ bool MayFallbackToU2fWithAppIdExtension(
   bool ctap2_device_supports_u2f =
       device.device_info() &&
       base::ContainsKey(device.device_info()->versions, ProtocolVersion::kU2f);
-  return request.alternative_application_parameter && ctap2_device_supports_u2f;
+  return request.alternative_application_parameter &&
+         ctap2_device_supports_u2f && !request.allow_list.empty();
 }
 
 }  // namespace

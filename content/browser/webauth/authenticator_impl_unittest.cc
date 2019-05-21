@@ -3744,6 +3744,33 @@ TEST_F(ResidentKeyAuthenticatorImplTest, ProtectedNonResidentCreds) {
   EXPECT_TRUE(HasUV(callback_receiver));
 }
 
+TEST_F(ResidentKeyAuthenticatorImplTest, WithAppIDExtension) {
+  // Setting an AppID value for a resident-key request should be ignored.
+  device::VirtualCtap2Device::Config config;
+  config.u2f_support = true;
+  config.pin_support = true;
+  config.resident_key_support = true;
+  config.cred_protect_support = true;
+  virtual_device_.SetCtap2Config(config);
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
+
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  // |SelectAccount| should not be called when there's only a single response.
+  test_client_.expected_accounts = "<invalid>";
+
+  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  options->appid = kTestOrigin1;
+
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
 #if defined(OS_WIN)
 // Requests with a credProtect extension that have |enforce_protection_policy|
 // set should be rejected if the Windows WebAuthn API doesn't support
