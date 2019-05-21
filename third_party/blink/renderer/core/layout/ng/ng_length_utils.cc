@@ -476,11 +476,20 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
   // Scrollable percentage-sized children of table cells, in the table
   // "measure" phase contribute nothing to the row height measurement.
   // See: https://drafts.csswg.org/css-tables-3/#row-layout
+  // We only apply this rule if the block size of the containing table cell is
+  // considered to be restricted, though. Otherwise, especially if this is the
+  // only child of the cell, and that is the only cell in the row, we'd end up
+  // with zero block size. To match the legacy layout engine behavior in
+  // LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(), we only
+  // check the block-size of the containing cell and its containing table. Other
+  // things to consider, would be checking the row and row-group, and also other
+  // properties, such as {min,max}-block-size.
   if (logical_height.IsPercentOrCalc() &&
       constraint_space.TableCellChildLayoutPhase() ==
           NGTableCellChildLayoutPhase::kMeasure &&
       (style.OverflowY() == EOverflow::kAuto ||
-       style.OverflowY() == EOverflow::kScroll))
+       style.OverflowY() == EOverflow::kScroll) &&
+      constraint_space.IsInRestrictedBlockSizeTableCell())
     return border_padding.BlockSum();
 
   LayoutUnit extent = ResolveMainBlockLength(

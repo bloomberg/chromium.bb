@@ -249,6 +249,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
+  NGConstraintSpaceBuilder& SetIsInRestrictedBlockSizeTableCell() {
+    SetFlag(NGConstraintSpace::kInRestrictedBlockSizeTableCell, true);
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetExclusionSpace(
       const NGExclusionSpace& exclusion_space) {
     if (!is_new_fc_)

@@ -2075,6 +2075,9 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
         ConstraintSpace().IsFixedSizeBlock()
             ? NGTableCellChildLayoutPhase::kLayout
             : NGTableCellChildLayoutPhase::kMeasure);
+
+    if (Node().IsRestrictedBlockSizeTableCell())
+      builder.SetIsInRestrictedBlockSizeTableCell();
   }
 
   if (NGBaseline::ShouldPropagateBaselines(child))

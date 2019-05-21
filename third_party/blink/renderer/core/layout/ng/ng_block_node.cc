@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -881,6 +883,13 @@ bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
   auto* layout_box = DynamicTo<LayoutBlock>(GetLayoutBox());
   return layout_box &&
          layout_box->UseLogicalBottomMarginEdgeForInlineBlockBaseline();
+}
+
+bool NGBlockNode::IsRestrictedBlockSizeTableCell() const {
+  DCHECK(IsTableCell());
+  const LayoutTableCell* cell = ToLayoutTableCell(GetLayoutBox());
+  return !cell->StyleRef().LogicalHeight().IsAuto() ||
+         !cell->Table()->StyleRef().LogicalHeight().IsAuto();
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(

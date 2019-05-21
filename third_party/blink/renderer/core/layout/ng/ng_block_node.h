@@ -97,6 +97,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
   bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
 
+  // Return true if the block size of this table cell should be considered
+  // restricted (e.g. height of the cell or its table is non-auto).
+  bool IsRestrictedBlockSizeTableCell() const;
+
   // Layout an atomic inline; e.g., inline block.
   scoped_refptr<const NGLayoutResult> LayoutAtomicInline(
       const NGConstraintSpace& parent_constraint_space,

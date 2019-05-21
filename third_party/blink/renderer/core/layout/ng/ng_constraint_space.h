@@ -67,9 +67,10 @@ class CORE_EXPORT NGConstraintSpace final {
     kAnonymous = 1 << 5,
     kUseFirstLineStyle = 1 << 6,
     kAncestorHasClearancePastAdjoiningFloats = 1 << 7,
+    kInRestrictedBlockSizeTableCell = 1 << 8,
 
     // Size of bitfield used to store the flags.
-    kNumberOfConstraintSpaceFlags = 8
+    kNumberOfConstraintSpaceFlags = 9
   };
 
   // To ensure that the bfc_offset_, rare_data_ union doesn't get polluted,
@@ -330,6 +331,10 @@ class CORE_EXPORT NGConstraintSpace final {
   NGTableCellChildLayoutPhase TableCellChildLayoutPhase() const {
     return static_cast<NGTableCellChildLayoutPhase>(
         bitfields_.table_cell_child_layout_phase);
+  }
+
+  bool IsInRestrictedBlockSizeTableCell() const {
+    return HasFlag(kInRestrictedBlockSizeTableCell);
   }
 
   NGMarginStrut MarginStrut() const {
