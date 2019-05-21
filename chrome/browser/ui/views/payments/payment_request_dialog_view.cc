@@ -253,10 +253,9 @@ void PaymentRequestDialogView::OnInitialized(
 
   HideProcessingSpinner();
 
-  if (request_->state()->are_requested_methods_supported()) {
-    request_->RecordDialogShownEventInJourneyLogger();
-    if (observer_for_testing_)
-      observer_for_testing_->OnDialogOpened();
+  if (request_->state()->are_requested_methods_supported() &&
+      observer_for_testing_) {
+    observer_for_testing_->OnDialogOpened();
   }
 }
 
@@ -435,10 +434,9 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   if (number_of_initialization_tasks_ > 0)
     return;
 
-  if (request_->state()->are_requested_methods_supported()) {
-    request_->RecordDialogShownEventInJourneyLogger();
-    if (observer_for_testing_)
-      observer_for_testing_->OnDialogOpened();
+  if (request_->state()->are_requested_methods_supported() &&
+      observer_for_testing_) {
+    observer_for_testing_->OnDialogOpened();
   }
 }
 

@@ -295,7 +295,6 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
 
   if (is_resolving_promise_passed_into_show_method) {
     if (SatisfiesSkipUIConstraints()) {
-      skipped_payment_request_ui_ = true;
       Pay();
     } else if (spec_->request_shipping()) {
       state_->SelectDefaultShippingAddressAndNotifyObservers();
@@ -450,11 +449,8 @@ bool PaymentRequest::ChangePaymentMethod(const std::string& method_name,
 void PaymentRequest::AreRequestedMethodsSupportedCallback(
     bool methods_supported) {
   if (methods_supported) {
-    if (SatisfiesSkipUIConstraints()) {
-      skipped_payment_request_ui_ = true;
-      journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SKIPPED_SHOW);
+    if (SatisfiesSkipUIConstraints())
       Pay();
-    }
   } else {
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
@@ -474,18 +470,26 @@ bool PaymentRequest::IsThisPaymentRequestShowing() const {
   return is_show_called_ && display_handle_ && spec_ && state_;
 }
 
-bool PaymentRequest::SatisfiesSkipUIConstraints() const {
+bool PaymentRequest::SatisfiesSkipUIConstraints() {
   // Only allowing URL base payment apps to skip the payment sheet.
-  return (spec()->url_payment_method_identifiers().size() == 1 ||
-          skip_ui_for_non_url_payment_method_identifiers_for_test_) &&
-         base::FeatureList::IsEnabled(features::kWebPaymentsSingleAppUiSkip) &&
-         base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps) &&
-         is_show_user_gesture_ && state()->IsInitialized() &&
-         spec()->IsInitialized() &&
-         state()->available_instruments().size() == 1 &&
-         spec()->stringified_method_data().size() == 1 &&
-         !spec()->request_shipping() && !spec()->request_payer_name() &&
-         !spec()->request_payer_phone() && !spec()->request_payer_email();
+  skipped_payment_request_ui_ =
+      (spec()->url_payment_method_identifiers().size() == 1 ||
+       skip_ui_for_non_url_payment_method_identifiers_for_test_) &&
+      base::FeatureList::IsEnabled(features::kWebPaymentsSingleAppUiSkip) &&
+      base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps) &&
+      is_show_user_gesture_ && state()->IsInitialized() &&
+      spec()->IsInitialized() && state()->available_instruments().size() == 1 &&
+      spec()->stringified_method_data().size() == 1 &&
+      !spec()->request_shipping() && !spec()->request_payer_name() &&
+      !spec()->request_payer_phone() && !spec()->request_payer_email();
+  if (skipped_payment_request_ui_) {
+    DCHECK(state()->IsInitialized() && spec()->IsInitialized());
+    journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SKIPPED_SHOW);
+  } else if (state()->IsInitialized() && spec()->IsInitialized()) {
+    // Set EVENT_SHOWN only after state() and spec() initialization.
+    journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
+  }
+  return skipped_payment_request_ui_;
 }
 
 void PaymentRequest::OnPaymentResponseAvailable(
@@ -615,12 +619,13 @@ void PaymentRequest::HideIfNecessary() {
   display_handle_.reset();
 }
 
-void PaymentRequest::RecordDialogShownEventInJourneyLogger() {
-  journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
-}
-
 bool PaymentRequest::IsIncognito() const {
   return delegate_->IsIncognito();
+}
+
+void PaymentRequest::SetSkipUiForNonUrlPaymentMethodIdentifiersForTest() {
+  journey_logger_.set_skip_ui_for_non_url_payment_method_identifiers_for_test();
+  skip_ui_for_non_url_payment_method_identifiers_for_test_ = true;
 }
 
 void PaymentRequest::RecordFirstAbortReason(

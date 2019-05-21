@@ -51,6 +51,8 @@ class PaymentRequestCanMakePaymentMetricsTest
                                  DialogEvent::DIALOG_OPENED});
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
     WaitForObservedEvent();
+    // Wait for all callbacks to run.
+    base::RunLoop().RunUntilIdle();
   }
 
  private:

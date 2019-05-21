@@ -5,6 +5,7 @@
 #include "components/payments/core/journey_logger.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/metrics/histogram_functions.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -51,6 +52,19 @@ std::string GetHistogramNameSuffix(
 
   DCHECK(!name_suffix.empty());
   return name_suffix;
+}
+
+// Returns true when exactly one boolean value in the vector is true.
+bool ValidateExclusiveBitVector(const std::vector<bool>& bit_vector) {
+  bool seen_true_bit = false;
+  for (auto bit : bit_vector) {
+    if (!bit)
+      continue;
+    if (seen_true_bit)
+      return false;
+    seen_true_bit = true;
+  }
+  return seen_true_bit;
 }
 
 }  // namespace
@@ -244,6 +258,7 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
     events_ |= EVENT_HAD_INITIAL_FORM_OF_PAYMENT;
 
   // Record the events in UMA.
+  ValidateEventBits();
   base::UmaHistogramSparse("PaymentRequest.Events", events_);
 
   if (source_id_ == ukm::kInvalidSourceId)
@@ -254,6 +269,55 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
       .SetCompletionStatus(completion_status)
       .SetEvents(events_)
       .Record(ukm::UkmRecorder::Get());
+}
+
+void JourneyLogger::ValidateEventBits() const {
+  std::vector<bool> bit_vector;
+
+  // Validate completion status.
+  bit_vector.push_back(events_ & EVENT_COMPLETED);
+  bit_vector.push_back(events_ & EVENT_OTHER_ABORTED);
+  bit_vector.push_back(events_ & EVENT_USER_ABORTED);
+  DCHECK(ValidateExclusiveBitVector(bit_vector));
+  bit_vector.clear();
+  if (events_ & EVENT_COMPLETED)
+    DCHECK(events_ & EVENT_PAY_CLICKED);
+
+  // Validate the user selected method.
+  if (events_ & EVENT_COMPLETED) {
+    bit_vector.push_back(events_ & EVENT_SELECTED_CREDIT_CARD);
+    bit_vector.push_back(events_ & EVENT_SELECTED_GOOGLE);
+    bit_vector.push_back(events_ & EVENT_SELECTED_OTHER);
+    DCHECK(ValidateExclusiveBitVector(bit_vector));
+    bit_vector.clear();
+  }
+
+  // Selected method should be requested.
+  if (events_ & EVENT_SELECTED_CREDIT_CARD) {
+    DCHECK(events_ & EVENT_REQUEST_METHOD_BASIC_CARD);
+  } else if (events_ & EVENT_SELECTED_GOOGLE) {
+    DCHECK(events_ & EVENT_REQUEST_METHOD_GOOGLE);
+  } else if (events_ & EVENT_SELECTED_OTHER) {
+    // It is possible that a service worker based app responds to "basic-card"
+    // request.
+    DCHECK(events_ & EVENT_REQUEST_METHOD_OTHER ||
+           events_ & EVENT_REQUEST_METHOD_BASIC_CARD);
+  }
+
+  // Validate UI SHOWN status.
+  if (events_ & EVENT_COMPLETED) {
+    bit_vector.push_back(events_ & EVENT_SHOWN);
+    bit_vector.push_back(events_ & EVENT_SKIPPED_SHOW);
+    DCHECK(ValidateExclusiveBitVector(bit_vector));
+    bit_vector.clear();
+  }
+
+  // Basic card flow should not skip UI show unless explicitly specified for
+  // tests.
+  if (events_ & EVENT_SELECTED_CREDIT_CARD) {
+    DCHECK((events_ & EVENT_SHOWN) ||
+           skip_ui_for_non_url_payment_method_identifiers_for_test_);
+  }
 }
 
 bool JourneyLogger::WasPaymentRequestTriggered() {

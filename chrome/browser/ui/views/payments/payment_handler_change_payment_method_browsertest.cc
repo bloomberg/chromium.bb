@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerChangePaymentMethodTest, Test) {
                                      GetParam().init_test_code));
 
   if (GetParam().method_identifier == MethodIdentifier::kBasicCard)
-    EnalbeSkipUIForForBasicCard();
+    EnableSkipUIForForBasicCard();
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       GetActiveWebContents(), "outputChangePaymentMethodReturnValue(request);",

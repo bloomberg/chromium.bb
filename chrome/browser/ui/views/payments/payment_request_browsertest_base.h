@@ -270,7 +270,7 @@ class PaymentRequestBrowserTestBase
   void WaitForObservedEvent();
 
   // Allows to skip UI into payment handler for "basic-card".
-  void EnalbeSkipUIForForBasicCard();
+  void EnableSkipUIForForBasicCard();
 
  private:
   std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;

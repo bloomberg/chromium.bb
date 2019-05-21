@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, SkipUI) {
   NavigateTo("/show_promise/digital_goods.html");
   InstallEchoPaymentHandlerForBasicCard();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "create();"));
-  EnalbeSkipUIForForBasicCard();
+  EnableSkipUIForForBasicCard();
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_SHOWN,
        DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
