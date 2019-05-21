@@ -313,28 +313,13 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
   if (!disabled_types.Has(syncer::PREFERENCES)) {
-    if (override_prefs_controller_to_uss_for_test_) {
-      // TODO(crbug.com/965394) This still uses a proxy delegate even though the
-      // model lives on the UI thread. Remove the code altogether with
-      // |override_prefs_controller_to_uss_for_test_|.
-      controllers.push_back(std::make_unique<ModelTypeController>(
-          syncer::PREFERENCES,
-          std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-              ui_thread_,
-              base::BindRepeating(&browser_sync::BrowserSyncClient::
-                                      GetControllerDelegateForModelType,
-                                  base::Unretained(sync_client_),
-                                  syncer::PREFERENCES))));
-    } else {
-      controllers.push_back(
-          std::make_unique<SyncableServiceBasedModelTypeController>(
-              syncer::PREFERENCES,
-              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
-                             base::Unretained(sync_client_),
-                             syncer::PREFERENCES),
-              dump_stack));
-    }
+    controllers.push_back(
+        std::make_unique<SyncableServiceBasedModelTypeController>(
+            syncer::PREFERENCES,
+            sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+            base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
+                           base::Unretained(sync_client_), syncer::PREFERENCES),
+            dump_stack));
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
@@ -451,14 +436,6 @@ ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
   components.model_associator = std::move(model_associator);
   return components;
 }
-
-// static
-void ProfileSyncComponentsFactoryImpl::OverridePrefsForUssTest(bool use_uss) {
-  override_prefs_controller_to_uss_for_test_ = use_uss;
-}
-
-bool ProfileSyncComponentsFactoryImpl::
-    override_prefs_controller_to_uss_for_test_ = false;
 
 std::unique_ptr<syncer::ModelTypeControllerDelegate>
 ProfileSyncComponentsFactoryImpl::CreateForwardingControllerDelegate(
