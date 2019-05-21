@@ -1556,6 +1556,10 @@ void TabStrip::OnMouseEventInTab(views::View* source,
 void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
   if (!base::FeatureList::IsEnabled(features::kTabHoverCards))
     return;
+  // We don't want to show a hover card for a tab while it is animating.
+  if (bounds_animator_.IsAnimating(tab) && should_show) {
+    return;
+  }
 
   if (!hover_card_) {
     // There is nothing to be done if the hover card doesn't exist and we are

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -75,7 +76,9 @@ class HoverCardVisibleWaiter : public views::WidgetObserver {
 
 class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
  public:
-  TabHoverCardBubbleViewBrowserTest() {
+  TabHoverCardBubbleViewBrowserTest()
+      : animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+            gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED)) {
     TabHoverCardBubbleView::disable_animations_for_testing_ = true;
   }
   ~TabHoverCardBubbleViewBrowserTest() override = default;
@@ -145,9 +148,12 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleViewBrowserTest);
+  std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
+      animation_mode_reset_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleViewBrowserTest);
 };
 
 // Fails on win7 (dbg): http://crbug.com/932402.
