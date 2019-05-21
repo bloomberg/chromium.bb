@@ -36,6 +36,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingController {
  private:
   friend class ScopedThrottlingToken;
 
+  // TODO(https://crbug.com/960874): Debugging code to try and shed some light
+  // on why the owned maps are invalid.
+  enum class Liveness : int32_t {
+    kAlive = 0xCA11AB13,
+    kDead = 0xDEADBEEF,
+  };
+
   ThrottlingController();
   ~ThrottlingController();
 
@@ -65,6 +72,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingController {
 
   ThrottlingNetworkInterceptor* FindInterceptor(uint32_t net_log_source_id);
 
+  // TODO(https://crbug.com/960874): Debugging code.
+  void CheckValidThread();
+
   static ThrottlingController* instance_;
 
   using InterceptorMap =
@@ -74,9 +84,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingController {
       std::map<uint32_t /* net_log_source_id */,
                base::UnguessableToken /* throttling_profile_id */>;
 
+  // TODO(https://crbug.com/960874): Debugging code.
+  Liveness liveness_ = Liveness::kAlive;
   InterceptorMap interceptors_;
   NetLogSourceProfileMap net_log_source_profile_map_;
-  THREAD_CHECKER(thread_checker_);
+  base::ThreadCheckerImpl thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ThrottlingController);
 };
