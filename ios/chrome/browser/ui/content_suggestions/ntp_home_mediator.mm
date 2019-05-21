@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/content_suggestions/user_account_image_update_delegate.h"
@@ -47,6 +48,8 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -463,6 +466,36 @@ const char kNTPHelpURL[] =
 }
 
 - (void)registerImageUpdater:(id<UserAccountImageUpdateDelegate>)imageUpdater {
+  UIImage* image;
+  // Fetches user's identity from Authentication Service.
+  ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();
+  if (identity) {
+    // Fetches user's avatar from Authentication Service. Use cached version if
+    // one is available. If not, use the default avatar and initiate a fetch
+    // in the background. When background fetch completes, all observers will
+    // be notified to refresh the user's avatar.
+    // TODO(crbug.com/961120): Implement observers. This avatar fetch code
+    // is from the IdentityRefreshLogic in settings_table_view_controller.mm.
+    // Code can probably be shared.
+    ios::ChromeIdentityService* identityService =
+        ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+    image = identityService->GetCachedAvatarForIdentity(identity);
+    if (!image) {
+      image = [self defaultAvatar];
+      identityService->GetAvatarForIdentity(identity, nil);
+    }
+  } else {
+    // User is not signed in, show default avatar.
+    image = [self defaultAvatar];
+  }
+  // TODO(crbug.com/961120): Use ResizedAvatarCache when it accepts the
+  // specification of different image sizes.
+  CGFloat dimension = ntp_home::kIdentityAvatarDimension;
+  if (image.size.width != dimension || image.size.height != dimension) {
+    image = ResizeImage(image, CGSizeMake(dimension, dimension),
+                        ProjectionMode::kAspectFit);
+  }
+  [imageUpdater updateAccountImage:image];
 }
 
 - (BOOL)ignoreLoadRequests {
@@ -619,6 +652,14 @@ const char kNTPHelpURL[] =
       item ? item->GetPageDisplayState().scroll_state().content_offset().y : 0;
   if (offset > 0)
     [self.suggestionsViewController setContentOffset:offset];
+}
+
+// Returns the default avatar image for users who are not signed in or signed
+// in but avatar image is not available yet.
+- (UIImage*)defaultAvatar {
+  return ios::GetChromeBrowserProvider()
+      ->GetSigninResourcesProvider()
+      ->GetDefaultAvatar();
 }
 
 @end
