@@ -117,6 +117,7 @@ class NotifierButtonWrapperView : public views::View {
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnBlur() override;
+  const char* GetClassName() const override;
 
  private:
   // Initialize |disabled_filter_|. Should be called once.
@@ -201,6 +202,10 @@ void NotifierButtonWrapperView::OnBlur() {
   SchedulePaint();
 }
 
+const char* NotifierButtonWrapperView::GetClassName() const {
+  return "NotifierButtonWrapperView";
+}
+
 void NotifierButtonWrapperView::CreateDisabledFilter() {
   DCHECK(!disabled_filter_);
   disabled_filter_ = new views::View;
@@ -215,6 +220,9 @@ void NotifierButtonWrapperView::CreateDisabledFilter() {
 class ScrollContentsView : public views::View {
  public:
   ScrollContentsView() = default;
+
+  // views::View:
+  const char* GetClassName() const override { return "ScrollContentsView"; }
 
  private:
   void PaintChildren(const views::PaintInfo& paint_info) override {
@@ -277,6 +285,9 @@ class EmptyNotifierView : public views::View {
     AddChildView(label);
   }
 
+  // views::View:
+  const char* GetClassName() const override { return "EmptyNotifierView"; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyNotifierView);
 };
@@ -334,6 +345,10 @@ void NotifierSettingsView::NotifierButton::SetChecked(bool checked) {
 
 bool NotifierSettingsView::NotifierButton::GetChecked() const {
   return checkbox_->GetChecked();
+}
+
+const char* NotifierSettingsView::NotifierButton::GetClassName() const {
+  return "NotifierButton";
 }
 
 void NotifierSettingsView::NotifierButton::ButtonPressed(
@@ -502,6 +517,10 @@ void NotifierSettingsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kList;
   node_data->SetName(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
+}
+
+const char* NotifierSettingsView::GetClassName() const {
+  return "NotifierSettingsView";
 }
 
 void NotifierSettingsView::OnNotifierListUpdated(

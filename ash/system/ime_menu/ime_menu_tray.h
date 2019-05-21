@@ -59,6 +59,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   void CloseBubble() override;
   void ShowBubble(bool show_by_click) override;
   TrayBubbleView* GetBubbleView() override;
+  const char* GetClassName() const override;
 
   // IMEObserver:
   void OnIMERefresh() override;

@@ -178,6 +178,9 @@ class KeyboardStatusRow : public views::View {
     tri_view->AddView(TriView::Container::END, toggle_);
   }
 
+  // views::View:
+  const char* GetClassName() const override { return "KeyboardStatusRow"; }
+
  private:
   // ToggleButton to toggle keyboard on or off.
   views::ToggleButton* toggle_ = nullptr;
@@ -344,6 +347,10 @@ void ImeListView::VisibilityChanged(View* starting_from, bool is_visible) {
   }
 
   ScrollItemToVisible(current_ime_view_);
+}
+
+const char* ImeListView::GetClassName() const {
+  return "ImeListView";
 }
 
 void ImeListView::FocusCurrentImeIfNeeded() {

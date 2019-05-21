@@ -118,6 +118,9 @@ class TitleView : public views::View, public views::ButtonListener {
 
   ~TitleView() override = default;
 
+  // views::View:
+  const char* GetClassName() const override { return "TitleView"; }
+
  private:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
@@ -517,6 +520,10 @@ void PaletteTray::ShowBubble(bool show_by_click) {
 
 TrayBubbleView* PaletteTray::GetBubbleView() {
   return bubble_ ? bubble_->bubble_view() : nullptr;
+}
+
+const char* PaletteTray::GetClassName() const {
+  return "PaletteTray";
 }
 
 void PaletteTray::InitializeWithLocalState() {

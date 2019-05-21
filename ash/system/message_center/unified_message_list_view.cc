@@ -152,6 +152,8 @@ class UnifiedMessageListView::MessageViewContainer
     PreferredSizeChanged();
   }
 
+  const char* GetClassName() const override { return "UnifiedMessageListView"; }
+
   // MessageView::SlideObserver:
   void OnSlideChanged(const std::string& notification_id) override {
     control_view_->UpdateButtonsVisibility();
@@ -312,6 +314,10 @@ gfx::Size UnifiedMessageListView::CalculatePreferredSize() const {
   return gfx::Size(kTrayMenuWidth,
                    gfx::Tween::IntValueBetween(GetCurrentValue(), start_height_,
                                                ideal_height_));
+}
+
+const char* UnifiedMessageListView::GetClassName() const {
+  return "UnifiedMessageListView";
 }
 
 void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {

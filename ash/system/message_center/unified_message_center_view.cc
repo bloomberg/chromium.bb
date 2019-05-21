@@ -88,6 +88,8 @@ class ScrollerContentsView : public views::View {
     PreferredSizeChanged();
   }
 
+  const char* GetClassName() const override { return "ScrollerContentsView"; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollerContentsView);
 };
@@ -116,6 +118,10 @@ class StackingBarClearAllButton : public views::LabelButton {
                          kStackingNotificationClearAllButtonPadding.width(),
                      label()->GetPreferredSize().height() +
                          kStackingNotificationClearAllButtonPadding.height());
+  }
+
+  const char* GetClassName() const override {
+    return "StackingBarClearAllButton";
   }
 
   int GetHeightForWidth(int width) const override {
@@ -281,6 +287,10 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 }
 
+const char* StackingNotificationCounterView::GetClassName() const {
+  return "StackingNotificationCounterView";
+}
+
 void StackingNotificationCounterView::UpdateVisibility() {
   switch (animation_state_) {
     case UnifiedMessageCenterAnimationState::IDLE:
@@ -420,6 +430,10 @@ gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
   }
 
   return preferred_size;
+}
+
+const char* UnifiedMessageCenterView::GetClassName() const {
+  return "UnifiedMessageCenterView";
 }
 
 void UnifiedMessageCenterView::OnMessageCenterScrolled() {

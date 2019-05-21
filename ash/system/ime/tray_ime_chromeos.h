@@ -46,6 +46,7 @@ class IMEDetailedView : public ImeListView {
                            const ui::Event& event) override;
   void CreateExtraTitleRowButtons() override;
   void ShowSettings();
+  const char* GetClassName() const override;
 
   ImeController* const ime_controller_;
 

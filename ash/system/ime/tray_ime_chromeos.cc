@@ -82,6 +82,10 @@ void IMEDetailedView::ShowSettings() {
   CloseBubble();
 }
 
+const char* IMEDetailedView::GetClassName() const {
+  return "IMEDetailedView";
+}
+
 }  // namespace tray
 
 }  // namespace ash

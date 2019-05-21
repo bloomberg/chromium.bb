@@ -70,6 +70,9 @@ class PaletteWelcomeBubble::WelcomeBubbleView
 
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
+  // views::View:
+  const char* GetClassName() const override { return "WelcomeBubbleView"; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WelcomeBubbleView);
 };

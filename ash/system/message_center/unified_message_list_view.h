@@ -73,6 +73,7 @@ class ASH_EXPORT UnifiedMessageListView
   void PreferredSizeChanged() override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  const char* GetClassName() const override;
 
   // message_center::MessageCenterObserver:
   void OnNotificationAdded(const std::string& id) override;

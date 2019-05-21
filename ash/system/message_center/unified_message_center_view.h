@@ -65,6 +65,7 @@ class StackingNotificationCounterView : public views::View {
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
 
  private:
   friend class UnifiedMessageCenterViewTest;
@@ -125,6 +126,7 @@ class ASH_EXPORT UnifiedMessageCenterView
   void RemovedFromWidget() override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  const char* GetClassName() const override;
 
   // MessageCenterScrollBar::Observer:
   void OnMessageCenterScrolled() override;

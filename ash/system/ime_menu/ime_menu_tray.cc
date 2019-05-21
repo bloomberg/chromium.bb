@@ -101,6 +101,7 @@ class ImeMenuLabel : public views::Label {
     return gfx::Size(kTrayItemSize, kTrayItemSize);
   }
   int GetHeightForWidth(int width) const override { return kTrayItemSize; }
+  const char* GetClassName() const override { return "ImeMenuLabel"; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImeMenuLabel);
@@ -110,6 +111,9 @@ class ImeMenuImageView : public views::ImageView {
  public:
   ImeMenuImageView() { SetBorder(views::CreateEmptyBorder(gfx::Insets(0, 6))); }
   ~ImeMenuImageView() override = default;
+
+  // views::View:
+  const char* GetClassName() const override { return "ImeMenuImageView"; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImeMenuImageView);
@@ -162,6 +166,9 @@ class ImeTitleView : public views::View, public views::ButtonListener {
   }
 
   ~ImeTitleView() override = default;
+
+  // views::View:
+  const char* GetClassName() const override { return "ImeTitleView"; }
 
  private:
   // Settings button that is only used if the emoji, handwriting and voice
@@ -216,6 +223,9 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
                               keyset, kImeKeysetUmaBoundary);
     ime_menu_tray_->ShowKeyboardWithKeyset(keyset);
   }
+
+  // views::View:
+  const char* GetClassName() const override { return "ImeButtonsView"; }
 
  private:
   void Init(bool show_emoji, bool show_handwriting, bool show_voice) {
@@ -274,6 +284,9 @@ class ImeMenuListView : public ImeListView {
  public:
   ImeMenuListView() : ImeMenuListView(std::make_unique<Delegate>()) {}
   ~ImeMenuListView() override = default;
+
+  // views::View:
+  const char* GetClassName() const override { return "ImeMenuListView"; }
 
  private:
   class Delegate : public DetailedViewDelegate {
@@ -463,6 +476,10 @@ void ImeMenuTray::ShowBubble(bool show_by_click) {
 
 TrayBubbleView* ImeMenuTray::GetBubbleView() {
   return bubble_ ? bubble_->bubble_view() : nullptr;
+}
+
+const char* ImeMenuTray::GetClassName() const {
+  return "ImeMenuTray";
 }
 
 void ImeMenuTray::OnIMERefresh() {
