@@ -3725,6 +3725,9 @@
       'sandbox_mac_unittests': {},
     },
 
+    'mac_specific_isolated_scripts': {
+      'mac_signing_tests': {},
+    },
 
     'mash_fyi_chromium_gtests': {
       'mash_fyi_browser_tests': {
@@ -4562,10 +4565,11 @@
       'non_linux_chromium_gtests',
     ],
 
-    'chromium_rel_isolated_scripts': [
+    'chromium_mac_rel_isolated_scripts': [
       'chromedriver_py_tests_isolated_scripts',
       'components_perftests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
+      'mac_specific_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 

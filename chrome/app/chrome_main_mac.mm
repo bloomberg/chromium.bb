@@ -27,9 +27,17 @@ void SetUpBundleOverrides() {
   NSBundle* base_bundle = chrome::OuterAppBundle();
   base::mac::SetBaseBundleID([[base_bundle bundleIdentifier] UTF8String]);
 
+#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
+  base::FilePath child_exe_path =
+      chrome::GetFrameworkBundlePath()
+          .Append("Helpers")
+          .Append(chrome::kHelperProcessExecutablePath);
+#else
+  base::FilePath child_exe_path = chrome::GetVersionedDirectory().Append(
+      chrome::kHelperProcessExecutablePath);
+#endif
+
   // On the Mac, the child executable lives at a predefined location within
   // the app bundle's versioned directory.
-  base::PathService::Override(content::CHILD_PROCESS_EXE,
-                              chrome::GetVersionedDirectory().Append(
-                                  chrome::kHelperProcessExecutablePath));
+  base::PathService::Override(content::CHILD_PROCESS_EXE, child_exe_path);
 }

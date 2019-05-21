@@ -52,6 +52,10 @@ buildflag_header("buildflags") {
     "PGO_BUILD=$pgo_build",
     "OPTIMIZE_WEBUI=$optimize_webui",
   ]
+
+  if (is_mac) {
+    flags += [ "NEW_MAC_BUNDLE_STRUCTURE=$new_mac_bundle_structure" ]
+  }
 }
 
 source_set("channel_info") {
