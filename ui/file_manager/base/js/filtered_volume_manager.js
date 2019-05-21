@@ -83,6 +83,8 @@ class FilteredVolumeManager extends cr.EventTarget {
     this.volumeInfoList = new FilteredVolumeInfoList(this.list_);
 
     this.volumeManager_ = null;
+
+    /** @private {?Array<function()>} */
     this.pendingTasks_ = [];
     this.onEventBound_ = this.onEvent_.bind(this);
     this.onVolumeInfoListUpdatedBound_ =
@@ -335,7 +337,7 @@ class FilteredVolumeManager extends cr.EventTarget {
   /**
    * Obtains a volume information of the current profile.
    * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
-   * @return {VolumeInfo} Found volume info.
+   * @return {?VolumeInfo} Found volume info.
    */
   getCurrentProfileVolumeInfo(volumeType) {
     return this.filterDisallowedVolume_(
@@ -365,7 +367,7 @@ class FilteredVolumeManager extends cr.EventTarget {
    * Obtains location information from an entry.
    *
    * @param {(!Entry|!FilesAppEntry)} entry File or directory entry.
-   * @return {EntryLocation} Location information.
+   * @return {?EntryLocation} Location information.
    */
   getLocationInfo(entry) {
     const locationInfo =
@@ -399,15 +401,15 @@ class FilteredVolumeManager extends cr.EventTarget {
    * @return {!Promise<!VolumeInfo>} The VolumeInfo. Will not resolve
    *     if the volume is never mounted.
    */
-  whenVolumeInfoReady(volumeId) {
-    return new Promise(resolve => {
-      this.volumeManager_.whenVolumeInfoReady(volumeId).then((volumeInfo) => {
-        volumeInfo = this.filterDisallowedVolume_(volumeInfo);
-        if (volumeInfo) {
-          resolve(volumeInfo);
-        }
-      });
-    });
+  async whenVolumeInfoReady(volumeId) {
+    const volumeInfo = this.filterDisallowedVolume_(
+        await this.volumeManager_.whenVolumeInfoReady(volumeId));
+
+    if (!volumeInfo) {
+      throw new Error(`Volume not allowed: ${volumeId}`);
+    }
+
+    return volumeInfo;
   }
 
   /**
@@ -455,8 +457,7 @@ class FilteredVolumeManager extends cr.EventTarget {
     if (this.pendingTasks_) {
       return new Promise((fulfill, reject) => {
         this.pendingTasks_.push(() => {
-          return this.volumeManager_.configure(volumeInfo)
-              .then(fulfill, reject);
+          this.volumeManager_.configure(volumeInfo).then(fulfill, reject);
         });
       });
     }
@@ -467,8 +468,8 @@ class FilteredVolumeManager extends cr.EventTarget {
   /**
    * Filters volume info by isAllowedVolume_().
    *
-   * @param {VolumeInfo} volumeInfo Volume info.
-   * @return {VolumeInfo} Null if the volume is disallowed. Otherwise just
+   * @param {?VolumeInfo} volumeInfo Volume info.
+   * @return {?VolumeInfo} Null if the volume is disallowed. Otherwise just
    *     returns the volume.
    * @private
    */
