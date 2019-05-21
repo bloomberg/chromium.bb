@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -437,8 +438,9 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
     }
 
     std::set<base::string16> extension_names;
-    received_scanner_results_.FetchExtensionNames(testing_profile_,
-                                                  &extension_names);
+    settings::ChromeCleanupHandler::GetExtensionNamesFromIds(
+        testing_profile_, received_scanner_results_.extension_ids(),
+        &extension_names);
     if (cleaner_process_options_.extension_ids() &&
         extension_cleaning_feature_status_ ==
             ExtensionCleaningFeatureStatus::kEnabled) {

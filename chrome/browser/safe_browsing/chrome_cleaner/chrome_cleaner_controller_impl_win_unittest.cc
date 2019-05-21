@@ -594,26 +594,15 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
         scanner_results_on_cleaning.registry_keys(),
         UnorderedElementsAreArray(scanner_results_on_infected.registry_keys()));
   }
-
-  std::set<base::string16> extension_names_infected;
-  scanner_results_on_infected.FetchExtensionNames(profile1,
-                                                  &extension_names_infected);
-  std::set<base::string16> extension_names_cleaning;
-  scanner_results_on_cleaning.FetchExtensionNames(profile1,
-                                                  &extension_names_cleaning);
-// Extension names only reported on Windows Chrome build.
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  EXPECT_EQ(!extension_names_infected.empty(), ExpectedExtensionsReported());
-  EXPECT_EQ(!extension_names_cleaning.empty(),
+  EXPECT_EQ(!scanner_results_on_infected.extension_ids().empty(),
+            ExpectedExtensionsReported());
+  EXPECT_EQ(!scanner_results_on_cleaning.extension_ids().empty(),
             ExpectedExtensionsReported() && ExpectedOnCleaningCalled());
-  if (!extension_names_cleaning.empty()) {
-    EXPECT_THAT(extension_names_cleaning,
-                UnorderedElementsAreArray(extension_names_infected));
+  if (!scanner_results_on_cleaning.extension_ids().empty()) {
+    EXPECT_THAT(
+        scanner_results_on_cleaning.extension_ids(),
+        UnorderedElementsAreArray(scanner_results_on_infected.extension_ids()));
   }
-#else
-  EXPECT_TRUE(extension_names_infected.empty());
-  EXPECT_TRUE(extension_names_cleaning.empty());
-#endif
 
   EXPECT_EQ(ExpectedRebootFlowStarted(), reboot_flow_started_);
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_extension_util_win.h"
+#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
 
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
 #include "chrome/grit/generated_resources.h"
@@ -14,14 +14,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace safe_browsing {
+namespace settings {
 
-TEST(ChromeCleanerExtensionUtilTest, GetExtensionNamesFromIds) {
+using safe_browsing::MockChromeCleanerProcess;
+
+TEST(ChromeCleanupHandlerTest, GetExtensionsNamesFromIds) {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   TestingProfileManager profile_manager_(TestingBrowserProcess::GetGlobal());
 
-  // Set up the testing profile, so chrome_cleaner_win_util can get the
-  // extensions registry from it.
+  // Set up the testing profile to get the extensions registry from it.
   ASSERT_TRUE(profile_manager_.SetUp());
   TestingProfile* testing_profile_ =
       profile_manager_.CreateTestingProfile("DummyProfile");
@@ -34,16 +35,21 @@ TEST(ChromeCleanerExtensionUtilTest, GetExtensionNamesFromIds) {
   };
 
   std::set<base::string16> expected_names = {
-      MockChromeCleanerProcess::kInstalledExtensionName1,
-      MockChromeCleanerProcess::kInstalledExtensionName2,
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_RESET_CLEANUP_DETAILS_EXTENSION_UNKNOWN,
-          MockChromeCleanerProcess::kUnknownExtensionId),
+#if defined(GOOGLE_CHROME_BUILD)
+    // Extension names are only available in Google-branded builds.
+    MockChromeCleanerProcess::kInstalledExtensionName1,
+    MockChromeCleanerProcess::kInstalledExtensionName2,
+    l10n_util::GetStringFUTF16(
+        IDS_SETTINGS_RESET_CLEANUP_DETAILS_EXTENSION_UNKNOWN,
+        MockChromeCleanerProcess::kUnknownExtensionId),
+#endif
   };
 
   std::set<base::string16> actual_names;
-  GetExtensionNamesFromIds(testing_profile_, test_ids, &actual_names);
+  ChromeCleanupHandler::GetExtensionNamesFromIds(testing_profile_, test_ids,
+                                                 &actual_names);
+
   EXPECT_THAT(actual_names, testing::ContainerEq(expected_names));
 }
 
-}  // namespace safe_browsing
+}  // namespace settings

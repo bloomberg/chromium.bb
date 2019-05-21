@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
+#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
 
 #include <memory>
 #include <string>
@@ -15,20 +15,21 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -70,7 +71,8 @@ base::DictionaryValue GetScannerResultsAsDictionary(
   value.SetList("registryKeys",
                 GetStringSetAsListStorage(scanner_results.registry_keys()));
   std::set<base::string16> extensions;
-  scanner_results.FetchExtensionNames(profile, &extensions);
+  ChromeCleanupHandler::GetExtensionNamesFromIds(
+      profile, scanner_results.extension_ids(), &extensions);
   value.SetList("extensions", GetStringSetAsListStorage(extensions));
   return value;
 }
@@ -110,6 +112,28 @@ ChromeCleanupHandler::ChromeCleanupHandler(Profile* profile)
 
 ChromeCleanupHandler::~ChromeCleanupHandler() {
   controller_->RemoveObserver(this);
+}
+
+// static
+void ChromeCleanupHandler::GetExtensionNamesFromIds(
+    Profile* profile,
+    const std::set<base::string16>& extension_ids,
+    std::set<base::string16>* extension_names) {
+#if defined(GOOGLE_CHROME_BUILD)
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  for (const base::string16& extension_id : extension_ids) {
+    const extensions::Extension* extension =
+        extension_registry->GetInstalledExtension(
+            base::UTF16ToUTF8(extension_id));
+    if (extension) {
+      extension_names->insert(base::UTF8ToUTF16(extension->name()));
+    } else {
+      extension_names->insert(l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_RESET_CLEANUP_DETAILS_EXTENSION_UNKNOWN, extension_id));
+    }
+  }
+#endif
 }
 
 void ChromeCleanupHandler::RegisterMessages() {

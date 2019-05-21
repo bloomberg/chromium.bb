@@ -2,19 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROME_CLEANUP_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROME_CLEANUP_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROME_CLEANUP_HANDLER_WIN_H_
+#define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROME_CLEANUP_HANDLER_WIN_H_
 
 #include <set>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class Profile;
+
+namespace safe_browsing {
+class ChromeCleanerController;
+}
 
 namespace settings {
 
@@ -25,6 +30,15 @@ class ChromeCleanupHandler
  public:
   explicit ChromeCleanupHandler(Profile* profile);
   ~ChromeCleanupHandler() override;
+
+  // Retrieves extension names for |extension_ids| from |profile|'s extension
+  // registry and adds them to |extension_names|. If a name cannot be found for
+  // an extension ID, instead adds a translated string stating the item is an
+  // unknown extension ID.
+  static void GetExtensionNamesFromIds(
+      Profile* profile,
+      const std::set<base::string16>& extension_ids,
+      std::set<base::string16>* extension_names);
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
@@ -90,4 +104,4 @@ class ChromeCleanupHandler
 
 }  // namespace settings
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROME_CLEANUP_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROME_CLEANUP_HANDLER_WIN_H_

@@ -62,7 +62,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
-#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
+#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
