@@ -21,11 +21,9 @@
 namespace exo {
 
 WMHelperCastShell::WMHelperCastShell(
-    aura::Env* env,
     chromecast::CastWindowManagerAura* cast_window_manager_aura,
     chromecast::CastScreen* cast_screen)
     : cast_window_manager_aura_(cast_window_manager_aura),
-      env_(env),
       cast_screen_(cast_screen),
       vsync_timing_manager_(this) {
   cast_screen_->AddObserver(&display_observer_);
@@ -33,10 +31,6 @@ WMHelperCastShell::WMHelperCastShell(
 
 WMHelperCastShell::~WMHelperCastShell() {
   cast_screen_->RemoveObserver(&display_observer_);
-}
-
-aura::Env* WMHelperCastShell::env() {
-  return env_;
 }
 
 void WMHelperCastShell::AddActivationObserver(

@@ -18,7 +18,6 @@
 #include "ui/display/display_observer.h"
 
 namespace aura {
-class env;
 class Window;
 namespace client {
 class CursorClient;
@@ -57,13 +56,11 @@ namespace exo {
 // features.
 class WMHelperCastShell : public WMHelper, public VSyncTimingManager::Delegate {
  public:
-  WMHelperCastShell(aura::Env* env,
-                    chromecast::CastWindowManagerAura* cast_window_manager_aura,
+  WMHelperCastShell(chromecast::CastWindowManagerAura* cast_window_manager_aura,
                     chromecast::CastScreen* cast_screen);
   ~WMHelperCastShell() override;
 
   // Overridden from WMHelper
-  aura::Env* env() override;
   void AddActivationObserver(wm::ActivationChangeObserver* observer) override;
   void RemoveActivationObserver(
       wm::ActivationChangeObserver* observer) override;
