@@ -102,9 +102,14 @@ vars = {
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
   'cros_board': '',
+  # Building for CrOS is only supported on linux currently.
+  'checkout_simplechrome': '(checkout_chromeos and host_os == "linux") and ("{cros_board}" != "")',
   # Surround the board var in quotes so gclient doesn't try parsing the string
   # as an expression.
   'cros_download_vm': '"{cros_board}" == "amd64-generic"',
+  # Should we build and test for public (ie: full) CrOS images, or private
+  # (ie: release) images.
+  'use_public_cros_config': 'not checkout_src_internal',
 
   # ANGLE's deps are relative to the angle_root variable.
   'angle_root': 'src/third_party/angle',
@@ -2900,13 +2905,13 @@ hooks = [
     ],
   },
 
-  # Download CrOS simplechrome artifacts. The first hooks is for boards that
-  # support VM images, the second hook for all other boards.
+  # Download public CrOS simplechrome artifacts. The first hooks is for boards
+  # that support VM images, the second hook for all other boards. For internal
+  # boards, see src-internal's DEPS.
   {
     'name': 'cros_simplechrome_artifacts_with_vm',
     'pattern': '.',
-    # Building for CrOS is only supported on linux currently.
-    'condition': '((checkout_chromeos and host_os == "linux") and cros_download_vm) and ("{cros_board}" != "")',
+    'condition': '(checkout_simplechrome and cros_download_vm) and use_public_cros_config',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
@@ -2927,8 +2932,7 @@ hooks = [
   {
     'name': 'cros_simplechrome_artifacts_with_no_vm',
     'pattern': '.',
-    # Building for CrOS is only supported on linux currently.
-    'condition': '((checkout_chromeos and host_os == "linux") and not cros_download_vm) and ("{cros_board}" != "")',
+    'condition': '(checkout_simplechrome and not cros_download_vm) and use_public_cros_config',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
