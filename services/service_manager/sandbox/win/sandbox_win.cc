@@ -71,6 +71,7 @@ const wchar_t* const kTroublesomeDlls[] = {
     L"airfoilinject3.dll",         // Airfoil.
     L"akinsofthook32.dll",         // Akinsoft Software Engineering.
     L"assistant_x64.dll",          // Unknown.
+    L"atcuf64.dll",                // Bit Defender Internet Security x64.
     L"avcuf64.dll",                // Bit Defender Internet Security x64.
     L"avgrsstx.dll",               // AVG 8.
     L"babylonchromepi.dll",        // Babylon translator.
