@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/step_names.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
@@ -65,10 +61,7 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    // Connect to the ash test interface.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &tray_test_api_);
+    tray_test_api_ = ash::SystemTrayTestApi::Create();
   }
 
   // FirstRunActor::Delegate overrides.
@@ -154,12 +147,7 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
     return FirstRunController::GetInstanceForTest();
   }
 
-  bool IsTrayBubbleOpen() {
-    bool is_open = false;
-    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    wait_for.IsTrayBubbleOpen(&is_open);
-    return is_open;
-  }
+  bool IsTrayBubbleOpen() { return tray_test_api_->IsTrayBubbleOpen(); }
 
   views::Widget* GetOverlayWidget() { return controller()->widget_.get(); }
 
@@ -168,7 +156,7 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   }
 
  private:
-  ash::mojom::SystemTrayTestApiPtr tray_test_api_;
+  std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
   std::string current_step_name_;
   bool initialized_;
   bool finalized_;

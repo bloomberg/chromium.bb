@@ -7,11 +7,10 @@
 
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/cast_config_controller.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom-test-utils.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
@@ -51,16 +50,10 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   SystemTrayTrayCastMediaRouterChromeOSTest() : InProcessBrowserTest() {}
   ~SystemTrayTrayCastMediaRouterChromeOSTest() override {}
 
-  void ShowBubble() {
-    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    wait_for.ShowBubble();
-  }
+  void ShowBubble() { tray_test_api_->ShowBubble(); }
 
   bool IsViewDrawn(int view_id) {
-    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    bool visible = false;
-    wait_for.IsBubbleViewVisible(view_id, false /* open_tray */, &visible);
-    return visible;
+    return tray_test_api_->IsBubbleViewVisible(view_id, false /* open_tray */);
   }
 
   bool IsTrayVisible() { return IsViewDrawn(ash::VIEW_ID_CAST_MAIN_VIEW); }
@@ -114,10 +107,7 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    // Connect to the ash test interface.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &tray_test_api_);
+    tray_test_api_ = ash::SystemTrayTestApi::Create();
     // Connect to ash message center interface.
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
@@ -142,7 +132,7 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   std::unique_ptr<media_router::MockMediaRouter> media_router_;
   media_router::MediaSinksObserver* media_sinks_observer_ = nullptr;
   media_router::MediaRoutesObserver* media_routes_observer_ = nullptr;
-  ash::mojom::SystemTrayTestApiPtr tray_test_api_;
+  std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
   ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayTrayCastMediaRouterChromeOSTest);

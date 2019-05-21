@@ -2053,6 +2053,15 @@ executable("ash_shell_with_content") {
 
 static_library("test_support") {
   testonly = true
+  friend = [
+    ":*",
+    "//ash/components/shortcut_viewer:*",
+    "//components/exo:*",
+    "//components/exo/wayland:*",
+  ]
+  public = [
+    "public/cpp/system_tray_test_api.h",
+  ]
   sources = [
     "accessibility/test_accessibility_controller_client.cc",
     "accessibility/test_accessibility_controller_client.h",

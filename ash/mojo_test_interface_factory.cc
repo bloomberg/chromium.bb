@@ -10,10 +10,8 @@
 #include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
 #include "ash/public/interfaces/shelf_test_api.test-mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "ash/shelf/shelf_test_api.h"
 #include "ash/system/status_area_widget_test_api.h"
-#include "ash/system/unified/unified_system_tray_test_api.h"
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 
@@ -38,11 +36,6 @@ void BindStatusAreaWidgetTestApiOnMainThread(
   StatusAreaWidgetTestApi::BindRequest(std::move(request));
 }
 
-void BindSystemTrayTestApiOnMainThread(
-    mojom::SystemTrayTestApiRequest request) {
-  UnifiedSystemTrayTestApi::BindRequest(std::move(request));
-}
-
 }  // namespace
 
 void RegisterInterfaces(
@@ -53,8 +46,6 @@ void RegisterInterfaces(
   registry->AddInterface(base::Bind(&BindShelfTestApiOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindStatusAreaWidgetTestApiOnMainThread),
-                         main_thread_task_runner);
-  registry->AddInterface(base::Bind(&BindSystemTrayTestApiOnMainThread),
                          main_thread_task_runner);
 }
 

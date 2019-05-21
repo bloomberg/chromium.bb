@@ -8,9 +8,7 @@
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/ash_view_ids.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -37,10 +35,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/view.h"
 
@@ -64,10 +60,7 @@ class ShutdownPolicyBaseTest
   // policy::DevicePolicyCrosBrowserTest:
   void SetUpOnMainThread() override {
     policy::DevicePolicyCrosBrowserTest::SetUpOnMainThread();
-    // Connect to the ash test interface.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &tray_test_api_);
+    tray_test_api_ = ash::SystemTrayTestApi::Create();
   }
 
   // Updates the device shutdown policy and sets it to |reboot_on_shutdown|.
@@ -101,7 +94,7 @@ class ShutdownPolicyBaseTest
 
   bool result_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  ash::mojom::SystemTrayTestApiPtr tray_test_api_;
+  std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
 };
 
 class ShutdownPolicyInSessionTest
@@ -111,23 +104,15 @@ class ShutdownPolicyInSessionTest
   ~ShutdownPolicyInSessionTest() override {}
 
   // Opens the system tray menu. This creates the tray views.
-  void OpenSystemTrayMenu() {
-    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    wait_for.ShowBubble();
-  }
+  void OpenSystemTrayMenu() { tray_test_api_->ShowBubble(); }
 
   // Closes the system tray menu. This deletes the tray views.
-  void CloseSystemTrayMenu() {
-    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    wait_for.CloseBubble();
-  }
+  void CloseSystemTrayMenu() { tray_test_api_->CloseBubble(); }
 
-  // Returns true if the shutdown button's tooltip matches the text of the
-  // resource |message_id|.
+  // Returns true if the shutdown button's tooltip matches |tooltip|.
   bool HasShutdownButtonTooltip(const std::string& tooltip) {
-    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    base::string16 actual_tooltip;
-    wait_for.GetBubbleViewTooltip(ash::VIEW_ID_POWER_BUTTON, &actual_tooltip);
+    base::string16 actual_tooltip =
+        tray_test_api_->GetBubbleViewTooltip(ash::VIEW_ID_POWER_BUTTON);
     return base::UTF8ToUTF16(tooltip) == actual_tooltip;
   }
 
