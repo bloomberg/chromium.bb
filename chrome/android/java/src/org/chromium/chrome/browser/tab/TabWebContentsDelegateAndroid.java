@@ -75,8 +75,6 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         mTab = tab;
         mHandler = new Handler();
         mCloseContentsRunnable = () -> {
-            // TODO(jinsukkim): Move |closeTab| to TabModelSelector by making it observe its tabs.
-            TabModelSelector.from(mTab).closeTab(mTab);
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) observers.next().onCloseContents(mTab);
         };
