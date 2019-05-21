@@ -5943,7 +5943,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
   DISABLED_MouseClickWithNonIntegerScaleFactor
 #else
 #define MAYBE_MouseClickWithNonIntegerScaleFactor \
-  DISABLED_MouseClickWithNonIntegerScaleFactor  // http://crbug.com/961136
+  MouseClickWithNonIntegerScaleFactor
 #endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
                        MAYBE_MouseClickWithNonIntegerScaleFactor) {
