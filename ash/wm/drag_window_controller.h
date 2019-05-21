@@ -27,10 +27,12 @@ namespace ash {
 // while dragging a window across displays.
 class ASH_EXPORT DragWindowController {
  public:
-  // Computes the opacity for drag window based on how much of the area
-  // of the window is visible.
-  static float GetDragWindowOpacity(const gfx::Rect& window_bounds,
-                                    const gfx::Rect& visible_bounds);
+  // Returns 1 if |drag_location_in_screen| is contained in |root_window|.
+  // Otherwise, returns an opacity value based on what fraction of
+  // |dragged_window| is contained in |root_window|.
+  static float GetDragWindowOpacity(aura::Window* root_window,
+                                    aura::Window* dragged_window,
+                                    const gfx::Point& drag_location_in_screen);
 
   explicit DragWindowController(aura::Window* window);
   virtual ~DragWindowController();
@@ -38,8 +40,7 @@ class ASH_EXPORT DragWindowController {
   // This is used to update the bounds and opacity for the drag window
   // immediately.
   // This also creates/destorys the drag window when necessary.
-  void Update(const gfx::Rect& bounds_in_screen,
-              const gfx::Point& drag_location_in_screen);
+  void Update(const gfx::Point& drag_location_in_screen);
 
  private:
   class DragWindowDetails;
