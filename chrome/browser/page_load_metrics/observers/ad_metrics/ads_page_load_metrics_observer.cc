@@ -88,9 +88,9 @@ bool AdsPageLoadMetricsObserver::IsSubframeSameOriginToMainFrame(
   return subframe_origin.IsSameOriginWith(mainframe_origin);
 }
 
-AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver()
+AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(base::TickClock* clock)
     : subresource_observer_(this),
-      clock_(base::DefaultTickClock::GetInstance()) {}
+      clock_(clock ? clock : base::DefaultTickClock::GetInstance()) {}
 
 AdsPageLoadMetricsObserver::~AdsPageLoadMetricsObserver() = default;
 
@@ -159,11 +159,15 @@ void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
   if (!GetDelegate()->GetVisibilityTracker().currently_in_foreground())
     return;
 
+  // Get the current time, considered to be when this update occurred.
+  base::TimeTicks current_time = clock_->NowTicks();
+
   FrameData::InteractiveStatus interactive_status =
       time_interactive_.is_null()
           ? FrameData::InteractiveStatus::kPreInteractive
           : FrameData::InteractiveStatus::kPostInteractive;
-  aggregate_frame_data_->UpdateCpuUsage(timing.task_time, interactive_status);
+  aggregate_frame_data_->UpdateCpuUsage(current_time, timing.task_time,
+                                        interactive_status);
 
   const auto& id_and_data =
       ad_frames_data_.find(subframe_rfh->GetFrameTreeNodeId());
@@ -172,7 +176,8 @@ void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
 
   FrameData* ancestor_data = id_and_data->second;
   if (ancestor_data) {
-    ancestor_data->UpdateCpuUsage(timing.task_time, interactive_status);
+    ancestor_data->UpdateCpuUsage(current_time, timing.task_time,
+                                  interactive_status);
   }
 }
 
@@ -596,6 +601,21 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
 
     page_has_relevant_ad = true;
 
+    // Report the peak windowed usage, which is independent of activation status
+    // (measured only for the unactivated period).  Only reported if there was a
+    // relevant unactivated period.
+    if ((ad_frame_data.user_activation_status() ==
+             FrameData::UserActivationStatus::kNoActivation &&
+         total_duration.InMilliseconds() > 0) ||
+        (ad_frame_data.user_activation_status() ==
+             FrameData::UserActivationStatus::kReceivedActivation &&
+         ad_frame_data.pre_activation_foreground_duration().InMilliseconds() >
+             0)) {
+      ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowedPercent",
+                    UMA_HISTOGRAM_PERCENTAGE, visibility,
+                    ad_frame_data.peak_windowed_cpu_percent());
+    }
+
     if (ad_frame_data.user_activation_status() ==
         FrameData::UserActivationStatus::kNoActivation) {
       base::TimeDelta task_duration_pre = ad_frame_data.GetInteractiveCpuUsage(
@@ -691,6 +711,9 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
                   GetCpuPercentage(task_duration_total, total_duration));
     ADS_HISTOGRAM("Cpu.FullPage.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
                   task_duration_total);
+    ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,
+                  visibility,
+                  aggregate_frame_data_->peak_windowed_cpu_percent());
   }
   if (pre_interactive_duration_.InMilliseconds() > 0) {
     ADS_HISTOGRAM(

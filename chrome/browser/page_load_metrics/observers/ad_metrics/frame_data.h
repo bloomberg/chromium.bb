@@ -83,6 +83,10 @@ class FrameData {
   // Maximum number of bytes allowed to be loaded by a frame.
   static const int kFrameSizeInterventionByteThreshold = 1050 * 1024;
 
+  // Window over which to consider cpu time spent in an ad_frame.
+  static constexpr base::TimeDelta kCpuWindowSize =
+      base::TimeDelta::FromSeconds(30);
+
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
 
@@ -117,7 +121,9 @@ class FrameData {
   void SetDisplayState(bool is_display_none);
 
   // Add the cpu |update| appropriately given the page |interactive| status.
-  void UpdateCpuUsage(base::TimeDelta update, InteractiveStatus interactive);
+  void UpdateCpuUsage(base::TimeTicks update_time,
+                      base::TimeDelta update,
+                      InteractiveStatus interactive);
 
   // Get the cpu usage for the appropriate interactive period.
   base::TimeDelta GetInteractiveCpuUsage(InteractiveStatus status) const;
@@ -144,6 +150,8 @@ class FrameData {
   // Construct and record an AdFrameLoad UKM event for this frame. Only records
   // events for frames that have non-zero bytes.
   void RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const;
+
+  int peak_windowed_cpu_percent() const { return peak_windowed_cpu_percent_; }
 
   FrameTreeNodeId frame_tree_node_id() const { return frame_tree_node_id_; }
 
@@ -186,6 +194,15 @@ class FrameData {
   }
 
  private:
+  // Time updates for the frame with a timestamp indicating when they arrived.
+  // Used for windowed cpu load reporting.
+  struct CpuUpdateData {
+    base::TimeTicks update_time;
+    base::TimeDelta usage_info;
+    CpuUpdateData(base::TimeTicks time, base::TimeDelta info)
+        : update_time(time), usage_info(info) {}
+  };
+
   // Updates whether or not this frame meets the criteria for visibility.
   void UpdateFrameVisibility();
 
@@ -215,6 +232,14 @@ class FrameData {
           base::TimeDelta(), base::TimeDelta()};
   // Duration of time the page spent in the foreground before activation.
   base::TimeDelta pre_activation_foreground_duration_;
+  // The cpu time spent in the current window.
+  base::TimeDelta cpu_total_for_current_window_;
+  // The cpu updates themselves that are still relevant for the time window.
+  // Note: Since the window is 30 seconds and PageLoadMetrics updates arrive at
+  // most every half second, this can never have more than 60 elements.
+  base::queue<CpuUpdateData> cpu_updates_for_current_window_;
+  // The peak windowed cpu load during the unactivated period.
+  int peak_windowed_cpu_percent_ = 0;
 
   // The depth of this FrameData's root frame.
   unsigned int root_frame_depth_ = 0;

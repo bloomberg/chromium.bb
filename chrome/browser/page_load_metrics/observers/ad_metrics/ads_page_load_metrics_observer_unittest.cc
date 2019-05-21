@@ -364,6 +364,7 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
 
   void OverrideVisibilityTrackerWithMockClock() {
     clock_ = std::make_unique<base::SimpleTestTickClock>();
+    clock_->SetNowTicks(base::TimeTicks::Now());
   }
 
   // Given the prefix of the CPU histogram to check, either "Cpu.FullPage" or
@@ -412,7 +413,7 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
   }
 
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) {
-    auto observer = std::make_unique<AdsPageLoadMetricsObserver>();
+    auto observer = std::make_unique<AdsPageLoadMetricsObserver>(clock_.get());
     ads_observer_ = observer.get();
     tracker->AddObserver(std::move(observer));
     // Swap out the ScopedVisibilityTracker to use the test clock.
@@ -958,6 +959,99 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
             500);
 }
 
+TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowed) {
+  OverrideVisibilityTrackerWithMockClock();
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add some data to the ad frame so it gets reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Perform some updates on ad and non-ad frames. Usage 1%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
+
+  // Advance time by twelve seconds.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(12));
+
+  // Do some more work on the ad frame. Usage 5%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
+
+  // Advance time by twelve more seconds.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(12));
+
+  // Do some more work on the ad frame. Usage 8%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
+
+  // Advance time by twelve more seconds.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(12));
+
+  // Perform some updates on ad and non-ad frames. Usage 10%/13%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
+  OnCpuTimingUpdate(main_frame, base::TimeDelta::FromMilliseconds(1000));
+
+  // Advance time by twelve more seconds.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(12));
+
+  // Perform some updates on ad and non-ad frames. Usage 8%/11%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
+
+  // Navigate away and check the peak windowed cpu usage.
+  NavigateFrame(kNonAdUrl, main_frame);
+  // 10% is the maximum for the individual ad frame.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 10, 1);
+  // 13% is the maximum for all frames (including main).
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 13, 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowedActivated) {
+  OverrideVisibilityTrackerWithMockClock();
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add some data to the ad frame so it gets reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Perform some updates on ad and non-ad frames. Usage 1%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
+
+  // Advance time by twelve seconds.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(12));
+
+  // Do some more work on the ad frame. Usage 8%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(2000));
+
+  // Advance time by twelve more seconds.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(12));
+
+  // Do some more work on the ad frame. Usage 11%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
+
+  // Set the page activation and advance time by twelve more seconds.
+  TriggerFirstUserActivation(ad_frame);
+  AdvancePageDuration(base::TimeDelta::FromSeconds(12));
+
+  // Perform some updates on ad and main frames. Usage 13%/16%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
+  OnCpuTimingUpdate(main_frame, base::TimeDelta::FromMilliseconds(1000));
+
+  // Advance time by twelve more seconds.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(12));
+
+  // Perform some updates on ad and non-ad frames. Usage 8%/11%.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
+
+  // Navigate away and check the peak windowed cpu usage.
+  NavigateFrame(kNonAdUrl, main_frame);
+  // 11% is the maximum before activation for the ad frame.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 11, 1);
+  // 16% is the maximum for all frames (including main), ignores activation.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 16, 1);
+}
+
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
   OverrideVisibilityTrackerWithMockClock();
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
@@ -1155,6 +1249,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   CheckCpuHistograms("Cpu.FullPage", "", 0, 0, 0, 0);
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", 0, 0, 0, 0);
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 0);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1231,6 +1329,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
   CheckCpuHistograms("Cpu.FullPage", "", 0, 0, 0, 0);
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", 0, 0, 0, 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 0);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);

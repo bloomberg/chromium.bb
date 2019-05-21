@@ -43,7 +43,7 @@ class AdsPageLoadMetricsObserver
 
   using ResourceMimeType = FrameData::ResourceMimeType;
 
-  AdsPageLoadMetricsObserver();
+  explicit AdsPageLoadMetricsObserver(base::TickClock* clock = nullptr);
   ~AdsPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver

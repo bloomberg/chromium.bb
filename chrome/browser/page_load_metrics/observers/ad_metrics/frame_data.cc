@@ -27,6 +27,9 @@ const int kMinimumVisibleFrameArea = 25;
 }  // namespace
 
 // static
+constexpr base::TimeDelta FrameData::kCpuWindowSize;
+
+// static
 FrameData::ResourceMimeType FrameData::GetResourceMimeType(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
   if (blink::IsSupportedImageMimeType(resource->mime_type))
@@ -144,11 +147,33 @@ void FrameData::SetDisplayState(bool is_display_none) {
   UpdateFrameVisibility();
 }
 
-void FrameData::UpdateCpuUsage(base::TimeDelta update,
+void FrameData::UpdateCpuUsage(base::TimeTicks update_time,
+                               base::TimeDelta update,
                                InteractiveStatus interactive) {
+  // Update the overall usage for all of the relevant buckets.
   cpu_by_interactive_period_[static_cast<size_t>(interactive)] += update;
   cpu_by_activation_period_[static_cast<size_t>(user_activation_status_)] +=
       update;
+
+  // If the frame has been activated, then we don't update the peak usage.
+  if (user_activation_status_ == UserActivationStatus::kReceivedActivation)
+    return;
+
+  // Update the peak usage.
+  cpu_total_for_current_window_ += update;
+  cpu_updates_for_current_window_.push(CpuUpdateData(update_time, update));
+  base::TimeTicks cutoff_time = update_time - kCpuWindowSize;
+  while (!cpu_updates_for_current_window_.empty() &&
+         cpu_updates_for_current_window_.front().update_time < cutoff_time) {
+    cpu_total_for_current_window_ -=
+        cpu_updates_for_current_window_.front().usage_info;
+    cpu_updates_for_current_window_.pop();
+  }
+  int current_windowed_cpu_percent =
+      100 * cpu_total_for_current_window_.InMilliseconds() /
+      kCpuWindowSize.InMilliseconds();
+  if (current_windowed_cpu_percent > peak_windowed_cpu_percent_)
+    peak_windowed_cpu_percent_ = current_windowed_cpu_percent;
 }
 
 base::TimeDelta FrameData::GetInteractiveCpuUsage(
