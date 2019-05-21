@@ -17,7 +17,7 @@ base::TimeDelta MergeSessionLoaderThrottle::GetMergeSessionTimeout() {
           switches::kShortMergeSessionTimeoutForTest)) {
     return base::TimeDelta::FromSeconds(1);
   } else {
-    return base::TimeDelta::FromSeconds(10);
+    return base::TimeDelta::FromSeconds(20);
   }
 }
 
