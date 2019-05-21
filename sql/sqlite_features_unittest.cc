@@ -176,6 +176,18 @@ TEST_F(SQLiteFeaturesTest, BooleanSupport) {
   EXPECT_TRUE(!s.ColumnBool(3)) << " default FALSE added by altering the table";
 }
 
+TEST_F(SQLiteFeaturesTest, IcuEnabled) {
+  sql::Statement lower_en(
+      db().GetUniqueStatement("SELECT lower('I', 'en_us')"));
+  ASSERT_TRUE(lower_en.Step());
+  EXPECT_EQ("i", lower_en.ColumnString(0));
+
+  sql::Statement lower_tr(
+      db().GetUniqueStatement("SELECT lower('I', 'tr_tr')"));
+  ASSERT_TRUE(lower_tr.Step());
+  EXPECT_EQ("\u0131", lower_tr.ColumnString(0));
+}
+
 // Verify that OS file writes are reflected in the memory mapping of a
 // memory-mapped file.  Normally SQLite writes to memory-mapped files using
 // memcpy(), which should stay consistent.  Our SQLite is slightly patched to
