@@ -172,9 +172,9 @@ bool SendBeaconCommon(LocalFrame* frame,
   if (!frame->GetDocument())
     return false;
 
-  if (!ContentSecurityPolicy::ShouldBypassMainWorld(frame->GetDocument()) &&
-      !frame->GetDocument()->GetContentSecurityPolicy()->AllowConnectToSource(
-          url)) {
+  if (!frame->GetDocument()
+           ->GetContentSecurityPolicyForWorld()
+           ->AllowConnectToSource(url)) {
     // We're simulating a network failure here, so we return 'true'.
     return true;
   }
