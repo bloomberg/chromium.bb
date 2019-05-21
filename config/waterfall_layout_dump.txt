@@ -541,6 +541,7 @@
     wolf-postsubmit
     wooten-postsubmit
     zako-postsubmit
+    zork-postsubmit
 
 == pre_cq ==
   pre-cq-launcher
@@ -2889,6 +2890,7 @@
     wolf-postsubmit-tryjob
     wooten-postsubmit-tryjob
     zako-postsubmit-tryjob
+    zork-postsubmit-tryjob
   master-release-tryjob
     amd64-generic-cheets-release-tryjob
     arkham-release-tryjob
