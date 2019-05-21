@@ -5,13 +5,11 @@ all the modifications made by Bloomberg in order to use it in our environment.
 
 This repository serves a couple of purposes for us:
 
-* **Provide a trimmed snapshot of the Chromium tree**
-  A typical Chromium checkout is about 3GB and fetches code from several
-different repositories.  Most of that code is not used by Bloomberg (we only
-use the `content` portion of Chromium, and only for the Windows platform).
-
-  Our checkout is about 300MB, and this all comes from a single repo, which
-makes it much easier for us to use internally.
+* **Provide a monolithic repo of the Chromium project**
+  A typical Chromium checkout consists of many "submodule" repositories.  In
+contrast, this repo contains all of the submodules from the original repo
+but in the form of "subtree".  Having a single repository for all of Chromium
+code is much easier for us to use internally.
 
 * **Provide a space for us to make/publish changes**
   We have made a bunch of changes to different parts of Chromium in order to
@@ -26,20 +24,19 @@ the release.
 intention to submit as many bugfixes upstream as we can.
 
   The list of branches along with descriptions and test cases can be found
-[here](http://bloomberg.github.com/chromium.bb/).
+[here](https://github.com/bloomberg/chromium.bb/blob/gh-pages/README.md).
 
 
 ## Branch Structure
 
 The `master` branch contains the code that is used to make the official
 Chromium builds used by Bloomberg.  It is not used for development.  Actual
-development happens in one of the `bugfix/*` or `feature/*` branches.
+development happens in one of the `bugfix/*`, `feature/*` or `blpwtk2/*`
+branches.
 
-Each `bugfix/*` or `feature/*` branch is based on the `upstream/latest` branch,
-which contains a snapshot of the code we get from the upstream Chromium
-project.  (Note: The `upstream/latest` is not an *exact* copy of the upstream
-Chromium repo.  There are some minor modifications made to the build files and
-code, in order to aid and optimize our tree minimization process).
+Each `bugfix/*`, `feature/*` or `blpwtk2/*` branch is based on the
+`patched/<cr-version>` branch, which contains the source tree of upstream
+Chromium project.
 
 The `release/candidate` branch contains changes that are scheduled to be
 included in the next release.
@@ -47,40 +44,28 @@ included in the next release.
 
 ## Build Instructions
 
-**Bloomberg Employees:** [Build steps](https://cms.prod.bloomberg.com/team/display/rfwk/WTK.howto.gn.build.blpwtk2)
+**Bloomberg Employees:** [Build steps](https://cms.prod.bloomberg.com/team/display/rwf/Maintenance+of+blpwtk2)
 
 If you are **not** a Bloomberg employee, the following instructions should still
 work:
 
 * Setup your build environment:
     * [Python 2.7](https://www.python.org/download/releases/2.7.6/)
-    * Visual Studio 2013 Update 4 (see [VS updates](https://support.microsoft.com/en-us/kb/2829760))
-    * [Ninja](https://github.com/martine/ninja)
-* Run the following command from inside the top-level directory:
+    * Visual Studio 2017
+    * [depot_tools](https://dev.chromium.org/developers/how-tos/depottools)
+    * Windows SDK 10.0.17134
 
-            src/build/runhooks
+* Run the following commands from inside the `/src` directory:
 
-* You can build it either on the command-line or from Visual Studio.
-* If building from the command line:
+            build/runhooks.py
+            build/blpwtk2.py
 
-            ninja -C src/out/Debug     # for Debug builds
-            ninja -C src/out/Release   # for Release builds
+* Run ninja to build:
 
-* If building from Visual Studio:
-    * **Note:** Even though you are using Visual Studio, it will internally
-      build using ninja.  The Visual Studio projects simply invoke ninja when
-      you build them.  *Pure* MSVC builds are **not supported**.  These Visual
-      Studio projects are useful only for browsing the code and debugging
-      (setting breakpoints etc).
-    * Open `src/blpwtk2/blpwtk2.sln`.  This solution file should be generated
-      from the previous step.
-    * Build the `blpwtk2_all` project.
-    * Now, you can either run the `content_shell` project or the
-      `blpwtk2_shell` project:
-        * The `content_shell` project is from the upstream Chromium project,
-          and uses the `content` layer directly.
-        * The `blpwtk2_shell` project is from our `feature/blpwtk2` branch, and
-          uses our `blpwtk2` integration layer.
+            ninja -C src/out/shared_debug blpwtk2_all     # for Debug component builds
+            ninja -C src/out/shared_release  blpwtk2_all  # for Release component builds
+            ninja -C src/out/static_debug  blpwtk2_all    # for Debug static builds
+            ninja -C src/out/static_release  blpwtk2_all  # for Release static builds
 
 ---
 ###### Microsoft, Windows, Visual Studio and ClearType are registered trademarks of Microsoft Corp.
