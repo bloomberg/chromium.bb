@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_FILE_SYSTEM_CHOOSER_H_
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/task_runner.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
@@ -20,17 +21,9 @@ namespace content {
 // All of this class has to be called on the UI thread.
 class CONTENT_EXPORT FileSystemChooser : public ui::SelectFileDialog::Listener {
  public:
-  struct IsolatedFileSystemEntry {
-    std::string file_system_id;
-    // Path to the file as it would appear in the file system URL for this
-    // entry. I.e. this includes the file_system_id and relative path to the
-    // file within that file system.
-    base::FilePath isolated_file_path;
-  };
-
   using ResultCallback =
       base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
-                              std::vector<IsolatedFileSystemEntry>)>;
+                              std::vector<base::FilePath>)>;
 
   static void CreateAndShow(
       int render_process_id,

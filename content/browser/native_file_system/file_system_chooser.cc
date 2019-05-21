@@ -5,6 +5,7 @@
 #include "content/browser/native_file_system/file_system_chooser.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -153,25 +154,6 @@ void FileSystemChooser::MultiFilesSelected(
   auto* isolated_context = storage::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
 
-  std::vector<IsolatedFileSystemEntry> result;
-  result.reserve(files.size());
-  for (const auto& path : files) {
-    std::string base_name;
-    storage::IsolatedContext::ScopedFSHandle file_system =
-        isolated_context->RegisterFileSystemForPath(
-            storage::kFileSystemTypeNativeLocal, std::string(), path,
-            &base_name);
-
-    // TODO(https://crbug.com/955185): Properly refcount file system in handle
-    // implementations, rather than just leaking them like this.
-    storage::IsolatedContext::GetInstance()->AddReference(file_system.id());
-
-    base::FilePath root_path =
-        isolated_context->CreateVirtualRootPath(file_system.id());
-    base::FilePath isolated_path = root_path.AppendASCII(base_name);
-    result.push_back({file_system.id(), isolated_path});
-  }
-
   if (type_ == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
     // Create files if they don't yet exist.
     // TODO(mek): If we change FileSystemFileHandle to be able to represent a
@@ -181,7 +163,6 @@ void FileSystemChooser::MultiFilesSelected(
         FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
         base::BindOnce(
             [](const std::vector<base::FilePath>& files,
-               std::vector<IsolatedFileSystemEntry> result,
                scoped_refptr<base::TaskRunner> callback_runner,
                ResultCallback callback) {
               for (const auto& path : files) {
@@ -203,7 +184,7 @@ void FileSystemChooser::MultiFilesSelected(
                       base::BindOnce(std::move(callback),
                                      blink::mojom::NativeFileSystemError::New(
                                          base::File::FILE_ERROR_FAILED),
-                                     std::vector<IsolatedFileSystemEntry>()));
+                                     std::vector<base::FilePath>()));
                   return;
                 }
               }
@@ -212,9 +193,9 @@ void FileSystemChooser::MultiFilesSelected(
                   base::BindOnce(std::move(callback),
                                  blink::mojom::NativeFileSystemError::New(
                                      base::File::FILE_OK),
-                                 std::move(result)));
+                                 std::move(files)));
             },
-            files, std::move(result), callback_runner_, std::move(callback_)));
+            files, callback_runner_, std::move(callback_)));
     delete this;
     return;
   }
@@ -222,7 +203,7 @@ void FileSystemChooser::MultiFilesSelected(
       FROM_HERE, base::BindOnce(std::move(callback_),
                                 blink::mojom::NativeFileSystemError::New(
                                     base::File::FILE_OK),
-                                std::move(result)));
+                                std::move(files)));
   delete this;
 }
 
@@ -231,7 +212,7 @@ void FileSystemChooser::FileSelectionCanceled(void* params) {
       FROM_HERE, base::BindOnce(std::move(callback_),
                                 blink::mojom::NativeFileSystemError::New(
                                     base::File::FILE_ERROR_ABORT),
-                                std::vector<IsolatedFileSystemEntry>()));
+                                std::vector<base::FilePath>()));
   delete this;
 }
 

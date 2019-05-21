@@ -4,6 +4,7 @@
 
 #include "content/browser/native_file_system/file_system_chooser.h"
 
+#include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,9 +32,7 @@ class FileSystemChooserTest : public testing::Test {
         std::move(accepts), include_accepts_all,
         base::BindLambdaForTesting(
             [&](blink::mojom::NativeFileSystemErrorPtr,
-                std::vector<FileSystemChooser::IsolatedFileSystemEntry>) {
-              loop.Quit();
-            }),
+                std::vector<base::FilePath>) { loop.Quit(); }),
         base::SequencedTaskRunnerHandle::Get());
     loop.Run();
   }

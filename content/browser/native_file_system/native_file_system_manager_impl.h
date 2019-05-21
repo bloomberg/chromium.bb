@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_MANAGER_IMPL_H_
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -69,6 +70,18 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   blink::mojom::NativeFileSystemDirectoryHandlePtr CreateDirectoryHandle(
       const storage::FileSystemURL& url);
 
+  // Creates a new NativeFileSystemEntryPtr from the path to a file. Assumes the
+  // passed in path is valid and represents a file.
+  blink::mojom::NativeFileSystemEntryPtr CreateFileEntryFromPath(
+      const url::Origin& origin,
+      const base::FilePath& file_path);
+
+  // Creates a new NativeFileSystemEntryPtr from the path to a directory.
+  // Assumes the passed in path is valid and represents a directory.
+  blink::mojom::NativeFileSystemEntryPtr CreateDirectoryEntryFromPath(
+      const url::Origin& origin,
+      const base::FilePath& directory_path);
+
   // Create a transfer token for a specific file or directory.
   void CreateTransferToken(
       const NativeFileSystemFileHandleImpl& file,
@@ -105,12 +118,11 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
                                   const std::string& filesystem_name,
                                   base::File::Error result);
 
-  void DidChooseEntries(
-      blink::mojom::ChooseFileSystemEntryType type,
-      const url::Origin& origin,
-      ChooseEntriesCallback callback,
-      blink::mojom::NativeFileSystemErrorPtr result,
-      std::vector<FileSystemChooser::IsolatedFileSystemEntry> entries);
+  void DidChooseEntries(blink::mojom::ChooseFileSystemEntryType type,
+                        const url::Origin& origin,
+                        ChooseEntriesCallback callback,
+                        blink::mojom::NativeFileSystemErrorPtr result,
+                        std::vector<base::FilePath> entries);
 
   void CreateTransferTokenImpl(
       const storage::FileSystemURL& url,
@@ -120,6 +132,11 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   void DoResolveTransferToken(blink::mojom::NativeFileSystemTransferTokenPtr,
                               ResolvedTokenCallback callback,
                               const base::UnguessableToken& token);
+
+  // Creates a FileSystemURL which corresponds to a FilePath and Origin.
+  storage::FileSystemURL CreateFileSystemURLFromPath(const url::Origin& origin,
+                                                     const base::FilePath& path,
+                                                     std::string* name);
 
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;
