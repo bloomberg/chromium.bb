@@ -22,9 +22,8 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   ~PrintingContextLinux() override;
 
   // Sets the function that creates the print dialog.
-  static void SetCreatePrintDialogFunction(
-      PrintDialogGtkInterface* (*create_dialog_func)(
-          PrintingContextLinux* context));
+  static void SetCreatePrintDialogFunction(PrintDialogGtkInterface* (
+      *create_dialog_func)(PrintingContextLinux* context));
 
   // Sets the function that returns pdf paper size through the native API.
   static void SetPdfPaperSizeFunction(

@@ -33,19 +33,15 @@ struct PRINTING_EXPORT PrinterBasicInfo;
 
 class PrinterHandleTraits {
  public:
-  typedef HANDLE Handle;
+  using Handle = HANDLE;
 
   static bool CloseHandle(HANDLE handle) {
     return ::ClosePrinter(handle) != FALSE;
   }
 
-  static bool IsHandleValid(HANDLE handle) {
-    return handle != NULL;
-  }
+  static bool IsHandleValid(HANDLE handle) { return handle != NULL; }
 
-  static HANDLE NullHandle() {
-    return NULL;
-  }
+  static HANDLE NullHandle() { return NULL; }
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterHandleTraits);
@@ -65,34 +61,30 @@ class ScopedPrinterHandle
   }
 
  private:
-  typedef base::win::GenericScopedHandle<PrinterHandleTraits,
-                                         base::win::DummyVerifierTraits> Base;
+  using Base = base::win::GenericScopedHandle<PrinterHandleTraits,
+                                              base::win::DummyVerifierTraits>;
 };
 
 class PrinterChangeHandleTraits {
  public:
-  typedef HANDLE Handle;
+  using Handle = HANDLE;
 
   static bool CloseHandle(HANDLE handle) {
     ::FindClosePrinterChangeNotification(handle);
     return true;
   }
 
-  static bool IsHandleValid(HANDLE handle) {
-    return handle != NULL;
-  }
+  static bool IsHandleValid(HANDLE handle) { return handle != NULL; }
 
-  static HANDLE NullHandle() {
-    return NULL;
-  }
+  static HANDLE NullHandle() { return NULL; }
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterChangeHandleTraits);
 };
 
-typedef base::win::GenericScopedHandle<PrinterChangeHandleTraits,
-                                       base::win::DummyVerifierTraits>
-    ScopedPrinterChangeHandle;
+using ScopedPrinterChangeHandle =
+    base::win::GenericScopedHandle<PrinterChangeHandleTraits,
+                                   base::win::DummyVerifierTraits>;
 
 // Wrapper class to wrap the XPS APIs (PTxxx APIs). This is needed because these
 // APIs are not available by default on XP. We could delayload prntvpt.dll but
@@ -134,7 +126,7 @@ class PRINTING_EXPORT XPSModule {
   static HRESULT CloseProvider(HPTPROVIDER provider);
 
  private:
-  XPSModule() { }
+  XPSModule() {}
   static bool InitImpl();
 };
 
@@ -160,19 +152,19 @@ class PRINTING_EXPORT XPSPrintModule {
   // All the other methods can ONLY be called after a successful call to Init.
   // Init can be called many times and by multiple threads.
   static bool Init();
-  static HRESULT StartXpsPrintJob(
-      const LPCWSTR printer_name,
-      const LPCWSTR job_name,
-      const LPCWSTR output_file_name,
-      HANDLE progress_event,
-      HANDLE completion_event,
-      UINT8* printable_pages_on,
-      UINT32 printable_pages_on_count,
-      IXpsPrintJob **xps_print_job,
-      IXpsPrintJobStream **document_stream,
-      IXpsPrintJobStream **print_ticket_stream);
+  static HRESULT StartXpsPrintJob(const LPCWSTR printer_name,
+                                  const LPCWSTR job_name,
+                                  const LPCWSTR output_file_name,
+                                  HANDLE progress_event,
+                                  HANDLE completion_event,
+                                  UINT8* printable_pages_on,
+                                  UINT32 printable_pages_on_count,
+                                  IXpsPrintJob** xps_print_job,
+                                  IXpsPrintJobStream** document_stream,
+                                  IXpsPrintJobStream** print_ticket_stream);
+
  private:
-  XPSPrintModule() { }
+  XPSPrintModule() {}
   static bool InitImpl();
 };
 

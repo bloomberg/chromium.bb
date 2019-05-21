@@ -121,8 +121,7 @@ class PRINTING_EXPORT PrintBackend
 #endif  // !defined(OS_CHROMEOS)
 
   // Gets the information about driver for a specific printer.
-  virtual std::string GetPrinterDriverInfo(
-      const std::string& printer_name) = 0;
+  virtual std::string GetPrinterDriverInfo(const std::string& printer_name) = 0;
 
   // Returns true if printer_name points to a valid printer.
   virtual bool IsValidPrinter(const std::string& printer_name) = 0;

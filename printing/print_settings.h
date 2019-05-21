@@ -82,9 +82,7 @@ class PRINTING_EXPORT PrintSettings {
   }
   // Media properties requested by the user. Translated into device media by the
   // platform specific layers.
-  const RequestedMedia& requested_media() const {
-    return requested_media_;
-  }
+  const RequestedMedia& requested_media() const { return requested_media_; }
 
   // Set printer printable area in in device units.
   // Some platforms already provide flipped area. Set |landscape_needs_flip|
@@ -126,7 +124,7 @@ class PRINTING_EXPORT PrintSettings {
   int device_units_per_inch() const {
 #if defined(OS_MACOSX)
     return 72;
-#else  // defined(OS_MACOSX)
+#else   // defined(OS_MACOSX)
     return dpi();
 #endif  // defined(OS_MACOSX)
   }
@@ -175,7 +173,7 @@ class PRINTING_EXPORT PrintSettings {
   bool printer_is_textonly() const {
     return printer_type_ == PrinterType::TYPE_TEXTONLY;
   }
-  bool printer_is_xps() const { return printer_type_ == PrinterType::TYPE_XPS;}
+  bool printer_is_xps() const { return printer_type_ == PrinterType::TYPE_XPS; }
   bool printer_is_ps2() const {
     return printer_type_ == PrinterType::TYPE_POSTSCRIPT_LEVEL2;
   }

@@ -108,8 +108,8 @@ bool CupsPrinter::ToPrinterInfo(PrinterBasicInfo* printer_info) const {
   if (state)
     base::StringToInt(state, &printer_info->printer_status);
 
-  const char* drv_info = cupsGetOption(kDriverNameTagName,
-                                       printer->num_options, printer->options);
+  const char* drv_info =
+      cupsGetOption(kDriverNameTagName, printer->num_options, printer->options);
   if (drv_info)
     printer_info->options[kDriverInfoTagName] = *drv_info;
 
@@ -127,9 +127,8 @@ std::string CupsPrinter::GetName() const {
 }
 
 std::string CupsPrinter::GetMakeAndModel() const {
-  const char* make_and_model =
-      cupsGetOption(kDriverNameTagName, destination_->num_options,
-                    destination_->options);
+  const char* make_and_model = cupsGetOption(
+      kDriverNameTagName, destination_->num_options, destination_->options);
 
   return make_and_model ? std::string(make_and_model) : std::string();
 }

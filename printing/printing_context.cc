@@ -18,9 +18,7 @@ const float kCloudPrintMarginInch = 0.25;
 }
 
 PrintingContext::PrintingContext(Delegate* delegate)
-    : delegate_(delegate),
-      in_print_job_(false),
-      abort_printing_(false) {
+    : delegate_(delegate), in_print_job_(false), abort_printing_(false) {
   DCHECK(delegate_);
 }
 

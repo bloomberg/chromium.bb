@@ -213,7 +213,7 @@ const int COMPLETE_PREVIEW_DOCUMENT_INDEX = -1;
 // Whether to show PDF in view provided by OS. Implemented for MacOS only.
 const char kSettingOpenPDFInPreview[] = "OpenPDFInPreview";
 
-#if defined (USE_CUPS)
+#if defined(USE_CUPS)
 const char kBlack[] = "Black";
 const char kCMYK[] = "CMYK";
 const char kKCMY[] = "KCMY";

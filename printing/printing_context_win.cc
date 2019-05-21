@@ -137,9 +137,8 @@ gfx::Size PrintingContextWin::GetPdfPaperSizeDeviceUnits() {
         break;
     }
   }
-  return gfx::Size(
-      paper_size.width() * settings_.device_units_per_inch(),
-      paper_size.height() * settings_.device_units_per_inch());
+  return gfx::Size(paper_size.width() * settings_.device_units_per_inch(),
+                   paper_size.height() * settings_.device_units_per_inch());
 }
 
 PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
@@ -166,8 +165,8 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     dev_mode->dmCopies = std::max(settings_.copies(), 1);
     if (dev_mode->dmCopies > 1) {  // do not change unless multiple copies
       dev_mode->dmFields |= DM_COPIES;
-      dev_mode->dmCollate = settings_.collate() ? DMCOLLATE_TRUE :
-                                                  DMCOLLATE_FALSE;
+      dev_mode->dmCollate =
+          settings_.collate() ? DMCOLLATE_TRUE : DMCOLLATE_FALSE;
     }
 
     switch (settings_.duplex_mode()) {
@@ -188,8 +187,8 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     }
 
     dev_mode->dmFields |= DM_ORIENTATION;
-    dev_mode->dmOrientation = settings_.landscape() ? DMORIENT_LANDSCAPE :
-                                                      DMORIENT_PORTRAIT;
+    dev_mode->dmOrientation =
+        settings_.landscape() ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
 
     if (settings_.dpi_horizontal() > 0) {
       dev_mode->dmPrintQuality = settings_.dpi_horizontal();
@@ -261,7 +260,7 @@ PrintingContext::Result PrintingContextWin::NewDocument(
     return OnError();
 
   DCHECK(SimplifyDocumentTitle(document_name) == document_name);
-  DOCINFO di = { sizeof(DOCINFO) };
+  DOCINFO di = {sizeof(DOCINFO)};
   di.lpszDocName = document_name.c_str();
 
   // Is there a debug dump directory specified? If so, force to print to a file.
@@ -365,8 +364,8 @@ PrintingContext::Result PrintingContextWin::InitializeSettings(
 
   DCHECK(!in_print_job_);
   settings_.set_device_name(device_name);
-  PrintSettingsInitializerWin::InitPrintSettings(
-      context_, *dev_mode, &settings_);
+  PrintSettingsInitializerWin::InitPrintSettings(context_, *dev_mode,
+                                                 &settings_);
 
   return OK;
 }

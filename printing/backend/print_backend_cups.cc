@@ -55,8 +55,8 @@ bool PrinterBasicInfoFromCUPS(const cups_dest_t& printer,
   if (state)
     base::StringToInt(state, &printer_info->printer_status);
 
-  const char* drv_info = cupsGetOption(kDriverNameTagName,
-                                       printer.num_options, printer.options);
+  const char* drv_info =
+      cupsGetOption(kDriverNameTagName, printer.num_options, printer.options);
   if (drv_info)
     printer_info->options[kDriverInfoTagName] = *drv_info;
 
@@ -75,8 +75,7 @@ PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url,
                                    bool blocking)
     : print_server_url_(print_server_url),
       cups_encryption_(encryption),
-      blocking_(blocking) {
-}
+      blocking_(blocking) {}
 
 bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
   DCHECK(printer_list);
@@ -132,11 +131,11 @@ bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     PrinterSemanticCapsAndDefaults* printer_info) {
   PrinterCapsAndDefaults info;
-  if (!GetPrinterCapsAndDefaults(printer_name, &info) )
+  if (!GetPrinterCapsAndDefaults(printer_name, &info))
     return false;
 
-  return ParsePpdCapabilities(
-      printer_name, info.printer_capabilities, printer_info);
+  return ParsePpdCapabilities(printer_name, info.printer_capabilities,
+                              printer_info);
 }
 
 bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
@@ -204,8 +203,7 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     print_backend_settings->GetString(kCUPSPrintServerURL,
                                       &print_server_url_str);
 
-    print_backend_settings->GetString(kCUPSBlocking,
-                                      &cups_blocking);
+    print_backend_settings->GetString(kCUPSBlocking, &cups_blocking);
 
     print_backend_settings->GetInteger(kCUPSEncryption, &encryption);
   }

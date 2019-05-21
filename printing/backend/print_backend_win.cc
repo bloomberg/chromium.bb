@@ -170,11 +170,9 @@ class PrintBackendWin : public PrintBackend {
   bool GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) override;
-  bool GetPrinterCapsAndDefaults(
-      const std::string& printer_name,
-      PrinterCapsAndDefaults* printer_info) override;
-  std::string GetPrinterDriverInfo(
-      const std::string& printer_name) override;
+  bool GetPrinterCapsAndDefaults(const std::string& printer_name,
+                                 PrinterCapsAndDefaults* printer_info) override;
+  std::string GetPrinterDriverInfo(const std::string& printer_name) override;
   bool IsValidPrinter(const std::string& printer_name) override;
 
  protected:
@@ -262,17 +260,17 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
 
     if (user_settings->dmFields & DM_DUPLEX) {
       switch (user_settings->dmDuplex) {
-      case DMDUP_SIMPLEX:
-        caps.duplex_default = SIMPLEX;
-        break;
-      case DMDUP_VERTICAL:
-        caps.duplex_default = LONG_EDGE;
-        break;
-      case DMDUP_HORIZONTAL:
-        caps.duplex_default = SHORT_EDGE;
-        break;
-      default:
-        NOTREACHED();
+        case DMDUP_SIMPLEX:
+          caps.duplex_default = SIMPLEX;
+          break;
+        case DMDUP_VERTICAL:
+          caps.duplex_default = LONG_EDGE;
+          break;
+        case DMDUP_HORIZONTAL:
+          caps.duplex_default = SHORT_EDGE;
+          break;
+        default:
+          NOTREACHED();
       }
     }
 

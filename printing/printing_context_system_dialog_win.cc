@@ -135,8 +135,8 @@ bool PrintingContextSystemDialogWin::InitializeSettingsWithRanges(
   settings_.set_ranges(ranges_vector);
   settings_.set_device_name(new_device_name);
   settings_.set_selection_only(selection_only);
-  PrintSettingsInitializerWin::InitPrintSettings(
-      context(), dev_mode, &settings_);
+  PrintSettingsInitializerWin::InitPrintSettings(context(), dev_mode,
+                                                 &settings_);
 
   return true;
 }

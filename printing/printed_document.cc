@@ -81,8 +81,7 @@ void DebugDumpDataTask(const base::string16& doc_name,
       PrintedDocument::CreateDebugDumpPath(doc_name, extension);
   if (path.empty())
     return;
-  base::WriteFile(path,
-                  reinterpret_cast<const char*>(data->front()),
+  base::WriteFile(path, reinterpret_cast<const char*>(data->front()),
                   base::checked_cast<int>(data->size()));
 }
 

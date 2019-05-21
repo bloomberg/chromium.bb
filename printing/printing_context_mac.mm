@@ -42,7 +42,7 @@ PMPaper MatchPaper(CFArrayRef paper_list,
   PMPaper best_matching_paper = NULL;
   int num_papers = CFArrayGetCount(paper_list);
   for (int i = 0; i < num_papers; ++i) {
-    PMPaper paper = (PMPaper)[(NSArray*)paper_list objectAtIndex : i];
+    PMPaper paper = (PMPaper)[(NSArray*)paper_list objectAtIndex:i];
     double paper_width = 0.0;
     double paper_height = 0.0;
     PMPaperGetWidth(paper, &paper_width);
@@ -75,8 +75,7 @@ std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 PrintingContextMac::PrintingContextMac(Delegate* delegate)
     : PrintingContext(delegate),
       print_info_([[NSPrintInfo sharedPrintInfo] copy]),
-      context_(NULL) {
-}
+      context_(NULL) {}
 
 PrintingContextMac::~PrintingContextMac() {
   ReleaseContext();
@@ -153,9 +152,8 @@ gfx::Size PrintingContextMac::GetPdfPaperSizeDeviceUnits() {
   PMGetAdjustedPaperRect(page_format, &paper_rect);
 
   // Device units are in points. Units per inch is 72.
-  gfx::Size physical_size_device_units(
-      (paper_rect.right - paper_rect.left),
-      (paper_rect.bottom - paper_rect.top));
+  gfx::Size physical_size_device_units((paper_rect.right - paper_rect.left),
+                                       (paper_rect.bottom - paper_rect.top));
   DCHECK(settings_.device_units_per_inch() == kPointsPerInch);
   return physical_size_device_units;
 }
@@ -211,9 +209,8 @@ bool PrintingContextMac::SetPrintPreviewJob() {
       static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
   PMPrintSettings print_settings =
       static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
-  return PMSessionSetDestination(
-      print_session, print_settings, kPMDestinationPreview,
-      NULL, NULL) == noErr;
+  return PMSessionSetDestination(print_session, print_settings,
+                                 kPMDestinationPreview, NULL, NULL) == noErr;
 }
 
 void PrintingContextMac::InitPrintSettingsFromPrintInfo() {
@@ -223,8 +220,8 @@ void PrintingContextMac::InitPrintSettingsFromPrintInfo() {
       static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
   PMPrinter printer;
   PMSessionGetCurrentPrinter(print_session, &printer);
-  PrintSettingsInitializerMac::InitPrintSettings(
-      printer, page_format, &settings_);
+  PrintSettingsInitializerMac::InitPrintSettings(printer, page_format,
+                                                 &settings_);
 }
 
 bool PrintingContextMac::SetPrinter(const std::string& device_name) {
@@ -246,7 +243,7 @@ bool PrintingContextMac::SetPrinter(const std::string& device_name) {
     return false;
 
   if (CFStringCompare(new_printer_id.get(), current_printer_id, 0) ==
-          kCFCompareEqualTo) {
+      kCFCompareEqualTo) {
     return true;
   }
 
@@ -312,13 +309,9 @@ bool PrintingContextMac::UpdatePageFormatWithPaperInfo() {
     return true;
 
   PMPaper paper = NULL;
-  if (PMPaperCreateCustom(current_printer,
-                          CFSTR("Custom paper ID"),
-                          CFSTR("Custom paper"),
-                          page_width,
-                          page_height,
-                          &margins,
-                          &paper) != noErr) {
+  if (PMPaperCreateCustom(current_printer, CFSTR("Custom paper ID"),
+                          CFSTR("Custom paper"), page_width, page_height,
+                          &margins, &paper) != noErr) {
     return false;
   }
   bool result = UpdatePageFormatWithPaper(paper, default_page_format);
@@ -403,10 +396,8 @@ bool PrintingContextMac::SetOutputColor(int color_mode) {
   base::ScopedCFTypeRef<CFStringRef> output_color(
       base::SysUTF8ToCFStringRef(color_value));
 
-  return PMPrintSettingsSetValue(pmPrintSettings,
-                                 color_setting.get(),
-                                 output_color.get(),
-                                 false) == noErr;
+  return PMPrintSettingsSetValue(pmPrintSettings, color_setting.get(),
+                                 output_color.get(), false) == noErr;
 }
 
 PageRanges PrintingContextMac::GetPageRangesFromPrintInfo() {
@@ -438,9 +429,8 @@ PrintingContext::Result PrintingContextMac::NewDocument(
       base::SysUTF16ToCFStringRef(document_name));
   PMPrintSettingsSetJobName(print_settings, job_title.get());
 
-  OSStatus status = PMSessionBeginCGDocumentNoDialog(print_session,
-                                                     print_settings,
-                                                     page_format);
+  OSStatus status = PMSessionBeginCGDocumentNoDialog(
+      print_session, print_settings, page_format);
   if (status != noErr)
     return OnError();
 

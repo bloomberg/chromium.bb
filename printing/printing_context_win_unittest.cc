@@ -183,7 +183,7 @@ TEST_F(PrintingContextTest, Base) {
 
   // The print may lie to use and may not support world transformation.
   // Verify right now.
-  XFORM random_matrix = { 1, 0.1f, 0, 1.5f, 0, 1 };
+  XFORM random_matrix = {1, 0.1f, 0, 1.5f, 0, 1};
   EXPECT_TRUE(SetWorldTransform(context.context(), &random_matrix));
   EXPECT_TRUE(ModifyWorldTransform(context.context(), nullptr, MWT_IDENTITY));
 }

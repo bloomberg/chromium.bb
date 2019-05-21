@@ -12,7 +12,7 @@
 namespace base {
 class DictionaryValue;
 class Value;
-}
+}  // namespace base
 
 namespace printing {
 

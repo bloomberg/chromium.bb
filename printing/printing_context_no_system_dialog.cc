@@ -25,8 +25,7 @@ std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 #endif  // !defined(USE_CUPS)
 
 PrintingContextNoSystemDialog::PrintingContextNoSystemDialog(Delegate* delegate)
-    : PrintingContext(delegate) {
-}
+    : PrintingContext(delegate) {}
 
 PrintingContextNoSystemDialog::~PrintingContextNoSystemDialog() {
   ReleaseContext();
@@ -58,16 +57,16 @@ gfx::Size PrintingContextNoSystemDialog::GetPdfPaperSizeDeviceUnits() {
   int32_t width = 0;
   int32_t height = 0;
   UErrorCode error = U_ZERO_ERROR;
-  ulocdata_getPaperSize(
-      delegate_->GetAppLocale().c_str(), &height, &width, &error);
+  ulocdata_getPaperSize(delegate_->GetAppLocale().c_str(), &height, &width,
+                        &error);
   if (error > U_ZERO_ERROR) {
     // If the call failed, assume a paper size of 8.5 x 11 inches.
     LOG(WARNING) << "ulocdata_getPaperSize failed, using 8.5 x 11, error: "
                  << error;
-    width = static_cast<int>(
-        kLetterWidthInch * settings_.device_units_per_inch());
-    height = static_cast<int>(
-        kLetterHeightInch  * settings_.device_units_per_inch());
+    width =
+        static_cast<int>(kLetterWidthInch * settings_.device_units_per_inch());
+    height =
+        static_cast<int>(kLetterHeightInch * settings_.device_units_per_inch());
   } else {
     // ulocdata_getPaperSize returns the width and height in mm.
     // Convert this to pixels based on the dpi.
@@ -142,4 +141,3 @@ printing::NativeDrawingContext PrintingContextNoSystemDialog::context() const {
 }
 
 }  // namespace printing
-

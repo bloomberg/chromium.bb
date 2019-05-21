@@ -435,7 +435,6 @@ bool GetPrinterInfo(const std::string& address,
                     const std::string& resource,
                     bool encrypted,
                     PrinterInfo* printer_info) {
-
   ScopedHttpPtr http = ScopedHttpPtr(httpConnect2(
       address.c_str(), port, nullptr, AF_INET,
       encrypted ? HTTP_ENCRYPTION_ALWAYS : HTTP_ENCRYPTION_IF_REQUESTED, 0,
@@ -470,7 +469,6 @@ bool GetPrinterInfo(const std::string& address,
 bool GetPrinterStatus(http_t* http,
                       const std::string& printer_id,
                       PrinterStatus* printer_status) {
-
   ipp_status_t status;
   const std::string printer_uri = PrinterUriFromName(printer_id);
 
