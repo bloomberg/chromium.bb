@@ -214,6 +214,10 @@ class NGInlineItemsBuilderTemplate {
   void AppendGeneratedBreakOpportunity(LayoutObject*);
 
   void Exit(LayoutObject*);
+
+  bool ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
+      const String&,
+      const ComputedStyle&) const;
 };
 
 template <>

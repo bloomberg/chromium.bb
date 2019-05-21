@@ -349,6 +349,14 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
       return false;
   }
 
+  if (UNLIKELY(old_item0.StartOffset() > 0 &&
+               ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
+                   layout_text->GetText(), new_style))) {
+    // e.g. <p>abc xyz</p> => <p> xyz</p> where "abc" and " xyz" are different
+    // Text node. |text_| is " \u200Bxyz".
+    return false;
+  }
+
   for (const NGInlineItem& item : items) {
     // Collapsed space item at the start will not be restored, and that not
     // needed to add.
@@ -648,6 +656,18 @@ void NGInlineItemsBuilderTemplate<
   is_empty_inline_ = false;  // text item is not empty.
 }
 
+template <typename OffsetMappingBuilder>
+bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
+    ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
+        const String& string,
+        const ComputedStyle& style) const {
+  return text_.IsEmpty() && string.length() > 0 &&
+         string[0] == kSpaceCharacter && !style.CollapseWhiteSpace() &&
+         style.AutoWrap();
+}
+
+// TODO(yosin): We should remove |style| and |string| parameter because of
+// except for testing, we can get them from |LayoutText|.
 // Even when without whitespace collapsing, control characters (newlines and
 // tabs) are in their own control items to make the line breaker not special.
 template <typename OffsetMappingBuilder>
@@ -663,8 +683,8 @@ void NGInlineItemsBuilderTemplate<
   // opportunity after leading preserved spaces needs a special code in the line
   // breaker. Generate an opportunity to make it easy.
   unsigned start = 0;
-  if (UNLIKELY(text_.IsEmpty() && string[start] == kSpaceCharacter &&
-               style->AutoWrap())) {
+  if (UNLIKELY(ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
+          string, *style))) {
     do {
       ++start;
     } while (start < string.length() && string[start] == kSpaceCharacter);

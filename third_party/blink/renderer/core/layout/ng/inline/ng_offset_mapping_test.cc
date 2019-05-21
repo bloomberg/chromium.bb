@@ -1225,6 +1225,33 @@ TEST_F(NGOffsetMappingTest, SoftHyphen) {
   TEST_RANGE(mapping.GetRanges(), text, 0u, 1u);
 }
 
+// For http://crbug.com/965353
+TEST_F(NGOffsetMappingTest, PreWrapAndReusing) {
+  // Note: "white-space: break-space" yields same result.
+  SetupHtml("t", "<p id='t' style='white-space: pre-wrap'>abc</p>");
+  Element& target = *GetDocument().getElementById("t");
+
+  // Change to <p id=t>abc xyz</p>
+  Text& text = *Text::Create(GetDocument(), " xyz");
+  target.appendChild(&text);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Change to <p id=t> xyz</p>. We attempt to reuse " xyz".
+  target.firstChild()->remove();
+  UpdateAllLifecyclePhasesForTest();
+
+  const NGOffsetMapping& mapping = GetOffsetMapping();
+  EXPECT_EQ(String(u" \u200Bxyz"), mapping.GetText())
+      << "We have ZWS after leading preserved space.";
+  EXPECT_EQ((Vector<NGOffsetMappingUnit>{
+                NGOffsetMappingUnit(kIdentity, *text.GetLayoutObject(), 0u, 1u,
+                                    0u, 1u),
+                NGOffsetMappingUnit(kIdentity, *text.GetLayoutObject(), 1u, 4u,
+                                    2u, 5u),
+            }),
+            mapping.GetUnits());
+}
+
 TEST_F(NGOffsetMappingTest, TextOverflowEllipsis) {
   LoadAhem();
   SetupHtml("t",
