@@ -20,6 +20,7 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
+#include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "components/search/search.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -42,6 +43,9 @@ void InstantUnitTestBase::SetUp() {
   UIThreadSearchTermsData::SetGoogleBaseURL("https://www.google.com/");
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   instant_service_ = InstantServiceFactory::GetForProfile(profile());
+
+  instant_service_->SetImageFetcherForTesting(
+      new testing::NiceMock<image_fetcher::MockImageFetcher>());
 }
 
 void InstantUnitTestBase::TearDown() {
