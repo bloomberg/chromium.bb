@@ -74,7 +74,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
-#include "gpu/ipc/service/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_surface_win.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -550,7 +550,7 @@ void GpuServiceImpl::RequestHDRStatusOnMainThread(
   DCHECK(main_runner_->BelongsToCurrentThread());
   bool hdr_enabled = false;
 #if defined(OS_WIN)
-  hdr_enabled = gpu::DirectCompositionSurfaceWin::IsHDRSupported();
+  hdr_enabled = gl::DirectCompositionSurfaceWin::IsHDRSupported();
 #endif
   io_runner_->PostTask(FROM_HERE,
                        base::BindOnce(std::move(callback), hdr_enabled));

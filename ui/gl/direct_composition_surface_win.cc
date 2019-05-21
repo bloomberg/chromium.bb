@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_surface_win.h"
 
 #include <dxgi1_6.h>
 
@@ -17,8 +17,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "base/win/windows_version.h"
-#include "gpu/ipc/service/dc_layer_tree.h"
-#include "gpu/ipc/service/direct_composition_child_surface_win.h"
+#include "ui/gl/dc_layer_tree.h"
+#include "ui/gl/direct_composition_child_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
 #include "ui/gl/gl_switches.h"
@@ -29,7 +29,7 @@
 #define EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE 0x33A6
 #endif /* EGL_ANGLE_flexible_surface_compatibility */
 
-namespace gpu {
+namespace gl {
 namespace {
 struct OverlaySupportInfo {
   DXGI_FORMAT format;
@@ -70,7 +70,7 @@ void InitializeHardwareOverlaySupport() {
     return;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device) {
     DLOG(ERROR) << "Failed to retrieve D3D11 device";
     return;
@@ -187,7 +187,7 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
     VSyncCallback vsync_callback,
     HWND parent_window,
     const Settings& settings)
-    : gl::GLSurfaceEGL(),
+    : GLSurfaceEGL(),
       child_window_(parent_window),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       root_surface_(new DirectCompositionChildSurfaceWin()),
@@ -196,8 +196,8 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
           settings.disable_larger_than_screen_overlays)),
       vsync_provider_(std::move(vsync_provider)),
       vsync_callback_(std::move(vsync_callback)),
-      presentation_helper_(std::make_unique<gl::GLSurfacePresentationHelper>(
-          vsync_provider_.get())),
+      presentation_helper_(
+          std::make_unique<GLSurfacePresentationHelper>(vsync_provider_.get())),
       weak_ptr_factory_(this) {}
 
 DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
@@ -222,13 +222,13 @@ bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
 
     // Flexible surface compatibility is required to be able to MakeCurrent with
     // the default pbuffer surface.
-    if (!gl::GLSurfaceEGL::IsEGLFlexibleSurfaceCompatibilitySupported()) {
+    if (!GLSurfaceEGL::IsEGLFlexibleSurfaceCompatibilitySupported()) {
       DLOG(ERROR) << "EGL_ANGLE_flexible_surface_compatibility not supported";
       return false;
     }
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-        gl::QueryD3D11DeviceObjectFromANGLE();
+        QueryD3D11DeviceObjectFromANGLE();
     if (!d3d11_device) {
       DLOG(ERROR) << "Failed to retrieve D3D11 device";
       return false;
@@ -243,7 +243,7 @@ bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
 
     // This will fail if DirectComposition DLL can't be loaded.
     Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device =
-        gl::QueryDirectCompositionDevice(d3d11_device);
+        QueryDirectCompositionDevice(d3d11_device);
     if (!dcomp_device) {
       DLOG(ERROR) << "Failed to retrieve direct composition device";
       return false;
@@ -391,14 +391,14 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
   return hdr_monitor_found;
 }
 
-bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
-  d3d11_device_ = gl::QueryD3D11DeviceObjectFromANGLE();
+bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
+  d3d11_device_ = QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device_) {
     DLOG(ERROR) << "Failed to retrieve D3D11 device from ANGLE";
     return false;
   }
 
-  dcomp_device_ = gl::QueryDirectCompositionDevice(d3d11_device_);
+  dcomp_device_ = QueryDirectCompositionDevice(d3d11_device_);
   if (!dcomp_device_) {
     DLOG(ERROR)
         << "Failed to retrieve direct compostion device from D3D11 device";
@@ -414,7 +414,7 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   if (!layer_tree_->Initialize(window_, d3d11_device_, dcomp_device_))
     return false;
 
-  if (!root_surface_->Initialize(gl::GLSurfaceFormat()))
+  if (!root_surface_->Initialize(GLSurfaceFormat()))
     return false;
 
   if (root_surface_->UseSwapChainFrameStatistics()) {
@@ -425,7 +425,7 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   }
 
   if ((SupportsGpuVSync() && vsync_callback_) || main_thread_vsync_callback_) {
-    vsync_thread_ = std::make_unique<gl::VSyncThreadWin>(
+    vsync_thread_ = std::make_unique<VSyncThreadWin>(
         window_, d3d11_device_,
         base::BindRepeating(
             &DirectCompositionSurfaceWin::HandleVSyncOnVSyncThread,
@@ -472,7 +472,7 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
     PresentationCallback callback) {
   TRACE_EVENT0("gpu", "DirectCompositionSurfaceWin::SwapBuffers");
 
-  base::Optional<gl::GLSurfacePresentationHelper::ScopedSwapBuffers>
+  base::Optional<GLSurfacePresentationHelper::ScopedSwapBuffers>
       scoped_swap_buffers;
   if (!root_surface_->UseSwapChainFrameStatistics()) {
     scoped_swap_buffers.emplace(presentation_helper_.get(),
@@ -534,7 +534,7 @@ bool DirectCompositionSurfaceWin::SupportsPostSubBuffer() {
   return true;
 }
 
-bool DirectCompositionSurfaceWin::OnMakeCurrent(gl::GLContext* context) {
+bool DirectCompositionSurfaceWin::OnMakeCurrent(GLContext* context) {
   if (presentation_helper_)
     presentation_helper_->OnMakeCurrent(context, this);
   return root_surface_->OnMakeCurrent(context);
@@ -613,4 +613,4 @@ DirectCompositionSurfaceWin::GetBackbufferSwapChainForTesting() const {
   return root_surface_->swap_chain();
 }
 
-}  // namespace gpu
+}  // namespace gl

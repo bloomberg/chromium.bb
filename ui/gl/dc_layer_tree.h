@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_SERVICE_DC_LAYER_TREE_H_
-#define GPU_IPC_SERVICE_DC_LAYER_TREE_H_
+#ifndef UI_GL_DC_LAYER_TREE_H_
+#define UI_GL_DC_LAYER_TREE_H_
 
 #include <windows.h>
 #include <d3d11.h>
@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 
-namespace gpu {
+namespace gl {
 
 class DirectCompositionChildSurfaceWin;
 class SwapChainPresenter;
@@ -125,6 +125,6 @@ class DCLayerTree {
   DISALLOW_COPY_AND_ASSIGN(DCLayerTree);
 };
 
-}  // namespace gpu
+}  // namespace gl
 
-#endif  // GPU_IPC_SERVICE_DC_LAYER_TREE_H_
+#endif  // UI_GL_DC_LAYER_TREE_H_

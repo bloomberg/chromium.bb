@@ -256,7 +256,6 @@ test("gl_tests") {
     "ipc/client/gpu_context_tests.h",
     "ipc/client/gpu_in_process_context_tests.cc",
     "ipc/client/raster_in_process_context_tests.cc",
-    "ipc/service/direct_composition_surface_win_unittest.cc",
   ]
 
   if (use_dawn) {

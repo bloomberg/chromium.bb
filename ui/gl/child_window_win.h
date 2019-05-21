@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_SERVICE_CHILD_WINDOW_WIN_H_
-#define GPU_IPC_SERVICE_CHILD_WINDOW_WIN_H_
+#ifndef UI_GL_CHILD_WINDOW_WIN_H_
+#define UI_GL_CHILD_WINDOW_WIN_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
@@ -11,7 +11,7 @@
 
 #include <windows.h>
 
-namespace gpu {
+namespace gl {
 
 // The window DirectComposition renders into needs to be owned by the process
 // that's currently doing the rendering. The class creates and owns a window
@@ -39,6 +39,6 @@ class ChildWindowWin {
   DISALLOW_COPY_AND_ASSIGN(ChildWindowWin);
 };
 
-}  // namespace gpu
+}  // namespace gl
 
-#endif  // GPU_IPC_SERVICE_CHILD_WINDOW_WIN_H_
+#endif  // UI_GL_CHILD_WINDOW_WIN_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/child_window_win.h"
+#include "ui/gl/child_window_win.h"
 
 #include <memory>
 
@@ -13,7 +13,7 @@
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/gfx/win/window_impl.h"
 
-namespace gpu {
+namespace gl {
 
 namespace {
 
@@ -157,4 +157,4 @@ scoped_refptr<base::TaskRunner> ChildWindowWin::GetTaskRunnerForTesting() {
   return thread_->task_runner();
 }
 
-}  // namespace gpu
+}  // namespace gl

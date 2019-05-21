@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/swap_chain_presenter.h"
+#include "ui/gl/swap_chain_presenter.h"
 
 #include <d3d11_1.h>
 
@@ -10,16 +10,15 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
-#include "components/crash/core/common/crash_key.h"
-#include "gpu/ipc/service/dc_layer_tree.h"
-#include "gpu/ipc/service/direct_composition_surface_win.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gl/dc_layer_tree.h"
+#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_image_dxgi.h"
 #include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_switches.h"
 
-namespace gpu {
+namespace gl {
 namespace {
 // Some drivers fail to correctly handle BT.709 video in overlays. This flag
 // converts them to BT.601 in the video processor.
@@ -243,8 +242,8 @@ bool SwapChainPresenter::ShouldUseYUVSwapChain(
 }
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
-    gl::GLImageMemory* y_image_memory,
-    gl::GLImageMemory* uv_image_memory) {
+    GLImageMemory* y_image_memory,
+    GLImageMemory* uv_image_memory) {
   gfx::Size texture_size = y_image_memory->GetSize();
   gfx::Size uv_image_size = uv_image_memory->GetSize();
   if (uv_image_size.height() != texture_size.height() / 2 ||
@@ -257,15 +256,6 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
 
   TRACE_EVENT1("gpu", "SwapChainPresenter::UploadVideoImages", "size",
                texture_size.ToString());
-
-  static crash_reporter::CrashKeyString<32> texture_size_key(
-      "dynamic-texture-size");
-  texture_size_key.Set(texture_size.ToString());
-
-  static crash_reporter::CrashKeyString<2> first_use_key(
-      "dynamic-texture-first-use");
-  bool first_use = !staging_texture_ || (staging_texture_size_ != texture_size);
-  first_use_key.Set(first_use ? "1" : "0");
 
   bool use_dynamic_texture = !layer_tree_->disable_nv12_dynamic_textures();
 
@@ -498,7 +488,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
 }
 
 bool SwapChainPresenter::TryPresentToDecodeSwapChain(
-    gl::GLImageDXGI* image_dxgi,
+    GLImageDXGI* image_dxgi,
     const gfx::Rect& content_rect,
     const gfx::Size& swap_chain_size) {
   if (!base::FeatureList::IsEnabled(
@@ -578,7 +568,7 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
 }
 
 bool SwapChainPresenter::PresentToDecodeSwapChain(
-    gl::GLImageDXGI* image_dxgi,
+    GLImageDXGI* image_dxgi,
     const gfx::Rect& content_rect,
     const gfx::Size& swap_chain_size) {
   DCHECK(!swap_chain_size.IsEmpty());
@@ -707,12 +697,11 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
 
 bool SwapChainPresenter::PresentToSwapChain(
     const ui::DCRendererLayerParams& params) {
-  gl::GLImageDXGI* image_dxgi =
-      gl::GLImageDXGI::FromGLImage(params.y_image.get());
-  gl::GLImageMemory* y_image_memory =
-      gl::GLImageMemory::FromGLImage(params.y_image.get());
-  gl::GLImageMemory* uv_image_memory =
-      gl::GLImageMemory::FromGLImage(params.uv_image.get());
+  GLImageDXGI* image_dxgi = GLImageDXGI::FromGLImage(params.y_image.get());
+  GLImageMemory* y_image_memory =
+      GLImageMemory::FromGLImage(params.y_image.get());
+  GLImageMemory* uv_image_memory =
+      GLImageMemory::FromGLImage(params.uv_image.get());
 
   if (!image_dxgi && (!y_image_memory || !uv_image_memory)) {
     DLOG(ERROR) << "Video GLImages are missing";
@@ -1204,4 +1193,4 @@ bool SwapChainPresenter::ReallocateSwapChain(
   return true;
 }
 
-}  // namespace gpu
+}  // namespace gl

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_SERVICE_DIRECT_COMPOSITION_SURFACE_WIN_H_
-#define GPU_IPC_SERVICE_DIRECT_COMPOSITION_SURFACE_WIN_H_
+#ifndef UI_GL_DIRECT_COMPOSITION_SURFACE_WIN_H_
+#define UI_GL_DIRECT_COMPOSITION_SURFACE_WIN_H_
 
 #include <windows.h>
 #include <d3d11.h>
@@ -13,21 +13,17 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "gpu/ipc/service/child_window_win.h"
-#include "gpu/ipc/service/gpu_ipc_service_export.h"
+#include "ui/gl/child_window_win.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gl {
-class GLSurfacePresentationHelper;
-class VSyncThreadWin;
-}
-
-namespace gpu {
 class DCLayerTree;
 class DirectCompositionChildSurfaceWin;
+class GLSurfacePresentationHelper;
+class VSyncThreadWin;
 
-class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
-    : public gl::GLSurfaceEGL {
+class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
  public:
   using VSyncCallback =
       base::RepeatingCallback<void(base::TimeTicks, base::TimeDelta)>;
@@ -83,7 +79,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool InitializeNativeWindow();
 
   // GLSurfaceEGL implementation.
-  bool Initialize(gl::GLSurfaceFormat format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   gfx::Size GetSize() override;
   bool IsOffscreen() override;
@@ -103,7 +99,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool SetEnableDCLayers(bool enable) override;
   bool FlipsVertically() const override;
   bool SupportsPostSubBuffer() override;
-  bool OnMakeCurrent(gl::GLContext* context) override;
+  bool OnMakeCurrent(GLContext* context) override;
   bool SupportsDCLayers() const override;
   bool UseOverlaysForVideo() const override;
   bool SupportsProtectedVideo() const override;
@@ -146,13 +142,13 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
 
-  std::unique_ptr<gl::VSyncThreadWin> vsync_thread_;
+  std::unique_ptr<VSyncThreadWin> vsync_thread_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
 
   const VSyncCallback vsync_callback_;
   bool vsync_callback_enabled_ = false;
 
-  std::unique_ptr<gl::GLSurfacePresentationHelper> presentation_helper_;
+  std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
@@ -163,6 +159,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionSurfaceWin);
 };
 
-}  // namespace gpu
+}  // namespace gl
 
-#endif  // GPU_IPC_SERVICE_DIRECT_COMPOSITION_SURFACE_WIN_H_
+#endif  // UI_GL_DIRECT_COMPOSITION_SURFACE_WIN_H_

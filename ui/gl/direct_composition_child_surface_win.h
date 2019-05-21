@@ -2,28 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_SERVICE_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_
-#define GPU_IPC_SERVICE_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_
+#ifndef UI_GL_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_
+#define UI_GL_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_
 
 #include <windows.h>
 #include <d3d11.h>
 #include <dcomp.h>
 #include <wrl/client.h>
 
-#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
-namespace gpu {
+namespace gl {
 
-class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
-    : public gl::GLSurfaceEGL {
+class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
  public:
   DirectCompositionChildSurfaceWin();
 
   static bool UseSwapChainFrameStatistics();
 
   // GLSurfaceEGL implementation.
-  bool Initialize(gl::GLSurfaceFormat format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   gfx::Size GetSize() override;
   bool IsOffscreen() override;
@@ -31,7 +29,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   bool FlipsVertically() const override;
   bool SupportsPostSubBuffer() override;
-  bool OnMakeCurrent(gl::GLContext* context) override;
+  bool OnMakeCurrent(GLContext* context) override;
   bool SupportsDCLayers() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
@@ -123,6 +121,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionChildSurfaceWin);
 };
 
-}  // namespace gpu
+}  // namespace gl
 
-#endif  // GPU_IPC_SERVICE_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_
+#endif  // UI_GL_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_

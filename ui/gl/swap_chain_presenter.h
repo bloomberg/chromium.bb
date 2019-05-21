@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_SERVICE_SWAP_CHAIN_PRESENTER_H_
-#define GPU_IPC_SERVICE_SWAP_CHAIN_PRESENTER_H_
+#ifndef UI_GL_SWAP_CHAIN_PRESENTER_H_
+#define UI_GL_SWAP_CHAIN_PRESENTER_H_
 
 #include <windows.h>
 #include <d3d11.h>
@@ -16,12 +16,9 @@
 #include "ui/gl/dc_renderer_layer_params.h"
 
 namespace gl {
+class DCLayerTree;
 class GLImageDXGI;
 class GLImageMemory;
-}  // namespace gl
-
-namespace gpu {
-class DCLayerTree;
 
 // SwapChainPresenter holds a swap chain, direct composition visuals, and other
 // associated resources for a single overlay layer.  It is updated by calling
@@ -92,8 +89,8 @@ class SwapChainPresenter {
   // Upload given YUV buffers to an NV12 texture that can be used to create
   // video processor input view.  Returns nullptr on failure.
   Microsoft::WRL::ComPtr<ID3D11Texture2D> UploadVideoImages(
-      gl::GLImageMemory* y_image_memory,
-      gl::GLImageMemory* uv_image_memory);
+      GLImageMemory* y_image_memory,
+      GLImageMemory* uv_image_memory);
 
   // Releases resources that might hold indirect references to the swap chain.
   void ReleaseSwapChainResources();
@@ -132,14 +129,14 @@ class SwapChainPresenter {
   // Try presenting to a decode swap chain based on various conditions such as
   // global state (e.g. finch, NV12 support), texture flags, and transform.
   // Returns true on success.  See PresentToDecodeSwapChain() for more info.
-  bool TryPresentToDecodeSwapChain(gl::GLImageDXGI* image_dxgi,
+  bool TryPresentToDecodeSwapChain(GLImageDXGI* image_dxgi,
                                    const gfx::Rect& content_rect,
                                    const gfx::Size& swap_chain_size);
 
   // Present to a decode swap chain created from compatible video decoder
   // buffers using given |image_dxgi| with destination size |swap_chain_size|.
   // Returns true on success.
-  bool PresentToDecodeSwapChain(gl::GLImageDXGI* image_dxgi,
+  bool PresentToDecodeSwapChain(GLImageDXGI* image_dxgi,
                                 const gfx::Rect& content_rect,
                                 const gfx::Size& swap_chain_size);
 
@@ -198,8 +195,8 @@ class SwapChainPresenter {
   Microsoft::WRL::ComPtr<IDCompositionVisual2> clip_visual_;
 
   // GLImages that were presented in the last frame.
-  scoped_refptr<gl::GLImage> last_y_image_;
-  scoped_refptr<gl::GLImage> last_uv_image_;
+  scoped_refptr<GLImage> last_y_image_;
+  scoped_refptr<GLImage> last_uv_image_;
 
   // NV12 staging texture used for software decoded YUV buffers.  Mapped to CPU
   // for copying from YUV buffers.  Texture usage is DYNAMIC or STAGING.
@@ -227,6 +224,6 @@ class SwapChainPresenter {
   DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
 };
 
-}  // namespace gpu
+}  // namespace gl
 
-#endif  // GPU_IPC_SERVICE_SWAP_CHAIN_PRESENTER_H_
+#endif  // UI_GL_SWAP_CHAIN_PRESENTER_H_

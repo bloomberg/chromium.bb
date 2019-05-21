@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/dc_layer_tree.h"
+#include "ui/gl/dc_layer_tree.h"
 
 #include "base/trace_event/trace_event.h"
-#include "gpu/ipc/service/direct_composition_child_surface_win.h"
-#include "gpu/ipc/service/swap_chain_presenter.h"
+#include "ui/gl/direct_composition_child_surface_win.h"
+#include "ui/gl/swap_chain_presenter.h"
 
-namespace gpu {
+namespace gl {
 namespace {
 bool SizeContains(const gfx::Size& a, const gfx::Size& b) {
   return gfx::Rect(a).Contains(gfx::Rect(b));
@@ -227,4 +227,4 @@ bool DCLayerTree::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
   return true;
 }
 
-}  // namespace gpu
+}  // namespace gl

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_surface_win.h"
 
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
@@ -27,19 +27,8 @@
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/win/win_window.h"
 
-namespace gpu {
+namespace gl {
 namespace {
-
-bool CheckIfDCSupported() {
-  if (!gl::QueryDirectCompositionDevice(
-          gl::QueryD3D11DeviceObjectFromANGLE())) {
-    LOG(WARNING)
-        << "GL implementation not using DirectComposition, skipping test.";
-    return false;
-  }
-  return true;
-}
-
 class TestPlatformDelegate : public ui::PlatformWindowDelegate {
  public:
   // ui::PlatformWindowDelegate implementation.
@@ -114,13 +103,28 @@ class DirectCompositionSurfaceTest : public testing::Test {
  public:
   DirectCompositionSurfaceTest() : parent_window_(ui::GetHiddenWindow()) {}
 
-  ~DirectCompositionSurfaceTest() override {
+ protected:
+  void SetUp() override {
+    // Other tests may also initialize GL.
+    gl::init::ShutdownGL(false);
+    // Without this, the following check always fails.
+    gl::init::InitializeGLNoExtensionsOneOff();
+    if (!QueryDirectCompositionDevice(QueryD3D11DeviceObjectFromANGLE())) {
+      LOG(WARNING)
+          << "GL implementation not using DirectComposition, skipping test.";
+      return;
+    }
+    surface_ = CreateDirectCompositionSurfaceWin();
+    context_ = CreateGLContext(surface_);
+    surface_->SetEnableDCLayers(true);
+  }
+
+  void TearDown() override {
     context_ = nullptr;
     if (surface_)
       DestroySurface(std::move(surface_));
   }
 
- protected:
   scoped_refptr<DirectCompositionSurfaceWin>
   CreateDirectCompositionSurfaceWin() {
     DirectCompositionSurfaceWin::Settings settings;
@@ -129,7 +133,7 @@ class DirectCompositionSurfaceTest : public testing::Test {
             /*vsync_provider=*/nullptr,
             DirectCompositionSurfaceWin::VSyncCallback(), parent_window_,
             settings);
-    EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
+    EXPECT_TRUE(surface->Initialize(GLSurfaceFormat()));
 
     // ImageTransportSurfaceDelegate::DidCreateAcceleratedSurfaceChildWindow()
     // is called in production code here. However, to remove dependency from
@@ -141,31 +145,24 @@ class DirectCompositionSurfaceTest : public testing::Test {
     return surface;
   }
 
-  scoped_refptr<gl::GLContext> CreateGLContext(
+  scoped_refptr<GLContext> CreateGLContext(
       scoped_refptr<DirectCompositionSurfaceWin> surface) {
-    scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
-        nullptr, surface.get(), gl::GLContextAttribs());
+    scoped_refptr<GLContext> context =
+        gl::init::CreateGLContext(nullptr, surface.get(), GLContextAttribs());
     EXPECT_TRUE(context->MakeCurrent(surface.get()));
     return context;
   }
 
-  virtual void InitializeSurface() {
-    surface_ = CreateDirectCompositionSurfaceWin();
-    context_ = CreateGLContext(surface_);
-  }
-
   HWND parent_window_;
   scoped_refptr<DirectCompositionSurfaceWin> surface_;
-  scoped_refptr<gl::GLContext> context_;
+  scoped_refptr<GLContext> context_;
 };
 
 TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
   EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
 
   // First SetDrawRectangle must be full size of surface.
   EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
@@ -185,18 +182,18 @@ TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {
   EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 
   EXPECT_TRUE(surface_->Resize(gfx::Size(50, 50), 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_TRUE(context_->IsCurrent(surface_.get()));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
   EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 
   scoped_refptr<DirectCompositionSurfaceWin> surface2 =
       CreateDirectCompositionSurfaceWin();
-  scoped_refptr<gl::GLContext> context2 = CreateGLContext(surface2.get());
+  scoped_refptr<GLContext> context2 = CreateGLContext(surface2.get());
 
   surface2->SetEnableDCLayers(true);
   EXPECT_TRUE(surface2->Resize(gfx::Size(100, 100), 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   // The previous IDCompositionSurface should be suspended when another
   // surface is being drawn to.
   EXPECT_TRUE(surface2->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
@@ -211,11 +208,11 @@ TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {
 
 // Tests that switching using EnableDCLayers works.
 TEST_F(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
+  surface_->SetEnableDCLayers(false);
   EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
   // First SetDrawRectangle must be full size of surface for DXGI swapchain.
@@ -256,11 +253,11 @@ TEST_F(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
 
 // Ensure that the swapchain's alpha is correct.
 TEST_F(DirectCompositionSurfaceTest, SwitchAlpha) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
+  surface_->SetEnableDCLayers(false);
   EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
@@ -273,11 +270,11 @@ TEST_F(DirectCompositionSurfaceTest, SwitchAlpha) {
 
   // Resize to the same parameters should have no effect.
   EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_TRUE(surface_->GetBackbufferSwapChainForTesting());
 
   EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, false));
+                               GLSurface::ColorSpace::UNSPECIFIED, false));
   EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
@@ -290,20 +287,17 @@ TEST_F(DirectCompositionSurfaceTest, SwitchAlpha) {
 
 // Ensure that the GLImage isn't presented again unless it changes.
 TEST_F(DirectCompositionSurfaceTest, NoPresentTwice) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, false);
 
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   image_dxgi->SetTexture(texture, 0);
   image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
@@ -344,8 +338,8 @@ TEST_F(DirectCompositionSurfaceTest, NoPresentTwice) {
   EXPECT_EQ(2u, last_present_count);
 
   // The image changed, we should get a new present
-  scoped_refptr<gl::GLImageDXGI> image_dxgi2(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi2(
+      new GLImageDXGI(texture_size, nullptr));
   image_dxgi2->SetTexture(texture, 0);
   image_dxgi2->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
@@ -367,20 +361,17 @@ TEST_F(DirectCompositionSurfaceTest, NoPresentTwice) {
 // is support - swapchain should be the minimum of the decoded
 // video buffer size and the onscreen video size
 TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(64, 64);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, false);
 
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   image_dxgi->SetTexture(texture, 0);
   image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
@@ -431,20 +422,17 @@ TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
 // Ensure the swapchain size is set to the correct size if HW overlay scaling
 // is not support - swapchain should be the onscreen video size
 TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(80, 80);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, false);
 
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   image_dxgi->SetTexture(texture, 0);
   image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
@@ -488,20 +476,17 @@ TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
 
 // Test protected video flags
 TEST_F(DirectCompositionSurfaceTest, ProtectedVideos) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(1280, 720);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, false);
 
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   image_dxgi->SetTexture(texture, 0);
   image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
   gfx::Size window_size(640, 360);
@@ -604,21 +589,27 @@ class DirectCompositionPixelTest : public DirectCompositionSurfaceTest {
   }
 
  protected:
-  void InitializeSurface() override {
+  void SetUp() override {
     static_cast<ui::PlatformWindow*>(&window_)->Show();
-    DirectCompositionSurfaceTest::InitializeSurface();
+    DirectCompositionSurfaceTest::SetUp();
+  }
+
+  void TearDown() override {
+    // Test harness times out without DestroyWindow() here.
+    if (IsWindow(parent_window_))
+      DestroyWindow(parent_window_);
+    DirectCompositionSurfaceTest::TearDown();
   }
 
   void PixelTestSwapChain(bool layers_enabled) {
-    if (!CheckIfDCSupported())
+    if (!surface_)
       return;
+    if (!layers_enabled)
+      surface_->SetEnableDCLayers(false);
 
-    InitializeSurface();
-
-    surface_->SetEnableDCLayers(layers_enabled);
     gfx::Size window_size(100, 100);
     EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                                 gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                                 GLSurface::ColorSpace::UNSPECIFIED, true));
     EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
     glClearColor(1.0, 0.0, 0.0, 1.0);
@@ -667,24 +658,22 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
   void TestVideo(const gfx::ColorSpace& color_space,
                  SkColor expected_color,
                  bool check_color) {
-    if (!CheckIfDCSupported())
+    if (!surface_)
       return;
-    InitializeSurface();
-    surface_->SetEnableDCLayers(true);
 
     gfx::Size window_size(100, 100);
     EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                                 gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                                 GLSurface::ColorSpace::UNSPECIFIED, true));
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-        gl::QueryD3D11DeviceObjectFromANGLE();
+        QueryD3D11DeviceObjectFromANGLE();
 
     gfx::Size texture_size(50, 50);
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
         CreateNV12Texture(d3d11_device, texture_size, false);
 
-    scoped_refptr<gl::GLImageDXGI> image_dxgi(
-        new gl::GLImageDXGI(texture_size, nullptr));
+    scoped_refptr<GLImageDXGI> image_dxgi(
+        new GLImageDXGI(texture_size, nullptr));
     image_dxgi->SetTexture(texture, 0);
     image_dxgi->SetColorSpace(color_space);
 
@@ -743,17 +732,15 @@ TEST_F(DirectCompositionVideoPixelTest, InvalidColorSpace) {
 }
 
 TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
 
   gfx::Size window_size(100, 100);
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size y_size(50, 50);
   gfx::Size uv_size(25, 25);
@@ -763,11 +750,11 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
       gfx::RowSizeForBufferFormat(uv_size.width(), gfx::BufferFormat::RG_88, 0);
   std::vector<uint8_t> y_data(y_stride * y_size.height(), 0xff);
   std::vector<uint8_t> uv_data(uv_stride * uv_size.height(), 0xff);
-  auto y_image = base::MakeRefCounted<gl::GLImageRefCountedMemory>(y_size);
+  auto y_image = base::MakeRefCounted<GLImageRefCountedMemory>(y_size);
 
   y_image->Initialize(new base::RefCountedBytes(y_data),
                       gfx::BufferFormat::R_8);
-  auto uv_image = base::MakeRefCounted<gl::GLImageRefCountedMemory>(uv_size);
+  auto uv_image = base::MakeRefCounted<GLImageRefCountedMemory>(uv_size);
   uv_image->Initialize(new base::RefCountedBytes(uv_data),
                        gfx::BufferFormat::RG_88);
   y_image->SetColorSpace(gfx::ColorSpace::CreateREC709());
@@ -792,17 +779,15 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
 }
 
 TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
 
   gfx::Size window_size(100, 100);
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -813,8 +798,7 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
                                            gfx::BufferFormat::RGBA_8888));
 
@@ -839,21 +823,19 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
 }
 
 TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyBoundsRect) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
 
   gfx::Size window_size(100, 100);
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -864,8 +846,7 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyBoundsRect) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
                                            gfx::BufferFormat::RGBA_8888));
 
@@ -892,24 +873,22 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyBoundsRect) {
 }
 
 TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
   // Swap chain size is overridden to content rect size only if scaled overlays
   // are supported.
   DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
-  surface_->SetEnableDCLayers(true);
 
   gfx::Size window_size(100, 100);
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -920,8 +899,7 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
                                            gfx::BufferFormat::RGBA_8888));
 
@@ -948,23 +926,20 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
 }
 
 TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
   DirectCompositionSurfaceWin::SetPreferNV12OverlaysForTesting();
-  InitializeSurface();
-
-  surface_->SetEnableDCLayers(true);
 
   gfx::Size window_size(100, 100);
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -975,8 +950,7 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
                                            gfx::BufferFormat::RGBA_8888));
 
@@ -1013,24 +987,22 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
 }
 
 TEST_F(DirectCompositionPixelTest, NonZeroBoundsOffset) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
   // Swap chain size is overridden to content rect size only if scaled overlays
   // are supported.
   DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
-  surface_->SetEnableDCLayers(true);
 
   gfx::Size window_size(100, 100);
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -1041,8 +1013,7 @@ TEST_F(DirectCompositionPixelTest, NonZeroBoundsOffset) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
                                            gfx::BufferFormat::RGBA_8888));
 
@@ -1084,21 +1055,19 @@ TEST_F(DirectCompositionPixelTest, NonZeroBoundsOffset) {
 }
 
 TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
-  if (!CheckIfDCSupported())
+  if (!surface_)
     return;
-  InitializeSurface();
-  surface_->SetEnableDCLayers(true);
 
   gfx::Size window_size(100, 100);
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+                               GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -1109,8 +1078,7 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
+  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
                                            gfx::BufferFormat::RGBA_8888));
 
@@ -1156,4 +1124,4 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
 }
 
 }  // namespace
-}  // namespace gpu
+}  // namespace gl

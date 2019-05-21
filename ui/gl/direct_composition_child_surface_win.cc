@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/direct_composition_child_surface_win.h"
+#include "ui/gl/direct_composition_child_surface_win.h"
 
 #include <d3d11_1.h>
 #include <dcomptypes.h>
@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "base/win/windows_version.h"
-#include "ui/display/display_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/color_space_utils.h"
 #include "ui/gl/egl_util.h"
@@ -33,7 +32,7 @@
 #define EGL_D3D_TEXTURE_ANGLE 0x33A3
 #endif /* EGL_ANGLE_d3d_texture_client_buffer */
 
-namespace gpu {
+namespace gl {
 
 namespace {
 // Only one DirectComposition surface can be rendered into at a time. Track
@@ -55,7 +54,7 @@ bool IsSwapChainTearingSupported() {
       return false;
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-        gl::QueryD3D11DeviceObjectFromANGLE();
+        QueryD3D11DeviceObjectFromANGLE();
     if (!d3d11_device) {
       DLOG(ERROR) << "Not using swap chain tearing because failed to retrieve "
                      "D3D11 device from ANGLE";
@@ -114,9 +113,9 @@ DirectCompositionChildSurfaceWin::~DirectCompositionChildSurfaceWin() {
   Destroy();
 }
 
-bool DirectCompositionChildSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
-  d3d11_device_ = gl::QueryD3D11DeviceObjectFromANGLE();
-  dcomp_device_ = gl::QueryDirectCompositionDevice(d3d11_device_);
+bool DirectCompositionChildSurfaceWin::Initialize(GLSurfaceFormat format) {
+  d3d11_device_ = QueryD3D11DeviceObjectFromANGLE();
+  dcomp_device_ = QueryDirectCompositionDevice(d3d11_device_);
   if (!dcomp_device_)
     return false;
 
@@ -272,7 +271,7 @@ bool DirectCompositionChildSurfaceWin::SupportsPostSubBuffer() {
   return true;
 }
 
-bool DirectCompositionChildSurfaceWin::OnMakeCurrent(gl::GLContext* context) {
+bool DirectCompositionChildSurfaceWin::OnMakeCurrent(GLContext* context) {
   if (g_current_surface != dcomp_surface_.Get()) {
     if (g_current_surface) {
       HRESULT hr = g_current_surface->SuspendDraw();
@@ -321,7 +320,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
   // |real_surface_|.
   ui::ScopedReleaseCurrent release_current;
 
-  DXGI_FORMAT dxgi_format = gl::ColorSpaceUtils::GetDXGIFormat(color_space_);
+  DXGI_FORMAT dxgi_format = ColorSpaceUtils::GetDXGIFormat(color_space_);
 
   bool force_swap_chain = UseSwapChainFrameStatistics();
   bool use_swap_chain = force_swap_chain || !enable_dc_layers_;
@@ -380,7 +379,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
     if (SUCCEEDED(swap_chain_.As(&swap_chain))) {
       swap_chain->SetColorSpace1(
-          gl::ColorSpaceUtils::GetDXGIColorSpace(color_space_));
+          ColorSpaceUtils::GetDXGIColorSpace(color_space_));
     }
   }
 
@@ -458,7 +457,7 @@ bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
 
   // ResizeBuffers can't change alpha blending mode.
   if (swap_chain_ && resize_only) {
-    DXGI_FORMAT format = gl::ColorSpaceUtils::GetDXGIFormat(color_space_);
+    DXGI_FORMAT format = ColorSpaceUtils::GetDXGIFormat(color_space_);
     UINT flags =
         IsSwapChainTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
     HRESULT hr = swap_chain_->ResizeBuffers(2 /* BufferCount */, size.width(),
@@ -590,4 +589,4 @@ void DirectCompositionChildSurfaceWin::ClearPendingFrames() {
   pending_frames_.clear();
 }
 
-}  // namespace gpu
+}  // namespace gl

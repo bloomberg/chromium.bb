@@ -36,7 +36,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "gpu/ipc/service/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
@@ -80,18 +80,18 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
     DCHECK(gpu_info);
     gpu_info->direct_composition =
-        DirectCompositionSurfaceWin::IsDirectCompositionSupported();
+        gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
     gpu_info->supports_overlays =
-        DirectCompositionSurfaceWin::AreOverlaysSupported();
+        gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
     bool supports_scaling = false;
-    if (DirectCompositionSurfaceWin::SupportsOverlayFormat(DXGI_FORMAT_YUY2,
-                                                           &supports_scaling)) {
+    if (gl::DirectCompositionSurfaceWin::SupportsOverlayFormat(
+            DXGI_FORMAT_YUY2, &supports_scaling)) {
       gpu_info->yuy2_overlay_support = supports_scaling
                                            ? gpu::OverlaySupport::kScaling
                                            : gpu::OverlaySupport::kDirect;
     }
-    if (DirectCompositionSurfaceWin::SupportsOverlayFormat(DXGI_FORMAT_NV12,
-                                                           &supports_scaling)) {
+    if (gl::DirectCompositionSurfaceWin::SupportsOverlayFormat(
+            DXGI_FORMAT_NV12, &supports_scaling)) {
       gpu_info->nv12_overlay_support = supports_scaling
                                            ? gpu::OverlaySupport::kScaling
                                            : gpu::OverlaySupport::kDirect;
