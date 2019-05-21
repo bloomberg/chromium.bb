@@ -136,8 +136,7 @@ bool RecentTabsGetSyncedFaviconForPageURL(
     sync_sessions::SessionSyncService* session_sync_service,
     const GURL& page_url,
     scoped_refptr<base::RefCountedMemory>* sync_bitmap) {
-  if (!session_sync_service)
-    return false;
+  DCHECK(session_sync_service);
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       session_sync_service->GetOpenTabsUIDelegate();
   return open_tabs &&
@@ -651,9 +650,8 @@ void RecentTabsSubMenuModel::ClearTabsFromOtherDevices() {
 
 sync_sessions::OpenTabsUIDelegate*
 RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
-  // Only return the delegate if it exists and it is done syncing sessions.
-  return session_sync_service_ ? session_sync_service_->GetOpenTabsUIDelegate()
-                               : nullptr;
+  DCHECK(session_sync_service_);
+  return session_sync_service_->GetOpenTabsUIDelegate();
 }
 
 void RecentTabsSubMenuModel::TabRestoreServiceChanged(

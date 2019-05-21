@@ -45,8 +45,7 @@ bool GetSyncedFaviconForPageURL(
     scoped_refptr<base::RefCountedMemory>* sync_bitmap) {
   sync_sessions::SessionSyncService* session_sync_service =
       SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  if (!session_sync_service)
-    return false;
+  DCHECK(session_sync_service);
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       session_sync_service->GetOpenTabsUIDelegate();
   return open_tabs &&
