@@ -203,8 +203,8 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   if (request.GetNavigationPolicy() != kNavigationPolicyCurrentTab)
     return FindResult(current_frame, false);
 
-  Frame* frame =
-      FindFrameForNavigationInternal(name, request.GetResourceRequest().Url());
+  const KURL& url = request.GetResourceRequest().Url();
+  Frame* frame = FindFrameForNavigationInternal(name, url);
   bool new_window = false;
   if (!frame) {
     frame = CreateNewWindow(*current_frame, request, name);
@@ -212,7 +212,7 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
     // CreateNewWindow() might have modified NavigationPolicy.
     // Set it back now that the new window is known to be the right one.
     request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
-  } else if (!current_frame->CanNavigate(*frame)) {
+  } else if (!current_frame->CanNavigate(*frame, url)) {
     frame = nullptr;
   }
 
@@ -269,7 +269,11 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
 
   for (Frame* frame = page->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
+    // Skip descendants of this frame that were searched above to avoid
+    // showing duplicate console messages if a frame is found by name
+    // but access is blocked.
     if (frame->Tree().GetName() == name &&
+        !frame->Tree().IsDescendantOf(this_frame_.Get()) &&
         To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame, url)) {
       return frame;
     }

@@ -160,33 +160,6 @@ bool DOMWindow::IsCurrentlyDisplayedInFrame() const {
   return GetFrame() && GetFrame()->GetPage();
 }
 
-bool DOMWindow::IsInsecureScriptAccess(LocalDOMWindow& accessing_window,
-                                       const KURL& url) {
-  if (!url.ProtocolIsJavaScript())
-    return false;
-
-  // If this DOMWindow isn't currently active in the Frame, then there's no
-  // way we should allow the access.
-  if (IsCurrentlyDisplayedInFrame()) {
-    // FIXME: Is there some way to eliminate the need for a separate
-    // "accessing_window == this" check?
-    if (&accessing_window == this)
-      return false;
-
-    // FIXME: The name canAccess seems to be a roundabout way to ask "can
-    // execute script".  Can we name the SecurityOrigin function better to make
-    // this more clear?
-    if (accessing_window.document()->GetSecurityOrigin()->CanAccess(
-            GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
-      return false;
-    }
-  }
-
-  accessing_window.PrintErrorMessage(
-      CrossDomainAccessErrorMessage(&accessing_window));
-  return true;
-}
-
 // FIXME: Once we're throwing exceptions for cross-origin access violations, we
 // will always sanitize the target frame details, so we can safely combine
 // 'crossDomainAccessErrorMessage' with this method after considering exactly

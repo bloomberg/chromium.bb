@@ -17,7 +17,6 @@ namespace blink {
 
 class Document;
 class InputDeviceCapabilitiesConstants;
-class KURL;
 class LocalDOMWindow;
 class Location;
 class MessageEvent;
@@ -112,7 +111,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
       const LocalDOMWindow* accessing_window) const;
   String CrossDomainAccessErrorMessage(
       const LocalDOMWindow* accessing_window) const;
-  bool IsInsecureScriptAccess(LocalDOMWindow& accessing_window, const KURL&);
 
   // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
   // when its document is no longer the document that is displayed in its

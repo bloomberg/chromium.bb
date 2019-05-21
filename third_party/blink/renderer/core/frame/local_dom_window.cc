@@ -1522,11 +1522,8 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (!result.frame)
     return nullptr;
 
-  if ((!completed_url.IsEmpty() || result.new_window) &&
-      !result.frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
-                                                         completed_url)) {
+  if (!completed_url.IsEmpty() || result.new_window)
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
-  }
 
   // TODO(japhet): window-open-noopener.html?_top and several tests in
   // html/browsers/windows/browsing-context-names/ appear to require that

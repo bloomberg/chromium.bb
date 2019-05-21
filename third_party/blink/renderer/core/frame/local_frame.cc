@@ -1019,6 +1019,16 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
                       WebFeature::kOpenerNavigationWithoutGesture);
   }
 
+  if (destination_url.ProtocolIsJavaScript() &&
+      !GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+          target_frame.GetSecurityContext()->GetSecurityOrigin())) {
+    PrintNavigationErrorMessage(
+        target_frame,
+        "The frame attempting navigation must be same-origin with the target "
+        "if navigating to a javascript: url");
+    return false;
+  }
+
   if (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kNavigation)) {
     if (!target_frame.Tree().IsDescendantOf(this) &&
         !target_frame.IsMainFrame()) {

@@ -5403,10 +5403,7 @@ crbug.com/936615 [ Win7 ] external/wpt/kv-storage/values.https.html [ Timeout Pa
 crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
 crbug.com/932078 virtual/insecure-device-sensor-events/http/tests/security/powerfulFeatureRestrictions/device-orientation-handler-not-fired-on-insecure-origin.html [ Skip ]
 
-# These tests depend on targeting javascript: url navigations at the specified window.
-crbug.com/935064 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-abort/javascript-url-abort-return-value-string.tentative.html [ Failure ]
 crbug.com/935064 external/wpt/content-security-policy/inheritance/iframe-all-local-schemes.sub.html [ Failure ]
-crbug.com/935064 external/wpt/content-security-policy/unsafe-hashes/javascript_src_allowed-href_blank.html [ Timeout ]
 
 # Sheriff 2019-02-28
 crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]

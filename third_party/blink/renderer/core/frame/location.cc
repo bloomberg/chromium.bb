@@ -286,14 +286,11 @@ void Location::SetLocation(const String& url,
     return;
   }
 
-  if (dom_window_->IsInsecureScriptAccess(*current_window, completed_url))
-    return;
-
   // Check the source browsing context's CSP to fulfill the CSP check
   // requirement of https://html.spec.whatwg.org/C/#navigate for javascript
   // URLs. Although the spec states we should perform this check on task
-  // execution, we do this prior to dispatch since the parent frame's CSP may be
-  // inaccessible if the target frame is out of process.
+  // execution, there are concerns about the correctness of that statement,
+  // see http://github.com/whatwg/html/issues/2591.
   Document* current_document = current_window->document();
   if (current_document && completed_url.ProtocolIsJavaScript() &&
       !ContentSecurityPolicy::ShouldBypassMainWorld(current_document)) {
