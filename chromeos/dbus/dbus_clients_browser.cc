@@ -101,7 +101,7 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   update_engine_client_.reset(UpdateEngineClient::Create(client_impl_type));
   virtual_file_provider_client_ =
       CREATE_DBUS_CLIENT(VirtualFileProviderClient, use_real_clients);
-  vm_plugin_dispatcher_client =
+  vm_plugin_dispatcher_client_ =
       CREATE_DBUS_CLIENT(VmPluginDispatcherClient, use_real_clients);
   wilco_dtc_supportd_client_ =
       CREATE_DBUS_CLIENT(WilcoDtcSupportdClient, use_real_clients);
@@ -131,7 +131,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   smb_provider_client_->Init(system_bus);
   update_engine_client_->Init(system_bus);
   virtual_file_provider_client_->Init(system_bus);
-  vm_plugin_dispatcher_client->Init(system_bus);
+  vm_plugin_dispatcher_client_->Init(system_bus);
   wilco_dtc_supportd_client_->Init(system_bus);
 }
 

@@ -72,7 +72,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
   std::unique_ptr<SmbProviderClient> smb_provider_client_;
   std::unique_ptr<UpdateEngineClient> update_engine_client_;
   std::unique_ptr<VirtualFileProviderClient> virtual_file_provider_client_;
-  std::unique_ptr<VmPluginDispatcherClient> vm_plugin_dispatcher_client;
+  std::unique_ptr<VmPluginDispatcherClient> vm_plugin_dispatcher_client_;
   std::unique_ptr<WilcoDtcSupportdClient> wilco_dtc_supportd_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusClientsBrowser);
