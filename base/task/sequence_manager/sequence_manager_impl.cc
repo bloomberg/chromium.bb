@@ -153,6 +153,8 @@ SequenceManagerImpl::SequenceManagerImpl(
       settings_(std::move(settings)),
       metric_recording_settings_(InitializeMetricRecordingSettings(
           settings_.randomised_sampling_enabled)),
+      add_queue_time_to_tasks_(settings_.add_queue_time_to_tasks),
+
       empty_queues_to_reload_(associated_thread_),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
       main_thread_only_(associated_thread_, settings_),

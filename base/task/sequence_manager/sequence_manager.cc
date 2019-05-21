@@ -41,6 +41,13 @@ SequenceManager::Settings::Builder::SetTickClock(const TickClock* clock_val) {
   return *this;
 }
 
+SequenceManager::Settings::Builder&
+SequenceManager::Settings::Builder::SetAddQueueTimeToTasks(
+    bool add_queue_time_to_tasks_val) {
+  settings_.add_queue_time_to_tasks = add_queue_time_to_tasks_val;
+  return *this;
+}
+
 #if DCHECK_IS_ON()
 
 SequenceManager::Settings::Builder&

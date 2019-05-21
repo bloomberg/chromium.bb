@@ -72,6 +72,9 @@ class BASE_EXPORT SequenceManager {
     bool randomised_sampling_enabled = false;
     const TickClock* clock = DefaultTickClock::GetInstance();
 
+    // If true, add the timestamp the task got queued to the task.
+    bool add_queue_time_to_tasks = false;
+
 #if DCHECK_IS_ON()
     // TODO(alexclarke): Consider adding command line flags to control these.
     enum class TaskLogging {
@@ -104,6 +107,7 @@ class BASE_EXPORT SequenceManager {
     // a random TaskQueue for a given priority rather than the TaskQueue with
     // the oldest EnqueueOrder.
     int random_task_selection_seed = 0;
+
 #endif  // DCHECK_IS_ON()
 
     DISALLOW_COPY_AND_ASSIGN(Settings);
@@ -220,6 +224,9 @@ class BASE_EXPORT SequenceManager::Settings::Builder {
   // Sets the TickClock the SequenceManager uses to obtain Now.
   Builder& SetTickClock(const TickClock* clock);
 
+  // Whether or not queueing timestamp will be added to tasks.
+  Builder& SetAddQueueTimeToTasks(bool add_queue_time_to_tasks);
+
 #if DCHECK_IS_ON()
   // Controls task execution logging.
   Builder& SetTaskLogging(TaskLogging task_execution_logging);
@@ -251,6 +258,7 @@ class BASE_EXPORT SequenceManager::Settings::Builder {
   // random TaskQueue for a given priority rather than the TaskQueue with the
   // oldest EnqueueOrder.
   Builder& SetRandomTaskSelectionSeed(int random_task_selection_seed);
+
 #endif  // DCHECK_IS_ON()
 
   Settings Build();

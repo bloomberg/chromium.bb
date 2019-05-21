@@ -23,6 +23,7 @@ WebThreadScheduler::CreateMainThreadScheduler(
   auto settings = base::sequence_manager::SequenceManager::Settings::Builder()
                       .SetMessageLoopType(base::MessageLoop::TYPE_DEFAULT)
                       .SetRandomisedSamplingEnabled(true)
+                      .SetAddQueueTimeToTasks(true)
                       .Build();
   auto sequence_manager =
       message_pump

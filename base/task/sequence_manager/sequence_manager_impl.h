@@ -387,7 +387,7 @@ class BASE_EXPORT SequenceManagerImpl
   const MetricRecordingSettings metric_recording_settings_;
 
   // Whether to add the queue time to tasks.
-  base::subtle::Atomic32 add_queue_time_to_tasks_ = 0;
+  base::subtle::Atomic32 add_queue_time_to_tasks_;
 
   AtomicFlagSet empty_queues_to_reload_;
 
