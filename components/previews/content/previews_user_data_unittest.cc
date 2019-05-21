@@ -46,6 +46,7 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   EXPECT_FALSE(data->black_listed_for_lite_page());
   EXPECT_FALSE(data->offline_preview_used());
   EXPECT_EQ(data->server_lite_page_info(), nullptr);
+  EXPECT_EQ(base::nullopt, data->serialized_hint_version_string());
 
   base::TimeTicks now = base::TimeTicks::Now();
 
@@ -57,6 +58,7 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   data->set_server_lite_page_info(
       std::make_unique<PreviewsUserData::ServerLitePageInfo>());
   data->server_lite_page_info()->original_navigation_start = now;
+  data->set_serialized_hint_version_string("someversion");
 
   PreviewsUserData data_copy(*data);
   EXPECT_EQ(id, data_copy.page_id());
@@ -69,6 +71,7 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   EXPECT_TRUE(data_copy.offline_preview_used());
   EXPECT_NE(data->server_lite_page_info(), nullptr);
   EXPECT_EQ(data->server_lite_page_info()->original_navigation_start, now);
+  EXPECT_EQ("someversion", data->serialized_hint_version_string());
 }
 
 }  // namespace previews

@@ -56,12 +56,14 @@ class PreviewsHints {
   void Initialize(HintCache* hint_cache, base::OnceClosure callback);
 
   // Whether the URL is whitelisted for the given previews type. If so,
-  // |out_inflation_percent| and |out_ect_threshold| will be populated if
-  // metadata is available for them.
+  // |out_inflation_percent|, |out_ect_threshold|,
+  // |out_serialized_hints_version_string| will be populated if metadata is
+  // available for them.
   bool IsWhitelisted(const GURL& url,
                      PreviewsType type,
                      int* out_inflation_percent,
-                     net::EffectiveConnectionType* out_ect_threshold) const;
+                     net::EffectiveConnectionType* out_ect_threshold,
+                     std::string* out_serialized_hints_version_string) const;
 
   // Whether the URL is blacklisted for the given previews type.
   bool IsBlacklisted(const GURL& url, PreviewsType type) const;

@@ -133,7 +133,8 @@ class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
       const GURL& url,
       PreviewsType type,
       int* out_inflation_percent,
-      net::EffectiveConnectionType* out_ect_threshold);
+      net::EffectiveConnectionType* out_ect_threshold,
+      std::string* serialized_hint_version_string);
 
   void MaybeLoadHintAndLogHintCacheMatch(const GURL& url,
                                          bool is_committed,
@@ -176,10 +177,12 @@ bool PreviewsHintsTest::MaybeLoadHintAndCheckIsWhitelisted(
     const GURL& url,
     PreviewsType type,
     int* out_inflation_percent,
-    net::EffectiveConnectionType* out_ect_threshold) {
+    net::EffectiveConnectionType* out_ect_threshold,
+    std::string* out_serialized_hint_version_string) {
   MaybeLoadHint(url);
   return previews_hints_->IsWhitelisted(url, type, out_inflation_percent,
-                                        out_ect_threshold);
+                                        out_ect_threshold,
+                                        out_serialized_hint_version_string);
 }
 
 void PreviewsHintsTest::MaybeLoadHintAndLogHintCacheMatch(
@@ -379,6 +382,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
 
   // Page hint for "/has_inflation_percent/"
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
@@ -422,29 +426,33 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
   resource_hint2b->set_resource_pattern("resource2b.js");
   ParseConfig(config);
 
-  // Verify optimization providing inflation_percent.
+  // Verify optimization providing inflation_percent and hints version.
   int inflation_percent = 0;
   net::EffectiveConnectionType ect_threshold =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  std::string serialized_hint_version_string;
   EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_inflation_percent/"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-      &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent, &ect_threshold,
+      &serialized_hint_version_string));
   EXPECT_EQ(55, inflation_percent);
   EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             ect_threshold);
+  EXPECT_EQ("someversion", serialized_hint_version_string);
 
   // Verify page hint providing ECT trigger.
   inflation_percent = 0;
   ect_threshold =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  serialized_hint_version_string = "";
   EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_max_ect_trigger/"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-      &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent, &ect_threshold,
+      &serialized_hint_version_string));
   EXPECT_EQ(0, inflation_percent);
   EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G,
             ect_threshold);
+  EXPECT_EQ("someversion", serialized_hint_version_string);
 
   // Verify getting resource patterns to block.
   std::vector<std::string> patterns_to_block1;
@@ -472,6 +480,7 @@ TEST_F(PreviewsHintsTest,
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
 
   // Page hint with NOSCRIPT optimization
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
@@ -489,13 +498,15 @@ TEST_F(PreviewsHintsTest,
   int inflation_percent = 0;
   net::EffectiveConnectionType ect_threshold =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  std::string serialized_hint_version_string;
   EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_multiple_optimizations/"),
-      PreviewsType::NOSCRIPT, &inflation_percent, &ect_threshold));
+      PreviewsType::NOSCRIPT, &inflation_percent, &ect_threshold,
+      &serialized_hint_version_string));
   EXPECT_FALSE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_multiple_optimizations/"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-      &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent, &ect_threshold,
+      &serialized_hint_version_string));
 }
 
 TEST_F(PreviewsHintsTest,
@@ -508,6 +519,7 @@ TEST_F(PreviewsHintsTest,
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
 
   // Page hint with NOSCRIPT optimization
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
@@ -525,13 +537,15 @@ TEST_F(PreviewsHintsTest,
   int inflation_percent = 0;
   net::EffectiveConnectionType ect_threshold =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  std::string serialized_hint_version_string;
   EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_multiple_optimizations/"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-      &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent, &ect_threshold,
+      &serialized_hint_version_string));
   EXPECT_FALSE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_multiple_optimizations/"),
-      PreviewsType::NOSCRIPT, &inflation_percent, &ect_threshold));
+      PreviewsType::NOSCRIPT, &inflation_percent, &ect_threshold,
+      &serialized_hint_version_string));
 }
 
 TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
@@ -542,6 +556,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
 
   // Page hint for "/experimental_preview/"
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
@@ -583,14 +598,16 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
     int inflation_percent = 0;
     net::EffectiveConnectionType ect_threshold =
         net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    std::string serialized_hint_version_string;
     EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
         GURL("https://www.somedomain.org/experimental_preview/"
              "experimental_resource.js"),
         PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-        &ect_threshold));
+        &ect_threshold, &serialized_hint_version_string));
     EXPECT_EQ(33, inflation_percent);
     EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
               ect_threshold);
+    EXPECT_EQ("someversion", serialized_hint_version_string);
 
     std::vector<std::string> patterns_to_block;
     previews_hints()->GetResourceLoadingHints(
@@ -610,14 +627,16 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
     int inflation_percent = 0;
     net::EffectiveConnectionType ect_threshold =
         net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
+    std::string serialized_hint_version_string;
     EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
         GURL("https://www.somedomain.org/experimental_preview/"
              "experimental_resource.js"),
         PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-        &ect_threshold));
+        &ect_threshold, &serialized_hint_version_string));
     EXPECT_EQ(99, inflation_percent);
     EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
               ect_threshold);
+    EXPECT_EQ("someversion", serialized_hint_version_string);
 
     std::vector<std::string> patterns_to_block;
     previews_hints()->GetResourceLoadingHints(
@@ -636,6 +655,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForNoopExperimentalPreview) {
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
 
   // Page hint for "/experimental_preview/"
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
@@ -670,11 +690,12 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForNoopExperimentalPreview) {
     int inflation_percent = 0;
     net::EffectiveConnectionType ect_threshold =
         net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    std::string serialized_hint_version_string;
     EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
         GURL("https://www.somedomain.org/experimental_preview/"
              "experimental_resource.js"),
         PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-        &ect_threshold));
+        &ect_threshold, &serialized_hint_version_string));
   }
 
   // Now enable the experiment and verify experimental no-op screens the
@@ -688,11 +709,12 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForNoopExperimentalPreview) {
     int inflation_percent = 0;
     net::EffectiveConnectionType ect_threshold =
         net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
+    std::string serialized_hint_version_string;
     EXPECT_FALSE(MaybeLoadHintAndCheckIsWhitelisted(
         GURL("https://www.somedomain.org/experimental_preview/"
              "experimental_resource.js"),
         PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-        &ect_threshold));
+        &ect_threshold, &serialized_hint_version_string));
   }
 }
 
@@ -704,6 +726,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExcludedExperimentalPreview) {
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
 
   // Page hint for "/experimental_preview/"
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
@@ -737,6 +760,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExcludedExperimentalPreview) {
   int inflation_percent = 0;
   net::EffectiveConnectionType ect_threshold =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  std::string serialized_hint_version_string;
 
   // Test with the experiment disabled and verify first optimization allowed.
   {
@@ -744,7 +768,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExcludedExperimentalPreview) {
         GURL("https://www.somedomain.org/experimental_preview/"
              "not_excluded_case"),
         PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-        &ect_threshold));
+        &ect_threshold, &serialized_hint_version_string));
 
     std::vector<std::string> patterns_to_block;
     previews_hints()->GetResourceLoadingHints(
@@ -765,7 +789,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExcludedExperimentalPreview) {
         GURL("https://www.somedomain.org/experimental_preview/"
              "fallthrough_case"),
         PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
-        &ect_threshold));
+        &ect_threshold, &serialized_hint_version_string));
 
     std::vector<std::string> patterns_to_block;
     previews_hints()->GetResourceLoadingHints(
@@ -784,6 +808,7 @@ TEST_F(PreviewsHintsTest, ParseDuplicateConfigs) {
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/news/");
   optimization_guide::proto::Optimization* optimization1 =

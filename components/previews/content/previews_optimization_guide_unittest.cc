@@ -406,6 +406,7 @@ void PreviewsOptimizationGuideTest::InitializeFixedCountResourceLoadingHints() {
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
 
   // Page hint for "/news/"
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
@@ -1697,6 +1698,35 @@ TEST_F(PreviewsOptimizationGuideTest,
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+}
+
+TEST_F(PreviewsOptimizationGuideTest, PreviewsUserDataPopulatedCorrectly) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+
+  InitializeFixedCountResourceLoadingHints();
+
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      GURL("https://somedomain.org/"), base::DoNothing()));
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
+  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
+      GURL("https://www.unknown.com"), base::DoNothing()));
+
+  RunUntilIdle();
+
+  PreviewsUserData user_data(kDefaultPageId);
+  net::EffectiveConnectionType ect_threshold;
+  // Verify whitelisting from loaded page hints.
+  EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+      &user_data, GURL("https://www.somedomain.org/unhinted"),
+      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+  EXPECT_EQ(base::nullopt, user_data.serialized_hint_version_string());
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+      &user_data,
+      GURL("https://www.somedomain.org/news/weather/raininginseattle"),
+      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+  EXPECT_EQ("someversion", user_data.serialized_hint_version_string());
 }
 
 TEST_F(PreviewsOptimizationGuideTest, IsBlacklisted) {

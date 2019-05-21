@@ -4542,6 +4542,26 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="OptimizationGuide">
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    Optimization guide metrics associated with a page load. See
+    //components/optimization_guide/.
+  </summary>
+  <metric name="HintGenerationTimestamp">
+    <summary>
+      The timestamp, in seconds from epoch, that the server generated the hint
+      for the optimization applied on the page load.
+    </summary>
+  </metric>
+  <metric name="HintSource">
+    <summary>
+      The |optimization_guide::proto::HintSource| for the optimization that was
+      applied on the page load.
+    </summary>
+  </metric>
+</event>
+
 <event name="PageDomainInfo">
   <owner>uthakore@chromium.org</owner>
   <owner>invernizzi@chromium.org</owner>

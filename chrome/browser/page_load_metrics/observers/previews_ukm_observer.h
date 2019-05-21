@@ -10,6 +10,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 
@@ -58,7 +59,10 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
 
  private:
+  void RecordMetrics(const page_load_metrics::PageLoadExtraInfo& info);
   void RecordPreviewsTypes(const page_load_metrics::PageLoadExtraInfo& info);
+  void RecordOptimizationGuideInfo(
+      const page_load_metrics::PageLoadExtraInfo& info);
 
   // The preview type that was most recently committed.
   PreviewsType committed_preview_;
@@ -86,6 +90,7 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
       offline_eligibility_reason_ = base::nullopt;
   CoinFlipHoldbackResult coin_flip_result_ = CoinFlipHoldbackResult::kNotSet;
   base::Optional<base::TimeDelta> navigation_restart_penalty_ = base::nullopt;
+  base::Optional<std::string> serialized_hint_version_string_ = base::nullopt;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

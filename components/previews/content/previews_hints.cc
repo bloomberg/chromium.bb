@@ -378,7 +378,8 @@ bool PreviewsHints::IsWhitelisted(
     const GURL& url,
     PreviewsType type,
     int* out_inflation_percent,
-    net::EffectiveConnectionType* out_ect_threshold) const {
+    net::EffectiveConnectionType* out_ect_threshold,
+    std::string* out_serialized_hint_version_string) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(hint_cache_);
 
@@ -426,6 +427,9 @@ bool PreviewsHints::IsWhitelisted(
       *out_ect_threshold = ConvertProtoEffectiveConnectionType(
           matched_page_hint->max_ect_trigger());
     }
+
+    *out_serialized_hint_version_string = hint->version();
+
     return true;
   }
 

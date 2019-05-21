@@ -173,13 +173,19 @@ bool PreviewsOptimizationGuide::IsWhitelisted(
 
   *out_ect_threshold = params::GetECTThresholdForPreview(type);
   int inflation_percent = 0;
-  if (!hints_->IsWhitelisted(url, type, &inflation_percent,
-                             out_ect_threshold)) {
+  std::string serialized_hint_version_string;
+  if (!hints_->IsWhitelisted(url, type, &inflation_percent, out_ect_threshold,
+                             &serialized_hint_version_string)) {
     return false;
   }
 
   if (inflation_percent != 0 && previews_data) {
     previews_data->set_data_savings_inflation_percent(inflation_percent);
+  }
+
+  if (!serialized_hint_version_string.empty() && previews_data) {
+    previews_data->set_serialized_hint_version_string(
+        serialized_hint_version_string);
   }
 
   return true;
