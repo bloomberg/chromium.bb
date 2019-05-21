@@ -151,10 +151,6 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
 
   views::Widget* GetOverlayWidget() { return controller()->widget_.get(); }
 
-  void FlushForTesting() {
-    controller()->first_run_helper_ptr_.FlushForTesting();
-  }
-
  private:
   std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
   std::string current_step_name_;
@@ -170,12 +166,10 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
   LaunchTutorial();
   WaitForInitialization();
   WaitForStep(first_run::kAppListStep);
-  FlushForTesting();
   EXPECT_FALSE(IsTrayBubbleOpen());
 
   AdvanceStep();
   WaitForStep(first_run::kTrayStep);
-  FlushForTesting();
   EXPECT_TRUE(IsTrayBubbleOpen());
 
   AdvanceStep();
@@ -194,7 +188,6 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, ModalWindowDoesNotBlock) {
   LaunchTutorial();
   WaitForInitialization();
   WaitForStep(first_run::kAppListStep);
-  FlushForTesting();
 
   // Simulate the browser opening a modal dialog.
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
@@ -223,7 +216,6 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, EscapeCancelsTutorial) {
   WaitForStep(first_run::kAppListStep);
   AdvanceStep();
   WaitForStep(first_run::kTrayStep);
-  FlushForTesting();
   EXPECT_TRUE(IsTrayBubbleOpen());
 
   // Press the escape key.

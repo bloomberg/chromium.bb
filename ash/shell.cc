@@ -45,7 +45,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/events/event_rewriter_controller.h"
-#include "ash/first_run/first_run_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/snap_controller_impl.h"
@@ -551,7 +550,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
     : brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
       connector_(connector),
-      first_run_helper_(std::make_unique<FirstRunHelper>()),
       focus_cycler_(std::make_unique<FocusCycler>()),
       ime_controller_(std::make_unique<ImeController>()),
       ime_engine_factory_registry_(

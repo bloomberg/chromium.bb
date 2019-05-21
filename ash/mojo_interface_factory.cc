@@ -17,7 +17,6 @@
 #include "ash/autotest/shelf_integration_test_api.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/events/event_rewriter_controller.h"
-#include "ash/first_run/first_run_helper.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_engine_factory_registry.h"
@@ -115,11 +114,6 @@ void BindAshMessageCenterControllerRequestOnMainThread(
 void BindEventRewriterControllerRequestOnMainThread(
     mojom::EventRewriterControllerRequest request) {
   Shell::Get()->event_rewriter_controller()->BindRequest(std::move(request));
-}
-
-void BindFirstRunHelperRequestOnMainThread(
-    mojom::FirstRunHelperRequest request) {
-  Shell::Get()->first_run_helper()->BindRequest(std::move(request));
 }
 
 void BindHighlighterControllerRequestOnMainThread(
@@ -260,9 +254,6 @@ void RegisterInterfaces(
   }
   registry->AddInterface(
       base::BindRepeating(&BindEventRewriterControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindFirstRunHelperRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindHighlighterControllerRequestOnMainThread),

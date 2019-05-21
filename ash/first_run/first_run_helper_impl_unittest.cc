@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/first_run/first_run_helper.h"
+#include "ash/first_run/first_run_helper_impl.h"
 
 #include "ash/first_run/desktop_cleaner.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -12,25 +12,20 @@
 
 namespace ash {
 
-class FirstRunHelperTest : public AshTestBase,
-                           public mojom::FirstRunHelperClient {
+class FirstRunHelperTest : public AshTestBase {
  public:
-  FirstRunHelperTest() : cancelled_times_(0) {}
-
+  FirstRunHelperTest() = default;
   ~FirstRunHelperTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
     CheckContainersAreVisible();
-    helper_ = Shell::Get()->first_run_helper();
-    mojom::FirstRunHelperClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    helper_->Start(std::move(client_ptr));
+    helper_ = FirstRunHelper::Start(base::BindOnce(
+        &FirstRunHelperTest::OnCancelled, base::Unretained(this)));
   }
 
   void TearDown() override {
-    helper_->Stop();
-    helper_ = nullptr;
+    helper_.reset();
     CheckContainersAreVisible();
     AshTestBase::TearDown();
   }
@@ -57,17 +52,15 @@ class FirstRunHelperTest : public AshTestBase,
     }
   }
 
-  FirstRunHelper* helper() { return helper_; }
+  FirstRunHelper* helper() { return helper_.get(); }
 
   int cancelled_times() const { return cancelled_times_; }
 
  private:
-  // mojom::FirstRunHelperClient:
-  void OnCancelled() override { ++cancelled_times_; }
+  void OnCancelled() { ++cancelled_times_; }
 
-  FirstRunHelper* helper_;
-  mojo::Binding<mojom::FirstRunHelperClient> binding_{this};
-  int cancelled_times_;
+  std::unique_ptr<FirstRunHelper> helper_;
+  int cancelled_times_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelperTest);
 };
@@ -81,14 +74,12 @@ TEST_F(FirstRunHelperTest, ContainersAreHidden) {
 // Tests that screen lock cancels the tutorial.
 TEST_F(FirstRunHelperTest, ScreenLock) {
   GetSessionControllerClient()->LockScreen();
-  helper()->FlushForTesting();
   EXPECT_EQ(cancelled_times(), 1);
 }
 
 // Tests that shutdown cancels the tutorial.
 TEST_F(FirstRunHelperTest, ChromeTerminating) {
   Shell::Get()->session_controller()->NotifyChromeTerminating();
-  helper()->FlushForTesting();
   EXPECT_EQ(cancelled_times(), 1);
 }
 

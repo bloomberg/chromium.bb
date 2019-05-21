@@ -119,7 +119,6 @@ class DragDropController;
 class EventClientImpl;
 class EventRewriterController;
 class EventTransformationHandler;
-class FirstRunHelper;
 class FocusCycler;
 class HighContrastController;
 class HighlighterController;
@@ -366,7 +365,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   HomeScreenController* home_screen_controller() {
     return home_screen_controller_.get();
   }
-  FirstRunHelper* first_run_helper() { return first_run_helper_.get(); }
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
   AshFocusRules* focus_rules() { return focus_rules_; }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
@@ -672,7 +670,6 @@ class ASH_EXPORT Shell : public SessionObserver,
       detachable_base_notification_controller_;
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
-  std::unique_ptr<FirstRunHelper> first_run_helper_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeController> ime_controller_;
