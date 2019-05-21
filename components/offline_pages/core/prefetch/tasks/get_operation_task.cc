@@ -81,7 +81,7 @@ GetOperationTask::OperationResultList SelectOperationsToFetch(
 GetOperationTask::GetOperationTask(
     PrefetchStore* store,
     PrefetchNetworkRequestFactory* request_factory,
-    PrefetchRequestFinishedCallback callback)
+    GetOperationFinishedCallback callback)
     : prefetch_store_(store),
       request_factory_(request_factory),
       callback_(std::move(callback)),
@@ -101,8 +101,8 @@ void GetOperationTask::StartGetOperationRequests(
     OperationResultList operation_names) {
   if (operation_names) {
     for (std::string& operation : *operation_names) {
-      request_factory_->MakeGetOperationRequest(operation,
-                                                std::move(callback_));
+      request_factory_->MakeGetOperationRequest(
+          operation, PrefetchRequestFinishedCallback(callback_));
     }
   }
 
