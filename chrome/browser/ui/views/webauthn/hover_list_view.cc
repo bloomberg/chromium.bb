@@ -43,6 +43,10 @@ class WebauthnHoverButton : public HoverButton {
 
   gfx::Insets GetInsets() const override {
     gfx::Insets ret = HoverButton::GetInsets();
+    if (vert_inset_.has_value()) {
+      ret.set_top(*vert_inset_);
+      ret.set_bottom(*vert_inset_);
+    }
     if (left_inset_.has_value()) {
       ret.set_left(*left_inset_);
     }
@@ -56,8 +60,11 @@ class WebauthnHoverButton : public HoverButton {
     left_inset_ = 0;
   }
 
+  void SetVertInset(int vert_inset) { vert_inset_ = vert_inset; }
+
  private:
   base::Optional<int> left_inset_;
+  base::Optional<int> vert_inset_;
 };
 
 std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
@@ -82,6 +89,12 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
   }
 
   std::unique_ptr<views::ImageView> chevron_image = nullptr;
+  // kTwoLineVertInset is the top and bottom padding of the HoverButton if
+  // |is_two_line_item| is true. This ensures that the spacing between the two
+  // lines isn't too large because HoverButton will otherwise spread the lines
+  // evenly over the given vertical space.
+  constexpr int kTwoLineVertInset = 6;
+
   if (!is_placeholder_item) {
     constexpr int kChevronSize = 8;
     chevron_image = std::make_unique<views::ImageView>();
@@ -94,7 +107,8 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
       // chevron image to pad single-line items out to a uniform height of
       // |kHeight|.
       constexpr int kHeight = 56;
-      chevron_vert_inset = (kHeight - kChevronSize) / 2;
+      chevron_vert_inset =
+          (kHeight - (2 * kTwoLineVertInset) - kChevronSize) / 2;
     }
     chevron_image->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(/*top=*/chevron_vert_inset, /*left=*/12,
@@ -107,6 +121,9 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
   hover_button->set_tag(item_tag);
   if (!vector_icon) {
     hover_button->SetInsetForNoIcon();
+  }
+  if (is_two_line_item) {
+    hover_button->SetVertInset(kTwoLineVertInset);
   }
 
   // Because there is an icon on both sides, set a custom border that has only
