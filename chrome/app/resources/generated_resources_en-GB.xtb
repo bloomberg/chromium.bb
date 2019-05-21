@@ -487,7 +487,7 @@
 <translation id="1744060673522309905">Can't join the device to the domain. Make sure that you haven’t exceeded the number of devices that you can add.</translation>
 <translation id="1744108098763830590">background page</translation>
 <translation id="1745520510852184940">Always Do This</translation>
-<translation id="1746402432151920942">Protected Media Identifier</translation>
+<translation id="1746402432151920942">Protected media identifier</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
 <translation id="1753905327828125965">Most Visited</translation>
 <translation id="1756681705074952506">Input method</translation>
@@ -545,7 +545,7 @@
 <translation id="1830550083491357902">Not signed in</translation>
 <translation id="1832511806131704864">Phone change updated</translation>
 <translation id="1834503245783133039">Download unsuccessful: <ph name="FILE_NAME" /></translation>
-<translation id="1834583737373831634">MIDI Devices</translation>
+<translation id="1834583737373831634">MIDI devices</translation>
 <translation id="1838374766361614909">Clear search</translation>
 <translation id="1841545962859478868">The device admin may monitor the following:</translation>
 <translation id="1841616161104323629">Missing device record.</translation>
@@ -788,7 +788,7 @@
 <translation id="2220529011494928058">Report an issue</translation>
 <translation id="2220572644011485463">PIN or password</translation>
 <translation id="2224444042887712269">This setting belongs to <ph name="OWNER_EMAIL" />.</translation>
-<translation id="2224471211857467033">Accessibility Events</translation>
+<translation id="2224471211857467033">Accessibility events</translation>
 <translation id="2224551243087462610">Edit folder name</translation>
 <translation id="2226449515541314767">This site has been blocked from having full control of MIDI devices.</translation>
 <translation id="2226720438730111184">Tell us what's happening</translation>

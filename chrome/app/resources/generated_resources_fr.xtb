@@ -2026,7 +2026,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4099060993766194518">Restaurer le moteur de recherche par défaut ?</translation>
 <translation id="4099874310852108874">Une erreur réseau s'est produite.</translation>
 <translation id="4100733287846229632">Très peu d'espace disponible sur l'appareil</translation>
-<translation id="4100853287411968461">Nouvelle limite d'utilisation</translation>
+<translation id="4100853287411968461">Nouvelle limite du temps d'utilisation</translation>
 <translation id="4103091233824664032">Saisissez votre mot de passe pour configurer le verrouillage de l'écran et la connexion</translation>
 <translation id="4104163789986725820">E&amp;xporter...</translation>
 <translation id="4107048419833779140">Identifier et exclure des périphériques de stockage</translation>
@@ -4289,7 +4289,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7704628569466676326">Associez votre clé de sécurité à cet appareil afin de pouvoir l'utiliser pour vous connecter à votre compte</translation>
 <translation id="7705276765467986571">Impossible de charger le modèle du favori.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7707108266051544351">L'utilisation des capteurs de mouvement ou de lumière a été bloquée pour ce site.</translation>
+<translation id="7707108266051544351">L'utilisation des capteurs de mouvement a été bloquée pour ce site.</translation>
 <translation id="7707922173985738739">Utiliser les données mobiles</translation>
 <translation id="7709152031285164251">Échec – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Caster…</translation>

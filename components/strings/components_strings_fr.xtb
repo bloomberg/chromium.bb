@@ -693,7 +693,7 @@
 <translation id="4759118997339041434">Saisie automatique des cartes de paiement désactivée</translation>
 <translation id="4764776831041365478">Il se peut que la page Web à l'adresse <ph name="URL" /> soit temporairement inaccessible ou qu'elle ait été déplacée de façon permanente à une autre adresse Web.</translation>
 <translation id="4771973620359291008">Une erreur inconnue s'est produite.</translation>
-<translation id="4780900888022378816">Votre appareil est géré par <ph name="ENROLLMENT_DOMAIN" /> et, votre compte, par <ph name="ACCOUNT_DOMAIN" />.</translation>
+<translation id="4780900888022378816">Votre appareil est géré par <ph name="ENROLLMENT_DOMAIN" />, et votre compte par <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Passer à cet onglet</translation>
 <translation id="4798078619018708837">Saisissez la date d'expiration et le code CVC de la carte <ph name="CREDIT_CARD" /> pour mettre à jour les informations relatives à celle-ci. Une fois la validation effectuée, les informations relatives à la carte de votre compte Google seront partagées avec ce site.</translation>
 <translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
@@ -718,7 +718,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> indique</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
-<translation id="4945672369594656571">Contrôler la manière dont les données de votre appareil et de votre compte sont traitées. Google traite ces données exclusivement sous la direction du responsable de votre appareil et de votre compte, et uniquement aux fins spécifiées par ce dernier.</translation>
+<translation id="4945672369594656571">Contrôle la manière dont les données de votre appareil et de votre compte sont traitées. Google traite ces données exclusivement sous la direction du responsable de votre appareil et de votre compte, et uniquement aux fins spécifiées par ce dernier.</translation>
 <translation id="4950898438188848926">Bouton pour changer d'onglet (appuyez sur Entrée pour passer à l'onglet ouvert, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />)</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4955242332710481440">A5-Extra</translation>

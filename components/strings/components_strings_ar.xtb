@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
-<translation id="1001338328714563407">بصفتك مدير الجهاز والحساب، <ph name="ENROLLMENT_DOMAIN" />:</translation>
+<translation id="1001338328714563407">يمكن لنطاق التسجيل <ph name="ENROLLMENT_DOMAIN" /> بصفته مدير هذا الجهاز والحساب:</translation>
 <translation id="1008557486741366299">ليس الآن</translation>
 <translation id="1010200102790553230">تحميل الصفحة لاحقًا</translation>
 <translation id="1015730422737071372">تقديم تفاصيل إضافية</translation>
@@ -362,7 +362,7 @@
 <translation id="2903493209154104877">العناوين</translation>
 <translation id="290376772003165898">أليست الصفحة باللغة <ph name="LANGUAGE" />؟</translation>
 <translation id="2909946352844186028">تم اكتشاف حدوث تغيير في الشبكة.</translation>
-<translation id="2910133103376701357">يدير <ph name="ENROLLMENT_DOMAIN" /> جهازك وحسابك.</translation>
+<translation id="2910133103376701357">يدير نطاق التسجيل <ph name="ENROLLMENT_DOMAIN" /> جهازك وحسابك.</translation>
 <translation id="2916038427272391327">إغلاق البرامج الأخرى</translation>
 <translation id="2922350208395188000">لا يمكن التحقق من شهادة الخادم.</translation>
 <translation id="2925673989565098301">طريقة التسليم</translation>
@@ -373,7 +373,7 @@
 <translation id="2948083400971632585">يمكنك إيقاف أي خوادم وكيلة تمت تهيئتها لاتصال من صفحة الإعدادات.</translation>
 <translation id="2955913368246107853">إغلاق شريط البحث</translation>
 <translation id="2969319727213777354">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Google Chrome من التحقق من هذه الشهادات.</translation>
-<translation id="2970515157925768593">يمكن تغيير إعداد الجهاز والحساب عن بُعد.</translation>
+<translation id="2970515157925768593">تغيير إعداد الجهاز والحساب عن بُعد.</translation>
 <translation id="2972581237482394796">إعا&amp;دة</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />، تم تحديده حاليًا. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">محو البيانات</translation>
@@ -385,7 +385,7 @@
 <translation id="3005723025932146533">عرض نسخة محفوظة</translation>
 <translation id="3008447029300691911">‏أدخل رمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" />. بعد تأكيدك، ستتم مشاركة تفاصيل بطاقتك مع هذا الموقع.</translation>
 <translation id="3010559122411665027">إدخال القائمة "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">بصفتك مدير هذا الجهاز، <ph name="ENROLLMENT_DOMAIN" />:</translation>
+<translation id="3014389611820813634">يمكن لنطاق التسجيل <ph name="ENROLLMENT_DOMAIN" /> بصفته مدير هذا الجهاز:</translation>
 <translation id="301521992641321250">تم الحظر تلقائيًا</translation>
 <translation id="3023071826883856138">‏You4 (مغلف)</translation>
 <translation id="3024663005179499861">نوع السياسة غير صحيح</translation>
@@ -431,7 +431,7 @@
 <translation id="3287510313208355388">التنزيل عند الاتصال بالإنترنت</translation>
 <translation id="3293642807462928945">مزيد من المعلومات عن سياسة <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">لم يتم العثور على أي نتائج بحث</translation>
-<translation id="3311730110465560799">يمكن تغيير إعداد الجهاز عن بُعد.</translation>
+<translation id="3311730110465560799">تغيير إعداد الجهاز عن بُعد.</translation>
 <translation id="3320021301628644560">إضافة عنوان إرسال الفواتير</translation>
 <translation id="3324983252691184275">قرمزي</translation>
 <translation id="3338095232262050444">آمن</translation>
@@ -619,7 +619,7 @@
 <translation id="4265872034478892965">تم السماح من قبل المشرف</translation>
 <translation id="4275830172053184480">إعادة تشغيل جهازك</translation>
 <translation id="4277028893293644418">إعادة تعيين كلمة المرور</translation>
-<translation id="4279811152705618813">تتم إدارة <ph name="DEVICE_TYPE" /> من خلال <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4279811152705618813">يدير <ph name="ENROLLMENT_DOMAIN" /> الجهاز <ph name="DEVICE_TYPE" />.</translation>
 <translation id="4280429058323657511">، تاريخ انتهاء الصلاحية <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{‏تم حفظ هذه البطاقة في حسابك على Google}zero{‏تم حفظ هذه البطاقات في حسابك على Google}two{‏تم حفظ هاتين البطاقتين في حسابك على Google}few{‏تم حفظ هذه البطاقات في حسابك على Google}many{‏تم حفظ هذه البطاقات في حسابك على Google}other{‏تم حفظ هذه البطاقات في حسابك على Google}}</translation>
 <translation id="42981349822642051">توسيع</translation>
@@ -726,7 +726,7 @@
 <translation id="4926159001844873046">يعرض موقع <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">لا نتائج</translation>
-<translation id="4945672369594656571">‏يتحكّم في كيفية التعامل مع الجهاز وبيانات الحساب. ستعالج Google بيانات جهازك وحسابك حصريًا ضمن عملية إدارة مدير الحساب وللأغراض المُحدّدة فقط عن طريق مدير الجهاز والحساب.</translation>
+<translation id="4945672369594656571">‏التحكّم في كيفية التعامل مع الجهاز وبيانات الحساب. ستعالج Google بيانات جهازك وحسابك حصريًا تحت إدارة مدير الحساب والجهاز ولتلبية الأغراض التي يحدّدها فقط.</translation>
 <translation id="4950898438188848926">‏زر التبديل بين علامات التبويب، اضغط على Enter للتبديل إلى علامة التبويب المفتوحة هذه <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">إجراءات</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -740,7 +740,7 @@
 <translation id="5017554619425969104">النص الذي نسخته</translation>
 <translation id="5018422839182700155">يتعذّر فتح هذه الصفحة</translation>
 <translation id="5019198164206649151">التخزين المساعد في حالة سيئة</translation>
-<translation id="5020154601324912079">‏يتحكّم في كيفية التعامل مع بيانات الجهاز. ستعالج Google بيانات جهازك حصريًا ضمن عملية إدارة مدير الجهاز وللأغراض المُحدّدة فقط من خلال مدير الجهاز.</translation>
+<translation id="5020154601324912079">‏التحكّم في كيفية التعامل مع بيانات الجهاز. ستعالج Google بيانات جهازك حصريًا تحت إدارة مدير الجهاز ولتلبية الأغراض المُحدّدة فقط من قبل مدير الجهاز.</translation>
 <translation id="5023310440958281426">التحقق من سياسات المشرف</translation>
 <translation id="5029568752722684782">محو النسخة</translation>
 <translation id="503069730517007720">يلزم شهادة جذر لـ "<ph name="SOFTWARE_NAME" />" ولكن لم يتم تثبيتها. ينبغي على مشرف تقنية المعلومات أن يلقي نظرة على تعليمات التهيئة لـ "<ph name="SOFTWARE_NAME" />" لإصلاح تلك المشكلة. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -919,7 +919,7 @@
 <translation id="5977976211062815271">على هذا الجهاز</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">لا يمكن فتح تطبيق الدفع</translation>
-<translation id="5988826871883769516">يدير حسابك <ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="5988826871883769516">يدير <ph name="ENROLLMENT_DOMAIN" /> حسابك.</translation>
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
 <translation id="5990559369517809815">تم حظر الطلبات المقدمة إلى الخادم بواسطة إحدى الإضافات.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1092,7 +1092,7 @@
 <translation id="7062635574500127092">أزرق مخضر</translation>
 <translation id="7064851114919012435">معلومات الاتصال</translation>
 <translation id="7079718277001814089">يحتوي هذا الموقع على برامج ضارة</translation>
-<translation id="7081564429925484109">‏تحذير: لم يتم دمج هذه السياسة كما هو موضح في سياسة PolicyListMultipleSourceMergeList لأنها ليست قائمة.</translation>
+<translation id="7081564429925484109">‏تحذير: لم يتم دمج هذه السياسة كما هو موضح في سياسة PolicyListMultipleSourceMergeList لأنها ليست عبارة عن قائمة.</translation>
 <translation id="7087282848513945231">مقاطعة</translation>
 <translation id="7090678807593890770">‏البحث في Google عن <ph name="LINK" /></translation>
 <translation id="7108338896283013870">إخفاء</translation>
@@ -1169,7 +1169,7 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">إدارة كلمات المرور…</translation>
 <translation id="7419106976560586862">مسار الملف الشخصي</translation>
-<translation id="7424427397225027541">‏يتحكّم في كيفية التعامل مع بيانات الحساب. ستعالج Google بيانات حسابك حصريًا ضمن عملية إدارة مدير الحساب وللأغراض المُحدّدة فقط عن طريق مدير الحساب.</translation>
+<translation id="7424427397225027541">‏التحكم في كيفية التعامل مع بيانات الحساب. ستعالج Google بيانات حسابك حصريًا تحت إدارة مدير الحساب ولتلبية الأغراض التي يحدّدها فقط.</translation>
 <translation id="7437289804838430631">إضافة معلومات الاتصال</translation>
 <translation id="7440140511386898319">الاستكشاف أثناء عدم الاتصال بالإنترنت</translation>
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
@@ -1255,7 +1255,7 @@
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7805768142964895445">الحالة</translation>
 <translation id="7806344367022510803">‏تغيير إعدادات محرّك البحث في Chrome</translation>
-<translation id="7810209002420871817">بصفتك مدير الحساب، <ph name="ACCOUNT_DOMAIN" />:</translation>
+<translation id="7810209002420871817">يمكن لنطاق الحساب <ph name="ACCOUNT_DOMAIN" /> بصفته مدير الحساب:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">‏هل تريد إزالة اقتراح النموذج من Chrome؟</translation>
 <translation id="7815407501681723534">تم العثور على <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> لـ "<ph name="SEARCH_STRING" />"</translation>

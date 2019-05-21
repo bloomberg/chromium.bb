@@ -1212,15 +1212,15 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 <translation id="3072045631333522102">Economiseur d'écran à utiliser sur l'écran de connexion en mode Point de vente</translation>
 <translation id="3072847235228302527">Définir les conditions d'utilisation d'un compte local de l'appareil</translation>
 <translation id="3077183141551274418">Activer ou désactiver le cycle de vie des onglets</translation>
-<translation id="3079417254871857650">Permet de spécifier l'action à effectuer lorsque le répertoire d'accueil de l'utilisateur a été créé avec un chiffrement eCryptfs.
+<translation id="3079417254871857650">Permet de spécifier l'action à effectuer lorsque le répertoire personnel de l'utilisateur a été créé avec un chiffrement eCryptfs.
 
-      Si cette règle est définie sur "DisallowArc", les applications Android sont désactivées pour l'utilisateur, et la migration d'eCryptfs vers ext4 n'aura pas lieu. Les applications Android pourront s'exécuter si l'annuaire principal est déjà chiffré à l'aide du système ext4.
+      Si cette règle est définie sur "DisallowArc", les applications Android sont désactivées pour l'utilisateur, et la migration d'eCryptfs vers ext4 n'aura pas lieu. Les applications Android pourront s'exécuter si le répertoire personnel est déjà chiffré à l'aide du système ext4.
 
-      Si cette règle est définie sur "Migrate", les répertoires d'accueil chiffrés avec eCryptfs feront l'objet d'une migration automatique vers le chiffrement ext4 à la connexion, sans demander la permission de l'utilisateur.
+      Si cette règle est définie sur "Migrate", les répertoires personnels chiffrés avec eCryptfs feront l'objet d'une migration automatique vers le chiffrement ext4 à la connexion, sans demander la permission de l'utilisateur.
 
-      Si cette règle est définie sur "Wipe", les répertoires d'accueil chiffrés avec eCryptfs seront supprimés à la connexion, puis de nouveaux répertoires avec chiffrement ext4 seront créés à leur place. Avertissement : Ceci supprime les données locales de l'utilisateur.
+      Si cette règle est définie sur "Wipe", les répertoires personnels chiffrés avec eCryptfs seront supprimés à la connexion, puis de nouveaux répertoires avec chiffrement ext4 seront créés à leur place. Avertissement : Ceci supprime les données locales de l'utilisateur.
 
-      Si cette règle est définie sur "MinimalMigrate", les répertoires d'accueil chiffrés avec eCryptfs sont supprimés lors de la connexion et remplacés par de nouveaux répertoires d'accueil chiffrés avec ext4. Toutefois, cette option permet de conserver les jetons de connexion pour éviter à l'utilisateur de se reconnecter. Avertissement : Ceci supprime les données locales de l'utilisateur.
+      Si cette règle est définie sur "MinimalMigrate", les répertoires personnels chiffrés avec eCryptfs sont supprimés lors de la connexion et remplacés par de nouveaux répertoires personnels chiffrés avec ext4. Toutefois, la règle tente de conserver les jetons de connexion pour éviter à l'utilisateur de se reconnecter. Avertissement : Ceci supprime les données locales de l'utilisateur.
 
       Si cette règle est définie sur une option qui n'est plus acceptée ("AskUser" ou "AskForEcryptfsArcUsers"), le résultat sera le même que si vous aviez sélectionné l'option "Migrate".
 
@@ -1545,13 +1545,13 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3826475866868158882">Services de localisation Google activés</translation>
 <translation id="3831054243924627613">Cette règle permet de contrôler l'état initial du service Android de sauvegarde et de restauration.
 
-      Si cette règle n'est pas configurée ou est définie sur <ph name="BR_DISABLED" />, le service Android de sauvegarde et restauration est désactivé initialement.
+      Si cette règle n'est pas configurée ou est définie sur <ph name="BR_DISABLED" />, le service Android de sauvegarde et restauration est initialement désactivé.
 
-      Si cette règle est définie sur <ph name="BR_ENABLED" />, le service Android de sauvegarde et restauration est activé.
+      Si cette règle est définie sur <ph name="BR_ENABLED" />, le service Android de sauvegarde et restauration est initialement activé.
 
-      Si cette règle est définie sur <ph name="BR_UNDER_USER_CONTROL" />, l'utilisateur est invité à choisir s'il souhaite activer le service Android de sauvegarde et restauration. S'il l'active, les données des applications Android sont sauvegardées sur les serveurs de sauvegarde Android, puis restaurées depuis ces derniers lors de la réinstallation des applications (si ces dernières sont compatibles).
+      Si cette règle est définie sur <ph name="BR_UNDER_USER_CONTROL" />, l'utilisateur est invité à choisir s'il souhaite activer le service Android de sauvegarde et restauration. S'il l'active, les données des applications Android sont importées sur les serveurs de sauvegarde Android, puis restaurées depuis ces derniers lors de la réinstallation des applications (si ces dernières sont compatibles).
 
-      Cette règle contrôle uniquement l'état du service Android de sauvegarde et restauration lors la phase initiale de configuration. Par la suite, l'utilisateur peut accéder aux paramètres Android pour activer ou désactiver ce service.</translation>
+      Cette règle contrôle uniquement l'état du service Android de sauvegarde et restauration lors de la phase initiale de configuration. Par la suite, l'utilisateur peut accéder aux paramètres Android pour activer ou désactiver ce service.</translation>
 <translation id="3831376478177535007">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> accepte de faire confiance aux certificats émis par l'ancienne infrastructure PKI de Symantec Corporation s'ils sont correctement validés et que leur chaîne de confiance renvoie à un certificat CA reconnu.
 
       Notez que cette règle dépend de la reconnaissance des certificats de l'ancienne infrastructure de Symantec par le système d'exploitation. Si une mise à jour du système d'exploitation modifie sa gestion de ces certificats, cette règle n'aura plus d'effet. En outre, cette règle n'est qu'une solution temporaire destinée à laisser suffisamment de temps aux entreprises pour cesser d'utiliser les anciens certificats Symantec. Elle sera supprimée aux alentours du 1er janvier 2019.
@@ -1672,7 +1672,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur "True" ou si elle n'est pas définie, les utilisateurs peuvent utiliser leurs offres via ce service.
 
       Si elle est définie sur "False", les utilisateurs ne peuvent pas utiliser leurs offres.</translation>
-<translation id="4008233182078913897">Définit la liste des sites Web qui sont installés silencieusement, sans aucune intervention de l'utilisateur, et que ce dernier ne peut pas désinstaller ni désactiver. Toutes les autorisations demandées par les
+<translation id="4008233182078913897">Définit la liste des applications et des extensions qui sont installées silencieusement, sans aucune intervention de l'utilisateur, et que ce dernier ne peut pas désinstaller ni désactiver. Toutes les autorisations demandées par les
           applications et extensions sont accordées implicitement, sans intervention de l’utilisateur,
           y compris n'importe quelle autre autorisation demandée par les futures versions de
           l’application ou l’extension concernée. En outre, les autorisations sont accordées pour les
@@ -1680,7 +1680,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           enterprise.platformKeys (Ces deux API ne sont pas disponibles pour les applications/extensions qui ne sont pas
           installées d'office).
 
-          Cette règle est prioritaire sur toute règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> présentant un conflit potentiel. Si une application ayant été préalablement installée d'office est supprimée de cette liste, elle est automatiquement désinstallée par <ph name="PRODUCT_NAME" />.
+          Cette règle est prioritaire sur toute règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> présentant un conflit potentiel. Si une application ou extension ayant été préalablement installée d'office est supprimée de cette liste, elle est automatiquement désinstallée par <ph name="PRODUCT_NAME" />.
 
           Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation d'office est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
 
@@ -1688,11 +1688,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Dans cette règle, chaque élément de la liste est constitué d'une chaîne contenant un identifiant d'extension et une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'identifiant d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée (il s'agit actuellement de "https://clients2.google.com/service/update2/crx"). Notez que l'URL de mise à jour définie dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL de mise à jour indiquée dans le fichier manifeste de l'extension. Sachez également que la définition explicite de l'URL de mise à jour était obligatoire dans les versions de <ph name="PRODUCT_NAME" /> jusqu'à la version 67.
 
-          Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> installe l'application <ph name="EXTENSION_ID_SAMPLE" /> à partir de l'URL de mise à jour standard du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, rendez-vous sur : <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> installe l'extension <ph name="EXTENSION_ID_SAMPLE" /> à partir de l'URL de mise à jour standard du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, rendez-vous sur : <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Si cette règle n'est pas configurée, aucune application ni extension n'est installée automatiquement. Toute application ou extension de <ph name="PRODUCT_NAME" /> peut donc être désinstallée.
 
-          Sachez que cette règle n'est pas compatible avec le mode navigation privée.</translation>
+          Sachez que cette règle ne s'applique pas en mode navigation privée.</translation>
 <translation id="4008507541867797979">Si cette règle est définie sur True ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> affiche les utilisateurs existants sur l'écran de connexion et permet d'en choisir un.
 
       Si cette règle est définie sur False, <ph name="PRODUCT_OS_NAME" /> n'affiche pas les utilisateurs existants sur l'écran de connexion. L'écran de connexion habituel (demandant l'e-mail et le mot de passe ou le numéro de téléphone de l'utilisateur) ou l'écran interstitiel SAML (si autorisé via la règle <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) s'affiche, à moins qu'une session gérée ne soit configurée. Lorsqu'une session gérée est configurée, seuls les comptes de la session gérée s'affichent, et permettent d'en choisir un.
@@ -2555,7 +2555,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           Si cette règle n'est pas configurée, aucune restriction n'est imposée concernant les types d'extensions ou d'applications pouvant être installés.
 
-          Avant la version 75, l'utilisation de plusieurs identifiants d'extension séparés par une virgule sera ignorée et ne sera pas acceptée. Le reste de la règle continuera de s'appliquer.</translation>
+          Avant la version 75, l'utilisation de plusieurs identifiants d'extension séparés par une virgule n'est pas prise en charge et sera donc ignorée. Le reste de la règle continuera de s'appliquer.</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="5689430183304951538">Format de page d'impression par défaut</translation>
 <translation id="5693469654327063861">Autoriser la migration de données</translation>
@@ -2676,7 +2676,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
       Si cette règle est définie sur "True", la règle relative au cloud prévaut en cas de conflit avec celle concernant les plates-formes.
       Si cette règle est définie sur "False" ou n'est pas configurée, la règle relative aux plates-formes prévaut en cas de conflit avec celle concernant le cloud.
 
-      Cette règle est uniquement disponible en tant que règle de la plate-forme (machine) et n'affecte que les règles relatives au cloud s’appliquant aux machines.
+      Cette règle est uniquement disponible en tant que règle obligatoire de plate-forme de machines et n'affecte que les règles relatives au cloud s’appliquant aux machines.
       </translation>
 <translation id="5905473632148429217">Activer les contrôles OCSP/CRL en ligne</translation>
 <translation id="5906199912611534122">Permet d'activer ou de désactiver la limitation du débit réseau.
