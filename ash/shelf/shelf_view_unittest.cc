@@ -3947,6 +3947,10 @@ class KioskNextShelfViewTest : public ShelfViewTest {
     // The shelf_view_ in ShelfWidget will be replaced. Therefore, we need
     // to update |shelf_view_|.
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
+    ASSERT_GE(shelf_view_->width(), 500);
+
+    test_api_.reset(new ShelfViewTestAPI(shelf_view_));
+    test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
   }
 
  private:
@@ -3975,6 +3979,36 @@ TEST_F(KioskNextShelfViewTest, AppButtonHidden) {
 
   ASSERT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_EQ(1, shelf_view_->last_visible_index());
+}
+
+// Control buttons (back/home) should be centered in Kiosk Next mode.
+TEST_F(KioskNextShelfViewTest, ControlButtonsCentered) {
+  LogInKioskNextUserInternal();
+
+  // Get shelf bounds from the widget - buttons should be centered relatively to
+  // the whole shelf area (consisting of shelf view and status area).
+  const gfx::Rect shelf_bounds = GetPrimaryShelf()
+                                     ->GetShelfViewForTesting()
+                                     ->GetWidget()
+                                     ->GetWindowBoundsInScreen();
+
+  // Switch to local shelf coordinates - buttons bounds are checked in relation
+  // to shelf.
+  gfx::Rect expected_button_area_bounds = gfx::Rect(shelf_bounds.size());
+  const gfx::Size expected_button_area_size =
+      gfx::Size(2 * kShelfControlSize + ShelfConstants::button_spacing(),
+                ShelfConstants::shelf_size());
+  expected_button_area_bounds.ClampToCenteredSize(expected_button_area_size);
+
+  const gfx::Rect back_button_bounds = test_api_->GetIdealBoundsByIndex(0);
+  EXPECT_FALSE(back_button_bounds.IsEmpty());
+  EXPECT_TRUE(expected_button_area_bounds.Contains(back_button_bounds));
+
+  const gfx::Rect home_button_bounds = test_api_->GetIdealBoundsByIndex(1);
+  EXPECT_FALSE(home_button_bounds.IsEmpty());
+  EXPECT_TRUE(expected_button_area_bounds.Contains(home_button_bounds));
+
+  EXPECT_FALSE(back_button_bounds.Intersects(home_button_bounds));
 }
 
 }  // namespace ash

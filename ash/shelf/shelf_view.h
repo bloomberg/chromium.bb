@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
+#include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
@@ -128,7 +129,7 @@ class ASH_EXPORT ShelfView : public views::View,
   Shelf* shelf() const { return shelf_; }
   ShelfModel* model() const { return model_; }
 
-  void Init();
+  virtual void Init();
 
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know. If the item is in an overflow shelf, the overflow icon location
@@ -326,6 +327,29 @@ class ASH_EXPORT ShelfView : public views::View,
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
   views::ViewModel* view_model() { return view_model_.get(); }
 
+ protected:
+  // Calculates the ideal bounds. The bounds of each button corresponding to an
+  // item in the model is set in |view_model_|.
+  virtual void CalculateIdealBounds() const;
+
+  virtual void LayoutAppListAndBackButtonHighlight();
+
+  views::Separator* separator() { return separator_; }
+
+  OverflowButton* overflow_button() { return overflow_button_; }
+
+  views::View* back_and_app_list_background() {
+    return back_and_app_list_background_;
+  }
+
+  // view_model() is called from const method CalculateIdealBounds() that
+  // modifies it. This is needed to work around ShelfView's problem with const
+  // correctness around CalculateIdealBounds() method.
+  views::ViewModel* view_model() const { return view_model_.get(); }
+
+  void set_first_visible_index(int index) { first_visible_index_ = index; }
+  void set_last_visible_index(int index) { last_visible_index_ = index; }
+
  private:
   friend class ShelfViewTestAPI;
 
@@ -354,7 +378,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Update all button's visibility in overflow.
   void UpdateAllButtonsVisibilityInOverflowMode();
 
-  void LayoutAppListAndBackButtonHighlight() const;
 
   // Returns the size that's actually available for app icons. Size occupied
   // by the app list button and back button plus all appropriate margins is
@@ -365,11 +388,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // and sets the |first_visible_index_| and |last_visible_index_| fields
   // appropriately.
   AppCenteringStrategy CalculateAppCenteringStrategy() const;
-
-  // Calculates the ideal bounds. The bounds of each button corresponding to an
-  // item in the model is set in |view_model_|.
-  void CalculateIdealBounds() const;
-
   void LayoutOverflowButton() const;
 
   // Returns the index of the last view whose max primary axis coordinate is

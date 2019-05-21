@@ -17,6 +17,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/default_shelf_view.h"
+#include "ash/shelf/kiosk_next_shelf_view.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -325,7 +327,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
                            Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_, this)),
+      shelf_view_(new DefaultShelfView(ShelfModel::Get(), shelf_, this)),
       login_shelf_view_(
           new LoginShelfView(RootWindowController::ForWindow(shelf_container)
                                  ->lock_screen_action_background_controller())),
@@ -603,7 +605,7 @@ void ShelfWidget::OnKioskNextEnabled() {
   shelf_view_->SetVisible(false);
   delete shelf_view_;
 
-  shelf_view_ = new ShelfView(
+  shelf_view_ = new KioskNextShelfView(
       Shell::Get()->kiosk_next_shell_controller()->shelf_model(), shelf_, this);
   shelf_view_->Init();
   GetContentsView()->AddChildView(shelf_view_);
