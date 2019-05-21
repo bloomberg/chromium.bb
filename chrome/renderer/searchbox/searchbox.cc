@@ -364,10 +364,6 @@ std::string SearchBox::FixupAndValidateUrl(const std::string& url) const {
   return internal::FixupAndValidateUrl(url);
 }
 
-void SearchBox::SetCustomBackgroundURL(const GURL& background_url) {
-  embedded_search_service_->SetCustomBackgroundURL(background_url);
-}
-
 void SearchBox::SetCustomBackgroundURLWithAttributions(
     const GURL& background_url,
     const std::string& attribution_line_1,

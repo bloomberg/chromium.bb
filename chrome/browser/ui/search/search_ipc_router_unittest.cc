@@ -812,32 +812,6 @@ TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
   GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
 }
 
-TEST_F(SearchIPCRouterTest, ProcessSetCustomBackgroundURLMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  GURL bg_url("www.foo.com");
-  EXPECT_CALL(*mock_delegate(), OnSetCustomBackgroundURL(bg_url)).Times(1);
-  EXPECT_CALL(*policy, ShouldProcessSetCustomBackgroundURL())
-      .Times(1)
-      .WillOnce(Return(true));
-
-  GetSearchIPCRouter().SetCustomBackgroundURL(bg_url);
-}
-
-TEST_F(SearchIPCRouterTest, IgnoreSetCustomBackgroundURLMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  GURL bg_url("www.foo.com");
-  EXPECT_CALL(*mock_delegate(), OnSetCustomBackgroundURL(bg_url)).Times(0);
-  EXPECT_CALL(*policy, ShouldProcessSetCustomBackgroundURL())
-      .Times(1)
-      .WillOnce(Return(false));
-
-  GetSearchIPCRouter().SetCustomBackgroundURL(bg_url);
-}
-
 TEST_F(SearchIPCRouterTest, ProcessSetCustomBackgroundURLWithAttributionsMsg) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();

@@ -104,9 +104,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // if the |text| is empty) into the omnibox.
     virtual void PasteIntoOmnibox(const base::string16& text) = 0;
 
-    // Called when a custom background is selected on the NTP.
-    virtual void OnSetCustomBackgroundURL(const GURL& url) = 0;
-
     // Called when a custom background with attributions is selected on the NTP.
     // background_url: Url of the background image.
     // attribution_line_1: First attribution line for the image.
@@ -169,7 +166,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
-    virtual bool ShouldProcessSetCustomBackgroundURL() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
     virtual bool ShouldProcessBlocklistSearchSuggestion() = 0;
@@ -257,7 +253,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
       const ntp_tiles::NTPTileImpression& impression) override;
   void PasteAndOpenDropdown(int page_seq_no,
                             const base::string16& text) override;
-  void SetCustomBackgroundURL(const GURL& url) override;
   void SetCustomBackgroundURLWithAttributions(
       const GURL& background_url,
       const std::string& attribution_line_1,

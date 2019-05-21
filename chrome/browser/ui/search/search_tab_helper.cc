@@ -378,11 +378,6 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   omnibox_view->OnAfterPossibleChange(true);
 }
 
-void SearchTabHelper::OnSetCustomBackgroundURL(const GURL& url) {
-  if (instant_service_)
-    instant_service_->SetCustomBackgroundURL(url);
-}
-
 void SearchTabHelper::OnSetCustomBackgroundURLWithAttributions(
     const GURL& background_url,
     const std::string& attribution_line_1,

@@ -179,7 +179,7 @@ TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
   const GURL kUrl("https://www.foo.com");
 
   instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURL(kUrl);
+  instant_service_->SetCustomBackgroundURLWithAttributions(kUrl, std::string(), std::string(), GURL());
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
@@ -196,7 +196,7 @@ TEST_F(InstantServiceTest, SetCustomBackgroundURLInvalidURL) {
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kValidUrl.spec(), theme_info->custom_background_url.spec());
 
-  instant_service_->SetCustomBackgroundURL(kInvalidUrl);
+  instant_service_->SetCustomBackgroundURLWithAttributions(kInvalidUrl, std::string(), std::string(), GURL());
 
   theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(std::string(), theme_info->custom_background_url.spec());

@@ -140,7 +140,6 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Updates the NTP custom background preferences, sometimes this includes
   // image attributions.
-  void SetCustomBackgroundURL(const GURL& background_url);
   void SetCustomBackgroundURLWithAttributions(
       const GURL& background_url,
       const std::string& attribution_line_1,

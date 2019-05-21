@@ -332,13 +332,6 @@ void SearchIPCRouter::PasteAndOpenDropdown(int page_seq_no,
   delegate_->PasteIntoOmnibox(text);
 }
 
-void SearchIPCRouter::SetCustomBackgroundURL(const GURL& url) {
-  if (!policy_->ShouldProcessSetCustomBackgroundURL())
-    return;
-
-  delegate_->OnSetCustomBackgroundURL(url);
-}
-
 void SearchIPCRouter::SetCustomBackgroundURLWithAttributions(
     const GURL& background_url,
     const std::string& attribution_line_1,

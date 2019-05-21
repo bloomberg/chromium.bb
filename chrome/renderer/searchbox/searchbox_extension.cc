@@ -1025,7 +1025,7 @@ void NewTabPageBindings::SetCustomBackgroundURL(
     const std::string& background_url) {
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   GURL url(background_url);
-  search_box->SetCustomBackgroundURL(url);
+  search_box->SetCustomBackgroundURLWithAttributions(url, std::string(), std::string(), GURL());
 }
 
 // static

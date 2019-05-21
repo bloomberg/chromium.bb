@@ -109,7 +109,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnLogMostVisitedNavigation(
       const ntp_tiles::NTPTileImpression& impression) override;
   void PasteIntoOmnibox(const base::string16& text) override;
-  void OnSetCustomBackgroundURL(const GURL& url) override;
   void OnSetCustomBackgroundURLWithAttributions(
       const GURL& background_url,
       const std::string& attribution_line_1,
