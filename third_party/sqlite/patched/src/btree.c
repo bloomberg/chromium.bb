@@ -1617,7 +1617,7 @@ static int allocateSpace(MemPage *pPage, int nByte, int *pIdx){
   ** However, that integer is too large to be stored in a 2-byte unsigned
   ** integer, so a value of 0 is used in its place. */
   top = get2byte(&data[hdr+5]);
-  assert( top<=(int)pPage->pBt->usableSize ); /* Prevent by getAndInitPage() */
+  assert( top<=(int)pPage->pBt->usableSize ); /* by btreeComputeFreeSpace() */
   if( gap>top ){
     if( top==0 && pPage->pBt->usableSize==65536 ){
       top = 65536;
@@ -1973,7 +1973,7 @@ static int btreeInitPage(MemPage *pPage){
   ** serves to verify that the offset to the start of the cell-content
   ** area, according to the page header, lies within the page.
   */
-  if( nFree>usableSize ){
+  if( nFree>usableSize || nFree<iCellFirst ){
     return SQLITE_CORRUPT_PAGE(pPage);
   }
   pPage->nFree = (u16)(nFree - iCellFirst);

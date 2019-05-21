@@ -1468,7 +1468,7 @@ case OP_Concat: {           /* same as TK_CONCAT, in1, in2, out3 */
   if( nByte>db->aLimit[SQLITE_LIMIT_LENGTH] ){
     goto too_big;
   }
-  if( sqlite3VdbeMemGrow(pOut, (int)nByte+2, pOut==pIn2) ){
+  if( sqlite3VdbeMemGrow(pOut, (int)nByte+3, pOut==pIn2) ){
     goto no_mem;
   }
   MemSetTypeFlag(pOut, MEM_Str);
@@ -1478,6 +1478,7 @@ case OP_Concat: {           /* same as TK_CONCAT, in1, in2, out3 */
   memcpy(&pOut->z[pIn2->n], pIn1->z, pIn1->n);
   pOut->z[nByte]=0;
   pOut->z[nByte+1] = 0;
+  pOut->z[nByte+2] = 0;
   pOut->flags |= MEM_Term;
   pOut->n = (int)nByte;
   pOut->enc = encoding;
