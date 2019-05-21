@@ -494,7 +494,7 @@ void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {
   const CryptAuthKey* key_v2 =
       key_registry_->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
 
-  RecordUserKeyPairState(public_key_v1, public_key_v1, key_v2);
+  RecordUserKeyPairState(public_key_v1, private_key_v1, key_v2);
 
   // If the v1 user key pair does not exist, no action is needed.
   if (public_key_v1.empty() || private_key_v1.empty())
