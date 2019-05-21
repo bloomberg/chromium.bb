@@ -1863,18 +1863,18 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Word,
       /*count*/ 6,
-      /*expected_text*/ L"text",
-      /*expected_count*/ 4);
+      /*expected_text*/ L"",
+      /*expected_count*/ 5);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Word,
-      /*count*/ -7,
+      /*count*/ -8,
       /*expected_text*/ L"some textmore texteven more text",
-      /*expected_count*/ -6);
+      /*expected_count*/ -7);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ -8,
-                                   /*expected_text*/ L"some",
-                                   /*expected_count*/ -6);
+                                   /*expected_text*/ L"",
+                                   /*expected_count*/ -7);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1944,23 +1944,23 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Line,
                                    /*count*/ -13,
-                                   /*expected_text*/ L"0",
-                                   /*expected_count*/ -5);
+                                   /*expected_text*/ L"",
+                                   /*expected_count*/ -6);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Line,
                                    /*count*/ 11,
                                    /*expected_text*/ L"0123456",
-                                   /*expected_count*/ 6);
+                                   /*expected_count*/ 7);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Line,
       /*count*/ 9,
-      /*expected_text*/ L"6",
-      /*expected_count*/ 6);
+      /*expected_text*/ L"",
+      /*expected_count*/ 7);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Line,
       /*count*/ -7,
       /*expected_text*/ L"0123456",
-      /*expected_count*/ -6);
+      /*expected_count*/ -7);
 }
 
 // Verify that the endpoint can move past an empty text field.

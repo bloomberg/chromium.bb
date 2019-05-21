@@ -904,9 +904,10 @@ class AXPosition {
         do {
           text_position = text_position->CreateNextTextAnchorPosition();
           if (text_position->IsNullPosition()) {
-            if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-              return CreatePositionAtEndOfAnchor();
-            return text_position;
+            if (AtEndOfAnchor() &&
+                boundary_behavior == AXBoundaryBehavior::CrossBoundary)
+              return text_position;
+            return CreatePositionAtEndOfAnchor();
           }
         } while (!text_position->MaxTextOffset() ||
                  text_position->GetWordStartOffsets().empty());
@@ -1104,9 +1105,10 @@ class AXPosition {
           text_position = text_position->CreatePreviousTextAnchorPosition()
                               ->CreatePositionAtEndOfAnchor();
           if (text_position->IsNullPosition()) {
-            if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-              return CreatePositionAtStartOfAnchor();
-            return text_position;
+            if (AtStartOfAnchor() &&
+                boundary_behavior == AXBoundaryBehavior::CrossBoundary)
+              return text_position;
+            return CreatePositionAtStartOfAnchor();
           }
         } while (!text_position->MaxTextOffset() ||
                  text_position->GetWordStartOffsets().empty());
@@ -1160,9 +1162,10 @@ class AXPosition {
     do {
       text_position = text_position->CreateNextTextAnchorPosition();
       if (text_position->IsNullPosition()) {
-        if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-          return CreatePositionAtEndOfAnchor();
-        return text_position;
+        if (AtEndOfAnchor() &&
+            boundary_behavior == AXBoundaryBehavior::CrossBoundary)
+          return text_position;
+        return CreatePositionAtEndOfAnchor();
       }
 
       // Continue searching for the next line start until the next logical text
@@ -1319,9 +1322,10 @@ class AXPosition {
       text_position = text_position->CreatePreviousTextAnchorPosition()
                           ->CreatePositionAtEndOfAnchor();
       if (text_position->IsNullPosition()) {
-        if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-          return CreatePositionAtStartOfAnchor();
-        return text_position;
+        if (AtStartOfAnchor() &&
+            boundary_behavior == AXBoundaryBehavior::CrossBoundary)
+          return text_position;
+        return CreatePositionAtStartOfAnchor();
       }
 
       // Continue searching for the previous line end until the next logical
