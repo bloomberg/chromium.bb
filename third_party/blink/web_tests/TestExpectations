@@ -2729,10 +2729,12 @@ crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Crash ]
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
+# FontFace object failures detected by WPT test
+crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-018.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-009.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-012.html [ Failure ]
