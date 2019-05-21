@@ -67,6 +67,28 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)goBack;
 
+// Opens a new tab and waits for the new tab animation to complete within a
+// timeout, or a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)openNewTab;
+
+// Opens a new incognito tab and waits for the new tab animation to complete.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)openNewIncognitoTab;
+
+// Closes all tabs in the current mode (incognito or normal), and waits for the
+// UI to complete. If current mode is Incognito, mode will be switched to
+// normal after closing all tabs.
+- (void)closeAllTabsInCurrentMode;
+
+// Closes all incognito tabs and waits for the UI to complete within a
+// timeout, or a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)closeAllIncognitoTabs;
+
 // Waits for the page to finish loading within a timeout, or a GREYAssert is
 // induced.
 // TODO(crbug.com/963613): Change return type to void when
@@ -104,26 +126,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // TODO(crbug.com/963613): Change return type to void when
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)goForward;
-
-// Opens a new tab and waits for the new tab animation to complete within a
-// timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)openNewTab;
-
-// Opens a new incognito tab and waits for the new tab animation to complete.
-- (NSError*)openNewIncognitoTab WARN_UNUSED_RESULT;
-
-// Closes all tabs in the current mode (incognito or normal), and waits for the
-// UI to complete. If current mode is Incognito, mode will be switched to
-// normal after closing all tabs.
-- (void)closeAllTabsInCurrentMode;
-
-// Closes all incognito tabs and waits for the UI to complete  within a
-// timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)closeAllIncognitoTabs;
 
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;

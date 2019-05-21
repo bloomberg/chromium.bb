@@ -8,6 +8,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 
@@ -44,6 +45,21 @@
   return chrome_test_util::IsLoading();
 }
 
++ (void)openNewTab {
+  chrome_test_util::OpenNewTab();
+}
+
++ (void)openNewIncognitoTab {
+  chrome_test_util::OpenNewIncognitoTab();
+}
+
++ (void)closeAllTabsInCurrentMode {
+  chrome_test_util::CloseAllTabsInCurrentMode();
+}
+
++ (bool)closeAllIncognitoTabs {
+  return chrome_test_util::CloseAllIncognitoTabs();
+}
 + (void)goBack {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
 }

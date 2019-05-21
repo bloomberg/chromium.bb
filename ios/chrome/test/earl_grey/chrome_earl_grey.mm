@@ -75,6 +75,35 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
+- (NSError*)openNewTab {
+  [ChromeEarlGreyAppInterface openNewTab];
+  [self waitForPageToFinishLoading];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  return nil;
+}
+
+- (NSError*)openNewIncognitoTab {
+  [ChromeEarlGreyAppInterface openNewIncognitoTab];
+  [self waitForPageToFinishLoading];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  return nil;
+}
+
+- (void)closeAllTabsInCurrentMode {
+  [ChromeEarlGreyAppInterface closeAllTabsInCurrentMode];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
+- (NSError*)closeAllIncognitoTabs {
+  EG_TEST_HELPER_ASSERT_TRUE([ChromeEarlGreyAppInterface closeAllIncognitoTabs],
+                             @"Could not close all Incognito tabs");
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  return nil;
+}
+
 - (NSError*)waitForPageToFinishLoading {
   GREYCondition* finishedLoading = [GREYCondition
       conditionWithName:kWaitForPageToFinishLoadingError
@@ -188,35 +217,6 @@ id ExecuteJavaScript(NSString* javascript,
 - (NSError*)goForward {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
   [self waitForPageToFinishLoading];
-
-  return nil;
-}
-
-- (NSError*)openNewTab {
-  chrome_test_util::OpenNewTab();
-  [self waitForPageToFinishLoading];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  return nil;
-}
-
-- (NSError*)openNewIncognitoTab {
-  chrome_test_util::OpenNewIncognitoTab();
-  [self waitForPageToFinishLoading];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  return nil;
-}
-
-- (void)closeAllTabsInCurrentMode {
-  chrome_test_util::CloseAllTabsInCurrentMode();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-}
-
-- (NSError*)closeAllIncognitoTabs {
-  bool closed = chrome_test_util::CloseAllIncognitoTabs();
-  EG_TEST_HELPER_ASSERT_TRUE(closed, @"Could not close all Incognito tabs");
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   return nil;
 }

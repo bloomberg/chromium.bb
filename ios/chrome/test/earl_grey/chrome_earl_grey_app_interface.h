@@ -29,6 +29,20 @@
 // Returns YES if the current WebState is loading.
 + (BOOL)isLoading;
 
+// Opens a new tab, and does not wait for animations to complete.
++ (void)openNewTab;
+
+// Opens a new incognito tab, and does not wait for animations to complete.
++ (void)openNewIncognitoTab;
+
+// Closes all tabs in the current mode (incognito or normal), and does not wait
+// for the UI to complete. If current mode is Incognito, mode will be switched
+// normal after closing all tabs.
++ (void)closeAllTabsInCurrentMode;
+
+// Closes all incognito tabs. Return YES on success.
++ (bool)closeAllIncognitoTabs;
+
 // Navigates back to the previous page.
 + (void)goBack;
 

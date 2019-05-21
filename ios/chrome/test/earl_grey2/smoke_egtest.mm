@@ -115,4 +115,13 @@
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
 }
 
+// Tests tab open/close-related converted helpers in chrome_earl_grey.h.
+- (void)testTabOpeningAndClosing {
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
+  [ChromeEarlGrey closeAllIncognitoTabs];
+}
+
 @end
