@@ -27,8 +27,6 @@ reported, we allocate a lot of virtual memory but don't store metadata for every
 allocation. That way though we may not be able to report the metadata for an old
 allocation, we will not report incorrect stack traces.
 
-Allocations are sampled to the GuardedPageAllocator using an [allocator shim.](/base/allocator/README.md)
-
 ## Crash handler
 
 The allocator is designed so that memory errors with GWP-ASan allocations
@@ -49,10 +47,10 @@ validate the allocator internals before reasoning about them.
 
 ## Status
 
-GWP-ASan is currently only implemented for the system allocator (e.g. not
-PartitionAlloc/Oilpan/v8) on Windows and macOS. It is currently enabled by
-default. The allocator parameters can be manually modified by using the
-following invocation:
+GWP-ASan is implemented for malloc and PartitionAlloc, but not for Oilpan or v8,
+on Windows and macOS. It is currently enabled by default for malloc. The
+allocator parameters can be manually modified by using an invocation like the
+following:
 
 ```shell
 chrome --enable-features="GwpAsanMalloc<Study" \
@@ -60,13 +58,29 @@ chrome --enable-features="GwpAsanMalloc<Study" \
        --force-fieldtrial-params=Study.Group1:MaxAllocations/128/MaxMetadata/255/TotalPages/4096/AllocationSamplingFrequency/1000/ProcessSamplingProbability/1.0
 ```
 
-GWP-ASan is tuned more aggressively in canary/dev (to increase the likelihood we
-catch newly introduced bugs) and for the browser process (because of its
-importance and sheer number of allocations.)
+GWP-ASan is tuned more aggressively in canary/dev, to increase the likelihood we
+catch newly introduced bugs, and for specific processes depending on the
+particular allocator.
 
 A [hotlist of bugs discovered by by GWP-ASan](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=Hotlist%3DGWP-ASan)
 exists, though GWP-ASan crashes are filed without external visibility by
 default.
+
+## Limitations
+
+- GWP-ASan is configured with a small fixed-size amount of memory, so
+  long-lived allocations can quickly deplete the page pool and lead the
+  allocator to run out of memory. Depending on the sampling frequency and
+  distribution of allocation lifetimes this may lead to only allocations early
+  in the process lifetime being sampled.
+- Allocations over a page in size are not sampled.
+- The allocator skips zero-size allocations. Zero-size allocations on some
+  platforms return valid pointers and may be subject to lifetime and bounds
+  issues.
+- GWP-ASan does not intercept allocations for Oilpan or the v8 GC.
+- GWP-ASan does not hook PDFium's fork of PartitionAlloc.
+- Right-aligned allocations to catch overflows are not perfectly right-aligned,
+  so small out-of-bounds accesses may be missed.
 
 ## Testing
 
