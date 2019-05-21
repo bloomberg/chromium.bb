@@ -388,6 +388,16 @@
     "args": ["--enable-blink-features=LayoutNGFieldset"]
   },
   {
+    "prefix": "layout_ng_experimental",
+    "base": "external/wpt/css/css-contain",
+    "args": ["--enable-blink-features=LayoutNGFieldset"]
+  },
+  {
+    "prefix": "layout_ng_experimental",
+    "base": "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain",
+    "args": ["--enable-blink-features=LayoutNGFieldset"]
+  },
+  {
     "prefix": "print_browser",
     "base": "print_testharness",
     "args": ["--enable-print-browser"]
