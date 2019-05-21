@@ -563,33 +563,6 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'/\bbase::Bind\(',
-      (
-          'Please consider using base::Bind{Once,Repeating} instead',
-          'of base::Bind. (crbug.com/714018)',
-      ),
-      False,
-      (),
-    ),
-    (
-      r'/\bbase::Callback<',
-      (
-          'Please consider using base::{Once,Repeating}Callback instead',
-          'of base::Callback. (crbug.com/714018)',
-      ),
-      False,
-      (),
-    ),
-    (
-      r'/\bbase::Closure\b',
-      (
-          'Please consider using base::{Once,Repeating}Closure instead',
-          'of base::Closure. (crbug.com/714018)',
-      ),
-      False,
-      (),
-    ),
-    (
       r'/base::SharedMemory(|Handle)',
       (
           'base::SharedMemory is deprecated. Please use',
