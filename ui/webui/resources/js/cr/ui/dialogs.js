@@ -44,6 +44,9 @@ cr.define('cr.ui.dialogs', function() {
     /** @protected {?Element} */
     this.cancelButton_ = null;
 
+    /** @protected {?Element} */
+    this.buttons = null;
+
     this.initDom_();
   }
 
