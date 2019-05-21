@@ -72,7 +72,8 @@ ExploreSitesServiceImpl::~ExploreSitesServiceImpl() {}
 bool ExploreSitesServiceImpl::IsExploreSitesEnabled() {
   ExploreSitesVariation variation = GetExploreSitesVariation();
   return variation == ExploreSitesVariation::ENABLED ||
-         variation == ExploreSitesVariation::PERSONALIZED;
+         variation == ExploreSitesVariation::PERSONALIZED ||
+         variation == ExploreSitesVariation::MOST_LIKELY;
 }
 
 void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {

@@ -95,7 +95,8 @@ public class ExploreSitesBridge {
     public static boolean isEnabled(@ExploreSitesVariation int variation) {
         return variation == ExploreSitesVariation.ENABLED
                 || variation == ExploreSitesVariation.PERSONALIZED
-                || variation == ExploreSitesVariation.CONDENSED;
+                || variation == ExploreSitesVariation.CONDENSED
+                || variation == ExploreSitesVariation.MOST_LIKELY;
     }
 
     public static boolean isExperimental(@ExploreSitesVariation int variation) {
@@ -104,6 +105,10 @@ public class ExploreSitesBridge {
 
     public static boolean isCondensed(@ExploreSitesVariation int variation) {
         return variation == ExploreSitesVariation.CONDENSED;
+    }
+
+    public static boolean isIntegratedWithMostLikely(@ExploreSitesVariation int variation) {
+        return variation == ExploreSitesVariation.MOST_LIKELY;
     }
 
     /**
