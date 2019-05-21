@@ -491,8 +491,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
       SkIRect result_rect;
       // TODO(ajuma): Apply the filter in the same pass as the content where
       // possible (e.g. when there's no origin offset). See crbug.com/308201.
-      filter_image = ApplyImageFilter(image_filter.get(), quad, source_bitmap,
-                                      &result_rect);
+      filter_image =
+          ApplyImageFilter(image_filter.get(), quad, source_bitmap,
+                           /* offset_expanded_bounds = */ true, &result_rect);
       if (result_rect.isEmpty()) {
         return;
       }
@@ -654,46 +655,47 @@ bool SoftwareRenderer::ShouldApplyBackdropFilters(
   return true;
 }
 
-// If non-null, auto_bounds will be filled with the automatically-computed
-// destination bounds. If null, the output will be the same size as the
-// input bitmap.
+// Applies |filter| to |to_filter| bitmap. |result_rect| will be filled with the
+// automatically-computed destination bounds. If |offset_expanded_bounds| is
+// true, the bitmap will be offset for any pixel-moving filters. This function
+// is called for both filters and backdrop_filters. The difference between those
+// two paths is that the filter path wants to offset to the expanded bounds
+// (including border for pixel moving filters) when drawing the bitmap into the
+// canvas, while the backdrop filter path needs to keep the origin unmoved (at
+// quad->rect origin) so that it gets put in the right spot relative to the
+// underlying backdrop.
 sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
     SkImageFilter* filter,
     const RenderPassDrawQuad* quad,
     const SkBitmap& to_filter,
-    SkIRect* auto_bounds) const {
+    bool offset_expanded_bounds,
+    SkIRect* result_rect) const {
+  DCHECK(result_rect);
   if (!filter)
     return nullptr;
 
   SkMatrix local_matrix;
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
-  SkIRect dst_rect;
-  if (auto_bounds) {
-    dst_rect =
-        filter->filterBounds(gfx::RectToSkIRect(quad->rect), local_matrix,
-                             SkImageFilter::kForward_MapDirection);
-    *auto_bounds = dst_rect;
-  } else {
-    dst_rect = to_filter.bounds();
-  }
-
+  *result_rect =
+      filter->filterBounds(gfx::RectToSkIRect(quad->rect), local_matrix,
+                           SkImageFilter::kForward_MapDirection);
+  gfx::Point canvas_offset =
+      offset_expanded_bounds ? gfx::Point(result_rect->x(), result_rect->y())
+                             : quad->rect.origin();
   SkImageInfo dst_info =
-      SkImageInfo::MakeN32Premul(dst_rect.width(), dst_rect.height());
+      SkImageInfo::MakeN32Premul(result_rect->width(), result_rect->height());
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(dst_info);
-
-  if (!surface) {
+  if (!surface)
     return nullptr;
-  }
 
   SkPaint paint;
   // Treat subnormal float values as zero for performance.
   cc::ScopedSubnormalFloatDisabler disabler;
   paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
-  surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
+  surface->getCanvas()->translate(-canvas_offset.x(), -canvas_offset.y());
   surface->getCanvas()->drawBitmap(to_filter, quad->rect.x(), quad->rect.y(),
                                    &paint);
-
   return surface->makeImageSnapshot();
 }
 
@@ -734,7 +736,7 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   // |backdrop_rect| is now the bounding box of clip_region, in window pixel
   // coordinates, and with flip applied.
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
-      contents_device_transform, gfx::RectF(-0.5f, -0.5f, 1.f, 1.f)));
+      contents_device_transform, QuadVertexRect()));
 
   if (ShouldApplyBackdropFilters(backdrop_filters)) {
     SkMatrix matrix;
@@ -833,8 +835,11 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
           gfx::SizeF(bitmap_rect.width(), bitmap_rect.height()),
           clipping_offset)
           ->cached_sk_filter_;
+
+  SkIRect result_rect;
   sk_sp<SkImage> filtered_image =
-      ApplyImageFilter(filter.get(), quad, backdrop_bitmap, nullptr);
+      ApplyImageFilter(filter.get(), quad, backdrop_bitmap,
+                       /* offset_expanded_bounds = */ false, &result_rect);
   if (!filtered_image)
     return nullptr;
 

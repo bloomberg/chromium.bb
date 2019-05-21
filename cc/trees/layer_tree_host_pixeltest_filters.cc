@@ -306,6 +306,34 @@ TEST_P(LayerTreeHostFiltersPixelTestGL, BackdropFilterBlurOffAxis) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_off_axis.png")));
 }
 
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBoundsWithChildren) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), kCSSGreen);
+  scoped_refptr<SolidColorLayer> invert =
+      CreateSolidColorLayer(gfx::Rect(30, 30, 140, 40), SK_ColorTRANSPARENT);
+  scoped_refptr<SolidColorLayer> invert_child1 =
+      CreateSolidColorLayer(gfx::Rect(50, -20, 40, 20), kCSSOrange);
+  scoped_refptr<SolidColorLayer> invert_child2 =
+      CreateSolidColorLayer(gfx::Rect(50, 40, 40, 20), kCSSOrange);
+  background->AddChild(green);
+  background->AddChild(invert);
+  invert->AddChild(invert_child1);
+  invert->AddChild(invert_child2);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateInvertFilter(1.f));
+  invert->SetBackdropFilters(filters);
+  gfx::RRectF backdrop_filter_bounds(gfx::RectF(gfx::SizeF(invert->bounds())),
+                                     0);
+  invert->SetBackdropFilterBounds(backdrop_filter_bounds);
+
+  RunPixelTest(renderer_type(), background,
+               base::FilePath(FILE_PATH_LITERAL(
+                   "backdrop_filter_bounds_with_children.png")));
+}
+
 class LayerTreeHostFiltersScaledPixelTest
     : public LayerTreeHostFiltersPixelTest {
   void SetupTree() override {

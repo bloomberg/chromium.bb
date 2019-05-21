@@ -84,6 +84,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
                                   const RenderPassDrawQuad* quad,
                                   const SkBitmap& to_filter,
+                                  bool offset_expanded_bounds,
                                   SkIRect* auto_bounds) const;
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       const RenderPassDrawQuad* quad,
