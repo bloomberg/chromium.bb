@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
 
+#include "base/test/test_mock_time_task_runner.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 
 namespace blink {
 
@@ -23,6 +23,9 @@ class TextPaintTimingDetectorTest
   void SetUp() override {
     RenderingTest::SetUp();
     RenderingTest::EnableCompositing();
+    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    // Advance clock so it isn't 0 as rendering code asserts in that case.
+    AdvanceClock(base::TimeDelta::FromMicroseconds(1));
   }
 
  protected:
@@ -67,7 +70,7 @@ class TextPaintTimingDetectorTest
     TextPaintTimingDetector* detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
     detector->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                             CurrentTimeTicks());
+                             test_task_runner_->NowTicks());
   }
 
   TimeTicks LargestPaintStoredResult() {
@@ -82,7 +85,7 @@ class TextPaintTimingDetectorTest
     if (detector &&
         !detector->records_manager_.texts_queued_for_paint_time_.empty()) {
       detector->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                               CurrentTimeTicks());
+                               test_task_runner_->NowTicks());
     }
   }
 
@@ -97,7 +100,7 @@ class TextPaintTimingDetectorTest
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
         ->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                         CurrentTimeTicks());
+                         test_task_runner_->NowTicks());
   }
 
   void UpdateCandidate() {
@@ -151,6 +154,15 @@ class TextPaintTimingDetectorTest
   void RemoveElement(Element* element) {
     element->GetLayoutObject()->Parent()->GetNode()->removeChild(element);
   }
+
+  base::TimeTicks NowTicks() const { return test_task_runner_->NowTicks(); }
+
+  void AdvanceClock(base::TimeDelta delta) {
+    test_task_runner_->FastForwardBy(delta);
+  }
+
+ private:
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 };
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_NoText) {
@@ -228,13 +240,13 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_LargestText) {
 }
 
 TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
-  TimeTicks time1 = CurrentTimeTicks();
+  TimeTicks time1 = NowTicks();
   SetBodyInnerHTML(R"HTML(
     <div>small text</div>
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   UpdateCandidate();
-  TimeTicks time2 = CurrentTimeTicks();
+  TimeTicks time2 = NowTicks();
   TimeTicks first_largest = LargestPaintStoredResult();
   EXPECT_GE(first_largest, time1);
   EXPECT_GE(time2, first_largest);
@@ -242,7 +254,7 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
   AppendDivElementToBody("a long-long-long text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   UpdateCandidate();
-  TimeTicks time3 = CurrentTimeTicks();
+  TimeTicks time3 = NowTicks();
   TimeTicks second_largest = LargestPaintStoredResult();
   EXPECT_GE(second_largest, time2);
   EXPECT_GE(time3, second_largest);
@@ -279,20 +291,20 @@ TEST_F(TextPaintTimingDetectorTest, VisitSameNodeTwiceBeforePaintTimeIsSet) {
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
-  WTF::ScopedMockClock clock;
-  clock.Advance(TimeDelta::FromSecondsD(1));
+  base::TimeTicks start_time = NowTicks();
+  AdvanceClock(TimeDelta::FromSecondsD(1));
   SetBodyInnerHTML(R"HTML(
   )HTML");
   Element* text = AppendDivElementToBody("text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  clock.Advance(TimeDelta::FromSecondsD(1));
+  AdvanceClock(TimeDelta::FromSecondsD(1));
   text->setAttribute(html_names::kStyleAttr,
                      AtomicString("position:fixed;left:30px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  clock.Advance(TimeDelta::FromSecondsD(1));
+  AdvanceClock(TimeDelta::FromSecondsD(1));
   TextRecord* record = TextRecordOfLargestTextPaint();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->paint_time, base::TimeTicks() + TimeDelta::FromSecondsD(1));
+  EXPECT_EQ(record->paint_time, start_time + TimeDelta::FromSecondsD(1));
 }
 
 TEST_F(TextPaintTimingDetectorTest,
