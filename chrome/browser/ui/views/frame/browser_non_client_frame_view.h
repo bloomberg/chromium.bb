@@ -127,6 +127,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
+  void Layout() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   int NonClientHitTest(const gfx::Point& point) override;
   void ResetWindowControls() override;

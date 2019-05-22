@@ -209,6 +209,17 @@ int BrowserNonClientFrameView::GetTabBackgroundResourceId(
 
 void BrowserNonClientFrameView::UpdateMinimumSize() {}
 
+void BrowserNonClientFrameView::Layout() {
+  // BrowserView updates most UI visibility on layout based on fullscreen
+  // state. However, it doesn't have access to hosted_app_button_container_. Do
+  // it here. This is necessary since otherwise the visibility of ink drop
+  // layers won't be updated; see crbug.com/964215.
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->SetVisible(!frame_->IsFullscreen());
+
+  NonClientFrameView::Layout();
+}
+
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
   // UpdateTaskbarDecoration() calls DrawTaskbarDecoration(), but that does
