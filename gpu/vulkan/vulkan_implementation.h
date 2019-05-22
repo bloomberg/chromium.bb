@@ -40,7 +40,7 @@ struct VulkanYCbCrInfo;
 // VkSurfaceKHR objects). It also provides helper/utility functions.
 class VULKAN_EXPORT VulkanImplementation {
  public:
-  VulkanImplementation();
+  explicit VulkanImplementation(bool use_swiftshader = false);
 
   virtual ~VulkanImplementation();
 
@@ -130,7 +130,10 @@ class VULKAN_EXPORT VulkanImplementation {
       VulkanYCbCrInfo* ycbcr_info) = 0;
 #endif
 
+  bool use_swiftshader() const { return use_swiftshader_; }
+
  private:
+  const bool use_swiftshader_;
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementation);
 };
 

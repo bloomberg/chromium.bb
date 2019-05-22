@@ -118,7 +118,9 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
   return true;
 }
 
-bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
+bool VulkanFunctionPointers::BindDeviceFunctionPointers(
+    VkDevice vk_device,
+    bool using_swiftshader) {
   // Device functions
   vkAllocateCommandBuffersFn = reinterpret_cast<PFN_vkAllocateCommandBuffers>(
       vkGetDeviceProcAddrFn(vk_device, "vkAllocateCommandBuffers"));
@@ -354,12 +356,12 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 
   vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
-  if (!vkGetSemaphoreFdKHRFn)
+  if (!vkGetSemaphoreFdKHRFn && !using_swiftshader)
     return false;
 
   vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
-  if (!vkImportSemaphoreFdKHRFn)
+  if (!vkImportSemaphoreFdKHRFn && !using_swiftshader)
     return false;
 
 #endif
@@ -368,7 +370,7 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 
   vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkGetMemoryFdKHR"));
-  if (!vkGetMemoryFdKHRFn)
+  if (!vkGetMemoryFdKHRFn && !using_swiftshader)
     return false;
 
 #endif

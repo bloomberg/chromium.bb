@@ -11,7 +11,8 @@
 
 namespace gpu {
 
-VulkanImplementation::VulkanImplementation() {}
+VulkanImplementation::VulkanImplementation(bool use_swiftshader)
+    : use_swiftshader_(use_swiftshader) {}
 
 VulkanImplementation::~VulkanImplementation() {}
 
@@ -26,7 +27,8 @@ std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
   std::vector<const char*> required_extensions =
       vulkan_implementation->GetRequiredDeviceExtensions();
   if (!device_queue->Initialize(option, std::move(required_extensions),
-                                callback)) {
+                                callback,
+                                vulkan_implementation->use_swiftshader())) {
     device_queue->Destroy();
     return nullptr;
   }

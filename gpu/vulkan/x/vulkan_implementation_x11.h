@@ -17,7 +17,7 @@ namespace gpu {
 class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
     : public VulkanImplementation {
  public:
-  VulkanImplementationX11();
+  explicit VulkanImplementationX11(bool use_swiftshader = false);
   ~VulkanImplementationX11() override;
 
   // VulkanImplementation:

@@ -40,7 +40,8 @@ class TestGpuServiceHolder {
   // --enable-vulkan).
   static TestGpuServiceHolder* GetSingleton();
 
-  explicit TestGpuServiceHolder(const gpu::GpuPreferences& preferences);
+  TestGpuServiceHolder(const gpu::GpuPreferences& preferences,
+                       bool use_swiftshader_for_vulkan);
   ~TestGpuServiceHolder();
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner() {
@@ -65,6 +66,7 @@ class TestGpuServiceHolder {
 
  private:
   void InitializeOnGpuThread(const gpu::GpuPreferences& preferences,
+                             bool use_swiftshader_for_vulkan,
                              base::WaitableEvent* completion);
   void DeleteOnGpuThread();
 

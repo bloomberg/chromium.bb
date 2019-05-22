@@ -26,7 +26,8 @@ VulkanDeviceQueue::~VulkanDeviceQueue() {
 bool VulkanDeviceQueue::Initialize(
     uint32_t options,
     const std::vector<const char*>& required_extensions,
-    const GetPresentationSupportCallback& get_presentation_support) {
+    const GetPresentationSupportCallback& get_presentation_support,
+    bool use_swiftshader) {
   DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), owned_vk_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), vk_device_);
@@ -151,7 +152,8 @@ bool VulkanDeviceQueue::Initialize(
   enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
                                           std::end(enabled_extensions));
 
-  gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(vk_device_);
+  gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(vk_device_,
+                                                               use_swiftshader);
 
   if (gfx::HasExtension(enabled_extensions_, VK_KHR_SWAPCHAIN_EXTENSION_NAME))
     gpu::GetVulkanFunctionPointers()->BindSwapchainFunctionPointers(vk_device_);

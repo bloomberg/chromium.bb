@@ -13,7 +13,8 @@
 namespace gpu {
 
 COMPONENT_EXPORT(VULKAN_INIT)
-std::unique_ptr<VulkanImplementation> CreateVulkanImplementation();
+std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(
+    bool use_swiftshader = false);
 
 }  // namespace gpu
 

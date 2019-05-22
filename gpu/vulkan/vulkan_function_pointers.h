@@ -47,7 +47,12 @@ struct VulkanFunctionPointers {
   VULKAN_EXPORT bool BindPhysicalDeviceFunctionPointers(VkInstance vk_instance);
 
   // These functions assume that vkGetDeviceProcAddr has been populated.
-  VULKAN_EXPORT bool BindDeviceFunctionPointers(VkDevice vk_device);
+  // |using_swiftshader| allows functions that aren't supported by Swiftshader
+  // to be missing.
+  // TODO(samans): Remove |using_swiftshader| once all the workarounds can be
+  // removed. https://crbug.com/963988
+  VULKAN_EXPORT bool BindDeviceFunctionPointers(VkDevice vk_device,
+                                                bool using_swiftshader = false);
   bool BindSwapchainFunctionPointers(VkDevice vk_device);
 
   base::NativeLibrary vulkan_loader_library_ = nullptr;

@@ -211,7 +211,12 @@ struct VulkanFunctionPointers {
   VULKAN_EXPORT bool BindPhysicalDeviceFunctionPointers(VkInstance vk_instance);
 
   // These functions assume that vkGetDeviceProcAddr has been populated.
-  VULKAN_EXPORT bool BindDeviceFunctionPointers(VkDevice vk_device);
+  // |using_swiftshader| allows functions that aren't supported by Swiftshader
+  // to be missing.
+  // TODO(samans): Remove |using_swiftshader| once all the workarounds can be
+  // removed. https://crbug.com/963988
+  VULKAN_EXPORT bool BindDeviceFunctionPointers(VkDevice vk_device,
+                                                bool using_swiftshader = false);
   bool BindSwapchainFunctionPointers(VkDevice vk_device);
 
   base::NativeLibrary vulkan_loader_library_ = nullptr;
@@ -444,16 +449,21 @@ struct VulkanFunctionPointers {
 """)
 
 def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
-                                       functions):
+                                       functions, allow_missing=False):
   template = Template("""  ${name}Fn = reinterpret_cast<PFN_${name}>(
     $get_proc_addr($parent, "$name"));
-  if (!${name}Fn)
+  if (!${name}Fn${check_swiftshader})
     return false;
 
 """)
+  if allow_missing:
+    check_swiftshader = " && !using_swiftshader"
+  else:
+    check_swiftshader = ""
   for func in functions:
     file.write(template.substitute(name=func['name'], get_proc_addr =
-                                   proc_addr_function, parent=parent))
+                                   proc_addr_function, parent=parent,
+                                   check_swiftshader=check_swiftshader))
 
 def WriteUnassociatedFunctionPointerInitialization(file, functions):
   WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddrFn', 'nullptr',
@@ -463,9 +473,11 @@ def WriteInstanceFunctionPointerInitialization(file, functions):
   WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddrFn',
                                      'vk_instance', functions)
 
-def WriteDeviceFunctionPointerInitialization(file, functions):
+def WriteDeviceFunctionPointerInitialization(file,
+                                             functions,
+                                             allow_missing=False):
   WriteFunctionPointerInitialization(file, 'vkGetDeviceProcAddrFn', 'vk_device',
-                                     functions)
+                                     functions, allow_missing)
 
 def GenerateSourceFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
@@ -539,7 +551,9 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
   return true;
 }
 
-bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
+bool VulkanFunctionPointers::BindDeviceFunctionPointers(
+    VkDevice vk_device,
+    bool using_swiftshader) {
   // Device functions
 """)
   WriteDeviceFunctionPointerInitialization(file, device_functions)
@@ -563,7 +577,8 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 """)
 
   WriteDeviceFunctionPointerInitialization(file,
-                                           device_functions_linux_or_android)
+                                           device_functions_linux_or_android,
+                                           True) # allow_missing
 
   file.write("""\
 #endif
@@ -576,7 +591,8 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 """)
 
   WriteDeviceFunctionPointerInitialization(file,
-                                           device_functions_linux)
+                                           device_functions_linux,
+                                           True) # allow_missing
 
   file.write("""\
 #endif

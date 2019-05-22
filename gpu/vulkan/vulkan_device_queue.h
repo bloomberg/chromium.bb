@@ -37,7 +37,8 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   bool Initialize(
       uint32_t options,
       const std::vector<const char*>& required_extensions,
-      const GetPresentationSupportCallback& get_presentation_support);
+      const GetPresentationSupportCallback& get_presentation_support,
+      bool use_swiftshader);
 
   bool InitializeForWevbView(VkPhysicalDevice vk_physical_device,
                              VkDevice vk_device,
