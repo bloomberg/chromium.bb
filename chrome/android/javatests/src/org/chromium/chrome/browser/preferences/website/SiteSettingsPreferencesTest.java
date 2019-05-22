@@ -9,6 +9,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.util.Pair;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -40,6 +41,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 
 /**
@@ -470,9 +472,69 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesShown() throws Exception {
-        // TODO: Add tests for other categories. The allow/block group could be tricky.
-        checkPreferencesForCategory(SiteSettingsCategory.Type.ALL_SITES, new String[0]);
-        checkPreferencesForCategory(SiteSettingsCategory.Type.USE_STORAGE, new String[0]);
+        // If you add a category in the SiteSettings UI, please add a test for it below.
+        Assert.assertEquals(18, SiteSettingsCategory.Type.NUM_ENTRIES);
+
+        String[] nullArray = new String[0];
+        String[] binaryToggle = new String[] {"binary_toggle"};
+        String[] binaryToggleWithException = new String[] {"binary_toggle", "add_exception"};
+        String[] binaryToggleWithAllowed = new String[] {"binary_toggle", "allowed_group"};
+        String[] cookie = new String[] {"binary_toggle", "third_party_cookies", "add_exception"};
+        String[] protectedMedia = new String[] {"tri_state_toggle", "protected_content_learn_more"};
+
+        HashMap<Integer, Pair<String[], String[]>> testCases =
+                new HashMap<Integer, Pair<String[], String[]>>();
+        testCases.put(SiteSettingsCategory.Type.ADS, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.ALL_SITES, new Pair<>(nullArray, nullArray));
+        testCases.put(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS,
+                new Pair<>(binaryToggleWithException, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.AUTOPLAY,
+                new Pair<>(binaryToggleWithException, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.BACKGROUND_SYNC,
+                new Pair<>(binaryToggleWithException, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.CAMERA, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.CLIPBOARD, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.COOKIES, new Pair<>(cookie, cookie));
+        testCases.put(SiteSettingsCategory.Type.DEVICE_LOCATION,
+                new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
+        testCases.put(SiteSettingsCategory.Type.JAVASCRIPT,
+                new Pair<>(binaryToggleWithException, binaryToggleWithException));
+        testCases.put(SiteSettingsCategory.Type.MICROPHONE, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.NOTIFICATIONS,
+                new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
+        testCases.put(SiteSettingsCategory.Type.POPUPS, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.PROTECTED_MEDIA,
+                new Pair<>(protectedMedia, protectedMedia));
+        testCases.put(SiteSettingsCategory.Type.SENSORS, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.SOUND,
+                new Pair<>(binaryToggleWithException, binaryToggleWithException));
+        testCases.put(SiteSettingsCategory.Type.USB, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.USE_STORAGE, new Pair<>(nullArray, nullArray));
+
+        for (@SiteSettingsCategory.Type int key = 0; key < SiteSettingsCategory.Type.NUM_ENTRIES;
+                ++key) {
+            Pair<String[], String[]> values = testCases.get(key);
+
+            if (key == SiteSettingsCategory.Type.ALL_SITES
+                    || key == SiteSettingsCategory.Type.USE_STORAGE) {
+                checkPreferencesForCategory(key, values.first);
+                return;
+            }
+
+            // Disable the category and check for the right preferences.
+            setGlobalToggleForCategory(key, false);
+            checkPreferencesForCategory(key, values.first);
+            // Re-enable the category and check for the right preferences.
+            setGlobalToggleForCategory(key, true);
+            checkPreferencesForCategory(key, values.second);
+        }
+
+        // Location is not the only system-managed permission, but having one test for a
+        // system-managed permission has been shown to catch stray permissons appearing where they
+        // should not.
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(false);
+        checkPreferencesForCategory(SiteSettingsCategory.Type.DEVICE_LOCATION, binaryToggle);
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
     }
 
     /**
