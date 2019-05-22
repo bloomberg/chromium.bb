@@ -59,6 +59,9 @@
 
 
 <script>
+  if (window.internals)
+    window.internals.runtimeFlags.implicitRootScrollerEnabled = true;
+
   window.onload = async () => {
     const iframe = document.getElementById('rootscroller');
     const scroller  = iframe.contentDocument.getElementById('scroller');
