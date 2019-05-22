@@ -66,6 +66,7 @@ class ManualFillingBridge {
                             : "Controller has been destroyed but the bridge wasn't cleaned up!";
                         ManualFillingMetricsRecorder.recordActionSelected(
                                 AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
+                        mManualFillingComponent.dismiss();
                         nativeOnGenerationRequested(mNativeView);
                     })};
         } else {
