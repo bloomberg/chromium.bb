@@ -6,7 +6,6 @@ import("//build/config/features.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chromecast/chromecast.gni")
-import("//components/nacl/features.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("run_jsbundler.gni")
@@ -231,10 +230,8 @@ group("chromevox") {
     "//chrome/browser/resources/chromeos/braille_ime:braille_ime_manifest",
     "//chrome/browser/resources/chromeos/chromevox/strings:chromevox_strings",
     "//third_party/chromevox:chromevox_third_party_resources",
+    "//third_party/liblouis",
   ]
-  if (enable_nacl) {
-    deps += [ "//third_party/liblouis" ]
-  }
   if (chromevox_compress_js) {
     deps += [
       ":chromevox_background_script",
