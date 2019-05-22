@@ -581,16 +581,28 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
     return nullptr;
   }
 
-  // Look for an existing preference in the user store. If it doesn't
-  // exist, create a new user preference.
+  // Look for an existing preference in the user store. Return it in case it
+  // exists and has the correct type.
   base::Value* value = nullptr;
-  if (user_pref_store_->GetMutableValue(path, &value))
+  if (user_pref_store_->GetMutableValue(path, &value) &&
+      value->type() == type) {
     return value;
+  }
 
-  // If no user preference exists, clone default value.
+  // TODO(crbug.com/859477): Remove once root cause has been found.
+  if (value && value->type() != type) {
+    DEBUG_ALIAS_FOR_CSTR(path_copy, path.c_str(), 1024);
+    base::debug::DumpWithoutCrashing();
+  }
+
+  // If no user preference of the correct type exists, clone default value.
   const base::Value* default_value = nullptr;
   pref_registry_->defaults()->GetValue(path, &default_value);
-  DCHECK_EQ(default_value->type(), type);
+  // TODO(crbug.com/859477): Revert to DCHECK once root cause has been found.
+  if (default_value->type() != type) {
+    DEBUG_ALIAS_FOR_CSTR(path_copy, path.c_str(), 1024);
+    base::debug::DumpWithoutCrashing();
+  }
   user_pref_store_->SetValueSilently(path, default_value->CreateDeepCopy(),
                                      GetWriteFlags(pref));
   user_pref_store_->GetMutableValue(path, &value);
