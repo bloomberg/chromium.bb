@@ -372,10 +372,10 @@ class LayerTreeHostFiltersScaledPixelTest
   float device_scale_factor_;
 };
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersScaledPixelTest,
                          ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL,
                                            LayerTreeTest::RENDERER_SOFTWARE));
 
 TEST_P(LayerTreeHostFiltersScaledPixelTest, StandardDpi) {
@@ -1041,10 +1041,10 @@ class BackdropFilterWithDeviceScaleFactorTest
   float device_scale_factor_ = 1;
 };
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(,
                          BackdropFilterWithDeviceScaleFactorTest,
                          ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL,
                                            LayerTreeTest::RENDERER_SOFTWARE));
 
 TEST_P(BackdropFilterWithDeviceScaleFactorTest, StandardDpi) {
