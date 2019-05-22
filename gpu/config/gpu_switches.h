@@ -22,6 +22,7 @@ GPU_EXPORT extern const char kWebglAntialiasingMode[];
 GPU_EXPORT extern const char kWebglMSAASampleCount[];
 GPU_EXPORT extern const char kDisableGpuProcessForDX12VulkanInfoCollection[];
 GPU_EXPORT extern const char kEnableUnsafeWebGPU[];
+GPU_EXPORT extern const char kEnableWebGLSwapChain[];
 
 }  // namespace switches
 

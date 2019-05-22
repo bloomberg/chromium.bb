@@ -55,4 +55,7 @@ const char kDisableGpuProcessForDX12VulkanInfoCollection[] =
 
 const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
 
+// Enables WebGL overlays for Windows.
+const char kEnableWebGLSwapChain[] = "enable-webgl-swap-chain";
+
 }  // namespace switches

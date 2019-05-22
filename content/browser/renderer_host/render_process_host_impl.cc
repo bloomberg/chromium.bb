@@ -2990,6 +2990,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGL2ComputeContext,
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableWebGLImageChromium,
+    switches::kEnableWebGLSwapChain,
     switches::kEnableWebVR,
     switches::kFileUrlPathAlias,
     switches::kForceDisplayColorProfile,

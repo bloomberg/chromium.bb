@@ -423,6 +423,10 @@ void WebRuntimeFeatures::EnableWebGLImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetWebGLImageChromiumEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebGLSwapChain(bool enable) {
+  RuntimeEnabledFeatures::SetWebGLSwapChainEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableXSLT(bool enable) {
   RuntimeEnabledFeatures::SetXSLTEnabled(enable);
 }

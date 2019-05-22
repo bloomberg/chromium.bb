@@ -192,6 +192,9 @@ void SetIndividualRuntimeFeatures(
   if (command_line.HasSwitch(switches::kEnableUnsafeWebGPU))
     WebRuntimeFeatures::EnableWebGPU(true);
 
+  if (command_line.HasSwitch(switches::kEnableWebGLSwapChain))
+    WebRuntimeFeatures::EnableWebGLSwapChain(true);
+
   if (command_line.HasSwitch(switches::kEnableWebVR))
     WebRuntimeFeatures::EnableWebVR(true);
 
