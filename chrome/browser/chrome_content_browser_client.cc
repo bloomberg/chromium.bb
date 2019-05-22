@@ -243,6 +243,7 @@
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_recorder_impl.h"
 #include "components/rappor/rappor_service_impl.h"
@@ -5505,6 +5506,12 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   }
 
   DCHECK(previews_data);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          previews::switches::kForceEnablePreviews)) {
+    previews_decider_impl->LoadPageHints(current_navigation_url);
+    return content::ALL_SUPPORTED_PREVIEWS;
+  }
 
   bool is_reload =
       navigation_handle->GetReloadType() != content::ReloadType::NONE;

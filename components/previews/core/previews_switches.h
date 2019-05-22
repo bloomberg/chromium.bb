@@ -14,6 +14,7 @@ bool ShouldIgnorePreviewsBlacklist();
 
 extern const char kDoNotRequireLitePageRedirectInfoBar[];
 extern const char kIgnorePreviewsBlacklist[];
+extern const char kForceEnablePreviews[];
 extern const char kLitePageServerPreviewHost[];
 extern const char kIgnoreLitePageRedirectOptimizationBlacklist[];
 extern const char kClearLitePageRedirectLocalBlacklist[];

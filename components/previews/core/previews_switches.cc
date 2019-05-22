@@ -11,7 +11,9 @@ namespace switches {
 
 bool ShouldIgnorePreviewsBlacklist() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kIgnorePreviewsBlacklist);
+             kIgnorePreviewsBlacklist) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kForceEnablePreviews);
 }
 
 // Do not require the user notification InfoBar to be shown before triggering a
@@ -21,6 +23,9 @@ const char kDoNotRequireLitePageRedirectInfoBar[] =
 
 // Ignore decisions made by PreviewsBlackList.
 const char kIgnorePreviewsBlacklist[] = "ignore-previews-blacklist";
+
+// Force enable all available previews on every page load.
+const char kForceEnablePreviews[] = "force-enable-previews";
 
 // Override the Lite Page Preview Host.
 const char kLitePageServerPreviewHost[] = "litepage-server-previews-host";
