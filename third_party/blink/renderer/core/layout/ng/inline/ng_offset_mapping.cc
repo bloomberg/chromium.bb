@@ -98,7 +98,29 @@ NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
       dom_start_(dom_start),
       dom_end_(dom_end),
       text_content_start_(text_content_start),
-      text_content_end_(text_content_end) {}
+      text_content_end_(text_content_end) {
+  AssertValid();
+}
+
+void NGOffsetMappingUnit::AssertValid() const {
+#if ENABLE_SECURITY_ASSERT
+  SECURITY_DCHECK(dom_start_ <= dom_end_) << dom_start_ << " vs. " << dom_end_;
+  SECURITY_DCHECK(text_content_start_ <= text_content_end_)
+      << text_content_start_ << " vs. " << text_content_end_;
+  if (layout_object_->IsText()) {
+    const LayoutText& layout_text = ToLayoutText(*layout_object_);
+    const unsigned text_start =
+        AssociatedNode() ? layout_text.TextStartOffset() : 0;
+    const unsigned text_end = text_start + layout_text.TextLength();
+    SECURITY_DCHECK(dom_end_ >= text_start)
+        << dom_end_ << " vs. " << text_start;
+    SECURITY_DCHECK(dom_end_ <= text_end) << dom_end_ << " vs. " << text_end;
+  } else {
+    SECURITY_DCHECK(dom_start_ == 0) << dom_start_;
+    SECURITY_DCHECK(dom_end_ == 1) << dom_end_;
+  }
+#endif
+}
 
 NGOffsetMappingUnit::~NGOffsetMappingUnit() = default;
 
@@ -237,7 +259,23 @@ LayoutBlockFlow* NGOffsetMapping::GetInlineFormattingContextOf(
 NGOffsetMapping::NGOffsetMapping(UnitVector&& units,
                                  RangeMap&& ranges,
                                  String text)
-    : units_(std::move(units)), ranges_(std::move(ranges)), text_(text) {}
+    : units_(std::move(units)), ranges_(std::move(ranges)), text_(text) {
+#if ENABLE_SECURITY_ASSERT
+  for (const auto& unit : units_) {
+    SECURITY_DCHECK(unit.TextContentStart() <= text.length())
+        << unit.TextContentStart() << "<=" << text.length();
+    SECURITY_DCHECK(unit.TextContentEnd() <= text.length())
+        << unit.TextContentEnd() << "<=" << text.length();
+    unit.AssertValid();
+  }
+  for (const auto& pair : ranges) {
+    SECURITY_DCHECK(pair.value.first < units_.size())
+        << pair.value.first << "<" << units_.size();
+    SECURITY_DCHECK(pair.value.second < units_.size())
+        << pair.value.second << "<" << units_.size();
+  }
+#endif
+}
 
 NGOffsetMapping::~NGOffsetMapping() = default;
 

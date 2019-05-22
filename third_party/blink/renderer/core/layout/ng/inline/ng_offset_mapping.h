@@ -72,6 +72,8 @@ class CORE_EXPORT NGOffsetMappingUnit {
   unsigned ConvertTextContentToFirstDOMOffset(unsigned) const;
   unsigned ConvertTextContentToLastDOMOffset(unsigned) const;
 
+  void AssertValid() const;
+
  private:
   NGOffsetMappingUnitType type_ = NGOffsetMappingUnitType::kIdentity;
 
@@ -81,6 +83,10 @@ class CORE_EXPORT NGOffsetMappingUnit {
   // offset in |LayoutText::text_| instead of DOM node.
   unsigned dom_start_;
   unsigned dom_end_;
+
+  // |text_content_start_| and |text_content_end_| are offsets in
+  // |NGOffsetMapping::text_|. These values are in [0, |text_.length()] to
+  // represent collapsed spaces at the end of block.
   unsigned text_content_start_;
   unsigned text_content_end_;
 

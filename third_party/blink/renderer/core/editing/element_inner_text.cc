@@ -255,10 +255,6 @@ void ElementInnerTextCollector::ProcessLayoutText(const LayoutText& layout_text,
   const NGOffsetMapping* const mapping = GetOffsetMapping(layout_text);
   const NGMappingUnitRange range = mapping->GetMappingUnitsForNode(text_node);
   for (const NGOffsetMappingUnit& unit : range) {
-    // TODO(yosin): Once |NGOffsetMapping| holds valid entries, we should remove
-    // following |CHECK|s. See http://crbug.com/964871
-    CHECK_LE(unit.TextContentStart(), mapping->GetText().length());
-    CHECK_LE(unit.TextContentEnd(), mapping->GetText().length());
     result_.EmitText(
         StringView(mapping->GetText(), unit.TextContentStart(),
                    unit.TextContentEnd() - unit.TextContentStart()));
