@@ -874,7 +874,7 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
 void NGInlineNode::ClearAssociatedFragments(
     const NGPhysicalFragment& fragment,
     const NGBlockBreakToken* block_break_token) {
-  auto* block_flow = To<LayoutBlockFlow>(fragment.GetLayoutObject());
+  auto* block_flow = To<LayoutBlockFlow>(fragment.GetMutableLayoutObject());
   if (!block_flow->ChildrenInline())
     return;
   NGInlineNode node = NGInlineNode(block_flow);

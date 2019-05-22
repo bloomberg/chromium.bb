@@ -52,7 +52,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
     unsigned end_offset,
     scoped_refptr<const ShapeResultView> shape_result)
     : NGPhysicalFragment(
-          source.GetLayoutObject(),
+          source.GetMutableLayoutObject(),
           source.StyleVariant(),
           source.IsHorizontal()
               ? PhysicalSize{shape_result->SnappedWidth(), source.Size().height}

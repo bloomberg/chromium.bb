@@ -192,8 +192,11 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // Commonly used functions for NGPhysicalFragment.
   Node* GetNode() const { return PhysicalFragment().GetNode(); }
-  LayoutObject* GetLayoutObject() const {
+  const LayoutObject* GetLayoutObject() const {
     return PhysicalFragment().GetLayoutObject();
+  }
+  LayoutObject* GetMutableLayoutObject() const {
+    return PhysicalFragment().GetMutableLayoutObject();
   }
   const ComputedStyle& Style() const { return PhysicalFragment().Style(); }
   PhysicalOffset Offset() const {
@@ -316,7 +319,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static void MarkLineBoxesDirtyFor(const LayoutObject& layout_object);
 
   // Returns |LayoutBox| that holds ink overflow for this fragment.
-  LayoutBox* InkOverflowOwnerBox() const;
+  const LayoutBox* InkOverflowOwnerBox() const;
 
   // Re-compute ink overflow of children and return the union.
   PhysicalRect RecalcInkOverflow();

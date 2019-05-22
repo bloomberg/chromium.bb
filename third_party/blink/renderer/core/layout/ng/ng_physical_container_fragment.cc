@@ -77,7 +77,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     // added when we iterate the continuation chain.
     // See NGPhysicalBoxFragment::AddSelfOutlineRects().
     if (!child->IsLineBox()) {
-      LayoutObject* child_layout_object = child->GetLayoutObject();
+      const LayoutObject* child_layout_object = child->GetLayoutObject();
       if (auto* child_layout_block_flow =
               DynamicTo<LayoutBlockFlow>(child_layout_object)) {
         if (child_layout_object->IsElementContinuation() ||
@@ -111,7 +111,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
 
   if (const auto* descendant_box =
           DynamicTo<NGPhysicalBoxFragment>(descendant.get())) {
-    LayoutObject* descendant_layout_object = descendant_box->GetLayoutObject();
+    const LayoutObject* descendant_layout_object =
+        descendant_box->GetLayoutObject();
     DCHECK(descendant_layout_object);
 
     if (descendant_box->HasLayer()) {
@@ -133,7 +134,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     }
 
     DCHECK(descendant_layout_object->IsLayoutInline());
-    LayoutInline* descendant_layout_inline =
+    const LayoutInline* descendant_layout_inline =
         ToLayoutInline(descendant_layout_object);
     // As an optimization, an ancestor has added rects for its line boxes
     // covering descendants' line boxes, so descendants don't need to add line

@@ -27,7 +27,8 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::GetOrCreate(
         new FragmentToNGAbstractInlineTextBoxHashMap();
   }
   const auto it = g_abstract_inline_text_box_map_->find(&fragment);
-  LayoutText* const layout_text = ToLayoutText(fragment.GetLayoutObject());
+  LayoutText* const layout_text =
+      ToLayoutText(fragment.GetMutableLayoutObject());
   if (it != g_abstract_inline_text_box_map_->end()) {
     CHECK(layout_text->HasAbstractInlineTextBox());
     return it->value;

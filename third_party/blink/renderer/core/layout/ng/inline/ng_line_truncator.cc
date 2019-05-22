@@ -79,7 +79,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
   NGTextFragmentBuilder builder(node_, line_style_->GetWritingMode());
   DCHECK(ellipsized_fragment->GetLayoutObject() &&
          ellipsized_fragment->GetLayoutObject()->IsInline());
-  builder.SetText(ellipsized_fragment->GetLayoutObject(), ellipsis_text,
+  builder.SetText(ellipsized_fragment->GetMutableLayoutObject(), ellipsis_text,
                   ellipsis_style, true /* is_ellipsis_style */,
                   std::move(ellipsis_shape_result));
   FontBaseline baseline_type = line_style_->GetFontBaseline();

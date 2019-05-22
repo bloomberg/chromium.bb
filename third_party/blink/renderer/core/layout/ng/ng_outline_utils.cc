@@ -23,7 +23,7 @@ bool NGOutlineUtils::HasPaintedOutline(const ComputedStyle& style,
 
 bool NGOutlineUtils::IsInlineOutlineNonpaintingFragment(
     const NGPhysicalFragment& physical_fragment) {
-  LayoutObject* layout_object = physical_fragment.GetLayoutObject();
+  const LayoutObject* layout_object = physical_fragment.GetLayoutObject();
   if (!layout_object)
     return false;
   if (!layout_object->IsLayoutInline())

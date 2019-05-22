@@ -197,7 +197,12 @@ class CORE_EXPORT NGPhysicalFragment
   // For a line box, |layout_object_| has its containing block but this function
   // returns |nullptr| for the historical reasons. TODO(kojii): We may change
   // this in future. Use |IsLineBox()| instead of testing this is |nullptr|.
-  LayoutObject* GetLayoutObject() const {
+  const LayoutObject* GetLayoutObject() const {
+    return !IsLineBox() ? &layout_object_ : nullptr;
+  }
+  // TODO(kojii): We should not have mutable version at all, the use of this
+  // function should be eliminiated over time.
+  LayoutObject* GetMutableLayoutObject() const {
     return !IsLineBox() ? &layout_object_ : nullptr;
   }
 

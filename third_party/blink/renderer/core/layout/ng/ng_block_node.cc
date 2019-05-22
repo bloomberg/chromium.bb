@@ -736,7 +736,7 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     const auto& box_fragment = *To<NGPhysicalBoxFragment>(child_fragment.get());
     if (IsFirstFragment(constraint_space, box_fragment)) {
       if (box_fragment.IsRenderedLegend())
-        rendered_legend = ToLayoutBox(box_fragment.GetLayoutObject());
+        rendered_legend = ToLayoutBox(box_fragment.GetMutableLayoutObject());
       CopyChildFragmentPosition(box_fragment, child_fragment.Offset(),
                                 offset_from_start);
     }
@@ -784,7 +784,7 @@ void NGBlockNode::CopyChildFragmentPosition(
     const NGPhysicalFragment& fragment,
     const PhysicalOffset fragment_offset,
     const PhysicalOffset additional_offset) {
-  LayoutBox* layout_box = ToLayoutBox(fragment.GetLayoutObject());
+  LayoutBox* layout_box = ToLayoutBox(fragment.GetMutableLayoutObject());
   if (!layout_box)
     return;
 
@@ -829,7 +829,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
 
       // Replaced elements and inline blocks need Location() set relative to
       // their block container.
-      LayoutObject* layout_object = child->GetLayoutObject();
+      LayoutObject* layout_object = child->GetMutableLayoutObject();
       if (layout_object && layout_object->IsBox()) {
         LayoutBox& layout_box = ToLayoutBox(*layout_object);
         PhysicalOffset maybe_flipped_offset = child_offset;

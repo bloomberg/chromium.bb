@@ -60,7 +60,8 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     // </div>
     // TODO(layout-dev): This code should eventually be removed once we handle
     // relative positioned objects directly in the fragment tree.
-    if (LayoutBox* child_box = ToLayoutBoxOrNull(child.GetLayoutObject())) {
+    if (const LayoutBox* child_box =
+            ToLayoutBoxOrNull(child.GetLayoutObject())) {
       top_left_offset += PhysicalOffset(child_box->OffsetForInFlowPosition())
                              .ConvertToLogical(GetWritingMode(), Direction(),
                                                PhysicalSize(), PhysicalSize());

@@ -81,7 +81,7 @@ bool HitTestCulledInlineAncestors(HitTestResult& result,
       parent.PhysicalFragment().IsLineBox() ? parent.Parent()->GetLayoutObject()
                                             : parent.GetLayoutObject();
 
-  LayoutObject* current_layout_object = fragment.GetLayoutObject();
+  const LayoutObject* current_layout_object = fragment.GetLayoutObject();
   for (LayoutObject* culled_parent = current_layout_object->Parent();
        culled_parent && culled_parent != limit_layout_object;
        culled_parent = culled_parent->Parent()) {
@@ -313,7 +313,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
-  LayoutObject* layout_object = fragment.GetLayoutObject();
+  const LayoutObject* layout_object = fragment.GetLayoutObject();
 
   DCHECK(fragment.ChildrenInline());
 
@@ -648,7 +648,7 @@ void NGBoxFragmentPainter::PaintBackground(
 void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
     const NGPhysicalFragment& fragment,
     const PaintInfo& paint_info) {
-  LayoutObject* child_layout_object = fragment.GetLayoutObject();
+  const LayoutObject* child_layout_object = fragment.GetLayoutObject();
   DCHECK(child_layout_object);
   if (child_layout_object->PaintFragment()) {
     // This object will use NGBoxFragmentPainter.
@@ -1178,7 +1178,7 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
   if (fragment.IsInline() && action != kHitTestForeground)
     return false;
 
-  LayoutBox* const layout_box = ToLayoutBox(fragment.GetLayoutObject());
+  LayoutBox* const layout_box = ToLayoutBox(fragment.GetMutableLayoutObject());
 
   // To be passed as |accumulated_offset| to legacy hit test functions of
   // LayoutBox or subclass overrides, where it isn't in any well-defined

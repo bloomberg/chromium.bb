@@ -95,7 +95,7 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
     legend_cutout_rect.Move(paint_rect.offset);
     graphics_context.ClipOut(PixelSnappedIntRect(legend_cutout_rect));
 
-    LayoutObject* layout_object = fieldset_.GetLayoutObject();
+    const LayoutObject* layout_object = fieldset_.GetLayoutObject();
     Node* node = layout_object->GeneratingNode();
     fragment_painter.PaintBorder(*fieldset_.GetLayoutObject(),
                                  layout_object->GetDocument(), node, paint_info,
@@ -107,7 +107,7 @@ void NGFieldsetPainter::PaintLegend(const NGPaintFragment& legend,
                                     const PaintInfo& paint_info) {
   // Unless the legend establishes its own self-painting layer, paint the legend
   // as part of the border phase, according to spec.
-  LayoutObject* legend_object = legend.GetLayoutObject();
+  const LayoutObject* legend_object = legend.GetLayoutObject();
   if (ToLayoutBox(legend_object)->HasSelfPaintingLayer())
     return;
   PaintInfo legend_paint_info = paint_info;

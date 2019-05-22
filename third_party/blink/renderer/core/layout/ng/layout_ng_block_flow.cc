@@ -154,7 +154,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     const NGPhysicalFragment* child_fragment = child.get();
     DCHECK(child_fragment->GetLayoutObject()->IsBox());
     LayoutBox* child_legacy_box =
-        ToLayoutBox(child_fragment->GetLayoutObject());
+        ToLayoutBox(child_fragment->GetMutableLayoutObject());
     PhysicalOffset child_offset = child.Offset();
     if (container_style->IsFlippedBlocksWritingMode()) {
       child_legacy_box->SetX(container_border_box_logical_height -

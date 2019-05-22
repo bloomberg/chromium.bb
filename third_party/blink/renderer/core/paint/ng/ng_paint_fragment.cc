@@ -229,7 +229,7 @@ void NGPaintFragment::List<Traverse>::ToList(
 }
 
 void NGPaintFragment::SetShouldDoFullPaintInvalidation() {
-  if (LayoutObject* layout_object = GetLayoutObject())
+  if (LayoutObject* layout_object = GetMutableLayoutObject())
     layout_object->SetShouldDoFullPaintInvalidation();
 }
 
@@ -381,8 +381,8 @@ void NGPaintFragment::PopulateDescendants(
       DCHECK(!child_fragment->IsOutOfFlowPositioned());
       if (child_fragment->IsText() || child_fragment->IsInlineBox() ||
           child_fragment->IsAtomicInline()) {
-        child->AssociateWithLayoutObject(child_fragment->GetLayoutObject(),
-                                         last_fragment_map);
+        child->AssociateWithLayoutObject(
+            child_fragment->GetMutableLayoutObject(), last_fragment_map);
         child->inline_offset_to_container_box_ =
             inline_offset_to_container_box + child_fragment.Offset();
       } else if (child_fragment->IsLineBox()) {
@@ -503,7 +503,7 @@ NGPaintFragment::NGInkOverflowModel::NGInkOverflowModel(
     : self_ink_overflow(self_ink_overflow),
       contents_ink_overflow(contents_ink_overflow) {}
 
-LayoutBox* NGPaintFragment::InkOverflowOwnerBox() const {
+const LayoutBox* NGPaintFragment::InkOverflowOwnerBox() const {
   const NGPhysicalFragment& fragment = PhysicalFragment();
   if (fragment.IsBox() && !fragment.IsInlineBox())
     return ToLayoutBox(fragment.GetLayoutObject());
@@ -572,7 +572,8 @@ PhysicalRect NGPaintFragment::RecalcContentsInkOverflow() const {
     // A BFC root establishes a separate NGPaintFragment tree. Re-compute the
     // child tree using its LayoutObject, because it may not be NG.
     if (child_fragment.IsBlockFormattingContextRoot()) {
-      LayoutBox* layout_box = ToLayoutBox(child_fragment.GetLayoutObject());
+      LayoutBox* layout_box =
+          ToLayoutBox(child_fragment.GetMutableLayoutObject());
       layout_box->RecalcVisualOverflow();
       child_rect = PhysicalRect(layout_box->VisualOverflowRect());
     } else {
@@ -818,7 +819,7 @@ bool NGPaintFragment::TryMarkLastLineBoxDirtyFor(
 }
 
 void NGPaintFragment::SetShouldDoFullPaintInvalidationRecursively() {
-  if (LayoutObject* layout_object = GetLayoutObject())
+  if (LayoutObject* layout_object = GetMutableLayoutObject())
     layout_object->SetShouldDoFullPaintInvalidation();
 
   for (NGPaintFragment* child : Children())
@@ -831,7 +832,7 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() const {
 
   if (NGPaintFragment* line_box = FirstLineBox()) {
     line_box->SetShouldDoFullPaintInvalidationRecursively();
-    GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+    GetMutableLayoutObject()->SetShouldDoFullPaintInvalidation();
   }
 }
 
@@ -1057,7 +1058,7 @@ Node* NGPaintFragment::NodeForHitTest() const {
     return Parent()->NodeForHitTest();
 
   // When the fragment is a list marker, return the list item.
-  LayoutObject* object = GetLayoutObject();
+  const LayoutObject* object = GetLayoutObject();
   if (object && object->IsLayoutNGListMarker()) {
     if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*object))
       return list_item->GetNode();
@@ -1107,7 +1108,8 @@ String NGPaintFragment::DebugName() const {
   const NGPhysicalFragment& physical_fragment = *physical_fragment_;
   if (physical_fragment.IsBox()) {
     name.Append("NGPhysicalBoxFragment");
-    if (LayoutObject* layout_object = physical_fragment.GetLayoutObject()) {
+    if (const LayoutObject* layout_object =
+            physical_fragment.GetLayoutObject()) {
       DCHECK(physical_fragment.IsBox());
       name.Append(' ');
       name.Append(layout_object->DebugName());

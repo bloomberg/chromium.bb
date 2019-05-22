@@ -1236,7 +1236,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
        !runner.IsNull();
        runner = NGPaintFragmentTraversal::NextInlineLeafOf(runner)) {
     LayoutObject* runner_layout_object =
-        runner.GetFragment()->GetLayoutObject();
+        runner.GetFragment()->GetMutableLayoutObject();
     if (AXObject* result =
             ax_object.AXObjectCache().GetOrCreate(runner_layout_object))
       return result;
@@ -1316,7 +1316,7 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
        !runner.IsNull();
        runner = NGPaintFragmentTraversal::PreviousInlineLeafOf(runner)) {
     LayoutObject* earlier_layout_object =
-        runner.GetFragment()->GetLayoutObject();
+        runner.GetFragment()->GetMutableLayoutObject();
     if (AXObject* result =
             ax_object.AXObjectCache().GetOrCreate(earlier_layout_object))
       return result;

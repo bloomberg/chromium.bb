@@ -84,7 +84,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
 
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
   SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
-  return (static_cast<LayoutBoxModelObject*>(GetLayoutObject()))
+  return (static_cast<const LayoutBoxModelObject*>(GetLayoutObject()))
       ->HasSelfPaintingLayer();
 }
 
@@ -98,7 +98,7 @@ PhysicalRect NGPhysicalBoxFragment::OverflowClipRect(
 
 PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow() const {
   DCHECK(GetLayoutObject());
-  LayoutObject* layout_object = GetLayoutObject();
+  const LayoutObject* layout_object = GetLayoutObject();
   if (layout_object->IsBox()) {
     if (HasOverflowClip())
       return PhysicalRect({}, Size());
