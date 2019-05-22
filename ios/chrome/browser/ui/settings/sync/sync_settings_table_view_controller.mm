@@ -912,7 +912,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (BOOL)shouldDisplaySyncError {
   SyncSetupService::SyncServiceState state =
       _syncSetupService->GetSyncServiceState();
-  return state != SyncSetupService::kNoSyncServiceError;
+  DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
+  // Without unity, kSyncSettingsNotConfirmed should not be shown.
+  return state != SyncSetupService::kNoSyncServiceError &&
+         state != SyncSetupService::kSyncSettingsNotConfirmed;
 }
 
 - (BOOL)shouldDisableSettingsOnSyncError {
