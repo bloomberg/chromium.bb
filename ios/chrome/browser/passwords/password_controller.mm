@@ -479,11 +479,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       return;
     }
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
+      // Don't call completion because current siggestion state should remain
+      // whether user injects a generated password or cancels.
       [self generatePasswordForFormName:formName
-                      completionHandler:^(BOOL injected) {
-                        if (injected)
-                          completion();
-                      }];
+                        fieldIdentifier:fieldIdentifier];
       LogSuggestionClicked(PasswordSuggestionType::SUGGESTED);
       return;
     }
@@ -764,7 +763,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 
 - (void)generatePasswordForFormName:(NSString*)formName
-                  completionHandler:(void (^)(BOOL))completionHandler {
+                    fieldIdentifier:(NSString*)fieldIdentifier {
   if (![self getFormForGenerationFromFormName:formName])
     return;
 
@@ -798,6 +797,15 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
   __weak PasswordController* weakSelf = self;
 
+  auto restoreFocus = ^{
+    [weakSelf generatePasswordPopupDismissed];
+    // Suggestion are still visible but they lost their state, so by forcing
+    // a focus event on the current field, it will reset the suggestions.
+    [weakSelf.formHelper focusOnForm:formName
+                     fieldIdentifier:fieldIdentifier
+                   completionHandler:nil];
+  };
+
   [self.actionSheetCoordinator
       addItemWithTitle:GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD)
                 action:^{
@@ -805,18 +813,12 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                       injectGeneratedPasswordForFormName:formName
                                        generatedPassword:
                                            weakSelf.generatedPotentialPassword
-                                       completionHandler:completionHandler];
-                  [weakSelf generatePasswordPopupDismissed];
+                                       completionHandler:restoreFocus];
                 }
                  style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
-                                         action:^{
-                                           if (completionHandler)
-                                             completionHandler(NO);
-                                           [weakSelf
-                                               generatePasswordPopupDismissed];
-                                         }
+                                         action:restoreFocus
                                           style:UIAlertActionStyleCancel];
 
   // Set 'suggest' as preferred action, as per UX.
@@ -861,7 +863,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 - (void)injectGeneratedPasswordForFormName:(NSString*)formName
                          generatedPassword:(NSString*)generatedPassword
-                         completionHandler:(void (^)(BOOL))completionHandler {
+                         completionHandler:(void (^)())completionHandler {
   const autofill::NewPasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
   if (!generation_data)
@@ -889,7 +891,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       self.passwordGeneratedIdentifier = newPasswordIdentifier;
     }
     if (completionHandler)
-      completionHandler(YES);
+      completionHandler();
   };
 
   [self.formHelper fillPasswordForm:formName
