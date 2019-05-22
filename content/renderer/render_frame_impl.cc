@@ -5917,8 +5917,18 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
     if (params->origin.scheme() != url::kFileScheme ||
         !render_view_->GetWebkitPreferences()
              .allow_universal_access_from_file_urls) {
-      CHECK(params->origin.IsSameOriginWith(url::Origin::Create(params->url)))
-          << " url:" << params->url << " origin:" << params->origin;
+      if (!params->origin.IsSameOriginWith(url::Origin::Create(params->url))) {
+        base::debug::CrashKeyString* url = base::debug::AllocateCrashKeyString(
+            "mismatched_url", base::debug::CrashKeySize::Size256);
+        base::debug::CrashKeyString* origin =
+            base::debug::AllocateCrashKeyString(
+                "mismatched_origin", base::debug::CrashKeySize::Size256);
+        base::debug::ScopedCrashKeyString(url,
+                                          params->url.possibly_invalid_spec());
+        base::debug::ScopedCrashKeyString(origin,
+                                          params->origin.GetDebugString());
+        CHECK(false) << " url:" << params->url << " origin:" << params->origin;
+      }
     }
   }
   params->request_id = internal_data->request_id();
