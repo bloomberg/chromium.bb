@@ -2186,6 +2186,14 @@ EVENT_TYPE(AUTH_CONTROLLER)
 //  }
 EVENT_TYPE(AUTH_BOUND_TO_CONTROLLER)
 
+// Record the initialization of an HttpAuthHandler derivative.
+//
+// The END phase has the following parameters:
+//  {
+//       "succeeded": <bool indicating whether the initialization succeeded>
+//  }
+EVENT_TYPE(AUTH_HANDLER_INIT)
+
 // Records the invocation and completion of a single token generation operation.
 //
 // The END phase has the following parameters:

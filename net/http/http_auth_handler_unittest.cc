@@ -56,13 +56,17 @@ TEST(HttpAuthHandlerTest, NetLog) {
       TestNetLogEntry::List entries;
       test_net_log.GetEntries(&entries);
 
-      ASSERT_EQ(3u, entries.size());
+      ASSERT_EQ(5u, entries.size());
       EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                        NetLogEventType::AUTH_HANDLER_INIT));
+      EXPECT_TRUE(
+          LogContainsEndEvent(entries, 1, NetLogEventType::AUTH_HANDLER_INIT));
+      EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
                                         NetLogEventType::AUTH_GENERATE_TOKEN));
-      EXPECT_TRUE(LogContainsEndEvent(entries, 1,
+      EXPECT_TRUE(LogContainsEndEvent(entries, 3,
                                       NetLogEventType::AUTH_GENERATE_TOKEN));
       EXPECT_TRUE(LogContainsEntryWithType(
-          entries, 2, NetLogEventType::AUTH_HANDLE_CHALLENGE));
+          entries, 4, NetLogEventType::AUTH_HANDLE_CHALLENGE));
     }
   }
 }

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 
 namespace net {
@@ -36,7 +37,10 @@ bool HttpAuthHandler::InitFromChallenge(HttpAuthChallengeTokenizer* challenge,
   net_log_ = net_log;
 
   auth_challenge_ = challenge->challenge_text();
+  net_log_.BeginEvent(NetLogEventType::AUTH_HANDLER_INIT);
   bool ok = Init(challenge, ssl_info);
+  net_log_.EndEvent(NetLogEventType::AUTH_HANDLER_INIT,
+                    NetLog::BoolCallback("succeeded", ok));
 
   // Init() is expected to set the scheme, realm, score, and properties.  The
   // realm may be empty.
