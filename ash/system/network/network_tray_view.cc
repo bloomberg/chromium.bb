@@ -33,7 +33,7 @@ network_icon::IconType GetIconType() {
 
 NetworkTrayView::NetworkTrayView(Shelf* shelf, ActiveNetworkIcon::Type type)
     : TrayItemView(shelf), type_(type) {
-  Shell::Get()->system_tray_model()->network_observer()->AddObserver(this);
+  Shell::Get()->system_tray_model()->network_state_model()->AddObserver(this);
   CreateImageView();
   UpdateNetworkStateHandlerIcon();
   UpdateConnectionStatus(true /* notify_a11y */);
@@ -41,7 +41,8 @@ NetworkTrayView::NetworkTrayView(Shelf* shelf, ActiveNetworkIcon::Type type)
 
 NetworkTrayView::~NetworkTrayView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
-  Shell::Get()->system_tray_model()->network_observer()->RemoveObserver(this);
+  Shell::Get()->system_tray_model()->network_state_model()->RemoveObserver(
+      this);
 }
 
 const char* NetworkTrayView::GetClassName() const {

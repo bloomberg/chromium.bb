@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
-#define ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
+#ifndef ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_MODEL_H_
+#define ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_MODEL_H_
 
 #include <vector>
 
@@ -21,10 +21,10 @@ class Connector;
 
 namespace ash {
 
-// TrayNetworkStateObserver observes the mojo interface and tracks the devices
+// TrayNetworkStateModel observes the mojo interface and tracks the devices
 // and active networks. It has UI observers that are informed when important
 // changes occur.
-class ASH_EXPORT TrayNetworkStateObserver
+class ASH_EXPORT TrayNetworkStateModel
     : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
   class Observer : public base::CheckedObserver {
@@ -36,8 +36,8 @@ class ASH_EXPORT TrayNetworkStateObserver
     virtual void NetworkListChanged();
   };
 
-  explicit TrayNetworkStateObserver(service_manager::Connector* connector);
-  ~TrayNetworkStateObserver() override;
+  explicit TrayNetworkStateModel(service_manager::Connector* connector);
+  ~TrayNetworkStateModel() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -111,9 +111,9 @@ class ASH_EXPORT TrayNetworkStateObserver
   chromeos::network_config::mojom::NetworkStatePropertiesPtr active_cellular_;
   chromeos::network_config::mojom::NetworkStatePropertiesPtr active_vpn_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateObserver);
+  DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateModel);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
+#endif  // ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_MODEL_H_

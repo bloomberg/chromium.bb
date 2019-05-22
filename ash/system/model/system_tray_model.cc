@@ -14,7 +14,7 @@
 #include "ash/system/model/update_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/network/active_network_icon.h"
-#include "ash/system/network/tray_network_state_observer.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/logging.h"
@@ -29,10 +29,10 @@ SystemTrayModel::SystemTrayModel(service_manager::Connector* connector)
       tracing_(std::make_unique<TracingModel>()),
       update_model_(std::make_unique<UpdateModel>()),
       virtual_keyboard_(std::make_unique<VirtualKeyboardModel>()),
-      network_observer_(std::make_unique<TrayNetworkStateObserver>(connector)),
+      network_state_model_(std::make_unique<TrayNetworkStateModel>(connector)),
       active_network_icon_(
           std::make_unique<ActiveNetworkIcon>(connector,
-                                              network_observer_.get())) {}
+                                              network_state_model_.get())) {}
 
 SystemTrayModel::~SystemTrayModel() = default;
 

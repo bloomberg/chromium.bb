@@ -41,10 +41,10 @@ class NetworkIconTest : public testing::Test {
 
   void SetUp() override {
     SetUpDefaultNetworkState();
-    network_state_observer_ = std::make_unique<TrayNetworkStateObserver>(
+    network_state_model_ = std::make_unique<TrayNetworkStateModel>(
         network_config_helper_.connector());
     active_network_icon_ = std::make_unique<ActiveNetworkIcon>(
-        network_config_helper_.connector(), network_state_observer_.get());
+        network_config_helper_.connector(), network_state_model_.get());
   }
 
   void TearDown() override {
@@ -153,7 +153,7 @@ class NetworkIconTest : public testing::Test {
  private:
   const base::MessageLoop message_loop_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
-  std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
+  std::unique_ptr<TrayNetworkStateModel> network_state_model_;
   std::unique_ptr<ActiveNetworkIcon> active_network_icon_;
 
   // Preconfigured service paths:

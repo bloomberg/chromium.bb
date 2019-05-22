@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/network/tray_network_state_observer.h"
+#include "ash/system/network/tray_network_state_model.h"
 
 #include <set>
 #include <string>
@@ -47,7 +47,7 @@ NetworkStatePropertiesPtr GetConnectingOrConnected(
 
 namespace ash {
 
-TrayNetworkStateObserver::TrayNetworkStateObserver(
+TrayNetworkStateModel::TrayNetworkStateModel(
     service_manager::Connector* connector)
     : update_frequency_(kUpdateFrequencyMs) {
   if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
@@ -58,45 +58,45 @@ TrayNetworkStateObserver::TrayNetworkStateObserver(
     BindCrosNetworkConfig(connector);
 }
 
-TrayNetworkStateObserver::~TrayNetworkStateObserver() = default;
+TrayNetworkStateModel::~TrayNetworkStateModel() = default;
 
-void TrayNetworkStateObserver::AddObserver(Observer* observer) {
+void TrayNetworkStateModel::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void TrayNetworkStateObserver::RemoveObserver(Observer* observer) {
+void TrayNetworkStateModel::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-DeviceStateProperties* TrayNetworkStateObserver::GetDevice(NetworkType type) {
+DeviceStateProperties* TrayNetworkStateModel::GetDevice(NetworkType type) {
   auto iter = devices_.find(type);
   if (iter == devices_.end())
     return nullptr;
   return iter->second.get();
 }
 
-DeviceStateType TrayNetworkStateObserver::GetDeviceState(NetworkType type) {
+DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
   DeviceStateProperties* device = GetDevice(type);
   return device ? device->state : DeviceStateType::kUnavailable;
 }
 
 // CrosNetworkConfigObserver
 
-void TrayNetworkStateObserver::OnActiveNetworksChanged(
+void TrayNetworkStateModel::OnActiveNetworksChanged(
     std::vector<NetworkStatePropertiesPtr> networks) {
   UpdateActiveNetworks(std::move(networks));
   SendActiveNetworkStateChanged();
 }
 
-void TrayNetworkStateObserver::OnNetworkStateListChanged() {
+void TrayNetworkStateModel::OnNetworkStateListChanged() {
   NotifyNetworkListChanged();
 }
 
-void TrayNetworkStateObserver::OnDeviceStateListChanged() {
+void TrayNetworkStateModel::OnDeviceStateListChanged() {
   GetDeviceStateList();
 }
 
-void TrayNetworkStateObserver::BindCrosNetworkConfig(
+void TrayNetworkStateModel::BindCrosNetworkConfig(
     service_manager::Connector* connector) {
   // Ensure bindings are reset in case this is called after a failure.
   cros_network_config_observer_binding_.Close();
@@ -111,16 +111,16 @@ void TrayNetworkStateObserver::BindCrosNetworkConfig(
 
   // If the connection is lost (e.g. due to a crash), attempt to rebind it.
   cros_network_config_ptr_.set_connection_error_handler(
-      base::BindOnce(&TrayNetworkStateObserver::BindCrosNetworkConfig,
+      base::BindOnce(&TrayNetworkStateModel::BindCrosNetworkConfig,
                      base::Unretained(this), connector));
 }
 
-void TrayNetworkStateObserver::GetDeviceStateList() {
+void TrayNetworkStateModel::GetDeviceStateList() {
   cros_network_config_ptr_->GetDeviceStateList(base::BindOnce(
-      &TrayNetworkStateObserver::OnGetDeviceStateList, base::Unretained(this)));
+      &TrayNetworkStateModel::OnGetDeviceStateList, base::Unretained(this)));
 }
 
-void TrayNetworkStateObserver::OnGetDeviceStateList(
+void TrayNetworkStateModel::OnGetDeviceStateList(
     std::vector<DeviceStatePropertiesPtr> devices) {
   devices_.clear();
   for (auto& device : devices) {
@@ -133,16 +133,16 @@ void TrayNetworkStateObserver::OnGetDeviceStateList(
   GetActiveNetworks();  // Will trigger an observer event.
 }
 
-void TrayNetworkStateObserver::GetActiveNetworks() {
+void TrayNetworkStateModel::GetActiveNetworks() {
   DCHECK(cros_network_config_ptr_);
   cros_network_config_ptr_->GetNetworkStateList(
       NetworkFilter::New(FilterType::kActive, NetworkType::kAll,
                          /*limit=*/0),
-      base::BindOnce(&TrayNetworkStateObserver::OnActiveNetworksChanged,
+      base::BindOnce(&TrayNetworkStateModel::OnActiveNetworksChanged,
                      base::Unretained(this)));
 }
 
-void TrayNetworkStateObserver::UpdateActiveNetworks(
+void TrayNetworkStateModel::UpdateActiveNetworks(
     std::vector<NetworkStatePropertiesPtr> networks) {
   active_cellular_.reset();
   active_vpn_.reset();
@@ -196,27 +196,27 @@ void TrayNetworkStateObserver::UpdateActiveNetworks(
       GetConnectingOrConnected(connecting_non_cellular, connected_non_cellular);
 }
 
-void TrayNetworkStateObserver::NotifyNetworkListChanged() {
+void TrayNetworkStateModel::NotifyNetworkListChanged() {
   if (timer_.IsRunning())
     return;
   timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(update_frequency_),
-      base::BindRepeating(&TrayNetworkStateObserver::SendNetworkListChanged,
+      base::BindRepeating(&TrayNetworkStateModel::SendNetworkListChanged,
                           base::Unretained(this)));
 }
 
-void TrayNetworkStateObserver::SendActiveNetworkStateChanged() {
+void TrayNetworkStateModel::SendActiveNetworkStateChanged() {
   for (auto& observer : observer_list_)
     observer.ActiveNetworkStateChanged();
 }
 
-void TrayNetworkStateObserver::SendNetworkListChanged() {
+void TrayNetworkStateModel::SendNetworkListChanged() {
   for (auto& observer : observer_list_)
     observer.NetworkListChanged();
 }
 
-void TrayNetworkStateObserver::Observer::ActiveNetworkStateChanged() {}
+void TrayNetworkStateModel::Observer::ActiveNetworkStateChanged() {}
 
-void TrayNetworkStateObserver::Observer::NetworkListChanged() {}
+void TrayNetworkStateModel::Observer::NetworkListChanged() {}
 
 }  // namespace ash

@@ -64,11 +64,12 @@ bool IsVPNConnected() {
 VPNFeaturePodController::VPNFeaturePodController(
     UnifiedSystemTrayController* tray_controller)
     : tray_controller_(tray_controller) {
-  Shell::Get()->system_tray_model()->network_observer()->AddObserver(this);
+  Shell::Get()->system_tray_model()->network_state_model()->AddObserver(this);
 }
 
 VPNFeaturePodController::~VPNFeaturePodController() {
-  Shell::Get()->system_tray_model()->network_observer()->RemoveObserver(this);
+  Shell::Get()->system_tray_model()->network_state_model()->RemoveObserver(
+      this);
 }
 
 FeaturePodButton* VPNFeaturePodController::CreateButton() {

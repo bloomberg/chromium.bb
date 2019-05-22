@@ -169,14 +169,15 @@ NetworkFeaturePodButton::NetworkFeaturePodButton(
   // NetworkHandler can be uninitialized in unit tests.
   if (!NetworkHandler::IsInitialized())
     return;
-  Shell::Get()->system_tray_model()->network_observer()->AddObserver(this);
+  Shell::Get()->system_tray_model()->network_state_model()->AddObserver(this);
   ShowDetailedViewArrow();
   Update();
 }
 
 NetworkFeaturePodButton::~NetworkFeaturePodButton() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
-  Shell::Get()->system_tray_model()->network_observer()->RemoveObserver(this);
+  Shell::Get()->system_tray_model()->network_state_model()->RemoveObserver(
+      this);
 }
 
 void NetworkFeaturePodButton::NetworkIconChanged() {

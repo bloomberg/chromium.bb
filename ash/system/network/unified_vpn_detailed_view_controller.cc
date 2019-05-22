@@ -16,11 +16,12 @@ UnifiedVPNDetailedViewController::UnifiedVPNDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
           std::make_unique<DetailedViewDelegate>(tray_controller)) {
-  Shell::Get()->system_tray_model()->network_observer()->AddObserver(this);
+  Shell::Get()->system_tray_model()->network_state_model()->AddObserver(this);
 }
 
 UnifiedVPNDetailedViewController::~UnifiedVPNDetailedViewController() {
-  Shell::Get()->system_tray_model()->network_observer()->RemoveObserver(this);
+  Shell::Get()->system_tray_model()->network_state_model()->RemoveObserver(
+      this);
 }
 
 views::View* UnifiedVPNDetailedViewController::CreateView() {

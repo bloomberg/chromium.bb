@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/network/network_icon.h"
-#include "ash/system/network/tray_network_state_observer.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -40,7 +40,7 @@ namespace ash {
 // TODO(stevenjb): Move all test coverage to active_network_icon_unittest.cc and
 // test Dual icon methods.
 // This class is also responsible for periodically purging the icon cache.
-class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateObserver::Observer {
+class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
  public:
   enum class Type {
     kSingle,    // A single network icon in the tray.
@@ -49,7 +49,7 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateObserver::Observer {
   };
 
   ActiveNetworkIcon(service_manager::Connector* connector,
-                    TrayNetworkStateObserver* model);
+                    TrayNetworkStateModel* model);
   ~ActiveNetworkIcon() override;
 
   // Provides the a11y and tooltip strings for |type|.
@@ -86,13 +86,13 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateObserver::Observer {
 
   void SetCellularUninitializedMsg();
 
-  // TrayNetworkStateObserver::Observer
+  // TrayNetworkStateModel::Observer
   void ActiveNetworkStateChanged() override;
   void NetworkListChanged() override;
 
   void PurgeNetworkIconCache();
 
-  TrayNetworkStateObserver* model_;
+  TrayNetworkStateModel* model_;
 
   chromeos::network_config::mojom::CrosNetworkConfigPtr
       cros_network_config_ptr_;

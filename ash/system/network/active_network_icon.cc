@@ -49,7 +49,7 @@ SkColor GetDefaultColorForIconType(network_icon::IconType icon_type) {
 }  // namespace
 
 ActiveNetworkIcon::ActiveNetworkIcon(service_manager::Connector* connector,
-                                     TrayNetworkStateObserver* model)
+                                     TrayNetworkStateModel* model)
     : model_(model), weak_ptr_factory_(this) {
   if (connector)  // May be null in tests.
     BindCrosNetworkConfig(connector);
@@ -296,7 +296,7 @@ void ActiveNetworkIcon::SetCellularUninitializedMsg() {
     cellular_uninitialized_msg_ = 0;
 }
 
-// TrayNetworkStateObserver::Observer
+// TrayNetworkStateModel::Observer
 
 void ActiveNetworkIcon::ActiveNetworkStateChanged() {
   SetCellularUninitializedMsg();
