@@ -29,7 +29,7 @@
 
 #Same as ko.cti except for punctuation dot changes.
 
-include chardefs.cti All character definition opcodes
+include en-chardefs.cti English character definition opcodes
 include braille-patterns.cti
 
 # Braille indicators

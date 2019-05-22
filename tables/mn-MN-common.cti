@@ -225,7 +225,7 @@ begemphphrase italic 456
 include litdigits6Dots.uti
 
 # Letters are defined in en-chardefs
-include chardefs.cti
+include en-chardefs.cti
 
 # accented letters
 

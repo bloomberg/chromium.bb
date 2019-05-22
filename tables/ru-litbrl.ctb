@@ -21,7 +21,7 @@
 # Display and character definitions:
 include ru-letters.dis
 include ru-chardefs.cti
-include chardefs.cti
+include en-chardefs.cti English character definitions
 
 # Braille indicators:
 numsign 3456  number sign, just a dots operand

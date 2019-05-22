@@ -18,7 +18,7 @@
 # -------------------------
 
 # Latin symbols
-include chardefs.cti
+include en-chardefs.cti English character definitions
 include litdigits6Dots.uti
 numsign 3456
 
