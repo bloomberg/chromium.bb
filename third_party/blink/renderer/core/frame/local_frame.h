@@ -422,6 +422,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // navigations go through.
   void MaybeLogAdClickNavigation();
 
+  void DispatchDidHandleOnloadEvents();
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -553,6 +555,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   mojom::FrameLifecycleState lifecycle_state_ =
       mojom::FrameLifecycleState::kRunning;
+  base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {
