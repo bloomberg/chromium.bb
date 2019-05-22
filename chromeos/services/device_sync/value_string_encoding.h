@@ -20,6 +20,13 @@ namespace util {
 // NOTE: Do not change the encoding scheme because some output values are
 // persisted as preferences.
 
+// Converts input string to Base64Url-encoded std::string.
+std::string EncodeAsString(const std::string& unencoded_string);
+
+// Inverse operation to EncodeAsString(). Returns null if |encoded_string|
+// cannot be decoded.
+base::Optional<std::string> DecodeFromString(const std::string& encoded_string);
+
 // Converts input string to Base64Url-encoded base::Value string. This is
 // particularly useful when storing byte strings as preferences because
 // base::Value strings must be valid UTF-8 strings.

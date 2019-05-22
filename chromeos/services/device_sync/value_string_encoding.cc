@@ -13,13 +13,29 @@ namespace device_sync {
 
 namespace util {
 
-base::Value EncodeAsValueString(const std::string& unencoded_string) {
+std::string EncodeAsString(const std::string& unencoded_string) {
   std::string encoded_string;
   base::Base64UrlEncode(unencoded_string,
                         base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &encoded_string);
 
-  return base::Value(encoded_string);
+  return encoded_string;
+}
+
+base::Optional<std::string> DecodeFromString(
+    const std::string& encoded_string) {
+  std::string decoded_string;
+  if (!base::Base64UrlDecode(encoded_string,
+                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                             &decoded_string)) {
+    return base::nullopt;
+  }
+
+  return decoded_string;
+}
+
+base::Value EncodeAsValueString(const std::string& unencoded_string) {
+  return base::Value(EncodeAsString(unencoded_string));
 }
 
 base::Optional<std::string> DecodeFromValueString(
@@ -27,14 +43,7 @@ base::Optional<std::string> DecodeFromValueString(
   if (!encoded_value_string || !encoded_value_string->is_string())
     return base::nullopt;
 
-  std::string decoded_string;
-  if (!base::Base64UrlDecode(encoded_value_string->GetString(),
-                             base::Base64UrlDecodePolicy::REQUIRE_PADDING,
-                             &decoded_string)) {
-    return base::nullopt;
-  }
-
-  return decoded_string;
+  return DecodeFromString(encoded_value_string->GetString());
 }
 
 base::Value EncodeProtoMessageAsValueString(
