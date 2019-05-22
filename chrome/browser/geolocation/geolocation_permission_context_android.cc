@@ -232,8 +232,7 @@ GeolocationPermissionContextAndroid::UpdatePermissionStatusWithDeviceStatus(
     PermissionResult result,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
-  if (base::FeatureList::IsEnabled(features::kLsdPermissionPrompt) &&
-      result.content_setting != CONTENT_SETTING_BLOCK) {
+  if (result.content_setting != CONTENT_SETTING_BLOCK) {
     if (!location_settings_->IsSystemLocationSettingEnabled()) {
       // As this is returning the status for possible future permission
       // requests, whose gesture status is unknown, pretend there is a user
@@ -391,9 +390,6 @@ bool GeolocationPermissionContextAndroid::CanShowLocationSettingsDialog(
     const GURL& requesting_origin,
     bool user_gesture,
     bool ignore_backoff) const {
-  if (!base::FeatureList::IsEnabled(features::kLsdPermissionPrompt))
-    return false;
-
   bool is_default_search = IsRequestingOriginDSE(requesting_origin);
   // If this isn't the default search engine, a gesture is needed.
   if (!is_default_search && !user_gesture) {

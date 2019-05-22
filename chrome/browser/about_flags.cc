@@ -2257,9 +2257,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillRefreshStyleName,
      flag_descriptions::kEnableAutofillRefreshStyleDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillRefreshStyleAndroid)},
-    {"lsd-permission-prompt", flag_descriptions::kLsdPermissionPromptName,
-     flag_descriptions::kLsdPermissionPromptDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kLsdPermissionPrompt)},
 #endif
 
 #if defined(OS_CHROMEOS)

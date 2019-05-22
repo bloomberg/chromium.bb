@@ -1337,9 +1337,6 @@ extern const char kIncognitoStringsDescription[];
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 
-extern const char kLsdPermissionPromptName[];
-extern const char kLsdPermissionPromptDescription[];
-
 extern const char kManualPasswordGenerationAndroidName[];
 extern const char kManualPasswordGenerationAndroidDescription[];
 

@@ -357,11 +357,6 @@ const base::Feature kIntentPicker{"IntentPicker",
 const base::Feature kKidsManagementUrlClassification{
     "KidsManagementUrlClassification", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables the Location Settings Dialog (LSD). The LSD is an Android
-// system-level geolocation permission prompt.
-const base::Feature kLsdPermissionPrompt{"LsdPermissionPrompt",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_MACOSX)
 // Uses NSFullSizeContentViewWindowMask where available instead of adding our
 // own views to the window frame. This is a temporary kill switch, it can be
