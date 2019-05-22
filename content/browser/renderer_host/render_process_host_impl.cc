@@ -3439,6 +3439,7 @@ void RenderProcessHostImpl::Cleanup() {
             false /* already_dead */);
     info.status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
     info.exit_code = 0;
+    PopulateTerminationInfoRendererFields(&info);
     for (auto& observer : observers_) {
       observer.RenderProcessExited(this, info);
     }
@@ -3494,6 +3495,12 @@ void RenderProcessHostImpl::Cleanup() {
 
   instance_weak_factory_ =
       std::make_unique<base::WeakPtrFactory<RenderProcessHostImpl>>(this);
+}
+
+void RenderProcessHostImpl::PopulateTerminationInfoRendererFields(
+    ChildProcessTerminationInfo* info) {
+  info->renderer_has_visible_clients = VisibleClientCount() > 0;
+  info->renderer_was_subframe = GetFrameDepth() > 0;
 }
 
 void RenderProcessHostImpl::AddPendingView() {
@@ -4121,6 +4128,7 @@ void RenderProcessHostImpl::ProcessDied(
 #endif
     }
   }
+  PopulateTerminationInfoRendererFields(&info);
 
   child_process_launcher_.reset();
   is_dead_ = true;
@@ -4480,6 +4488,7 @@ void RenderProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   ChildProcessTerminationInfo info;
   info.status = base::TERMINATION_STATUS_LAUNCH_FAILED;
   info.exit_code = error_code;
+  PopulateTerminationInfoRendererFields(&info);
   ProcessDied(true, &info);
 }
 

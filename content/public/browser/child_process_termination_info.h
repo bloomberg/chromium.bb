@@ -34,6 +34,15 @@ struct CONTENT_EXPORT ChildProcessTerminationInfo {
   // ChildProcessTerminationInfo is computed.
   base::TimeDelta uptime = base::TimeDelta::Max();
 
+  // Populated only for renderer process. True if there are any visible
+  // clients at the time of process death.
+  bool renderer_has_visible_clients = false;
+
+  // Populated only for renderer process. True if
+  // RenderProcessHost::GetFrameDepth is bigger than 0. Note this is not exactly
+  // the same as not having main frames.
+  bool renderer_was_subframe = false;
+
 #if defined(OS_ANDROID)
   // True if child service has strong or moderate binding at time of death.
   base::android::ChildBindingState binding_state =
