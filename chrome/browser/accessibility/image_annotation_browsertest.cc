@@ -63,7 +63,7 @@ std::vector<std::string> DescribeNodesWithAnnotations(
 
 bool HasNodeWithAnnotationStatus(const ui::AXTreeUpdate& tree_update,
                                  ax::mojom::ImageAnnotationStatus status) {
-  for (auto node_data : tree_update.nodes) {
+  for (const auto& node_data : tree_update.nodes) {
     if (node_data.GetImageAnnotationStatus() == status)
       return true;
   }
@@ -375,8 +375,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationError) {
   ui_test_utils::NavigateToURL(
       browser(), https_server_.GetURL("/image_annotation_doc.html"));
 
-  // Block until the annotation status for the root is empty. If that
-  // never occurs then the test will time out.
+  // Block until the annotation status for the root contains an error code. If
+  // that never occurs then the test will time out.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui::AXTreeUpdate snapshot =
@@ -451,6 +451,80 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
   while (!HasNodeWithAnnotationStatus(
       snapshot,
       ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme)) {
+    content::WaitForAccessibilityTreeToChange(web_contents);
+    snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
+                       TutorMessageOnlyOnFirstImage) {
+  // We should not promote the image annotation service on more than one image
+  // in the same renderer.
+
+  FakeAnnotator::SetReturnOcrResults(false);
+  FakeAnnotator::SetReturnLabelResults(false);
+
+  // The following test page should have at least two images on it.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/image_annotation.html"));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui::AXMode mode = ui::kAXModeComplete;
+  mode.set_mode(ui::AXMode::kLabelImages, false);
+  web_contents->SetAccessibilityMode(mode);
+
+  // Block until there are at least two images that have been processed. One of
+  // them should get the tutor message and the other shouldn't. The annotation
+  // status for the image that didn't get the tutor message should be
+  // kSilentlyEligibleForAnnotation whilst the status for the image that did
+  // should be kEligibleForAnnotation. If that never occurs then the test will
+  // time out.
+  ui::AXTreeUpdate snapshot =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+  while (
+      !HasNodeWithAnnotationStatus(
+          snapshot,
+          ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation) ||
+      !HasNodeWithAnnotationStatus(
+          snapshot, ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation)) {
+    content::WaitForAccessibilityTreeToChange(web_contents);
+    snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
+                       TutorMessageOnlyOnFirstImageInLinks) {
+  // We should not promote the image annotation service on more than one image
+  // in the same renderer.
+
+  FakeAnnotator::SetReturnOcrResults(false);
+  FakeAnnotator::SetReturnLabelResults(false);
+
+  // The following test page should have at least two images on it.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/image_annotation_link.html"));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui::AXMode mode = ui::kAXModeComplete;
+  mode.set_mode(ui::AXMode::kLabelImages, false);
+  web_contents->SetAccessibilityMode(mode);
+
+  // Block until there are at least two images that have been processed. One of
+  // them should get the tutor message and the other shouldn't. The annotation
+  // status for the image that didn't get the tutor message should be
+  // kSilentlyEligibleForAnnotation whilst the status for the image that did
+  // should be kEligibleForAnnotation. If that never occurs then the test will
+  // time out.
+  ui::AXTreeUpdate snapshot =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+  while (
+      !HasNodeWithAnnotationStatus(
+          snapshot,
+          ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation) ||
+      !HasNodeWithAnnotationStatus(
+          snapshot, ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation)) {
     content::WaitForAccessibilityTreeToChange(web_contents);
     snapshot = content::GetAccessibilityTreeSnapshot(web_contents);
   }

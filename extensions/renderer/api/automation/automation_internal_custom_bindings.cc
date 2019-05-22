@@ -1018,6 +1018,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
           case ax::mojom::ImageAnnotationStatus::kNone:
           case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
           case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+          case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
             break;
 
           case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
@@ -2089,6 +2090,7 @@ AutomationInternalCustomBindings::GetLocalizedStringForImageAnnotationStatus(
     case ax::mojom::ImageAnnotationStatus::kNone:
     case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
       return std::string();
   }

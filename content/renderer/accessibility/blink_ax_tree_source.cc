@@ -1141,7 +1141,7 @@ void BlinkAXTreeSource::TruncateAndAddStringAttribute(
   }
 }
 
-void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
+void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
                                             AXContentNodeData* dst) const {
   if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return;
@@ -1198,7 +1198,6 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
 
   // Skip images that are too small to label. This also catches
   // unloaded images where the size is unknown.
-
   WebAXObject offset_container;
   WebFloatRect bounds;
   SkMatrix44 container_transform;
@@ -1222,8 +1221,15 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   }
 
   if (!image_annotator_) {
-    dst->SetImageAnnotationStatus(
-        ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+    if (!first_unlabeled_image_id_.has_value() ||
+        first_unlabeled_image_id_.value() == src.AxID()) {
+      dst->SetImageAnnotationStatus(
+          ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+      first_unlabeled_image_id_ = src.AxID();
+    } else {
+      dst->SetImageAnnotationStatus(
+          ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation);
+    }
     return;
   }
 

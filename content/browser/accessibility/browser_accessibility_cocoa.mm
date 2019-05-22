@@ -977,6 +977,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     case ax::mojom::ImageAnnotationStatus::kNone:
     case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
       break;
   }
 
@@ -1578,6 +1579,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     case ax::mojom::ImageAnnotationStatus::kNone:
     case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
       break;
   }
 
@@ -1726,7 +1728,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
 
   if (owner_->GetData().GetImageAnnotationStatus() ==
-      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation) {
+          ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation ||
+      owner_->GetData().GetImageAnnotationStatus() ==
+          ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation) {
     return base::SysUTF16ToNSString(
         owner_->GetLocalizedRoleDescriptionForUnlabeledImage());
   }

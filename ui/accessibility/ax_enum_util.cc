@@ -2618,6 +2618,8 @@ const char* ToString(ax::mojom::ImageAnnotationStatus status) {
       return "ineligibleForAnnotation";
     case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
       return "eligibleForAnnotation";
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
+      return "silentlyEligibleForAnnotation";
     case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
       return "annotationPending";
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
@@ -2643,6 +2645,8 @@ ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
     return ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation;
   if (0 == strcmp(status, "eligibleForAnnotation"))
     return ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation;
+  if (0 == strcmp(status, "silentlyEligibleForAnnotation"))
+    return ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation;
   if (0 == strcmp(status, "annotationPending"))
     return ax::mojom::ImageAnnotationStatus::kAnnotationPending;
   if (0 == strcmp(status, "annotationSucceeded"))

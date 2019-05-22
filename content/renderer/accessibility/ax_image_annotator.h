@@ -93,7 +93,7 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
   virtual ContentClient* GetContentClient() const;
 
   // Given a WebImage, it uses the URL of the main document and the src
-  // attribute of the image, generates a unique identifier for the image that
+  // attribute of the image, to generate a unique identifier for the image that
   // could be provided to the image annotation service.
   //
   // This method is virtual to allow overriding it from tests.

@@ -1143,6 +1143,7 @@ void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
         case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
         case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
         case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+        case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
           break;
         case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
         case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:

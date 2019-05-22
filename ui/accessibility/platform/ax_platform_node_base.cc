@@ -497,7 +497,9 @@ base::string16 AXPlatformNodeBase::GetRangeValueText() const {
 
 base::string16 AXPlatformNodeBase::GetRoleDescription() const {
   if (GetData().GetImageAnnotationStatus() ==
-      ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation) {
+          ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation ||
+      GetData().GetImageAnnotationStatus() ==
+          ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation) {
     return GetDelegate()->GetLocalizedRoleDescriptionForUnlabeledImage();
   }
 
