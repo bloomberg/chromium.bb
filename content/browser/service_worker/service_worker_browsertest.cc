@@ -1033,6 +1033,21 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     version_->StopWorker(std::move(done));
   }
 
+  void SetActiveVersionOnIOThread(ServiceWorkerRegistration* registration,
+                                  ServiceWorkerVersion* version) {
+    version->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+    version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+    registration->SetActiveVersion(version);
+  }
+
+  void SetResourcesOnIOThread(
+      ServiceWorkerVersion* version,
+      const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources) {
+    version->script_cache_map()->resource_map_.clear();
+    version->script_cache_map()->SetResources(resources);
+  }
+
  protected:
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
@@ -1110,31 +1125,24 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {
   StartWorker(blink::ServiceWorkerStatusCode::kErrorNetwork);
 }
 
-#if defined(ANDROID)
-// Flaky failures on Android; see https://crbug.com/720275.
-#define MAYBE_ReadResourceFailure DISABLED_ReadResourceFailure
-#else
-#define MAYBE_ReadResourceFailure ReadResourceFailure
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       MAYBE_ReadResourceFailure) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, ReadResourceFailure) {
   StartServerAndNavigateToSetup();
-  // Create a registration.
-  RunOnIOThread(base::BindOnce(&self::SetUpRegistrationOnIOThread,
-                               base::Unretained(this),
-                               "/service_worker/worker.js"));
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  RunOnIOThread(base::BindOnce(&ServiceWorkerRegistration::SetActiveVersion,
-                               base::Unretained(registration_.get()),
-                               base::Unretained(version_.get())));
+
+  // Create a registration with an active version.
+  RunOnIOThread(base::BindOnce(
+      &ServiceWorkerVersionBrowserTest::SetUpRegistrationOnIOThread,
+      base::Unretained(this), "/service_worker/worker.js"));
+  RunOnIOThread(base::BindOnce(
+      &ServiceWorkerVersionBrowserTest::SetActiveVersionOnIOThread,
+      base::Unretained(this), base::Unretained(registration_.get()),
+      base::Unretained(version_.get())));
 
   // Add a non-existent resource to the version.
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-  records.push_back(
-      ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100));
-  version_->script_cache_map()->SetResources(records);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
+      ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100)};
+  RunOnIOThread(base::BindOnce(
+      &ServiceWorkerVersionBrowserTest::SetResourcesOnIOThread,
+      base::Unretained(this), base::Unretained(version_.get()), records));
 
   // Store the registration.
   StoreRegistration(version_->version_id(),
@@ -1163,17 +1171,23 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   RunOnIOThread(
       base::BindOnce(&self::AddControlleeOnIOThread, base::Unretained(this)));
 
-  // Add a non-existent resource to the version.
-  version_->script_cache_map()->resource_map_[version_->script_url()] =
-      ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100);
+  // Set a non-existent resource to the version.
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
+      ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100)};
+  RunOnIOThread(base::BindOnce(
+      &ServiceWorkerVersionBrowserTest::SetResourcesOnIOThread,
+      base::Unretained(this), base::Unretained(version_.get()), records));
 
   // Make a waiting version and store it.
   RunOnIOThread(base::BindOnce(&self::AddWaitingWorkerOnIOThread,
                                base::Unretained(this),
                                "/service_worker/worker.js"));
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
+  records = {
       ServiceWorkerDatabase::ResourceRecord(31, version_->script_url(), 100)};
-  registration_->waiting_version()->script_cache_map()->SetResources(records);
+  RunOnIOThread(base::BindOnce(
+      &ServiceWorkerVersionBrowserTest::SetResourcesOnIOThread,
+      base::Unretained(this),
+      base::Unretained(registration_->waiting_version()), records));
   StoreRegistration(registration_->waiting_version()->version_id(),
                     blink::ServiceWorkerStatusCode::kOk);
 
