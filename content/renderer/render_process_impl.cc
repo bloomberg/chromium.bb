@@ -151,11 +151,6 @@ RenderProcessImpl::RenderProcessImpl()
                           "--no-harmony-sharedarraybuffer");
   }
 
-  SetV8FlagIfFeature(features::kAwaitOptimization,
-                     "--harmony-await-optimization");
-  SetV8FlagIfNotFeature(features::kAwaitOptimization,
-                        "--no-harmony-await-optimization");
-
   SetV8FlagIfFeature(features::kBlinkHeapUnifiedGCScheduling,
                      "--global-gc-scheduling");
 

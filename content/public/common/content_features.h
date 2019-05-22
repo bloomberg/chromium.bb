@@ -26,7 +26,6 @@ CONTENT_EXPORT extern const base::Feature kAppCacheIncludePaddingInQuota;
 CONTENT_EXPORT extern const base::Feature kAudioServiceAudioStreams;
 CONTENT_EXPORT extern const base::Feature kAudioServiceLaunchOnStartup;
 CONTENT_EXPORT extern const base::Feature kAudioServiceOutOfProcess;
-CONTENT_EXPORT extern const base::Feature kAwaitOptimization;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;

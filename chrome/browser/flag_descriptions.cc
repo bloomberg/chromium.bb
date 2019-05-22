@@ -227,10 +227,6 @@ const char kAutoScreenBrightnessDescription[] =
     "Uses Auto Screen Brightness model to adjust screen brightness based on "
     "ambient light";
 
-const char kAwaitOptimizationName[] = "Await optimization";
-const char kAwaitOptimizationDescription[] =
-    "Enables await taking 1 tick on the microtask queue.";
-
 const char kBrowserTaskSchedulerName[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";

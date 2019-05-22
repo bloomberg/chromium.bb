@@ -2067,11 +2067,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "harmony-await-optimization",
-    "owners": [ "mslekova" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "http-auth-committed-interstitials",
     "owners": [ "jdeblasio", "estark" ],
     "expiry_milestone": 77

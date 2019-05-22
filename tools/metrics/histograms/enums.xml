@@ -33434,7 +33434,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1137696948" label="enable-chromeos-account-manager"/>
   <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
-  <int value="-1136602572" label="AwaitOptimization:disabled"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>
   <int value="-1134307340" label="stop-loading-in-background:enabled"/>
   <int value="-1132704128" label="AndroidPaymentAppsFilter:disabled"/>
@@ -34378,7 +34377,6 @@ from previous Chrome versions.
   <int value="341152650" label="SoundContentSetting:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
-  <int value="348043155" label="AwaitOptimization:enabled"/>
   <int value="348115702" label="new-password-form-parsing-for-saving:enabled"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>

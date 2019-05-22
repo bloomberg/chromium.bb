@@ -51,10 +51,6 @@ const base::Feature kAudioServiceLaunchOnStartup{
 const base::Feature kAudioServiceOutOfProcess{
     "AudioServiceOutOfProcess", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables await taking 1 tick on the microtask queue.
-const base::Feature kAwaitOptimization{"AwaitOptimization",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Kill switch for Background Fetch.
 const base::Feature kBackgroundFetch{"BackgroundFetch",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
