@@ -39,6 +39,7 @@ enum WebIDBDatabaseException {
   kWebIDBDatabaseExceptionDataError = 30,
   kWebIDBDatabaseExceptionVersionError = 33,
   kWebIDBDatabaseExceptionAbortError = 20,
+  kWebIDBDatabaseExceptionIgnorableAbortError = 11,
   kWebIDBDatabaseExceptionQuotaError = 22,
   kWebIDBDatabaseExceptionTimeoutError = 23,
 };

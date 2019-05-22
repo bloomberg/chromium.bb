@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
@@ -40,32 +41,9 @@ IndexedDBDatabaseError CreateError(
     uint16_t code,
     const char* message,
     base::WeakPtr<IndexedDBTransaction> transaction) {
-  DCHECK(transaction);
-  transaction->IncrementNumErrorsSent();
+  if (transaction)
+    transaction->IncrementNumErrorsSent();
   return IndexedDBDatabaseError(code, message);
-}
-
-leveldb::Status InvokeOrSucceed(base::WeakPtr<IndexedDBCursor> weak_cursor,
-                                IndexedDBTransaction::Operation operation,
-                                IndexedDBTransaction* transaction) {
-  if (weak_cursor)
-    return std::move(operation).Run(transaction);
-  return leveldb::Status::OK();
-}
-
-// This allows us to bind a function with a return value to a weak ptr, and if
-// the weak pointer is invalidated then we just return a default (success).
-template <typename Functor, typename... Args>
-IndexedDBTransaction::Operation BindWeakOperation(
-    Functor&& functor,
-    base::WeakPtr<IndexedDBCursor> weak_cursor,
-    Args&&... args) {
-  DCHECK(weak_cursor);
-  IndexedDBCursor* cursor_ptr = weak_cursor.get();
-  return base::BindOnce(&InvokeOrSucceed, std::move(weak_cursor),
-                        base::BindOnce(std::forward<Functor>(functor),
-                                       base::Unretained(cursor_ptr),
-                                       std::forward<Args>(args)...));
 }
 
 }  // namespace
@@ -106,12 +84,16 @@ void IndexedDBCursor::Advance(
     return;
   }
 
+  blink::mojom::IDBCursor::AdvanceCallback aborting_callback =
+      CreateCallbackAbortOnDestruct<blink::mojom::IDBCursor::AdvanceCallback,
+                                    blink::mojom::IDBCursorResultPtr>(
+          std::move(callback), transaction_);
+
   transaction_->ScheduleTask(
       task_type_,
-      BindWeakOperation(
+      BindWeakOperation<IndexedDBCursor>(
           &IndexedDBCursor::CursorAdvanceOperation, ptr_factory_.GetWeakPtr(),
-          count, std::move(dispatcher_host),
-          std::move(callback)));
+          count, std::move(dispatcher_host), std::move(aborting_callback)));
 }
 
 leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
@@ -184,12 +166,17 @@ void IndexedDBCursor::Continue(
     return;
   }
 
+  blink::mojom::IDBCursor::CursorContinueCallback aborting_callback =
+      CreateCallbackAbortOnDestruct<
+          blink::mojom::IDBCursor::CursorContinueCallback,
+          blink::mojom::IDBCursorResultPtr>(std::move(callback), transaction_);
+
   transaction_->ScheduleTask(
       task_type_,
-      BindWeakOperation(
+      BindWeakOperation<IndexedDBCursor>(
           &IndexedDBCursor::CursorContinueOperation, ptr_factory_.GetWeakPtr(),
-          std::move(dispatcher_host),
-          base::Passed(&key), base::Passed(&primary_key), std::move(callback)));
+          std::move(dispatcher_host), base::Passed(&key),
+          base::Passed(&primary_key), std::move(aborting_callback)));
 }
 
 leveldb::Status IndexedDBCursor::CursorContinueOperation(
@@ -266,12 +253,16 @@ void IndexedDBCursor::PrefetchContinue(
     return;
   }
 
+  blink::mojom::IDBCursor::PrefetchCallback aborting_callback =
+      CreateCallbackAbortOnDestruct<blink::mojom::IDBCursor::PrefetchCallback,
+                                    blink::mojom::IDBCursorResultPtr>(
+          std::move(callback), transaction_);
+
   transaction_->ScheduleTask(
-      task_type_,
-      BindWeakOperation(
-          &IndexedDBCursor::CursorPrefetchIterationOperation,
-          ptr_factory_.GetWeakPtr(), std::move(dispatcher_host),
-          number_to_fetch, std::move(callback)));
+      task_type_, BindWeakOperation<IndexedDBCursor>(
+                      &IndexedDBCursor::CursorPrefetchIterationOperation,
+                      ptr_factory_.GetWeakPtr(), std::move(dispatcher_host),
+                      number_to_fetch, std::move(aborting_callback)));
 }
 
 leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
