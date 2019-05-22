@@ -1029,18 +1029,16 @@ void remote_shell_get_remote_surface(wl_client* client,
       base::BindRepeating(&HandleRemoteSurfaceGeometryChangedCallback,
                           base::Unretained(remote_surface_resource)));
 
-  if (wl_resource_get_version(remote_surface_resource) >= 10) {
-    shell_surface->set_client_controlled_move_resize(false);
-    shell_surface->set_bounds_changed_callback(
-        base::BindRepeating(&HandleRemoteSurfaceBoundsChangedCallback,
-                            base::Unretained(remote_surface_resource)));
-    shell_surface->set_drag_started_callback(
-        base::BindRepeating(&HandleRemoteSurfaceDragStartedCallback,
-                            base::Unretained(remote_surface_resource)));
-    shell_surface->set_drag_finished_callback(
-        base::BindRepeating(&HandleRemoteSurfaceDragFinishedCallback,
-                            base::Unretained(remote_surface_resource)));
-  }
+  DCHECK(wl_resource_get_version(remote_surface_resource) >= 10);
+  shell_surface->set_bounds_changed_callback(
+      base::BindRepeating(&HandleRemoteSurfaceBoundsChangedCallback,
+                          base::Unretained(remote_surface_resource)));
+  shell_surface->set_drag_started_callback(
+      base::BindRepeating(&HandleRemoteSurfaceDragStartedCallback,
+                          base::Unretained(remote_surface_resource)));
+  shell_surface->set_drag_finished_callback(
+      base::BindRepeating(&HandleRemoteSurfaceDragFinishedCallback,
+                          base::Unretained(remote_surface_resource)));
 
   SetImplementation(remote_surface_resource, &remote_surface_implementation,
                     std::move(shell_surface));

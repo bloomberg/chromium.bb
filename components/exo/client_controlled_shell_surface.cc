@@ -448,10 +448,8 @@ void ClientControlledShellSurface::SetTopInset(int height) {
 void ClientControlledShellSurface::SetResizeOutset(int outset) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetResizeOutset", "outset",
                outset);
-  if (client_controlled_move_resize_) {
-    if (root_surface())
-      root_surface()->SetInputOutset(outset);
-  }
+  // Deprecated.
+  NOTREACHED();
 }
 
 void ClientControlledShellSurface::OnWindowStateChangeEvent(
@@ -468,7 +466,7 @@ void ClientControlledShellSurface::StartDrag(int component,
   TRACE_EVENT2("exo", "ClientControlledShellSurface::StartDrag", "component",
                component, "location", location.ToString());
 
-  if (!widget_ || (client_controlled_move_resize_ && component != HTCAPTION))
+  if (!widget_)
     return;
   AttemptToStartDrag(component, location);
 }
@@ -695,7 +693,7 @@ ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
   window_state->SetDelegate(std::move(window_delegate));
   ash::NonClientFrameViewAsh* frame_view =
       static_cast<ash::NonClientFrameViewAsh*>(
-          ShellSurfaceBase::CreateNonClientFrameView(widget));
+          CreateNonClientFrameViewInternal(widget, /*client_controlled=*/true));
   immersive_fullscreen_controller_ =
       std::make_unique<ash::ImmersiveFullscreenController>();
   frame_view->InitImmersiveFullscreenControllerForView(
@@ -813,9 +811,8 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     return;
   }
 
-  bool set_bounds_locally = !client_controlled_move_resize_ &&
-                            GetWindowState()->is_dragged() &&
-                            !is_display_move_pending;
+  bool set_bounds_locally =
+      GetWindowState()->is_dragged() && !is_display_move_pending;
 
   if (set_bounds_locally || client_controlled_state_->set_bounds_locally()) {
     // Convert from screen to display coordinates.

@@ -906,7 +906,6 @@ TEST_F(ClientControlledShellSurfaceTest, MouseAndTouchTarget) {
 
   const gfx::Rect original_bounds(0, 0, 256, 256);
   shell_surface->SetGeometry(original_bounds);
-  shell_surface->set_client_controlled_move_resize(false);
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -968,8 +967,6 @@ TEST_F(ClientControlledShellSurfaceTest, ShellSurfaceInSystemModalHitTest) {
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get(),
                                                             /*is_modal=*/true);
-  shell_surface->set_client_controlled_move_resize(false);
-
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
 
   gfx::Size desktop_size(640, 480);
@@ -1050,8 +1047,6 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
-  shell_surface->set_client_controlled_move_resize(false);
-
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
 
   gfx::Size window_size(100, 100);
@@ -1138,7 +1133,6 @@ TEST_F(ClientControlledShellSurfaceTest, CloseWindowWhenDraggingTest) {
 
   const gfx::Rect original_bounds(0, 0, 256, 256);
   shell_surface->SetGeometry(original_bounds);
-  shell_surface->set_client_controlled_move_resize(false);
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -1313,7 +1307,6 @@ TEST_F(ClientControlledShellSurfaceDisplayTest, MoveToAnotherDisplayByDrag) {
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
-  shell_surface->set_client_controlled_move_resize(false);
 
   gfx::Size window_size(200, 200);
   std::unique_ptr<Buffer> desktop_buffer(
@@ -1362,7 +1355,6 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
-  shell_surface->set_client_controlled_move_resize(false);
 
   gfx::Size window_size(200, 200);
   std::unique_ptr<Buffer> desktop_buffer(

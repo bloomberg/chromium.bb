@@ -53,10 +53,6 @@ class ClientControlledShellSurface
     geometry_changed_callback_ = callback;
   }
 
-  void set_client_controlled_move_resize(bool client_controlled_move_resize) {
-    client_controlled_move_resize_ = client_controlled_move_resize;
-  }
-
   // Set bounds in root window coordinates relative to the given display.
   void SetBounds(int64_t display_id, const gfx::Rect& bounds);
 

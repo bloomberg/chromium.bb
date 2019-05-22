@@ -91,10 +91,10 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
   CustomFrameView(views::Widget* widget,
                   ShellSurfaceBase* shell_surface,
                   bool enabled,
-                  bool client_controlled_move_resize)
+                  bool client_controlled)
       : NonClientFrameViewAsh(widget),
         shell_surface_(shell_surface),
-        client_controlled_move_resize_(client_controlled_move_resize) {
+        client_controlled_(client_controlled) {
     SetEnabled(enabled);
     SetVisible(enabled);
     if (!enabled)
@@ -151,7 +151,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
     return client_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override {
-    if (GetVisible() || !client_controlled_move_resize_)
+    if (GetVisible() || client_controlled_)
       return ash::NonClientFrameViewAsh::NonClientHitTest(point);
     return GetWidget()->client_view()->NonClientHitTest(point);
   }
@@ -196,20 +196,15 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
 
  private:
   ShellSurfaceBase* const shell_surface_;
-  // TODO(oshima): Remove this once the transition to new drag/resize
-  // is complete. https://crbug.com/801666.
-  const bool client_controlled_move_resize_;
+  bool client_controlled_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };
 
 class CustomWindowTargeter : public aura::WindowTargeter {
  public:
-  CustomWindowTargeter(views::Widget* widget,
-                       bool client_controlled_move_resize)
-      : widget_(widget),
-        client_controlled_move_resize_(client_controlled_move_resize) {}
-  ~CustomWindowTargeter() override {}
+  explicit CustomWindowTargeter(views::Widget* widget) : widget_(widget) {}
+  ~CustomWindowTargeter() override = default;
 
   // Overridden from aura::WindowTargeter:
   bool EventLocationInsideBounds(aura::Window* window,
@@ -250,12 +245,11 @@ class CustomWindowTargeter : public aura::WindowTargeter {
       return false;
     }
     // Use ash's resize handle detection logic if
-    // a) ClientControlledShellSurface uses server side resize or
+    // a) ClientControlledShellSurface
     // b) xdg shell is using the server side decoration.
-    if (ash::wm::GetWindowState(widget_->GetNativeWindow())
-                ->allow_set_bounds_direct()
-            ? client_controlled_move_resize_
-            : !widget_->non_client_view()->frame_view()->GetVisible()) {
+    if (!ash::wm::GetWindowState(widget_->GetNativeWindow())
+             ->allow_set_bounds_direct() &&
+        !widget_->non_client_view()->frame_view()->GetVisible()) {
       return false;
     }
 
@@ -286,7 +280,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   }
 
   views::Widget* const widget_;
-  const bool client_controlled_move_resize_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
@@ -726,18 +719,7 @@ views::View* ShellSurfaceBase::GetContentsView() {
 
 views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameView(
     views::Widget* widget) {
-  aura::Window* window = widget_->GetNativeWindow();
-  // ShellSurfaces always use immersive mode.
-  window->SetProperty(ash::kImmersiveIsActive, true);
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-  if (!frame_enabled() && !window_state->HasDelegate()) {
-    window_state->SetDelegate(std::make_unique<CustomWindowStateDelegate>());
-  }
-  CustomFrameView* frame_view = new CustomFrameView(
-      widget, this, frame_enabled(), client_controlled_move_resize_);
-  if (has_frame_colors_)
-    frame_view->SetFrameColors(active_frame_color_, inactive_frame_color_);
-  return frame_view;
+  return CreateNonClientFrameViewInternal(widget, /*client_controlled=*/false);
 }
 
 bool ShellSurfaceBase::WidgetHasHitTestMask() const {
@@ -1065,8 +1047,24 @@ gfx::Rect ShellSurfaceBase::GetShadowBounds() const {
 
 void ShellSurfaceBase::InstallCustomWindowTargeter() {
   aura::Window* window = widget_->GetNativeWindow();
-  window->SetEventTargeter(std::make_unique<CustomWindowTargeter>(
-      widget_, client_controlled_move_resize_));
+  window->SetEventTargeter(std::make_unique<CustomWindowTargeter>(widget_));
+}
+
+views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameViewInternal(
+    views::Widget* widget,
+    bool client_controlled) {
+  aura::Window* window = widget_->GetNativeWindow();
+  // ShellSurfaces always use immersive mode.
+  window->SetProperty(ash::kImmersiveIsActive, true);
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  if (!frame_enabled() && !window_state->HasDelegate()) {
+    window_state->SetDelegate(std::make_unique<CustomWindowStateDelegate>());
+  }
+  CustomFrameView* frame_view =
+      new CustomFrameView(widget, this, frame_enabled(), client_controlled);
+  if (has_frame_colors_)
+    frame_view->SetFrameColors(active_frame_color_, inactive_frame_color_);
+  return frame_view;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
