@@ -820,5 +820,75 @@ TEST_F(NGLayoutResultCachingTest, HitStandardsModePercentageBasedChild) {
   EXPECT_NE(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, ChangeTableCellBlockSizeConstrainedness) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .table { display: table; width: 300px; }
+      .cell { display: table-cell; }
+      .child1 { height: 100px; }
+      .child2, .child3 { overflow:auto; height:10%; }
+    </style>
+    <div class="table">
+      <div class="cell">
+        <div class="child1" id="test1"></div>
+        <div class="child2" id="test2">
+          <div style="height:30px;"></div>
+        </div>
+        <div class="child3" id="test3"></div>
+      </div>
+    </div>
+    <div class="table" style="height:300px;">
+      <div class="cell">
+        <div class="child1" id="src1"></div>
+        <div class="child2" id="src2">
+          <div style="height:30px;"></div>
+        </div>
+        <div class="child3" id="src3"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* test2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test2"));
+  auto* test3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test3"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+  auto* src3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src3"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+  // The first child has a fixed height, and shouldn't be affected by the cell
+  // height.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test2->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+  // The second child has overflow:auto and a percentage height, but its
+  // intrinsic height is identical to its extrinsic height (when the cell has a
+  // height). So it won't need layout, either.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src3->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test3->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+  // The third child has overflow:auto and a percentage height, and its
+  // intrinsic height is 0 (no children), so it matters whether the cell has a
+  // height or not. We're only going to need simplified layout, though, since no
+  // children will be affected by its height change.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsSimplifiedLayout);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
 }  // namespace
 }  // namespace blink

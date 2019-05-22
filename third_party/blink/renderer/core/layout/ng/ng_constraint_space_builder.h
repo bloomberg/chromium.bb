@@ -250,7 +250,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetIsInRestrictedBlockSizeTableCell() {
-    SetFlag(NGConstraintSpace::kInRestrictedBlockSizeTableCell, true);
+    space_.bitfields_.is_in_restricted_block_size_table_cell = true;
     return *this;
   }
 

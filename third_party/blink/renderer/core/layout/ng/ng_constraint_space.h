@@ -67,10 +67,9 @@ class CORE_EXPORT NGConstraintSpace final {
     kAnonymous = 1 << 5,
     kUseFirstLineStyle = 1 << 6,
     kAncestorHasClearancePastAdjoiningFloats = 1 << 7,
-    kInRestrictedBlockSizeTableCell = 1 << 8,
 
     // Size of bitfield used to store the flags.
-    kNumberOfConstraintSpaceFlags = 9
+    kNumberOfConstraintSpaceFlags = 8
   };
 
   // To ensure that the bfc_offset_, rare_data_ union doesn't get polluted,
@@ -334,7 +333,7 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   bool IsInRestrictedBlockSizeTableCell() const {
-    return HasFlag(kInRestrictedBlockSizeTableCell);
+    return bitfields_.is_in_restricted_block_size_table_cell;
   }
 
   NGMarginStrut MarginStrut() const {
@@ -556,6 +555,7 @@ class CORE_EXPORT NGConstraintSpace final {
           is_shrink_to_fit(false),
           is_fixed_size_inline(false),
           is_fixed_size_block(false),
+          is_in_restricted_block_size_table_cell(false),
           table_cell_child_layout_phase(static_cast<unsigned>(
               NGTableCellChildLayoutPhase::kNotTableCellChild)),
           flags(kFixedSizeBlockIsDefinite),
@@ -573,6 +573,8 @@ class CORE_EXPORT NGConstraintSpace final {
       return is_shrink_to_fit == other.is_shrink_to_fit &&
              is_fixed_size_inline == other.is_fixed_size_inline &&
              is_fixed_size_block == other.is_fixed_size_block &&
+             is_in_restricted_block_size_table_cell ==
+                 other.is_in_restricted_block_size_table_cell &&
              table_cell_child_layout_phase ==
                  other.table_cell_child_layout_phase;
     }
@@ -586,6 +588,7 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_shrink_to_fit : 1;
     unsigned is_fixed_size_inline : 1;
     unsigned is_fixed_size_block : 1;
+    unsigned is_in_restricted_block_size_table_cell : 1;
     unsigned table_cell_child_layout_phase : 2;  // NGTableCellChildLayoutPhase
 
     unsigned flags : kNumberOfConstraintSpaceFlags;  // ConstraintSpaceFlags
