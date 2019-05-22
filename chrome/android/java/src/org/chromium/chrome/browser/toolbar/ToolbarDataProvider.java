@@ -50,9 +50,10 @@ public interface ToolbarDataProvider {
     boolean isIncognito();
 
     /**
-     * @return Whether the toolbar is currently being displayed in overview mode.
+     * @return Whether the toolbar is currently being displayed in overview mode and showing the
+     *  omnibox.
      */
-    boolean isInOverview();
+    boolean isInOverviewAndShowingOmnibox();
 
     /**
      * @return Whether the location bar should show when in overview mode.

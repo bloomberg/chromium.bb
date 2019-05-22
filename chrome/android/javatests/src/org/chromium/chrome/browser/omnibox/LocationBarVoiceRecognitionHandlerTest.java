@@ -204,7 +204,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        public boolean isInOverview() {
+        public boolean isInOverviewAndShowingOmnibox() {
             return false;
         }
 

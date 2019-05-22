@@ -49,7 +49,7 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean isInOverview() {
+    public boolean isInOverviewAndShowingOmnibox() {
         return false;
     }
 

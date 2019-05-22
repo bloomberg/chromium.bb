@@ -266,11 +266,20 @@ public class LocationBarModel implements ToolbarDataProvider {
         return mIsIncognito;
     }
 
+    /**
+     * @return Whether the location bar is showing in overview mode. If the location bar should not
+     *  currently be showing in overview mode, returns false.
+     */
     @Override
-    public boolean isInOverview() {
+    public boolean isInOverviewAndShowingOmnibox() {
+        if (!mShouldShowOmniboxInOverviewMode) return false;
+
         return mOverviewModeBehavior != null && mOverviewModeBehavior.overviewVisible();
     }
 
+    /**
+     * @return Whether the location bar should show when in overview mode.
+     */
     @Override
     public boolean shouldShowLocationBarInOverviewMode() {
         return mShouldShowOmniboxInOverviewMode;
@@ -314,7 +323,7 @@ public class LocationBarModel implements ToolbarDataProvider {
     @Override
     public int getPrimaryColor() {
         Context context = ContextUtils.getApplicationContext();
-        return isInOverview()
+        return isInOverviewAndShowingOmnibox()
                 ? ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito())
                 : mPrimaryColor;
     }
@@ -323,7 +332,7 @@ public class LocationBarModel implements ToolbarDataProvider {
     public boolean isUsingBrandColor() {
         // If the overview is visible, force use of primary color, which is also overridden when the
         // overview is visible.
-        return isInOverview() || mIsUsingBrandColor;
+        return isInOverviewAndShowingOmnibox() || mIsUsingBrandColor;
     }
 
     @Override

@@ -908,7 +908,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private float getExpansionPercentForVisualState(@VisualState int visualState) {
         return visualState == VisualState.NEW_TAB_NORMAL && mTabSwitcherState == STATIC_TAB
-                        || getToolbarDataProvider().isInOverview()
+                        || getToolbarDataProvider().isInOverviewAndShowingOmnibox()
                 ? 1
                 : mUrlExpansionPercent;
     }
@@ -941,7 +941,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // toolbar is not visible (e.g. in tab switcher mode).
         if (isInTabSwitcherMode()) return;
 
-        if (!mIsBottomToolbarVisible && !getToolbarDataProvider().isInOverview()) {
+        if (!mIsBottomToolbarVisible && !getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
             int toolbarButtonVisibility = getToolbarButtonVisibility();
             mToolbarButtonsContainer.setVisibility(toolbarButtonVisibility);
             if (mHomeButton != null && mHomeButton.getVisibility() != GONE) {
@@ -1007,7 +1007,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 ntp.setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
             }
 
-            if (isLocationBarShownInNTP() && !getToolbarDataProvider().isInOverview()) {
+            if (isLocationBarShownInNTP()
+                    && !getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
                 updateNtpTransitionAnimation();
             } else {
                 // Reset these values in case we transitioned to a different page during the
@@ -2095,7 +2096,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         if (mToggleTabStackButton != null) mToggleTabStackButton.setClickable(!hasFocus);
 
-        if (getToolbarDataProvider().isInOverview() && !hasFocus) {
+        if (getToolbarDataProvider().isInOverviewAndShowingOmnibox() && !hasFocus) {
             mUrlBar.setText("");
             return;
         }
@@ -2148,7 +2149,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 mLocationBar.finishUrlFocusChange(hasFocus);
                 mUrlFocusChangeInProgress = false;
 
-                if (getToolbarDataProvider().isInOverview()) {
+                if (getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
                     mLocationBar.updateVisualsForState();
                     mUrlBar.setText("");
                 }
@@ -2187,7 +2188,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             mTabSwitcherAnimationTabStackDrawable.updateForTabCount(numberOfTabs, isIncognito);
         }
 
-        if (getToolbarDataProvider().isInOverview()
+        if (getToolbarDataProvider().isInOverviewAndShowingOmnibox()
                 && getToolbarDataProvider().shouldShowLocationBarInOverviewMode()) {
             mUrlBar.setText("");
         }
