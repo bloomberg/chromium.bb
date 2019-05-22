@@ -293,21 +293,23 @@ class EmbeddedWorkerInstance::DevToolsProxy {
  public:
   DevToolsProxy(int process_id, int agent_route_id)
       : process_id_(process_id),
-        agent_route_id_(agent_route_id) {}
+        agent_route_id_(agent_route_id),
+        ui_task_runner_(
+            base::CreateSequencedTaskRunnerWithTraits({BrowserThread::UI})) {}
 
   ~DevToolsProxy() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(NotifyWorkerDestroyedOnUI,
-                                            process_id_, agent_route_id_));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(NotifyWorkerDestroyedOnUI, process_id_,
+                                  agent_route_id_));
   }
 
   void NotifyWorkerReadyForInspection(
       blink::mojom::DevToolsAgentHostAssociatedRequest host_request,
       blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
+    ui_task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(NotifyWorkerReadyForInspectionOnUI, process_id_,
                        agent_route_id_, std::move(host_request),
                        std::move(devtools_agent_ptr_info)));
@@ -315,16 +317,16 @@ class EmbeddedWorkerInstance::DevToolsProxy {
 
   void NotifyWorkerVersionInstalled() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(NotifyWorkerVersionInstalledOnUI,
-                                            process_id_, agent_route_id_));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(NotifyWorkerVersionInstalledOnUI, process_id_,
+                                  agent_route_id_));
   }
 
   void NotifyWorkerVersionDoomed() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(NotifyWorkerVersionDoomedOnUI,
-                                            process_id_, agent_route_id_));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(NotifyWorkerVersionDoomedOnUI, process_id_,
+                                  agent_route_id_));
   }
 
   bool ShouldNotifyWorkerStopIgnored() const {
@@ -338,6 +340,7 @@ class EmbeddedWorkerInstance::DevToolsProxy {
  private:
   const int process_id_;
   const int agent_route_id_;
+  const scoped_refptr<base::TaskRunner> ui_task_runner_;
   bool worker_stop_ignored_notified_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsProxy);
