@@ -23,7 +23,6 @@
 // means that the active keyboard has changed.
 - (void)omniboxViewControllerTextInputModeDidChange:
     (OmniboxViewController*)omniboxViewController;
-
 @end
 
 @interface OmniboxViewController : UIViewController<EditViewAnimatee,
