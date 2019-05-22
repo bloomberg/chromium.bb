@@ -59,6 +59,10 @@ struct weston_remoting_api {
 
 	/** Set the port number */
 	void (*set_port)(struct weston_output *output, int port);
+
+	/** Set the pipeline for gstreamer */
+	void (*set_gst_pipeline)(struct weston_output *output,
+				 char *gst_pipeline);
 };
 
 static inline const struct weston_remoting_api *

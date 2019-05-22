@@ -2196,6 +2196,7 @@ drm_backend_remoted_output_configure(struct weston_output *output,
 	char *gbm_format = NULL;
 	char *seat = NULL;
 	char *host = NULL;
+	char *pipeline = NULL;
 	int port, ret;
 
 	ret = api->set_mode(output, modeline);
@@ -2220,21 +2221,23 @@ drm_backend_remoted_output_configure(struct weston_output *output,
 	api->set_seat(output, seat);
 	free(seat);
 
+	weston_config_section_get_string(section, "gst-pipeline", &pipeline,
+					 NULL);
+	if (pipeline) {
+		api->set_gst_pipeline(output, pipeline);
+		free(pipeline);
+		return 0;
+	}
+
 	weston_config_section_get_string(section, "host", &host, NULL);
-	if (!host) {
-		weston_log("Cannot configure an output \"%s\". Invalid host\n",
-			   output->name);
-		return -1;
+	weston_config_section_get_int(section, "port", &port, 0);
+	if (!host || port <= 0 || 65533 < port) {
+		weston_log("Cannot configure an output \"%s\". "
+			   "Need to specify gst-pipeline or "
+			   "host and port (1-65533).\n", output->name);
 	}
 	api->set_host(output, host);
 	free(host);
-
-	weston_config_section_get_int(section, "port", &port, 0);
-	if (port <= 0 || 65533 < port) {
-		weston_log("Cannot configure an output \"%s\". Invalid port\n",
-			   output->name);
-		return -1;
-	}
 	api->set_port(output, port);
 
 	return 0;

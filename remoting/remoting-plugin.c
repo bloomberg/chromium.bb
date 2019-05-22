@@ -97,6 +97,7 @@ struct remoted_output {
 
 	char *host;
 	int port;
+	char *gst_pipeline;
 	const struct remoted_output_support_gbm_format *format;
 
 	struct weston_head *head;
@@ -180,26 +181,31 @@ remoting_gst_bus_sync_handler(GstBus *bus, GstMessage *message,
 static int
 remoting_gst_pipeline_init(struct remoted_output *output)
 {
-	char pipeline_str[1024];
 	GstCaps *caps;
 	GError *err = NULL;
 	GstStateChangeReturn ret;
 	struct weston_mode *mode = output->output->current_mode;
 
-	/* TODO: use encodebin instead of jpegenc */
-	snprintf(pipeline_str, sizeof(pipeline_str),
-		 "rtpbin name=rtpbin "
-		 "appsrc name=src ! videoconvert ! video/x-raw,format=I420 ! "
-		 "jpegenc ! rtpjpegpay ! rtpbin.send_rtp_sink_0 "
-		 "rtpbin.send_rtp_src_0 ! udpsink name=sink host=%s port=%d "
-		 "rtpbin.send_rtcp_src_0 ! "
-		 "udpsink host=%s port=%d sync=false async=false "
-		 "udpsrc port=%d ! rtpbin.recv_rtcp_sink_0",
-		 output->host, output->port, output->host, output->port + 1,
-		 output->port + 2);
-	weston_log("GST pipeline: %s\n", pipeline_str);
+	if (!output->gst_pipeline) {
+		char pipeline_str[1024];
+		/* TODO: use encodebin instead of jpegenc */
+		snprintf(pipeline_str, sizeof(pipeline_str),
+			 "rtpbin name=rtpbin "
+			 "appsrc name=src ! videoconvert ! "
+			 "video/x-raw,format=I420 ! jpegenc ! rtpjpegpay ! "
+			 "rtpbin.send_rtp_sink_0 "
+			 "rtpbin.send_rtp_src_0 ! "
+			 "udpsink name=sink host=%s port=%d "
+			 "rtpbin.send_rtcp_src_0 ! "
+			 "udpsink host=%s port=%d sync=false async=false "
+			 "udpsrc port=%d ! rtpbin.recv_rtcp_sink_0",
+			 output->host, output->port, output->host,
+			 output->port + 1, output->port + 2);
+		output->gst_pipeline = strdup(pipeline_str);
+	}
+	weston_log("GST pipeline: %s\n", output->gst_pipeline);
 
-	output->pipeline = gst_parse_launch(pipeline_str, &err);
+	output->pipeline = gst_parse_launch(output->gst_pipeline, &err);
 	if (!output->pipeline) {
 		weston_log("Could not create gstreamer pipeline. Error: %s\n",
 			   err->message);
@@ -211,6 +217,12 @@ remoting_gst_pipeline_init(struct remoted_output *output)
 		gst_bin_get_by_name(GST_BIN(output->pipeline), "src");
 	if (!output->appsrc) {
 		weston_log("Could not get appsrc from gstreamer pipeline\n");
+		goto err;
+	}
+
+	/* check sink */
+	if (!gst_bin_get_by_name(GST_BIN(output->pipeline), "sink")) {
+		weston_log("Could not get sink from gstreamer pipeline\n");
 		goto err;
 	}
 
@@ -626,6 +638,8 @@ remoting_output_destroy(struct weston_output *output)
 
 	if (remoted_output->host)
 		free(remoted_output->host);
+	if (remoted_output->gst_pipeline)
+		free(remoted_output->gst_pipeline);
 
 	wl_list_remove(&remoted_output->link);
 	weston_head_release(remoted_output->head);
@@ -853,6 +867,20 @@ remoting_output_set_port(struct weston_output *output, int port)
 		remoted_output->port = port;
 }
 
+static void
+remoting_output_set_gst_pipeline(struct weston_output *output,
+				 char *gst_pipeline)
+{
+	struct remoted_output *remoted_output = lookup_remoted_output(output);
+
+	if (!remoted_output)
+		return;
+
+	if (remoted_output->gst_pipeline)
+		free(remoted_output->gst_pipeline);
+	remoted_output->gst_pipeline = strdup(gst_pipeline);
+}
+
 static const struct weston_remoting_api remoting_api = {
 	remoting_output_create,
 	remoting_output_is_remoted,
@@ -861,6 +889,7 @@ static const struct weston_remoting_api remoting_api = {
 	remoting_output_set_seat,
 	remoting_output_set_host,
 	remoting_output_set_port,
+	remoting_output_set_gst_pipeline,
 };
 
 WL_EXPORT int

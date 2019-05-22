@@ -168,6 +168,12 @@ transmitted to.
 \fBport\fR=\fIport\fR
 Specify the port number to transmit the remote output to. Usable port range
 is 1-65533.
+.TP
+\fBgst-pipeline\fR=\fIpipeline\fR
+Specify the gstreamer pipeline. It is necessary that source is appsrc,
+its name is "src", and sink name is "sink" in
+.I pipeline\fR.
+Ignore port and host configuration if the gst-pipeline is specified.
 
 .
 .\" ***************************************************************
