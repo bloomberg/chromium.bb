@@ -118,10 +118,11 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnLoadProgressChanged(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              double progress);
-  void OnTabListCreated(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
-                        jobjectArray tabs,
-                        jobjectArray incognito_tabs);
+  void OnTabListCreated(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& obj,
+      const base::android::JavaRef<jobjectArray>& tabs,
+      const base::android::JavaRef<jobjectArray>& incognito_tabs);
   void OnTabUpdated(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     jboolean incognito,
