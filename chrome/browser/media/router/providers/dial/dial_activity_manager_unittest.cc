@@ -187,13 +187,15 @@ TEST_F(DialActivityManagerTest, StopApp) {
       GURL(sink_.dial_data().app_url.spec() + "/YouTube/app_instance");
   TestLaunchApp(*activity, base::nullopt, app_instance_url);
 
+  auto can_stop = manager_.CanStopApp(activity->route.media_route_id());
+  EXPECT_EQ(can_stop.second, RouteRequestResult::OK);
   manager_.SetExpectedRequest(app_instance_url, "DELETE", base::nullopt);
   StopApp(activity->route.media_route_id());
+  testing::Mock::VerifyAndClearExpectations(this);
 
-  // Pending stop request.
-  EXPECT_CALL(*this, OnStopAppResult(_, Not(RouteRequestResult::OK)));
-  EXPECT_CALL(manager_, OnFetcherCreated()).Times(0);
-  StopApp(activity->route.media_route_id());
+  // // The result should not be OK because there is a pending request.
+  can_stop = manager_.CanStopApp(activity->route.media_route_id());
+  EXPECT_NE(can_stop.second, RouteRequestResult::OK);
 
   loader_factory_.AddResponse(app_instance_url, network::ResourceResponseHead(),
                               "", network::URLLoaderCompletionStatus());

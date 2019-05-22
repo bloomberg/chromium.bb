@@ -345,14 +345,21 @@ void DialMediaRouteProvider::DoTerminateRoute(const DialActivity& activity,
                                               TerminateRouteCallback callback) {
   const MediaRoute::Id& route_id = activity.route.media_route_id();
   DVLOG(2) << "Terminating route " << route_id;
-  std::vector<mojom::RouteMessagePtr> messages;
-  messages.emplace_back(internal_message_util_.CreateReceiverActionStopMessage(
-      activity.launch_info, sink));
-  message_sender_->SendMessages(route_id, std::move(messages));
-  activity_manager_->StopApp(
-      route_id,
-      base::BindOnce(&DialMediaRouteProvider::HandleStopAppResult,
-                     base::Unretained(this), route_id, std::move(callback)));
+  std::pair<base::Optional<std::string>, RouteRequestResult::ResultCode>
+      can_stop_app = activity_manager_->CanStopApp(route_id);
+  if (can_stop_app.second == RouteRequestResult::OK) {
+    std::vector<mojom::RouteMessagePtr> messages;
+    messages.emplace_back(
+        internal_message_util_.CreateReceiverActionStopMessage(
+            activity.launch_info, sink));
+    message_sender_->SendMessages(route_id, std::move(messages));
+    activity_manager_->StopApp(
+        route_id,
+        base::BindOnce(&DialMediaRouteProvider::HandleStopAppResult,
+                       base::Unretained(this), route_id, std::move(callback)));
+  } else {
+    std::move(callback).Run(can_stop_app.first, can_stop_app.second);
+  }
 }
 
 void DialMediaRouteProvider::HandleStopAppResult(
