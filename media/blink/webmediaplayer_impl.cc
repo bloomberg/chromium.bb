@@ -1148,7 +1148,14 @@ bool WebMediaPlayerImpl::IsPrerollAttemptNeeded() {
   // TODO(sandersd): Replace with |highest_ready_state_since_seek_| if we need
   // to ensure that preroll always gets a chance to complete.
   // See http://crbug.com/671525.
-  if (highest_ready_state_ >= ReadyState::kReadyStateHaveMetadata)
+  //
+  // Note: Even though we get play/pause signals at kReadyStateHaveMetadata, we
+  // must attempt to preroll until kReadyStateHaveFutureData so that the
+  // canplaythrough event will be fired to the page (which may be waiting).
+  //
+  // TODO(dalecurtis): We should try signaling kReadyStateHaveFutureData upon
+  // automatic-suspend of a non-playing element to avoid wasting resources.
+  if (highest_ready_state_ >= ReadyState::kReadyStateHaveFutureData)
     return false;
 
   // To suspend before we reach kReadyStateHaveCurrentData is only ok
