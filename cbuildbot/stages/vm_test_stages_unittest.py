@@ -443,7 +443,7 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
       self.assertCommandContains(enter_chroot=True, expected=False)
     else:
       self.assertCommandContains([
-          'cros_run_vm_test', '--debug',
+          'cros_run_test', '--debug',
           '--image-path=%s' % self.VM_IMAGE_INSIDE_CHROOT,
           '--results-dir=%s' % self.RESULTS_DIR,
           '--private-key=%s' % self.PRIVATE_KEY_INSIDE_CHROOT

@@ -173,7 +173,7 @@ def VmTest(input_proto, _output_proto):
   if not vm_tests:
     cros_build_lib.Die('vm_tests must contain at least one element')
 
-  cmd = ['cros_run_vm_test', '--debug', '--no-display', '--copy-on-write',
+  cmd = ['cros_run_test', '--debug', '--no-display', '--copy-on-write',
          '--board', build_target.name, '--image-path', vm_image.path,
          '--%s' % test_pb2.VmTestRequest.TestHarness.Name(test_harness).lower()]
   cmd.extend(vm_test.pattern for vm_test in vm_tests)

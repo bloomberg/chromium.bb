@@ -861,7 +861,7 @@ def _RunTestSuiteUsingChromite(board,
   vm_image_path = os.path.join(image_dir, constants.VM_IMAGE_BIN)
 
   cmd = [
-      'cros_run_vm_test',
+      'cros_run_test',
       '--debug',
       '--board=%s' % board,
       '--image-path=%s' % path_util.ToChrootPath(vm_image_path),

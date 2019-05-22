@@ -549,7 +549,7 @@ def ParseCommandLine(argv):
 
   # Ensure command is provided. For e.g. to copy out to the device and run
   # out/unittest:
-  # cros_run_vm_test --files out --cwd out --cmd -- ./unittest
+  # cros_run_test --files out --cwd out --cmd -- ./unittest
   # Treat --cmd as --remote-cmd.
   opts.remote_cmd = opts.remote_cmd or opts.cmd
   if (opts.remote_cmd or opts.host_cmd) and len(opts.args) < 2:

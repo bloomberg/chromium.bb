@@ -169,7 +169,7 @@ class VmTestTest(cros_test_lib.MockTestCase):
     """Test VmTest for Tast with all options set."""
     test_controller.VmTest(self._GetInput(), None)
     self.rc_mock.assertCommandContains([
-        'cros_run_vm_test', '--debug', '--no-display', '--copy-on-write',
+        'cros_run_test', '--debug', '--no-display', '--copy-on-write',
         '--board', 'target',
         '--image-path', '/path/to/image.bin',
         '--tast', 'suite',
@@ -182,7 +182,7 @@ class VmTestTest(cros_test_lib.MockTestCase):
     input_proto = self._GetInput(test_harness=test_pb2.VmTestRequest.AUTOTEST)
     test_controller.VmTest(input_proto, None)
     self.rc_mock.assertCommandContains([
-        'cros_run_vm_test', '--debug', '--no-display', '--copy-on-write',
+        'cros_run_test', '--debug', '--no-display', '--copy-on-write',
         '--board', 'target',
         '--image-path', '/path/to/image.bin',
         '--autotest', 'suite',

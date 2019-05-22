@@ -3371,7 +3371,7 @@ class ChromeSDK(object):
             'chromiumos_preflight']
 
   def VMTest(self, image_path, debug=False):
-    """Run cros_run_vm_test in a VM.
+    """Run cros_run_test in a VM.
 
     Only run tests for boards where we build a VM.
 
@@ -3383,7 +3383,7 @@ class ChromeSDK(object):
       A CommandResult object.
     """
     return self.Run([
-        'cros_run_vm_test', '--copy-on-write', '--deploy',
+        'cros_run_test', '--copy-on-write', '--deploy',
         '--board=%s' % self.board, '--image-path=%s' % image_path,
         '--build-dir=%s' % self._GetOutDirectory(debug=debug),
     ])

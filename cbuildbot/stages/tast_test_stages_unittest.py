@@ -137,7 +137,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # pylint: disable=unused-argument
     # Just check positional args and tricky flags. Checking all args is an
     # exercise in verifying that we're capable of typing the same thing twice.
-    self.assertEqual(cmd[0], './cros_run_vm_test')
+    self.assertEqual(cmd[0], './cros_run_test')
 
     # test_exprs are at the end, if they exist.
     num_test_exprs = len(self._exp_test_exprs)

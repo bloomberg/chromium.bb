@@ -92,7 +92,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.TEST_INFRA_STAGE
 
-  # Time allotted to cros_run_vm_test to clean up (i.e. shut down the VM) after
+  # Time allotted to cros_run_test to clean up (i.e. shut down the VM) after
   # receiving SIGTERM. After this, SIGKILL is sent.
   CLEANUP_TIMEOUT_SEC = 10 * 60
 
@@ -184,7 +184,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     """
     vm_path = os.path.join(self.GetImageDirSymlink(), constants.VM_IMAGE_BIN)
     results_dir = self._MakeChrootPathAbsolute(suite_chroot_results_dir)
-    cmd = ['./cros_run_vm_test', '--no-display', '--copy-on-write', '--debug',
+    cmd = ['./cros_run_test', '--no-display', '--copy-on-write', '--debug',
            '--board=%s' % self._current_board, '--image-path=%s' % vm_path,
            '--results-dir=%s' % results_dir, '--test-timeout=%d' % timeout,
            '--tast'] + test_exprs
