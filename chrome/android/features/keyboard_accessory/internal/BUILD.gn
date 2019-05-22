@@ -49,6 +49,7 @@ android_library("internal_java") {
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_component/AccessorySheetProperties.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_component/AccessorySheetView.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_component/AccessorySheetViewBinder.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_component/NoSwipeViewPager.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AccessorySheetTabCoordinator.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AccessorySheetTabMetricsRecorder.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AccessorySheetTabModel.java",
