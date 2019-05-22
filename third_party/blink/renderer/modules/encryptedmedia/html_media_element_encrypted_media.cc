@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/content_decryption_module_result.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -373,7 +374,8 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
   //    promise rejected with an InvalidStateError.
   if (this_element.is_attaching_media_keys_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            "Another request is in progress."));
   }
 

@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -588,9 +589,10 @@ void UserMediaRequest::Fail(WebUserMediaRequest::Error name,
     default:
       NOTREACHED();
   }
-  callbacks_->OnError(nullptr,
-                      DOMExceptionOrOverconstrainedError::FromDOMException(
-                          DOMException::Create(exception_code, message)));
+  callbacks_->OnError(
+      nullptr,
+      DOMExceptionOrOverconstrainedError::FromDOMException(
+          MakeGarbageCollected<DOMException>(exception_code, message)));
 }
 
 void UserMediaRequest::ContextDestroyed(ExecutionContext*) {

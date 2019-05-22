@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -230,7 +231,7 @@ void IDBRequest::Abort() {
 
   error_.Clear();
   result_.Clear();
-  EnqueueResponse(DOMException::Create(
+  EnqueueResponse(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kAbortError,
       "The transaction was aborted, so the request cannot be fulfilled."));
   request_aborted_ = true;
@@ -708,9 +709,9 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
       // Transactions should be aborted after event dispatch if an exception was
       // not caught.
       if (event.LegacyDidListenersThrow()) {
-        transaction_->SetError(
-            DOMException::Create(DOMExceptionCode::kAbortError,
-                                 "Uncaught exception in event handler."));
+        transaction_->SetError(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kAbortError,
+            "Uncaught exception in event handler."));
         transaction_->abort(IGNORE_EXCEPTION_FOR_TESTING);
       } else if (event.type() == event_type_names::kError &&
                  dispatch_result == DispatchEventResult::kNotCanceled) {

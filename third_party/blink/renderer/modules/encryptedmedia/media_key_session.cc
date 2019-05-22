@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/content_decryption_module_result.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -108,23 +109,25 @@ static bool IsPersistentSessionType(WebEncryptedMediaSessionType session_type) {
 static ScriptPromise CreateRejectedPromiseNotCallable(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                          "The session is not callable."));
 }
 
 static ScriptPromise CreateRejectedPromiseAlreadyClosed(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                          "The session is already closed."));
 }
 
 static ScriptPromise CreateRejectedPromiseAlreadyInitialized(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state,
-      DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                           "The session is already initialized."));
+      script_state, MakeGarbageCollected<DOMException>(
+                        DOMExceptionCode::kInvalidStateError,
+                        "The session is already initialized."));
 }
 
 // A class holding a pending action.
@@ -479,10 +482,10 @@ ScriptPromise MediaKeySession::generateRequest(
       EncryptedMediaUtils::ConvertToInitDataType(init_data_type_string);
   if (init_data_type == WebEncryptedMediaInitDataType::kUnknown) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                           "The initialization data type '" +
-                                               init_data_type_string +
-                                               "' is not supported."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotSupportedError,
+                          "The initialization data type '" +
+                              init_data_type_string + "' is not supported."));
   }
 
   // 7. Let init data be a copy of the contents of the initData parameter.

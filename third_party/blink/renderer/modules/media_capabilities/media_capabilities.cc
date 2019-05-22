@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/optional.h"
 #include "media/base/mime_util.h"
@@ -44,6 +45,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
@@ -728,7 +730,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
                                       WrapPersistent(resolver)));
       return promise;
     }
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError,
         "Platform error: could not get EncodingInfoHandler."));
     return promise;
@@ -743,7 +745,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
                                       WrapPersistent(resolver)));
       return promise;
     }
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError,
         "Platform error: could not create MediaRecorderHandler."));
     return promise;
@@ -794,10 +796,10 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
                                mojom::ConsoleMessageLevel::kWarning,
                                kEncryptedMediaFeaturePolicyConsoleWarning));
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kSecurityError,
-                             "decodingInfo(): Creating MediaKeySystemAccess is "
-                             "disabled by feature policy."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kSecurityError,
+                          "decodingInfo(): Creating MediaKeySystemAccess is "
+                          "disabled by feature policy."));
   }
 
   // Calling context must have a real Document bound to a Page. This check is
@@ -805,7 +807,7 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
   if (!document->GetPage()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "The context provided is not associated with a page."));
   }
@@ -813,17 +815,17 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
   if (execution_context->IsWorkerGlobalScope()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "Encrypted Media decoding info not available in Worker context."));
   }
 
   if (!execution_context->IsSecureContext()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kSecurityError,
-                             "Encrypted Media decoding info can only be "
-                             "queried in a secure context."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kSecurityError,
+                          "Encrypted Media decoding info can only be "
+                          "queried in a secure context."));
   }
 
   MediaCapabilitiesKeySystemConfiguration* key_system_config =

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/hid/hid_collection_info.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -48,13 +49,15 @@ const HeapVector<Member<HIDCollectionInfo>>& HIDDevice::collections() const {
 
 ScriptPromise HIDDevice::open(ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                          "Not supported."));
 }
 
 ScriptPromise HIDDevice::close(ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                          "Not supported."));
 }
 
@@ -62,7 +65,8 @@ ScriptPromise HIDDevice::sendReport(ScriptState* script_state,
                                     uint8_t report_id,
                                     const ArrayBufferOrArrayBufferView& data) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                          "Not supported."));
 }
 
@@ -71,14 +75,16 @@ ScriptPromise HIDDevice::sendFeatureReport(
     uint8_t report_id,
     const ArrayBufferOrArrayBufferView& data) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                          "Not supported."));
 }
 
 ScriptPromise HIDDevice::receiveFeatureReport(ScriptState* script_state,
                                               uint8_t report_id) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                          "Not supported."));
 }
 

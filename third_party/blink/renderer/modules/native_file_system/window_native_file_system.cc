@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/native_file_system/window_native_file_system.h"
 
+#include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -15,6 +17,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options_accepts.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -59,19 +62,21 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
     const ChooseFileSystemEntriesOptions* options) {
   if (!window.IsCurrentlyDisplayedInFrame()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kAbortError));
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
   Document* document = window.document();
   if (!document) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kAbortError));
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
   if (!LocalFrame::HasTransientUserActivation(window.GetFrame())) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kSecurityError,
             "Must be handling a user gesture to show a file picker."));
   }

@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_writer.h"
 
+#include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
@@ -16,6 +19,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -62,8 +66,8 @@ ScriptPromise NativeFileSystemWriter::WriteBlob(ScriptState* script_state,
                                                 Blob* blob) {
   if (!file_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError));
   }
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -168,8 +172,8 @@ ScriptPromise NativeFileSystemWriter::WriteStream(
     ExceptionState& exception_state) {
   if (!file_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError));
   }
   DCHECK(!stream_loader_);
 
@@ -196,8 +200,8 @@ ScriptPromise NativeFileSystemWriter::truncate(ScriptState* script_state,
                                                uint64_t size) {
   if (!file_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError));
   }
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -211,8 +215,8 @@ ScriptPromise NativeFileSystemWriter::truncate(ScriptState* script_state,
 ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state) {
   if (!file_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError));
   }
   file_ = nullptr;
   return ScriptPromise::CastUndefined(script_state);

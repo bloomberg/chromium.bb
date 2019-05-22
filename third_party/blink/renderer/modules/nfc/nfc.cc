@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/nfc/nfc.h"
 
+#include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -18,6 +20,7 @@
 #include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_watch_options.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -374,7 +377,8 @@ ScriptPromise RejectWithDOMException(ScriptState* script_state,
                                      DOMExceptionCode exception_code,
                                      const String& message) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(exception_code, message));
+      script_state,
+      MakeGarbageCollected<DOMException>(exception_code, message));
 }
 
 ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,

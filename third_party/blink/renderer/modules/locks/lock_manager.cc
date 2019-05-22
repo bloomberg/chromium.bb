@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -102,8 +103,8 @@ class LockManager::LockRequestImpl final
     if (!resolver_->GetScriptState()->ContextIsValid())
       return;
 
-    resolver_->Reject(
-        DOMException::Create(DOMExceptionCode::kAbortError, reason));
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, reason));
   }
 
   void Failed() override {

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_request_queue_item.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -144,7 +145,7 @@ void IDBRequestLoader::ReportError() {
   DCHECK(started_);
   DCHECK(!canceled_);
 #endif  // DCHECK_IS_ON()
-  queue_item_->OnResultLoadComplete(DOMException::Create(
+  queue_item_->OnResultLoadComplete(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kDataError, "Failed to read large IndexedDB value"));
 }
 

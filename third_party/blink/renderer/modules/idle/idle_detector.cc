@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 #include "third_party/blink/renderer/modules/idle/idle_detector.h"
+
+#include <utility>
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink.h"
@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/idle/idle_state.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
@@ -82,7 +83,8 @@ ScriptPromise IdleDetector::start(ScriptState* script_state) {
           mojom::FeaturePolicyFeature::kIdleDetection,
           ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
   }
 

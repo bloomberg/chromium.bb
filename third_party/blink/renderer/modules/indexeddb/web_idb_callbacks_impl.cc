@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
@@ -43,6 +44,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -106,8 +108,8 @@ void WebIDBCallbacksImpl::Error(int32_t code, const String& message) {
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "error");
-  request_->HandleResponse(
-      DOMException::Create(static_cast<DOMExceptionCode>(code), message));
+  request_->HandleResponse(MakeGarbageCollected<DOMException>(
+      static_cast<DOMExceptionCode>(code), message));
   Detach();
 }
 
