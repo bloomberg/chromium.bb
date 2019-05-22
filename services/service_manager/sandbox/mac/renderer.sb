@@ -70,7 +70,8 @@
 
 ; For V8 to use in thread calculations.
 (if (>= os-version 1014)
-  (allow sysctl-read (sysctl-name "kern.tcsm_available"))
-  (allow sysctl-read (sysctl-name "kern.tcsm_enable"))
-  (allow sysctl-write (sysctl-name "kern.tcsm_enable"))
-)
+  (begin
+    (allow sysctl-read (sysctl-name "kern.tcsm_enable"))
+    (allow sysctl-write (sysctl-name "kern.tcsm_enable"))
+    (allow sysctl-read (sysctl-name "kern.tcsm_available"))
+))
