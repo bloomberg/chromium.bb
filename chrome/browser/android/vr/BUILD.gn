@@ -194,6 +194,7 @@ loadable_module("vr_ui_dummy_lib") {
     "ui_dummy.cc",
     "ui_dummy.h",
   ]
+  no_default_deps = true
 }
 
 android_library("ar_java") {
