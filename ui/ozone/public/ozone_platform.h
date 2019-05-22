@@ -120,8 +120,6 @@ class OZONE_EXPORT OzonePlatform {
     bool supports_overlays = false;
   };
 
-  using StartupCallback = base::OnceCallback<void(OzonePlatform*)>;
-
   // Ensures the OzonePlatform instance without doing any initialization.
   // No-op in case the instance is already created.
   // This is useful in order call virtual methods that depend on the ozone
@@ -139,14 +137,6 @@ class OZONE_EXPORT OzonePlatform {
   static void InitializeForGPU(const InitParams& args);
 
   static OzonePlatform* GetInstance();
-
-  // Registers a callback to be run when the OzonePlatform is initialized. Note
-  // that if an instance already exists, then the callback is called
-  // immediately. If an instance does not exist, and is created later, then the
-  // callback is called once the instance is created and initialized, on the
-  // thread it is initialized on. If the caller requires the callback to run on
-  // a specific thread, then it needs to do ensure that by itself.
-  static void RegisterStartupCallback(StartupCallback callback);
 
   // Factory getters to override in subclasses. The returned objects will be
   // injected into the appropriate layer at startup. Subclasses should not

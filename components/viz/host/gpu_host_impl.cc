@@ -84,30 +84,6 @@ FontRenderParams& GetFontRenderParams() {
   return *instance;
 }
 
-#if defined(USE_OZONE)
-// Helper to register Mus/conventional thread bouncers for ozone startup.
-void OzoneRegisterStartupCallbackHelper(
-    scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner,
-    base::OnceCallback<void(ui::OzonePlatform*)> callback) {
-  // The callback registered in ozone can be called in any thread. So use an
-  // intermediary callback that bounces to the GpuHost thread if needed, before
-  // running the callback.
-  auto bounce_callback = base::BindOnce(
-      [](base::SingleThreadTaskRunner* host_thread_task_runner,
-         base::OnceCallback<void(ui::OzonePlatform*)> callback,
-         ui::OzonePlatform* platform) {
-        if (host_thread_task_runner->BelongsToCurrentThread()) {
-          std::move(callback).Run(platform);
-        } else {
-          host_thread_task_runner->PostTask(
-              FROM_HERE, base::BindOnce(std::move(callback), platform));
-        }
-      },
-      base::RetainedRef(host_thread_task_runner), std::move(callback));
-  ui::OzonePlatform::RegisterStartupCallback(std::move(bounce_callback));
-}
-#endif  // defined(USE_OZONE)
-
 }  // namespace
 
 VizMainWrapper::VizMainWrapper(mojom::VizMainPtr viz_main_ptr)
@@ -348,8 +324,6 @@ void GpuHostImpl::InitOzone() {
   // Ozone needs to send the primary DRM device to GPU service as early as
   // possible to ensure the latter always has a valid device.
   // https://crbug.com/608839
-  // If the OzonePlatform is not created yet, defer the callback until
-  // OzonePlatform instance is created.
   //
   // The Ozone/Wayland requires mojo communication to be established to be
   // functional with a separate gpu process. Thus, using the PlatformProperties,
@@ -364,23 +338,11 @@ void GpuHostImpl::InitOzone() {
     auto terminate_callback = base::BindOnce(&GpuHostImpl::TerminateGpuProcess,
                                              weak_ptr_factory_.GetWeakPtr());
 
-    auto startup_callback = base::BindOnce(
-        [](const base::RepeatingCallback<void(const std::string&,
-                                              mojo::ScopedMessagePipeHandle)>&
-               interface_binder,
-           base::OnceCallback<void(const std::string&)> terminate_callback,
-           scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-           scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner,
-           ui::OzonePlatform* platform) {
-          DCHECK(host_thread_task_runner->BelongsToCurrentThread());
-          platform->GetGpuPlatformSupportHost()->OnGpuServiceLaunched(
-              main_thread_task_runner, host_thread_task_runner,
-              interface_binder, std::move(terminate_callback));
-        },
-        interface_binder, std::move(terminate_callback),
-        params_.main_thread_task_runner, host_thread_task_runner_);
-    OzoneRegisterStartupCallbackHelper(host_thread_task_runner_,
-                                       std::move(startup_callback));
+    ui::OzonePlatform::GetInstance()
+        ->GetGpuPlatformSupportHost()
+        ->OnGpuServiceLaunched(params_.main_thread_task_runner,
+                               host_thread_task_runner_, interface_binder,
+                               std::move(terminate_callback));
   } else {
     auto send_callback = base::BindRepeating(
         [](base::WeakPtr<GpuHostImpl> host, IPC::Message* message) {
@@ -390,22 +352,11 @@ void GpuHostImpl::InitOzone() {
             delete message;
         },
         weak_ptr_factory_.GetWeakPtr());
-    // Create the callback that should run on the current thread.
-    auto startup_callback = base::BindOnce(
-        [](int host_id,
-           const base::RepeatingCallback<void(IPC::Message*)>& send_callback,
-           scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-           scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner,
-           ui::OzonePlatform* platform) {
-          DCHECK(host_thread_task_runner->BelongsToCurrentThread());
-          platform->GetGpuPlatformSupportHost()->OnGpuProcessLaunched(
-              host_id, main_thread_task_runner, host_thread_task_runner,
-              send_callback);
-        },
-        params_.restart_id, send_callback, params_.main_thread_task_runner,
-        host_thread_task_runner_);
-    OzoneRegisterStartupCallbackHelper(host_thread_task_runner_,
-                                       std::move(startup_callback));
+    ui::OzonePlatform::GetInstance()
+        ->GetGpuPlatformSupportHost()
+        ->OnGpuProcessLaunched(params_.restart_id,
+                               params_.main_thread_task_runner,
+                               host_thread_task_runner_, send_callback);
   }
 }
 

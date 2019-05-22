@@ -24,20 +24,9 @@ bool g_platform_initialized_gpu = false;
 
 OzonePlatform* g_instance = nullptr;
 
-OzonePlatform::StartupCallback& GetInstanceCallback() {
-  static base::NoDestructor<OzonePlatform::StartupCallback> callback;
-  return *callback;
-}
-
-base::Lock& GetOzoneInstanceLock() {
-  static base::Lock lock;
-  return lock;
-}
-
 }  // namespace
 
 OzonePlatform::OzonePlatform() {
-  GetOzoneInstanceLock().AssertAcquired();
   DCHECK(!g_instance) << "There should only be a single OzonePlatform.";
   g_instance = this;
 }
@@ -49,17 +38,11 @@ void OzonePlatform::InitializeForUI(const InitParams& args) {
   EnsureInstance();
   if (g_platform_initialized_ui)
     return;
+  g_platform_initialized_ui = true;
   g_instance->InitializeUI(args);
   // This is deliberately created after initializing so that the platform can
   // create its own version of DDM.
   DeviceDataManager::CreateInstance();
-  {
-    base::AutoLock lock(GetOzoneInstanceLock());
-    g_platform_initialized_ui = true;
-  }
-  auto& instance_callback = GetInstanceCallback();
-  if (instance_callback)
-    std::move(instance_callback).Run(g_instance);
 }
 
 // static
@@ -69,23 +52,16 @@ void OzonePlatform::InitializeForGPU(const InitParams& args) {
     return;
   g_platform_initialized_gpu = true;
   g_instance->InitializeGPU(args);
-  if (!args.single_process) {
-    auto& instance_callback = GetInstanceCallback();
-    if (instance_callback)
-      std::move(instance_callback).Run(g_instance);
-  }
 }
 
 // static
 OzonePlatform* OzonePlatform::GetInstance() {
-  base::AutoLock lock(GetOzoneInstanceLock());
   DCHECK(g_instance) << "OzonePlatform is not initialized";
   return g_instance;
 }
 
 // static
 OzonePlatform* OzonePlatform::EnsureInstance() {
-  base::AutoLock lock(GetOzoneInstanceLock());
   if (!g_instance) {
     TRACE_EVENT1("ozone",
                  "OzonePlatform::Initialize",
@@ -99,21 +75,6 @@ OzonePlatform* OzonePlatform::EnsureInstance() {
     DCHECK_EQ(g_instance, pl);
   }
   return g_instance;
-}
-
-// static
-void OzonePlatform::RegisterStartupCallback(StartupCallback callback) {
-  OzonePlatform* inst = nullptr;
-  {
-    base::AutoLock lock(GetOzoneInstanceLock());
-    if (!g_platform_initialized_ui) {
-      auto& instance_callback = GetInstanceCallback();
-      instance_callback = std::move(callback);
-      return;
-    }
-    inst = g_instance;
-  }
-  std::move(callback).Run(inst);
 }
 
 IPC::MessageFilter* OzonePlatform::GetGpuMessageFilter() {
