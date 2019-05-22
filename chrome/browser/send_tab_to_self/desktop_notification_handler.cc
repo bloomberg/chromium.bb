@@ -102,10 +102,10 @@ void DesktopNotificationHandler::OnClick(
     Navigate(&params);
     NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
         NotificationHandler::Type::SEND_TAB_TO_SELF, notification_id);
-    // Delete the entry in SendTabToSelfModel
+    // Marks the the entry as opened in SendTabToSelfModel
     SendTabToSelfSyncServiceFactory::GetForProfile(profile)
         ->GetSendTabToSelfModel()
-        ->DeleteEntry(notification_id);
+        ->MarkEntryOpened(notification_id);
     RecordNotificationHistogram(SendTabToSelfNotification::kOpened);
   }
   std::move(completed_closure).Run();
