@@ -32945,11 +32945,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1855347512" label="FormControlsRefresh:disabled"/>
   <int value="-1854432127" label="ChromeHomePullToRefreshIphAtTop:disabled"/>
   <int value="-1854372227" label="VrBrowsingExperimentalFeatures:enabled"/>
+  <int value="-1853570433" label="AdvancedPpdAttributes:enabled"/>
   <int value="-1849706663" label="enable-password-force-saving:disabled"/>
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1847776781"
       label="enable-loading-ipc-optimization-for-small-resources"/>
   <int value="-1844754731" label="Mash:disabled"/>
+  <int value="-1840608422" label="AdvancedPpdAttributes:disabled"/>
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
   <int value="-1839496458" label="disable-file-manager-touch-mode"/>
   <int value="-1838482444" label="disable-settings-window"/>

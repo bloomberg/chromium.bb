@@ -164,6 +164,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_features.h"
+#include "printing/printing_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif  // OS_CHROMEOS
 
@@ -3733,6 +3734,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAllowPopupsDuringPageUnloadName,
      flag_descriptions::kAllowPopupsDuringPageUnloadDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
+#if defined(OS_CHROMEOS)
+    {"enable-advanced-ppd-attributes",
+     flag_descriptions::kEnableAdvancedPpdAttributesName,
+     flag_descriptions::kEnableAdvancedPpdAttributesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(printing::kAdvancedPpdAttributes)},
+#endif  // defined(OS_CHROMEOS)
 
     {"enable-forbid-sync-xhr-in-page-dismissal",
      flag_descriptions::kForbidSyncXHRInPageDismissalName,

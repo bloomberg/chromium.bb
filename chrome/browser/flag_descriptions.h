@@ -1748,6 +1748,9 @@ extern const char kDisableTabletAutohideTitlebarsDescription[];
 extern const char kDoubleTapToZoomInTabletModeName[];
 extern const char kDoubleTapToZoomInTabletModeDescription[];
 
+extern const char kEnableAdvancedPpdAttributesName[];
+extern const char kEnableAdvancedPpdAttributesDescription[];
+
 extern const char kEnableAppDataSearchName[];
 extern const char kEnableAppDataSearchDescription[];
 

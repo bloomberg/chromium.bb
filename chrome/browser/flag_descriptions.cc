@@ -2918,6 +2918,11 @@ const char kDoubleTapToZoomInTabletModeDescription[] =
     "If Enabled, double tapping in webpages while in tablet mode will zoom the "
     "page.";
 
+const char kEnableAdvancedPpdAttributesName[] =
+    "Enables advanced PPD attributes";
+const char kEnableAdvancedPpdAttributesDescription[] =
+    "Enables advanced settings on CUPS printers";
+
 const char kEnableAppDataSearchName[] = "Enable app data search in launcher";
 const char kEnableAppDataSearchDescription[] =
     "Allow launcher search to access data available through Firebase App "

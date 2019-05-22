@@ -684,6 +684,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-advanced-ppd-attributes",
+    "owners": [ "vkuzkokov", "skau" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-android-autofill-accessibility",
     "owners": [ "ftirelo" ],
     "expiry_milestone": 73

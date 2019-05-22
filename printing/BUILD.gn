@@ -229,6 +229,8 @@ component("printing") {
       "printed_document_chromeos.cc",
       "printing_context_no_system_dialog.cc",
       "printing_context_no_system_dialog.h",
+      "printing_features_chromeos.cc",
+      "printing_features_chromeos.h",
     ]
   } else if (is_android) {
     sources += [
