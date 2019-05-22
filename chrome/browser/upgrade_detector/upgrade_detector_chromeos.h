@@ -14,6 +14,7 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chromeos/dbus/update_engine_client.h"
 
+class PrefRegistrySimple;
 namespace base {
 class Clock;
 template <typename T>
@@ -25,6 +26,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
                                 public chromeos::UpdateEngineClient::Observer {
  public:
   ~UpgradeDetectorChromeos() override;
+
+  // Register ChromeOS specific Prefs.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   static UpgradeDetectorChromeos* GetInstance();
 

@@ -960,6 +960,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+  { key::kRelaunchHeadsUpPeriod,
+    prefs::kRelaunchHeadsUpPeriod,
+    base::Value::Type::INTEGER },
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_ANDROID)
   { key::kAutoplayAllowed,
     prefs::kAutoplayAllowed,

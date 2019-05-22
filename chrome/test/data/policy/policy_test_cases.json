@@ -2697,6 +2697,16 @@
     ]
   },
 
+  "RelaunchHeadsUpPeriod": {
+    "os": ["chromeos"],
+    "test_policy": { "RelaunchHeadsUpPeriod": 86400000 },
+    "pref_mappings": [
+      { "pref": "browser.relaunch_heads_up_period",
+        "local_state": true
+      }
+    ]
+  },
+
   "PromotionalTabsEnabled": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "PromotionalTabsEnabled": false },

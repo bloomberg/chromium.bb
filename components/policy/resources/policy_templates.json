@@ -13186,6 +13186,24 @@
       If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
     {
+      'id': 567,
+      'name': 'RelaunchHeadsUpPeriod',
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome_os:76-'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 3600000 },
+      'caption': '''Set the time of the first user relaunch notification''',
+      'label': '''Time period (milliseconds)''',
+      'example_value': 86400000,
+      'desc': '''Allows you to set the time period, in milliseconds, between the first notification that a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device must be restarted to apply a pending update and the end of the time period specified by the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME">RelaunchNotificationPeriod</ph> policy.
+
+      If not set, the default period of 86400000 milliseconds (one day) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.''',
+    },
+    {
       'name': 'VirtualMachinesAllowed',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -16724,5 +16742,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546],
-  'highest_id_currently_used': 566
+  'highest_id_currently_used': 567
 }

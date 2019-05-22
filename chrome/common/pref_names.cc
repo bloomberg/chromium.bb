@@ -2110,6 +2110,13 @@ const char kRelaunchNotificationPeriod[] =
     "browser.relaunch_notification_period";
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+// Pref name for the policy controlling the time period between the first user
+// notification about need to relaunch and the end of the
+// RelaunchNotificationPeriod. Values are in milliseconds.
+const char kRelaunchHeadsUpPeriod[] = "browser.relaunch_heads_up_period";
+#endif  // defined(OS_CHROMEOS)
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

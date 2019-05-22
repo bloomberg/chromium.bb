@@ -289,6 +289,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/components/account_manager/account_manager.h"
@@ -645,6 +646,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::PolicyCertServiceFactory::RegisterPrefs(registry);
   policy::TPMAutoUpdateModePolicyHandler::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
+  UpgradeDetectorChromeos::RegisterPrefs(registry);
 #endif
 
 #if defined(OS_MACOSX)

@@ -16,8 +16,10 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "components/prefs/pref_registry_simple.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
@@ -37,6 +39,10 @@ constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(4);
 // annoyance level's threshold. The elevated level always hits half-way to the
 // high level.
 constexpr double kElevatedScaleFactor = 0.5;
+
+// The default amount of time between the detector's annoyance level change
+// from UPGRADE_ANNOYANCE_ELEVATED to UPGRADE_ANNOYANCE_HIGH in ms.
+constexpr int kDefaultHeadsUpPeriodMs = 24 * 60 * 60 * 1000;  // 1 day.
 
 // The reason of the rollback used in the UpgradeDetector.RollbackReason
 // histogram.
@@ -113,6 +119,12 @@ UpgradeDetectorChromeos::UpgradeDetectorChromeos(
       weak_factory_(this) {}
 
 UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {}
+
+// static
+void UpgradeDetectorChromeos::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kRelaunchHeadsUpPeriod,
+                                kDefaultHeadsUpPeriodMs);
+}
 
 void UpgradeDetectorChromeos::Init() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);

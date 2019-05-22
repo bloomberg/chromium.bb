@@ -757,6 +757,10 @@ extern const char kRelaunchNotification[];
 extern const char kRelaunchNotificationPeriod[];
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+extern const char kRelaunchHeadsUpPeriod[];
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_ANDROID)
 extern const char kAttemptedToEnableAutoupdate[];
 
