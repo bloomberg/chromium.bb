@@ -55,11 +55,6 @@ class TestLauncherTest : public testing::Test {
         scoped_task_environment(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
-  // Posted task is needed to break RunLoop().Run() in TestLauncher.
-  void SetUp() override {
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, BindOnce(&RunLoop::QuitCurrentWhenIdleDeprecated));
-  }
 
   // Adds tests to be returned by the delegate.
   void AddMockedTests(std::string test_case_name,
@@ -95,6 +90,16 @@ class TestLauncherTest : public testing::Test {
   std::vector<TestIdentifier> tests_;
 };
 
+// Action to mock delegate invoking OnTestFinish on test launcher.
+ACTION_P2(OnTestResult, full_name, status) {
+  TestResult result;
+  result.full_name = full_name;
+  result.status = status;
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      BindOnce(&TestLauncher::OnTestFinished, Unretained(arg0), result));
+}
+
 // A test and a disabled test cannot share a name.
 TEST_F(TestLauncherTest, TestNameSharedWithDisabledTest) {
   AddMockedTests("Test", {"firstTest", "DISABLED_firstTest"});
@@ -117,6 +122,14 @@ TEST_F(TestLauncherTest, OrphanePreTest) {
   EXPECT_FALSE(test_launcher.Run(command_line.get()));
 }
 
+// When There are no tests, RunLoop should not be called.
+TEST_F(TestLauncherTest, EmptyTestSetPasses) {
+  SetUpExpectCalls();
+  using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _)).WillOnce(testing::Return(0));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
 // Test TestLauncher filters DISABLED tests by default.
 TEST_F(TestLauncherTest, FilterDisabledTestByDefault) {
   AddMockedTests("DISABLED_TestDisabled", {"firstTest"});
@@ -128,12 +141,15 @@ TEST_F(TestLauncherTest, FilterDisabledTestByDefault) {
   EXPECT_CALL(delegate,
               RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
                                                     tests_names.cend())))
-      .Times(1);
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("Test.secondTest", TestResult::TEST_SUCCESS),
+          testing::Return(2)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
 // Test TestLauncher "gtest_filter" switch.
-TEST_F(TestLauncherTest, UsingCommandLineSwitch) {
+TEST_F(TestLauncherTest, UsingCommandLineFilter) {
   AddMockedTests("Test",
                  {"firstTest", "secondTest", "DISABLED_firstTestDisabled"});
   SetUpExpectCalls();
@@ -143,8 +159,66 @@ TEST_F(TestLauncherTest, UsingCommandLineSwitch) {
   EXPECT_CALL(delegate,
               RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
                                                     tests_names.cend())))
-      .Times(1);
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
+// Test TestLauncher "gtest_repeat" switch.
+TEST_F(TestLauncherTest, RunningMultipleIterations) {
+  AddMockedTests("Test", {"firstTest"});
+  SetUpExpectCalls();
+  command_line->AppendSwitchASCII("gtest_repeat", "2");
+  using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
+// Test TestLauncher will retry failed test, and stop on success.
+TEST_F(TestLauncherTest, SuccessOnRetryTests) {
+  AddMockedTests("Test", {"firstTest"});
+  SetUpExpectCalls();
+  using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_FAILURE),
+          testing::Return(1)));
+  std::vector<std::string> tests_names = {"Test.firstTest"};
+  EXPECT_CALL(delegate,
+              RetryTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                      tests_names.cend())))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
+// Test TestLauncher will retry continuing failing test 3 times by default,
+// before eventually failing and returning false.
+TEST_F(TestLauncherTest, FailOnRetryTests) {
+  AddMockedTests("Test", {"firstTest"});
+  SetUpExpectCalls();
+  using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_FAILURE),
+          testing::Return(1)));
+  std::vector<std::string> tests_names = {"Test.firstTest"};
+  EXPECT_CALL(delegate,
+              RetryTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                      tests_names.cend())))
+      .Times(3)
+      .WillRepeatedly(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_FAILURE),
+          testing::Return(1)));
+  EXPECT_FALSE(test_launcher.Run(command_line.get()));
 }
 
 // Test TestLauncher run disabled unit tests switch.
@@ -162,7 +236,13 @@ TEST_F(TestLauncherTest, RunDisabledTests) {
   EXPECT_CALL(delegate,
               RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
                                                     tests_names.cend())))
-      .Times(1);
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("DISABLED_TestDisabled.firstTest",
+                       TestResult::TEST_SUCCESS),
+          OnTestResult("Test.DISABLED_firstTestDisabled",
+                       TestResult::TEST_SUCCESS),
+          testing::Return(3)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -180,7 +260,10 @@ TEST_F(TestLauncherTest, RedirectStdio) {
   SetUpExpectCalls();
   command_line->AppendSwitchASCII("test-launcher-print-test-stdio", "always");
   using ::testing::_;
-  EXPECT_CALL(delegate, RunTests(_, _)).Times(1);
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)));
   std::vector<std::string> tests_names = {"Test.firstTest"};
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }

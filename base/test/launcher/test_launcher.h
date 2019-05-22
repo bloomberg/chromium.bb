@@ -192,10 +192,15 @@ class TestLauncher {
   // Runs all tests in current iteration.
   void RunTests();
 
+  // Retry to run tests that failed during RunTests.
+  // Returns false if retry still fails or unable to start.
+  bool RunRetryTests();
+
   void CombinePositiveTestFilters(std::vector<std::string> filter_a,
                                   std::vector<std::string> filter_b);
 
-  void RunTestIteration();
+  // Rest counters, retry tests list, and test result tracker.
+  void OnTestIterationStart();
 
 #if defined(OS_POSIX)
   void OnShutdownPipeReadable();
@@ -241,8 +246,8 @@ class TestLauncher {
   // Tests to use (cached result of TestLauncherDelegate::GetTests).
   std::vector<TestInfo> tests_;
 
-  // Number of tests found in this binary.
-  size_t test_found_count_;
+  // Threshold for number of broken tests.
+  size_t broken_threshold_;
 
   // Number of tests started in this iteration.
   size_t test_started_count_;
@@ -257,9 +262,6 @@ class TestLauncher {
   // likely indicating a more systemic problem if widespread.
   size_t test_broken_count_;
 
-  // Number of retries in this iteration.
-  size_t retry_count_;
-
   // Maximum number of retries per iteration.
   size_t retry_limit_;
 
@@ -269,9 +271,6 @@ class TestLauncher {
 
   // Tests to retry in this iteration.
   std::set<std::string> tests_to_retry_;
-
-  // Result to be returned from Run.
-  bool run_result_;
 
   // Support for test shuffling, just like gtest does.
   bool shuffle_;

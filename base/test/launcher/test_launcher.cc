@@ -153,7 +153,7 @@ void KillSpawnedTestProcesses() {
   // from being spawned.
   AutoLock lock(*GetLiveProcessesLock());
 
-  fprintf(stdout, "Sending SIGTERM to %" PRIuS " child processes... ",
+  fprintf(stdout, "Sending SIGTERM to %zu child processes... ",
           GetLiveProcesses()->size());
   fflush(stdout);
 
@@ -171,7 +171,7 @@ void KillSpawnedTestProcesses() {
   fprintf(stdout, "done.\n");
   fflush(stdout);
 
-  fprintf(stdout, "Sending SIGKILL to %" PRIuS " child processes... ",
+  fprintf(stdout, "Sending SIGKILL to %zu child processes... ",
           GetLiveProcesses()->size());
   fflush(stdout);
 
@@ -347,7 +347,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   // index).
   static base::AtomicSequenceNumber child_launch_index;
   base::FilePath nested_data_path = kDataPath.AppendASCII(
-      base::StringPrintf("test-%" PRIuS "-%d", base::Process::Current().Pid(),
+      base::StringPrintf("test-%zu-%d", base::Process::Current().Pid(),
                          child_launch_index.GetNext()));
   CHECK(!base::DirectoryExists(nested_data_path));
   CHECK(base::CreateDirectory(nested_data_path));
@@ -652,15 +652,13 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       total_shards_(1),
       shard_index_(0),
       cycles_(1),
-      test_found_count_(0),
+      broken_threshold_(0),
       test_started_count_(0),
       test_finished_count_(0),
       test_success_count_(0),
       test_broken_count_(0),
-      retry_count_(0),
       retry_limit_(0),
       force_run_broken_tests_(false),
-      run_result_(true),
       shuffle_(false),
       shuffle_seed_(0),
       watchdog_timer_(FROM_HERE,
@@ -681,9 +679,6 @@ bool TestLauncher::Run(CommandLine* command_line) {
                                       : command_line))
     return false;
 
-  // Value of |cycles_| changes after each iteration. Keep track of the
-  // original value.
-  int requested_cycles = cycles_;
 
 #if defined(OS_POSIX)
   CHECK_EQ(0, pipe(g_shutdown_pipe));
@@ -706,17 +701,38 @@ bool TestLauncher::Run(CommandLine* command_line) {
   // Start the watchdog timer.
   watchdog_timer_.Reset();
 
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&TestLauncher::RunTestIteration, Unretained(this)));
+  // Indicate a test did not succeed.
+  bool test_failed = false;
+  int cycles = cycles_;
+  // Set to false if any iteration fails.
+  bool run_result = true;
 
-  RunLoop().Run();
+  while ((cycles > 0 || cycles == -1) && !(stop_on_failure_ && test_failed)) {
+    OnTestIterationStart();
 
-  if (requested_cycles != 1)
+    RunTests();
+    bool retry_result = RunRetryTests();
+    // Signal failure, but continue to run all requested test iterations.
+    // With the summary of all iterations at the end this is a good default.
+    run_result = run_result && retry_result;
+
+    if (retry_result) {
+      fprintf(stdout, "SUCCESS: all tests passed.\n");
+      fflush(stdout);
+    }
+
+    test_failed = test_success_count_ != test_finished_count_;
+    OnTestIterationFinished();
+    // Special value "-1" means "repeat indefinitely".
+    cycles = (cycles == -1) ? cycles : cycles - 1;
+  }
+
+  if (cycles_ != 1)
     results_tracker_.PrintSummaryOfAllIterations();
 
   MaybeSaveSummaryAsJSON(std::vector<std::string>());
 
-  return run_result_;
+  return run_result;
 }
 
 void TestLauncher::LaunchChildGTestProcess(
@@ -750,7 +766,7 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
     // Keep the top and bottom of the log and truncate the middle part.
     result.output_snippet =
         result.output_snippet.substr(0, kOutputSnippetBytesLimit / 2) + "\n" +
-        StringPrintf("<truncated (%" PRIuS " bytes)>\n",
+        StringPrintf("<truncated (%zu bytes)>\n",
                      result.output_snippet.length()) +
         result.output_snippet.substr(result.output_snippet.length() -
                                      kOutputSnippetBytesLimit / 2) +
@@ -789,11 +805,9 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
   results_tracker_.AddTestResult(result);
 
   // TODO(phajdan.jr): Align counter (padding).
-  std::string status_line(
-      StringPrintf("[%" PRIuS "/%" PRIuS "] %s ",
-                   test_finished_count_,
-                   test_started_count_,
-                   result.full_name.c_str()));
+  std::string status_line(StringPrintf("[%zu/%zu] %s ", test_finished_count_,
+                                       test_started_count_,
+                                       result.full_name.c_str()));
   if (result.completed()) {
     status_line.append(StringPrintf("(%" PRId64 " ms)",
                                     result.elapsed_time.InMilliseconds()));
@@ -822,10 +836,8 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
       result.status == TestResult::TEST_UNKNOWN) {
     test_broken_count_++;
   }
-  size_t broken_threshold =
-      std::max(static_cast<size_t>(20), test_found_count_ / 10);
-  if (!force_run_broken_tests_ && test_broken_count_ >= broken_threshold) {
-    fprintf(stdout, "Too many badly broken tests (%" PRIuS "), exiting now.\n",
+  if (!force_run_broken_tests_ && test_broken_count_ >= broken_threshold_) {
+    fprintf(stdout, "Too many badly broken tests (%zu), exiting now.\n",
             test_broken_count_);
     fflush(stdout);
 
@@ -837,51 +849,8 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
 
     exit(1);
   }
-
-  if (test_finished_count_ != test_started_count_)
-    return;
-
-  if (tests_to_retry_.empty() || retry_count_ >= retry_limit_) {
-    OnTestIterationFinished();
-    return;
-  }
-
-  if (!force_run_broken_tests_ && tests_to_retry_.size() >= broken_threshold) {
-    fprintf(stdout,
-            "Too many failing tests (%" PRIuS "), skipping retries.\n",
-            tests_to_retry_.size());
-    fflush(stdout);
-
-    results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
-
-    OnTestIterationFinished();
-    return;
-  }
-
-  retry_count_++;
-
-  std::vector<std::string> test_names(tests_to_retry_.begin(),
-                                      tests_to_retry_.end());
-
-  tests_to_retry_.clear();
-
-  size_t retry_started_count = launcher_delegate_->RetryTests(this, test_names);
-  if (retry_started_count == 0) {
-    // Signal failure, but continue to run all requested test iterations.
-    // With the summary of all iterations at the end this is a good default.
-    run_result_ = false;
-
-    OnTestIterationFinished();
-    return;
-  }
-
-  fprintf(stdout, "Retrying %" PRIuS " test%s (retry #%" PRIuS ")\n",
-          retry_started_count,
-          retry_started_count > 1 ? "s" : "",
-          retry_count_);
-  fflush(stdout);
-
-  test_started_count_ += retry_started_count;
+  if (test_finished_count_ == test_started_count_)
+    RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // Helper used to parse test filter files. Syntax is documented in
@@ -1064,7 +1033,7 @@ bool TestLauncher::Init(CommandLine* command_line) {
     return false;
   }
 
-  fprintf(stdout, "Using %" PRIuS " parallel jobs.\n", parallel_jobs_);
+  fprintf(stdout, "Using %zu parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
 
   CreateAndStartThreadPool(static_cast<int>(parallel_jobs_));
@@ -1311,6 +1280,7 @@ void TestLauncher::CombinePositiveTestFilters(
 
 void TestLauncher::RunTests() {
   std::vector<std::string> test_names;
+  size_t test_found_count = 0;
   for (const TestInfo& test_info : tests_) {
     std::string test_name = test_info.GetFullName();
     results_tracker_.AddTest(test_name);
@@ -1327,7 +1297,7 @@ void TestLauncher::RunTests() {
       continue;
 
     // Count tests in the binary, before we apply filter and sharding.
-    test_found_count_++;
+    test_found_count++;
 
     std::string test_name_no_disabled = test_info.GetDisabledStrippedName();
 
@@ -1402,39 +1372,58 @@ void TestLauncher::RunTests() {
   results_tracker_.GeneratePlaceholderIteration();
   MaybeSaveSummaryAsJSON({"EARLY_SUMMARY"});
 
+  broken_threshold_ = std::max(static_cast<size_t>(20), test_found_count / 10);
+
   test_started_count_ = launcher_delegate_->RunTests(this, test_names);
 
-  if (test_started_count_ == 0) {
-    fprintf(stdout, "0 tests run\n");
-    fflush(stdout);
-
-    // No tests have actually been started, so kick off the next iteration.
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, BindOnce(&TestLauncher::RunTestIteration, Unretained(this)));
-  }
+  if (test_started_count_ > 0)
+    RunLoop().Run();
 }
 
-void TestLauncher::RunTestIteration() {
-  if (cycles_ == 0 ||
-      (stop_on_failure_ && test_success_count_ != test_finished_count_)) {
-    RunLoop::QuitCurrentWhenIdleDeprecated();
-    return;
+bool TestLauncher::RunRetryTests() {
+  // Number of retries in this iteration.
+  size_t retry_count = 0;
+  while (!tests_to_retry_.empty() && retry_count < retry_limit_) {
+    if (!force_run_broken_tests_ &&
+        tests_to_retry_.size() >= broken_threshold_) {
+      fprintf(stdout, "Too many failing tests (%zu), skipping retries.\n",
+              tests_to_retry_.size());
+      fflush(stdout);
+
+      results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
+      return false;
+    }
+    std::vector<std::string> test_names(tests_to_retry_.begin(),
+                                        tests_to_retry_.end());
+    tests_to_retry_.clear();
+
+    size_t retry_started_count =
+        launcher_delegate_->RetryTests(this, test_names);
+
+    test_started_count_ += retry_started_count;
+
+    // Only invoke RunLoop if there are any tasks to run.
+    if (retry_started_count == 0)
+      return false;
+
+    fprintf(stdout, "Retrying %zu test%s (retry #%zu)\n", retry_started_count,
+            retry_started_count > 1 ? "s" : "", retry_count);
+    fflush(stdout);
+
+    RunLoop().Run();
+
+    retry_count++;
   }
+  return tests_to_retry_.empty();
+}
 
-  // Special value "-1" means "repeat indefinitely".
-  cycles_ = (cycles_ == -1) ? cycles_ : cycles_ - 1;
-
-  test_found_count_ = 0;
+void TestLauncher::OnTestIterationStart() {
   test_started_count_ = 0;
   test_finished_count_ = 0;
   test_success_count_ = 0;
   test_broken_count_ = 0;
-  retry_count_ = 0;
   tests_to_retry_.clear();
   results_tracker_.OnTestIterationStarting();
-
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&TestLauncher::RunTests, Unretained(this)));
 }
 
 #if defined(OS_POSIX)
@@ -1473,23 +1462,7 @@ void TestLauncher::OnTestIterationFinished() {
   if (!tests_by_status[TestResult::TEST_UNKNOWN].empty())
     results_tracker_.AddGlobalTag(kUnreliableResultsTag);
 
-  // When we retry tests, success is determined by having nothing more
-  // to retry (everything eventually passed), as opposed to having
-  // no failures at all.
-  if (tests_to_retry_.empty()) {
-    fprintf(stdout, "SUCCESS: all tests passed.\n");
-    fflush(stdout);
-  } else {
-    // Signal failure, but continue to run all requested test iterations.
-    // With the summary of all iterations at the end this is a good default.
-    run_result_ = false;
-  }
-
   results_tracker_.PrintSummaryOfCurrentIteration();
-
-  // Kick off the next iteration.
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&TestLauncher::RunTestIteration, Unretained(this)));
 }
 
 void TestLauncher::OnOutputTimeout() {
