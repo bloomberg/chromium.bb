@@ -342,17 +342,11 @@ class CORE_EXPORT StyleEngine final
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 
-  void SetMetaColorScheme(const ColorSchemeSet& meta_color_scheme) {
-    meta_color_scheme_ = meta_color_scheme;
-    UpdateColorScheme();
-  }
-  const ColorSchemeSet& GetMetaColorScheme() const {
-    return meta_color_scheme_;
-  }
+  void SetColorSchemeFromMeta(const CSSValue* color_scheme);
+  const CSSValue* GetMetaColorSchemeValue() const { return meta_color_scheme_; }
   PreferredColorScheme GetPreferredColorScheme() const {
     return preferred_color_scheme_;
   }
-  ColorScheme GetColorScheme() const { return color_scheme_; }
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
@@ -447,6 +441,7 @@ class CORE_EXPORT StyleEngine final
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
 
   void UpdateColorScheme();
+  bool SupportsDarkColorScheme();
 
   Member<Document> document_;
   bool is_master_;
@@ -534,17 +529,13 @@ class CORE_EXPORT StyleEngine final
   // Color schemes explicitly supported by the author through the viewport meta
   // tag. E.g. <meta name="color-scheme" content="light dark">. A dark color-
   // scheme is used to opt-out of forced darkening.
-  ColorSchemeSet meta_color_scheme_;
+  Member<const CSSValue> meta_color_scheme_;
 
   // The preferred color scheme is set in settings, but may be overridden by the
   // ForceDarkMode setting where the preferred_color_scheme_ will be set no
   // kNoPreference to avoid dark styling to be applied before auto darkening.
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
-
-  // The resolved color scheme to use based on the meta color-scheme, the
-  // preferred color scheme, and the ForceDarkMode setting.
-  ColorScheme color_scheme_ = ColorScheme::kLight;
 
   friend class NodeTest;
   friend class StyleEngineTest;

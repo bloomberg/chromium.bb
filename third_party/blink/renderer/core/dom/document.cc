@@ -2077,6 +2077,8 @@ void Document::PropagateStyleToViewport() {
   Length scroll_padding_bottom = overflow_style->ScrollPaddingBottom();
   Length scroll_padding_left = overflow_style->ScrollPaddingLeft();
 
+  bool dark_color_scheme = document_element_style->DarkColorScheme();
+
   const ComputedStyle& viewport_style = GetLayoutView()->StyleRef();
   if (viewport_style.GetWritingMode() != root_writing_mode ||
       viewport_style.Direction() != root_direction ||
@@ -2095,7 +2097,8 @@ void Document::PropagateStyleToViewport() {
       viewport_style.ScrollPaddingRight() != scroll_padding_right ||
       viewport_style.ScrollPaddingBottom() != scroll_padding_bottom ||
       viewport_style.ScrollPaddingLeft() != scroll_padding_left ||
-      viewport_style.GetEffectiveTouchAction() != effective_touch_action) {
+      viewport_style.GetEffectiveTouchAction() != effective_touch_action ||
+      viewport_style.DarkColorScheme() != dark_color_scheme) {
     scoped_refptr<ComputedStyle> new_style =
         ComputedStyle::Clone(viewport_style);
     new_style->SetWritingMode(root_writing_mode);
@@ -2116,6 +2119,7 @@ void Document::PropagateStyleToViewport() {
     new_style->SetScrollPaddingBottom(scroll_padding_bottom);
     new_style->SetScrollPaddingLeft(scroll_padding_left);
     new_style->SetEffectiveTouchAction(effective_touch_action);
+    new_style->SetDarkColorScheme(dark_color_scheme);
     GetLayoutView()->SetStyle(new_style);
     SetupFontBuilder(*new_style);
 
@@ -6230,6 +6234,29 @@ base::Optional<Color> Document::ThemeColor() const {
   return base::nullopt;
 }
 
+void Document::ColorSchemeMetaChanged() {
+  if (!RuntimeEnabledFeatures::MetaColorSchemeEnabled())
+    return;
+
+  auto* root_element = documentElement();
+  if (!root_element)
+    return;
+
+  const CSSValue* color_scheme = nullptr;
+  for (HTMLMetaElement& meta_element :
+       Traversal<HTMLMetaElement>::DescendantsOf(*root_element)) {
+    if (EqualIgnoringASCIICase(meta_element.GetName(), "color-scheme")) {
+      if ((color_scheme = CSSParser::ParseSingleValue(
+               CSSPropertyID::kColorScheme,
+               meta_element.Content().GetString().StripWhiteSpace(),
+               ElementSheet().Contents()->ParserContext()))) {
+        break;
+      }
+    }
+  }
+  GetStyleEngine().SetColorSchemeFromMeta(color_scheme);
+}
+
 static HTMLLinkElement* GetLinkElement(const Document* doc,
                                        bool (*match_fn)(HTMLLinkElement&)) {
   HTMLHeadElement* head = doc->head();
@@ -8037,11 +8064,6 @@ void Document::SetShowBeforeUnloadDialog(bool show_dialog) {
 
 TrustedTypePolicyFactory* Document::GetTrustedTypes() const {
   return ExecutingWindow() ? ExecutingWindow()->trustedTypes() : nullptr;
-}
-
-void Document::SetMetaColorScheme(const ColorSchemeSet& meta_color_scheme) {
-  GetStyleEngine().SetMetaColorScheme(meta_color_scheme);
-  MediaQueryAffectingValueChanged();
 }
 
 void Document::ColorSchemeChanged() {

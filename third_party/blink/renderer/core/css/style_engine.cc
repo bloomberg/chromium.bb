@@ -1796,37 +1796,53 @@ void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
     layout_tree_rebuild_root_.Update(ancestor, dirty_node);
 }
 
+bool StyleEngine::SupportsDarkColorScheme() {
+  if (!meta_color_scheme_)
+    return false;
+  if (const auto* scheme_list = DynamicTo<CSSValueList>(*meta_color_scheme_)) {
+    for (auto& item : *scheme_list) {
+      if (const auto* ident = DynamicTo<CSSIdentifierValue>(*item)) {
+        if (ident->GetValueID() == CSSValueID::kDark)
+          return true;
+      }
+    }
+  }
+  return false;
+}
+
 void StyleEngine::UpdateColorScheme() {
   auto* settings = GetDocument().GetSettings();
   DCHECK(settings);
-  ColorScheme old_color_scheme = color_scheme_;
-
+  PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
-  color_scheme_ = ColorScheme::kLight;
-
-  if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
-    if (meta_color_scheme_.Contains(ColorScheme::kDark)) {
-      color_scheme_ = ColorScheme::kDark;
-    } else if (settings->ForceDarkModeEnabled()) {
-      // Make sure we don't match (prefers-color-scheme: dark) when forced
-      // darkening is enabled.
-      preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
-    }
+  bool use_dark_scheme =
+      preferred_color_scheme_ == PreferredColorScheme::kDark &&
+      SupportsDarkColorScheme();
+  if (!use_dark_scheme && settings->ForceDarkModeEnabled()) {
+    // Make sure we don't match (prefers-color-scheme: dark) when forced
+    // darkening is enabled.
+    preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
 
-  if (color_scheme_ != old_color_scheme) {
+  if (preferred_color_scheme_ != old_preferred_color_scheme) {
     PlatformColorsChanged();
     if (LocalFrameView* view = GetDocument().View()) {
-      if (color_scheme_ == ColorScheme::kDark) {
-        view->SetBaseBackgroundColor(color_scheme_ == ColorScheme::kDark
-                                         ? Color::kBlack
-                                         : Color::kWhite);
-      }
+      view->SetBaseBackgroundColor(use_dark_scheme ? Color::kBlack
+                                                   : Color::kWhite);
     }
   }
 }
 
 void StyleEngine::ColorSchemeChanged() {
+  UpdateColorScheme();
+}
+
+void StyleEngine::SetColorSchemeFromMeta(const CSSValue* color_scheme) {
+  meta_color_scheme_ = color_scheme;
+  DCHECK(GetDocument().documentElement());
+  GetDocument().documentElement()->SetNeedsStyleRecalc(
+      kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                             style_change_reason::kPlatformColorChange));
   UpdateColorScheme();
 }
 
@@ -1856,6 +1872,7 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(text_to_sheet_cache_);
   visitor->Trace(sheet_to_text_cache_);
   visitor->Trace(tracker_);
+  visitor->Trace(meta_color_scheme_);
   FontSelectorClient::Trace(visitor);
 }
 

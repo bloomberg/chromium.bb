@@ -475,24 +475,6 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
   viewport_data.SetViewportDescription(description_from_legacy_tag);
 }
 
-void HTMLMetaElement::ProcessColorScheme(const AtomicString& content) {
-  if (!RuntimeEnabledFeatures::MetaColorSchemeEnabled())
-    return;
-
-  SpaceSplitString color_scheme_strings(content.LowerASCII());
-  size_t count = color_scheme_strings.size();
-  ColorSchemeSet color_scheme_set;
-  for (size_t i = 0; i < count; i++) {
-    auto color_scheme = color_scheme_strings[i];
-    if (color_scheme == "light") {
-      color_scheme_set.Set(ColorScheme::kLight);
-    } else if (color_scheme == "dark") {
-      color_scheme_set.Set(ColorScheme::kDark);
-    }
-  }
-  GetDocument().SetMetaColorScheme(color_scheme_set);
-}
-
 void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
   const AtomicString& content_value = FastGetAttribute(kContentAttr);
   if (content_value.IsNull())
@@ -500,6 +482,8 @@ void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
   if (EqualIgnoringASCIICase(name_value, "theme-color") &&
       GetDocument().GetFrame()) {
     GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+  } else if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
+    GetDocument().ColorSchemeMetaChanged();
   }
 }
 
@@ -532,6 +516,8 @@ void HTMLMetaElement::DidNotifySubtreeInsertionsToDocument() {
 
 void HTMLMetaElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
+  if (!insertion_point.IsInDocumentTree())
+    return;
   const AtomicString& name_value = FastGetAttribute(kNameAttr);
   if (!name_value.IsEmpty())
     NameRemoved(name_value);
@@ -573,7 +559,7 @@ void HTMLMetaElement::ProcessContent() {
     return;
   }
   if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
-    ProcessColorScheme(content_value);
+    GetDocument().ColorSchemeMetaChanged();
     return;
   }
 

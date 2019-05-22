@@ -1216,6 +1216,7 @@ TEST_F(DocumentTest, PrefersColorSchemeChanged) {
   GetDocument().GetSettings()->SetPreferredColorScheme(
       PreferredColorScheme::kDark);
 
+  UpdateAllLifecyclePhasesForTest();
   GetDocument().ServiceScriptedAnimations(base::TimeTicks());
 
   EXPECT_TRUE(listener->IsNotified());

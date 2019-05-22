@@ -18,17 +18,6 @@ enum ColorScheme {
   kDark = 2,
 };
 
-class ColorSchemeSet {
-  DISALLOW_NEW();
-
- public:
-  void Set(ColorScheme scheme) { schemes_ |= scheme; }
-  bool Contains(ColorScheme scheme) const { return schemes_ & scheme; }
-
- private:
-  unsigned schemes_ = 0;
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SCHEME_H_

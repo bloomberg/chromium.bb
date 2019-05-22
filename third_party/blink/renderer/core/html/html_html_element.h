@@ -43,6 +43,7 @@ class CORE_EXPORT HTMLHtmlElement final : public HTMLElement {
   void MaybeSetupApplicationCache();
 
   bool IsURLAttribute(const Attribute&) const override;
+  const CSSPropertyValueSet* AdditionalPresentationAttributeStyle() override;
 };
 
 }  // namespace blink

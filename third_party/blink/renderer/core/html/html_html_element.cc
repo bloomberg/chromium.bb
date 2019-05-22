@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -98,6 +99,19 @@ void HTMLHtmlElement::MaybeSetupApplicationCache() {
     UseCounter::Count(GetDocument(),
                       WebFeature::kApplicationCacheInstalledButNoManifest);
   }
+}
+
+const CSSPropertyValueSet*
+HTMLHtmlElement::AdditionalPresentationAttributeStyle() {
+  if (const CSSValue* color_scheme =
+          GetDocument().GetStyleEngine().GetMetaColorSchemeValue()) {
+    DEFINE_STATIC_LOCAL(
+        Persistent<MutableCSSPropertyValueSet>, color_scheme_style,
+        (MutableCSSPropertyValueSet::Create(kHTMLStandardMode)));
+    color_scheme_style->SetProperty(CSSPropertyID::kColorScheme, *color_scheme);
+    return color_scheme_style;
+  }
+  return nullptr;
 }
 
 }  // namespace blink
