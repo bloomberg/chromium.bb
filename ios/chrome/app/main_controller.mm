@@ -124,7 +124,6 @@
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
-#import "ios/chrome/browser/ui/settings/google_services/google_services_navigation_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
@@ -311,7 +310,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
 @interface MainController () <AppURLLoadingServiceDelegate,
                               BrowserStateStorageSwitching,
-                              GoogleServicesNavigationCoordinatorDelegate,
                               PrefObserverDelegate,
                               SettingsNavigationControllerDelegate,
                               TabSwitcherDelegate,
@@ -431,10 +429,6 @@ enum class EnterTabSwitcherSnapshotResult {
 // while the UI is presented.
 @property(nonatomic, strong)
     SigninInteractionCoordinator* signinInteractionCoordinator;
-
-// Coordinator to display the Google services settings.
-@property(nonatomic, strong)
-    GoogleServicesNavigationCoordinator* googleServicesNavigationCoordinator;
 
 // Activates |mainBVC| and |otrBVC| and sets |currentBVC| as primary iff
 // |currentBVC| can be made active.
@@ -1657,9 +1651,10 @@ enum class EnterTabSwitcherSnapshotResult {
                                  completion:nil];
 }
 
-// TODO(crbug.com/779791) : Remove show settings from MainController.
+// TODO(crbug.com/779791) : Remove Google services settings from MainController.
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
   if (!baseViewController) {
     DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
@@ -1676,16 +1671,13 @@ enum class EnterTabSwitcherSnapshotResult {
         showGoogleServicesSettingsFromViewController:baseViewController];
     return;
   }
-  // If the settings dialog is not already opened, start a new
-  // GoogleServicesNavigationCoordinator.
-  self.googleServicesNavigationCoordinator =
-      [[GoogleServicesNavigationCoordinator alloc]
-          initWithBaseViewController:baseViewController
-                        browserState:_mainBrowserState];
-  self.googleServicesNavigationCoordinator.delegate = self;
-  self.googleServicesNavigationCoordinator.dispatcherForSettings =
-      self.dispatcherForSettings;
-  [self.googleServicesNavigationCoordinator start];
+
+  _settingsNavigationController = [SettingsNavigationController
+      newGoogleServicesController:self.currentBrowserState
+                         delegate:self];
+  [baseViewController presentViewController:_settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
@@ -2411,10 +2403,6 @@ enum class EnterTabSwitcherSnapshotResult {
   // First, cancel the signin interaction.
   [self.signinInteractionCoordinator cancel];
 
-  [self.googleServicesNavigationCoordinator dismissAnimated:NO];
-  // Need to stop and set |self.googleServicesNavigationCoordinator| to nil.
-  [self stopGoogleServicesNavigationCoordinator];
-
   // Then, depending on what the SSO view controller is presented on, dismiss
   // it.
   ProceduralBlock completionWithBVC = ^{
@@ -2612,24 +2600,6 @@ enum class EnterTabSwitcherSnapshotResult {
       IdentityManagerFactory::GetForBrowserState(browserState);
   std::string username = identity_manager->GetPrimaryAccountInfo().email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
-}
-
-#pragma mark - GoogleServicesNavigationCoordinatorDelegate
-
-- (void)googleServicesNavigationCoordinatorDidClose:
-    (GoogleServicesNavigationCoordinator*)coordinator {
-  DCHECK_EQ(self.googleServicesNavigationCoordinator, coordinator);
-  // Need to stop and set |self.googleServicesNavigationCoordinator| to nil.
-  DCHECK(self.googleServicesNavigationCoordinator);
-  [self stopGoogleServicesNavigationCoordinator];
-}
-
-#pragma mark - GoogleServicesNavigationCoordinator helpers
-
-- (void)stopGoogleServicesNavigationCoordinator {
-  self.googleServicesNavigationCoordinator.delegate = nil;
-  [self.googleServicesNavigationCoordinator stop];
-  self.googleServicesNavigationCoordinator = nil;
 }
 
 @end

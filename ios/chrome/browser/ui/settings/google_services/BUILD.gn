@@ -11,8 +11,6 @@ source_set("google_services") {
     "advanced_signin_settings_coordinator.mm",
     "advanced_signin_settings_navigation_controller.h",
     "advanced_signin_settings_navigation_controller.mm",
-    "google_services_navigation_coordinator.h",
-    "google_services_navigation_coordinator.mm",
     "google_services_settings_command_handler.h",
     "google_services_settings_consumer.h",
     "google_services_settings_coordinator.h",
