@@ -106,4 +106,8 @@ bool OpenTabsUIDelegateImpl::GetLocalSession(
   return *local_session != nullptr;
 }
 
+GURL OpenTabsUIDelegateImpl::GetIconUrlForPageUrl(const GURL& page_url) {
+  return favicon_cache_->GetIconUrlForPageUrl(page_url);
+}
+
 }  // namespace sync_sessions

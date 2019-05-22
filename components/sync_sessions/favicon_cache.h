@@ -85,6 +85,10 @@ class FaviconCache : public syncer::SyncableService,
       const GURL& favicon_url,
       scoped_refptr<base::RefCountedMemory>* favicon_png) const;
 
+  // Returns the value associated with |page_url| in |page_favicon_map_| if one
+  // exists, otherwise returns an empty URL.
+  GURL GetIconUrlForPageUrl(const GURL& page_url) const;
+
   // If a valid favicon for the icon associated with |page_url| is found, fills
   // |favicon_png| with the png-encoded image and returns true. Else, returns
   // false.

@@ -30,6 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -81,6 +82,8 @@ class OpenTabsUIDelegateMock : public sync_sessions::OpenTabsUIDelegate {
  public:
   OpenTabsUIDelegateMock() {}
   ~OpenTabsUIDelegateMock() override {}
+
+  MOCK_METHOD1(GetIconUrlForPageUrl, GURL(const GURL& page_url));
 
   MOCK_CONST_METHOD2(GetSyncedFaviconForPageURL,
                      bool(const std::string& pageurl,

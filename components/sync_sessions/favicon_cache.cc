@@ -504,12 +504,18 @@ bool FaviconCache::GetSyncedFaviconForPageURL(
     scoped_refptr<base::RefCountedMemory>* favicon_png) const {
   if (!page_url.is_valid())
     return false;
-  auto iter = page_favicon_map_.find(page_url);
-
-  if (iter == page_favicon_map_.end())
+  GURL icon_url = GetIconUrlForPageUrl(page_url);
+  if (icon_url.is_empty())
     return false;
 
-  return GetSyncedFaviconForFaviconURL(iter->second, favicon_png);
+  return GetSyncedFaviconForFaviconURL(icon_url, favicon_png);
+}
+
+GURL FaviconCache::GetIconUrlForPageUrl(const GURL& page_url) const {
+  auto iter = page_favicon_map_.find(page_url);
+  if (iter == page_favicon_map_.end())
+    return GURL();
+  return iter->second;
 }
 
 void FaviconCache::UpdateMappingsFromForeignTab(const sync_pb::SessionTab& tab,

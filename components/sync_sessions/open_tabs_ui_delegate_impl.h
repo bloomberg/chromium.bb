@@ -48,6 +48,7 @@ class OpenTabsUIDelegateImpl : public OpenTabsUIDelegate {
       std::vector<const sessions::SessionTab*>* tabs) override;
   void DeleteForeignSession(const std::string& tag) override;
   bool GetLocalSession(const SyncedSession** local_session) override;
+  GURL GetIconUrlForPageUrl(const GURL& page_url) override;
 
  private:
   const SyncSessionsClient* const sessions_client_;

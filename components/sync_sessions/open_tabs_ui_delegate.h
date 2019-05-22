@@ -10,13 +10,14 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "components/favicon/core/favicon_url_mapper.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_sessions/synced_session.h"
 
 namespace sync_sessions {
 
-class OpenTabsUIDelegate {
+class OpenTabsUIDelegate : public favicon::FaviconUrlMapper {
  public:
   // If a valid favicon for the page at |url| is found, fills |favicon_png| with
   // the png-encoded image and returns true. Else, returns false.
@@ -61,7 +62,7 @@ class OpenTabsUIDelegate {
   virtual bool GetLocalSession(const SyncedSession** local) = 0;
 
  protected:
-  virtual ~OpenTabsUIDelegate();
+  ~OpenTabsUIDelegate() override;
 };
 
 }  // namespace sync_sessions
