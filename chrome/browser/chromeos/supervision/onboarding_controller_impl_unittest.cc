@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/chromeos/supervision/onboarding_constants.h"
@@ -195,6 +196,28 @@ TEST_F(OnboardingControllerTest, ExitFlowWhenHeaderValueIsWrong) {
   WaitForAuthRequestAndReturnToken("fake_access_token");
 
   EXPECT_TRUE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest,
+       SetEligibleForKioskNextWhenHeaderValueIsCorrect) {
+  BindWebviewHost();
+
+  webview_host()->set_custom_header_value(kDeviceOnboardingExperimentName);
+  WaitForAuthRequestAndReturnToken("fake_access_token");
+
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
+}
+
+TEST_F(OnboardingControllerTest,
+       SetNotEligibleForKioskNextWhenHeaderValueIsWrong) {
+  BindWebviewHost();
+
+  webview_host()->set_custom_header_value("clearly-wrong-header-value");
+  WaitForAuthRequestAndReturnToken("fake_access_token");
+
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
 }
 
 }  // namespace supervision

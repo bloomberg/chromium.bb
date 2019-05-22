@@ -110,7 +110,10 @@ void OnboardingControllerImpl::LoadPageCallback(
       !base::EqualsCaseInsensitiveASCII(custom_header_value.value(),
                                         kDeviceOnboardingExperimentName)) {
     webview_host_->ExitFlow();
+    return;
   }
+
+  profile_->GetPrefs()->SetBoolean(ash::prefs::kKioskNextShellEligible, true);
 }
 
 }  // namespace supervision

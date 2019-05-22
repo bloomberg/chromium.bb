@@ -36,6 +36,7 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityDictationEnabled[];
 ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 
+ASH_PUBLIC_EXPORT extern const char kKioskNextShellEligible[];
 ASH_PUBLIC_EXPORT extern const char kKioskNextShellEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kDockedMagnifierEnabled[];

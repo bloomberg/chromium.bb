@@ -200,9 +200,11 @@ void Preferences::RegisterProfilePrefs(
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
 
+  registry->RegisterBooleanPref(ash::prefs::kKioskNextShellEligible,
+                                /*default_value=*/false);
+
   registry->RegisterBooleanPref(ash::prefs::kKioskNextShellEnabled,
-                                false /* default_value */,
-                                PrefRegistry::PUBLIC);
+                                /*default_value=*/false, PrefRegistry::PUBLIC);
 
   registry->RegisterBooleanPref(prefs::kPerformanceTracingEnabled, false);
 
