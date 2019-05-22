@@ -15,6 +15,8 @@ source_set("osp_base") {
     "export.h",
     "ip_address.cc",
     "ip_address.h",
+    "location.cc",
+    "location.h",
     "macros.h",
     "scoped_pipe.h",
     "stringprintf.h",
@@ -38,6 +40,7 @@ source_set("osp_base_unittests") {
     "big_endian_unittest.cc",
     "error_unittest.cc",
     "ip_address_unittest.cc",
+    "location_unittest.cc",
     "scoped_pipe_unittest.cc",
   ]
 

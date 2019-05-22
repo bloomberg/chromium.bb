@@ -47,4 +47,10 @@
   OSP_DISALLOW_COPY_AND_ASSIGN(ClassName)
 #endif
 
+#ifdef NOINLINE
+#defined OSP_NOINLINE NOINLINE
+#else
+#define OSP_NOINLINE __attribute__((noinline))
+#endif
+
 #endif  // OSP_BASE_MACROS_H_
