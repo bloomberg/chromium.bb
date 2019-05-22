@@ -33,11 +33,13 @@ message ProbeRequest {
     storage = 2;
     vpd_cached = 3;
   }
-  // repeated string categories = 1;
   repeated SupportCategory categories = 1;
   // This option allows clients to retrieve data with privacy implication from
   // D-Bus call to runtime_probe. Default to false and please use with caution.
   bool include_privacy_fields = 2;
+  // If probe_default_category is True, the supplied categories above will be
+  // ignored.
+  bool probe_default_category = 3;
 }
 
 // Things about audio_codec
@@ -165,8 +167,8 @@ message VpdCached {
   Fields values = 2;  // Component's details
 }
 
-// A ProbeResult contains all potential probe results. For category not existed
-// or not requested for probing, field is expected to be empty.
+// A ProbeResult contains all potential probe results. For category not
+// existed or not requested for probing, field is expected to be empty.
 message ProbeResult {
   // If a call was successful, error will not be defined.
   // If a call failed, it must set an error code.
