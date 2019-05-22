@@ -24,6 +24,7 @@
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -184,7 +185,9 @@ float DragWindowController::GetDragWindowOpacity(
   gfx::Rect dragged_window_bounds = dragged_window->bounds();
   ::wm::ConvertRectToScreen(dragged_window->parent(), &dragged_window_bounds);
   gfx::RectF transformed_dragged_window_bounds(dragged_window_bounds);
-  dragged_window->transform().TransformRect(&transformed_dragged_window_bounds);
+  gfx::TransformAboutPivot(dragged_window_bounds.origin(),
+                           dragged_window->transform())
+      .TransformRect(&transformed_dragged_window_bounds);
   gfx::RectF visible_bounds(root_bounds);
   visible_bounds.Intersect(transformed_dragged_window_bounds);
   return kDragPhantomMaxOpacity * visible_bounds.size().GetArea() /
