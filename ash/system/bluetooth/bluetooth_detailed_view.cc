@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -274,8 +275,8 @@ void BluetoothDetailedView::UpdateClickedDevice(
 
 void BluetoothDetailedView::ShowSettings() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
-    Shell::Get()->system_tray_model()->client_ptr()->ShowBluetoothSettings();
-    CloseBubble();
+    CloseBubble();  // Deletes |this|.
+    Shell::Get()->system_tray_model()->client()->ShowBluetoothSettings();
   }
 }
 

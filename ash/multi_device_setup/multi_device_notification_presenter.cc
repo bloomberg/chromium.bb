@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -59,15 +60,12 @@ MultiDeviceNotificationPresenter::OpenUiDelegate::~OpenUiDelegate() = default;
 
 void MultiDeviceNotificationPresenter::OpenUiDelegate::
     OpenMultiDeviceSetupUi() {
-  Shell::Get()->system_tray_model()->client_ptr()->ShowMultiDeviceSetup();
+  Shell::Get()->system_tray_model()->client()->ShowMultiDeviceSetup();
 }
 
 void MultiDeviceNotificationPresenter::OpenUiDelegate::
     OpenConnectedDevicesSettings() {
-  Shell::Get()
-      ->system_tray_model()
-      ->client_ptr()
-      ->ShowConnectedDevicesSettings();
+  Shell::Get()->system_tray_model()->client()->ShowConnectedDevicesSettings();
 }
 
 // static

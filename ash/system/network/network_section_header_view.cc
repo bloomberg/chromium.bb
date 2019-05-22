@@ -5,6 +5,7 @@
 #include "ash/system/network/network_section_header_view.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -52,7 +53,7 @@ void ShowCellularSettings() {
   const chromeos::NetworkState* cellular_network =
       NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
           NetworkTypePattern::Cellular());
-  Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkSettings(
+  Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
       cellular_network ? cellular_network->guid() : std::string());
 }
 
@@ -336,7 +337,7 @@ void WifiSectionHeaderView::ButtonPressed(views::Button* sender,
   if (sender == join_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
-    Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkCreate(
+    Shell::Get()->system_tray_model()->client()->ShowNetworkCreate(
         ::onc::network_type::kWiFi);
     return;
   }

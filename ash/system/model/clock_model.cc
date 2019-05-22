@@ -4,6 +4,7 @@
 
 #include "ash/system/model/clock_model.h"
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/model/clock_observer.h"
@@ -51,11 +52,11 @@ bool ClockModel::IsSettingsAvailable() const {
 }
 
 void ClockModel::ShowDateSettings() {
-  Shell::Get()->system_tray_model()->client_ptr()->ShowDateSettings();
+  Shell::Get()->system_tray_model()->client()->ShowDateSettings();
 }
 
 void ClockModel::ShowSetTimeDialog() {
-  Shell::Get()->system_tray_model()->client_ptr()->ShowSetTimeDialog();
+  Shell::Get()->system_tray_model()->client()->ShowSetTimeDialog();
 }
 
 void ClockModel::NotifyRefreshClock() {

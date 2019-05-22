@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -228,8 +229,6 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
 
   if (sender == settings_button_)
     ShowSettings();
-
-  CloseBubble();
 }
 
 void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
@@ -264,7 +263,7 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
       list_type_ == LIST_TYPE_VPN
           ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS
           : UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS);
-  Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkSettings(
+  Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
       network ? network->guid() : std::string());
 }
 
@@ -287,7 +286,8 @@ void NetworkStateListDetailedView::ShowSettings() {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
-  Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkSettings(
+  CloseBubble();  // Deletes |this|.
+  Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
       std::string());
 }
 

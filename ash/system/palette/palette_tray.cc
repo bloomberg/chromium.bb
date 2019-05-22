@@ -9,6 +9,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/stylus_utils.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -128,13 +129,13 @@ class TitleView : public views::View, public views::ButtonListener {
       palette_tray_->RecordPaletteOptionsUsage(
           PaletteTrayOptions::PALETTE_SETTINGS_BUTTON,
           PaletteInvocationMethod::MENU);
-      Shell::Get()->system_tray_model()->client_ptr()->ShowPaletteSettings();
+      Shell::Get()->system_tray_model()->client()->ShowPaletteSettings();
       palette_tray_->HidePalette();
     } else if (sender == help_button_) {
       palette_tray_->RecordPaletteOptionsUsage(
           PaletteTrayOptions::PALETTE_HELP_BUTTON,
           PaletteInvocationMethod::MENU);
-      Shell::Get()->system_tray_model()->client_ptr()->ShowPaletteHelp();
+      Shell::Get()->system_tray_model()->client()->ShowPaletteHelp();
       palette_tray_->HidePalette();
     } else {
       NOTREACHED();

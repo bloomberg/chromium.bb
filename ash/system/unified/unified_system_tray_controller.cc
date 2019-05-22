@@ -6,6 +6,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/accessibility_feature_pod_controller.h"
@@ -107,7 +108,7 @@ void UnifiedSystemTrayController::HandleLockAction() {
 
 void UnifiedSystemTrayController::HandleSettingsAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
-  Shell::Get()->system_tray_model()->client_ptr()->ShowSettings();
+  Shell::Get()->system_tray_model()->client()->ShowSettings();
 }
 
 void UnifiedSystemTrayController::HandlePowerAction() {
@@ -135,7 +136,7 @@ void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
 void UnifiedSystemTrayController::HandleEnterpriseInfoAction() {
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.OpenHelpPageForManaged",
                             MANAGED_TYPE_ENTERPRISE, MANAGED_TYPE_COUNT);
-  Shell::Get()->system_tray_model()->client_ptr()->ShowEnterpriseInfo();
+  Shell::Get()->system_tray_model()->client()->ShowEnterpriseInfo();
 }
 
 void UnifiedSystemTrayController::ToggleExpanded() {

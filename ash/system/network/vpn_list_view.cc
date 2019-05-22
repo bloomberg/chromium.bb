@@ -9,6 +9,7 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -141,16 +142,16 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
     if (vpn_provider_.provider_type == VPNProvider::THIRD_PARTY_VPN) {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
-      Shell::Get()->system_tray_model()->client_ptr()->ShowThirdPartyVpnCreate(
+      Shell::Get()->system_tray_model()->client()->ShowThirdPartyVpnCreate(
           vpn_provider_.app_id);
     } else if (vpn_provider_.provider_type == VPNProvider::ARC_VPN) {
       // TODO(lgcheng@) Add UMA status if needed.
-      Shell::Get()->system_tray_model()->client_ptr()->ShowArcVpnCreate(
+      Shell::Get()->system_tray_model()->client()->ShowArcVpnCreate(
           vpn_provider_.app_id);
     } else {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
-      Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkCreate(
+      Shell::Get()->system_tray_model()->client()->ShowNetworkCreate(
           ::onc::network_type::kVPN);
     }
   }

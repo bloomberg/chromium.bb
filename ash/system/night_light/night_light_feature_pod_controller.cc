@@ -4,6 +4,7 @@
 
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -60,8 +61,8 @@ void NightLightFeaturePodController::OnLabelPressed() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
     base::RecordAction(
         base::UserMetricsAction("StatusArea_NightLight_Settings"));
-    Shell::Get()->system_tray_model()->client_ptr()->ShowDisplaySettings();
-    tray_controller_->CloseBubble();
+    tray_controller_->CloseBubble();  // Deletes |this|.
+    Shell::Get()->system_tray_model()->client()->ShowDisplaySettings();
   }
 }
 

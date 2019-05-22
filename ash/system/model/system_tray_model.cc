@@ -40,8 +40,8 @@ void SystemTrayModel::BindRequest(mojom::SystemTrayRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void SystemTrayModel::SetClient(mojom::SystemTrayClientPtr client_ptr) {
-  client_ptr_ = std::move(client_ptr);
+void SystemTrayModel::SetClient(SystemTrayClient* client) {
+  client_ = client;
 }
 
 void SystemTrayModel::SetPrimaryTrayEnabled(bool enabled) {

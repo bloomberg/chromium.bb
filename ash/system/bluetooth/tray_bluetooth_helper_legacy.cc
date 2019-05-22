@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/model/system_tray_model.h"
@@ -199,7 +200,7 @@ void TrayBluetoothHelperLegacy::ConnectToBluetoothDevice(
     return;
   }
   // Show pairing dialog for the unpaired device.
-  Shell::Get()->system_tray_model()->client_ptr()->ShowBluetoothPairingDialog(
+  Shell::Get()->system_tray_model()->client()->ShowBluetoothPairingDialog(
       device->GetAddress(), device->GetNameForDisplay(), device->IsPaired(),
       device->IsConnected());
 }

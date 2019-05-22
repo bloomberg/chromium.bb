@@ -4,6 +4,7 @@
 
 #include "ash/system/locale/locale_detailed_view.h"
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -145,7 +146,7 @@ void LocaleDetailedView::HandleViewClicked(views::View* view) {
   const std::string locale_iso_code = it->second;
   if (locale_iso_code !=
       Shell::Get()->system_tray_model()->locale()->current_locale_iso_code()) {
-    Shell::Get()->system_tray_model()->client_ptr()->SetLocaleAndExit(
+    Shell::Get()->system_tray_model()->client()->SetLocaleAndExit(
         locale_iso_code);
   }
 }

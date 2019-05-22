@@ -4,6 +4,7 @@
 
 #include "ash/network_connect_delegate_mus.h"
 
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/logging.h"
@@ -16,14 +17,12 @@ NetworkConnectDelegateMus::~NetworkConnectDelegateMus() = default;
 
 void NetworkConnectDelegateMus::ShowNetworkConfigure(
     const std::string& network_id) {
-  Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkConfigure(
-      network_id);
+  Shell::Get()->system_tray_model()->client()->ShowNetworkConfigure(network_id);
 }
 
 void NetworkConnectDelegateMus::ShowNetworkSettings(
     const std::string& network_id) {
-  Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkSettings(
-      network_id);
+  Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(network_id);
 }
 
 bool NetworkConnectDelegateMus::ShowEnrollNetwork(

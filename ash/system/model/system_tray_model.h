@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/system_tray.h"
 #include "ash/public/interfaces/system_tray.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -22,13 +23,15 @@ class ClockModel;
 class EnterpriseDomainModel;
 class LocaleModel;
 class SessionLengthLimitModel;
+class SystemTrayClient;
 class TracingModel;
 class TrayNetworkStateModel;
 class UpdateModel;
 class VirtualKeyboardModel;
 
 // Top level model of SystemTray.
-class SystemTrayModel : public mojom::SystemTray {
+// TODO(jamescook): Eliminate mojo interface.
+class SystemTrayModel : public SystemTray, public mojom::SystemTray {
  public:
   explicit SystemTrayModel(service_manager::Connector* connector);
   ~SystemTrayModel() override;
@@ -36,8 +39,10 @@ class SystemTrayModel : public mojom::SystemTray {
   // Binds the mojom::SystemTray interface to this object.
   void BindRequest(mojom::SystemTrayRequest request);
 
+  // SystemTray:
+  void SetClient(SystemTrayClient* client) override;
+
   // mojom::SystemTray:
-  void SetClient(mojom::SystemTrayClientPtr client) override;
   void SetPrimaryTrayEnabled(bool enabled) override;
   void SetPrimaryTrayVisible(bool visible) override;
   void SetUse24HourClock(bool use_24_hour) override;
@@ -74,7 +79,7 @@ class SystemTrayModel : public mojom::SystemTray {
   ActiveNetworkIcon* active_network_icon() {
     return active_network_icon_.get();
   }
-  const mojom::SystemTrayClientPtr& client_ptr() { return client_ptr_; }
+  SystemTrayClient* client() { return client_; }
 
  private:
   std::unique_ptr<ClockModel> clock_;
@@ -94,7 +99,7 @@ class SystemTrayModel : public mojom::SystemTray {
   mojo::BindingSet<mojom::SystemTray> bindings_;
 
   // Client interface in chrome browser. May be null in tests.
-  mojom::SystemTrayClientPtr client_ptr_;
+  SystemTrayClient* client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayModel);
 };

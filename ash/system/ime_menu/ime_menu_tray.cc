@@ -10,6 +10,7 @@
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -64,7 +65,7 @@ gfx::Range GetImeListViewRange() {
 // Shows language and input settings page.
 void ShowIMESettings() {
   base::RecordAction(base::UserMetricsAction("StatusArea_IME_Detailed"));
-  Shell::Get()->system_tray_model()->client_ptr()->ShowIMESettings();
+  Shell::Get()->system_tray_model()->client()->ShowIMESettings();
 }
 
 // Returns true if the current screen is login or lock screen.

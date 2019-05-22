@@ -40,6 +40,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/view_targeter_delegate.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -442,6 +443,11 @@ void TrayDetailedView::TransitionToMainView() {
 }
 
 void TrayDetailedView::CloseBubble() {
+  // Don't close again if we're already closing.
+  views::Widget* widget = GetWidget();
+  if (widget && widget->IsClosed())
+    return;
+
   delegate_->CloseBubble();
 }
 
