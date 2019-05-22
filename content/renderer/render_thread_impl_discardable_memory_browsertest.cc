@@ -44,7 +44,7 @@ class RenderThreadImplDiscardableMemoryBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-    PostTaskToInProcessRendererAndWait(base::Bind(
+    PostTaskToInProcessRendererAndWait(base::BindOnce(
         &RenderThreadImplDiscardableMemoryBrowserTest::SetUpOnRenderThread,
         base::Unretained(this)));
   }

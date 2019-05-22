@@ -133,7 +133,7 @@ class BrowserTestBase : public testing::Test {
   // When the test is running in --single-process mode, runs the given task on
   // the in-process renderer thread. A nested run loop is run until it
   // returns.
-  void PostTaskToInProcessRendererAndWait(const base::Closure& task);
+  void PostTaskToInProcessRendererAndWait(base::OnceClosure task);
 
   // Call this before SetUp() to cause the test to generate pixel output.
   void EnablePixelOutput();

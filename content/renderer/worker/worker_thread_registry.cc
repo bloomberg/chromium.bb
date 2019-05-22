@@ -80,7 +80,8 @@ void WorkerThread::RemoveObserver(Observer* observer) {
 WorkerThreadRegistry::WorkerThreadRegistry()
     : task_runner_for_dead_worker_(new DoNothingTaskRunner()) {}
 
-int WorkerThreadRegistry::PostTaskToAllThreads(base::Closure closure) {
+int WorkerThreadRegistry::PostTaskToAllThreads(
+    const base::RepeatingClosure& closure) {
   base::AutoLock locker(task_runner_map_lock_);
   for (const auto& it : task_runner_map_)
     it.second->PostTask(FROM_HERE, closure);

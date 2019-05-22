@@ -24,7 +24,7 @@ class CONTENT_EXPORT WorkerThreadRegistry {
  public:
   WorkerThreadRegistry();
 
-  int PostTaskToAllThreads(base::Closure task);
+  int PostTaskToAllThreads(const base::RepeatingClosure& task);
   static WorkerThreadRegistry* Instance();
 
   void DidStartCurrentWorkerThread();

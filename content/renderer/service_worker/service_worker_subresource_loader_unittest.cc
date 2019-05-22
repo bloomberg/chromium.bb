@@ -231,8 +231,8 @@ class FakeControllerServiceWorker
       base::RunLoop run_loop;
       ptr->Read(
           std::move(data_pipe.producer_handle),
-          base::BindOnce([](const base::Closure& quit_closure, int32_t status,
-                            uint64_t size) { quit_closure.Run(); },
+          base::BindOnce([](base::OnceClosure quit_closure, int32_t status,
+                            uint64_t size) { std::move(quit_closure).Run(); },
                          run_loop.QuitClosure()));
       run_loop.Run();
       // Copy the content to |out_string|.

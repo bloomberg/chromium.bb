@@ -115,10 +115,11 @@ void DumpStackTraceSignalHandler(int signal) {
 }
 #endif  // defined(OS_POSIX)
 
-void RunTaskOnRendererThread(const base::Closure& task,
-                             const base::Closure& quit_task) {
-  task.Run();
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_task);
+void RunTaskOnRendererThread(base::OnceClosure task,
+                             base::OnceClosure quit_task) {
+  std::move(task).Run();
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           std::move(quit_task));
 }
 
 void TraceStopTracingComplete(const base::Closure& quit,
@@ -536,7 +537,7 @@ void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
 }
 
 void BrowserTestBase::PostTaskToInProcessRendererAndWait(
-    const base::Closure& task) {
+    base::OnceClosure task) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSingleProcess));
 
@@ -546,8 +547,8 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
 
   base::RunLoop run_loop;
   renderer_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RunTaskOnRendererThread, task, run_loop.QuitClosure()));
+      FROM_HERE, base::BindOnce(&RunTaskOnRendererThread, std::move(task),
+                                run_loop.QuitClosure()));
   run_loop.Run();
 }
 
