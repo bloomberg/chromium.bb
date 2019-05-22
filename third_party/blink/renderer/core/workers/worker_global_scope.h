@@ -209,8 +209,13 @@ class CORE_EXPORT WorkerGlobalScope
   void ExceptionThrown(ErrorEvent*) override;
   void RemoveURLFromMemoryCache(const KURL&) final;
 
+  // Notifies that the top-level classic script is ready to evaluate.
+  // Worker top-level script is evaluated after it is fetched and
+  // ReadyToRunClassicScript() is called.
+  void ReadyToRunClassicScript();
+
   // Evaluates the given top-level classic script.
-  virtual void EvaluateClassicScriptInternal(
+  void EvaluateClassicScriptInternal(
       const KURL& script_url,
       String source_code,
       std::unique_ptr<Vector<uint8_t>> cached_meta_data);
@@ -259,6 +264,21 @@ class CORE_EXPORT WorkerGlobalScope
   service_manager::InterfaceProvider interface_provider_;
 
   const base::UnguessableToken agent_cluster_id_;
+
+  // State transition about worker-toplevel script evaluation.
+  enum class ScriptEvalState {
+    // Initial state: ReadyToRunClassicScript() is not yet called.
+    // Worker top-level script fetch might or might not completed, and even when
+    // the fetch completes in this state, script evaluation will be deferred to
+    // when ReadyToRunClassicScript() is called later.
+    kPauseAfterFetch,
+    // ReadyToRunClassicScript() is already called.
+    kReadyToEvaluate,
+    // The worker top-level script is evaluated.
+    kEvaluated,
+  };
+  ScriptEvalState script_eval_state_;
+  base::OnceClosure evaluate_script_;
 
   HttpsState https_state_;
 };

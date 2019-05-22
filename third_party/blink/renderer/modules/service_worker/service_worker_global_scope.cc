@@ -162,10 +162,7 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() = default;
 
 void ServiceWorkerGlobalScope::ReadyToEvaluateScript() {
-  DCHECK(!evaluate_script_ready_);
-  evaluate_script_ready_ = true;
-  if (evaluate_script_)
-    std::move(evaluate_script_).Run();
+  ReadyToRunClassicScript();
 }
 
 bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
@@ -582,26 +579,6 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
   }
   return WorkerGlobalScope::AddEventListenerInternal(event_type, listener,
                                                      options);
-}
-
-void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
-    const KURL& script_url,
-    String source_code,
-    std::unique_ptr<Vector<uint8_t>> cached_meta_data) {
-  DCHECK(IsContextThread());
-
-  // TODO(nhiroki): Move this mechanism to
-  // WorkerGlobalScope::EvaluateClassicScriptInternal().
-  if (!evaluate_script_ready_) {
-    evaluate_script_ =
-        WTF::Bind(&ServiceWorkerGlobalScope::EvaluateClassicScriptInternal,
-                  WrapWeakPersistent(this), script_url, std::move(source_code),
-                  std::move(cached_meta_data));
-    return;
-  }
-
-  WorkerGlobalScope::EvaluateClassicScriptInternal(script_url, source_code,
-                                                   std::move(cached_meta_data));
 }
 
 const AtomicString& ServiceWorkerGlobalScope::InterfaceName() const {

@@ -26,7 +26,9 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
       WorkerThread* thread)
       : WorkerGlobalScope(std::move(creation_params),
                           thread,
-                          CurrentTimeTicks()) {}
+                          CurrentTimeTicks()) {
+    ReadyToRunClassicScript();
+  }
 
   ~ThreadPoolWorkerGlobalScope() override = default;
 

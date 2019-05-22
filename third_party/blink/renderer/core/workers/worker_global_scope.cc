@@ -390,11 +390,28 @@ void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
     debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
 }
 
+void WorkerGlobalScope::ReadyToRunClassicScript() {
+  DCHECK_EQ(ScriptEvalState::kPauseAfterFetch, script_eval_state_);
+  script_eval_state_ = ScriptEvalState::kReadyToEvaluate;
+  if (evaluate_script_)
+    std::move(evaluate_script_).Run();
+}
+
 void WorkerGlobalScope::EvaluateClassicScriptInternal(
     const KURL& script_url,
     String source_code,
     std::unique_ptr<Vector<uint8_t>> cached_meta_data) {
   DCHECK(IsContextThread());
+  DCHECK_NE(ScriptEvalState::kEvaluated, script_eval_state_);
+
+  if (script_eval_state_ == ScriptEvalState::kPauseAfterFetch) {
+    evaluate_script_ =
+        WTF::Bind(&WorkerGlobalScope::EvaluateClassicScriptInternal,
+                  WrapWeakPersistent(this), script_url, std::move(source_code),
+                  std::move(cached_meta_data));
+    return;
+  }
+
   SingleCachedMetadataHandler* handler =
       CreateWorkerScriptCachedMetadataHandler(script_url,
                                               std::move(cached_meta_data));
@@ -408,6 +425,7 @@ void WorkerGlobalScope::EvaluateClassicScriptInternal(
       SanitizeScriptErrors::kDoNotSanitize, nullptr /* error_event */,
       GetV8CacheOptions());
   ReportingProxy().DidEvaluateClassicScript(success);
+  script_eval_state_ = ScriptEvalState::kEvaluated;
 }
 
 WorkerGlobalScope::WorkerGlobalScope(
@@ -435,7 +453,8 @@ WorkerGlobalScope::WorkerGlobalScope(
               creation_params->begin_frame_provider_params)),
       agent_cluster_id_(creation_params->agent_cluster_id.is_empty()
                             ? base::UnguessableToken::Create()
-                            : creation_params->agent_cluster_id) {
+                            : creation_params->agent_cluster_id),
+      script_eval_state_(ScriptEvalState::kPauseAfterFetch) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
   scoped_refptr<SecurityOrigin> security_origin =

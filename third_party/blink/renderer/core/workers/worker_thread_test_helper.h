@@ -49,7 +49,9 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       WorkerThread* thread)
       : WorkerGlobalScope(std::move(creation_params),
                           thread,
-                          CurrentTimeTicks()) {}
+                          CurrentTimeTicks()) {
+    ReadyToRunClassicScript();
+  }
 
   ~FakeWorkerGlobalScope() override = default;
 

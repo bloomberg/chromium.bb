@@ -90,7 +90,10 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     SharedWorkerThread* thread,
     base::TimeTicks time_origin)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {}
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
+  // TODO(bashi): Call this after appcache host is set.
+  ReadyToRunClassicScript();
+}
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
 

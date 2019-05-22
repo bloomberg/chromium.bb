@@ -185,12 +185,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       EventListener*,
       const AddEventListenerOptionsResolved*) override;
 
-  // WorkerGlobalScope
-  void EvaluateClassicScriptInternal(
-      const KURL& script_url,
-      String source_code,
-      std::unique_ptr<Vector<uint8_t>> cached_meta_data) override;
-
  private:
   void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
                      ExceptionState&) override;
@@ -235,9 +229,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   size_t cache_storage_installed_script_count_ = 0;
   uint64_t cache_storage_installed_script_total_size_ = 0;
   uint64_t cache_storage_installed_script_metadata_total_size_ = 0;
-
-  bool evaluate_script_ready_ = false;
-  base::OnceClosure evaluate_script_;
 
   // May be provided in the constructor as an optimization so InterfaceProvider
   // doesn't need to be used. Taken at the initial call to
