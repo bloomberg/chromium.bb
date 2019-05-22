@@ -45,6 +45,7 @@ std::string GetHttpMethod(
     case wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPut:
       return "PUT";
   }
+  return "";
 }
 
 // Returns true in case of non-error 2xx HTTP status code.
@@ -85,6 +86,18 @@ void WilcoDtcSupportdWebRequestService::PerformRequest(
     std::vector<base::StringPiece> headers,
     std::string request_body,
     PerformWebRequestCallback callback) {
+  const std::string http_method_str = GetHttpMethod(http_method);
+  // Fail with the kNetworkError if http_method_str is empty.
+  if (http_method_str.empty()) {
+    LOG(ERROR) << "WilcoDtcSupportd web request http method is unknown: "
+               << http_method;
+    std::move(callback).Run(wilco_dtc_supportd::mojom::
+                                WilcoDtcSupportdWebRequestStatus::kNetworkError,
+                            0 /* http_status */,
+                            mojo::ScopedHandle() /* response_body */);
+    return;
+  }
+
   // Fail with the kNetworkError if the queue overflows.
   if (request_queue_.size() == kWilcoDtcSupportdWebRequestQueueMaxSize) {
     LOG(ERROR)
@@ -146,7 +159,7 @@ void WilcoDtcSupportdWebRequestService::PerformRequest(
   // Create a web request.
   auto request = std::make_unique<WebRequest>();
   request->request = std::make_unique<network::ResourceRequest>();
-  request->request->method = GetHttpMethod(http_method);
+  request->request->method = http_method_str;
   request->request->url = std::move(url);
   request->request->allow_credentials = false;
   request->request->load_flags = net::LOAD_DISABLE_CACHE;
