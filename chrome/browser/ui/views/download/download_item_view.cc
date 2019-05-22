@@ -899,21 +899,22 @@ void DownloadItemView::ShowWarningDialog() {
 
   dropdown_state_ = NORMAL;
   if (mode_ == DANGEROUS_MODE) {
-    save_button_ = views::MdTextButton::Create(
+    auto save_button = views::MdTextButton::Create(
         this, model_->GetWarningConfirmButtonText());
-    AddChildView(save_button_);
+    save_button_ = AddChildView(std::move(save_button));
   }
-  discard_button_ = views::MdTextButton::Create(
+  auto discard_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-  AddChildView(discard_button_);
+  discard_button_ = AddChildView(std::move(discard_button));
 
   base::string16 dangerous_label =
       model_->GetWarningText(font_list_, kTextWidth);
-  dangerous_download_label_ = new views::Label(dangerous_label);
-  dangerous_download_label_->SetMultiLine(true);
-  dangerous_download_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  dangerous_download_label_->SetAutoColorReadabilityEnabled(false);
-  AddChildView(dangerous_download_label_);
+  auto dangerous_download_label =
+      std::make_unique<views::Label>(dangerous_label);
+  dangerous_download_label->SetMultiLine(true);
+  dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  dangerous_download_label->SetAutoColorReadabilityEnabled(false);
+  dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
   SizeLabelToMinWidth();
 
   file_name_label_->SetVisible(false);

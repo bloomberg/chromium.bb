@@ -42,40 +42,42 @@ void ButtonExample::CreateExampleView(View* container) {
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kCenter);
   container->SetLayoutManager(std::move(layout));
 
-  label_button_ = new LabelButton(this, ASCIIToUTF16(kLabelButton));
-  label_button_->SetFocusForPlatform();
-  label_button_->set_request_focus_on_press(true);
-  container->AddChildView(label_button_);
+  auto label_button =
+      std::make_unique<LabelButton>(this, ASCIIToUTF16(kLabelButton));
+  label_button->SetFocusForPlatform();
+  label_button->set_request_focus_on_press(true);
+  label_button_ = container->AddChildView(std::move(label_button));
 
-  styled_button_ = new LabelButton(this, ASCIIToUTF16("Styled Button"));
-  styled_button_->SetStyleDeprecated(Button::STYLE_BUTTON);
-  container->AddChildView(styled_button_);
+  auto styled_button =
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Styled Button"));
+  styled_button->SetStyleDeprecated(Button::STYLE_BUTTON);
+  styled_button_ = container->AddChildView(std::move(styled_button));
 
-  disabled_button_ = new LabelButton(this, ASCIIToUTF16("Disabled Button"));
-  disabled_button_->SetStyleDeprecated(Button::STYLE_BUTTON);
-  disabled_button_->SetState(Button::STATE_DISABLED);
-  container->AddChildView(disabled_button_);
+  auto disabled_button =
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Disabled Button"));
+  disabled_button->SetStyleDeprecated(Button::STYLE_BUTTON);
+  disabled_button->SetState(Button::STATE_DISABLED);
+  disabled_button_ = container->AddChildView(std::move(disabled_button));
 
-  md_button_ =
-      MdTextButton::Create(this, base::ASCIIToUTF16("Material design"));
-  container->AddChildView(md_button_);
+  md_button_ = container->AddChildView(
+      MdTextButton::Create(this, base::ASCIIToUTF16("Material design")));
 
-  md_default_button_ =
+  auto md_default_button =
       MdTextButton::Create(this, base::ASCIIToUTF16("Default"));
-  md_default_button_->SetIsDefault(true);
-  container->AddChildView(md_default_button_);
+  md_default_button->SetIsDefault(true);
+  md_default_button_ = container->AddChildView(std::move(md_default_button));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  image_button_ = new ImageButton(this);
-  image_button_->SetFocusForPlatform();
-  image_button_->set_request_focus_on_press(true);
-  image_button_->SetImage(ImageButton::STATE_NORMAL,
-                          rb.GetImageNamed(IDR_CLOSE).ToImageSkia());
-  image_button_->SetImage(ImageButton::STATE_HOVERED,
-                          rb.GetImageNamed(IDR_CLOSE_H).ToImageSkia());
-  image_button_->SetImage(ImageButton::STATE_PRESSED,
-                          rb.GetImageNamed(IDR_CLOSE_P).ToImageSkia());
-  container->AddChildView(image_button_);
+  auto image_button = std::make_unique<ImageButton>(this);
+  image_button->SetFocusForPlatform();
+  image_button->set_request_focus_on_press(true);
+  image_button->SetImage(ImageButton::STATE_NORMAL,
+                         rb.GetImageNamed(IDR_CLOSE).ToImageSkia());
+  image_button->SetImage(ImageButton::STATE_HOVERED,
+                         rb.GetImageNamed(IDR_CLOSE_H).ToImageSkia());
+  image_button->SetImage(ImageButton::STATE_PRESSED,
+                         rb.GetImageNamed(IDR_CLOSE_P).ToImageSkia());
+  image_button_ = container->AddChildView(std::move(image_button));
 }
 
 void ButtonExample::LabelButtonPressed(LabelButton* label_button,

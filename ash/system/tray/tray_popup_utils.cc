@@ -244,9 +244,9 @@ void TrayPopupUtils::ConfigureContainer(TriView::Container container,
 views::LabelButton* TrayPopupUtils::CreateTrayPopupButton(
     views::ButtonListener* listener,
     const base::string16& text) {
-  auto* button = views::MdTextButton::Create(listener, text);
+  auto button = views::MdTextButton::Create(listener, text);
   button->SetProminent(true);
-  return button;
+  return button.release();
 }
 
 views::Separator* TrayPopupUtils::CreateVerticalSeparator() {

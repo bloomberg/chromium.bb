@@ -31,22 +31,18 @@
 
 namespace ash {
 
-LogoutButtonTray::LogoutButtonTray(Shelf* shelf)
-    : shelf_(shelf),
-      container_(new TrayContainer(shelf)),
-      button_(views::MdTextButton::Create(this,
-                                          base::string16(),
-                                          CONTEXT_LAUNCHER_BUTTON)),
-      show_logout_button_in_tray_(false) {
+LogoutButtonTray::LogoutButtonTray(Shelf* shelf) : shelf_(shelf) {
   DCHECK(shelf);
   Shell::Get()->session_controller()->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  AddChildView(container_);
+  container_ = AddChildView(std::make_unique<TrayContainer>(shelf));
 
-  button_->SetProminent(true);
-  button_->SetBgColorOverride(gfx::kGoogleRed700);
+  auto button = views::MdTextButton::Create(this, base::string16(),
+                                            CONTEXT_LAUNCHER_BUTTON);
+  button->SetProminent(true);
+  button->SetBgColorOverride(gfx::kGoogleRed700);
 
-  container_->AddChildView(button_);
+  button_ = container_->AddChildView(std::move(button));
   SetVisible(false);
 }
 

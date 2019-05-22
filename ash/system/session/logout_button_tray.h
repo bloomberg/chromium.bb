@@ -58,9 +58,9 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   void UpdateButtonTextAndImage();
 
   Shelf* const shelf_;
-  TrayContainer* const container_;
-  views::MdTextButton* const button_;
-  bool show_logout_button_in_tray_;
+  TrayContainer* container_;
+  views::MdTextButton* button_;
+  bool show_logout_button_in_tray_ = false;
   base::TimeDelta dialog_duration_;
 
   // Observes user profile prefs.

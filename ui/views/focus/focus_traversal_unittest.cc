@@ -372,10 +372,10 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  LabelButton* button = MdTextButton::Create(nullptr, ASCIIToUTF16("Click me"));
+  auto button = MdTextButton::Create(nullptr, ASCIIToUTF16("Click me"));
   button->SetBounds(label_x, y + 10, 80, 30);
   button->SetID(FRUIT_BUTTON_ID);
-  left_container_->AddChildView(button);
+  left_container_->AddChildView(std::move(button));
   y += 40;
 
   cb =  new Checkbox(ASCIIToUTF16("This is another check box"));
@@ -471,19 +471,18 @@ void FocusTraversalTest::InitContentView() {
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("OK"));
   button->SetID(OK_BUTTON_ID);
   button->SetIsDefault(true);
-
-  GetContentsView()->AddChildView(button);
   button->SetBounds(150, y, width, 30);
+  GetContentsView()->AddChildView(std::move(button));
 
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("Cancel"));
   button->SetID(CANCEL_BUTTON_ID);
-  GetContentsView()->AddChildView(button);
   button->SetBounds(220, y, width, 30);
+  GetContentsView()->AddChildView(std::move(button));
 
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("Help"));
   button->SetID(HELP_BUTTON_ID);
-  GetContentsView()->AddChildView(button);
   button->SetBounds(290, y, width, 30);
+  GetContentsView()->AddChildView(std::move(button));
 
   y += 40;
 
@@ -534,9 +533,9 @@ void FocusTraversalTest::InitContentView() {
   text_field->SetID(SEARCH_TEXTFIELD_ID);
 
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("Search"));
-  contents->AddChildView(button);
   button->SetBounds(112, 5, 60, 30);
   button->SetID(SEARCH_BUTTON_ID);
+  contents->AddChildView(std::move(button));
 
   link = new Link(ASCIIToUTF16("Help"));
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -557,13 +556,13 @@ void FocusTraversalTest::InitContentView() {
   contents->SetBackground(CreateSolidBackground(SK_ColorBLUE));
   contents->SetID(THUMBNAIL_CONTAINER_ID);
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("Star"));
-  contents->AddChildView(button);
   button->SetBounds(5, 5, 50, 30);
   button->SetID(THUMBNAIL_STAR_ID);
+  contents->AddChildView(std::move(button));
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("SuperStar"));
-  contents->AddChildView(button);
   button->SetBounds(60, 5, 100, 30);
   button->SetID(THUMBNAIL_SUPER_STAR_ID);
+  contents->AddChildView(std::move(button));
 
   GetContentsView()->AddChildView(contents);
   contents->SetBounds(250, y, 200, 50);

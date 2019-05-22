@@ -638,10 +638,14 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   fingerprint_view_ = new FingerprintView();
 
   // TODO(jdufault): Implement real UI.
-  external_binary_auth_button_ = views::MdTextButton::Create(
-      this, base::ASCIIToUTF16("Authenticate with external binary"));
-  external_binary_enrollment_button_ = views::MdTextButton::Create(
-      this, base::ASCIIToUTF16("Enroll with external binary"));
+  external_binary_auth_button_ =
+      views::MdTextButton::Create(
+          this, base::ASCIIToUTF16("Authenticate with external binary"))
+          .release();
+  external_binary_enrollment_button_ =
+      views::MdTextButton::Create(
+          this, base::ASCIIToUTF16("Enroll with external binary"))
+          .release();
 
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 

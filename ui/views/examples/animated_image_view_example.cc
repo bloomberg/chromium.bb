@@ -38,35 +38,31 @@ class AnimationGallery : public View,
                          public TextfieldController,
                          public ButtonListener {
  public:
-  AnimationGallery()
-      : animated_image_view_(new AnimatedImageView()),
-        image_view_container_(new views::View()),
-        size_input_(new Textfield()),
-        file_chooser_(new Textfield()),
-        file_go_button_(
-            MdTextButton::Create(this, base::ASCIIToUTF16("Render"))) {
-    AddChildView(size_input_);
-
-    image_view_container_->AddChildView(animated_image_view_);
-    image_view_container_->SetLayoutManager(std::make_unique<FillLayout>());
+  AnimationGallery() {
+    auto image_view_container = std::make_unique<views::View>();
+    animated_image_view_ = image_view_container->AddChildView(
+        std::make_unique<AnimatedImageView>());
+    image_view_container->SetLayoutManager(std::make_unique<FillLayout>());
     animated_image_view_->SetBorder(
         CreateSolidSidedBorder(1, 1, 1, 1, SK_ColorBLACK));
-    AddChildView(image_view_container_);
+    image_view_container_ = AddChildView(std::move(image_view_container));
 
     BoxLayout* box = SetLayoutManager(
         std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
     box->SetFlexForView(image_view_container_, 1);
 
-    file_chooser_->set_placeholder_text(
+    auto file_chooser = std::make_unique<Textfield>();
+    file_chooser->set_placeholder_text(
         base::ASCIIToUTF16("Enter path to lottie JSON file"));
-    View* file_container = new View();
+    auto file_container = std::make_unique<View>();
     BoxLayout* file_box =
         file_container->SetLayoutManager(std::make_unique<BoxLayout>(
             BoxLayout::kHorizontal, gfx::Insets(10), 10));
-    file_container->AddChildView(file_chooser_);
-    file_container->AddChildView(file_go_button_);
+    file_chooser_ = file_container->AddChildView(std::move(file_chooser));
+    file_go_button_ = file_container->AddChildView(
+        MdTextButton::Create(this, base::ASCIIToUTF16("Render")));
     file_box->SetFlexForView(file_chooser_, 1);
-    AddChildView(file_container);
+    AddChildView(std::move(file_container));
 
     size_input_->set_placeholder_text(
         base::ASCIIToUTF16("Size in dip (Empty for default)"));
@@ -118,7 +114,7 @@ class AnimationGallery : public View,
 
   AnimatedImageView* animated_image_view_;
   View* image_view_container_;
-  Textfield* size_input_;
+  Textfield* size_input_ = AddChildView(std::make_unique<Textfield>());
   Textfield* file_chooser_;
   Button* file_go_button_;
 
@@ -136,7 +132,7 @@ AnimatedImageViewExample::~AnimatedImageViewExample() = default;
 
 void AnimatedImageViewExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  container->AddChildView(new AnimationGallery());
+  container->AddChildView(std::make_unique<AnimationGallery>());
 }
 
 }  // namespace examples

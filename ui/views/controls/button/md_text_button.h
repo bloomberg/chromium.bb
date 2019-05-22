@@ -27,9 +27,10 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   static std::unique_ptr<LabelButton> CreateSecondaryUiBlueButton(
       ButtonListener* listener,
       const base::string16& text);
-  static MdTextButton* Create(ButtonListener* listener,
-                              const base::string16& text,
-                              int button_context = style::CONTEXT_BUTTON_MD);
+  static std::unique_ptr<MdTextButton> Create(
+      ButtonListener* listener,
+      const base::string16& text,
+      int button_context = style::CONTEXT_BUTTON_MD);
 
   ~MdTextButton() override;
 

@@ -72,16 +72,15 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
   // cases, like when installing a theme. See DownloadShelf::AddDownload().
   SetVisible(false);
 
-  show_all_view_ = views::MdTextButton::Create(
+  auto show_all_view = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS));
-  AddChildView(show_all_view_);
+  show_all_view_ = AddChildView(std::move(show_all_view));
 
   auto close_button = views::CreateVectorImageButton(this);
   close_button->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   close_button_ = AddChildView(std::move(close_button));
 
-  accessible_alert_ = new views::View();
-  AddChildView(accessible_alert_);
+  accessible_alert_ = AddChildView(std::make_unique<views::View>());
 
   if (gfx::Animation::ShouldRenderRichAnimation()) {
     new_item_animation_.SetSlideDuration(kNewItemAnimationDurationMs);

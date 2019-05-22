@@ -30,25 +30,25 @@ namespace views {
 std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiButton(
     ButtonListener* listener,
     const base::string16& text) {
-  return base::WrapUnique(
-      MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD));
+  return MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
 }
 
 // static
 std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiBlueButton(
     ButtonListener* listener,
     const base::string16& text) {
-  auto* md_button =
+  auto md_button =
       MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
   md_button->SetProminent(true);
-  return base::WrapUnique(md_button);
+  return md_button;
 }
 
 // static
-MdTextButton* MdTextButton::Create(ButtonListener* listener,
-                                   const base::string16& text,
-                                   int button_context) {
-  MdTextButton* button = new MdTextButton(listener, button_context);
+std::unique_ptr<MdTextButton> MdTextButton::Create(ButtonListener* listener,
+                                                   const base::string16& text,
+                                                   int button_context) {
+  auto button = base::WrapUnique<MdTextButton>(
+      new MdTextButton(listener, button_context));
   button->SetText(text);
   button->SetFocusForPlatform();
 

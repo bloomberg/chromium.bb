@@ -128,16 +128,16 @@ ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
 
 views::MdTextButton* ConfirmInfoBar::CreateButton(
     ConfirmInfoBarDelegate::InfoBarButton type) {
-  auto* button =
+  auto button =
       views::MdTextButton::Create(this, GetDelegate()->GetButtonLabel(type));
   button->SetProperty(
       views::kMarginsKey,
       new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
                           DISTANCE_TOAST_CONTROL_VERTICAL),
                       0));
-  AddChildView(button);
-  button->SizeToPreferredSize();
-  return button;
+  auto* button_ptr = AddChildView(std::move(button));
+  button_ptr->SizeToPreferredSize();
+  return button_ptr;
 }
 
 int ConfirmInfoBar::NonLabelWidth() const {

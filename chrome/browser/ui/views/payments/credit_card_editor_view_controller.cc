@@ -345,16 +345,16 @@ CreditCardEditorViewController::CreateExtraViewForField(
   if (type != kBillingAddressType)
     return nullptr;
 
-  std::unique_ptr<views::View> button_view = std::make_unique<views::View>();
+  auto button_view = std::make_unique<views::View>();
   button_view->SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // The button to add new billing addresses.
-  std::unique_ptr<views::Button> add_button(
-      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_ADD)));
+  auto add_button =
+      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_ADD));
   add_button->SetID(static_cast<int>(DialogViewID::ADD_BILLING_ADDRESS_BUTTON));
   add_button->set_tag(add_billing_address_button_tag_);
   add_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  button_view->AddChildView(add_button.release());
+  button_view->AddChildView(std::move(add_button));
   return button_view;
 }
 

@@ -26,13 +26,11 @@ namespace shell {
 class LockView : public views::WidgetDelegateView,
                  public views::ButtonListener {
  public:
-  LockView()
-      : text_(new views::Label(base::ASCIIToUTF16("LOCKED!"))),
-        unlock_button_(
-            views::MdTextButton::Create(this, base::ASCIIToUTF16("Unlock"))) {
+  LockView() : text_(new views::Label(base::ASCIIToUTF16("LOCKED!"))) {
     text_->SetEnabledColor(SK_ColorRED);
     AddChildView(text_);
-    AddChildView(unlock_button_);
+    unlock_button_ = AddChildView(
+        views::MdTextButton::Create(this, base::ASCIIToUTF16("Unlock")));
   }
   ~LockView() override = default;
 

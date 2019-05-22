@@ -280,7 +280,7 @@ views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
     bool md_style) {
   std::unique_ptr<views::LabelButton> button =
       md_style ? views::MdTextButton::CreateSecondaryUiBlueButton(this, text)
-               : base::WrapUnique(views::MdTextButton::Create(this, text));
+               : views::MdTextButton::Create(this, text);
   views::Button* pointer = button.get();
 
   // Add margins.
