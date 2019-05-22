@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/shapedetection/barcode_detector.h"
 
+#include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -14,6 +16,7 @@
 #include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 #include "third_party/blink/renderer/modules/shapedetection/barcode_detector_options.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -106,9 +109,9 @@ ScriptPromise BarcodeDetector::getSupportedFormats(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (!detector->barcode_service_) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                             "Barcode detection service unavailable."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError,
+        "Barcode detection service unavailable."));
     return promise;
   }
 
@@ -137,9 +140,9 @@ ScriptPromise BarcodeDetector::DoDetect(ScriptPromiseResolver* resolver,
                                         SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
   if (!barcode_service_) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                             "Barcode detection service unavailable."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError,
+        "Barcode detection service unavailable."));
     return promise;
   }
   barcode_service_requests_.insert(resolver);
@@ -179,8 +182,9 @@ void BarcodeDetector::OnDetectBarcodes(
 
 void BarcodeDetector::OnBarcodeServiceConnectionError() {
   for (const auto& request : barcode_service_requests_) {
-    request->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                         "Barcode Detection not implemented."));
+    request->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError,
+        "Barcode Detection not implemented."));
   }
   barcode_service_requests_.clear();
   barcode_service_.reset();

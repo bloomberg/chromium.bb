@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_options.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -61,23 +62,24 @@ DOMException* HTMLElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
 
   switch (controller.IsElementAllowed(element)) {
     case Status::kFrameDetached:
-      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                  kDetachedError);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError, kDetachedError);
     case Status::kMetadataNotLoaded:
-      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                  kMetadataNotLoadedError);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError, kMetadataNotLoadedError);
     case Status::kVideoTrackNotAvailable:
-      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                  kVideoTrackNotAvailableError);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError, kVideoTrackNotAvailableError);
     case Status::kDisabledByFeaturePolicy:
-      return DOMException::Create(DOMExceptionCode::kSecurityError,
-                                  kFeaturePolicyBlocked);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError, kFeaturePolicyBlocked);
     case Status::kDisabledByAttribute:
-      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                  kDisablePictureInPicturePresent);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          kDisablePictureInPicturePresent);
     case Status::kDisabledBySystem:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  kNotAvailable);
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, kNotAvailable);
     case Status::kEnabled:
       break;
   }
@@ -88,8 +90,8 @@ DOMException* HTMLElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
   DCHECK(frame);
   if (!controller.PictureInPictureElement() &&
       !LocalFrame::ConsumeTransientUserActivation(frame)) {
-    return DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                                kUserGestureRequired);
+    return MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError, kUserGestureRequired);
   }
 
   return nullptr;

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/quota/quota_utils.h"
 #include "third_party/blink/renderer/modules/quota/storage_estimate.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -41,8 +42,8 @@ void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
   if (status_code != mojom::QuotaStatusCode::kOk) {
     // TODO(sashab): Replace this with a switch statement, and remove the enum
     // values from QuotaStatusCode.
-    resolver->Reject(
-        DOMException::Create(static_cast<DOMExceptionCode>(status_code)));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        static_cast<DOMExceptionCode>(status_code)));
     return;
   }
 

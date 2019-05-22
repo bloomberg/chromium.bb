@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/service_worker/service_worker_clients.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -175,8 +175,9 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
   }
 
   if (!context->IsWindowInteractionAllowed()) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidAccessError,
-                                          "Not allowed to open a window."));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidAccessError,
+        "Not allowed to open a window."));
     return promise;
   }
   context->ConsumeWindowInteraction();

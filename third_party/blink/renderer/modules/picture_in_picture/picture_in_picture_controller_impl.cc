@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -170,8 +171,8 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
 
   if (IsElementAllowed(*element) != Status::kEnabled) {
     if (resolver) {
-      resolver->Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError, ""));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError, ""));
     }
 
     ExitPictureInPicture(element, nullptr);

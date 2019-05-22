@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/presentation/presentation_error.h"
 
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -26,7 +27,7 @@ DOMException* CreatePresentationError(
       break;
   }
 
-  return DOMException::Create(code, error.message);
+  return MakeGarbageCollected<DOMException>(code, error.message);
 }
 
 }  // namespace blink

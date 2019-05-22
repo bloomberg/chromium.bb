@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -53,11 +54,12 @@ Vector<String> PushManager::supportedContentEncodings() {
 ScriptPromise PushManager::subscribe(ScriptState* script_state,
                                      const PushSubscriptionOptionsInit* options,
                                      ExceptionState& exception_state) {
-  if (!registration_->active())
+  if (!registration_->active()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kAbortError,
-                             "Subscription failed - no active Service Worker"));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kAbortError,
+                          "Subscription failed - no active Service Worker"));
+  }
 
   const WebPushSubscriptionOptions& web_options =
       PushSubscriptionOptions::ToWeb(options, exception_state);
@@ -73,11 +75,12 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
   if (auto* document =
           DynamicTo<Document>(ExecutionContext::From(script_state))) {
     LocalFrame* frame = document->GetFrame();
-    if (!document->domWindow() || !frame)
+    if (!document->domWindow() || !frame) {
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "Document is detached from window."));
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kInvalidStateError,
+                            "Document is detached from window."));
+    }
     PushController::ClientFrom(frame).Subscribe(
         registration_->RegistrationId(), web_options,
         LocalFrame::HasTransientUserActivation(frame,
@@ -110,11 +113,12 @@ ScriptPromise PushManager::permissionState(
     ExceptionState& exception_state) {
   if (auto* document =
           DynamicTo<Document>(ExecutionContext::From(script_state))) {
-    if (!document->domWindow() || !document->GetFrame())
+    if (!document->domWindow() || !document->GetFrame()) {
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "Document is detached from window."));
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kInvalidStateError,
+                            "Document is detached from window."));
+    }
   }
 
   return PushMessagingBridge::From(registration_)

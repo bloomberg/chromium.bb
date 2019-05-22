@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_request_event.h"
 
-#include <memory>
 #include <utility>
 
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -18,6 +17,7 @@
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -112,7 +112,7 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
   ExecutionContext* context = ExecutionContext::From(script_state);
 
   if (!isTrusted()) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError,
         "Cannot open a window when the event is not trusted"));
     return promise;
@@ -132,7 +132,7 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
   }
 
   if (!context->IsWindowInteractionAllowed()) {
-    resolver->Reject(DOMException::Create(
+    resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
         "Not allowed to open a window without user activation"));
     return promise;
@@ -160,16 +160,16 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
   if (change_payment_method_resolver_) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             "Waiting for response to the previous payment method change"));
   }
 
   if (!payment_handler_host_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "No corresponding PaymentRequest object found"));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "No corresponding PaymentRequest object found"));
   }
 
   auto method_data = payments::mojom::blink::PaymentHandlerMethodData::New();
@@ -264,8 +264,9 @@ void PaymentRequestEvent::OnChangePaymentMethodResponse(
             script_state->GetIsolate(), script_state->GetContext(),
             response_modifier->method_data->stringified_data, exception_state);
         if (exception_state.HadException()) {
-          change_payment_method_resolver_->Reject(DOMException::Create(
-              DOMExceptionCode::kSyntaxError, exception_state.Message()));
+          change_payment_method_resolver_->Reject(
+              MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                                 exception_state.Message()));
           change_payment_method_resolver_.Clear();
           return;
         }
@@ -282,8 +283,9 @@ void PaymentRequestEvent::OnChangePaymentMethodResponse(
         script_state->GetIsolate(), script_state->GetContext(),
         response->stringified_payment_method_errors, exception_state);
     if (exception_state.HadException()) {
-      change_payment_method_resolver_->Reject(DOMException::Create(
-          DOMExceptionCode::kSyntaxError, exception_state.Message()));
+      change_payment_method_resolver_->Reject(
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                             exception_state.Message()));
       change_payment_method_resolver_.Clear();
       return;
     }
@@ -300,7 +302,7 @@ void PaymentRequestEvent::OnChangePaymentMethodResponse(
 
 void PaymentRequestEvent::OnHostConnectionError() {
   if (change_payment_method_resolver_) {
-    change_payment_method_resolver_->Reject(DOMException::Create(
+    change_payment_method_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kAbortError, "Browser process disconnected"));
   }
   change_payment_method_resolver_.Clear();

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_container.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -223,10 +223,10 @@ void ServiceWorkerRegistration::SetNavigationPreloadHeader(
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Failed to update a ServiceWorkerRegistration: No "
-                             "associated provider is available."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Failed to update a ServiceWorkerRegistration: No "
+                          "associated provider is available."));
   }
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Update(
@@ -237,11 +237,11 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Failed to unregister a "
-                             "ServiceWorkerRegistration: No "
-                             "associated provider is available."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Failed to unregister a "
+                          "ServiceWorkerRegistration: No "
+                          "associated provider is available."));
   }
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Unregister(WTF::Bind(&DidUnregister, WrapPersistent(resolver)));
