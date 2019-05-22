@@ -313,6 +313,20 @@ void WontCompile() {
   Bind(NonEmptyFunctor());
 }
 
+#elif defined(NCTEST_DISALLOW_BINDLAMBDAFORTESTING_LVALUE_MUTABLE_LAMBDA)  // [r"BindLambdaForTesting requires non-const rvalue for mutable lambda binding\. I\.e\.: base::BindLambdaForTesting\(std::move\(lambda\)\)."]
+void WontCompile() {
+  int foo = 42;
+  auto mutable_lambda = [&]() mutable {};
+  BindLambdaForTesting(mutable_lambda);
+}
+
+#elif defined(NCTEST_DISALLOW_BINDLAMBDAFORTESTING_RVALUE_CONST_MUTABLE_LAMBDA)  // [r"BindLambdaForTesting requires non-const rvalue for mutable lambda binding\. I\.e\.: base::BindLambdaForTesting\(std::move\(lambda\)\)."]
+
+void WontCompile() {
+  int foo = 42;
+  const auto mutable_lambda = [&]() mutable {};
+  BindLambdaForTesting(std::move(mutable_lambda));
+}
 #endif
 
 }  // namespace base
