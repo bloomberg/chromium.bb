@@ -131,10 +131,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
                               base::ScopedFD password_fd,
                               StatusCallback callback) override;
 
-  void Premount(const base::FilePath& share_path,
-                bool ntlm_enabled,
-                MountCallback callback) override;
-
   void UpdateSharePath(int32_t mount_id,
                        const std::string& share_path,
                        StatusCallback callback) override;
