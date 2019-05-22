@@ -119,12 +119,15 @@ const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kGeniusAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 
 #if defined(OS_CHROMEOS)
+// TODO(michaelpg): Deprecate old app IDs before adding new ones to avoid bloat.
 const char kHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
 const char kHighlightsEveAppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
 const char kHighlightsNocturneAppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
+const char kHighlightsAltAppId[] = "gjeelkjnolfmhphfhhjokaijbicopfln";
 const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
 const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
 const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
+const char kScreensaverAltAppId[] = "bnabjkecnachpogjlfilfcnlpcmacglh";
 
 bool IsSystemUIApp(base::StringPiece extension_id) {
   static const char* const kApps[] = {
@@ -135,9 +138,11 @@ bool IsSystemUIApp(base::StringPiece extension_id) {
       kFilesManagerAppId,
       kHighlightsEveAppId,
       kHighlightsNocturneAppId,
+      kHighlightsAltAppId,
       kHighlightsAppId,
       kScreensaverEveAppId,
       kScreensaverNocturneAppId,
+      kScreensaverAltAppId,
       kScreensaverAppId,
       // clang-format on
   };

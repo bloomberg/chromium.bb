@@ -45,14 +45,16 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
   // Each version of the Highlights app is bucketed into the same value.
   if (app_id == extension_misc::kHighlightsAppId ||
       app_id == extension_misc::kHighlightsEveAppId ||
-      app_id == extension_misc::kHighlightsNocturneAppId) {
+      app_id == extension_misc::kHighlightsNocturneAppId ||
+      app_id == extension_misc::kHighlightsAltAppId) {
     return DemoModeApp::kHighlights;
   }
 
   // Each version of the Screensaver app is bucketed into the same value.
   if (app_id == extension_misc::kScreensaverAppId ||
       app_id == extension_misc::kScreensaverEveAppId ||
-      app_id == extension_misc::kScreensaverNocturneAppId) {
+      app_id == extension_misc::kScreensaverNocturneAppId ||
+      app_id == extension_misc::kScreensaverAltAppId) {
     return DemoModeApp::kScreensaver;
   }
 
