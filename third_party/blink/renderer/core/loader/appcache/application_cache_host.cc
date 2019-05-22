@@ -82,8 +82,8 @@ ApplicationCacheHost::~ApplicationCacheHost() {
 void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
   if (!IsApplicationCacheEnabled() || !host_)
     return;
-  int host_id = host_->GetHostID();
-  if (host_id != mojom::blink::kAppCacheNoHostId)
+  const base::UnguessableToken& host_id = host_->GetHostID();
+  if (!host_id.is_empty())
     request.SetAppCacheHostID(host_id);
 }
 
@@ -221,9 +221,9 @@ ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
                    web_info.padding_sizes);
 }
 
-int ApplicationCacheHost::GetHostID() const {
+const base::UnguessableToken& ApplicationCacheHost::GetHostID() const {
   if (!host_)
-    return mojom::blink::kAppCacheNoHostId;
+    return base::UnguessableToken::Null();
   return host_->GetHostID();
 }
 

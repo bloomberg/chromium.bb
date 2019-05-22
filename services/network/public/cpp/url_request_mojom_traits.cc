@@ -176,7 +176,8 @@ bool StructTraits<
       !data.ReadCustomProxyPostCacheHeaders(
           &out->custom_proxy_post_cache_headers) ||
       !data.ReadFetchWindowId(&out->fetch_window_id) ||
-      !data.ReadDevtoolsRequestId(&out->devtools_request_id)) {
+      !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
+      !data.ReadAppcacheHostId(&out->appcache_host_id)) {
     return false;
   }
 
@@ -188,7 +189,6 @@ bool StructTraits<
   out->allow_credentials = data.allow_credentials();
   out->plugin_child_id = data.plugin_child_id();
   out->resource_type = data.resource_type();
-  out->appcache_host_id = data.appcache_host_id();
   out->should_reset_appcache = data.should_reset_appcache();
   out->is_external_request = data.is_external_request();
   out->originated_from_service_worker = data.originated_from_service_worker();

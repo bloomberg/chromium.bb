@@ -45,9 +45,9 @@ interface SharedWorkerFactory {
 
       // NetworkService:
       // The ID of the AppCacheHost in the browser process that serves resources
-      // for this shared worker. This is kAppCacheNoHostId when NetworkService
+      // for this shared worker. This is not specified when NetworkService
       // is disabled or AppCache doesn't serve resources for this shared worker.
-      int32 appcache_host_id,
+      mojo_base.mojom.UnguessableToken? appcache_host_id,
 
       // Non-NetworkService:
       // The URLLoaderFactory to use to request the shared worker's script

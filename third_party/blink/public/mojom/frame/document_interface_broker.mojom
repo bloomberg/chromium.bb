@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "third_party/blink/public/mojom/appcache/appcache.mojom";
 import "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom";
 import "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom";
@@ -21,5 +22,5 @@ interface DocumentInterfaceBroker {
   GetVirtualAuthenticatorManager(blink.test.mojom.VirtualAuthenticatorManager& request);
   RegisterAppCacheHost(blink.mojom.AppCacheHost& host_request,
                        AppCacheFrontend frontend,
-                       int32 host_id);
+                       mojo_base.mojom.UnguessableToken host_id);
 };

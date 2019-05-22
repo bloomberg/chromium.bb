@@ -34,12 +34,6 @@
 
 namespace content {
 
-namespace {
-
-constexpr int kHostIdForTest = 123;
-
-}  // namespace
-
 class AppCacheHostTest : public testing::Test {
  public:
   AppCacheHostTest()
@@ -164,6 +158,8 @@ class AppCacheHostTest : public testing::Test {
 
   const int kProcessIdForTest;
   const int kRenderFrameIdForTest;
+  const base::UnguessableToken kHostIdForTest =
+      base::UnguessableToken::Create();
 
   // Mock classes for the 'host' to work with
   MockAppCacheService service_;

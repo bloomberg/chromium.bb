@@ -63,7 +63,7 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.plugin_child_id = 5;
   original.resource_type = 2;
   original.priority = net::IDLE;
-  original.appcache_host_id = 3;
+  original.appcache_host_id = base::UnguessableToken::Create();
   original.should_reset_appcache = true;
   original.is_external_request = false;
   original.cors_preflight_policy =

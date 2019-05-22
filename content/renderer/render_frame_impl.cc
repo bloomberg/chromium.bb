@@ -4056,7 +4056,9 @@ RenderFrameImpl::CreateApplicationCacheHost(
       frame_->GetTaskRunner(blink::TaskType::kNetworking);
 
   return std::make_unique<RendererWebApplicationCacheHostImpl>(
-      this, client, navigation_state->commit_params().appcache_host_id,
+      this, client,
+      navigation_state->commit_params().appcache_host_id.value_or(
+          base::UnguessableToken()),
       std::move(task_runner));
 }
 

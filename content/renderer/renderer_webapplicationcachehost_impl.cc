@@ -23,7 +23,7 @@ namespace content {
 RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     RenderFrameImpl* render_frame,
     WebApplicationCacheHostClient* client,
-    int appcache_host_id,
+    const base::UnguessableToken& appcache_host_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : WebApplicationCacheHostImpl(render_frame->GetDocumentInterfaceBroker(),
                                   client,

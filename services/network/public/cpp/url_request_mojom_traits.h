@@ -105,7 +105,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.priority;
   }
-  static int32_t appcache_host_id(const network::ResourceRequest& request) {
+  static const base::Optional<base::UnguessableToken>& appcache_host_id(
+      const network::ResourceRequest& request) {
     return request.appcache_host_id;
   }
   static bool should_reset_appcache(const network::ResourceRequest& request) {

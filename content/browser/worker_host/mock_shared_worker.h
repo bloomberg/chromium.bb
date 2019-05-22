@@ -81,7 +81,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
           service_worker_provider_info,
-      int appcache_host_id,
+      const base::Optional<base::UnguessableToken>& appcache_host_id,
       network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

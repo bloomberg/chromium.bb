@@ -8,7 +8,7 @@ namespace content {
 
 ApplicationCacheHostForSharedWorker::ApplicationCacheHostForSharedWorker(
     blink::WebApplicationCacheHostClient* client,
-    int appcache_host_id,
+    const base::UnguessableToken& appcache_host_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : WebApplicationCacheHostImpl(nullptr /* interface_broker */,
                                   client,

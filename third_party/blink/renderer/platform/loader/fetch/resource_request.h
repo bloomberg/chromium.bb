@@ -225,8 +225,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   // Allows the request to be matched up with its app cache host.
-  int AppCacheHostID() const { return app_cache_host_id_; }
-  void SetAppCacheHostID(int id) { app_cache_host_id_ = id; }
+  const base::UnguessableToken& AppCacheHostID() const {
+    return app_cache_host_id_;
+  }
+  void SetAppCacheHostID(const base::UnguessableToken& id) {
+    app_cache_host_id_ = id;
+  }
 
   // True if request was user initiated.
   bool HasUserGesture() const { return has_user_gesture_; }
@@ -459,7 +463,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   int intra_priority_value_;
   int requestor_id_;
   int plugin_child_id_;
-  int app_cache_host_id_;
+  base::UnguessableToken app_cache_host_id_;
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
   mojom::RequestContextType request_context_;

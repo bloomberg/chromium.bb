@@ -48,8 +48,6 @@ class WebURLResponse;
 // instances, and calls delete when the instance is no longer needed.
 class WebApplicationCacheHost {
  public:
-  static const int kAppCacheNoHostId = 0;
-
   virtual ~WebApplicationCacheHost() = default;
 
   // Called for every request made within the context.
@@ -118,7 +116,9 @@ class WebApplicationCacheHost {
   virtual void GetAssociatedCacheInfo(CacheInfo*) {}
   virtual void GetResourceList(WebVector<ResourceInfo>*) {}
   virtual void DeleteAssociatedCacheGroup() {}
-  virtual int GetHostID() const { return kAppCacheNoHostId; }
+  virtual const base::UnguessableToken& GetHostID() const {
+    return base::UnguessableToken::Null();
+  }
 };
 
 }  // namespace blink

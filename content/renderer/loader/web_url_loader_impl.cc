@@ -773,7 +773,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->plugin_child_id = request.GetPluginChildID();
   resource_request->priority =
       ConvertWebKitPriorityToNetPriority(request.GetPriority());
-  resource_request->appcache_host_id = request.AppCacheHostID();
+  resource_request->appcache_host_id =
+      request.AppCacheHostID().is_empty()
+          ? base::nullopt
+          : base::make_optional(request.AppCacheHostID());
   resource_request->should_reset_appcache = request.ShouldResetAppCache();
   resource_request->is_external_request = request.IsExternalRequest();
   resource_request->cors_preflight_policy = request.GetCorsPreflightPolicy();

@@ -276,8 +276,9 @@ void SharedWorkerHost::Start(
       std::move(info), pause_on_start, devtools_worker_token,
       std::move(renderer_preferences), std::move(preference_watcher_request),
       std::move(content_settings), std::move(service_worker_provider_info),
-      appcache_handle_ ? appcache_handle_->appcache_host_id()
-                       : blink::mojom::kAppCacheNoHostId,
+      appcache_handle_
+          ? base::make_optional(appcache_handle_->appcache_host_id())
+          : base::nullopt,
       std::move(main_script_loader_factory), std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       std::move(host), std::move(worker_request_),

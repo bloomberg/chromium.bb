@@ -27,7 +27,7 @@ class CONTENT_EXPORT AppCacheBackendImpl
   // blink::mojom::AppCacheBackend
   void RegisterHost(blink::mojom::AppCacheHostRequest host_request,
                     blink::mojom::AppCacheFrontendPtr frontend,
-                    int32_t host_id) override;
+                    const base::UnguessableToken& host_id) override;
 
  private:
   // Raw pointer is safe because instances of this class are owned by

@@ -315,7 +315,7 @@ struct CONTENT_EXPORT CommitNavigationParams {
   NavigationTiming navigation_timing;
 
   // The AppCache host id to be used to identify this navigation.
-  int appcache_host_id = blink::mojom::kAppCacheNoHostId;
+  base::Optional<base::UnguessableToken> appcache_host_id;
 
   // Set to |kYes| if a navigation is following the rules of user activation
   // propagation. This is different from |has_user_gesture|

@@ -33,9 +33,9 @@ AppCacheBackendImpl::~AppCacheBackendImpl() {
 void AppCacheBackendImpl::RegisterHost(
     blink::mojom::AppCacheHostRequest host_request,
     blink::mojom::AppCacheFrontendPtr frontend,
-    int32_t id) {
+    const base::UnguessableToken& host_id) {
   service_->RegisterHostInternal(std::move(host_request), std::move(frontend),
-                                 id, MSG_ROUTING_NONE, process_id_,
+                                 host_id, MSG_ROUTING_NONE, process_id_,
                                  mojo::GetBadMessageCallback());
 }
 

@@ -182,12 +182,12 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   }
 
   // Returns a pointer to a registered host. It retains ownership.
-  AppCacheHost* GetHost(int process_id, int host_id);
-  bool EraseHost(int process_id, int host_id);
+  AppCacheHost* GetHost(const base::UnguessableToken& host_id);
+  bool EraseHost(const base::UnguessableToken& host_id);
   void RegisterHostForFrame(
       blink::mojom::AppCacheHostRequest host_request,
       blink::mojom::AppCacheFrontendPtrInfo frontend,
-      int32_t host_id,
+      const base::UnguessableToken& host_id,
       int32_t render_frame_id,
       int process_id,
       mojo::ReportBadMessageCallback bad_message_callback);
@@ -237,13 +237,13 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   void RegisterHostInternal(
       blink::mojom::AppCacheHostRequest host_request,
       blink::mojom::AppCacheFrontendPtr frontend,
-      int32_t id,
+      const base::UnguessableToken& host_id,
       int32_t render_frame_id,
       int process_id,
       mojo::ReportBadMessageCallback bad_message_callback);
   // The (process id, host id) pair that identifies one AppCacheHost.
   using AppCacheHostProcessMap =
-      std::map<std::pair<int, int>, std::unique_ptr<AppCacheHost>>;
+      std::map<base::UnguessableToken, std::unique_ptr<AppCacheHost>>;
   AppCacheHostProcessMap hosts_;
 
   base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_;

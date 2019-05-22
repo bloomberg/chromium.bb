@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -28,18 +29,15 @@ namespace content {
 class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
                                     public blink::mojom::AppCacheFrontend {
  public:
-  // Returns the host having given id or NULL if there is no such host.
-  static WebApplicationCacheHostImpl* FromId(int id);
-
   // |interface_broker| can be null for workers.
   WebApplicationCacheHostImpl(
       blink::mojom::DocumentInterfaceBroker* interface_broker,
       blink::WebApplicationCacheHostClient* client,
-      int appcache_host_id,
+      const base::UnguessableToken& appcache_host_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebApplicationCacheHostImpl() override;
 
-  int host_id() const { return host_id_; }
+  const base::UnguessableToken& host_id() const { return host_id_; }
   blink::WebApplicationCacheHostClient* client() const { return client_; }
 
   // blink::mojom::AppCacheFrontend
@@ -63,7 +61,7 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
   bool SwapCache() override;
   void GetResourceList(blink::WebVector<ResourceInfo>* resources) override;
   void GetAssociatedCacheInfo(CacheInfo* info) override;
-  int GetHostID() const override;
+  const base::UnguessableToken& GetHostID() const override;
 
   void SelectCacheForSharedWorker(long long app_cache_id);
 
@@ -73,7 +71,7 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
   mojo::Binding<blink::mojom::AppCacheFrontend> binding_;
   blink::WebApplicationCacheHostClient* client_;
   blink::mojom::AppCacheHostPtr backend_host_;
-  int host_id_;
+  base::UnguessableToken host_id_;
   blink::mojom::AppCacheStatus status_;
   blink::WebURLResponse document_response_;
   GURL document_url_;

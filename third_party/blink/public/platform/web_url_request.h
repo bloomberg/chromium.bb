@@ -263,8 +263,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetPluginChildID(int);
 
   // Allows the request to be matched up with its app cache host.
-  BLINK_PLATFORM_EXPORT int AppCacheHostID() const;
-  BLINK_PLATFORM_EXPORT void SetAppCacheHostID(int);
+  BLINK_PLATFORM_EXPORT const base::UnguessableToken& AppCacheHostID() const;
+  BLINK_PLATFORM_EXPORT void SetAppCacheHostID(const base::UnguessableToken&);
 
   // If true, the client expects to receive the raw response pipe. Similar to
   // UseStreamOnResponse but the stream will be a mojo DataPipe rather than a

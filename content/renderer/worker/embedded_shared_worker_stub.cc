@@ -53,7 +53,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
         service_worker_provider_info,
-    int appcache_host_id,
+    const base::UnguessableToken& appcache_host_id,
     network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -73,7 +73,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   // The ID of the precreated AppCacheHost can be valid only when the
   // NetworkService is enabled.
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         appcache_host_id == blink::mojom::kAppCacheNoHostId);
+         appcache_host_id.is_empty());
 
   if (main_script_load_params) {
     response_override_ =

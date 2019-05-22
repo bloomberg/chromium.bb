@@ -6008,7 +6008,7 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
 void RenderFrameHostImpl::RegisterAppCacheHost(
     blink::mojom::AppCacheHostRequest host_request,
     blink::mojom::AppCacheFrontendPtr frontend,
-    int32_t id) {
+    const base::UnguessableToken& host_id) {
   auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
       GetProcess()->GetStoragePartition()->GetAppCacheService());
 
@@ -6016,7 +6016,7 @@ void RenderFrameHostImpl::RegisterAppCacheHost(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
                      appcache_service_impl->AsWeakPtr(),
-                     std::move(host_request), frontend.PassInterface(), id,
+                     std::move(host_request), frontend.PassInterface(), host_id,
                      routing_id_, GetProcess()->GetID(),
                      mojo::GetBadMessageCallback()));
 }

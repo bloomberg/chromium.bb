@@ -222,14 +222,14 @@ class AppCacheRequestHandlerTest
     mock_service_->set_request_context(empty_context_.get());
     mock_policy_.reset(new MockAppCachePolicy);
     mock_service_->set_appcache_policy(mock_policy_.get());
-    const int kHostId = 1;
+    const auto kHostId = base::UnguessableToken::Create();
     const int kRenderFrameId = 2;
     blink::mojom::AppCacheFrontendPtrInfo frontend;
     mojo::MakeRequest(&frontend);
     mock_service_->RegisterHostForFrame(
         mojo::MakeRequest(&host_ptr_), std::move(frontend), kHostId,
         kRenderFrameId, kMockProcessId, GetBadMessageCallback());
-    host_ = mock_service_->GetHost(kMockProcessId, kHostId);
+    host_ = mock_service_->GetHost(kHostId);
     job_factory_.reset(new MockURLRequestJobFactory());
     empty_context_->set_job_factory(job_factory_.get());
   }
@@ -721,7 +721,7 @@ class AppCacheRequestHandlerTest
                                         ResourceType::kSubResource));
     EXPECT_TRUE(handler_.get());
 
-    mock_service_->EraseHost(kMockProcessId, 1);
+    mock_service_->EraseHost(host_->host_id());
     host_ = nullptr;
 
     EXPECT_FALSE(handler_->MaybeLoadResource(nullptr));
@@ -746,7 +746,7 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(job());
     EXPECT_TRUE(job()->IsWaiting());
 
-    mock_service_->EraseHost(kMockProcessId, 1);
+    mock_service_->EraseHost(host_->host_id());
     host_ = nullptr;
 
     if (request_handler_type_ == URLREQUEST) {

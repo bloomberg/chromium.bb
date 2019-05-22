@@ -37,18 +37,18 @@ AppCacheRequestHandler* AppCacheInterceptor::GetHandler(
       request->GetUserData(&kHandlerKey));
 }
 
-void AppCacheInterceptor::SetExtraRequestInfo(net::URLRequest* request,
-                                              AppCacheServiceImpl* service,
-                                              int process_id,
-                                              int host_id,
-                                              ResourceType resource_type,
-                                              bool should_reset_appcache) {
-  if (!service || (host_id == blink::mojom::kAppCacheNoHostId))
+void AppCacheInterceptor::SetExtraRequestInfo(
+    net::URLRequest* request,
+    AppCacheServiceImpl* service,
+    const base::UnguessableToken& host_id,
+    ResourceType resource_type,
+    bool should_reset_appcache) {
+  if (!service || host_id.is_empty())
     return;
 
   // TODO(michaeln): An invalid host id is indicative of bad data
   // from a child process. How should we handle that here?
-  AppCacheHost* host = service->GetHost(process_id, host_id);
+  AppCacheHost* host = service->GetHost(host_id);
   if (!host)
     return;
 

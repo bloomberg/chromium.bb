@@ -1259,8 +1259,9 @@ void NavigationRequest::OnResponseStarted(
   // Update the AppCache params of the commit params.
   commit_params_.appcache_host_id =
       navigation_handle_->appcache_handle()
-          ? navigation_handle_->appcache_handle()->appcache_host_id()
-          : blink::mojom::kAppCacheNoHostId;
+          ? base::make_optional(
+                navigation_handle_->appcache_handle()->appcache_host_id())
+          : base::nullopt;
 
   // Update fetch start timing. While NavigationRequest updates fetch start
   // timing for redirects, it's not aware of service worker interception so

@@ -1039,8 +1039,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
   // Have the appcache associate its extra info with the request.
   AppCacheInterceptor::SetExtraRequestInfo(
-      new_request.get(), requester_info->appcache_service(), child_id,
-      request_data.appcache_host_id,
+      new_request.get(), requester_info->appcache_service(),
+      request_data.appcache_host_id.value_or(base::UnguessableToken()),
       static_cast<ResourceType>(request_data.resource_type),
       request_data.should_reset_appcache);
 

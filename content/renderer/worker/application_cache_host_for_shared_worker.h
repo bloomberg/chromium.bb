@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_WORKER_APPLICATION_CACHE_HOST_FOR_SHARED_WORKER_H_
 #define CONTENT_RENDERER_WORKER_APPLICATION_CACHE_HOST_FOR_SHARED_WORKER_H_
 
+#include "base/unguessable_token.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 
 namespace content {
@@ -14,7 +15,7 @@ class ApplicationCacheHostForSharedWorker final
  public:
   ApplicationCacheHostForSharedWorker(
       blink::WebApplicationCacheHostClient* client,
-      int appcache_host_id,
+      const base::UnguessableToken& appcache_host_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHostForSharedWorker() override;
 

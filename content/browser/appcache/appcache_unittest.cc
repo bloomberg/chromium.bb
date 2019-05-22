@@ -32,11 +32,13 @@ TEST_F(AppCacheTest, CleanupUnusedCache) {
 
   blink::mojom::AppCacheFrontendPtr frontend1;
   mojo::MakeRequest(&frontend1);
-  AppCacheHost host1(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+  AppCacheHost host1(/*host_id=*/base::UnguessableToken::Create(),
+                     /*process_id=*/1, /*render_frame_id=*/1,
                      std::move(frontend1), &service);
   blink::mojom::AppCacheFrontendPtr frontend2;
   mojo::MakeRequest(&frontend2);
-  AppCacheHost host2(/*host_id=*/2, /*process_id=*/2, /*render_frame_id=*/2,
+  AppCacheHost host2(/*host_id=*/base::UnguessableToken::Create(),
+                     /*process_id=*/2, /*render_frame_id=*/2,
                      std::move(frontend2), &service);
 
   host1.AssociateCompleteCache(cache.get());

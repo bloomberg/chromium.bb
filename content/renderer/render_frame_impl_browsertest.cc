@@ -864,7 +864,7 @@ class TestSimpleDocumentInterfaceBrokerImpl
   }
   void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,
                             blink::mojom::AppCacheFrontendPtr frontend,
-                            int32_t id) override {}
+                            const base::UnguessableToken& id) override {}
 
   mojo::Binding<blink::mojom::DocumentInterfaceBroker> binding_;
   BinderCallback binder_callback_;

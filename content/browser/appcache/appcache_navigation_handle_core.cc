@@ -25,7 +25,7 @@ namespace {
 // Map of AppCache host id to the AppCacheNavigationHandleCore instance.
 // Accessed on the IO thread only.
 using AppCacheHandleMap =
-    std::map <int, content::AppCacheNavigationHandleCore*>;
+    std::map<base::UnguessableToken, content::AppCacheNavigationHandleCore*>;
 base::LazyInstance<AppCacheHandleMap>::DestructorAtExit g_appcache_handle_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -35,7 +35,7 @@ namespace content {
 
 AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
     ChromeAppCacheService* appcache_service,
-    int appcache_host_id,
+    const base::UnguessableToken& appcache_host_id,
     int process_id)
     : appcache_service_(appcache_service),
       appcache_host_id_(appcache_host_id),
@@ -43,6 +43,7 @@ AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
   // The AppCacheNavigationHandleCore is created on the UI thread but
   // should only be accessed from the IO thread afterwards.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!appcache_host_id_.is_empty());
 }
 
 AppCacheNavigationHandleCore::~AppCacheNavigationHandleCore() {
@@ -65,7 +66,7 @@ void AppCacheNavigationHandleCore::Initialize() {
 
 // static
 std::unique_ptr<AppCacheHost> AppCacheNavigationHandleCore::GetPrecreatedHost(
-    int host_id) {
+    const base::UnguessableToken& host_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto index = g_appcache_handle_map.Get().find(host_id);
   if (index != g_appcache_handle_map.Get().end()) {

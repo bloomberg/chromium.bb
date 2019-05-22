@@ -141,7 +141,7 @@ class CORE_EXPORT ApplicationCacheHost final
 
   void FillResourceList(ResourceInfoList*);
   CacheInfo ApplicationCacheInfo();
-  int GetHostID() const;
+  const base::UnguessableToken& GetHostID() const;
 
   void Trace(blink::Visitor*);
 

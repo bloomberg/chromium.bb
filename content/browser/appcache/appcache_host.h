@@ -70,7 +70,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
     virtual ~Observer() {}
   };
 
-  AppCacheHost(int host_id,
+  AppCacheHost(const base::UnguessableToken& host_id,
                int process_id,
                int render_frame_id,
                blink::mojom::AppCacheFrontendPtr frontend,
@@ -96,7 +96,8 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   void GetStatus(GetStatusCallback callback) override;
   void StartUpdate(StartUpdateCallback callback) override;
   void SwapCache(SwapCacheCallback callback) override;
-  void SetSpawningHostId(int spawning_host_id) override;
+  void SetSpawningHostId(
+      const base::UnguessableToken& spawning_host_id) override;
   void GetResourceList(GetResourceListCallback callback) override;
 
   // May return NULL if the spawning host context has been closed, or if a
@@ -158,7 +159,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // with which pending master entries.
   const GURL& pending_master_entry_url() const { return new_master_entry_url_; }
 
-  int host_id() const { return host_id_; }
+  const base::UnguessableToken& host_id() const { return host_id_; }
 
   int process_id() const {
     DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
@@ -253,19 +254,10 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // AppCacheGroup::UpdateObserver methods.
   void OnUpdateComplete(AppCacheGroup* group) override;
 
-  // Returns true if this host is for a dedicated worker context.
-  bool is_for_dedicated_worker() const {
-    return parent_host_id_ != blink::mojom::kAppCacheNoHostId;
-  }
-
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked);
 
-  // Returns the parent context's host instance. This is only valid
-  // to call when this instance is_for_dedicated_worker.
-  AppCacheHost* GetParentAppCacheHost() const;
-
   // Identifies the corresponding appcache host in the child process.
-  int host_id_;
+  const base::UnguessableToken host_id_;
 
   // Identifies the renderer process associated with the AppCacheHost.  Used for
   // security checks via ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin.
@@ -274,16 +266,8 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // Information about the host that created this one; the manifest
   // preferred by our creator influences which cache our main resource
   // should be loaded from.
-  int spawning_host_id_;
+  base::UnguessableToken spawning_host_id_;
   GURL preferred_manifest_url_;
-
-  // Hosts for dedicated workers are special cased to shunt
-  // request handling off to the dedicated worker's parent.
-  // The scriptable api is not accessible in dedicated workers
-  // so the other aspects of this class are not relevant for
-  // these special case instances.
-  int parent_host_id_;
-  int parent_process_id_;
 
   // Defined prior to refs to AppCaches and Groups because destruction
   // order matters, the disabled_storage_reference_ must outlive those

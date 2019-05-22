@@ -38,17 +38,9 @@ namespace {
 
 // Note: the order of the elements in this array must match those
 // of the EventID enum in appcache_interfaces.h.
-const char* const kEventNames[] = {
-  "Checking", "Error", "NoUpdate", "Downloading", "Progress",
-  "UpdateReady", "Cached", "Obsolete"
-};
-
-using HostsMap = base::IDMap<WebApplicationCacheHostImpl*>;
-
-HostsMap* all_hosts() {
-  static HostsMap* map = new HostsMap;
-  return map;
-}
+const char* const kEventNames[] = {"Checking",    "Error",    "NoUpdate",
+                                   "Downloading", "Progress", "UpdateReady",
+                                   "Cached",      "Obsolete"};
 
 GURL ClearUrlRef(const GURL& url) {
   if (!url.has_ref())
@@ -58,16 +50,12 @@ GURL ClearUrlRef(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
-}  // anon namespace
-
-WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
-  return all_hosts()->Lookup(id);
-}
+}  // namespace
 
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     blink::mojom::DocumentInterfaceBroker* interface_broker,
     WebApplicationCacheHostClient* client,
-    int appcache_host_id,
+    const base::UnguessableToken& appcache_host_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : binding_(this),
       client_(client),
@@ -78,13 +66,10 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
       was_select_cache_called_(false) {
   DCHECK(client);
   // PlzNavigate: The browser passes the ID to be used.
-  if (appcache_host_id != blink::mojom::kAppCacheNoHostId) {
-    all_hosts()->AddWithID(this, appcache_host_id);
+  if (!appcache_host_id.is_empty())
     host_id_ = appcache_host_id;
-  } else {
-    host_id_ = all_hosts()->Add(this);
-  }
-  DCHECK(host_id_ != blink::mojom::kAppCacheNoHostId);
+  else
+    host_id_ = base::UnguessableToken::Create();
 
   blink::mojom::AppCacheFrontendPtr frontend_ptr;
   binding_.Bind(mojo::MakeRequest(&frontend_ptr, task_runner), task_runner);
@@ -112,7 +97,6 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
 }
 
 WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {
-  all_hosts()->Remove(host_id_);
 }
 
 void WebApplicationCacheHostImpl::CacheSelected(
@@ -286,7 +270,7 @@ void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
     is_get_method_ = true;  // A redirect was involved.
   original_main_resource_url_ = GURL();
 
-  is_scheme_supported_ =  IsSchemeSupportedForAppCache(document_url_);
+  is_scheme_supported_ = IsSchemeSupportedForAppCache(document_url_);
   if ((document_response_.AppCacheID() != blink::mojom::kAppCacheNoCacheId) ||
       !is_scheme_supported_ || !is_get_method_)
     is_new_master_entry_ = OLD_ENTRY;
@@ -331,7 +315,7 @@ void WebApplicationCacheHostImpl::GetAssociatedCacheInfo(
   info->padding_sizes = cache_info_.padding_sizes;
 }
 
-int WebApplicationCacheHostImpl::GetHostID() const {
+const base::UnguessableToken& WebApplicationCacheHostImpl::GetHostID() const {
   return host_id_;
 }
 
