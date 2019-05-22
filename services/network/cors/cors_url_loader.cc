@@ -497,10 +497,17 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
   if (fetch_cors_flag_)
     return;
 
-  if (!network::cors::ShouldCheckCors(request_.url, request_.request_initiator,
-                                      request_.fetch_request_mode)) {
+  if (request_.fetch_request_mode == mojom::FetchRequestMode::kNavigate ||
+      request_.fetch_request_mode == mojom::FetchRequestMode::kNoCors) {
     return;
   }
+
+  if (request_.url.SchemeIs(url::kDataScheme))
+    return;
+
+  // CORS needs a proper origin (including a unique opaque origin). If the
+  // request doesn't have one, CORS should not work.
+  DCHECK(request_.request_initiator);
 
   // The source origin and destination URL pair may be in the allow list.
   switch (origin_access_list_->CheckAccessState(*request_.request_initiator,
@@ -531,6 +538,11 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
   // TODO(yhirano): Remove this logic at the time.
   if (request_.url.SchemeIsBlob() && request_.request_initiator->opaque() &&
       url::Origin::Create(request_.url).opaque()) {
+    return;
+  }
+
+  if (request_.request_initiator->IsSameOriginWith(
+          url::Origin::Create(request_.url))) {
     return;
   }
 

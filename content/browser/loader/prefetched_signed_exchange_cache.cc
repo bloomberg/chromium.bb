@@ -16,7 +16,6 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/constants.h"
-#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -117,7 +116,6 @@ class RedirectResponseURLLoader : public network::mojom::URLLoader {
 class InnerResponseURLLoader : public network::mojom::URLLoader {
  public:
   InnerResponseURLLoader(
-      const network::ResourceRequest& request,
       const network::ResourceResponseHead& inner_response,
       std::unique_ptr<const storage::BlobDataHandle> blob_data_handle,
       const network::URLLoaderCompletionStatus& completion_status,
@@ -127,25 +125,6 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
         completion_status_(completion_status),
         client_(std::move(client)),
         weak_factory_(this) {
-    DCHECK(inner_response.headers);
-    DCHECK(request.request_initiator);
-    if (network::cors::ShouldCheckCors(request.url, request.request_initiator,
-                                       request.fetch_request_mode)) {
-      const auto error_status = network::cors::CheckAccess(
-          request.url, inner_response.headers->response_code(),
-          GetHeaderString(
-              inner_response,
-              network::cors::header_names::kAccessControlAllowOrigin),
-          GetHeaderString(
-              inner_response,
-              network::cors::header_names::kAccessControlAllowCredentials),
-          request.fetch_credentials_mode, *request.request_initiator);
-      if (error_status) {
-        client_->OnComplete(network::URLLoaderCompletionStatus(*error_status));
-        return;
-      }
-    }
-
     network::ResourceResponseHead response = inner_response;
     UpdateRequestResponseStartTime(&response);
     response.encoded_data_length = 0;
@@ -162,16 +141,6 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   ~InnerResponseURLLoader() override {}
 
  private:
-  static base::Optional<std::string> GetHeaderString(
-      const network::ResourceResponseHead& response,
-      const std::string& header_name) {
-    DCHECK(response.headers);
-    std::string header_value;
-    if (!response.headers->GetNormalizedHeader(header_name, &header_value))
-      return base::nullopt;
-    return header_value;
-  }
-
   // network::mojom::URLLoader overrides:
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
@@ -269,9 +238,10 @@ class SubresourceSignedExchangeURLLoaderFactory
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
+    // TODO(crbug.com/935267): Implement CORS check.
     DCHECK_EQ(request.url, entry_->inner_url());
     mojo::MakeStrongBinding(std::make_unique<InnerResponseURLLoader>(
-                                request, *entry_->inner_response(),
+                                *entry_->inner_response(),
                                 std::make_unique<const storage::BlobDataHandle>(
                                     *entry_->blob_data_handle()),
                                 *entry_->completion_status(), std::move(client),
@@ -370,7 +340,7 @@ class PrefetchedNavigationLoaderInterceptor
                           network::mojom::URLLoaderClientPtr client) {
     mojo::MakeStrongBinding(
         std::make_unique<InnerResponseURLLoader>(
-            resource_request, *exchange_->inner_response(),
+            *exchange_->inner_response(),
             std::make_unique<const storage::BlobDataHandle>(
                 *exchange_->blob_data_handle()),
             *exchange_->completion_status(), std::move(client),
