@@ -25,6 +25,11 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public interface LocationBar extends UrlBarDelegate {
     /**
+     * Cleanup resources when this goes out of scope.
+     */
+    void destroy();
+
+    /**
      * Handles native dependent initialization for this class.
      */
     void onNativeLibraryReady();

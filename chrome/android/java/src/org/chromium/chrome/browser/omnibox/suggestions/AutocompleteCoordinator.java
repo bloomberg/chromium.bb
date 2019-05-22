@@ -22,6 +22,11 @@ import java.util.List;
  */
 public interface AutocompleteCoordinator extends UrlFocusChangeListener, UrlTextChangeListener {
     /**
+     * Clean up resources used by this class.
+     */
+    void destroy();
+
+    /**
      * Provides data and state for the toolbar component.
      * @param toolbarDataProvider The data provider.
      */

@@ -158,6 +158,11 @@ class AutocompleteMediator
         mEntitySuggestionProcessor = new EntitySuggestionProcessor(mContext, this);
     }
 
+    public void destroy() {
+        mAnswerSuggestionProcessor.destroy();
+        mAnswerSuggestionProcessor = null;
+    }
+
     @Override
     public void onStartWithNative() {}
 

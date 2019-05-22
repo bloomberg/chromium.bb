@@ -140,6 +140,8 @@ public abstract class ToolbarLayout
             mThemeColorProvider.removeThemeColorObserver(this);
             mThemeColorProvider = null;
         }
+
+        getLocationBar().destroy();
     }
 
     /**

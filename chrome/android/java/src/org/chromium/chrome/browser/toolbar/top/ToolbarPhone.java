@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar.top;
 
 import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
@@ -393,6 +392,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     void destroy() {
         super.destroy();
         if (mHomeButton != null) mHomeButton.destroy();
+        cancelAnimations();
     }
 
     /**
@@ -1672,9 +1672,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                         ? TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS
                         : TAB_SWITCHER_MODE_EXIT_FADE_ANIMATION_DURATION_MS);
         exitAnimation.setInterpolator(new LinearInterpolator());
-        exitAnimation.addListener(new AnimatorListenerAdapter() {
+        exitAnimation.addListener(new CancelAwareAnimatorListener() {
             @Override
-            public void onAnimationEnd(Animator animation) {
+            public void onEnd(Animator animation) {
                 onExitTabSwitcherAnimationEnd();
             }
         });
@@ -1687,9 +1687,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 ObjectAnimator.ofFloat(this, View.TRANSLATION_Y, -getHeight(), 0.f);
         exitAnimation.setDuration(TAB_SWITCHER_MODE_POST_EXIT_ANIMATION_DURATION_MS);
         exitAnimation.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-        exitAnimation.addListener(new AnimatorListenerAdapter() {
+        exitAnimation.addListener(new CancelAwareAnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) {
+            public void onStart(Animator animation) {
                 updateViewsForTabSwitcherMode();
                 // On older builds, force an update to ensure the new visuals are used
                 // when bringing in the toolbar.  crbug.com/404571
@@ -1699,7 +1699,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             }
 
             @Override
-            public void onAnimationEnd(Animator animation) {
+            public void onEnd(Animator animation) {
                 mDelayedTabSwitcherModeAnimation = null;
                 onExitTabSwitcherAnimationEnd();
             }
@@ -2105,7 +2105,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private void triggerUrlFocusAnimation(final boolean hasFocus) {
         if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
-            mUrlFocusLayoutAnimator.cancel();
+            mUrlFocusLayoutAnimator.end();
             mUrlFocusLayoutAnimator = null;
         }
         if (mExperimentalButtonAnimationRunning) mExperimentalButtonAnimator.end();
@@ -2225,7 +2225,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     @Override
     public void onPrimaryColorChanged(boolean shouldAnimate) {
         super.onPrimaryColorChanged(shouldAnimate);
-        if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
+        if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.end();
 
         final int initialColor = mToolbarBackground.getColor();
         final int finalColor = getToolbarDataProvider().getPrimaryColor();
@@ -2262,9 +2262,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                         initialLocationBarColor, finalLocationBarColor, fraction));
             }
         });
-        mBrandColorTransitionAnimation.addListener(new AnimatorListenerAdapter() {
+        mBrandColorTransitionAnimation.addListener(new CancelAwareAnimatorListener() {
             @Override
-            public void onAnimationEnd(Animator animation) {
+            public void onEnd(Animator animation) {
                 mBrandColorTransitionActive = false;
                 updateVisualsForLocationBarState();
             }
@@ -2399,7 +2399,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             return;
         } else if (mBrandColorTransitionAnimation != null
                 && mBrandColorTransitionAnimation.isRunning()) {
-            mBrandColorTransitionAnimation.cancel();
+            mBrandColorTransitionAnimation.end();
         }
 
         boolean visualStateChanged = mVisualState != newVisualState;
@@ -2604,16 +2604,16 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         animators.add(buttonTranslationAnimator);
 
         mExperimentalButtonAnimator = new AnimatorSet();
-        mExperimentalButtonAnimator.addListener(new AnimatorListenerAdapter() {
+        mExperimentalButtonAnimator.addListener(new CancelAwareAnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) {
+            public void onStart(Animator animation) {
                 mDisableLocationBarRelayout = true;
                 mExperimentalButtonAnimationRunning = true;
                 mExperimentalButton.setVisibility(View.VISIBLE);
             }
 
             @Override
-            public void onAnimationEnd(Animator animation) {
+            public void onEnd(Animator animation) {
                 onExperimentalButtonAnimationEnd();
                 mDisableLocationBarRelayout = false;
                 mExperimentalButtonAnimationRunning = false;
@@ -2656,16 +2656,16 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         animators.add(buttonTranslationAnimator);
 
         mExperimentalButtonAnimator = new AnimatorSet();
-        mExperimentalButtonAnimator.addListener(new AnimatorListenerAdapter() {
+        mExperimentalButtonAnimator.addListener(new CancelAwareAnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) {
+            public void onStart(Animator animation) {
                 mLayoutLocationBarWithoutExtraButton = true;
                 mExperimentalButtonAnimationRunning = true;
                 requestLayout();
             }
 
             @Override
-            public void onAnimationEnd(Animator animation) {
+            public void onEnd(Animator animation) {
                 onExperimentalButtonAnimationEnd();
                 mExperimentalButton.setVisibility(View.GONE);
                 mLayoutLocationBarWithoutExtraButton = false;
@@ -2801,5 +2801,19 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         getMenuButtonWrapper().setVisibility(visibility);
         updateButtonVisibility();
         mToolbarButtonsContainer.requestLayout();
+    }
+
+    private void cancelAnimations() {
+        if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
+            mUrlFocusLayoutAnimator.cancel();
+        }
+
+        if (mBrandColorTransitionAnimation != null && mBrandColorTransitionAnimation.isRunning()) {
+            mBrandColorTransitionAnimation.cancel();
+        }
+
+        if (mExperimentalButtonAnimator != null && mExperimentalButtonAnimator.isRunning()) {
+            mExperimentalButtonAnimator.cancel();
+        }
     }
 }

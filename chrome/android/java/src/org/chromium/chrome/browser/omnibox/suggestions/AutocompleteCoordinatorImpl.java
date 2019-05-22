@@ -48,7 +48,7 @@ import java.util.List;
  */
 public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     private final ViewGroup mParent;
-    private final AutocompleteMediator mMediator;
+    private AutocompleteMediator mMediator;
 
     private ListView mListView;
 
@@ -75,6 +75,12 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
         mMediator =
                 new AutocompleteMediator(context, delegate, urlBarEditingTextProvider, listModel);
+    }
+
+    @Override
+    public void destroy() {
+        mMediator.destroy();
+        mMediator = null;
     }
 
     private ViewProvider<SuggestionListViewHolder> createViewProvider(Context context) {

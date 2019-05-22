@@ -13,23 +13,28 @@ import android.animation.AnimatorListenerAdapter;
  * instead of the standard callback functions.
  */
 public class CancelAwareAnimatorListener extends AnimatorListenerAdapter {
-    private boolean mIsCancelled;
+    // Only allows one of the following to be called for any one start(): onEnd(), onCancel(). Also
+    // serves as a guard against an infinite loop that's present in ValueAnimator triggered
+    // when calling ValueAnimator#end() in an AnimatorListenerAdapter#onAnimationEnd() callback.
+    private boolean mHasResultCallbackBeenInvoked;
 
     @Override
     public final void onAnimationStart(Animator animation) {
-        mIsCancelled = false;
+        mHasResultCallbackBeenInvoked = false;
         onStart(animation);
     }
 
     @Override
     public final void onAnimationCancel(Animator animation) {
-        mIsCancelled = true;
+        if (mHasResultCallbackBeenInvoked) return;
+        mHasResultCallbackBeenInvoked = true;
         onCancel(animation);
     }
 
     @Override
     public final void onAnimationEnd(Animator animation) {
-        if (mIsCancelled) return;
+        if (mHasResultCallbackBeenInvoked) return;
+        mHasResultCallbackBeenInvoked = true;
         onEnd(animation);
     }
 

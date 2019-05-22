@@ -43,6 +43,9 @@ public class NetworkImageFetcher extends ImageFetcher {
     }
 
     @Override
+    public void clear() {}
+
+    @Override
     public @ImageFetcherConfig int getConfig() {
         return ImageFetcherConfig.NETWORK_ONLY;
     }
