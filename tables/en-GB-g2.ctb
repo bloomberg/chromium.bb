@@ -143,6 +143,8 @@ word behring 12-15-125-1235-346
 word beh =
 word bel =
 begword beln = Belnick
+begword belittle 23-123-123
+nofor sufword belittle 23-123-24-2345-2345-123-15
 always below 23-123
 always beneath 23-1345
 always beside 23-234
@@ -405,7 +407,7 @@ always letter 123-1235
 contraction lr
 word like 123
 word doolittle =
-always little 123-123
+sufword little 123-123
 contraction ll
 sufword lone 123-5-135 lonely
 always lord 5-123
