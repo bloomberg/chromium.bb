@@ -17,12 +17,13 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -30,8 +31,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
-import org.chromium.base.task.test.BackgroundShadowAsyncTask;
-import org.chromium.base.task.test.CustomShadowAsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink_public.platform.WebDisplayMode;
@@ -53,9 +53,7 @@ import java.util.Map;
  * Unit tests for WebApkUpdateManager.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        shadows = {BackgroundShadowAsyncTask.class, CustomShadowAsyncTask.class,
-                ShadowUrlUtilities.class})
+@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 public class WebApkUpdateManagerUnitTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -360,7 +358,6 @@ public class WebApkUpdateManagerUnitTest {
         if (updateCallback == null) return;
 
         updateCallback.onResultFromNative(result, false /* relaxUpdates */);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
     }
 
     private static void writeRandomTextToFile(String path) {
@@ -402,6 +399,7 @@ public class WebApkUpdateManagerUnitTest {
     public void setUp() throws Exception {
         PathUtils.setPrivateDataDirectorySuffix("chrome");
         CommandLine.init(null);
+        PostTask.setPrenativeThreadPoolExecutorForTesting(new RoboExecutorService());
 
         mJniMocker.mock(WebApkUpdateManagerJni.TEST_HOOKS, new TestWebApkUpdateManagerJni());
 
@@ -413,12 +411,16 @@ public class WebApkUpdateManagerUnitTest {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
                 });
-        BackgroundShadowAsyncTask.runBackgroundTasks();
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateTimeOfLastCheckForUpdatedWebManifest();
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
         storage.updateDidLastWebApkUpdateRequestSucceed(true);
+    }
+
+    @After
+    public void tearDown() {
+        PostTask.resetPrenativeThreadPoolExecutorForTesting();
     }
 
     /**
@@ -530,7 +532,6 @@ public class WebApkUpdateManagerUnitTest {
      * Test that the pending update file is deleted after update completes regardless of whether
      * update succeeded.
      */
-    @Ignore("https://crbug.com/937109")
     @Test
     public void testPendingUpdateFileDeletedAfterUpdateCompletion() throws Exception {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
@@ -556,7 +557,6 @@ public class WebApkUpdateManagerUnitTest {
      * {@link WebApkUpdateManager#nativeStoreWebApkUpdateRequestToFile} creates the pending update
      * file but fails.
      */
-    @Ignore("https://crbug.com/937109")
     @Test
     public void testFileDeletedIfStoreWebApkUpdateRequestToFileFails() throws Exception {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
@@ -572,7 +572,6 @@ public class WebApkUpdateManagerUnitTest {
         assertTrue(new File(updateRequestPath).exists());
 
         updateManager.getStoreUpdateRequestCallback().onResult(false);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
 
         assertNull(storage.getPendingUpdateRequestPath());
         assertFalse(new File(updateRequestPath).exists());
