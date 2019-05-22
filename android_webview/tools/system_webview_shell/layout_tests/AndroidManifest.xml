@@ -30,7 +30,7 @@
             android:exported="true"/>
     </application>
 
-    <instrumentation android:name="android.support.test.runner.AndroidJUnitRunner"
+    <instrumentation android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner"
         android:targetPackage="org.chromium.webview_shell"
         android:label="Layout tests for org.chromium.webview_shell"/>
 </manifest>
