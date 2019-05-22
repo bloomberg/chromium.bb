@@ -34,11 +34,6 @@ Polymer({
 
     ariaDescription: String,
 
-    ariaLabel: {
-      type: String,
-      observer: 'onAriaLabelChanged_',
-    },
-
     tabIndex: {
       type: Number,
       value: 0,
@@ -96,12 +91,6 @@ Polymer({
   /** @private */
   hideRipple_: function() {
     this.getRipple().holdDown = false;
-  },
-
-  /** @private */
-  onAriaLabelChanged_: function() {
-    this.$.checkbox.setAttribute(
-        'aria-labelledby', this.ariaLabel ? 'ariaLabel' : 'label-container');
   },
 
   /**
