@@ -43,6 +43,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -67,9 +68,12 @@ const int64_t kSpaceCriticallyLowBytes = 512 * 1024 * 1024;
 // Threshold to show a message indicating space is low (1 GB).
 const int64_t kSpaceLowBytes = 1 * 1024 * 1024 * 1024;
 
+constexpr char kAndroidEnabled[] = "androidEnabled";
+
 }  // namespace
 
-StorageHandler::StorageHandler(Profile* profile)
+StorageHandler::StorageHandler(Profile* profile,
+                               content::WebUIDataSource* html_source)
     : browser_cache_size_(-1),
       has_browser_cache_size_(false),
       browser_site_data_size_(-1),
@@ -82,7 +86,12 @@ StorageHandler::StorageHandler(Profile* profile)
       updating_other_users_size_(false),
       is_android_running_(false),
       profile_(profile),
-      weak_ptr_factory_(this) {}
+      source_name_(html_source->GetSource()),
+      arc_observer_(this),
+      weak_ptr_factory_(this) {
+  html_source->AddBoolean(kAndroidEnabled,
+                          arc::IsArcPlayStoreEnabledForProfile(profile));
+}
 
 StorageHandler::~StorageHandler() {
   arc::ArcServiceManager::Get()
@@ -94,6 +103,10 @@ StorageHandler::~StorageHandler() {
 void StorageHandler::RegisterMessages() {
   DCHECK(web_ui());
 
+  web_ui()->RegisterMessageCallback(
+      "updateAndroidEnabled",
+      base::BindRepeating(&StorageHandler::HandleUpdateAndroidEnabled,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "updateStorageInfo",
       base::BindRepeating(&StorageHandler::HandleUpdateStorageInfo,
@@ -112,12 +125,7 @@ void StorageHandler::RegisterMessages() {
 }
 
 void StorageHandler::OnJavascriptAllowed() {
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      arc::prefs::kArcEnabled,
-      base::BindRepeating(&StorageHandler::OnArcEnabledChanged,
-                          // |this| always outlives |pref_change_registrar_|.
-                          base::Unretained(this)));
+  arc_observer_.Add(arc::ArcSessionManager::Get());
 
   // Start observing the mojo connection UpdateAndroidSize() relies on. Note
   // that OnConnectionReady() will be called immediately if the connection has
@@ -140,8 +148,13 @@ void StorageHandler::OnJavascriptDisallowed() {
       ->storage_manager()
       ->RemoveObserver(this);
 
-  // Stop observing the pref changes for the same reason.
-  pref_change_registrar_.RemoveAll();
+  arc_observer_.Remove(arc::ArcSessionManager::Get());
+}
+
+void StorageHandler::HandleUpdateAndroidEnabled(
+    const base::ListValue* unused_args) {
+  // OnJavascriptAllowed() calls ArcSessionManager::AddObserver() later.
+  AllowJavascript();
 }
 
 void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
@@ -154,7 +167,6 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   UpdateAndroidSize();
   UpdateCrostiniSize();
   UpdateOtherUsersSize();
-  OnArcEnabledChanged();
 }
 
 void StorageHandler::HandleOpenDownloads(
@@ -440,10 +452,11 @@ void StorageHandler::OnConnectionClosed() {
   FireWebUIListener("storage-android-running-changed", base::Value(false));
 }
 
-void StorageHandler::OnArcEnabledChanged() {
-  FireWebUIListener(
-      "storage-android-enabled-changed",
-      base::Value(arc::IsArcPlayStoreEnabledForProfile(profile_)));
+void StorageHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
+  FireWebUIListener("storage-android-enabled-changed", base::Value(enabled));
+  auto update = std::make_unique<base::DictionaryValue>();
+  update->SetKey(kAndroidEnabled, base::Value(enabled));
+  content::WebUIDataSource::Update(profile_, source_name_, std::move(update));
 }
 
 }  // namespace settings

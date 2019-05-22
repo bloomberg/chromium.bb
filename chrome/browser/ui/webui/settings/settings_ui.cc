@@ -399,7 +399,8 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::PointerHandler>());
   web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::StorageHandler>(profile));
+      std::make_unique<chromeos::settings::StorageHandler>(profile,
+                                                           html_source));
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::StylusHandler>());
   web_ui->AddMessageHandler(

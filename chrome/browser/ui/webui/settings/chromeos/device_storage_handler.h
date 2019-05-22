@@ -8,21 +8,27 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "components/arc/common/storage_manager.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user.h"
 
 class Profile;
+
+namespace content {
+class WebUIDataSource;
+}  // namespace content
 
 namespace crostini {
 enum class CrostiniResult;
@@ -33,7 +39,8 @@ namespace settings {
 
 class StorageHandler
     : public ::settings::SettingsPageUIHandler,
-      public arc::ConnectionObserver<arc::mojom::StorageManagerInstance> {
+      public arc::ConnectionObserver<arc::mojom::StorageManagerInstance>,
+      public arc::ArcSessionManager::Observer {
  public:
   // Enumeration for device state about remaining space. These values must be
   // kept in sync with settings.StorageSpaceState in JS code.
@@ -43,7 +50,7 @@ class StorageHandler
     STORAGE_SPACE_CRITICALLY_LOW = 2,
   };
 
-  explicit StorageHandler(Profile* profile);
+  StorageHandler(Profile* profile, content::WebUIDataSource* html_source);
   ~StorageHandler() override;
 
   // ::settings::SettingsPageUIHandler:
@@ -55,8 +62,12 @@ class StorageHandler
   void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
+  // arc::ArcSessionManager::Observer:
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
+
  private:
   // Handlers of JS messages.
+  void HandleUpdateAndroidEnabled(const base::ListValue* unused_args);
   void HandleUpdateStorageInfo(const base::ListValue* unused_args);
   void HandleOpenDownloads(const base::ListValue* unused_args);
   void HandleOpenArcStorage(const base::ListValue* unused_args);
@@ -111,9 +122,6 @@ class StorageHandler
   // Callback to save the fetched user sizes and update the UI.
   void OnGetOtherUserSize(base::Optional<cryptohome::BaseReply> reply);
 
-  // Callback to update ARC related UI.
-  void OnArcEnabledChanged();
-
   // Total size of cache data in browsing data.
   int64_t browser_cache_size_;
 
@@ -149,9 +157,9 @@ class StorageHandler
   bool is_android_running_;
 
   Profile* const profile_;
-
-  // Used to watch ARC prefs for changes so the UI can be notified.
-  PrefChangeRegistrar pref_change_registrar_;
+  const std::string source_name_;
+  ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManager::Observer>
+      arc_observer_;
 
   base::WeakPtrFactory<StorageHandler> weak_ptr_factory_;
 

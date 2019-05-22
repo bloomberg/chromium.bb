@@ -52,6 +52,9 @@ cr.define('device_page_tests', function() {
       this.keyboardShortcutViewerShown_++;
     },
 
+    /** override */
+    updateAndroidEnabled: function() {},
+
     /** @override */
     updatePowerStatus: function() {
       this.updatePowerStatusCalled_++;

@@ -43,11 +43,7 @@ Polymer({
       value: false,
     },
 
-    /** @private */
-    androidEnabled_: {
-      type: Boolean,
-      value: false,
-    },
+    androidEnabled: Boolean,
 
     /** @private */
     androidRunning_: {
@@ -117,9 +113,6 @@ Polymer({
     this.addWebUIListener(
         'storage-drive-enabled-changed',
         this.handleDriveEnabledChanged_.bind(this));
-    this.addWebUIListener(
-        'storage-android-enabled-changed',
-        this.handleAndroidEnabledChanged_.bind(this));
     this.addWebUIListener(
         'storage-android-running-changed',
         this.handleAndroidRunningChanged_.bind(this));
@@ -283,14 +276,6 @@ Polymer({
    */
   handleDriveEnabledChanged_: function(enabled) {
     this.driveEnabled_ = enabled;
-  },
-
-  /**
-   * @param {boolean} enabled True if Play Store is enabled.
-   * @private
-   */
-  handleAndroidEnabledChanged_: function(enabled) {
-    this.androidEnabled_ = enabled;
   },
 
   /**

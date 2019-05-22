@@ -103,7 +103,9 @@ Polymer({
     /** @private */
     androidEnabled_: {
       type: Boolean,
-      value: false,
+      value: function() {
+        return loadTimeData.getBoolean('androidEnabled');
+      },
     },
   },
 
@@ -126,6 +128,7 @@ Polymer({
     this.addWebUIListener(
         'storage-android-enabled-changed',
         this.set.bind(this, 'androidEnabled_'));
+    settings.DevicePageBrowserProxyImpl.getInstance().updateAndroidEnabled();
   },
 
   /**
