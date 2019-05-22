@@ -27,8 +27,10 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.send_tab_to_self.TargetDeviceInfo.DeviceType;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.Arrays;
 import java.util.List;
 
 /** Tests for SendTabToSelfAndroidBridge */
@@ -65,6 +67,33 @@ public class SendTabToSelfAndroidBridgeTest {
         verify(mNativeMock)
                 .addEntry(eq(mProfile), eq(URL), eq(TITLE), eq(NAVIGATION_TIME_MS),
                         eq(TARGET_DEVICE_SYNC_CACHE_GUID));
+    }
+
+    @Test
+    @SmallTest
+    @SuppressWarnings("unchecked")
+    public void testGetAllTargetDeviceInfos() {
+        TargetDeviceInfo one = new TargetDeviceInfo("name1", "guid1", DeviceType.CHROMEOS, 123l);
+        TargetDeviceInfo two = new TargetDeviceInfo("name2", "guid2", DeviceType.LINUX, 456l);
+        TargetDeviceInfo three = new TargetDeviceInfo("name3", "guid3", DeviceType.PHONE, 789l);
+        doAnswer(answerVoid(new VoidAnswer2<Profile, List<TargetDeviceInfo>>() {
+            @Override
+            public void answer(Profile profile, List<TargetDeviceInfo> deviceInfos) {
+                deviceInfos.add(one);
+                deviceInfos.add(two);
+                deviceInfos.add(three);
+            }
+        }))
+                .when(mNativeMock)
+                .getAllTargetDeviceInfos(eq(mProfile), any(List.class));
+
+        List<TargetDeviceInfo> actual =
+                SendTabToSelfAndroidBridge.getAllTargetDeviceInfos(mProfile);
+
+        verify(mNativeMock).getAllTargetDeviceInfos(eq(mProfile), any(List.class));
+        Assert.assertEquals(3, actual.size());
+        List<TargetDeviceInfo> expected = Arrays.asList(one, two, three);
+        Assert.assertArrayEquals(expected.toArray(), actual.toArray());
     }
 
     @Test

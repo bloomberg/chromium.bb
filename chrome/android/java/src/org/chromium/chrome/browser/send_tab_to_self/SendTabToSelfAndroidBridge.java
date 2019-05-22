@@ -121,12 +121,37 @@ public class SendTabToSelfAndroidBridge {
 
     /**
      * Shows an infobar for the webcontents passed in.
+     *
      * @param entry Contains the URL to open when the user taps on the infobar.
      * @param webContents Where to create the infobar.
      */
     public static void showInfoBar(SendTabToSelfEntry entry, WebContents webContents) {
         SendTabToSelfAndroidBridgeJni.get().showInfoBar(
                 webContents, entry.guid, entry.url, entry.targetDeviceSyncCacheGuid);
+    }
+
+    /**
+     * @param profile Profile of the user for whom to retrieve the targetDeviceInfos.
+     * @returns All {@link TargetDeviceInfo} for the user.
+     */
+    public static List<TargetDeviceInfo> getAllTargetDeviceInfos(Profile profile) {
+        // TODO(https://crbug.com/942549): Add this assertion back in once the
+        // code to load is in place. assert mIsNativeSendTabToSelfModelLoaded;
+        List<TargetDeviceInfo> toPopulate = new ArrayList<TargetDeviceInfo>();
+        SendTabToSelfAndroidBridgeJni.get().getAllTargetDeviceInfos(profile, toPopulate);
+        return toPopulate;
+    }
+
+    /**
+     * Called by the native code in order to populate the list.
+     *
+     * @param allInfos List to populate provided by getAllTargetDeviceInfos.
+     * @param newInfo The DeviceInfo to add to the list.
+     */
+    @CalledByNative
+    private static void addToTargetDeviceInfoList(
+            List<TargetDeviceInfo> allInfos, TargetDeviceInfo newInfo) {
+        allInfos.add(newInfo);
     }
 
     @NativeMethods
@@ -148,5 +173,7 @@ public class SendTabToSelfAndroidBridge {
 
         void showInfoBar(
                 WebContents webContents, String guid, String url, String targetDeviceSyncCacheGuid);
+
+        void getAllTargetDeviceInfos(Profile profile, List<TargetDeviceInfo> guids);
     }
 }
