@@ -999,4 +999,43 @@ TEST_F(VideoCaptureControllerTest,
       media::VideoCaptureFrameDropReason::kBufferPoolMaxBufferCountExceeded, 1);
 }
 
+TEST_F(VideoCaptureControllerTest, DeviceClientWithColorSpace) {
+  // Register |client_a_| at |controller_|.
+  media::VideoCaptureParams requested_params;
+  requested_params.requested_format = media::VideoCaptureFormat(
+      gfx::Size(128, 80), 30, media::PIXEL_FORMAT_ARGB);
+  const gfx::ColorSpace data_color_space =
+      gfx::ColorSpace::CreateDisplayP3D65();
+  const gfx::ColorSpace overriden_color_space =
+      data_color_space.GetWithMatrixAndRange(
+          gfx::ColorSpace::MatrixID::SMPTE170M,
+          gfx::ColorSpace::RangeID::LIMITED);
+  client_a_->expected_color_space_ = overriden_color_space;
+  controller_->AddClient(arbitrary_route_id_, client_a_.get(),
+                         arbitrary_session_id_, requested_params);
+  base::RunLoop().RunUntilIdle();
+
+  // Device sends a frame to |device_client_| and |client_a_| reports to
+  // |controller_| that it has finished consuming the frame.
+  int buffer_id_reported_to_client = media::VideoCaptureBufferPool::kInvalidId;
+  {
+    InSequence s;
+    EXPECT_CALL(*client_a_, DoBufferCreated(_, _))
+        .Times(1)
+        .WillOnce(SaveArg<1>(&buffer_id_reported_to_client));
+    EXPECT_CALL(*client_a_, DoBufferReady(_, _)).Times(1);
+  }
+  EXPECT_CALL(*client_a_, DoBufferDestroyed(_, _)).Times(0);
+  SendStubFrameToDeviceClient(requested_params.requested_format,
+                              data_color_space);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(client_a_.get());
+
+  // |device_client_| is released by the device.
+  EXPECT_CALL(*client_a_, DoBufferDestroyed(_, buffer_id_reported_to_client));
+  device_client_.reset();
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(client_a_.get());
+}
+
 }  // namespace content

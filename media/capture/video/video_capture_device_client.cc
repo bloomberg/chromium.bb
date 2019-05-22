@@ -81,17 +81,29 @@ gfx::ColorSpace OverrideColorSpaceForLibYuvConversion(
     case media::PIXEL_FORMAT_RGB32:
     case media::PIXEL_FORMAT_ABGR:
     case media::PIXEL_FORMAT_XBGR:
-      // TODO(julien.isorce): Merge data 's primary and transfer function into
-      // the returned color space, see http://crbug.com/945468.
+      // Check if we can merge data 's primary and transfer function into the
+      // returned color space.
+      if (color_space.IsValid()) {
+        // The raw data is rgb so we expect its color space to only hold gamma
+        // correction.
+        DCHECK(color_space == color_space.GetAsFullRangeRGB());
 
-      // Color space is not specified but it's probably safe to assume its
-      // sRGB though, and so it would be valid to assume that libyuv 's
-      // ConvertToI420() is going to produce results in Rec601
-      // (or very close to it).
-      // TODO(julien.isorce): pass color space information to libyuv once the
-      // support is added, see http://crbug.com/libyuv/835.
-      if (!color_space.IsValid())
+        // This captured ARGB data is going to be converted to yuv using libyuv
+        // ConvertToI420 which internally uses Rec601 coefficients. So build a
+        // combined colorspace that contains both the above gamma correction
+        // and the yuv conversion information.
+        // TODO(julien.isorce): instead pass color space information to libyuv
+        // once the support is added, see http://crbug.com/libyuv/835.
+        overriden_color_space = color_space.GetWithMatrixAndRange(
+            gfx::ColorSpace::MatrixID::SMPTE170M,
+            gfx::ColorSpace::RangeID::LIMITED);
+      } else {
+        // Color space is not specified but it's probably safe to assume its
+        // sRGB though, and so it would be valid to assume that libyuv's
+        // ConvertToI420() is going to produce results in Rec601, or very close
+        // to it.
         overriden_color_space = gfx::ColorSpace::CreateREC601();
+      }
       break;
     default:
       break;
