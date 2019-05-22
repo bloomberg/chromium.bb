@@ -41,7 +41,7 @@ AppShimHost::AppShimHost(const std::string& app_id,
 
     // Create the interface that will be used by views::NativeWidgetMac to
     // create NSWindows hosted in the app shim process.
-    views_bridge_mac::mojom::BridgeFactoryAssociatedRequest
+    remote_cocoa::mojom::BridgeFactoryAssociatedRequest
         views_bridge_factory_request;
     views_bridge_factory_host_ = std::make_unique<views::BridgeFactoryHost>(
         host_id, &views_bridge_factory_request);

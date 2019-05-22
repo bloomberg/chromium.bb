@@ -11,7 +11,7 @@
 #import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
 #include "ui/base/cocoa/weak_ptr_nsobject.h"
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 // The ActiveEventTap is a RAII handle on the resources being used to capture
 // events. There is either 0 or 1 active instance of this class. If a second
@@ -125,4 +125,4 @@ void CocoaMouseCapture::OnOtherClientGotCapture() {
   active_handle_.reset();
 }
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa

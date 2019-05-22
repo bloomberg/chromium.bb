@@ -131,7 +131,7 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
   // NativeWidgetMac:
   void PopulateCreateWindowParams(
       const views::Widget::InitParams& widget_params,
-      views_bridge_mac::mojom::CreateWindowParams* params) override {
+      remote_cocoa::mojom::CreateWindowParams* params) override {
     params->style_mask = NSBorderlessWindowMask;
     if (widget_params.type == Widget::InitParams::TYPE_WINDOW) {
       params->style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
@@ -140,7 +140,7 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
     }
   }
   NativeWidgetMacNSWindow* CreateNSWindow(
-      const views_bridge_mac::mojom::CreateWindowParams* params) override {
+      const remote_cocoa::mojom::CreateWindowParams* params) override {
     return [[[NativeWidgetMacTestWindow alloc]
         initWithContentRect:ui::kWindowSizeDeterminedLater
                   styleMask:params->style_mask

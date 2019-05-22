@@ -32,7 +32,7 @@ class View;
 // Implements drag and drop on MacViews. This class acts as a bridge between
 // the Views and native system's drag and drop. This class mimics
 // DesktopDragDropClientAuraX11.
-class VIEWS_EXPORT DragDropClientMac : public views_bridge_mac::DragDropClient {
+class VIEWS_EXPORT DragDropClientMac : public remote_cocoa::DragDropClient {
  public:
   DragDropClientMac(BridgedNativeWidgetImpl* bridge, View* root_view);
   ~DragDropClientMac() override;
@@ -46,7 +46,7 @@ class VIEWS_EXPORT DragDropClientMac : public views_bridge_mac::DragDropClient {
 
   DropHelper* drop_helper() { return &drop_helper_; }
 
-  // views_bridge_mac::DragDropClient:
+  // remote_cocoa::DragDropClient:
   NSDragOperation DragUpdate(id<NSDraggingInfo>) override;
   NSDragOperation Drop(id<NSDraggingInfo> sender) override;
   void EndDrag() override;

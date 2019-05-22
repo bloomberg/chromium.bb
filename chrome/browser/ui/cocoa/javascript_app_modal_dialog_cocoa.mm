@@ -28,7 +28,7 @@
 #include "ui/views/cocoa/bridge_factory_host.h"
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 
-using views_bridge_mac::mojom::AlertDisposition;
+using remote_cocoa::mojom::AlertDisposition;
 
 ////////////////////////////////////////////////////////////////////////////////
 // JavaScriptAppModalDialogCocoa:
@@ -41,10 +41,10 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
 
 JavaScriptAppModalDialogCocoa::~JavaScriptAppModalDialogCocoa() {}
 
-views_bridge_mac::mojom::AlertBridgeInitParamsPtr
+remote_cocoa::mojom::AlertBridgeInitParamsPtr
 JavaScriptAppModalDialogCocoa::GetAlertParams() {
-  views_bridge_mac::mojom::AlertBridgeInitParamsPtr params =
-      views_bridge_mac::mojom::AlertBridgeInitParams::New();
+  remote_cocoa::mojom::AlertBridgeInitParamsPtr params =
+      remote_cocoa::mojom::AlertBridgeInitParams::New();
   params->title = dialog_->title();
   params->message_text = dialog_->message_text();
 
@@ -135,7 +135,7 @@ int JavaScriptAppModalDialogCocoa::GetAppModalDialogButtons() const {
 void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
   is_showing_ = true;
 
-  views_bridge_mac::mojom::AlertBridgeRequest bridge_request =
+  remote_cocoa::mojom::AlertBridgeRequest bridge_request =
       mojo::MakeRequest(&alert_bridge_);
   alert_bridge_.set_connection_error_handler(
       base::BindOnce(&JavaScriptAppModalDialogCocoa::OnConnectionError,
@@ -154,7 +154,7 @@ void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
   if (bridge_factory_host)
     bridge_factory_host->GetFactory()->CreateAlert(std::move(bridge_request));
   else
-    ignore_result(new views_bridge_mac::AlertBridge(std::move(bridge_request)));
+    ignore_result(new remote_cocoa::AlertBridge(std::move(bridge_request)));
   alert_bridge_->Show(
       GetAlertParams(),
       base::BindOnce(&JavaScriptAppModalDialogCocoa::OnAlertFinished,

@@ -23,11 +23,11 @@ AppWindowNativeWidgetMac::~AppWindowNativeWidgetMac() {
 
 void AppWindowNativeWidgetMac::PopulateCreateWindowParams(
     const views::Widget::InitParams& widget_params,
-    views_bridge_mac::mojom::CreateWindowParams* params) {
+    remote_cocoa::mojom::CreateWindowParams* params) {
   // If the window is frameless then use the frameless NSWindow sub-class.
   // Otherwise use the default window creation parameters.
   if (native_app_window_->IsFrameless()) {
-    params->window_class = views_bridge_mac::mojom::WindowClass::kFrameless;
+    params->window_class = remote_cocoa::mojom::WindowClass::kFrameless;
     params->style_mask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
                          NSWindowStyleMaskMiniaturizable |
                          NSWindowStyleMaskResizable |
@@ -36,7 +36,7 @@ void AppWindowNativeWidgetMac::PopulateCreateWindowParams(
 }
 
 NativeWidgetMacNSWindow* AppWindowNativeWidgetMac::CreateNSWindow(
-    const views_bridge_mac::mojom::CreateWindowParams* params) {
+    const remote_cocoa::mojom::CreateWindowParams* params) {
   NativeWidgetMacNSWindow* ns_window = NativeWidgetMac::CreateNSWindow(params);
 
   // If the window has a native or colored frame, use the same NSWindow as

@@ -15,12 +15,12 @@
 
 @class AlertBridgeHelper;
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 // Class that displays an NSAlert with associated UI as described by the mojo
 // AlertBridge interface.
 class REMOTE_COCOA_APP_SHIM_EXPORT AlertBridge
-    : public views_bridge_mac::mojom::AlertBridge {
+    : public remote_cocoa::mojom::AlertBridge {
  public:
   // Creates a new alert which controls its own lifetime. It will destroy itself
   // once its NSAlert goes away.
@@ -41,7 +41,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT AlertBridge
   // dismissed).
   void OnConnectionError();
 
-  // views_bridge_mac::mojom::Alert:
+  // remote_cocoa::mojom::Alert:
   void Show(mojom::AlertBridgeInitParamsPtr params,
             ShowCallback callback) override;
 
@@ -55,11 +55,11 @@ class REMOTE_COCOA_APP_SHIM_EXPORT AlertBridge
   // The callback to make when the dialog has finished running.
   ShowCallback callback_;
 
-  mojo::Binding<views_bridge_mac::mojom::AlertBridge> mojo_binding_;
+  mojo::Binding<remote_cocoa::mojom::AlertBridge> mojo_binding_;
   base::WeakPtrFactory<AlertBridge> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AlertBridge);
 };
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_ALERT_H_

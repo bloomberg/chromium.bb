@@ -137,7 +137,7 @@ TextInputHost::TextInputHost(BridgedNativeWidgetHostImpl* host_impl)
 TextInputHost::~TextInputHost() = default;
 
 void TextInputHost::BindRequest(
-    views_bridge_mac::mojom::TextInputHostAssociatedRequest request) {
+    remote_cocoa::mojom::TextInputHostAssociatedRequest request) {
   mojo_binding_.Bind(std::move(request),
                      ui::WindowResizeHelperMac::Get()->task_runner());
 }
@@ -186,7 +186,7 @@ void TextInputHost::SetTextInputClient(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TextInputHost, views_bridge_mac::mojom::TextInputHost:
+// TextInputHost, remote_cocoa::mojom::TextInputHost:
 
 bool TextInputHost::HasClient(bool* out_has_client) {
   *out_has_client = text_input_client_ != nullptr;
@@ -340,7 +340,7 @@ bool TextInputHost::GetFirstRectForRange(const gfx::Range& requested_range,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TextInputHost, views_bridge_mac::mojom::TextInputHost synchronous methods:
+// TextInputHost, remote_cocoa::mojom::TextInputHost synchronous methods:
 
 void TextInputHost::HasClient(HasClientCallback callback) {
   bool has_client = false;

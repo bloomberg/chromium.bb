@@ -21,7 +21,7 @@ const int kTooltipMaxWidthPixels = 250;
 namespace views {
 
 TooltipManagerMac::TooltipManagerMac(
-    views_bridge_mac::mojom::BridgedNativeWidget* bridge)
+    remote_cocoa::mojom::BridgedNativeWidget* bridge)
     : bridge_(bridge) {}
 
 TooltipManagerMac::~TooltipManagerMac() {

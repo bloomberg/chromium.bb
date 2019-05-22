@@ -75,7 +75,7 @@ views::BridgedNativeWidgetImpl* FindBridgeForSender(id sender,
   auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
   DCHECK(bridge);
 
-  views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
+  remote_cocoa::mojom::ValidateUserInterfaceItemResultPtr result;
   if (!bridge->host()->ValidateUserInterfaceItem([item tag], &result))
     return NO;
 

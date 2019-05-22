@@ -9,7 +9,7 @@
 
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 // Interface between the content view of a BridgedNativeWidgetImpl and a
 // DragDropClientMac in the browser process. This interface should eventually
@@ -32,6 +32,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT DragDropClient {
   virtual void DragExit() = 0;
 };
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_DRAG_DROP_CLIENT_H_

@@ -11,8 +11,8 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-using views_bridge_mac::mojom::AlertBridgeInitParams;
-using views_bridge_mac::mojom::AlertDisposition;
+using remote_cocoa::mojom::AlertBridgeInitParams;
+using remote_cocoa::mojom::AlertDisposition;
 
 namespace {
 
@@ -29,10 +29,10 @@ const int kMessageTextMaxSlots = 2000;
 @interface AlertBridgeHelper : NSObject <NSAlertDelegate> {
  @private
   base::scoped_nsobject<NSAlert> alert_;
-  views_bridge_mac::AlertBridge* alertBridge_;  // Weak.
+  remote_cocoa::AlertBridge* alertBridge_;  // Weak.
   base::scoped_nsobject<NSTextField> textField_;
 }
-@property(assign, nonatomic) views_bridge_mac::AlertBridge* alertBridge;
+@property(assign, nonatomic) remote_cocoa::AlertBridge* alertBridge;
 
 // Returns the underlying alert.
 - (NSAlert*)alert;
@@ -254,7 +254,7 @@ const int kMessageTextMaxSlots = 2000;
 
 @end
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AlertBridge:
@@ -316,4 +316,4 @@ void AlertBridge::Show(mojom::AlertBridgeInitParamsPtr params,
                       afterDelay:0];
 }
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa

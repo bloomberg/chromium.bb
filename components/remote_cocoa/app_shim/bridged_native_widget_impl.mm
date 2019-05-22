@@ -41,8 +41,8 @@
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 
-using views_bridge_mac::mojom::VisibilityTransition;
-using views_bridge_mac::mojom::WindowVisibilityState;
+using remote_cocoa::mojom::VisibilityTransition;
+using remote_cocoa::mojom::WindowVisibilityState;
 
 namespace {
 constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
@@ -262,24 +262,24 @@ BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromNativeWindow(
 // static
 base::scoped_nsobject<NativeWidgetMacNSWindow>
 BridgedNativeWidgetImpl::CreateNSWindow(
-    const views_bridge_mac::mojom::CreateWindowParams* params) {
+    const remote_cocoa::mojom::CreateWindowParams* params) {
   base::scoped_nsobject<NativeWidgetMacNSWindow> ns_window;
   switch (params->window_class) {
-    case views_bridge_mac::mojom::WindowClass::kDefault:
+    case remote_cocoa::mojom::WindowClass::kDefault:
       ns_window.reset([[NativeWidgetMacNSWindow alloc]
           initWithContentRect:ui::kWindowSizeDeterminedLater
                     styleMask:params->style_mask
                       backing:NSBackingStoreBuffered
                         defer:NO]);
       break;
-    case views_bridge_mac::mojom::WindowClass::kBrowser:
+    case remote_cocoa::mojom::WindowClass::kBrowser:
       ns_window.reset([[BrowserNativeWidgetWindow alloc]
           initWithContentRect:ui::kWindowSizeDeterminedLater
                     styleMask:params->style_mask
                       backing:NSBackingStoreBuffered
                         defer:NO]);
       break;
-    case views_bridge_mac::mojom::WindowClass::kFrameless:
+    case remote_cocoa::mojom::WindowClass::kFrameless:
       ns_window.reset([[NativeWidgetMacFramelessNSWindow alloc]
           initWithContentRect:ui::kWindowSizeDeterminedLater
                     styleMask:params->style_mask
@@ -302,7 +302,7 @@ BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(
     uint64_t bridged_native_widget_id,
     BridgedNativeWidgetHost* host,
     BridgedNativeWidgetHostHelper* host_helper,
-    views_bridge_mac::mojom::TextInputHost* text_input_host)
+    remote_cocoa::mojom::TextInputHost* text_input_host)
     : id_(bridged_native_widget_id),
       host_(host),
       host_helper_(host_helper),
@@ -322,7 +322,7 @@ BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
 }
 
 void BridgedNativeWidgetImpl::BindRequest(
-    views_bridge_mac::mojom::BridgedNativeWidgetAssociatedRequest request,
+    remote_cocoa::mojom::BridgedNativeWidgetAssociatedRequest request,
     base::OnceClosure connection_closed_callback) {
   bridge_mojo_binding_.Bind(std::move(request),
                             ui::WindowResizeHelperMac::Get()->task_runner());
@@ -404,12 +404,12 @@ void BridgedNativeWidgetImpl::ShowEmojiPanel() {
 }
 
 void BridgedNativeWidgetImpl::CreateWindow(
-    views_bridge_mac::mojom::CreateWindowParamsPtr params) {
+    remote_cocoa::mojom::CreateWindowParamsPtr params) {
   SetWindow(CreateNSWindow(params.get()));
 }
 
 void BridgedNativeWidgetImpl::InitWindow(
-    views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr params) {
+    remote_cocoa::mojom::BridgedNativeWidgetInitParamsPtr params) {
   modal_type_ = params->modal_type;
   is_translucent_window_ = params->is_translucent;
   widget_is_top_level_ = params->widget_is_top_level;
@@ -1094,7 +1094,7 @@ NSWindow* BridgedNativeWidgetImpl::ns_window() {
   return window_.get();
 }
 
-views_bridge_mac::DragDropClient* BridgedNativeWidgetImpl::drag_drop_client() {
+remote_cocoa::DragDropClient* BridgedNativeWidgetImpl::drag_drop_client() {
   return host_helper_->GetDragDropClient();
 }
 

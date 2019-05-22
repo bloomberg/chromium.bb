@@ -29,7 +29,7 @@
 @class NativeWidgetMacNSWindow;
 @class ViewsNSWindowDelegate;
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 namespace mojom {
 class BridgedNativeWidgetHost;
@@ -40,7 +40,7 @@ class BridgedNativeWidgetHostHelper;
 class CocoaMouseCapture;
 class DragDropClient;
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa
 
 namespace views {
 namespace test {
@@ -49,16 +49,16 @@ class BridgedNativeWidgetTestApi;
 
 class CocoaWindowMoveLoop;
 
-using views_bridge_mac::mojom::BridgedNativeWidgetHost;
-using views_bridge_mac::BridgedNativeWidgetHostHelper;
-using views_bridge_mac::CocoaMouseCapture;
-using views_bridge_mac::CocoaMouseCaptureDelegate;
+using remote_cocoa::mojom::BridgedNativeWidgetHost;
+using remote_cocoa::BridgedNativeWidgetHostHelper;
+using remote_cocoa::CocoaMouseCapture;
+using remote_cocoa::CocoaMouseCaptureDelegate;
 
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
 class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
-    : public views_bridge_mac::mojom::BridgedNativeWidget,
+    : public remote_cocoa::mojom::BridgedNativeWidget,
       public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
       public CocoaMouseCaptureDelegate {
@@ -74,21 +74,20 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
 
   // Create an NSWindow for the specified parameters.
   static base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
-      const views_bridge_mac::mojom::CreateWindowParams* params);
+      const remote_cocoa::mojom::CreateWindowParams* params);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
-  BridgedNativeWidgetImpl(
-      uint64_t bridged_native_widget_id,
-      BridgedNativeWidgetHost* host,
-      BridgedNativeWidgetHostHelper* host_helper,
-      views_bridge_mac::mojom::TextInputHost* text_input_host);
+  BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
+                          BridgedNativeWidgetHost* host,
+                          BridgedNativeWidgetHostHelper* host_helper,
+                          remote_cocoa::mojom::TextInputHost* text_input_host);
   ~BridgedNativeWidgetImpl() override;
 
   // Bind |bridge_mojo_binding_| to |request|, and set the connection error
   // callback for |bridge_mojo_binding_| to |connection_closed_callback| (which
   // will delete |this| when the connection is closed).
   void BindRequest(
-      views_bridge_mac::mojom::BridgedNativeWidgetAssociatedRequest request,
+      remote_cocoa::mojom::BridgedNativeWidgetAssociatedRequest request,
       base::OnceClosure connection_closed_callback);
 
   // Initialize the NSWindow by taking ownership of the specified object.
@@ -158,12 +157,12 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   BridgedContentView* ns_view() { return bridged_view_; }
   BridgedNativeWidgetHost* host() { return host_; }
   BridgedNativeWidgetHostHelper* host_helper() { return host_helper_; }
-  views_bridge_mac::mojom::TextInputHost* text_input_host() const {
+  remote_cocoa::mojom::TextInputHost* text_input_host() const {
     return text_input_host_;
   }
   NSWindow* ns_window();
 
-  views_bridge_mac::DragDropClient* drag_drop_client();
+  remote_cocoa::DragDropClient* drag_drop_client();
   bool is_translucent_window() const { return is_translucent_window_; }
 
   // The parent widget specified in Widget::InitParams::parent. If non-null, the
@@ -181,7 +180,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
 
   // Whether to run a custom animation for the provided |transition|.
   bool ShouldRunCustomAnimationFor(
-      views_bridge_mac::mojom::VisibilityTransition transition) const;
+      remote_cocoa::mojom::VisibilityTransition transition) const;
 
   // Redispatch a keyboard event using the widget's window's CommandDispatcher.
   // Return true if the event is handled.
@@ -199,15 +198,14 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   bool ShouldWaitInPreCommit() override;
   base::TimeDelta PreCommitTimeout() override;
 
-  // views_bridge_mac::mojom::BridgedNativeWidget:
-  void CreateWindow(
-      views_bridge_mac::mojom::CreateWindowParamsPtr params) override;
+  // remote_cocoa::mojom::BridgedNativeWidget:
+  void CreateWindow(remote_cocoa::mojom::CreateWindowParamsPtr params) override;
   void SetParent(uint64_t parent_id) override;
   void StackAbove(uint64_t sibling_id) override;
   void StackAtTop() override;
   void ShowEmojiPanel() override;
-  void InitWindow(views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr
-                      params) override;
+  void InitWindow(
+      remote_cocoa::mojom::BridgedNativeWidgetInitParamsPtr params) override;
   void InitCompositorView() override;
   void CreateContentView(uint64_t ns_view_id, const gfx::Rect& bounds) override;
   void DestroyContentView() override;
@@ -220,10 +218,10 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   void SetSizeAndCenter(const gfx::Size& content_size,
                         const gfx::Size& minimum_content_size) override;
   void SetVisibilityState(
-      views_bridge_mac::mojom::WindowVisibilityState new_state) override;
+      remote_cocoa::mojom::WindowVisibilityState new_state) override;
   void SetAnimationEnabled(bool animation_enabled) override;
   void SetTransitionsToAnimate(
-      views_bridge_mac::mojom::VisibilityTransition transitions) override;
+      remote_cocoa::mojom::VisibilityTransition transitions) override;
   void SetVisibleOnAllSpaces(bool always_visible) override;
   void SetFullscreen(bool fullscreen) override;
   void SetCanAppearInExistingFullscreenSpaces(
@@ -295,7 +293,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   const uint64_t id_;
   BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
   BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
-  views_bridge_mac::mojom::TextInputHost* const
+  remote_cocoa::mojom::TextInputHost* const
       text_input_host_;  // Weak, owned by |host_|.
 
   base::scoped_nsobject<NativeWidgetMacNSWindow> window_;
@@ -335,8 +333,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
 
   // The transition types to animate when not relying on native NSWindow
   // animation behaviors.
-  views_bridge_mac::mojom::VisibilityTransition transitions_to_animate_ =
-      views_bridge_mac::mojom::VisibilityTransition::kBoth;
+  remote_cocoa::mojom::VisibilityTransition transitions_to_animate_ =
+      remote_cocoa::mojom::VisibilityTransition::kBoth;
 
   // Whether this window wants to be fullscreen. If a fullscreen animation is in
   // progress then it might not be actually fullscreen.
@@ -369,7 +367,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   // shadow needs to be invalidated when a frame is received for the new shape.
   bool invalidate_shadow_on_frame_swap_ = false;
 
-  mojo::AssociatedBinding<views_bridge_mac::mojom::BridgedNativeWidget>
+  mojo::AssociatedBinding<remote_cocoa::mojom::BridgedNativeWidget>
       bridge_mojo_binding_;
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetImpl);
 };

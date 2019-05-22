@@ -136,7 +136,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)insertTextInternal:(id)text;
 
 // Returns the native Widget's drag drop client. Possibly null.
-- (views_bridge_mac::DragDropClient*)dragDropClient NS_RETURNS_INNER_POINTER;
+- (remote_cocoa::DragDropClient*)dragDropClient NS_RETURNS_INNER_POINTER;
 
 // Returns true if there exists a ui::TextInputClient for the currently focused
 // views::View.
@@ -483,7 +483,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   }
 }
 
-- (views_bridge_mac::DragDropClient*)dragDropClient {
+- (remote_cocoa::DragDropClient*)dragDropClient {
   return bridge_ ? bridge_->drag_drop_client() : nullptr;
 }
 
@@ -653,7 +653,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  views_bridge_mac::DragDropClient* client = [self dragDropClient];
+  remote_cocoa::DragDropClient* client = [self dragDropClient];
   const auto drag_operation =
       client ? client->DragUpdate(sender) : ui::DragDropTypes::DRAG_NONE;
   UMA_HISTOGRAM_BOOLEAN("Event.DragDrop.AcceptDragUpdate",
@@ -662,13 +662,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-  views_bridge_mac::DragDropClient* client = [self dragDropClient];
+  remote_cocoa::DragDropClient* client = [self dragDropClient];
   if (client)
     client->DragExit();
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-  views_bridge_mac::DragDropClient* client = [self dragDropClient];
+  remote_cocoa::DragDropClient* client = [self dragDropClient];
   return client && client->Drop(sender) != NSDragOperationNone;
 }
 
@@ -1441,7 +1441,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)draggingSession:(NSDraggingSession*)session
            endedAtPoint:(NSPoint)screenPoint
               operation:(NSDragOperation)operation {
-  views_bridge_mac::DragDropClient* client = [self dragDropClient];
+  remote_cocoa::DragDropClient* client = [self dragDropClient];
   if (client)
     client->EndDrag();
 }

@@ -37,8 +37,8 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
 
-using views_bridge_mac::mojom::BridgedNativeWidgetInitParams;
-using views_bridge_mac::mojom::WindowVisibilityState;
+using remote_cocoa::mojom::BridgedNativeWidgetInitParams;
+using remote_cocoa::mojom::WindowVisibilityState;
 
 namespace views {
 
@@ -51,7 +51,7 @@ namespace {
 // underlying connection closes.
 // https://crbug.com/915572
 class BridgedNativeWidgetHostDummy
-    : public views_bridge_mac::mojom::BridgedNativeWidgetHost {
+    : public remote_cocoa::mojom::BridgedNativeWidgetHost {
  public:
   BridgedNativeWidgetHostDummy() = default;
   ~BridgedNativeWidgetHostDummy() override = default;
@@ -171,7 +171,7 @@ class BridgedNativeWidgetHostDummy
   void ValidateUserInterfaceItem(
       int32_t command,
       ValidateUserInterfaceItemCallback callback) override {
-    views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
+    remote_cocoa::mojom::ValidateUserInterfaceItemResultPtr result;
     std::move(callback).Run(std::move(result));
   }
   void ExecuteCommand(int32_t command,
@@ -353,8 +353,8 @@ BridgedNativeWidgetHostImpl::GetNativeViewAccessibleForNSWindow() const {
   return remote_window_accessible_.get();
 }
 
-views_bridge_mac::mojom::BridgedNativeWidget*
-BridgedNativeWidgetHostImpl::bridge() const {
+remote_cocoa::mojom::BridgedNativeWidget* BridgedNativeWidgetHostImpl::bridge()
+    const {
   if (bridge_ptr_)
     return bridge_ptr_.get();
   if (bridge_impl_)
@@ -372,7 +372,7 @@ void BridgedNativeWidgetHostImpl::CreateLocalBridge(
 
 void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
     BridgeFactoryHost* bridge_factory_host,
-    views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params) {
+    remote_cocoa::mojom::CreateWindowParamsPtr window_create_params) {
   accessibility_focus_overrider_.SetAppIsRemote(true);
   bridge_factory_host_ = bridge_factory_host;
   bridge_factory_host_->AddObserver(this);
@@ -381,7 +381,7 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
   // handle to track this window in this process.
   {
     auto local_window_create_params =
-        views_bridge_mac::mojom::CreateWindowParams::New();
+        remote_cocoa::mojom::CreateWindowParams::New();
     local_window_create_params->style_mask = NSBorderlessWindowMask;
     local_window_ = BridgedNativeWidgetImpl::CreateNSWindow(
         local_window_create_params.get());
@@ -392,10 +392,10 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
   }
 
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
-  views_bridge_mac::mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr;
+  remote_cocoa::mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr;
   host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr),
                           ui::WindowResizeHelperMac::Get()->task_runner());
-  views_bridge_mac::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
+  remote_cocoa::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
   text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
   bridge_factory_host_->GetFactory()->CreateBridgedNativeWidget(
       widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface(),
@@ -744,7 +744,7 @@ NSView* BridgedNativeWidgetHostImpl::GetGlobalCaptureView() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidgetHostImpl, views_bridge_mac::BridgedNativeWidgetHostHelper:
+// BridgedNativeWidgetHostImpl, remote_cocoa::BridgedNativeWidgetHostHelper:
 
 id BridgedNativeWidgetHostImpl::GetNativeViewAccessible() {
   return root_view_ ? root_view_->GetNativeViewAccessible() : nil;
@@ -766,8 +766,7 @@ bool BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
   return false;
 }
 
-views_bridge_mac::DragDropClient*
-BridgedNativeWidgetHostImpl::GetDragDropClient() {
+remote_cocoa::DragDropClient* BridgedNativeWidgetHostImpl::GetDragDropClient() {
   return drag_drop_client_.get();
 }
 
@@ -797,7 +796,7 @@ void BridgedNativeWidgetHostImpl::OnBridgeFactoryHostDestroying(
 
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
-// views_bridge_mac::mojom::BridgedNativeWidgetHost:
+// remote_cocoa::mojom::BridgedNativeWidgetHost:
 
 void BridgedNativeWidgetHostImpl::OnVisibilityChanged(bool window_visible) {
   is_visible_ = window_visible;
@@ -1187,8 +1186,8 @@ bool BridgedNativeWidgetHostImpl::GetRootViewAccessibilityToken(
 
 bool BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
     int32_t command,
-    views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr* out_result) {
-  *out_result = views_bridge_mac::mojom::ValidateUserInterfaceItemResult::New();
+    remote_cocoa::mojom::ValidateUserInterfaceItemResultPtr* out_result) {
+  *out_result = remote_cocoa::mojom::ValidateUserInterfaceItemResult::New();
   native_widget_mac_->ValidateUserInterfaceItem(command, out_result->get());
   return true;
 }
@@ -1220,7 +1219,7 @@ bool BridgedNativeWidgetHostImpl::HandleAccelerator(
 
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
-// views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
+// remote_cocoa::mojom::BridgedNativeWidgetHost synchronous callbacks:
 
 void BridgedNativeWidgetHostImpl::GetSheetOffsetY(
     GetSheetOffsetYCallback callback) {
@@ -1347,7 +1346,7 @@ void BridgedNativeWidgetHostImpl::GetRootViewAccessibilityToken(
 void BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
     int32_t command,
     ValidateUserInterfaceItemCallback callback) {
-  views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
+  remote_cocoa::mojom::ValidateUserInterfaceItemResultPtr result;
   ValidateUserInterfaceItem(command, &result);
   std::move(callback).Run(std::move(result));
 }

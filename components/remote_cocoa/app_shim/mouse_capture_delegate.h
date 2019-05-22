@@ -8,7 +8,7 @@
 @class NSEvent;
 @class NSWindow;
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 // Delegate for receiving captured events from a CocoaMouseCapture.
 class CocoaMouseCaptureDelegate {
@@ -26,6 +26,6 @@ class CocoaMouseCaptureDelegate {
   virtual NSWindow* GetWindow() const = 0;
 };
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_MOUSE_CAPTURE_DELEGATE_H_

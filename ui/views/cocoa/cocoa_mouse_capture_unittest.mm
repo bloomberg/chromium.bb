@@ -30,7 +30,7 @@
 
 @end
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 namespace {
 
 // Simple capture delegate that just counts events forwarded.
@@ -128,4 +128,4 @@ TEST_F(CocoaMouseCaptureTest, CaptureEvents) {
   EXPECT_EQ(2, [view mouseDownCount]);
 }
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa

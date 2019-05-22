@@ -14,7 +14,7 @@
 
 // TODO(ccameron): This file is to be moved to /components/remote_cocoa/app_shim
 // when possible. For now, put it in the namespace of that path.
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 // The factory that creates BridgedNativeWidget instances. This object is to
 // be instantiated in app shim processes.
@@ -40,6 +40,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgeFactoryImpl
   mojo::AssociatedBinding<mojom::BridgeFactory> binding_;
 };
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGE_FACTORY_IMPL_H_

@@ -151,7 +151,7 @@ void BrowserFrameMac::OnWindowFullscreenStateChange() {
 
 void BrowserFrameMac::ValidateUserInterfaceItem(
     int32_t tag,
-    views_bridge_mac::mojom::ValidateUserInterfaceItemResult* result) {
+    remote_cocoa::mojom::ValidateUserInterfaceItemResult* result) {
   Browser* browser = browser_view_->browser();
   if (!chrome::SupportsCommand(browser, tag)) {
     result->enable = false;
@@ -289,14 +289,14 @@ bool BrowserFrameMac::ExecuteCommand(
 
 void BrowserFrameMac::PopulateCreateWindowParams(
     const views::Widget::InitParams& widget_params,
-    views_bridge_mac::mojom::CreateWindowParams* params) {
+    remote_cocoa::mojom::CreateWindowParams* params) {
   params->style_mask = NSTitledWindowMask | NSClosableWindowMask |
                        NSMiniaturizableWindowMask | NSResizableWindowMask;
 
   base::scoped_nsobject<NativeWidgetMacNSWindow> ns_window;
   if (browser_view_->IsBrowserTypeNormal() ||
       browser_view_->IsBrowserTypeHostedApp()) {
-    params->window_class = views_bridge_mac::mojom::WindowClass::kBrowser;
+    params->window_class = remote_cocoa::mojom::WindowClass::kBrowser;
     params->style_mask |= NSFullSizeContentViewWindowMask;
 
     // Ensure tabstrip/profile button are visible.
@@ -306,13 +306,13 @@ void BrowserFrameMac::PopulateCreateWindowParams(
     if (browser_view_->IsBrowserTypeHostedApp())
       params->window_title_hidden = true;
   } else {
-    params->window_class = views_bridge_mac::mojom::WindowClass::kDefault;
+    params->window_class = remote_cocoa::mojom::WindowClass::kDefault;
   }
   params->animation_enabled = true;
 }
 
 NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
-    const views_bridge_mac::mojom::CreateWindowParams* params) {
+    const remote_cocoa::mojom::CreateWindowParams* params) {
   NativeWidgetMacNSWindow* ns_window = NativeWidgetMac::CreateNSWindow(params);
   if (@available(macOS 10.12.2, *)) {
     touch_bar_delegate_.reset([[BrowserWindowTouchBarViewsDelegate alloc]

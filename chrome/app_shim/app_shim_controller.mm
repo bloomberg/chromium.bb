@@ -305,8 +305,8 @@ void AppShimController::LaunchAppDone(
 }
 
 void AppShimController::CreateViewsBridgeFactory(
-    views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request) {
-  views_bridge_mac::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
+    remote_cocoa::mojom::BridgeFactoryAssociatedRequest request) {
+  remote_cocoa::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
 }
 
 void AppShimController::CreateContentNSViewBridgeFactory(

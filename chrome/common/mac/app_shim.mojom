@@ -25,7 +25,7 @@ interface AppShim {
   // Create the interface through which BridgedNativeWidget instances may be
   // created (for views::Widgets whose NSWindows exist in the app shim process).
   CreateViewsBridgeFactory(
-      associated views_bridge_mac.mojom.BridgeFactory& views_bridge_factory);
+      associated remote_cocoa.mojom.BridgeFactory& views_bridge_factory);
 
   // Create the interface through which a content structure
   // (RenderWidgetHostView or WebContentsView) may create an NSView that exists
@@ -35,8 +35,8 @@ interface AppShim {
           content_ns_views_bridge_factory);
 
   // Initialize the command handler for the specified BridgedNativeWidget. This
-  // method exists at this scope (as opposed to in views_bridge_mac) because it
-  // creates chrome-scoped objects that implement views_bridge_mac interfaces.
+  // method exists at this scope (as opposed to in remote_cocoa) because it
+  // creates chrome-scoped objects that implement remote_cocoa interfaces.
   CreateCommandDispatcherForWidget(uint64 widget_id);
 
   // Instructs the shim to hide the app.

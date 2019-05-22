@@ -12,7 +12,7 @@
 
 @class NSWindow;
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 class CocoaMouseCaptureDelegate;
 
@@ -48,6 +48,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT CocoaMouseCapture {
   DISALLOW_COPY_AND_ASSIGN(CocoaMouseCapture);
 };
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_MOUSE_CAPTURE_H_

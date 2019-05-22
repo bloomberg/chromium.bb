@@ -17,7 +17,7 @@ namespace ui {
 class TextInputClient;
 }  // namespace ui
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 class DragDropClient;
 
@@ -61,6 +61,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetHostHelper {
   virtual ui::TextInputClient* GetTextInputClient() = 0;
 };
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_

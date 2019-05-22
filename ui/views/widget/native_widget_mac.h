@@ -16,13 +16,13 @@
 class NativeWidgetMacNSWindow;
 #endif
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 namespace mojom {
 class BridgedNativeWidget;
 class CreateWindowParams;
 class ValidateUserInterfaceItemResult;
 }  // namespace mojom
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa
 
 namespace views {
 namespace test {
@@ -69,7 +69,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // -[NSUserInterfaceValidations validateUserInterfaceItem].
   virtual void ValidateUserInterfaceItem(
       int32_t command,
-      views_bridge_mac::mojom::ValidateUserInterfaceItemResult* result) {}
+      remote_cocoa::mojom::ValidateUserInterfaceItemResult* result) {}
 
   // Execute the chrome command |command| with |window_open_disposition|. If
   // |is_before_first_responder| then only call ExecuteCommand if the command
@@ -185,7 +185,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
  protected:
   virtual void PopulateCreateWindowParams(
       const Widget::InitParams& widget_params,
-      views_bridge_mac::mojom::CreateWindowParams* params) {}
+      remote_cocoa::mojom::CreateWindowParams* params) {}
 
   // Creates the NSWindow that will be passed to the BridgedNativeWidgetImpl.
   // Called by InitNativeWidget. The return value will be autoreleased.
@@ -194,7 +194,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // are autoreleased, and will crash if the window has a more precise
   // lifetime.
   virtual NativeWidgetMacNSWindow* CreateNSWindow(
-      const views_bridge_mac::mojom::CreateWindowParams* params);
+      const remote_cocoa::mojom::CreateWindowParams* params);
 
   // Return the BridgeFactoryHost that is to be used for creating this window
   // and all of its child windows. This will return nullptr if the native
@@ -209,7 +209,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual void OnWindowDestroying(gfx::NativeWindow window) {}
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
-  views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
+  remote_cocoa::mojom::BridgedNativeWidget* bridge() const;
   BridgedNativeWidgetImpl* bridge_impl() const;
   BridgedNativeWidgetHostImpl* bridge_host() const {
     return bridge_host_.get();

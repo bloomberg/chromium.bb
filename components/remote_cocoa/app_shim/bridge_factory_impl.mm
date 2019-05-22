@@ -12,7 +12,7 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 
-namespace views_bridge_mac {
+namespace remote_cocoa {
 
 using views::BridgedNativeWidgetImpl;
 using views::BridgedNativeWidgetHostHelper;
@@ -77,7 +77,7 @@ class Bridge : public BridgedNativeWidgetHostHelper {
                  gfx::Point* baseline_point) override {
     *found_word = false;
   }
-  views_bridge_mac::DragDropClient* GetDragDropClient() override {
+  remote_cocoa::DragDropClient* GetDragDropClient() override {
     // Drag-drop only doesn't work across mojo yet.
     return nullptr;
   }
@@ -127,4 +127,4 @@ BridgeFactoryImpl::BridgeFactoryImpl() : binding_(this) {}
 
 BridgeFactoryImpl::~BridgeFactoryImpl() {}
 
-}  // namespace views_bridge_mac
+}  // namespace remote_cocoa

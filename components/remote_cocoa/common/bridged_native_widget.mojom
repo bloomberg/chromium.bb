@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module views_bridge_mac.mojom;
+module remote_cocoa.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
