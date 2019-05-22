@@ -216,23 +216,25 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2330
-        'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
-         # Not applicable on ChromeDriverWebViewShell (doesn't support tabs).
+        # Not applicable. ChromeDriverWebViewShell doesn't support tabs.
         'WindowSwitchingTest.*',
+        'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
+
+        # Not applicable. ChromeDriverWebViewShell doesn't support local storage
+        'LocalStorageTest.*',
+
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2330
+        'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
+
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2595
         'TakesScreenshotTest.*',
 
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
         'ImplicitWaitTest.testShouldRetainImplicitlyWaitFromTheReturnedWebDriverOfFrameSwitchTo',
 
-        # ChromeDriverWebViewShell doesn't support local storage
-        'LocalStorageTest.*',
-
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2899
         'ClickScrollingTest.testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow',
         'ClickTest.testCanClickOnALinkThatOverflowsAndFollowIt',
-        'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
     ]
 )
 
