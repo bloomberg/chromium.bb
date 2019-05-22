@@ -117,6 +117,8 @@ class CORE_EXPORT AutoscrollController final
 
   FRIEND_TEST_ALL_PREFIXES(AutoscrollControllerTest,
                            CrashWhenLayoutStopAnimationBeforeScheduleAnimation);
+  FRIEND_TEST_ALL_PREFIXES(AutoscrollControllerTest,
+                           ContinueAutoscrollAfterMouseLeaveEvent);
 };
 
 }  // namespace blink

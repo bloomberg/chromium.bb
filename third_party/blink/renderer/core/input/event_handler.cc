@@ -888,14 +888,9 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
 
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     if (Page* page = frame_->GetPage()) {
-      if (mouse_event.GetType() == WebInputEvent::kMouseLeave &&
-          mouse_event.button != WebPointerProperties::Button::kMiddle) {
-        page->GetAutoscrollController().StopMiddleClickAutoscroll(frame_);
-      } else {
-        page->GetAutoscrollController().HandleMouseMoveForMiddleClickAutoscroll(
-            frame_, mouse_event_manager_->LastKnownMouseScreenPosition(),
-            mouse_event.button == WebPointerProperties::Button::kMiddle);
-      }
+      page->GetAutoscrollController().HandleMouseMoveForMiddleClickAutoscroll(
+          frame_, mouse_event_manager_->LastKnownMouseScreenPosition(),
+          mouse_event.button == WebPointerProperties::Button::kMiddle);
     }
   }
 
