@@ -1912,8 +1912,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
 
-  if ([self internalRole] == ax::mojom::Role::kTable ||
-      [self internalRole] == ax::mojom::Role::kGrid) {
+  if (ui::IsTableLike(owner_->GetRole())) {
     for (BrowserAccessibilityCocoa* child in [self children]) {
       if ([[child role] isEqualToString:NSAccessibilityRowRole])
         [ret addObject:child];
@@ -2473,10 +2472,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if ([attribute
           isEqualToString:
               NSAccessibilityCellForColumnAndRowParameterizedAttribute]) {
-    if ([self internalRole] != ax::mojom::Role::kTable &&
-        [self internalRole] != ax::mojom::Role::kGrid) {
+    if (!ui::IsTableLike([self internalRole]))
       return nil;
-    }
     if (![parameter isKindOfClass:[NSArray class]])
       return nil;
     if (2 != [parameter count])
