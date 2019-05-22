@@ -16,7 +16,18 @@
 #error "This file requires ARC support."
 #endif
 
+// Redefine EarlGrey macro to use line number and file name taken from the place
+// of ChromeEarlGreyUI macro instantiation, rather than local line number
+// inside test helper method. Original EarlGrey macro definition also expands to
+// EarlGreyImpl instantiation. [self earlGrey] is provided by a superclass and
+// returns EarlGreyImpl object created with correct line number and filename.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmacro-redefined"
+#define EarlGrey [self earlGrey]
+#pragma clang diagnostic pop
+
 using chrome_test_util::ClearBrowsingDataView;
+using chrome_test_util::ConfirmClearBrowsingDataButton;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
 using base::test::ios::WaitUntilConditionOrTimeout;
@@ -68,8 +79,8 @@ bool IsAppCompactWidth() {
 }
 
 - (void)openSettingsMenu {
-  [ChromeEarlGreyUI openToolsMenu];
-  [ChromeEarlGreyUI tapToolsMenuButton:SettingsMenuButton()];
+  [self openToolsMenu];
+  [self tapToolsMenuButton:SettingsMenuButton()];
 }
 
 - (void)tapToolsMenuButton:(id<GREYMatcher>)buttonMatcher {
@@ -112,8 +123,7 @@ bool IsAppCompactWidth() {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ClearBrowsingDataButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          ConfirmClearBrowsingDataButton()]
+  [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
       performAction:grey_tap()];
 
   // Wait until activity indicator modal is cleared, meaning clearing browsing
@@ -175,7 +185,7 @@ bool IsAppCompactWidth() {
 }
 
 - (void)openNewTab {
-  [ChromeEarlGreyUI openToolsMenu];
+  [self openToolsMenu];
   id<GREYMatcher> newTabButtonMatcher =
       grey_accessibilityID(kToolsMenuNewTabId);
   [[EarlGrey selectElementWithMatcher:newTabButtonMatcher]
@@ -184,7 +194,7 @@ bool IsAppCompactWidth() {
 }
 
 - (void)openNewIncognitoTab {
-  [ChromeEarlGreyUI openToolsMenu];
+  [self openToolsMenu];
   id<GREYMatcher> newIncognitoTabMatcher =
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
   [[EarlGrey selectElementWithMatcher:newIncognitoTabMatcher]

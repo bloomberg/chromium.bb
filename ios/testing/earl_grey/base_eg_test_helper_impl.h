@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class EarlGreyImpl;
+
 // Public macro to use in test helpers methods. Usage example:
 //
 // @interface MyEarlGreyImpl : BaseEGTestHelperImpl
@@ -66,6 +68,12 @@
 - (void)fail:(BOOL)fail
      expression:(NSString*)expression
     description:(NSString*)description;
+
+// Underlying EarlGreyImpl object created with file and line number passed to
+// invokedFromFile:lineNumber:. Subclasses can use this object instead of
+// calling methods on EarlGrey to produce exceptions with correct file and line
+// numbers.
+- (EarlGreyImpl*)earlGrey;
 
 @end
 

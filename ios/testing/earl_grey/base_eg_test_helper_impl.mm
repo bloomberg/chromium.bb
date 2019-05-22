@@ -53,6 +53,10 @@
   [self failWithExceptionName:@"expression error" reason:reason];
 }
 
+- (EarlGreyImpl*)earlGrey {
+  return _impl;
+}
+
 #pragma mark - Private
 
 - (void)failWithExceptionName:(NSString*)name reason:(NSString*)reason {
