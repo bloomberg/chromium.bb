@@ -20,6 +20,7 @@
  *   multidevice: (boolean|undefined),
  *   onStartup: (boolean|undefined),
  *   people: (boolean|undefined|PeoplePageVisibility),
+ *   printing: (boolean|undefined),
  *   privacy: (boolean|undefined|PrivacyPageVisibility),
  *   reset:(boolean|undefined),
  * }}
@@ -87,6 +88,7 @@ cr.define('settings', function() {
       defaultBrowser: false,
       advancedSettings: false,
       extensions: false,
+      printing: false,
     };
     // </if>
     // <if expr="chromeos">
@@ -119,6 +121,7 @@ cr.define('settings', function() {
         smbShares: false,
       },
       extensions: false,
+      printing: showOSSettings,
     };
     // </if>
   } else {
@@ -159,6 +162,7 @@ cr.define('settings', function() {
         smbShares: showOSSettings,
       },
       extensions: true,
+      printing: showOSSettings,
     };
     // </if>
   }

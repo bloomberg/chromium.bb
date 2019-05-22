@@ -20,7 +20,6 @@ cr.define('split_settings_flag', function() {
       'languages',
       'onStartup',
       'people',
-      'printing',
       'privacy',
       'reset',
       'search',
