@@ -441,7 +441,7 @@ void OnGetAssertionComplete(
     DOMArrayBuffer* signature_buffer =
         VectorToDOMArrayBuffer(std::move(credential->signature));
     DOMArrayBuffer* user_handle =
-        credential->user_handle
+        (credential->user_handle && credential->user_handle->size() > 0)
             ? VectorToDOMArrayBuffer(std::move(*credential->user_handle))
             : nullptr;
     auto* authenticator_response =
