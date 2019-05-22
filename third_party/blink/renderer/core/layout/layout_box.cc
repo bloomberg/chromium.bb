@@ -2332,6 +2332,10 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
 
+  const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return nullptr;
+
   // TODO(cbiesinger): Support caching fragmented boxes.
   if (break_token)
     return nullptr;
@@ -2356,10 +2360,6 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     else
       return nullptr;
   }
-
-  const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
-  if (!cached_layout_result)
-    return nullptr;
 
   const NGPhysicalContainerFragment& physical_fragment =
       cached_layout_result->PhysicalFragment();
