@@ -246,6 +246,14 @@ void ConsumerHost::TracingSession::OnEnableTracingTimeout() {
   if (!pending_enable_tracing_ack_pids_) {
     return;
   }
+
+  std::stringstream error;
+  error << "Timed out waiting for processes to ack BeginTracing: ";
+  for (auto pid : *pending_enable_tracing_ack_pids_) {
+    error << pid << " ";
+  }
+  LOG(ERROR) << error.rdbuf();
+
   DCHECK(tracing_session_client_);
   tracing_session_client_->OnTracingEnabled();
   pending_enable_tracing_ack_pids_.reset();
