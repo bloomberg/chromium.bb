@@ -12,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -40,6 +41,10 @@ public class RestoreHistogramTest {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 
+    private void clearPrefs() {
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+    }
+
     /**
      * Test that the fundamental method for writing the histogram
      * {@link ChromeBackupAgent#recordRestoreHistogram()} works correctly
@@ -65,6 +70,7 @@ public class RestoreHistogramTest {
                         ChromeBackupAgent.RestoreStatus.RESTORE_STATUS_RECORDED);
 
         // Check behavior with no preference set
+        clearPrefs();
         ChromeBackupAgent.recordRestoreHistogram();
         Assert.assertEquals(1, noRestoreDelta.getDelta());
         Assert.assertEquals(0, restoreCompletedDelta.getDelta());

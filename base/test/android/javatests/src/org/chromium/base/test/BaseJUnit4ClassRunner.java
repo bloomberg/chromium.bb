@@ -4,7 +4,8 @@
 
 package org.chromium.base.test;
 
-import android.app.Application;
+import static org.chromium.base.test.BaseChromiumAndroidJUnitRunner.shouldListTests;
+
 import android.content.Context;
 import android.support.annotation.CallSuper;
 import android.support.test.InstrumentationRegistry;
@@ -12,7 +13,6 @@ import android.support.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 import android.support.test.internal.util.AndroidRunnerParams;
 
 import org.junit.rules.MethodRule;
-import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
@@ -21,6 +21,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.params.MethodParamAnnotationRule;
@@ -87,11 +88,6 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
                 new AndroidRunnerParams(InstrumentationRegistry.getInstrumentation(),
                         InstrumentationRegistry.getArguments(), false, 0L, false));
 
-        assert InstrumentationRegistry.getInstrumentation()
-                        instanceof BaseChromiumAndroidJUnitRunner
-            : "Must use BaseChromiumAndroidJUnitRunner instrumentation with "
-              + "BaseJUnit4ClassRunner, but found: "
-              + InstrumentationRegistry.getInstrumentation().getClass();
         String traceOutput = InstrumentationRegistry.getArguments().getString(EXTRA_TRACE_FILE);
 
         if (traceOutput != null) {
@@ -104,12 +100,6 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
                 }
             }
         }
-    }
-
-    /** Returns the singleton Application instance. */
-    public static Application getApplication() {
-        return (Application)
-                BaseChromiumAndroidJUnitRunner.sInMemorySharedPreferencesContext.getBaseContext();
     }
 
     /**
@@ -184,14 +174,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @CallSuper
     protected List<TestRule> getDefaultTestRules() {
-        // Order is important here. Outer rule setUp's run first, and tearDown's run last.
-        // Base setUp() should go first to initialize ContextUtils and clear out prefs.
-        // Base's tearDown() should come last since it deletes files.
-        // Activities must be destroyed before lifetimes are checked, so DestroyActivitiesRule()
-        // must come last so that its tearDown() runs before LifetimeAssertRule's.
-        return Collections.singletonList(RuleChain.outerRule(new BaseJUnit4TestRule())
-                                                 .around(new LifetimeAssertRule())
-                                                 .around(new DestroyActivitiesRule()));
+        return Arrays.asList(new DestroyActivitiesRule(), new LifetimeAssertRule());
     }
 
     /**
@@ -221,8 +204,12 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @Override
     public void run(RunNotifier notifier) {
-        if (BaseChromiumAndroidJUnitRunner.shouldListTests(
-                    InstrumentationRegistry.getArguments())) {
+        // Most tests have an Application subclass that already call this.
+        if (ContextUtils.getApplicationContext() == null) {
+            ContextUtils.initApplicationContext(
+                    InstrumentationRegistry.getTargetContext().getApplicationContext());
+        }
+        if (shouldListTests(InstrumentationRegistry.getArguments())) {
             for (Description child : getDescription().getChildren()) {
                 notifier.fireTestStarted(child);
                 notifier.fireTestFinished(child);
@@ -289,5 +276,14 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
     @Override
     protected Statement withAfters(FrameworkMethod method, Object test, Statement base) {
         return super.withAfters(method, test, new ScreenshotOnFailureStatement(base));
+    }
+
+    @Override
+    protected List<TestRule> classRules() {
+        List<TestRule> result = super.classRules();
+        // Class rules are the outermost TestRules, so CommitSharedPreferencesTestRule will commit
+        // SharedPreferences after all other rules have finished writing them.
+        result.add(new CommitSharedPreferencesTestRule());
+        return result;
     }
 }

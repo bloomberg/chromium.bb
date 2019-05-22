@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
@@ -13,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StyleRes;
 import android.support.v7.app.AppCompatActivity;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
@@ -106,13 +104,5 @@ public class ChromeBaseAppCompatActivity
     @Override
     public void onNightModeStateChanged() {
         if (!isFinishing()) recreate();
-    }
-
-    /**
-     * Required to make preference fragments use InMemorySharedPreferences in tests.
-     */
-    @Override
-    public SharedPreferences getSharedPreferences(String name, int mode) {
-        return ContextUtils.getApplicationContext().getSharedPreferences(name, mode);
     }
 }
