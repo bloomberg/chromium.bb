@@ -54,6 +54,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
 
     virtual drive::DriveNotificationManager& GetDriveNotificationManager() = 0;
     virtual std::unique_ptr<DriveFsBootstrapListener> CreateMojoListener();
+    virtual base::FilePath GetMyFilesPath() = 0;
+    virtual std::string GetLostAndFoundDirectoryName() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);

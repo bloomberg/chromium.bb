@@ -591,6 +591,15 @@ class DriveIntegrationService::DriveFsHolder
     return Delegate::CreateMojoListener();
   }
 
+  base::FilePath GetMyFilesPath() override {
+    return file_manager::util::GetMyFilesFolderForProfile(profile_);
+  }
+
+  std::string GetLostAndFoundDirectoryName() override {
+    return l10n_util::GetStringUTF8(
+        IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME);
+  }
+
   Profile* const profile_;
   drivefs::DriveFsHost::MountObserver* const mount_observer_;
 

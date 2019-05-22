@@ -100,7 +100,7 @@ interface DriveFsDelegate {
   OnHeartbeat();
 };
 
-// Next MinVersion: 3
+// Next MinVersion: 4
 struct DriveFsConfiguration {
   string user_email;
 
@@ -109,6 +109,11 @@ struct DriveFsConfiguration {
 
   [MinVersion=2]
   bool enable_metrics = false;
+
+  // The directory name to use for lost and found within the user's My files
+  // directory.
+  [MinVersion=3]
+  string? lost_and_found_directory_name;
 };
 
 enum AccessTokenStatus {
