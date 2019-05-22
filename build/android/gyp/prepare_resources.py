@@ -248,10 +248,9 @@ def _OnStaleMd5(options):
           rjava_build_options.GenerateOnResourcesLoaded()
 
         resource_utils.CreateRJavaFiles(
-            build.srcjar_dir, package, r_txt_path,
-            options.extra_res_packages,
-            options.extra_r_text_files,
-            rjava_build_options)
+            build.srcjar_dir, package, r_txt_path, options.extra_res_packages,
+            options.extra_r_text_files, rjava_build_options,
+            os.path.basename(options.srcjar_out))
 
       build_utils.ZipDir(options.srcjar_out, build.srcjar_dir)
 

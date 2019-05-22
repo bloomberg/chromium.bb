@@ -21,6 +21,7 @@ _SOURCE_ROOT = os.path.abspath(
 sys.path.insert(1, os.path.join(_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
 
+_ROOT_R_JAVA_PACKAGE_PREFIX = 'gen'
 
 EMPTY_ANDROID_MANIFEST_PATH = os.path.join(
     _SOURCE_ROOT, 'build', 'android', 'AndroidManifest.xml')
@@ -330,7 +331,7 @@ class RJavaBuildOptions:
 
 
 def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
-                     extra_r_txt_files, rjava_build_options):
+                     extra_r_txt_files, rjava_build_options, srcjar_name):
   """Create all R.java files for a set of packages and R.txt files.
 
   Args:
@@ -344,6 +345,7 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
       |and replaced by the values extracted from |main_r_txt_file|.
     rjava_build_options: An RJavaBuildOptions instance that controls how
       exactly the R.java file is generated.
+    srcjar_name: Name of desired output srcjar.
   Raises:
     Exception if a package name appears several times in |extra_res_packages|
   """
@@ -362,8 +364,23 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
   # Map of (resource_type, name) -> Entry.
   # Contains the correct values for resources.
   all_resources = {}
+  all_resources_by_type = collections.defaultdict(list)
   for entry in _ParseTextSymbolsFile(main_r_txt_file, fix_package_ids=True):
     all_resources[(entry.resource_type, entry.name)] = entry
+    all_resources_by_type[entry.resource_type].append(entry)
+
+  # Creating the root R.java file. We use srcjar_name to provide unique package
+  # names, since when one java target depends on 2 different targets (each with
+  # resources), those 2 root resource packages have to be different from one
+  # another.
+  root_r_java_package = _ROOT_R_JAVA_PACKAGE_PREFIX + "." + srcjar_name
+  root_r_java_dir = os.path.join(srcjar_dir, *root_r_java_package.split('.'))
+  build_utils.MakeDirectory(root_r_java_dir)
+  root_r_java_path = os.path.join(root_r_java_dir, 'R.java')
+  root_java_file_contents = _RenderRootRJavaSource(
+      root_r_java_package, all_resources_by_type, rjava_build_options)
+  with open(root_r_java_path, 'w') as f:
+    f.write(root_java_file_contents)
 
   # Map of package_name->resource_type->entry
   resources_by_package = (
@@ -400,18 +417,18 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
         resources_by_type[entry.resource_type].append(entry)
 
   for package, resources_by_type in resources_by_package.iteritems():
-    _CreateRJavaSourceFile(srcjar_dir, package, resources_by_type,
-                           rjava_build_options)
+    _CreateRJavaSourceFile(srcjar_dir, package, root_r_java_package,
+                           resources_by_type, rjava_build_options)
 
 
-def _CreateRJavaSourceFile(srcjar_dir, package, resources_by_type,
-                           rjava_build_options):
+def _CreateRJavaSourceFile(srcjar_dir, package, root_r_java_package,
+                           resources_by_type, rjava_build_options):
   """Generates an R.java source file."""
   package_r_java_dir = os.path.join(srcjar_dir, *package.split('.'))
   build_utils.MakeDirectory(package_r_java_dir)
   package_r_java_path = os.path.join(package_r_java_dir, 'R.java')
-  java_file_contents = _RenderRJavaSource(package, resources_by_type,
-                                          rjava_build_options)
+  java_file_contents = _RenderRJavaSource(
+      package, root_r_java_package, resources_by_type, rjava_build_options)
   with open(package_r_java_path, 'w') as f:
     f.write(java_file_contents)
 
@@ -431,11 +448,42 @@ def _GetNonSystemIndex(entry):
   return len(res_ids)
 
 
-def _RenderRJavaSource(package, resources_by_type, rjava_build_options):
+def _RenderRJavaSource(package, root_r_java_package, resources_by_type,
+                       rjava_build_options):
+  """Generates the contents of a R.java file."""
+  template = Template(
+      """/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
+
+package {{ package }};
+
+public final class R {
+    {% for resource_type in resource_types %}
+    public static final class {{ resource_type }} extends
+            {{ root_package }}.R.{{ resource_type }} {}
+    {% endfor %}
+    {% if has_on_resources_loaded %}
+    public static void onResourcesLoaded(int packageId) {
+        {{ root_package }}.R.onResourcesLoaded(packageId);
+    }
+    {% endif %}
+}
+""",
+      trim_blocks=True,
+      lstrip_blocks=True)
+
+  return template.render(
+      package=package,
+      resources=resources_by_type,
+      resource_types=sorted(resources_by_type),
+      root_package=root_r_java_package,
+      has_on_resources_loaded=rjava_build_options.has_on_resources_loaded)
+
+
+def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options):
   """Render an R.java source file. See _CreateRJaveSourceFile for args info."""
   final_resources_by_type = collections.defaultdict(list)
   non_final_resources_by_type = collections.defaultdict(list)
-  for res_type, resources in resources_by_type.iteritems():
+  for res_type, resources in all_resources_by_type.iteritems():
     for entry in resources:
       # Entries in stylable that are not int[] are not actually resource ids
       # but constants.
@@ -456,14 +504,15 @@ def _RenderRJavaSource(package, resources_by_type, rjava_build_options):
   # resources, the onResourcesLoaded method was exceeding the 64KB limit that
   # Java imposes. For this reason we split onResourcesLoaded into different
   # methods for each resource type.
-  template = Template("""/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
+  template = Template(
+      """/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
 
 package {{ package }};
 
 public final class R {
     private static boolean sResourcesDidLoad;
     {% for resource_type in resource_types %}
-    public static final class {{ resource_type }} {
+    public static class {{ resource_type }} {
         {% for e in final_resources[resource_type] %}
         public static final {{ e.java_type }} {{ e.name }} = {{ e.value }};
         {% endfor %}
@@ -478,7 +527,9 @@ public final class R {
     {% endfor %}
     {% if has_on_resources_loaded %}
     public static void onResourcesLoaded(int packageId) {
-        assert !sResourcesDidLoad;
+        if (sResourcesDidLoad) {
+            return;
+        }
         sResourcesDidLoad = true;
         int packageIdTransform = (packageId ^ 0x7f) << 24;
         {% for resource_type in resource_types %}
@@ -504,11 +555,13 @@ public final class R {
     {% endfor %}
     {% endif %}
 }
-""", trim_blocks=True, lstrip_blocks=True)
+""",
+      trim_blocks=True,
+      lstrip_blocks=True)
 
   return template.render(
       package=package,
-      resource_types=sorted(resources_by_type),
+      resource_types=sorted(all_resources_by_type),
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded,
       final_resources=final_resources_by_type,
       non_final_resources=non_final_resources_by_type,
