@@ -315,8 +315,22 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
                       time_since_request_sent);
 
   assistant::SettingsUi settings_ui;
-  if (!settings_ui.ParseFromString(settings))
+  if (!settings_ui.ParseFromString(settings)) {
+    LOG(ERROR) << "Failed to parse get settings response.";
+    HandleFlowFinished();
     return;
+  }
+
+  if (settings_ui.has_gaia_user_context_ui()) {
+    auto gaia_user_context_ui = settings_ui.gaia_user_context_ui();
+    if (gaia_user_context_ui.waa_disabled_by_dasher_domain() ||
+        gaia_user_context_ui.assistant_disabled_by_dasher_domain()) {
+      DVLOG(1) << "Assistant/web & app activity is disabled by dasher domain. "
+                  "Skip Assistant opt-in flow.";
+      HandleFlowFinished();
+      return;
+    }
+  }
 
   DCHECK(settings_ui.has_consent_flow_ui());
 
