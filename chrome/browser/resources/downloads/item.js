@@ -177,7 +177,7 @@ cr.define('downloads', function() {
         return '';
       }
 
-      const url = `chrome://extensions#${this.data.byExtId}`;
+      const url = `chrome://extensions/?id=${this.data.byExtId}`;
       const name = this.data.byExtName;
       return loadTimeData.getStringF('controlledByUrl', url, HTMLEscape(name));
     },
@@ -388,6 +388,11 @@ cr.define('downloads', function() {
     /** @private */
     observeControlledBy_: function() {
       this.$['controlled-by'].innerHTML = this.controlledBy_;
+      if (this.controlledBy_) {
+        const link = this.$$('#controlled-by a');
+        link.setAttribute('focus-row-control', '');
+        link.setAttribute('focus-type', 'controlledBy');
+      }
     },
 
     /** @private */
