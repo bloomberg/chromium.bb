@@ -46,14 +46,13 @@ static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
   }
 }
 
-static uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
+static uint32_t motion_compensated_prediction(AV1_COMP *cpi, MACROBLOCK *x,
                                               uint8_t *cur_frame_buf,
                                               uint8_t *ref_frame_buf,
                                               int stride, int stride_ref,
                                               BLOCK_SIZE bsize, int mi_row,
                                               int mi_col) {
   AV1_COMMON *cm = &cpi->common;
-  MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv;
   const SEARCH_METHODS search_method = NSTEP;
@@ -85,7 +84,7 @@ static uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
   av1_full_pixel_search(cpi, x, bsize, &best_ref_mv1_full, step_param,
                         search_method, 0, sadpb, cond_cost_list(cpi, cost_list),
                         &best_ref_mv1, INT_MAX, 0, (MI_SIZE * mi_col),
-                        (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC]);
+                        (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_LOOKAHEAD]);
 
   /* restore UMV window */
   x->mv_limits = tmp_mv_limits;
@@ -108,7 +107,6 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                             TX_SIZE tx_size, YV12_BUFFER_CONFIG *ref_frame[],
                             uint8_t *predictor, TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
-  ThreadData *td = &cpi->td;
   const GF_GROUP *gf_group = &cpi->twopass.gf_group;
 
   const int bw = 4 << mi_size_wide_log2[bsize];
@@ -121,16 +119,11 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   int64_t intra_cost;
   PREDICTION_MODE mode;
   int mb_y_offset = mi_row * MI_SIZE * xd->cur_buf->y_stride + mi_col * MI_SIZE;
-  MB_MODE_INFO mi_above, mi_left;
 
   memset(tpl_stats, 0, sizeof(*tpl_stats));
 
-  xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
-  xd->mb_to_bottom_edge = ((cm->mi_rows - 1 - mi_row) * MI_SIZE) * 8;
-  xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
-  xd->mb_to_right_edge = ((cm->mi_cols - 1 - mi_col) * MI_SIZE) * 8;
-  xd->above_mbmi = (mi_row > 0) ? &mi_above : NULL;
-  xd->left_mbmi = (mi_col > 0) ? &mi_left : NULL;
+  xd->above_mbmi = NULL;
+  xd->left_mbmi = NULL;
   xd->mi[0]->sb_type = bsize;
   xd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
 
@@ -196,12 +189,6 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
 
   best_mv.as_int = 0;
 
-  (void)mb_y_offset;
-  // Motion estimation column boundary
-  x->mv_limits.col_min = -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
-  x->mv_limits.col_max =
-      ((cm->mi_cols - 1 - mi_col) * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND);
-
   for (rf_idx = 0; rf_idx < INTER_REFS_PER_FRAME; ++rf_idx) {
     if (ref_frame[rf_idx] == NULL) continue;
 
@@ -217,8 +204,11 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
     int mb_y_offset_ref =
         mi_row * MI_SIZE * ref_frame[rf_idx]->y_stride + mi_col * MI_SIZE;
 
+    /*printf("frames: %d %d %d %d %d\n", gf_group->size, frame_idx, rf_idx,
+      gf_group->ref_frame_gop_idx[frame_idx][rf_idx],
+      gf_group->ref_frame_disp_idx[frame_idx][rf_idx]);*/
     motion_compensated_prediction(
-        cpi, td, xd->cur_buf->y_buffer + mb_y_offset,
+        cpi, x, xd->cur_buf->y_buffer + mb_y_offset,
         ref_frame[rf_idx]->y_buffer + mb_y_offset_ref, xd->cur_buf->y_stride,
         ref_frame[rf_idx]->y_stride, bsize, mi_row, mi_col);
 
@@ -461,6 +451,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
 #else
 #error "Invalid block size for tpl model"
 #endif  // MC_FLOW_BSIZE == 64
+  av1_tile_init(&xd->tile, cm, 0, 0);
 
   DECLARE_ALIGNED(32, uint16_t, predictor16[MC_FLOW_NUM_PELS * 3]);
   DECLARE_ALIGNED(32, uint8_t, predictor8[MC_FLOW_NUM_PELS * 3]);
@@ -490,7 +481,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
       int duplicate = 0;
       for (int idx2 = 0; idx2 < idx; ++idx2) {
         const int rf_idx2 = gf_group->ref_frame_gop_idx[frame_idx][idx2];
-        if (gf_picture[rf_idx] == gf_picture[rf_idx2]) {
+        if (rf_idx2 != -1 && gf_picture[rf_idx] == gf_picture[rf_idx2]) {
           duplicate = 1;
           break;
         }
@@ -518,10 +509,20 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
   for (mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
     x->mv_limits.row_min = -((mi_row * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
-    x->mv_limits.row_max =
-        (cm->mi_rows - 1 - mi_row) * MI_SIZE + (17 - 2 * AOM_INTERP_EXTEND);
+    x->mv_limits.row_max = (cm->mi_rows - mi_height - mi_row) * MI_SIZE +
+                           (17 - 2 * AOM_INTERP_EXTEND);
+    xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
+    xd->mb_to_bottom_edge = ((cm->mi_rows - mi_height - mi_row) * MI_SIZE) * 8;
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
       TplDepStats tpl_stats;
+
+      // Motion estimation column boundary
+      x->mv_limits.col_min =
+          -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
+      x->mv_limits.col_max = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) +
+                             (17 - 2 * AOM_INTERP_EXTEND);
+      xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
+      xd->mb_to_right_edge = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) * 8;
       mode_estimation(cpi, x, xd, &sf, frame_idx, src_diff, coeff, 1, mi_row,
                       mi_col, bsize, tx_size, ref_frame, predictor, &tpl_stats);
 
@@ -702,7 +703,6 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                                   YV12_BUFFER_CONFIG *src,
                                   TplDepFrame *ref_tpl_frame) {
   AV1_COMMON *cm = &cpi->common;
-  ThreadData *td = &cpi->td;
 
   const int bw = 4 << mi_size_wide_log2[bsize];
   const int bh = 4 << mi_size_high_log2[bsize];
@@ -739,19 +739,19 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   for (int mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
     x->mv_limits.row_min = -((mi_row * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
-    x->mv_limits.row_max =
-        (cm->mi_rows - 1 - mi_row) * MI_SIZE + (17 - 2 * AOM_INTERP_EXTEND);
+    x->mv_limits.row_max = (cm->mi_rows - mi_height - mi_row) * MI_SIZE +
+                           (17 - 2 * AOM_INTERP_EXTEND);
     xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
-    xd->mb_to_bottom_edge = ((cm->mi_rows - 1 - mi_row) * MI_SIZE) * 8;
+    xd->mb_to_bottom_edge = ((cm->mi_rows - mi_height - mi_row) * MI_SIZE) * 8;
 
     for (int mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
       int64_t inter_cost, intra_cost;
       x->mv_limits.col_min =
           -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
-      x->mv_limits.col_max =
-          ((cm->mi_cols - 1 - mi_col) * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND);
+      x->mv_limits.col_max = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) +
+                             (17 - 2 * AOM_INTERP_EXTEND);
       xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
-      xd->mb_to_right_edge = ((cm->mi_cols - 1 - mi_col) * MI_SIZE) * 8;
+      xd->mb_to_right_edge = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) * 8;
 
       // Intra mode
       xd->mi[0]->ref_frame[0] = INTRA_FRAME;
@@ -801,7 +801,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       const int mb_y_offset_ref =
           mi_row * MI_SIZE * ref->y_stride + mi_col * MI_SIZE;
       motion_compensated_prediction(
-          cpi, td, src->y_buffer + mb_y_offset, ref->y_buffer + mb_y_offset_ref,
+          cpi, x, src->y_buffer + mb_y_offset, ref->y_buffer + mb_y_offset_ref,
           src->y_stride, ref->y_stride, bsize, mi_row, mi_col);
 
       av1_build_inter_predictor(
