@@ -552,13 +552,17 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
 
     // SVG runs with accelerated compositing disabled so no
     // ScrollingCoordinator.
-    // TODO(bokan): This can go away with BGPT because it's used only to
-    // propagate scroll offsets to the cc::Layers. In BGPT, scroll offsets are
-    // set directly on the TransformPaintPropertyNodes so this becomes a no-op.
-    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      if (ScrollingCoordinator* coordinator =
-              GetPage().GetScrollingCoordinator())
+    if (ScrollingCoordinator* coordinator =
+            GetPage().GetScrollingCoordinator()) {
+      // In BGPT, scroll offsets and related properties are set directly on the
+      // property trees so all we need to do is update the scroll offset on the
+      // corresponding cc::Layer. Pre-BGPT we used ScrollLayerDidChange but
+      // since all we need this for is to update the cc::Layer's offset, we now
+      // use the more purpose-built UpdateCompositedScrollOffset, as in PLSA.
+      if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         coordinator->ScrollableAreaScrollLayerDidChange(this);
+      else
+        coordinator->UpdateCompositedScrollOffset(this);
     }
 
     EnqueueScrollEvent();
