@@ -13,6 +13,7 @@
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -153,6 +154,8 @@ class OfflinePageTabHelperTest : public web::WebTest {
     test_cbs_builder.SetPath(test_data_dir);
     chrome_browser_state_ = test_cbs_builder.Build();
     test_web_state_.SetBrowserState(chrome_browser_state_.get());
+    test_web_state_.SetNavigationManager(
+        std::make_unique<web::TestNavigationManager>());
     reading_list_model_ = std::make_unique<ReadingListModelImpl>(
         /*storage_layer*/ nullptr, /*pref_service*/ nullptr,
         base::DefaultClock::GetInstance());
@@ -180,6 +183,8 @@ class OfflinePageTabHelperDelayedModelTest : public web::WebTest {
     test_cbs_builder.SetPath(test_data_dir);
     chrome_browser_state_ = test_cbs_builder.Build();
     test_web_state_.SetBrowserState(chrome_browser_state_.get());
+    test_web_state_.SetNavigationManager(
+        std::make_unique<web::TestNavigationManager>());
     fake_reading_list_model_ = std::make_unique<FakeReadingListModel>();
     GURL url(kTestURL);
     entry_ = std::make_unique<ReadingListEntry>(url, kTestTitle, base::Time());
@@ -254,6 +259,10 @@ TEST_F(OfflinePageTabHelperTest, TestLoadReadingListDistilled) {
   test_web_state_.SetCurrentURL(url);
   web::FakeNavigationContext context;
   context.SetHasCommitted(true);
+  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
+  static_cast<web::TestNavigationManager*>(
+      test_web_state_.GetNavigationManager())
+      ->SetLastCommittedItem(item.get());
   context.SetUrl(url);
   test_web_state_.OnNavigationStarted(&context);
   test_web_state_.OnNavigationFinished(&context);
@@ -326,6 +335,10 @@ TEST_F(OfflinePageTabHelperDelayedModelTest, TestLateReadingListModelLoading) {
   web::FakeNavigationContext context;
 
   context.SetHasCommitted(true);
+  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
+  static_cast<web::TestNavigationManager*>(
+      test_web_state_.GetNavigationManager())
+      ->SetLastCommittedItem(item.get());
   context.SetUrl(url);
   test_web_state_.OnNavigationStarted(&context);
   test_web_state_.OnNavigationFinished(&context);
