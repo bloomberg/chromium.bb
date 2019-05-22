@@ -15,9 +15,10 @@
 
 ; process-info
 (if (>= os-version 1013)
-  (allow process-info-pidinfo)
-  (allow process-info-setcontrol (target self))
-)
+  (begin
+    (allow process-info-pidinfo)
+    (allow process-info-setcontrol (target self))
+))
 
 ; File reads.
 ; Reads from the home directory.
