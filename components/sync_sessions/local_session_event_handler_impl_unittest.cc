@@ -590,14 +590,7 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewTab) {
   AddTab(kWindowId1, kBar1, kTabId2);
 }
 
-TEST_F(LocalSessionEventHandlerImplTest,
-       PropagateClosedTabWithoutDeferredRecyclingNorImmediateDeletion) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{kDeferRecyclingOfSyncTabNodesIfUnsynced,
-                             kTabNodePoolImmediateDeletion});
-
+TEST_F(LocalSessionEventHandlerImplTest, PropagateClosedTab) {
   AddWindow(kWindowId1);
   AddTab(kWindowId1, kFoo1, kTabId1);
   TestSyncedTabDelegate* tab2 = AddTab(kWindowId1, kBar1, kTabId2);
@@ -626,7 +619,8 @@ TEST_F(LocalSessionEventHandlerImplTest,
   handler_->OnLocalTabModified(tab2);
 }
 
-TEST_F(LocalSessionEventHandlerImplTest, PropagateClosedTab) {
+TEST_F(LocalSessionEventHandlerImplTest,
+       PropagateClosedTabWithDeferredRecyclingAndImmediateDeletion) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       /*enabled_features=*/{kDeferRecyclingOfSyncTabNodesIfUnsynced,
