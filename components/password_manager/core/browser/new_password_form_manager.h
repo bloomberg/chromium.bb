@@ -350,11 +350,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // dependencies on it.
   bool is_new_login_ = true;
 
-  // Contains a generated password, empty if no password generation happened or
-  // a generated password removed by the user.
-  // TODO(crbug/936011): move to |generation_state_|.
-  base::string16 generated_password_;
-
 #if defined(OS_IOS)
   // Contains a generated password, empty if no password generation happened or
   // a generated password removed by the user.

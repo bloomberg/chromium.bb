@@ -427,7 +427,6 @@ void NewPasswordFormManager::PasswordNoLongerGenerated() {
 
   generation_state_->PasswordNoLongerGenerated();
   generation_state_.reset();
-  generated_password_.clear();
   votes_uploader_.set_has_generated_password(false);
   votes_uploader_.set_generated_password_changed(false);
   metrics_recorder_->SetGeneratedPasswordStatus(
@@ -497,7 +496,7 @@ bool NewPasswordFormManager::UpdateGeneratedPasswordOnUserInput(
       break;
     }
   }
-  base::string16 generated_password = generated_password_;
+  base::string16 generated_password = generation_state_->generated_password();
   if (generation_element_ == field_identifier) {
     generated_password = field_value;
     form_data_changed = true;
@@ -538,7 +537,6 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   //   (3) They are not changed during OnFetchCompleted, triggered at some point
   //   by the
   //       cloned FormFetcher.
-  result->generated_password_ = generated_password_;
   result->votes_uploader_ = votes_uploader_;
   if (parser_.predictions())
     result->parser_.set_predictions(*parser_.predictions());
@@ -877,9 +875,9 @@ void NewPasswordFormManager::CreatePendingCredentials() {
               kCorrectedUsernameInForm);
     }
   }
-  pending_credentials_.password_value = generated_password_.empty()
-                                            ? password_to_save.first
-                                            : generated_password_;
+  pending_credentials_.password_value =
+      HasGeneratedPassword() ? generation_state_->generated_password()
+                             : password_to_save.first;
   pending_credentials_.preferred = true;
   pending_credentials_.form_has_autofilled_value =
       parsed_submitted_form_->form_has_autofilled_value;
@@ -1023,7 +1021,7 @@ void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
     // from the presaved one, then mark that the generated password was changed.
     // If a user recovers the original generated password, it will be recorded
     // as a password change.
-    if (generated_password_ != generated_password) {
+    if (generation_state_->generated_password() != generated_password) {
       votes_uploader_.set_generated_password_changed(true);
       metrics_recorder_->SetGeneratedPasswordStatus(
           PasswordFormMetricsRecorder::GeneratedPasswordStatus::
@@ -1031,11 +1029,10 @@ void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
     }
   }
   votes_uploader_.set_has_generated_password(true);
-  generated_password_ = generated_password;
 
   // Set |password_value| to the generated password in order to ensure that the
   // generated password is saved.
-  parsed_form->password_value = generated_password_;
+  parsed_form->password_value = generated_password;
 
   // Clear the username value if there are already saved credentials with
   // the same username in order to prevent overwriting.
