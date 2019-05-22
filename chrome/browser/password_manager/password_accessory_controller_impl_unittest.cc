@@ -6,8 +6,8 @@
 
 #include <algorithm>
 #include <memory>
-#include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -31,6 +31,7 @@
 
 namespace {
 using autofill::AccessorySheetData;
+using autofill::FallbackSheetType;
 using autofill::FillingStatus;
 using autofill::FooterCommand;
 using autofill::PasswordForm;
@@ -47,56 +48,6 @@ using FillingSource = ManualFillingController::FillingSource;
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleDomain[] = "example.com";
 constexpr int kIconSize = 75;  // An example size for favicons (=> 3.5*20px).
-
-// Helper class for AccessorySheetData objects creation.
-//
-// Example that creates a AccessorySheetData object with two UserInfo objects;
-// the former has two fields, whereas the latter has three fields:
-//   AccessorySheetData data = AccessorySheetDataBuilder(title)
-//       .AddUserInfo()
-//           .AppendField(...)
-//           .AppendField(...)
-//       .AddUserInfo()
-//           .AppendField(...)
-//           .AppendField(...)
-//           .AppendField(...)
-//       .Build();
-class AccessorySheetDataBuilder {
- public:
-  explicit AccessorySheetDataBuilder(const base::string16& title)
-      : accessory_sheet_data_(autofill::FallbackSheetType::PASSWORD, title) {}
-
-  ~AccessorySheetDataBuilder() = default;
-
-  // Adds a new UserInfo object to |accessory_sheet_data_|.
-  AccessorySheetDataBuilder& AddUserInfo() {
-    accessory_sheet_data_.add_user_info(UserInfo());
-    return *this;
-  }
-
-  // Appends a field to the last UserInfo object.
-  AccessorySheetDataBuilder& AppendField(const base::string16& display_text,
-                                         const base::string16& a11y_description,
-                                         bool is_obfuscated,
-                                         bool selectable) {
-    accessory_sheet_data_.mutable_user_info_list().back().add_field(
-        UserInfo::Field(display_text, a11y_description, is_obfuscated,
-                        selectable));
-    return *this;
-  }
-
-  // Appends a new footer command to |accessory_sheet_data_|.
-  AccessorySheetDataBuilder& AppendFooterCommand(
-      const base::string16& display_text) {
-    accessory_sheet_data_.add_footer_command(FooterCommand(display_text));
-    return *this;
-  }
-
-  const AccessorySheetData& Build() { return accessory_sheet_data_; }
-
- private:
-  AccessorySheetData accessory_sheet_data_;
-};
 
 // Creates a new map entry in the |first| element of the returned pair. The
 // |second| element holds the PasswordForm that the |first| element points to.
@@ -150,56 +101,13 @@ base::string16 generate_password_str() {
 
 // Creates a AccessorySheetDataBuilder object with a "Manage passwords..."
 // footer.
-AccessorySheetDataBuilder PasswordAccessorySheetDataBuilder(
+AccessorySheetData::Builder PasswordAccessorySheetDataBuilder(
     const base::string16& title) {
-  AccessorySheetDataBuilder builder(title);
-  builder.AppendFooterCommand(manage_passwords_str());
-  return builder;
+  return AccessorySheetData::Builder(FallbackSheetType::PASSWORD, title)
+      .AppendFooterCommand(manage_passwords_str());
 }
 
 }  // namespace
-
-// Automagically used to pretty-print UserInfo::Field. Must be in same
-// namespace.
-void PrintTo(const UserInfo::Field& field, std::ostream* os) {
-  *os << "(display text: \"" << base::UTF16ToUTF8(field.display_text())
-      << "\", a11y_description: \""
-      << base::UTF16ToUTF8(field.a11y_description()) << "\", is "
-      << (field.is_obfuscated() ? "" : "not ") << "obfuscated, is "
-      << (field.selectable() ? "" : "not ") << "selectable)";
-}
-
-// Automagically used to pretty-print UserInfo. Must be in same namespace.
-void PrintTo(const UserInfo& user_info, std::ostream* os) {
-  *os << "[";
-  for (const UserInfo::Field& field : user_info.fields()) {
-    PrintTo(field, os);
-    *os << ", ";
-  }
-  *os << "]";
-}
-
-// Automagically used to pretty-print FooterCommand. Must be in same namespace.
-void PrintTo(const FooterCommand& footer_command, std::ostream* os) {
-  *os << "(display text: \"" << base::UTF16ToUTF8(footer_command.display_text())
-      << "\")";
-}
-
-// Automagically used to pretty-print AccessorySheetData. Must be in same
-// namespace.
-void PrintTo(const AccessorySheetData& data, std::ostream* os) {
-  *os << "has title: \"" << data.title() << "\", has user info list: [";
-  for (const UserInfo& user_info : data.user_info_list()) {
-    PrintTo(user_info, os);
-    *os << ", ";
-  }
-  *os << "], has footer commands: [";
-  for (const FooterCommand& footer_command : data.footer_commands()) {
-    PrintTo(footer_command, os);
-    *os << ", ";
-  }
-  *os << "]";
-}
 
 class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -750,12 +658,13 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
 TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
   controller()->SavePasswordsForOrigin({},
                                        url::Origin::Create(GURL(kExampleSite)));
-  AccessorySheetDataBuilder data_builder(passwords_empty_str(kExampleDomain));
+  AccessorySheetData::Builder data_builder(FallbackSheetType::PASSWORD,
+                                           passwords_empty_str(kExampleDomain));
   data_builder.AppendFooterCommand(generate_password_str())
       .AppendFooterCommand(manage_passwords_str());
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(
-                  /*is_fillable=*/true, data_builder.Build()));
+                  /*is_fillable=*/true, std::move(data_builder).Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
               ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(

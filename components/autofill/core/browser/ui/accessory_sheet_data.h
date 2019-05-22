@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_ACCESSORY_SHEET_DATA_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_ACCESSORY_SHEET_DATA_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -57,7 +58,7 @@ class UserInfo {
   UserInfo& operator=(const UserInfo& user_info);
   UserInfo& operator=(UserInfo&& user_info);
 
-  void add_field(Field field) { fields_.emplace_back(std::move(field)); }
+  void add_field(Field field) { fields_.push_back(std::move(field)); }
 
   const std::vector<Field>& fields() const { return fields_; }
 
@@ -66,6 +67,9 @@ class UserInfo {
  private:
   std::vector<Field> fields_;
 };
+
+std::ostream& operator<<(std::ostream& out, const UserInfo::Field& field);
+std::ostream& operator<<(std::ostream& out, const UserInfo& user_info);
 
 // Represents a command below the suggestions, such as "Manage password...".
 class FooterCommand {
@@ -87,6 +91,8 @@ class FooterCommand {
   base::string16 display_text_;
 };
 
+std::ostream& operator<<(std::ostream& out, const FooterCommand& fc);
+
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.keyboard_accessory
 enum class FallbackSheetType {
   // Indicates the data type to which an AccessorySheetData object corresponds.
@@ -95,10 +101,14 @@ enum class FallbackSheetType {
   ADDRESS
 };
 
+std::ostream& operator<<(std::ostream& out, const FallbackSheetType& type);
+
 // Represents the contents of a bottom sheet tab below the keyboard accessory,
 // which can correspond to passwords, credit cards, or profiles data.
 class AccessorySheetData {
  public:
+  class Builder;
+
   explicit AccessorySheetData(FallbackSheetType sheet_type,
                               const base::string16& title);
   AccessorySheetData(const AccessorySheetData& data);
@@ -137,6 +147,59 @@ class AccessorySheetData {
   base::string16 title_;
   std::vector<UserInfo> user_info_list_;
   std::vector<FooterCommand> footer_commands_;
+};
+
+std::ostream& operator<<(std::ostream& out, const AccessorySheetData& data);
+
+// Helper class for AccessorySheetData objects creation.
+//
+// Example that creates a AccessorySheetData object with two UserInfo objects;
+// the former has two fields, whereas the latter has three fields:
+//   AccessorySheetData data = AccessorySheetData::Builder(title)
+//       .AddUserInfo()
+//           .AppendField(...)
+//           .AppendField(...)
+//       .AddUserInfo()
+//           .AppendField(...)
+//           .AppendField(...)
+//           .AppendField(...)
+//       .Build();
+class AccessorySheetData::Builder {
+ public:
+  Builder(FallbackSheetType type, const base::string16& title);
+  ~Builder();
+
+  // Adds a new UserInfo object to |accessory_sheet_data_|.
+  Builder&& AddUserInfo() &&;
+  Builder& AddUserInfo() &;
+
+  // Appends a selectable, non-obfuscated field to the last UserInfo object.
+  Builder&& AppendSimpleField(const base::string16& text) &&;
+  Builder& AppendSimpleField(const base::string16& text) &;
+
+  // Appends a field to the last UserInfo object.
+  Builder&& AppendField(const base::string16& display_text,
+                        const base::string16& a11y_description,
+                        bool is_obfuscated,
+                        bool selectable) &&;
+  Builder& AppendField(const base::string16& display_text,
+                       const base::string16& a11y_description,
+                       bool is_obfuscated,
+                       bool selectable) &;
+
+  // Appends a new footer command to |accessory_sheet_data_|.
+  Builder&& AppendFooterCommand(const base::string16& display_text) &&;
+  Builder& AppendFooterCommand(const base::string16& display_text) &;
+
+  // This class returns the constructed AccessorySheetData object. Since this
+  // would render the builder unusable, it's required to destroy the object
+  // afterwards. So if you hold the class in a variable, invoke like this:
+  //   AccessorySheetData::Builder b(title);
+  //   std::move(b).Build();
+  AccessorySheetData&& Build() &&;
+
+ private:
+  AccessorySheetData accessory_sheet_data_;
 };
 
 }  // namespace autofill

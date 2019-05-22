@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_UTILS_H_
 #define CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_UTILS_H_
 
+#include <vector>
+
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 
 namespace autofill {
@@ -12,6 +14,7 @@ namespace autofill {
 // Creates an AccessorySheetData defining the data to be shown in the filling
 // UI.
 AccessorySheetData CreateAccessorySheetData(
+    FallbackSheetType type,
     base::string16 title,
     std::vector<UserInfo> user_info,
     std::vector<FooterCommand> footer_commands);

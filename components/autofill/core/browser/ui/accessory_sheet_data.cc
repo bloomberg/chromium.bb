@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 
+#include "base/strings/string_piece.h"
+
 namespace autofill {
 
 UserInfo::Field::Field(const base::string16& display_text,
@@ -32,6 +34,14 @@ bool UserInfo::Field::operator==(const UserInfo::Field& field) const {
          selectable_ == field.selectable_;
 }
 
+std::ostream& operator<<(std::ostream& os, const UserInfo::Field& field) {
+  os << "(display text: \"" << field.display_text() << "\", "
+     << "a11y_description: \"" << field.a11y_description() << "\", "
+     << "is " << (field.selectable() ? "" : "not ") << "selectable, "
+     << "is " << (field.is_obfuscated() ? "" : "not ") << "obfuscated)";
+  return os;
+}
+
 UserInfo::UserInfo() = default;
 
 UserInfo::UserInfo(const UserInfo& user_info) = default;
@@ -46,6 +56,14 @@ UserInfo& UserInfo::operator=(UserInfo&& user_info) = default;
 
 bool UserInfo::operator==(const UserInfo& user_info) const {
   return fields_ == user_info.fields_;
+}
+
+std::ostream& operator<<(std::ostream& os, const UserInfo& user_info) {
+  os << "[\n";
+  for (const UserInfo::Field& field : user_info.fields()) {
+    os << field << ", \n";
+  }
+  return os << "]";
 }
 
 FooterCommand::FooterCommand(const base::string16& display_text)
@@ -65,6 +83,22 @@ FooterCommand& FooterCommand::operator=(FooterCommand&& footer_command) =
 
 bool FooterCommand::operator==(const FooterCommand& fc) const {
   return display_text_ == fc.display_text_;
+}
+
+std::ostream& operator<<(std::ostream& os, const FooterCommand& fc) {
+  return os << "(display text: \"" << fc.display_text() << "\")";
+}
+
+std::ostream& operator<<(std::ostream& os, const FallbackSheetType& type) {
+  switch (type) {
+    case FallbackSheetType::PASSWORD:
+      return os << "Passwords sheet";
+    case FallbackSheetType::CREDIT_CARD:
+      return os << "Payments sheet";
+    case FallbackSheetType::ADDRESS:
+      return os << "Address sheet";
+  }
+  return os;
 }
 
 AccessorySheetData::AccessorySheetData(FallbackSheetType sheet_type,
@@ -88,6 +122,83 @@ bool AccessorySheetData::operator==(const AccessorySheetData& data) const {
   return sheet_type_ == data.sheet_type_ && title_ == data.title_ &&
          user_info_list_ == data.user_info_list_ &&
          footer_commands_ == data.footer_commands_;
+}
+
+std::ostream& operator<<(std::ostream& os, const AccessorySheetData& data) {
+  os << data.get_sheet_type() << " with title: \"" << data.title()
+     << "\", user info list: [";
+  for (const UserInfo& user_info : data.user_info_list()) {
+    os << user_info << ", ";
+  }
+  os << "], footer commands: [";
+  for (const FooterCommand& footer_command : data.footer_commands()) {
+    os << footer_command << ", ";
+  }
+  return os << "]";
+}
+
+AccessorySheetData::Builder::Builder(FallbackSheetType type,
+                                     const base::string16& title)
+    : accessory_sheet_data_(type, title) {}
+
+AccessorySheetData::Builder::~Builder() = default;
+
+AccessorySheetData::Builder&& AccessorySheetData::Builder::AddUserInfo() && {
+  // Calls AddUserInfo()& since |this| is an lvalue.
+  return std::move(AddUserInfo());
+}
+
+AccessorySheetData::Builder& AccessorySheetData::Builder::AddUserInfo() & {
+  accessory_sheet_data_.add_user_info(UserInfo());
+  return *this;
+}
+
+AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendSimpleField(
+    const base::string16& text) && {
+  // Calls AppendSimpleField(...)& since |this| is an lvalue.
+  return std::move(AppendSimpleField(text));
+}
+
+AccessorySheetData::Builder& AccessorySheetData::Builder::AppendSimpleField(
+    const base::string16& text) & {
+  return AppendField(text, text, false, true);
+}
+
+AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendField(
+    const base::string16& display_text,
+    const base::string16& a11y_description,
+    bool is_obfuscated,
+    bool selectable) && {
+  // Calls AppendField(...)& since |this| is an lvalue.
+  return std::move(
+      AppendField(display_text, a11y_description, is_obfuscated, selectable));
+}
+
+AccessorySheetData::Builder& AccessorySheetData::Builder::AppendField(
+    const base::string16& display_text,
+    const base::string16& a11y_description,
+    bool is_obfuscated,
+    bool selectable) & {
+  accessory_sheet_data_.mutable_user_info_list().back().add_field(
+      UserInfo::Field(display_text, a11y_description, is_obfuscated,
+                      selectable));
+  return *this;
+}
+
+AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendFooterCommand(
+    const base::string16& display_text) && {
+  // Calls AppendFooterCommand(...)& since |this| is an lvalue.
+  return std::move(AppendFooterCommand(display_text));
+}
+
+AccessorySheetData::Builder& AccessorySheetData::Builder::AppendFooterCommand(
+    const base::string16& display_text) & {
+  accessory_sheet_data_.add_footer_command(FooterCommand(display_text));
+  return *this;
+}
+
+AccessorySheetData&& AccessorySheetData::Builder::Build() && {
+  return std::move(accessory_sheet_data_);
 }
 
 }  // namespace autofill

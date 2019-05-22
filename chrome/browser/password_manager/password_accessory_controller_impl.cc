@@ -212,6 +212,7 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
   GetManualFillingController()->RefreshSuggestionsForField(
       is_fillable,
       autofill::CreateAccessorySheetData(
+          autofill::FallbackSheetType::PASSWORD,
           GetTitle(has_suggestions, GetFocusedFrameOrigin()),
           std::move(info_to_add), std::move(footer_commands_to_add)));
 
