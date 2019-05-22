@@ -1350,6 +1350,11 @@ const char kOopRasterizationDescription[] =
     "Perform Ganesh raster in the GPU Process instead of the renderer.  "
     "Must also enable GPU rasterization";
 
+const char kOverlayNewLayoutName[] = "Overlay new layout";
+const char kOverlayNewLayoutDescription[] =
+    "Enables a new layout for the "
+    "Overlay panels including Contextual Search and Preview Tab.";
+
 const char kOverlayScrollbarsName[] = "Overlay Scrollbars";
 const char kOverlayScrollbarsDescription[] =
     "Enable the experimental overlay scrollbars implementation. You must also "

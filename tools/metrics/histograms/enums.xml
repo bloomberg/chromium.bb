@@ -34800,6 +34800,7 @@ from previous Chrome versions.
   <int value="996637686" label="NativeFileSystemAPI:enabled"/>
   <int value="996643125" label="EnableAppShortcutSearch:disabled"/>
   <int value="996701528" label="SystemKeyboardLock:enabled"/>
+  <int value="1000045846" label="OverlayNewLayout:disabled"/>
   <int value="1000587036" label="OfflinePagesDescriptiveFailStatus:disabled"/>
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
@@ -35442,6 +35443,7 @@ from previous Chrome versions.
   <int value="1949019439"
       label="AutofillRestrictUnownedFieldsToFormlessCheckout:disabled"/>
   <int value="1949908940" label="disable-zip-archiver-unpacker"/>
+  <int value="1950191981" label="OverlayNewLayout:enabled"/>
   <int value="1951466218" label="enable-data-reduction-proxy-lite-page"/>
   <int value="1951645673" label="PasswordsKeyboardAccessory:disabled"/>
   <int value="1957273171" label="PageAlmostIdle:disabled"/>

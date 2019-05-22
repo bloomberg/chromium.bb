@@ -281,6 +281,7 @@ public abstract class ChromeFeatureList {
     public static final String OMNIBOX_SHOW_SUGGESTION_FAVICONS =
             "OmniboxUIExperimentShowSuggestionFavicons";
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
+    public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String OVERSCROLL_HISTORY_NAVIGATION = "OverscrollHistoryNavigation";
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
     public static final String PASSWORDS_KEYBOARD_ACCESSORY = "PasswordsKeyboardAccessory";

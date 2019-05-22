@@ -197,8 +197,8 @@ public class EphemeralTabPanel extends OverlayPanel {
     @Override
     public SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
             LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
-        mSceneLayer.update(
-                resourceManager, this, getBarControl(), getBarControl().getTitleControl());
+        mSceneLayer.update(resourceManager, this, getBarControl(),
+                getBarControl().getTitleControl(), getBarControl().getCaptionControl());
         return mSceneLayer;
     }
 
@@ -214,17 +214,35 @@ public class EphemeralTabPanel extends OverlayPanel {
     @Override
     public void handleBarClick(float x, float y) {
         super.handleBarClick(x, y);
-        if (isCoordinateInsideCloseButton(x)) {
-            closePanel(StateChangeReason.CLOSE_BUTTON, true);
-        } else if (isCoordinateInsideOpenTabButton(x)) {
-            if (canPromoteToNewTab() && mUrl != null) {
-                closePanel(StateChangeReason.TAB_PROMOTION, false);
-                mActivity.getCurrentTabCreator().createNewTab(
-                        new LoadUrlParams(mUrl, PageTransition.LINK), TabLaunchType.FROM_LINK,
-                        mActivity.getActivityTabProvider().get());
+
+        // TODO(donnd): Remove one of these cases when experiment is resolved.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            if (isCoordinateInsideCloseButton(x)) {
+                closePanel(StateChangeReason.CLOSE_BUTTON, true);
+            } else if (isCoordinateInsideOpenTabButton(x)) {
+                if (canPromoteToNewTab() && mUrl != null) {
+                    closePanel(StateChangeReason.TAB_PROMOTION, false);
+                    mActivity.getCurrentTabCreator().createNewTab(
+                            new LoadUrlParams(mUrl, PageTransition.LINK), TabLaunchType.FROM_LINK,
+                            mActivity.getActivityTabProvider().get());
+                }
+            } else if (isPeeking()) {
+                maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
             }
-        } else if (isPeeking()) {
-            maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
+        } else {
+            // To keep things simple for now we just have both cases verbatim (without optimizing).
+            if (isCoordinateInsideCloseButton(x)) {
+                closePanel(StateChangeReason.CLOSE_BUTTON, true);
+            } else {
+                if (isPeeking()) {
+                    maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
+                } else if (canPromoteToNewTab() && mUrl != null) {
+                    closePanel(StateChangeReason.TAB_PROMOTION, false);
+                    mActivity.getCurrentTabCreator().createNewTab(
+                            new LoadUrlParams(mUrl, PageTransition.LINK), TabLaunchType.FROM_LINK,
+                            mActivity.getActivityTabProvider().get());
+                }
+            }
         }
     }
 
@@ -264,6 +282,22 @@ public class EphemeralTabPanel extends OverlayPanel {
     protected void onClosed(@StateChangeReason int reason) {
         super.onClosed(reason);
         if (mSceneLayer != null) mSceneLayer.hideTree();
+    }
+
+    @Override
+    protected void updatePanelForCloseOrPeek(float percentage) {
+        super.updatePanelForCloseOrPeek(percentage);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) return;
+
+        getBarControl().updateForCloseOrPeek(percentage);
+    }
+
+    @Override
+    protected void updatePanelForMaximization(float percentage) {
+        super.updatePanelForMaximization(percentage);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) return;
+
+        getBarControl().updateForMaximize(percentage);
     }
 
     /**

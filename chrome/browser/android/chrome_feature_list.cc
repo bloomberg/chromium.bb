@@ -150,6 +150,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPButton,
     &kNTPLaunchAfterInactivity,
     &kOmniboxSpareRenderer,
+    &kOverlayNewLayout,
     &kPayWithGoogleV1,
     &kProgressBarThrottleFeature,
     &kPwaImprovedSplashScreen,
@@ -460,6 +461,9 @@ const base::Feature kNTPLaunchAfterInactivity{
 
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOverlayNewLayout{"OverlayNewLayout",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(rouslan): Remove this.
 const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",

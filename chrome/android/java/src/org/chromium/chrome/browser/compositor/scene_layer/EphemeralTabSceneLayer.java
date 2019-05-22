@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.compositor.scene_layer;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabBarControl;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCaptionControl;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabTitleControl;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -48,29 +51,46 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
      * @param panel The OverlayPanel to render.
      * @param bar {@link EphemeralTabBarControl} object.
      * @param title {@link EphemeralTabTitleControl} object.
+     * @param caption {@link EphemeralTabCaptionControl} object.
      */
     public void update(ResourceManager resourceManager, EphemeralTabPanel panel,
-            EphemeralTabBarControl bar, EphemeralTabTitleControl title) {
+            EphemeralTabBarControl bar, EphemeralTabTitleControl title,
+            @Nullable EphemeralTabCaptionControl caption) {
         // Don't try to update the layer if not initialized or showing.
         if (resourceManager == null || !panel.isShowing()) return;
         if (!mIsInitialized) {
             nativeCreateEphemeralTabLayer(mNativePtr, resourceManager);
+            int openInTabIconId = (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                          && panel.canPromoteToNewTab())
+                    ? R.drawable.open_in_new_tab
+                    : INVALID_RESOURCE_ID;
+            int dragHandlebarId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                    ? R.drawable.drag_handlebar
+                    : INVALID_RESOURCE_ID;
             nativeSetResourceIds(mNativePtr, title.getViewId(),
                     R.drawable.contextual_search_bar_background, R.drawable.modern_toolbar_shadow,
-                    R.drawable.infobar_chrome, R.drawable.drag_handlebar,
-                    panel.canPromoteToNewTab() ? R.drawable.open_in_new_tab : INVALID_RESOURCE_ID,
+                    R.drawable.infobar_chrome, dragHandlebarId, openInTabIconId,
                     R.drawable.btn_close);
             mIsInitialized = true;
         }
 
         int titleViewId = title.getViewId();
+        int captionViewId = 0;
+        float captionAnimationPercentage = 0.f;
+        boolean captionVisible = false;
+        if (caption != null) {
+            captionViewId = caption.getViewId();
+            captionAnimationPercentage = caption.getAnimationPercentage();
+            captionVisible = caption.getIsVisible();
+        }
         boolean isProgressBarVisible = panel.isProgressBarVisible();
         float progressBarHeight = panel.getProgressBarHeight();
         float progressBarOpacity = panel.getProgressBarOpacity();
         int progressBarCompletion = panel.getProgressBarCompletion();
 
         WebContents panelWebContents = panel.getWebContents();
-        nativeUpdate(mNativePtr, titleViewId, bar.getTextLayerMinHeight(),
+        nativeUpdate(mNativePtr, titleViewId, captionViewId, captionAnimationPercentage,
+                bar.getTextLayerMinHeight(), bar.getTitleCaptionSpacing(), captionVisible,
                 R.drawable.progress_bar_background, R.drawable.progress_bar_foreground, mDpToPx,
                 panel.getBasePageBrightness(), panel.getBasePageY() * mDpToPx, panelWebContents,
                 panel.getOffsetX() * mDpToPx, panel.getOffsetY() * mDpToPx,
@@ -134,7 +154,8 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
     private native void nativeGetFavicon(
             long nativeEphemeralTabSceneLayer, Profile profile, String url, int size);
     private native void nativeUpdate(long nativeEphemeralTabSceneLayer, int titleViewId,
-            float textLayerMinHeight, int progressBarBackgroundResourceId,
+            int captionViewId, float captionAnimationPercentage, float textLayerMinHeight,
+            float titleCaptionSpacing, boolean captionVisible, int progressBarBackgroundResourceId,
             int progressBarResourceId, float dpToPx, float basePageBrightness,
             float basePageYOffset, WebContents webContents, float panelX, float panelY,
             float panelWidth, float panelHeight, int barBackgroundColor, float barMarginSide,

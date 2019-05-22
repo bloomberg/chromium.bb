@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressOb
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchCaptionControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
@@ -936,14 +937,18 @@ public class ContextualSearchManagerTest {
         // TODO(pedrosimonetti): This is not reliable. Find a better approach.
         // This taps on the panel in an area that will be selected if the "intelligence" node has
         // been tap-selected, and that will cause it to be long-press selected.
-        // We use the far right side (x == 0.95f) to prevent simulating a tap on top of an
+        // We use the far right side to prevent simulating a tap on top of an
         // existing long-press selection (the pins are a tap target). This might not work on RTL.
         // We are using y == 0.35f because otherwise it will fail for long press cases.
         // It might be better to get the position of the Panel and tap just about outside
         // the Panel. I suspect some Flaky tests are caused by this problem (ones involving
         // long press and trying to close with the bar peeking, with a long press selection
         // established).
-        tapBasePage(0.95f, 0.35f);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            tapBasePage(0.95f, 0.35f);
+        } else {
+            tapBasePage(0.90f, 0.35f);
+        }
         waitForPanelToClose();
     }
 
@@ -1040,9 +1045,25 @@ public class ContextualSearchManagerTest {
      * @throws InterruptedException
      */
     private void forceOpenTabIconClick() throws InterruptedException {
+        assert ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             mPanel.handleBarClick(mPanel.getOpenTabIconX() + mPanel.getOpenTabIconDimension() / 2,
                     mPanel.getBarHeight() / 2);
+        });
+    }
+
+    /**
+     * Force the Panel to handle a click in the Bar.
+     * @throws InterruptedException
+     */
+    private void forcePanelToHandleBarClick() throws InterruptedException {
+        assert !ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                // TODO(donnd): provide better time and x,y data to make this more broadly useful.
+                mPanel.handleBarClick(0, 0);
+            }
         });
     }
 
@@ -1627,8 +1648,12 @@ public class ContextualSearchManagerTest {
         flingPanelUpToTop();
         waitForPanelToMaximize();
 
-        // A click on the open-tab icon should not promote since we are still waiting to Resolve.
-        forceOpenTabIconClick();
+        // A click should not promote since we are still waiting to Resolve.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            forceOpenTabIconClick();
+        } else {
+            forcePanelToHandleBarClick();
+        }
 
         // Assert that the Panel is still maximized.
         waitForPanelToMaximize();
@@ -1636,8 +1661,12 @@ public class ContextualSearchManagerTest {
         // Let the Search Term Resolution finish.
         simulateSlowResolveFinished();
 
-        // Now a click on the icon should promote to a separate tab.
-        forceOpenTabIconClick();
+        // Now a click to promote to a separate tab.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            forceOpenTabIconClick();
+        } else {
+            forcePanelToHandleBarClick();
+        }
 
         // The Panel should now be closed.
         waitForPanelToClose();
@@ -2913,6 +2942,12 @@ public class ContextualSearchManagerTest {
 
         // Check that the expanded bar is showing the correct image.
         Assert.assertEquals(0.f, imageControl.getCustomImageVisibilityPercentage(), 0);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            Assert.assertTrue(barControl.getCaptionVisible());
+            Assert.assertEquals(mActivityTestRule.getActivity().getResources().getString(
+                                        ContextualSearchCaptionControl.EXPANED_CAPTION_ID),
+                    barControl.getCaptionText());
+        }
 
         // Go back to peeking.
         swipePanelDown();

@@ -817,6 +817,9 @@ extern const char kOnTheFlyMhtmlHashComputationDescription[];
 extern const char kOopRasterizationName[];
 extern const char kOopRasterizationDescription[];
 
+extern const char kOverlayNewLayoutName[];
+extern const char kOverlayNewLayoutDescription[];
+
 extern const char kOverlayScrollbarsName[];
 extern const char kOverlayScrollbarsDescription[];
 

@@ -162,20 +162,22 @@ void OverlayPanelLayer::SetProperties(
   }
 
   // ---------------------------------------------------------------------------
-  // Drag Handlerbar
+  // Drag Handlebar
   // ---------------------------------------------------------------------------
-  ui::Resource* drag_handlebar_resource =
-      resource_manager_->GetStaticResourceWithTint(drag_handlebar_resource_id_,
-                                                   drag_handlebar_tint);
-  drag_handlebar_->SetUIResourceId(
-      drag_handlebar_resource->ui_resource()->id());
-  drag_handlebar_->SetBounds(drag_handlebar_resource->size());
-  float drag_handlebar_left =
-      panel_width / 2 - drag_handlebar_resource->size().width() / 2;
-  float drag_handlebar_top =
-      bar_top + bar_margin_top - drag_handlebar_resource->size().height() / 2;
-  drag_handlebar_->SetPosition(
-      gfx::PointF(drag_handlebar_left, drag_handlebar_top));
+  if (drag_handlebar_resource_id_ != 0 && drag_handlebar_resource_id_ != -1) {
+    ui::Resource* drag_handlebar_resource =
+        resource_manager_->GetStaticResourceWithTint(
+            drag_handlebar_resource_id_, drag_handlebar_tint);
+    drag_handlebar_->SetUIResourceId(
+        drag_handlebar_resource->ui_resource()->id());
+    drag_handlebar_->SetBounds(drag_handlebar_resource->size());
+    float drag_handlebar_left =
+        panel_width / 2 - drag_handlebar_resource->size().width() / 2;
+    float drag_handlebar_top =
+        bar_top + bar_margin_top - drag_handlebar_resource->size().height() / 2;
+    drag_handlebar_->SetPosition(
+        gfx::PointF(drag_handlebar_left, drag_handlebar_top));
+  }
 
   // ---------------------------------------------------------------------------
   // Close Icon

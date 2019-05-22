@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarBannerControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
@@ -61,8 +62,14 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         int searchContextViewId = searchBarControl.getSearchContextViewId();
         int searchTermViewId = searchBarControl.getSearchTermViewId();
         int searchCaptionViewId = searchBarControl.getCaptionViewId();
-        int openNewTabIconId =
-                panel.canPromoteToNewTab() ? R.drawable.open_in_new_tab : INVALID_RESOURCE_ID;
+
+        int openNewTabIconId = (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                       && panel.canPromoteToNewTab())
+                ? R.drawable.open_in_new_tab
+                : INVALID_RESOURCE_ID;
+        int dragHandlebarId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                ? R.drawable.drag_handlebar
+                : INVALID_RESOURCE_ID;
 
         int searchPromoViewId = promoControl.getViewId();
         boolean searchPromoVisible = promoControl.isVisible();
@@ -138,17 +145,17 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 searchBarBackgroundColor, searchContextViewId, searchTermViewId,
                 searchCaptionViewId, R.drawable.modern_toolbar_shadow,
                 R.drawable.ic_logo_googleg_24dp, quickActionIconResId, R.drawable.breadcrumb_arrow,
-                R.drawable.drag_handlebar, openNewTabIconId,
-                ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID, R.drawable.progress_bar_background,
-                R.drawable.progress_bar_foreground, searchPromoViewId,
-                R.drawable.contextual_search_promo_ripple, searchBarBannerTextViewId, mDpToPx,
-                panel.getFullscreenWidth() * mDpToPx, panel.getTabHeight() * mDpToPx,
-                panel.getBasePageBrightness(), panel.getBasePageY() * mDpToPx, panelWebContents,
-                searchPromoVisible, searchPromoHeightPx, searchPromoOpacity,
-                searchPromoBackgroundColor, searchBarBannerVisible, searchBarBannerHeightPx,
-                searchBarBannerPaddingPx, searchBarBannerRippleWidthPx,
-                searchBarBannerRippleOpacity, searchBarBannerTextOpacity, searchPanelX * mDpToPx,
-                searchPanelY * mDpToPx, searchPanelWidth * mDpToPx, searchPanelHeight * mDpToPx,
+                dragHandlebarId, openNewTabIconId, ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
+                R.drawable.progress_bar_background, R.drawable.progress_bar_foreground,
+                searchPromoViewId, R.drawable.contextual_search_promo_ripple,
+                searchBarBannerTextViewId, mDpToPx, panel.getFullscreenWidth() * mDpToPx,
+                panel.getTabHeight() * mDpToPx, panel.getBasePageBrightness(),
+                panel.getBasePageY() * mDpToPx, panelWebContents, searchPromoVisible,
+                searchPromoHeightPx, searchPromoOpacity, searchPromoBackgroundColor,
+                searchBarBannerVisible, searchBarBannerHeightPx, searchBarBannerPaddingPx,
+                searchBarBannerRippleWidthPx, searchBarBannerRippleOpacity,
+                searchBarBannerTextOpacity, searchPanelX * mDpToPx, searchPanelY * mDpToPx,
+                searchPanelWidth * mDpToPx, searchPanelHeight * mDpToPx,
                 searchBarMarginSide * mDpToPx, searchBarMarginTop * mDpToPx,
                 searchBarHeight * mDpToPx, searchContextOpacity,
                 searchBarControl.getTextLayerMinHeight(), searchTermOpacity,

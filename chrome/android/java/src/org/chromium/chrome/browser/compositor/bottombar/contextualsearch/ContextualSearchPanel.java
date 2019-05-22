@@ -95,9 +95,13 @@ public class ContextualSearchPanel extends OverlayPanel {
                 ApiCompatibilityUtils
                         .getDrawable(mContext.getResources(), R.drawable.modern_toolbar_shadow)
                         .getIntrinsicHeight();
-        mEndButtonWidthDp = mPxToDp
-                * mContext.getResources().getDimensionPixelSize(
-                          R.dimen.contextual_search_end_button_width);
+        // We may have 1 or 2 buttons depending on old/new layout.
+        int endButtonsWidthDimension =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                ? R.dimen.contextual_search_end_buttons_width
+                : R.dimen.contextual_search_end_button_width;
+        mEndButtonWidthDp =
+                mPxToDp * mContext.getResources().getDimensionPixelSize(endButtonsWidthDimension);
     }
 
     @Override
@@ -283,7 +287,10 @@ public class ContextualSearchPanel extends OverlayPanel {
         } else if (isExpanded() || isMaximized()) {
             if (isCoordinateInsideCloseButton(x)) {
                 closePanel(StateChangeReason.CLOSE_BUTTON, true);
-            } else if (isCoordinateInsideOpenTabButton(x) && canPromoteToNewTab()) {
+            } else if (canPromoteToNewTab()
+                    && (!ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                            || ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                    && isCoordinateInsideOpenTabButton(x))) {
                 mManagementDelegate.promoteToTab();
             }
         }
