@@ -84,8 +84,9 @@ void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
     if (origin_whitelist.count(it->content_origin)) {
       // Because the unthrottle callback may register another peripheral plugin
       // and invalidate our iterator, we cannot run it synchronously.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, std::move(it->unthrottle_callback));
+      render_frame()
+          ->GetTaskRunner(blink::TaskType::kInternalDefault)
+          ->PostTask(FROM_HERE, std::move(it->unthrottle_callback));
       it = peripheral_plugins_.erase(it);
     } else {
       ++it;
