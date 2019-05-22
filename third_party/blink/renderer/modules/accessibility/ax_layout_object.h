@@ -147,12 +147,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
                          NameSources*) const override;
 
   // Modify or take an action on an object.
-  bool OnNativeSetSelectionAction(const AXSelection&) override;
   bool OnNativeSetValueAction(const String&) override;
-
-  // Methods that retrieve or manipulate the current selection.
-  AXSelection Selection() const override;
-  AXSelection SelectionUnderObject() const override;
 
   // Hit testing.
   AXObject* AccessibilityHitTest(const IntPoint&) const override;
@@ -191,10 +186,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void HandleAutofillStateChanged(bool) override;
   void TextChanged() override;
 
-  // Text metrics. Most of these should be deprecated, needs major cleanup.
-  int Index(const VisiblePosition&) const override;
-  VisiblePosition VisiblePositionForIndex(int) const override;
-
   // For a table.
   bool IsDataTable() const override;
   unsigned ColumnCount() const override;
@@ -219,7 +210,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
  private:
   bool IsTabItemSelected() const;
-  bool IsValidSelectionBound(const AXObject*) const;
   AXObject* AccessibilityImageMapHitTest(HTMLAreaElement*,
                                          const IntPoint&) const;
   bool IsSVGImage() const;
@@ -236,10 +226,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool FindAllTableCellsWithRole(ax::mojom::Role, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;
-  AXSelection TextControlSelection() const;
-  int IndexForVisiblePosition(const VisiblePosition&) const;
-  AXLayoutObject* GetUnignoredObjectFromNode(Node&) const;
-
   bool CanIgnoreTextAsEmpty() const;
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;

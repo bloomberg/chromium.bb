@@ -820,33 +820,6 @@ void WebAXObject::Selection(bool& is_selection_backward,
   }
 }
 
-void WebAXObject::SelectionDeprecated(
-    WebAXObject& anchor_object,
-    int& anchor_offset,
-    ax::mojom::TextAffinity& anchor_affinity,
-    WebAXObject& focus_object,
-    int& focus_offset,
-    ax::mojom::TextAffinity& focus_affinity) const {
-  if (IsDetached()) {
-    anchor_object = WebAXObject();
-    anchor_offset = -1;
-    anchor_affinity = ax::mojom::TextAffinity::kDownstream;
-    focus_object = WebAXObject();
-    focus_offset = -1;
-    focus_affinity = ax::mojom::TextAffinity::kDownstream;
-    return;
-  }
-
-  AXObject::AXSelection ax_selection = private_->Selection();
-  anchor_object = WebAXObject(ax_selection.anchor_object);
-  anchor_offset = ax_selection.anchor_offset;
-  anchor_affinity = ToAXAffinity(ax_selection.anchor_affinity);
-  focus_object = WebAXObject(ax_selection.focus_object);
-  focus_offset = ax_selection.focus_offset;
-  focus_affinity = ToAXAffinity(ax_selection.focus_affinity);
-  return;
-}
-
 bool WebAXObject::SetAccessibilityFocus() const {
   if (IsDetached())
     return false;
@@ -943,41 +916,6 @@ unsigned WebAXObject::SelectionStart() const {
   if (ax_selection.Base().IsTextPosition())
     return ax_selection.Base().TextOffset();
   return ax_selection.Base().ChildIndex();
-}
-
-bool WebAXObject::SetSelectionDeprecated(const WebAXObject& anchor_object,
-                                         int anchor_offset,
-                                         const WebAXObject& focus_object,
-                                         int focus_offset) const {
-  if (IsDetached())
-    return false;
-
-  AXObject::AXSelection ax_selection(anchor_object, anchor_offset,
-                                     TextAffinity::kUpstream, focus_object,
-                                     focus_offset, TextAffinity::kDownstream);
-  return private_->RequestSetSelectionAction(ax_selection);
-}
-
-unsigned WebAXObject::SelectionEndDeprecated() const {
-  if (IsDetached())
-    return 0;
-
-  AXObject::AXSelection ax_selection = private_->SelectionUnderObject();
-  if (ax_selection.focus_offset < 0)
-    return 0;
-
-  return ax_selection.focus_offset;
-}
-
-unsigned WebAXObject::SelectionStartDeprecated() const {
-  if (IsDetached())
-    return 0;
-
-  AXObject::AXSelection ax_selection = private_->SelectionUnderObject();
-  if (ax_selection.anchor_offset < 0)
-    return 0;
-
-  return ax_selection.anchor_offset;
 }
 
 bool WebAXObject::Focus() const {

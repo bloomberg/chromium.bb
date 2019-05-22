@@ -34,9 +34,6 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
-#include "third_party/blink/renderer/core/editing/editing_utilities.h"
-#include "third_party/blink/renderer/core/editing/visible_position.h"
-#include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -2871,10 +2868,6 @@ bool AXObject::RequestSetSelectedAction(bool selected) {
   return OnNativeSetSelectedAction(selected);
 }
 
-bool AXObject::RequestSetSelectionAction(const AXSelection& selection) {
-  return OnNativeSetSelectionAction(selection);
-}
-
 bool AXObject::RequestSetSequentialFocusNavigationStartingPointAction() {
   return OnNativeSetSequentialFocusNavigationStartingPointAction();
 }
@@ -2989,10 +2982,6 @@ bool AXObject::OnNativeSetValueAction(const String&) {
 }
 
 bool AXObject::OnNativeSetSelectedAction(bool) {
-  return false;
-}
-
-bool AXObject::OnNativeSetSelectionAction(const AXSelection& selection) {
   return false;
 }
 
@@ -3385,10 +3374,6 @@ String AXObject::ToString() const {
              .GetString()
              .EncodeForDebugging() +
          ": " + ComputedName().EncodeForDebugging();
-}
-
-VisiblePosition AXObject::VisiblePositionForIndex(int) const {
-  return VisiblePosition();
 }
 
 bool operator==(const AXObject& first, const AXObject& second) {

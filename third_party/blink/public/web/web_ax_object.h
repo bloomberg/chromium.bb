@@ -221,19 +221,7 @@ class WebAXObject {
 
   // The following selection functions get or set the global document
   // selection and can be called on any object in the tree.
-  //
-  // Since we are gradually moving to a new selection codebase, we have two sets
-  // of functions. The deprecated ones will still be used by Chromium, except in
-  // Web Tests, which will be using the new ones.
-  // TODO(nektar): Remove deprecated functions. crbug.com/639340
 
-  BLINK_EXPORT void SelectionDeprecated(
-      WebAXObject& anchor_object,
-      int& anchor_offset,
-      ax::mojom::TextAffinity& anchor_affinity,
-      WebAXObject& focus_object,
-      int& focus_offset,
-      ax::mojom::TextAffinity& focus_affinity) const;
   BLINK_EXPORT void Selection(bool& is_selection_backward,
                               WebAXObject& anchor_object,
                               int& anchor_offset,
@@ -245,15 +233,8 @@ class WebAXObject {
   // The following selection functions return text offsets calculated starting
   // from the current object. They only report on a selection that is placed on
   // the current object or on any of its descendants.
-  //
-  // Since we are gradually moving to a new selection codebase, we have two sets
-  // of functions. The deprecated ones will still be used by Chromium, except in
-  // Web Tests, which will be using the new ones.
-  // TODO(nektar): Remove deprecated functions. crbug.com/639340
 
-  BLINK_EXPORT unsigned SelectionEndDeprecated() const;
   BLINK_EXPORT unsigned SelectionEnd() const;
-  BLINK_EXPORT unsigned SelectionStartDeprecated() const;
   BLINK_EXPORT unsigned SelectionStart() const;
 
   // 1-based position in set & Size of set.
@@ -296,10 +277,6 @@ class WebAXObject {
   BLINK_EXPORT bool Focus() const;
   BLINK_EXPORT bool SetAccessibilityFocus() const;
   BLINK_EXPORT bool SetSelected(bool) const;
-  BLINK_EXPORT bool SetSelectionDeprecated(const WebAXObject& anchor_object,
-                                           int anchor_offset,
-                                           const WebAXObject& focus_object,
-                                           int focus_offset) const;
   BLINK_EXPORT bool SetSelection(const WebAXObject& anchor_object,
                                  int anchor_offset,
                                  const WebAXObject& focus_object,

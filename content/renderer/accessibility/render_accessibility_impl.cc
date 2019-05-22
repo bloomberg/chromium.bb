@@ -749,13 +749,8 @@ void RenderAccessibilityImpl::OnPerformAction(
           WebPoint(data.target_point.x(), data.target_point.y()));
       break;
     case ax::mojom::Action::kSetSelection:
-      if (base::FeatureList::IsEnabled(features::kNewAccessibilitySelection)) {
         anchor.SetSelection(anchor, data.anchor_offset, focus,
                             data.focus_offset);
-      } else {
-        anchor.SetSelectionDeprecated(anchor, data.anchor_offset, focus,
-                                      data.focus_offset);
-      }
       HandleAXEvent(root, ax::mojom::Event::kLayoutComplete);
       break;
     case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
