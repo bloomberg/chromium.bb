@@ -2552,6 +2552,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     git_info_zip = trace_name + '-git-info'
 
     git_push_metadata['now'] = datetime_now().strftime('%c')
+    if sys.stdin.encoding != 'utf-8':
+      git_push_metadata['now'] = git_push_metadata['now'].decode(
+          sys.stdin.encoding)
+
     git_push_metadata['trace_name'] = trace_name
     gclient_utils.FileWrite(
         traces_readme, TRACES_README_FORMAT % git_push_metadata)
