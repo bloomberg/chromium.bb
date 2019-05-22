@@ -31,6 +31,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -631,26 +632,31 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       content::WebUIDataSource* source) {
   AddLocalizedPolicyStrings(source, policy::kPolicySources,
                             static_cast<size_t>(policy::POLICY_SOURCE_COUNT));
-  source->AddLocalizedString("conflict", IDS_POLICY_LABEL_CONFLICT);
-  source->AddLocalizedString("headerLevel", IDS_POLICY_HEADER_LEVEL);
-  source->AddLocalizedString("headerName", IDS_POLICY_HEADER_NAME);
-  source->AddLocalizedString("headerScope", IDS_POLICY_HEADER_SCOPE);
-  source->AddLocalizedString("headerSource", IDS_POLICY_HEADER_SOURCE);
-  source->AddLocalizedString("headerStatus", IDS_POLICY_HEADER_STATUS);
-  source->AddLocalizedString("headerValue", IDS_POLICY_HEADER_VALUE);
-  source->AddLocalizedString("warning", IDS_POLICY_HEADER_WARNING);
-  source->AddLocalizedString("levelMandatory", IDS_POLICY_LEVEL_MANDATORY);
-  source->AddLocalizedString("levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED);
-  source->AddLocalizedString("error", IDS_POLICY_LABEL_ERROR);
-  source->AddLocalizedString("ignored", IDS_POLICY_LABEL_IGNORED);
-  source->AddLocalizedString("notSpecified", IDS_POLICY_NOT_SPECIFIED);
-  source->AddLocalizedString("ok", IDS_POLICY_OK);
-  source->AddLocalizedString("scopeDevice", IDS_POLICY_SCOPE_DEVICE);
-  source->AddLocalizedString("scopeUser", IDS_POLICY_SCOPE_USER);
-  source->AddLocalizedString("title", IDS_POLICY_TITLE);
-  source->AddLocalizedString("unknown", IDS_POLICY_UNKNOWN);
-  source->AddLocalizedString("unset", IDS_POLICY_UNSET);
-  source->AddLocalizedString("value", IDS_POLICY_LABEL_VALUE);
+
+  static constexpr LocalizedString kStrings[] = {
+      {"conflict", IDS_POLICY_LABEL_CONFLICT},
+      {"headerLevel", IDS_POLICY_HEADER_LEVEL},
+      {"headerName", IDS_POLICY_HEADER_NAME},
+      {"headerScope", IDS_POLICY_HEADER_SCOPE},
+      {"headerSource", IDS_POLICY_HEADER_SOURCE},
+      {"headerStatus", IDS_POLICY_HEADER_STATUS},
+      {"headerValue", IDS_POLICY_HEADER_VALUE},
+      {"warning", IDS_POLICY_HEADER_WARNING},
+      {"levelMandatory", IDS_POLICY_LEVEL_MANDATORY},
+      {"levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED},
+      {"error", IDS_POLICY_LABEL_ERROR},
+      {"ignored", IDS_POLICY_LABEL_IGNORED},
+      {"notSpecified", IDS_POLICY_NOT_SPECIFIED},
+      {"ok", IDS_POLICY_OK},
+      {"scopeDevice", IDS_POLICY_SCOPE_DEVICE},
+      {"scopeUser", IDS_POLICY_SCOPE_USER},
+      {"title", IDS_POLICY_TITLE},
+      {"unknown", IDS_POLICY_UNKNOWN},
+      {"unset", IDS_POLICY_UNSET},
+      {"value", IDS_POLICY_LABEL_VALUE},
+  };
+  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+
   source->SetJsonPath("strings.js");
 }
 

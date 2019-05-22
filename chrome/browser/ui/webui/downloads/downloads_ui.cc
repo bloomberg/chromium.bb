@@ -18,6 +18,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -51,35 +52,48 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
-  source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
-  source->AddLocalizedString("searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL);
-  source->AddLocalizedString("searchResultsSingular",
-                             IDS_SEARCH_RESULTS_SINGULAR);
-  source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
-
-  source->AddLocalizedString("actionMenuDescription",
-                             IDS_DOWNLOAD_ACTION_MENU_DESCRIPTION);
-  source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);
-  source->AddLocalizedString("clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH);
-  source->AddLocalizedString("openDownloadsFolder",
-                             IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
-  source->AddLocalizedString("moreActions", IDS_DOWNLOAD_MORE_ACTIONS);
-  source->AddLocalizedString("search", IDS_DOWNLOAD_SEARCH);
-
-  // No results message that shows instead of the downloads list.
-  source->AddLocalizedString("noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS);
-  source->AddLocalizedString("noSearchResults", IDS_SEARCH_NO_RESULTS);
-
-  // Status.
-  source->AddLocalizedString("statusCancelled", IDS_DOWNLOAD_TAB_CANCELLED);
-  source->AddLocalizedString("statusRemoved", IDS_DOWNLOAD_FILE_REMOVED);
-
-  // Dangerous file.
-  source->AddLocalizedString("dangerFileDesc",
-                             IDS_BLOCK_REASON_GENERIC_DOWNLOAD);
-
   bool requests_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
       RequestsAdvancedProtectionVerdicts(profile);
+
+  static constexpr LocalizedString kStrings[] = {
+      {"title", IDS_DOWNLOAD_TITLE},
+      {"searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL},
+      {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR},
+      {"downloads", IDS_DOWNLOAD_TITLE},
+      {"actionMenuDescription", IDS_DOWNLOAD_ACTION_MENU_DESCRIPTION},
+      {"clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL},
+      {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+      {"openDownloadsFolder", IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER},
+      {"moreActions", IDS_DOWNLOAD_MORE_ACTIONS},
+      {"search", IDS_DOWNLOAD_SEARCH},
+
+      // No results message that shows instead of the downloads list.
+      {"noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS},
+      {"noSearchResults", IDS_SEARCH_NO_RESULTS},
+
+      // Status.
+      {"statusCancelled", IDS_DOWNLOAD_TAB_CANCELLED},
+      {"statusRemoved", IDS_DOWNLOAD_FILE_REMOVED},
+
+      // Dangerous file.
+      {"dangerFileDesc", IDS_BLOCK_REASON_GENERIC_DOWNLOAD},
+      {"dangerSave", IDS_CONFIRM_DOWNLOAD},
+      {"dangerRestore", IDS_CONFIRM_DOWNLOAD_RESTORE},
+      {"dangerDiscard", IDS_DISCARD_DOWNLOAD},
+
+      // Controls.
+      {"controlPause", IDS_DOWNLOAD_LINK_PAUSE},
+      {"controlCancel", IDS_DOWNLOAD_LINK_CANCEL},
+      {"controlResume", IDS_DOWNLOAD_LINK_RESUME},
+      {"controlRemoveFromList", IDS_DOWNLOAD_LINK_REMOVE},
+      {"controlRemoveFromListAriaLabel", IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL},
+      {"controlRetry", IDS_DOWNLOAD_LINK_RETRY},
+      {"controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL},
+      {"toastClearedAll", IDS_DOWNLOAD_TOAST_CLEARED_ALL},
+      {"toastRemovedFromList", IDS_DOWNLOAD_TOAST_REMOVED_FROM_LIST},
+      {"undo", IDS_DOWNLOAD_UNDO},
+  };
+  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
   source->AddLocalizedString(
       "dangerDownloadDesc",
@@ -97,25 +111,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
           ? IDS_BLOCK_REASON_UNWANTED_DOWNLOAD_IN_ADVANCED_PROTECTION
           : IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
 
-  source->AddLocalizedString("dangerSave", IDS_CONFIRM_DOWNLOAD);
-  source->AddLocalizedString("dangerRestore", IDS_CONFIRM_DOWNLOAD_RESTORE);
-  source->AddLocalizedString("dangerDiscard", IDS_DISCARD_DOWNLOAD);
-
-  // Controls.
-  source->AddLocalizedString("controlPause", IDS_DOWNLOAD_LINK_PAUSE);
   if (browser_defaults::kDownloadPageHasShowInFolder)
     source->AddLocalizedString("controlShowInFolder", IDS_DOWNLOAD_LINK_SHOW);
-  source->AddLocalizedString("controlCancel", IDS_DOWNLOAD_LINK_CANCEL);
-  source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
-  source->AddLocalizedString("controlRemoveFromList", IDS_DOWNLOAD_LINK_REMOVE);
-  source->AddLocalizedString("controlRemoveFromListAriaLabel",
-                             IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL);
-  source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
-  source->AddLocalizedString("controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL);
-  source->AddLocalizedString("toastClearedAll", IDS_DOWNLOAD_TOAST_CLEARED_ALL);
-  source->AddLocalizedString("toastRemovedFromList",
-                             IDS_DOWNLOAD_TOAST_REMOVED_FROM_LIST);
-  source->AddLocalizedString("undo", IDS_DOWNLOAD_UNDO);
 
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in downloads/downloads.html

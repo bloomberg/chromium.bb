@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -71,13 +72,16 @@ enum MakeChromeDefaultResult {
 content::WebUIDataSource* CreateSetAsDefaultBrowserUIHTMLSource() {
   content::WebUIDataSource* data_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMetroFlowHost);
-  data_source->AddLocalizedString("pageTitle", IDS_METRO_FLOW_TAB_TITLE);
-  data_source->AddLocalizedString("flowTitle", IDS_METRO_FLOW_TITLE_SHORT);
-  data_source->AddLocalizedString("flowDescription",
-                                  IDS_METRO_FLOW_DESCRIPTION);
-  data_source->AddLocalizedString("flowNext", IDS_METRO_FLOW_SET_DEFAULT);
-  data_source->AddLocalizedString("chromeLogoString",
-                                  IDS_SHORT_PRODUCT_LOGO_ALT_TEXT);
+
+  static constexpr LocalizedString kStrings[] = {
+      {"pageTitle", IDS_METRO_FLOW_TAB_TITLE},
+      {"flowTitle", IDS_METRO_FLOW_TITLE_SHORT},
+      {"flowDescription", IDS_METRO_FLOW_DESCRIPTION},
+      {"flowNext", IDS_METRO_FLOW_SET_DEFAULT},
+      {"chromeLogoString", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
+  };
+  AddLocalizedStringsBulk(data_source, kStrings, base::size(kStrings));
+
   data_source->SetJsonPath("strings.js");
   data_source->AddResourcePath("set_as_default_browser.js",
                                IDR_SET_AS_DEFAULT_BROWSER_JS);
