@@ -675,11 +675,6 @@ const char kEnableNetworkLoggingToFileDescription[] =
     "Enables network logging to a file named netlog.json in the user data "
     "directory. The file can be imported into chrome://net-internals.";
 
-const char kEnableNetworkServiceName[] = "Enable network service";
-const char kEnableNetworkServiceDescription[] =
-    "Enables the network service, which makes network requests through a "
-    "separate process.";
-
 const char kEnableNetworkServiceInProcessName[] =
     "Runs network service in-process";
 const char kEnableNetworkServiceInProcessDescription[] =

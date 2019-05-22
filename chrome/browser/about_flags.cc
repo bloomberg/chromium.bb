@@ -2528,10 +2528,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kHandwritingGesture)},
 #endif  // OS_CHROMEOS
 
-    {"network-service", flag_descriptions::kEnableNetworkServiceName,
-     flag_descriptions::kEnableNetworkServiceDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kNetworkService)},
-
     {"network-service-in-process",
      flag_descriptions::kEnableNetworkServiceInProcessName,
      flag_descriptions::kEnableNetworkServiceInProcessDescription, kOsAll,
