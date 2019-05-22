@@ -1,0 +1,11 @@
+{
+    "comments": [
+        "EG2 tests to run on the waterfall."
+    ],
+    "tests": [
+        {
+            "app": "ios_chrome_smoke_eg2tests",
+            "host": "ios_chrome_eg2_test_app_host"
+        }
+    ]
+}

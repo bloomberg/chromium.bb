@@ -1288,6 +1288,11 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests",
     "type": "raw",
   },
+  "ios_chrome_smoke_eg2tests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests",
+    "type": "raw",
+  },
   "ios_components_unittests": {
     "args": [],
     "label": "//ios/components:ios_components_unittests",

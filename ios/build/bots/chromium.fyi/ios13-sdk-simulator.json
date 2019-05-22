@@ -18,5 +18,22 @@
   "configuration": "Debug",
   "expiration_time": 14400,
   "tests": [
+    {
+      "xcode parallelization": true,
+      "include": "eg2_tests.json",
+      "device type": "iPhone X",
+      "os": "12.1",
+      "priority": 35,
+      "host os": "Mac-10.13.6",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
+    }
   ]
 }
