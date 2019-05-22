@@ -11,7 +11,6 @@
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "ui/base/models/simple_menu_model.h"

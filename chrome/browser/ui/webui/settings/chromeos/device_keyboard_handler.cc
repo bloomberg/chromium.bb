@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/new_window.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
