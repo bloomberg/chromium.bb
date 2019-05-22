@@ -118,8 +118,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleAutofillStateChanged(Element*, bool) override;
   void HandleValidationMessageVisibilityChanged(
       const Element* form_control) override;
-  void HandleFocusedUIElementChanged(Node* old_focused_node,
-                                     Node* new_focused_node) override;
+  void HandleFocusedUIElementChanged(Element* old_focused_element,
+                                     Element* new_focused_element) override;
   void HandleInitialFocus() override;
   void HandleTextFormControlChanged(Node*) override;
   void HandleEditableTextContentChanged(Node*) override;

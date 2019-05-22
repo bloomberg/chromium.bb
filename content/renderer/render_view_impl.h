@@ -235,8 +235,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool AcceptsLoadDrops() override;
   void FocusNext() override;
   void FocusPrevious() override;
-  void FocusedNodeChanged(const blink::WebNode& fromNode,
-                          const blink::WebNode& toNode) override;
+  void FocusedElementChanged(const blink::WebElement& from_element,
+                             const blink::WebElement& to_element) override;
   bool CanUpdateLayout() override;
   void DidUpdateMainFrameLayout() override;
   blink::WebString AcceptLanguages() override;

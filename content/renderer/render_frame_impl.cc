@@ -2006,7 +2006,7 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
 
   GetLocalRootRenderWidget()->UpdateTextInputState();
 
-  FocusedNodeChangedForAccessibility(WebNode());
+  FocusedElementChangedForAccessibility(WebElement());
 }
 
 void RenderFrameImpl::PepperCaretPositionChanged(
@@ -6243,12 +6243,11 @@ void RenderFrameImpl::DidChangeLoadProgress(double load_progress) {
   Send(new FrameHostMsg_DidChangeLoadProgress(routing_id_, load_progress));
 }
 
-void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
+void RenderFrameImpl::FocusedElementChanged(const WebElement& element) {
   has_scrolled_focused_editable_node_into_rect_ = false;
   bool is_editable = false;
   gfx::Rect node_bounds;
-  if (!node.IsNull() && node.IsElementNode()) {
-    WebElement element = const_cast<WebNode&>(node).To<WebElement>();
+  if (!element.IsNull()) {
     blink::WebRect rect = element.BoundsInViewport();
     GetLocalRootRenderWidget()->ConvertViewportToWindow(&rect);
     is_editable = element.IsEditable();
@@ -6261,12 +6260,13 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
   GetLocalRootRenderWidget()->ClearTextInputState();
 
   for (auto& observer : observers_)
-    observer.FocusedNodeChanged(node);
+    observer.FocusedElementChanged(element);
 }
 
-void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
+void RenderFrameImpl::FocusedElementChangedForAccessibility(
+    const WebElement& element) {
   if (render_accessibility())
-    render_accessibility()->AccessibilityFocusedNodeChanged(node);
+    render_accessibility()->AccessibilityFocusedElementChanged(element);
 }
 
 void RenderFrameImpl::OnReportContentSecurityPolicyViolation(

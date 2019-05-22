@@ -575,9 +575,9 @@ void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   widget->FocusChangeComplete();
 }
 
-void RenderViewTest::SetFocused(const blink::WebNode& node) {
+void RenderViewTest::SetFocused(const blink::WebElement& element) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->FocusedNodeChanged(blink::WebNode(), node);
+  impl->FocusedElementChanged(blink::WebElement(), element);
 }
 
 void RenderViewTest::Reload(const GURL& url) {

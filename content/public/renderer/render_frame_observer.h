@@ -32,8 +32,8 @@ class GURL;
 
 namespace blink {
 class WebDocumentLoader;
+class WebElement;
 class WebFormElement;
-class WebNode;
 class WebString;
 struct WebURLError;
 class WebWorkerFetchContext;
@@ -201,8 +201,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidReceiveTransferSizeUpdate(int resource_id,
                                             int received_data_length) {}
 
-  // Called when the focused node has changed to |node|.
-  virtual void FocusedNodeChanged(const blink::WebNode& node) {}
+  // Called when the focused element has changed to |element|.
+  virtual void FocusedElementChanged(const blink::WebElement& element) {}
 
   // Called when accessibility is enabled or disabled.
   virtual void AccessibilityModeChanged() {}

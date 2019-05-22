@@ -1688,25 +1688,25 @@ void RenderViewImpl::FocusPrevious() {
   Send(new ViewHostMsg_TakeFocus(GetRoutingID(), true));
 }
 
-// TODO(esprehn): Blink only ever passes Elements, this should take WebElement.
-void RenderViewImpl::FocusedNodeChanged(const WebNode& fromNode,
-                                        const WebNode& toNode) {
+void RenderViewImpl::FocusedElementChanged(const WebElement& from_element,
+                                           const WebElement& to_element) {
   RenderFrameImpl* previous_frame = nullptr;
-  if (!fromNode.IsNull())
+  if (!from_element.IsNull())
     previous_frame =
-        RenderFrameImpl::FromWebFrame(fromNode.GetDocument().GetFrame());
+        RenderFrameImpl::FromWebFrame(from_element.GetDocument().GetFrame());
   RenderFrameImpl* new_frame = nullptr;
-  if (!toNode.IsNull())
-    new_frame = RenderFrameImpl::FromWebFrame(toNode.GetDocument().GetFrame());
+  if (!to_element.IsNull())
+    new_frame =
+        RenderFrameImpl::FromWebFrame(to_element.GetDocument().GetFrame());
 
   if (previous_frame && previous_frame != new_frame)
-    previous_frame->FocusedNodeChanged(WebNode());
+    previous_frame->FocusedElementChanged(WebElement());
   if (new_frame)
-    new_frame->FocusedNodeChanged(toNode);
+    new_frame->FocusedElementChanged(to_element);
 
   // TODO(dmazzoni): remove once there's a separate a11y tree per frame.
   if (main_render_frame_)
-    main_render_frame_->FocusedNodeChangedForAccessibility(toNode);
+    main_render_frame_->FocusedElementChangedForAccessibility(to_element);
 }
 
 void RenderViewImpl::DidUpdateMainFrameLayout() {

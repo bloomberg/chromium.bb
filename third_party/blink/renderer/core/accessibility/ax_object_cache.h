@@ -93,8 +93,8 @@ class CORE_EXPORT AXObjectCache
   // Returns true if the AXObjectCache cares about this attribute
   virtual bool HandleAttributeChanged(const QualifiedName& attr_name,
                                       Element*) = 0;
-  virtual void HandleFocusedUIElementChanged(Node* old_focused_node,
-                                             Node* new_focused_node) = 0;
+  virtual void HandleFocusedUIElementChanged(Element* old_focused_node,
+                                             Element* new_focused_node) = 0;
   virtual void HandleInitialFocus() = 0;
   virtual void HandleEditableTextContentChanged(Node*) = 0;
   virtual void HandleScaleAndLocationChanged(Document*) = 0;

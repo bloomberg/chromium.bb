@@ -4811,8 +4811,8 @@ void Document::ClearFocusedElement() {
                                          kWebFocusTypeNone, nullptr));
 }
 
-void Document::NotifyFocusedElementChanged(Node* old_focused_element,
-                                           Node* new_focused_element) {
+void Document::NotifyFocusedElementChanged(Element* old_focused_element,
+                                           Element* new_focused_element) {
   if (new_focused_element) {
     if (AXObjectCache* cache = ExistingAXObjectCache()) {
       cache->HandleFocusedUIElementChanged(old_focused_element,
@@ -4821,8 +4821,8 @@ void Document::NotifyFocusedElementChanged(Node* old_focused_element,
   }
 
   if (GetPage()) {
-    GetPage()->GetChromeClient().FocusedNodeChanged(old_focused_element,
-                                                    new_focused_element);
+    GetPage()->GetChromeClient().FocusedElementChanged(old_focused_element,
+                                                       new_focused_element);
     if (GetSettings()->GetSpatialNavigationEnabled())
       GetPage()->GetSpatialNavigationController().FocusedNodeChanged(this);
   }

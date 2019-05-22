@@ -217,18 +217,21 @@ void ChromeClientImpl::TakeFocus(WebFocusType type) {
     web_view_->Client()->FocusNext();
 }
 
-void ChromeClientImpl::FocusedNodeChanged(Node* from_node, Node* to_node) {
-  web_view_->GetPage()->GetValidationMessageClient().DidChangeFocusTo(to_node);
+void ChromeClientImpl::FocusedElementChanged(Element* from_element,
+                                             Element* to_element) {
+  web_view_->GetPage()->GetValidationMessageClient().DidChangeFocusTo(
+      to_element);
 
   if (!web_view_->Client())
     return;
 
-  web_view_->Client()->FocusedNodeChanged(WebNode(from_node), WebNode(to_node));
+  web_view_->Client()->FocusedElementChanged(WebElement(from_element),
+                                             WebElement(to_element));
 
   WebURL focus_url;
-  if (to_node && to_node->IsElementNode() && ToElement(to_node)->IsLiveLink() &&
-      to_node->ShouldHaveFocusAppearance())
-    focus_url = ToElement(to_node)->HrefURL();
+  if (to_element && to_element->IsLiveLink() &&
+      to_element->ShouldHaveFocusAppearance())
+    focus_url = to_element->HrefURL();
   web_view_->Client()->SetKeyboardFocusURL(focus_url);
 }
 

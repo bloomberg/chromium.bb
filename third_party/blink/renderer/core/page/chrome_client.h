@@ -136,7 +136,7 @@ class CORE_EXPORT ChromeClient
   virtual bool CanTakeFocus(WebFocusType) = 0;
   virtual void TakeFocus(WebFocusType) = 0;
 
-  virtual void FocusedNodeChanged(Node*, Node*) = 0;
+  virtual void FocusedElementChanged(Element*, Element*) = 0;
 
   virtual bool HadFormInteraction() const = 0;
 

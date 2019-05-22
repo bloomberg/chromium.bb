@@ -356,14 +356,14 @@ class CONTENT_EXPORT RenderFrameImpl
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
                                    ax::mojom::Event event);
 
-  // The focused node changed to |node|. If focus was lost from this frame,
-  // |node| will be null.
-  void FocusedNodeChanged(const blink::WebNode& node);
+  // The focused element changed to |element|. If focus was lost from this
+  // frame, |element| will be null.
+  void FocusedElementChanged(const blink::WebElement& element);
 
   // TODO(dmazzoni): the only reason this is here is to plumb it through to
   // RenderAccessibilityImpl. It should use the RenderFrameObserver method, once
   // blink has a separate accessibility tree per frame.
-  void FocusedNodeChangedForAccessibility(const blink::WebNode& node);
+  void FocusedElementChangedForAccessibility(const blink::WebElement& element);
 
   // A RenderView opened by this RenderFrame needs to be shown.
   void ShowCreatedWindow(bool opened_by_user_gesture,

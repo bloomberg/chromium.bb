@@ -26,7 +26,6 @@
 
 namespace blink {
 class WebDocument;
-class WebNode;
 }  // namespace blink
 
 namespace ui {
@@ -105,7 +104,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
       const blink::WebAXObject& end_object,
       int end_offset);
 
-  void AccessibilityFocusedNodeChanged(const blink::WebNode& node);
+  void AccessibilityFocusedElementChanged(const blink::WebElement& element);
 
   void HandleAXEvent(const blink::WebAXObject& obj,
                      ax::mojom::Event event,

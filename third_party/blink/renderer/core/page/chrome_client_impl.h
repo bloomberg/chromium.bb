@@ -66,7 +66,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void Focus(LocalFrame*) override;
   bool CanTakeFocus(WebFocusType) override;
   void TakeFocus(WebFocusType) override;
-  void FocusedNodeChanged(Node* from_node, Node* to_node) override;
+  void FocusedElementChanged(Element* from_node, Element* to_node) override;
   void BeginLifecycleUpdates() override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits() override;

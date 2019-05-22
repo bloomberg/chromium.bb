@@ -144,7 +144,8 @@ void SpellCheckProvider::RequestTextChecking(
 #endif  // !USE_BROWSER_SPELLCHECKER
 }
 
-void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
+void SpellCheckProvider::FocusedElementChanged(
+    const blink::WebElement& unused) {
 #if defined(OS_ANDROID)
   if (!spell_check_host_.is_bound())
     return;

@@ -310,13 +310,13 @@ void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
   Send(new AccessibilityHostMsg_FindInPageResult(routing_id(), params));
 }
 
-void RenderAccessibilityImpl::AccessibilityFocusedNodeChanged(
-    const WebNode& node) {
+void RenderAccessibilityImpl::AccessibilityFocusedElementChanged(
+    const WebElement& element) {
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
     return;
 
-  if (node.IsNull()) {
+  if (element.IsNull()) {
     // When focus is cleared, implicitly focus the document.
     // TODO(dmazzoni): Make Blink send this notification instead.
     HandleAXEvent(WebAXObject::FromWebDocument(document),

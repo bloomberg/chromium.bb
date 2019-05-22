@@ -90,7 +90,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   bool CanTakeFocus(WebFocusType) override { return false; }
   void TakeFocus(WebFocusType) override {}
 
-  void FocusedNodeChanged(Node*, Node*) override {}
+  void FocusedElementChanged(Element*, Element*) override {}
   void Show(NavigationPolicy) override {}
 
   void DidOverscroll(const FloatSize&,

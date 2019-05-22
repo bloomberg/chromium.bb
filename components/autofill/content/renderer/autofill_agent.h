@@ -165,7 +165,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                                 ui::PageTransition transition) override;
   void DidFinishDocumentLoad() override;
   void DidChangeScrollOffset() override;
-  void FocusedNodeChanged(const blink::WebNode& node) override;
+  void FocusedElementChanged(const blink::WebElement& element) override;
   void OnDestruct() override;
 
   // Fires Mojo messages for a given form submission.

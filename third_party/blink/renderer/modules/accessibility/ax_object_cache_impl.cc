@@ -1504,14 +1504,15 @@ void AXObjectCacheImpl::MarkElementDirty(const Element* element, bool subtree) {
   MarkAXObjectDirty(Get(element), subtree);
 }
 
-void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,
-                                                      Node* new_focused_node) {
+void AXObjectCacheImpl::HandleFocusedUIElementChanged(
+    Element* old_focused_element,
+    Element* new_focused_element) {
   RemoveValidationMessageObject();
 
-  if (!new_focused_node)
+  if (!new_focused_element)
     return;
 
-  Page* page = new_focused_node->GetDocument().GetPage();
+  Page* page = new_focused_element->GetDocument().GetPage();
   if (!page)
     return;
 
@@ -1519,7 +1520,7 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,
   if (!focused_object)
     return;
 
-  AXObject* old_focused_object = Get(old_focused_node);
+  AXObject* old_focused_object = Get(old_focused_element);
   PostNotification(old_focused_object, ax::mojom::Event::kBlur);
   PostNotification(focused_object, ax::mojom::Event::kFocus);
 }

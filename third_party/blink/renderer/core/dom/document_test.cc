@@ -322,7 +322,7 @@ class MockDocumentValidationMessageClient
   void DocumentDetached(const Document&) override {
     document_detached_was_called = true;
   }
-  void DidChangeFocusTo(const Node*) override {}
+  void DidChangeFocusTo(const Element*) override {}
   void WillBeDestroyed() override {}
 
   // virtual void Trace(Visitor* visitor) {

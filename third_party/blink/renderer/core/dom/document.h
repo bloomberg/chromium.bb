@@ -1703,8 +1703,8 @@ class CORE_EXPORT Document : public ContainerNode,
     is_freezing_in_progress_ = is_freezing_in_progress;
   }
 
-  void NotifyFocusedElementChanged(Node* old_focused_element,
-                                   Node* new_focused_element);
+  void NotifyFocusedElementChanged(Element* old_focused_element,
+                                   Element* new_focused_element);
   void DisplayNoneChangedForFrame();
 
   DocumentLifecycle lifecycle_;
