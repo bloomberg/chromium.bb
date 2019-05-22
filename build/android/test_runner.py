@@ -175,7 +175,6 @@ def AddCommonOptions(parser):
 
   class FastLocalDevAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-      namespace.verbose_count = max(namespace.verbose_count, 1)
       namespace.num_retries = 0
       namespace.enable_device_cache = True
       namespace.enable_concurrent_adb = True
@@ -184,10 +183,12 @@ def AddCommonOptions(parser):
 
   parser.add_argument(
       '--fast-local-dev',
-      type=bool, nargs=0, action=FastLocalDevAction,
-      help='Alias for: --verbose --num-retries=0 '
-           '--enable-device-cache --enable-concurrent-adb '
-           '--skip-clear-data --extract-test-list-from-filter')
+      type=bool,
+      nargs=0,
+      action=FastLocalDevAction,
+      help='Alias for: --num-retries=0 --enable-device-cache '
+      '--enable-concurrent-adb --skip-clear-data '
+      '--extract-test-list-from-filter')
 
   # TODO(jbudorick): Remove this once downstream bots have switched to
   # api.test_results.
