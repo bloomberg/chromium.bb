@@ -1252,9 +1252,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   // Handle header removal by the Declarative Net Request API. We filter these
   // headers so that headers removed by Declarative Net Request API are not
   // visible to web request extensions.
-  // TODO(karandeepb): Change the following to a DCHECK. This is a CHECK to
-  // debug crbug.com/960323.
-  CHECK(request->dnr_action.has_value());
+  DCHECK(request->dnr_action.has_value());
   bool headers_filtered = false;
   scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers =
       FilterResponseHeaders(original_response_headers,
