@@ -1762,27 +1762,27 @@
   {
     "name": "enable-webassembly-baseline",
     "owners": [ "clemensh", "wasm-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 83
   },
   {
     "name": "enable-webassembly-code-cache",
     "owners": [ "bbudge", "hablich", "wasm-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 83
   },
   {
     "name": "enable-webassembly-code-gc",
     "owners": [ "clemensh", "wasm-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "enable-webassembly-simd",
     "owners": [ "gdeepti", "wasm-team@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 83
   },
   {
     "name": "enable-webassembly-threads",
     "owners": [ "binji", "hablich", "wasm-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 83
   },
   {
     "name": "enable-webgl2-compute-context",
