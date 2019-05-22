@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
-#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
@@ -80,12 +79,6 @@ class ContextMenuControllerTest : public testing::Test {
         .ShowContextMenu(GetDocument()->GetFrame(), location, source);
   }
 
-  WebView* GetWebView() { return web_view_helper_.GetWebView(); }
-
-  WebLocalFrameImpl* LocalMainFrame() {
-    return web_view_helper_.LocalMainFrame();
-  }
-
   Document* GetDocument() {
     return static_cast<Document*>(
         web_view_helper_.LocalMainFrame()->GetDocument());
@@ -108,75 +101,6 @@ class ContextMenuControllerTest : public testing::Test {
   TestWebFrameClientImpl web_frame_client_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
-
-// Regression test for https://crbug.com/962413
-TEST_F(ContextMenuControllerTest, ExtendSelection) {
-  ContextMenuAllowedScope context_menu_allowed_scope;
-
-  GetDocument()->body()->SetInnerHTMLFromString(
-      "<!DOCTYPE html>"
-      "<style>"
-      "  #header {"
-      "    background-color:rgba(255,0,0,0.5);"
-      "    position:fixed;"
-      "    top:0px;"
-      "    width:100%;"
-      "    z-index:1;"
-      "    height:100px;"
-      "    user-select:none;"
-      "  }"
-      "  #content {"
-      "    background-color:rgba(0,255,0,1);"
-      "    line-height:80px;"
-      "    font-size:80px;"
-      "  }"
-      "</style>"
-      "<div id='header'>"
-      "</div>"
-      "<div id='content'>"
-      "  <div>abcd</div>"
-      "  <div id='child'>efgh</div>"
-      "</div>");
-
-  Element* child = GetDocument()->getElementById("child");
-  DOMRect* child_rect = child->getBoundingClientRect();
-  LayoutPoint child_location((child_rect->left() + child_rect->right()) / 2,
-                             (child_rect->top() + child_rect->bottom()) / 2);
-  // Long press child element to select it's text,
-  // ContextMenuController#ShowContextMenu() will be auto called after selection
-  // changed.
-  WebGestureEvent gesture_event(WebInputEvent::kGestureLongPress,
-                                WebInputEvent::kNoModifiers,
-                                CurrentTimeTicks());
-  gesture_event.SetPositionInWidget(WebFloatPoint(
-      child_location.X().ToFloat(), child_location.Y().ToFloat()));
-  GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(gesture_event));
-
-  // Context menu info are sent to the WebLocalFrameClient.
-  WebContextMenuData child_context_menu_data =
-      GetWebFrameClient().GetContextMenuData();
-  EXPECT_EQ("efgh", child_context_menu_data.selected_text);
-
-  // Extend selection to select <div>abcd</div>, which is under |header| div.
-  Element* content = GetDocument()->getElementById("content");
-  DOMRect* rect = content->getBoundingClientRect();
-  LocalMainFrame()->MoveRangeSelectionExtent(
-      WebPoint(rect->left(), rect->top()));
-
-  WebRect anchor, focus;
-  GetWebView()->MainFrameWidget()->SelectionBounds(anchor, focus);
-  // Show context menu at specific location, referred to:
-  // |WebContents.showContextMenuAtTouchHandle(mSelectionRect.left,
-  // mSelectionRect.bottom)|.
-  LayoutPoint location(focus.x, focus.y + focus.height / 2.0);
-  EXPECT_TRUE(ShowContextMenu(location, kMenuSourceTouchHandle));
-
-  // Context menu info are sent to the WebLocalFrameClient.
-  WebContextMenuData context_menu_data =
-      GetWebFrameClient().GetContextMenuData();
-  EXPECT_EQ("abcd\n", context_menu_data.selected_text);
-}
 
 TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
   ContextMenuAllowedScope context_menu_allowed_scope;

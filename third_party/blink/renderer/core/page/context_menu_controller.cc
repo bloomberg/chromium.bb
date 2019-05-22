@@ -398,13 +398,11 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   data.selection_start_offset = 0;
   // HitTestResult::isSelected() ensures clean layout by performing a hit test.
   // If source_type is |kMenuSourceAdjustSelection| or
-  // |kMenuSourceAdjustSelectionReset| or |kMenuSourceTouchHandle|we know the
-  // original HitTestResult in SelectionController passed the inside check
-  // already, so let it pass.
+  // |kMenuSourceAdjustSelectionReset| we know the original HitTestResult in
+  // SelectionController passed the inside check already, so let it pass.
   if (result.IsSelected(location) ||
       source_type == kMenuSourceAdjustSelection ||
-      source_type == kMenuSourceAdjustSelectionReset ||
-      source_type == kMenuSourceTouchHandle) {
+      source_type == kMenuSourceAdjustSelectionReset) {
     data.selected_text = selected_frame->SelectedText();
     WebRange range =
         selected_frame->GetInputMethodController().GetSelectionOffsets();
