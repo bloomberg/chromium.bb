@@ -167,6 +167,7 @@ bool IsClientLoFiEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
 bool IsLitePageServerPreviewsEnabled();
+bool IsDeferAllScriptPreviewsEnabled();
 
 // The blacklist version for each preview type.
 int OfflinePreviewsVersion();
@@ -174,6 +175,7 @@ int ClientLoFiVersion();
 int LitePageServerPreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
+int DeferAllScriptPreviewsVersion();
 
 // The maximum number of page hints that should be loaded to memory.
 size_t GetMaxPageHintsInMemoryThreshhold();

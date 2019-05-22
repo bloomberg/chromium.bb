@@ -26,6 +26,7 @@ extern const base::Feature kOptimizationHintsFetching;
 extern const base::Feature kOfflinePreviewsFalsePositivePrevention;
 extern const base::Feature kCoinFlipHoldback;
 extern const base::Feature kExcludedMediaSuffixes;
+extern const base::Feature kDeferAllScriptPreviews;
 
 }  // namespace features
 }  // namespace previews

@@ -316,6 +316,10 @@ bool IsLitePageServerPreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kLitePageServerPreviews);
 }
 
+bool IsDeferAllScriptPreviewsEnabled() {
+  return base::FeatureList::IsEnabled(features::kDeferAllScriptPreviews);
+}
+
 int OfflinePreviewsVersion() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial, kVersion, 0);
 }
@@ -337,6 +341,11 @@ int NoScriptPreviewsVersion() {
 
 int ResourceLoadingHintsVersion() {
   return GetFieldTrialParamByFeatureAsInt(features::kResourceLoadingHints,
+                                          kVersion, 0);
+}
+
+int DeferAllScriptPreviewsVersion() {
+  return GetFieldTrialParamByFeatureAsInt(features::kDeferAllScriptPreviews,
                                           kVersion, 0);
 }
 

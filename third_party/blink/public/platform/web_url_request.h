@@ -110,7 +110,9 @@ class WebURLRequest {
     kLazyImageAutoReload = 1 << 11,    // Request the full version of an image
                                        // that was previously fetched as a
                                        // placeholder by lazyload.
-    kPreviewsStateLast = kLazyImageAutoReload
+    kDeferAllScriptOn = 1 << 12,  // Request that script execution be deferred
+                                  // until parsing completes.
+    kPreviewsStateLast = kDeferAllScriptOn
   };
 
   class ExtraData {

@@ -1707,7 +1707,7 @@ void DocumentLoader::ReportPreviewsIntervention() const {
   DCHECK_NE(WebURLRequest::kLazyImageLoadDeferred, previews_state_);
 
   static_assert(
-      WebURLRequest::kPreviewsStateLast == WebURLRequest::kLazyImageAutoReload,
+      WebURLRequest::kPreviewsStateLast == WebURLRequest::kDeferAllScriptOn,
       "If a new Preview type is added, verify that the Intervention "
       "Report should be sent (or not sent) for that type.");
 

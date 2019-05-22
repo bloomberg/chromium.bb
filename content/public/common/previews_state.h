@@ -48,7 +48,9 @@ enum PreviewsTypes {
                                        // image that was deferred by lazyload.
   LAZY_IMAGE_AUTO_RELOAD = 1 << 11,  // Request the full image after previously
                                      // getting a lazy load placeholder.
-  PREVIEWS_STATE_LAST = LAZY_IMAGE_AUTO_RELOAD
+  DEFER_ALL_SCRIPT_ON = 1 << 12,  // Request that script execution be deferred
+                                  // until parsing completes.
+  PREVIEWS_STATE_LAST = DEFER_ALL_SCRIPT_ON
 };
 
 // Combination of all previews that are guaranteed not to provide partial

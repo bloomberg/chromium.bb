@@ -110,5 +110,9 @@ const base::Feature kCoinFlipHoldback{"PreviewsCoinFlipHoldback_UKMOnly",
 const base::Feature kExcludedMediaSuffixes{"PreviewsExcludedMediaSuffixes",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables DeferAllScript previews.
+const base::Feature kDeferAllScriptPreviews{"DeferAllScript",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews
