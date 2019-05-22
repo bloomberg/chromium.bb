@@ -161,9 +161,15 @@ class ClientSession : public protocol::HostStub,
       scoped_refptr<protocol::InputEventTimestampsSource>
           event_timestamp_source);
 
+  // Public for tests.
+  void UpdateMouseClampingFilterOffset();
+
  private:
   // Creates a proxy for sending clipboard events to the client.
   std::unique_ptr<protocol::ClipboardStub> CreateClipboardProxy();
+
+  void SetMouseClampingFilter(const webrtc::DesktopSize& size,
+                              const webrtc::DesktopVector& dpi);
 
   // protocol::VideoStream::Observer implementation.
   void OnVideoSizeChanged(protocol::VideoStream* stream,
