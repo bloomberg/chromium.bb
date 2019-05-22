@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <numeric>
 
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,23 +29,22 @@ namespace {
 // (1) is a tree with a single node with id 1.
 // (1 (2 3)) is a tree with 1 as the root, and 2 and 3 as its children.
 // (1 (2 (3))) has 1 as the root, 2 as its child, and then 3 as the child of 2.
-void TreeToStringHelper(const AXNode* node, std::string* out_result) {
-  *out_result += base::NumberToString(node->id());
-  if (node->child_count() != 0) {
-    *out_result += " (";
-    for (int i = 0; i < node->child_count(); ++i) {
-      if (i != 0)
-        *out_result += " ";
-      TreeToStringHelper(node->ChildAtIndex(i), out_result);
-    }
-    *out_result += ")";
-  }
+std::string TreeToStringHelper(const AXNode* node) {
+  std::string result = base::NumberToString(node->id());
+  if (node->children().empty())
+    return result;
+  const auto add_children = [](const std::string& str, const auto* node) {
+    return str + " " + TreeToStringHelper(node);
+  };
+  return result + " (" +
+         std::accumulate(node->children().cbegin() + 1, node->children().cend(),
+                         TreeToStringHelper(node->children().front()),
+                         add_children) +
+         ")";
 }
 
 std::string TreeToString(const AXTree& tree) {
-  std::string result;
-  TreeToStringHelper(tree.root(), &result);
-  return "(" + result + ")";
+  return "(" + TreeToStringHelper(tree.root()) + ")";
 }
 
 }  // anonymous namespace

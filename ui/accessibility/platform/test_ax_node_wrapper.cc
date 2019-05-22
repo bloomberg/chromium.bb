@@ -114,14 +114,14 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
 }
 
 int TestAXNodeWrapper::GetChildCount() {
-  return node_->child_count();
+  return int{node_->children().size()};
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, GetChildCount());
   TestAXNodeWrapper* child_wrapper =
-      GetOrCreate(tree_, node_->children()[index]);
+      GetOrCreate(tree_, node_->children()[size_t{index}]);
   return child_wrapper ?
       child_wrapper->ax_platform_node()->GetNativeViewAccessible() :
       nullptr;
@@ -240,10 +240,8 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {
 
 // Walk the AXTree and ensure that all wrappers are created
 void TestAXNodeWrapper::BuildAllWrappers(AXTree* tree, AXNode* node) {
-  for (int i = 0; i < node->child_count(); i++) {
-    auto* child = node->children()[i];
+  for (auto* child : node->children()) {
     TestAXNodeWrapper::GetOrCreate(tree, child);
-
     BuildAllWrappers(tree, child);
   }
 }
@@ -268,7 +266,7 @@ AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
 }
 
 int TestAXNodeWrapper::GetIndexInParent() const {
-  return node_ ? node_->index_in_parent() : -1;
+  return node_ ? int{node_->index_in_parent()} : -1;
 }
 
 void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,

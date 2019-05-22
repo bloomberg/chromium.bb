@@ -1380,7 +1380,7 @@ class AXPosition {
       // Get the next sibling if it exists, otherwise move up to the parent's
       // next sibling.
       int index_in_parent = current_position->AnchorIndexInParent();
-      if (index_in_parent < parent_position->AnchorChildCount() - 1) {
+      if (index_in_parent + 1 < parent_position->AnchorChildCount()) {
         AXPositionInstance next_sibling =
             parent_position->CreateChildPositionAt(index_in_parent + 1);
         DCHECK(next_sibling && !next_sibling->IsNullPosition());

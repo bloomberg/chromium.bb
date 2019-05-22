@@ -170,7 +170,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   AXNode* CreateNode(AXNode* parent,
                      int32_t id,
-                     int32_t index_in_parent,
+                     size_t index_in_parent,
                      AXTreeUpdateState* update_state);
 
   // This is called from within Unserialize(), it returns true on success.

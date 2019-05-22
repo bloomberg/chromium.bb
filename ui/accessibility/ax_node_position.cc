@@ -37,7 +37,7 @@ base::string16 AXNodePosition::GetText() const {
   }
 
   base::string16 text;
-  for (size_t i = 0, c = AnchorChildCount(); i < c; ++i)
+  for (int i = 0; i < AnchorChildCount(); ++i)
     text += CreateChildPositionAt(i)->GetText();
 
   return text;
@@ -55,18 +55,18 @@ void AXNodePosition::AnchorChild(int child_index,
     return;
   }
 
-  AXNode* child = GetAnchor()->ChildAtIndex(child_index);
+  AXNode* child = GetAnchor()->children()[size_t{child_index}];
   DCHECK(child);
   *tree_id = this->tree_id();
   *child_id = child->id();
 }
 
 int AXNodePosition::AnchorChildCount() const {
-  return GetAnchor() ? GetAnchor()->child_count() : 0;
+  return GetAnchor() ? int{GetAnchor()->children().size()} : 0;
 }
 
 int AXNodePosition::AnchorIndexInParent() const {
-  return GetAnchor() ? GetAnchor()->index_in_parent() : INVALID_INDEX;
+  return GetAnchor() ? int{GetAnchor()->index_in_parent()} : INVALID_INDEX;
 }
 
 base::stack<AXNode*> AXNodePosition::GetAncestorAnchors() const {

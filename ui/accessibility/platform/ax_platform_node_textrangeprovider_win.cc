@@ -758,7 +758,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
   AXPositionInstance common_ancestor =
       start_->LowestCommonAncestor(*end_.get());
 
-  if (common_ancestor->GetAnchor()->child_count() > 0) {
+  if (!common_ancestor->GetAnchor()->children().empty()) {
     descendants = owner()
                       ->GetDelegate()
                       ->GetFromNodeID(common_ancestor->anchor_id())

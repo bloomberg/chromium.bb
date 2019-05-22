@@ -263,12 +263,13 @@ AXPlatformNodeWinTest::GetRootIRawElementProviderSimple() {
 ComPtr<IRawElementProviderSimple>
 AXPlatformNodeWinTest::GetIRawElementProviderSimpleFromChildIndex(
     int child_index) {
-  if (!GetRootNode() || child_index >= GetRootNode()->child_count()) {
+  if (!GetRootNode() || child_index < 0 ||
+      size_t{child_index} >= GetRootNode()->children().size()) {
     return ComPtr<IRawElementProviderSimple>();
   }
 
   return QueryInterfaceFromNode<IRawElementProviderSimple>(
-      GetRootNode()->ChildAtIndex(child_index));
+      GetRootNode()->children()[size_t{child_index}]);
 }
 
 ComPtr<IRawElementProviderFragment>

@@ -281,13 +281,13 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   EXPECT_EQ(root.id, root_node->id());
   EXPECT_EQ(root.role, root_node->data().role);
 
-  ASSERT_EQ(2, root_node->child_count());
+  ASSERT_EQ(2u, root_node->children().size());
 
-  const AXNode* button_node = root_node->ChildAtIndex(0);
+  const AXNode* button_node = root_node->children()[0];
   EXPECT_EQ(button.id, button_node->id());
   EXPECT_EQ(button.role, button_node->data().role);
 
-  const AXNode* checkbox_node = root_node->ChildAtIndex(1);
+  const AXNode* checkbox_node = root_node->children()[1];
   EXPECT_EQ(checkbox.id, checkbox_node->id());
   EXPECT_EQ(checkbox.role, checkbox_node->data().role);
 
@@ -1388,17 +1388,17 @@ TEST(AXTreeTest, SkipIgnoredNodes) {
 
   AXTree tree(tree_update);
   AXNode* root = tree.root();
-  ASSERT_EQ(2, root->child_count());
-  ASSERT_EQ(2, root->ChildAtIndex(0)->id());
-  ASSERT_EQ(3, root->ChildAtIndex(1)->id());
+  ASSERT_EQ(2u, root->children().size());
+  ASSERT_EQ(2, root->children()[0]->id());
+  ASSERT_EQ(3, root->children()[1]->id());
 
-  EXPECT_EQ(3, root->GetUnignoredChildCount());
+  EXPECT_EQ(3u, root->GetUnignoredChildCount());
   EXPECT_EQ(4, root->GetUnignoredChildAtIndex(0)->id());
   EXPECT_EQ(5, root->GetUnignoredChildAtIndex(1)->id());
   EXPECT_EQ(3, root->GetUnignoredChildAtIndex(2)->id());
-  EXPECT_EQ(0, root->GetUnignoredChildAtIndex(0)->GetUnignoredIndexInParent());
-  EXPECT_EQ(1, root->GetUnignoredChildAtIndex(1)->GetUnignoredIndexInParent());
-  EXPECT_EQ(2, root->GetUnignoredChildAtIndex(2)->GetUnignoredIndexInParent());
+  EXPECT_EQ(0u, root->GetUnignoredChildAtIndex(0)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1u, root->GetUnignoredChildAtIndex(1)->GetUnignoredIndexInParent());
+  EXPECT_EQ(2u, root->GetUnignoredChildAtIndex(2)->GetUnignoredIndexInParent());
 
   EXPECT_EQ(1, root->GetUnignoredChildAtIndex(0)->GetUnignoredParent()->id());
 }
@@ -1421,11 +1421,11 @@ TEST(AXTreeTest, TestRecursionUnignoredChildCount) {
   AXTree tree(tree_update);
 
   AXNode* root = tree.root();
-  EXPECT_EQ(2, root->child_count());
-  EXPECT_EQ(1, root->GetUnignoredChildCount());
+  EXPECT_EQ(2u, root->children().size());
+  EXPECT_EQ(1u, root->GetUnignoredChildCount());
   EXPECT_EQ(5, root->GetUnignoredChildAtIndex(0)->id());
   AXNode* unignored = tree.GetFromId(5);
-  EXPECT_EQ(0, unignored->GetUnignoredChildCount());
+  EXPECT_EQ(0u, unignored->GetUnignoredChildCount());
 }
 
 TEST(AXTreeTest, NullUnignoredChildren) {
@@ -1441,8 +1441,8 @@ TEST(AXTreeTest, NullUnignoredChildren) {
   AXTree tree(tree_update);
 
   AXNode* root = tree.root();
-  EXPECT_EQ(2, root->child_count());
-  EXPECT_EQ(0, root->GetUnignoredChildCount());
+  EXPECT_EQ(2u, root->children().size());
+  EXPECT_EQ(0u, root->GetUnignoredChildCount());
   EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(0));
   EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(1));
 }

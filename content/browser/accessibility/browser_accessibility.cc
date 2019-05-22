@@ -307,7 +307,7 @@ BrowserAccessibility* BrowserAccessibility::InternalDeepestLastChild() const {
 uint32_t BrowserAccessibility::InternalChildCount() const {
   if (!node_ || !manager_)
     return 0;
-  return static_cast<uint32_t>(node_->child_count());
+  return uint32_t{node_->children().size()};
 }
 
 BrowserAccessibility* BrowserAccessibility::InternalGetChild(
@@ -315,7 +315,7 @@ BrowserAccessibility* BrowserAccessibility::InternalGetChild(
   if (!node_ || !manager_ || child_index >= InternalChildCount())
     return nullptr;
 
-  auto* child_node = node_->ChildAtIndex(child_index);
+  auto* child_node = node_->children()[child_index];
   DCHECK(child_node);
   return manager_->GetFromAXNode(child_node);
 }
@@ -1389,7 +1389,7 @@ ui::AXPlatformNode* BrowserAccessibility::GetFromNodeID(int32_t id) {
 }
 
 int BrowserAccessibility::GetIndexInParent() const {
-  return node_ ? node_->index_in_parent() : -1;
+  return node_ ? int{node_->index_in_parent()} : -1;
 }
 
 gfx::AcceleratedWidget

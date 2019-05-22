@@ -64,7 +64,7 @@ int BrowserAccessibilityPosition::AnchorChildCount() const {
 }
 
 int BrowserAccessibilityPosition::AnchorIndexInParent() const {
-  return GetAnchor() ? static_cast<int>(GetAnchor()->GetIndexInParent())
+  return GetAnchor() ? GetAnchor()->GetIndexInParent()
                      : AXPosition::INVALID_INDEX;
 }
 

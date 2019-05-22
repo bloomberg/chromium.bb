@@ -2291,10 +2291,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXNode* root_node = GetRootNode();
 
   // Test GetEnclosingElement for each child text node.
-  for (int i = 0; i < root_node->child_count(); ++i) {
+  for (auto* child : root_node->children()) {
     ComPtr<IRawElementProviderSimple> text_node_raw =
-        QueryInterfaceFromNode<IRawElementProviderSimple>(
-            root_node->children()[i]);
+        QueryInterfaceFromNode<IRawElementProviderSimple>(child);
 
     ComPtr<ITextProvider> text_provider;
     EXPECT_HRESULT_SUCCEEDED(
