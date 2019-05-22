@@ -120,36 +120,42 @@ class VolumeManagerImpl extends cr.EventTarget {
    * Initializes mount points.
    * @return {!Promise<void>}
    */
-  initialize() {
-    return new Promise((resolve, reject) => {
-      chrome.fileManagerPrivate.onMountCompleted.addListener(
-          this.onMountCompleted_.bind(this));
-      console.warn('Getting volume list');
-      chrome.fileManagerPrivate.getVolumeMetadataList(volumeMetadataList => {
-        console.warn(`There are ${volumeMetadataList.length} volumes`);
-        // We must subscribe to the mount completed event in the callback of
-        // getVolumeMetadataList (crbug.com/330061). But volumes reported by
-        // onMountCompleted events must be added after the volumes in the
-        // volumeMetadataList are mounted (crbug.com/135477).
-        this.mountQueue_.run(async (done) => {
-          try {
-            // Create VolumeInfo for each volume.
-            await Promise.all(volumeMetadataList.map(async (volumeMetadata) => {
-              console.warn(`Initializing volume ${volumeMetadata.volumeId}`);
-              const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
-              console.warn(`Initialized volume ${volumeInfo.volumeId}`);
-            }));
+  async initialize() {
+    chrome.fileManagerPrivate.onMountCompleted.addListener(
+        this.onMountCompleted_.bind(this));
 
-            console.warn('Initialized all volumes');
-            resolve();
-          } catch (e) {
-            reject(e);
-          } finally {
-            // Call the callback of AsyncQueue. Maybe it invokes callbacks
-            // registered by mountCompleted events.
-            done();
-          }
-        });
+    console.warn('Getting volume list');
+    const volumeMetadataList = await new Promise(
+        resolve => chrome.fileManagerPrivate.getVolumeMetadataList(resolve));
+    if (!volumeMetadataList) {
+      console.warn(`There are no volumes`);
+      return;
+    }
+    console.warn(`There are ${volumeMetadataList.length} volumes`);
+
+    // We must subscribe to the mount completed event in the callback of
+    // getVolumeMetadataList (crbug.com/330061). But volumes reported by
+    // onMountCompleted events must be added after the volumes in the
+    // volumeMetadataList are mounted (crbug.com/135477).
+    return new Promise((resolve, reject) => {
+      this.mountQueue_.run(async (done) => {
+        try {
+          // Create VolumeInfo for each volume.
+          await Promise.all(volumeMetadataList.map(async (volumeMetadata) => {
+            console.warn(`Initializing volume ${volumeMetadata.volumeId}`);
+            const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
+            console.warn(`Initialized volume ${volumeInfo.volumeId}`);
+          }));
+
+          console.warn('Initialized all volumes');
+          resolve();
+        } catch (e) {
+          reject(e);
+        } finally {
+          // Call the callback of AsyncQueue. Maybe it invokes callbacks
+          // registered by mountCompleted events.
+          done();
+        }
       });
     });
   }
