@@ -71,6 +71,8 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
       return touch_ui ? gfx::Insets(8, 12) : gfx::Insets(6);
     case INSETS_TOAST:
       return gfx::Insets(0, kHarmonyLayoutUnit);
+    case INSETS_TAB_GROUP_TITLE_CHIP:
+      return gfx::Insets(2, 4);
     default:
       return LayoutProvider::GetInsetsMetric(metric);
   }

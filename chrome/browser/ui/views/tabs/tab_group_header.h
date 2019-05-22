@@ -5,18 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 
-#include "base/strings/string16.h"
 #include "ui/views/view.h"
 
 class TabController;
 class TabGroupData;
-
-namespace gfx {
-class Canvas;
-}
-namespace views {
-class Label;
-}
 
 // View for tab group headers in the tab strip, which are tab-shaped markers of
 // group boundaries. There is one header for each group, which is included in
@@ -25,16 +17,11 @@ class TabGroupHeader : public views::View {
  public:
   TabGroupHeader(TabController* controller, int group);
 
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override;
-
  private:
   const TabGroupData* GetGroupData();
 
   TabController* const controller_;
   const int group_;
-
-  views::Label* title_label_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupHeader);
 };

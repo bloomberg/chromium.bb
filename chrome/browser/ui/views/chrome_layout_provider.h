@@ -19,6 +19,9 @@ enum ChromeInsetsMetric {
   INSETS_BOOKMARKS_BAR_BUTTON = views::VIEWS_INSETS_END,
   // Margins used by toasts.
   INSETS_TOAST,
+  // Margins around the title of a tab group header, that form the bounds of the
+  // title chip.
+  INSETS_TAB_GROUP_TITLE_CHIP,
 };
 
 enum ChromeDistanceMetric {

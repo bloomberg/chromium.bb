@@ -11,48 +11,54 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/layout/layout_provider.h"
 
 TabGroupHeader::TabGroupHeader(TabController* controller, int group)
     : controller_(controller), group_(group) {
   DCHECK(controller);
 
-  // TODO(crbug.com/905491): Call TabStyle::GetContentsInsets.
-  constexpr gfx::Insets kPlaceholderInsets = gfx::Insets(4, 27);
-  SetBorder(views::CreateEmptyBorder(kPlaceholderInsets));
-
   views::FlexLayout* layout =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCollapseMargins(true)
-      .SetMainAxisAlignment(views::LayoutAlignment::kStart)
+      .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
-  auto title = std::make_unique<views::Label>(GetGroupData()->title());
-  title->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-  title->SetElideBehavior(gfx::FADE_TAIL);
-  title_label_ = AddChildView(std::move(title));
-  layout->SetFlexForView(title_label_,
+  const TabGroupData* data = GetGroupData();
+  const SkColor color = GetGroupData()->color();
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
+  auto title_chip = std::make_unique<views::View>();
+  title_chip->SetBackground(views::CreateRoundedRectBackground(
+      color, provider->GetCornerRadiusMetric(views::EMPHASIS_LOW)));
+  title_chip->SetBorder(views::CreateEmptyBorder(
+      provider->GetInsetsMetric(INSETS_TAB_GROUP_TITLE_CHIP)));
+  title_chip->SetLayoutManager(std::make_unique<views::FillLayout>());
+  auto* title_chip_ptr = AddChildView(std::move(title_chip));
+  layout->SetFlexForView(title_chip_ptr,
                          views::FlexSpecification::ForSizeRule(
                              views::MinimumFlexSizeRule::kScaleToZero,
-                             views::MaximumFlexSizeRule::kUnbounded));
-}
+                             views::MaximumFlexSizeRule::kPreferred));
 
-void TabGroupHeader::OnPaint(gfx::Canvas* canvas) {
-  // TODO(crbug.com/905491): Call TabStyle::PaintTab.
-  gfx::Rect fill_bounds(GetLocalBounds());
-  fill_bounds.Inset(TabStyle::GetTabOverlap(), 0);
-  const SkColor color = GetGroupData()->color();
-  canvas->FillRect(fill_bounds, color);
-  title_label_->SetBackgroundColor(color);
+  auto title = std::make_unique<views::Label>(data->title());
+  title->SetAutoColorReadabilityEnabled(false);
+  title->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  title->SetElideBehavior(gfx::FADE_TAIL);
+  title->SetEnabledColor(color_utils::GetColorWithMaxContrast(color));
+  title_chip_ptr->AddChildView(std::move(title));
 }
 
 const TabGroupData* TabGroupHeader::GetGroupData() {
