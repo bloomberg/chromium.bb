@@ -56,34 +56,4 @@
                        atIndex:static_cast<NSUInteger>(atIndex)];
 }
 
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
-  DCHECK_GE(atIndex, 0);
-  [_tabModelObservers tabModel:_tabModel
-                  didRemoveTab:LegacyTabHelper::GetTabForWebState(webState)
-                       atIndex:static_cast<NSUInteger>(atIndex)];
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(int)reason {
-  if (!newWebState)
-    return;
-
-  // If there is no new active WebState, then it means that the atIndex will be
-  // set to WebStateList::kInvalidIndex, so only check for a positive index if
-  // there is a new WebState.
-  DCHECK_GE(atIndex, 0);
-
-  Tab* oldTab =
-      oldWebState ? LegacyTabHelper::GetTabForWebState(oldWebState) : nil;
-  [_tabModelObservers tabModel:_tabModel
-            didChangeActiveTab:LegacyTabHelper::GetTabForWebState(newWebState)
-                   previousTab:oldTab
-                       atIndex:static_cast<NSUInteger>(atIndex)];
-}
-
 @end

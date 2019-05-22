@@ -21,22 +21,11 @@
          atIndex:(NSUInteger)index
     inForeground:(BOOL)fg;
 
-// A tab was removed at the given index.
-- (void)tabModel:(TabModel*)model
-    didRemoveTab:(Tab*)tab
-         atIndex:(NSUInteger)index;
-
 // A Tab was replaced in the model, at the given index.
 - (void)tabModel:(TabModel*)model
     didReplaceTab:(Tab*)oldTab
           withTab:(Tab*)newTab
           atIndex:(NSUInteger)index;
-
-// A tab was activated.
-- (void)tabModel:(TabModel*)model
-    didChangeActiveTab:(Tab*)newTab
-           previousTab:(Tab*)previousTab
-               atIndex:(NSUInteger)index;
 
 // Some properties about the given tab changed, such as the URL or title.
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab;
