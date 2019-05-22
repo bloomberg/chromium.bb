@@ -38,7 +38,7 @@
     return web::WaitUntilWindowIdInjected(webState);
   }
 
-  return true;
+  return YES;
 }
 
 + (bool)isLoading {
@@ -57,7 +57,7 @@
   chrome_test_util::CloseAllTabsInCurrentMode();
 }
 
-+ (bool)closeAllIncognitoTabs {
++ (BOOL)closeAllIncognitoTabs {
   return chrome_test_util::CloseAllIncognitoTabs();
 }
 + (void)goBack {

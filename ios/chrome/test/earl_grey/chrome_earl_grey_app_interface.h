@@ -41,7 +41,7 @@
 + (void)closeAllTabsInCurrentMode;
 
 // Closes all incognito tabs. Return YES on success.
-+ (bool)closeAllIncognitoTabs;
++ (BOOL)closeAllIncognitoTabs;
 
 // Navigates back to the previous page.
 + (void)goBack;
