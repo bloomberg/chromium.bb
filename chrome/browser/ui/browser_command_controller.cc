@@ -973,17 +973,14 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_HOME,
                                         normal_window || browser_->is_app());
 
-  const bool is_experimental_hosted_app =
-      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser_);
+  const bool is_web_app =
+      web_app::AppBrowserController::IsForWebAppBrowser(browser_);
   // Hosted app browser commands.
-  command_updater_.UpdateCommandEnabled(IDC_COPY_URL,
-                                        is_experimental_hosted_app);
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_CHROME,
-                                        is_experimental_hosted_app);
-  command_updater_.UpdateCommandEnabled(IDC_SITE_SETTINGS,
-                                        is_experimental_hosted_app);
+  command_updater_.UpdateCommandEnabled(IDC_COPY_URL, is_web_app);
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_CHROME, is_web_app);
+  command_updater_.UpdateCommandEnabled(IDC_SITE_SETTINGS, is_web_app);
   command_updater_.UpdateCommandEnabled(IDC_HOSTED_APP_MENU_APP_INFO,
-                                        is_experimental_hosted_app);
+                                        is_web_app);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
@@ -1272,7 +1269,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 void BrowserCommandController::UpdateCommandsForHostedAppAvailability() {
   bool has_toolbar =
       browser_->is_type_tabbed() ||
-      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser_);
+      web_app::AppBrowserController::IsForWebAppBrowser(browser_);
   if (window() && window()->ShouldHideUIForFullscreen())
     has_toolbar = false;
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, has_toolbar);

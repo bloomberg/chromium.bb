@@ -23,10 +23,8 @@
 namespace web_app {
 
 // static
-bool AppBrowserController::IsForExperimentalWebAppBrowser(
-    const Browser* browser) {
-  return browser && browser->app_controller() &&
-         browser->app_controller()->IsForExperimentalWebAppBrowser();
+bool AppBrowserController::IsForWebAppBrowser(const Browser* browser) {
+  return browser && browser->app_controller();
 }
 
 // static
@@ -71,11 +69,6 @@ AppBrowserController::AppBrowserController(Browser* browser)
 
 AppBrowserController::~AppBrowserController() {
   browser()->tab_strip_model()->RemoveObserver(this);
-}
-
-bool AppBrowserController::IsForExperimentalWebAppBrowser() const {
-  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) ||
-         base::FeatureList::IsEnabled(::features::kFocusMode);
 }
 
 bool AppBrowserController::CreatedForInstalledPwa() const {

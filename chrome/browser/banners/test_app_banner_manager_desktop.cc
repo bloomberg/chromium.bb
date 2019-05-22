@@ -37,8 +37,6 @@ void TestAppBannerManagerDesktop::WaitForInstallableCheckTearDown() {
 }
 
 bool TestAppBannerManagerDesktop::WaitForInstallableCheck() {
-  DCHECK(IsExperimentalAppBannersEnabled());
-
   if (!installable_.has_value()) {
     base::RunLoop run_loop;
     installable_quit_closure_ = run_loop.QuitClosure();

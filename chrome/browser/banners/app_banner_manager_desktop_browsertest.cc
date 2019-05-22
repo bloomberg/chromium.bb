@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -93,10 +92,6 @@ class AppBannerManagerDesktopBrowserTest
     AppBannerSettingsHelper::SetTotalEngagementToTrigger(0);
     chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
 
-    feature_list_.InitWithFeatures(
-        {features::kExperimentalAppBanners, features::kDesktopPWAWindowing},
-        {});
-
     AppBannerManagerBrowserTestBase::SetUpOnMainThread();
   }
 
@@ -105,8 +100,6 @@ class AppBannerManagerDesktopBrowserTest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AppBannerManagerDesktopBrowserTest);
 };
 

@@ -1580,9 +1580,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertAndProceed) {
 
 // Visits a page in an app window with https error and proceed:
 IN_PROC_BROWSER_TEST_P(SSLUITest, InAppTestHTTPSExpiredCertAndProceed) {
-  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
-
   ASSERT_TRUE(https_server_expired_.Start());
 
   const GURL app_url = https_server_expired_.GetURL("/ssl/google.html");
@@ -1599,9 +1596,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, InAppTestHTTPSExpiredCertAndProceed) {
 // Visits a page with https error and proceed. Then open the app and proceed.
 IN_PROC_BROWSER_TEST_P(SSLUITestCommitted,
                        InAppTestHTTPSExpiredCertAndPreviouslyProceeded) {
-  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
-
   ASSERT_TRUE(https_server_expired_.Start());
 
   const GURL app_url = https_server_expired_.GetURL("/ssl/google.html");

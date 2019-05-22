@@ -765,24 +765,19 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  if (banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
-    const extensions::Extension* pwa =
-        base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)
-            ? extensions::util::GetPwaForSecureActiveTab(browser_)
-            : nullptr;
-    if (pwa) {
-      AddItem(
-          IDC_OPEN_IN_PWA_WINDOW,
-          l10n_util::GetStringFUTF16(
-              IDS_OPEN_IN_APP_WINDOW,
-              gfx::TruncateString(base::UTF8ToUTF16(pwa->name()),
-                                  kMaxAppNameLength, gfx::CHARACTER_BREAK)));
-    } else {
-      base::Optional<base::string16> install_pwa_item_name =
-          GetInstallPWAAppMenuItemName(browser_);
-      if (install_pwa_item_name)
-        AddItem(IDC_INSTALL_PWA, *install_pwa_item_name);
-    }
+  const extensions::Extension* pwa =
+      extensions::util::GetPwaForSecureActiveTab(browser_);
+  if (pwa) {
+    AddItem(IDC_OPEN_IN_PWA_WINDOW,
+            l10n_util::GetStringFUTF16(
+                IDS_OPEN_IN_APP_WINDOW,
+                gfx::TruncateString(base::UTF8ToUTF16(pwa->name()),
+                                    kMaxAppNameLength, gfx::CHARACTER_BREAK)));
+  } else {
+    base::Optional<base::string16> install_pwa_item_name =
+        GetInstallPWAAppMenuItemName(browser_);
+    if (install_pwa_item_name)
+      AddItem(IDC_INSTALL_PWA, *install_pwa_item_name);
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

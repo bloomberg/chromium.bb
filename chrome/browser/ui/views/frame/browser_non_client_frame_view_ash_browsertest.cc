@@ -23,7 +23,6 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
@@ -65,7 +64,6 @@
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -778,7 +776,6 @@ class HostedAppNonClientFrameViewAshTest
   void SetUpOnMainThread() override {
     TopChromeMdParamTest<BrowserActionsBarBrowserTest>::SetUpOnMainThread();
 
-    scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
     HostedAppButtonContainer::DisableAnimationForTesting();
 
     // Start secure local server.
@@ -867,8 +864,6 @@ class HostedAppNonClientFrameViewAshTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   // For mocking a secure site.
   net::EmbeddedTestServer https_server_;
   ChromeMockCertVerifier cert_verifier_;

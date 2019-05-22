@@ -22,8 +22,6 @@ class AppBannerManagerDesktop
 
   using content::WebContentsUserData<AppBannerManagerDesktop>::FromWebContents;
 
-  static bool IsEnabled();
-
   // Turn off triggering on engagement notifications or navigates, for testing
   // purposes only.
   static void DisableTriggeringForTesting();

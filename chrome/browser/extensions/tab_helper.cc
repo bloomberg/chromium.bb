@@ -194,8 +194,7 @@ void TabHelper::FinishCreateBookmarkApp(
     const WebApplicationInfo& web_app_info) {
   const bool success = (extension != nullptr);
 
-  if (success && banners::AppBannerManagerDesktop::IsEnabled() &&
-      web_app_info.open_as_window) {
+  if (success && web_app_info.open_as_window) {
     // Send the 'appinstalled' event and ensure any beforeinstallpromptevent
     // cannot trigger installation again.
     banners::AppBannerManagerDesktop::FromWebContents(web_contents())

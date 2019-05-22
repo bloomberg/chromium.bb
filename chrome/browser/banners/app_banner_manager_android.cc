@@ -13,7 +13,6 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
-#include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/banners/app_banner_ui_delegate_android.h"
@@ -162,17 +161,8 @@ bool AppBannerManagerAndroid::IsWebAppConsideredInstalled(
   // Whether a WebAPK is installed or is being installed. IsWebApkInstalled
   // will still detect the presence of a WebAPK even if Chrome's data is
   // cleared.
-  bool is_webapk_installed = ShortcutHelper::IsWebApkInstalled(
-      web_contents->GetBrowserContext(), start_url, manifest_url);
-
-  // If a WebAPK is not installed and the experimental app banners flag is off,
-  // we use a heuristic to decide whether we consider a non-WebAPK to be
-  // installed (due to the lack of a pre-Oreo API to detect what is and isn't on
-  // the Android homescreen).
-  return is_webapk_installed ||
-         (!IsExperimentalAppBannersEnabled() &&
-          AppBannerSettingsHelper::HasBeenInstalled(web_contents, validated_url,
-                                                    GetAppIdentifier()));
+  return ShortcutHelper::IsWebApkInstalled(web_contents->GetBrowserContext(),
+                                           start_url, manifest_url);
 }
 
 InstallableParams AppBannerManagerAndroid::ParamsToPerformInstallableCheck() {
@@ -268,16 +258,9 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
         primary_icon_, native_app_package_);
   }
 
-  bool banner_shown = false;
-  if (IsExperimentalAppBannersEnabled()) {
-    HideAmbientBadge();
-    banner_shown = ui_delegate_->ShowDialog();
-  } else {
-    banner_shown = AppBannerInfoBarDelegateAndroid::Create(
-        contents, std::move(ui_delegate_));
-  }
+  HideAmbientBadge();
 
-  if (banner_shown) {
+  if (ui_delegate_->ShowDialog()) {
     if (native_app_data_.is_null()) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);

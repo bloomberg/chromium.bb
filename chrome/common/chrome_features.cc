@@ -199,17 +199,6 @@ const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Enables or disables windowing related features for desktop PWAs.
-const base::Feature kDesktopPWAWindowing {
-  "DesktopPWAWindowing",
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX) || \
-    defined(OS_MACOSX)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
 // Enables or disables Desktop PWAs capturing links.
 const base::Feature kDesktopPWAsLinkCapturing{
     "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -263,17 +252,6 @@ const base::Feature kEnterpriseReportingInBrowser{
 const base::Feature kEventBasedStatusReporting{
     "EventBasedStatusReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
-
-// An experimental way of showing app banners, which has modal banners and gives
-// developers more control over when to show them.
-const base::Feature kExperimentalAppBanners {
-  "ExperimentalAppBanners",
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
 // parameter value controls which |ExternalInstallBubbleAlert| button is the

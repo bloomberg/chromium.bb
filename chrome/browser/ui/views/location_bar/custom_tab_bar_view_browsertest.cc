@@ -189,9 +189,8 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsStayInWindow, features::kDesktopPWAWindowing},
-        {});
+    scoped_feature_list_.InitWithFeatures({features::kDesktopPWAsStayInWindow},
+                                          {});
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     // Everything should be redirected to the http server.

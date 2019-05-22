@@ -2639,7 +2639,7 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
   // current page can be shown when browsing a url that is not inside the app.
   // Note: Final determination of whether or not the toolbar is shown is made by
   // the |AppBrowserController|.
-  if (app_controller() && app_controller()->IsForExperimentalWebAppBrowser())
+  if (web_app::AppBrowserController::IsForWebAppBrowser(this))
     features |= FEATURE_TOOLBAR;
 
   return !!(features & feature);

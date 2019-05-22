@@ -975,11 +975,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "enable-desktop-pwas",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-desktop-pwas-link-capturing",
     "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
@@ -1033,11 +1028,6 @@
   {
     "name": "enable-experimental-accessibility-switch-access",
     "owners": [ "anastasi@google.com", "dmazzoni", "dtseng" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-experimental-app-banners",
-    "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 76
   },
   {

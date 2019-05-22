@@ -70,12 +70,6 @@ gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
 bool IsSameScope(const GURL& app_url,
                  const GURL& page_url,
                  content::BrowserContext* profile) {
-  // We can only check scope on apps that are installed PWAs, so fall
-  // back to same origin check if PWA windowing is not enabled
-  // (GetInstalledPwaForUrl requires this).
-  if (!base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing))
-    return IsSameHostAndPort(app_url, page_url);
-
   const Extension* app_for_window = extensions::util::GetInstalledPwaForUrl(
       profile, app_url, extensions::LAUNCH_CONTAINER_WINDOW);
 
@@ -131,7 +125,6 @@ HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
       // indicator of a Bookmark App for an installable website.
       created_for_installed_pwa_(
-          base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
           UrlHandlers::GetUrlHandlers(GetExtension())) {}
 
 HostedAppBrowserController::~HostedAppBrowserController() = default;
@@ -207,7 +200,7 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
 
 bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
   // System Web Apps don't get the Hosted App buttons.
-  return IsForExperimentalWebAppBrowser() && !IsForSystemWebApp();
+  return IsForWebAppBrowser(browser()) && !IsForSystemWebApp();
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
@@ -231,7 +224,7 @@ gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowIcon() const {
-  if (IsForExperimentalWebAppBrowser())
+  if (IsForWebAppBrowser(browser()))
     return GetWindowAppIcon();
 
   return browser()->GetCurrentPageIcon().AsImageSkia();

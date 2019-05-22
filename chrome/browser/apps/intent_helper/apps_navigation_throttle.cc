@@ -92,10 +92,6 @@ GURL GetStartingGURL(content::NavigationHandle* navigation_handle) {
   return navigation_handle->GetStartingSiteInstance()->GetSiteURL();
 }
 
-bool IsDesktopPwasEnabled() {
-  return base::FeatureList::IsEnabled(features::kDesktopPWAWindowing);
-}
-
 }  // namespace
 
 namespace apps {
@@ -258,9 +254,6 @@ AppsNavigationThrottle::WillRedirectRequest() {
 // static
 bool AppsNavigationThrottle::CanCreate(content::WebContents* web_contents) {
   // Do not create the throttle if no apps can be installed.
-  if (!IsDesktopPwasEnabled())
-    return false;
-
   // Do not create the throttle in incognito or for a prerender navigation.
   if (web_contents->GetBrowserContext()->IsOffTheRecord() ||
       prerender::PrerenderContents::FromWebContents(web_contents) != nullptr) {
@@ -307,24 +300,22 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
     content::WebContents* web_contents,
     const GURL& url,
     std::vector<IntentPickerAppInfo> apps) {
-  if (IsDesktopPwasEnabled()) {
-    // Check if the current URL has an installed desktop PWA, and add that to
-    // the list of apps if it exists.
-    const extensions::Extension* extension =
-        extensions::util::GetInstalledPwaForUrl(
-            web_contents->GetBrowserContext(), url,
-            extensions::LAUNCH_CONTAINER_WINDOW);
+  // Check if the current URL has an installed desktop PWA, and add that to
+  // the list of apps if it exists.
+  const extensions::Extension* extension =
+      extensions::util::GetInstalledPwaForUrl(
+          web_contents->GetBrowserContext(), url,
+          extensions::LAUNCH_CONTAINER_WINDOW);
 
-    if (extension) {
-      auto* menu_manager =
-          extensions::MenuManager::Get(web_contents->GetBrowserContext());
+  if (extension) {
+    auto* menu_manager =
+        extensions::MenuManager::Get(web_contents->GetBrowserContext());
 
-      // Prefer the web and place apps of type PWA before apps of type ARC.
-      // TODO(crbug.com/824598): deterministically sort this list.
-      apps.emplace(apps.begin(), apps::mojom::AppType::kWeb,
-                   menu_manager->GetIconForExtension(extension->id()),
-                   extension->id(), extension->name());
-    }
+    // Prefer the web and place apps of type PWA before apps of type ARC.
+    // TODO(crbug.com/824598): deterministically sort this list.
+    apps.emplace(apps.begin(), apps::mojom::AppType::kWeb,
+                 menu_manager->GetIconForExtension(extension->id()),
+                 extension->id(), extension->name());
   }
   return apps;
 }
@@ -482,17 +473,14 @@ AppsNavigationThrottle::HandleRequest() {
 
   // We didn't query ARC, so proceed with the navigation and query if we have an
   // installed desktop PWA to handle the URL.
-  if (IsDesktopPwasEnabled()) {
-    std::vector<IntentPickerAppInfo> apps =
-        FindPwaForUrl(web_contents, url, {});
+  std::vector<IntentPickerAppInfo> apps = FindPwaForUrl(web_contents, url, {});
 
-    if (!apps.empty())
-      ui_displayed_ = true;
+  if (!apps.empty())
+    ui_displayed_ = true;
 
-    ShowIntentPickerForApps(
-        web_contents, ui_auto_display_service_, url, std::move(apps),
-        GetOnPickerClosedCallback(web_contents, ui_auto_display_service_, url));
-  }
+  ShowIntentPickerForApps(
+      web_contents, ui_auto_display_service_, url, std::move(apps),
+      GetOnPickerClosedCallback(web_contents, ui_auto_display_service_, url));
 
   return content::NavigationThrottle::PROCEED;
 }

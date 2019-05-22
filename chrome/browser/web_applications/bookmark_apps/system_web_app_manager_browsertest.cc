@@ -130,8 +130,7 @@ SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest()
       test_web_app_provider_creator_(
           base::BindOnce(&SystemWebAppManagerBrowserTest::CreateWebAppProvider,
                          base::Unretained(this))) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kDesktopPWAWindowing, features::kSystemWebApps}, {});
+  scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
   content::WebUIControllerFactory::RegisterFactory(factory_.get());
 }
 

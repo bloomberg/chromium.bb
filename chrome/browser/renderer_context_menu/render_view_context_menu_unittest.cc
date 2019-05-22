@@ -117,7 +117,6 @@ class RenderViewContextMenuTest : public testing::Test {
       std::unique_ptr<extensions::TestExtensionEnvironment> env)
       : environment_(std::move(env)) {
     // TODO(mgiuca): Add tests with DesktopPWAs enabled.
-    feature_list_.InitAndDisableFeature(features::kDesktopPWAWindowing);
   }
 
   // Proxy defined here to minimize friend classes in RenderViewContextMenu
@@ -147,7 +146,6 @@ class RenderViewContextMenuTest : public testing::Test {
 
  private:
   content::RenderViewHostTestEnabler rvh_test_enabler_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuTest);
 };
@@ -389,8 +387,6 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
   RenderViewContextMenuPrefsTest() = default;
 
   void SetUp() override {
-    // TODO(mgiuca): Add tests with DesktopPWAs enabled.
-    feature_list_.InitAndDisableFeature(features::kDesktopPWAWindowing);
     ChromeRenderViewHostTestHarness::SetUp();
     registry_ = std::make_unique<ProtocolHandlerRegistry>(profile(), nullptr);
   }
@@ -463,7 +459,6 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
 
  private:
   std::unique_ptr<ProtocolHandlerRegistry> registry_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuPrefsTest);
 };

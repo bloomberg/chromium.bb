@@ -183,9 +183,8 @@ HostedAppButtonContainer::HostedAppButtonContainer(
       active_color_(active_color),
       inactive_color_(inactive_color) {
   DCHECK(browser_view_);
-  DCHECK(browser_view_->browser()
-             ->app_controller()
-             ->IsForExperimentalWebAppBrowser());
+  DCHECK(web_app::AppBrowserController::IsForWebAppBrowser(
+      browser_view_->browser()));
 
   SetID(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
 

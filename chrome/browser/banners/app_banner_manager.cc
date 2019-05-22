@@ -207,8 +207,7 @@ void AppBannerManager::SendBannerDismissed() {
   if (event_.is_bound())
     event_->BannerDismissed();
 
-  if (IsExperimentalAppBannersEnabled())
-    SendBannerPromptRequest();
+  SendBannerPromptRequest();
 }
 
 base::WeakPtr<AppBannerManager> AppBannerManager::GetWeakPtr() {
@@ -522,7 +521,7 @@ void AppBannerManager::SendBannerPromptRequest() {
   blink::mojom::AppBannerController* controller_ptr = controller.get();
   controller_ptr->BannerPromptRequest(
       std::move(banner_proxy), mojo::MakeRequest(&event_), {GetBannerType()},
-      IsExperimentalAppBannersEnabled(),
+      /*require_gesture=*/true,
       base::BindOnce(&AppBannerManager::OnBannerPromptReply, GetWeakPtr(),
                      std::move(controller)));
 }
@@ -568,12 +567,9 @@ void AppBannerManager::DidFinishLoad(
     has_sufficient_engagement_ = true;
   }
 
-  // Start the pipeline immediately if we pass (or bypass) the engagement check,
-  // or if the experimental app banners feature is active.
-  if (state_ == State::INACTIVE &&
-      (has_sufficient_engagement_ || IsExperimentalAppBannersEnabled())) {
+  // Start the pipeline immediately if we haven't already started it.
+  if (state_ == State::INACTIVE)
     RequestAppBanner(validated_url);
-  }
 }
 
 void AppBannerManager::MediaStartedPlaying(const MediaPlayerInfo& media_info,
@@ -638,12 +634,6 @@ bool AppBannerManager::IsRunning() const {
 }
 
 // static
-bool AppBannerManager::IsExperimentalAppBannersEnabled() {
-  return base::FeatureList::IsEnabled(features::kExperimentalAppBanners) ||
-         base::FeatureList::IsEnabled(features::kDesktopPWAWindowing);
-}
-
-// static
 base::string16 AppBannerManager::GetInstallableAppName(
     content::WebContents* web_contents) {
   AppBannerManager* manager = FromWebContents(web_contents);
@@ -684,25 +674,6 @@ void AppBannerManager::RecordCouldShowBanner() {
 InstallableStatusCode AppBannerManager::ShouldShowBannerCode() {
   if (GetAppIdentifier().empty())
     return PACKAGE_NAME_OR_START_URL_EMPTY;
-
-  content::WebContents* contents = web_contents();
-
-  // Showing of experimental app banners is under developer control, and
-  // requires a user gesture. In contrast, showing of traditional app banners
-  // is automatic, so we throttle it if the user has recently ignored or
-  // blocked the banner.
-  if (!IsExperimentalAppBannersEnabled()) {
-    base::Time now = GetCurrentTime();
-    if (AppBannerSettingsHelper::WasBannerRecentlyBlocked(
-            contents, validated_url_, GetAppIdentifier(), now)) {
-      return PREVIOUSLY_BLOCKED;
-    }
-    if (AppBannerSettingsHelper::WasBannerRecentlyIgnored(
-            contents, validated_url_, GetAppIdentifier(), now)) {
-      return PREVIOUSLY_IGNORED;
-    }
-  }
-
   return NO_ERROR_DETECTED;
 }
 
@@ -719,7 +690,8 @@ void AppBannerManager::OnBannerPromptReply(
   // already been received before cancel was sent (e.g. if redisplay was
   // requested in the beforeinstallprompt event handler), we keep going and show
   // the banner immediately.
-  if (reply == blink::mojom::AppBannerPromptReply::CANCEL) {
+  bool event_canceled = reply == blink::mojom::AppBannerPromptReply::CANCEL;
+  if (event_canceled) {
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
     if (ShouldBypassEngagementChecks()) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
@@ -730,17 +702,14 @@ void AppBannerManager::OnBannerPromptReply(
     }
   }
 
-  bool event_canceled = reply == blink::mojom::AppBannerPromptReply::CANCEL;
-  bool need_prompt = IsExperimentalAppBannersEnabled() || event_canceled;
-
-  if (need_prompt && state_ == State::SENDING_EVENT) {
+  if (state_ == State::SENDING_EVENT) {
     if (!event_canceled)
       MaybeShowAmbientBadge();
     UpdateState(State::PENDING_PROMPT);
     return;
   }
 
-  DCHECK(!need_prompt || State::SENDING_EVENT_GOT_EARLY_PROMPT == state_);
+  DCHECK_EQ(State::SENDING_EVENT_GOT_EARLY_PROMPT, state_);
 
   ShowBanner();
 }
@@ -748,25 +717,16 @@ void AppBannerManager::OnBannerPromptReply(
 void AppBannerManager::MaybeShowAmbientBadge() {}
 
 void AppBannerManager::ShowBanner() {
+  // The banner is only shown if the site explicitly requests it to be shown.
+  DCHECK_NE(State::SENDING_EVENT, state_);
+
   content::WebContents* contents = web_contents();
   WebappInstallSource install_source;
 
-  // If we are still in the SENDING_EVENT state, the prompt was never canceled
-  // by the page. Otherwise the page requested a delayed showing of the prompt.
-  if (state_ == State::SENDING_EVENT) {
-    // In the experimental flow, the banner is only shown if the site explicitly
-    // requests it to be shown.
-    DCHECK(!IsExperimentalAppBannersEnabled());
-    TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_NO_ACTION);
-    install_source = status_reporter_->GetInstallSource(
-        contents, InstallTrigger::AUTOMATIC_PROMPT);
-
-  } else {
-    TrackBeforeInstallEvent(
-        BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT);
-    install_source =
-        status_reporter_->GetInstallSource(contents, InstallTrigger::API);
-  }
+  TrackBeforeInstallEvent(
+      BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT);
+  install_source =
+      status_reporter_->GetInstallSource(contents, InstallTrigger::API);
 
   // If this is the first time that we are showing the banner for this site,
   // record how long it's been since the first visit.

@@ -16,7 +16,6 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -98,8 +97,6 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
                        BypassServiceWorkerCheck) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(
       "/banners/manifest_no_service_worker.html"));
@@ -115,8 +112,6 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
                        PerformServiceWorkerCheck) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(
       "/banners/manifest_no_service_worker.html"));
@@ -128,8 +123,6 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, AlwaysUpdate) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   ASSERT_TRUE(embedded_test_server()->Start());
   {
     GURL url(embedded_test_server()->GetURL(

@@ -9,7 +9,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_frame_host.h"
@@ -158,17 +156,8 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppHelperTest);
 };
 
-// Launches an installation confirmation dialog for a bookmark app.
-IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeUi_CreateBookmarkApp) {
-  ShowAndVerifyUi();
-}
-
 // Launches an installation confirmation dialog for a PWA.
-IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeUi_CreateWindowedPWA) {
-  // The PWA dialog will be launched because manifest_test_page.html passes
-  // the PWA check, but the kDesktopPWAWindowing flag must also be enabled.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWA) {
   ShowAndVerifyUi();
 }
 
@@ -176,9 +165,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeUi_CreateWindowedPWA) {
 // reparented into an app window.
 IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
   // The PWA dialog will be launched because manifest_test_page.html passes
-  // the PWA check, but the kDesktopPWAWindowing flag must also be enabled.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+  // the PWA check.
   SetExpectedAppTitle("Manifest test app");
 
   ShowUi("CreateWindowedPWA");

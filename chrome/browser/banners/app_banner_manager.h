@@ -134,9 +134,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Sets the total engagement required for triggering the banner in testing.
   static void SetTotalEngagementToTrigger(double engagement);
 
-  // Returns whether the new experimental flow and UI is enabled.
-  static bool IsExperimentalAppBannersEnabled();
-
   // TODO(https://crbug.com/930612): Move |GetInstallableAppName| and
   // |IsWebContentsInstallable| out into a more general purpose installability
   // check class.

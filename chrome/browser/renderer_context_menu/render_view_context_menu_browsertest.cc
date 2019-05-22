@@ -329,31 +329,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenEntryPresentForNormalURLs) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       OpenInAppAbsentForURLsInScopeWhenDesktopPWAsDisabled) {
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
-    InstallTestBookmarkApp(GURL(kAppUrl1));
-  }
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kDesktopPWAWindowing);
-
-  std::unique_ptr<TestRenderViewContextMenu> menu =
-      CreateContextMenuMediaTypeNone(GURL(kAppUrl1), GURL(kAppUrl1));
-
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
-  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
-  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
-  ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
-                                          IDC_OPEN_LINK_IN_PROFILE_LAST));
-}
-
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenInAppPresentForURLsInScopeOfBookmarkApp) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   InstallTestBookmarkApp(GURL(kAppUrl1));
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -370,8 +346,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenInAppPresentForURLsInScopeOfNonWindowedBookmarkApp) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   InstallTestBookmarkApp(GURL(kAppUrl1), false);
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -388,8 +362,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenEntryInAppAbsentForURLsOutOfScopeOfBookmarkApp) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   InstallTestBookmarkApp(GURL(kAppUrl1));
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -407,8 +379,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenInAppAbsentForURLsInNonLocallyInstalledApp) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   const extensions::Extension* app = InstallTestBookmarkApp(GURL(kAppUrl1));
 
   // Part of the installation process (setting that this is a locally installed
@@ -432,8 +402,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        InAppOpenEntryPresentForRegularURLs) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   const extensions::Extension* bookmark_app =
       InstallTestBookmarkApp(GURL(kAppUrl1));
   Browser* app_window = OpenTestBookmarkApp(bookmark_app);
@@ -454,8 +422,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        InAppOpenEntryPresentForSameAppURLs) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   const extensions::Extension* bookmark_app =
       InstallTestBookmarkApp(GURL(kAppUrl1));
   Browser* app_window = OpenTestBookmarkApp(bookmark_app);
@@ -476,8 +442,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        InAppOpenEntryPresentForOtherAppURLs) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   const extensions::Extension* bookmark_app =
       InstallTestBookmarkApp(GURL(kAppUrl1));
   InstallTestBookmarkApp(GURL(kAppUrl2));
@@ -757,8 +721,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
 
 // Verify that "Open link in [App Name]" opens a new App window.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInBookmarkApp) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   InstallTestBookmarkApp(GURL(kAppUrl1));
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1325,8 +1287,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 // This test checks that we don't crash when creating a context menu for a
 // WebContents with no Browser.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, BrowserlessWebContentsCrash) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   std::unique_ptr<content::WebContents> web_contents =
       content::WebContents::Create(
           content::WebContents::CreateParams(browser()->profile()));

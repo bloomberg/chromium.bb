@@ -156,6 +156,7 @@ public class AppBannerManager extends EmptyTabObserver {
     }
 
     /** Returns the language option to use for app banners. */
+    // TODO(https://crbug.com/959086): Remove this as it's no longer used.
     public static int getAppBannerLanguageOption() {
         int languageOption = nativeGetHomescreenLanguageOption();
         if (languageOption == LanguageOption.ADD) {

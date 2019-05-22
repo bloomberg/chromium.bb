@@ -842,7 +842,7 @@ void LocationBarView::RefreshBackground() {
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
-  if (web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser_)) {
+  if (web_app::AppBrowserController::IsForWebAppBrowser(browser_)) {
     // For hosted apps, the location bar is normally hidden and icons appear in
     // the window frame instead.
     GetWidget()->non_client_view()->ResetWindowControls();
@@ -859,7 +859,7 @@ bool LocationBarView::RefreshContentSettingViews() {
 }
 
 void LocationBarView::RefreshPageActionIconViews() {
-  if (web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser_)) {
+  if (web_app::AppBrowserController::IsForWebAppBrowser(browser_)) {
     // For hosted apps, the location bar is normally hidden and icons appear in
     // the window frame instead.
     GetWidget()->non_client_view()->ResetWindowControls();

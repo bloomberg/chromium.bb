@@ -152,7 +152,6 @@
 #include "chrome/browser/extensions/api/cryptotoken_private/cryptotoken_private_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
@@ -453,6 +452,10 @@ const char kSignInPromoShowOnFirstRunAllowed[] =
 const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 #endif  // !defined(OS_ANDROID)
 
+// Deprecated 5/2019
+const char kBookmarkAppCreationLaunchType[] =
+    "extensions.bookmark_app_creation_launch_type";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -514,6 +517,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kSignInPromoShowOnFirstRunAllowed, true);
   registry->RegisterBooleanPref(kSignInPromoShowNTPBubble, false);
 #endif  // !defined(OS_ANDROID)
+
+  registry->RegisterIntegerPref(kBookmarkAppCreationLaunchType, 0);
 }
 
 }  // namespace
@@ -744,7 +749,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   extensions::AudioAPI::RegisterUserPrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
   extensions::ExtensionsUI::RegisterProfilePrefs(registry);
-  extensions::launch_util::RegisterProfilePrefs(registry);
   extensions::NtpOverriddenBubbleDelegate::RegisterPrefs(registry);
   extensions::RuntimeAPI::RegisterPrefs(registry);
   update_client::RegisterProfilePrefs(registry);
@@ -1107,4 +1111,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kSignInPromoShowOnFirstRunAllowed);
   profile_prefs->ClearPref(kSignInPromoShowNTPBubble);
 #endif  // !defined(OS_ANDROID)
+
+  // Added 5/2019.
+  profile_prefs->ClearPref(kBookmarkAppCreationLaunchType);
 }

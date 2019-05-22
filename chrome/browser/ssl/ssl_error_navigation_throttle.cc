@@ -89,8 +89,7 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
   // window.
   Browser* browser =
       chrome::FindBrowserWithWebContents(handle->GetWebContents());
-  if (browser &&
-      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
+  if (browser && web_app::AppBrowserController::IsForWebAppBrowser(browser)) {
     QueueShowInterstitial(
         std::move(handle_ssl_error_callback_), handle->GetWebContents(),
         // The navigation handle's net error code will be

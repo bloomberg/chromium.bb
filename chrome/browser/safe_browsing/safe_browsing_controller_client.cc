@@ -38,10 +38,8 @@ void SafeBrowsingControllerClient::Proceed() {
   // dangeours. So, when users click proceed on an interstitial, move the tab
   // to a regular Chrome window and proceed as usual there.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  if (browser &&
-      web_app::AppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
+  if (web_app::AppBrowserController::IsForWebAppBrowser(browser))
     chrome::OpenInChrome(browser);
-  }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   if (!interstitial_page()) {
     DCHECK(

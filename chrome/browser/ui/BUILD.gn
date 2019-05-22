@@ -629,8 +629,6 @@ jumbo_split_static_library("ui") {
       "android/external_protocol_dialog_android.cc",
       "android/infobars/ads_blocked_infobar.cc",
       "android/infobars/ads_blocked_infobar.h",
-      "android/infobars/app_banner_infobar_android.cc",
-      "android/infobars/app_banner_infobar_android.h",
       "android/infobars/autofill_credit_card_filling_infobar.cc",
       "android/infobars/autofill_credit_card_filling_infobar.h",
       "android/infobars/autofill_save_card_infobar.cc",

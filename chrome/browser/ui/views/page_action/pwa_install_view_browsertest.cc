@@ -35,7 +35,6 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
   ~PwaInstallViewBrowserTest() override {}
 
   void SetUp() override {
-    DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAWindowing));
     scoped_feature_list_.InitAndEnableFeature(
         features::kDesktopPWAsOmniboxInstall);
 

@@ -221,14 +221,6 @@ BookmarkAppHelper::BookmarkAppHelper(
   if (contents)
     installable_manager_ = InstallableManager::FromWebContents(contents);
 
-  // Use the last bookmark app creation type. The launch container is decided by
-  // the system for desktop PWAs.
-  if (!base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing)) {
-    web_app_info_.open_as_window =
-        profile_->GetPrefs()->GetInteger(
-            pref_names::kBookmarkAppCreationLaunchType) == LAUNCH_TYPE_WINDOW;
-  }
-
   // The default app title is the page title, which can be quite long. Limit the
   // default name used to something sensible.
   const int kMaxDefaultTitle = 40;
@@ -358,8 +350,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
 
   // TODO(alancutter): Get user confirmation before entering the install flow,
   // installation code shouldn't have to perform UI work.
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-      for_installable_site_ == web_app::ForInstallableSite::kYes) {
+  if (for_installable_site_ == web_app::ForInstallableSite::kYes) {
     web_app_info_.open_as_window = true;
     if (install_source_ == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
       chrome::ShowPWAInstallBubble(
@@ -429,9 +420,6 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   // shown.
   LaunchType launch_type =
       web_app_info_.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
-
-  profile_->GetPrefs()->SetInteger(pref_names::kBookmarkAppCreationLaunchType,
-                                   launch_type);
 
   if (forced_launch_type_)
     launch_type = forced_launch_type_.value();

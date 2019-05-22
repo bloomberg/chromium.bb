@@ -23,8 +23,7 @@ class IntentPickerBubbleViewBrowserTest
   void SetUp() override {
     // Link capturing disables showing the intent picker.
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAWindowing, features::kIntentPicker},
-        {features::kDesktopPWAsLinkCapturing});
+        {features::kIntentPicker}, {features::kDesktopPWAsLinkCapturing});
 
     extensions::test::BookmarkAppNavigationBrowserTest::SetUp();
   }

@@ -327,9 +327,8 @@ class BookmarkAppNavigationThrottleExperimentalBrowserTest
     : public BookmarkAppNavigationBrowserTest {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAWindowing, features::kDesktopPWAsLinkCapturing},
-        {});
+    scoped_feature_list_.InitWithFeatures({features::kDesktopPWAsLinkCapturing},
+                                          {});
     BookmarkAppNavigationBrowserTest::SetUp();
   }
 
@@ -349,25 +348,6 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({}, {features::kDesktopPWAsLinkCapturing});
   InstallTestBookmarkApp();
-  NavigateToLaunchingPage();
-
-  const GURL app_url = https_server().GetURL(GetAppUrlHost(), GetAppUrlPath());
-  TestTabActionDoesNotOpenAppWindow(
-      app_url,
-      base::BindOnce(&ClickLinkAndWait,
-                     browser()->tab_strip_model()->GetActiveWebContents(),
-                     app_url, LinkTarget::SELF, GetParam()));
-
-  ExpectNavigationResultHistogramEquals(global_histogram(), {});
-}
-
-// Tests that navigating to the Web App's app_url doesn't open a new window
-// if features::kDesktopPWAWindowing is disabled after installing the app.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
-                       FeatureDisable_AfterInstall) {
-  InstallTestBookmarkApp();
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({}, {features::kDesktopPWAsLinkCapturing});
   NavigateToLaunchingPage();
 
   const GURL app_url = https_server().GetURL(GetAppUrlHost(), GetAppUrlPath());
@@ -1267,13 +1247,12 @@ class BookmarkAppNavigationThrottleBaseCommonBrowserTest
     // permanent and these tests are removed, explicitly disable the flag.
     if (should_enable_link_capturing) {
       scoped_feature_list_.InitWithFeatures(
-          {features::kDesktopPWAWindowing, features::kDesktopPWAsLinkCapturing},
+          {features::kDesktopPWAsLinkCapturing},
           {features::kDesktopPWAsStayInWindow});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {features::kDesktopPWAWindowing},
-          {features::kDesktopPWAsLinkCapturing,
-           features::kDesktopPWAsStayInWindow});
+          {}, {features::kDesktopPWAsLinkCapturing,
+               features::kDesktopPWAsStayInWindow});
     }
   }
 

@@ -894,11 +894,6 @@ const char kExpensiveBackgroundTimerThrottlingName[] =
 const char kExpensiveBackgroundTimerThrottlingDescription[] =
     "Enables intervention to limit CPU usage of background timers to 1%.";
 
-const char kExperimentalAppBannersName[] = "Experimental app banners";
-const char kExperimentalAppBannersDescription[] =
-    "Enables a new experimental app banner flow and UI. Implies "
-    "#enable-app-banners.";
-
 const char kExperimentalCanvasFeaturesName[] = "Experimental canvas features";
 const char kExperimentalCanvasFeaturesDescription[] =
     "Enables the use of experimental canvas features which are still in "

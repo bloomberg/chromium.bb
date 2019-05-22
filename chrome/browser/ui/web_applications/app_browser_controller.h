@@ -31,16 +31,13 @@ class AppBrowserController : public TabStripModelObserver,
   // Returns whether |browser| uses the experimental hosted app experience.
   // Convenience wrapper for checking IsForExperimentalWebAppBrowser() on
   // |browser|'s HostedAppBrowserController if it exists.
-  static bool IsForExperimentalWebAppBrowser(const Browser* browser);
+  static bool IsForWebAppBrowser(const Browser* browser);
 
   // Renders |url|'s origin as Unicode.
   static base::string16 FormatUrlOrigin(const GURL& url);
 
   // Returns whether the site is secure based on content's security level.
   static bool IsSiteSecure(const content::WebContents* web_contents);
-
-  // Returns true if this controller is for an experimental web app browser.
-  bool IsForExperimentalWebAppBrowser() const;
 
   // Returns whether this controller was created for an installed PWA.
   virtual bool IsHostedApp() const;

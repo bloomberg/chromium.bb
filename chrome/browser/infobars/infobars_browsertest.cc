@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 #include "chrome/browser/devtools/devtools_infobar_delegate.h"
 #include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability_infobar_delegate.h"
@@ -196,7 +195,6 @@ void InfoBarUiTest::PreShow() {
 
 void InfoBarUiTest::ShowUi(const std::string& name) {
   if (name == "multiple_infobars") {
-    ShowUi("app_banner");
     ShowUi("hung_plugin");
     ShowUi("dev_tools");
     ShowUi("extension_dev_tools");
@@ -206,7 +204,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
   }
 
   const base::flat_map<std::string, IBD::InfoBarIdentifier> kIdentifiers = {
-      {"app_banner", IBD::APP_BANNER_INFOBAR_DELEGATE},
       {"hung_plugin", IBD::HUNG_PLUGIN_INFOBAR_DELEGATE},
       {"dev_tools", IBD::DEV_TOOLS_INFOBAR_DELEGATE},
       {"extension_dev_tools", IBD::EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE},
@@ -239,12 +236,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
                                                              : id->second);
 
   switch (expected_identifiers_.back()) {
-    case IBD::APP_BANNER_INFOBAR_DELEGATE:
-      banners::AppBannerInfoBarDelegateDesktop::Create(
-          GetWebContents(), nullptr,
-          WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB, blink::Manifest());
-      break;
-
     case IBD::HUNG_PLUGIN_INFOBAR_DELEGATE:
       HungPluginInfoBarDelegate::Create(GetInfoBarService(), nullptr, 0,
                                         base::ASCIIToUTF16("Test Plugin"));
@@ -473,10 +464,6 @@ base::Optional<InfoBarUiTest::InfoBars> InfoBarUiTest::GetNewInfoBars() const {
     return base::nullopt;
   return InfoBars(std::next(infobars.begin(), starting_infobars_.size()),
                   infobars.end());
-}
-
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_app_banner) {
-  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_hung_plugin) {

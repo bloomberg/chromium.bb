@@ -173,7 +173,7 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
 
 bool BrowserFrame::ShouldUseTheme() const {
   // Browser windows are always themed (including popups).
-  if (!web_app::AppBrowserController::IsForExperimentalWebAppBrowser(
+  if (!web_app::AppBrowserController::IsForWebAppBrowser(
           browser_view_->browser())) {
     return true;
   }

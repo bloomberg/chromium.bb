@@ -36,8 +36,7 @@ void WebAppInstallDialogCallback(
   // This is a copy paste of BookmarkAppHelper::OnIconsDownloaded().
   // TODO(https://crbug.com/915043): Delete
   // BookmarkAppHelper::OnIconsDownloaded().
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-      for_installable_site == ForInstallableSite::kYes) {
+  if (for_installable_site == ForInstallableSite::kYes) {
     web_app_info->open_as_window = true;
     if (install_source == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
       chrome::ShowPWAInstallBubble(initiator_web_contents,

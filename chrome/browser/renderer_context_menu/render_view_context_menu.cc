@@ -1075,9 +1075,7 @@ void RenderViewContextMenu::AppendDevtoolsForUnpackedExtensions() {
 void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     const Browser* browser = GetBrowser();
-    const bool in_app =
-        base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
-        browser && browser->is_app();
+    const bool in_app = browser && browser->is_app();
 
     menu_model_.AddItemWithStringId(
         IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
@@ -1234,9 +1232,6 @@ void RenderViewContextMenu::AppendSmartSelectionActionItems() {
 }
 
 void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAWindowing))
-    return;
-
   const Extension* pwa = extensions::util::GetInstalledPwaForUrl(
       browser_context_, params_.link_url);
   if (!pwa)

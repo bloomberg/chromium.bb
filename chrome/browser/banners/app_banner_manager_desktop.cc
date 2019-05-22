@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,11 +26,6 @@ bool gDisableTriggeringForTesting = false;
 }  // namespace
 
 namespace banners {
-
-bool AppBannerManagerDesktop::IsEnabled() {
-  return base::FeatureList::IsEnabled(features::kAppBanners) ||
-         IsExperimentalAppBannersEnabled();
-}
 
 // static
 AppBannerManager* AppBannerManager::FromWebContents(
@@ -102,31 +96,11 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
 }
 
 void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {
-  if (IsExperimentalAppBannersEnabled()) {
-    RecordDidShowBanner("AppBanner.WebApp.Shown");
-    TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
-    TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
-    ReportStatus(SHOWING_APP_INSTALLATION_DIALOG);
-    CreateWebApp(install_source);
-    return;
-  }
-
-  content::WebContents* contents = web_contents();
-  DCHECK(contents && !manifest_.IsEmpty());
-
-  // This differs from Android, where there is a concrete
-  // AppBannerInfoBarAndroid class to interface with Java, and the manager calls
-  // the InfoBarService to show the banner. On desktop, an InfoBar class
-  // is not required, and the delegate calls the InfoBarService.
-  infobars::InfoBar* infobar = AppBannerInfoBarDelegateDesktop::Create(
-      contents, GetWeakPtr(), install_source, manifest_);
-  if (infobar) {
-    RecordDidShowBanner("AppBanner.WebApp.Shown");
-    TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
-    ReportStatus(SHOWING_WEB_APP_BANNER);
-  } else {
-    ReportStatus(FAILED_TO_CREATE_BANNER);
-  }
+  RecordDidShowBanner("AppBanner.WebApp.Shown");
+  TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
+  TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
+  ReportStatus(SHOWING_APP_INSTALLATION_DIALOG);
+  CreateWebApp(install_source);
 }
 
 void AppBannerManagerDesktop::DidFinishLoad(

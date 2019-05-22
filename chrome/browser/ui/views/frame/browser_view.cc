@@ -623,8 +623,7 @@ WebContents* BrowserView::GetActiveWebContents() const {
 }
 
 bool BrowserView::IsBrowserTypeHostedApp() const {
-  return web_app::AppBrowserController::IsForExperimentalWebAppBrowser(
-      browser_.get());
+  return web_app::AppBrowserController::IsForWebAppBrowser(browser_.get());
 }
 
 bool BrowserView::IsTopControlsSlideBehaviorEnabled() const {

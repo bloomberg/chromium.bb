@@ -3279,8 +3279,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       // want to use the scope of the app associated with the window, not the
       // WebContents.
       Browser* browser = chrome::FindBrowserWithWebContents(contents);
-      if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
-          browser && browser->app_controller() &&
+      if (browser && browser->app_controller() &&
           browser->app_controller()->CreatedForInstalledPwa()) {
         // PWAs should be hosted apps.
         DCHECK(browser->app_controller()->IsHostedApp());
@@ -4271,24 +4270,22 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       throttles.push_back(std::move(url_to_app_throttle));
   }
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
-    if (base::FeatureList::IsEnabled(features::kDesktopPWAsLinkCapturing)) {
-      auto bookmark_app_experimental_throttle =
-          extensions::BookmarkAppExperimentalNavigationThrottle::
-              MaybeCreateThrottleFor(handle);
-      if (bookmark_app_experimental_throttle)
-        throttles.push_back(std::move(bookmark_app_experimental_throttle));
-    } else if (!base::FeatureList::IsEnabled(
-                   features::kDesktopPWAsStayInWindow)) {
-      // Only add the bookmark app navigation throttle if the stay in
-      // window flag is not set, as the navigation throttle controls
-      // opening out of scope links in the browser.
-      auto bookmark_app_throttle =
-          extensions::BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
-              handle);
-      if (bookmark_app_throttle)
-        throttles.push_back(std::move(bookmark_app_throttle));
-    }
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsLinkCapturing)) {
+    auto bookmark_app_experimental_throttle =
+        extensions::BookmarkAppExperimentalNavigationThrottle::
+            MaybeCreateThrottleFor(handle);
+    if (bookmark_app_experimental_throttle)
+      throttles.push_back(std::move(bookmark_app_experimental_throttle));
+  } else if (!base::FeatureList::IsEnabled(
+                 features::kDesktopPWAsStayInWindow)) {
+    // Only add the bookmark app navigation throttle if the stay in
+    // window flag is not set, as the navigation throttle controls
+    // opening out of scope links in the browser.
+    auto bookmark_app_throttle =
+        extensions::BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
+            handle);
+    if (bookmark_app_throttle)
+      throttles.push_back(std::move(bookmark_app_throttle));
   }
 #endif
 

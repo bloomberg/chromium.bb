@@ -144,8 +144,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
   Profile* profile = params.initiating_profile;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
-      params.open_pwa_window_if_possible) {
+  if (params.open_pwa_window_if_possible) {
     const extensions::Extension* app = extensions::util::GetInstalledPwaForUrl(
         profile, params.url, extensions::LAUNCH_CONTAINER_WINDOW);
     if (app) {
