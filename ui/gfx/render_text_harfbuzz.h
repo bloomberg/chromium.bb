@@ -212,12 +212,15 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   const base::string16& GetDisplayText() override;
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;
+  Size GetLineSize(const SelectionModel& caret) override;
+  float TotalLineWidth() override;
   SelectionModel FindCursorPosition(const Point& point,
                                     const Point& drag_origin) override;
   bool IsSelectionSupported() const override;
   std::vector<FontSpan> GetFontSpansForTesting() override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
-  Range GetCursorSpan(const Range& text_range) override;
+  RangeF GetCursorSpan(const Range& text_range) override;
+  size_t GetLineContainingCaret(const SelectionModel& caret) override;
 
   // ICU grapheme iterator for the layout text. Can be null in case of an error.
   base::i18n::BreakIterator* GetGraphemeIterator();
@@ -229,6 +232,9 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
   SelectionModel AdjacentWordSelectionModel(
+      const SelectionModel& selection,
+      VisualCursorDirection direction) override;
+  SelectionModel AdjacentLineSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
   size_t TextIndexToDisplayIndex(size_t index) override;

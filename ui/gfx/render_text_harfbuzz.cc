@@ -238,6 +238,18 @@ bool IsNewlineSegment(const base::string16& text,
   return text[segment.char_range.start()] == '\n';
 }
 
+// Returns the line index considering the newline character. Line index is
+// incremented if the caret is right after the newline character, i.e, the
+// cursor affinity is |CURSOR_BACKWARD| while containing the newline character.
+size_t LineIndexForNewline(const size_t line_index,
+                           const base::string16& text,
+                           const internal::LineSegment& segment,
+                           const SelectionModel& caret) {
+  bool at_newline = IsNewlineSegment(text, segment) &&
+                    caret.caret_affinity() == CURSOR_BACKWARD;
+  return line_index + (at_newline ? 1 : 0);
+}
+
 // Helper template function for |TextRunHarfBuzz::GetClusterAt()|. |Iterator|
 // can be a forward or reverse iterator type depending on the text direction.
 // Returns true on success, or false if an error is encountered.
@@ -287,7 +299,6 @@ int GetLineSegmentContainingXCoord(const internal::Line& line,
     return -1;
   for (size_t i = 0; i < line.segments.size(); i++) {
     const internal::LineSegment& segment = line.segments[i];
-
     // segment.x_range is not used because it is in text space.
     if (line_x < segment.width()) {
       *offset_relative_segment = line_x;
@@ -357,15 +368,9 @@ class HarfBuzzLineBreaker {
           IsNewlineSegment(text_, word_segments.back())) {
         new_line = true;
 
-        // Since the line should at least contain some information regarding the
-        // text range it corresponds to, don't pop the newline segment, if it's
-        // the only segment in the line. This ensures that every line has a non-
-        // empty segments vector (except the last in some cases). This segment
-        // won't be drawn though.
-        if (word_segments.size() != 1u || available_width_ != max_width_) {
+        // Subtract the width of newline segments, they are not drawn.
+        if (word_segments.size() != 1u || available_width_ != max_width_)
           word_width -= word_segments.back().width();
-          word_segments.pop_back();
-        }
       }
 
       // If the word is not the first word in the line and it can't fit into
@@ -411,8 +416,19 @@ class HarfBuzzLineBreaker {
       line->size.set_height(std::max(min_height_, max_descent_ + max_ascent_));
       line->baseline = std::max(min_baseline_, SkScalarRoundToInt(max_ascent_));
       line->preceding_heights = std::ceil(total_size_.height());
+      // Subtract newline segment's width from |total_size_| because it's not
+      // drawn.
+      float line_width = line->size.width();
+      if (!line->segments.empty() &&
+          IsNewlineSegment(text_, line->segments.back())) {
+        line_width -= line->segments.back().width();
+      }
+      if (line->segments.size() > 1 &&
+          IsNewlineSegment(text_, line->segments.front())) {
+        line_width -= line->segments.front().width();
+      }
       total_size_.set_height(total_size_.height() + line->size.height());
-      total_size_.set_width(std::max(total_size_.width(), line->size.width()));
+      total_size_.set_width(std::max(total_size_.width(), line_width));
     }
     max_descent_ = 0;
     max_ascent_ = 0;
@@ -431,7 +447,9 @@ class HarfBuzzLineBreaker {
     for (const internal::LineSegment& segment : word_segments) {
       if (has_truncated)
         break;
-      if (segment.width() <= available_width_ ||
+
+      if (IsNewlineSegment(text_, segment) ||
+          segment.width() <= available_width_ ||
           word_wrap_behavior_ == IGNORE_LONG_WORDS) {
         AddLineSegment(segment);
       } else {
@@ -1233,6 +1251,30 @@ SizeF RenderTextHarfBuzz::GetStringSizeF() {
   return total_size_;
 }
 
+Size RenderTextHarfBuzz::GetLineSize(const SelectionModel& caret) {
+  const auto to_size = [](const internal::Line& line) {
+    return Size(std::ceil(line.size.width()), line.size.height());
+  };
+  EnsureLayout();
+  const auto& caret_run = GetRunContainingCaret(caret);
+  for (const auto& line : lines()) {
+    for (const internal::LineSegment& segment : line.segments) {
+      if (segment.run == caret_run)
+        return to_size(line);
+    }
+  }
+
+  return to_size(lines().back());
+}
+
+float RenderTextHarfBuzz::TotalLineWidth() {
+  EnsureLayout();
+  float total_width = 0;
+  for (const auto& line : lines())
+    total_width += line.size.width();
+  return total_width;
+}
+
 SelectionModel RenderTextHarfBuzz::FindCursorPosition(
     const Point& view_point,
     const Point& drag_origin) {
@@ -1262,10 +1304,15 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(
     line_index = lines().size() - 1;
   }
   const internal::Line& line = lines()[line_index];
+  // Newline segment should be ignored in finding segment index with x
+  // coordinate because it's not drawn.
+  Vector2d newline_offset;
+  if (line.segments.size() > 1 && IsNewlineSegment(line.segments.front()))
+    newline_offset.set_x(line.segments.front().width());
 
   float point_offset_relative_segment = 0;
   const int segment_index = GetLineSegmentContainingXCoord(
-      line, (view_point - GetLineOffset(line_index)).x(),
+      line, (view_point - GetLineOffset(line_index) + newline_offset).x(),
       &point_offset_relative_segment);
   if (segment_index < 0)
     return LineSelectionModel(line_index, CURSOR_LEFT);
@@ -1353,10 +1400,13 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
     const internal::Line& line = lines()[line_index];
     // Only the last line can be empty.
     DCHECK(!line.segments.empty() || (line_index == lines().size() - 1));
-    const float line_start_x =
+    float line_start_x =
         line.segments.empty()
             ? 0
             : run_list->runs()[line.segments[0].run]->preceding_run_widths;
+
+    if (line.segments.size() > 1 && IsNewlineSegment(line.segments[0]))
+      line_start_x += line.segments[0].width();
 
     for (const internal::LineSegment& segment : line.segments) {
       const Range intersection = segment.char_range.Intersect(display_range);
@@ -1375,21 +1425,29 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
   return rects;
 }
 
-Range RenderTextHarfBuzz::GetCursorSpan(const Range& text_range) {
+RangeF RenderTextHarfBuzz::GetCursorSpan(const Range& text_range) {
   DCHECK(!text_range.is_reversed());
   EnsureLayout();
   const size_t index = text_range.start();
-  const size_t run_index =
+  size_t run_index =
       GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
   internal::TextRunList* run_list = GetRunList();
-  // Return edge bounds if the index is invalid or beyond the layout text size.
-  if (run_index >= run_list->size())
-    return Range(GetStringSize().width());
+
+  // Return zero if the text is empty.
+  if (run_list->size() == 0 || text().empty())
+    return RangeF(0);
+
+  // Use the last run if the index is invalid or beyond the layout text size.
+  Range valid_range(text_range.start(), text_range.end());
+  if (run_index >= run_list->size()) {
+    valid_range = Range(text().length() - 1, text().length());
+    run_index = run_list->size() - 1;
+  }
 
   internal::TextRunHarfBuzz* run = run_list->runs()[run_index].get();
 
-  Range display_range(TextIndexToDisplayIndex(text_range.start()),
-                      TextIndexToDisplayIndex(text_range.end()));
+  Range display_range(TextIndexToDisplayIndex(valid_range.start()),
+                      TextIndexToDisplayIndex(valid_range.end()));
 
   // Although highly likely, there's no guarantee that a single text run is used
   // for the entire cursor span. For example, Unicode Variation Selectors are
@@ -1399,14 +1457,27 @@ Range RenderTextHarfBuzz::GetCursorSpan(const Range& text_range) {
   display_range = display_range.Intersect(run->range);
 
   RangeF bounds = run->GetGraphemeSpanForCharRange(this, display_range);
-  // If cursor is enabled, extend the last glyph up to the rightmost cursor
-  // position since clients expect them to be contiguous.
-  if (cursor_enabled() && run_index == run_list->size() - 1 &&
-      index ==
-          (run->font_params.is_rtl ? run->range.start() : run->range.end() - 1))
-    bounds.set_end(std::ceil(bounds.end()));
-  return run->font_params.is_rtl ? RangeF(bounds.end(), bounds.start()).Round()
-                                 : bounds.Round();
+  return run->font_params.is_rtl ? RangeF(bounds.end(), bounds.start())
+                                 : bounds;
+}
+
+size_t RenderTextHarfBuzz::GetLineContainingCaret(const SelectionModel& caret) {
+  EnsureLayout();
+
+  if (caret.caret_pos() == 0)
+    return 0;
+
+  size_t layout_position = TextIndexToDisplayIndex(caret.caret_pos());
+  LogicalCursorDirection affinity = caret.caret_affinity();
+  for (size_t line_index = 0; line_index < lines().size(); ++line_index) {
+    const internal::Line& line = lines()[line_index];
+    for (const internal::LineSegment& segment : line.segments) {
+      if (RangeContainsCaret(segment.char_range, layout_position, affinity))
+        return LineIndexForNewline(line_index, text(), segment, caret);
+    }
+  }
+
+  return lines().size() - 1;
 }
 
 base::i18n::BreakIterator* RenderTextHarfBuzz::GetGraphemeIterator() {
@@ -1506,6 +1577,45 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
   return current;
 }
 
+SelectionModel RenderTextHarfBuzz::AdjacentLineSelectionModel(
+    const SelectionModel& selection,
+    VisualCursorDirection direction) {
+  DCHECK(direction == CURSOR_UP || direction == CURSOR_DOWN);
+
+  size_t line = GetLineContainingCaret(selection);
+  if (line == 0 && direction == CURSOR_UP) {
+    reset_cached_cursor_x();
+    return SelectionModel(0, CURSOR_BACKWARD);
+  }
+  if (line == lines().size() - 1 && direction == CURSOR_DOWN) {
+    reset_cached_cursor_x();
+    return SelectionModel(text().length(), CURSOR_FORWARD);
+  }
+
+  direction == CURSOR_UP ? --line : ++line;
+  Rect bounds = GetCursorBounds(selection, true);
+  Point target = bounds.origin();
+  if (cached_cursor_x())
+    target.set_x(cached_cursor_x().value());
+  else
+    set_cached_cursor_x(target.x());
+  if (direction == CURSOR_UP)
+    target.Offset(0, -bounds.size().height() / 2);
+  else
+    target.Offset(0, bounds.size().height() * 3 / 2);
+  SelectionModel next = FindCursorPosition(target, Point());
+  size_t next_line = GetLineContainingCaret(next);
+
+  // If the |target| position is at the newline character, the caret is drawn to
+  // the next line. e.g., when the caret is at the beginning of the line in RTL
+  // text. Move the caret to the position of the previous character to move the
+  // caret to the previous line.
+  if (next_line == line + 1)
+    next = SelectionModel(next.caret_pos() - 1, next.caret_affinity());
+
+  return next;
+}
+
 size_t RenderTextHarfBuzz::TextIndexToDisplayIndex(size_t index) {
   return TextIndexToGivenTextIndex(GetDisplayText(), index);
 }
@@ -1597,7 +1707,7 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
     SkScalar preceding_segment_widths = 0;
     for (const internal::LineSegment& segment : line.segments) {
       // Don't draw the newline glyph (crbug.com/680430).
-      if (IsNewlineSegment(GetDisplayText(), segment))
+      if (IsNewlineSegment(segment))
         continue;
 
       const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];

@@ -94,6 +94,12 @@ class RenderTextTestApi {
     return RenderText::ExpandToBeVerticallySymmetric(rect, display_rect);
   }
 
+  void reset_cached_cursor_x() { render_text_->reset_cached_cursor_x(); }
+
+  int GetLineContainingYCoord(float text_y) {
+    return render_text_->GetLineContainingYCoord(text_y);
+  }
+
  private:
   RenderText* render_text_;
 
