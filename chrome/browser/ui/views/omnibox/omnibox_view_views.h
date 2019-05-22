@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "ui/base/window_open_disposition.h"
@@ -40,10 +41,6 @@ namespace gfx {
 class RenderText;
 }
 
-namespace send_tab_to_self {
-class SendTabToSelfSubMenuModel;
-}
-
 namespace ui {
 class OSExchangeData;
 }  // namespace ui
@@ -61,6 +58,12 @@ class OmniboxViewViews : public OmniboxView,
  public:
   // The internal view class name.
   static const char kViewClassName[];
+
+  // Range of command IDs to use for the items in the send tab to self submenu.
+  static const int kMinSendTabToSelfSubMenuCommandId =
+      send_tab_to_self::SendTabToSelfSubMenuModel::kMinCommandId;
+  static const int kMaxSendTabToSelfSubMenuCommandId =
+      send_tab_to_self::SendTabToSelfSubMenuModel::kMaxCommandId;
 
   OmniboxViewViews(OmniboxEditController* controller,
                    std::unique_ptr<OmniboxClient> client,

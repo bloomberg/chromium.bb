@@ -9,17 +9,32 @@
 // menu contains the imformation of valid devices, getting form
 // SendTabToSelfModel. Every item of this menu is a valid device.
 
+#include <vector>
+
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "url/gurl.h"
 
 class Profile;
+
+namespace content {
+class WebContents;
+}
 
 namespace send_tab_to_self {
 
 class SendTabToSelfSubMenuModel : public ui::SimpleMenuModel,
                                   public ui::SimpleMenuModel::Delegate {
  public:
-  explicit SendTabToSelfSubMenuModel(Profile* profile);
+  static const int kMinCommandId = 2000;
+  static const int kMaxCommandId = 2020;
+
+  struct ValidDeviceItem;
+
+  enum ShareSourceType { kTab, kLink };
+
+  SendTabToSelfSubMenuModel(content::WebContents* tab,
+                            const GURL& link_url = GURL());
   ~SendTabToSelfSubMenuModel() override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
@@ -28,6 +43,14 @@ class SendTabToSelfSubMenuModel : public ui::SimpleMenuModel,
 
  private:
   void Build(Profile* profile);
+  void BuildDeviceItem(const std::string& device_name,
+                       const std::string& guid,
+                       int index);
+
+  content::WebContents* tab_;
+  ShareSourceType source_type_ = kTab;
+  GURL link_url_;
+  std::vector<ValidDeviceItem> valid_device_items_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfSubMenuModel);
 };

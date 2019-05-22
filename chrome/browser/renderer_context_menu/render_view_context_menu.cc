@@ -67,7 +67,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -1184,7 +1183,8 @@ void RenderViewContextMenu::AppendLinkItems() {
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
       send_tab_to_self_sub_menu_model_ =
           std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-              GetProfile());
+              browser->tab_strip_model()->GetActiveWebContents(),
+              params_.link_url);
       menu_model_.AddSubMenuWithStringIdAndIcon(
           IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
           send_tab_to_self_sub_menu_model_.get(),
@@ -1389,7 +1389,7 @@ void RenderViewContextMenu::AppendPageItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     send_tab_to_self_sub_menu_model_ =
         std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            GetProfile());
+            GetBrowser()->tab_strip_model()->GetActiveWebContents());
     menu_model_.AddSubMenuWithStringIdAndIcon(
         IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
         send_tab_to_self_sub_menu_model_.get(),

@@ -21,7 +21,6 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -1751,7 +1750,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
       menu_contents->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
     send_tab_to_self_sub_menu_model_ =
         std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            location_bar_view_->profile());
+            location_bar_view_->GetWebContents());
     menu_contents->AddSubMenuWithStringIdAndIcon(
         IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
         send_tab_to_self_sub_menu_model_.get(),

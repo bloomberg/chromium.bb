@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
-#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -89,7 +88,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     send_tab_to_self_sub_menu_model_ =
         std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            tab_strip->profile());
+            tab_strip->GetActiveWebContents());
     AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
                                   IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
                                   send_tab_to_self_sub_menu_model_.get(),

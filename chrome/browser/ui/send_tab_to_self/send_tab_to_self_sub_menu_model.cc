@@ -8,16 +8,74 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
+#include "content/public/browser/web_contents.h"
 
 namespace send_tab_to_self {
 
-SendTabToSelfSubMenuModel::SendTabToSelfSubMenuModel(Profile* profile)
-    : ui::SimpleMenuModel(this) {
+namespace {
+
+// Each item of submenu has its unique command id. These ids should not be same
+// with the command ids of items in the menumodel. The range of all command
+// ID's used in SendTabToSelfSubMenuModel must be equal or larger than
+// |SendTabToSelfSubMenuModel::kMinCommandId| and less than
+// |SendTabToSelfSubMenuModel::kMaxCommandId|.
+// We assume that the user doesn't have more than 10 devices, if someone has,
+// then the device list will only show the first 10 lines.
+const int kMaxDevicesShown = 10;
+
+const int kShareTabCommandId = SendTabToSelfSubMenuModel::kMinCommandId;
+const int kShareLinkCommandId = 2010;
+static_assert(
+    kShareLinkCommandId - kShareTabCommandId == kMaxDevicesShown,
+    "The range of command id for sharing tab should be no more than 10.");
+const int kMaxCommandId = SendTabToSelfSubMenuModel::kMaxCommandId;
+static_assert(
+    kMaxCommandId - kShareLinkCommandId == kMaxDevicesShown,
+    "The range of command id for sharing link should be no more than 10.");
+
+// Returns true if the command id identifies a non-link contextual menu item.
+bool IsShareTabCommandId(int command_id) {
+  return (command_id >= kShareTabCommandId && command_id < kShareLinkCommandId);
+}
+
+// Returns true if the command id identifies a link contextual menu item.
+bool IsShareLinkCommandId(int command_id) {
+  return command_id >= kShareLinkCommandId && command_id < kMaxCommandId;
+}
+
+// Convert |command_id| of menu item to index in |valid_device_items_|.
+int CommandIdToVectorIndex(int command_id) {
+  if (IsShareTabCommandId(command_id)) {
+    return command_id - kShareTabCommandId;
+  } else if (IsShareLinkCommandId(command_id)) {
+    return command_id - kShareLinkCommandId;
+  }
+  return -1;
+}
+
+}  // namespace
+
+struct SendTabToSelfSubMenuModel::ValidDeviceItem {
+  ValidDeviceItem(const std::string& device_name, const std::string& cache_guid)
+      : device_name(device_name), cache_guid(cache_guid) {}
+
+  std::string device_name;
+  std::string cache_guid;
+};
+
+SendTabToSelfSubMenuModel::SendTabToSelfSubMenuModel(content::WebContents* tab,
+                                                     const GURL& link_url)
+    : ui::SimpleMenuModel(this), tab_(tab), link_url_(link_url) {
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  if (link_url_.is_valid()) {
+    source_type_ = kLink;
+  }
   Build(profile);
 }
 
@@ -30,30 +88,55 @@ bool SendTabToSelfSubMenuModel::IsCommandIdEnabled(int command_id) const {
 
 void SendTabToSelfSubMenuModel::ExecuteCommand(int command_id,
                                                int event_flags) {
-  // TODO(crbug/959060): handle click action.
-  if (command_id == IDC_SEND_TAB_TO_SELF) {
-    NOTIMPLEMENTED();
-  } else if (command_id == IDC_CONTENT_LINK_SEND_TAB_TO_SELF) {
-    NOTIMPLEMENTED();
+  int vector_index = CommandIdToVectorIndex(command_id);
+  if (vector_index == -1) {
+    return;
   }
+  const ValidDeviceItem& item = valid_device_items_[vector_index];
+
+  if (source_type_ == kTab) {
+    // Is sharing a tab.
+    CreateNewEntry(tab_, item.device_name, item.cache_guid);
+  } else {
+    // Is sharing a link.
+    CreateNewEntry(tab_, item.device_name, item.cache_guid, link_url_);
+  }
+
   return;
 }
 
 void SendTabToSelfSubMenuModel::Build(Profile* profile) {
-  send_tab_to_self::SendTabToSelfSyncService* service =
+  SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile);
   DCHECK(service);
-  send_tab_to_self::SendTabToSelfModel* model =
-      service->GetSendTabToSelfModel();
+  SendTabToSelfModel* model = service->GetSendTabToSelfModel();
   DCHECK(model);
-  std::map<std::string, send_tab_to_self::TargetDeviceInfo> map =
+  std::map<std::string, TargetDeviceInfo> map =
       model->GetTargetDeviceNameToCacheInfoMap();
   if (!map.empty()) {
+    int index = 0;
     for (const auto& item : map) {
-      AddItem(IDC_SEND_TAB_TO_SELF, base::UTF8ToUTF16(item.first));
+      if (index == kMaxDevicesShown) {
+        return;
+      }
+      BuildDeviceItem(item.first, item.second.cache_guid, index++);
     }
   }
   return;
+}
+
+void SendTabToSelfSubMenuModel::BuildDeviceItem(const std::string& device_name,
+                                                const std::string& cache_guid,
+                                                int index) {
+  ValidDeviceItem item(device_name, cache_guid);
+  int command_id;
+  if (source_type_ == kTab) {
+    command_id = index + kShareTabCommandId;
+  } else {
+    command_id = index + kShareLinkCommandId;
+  }
+  InsertItemAt(index, command_id, base::UTF8ToUTF16(device_name));
+  valid_device_items_.push_back(item);
 }
 
 }  //  namespace send_tab_to_self
