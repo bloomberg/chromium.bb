@@ -191,9 +191,8 @@ enum class TaskType : unsigned char {
   // Tasks related to the inspector.
   kInternalInspector = 33,
 
-  // Tasks related to workers. Tasks with this type are mainly posted by:
-  // * //third_party/blink/renderer/core/workers
-  kInternalWorker = 36,
+  // Obsolete.
+  // kInternalWorker = 36,
 
   // Translation task that freezes when the frame is not visible.
   kInternalTranslation = 55,

@@ -41,7 +41,7 @@ SyncManager* ServiceWorkerRegistrationSync::sync() {
     ExecutionContext* execution_context = registration_->GetExecutionContext();
     sync_manager_ = SyncManager::Create(
         registration_,
-        execution_context->GetTaskRunner(TaskType::kInternalWorker));
+        execution_context->GetTaskRunner(TaskType::kInternalIPC));
   }
   return sync_manager_.Get();
 }

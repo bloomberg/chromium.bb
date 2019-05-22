@@ -287,7 +287,7 @@ void TaskBase::TaskCompletedOnWorkerThread(v8::Local<v8::Value> v8_result,
 
   PostCrossThreadTask(
       *worker_thread_->GetParentExecutionContextTaskRunners()->Get(
-          TaskType::kInternalWorker),
+          TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBindOnce(&TaskBase::TaskCompleted,
                           WrapCrossThreadPersistent(this),

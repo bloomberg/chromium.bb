@@ -463,10 +463,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // The TaskType of Inspector tasks needs to be unpausable because they need
     // to run even on a paused page.
     case TaskType::kInternalInspector:
-    // The TaskType of worker tasks needs to be unpausable (in addition to
-    // unthrottled and undeferred) not to prevent service workers that may
-    // control browser navigation on multiple tabs.
-    case TaskType::kInternalWorker:
     // Some tasks in the tests need to run when objects are paused e.g. to hook
     // when recovering from debugger JavaScript statetment.
     case TaskType::kInternalTest:
