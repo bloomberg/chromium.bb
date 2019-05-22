@@ -921,12 +921,7 @@ IN_PROC_BROWSER_TEST_P(
     ui_test_utils::NavigateToURL(
         browser(), PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
                        HttpsLitePageURL(kSuccess)));
-    if (GetParam() &&
-        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      VerifyPreviewLoaded();
-    } else {
       VerifyPreviewNotLoaded();
-    }
   }
 
   {
@@ -1384,29 +1379,44 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsNavigation)) {
-  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  VerifyPreviewLoaded();
+  {
+    SCOPED_TRACE("First preview load");
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    VerifyPreviewLoaded();
+  }
 
-  // Go to a new page that doesn't Preview.
-  ui_test_utils::NavigateToURL(browser(), http_url());
-  VerifyPreviewNotLoaded();
-  ClearDeciderState();
+  {
+    SCOPED_TRACE("Go to a new page that doesn't Preview");
+    ui_test_utils::NavigateToURL(browser(), http_url());
+    VerifyPreviewNotLoaded();
+    ClearDeciderState();
+  }
 
   // Note: |VerifyPreviewLoaded| calls |content::WaitForLoadStop()| so these are
   // safe.
 
-  // Navigate back.
-  GetWebContents()->GetController().GoBack();
-  VerifyPreviewLoaded();
+  {
+    SCOPED_TRACE("Navigate back");
+    GetWebContents()->GetController().GoBack();
+    if (GetParam()) {
+      VerifyPreviewNotLoaded();
+    } else {
+      VerifyPreviewLoaded();
+    }
+  }
 
-  // Navigate forward.
-  GetWebContents()->GetController().GoForward();
-  VerifyPreviewNotLoaded();
-  ClearDeciderState();
+  {
+    SCOPED_TRACE("Navigate forward");
+    GetWebContents()->GetController().GoForward();
+    VerifyPreviewNotLoaded();
+    ClearDeciderState();
+  }
 
-  // Navigate back again.
-  GetWebContents()->GetController().GoBack();
-  VerifyPreviewLoaded();
+  {
+    SCOPED_TRACE("Navigate back again");
+    GetWebContents()->GetController().GoBack();
+    VerifyPreviewLoaded();
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
