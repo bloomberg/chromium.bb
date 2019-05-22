@@ -41,12 +41,6 @@ Polymer({
       value: 'back',
     },
 
-    /** Overridden from UiPageContainerBehavior. */
-    headerId: {
-      type: String,
-      value: 'passwordPageHeader',
-    },
-
     /**
      * Authentication token; retrieved using the quickUnlockPrivate API.
      * @type {string}

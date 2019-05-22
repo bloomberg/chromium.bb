@@ -76,6 +76,9 @@ GetLocalizedStringsWithPlaceholders() {
       localized_strings([] {
         std::vector<LocalizedStringWithName> localized_strings;
 
+        // TODO(crbug.com/964547): Refactor so that any change to these strings
+        // will surface in both the OOBE and post-OOBE UIs without having to
+        // adjust both localization calls separately.
         localized_strings.emplace_back(
             "startSetupPageMessage",
             l10n_util::GetStringFUTF16(
@@ -120,8 +123,26 @@ void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {
   for (const auto& entry : kLocalizedStringsWithoutPlaceholders)
     builder->Add(entry.name, entry.id);
 
-  for (const auto& entry : GetLocalizedStringsWithPlaceholders())
-    builder->Add(entry.name, entry.localized_string);
+  // TODO(crbug.com/964547): Refactor so that any change to these strings will
+  // surface in both the OOBE and post-OOBE UIs without having to adjust both
+  // localization calls separately.
+  builder->AddF(
+      "startSetupPageMessage", IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE,
+      base::ASCIIToUTF16(kFootnoteMarker),
+      base::UTF8ToUTF16(chromeos::multidevice_setup::
+                            GetBoardSpecificBetterTogetherSuiteLearnMoreUrl()
+                                .spec()));
+
+  builder->AddF("startSetupPageFootnote",
+                IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE,
+                base::ASCIIToUTF16(kFootnoteMarker));
+
+  builder->AddF(
+      "startSetupPageFeatureListAwm",
+      IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION,
+      base::UTF8ToUTF16(
+          chromeos::multidevice_setup::GetBoardSpecificMessagesLearnMoreUrl()
+              .spec()));
 }
 
 }  // namespace multidevice_setup
