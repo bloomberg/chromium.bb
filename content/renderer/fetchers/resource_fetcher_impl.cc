@@ -35,7 +35,6 @@
 namespace {
 
 constexpr int32_t kRoutingId = 0;
-const char kAccessControlAllowOriginHeader[] = "Access-Control-Allow-Origin";
 
 }  // namespace
 
@@ -317,7 +316,7 @@ void ResourceFetcherImpl::Start(
   if (!frame->GetDocument().GetSecurityOrigin().IsNull()) {
     request_.request_initiator =
         static_cast<url::Origin>(frame->GetDocument().GetSecurityOrigin());
-    SetHeader(kAccessControlAllowOriginHeader,
+    SetHeader(net::HttpRequestHeaders::kOrigin,
               blink::WebSecurityOrigin::CreateUnique().ToString().Ascii());
   }
   request_.resource_type =
