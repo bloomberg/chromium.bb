@@ -79,9 +79,6 @@ various important responsibilities:
   * Note: external emails will always come in on security@chromium.org as
     chrome-security@google.com is a Google-only list, but both need to be
     triaged.
-* Ensure [accurate label management](security-labels.md) on bugs, for example
-  applying the correct **Merge-?** and **Restrict-View-?** labels when a bug
-  transitions to **Fixed**.
 * Change bugs status to **Fixed** for those that the developer forgets to
   close. Make sure to read bug comments where developer might point out that it
   needs more CLs, et c. Wait 24 hours before closing ClusterFuzz bugs, to give
@@ -212,6 +209,10 @@ the assessment? Be especially on the lookout for Highs that are really
 Criticals, and Lows that are really Mediums (make sure to account for process
 types and sandbox boundaries).
 
+**Note:** For V8 issues that weren't reported by ClusterFuzz, please add
+`Security_Needs_Attention-Severity` label alongside the regular
+`Security_Severity-*` label.
+
 #### Step 3. [Label, label, label](security-labels.md).
 
 Much of Chrome's development and release process depends on bugs having the
@@ -244,8 +245,7 @@ Generally, see [the Security Labels document](security-labels.md).
 
 ##### Labeling For Chrome On iOS
 
-* Reproduce using iOS device, desktop Safari, or
-  [Browserstack](http://browserstack.com/).
+* Reproduce using iOS device or desktop Safari.
 * Assign severity, impact, milestone, and component labels.
 * Label **ExternalDependency**.
 * Label **Hotlist-WebKit**. This label is monitored by Apple friends.
