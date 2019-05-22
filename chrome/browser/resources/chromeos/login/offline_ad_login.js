@@ -54,7 +54,7 @@ Polymer({
     /**
      * The kerberos realm (AD Domain), the machine is part of.
      */
-    realm: {type: String, observer: 'realmChanged_'},
+    realm: {type: String},
     /**
      * The user kerberos default realm. Used for autocompletion.
      */
