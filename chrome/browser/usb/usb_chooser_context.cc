@@ -465,6 +465,7 @@ bool UsbChooserContext::HasDevicePermission(
 void UsbChooserContext::GetDevices(
     device::mojom::UsbDeviceManager::GetDevicesCallback callback) {
   if (!is_initialized_) {
+    EnsureConnectionWithDeviceManager();
     pending_get_devices_requests_.push(std::move(callback));
     return;
   }
