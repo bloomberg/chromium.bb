@@ -6,6 +6,7 @@
 #define BASE_TASK_PROMISE_PROMISE_H_
 
 #include "base/task/post_task.h"
+#include "base/task/promise/finally_executor.h"
 #include "base/task/promise/helpers.h"
 #include "base/task/promise/no_op_promise_executor.h"
 #include "base/task/promise/promise_result.h"
@@ -298,6 +299,57 @@ class Promise {
     return ThenOn(SequencedTaskRunnerHandle::Get(), from_here,
                   std::forward<ResolveCb>(on_resolve),
                   std::forward<RejectCb>(on_reject));
+  }
+
+  // A task to execute |finally_callback| on |task_runner| is posted after the
+  // parent promise is resolved or rejected. |finally_callback| is not executed
+  // if the parent promise is cancelled. Unlike the finally() in Javascript
+  // promises, this doesn't return a Promise that is resolved or rejected with
+  // the parent's value if |finally_callback| returns void. (We could support
+  // this if needed it but it seems unlikely to be used).
+  template <typename FinallyCb>
+  NOINLINE auto FinallyOn(scoped_refptr<TaskRunner> task_runner,
+                          const Location& from_here,
+                          FinallyCb&& finally_callback) noexcept {
+    DCHECK(abstract_promise_);
+
+    // Extract properties from |finally_callback| callback.
+    using CallbackTraits = internal::CallbackTraits<FinallyCb>;
+    using ReturnedPromiseResolveT = typename CallbackTraits::ResolveType;
+    using ReturnedPromiseRejectT = typename CallbackTraits::RejectType;
+
+    using CallbackArgT = typename CallbackTraits::ArgType;
+    static_assert(std::is_void<CallbackArgT>::value,
+                  "|finally_callback| callback must have no arguments");
+
+    return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
+        MakeRefCounted<internal::AbstractPromise>(
+            std::move(task_runner), from_here,
+            std::make_unique<internal::AbstractPromise::AdjacencyList>(
+                abstract_promise_),
+            RejectPolicy::kMustCatchRejection,
+            internal::AbstractPromise::ConstructWith<
+                internal::DependentList::ConstructUnresolved,
+                internal::FinallyExecutor<
+                    OnceCallback<typename CallbackTraits::ReturnType()>,
+                    Resolved<ReturnedPromiseResolveT>,
+                    Rejected<ReturnedPromiseRejectT>>>(),
+            std::forward<FinallyCb>(finally_callback)));
+  }
+
+  template <typename FinallyCb>
+  auto FinallyOn(const TaskTraits& traits,
+                 const Location& from_here,
+                 FinallyCb&& finally_callback) noexcept {
+    return FinallyOn(CreateTaskRunnerWithTraits(traits), from_here,
+                     std::move(finally_callback));
+  }
+
+  template <typename FinallyCb>
+  auto FinallyOnCurrent(const Location& from_here,
+                        FinallyCb&& finally_callback) noexcept {
+    return FinallyOn(SequencedTaskRunnerHandle::Get(), from_here,
+                     std::move(finally_callback));
   }
 
   template <typename... Args>

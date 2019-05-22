@@ -362,7 +362,7 @@ class ArgMoveSemanticsHelper {
 // Helper for running a promise callback and storing the result if any.
 //
 // Callback = signature of the callback to execute,
-// ArgStorageType = type of the callback parameter (pr void if none)
+// ArgStorageType = type of the callback parameter (or void if none)
 // ResolveStorage = type to use for resolve, usually Resolved<T>.
 // RejectStorage = type to use for reject, usually Rejected<T>.
 // TODO(alexclarke): Add support for Rejected<Variant<...>>.

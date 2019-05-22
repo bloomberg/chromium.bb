@@ -1090,6 +1090,118 @@ TEST_F(PromiseTest, CatchThenInt) {
   run_loop.Run();
 }
 
+TEST_F(PromiseTest, SettledTaskFinally) {
+  int result = 0;
+  ManualPromiseResolver<int> p(FROM_HERE);
+  p.Resolve(123);
+
+  RunLoop run_loop;
+  p.promise()
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](int value) { result = value; }))
+      .FinallyOnCurrent(FROM_HERE, BindLambdaForTesting([&]() {
+                          EXPECT_EQ(123, result);
+                          run_loop.Quit();
+                        }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, SettledTaskFinallyThen) {
+  int result = 0;
+  ManualPromiseResolver<int> p(FROM_HERE);
+  p.Resolve(123);
+
+  RunLoop run_loop;
+  p.promise()
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](int value) { result = value; }))
+      .FinallyOnCurrent(FROM_HERE, BindLambdaForTesting([&]() {
+                          EXPECT_EQ(123, result);
+                          return std::string("hi");
+                        }))
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](const std::string& value) {
+                       EXPECT_EQ("hi", value);
+                       run_loop.Quit();
+                     }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, SettledTaskFinallyCatch) {
+  int result = 0;
+  ManualPromiseResolver<int> p(FROM_HERE);
+  p.Resolve(123);
+
+  RunLoop run_loop;
+  p.promise()
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](int value) { result = value; }))
+      .FinallyOnCurrent(
+          FROM_HERE,
+          BindLambdaForTesting([&]() -> PromiseResult<void, std::string> {
+            EXPECT_EQ(123, result);
+            return std::string("Oh no");
+          }))
+      .CatchOnCurrent(FROM_HERE,
+                      BindLambdaForTesting([&](const std::string& value) {
+                        EXPECT_EQ("Oh no", value);
+                        run_loop.Quit();
+                      }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, ResolveFinally) {
+  int result = 0;
+  ManualPromiseResolver<int> p(FROM_HERE);
+
+  RunLoop run_loop;
+  p.promise().ThenOnCurrent(
+      FROM_HERE, BindLambdaForTesting([&](int value) { result = value; }));
+  p.promise().FinallyOnCurrent(FROM_HERE, BindLambdaForTesting([&]() {
+                                 EXPECT_EQ(123, result);
+                                 run_loop.Quit();
+                               }));
+  p.Resolve(123);
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, RejectFinally) {
+  int result = 0;
+  ManualPromiseResolver<int, void> p(FROM_HERE);
+
+  RunLoop run_loop;
+  p.promise().ThenOnCurrent(
+      FROM_HERE, BindLambdaForTesting([&](int value) { result = value; }),
+      BindLambdaForTesting([&]() { result = -1; }));
+  p.promise().FinallyOnCurrent(FROM_HERE, BindLambdaForTesting([&]() {
+                                 EXPECT_EQ(-1, result);
+                                 run_loop.Quit();
+                               }));
+  p.Reject();
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, RejectFinallySkipsThens) {
+  ManualPromiseResolver<void> p(FROM_HERE);
+
+  RunLoop run_loop;
+  p.promise()
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&]() { return Rejected<int>(123); }))
+      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting([&]() {
+                       FAIL() << "Promise was rejected";
+                     }))
+      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting([&]() {
+                       FAIL() << "Promise was rejected";
+                     }))
+      .FinallyOnCurrent(FROM_HERE, run_loop.QuitClosure());
+  p.Resolve();
+  run_loop.Run();
+}
+
 namespace {
 struct Cancelable {
   Cancelable() : weak_ptr_factory(this) {}
@@ -1129,6 +1241,8 @@ TEST_F(PromiseTest, CancelViaWeakPtr) {
                           log.push_back("Caught " + err);
                         }));
 
+    p2.FinallyOnCurrent(
+        FROM_HERE, BindLambdaForTesting([&]() { log.push_back("Finally"); }));
     p2.ThenOnCurrent(FROM_HERE,
                      BindLambdaForTesting([&]() { log.push_back("Then #5"); }));
     p2.ThenOnCurrent(FROM_HERE,

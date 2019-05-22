@@ -19,6 +19,7 @@ struct FakeBindState;
 
 namespace internal {
 
+class FinallyExecutorCommon;
 class ThenAndCatchExecutorCommon;
 class BindStateBase;
 
@@ -136,6 +137,7 @@ class BASE_EXPORT CallbackBase {
   void Reset();
 
  protected:
+  friend class FinallyExecutorCommon;
   friend class ThenAndCatchExecutorCommon;
 
   using InvokeFuncStorage = BindStateBase::InvokeFuncStorage;
