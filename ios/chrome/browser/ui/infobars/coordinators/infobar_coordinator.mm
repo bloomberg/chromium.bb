@@ -267,7 +267,13 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   // coordinator.
   [self.badgeDelegate infobarModalWillDismiss];
   self.modalTransitionDriver = nil;
-  [self infobarWasDismissed];
+
+  // If InfobarBanner is being presented it means that this Modal was presented
+  // by an InfobarBanner. If this is the case InfobarBanner will call
+  // infobarWasDismissed and clean up once it gets dismissed, this prevents
+  // counting the dismissal metrics twice.
+  if (!self.presentingInfobarBanner)
+    [self infobarWasDismissed];
 }
 
 #pragma mark InfobarModalPositioner
