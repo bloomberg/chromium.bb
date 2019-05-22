@@ -876,6 +876,8 @@ android_library("chrome_test_java") {
     "//content/test/data/android/quota_permissions.html",
     "//content/test/data/android/webshare.html",
     "//content/test/data/android/webshare-apk.html",
+    "//content/test/data/android/webshare-bmp.html",
+    "//content/test/data/android/webshare-csv.html",
     "//content/test/data/android/webshare-dex.html",
     "//content/test/data/android/webshare-ogg.html",
     "//content/test/data/media/bear.webm",

@@ -48,6 +48,8 @@ public class WebShareTest {
 
     private static final String TEST_FILE = "/content/test/data/android/webshare.html";
     private static final String TEST_FILE_APK = "/content/test/data/android/webshare-apk.html";
+    private static final String TEST_FILE_BMP = "/content/test/data/android/webshare-bmp.html";
+    private static final String TEST_FILE_CSV = "/content/test/data/android/webshare-csv.html";
     private static final String TEST_FILE_DEX = "/content/test/data/android/webshare-dex.html";
     private static final String TEST_FILE_OGG = "/content/test/data/android/webshare-ogg.html";
 
@@ -193,6 +195,31 @@ public class WebShareTest {
     }
 
     /**
+     * Verify WebShare of .bmp files succeeds if share is called from a user gesture, and app
+     * chosen. This test tests functionality that is only available post Lollipop MR1.
+     * @throws Exception
+     */
+    @Test
+    @MediumTest
+    @Feature({"WebShare"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
+    public void testWebShareBmp() throws Exception {
+        // Set up ShareHelper to immediately succeed (without showing a picker).
+        ShareHelper.setFakeIntentReceiverForTesting(new FakeIntentReceiverPostLMR1(true));
+
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_BMP));
+        // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
+
+        // The actual intent to be delivered to the target is in the EXTRA_INTENT of the chooser
+        // intent.
+        Assert.assertNotNull(mReceivedIntent);
+        Assert.assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_INTENT));
+        verifyDeliveredBmpIntent(mReceivedIntent.getParcelableExtra(Intent.EXTRA_INTENT));
+    }
+
+    /**
      * Verify WebShare fails if share of .apk is called from a user gesture.
      * @throws Exception
      */
@@ -285,6 +312,28 @@ public class WebShareTest {
         verifyDeliveredOggIntent(mReceivedIntent);
     }
 
+    /**
+     * Verify WebShare of .csv files succeeds if share is called from a user gesture, and app
+     * chosen.
+     *
+     * Simulates pre-Lollipop-LMR1 system (different intent picker).
+     *
+     * @throws Exception
+     */
+    @Test
+    @MediumTest
+    @Feature({"WebShare"})
+    public void testWebShareCsvPreLMR1() throws Exception {
+        ShareHelper.setFakeIntentReceiverForTesting(new FakeIntentReceiverPreLMR1(true));
+
+        ShareHelper.setForceCustomChooserForTesting(true);
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_CSV));
+        // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
+        verifyDeliveredCsvIntent(mReceivedIntent);
+    }
+
     private static void verifyDeliveredIntent(Intent intent) {
         Assert.assertNotNull(intent);
         Assert.assertEquals(Intent.ACTION_SEND, intent.getAction());
@@ -293,6 +342,44 @@ public class WebShareTest {
         Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
         Assert.assertEquals(
                 "Test Text https://test.url/", intent.getStringExtra(Intent.EXTRA_TEXT));
+    }
+
+    private static String getFileContents(Uri fileUri) throws Exception {
+        InputStream inputStream =
+                InstrumentationRegistry.getContext().getContentResolver().openInputStream(fileUri);
+        byte[] buffer = new byte[1024];
+        int position = 0;
+        int read;
+        while ((read = inputStream.read(buffer, position, buffer.length - position)) > 0) {
+            position += read;
+        }
+        return new String(buffer, 0, position, "UTF-8");
+    }
+
+    private static void verifyDeliveredBmpIntent(Intent intent) throws Exception {
+        Assert.assertNotNull(intent);
+        Assert.assertEquals(Intent.ACTION_SEND_MULTIPLE, intent.getAction());
+        Assert.assertEquals("image/*", intent.getType());
+        Assert.assertEquals(Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                intent.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        ArrayList<Uri> fileUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+        Assert.assertEquals(2, fileUris.size());
+        Assert.assertEquals("B", getFileContents(fileUris.get(0)));
+        Assert.assertEquals("MP", getFileContents(fileUris.get(1)));
+    }
+
+    private static void verifyDeliveredCsvIntent(Intent intent) throws Exception {
+        Assert.assertNotNull(intent);
+        Assert.assertEquals(Intent.ACTION_SEND_MULTIPLE, intent.getAction());
+        Assert.assertEquals("text/*", intent.getType());
+        Assert.assertEquals(Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                intent.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        ArrayList<Uri> fileUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+        Assert.assertEquals(2, fileUris.size());
+        Assert.assertEquals("1,2", getFileContents(fileUris.get(0)));
+        Assert.assertEquals("1,2,3\n4,5,6\n", getFileContents(fileUris.get(1)));
     }
 
     private static void verifyDeliveredOggIntent(Intent intent) throws Exception {
@@ -304,17 +391,7 @@ public class WebShareTest {
 
         ArrayList<Uri> fileUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
         Assert.assertEquals(1, fileUris.size());
-
-        InputStream inputStream =
-                InstrumentationRegistry.getContext().getContentResolver().openInputStream(
-                        fileUris.get(0));
-        byte[] buffer = new byte[1024];
-        int position = 0;
-        int read;
-        while ((read = inputStream.read(buffer, position, buffer.length - position)) > 0) {
-            position += read;
-        }
-        Assert.assertEquals("contents", new String(buffer, 0, position, "UTF-8"));
+        Assert.assertEquals("contents", getFileContents(fileUris.get(0)));
     }
 
     // Uses intent picker functionality that is only available since Lollipop MR1.
