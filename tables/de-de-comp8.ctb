@@ -472,3 +472,9 @@ sign \x25cf 35
 sign \x2610 124578	# not active
 sign \x2612 12345678 	# active
 sign \x8722 36
+
+# musical unicode characters
+
+sign \x266d 12		# ♭
+sign \x266e 2356 	# ♮
+sign \x266f 3456 	# ♯
