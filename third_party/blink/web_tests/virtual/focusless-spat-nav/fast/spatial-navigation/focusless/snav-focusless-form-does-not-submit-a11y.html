@@ -12,10 +12,6 @@
 </form>
 
 <script>
-  if (accessibilityController) {
-    accessibilityController.reset();
-  }
-
   function fail() {
     assert_false(true, "Form should not have been submitted.");
   }
@@ -25,14 +21,13 @@
     snav.triggerMove("Down");
     await snavCallback();
 
-    assert_false(mockSnavService.canExitFocus,
+    assert_true(mockSnavService.canExitFocus,
                 "Should not be able to exit focus.");
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
-    assert_false(mockSnavService.hasNextFormElement,
+    assert_true(mockSnavService.hasNextFormElement,
                 "Should not be able to move to next form element.");
 
-    eventSender.keyDown('Enter');
     assert_equals(document.activeElement,
                   first,
                   "'first' should be focused.");

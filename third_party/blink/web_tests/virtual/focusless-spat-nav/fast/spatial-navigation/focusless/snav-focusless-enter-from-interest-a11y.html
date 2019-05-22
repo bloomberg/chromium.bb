@@ -9,12 +9,8 @@
 <a id="link" href="#active">Activate</a>
 
 <script>
-  if (accessibilityController) {
-    accessibilityController.reset();
-  }
-
-  // This test checks that pressing enter over an unfocused but interested
-  // element will activate it.
+  // This test checks that pressing enter over a focused element will route the
+  // event to the element and follow the link.
   let link = document.getElementById("link");
 
   testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
@@ -28,12 +24,15 @@
     // Move interest to 'link'
     snav.triggerMove('Down');
 
-    assert_not_equals(document.activeElement,
-                      link,
-                      "'link' must not be focused");
+    assert_equals(document.activeElement,
+                  link,
+                  "'link' must be focused");
     assert_equals(window.internals.interestedElement,
                   link,
                   "'link' must be interested");
+    assert_not_equals(window.location.hash,
+                      "#active",
+                      "Conferring focus must not cause navigation.");
 
     // Press enter key. Ensure that the link was activated by making sure we
     // navigated to the fragment.

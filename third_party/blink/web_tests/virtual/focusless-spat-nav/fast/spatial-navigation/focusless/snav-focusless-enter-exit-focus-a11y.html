@@ -20,12 +20,8 @@
 <div id="third" tabindex="0">Third</div>
 
 <script>
-  if (accessibilityController) {
-    accessibilityController.reset();
-  }
-
-  // This test checks that focusless mode allows entering focus into an element
-  // with the enter key and exiting it with the escape key.
+  // This test checks that focusless in a11y mode does move focus, but permits
+  // blurring via the escape key.
   let first = document.getElementById("first");
   let second = document.getElementById("second");
   let third = document.getElementById("third");
@@ -34,15 +30,9 @@
     snav.triggerMove('Down');
     snav.triggerMove('Down'); // Move interest to 'second'
 
-    assert_not_equals(document.activeElement,
-                      second,
-                      "'second' starts off unfocused");
-
-    eventSender.keyDown('Enter');
-
     assert_equals(document.activeElement,
                   second,
-                  "Enter key moves focus into 'second'");
+                  "'second' should be focused");
 
     eventSender.keyDown('Escape');
 

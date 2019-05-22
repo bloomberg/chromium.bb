@@ -20,6 +20,10 @@
 <div id="third" tabindex="0">Third</div>
 
 <script>
+  if (accessibilityController) {
+    accessibilityController.reset();
+  }
+
   // This test checks that uncancelled arrow keys from a focused element cause
   // interest to move.
   let first = document.getElementById("first");

@@ -20,34 +20,36 @@
 <div id="third" tabindex="0">Third</div>
 
 <script>
-  if (accessibilityController) {
-    accessibilityController.reset();
-  }
-
-  // This test checks that focusless mode allows entering focus into an element
-  // with the enter key and exiting it with the escape key.
+  // This test checks that uncancelled arrow keys from a focused element cause
+  // interest to move.
   let first = document.getElementById("first");
   let second = document.getElementById("second");
   let third = document.getElementById("third");
 
   test(() => {
+    assert_true(!!window.internals);
+
+    // Move interest to 'second'
     snav.triggerMove('Down');
-    snav.triggerMove('Down'); // Move interest to 'second'
+    snav.triggerMove('Down');
 
-    assert_not_equals(document.activeElement,
-                      second,
-                      "'second' starts off unfocused");
-
+    // Enter focus into 'second'
     eventSender.keyDown('Enter');
-
     assert_equals(document.activeElement,
                   second,
                   "Enter key moves focus into 'second'");
 
-    eventSender.keyDown('Escape');
-
+    // Press down arrow. This should unfocus 'second' and move interest to
+    // 'third'.
+    snav.triggerMove('Down');
     assert_not_equals(document.activeElement,
                       second,
-                      "Escape key blurs 'second'");
-  }, "Enter key moves focus into interested element");
+                      "Navigation blurs old interested element");
+    assert_equals(window.internals.interestedElement,
+                  third,
+                  "Uncancelled arrow key from focused element navigates");
+    assert_equals(document.activeElement,
+                  third,
+                  "Navigation should move focus to 'third'.");
+  }, "Navigation from focused element.");
 </script>

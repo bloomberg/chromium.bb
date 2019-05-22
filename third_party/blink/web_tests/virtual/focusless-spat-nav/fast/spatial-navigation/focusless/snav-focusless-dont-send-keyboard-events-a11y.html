@@ -20,34 +20,31 @@
 <div id="third" tabindex="0">Third</div>
 
 <script>
-  if (accessibilityController) {
-    accessibilityController.reset();
-  }
-
   var resultMap = [
     ["Down", "first"],
     ["Down", "second"],
     ["Down", "third"],
   ];
 
-  // This test checks basic movement operation of the "focusless spatial
-  // navigation" feature. This feature puts spatial navigation into a mode that
-  // moves a visual-only indicator, rather than page focus.
-  let no_focus_test = async_test("Focusless SpatNav");
-  let first = document.getElementById("first")
-  let second = document.getElementById("second")
-  let third = document.getElementById("third")
+  // This test checks that the "focusless spatial navigation" when in a11y does
+  // dispatch key events to elements (since they will have focus).
+  let no_keyboard_events_test =
+      async_test("Focusless SpatNav A11y Does Dispatch KeyboardEvents");
 
-  first.addEventListener("focus", no_focus_test.unreached_func(
-      "Focusless SpatNav should not cause focus event on 'first'"));
-  second.addEventListener("focus", no_focus_test.unreached_func(
-      "Focusless SpatNav should not cause focus event on 'second'"));
-  third.addEventListener("focus", no_focus_test.unreached_func(
-      "Focusless SpatNav should not cause focus event on 'third'"));
+  var count = 0;
+  for (let id of ['first', 'second']) {
+    let e = document.getElementById(id);
+    e.addEventListener('keydown', e => { count++; });
+  }
+  document.getElementById('third').addEventListener(
+      'keydown',
+       no_keyboard_events_test.unreached_func(
+           'Should not have sent a keyboard event to the third div'));
 
-  let postAssertsFunc = no_focus_test.step_func_done(() => {
-    assert_equals(document.activeElement, document.body,
-        "Focus should not have been changed");
+  let postAssertsFunc = no_keyboard_events_test.step_func_done(() => {
+    // We should send a keyboard event each time focus leaves a div. Should
+    // happen twice.
+    assert_equals(count, 2);
   });
 
   snav.assertFocusMoves(resultMap,
