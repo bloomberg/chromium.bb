@@ -13,6 +13,8 @@
 #include "base/win/windows_version.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/win/window_event_target.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -38,8 +40,9 @@ void DebugLogging(const std::string& s, HRESULT hr) {
 // static
 std::unique_ptr<DirectManipulationHelper>
 DirectManipulationHelper::CreateInstance(HWND window,
+                                         ui::Compositor* compositor,
                                          ui::WindowEventTarget* event_target) {
-  if (!::IsWindow(window))
+  if (!::IsWindow(window) || !compositor || !event_target)
     return nullptr;
 
   if (!base::FeatureList::IsEnabled(features::kPrecisionTouchpad))
@@ -50,8 +53,7 @@ DirectManipulationHelper::CreateInstance(HWND window,
     return nullptr;
 
   std::unique_ptr<DirectManipulationHelper> instance =
-      base::WrapUnique(new DirectManipulationHelper());
-  instance->window_ = window;
+      base::WrapUnique(new DirectManipulationHelper(window, compositor));
 
   if (instance->Initialize(event_target))
     return instance;
@@ -72,7 +74,7 @@ DirectManipulationHelper::CreateInstanceForTesting(
     return nullptr;
 
   std::unique_ptr<DirectManipulationHelper> instance =
-      base::WrapUnique(new DirectManipulationHelper());
+      base::WrapUnique(new DirectManipulationHelper(0, nullptr));
 
   instance->event_handler_ =
       Microsoft::WRL::Make<DirectManipulationEventHandler>(instance.get());
@@ -84,11 +86,25 @@ DirectManipulationHelper::CreateInstanceForTesting(
 }
 
 DirectManipulationHelper::~DirectManipulationHelper() {
-  if (viewport_)
-    viewport_->Abandon();
+  Destroy();
 }
 
-DirectManipulationHelper::DirectManipulationHelper() {}
+DirectManipulationHelper::DirectManipulationHelper(HWND window,
+                                                   ui::Compositor* compositor)
+    : window_(window), compositor_(compositor) {}
+
+void DirectManipulationHelper::OnAnimationStep(base::TimeTicks timestamp) {
+  // Simulate 1 frame in update_manager_.
+  HRESULT hr = update_manager_->Update(nullptr);
+  if (!SUCCEEDED(hr))
+    DebugLogging("UpdateManager update failed.", hr);
+}
+
+void DirectManipulationHelper::OnCompositingShuttingDown(
+    ui::Compositor* compositor) {
+  DCHECK_EQ(compositor, compositor_);
+  Destroy();
+}
 
 bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
   // IDirectManipulationUpdateManager is the first COM object created by the
@@ -180,32 +196,11 @@ bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
     return false;
   }
 
+  DCHECK(compositor_);
+  compositor_->AddAnimationObserver(this);
+
   DebugLogging("DirectManipulation initialization complete", S_OK);
   return true;
-}
-
-void DirectManipulationHelper::Activate() {
-  HRESULT hr = viewport_->Stop();
-  if (!SUCCEEDED(hr)) {
-    DebugLogging("Viewport stop failed.", hr);
-    return;
-  }
-
-  hr = manager_->Activate(window_);
-  if (!SUCCEEDED(hr))
-    DebugLogging("DirectManipulationManager activate failed.", hr);
-}
-
-void DirectManipulationHelper::Deactivate() {
-  HRESULT hr = viewport_->Stop();
-  if (!SUCCEEDED(hr)) {
-    DebugLogging("Viewport stop failed.", hr);
-    return;
-  }
-
-  hr = manager_->Deactivate(window_);
-  if (!SUCCEEDED(hr))
-    DebugLogging("DirectManipulationManager deactivate failed.", hr);
 }
 
 void DirectManipulationHelper::SetSizeInPixels(
@@ -226,9 +221,7 @@ void DirectManipulationHelper::SetSizeInPixels(
     DebugLogging("Viewport set rect failed.", hr);
 }
 
-bool DirectManipulationHelper::OnPointerHitTest(
-    WPARAM w_param,
-    ui::WindowEventTarget* event_target) {
+void DirectManipulationHelper::OnPointerHitTest(WPARAM w_param) {
   // Update the device scale factor.
   event_handler_->SetDeviceScaleFactor(
       display::win::ScreenWin::GetScaleFactorForHWND(window_));
@@ -239,28 +232,20 @@ bool DirectManipulationHelper::OnPointerHitTest(
   // For WM_POINTER, the pointer type will show the event from mouse.
   // For WM_POINTERACTIVATE, the pointer id will be different with the following
   // message.
-  event_handler_->SetWindowEventTarget(event_target);
-
   using GetPointerTypeFn = BOOL(WINAPI*)(UINT32, POINTER_INPUT_TYPE*);
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
   POINTER_INPUT_TYPE pointer_type;
   static GetPointerTypeFn get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
       GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerType"));
   if (get_pointer_type && get_pointer_type(pointer_id, &pointer_type) &&
-      pointer_type == PT_TOUCHPAD && event_target) {
+      pointer_type == PT_TOUCHPAD) {
     HRESULT hr = viewport_->SetContact(pointer_id);
-    if (!SUCCEEDED(hr)) {
+    if (!SUCCEEDED(hr))
       DebugLogging("Viewport set contact failed.", hr);
-      return false;
-    }
-
-    // Request begin frame for fake viewport.
-    need_poll_events_ = true;
   }
-  return need_poll_events_;
 }
 
-HRESULT DirectManipulationHelper::Reset(bool need_poll_events) {
+HRESULT DirectManipulationHelper::Reset() {
   // By zooming the primary content to a rect that match the viewport rect, we
   // reset the content's transform to identity.
   HRESULT hr = viewport_->ZoomToRect(
@@ -272,20 +257,40 @@ HRESULT DirectManipulationHelper::Reset(bool need_poll_events) {
     return hr;
   }
 
-  need_poll_events_ = need_poll_events;
   return S_OK;
-}
-
-bool DirectManipulationHelper::PollForNextEvent() {
-  // Simulate 1 frame in update_manager_.
-  HRESULT hr = update_manager_->Update(nullptr);
-  if (!SUCCEEDED(hr))
-    DebugLogging("UpdateManager update failed.", hr);
-  return need_poll_events_;
 }
 
 void DirectManipulationHelper::SetDeviceScaleFactorForTesting(float factor) {
   event_handler_->SetDeviceScaleFactor(factor);
+}
+
+void DirectManipulationHelper::Destroy() {
+  if (!compositor_)
+    return;
+
+  compositor_->RemoveAnimationObserver(this);
+  compositor_ = nullptr;
+
+  HRESULT hr;
+  if (viewport_) {
+    hr = viewport_->Stop();
+    if (!SUCCEEDED(hr))
+      DebugLogging("Viewport stop failed.", hr);
+
+    hr = viewport_->RemoveEventHandler(view_port_handler_cookie_);
+    if (!SUCCEEDED(hr))
+      DebugLogging("Viewport remove event handler failed.", hr);
+
+    hr = viewport_->Abandon();
+    if (!SUCCEEDED(hr))
+      DebugLogging("Viewport abandon failed.", hr);
+  }
+
+  if (manager_) {
+    hr = manager_->Deactivate(window_);
+    if (!SUCCEEDED(hr))
+      DebugLogging("DirectManipulationManager deactivate failed.", hr);
+  }
 }
 
 }  // namespace content
