@@ -324,8 +324,6 @@ static void ParseOldStyleNames(
           ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kGoogHighpassFilter)) {
       result.goog_highpass_filter.SetExact(ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kGoogTypingNoiseDetection)) {
-      result.goog_typing_noise_detection.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kGoogAudioMirroring)) {
       result.goog_audio_mirroring.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kDAEchoCancellation)) {
@@ -414,7 +412,8 @@ static void ParseOldStyleNames(
                constraint.name_.Equals(kGoogBeamforming) ||
                constraint.name_.Equals(kGoogArrayGeometry) ||
                constraint.name_.Equals(kPowerLineFrequency) ||
-               constraint.name_.Equals(kMediaStreamAudioHotword)) {
+               constraint.name_.Equals(kMediaStreamAudioHotword) ||
+               constraint.name_.Equals(kGoogTypingNoiseDetection)) {
       // TODO(crbug.com/856176): Remove the kGoogBeamforming and
       // kGoogArrayGeometry special cases.
       context->AddConsoleMessage(ConsoleMessage::Create(

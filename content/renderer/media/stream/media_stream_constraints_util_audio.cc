@@ -384,7 +384,6 @@ class EchoCancellationContainer {
     properties->goog_auto_gain_control &= default_audio_processing_value;
     properties->goog_experimental_echo_cancellation &=
         default_audio_processing_value;
-    properties->goog_typing_noise_detection &= default_audio_processing_value;
     properties->goog_noise_suppression &= default_audio_processing_value;
     properties->goog_experimental_noise_suppression &=
         default_audio_processing_value;
@@ -618,7 +617,6 @@ class ProcessingBasedContainer {
         BoolSet(), /* goog_audio_mirroring_set */
         BoolSet(), /* goog_auto_gain_control_set */
         BoolSet(), /* goog_experimental_echo_cancellation_set */
-        BoolSet(), /* goog_typing_noise_detection_set */
         BoolSet(), /* goog_noise_suppression_set */
         BoolSet(), /* goog_experimental_noise_suppression_set */
         BoolSet(), /* goog_highpass_filter_set */
@@ -647,7 +645,6 @@ class ProcessingBasedContainer {
         BoolSet(), /* goog_audio_mirroring_set */
         BoolSet(), /* goog_auto_gain_control_set */
         BoolSet(), /* goog_experimental_echo_cancellation_set */
-        BoolSet(), /* goog_typing_noise_detection_set */
         BoolSet(), /* goog_noise_suppression_set */
         BoolSet(), /* goog_experimental_noise_suppression_set */
         BoolSet(), /* goog_highpass_filter_set */
@@ -674,7 +671,6 @@ class ProcessingBasedContainer {
         BoolSet(),        /* goog_audio_mirroring_set */
         BoolSet({false}), /* goog_auto_gain_control_set */
         BoolSet({false}), /* goog_experimental_echo_cancellation_set */
-        BoolSet({false}), /* goog_typing_noise_detection_set */
         BoolSet({false}), /* goog_noise_suppression_set */
         BoolSet({false}), /* goog_experimental_noise_suppression_set */
         BoolSet({false}), /* goog_highpass_filter_set */
@@ -701,7 +697,6 @@ class ProcessingBasedContainer {
         BoolSet({false}), /* goog_audio_mirroring_set */
         BoolSet({false}), /* goog_auto_gain_control_set */
         BoolSet({false}), /* goog_experimental_echo_cancellation_set */
-        BoolSet({false}), /* goog_typing_noise_detection_set */
         BoolSet({false}), /* goog_noise_suppression_set */
         BoolSet({false}), /* goog_experimental_noise_suppression_set */
         BoolSet({false}), /* goog_highpass_filter_set */
@@ -843,7 +838,6 @@ class ProcessingBasedContainer {
     kGoogAudioMirroring,
     kGoogAutoGainControl,
     kGoogExperimentalEchoCancellation,
-    kGoogTypingNoiseDetection,
     kGoogNoiseSuppression,
     kGoogExperimentalNoiseSuppression,
     kGoogHighpassFilter,
@@ -870,9 +864,6 @@ class ProcessingBasedContainer {
           {kGoogExperimentalEchoCancellation,
            &ConstraintSet::goog_experimental_echo_cancellation,
            &AudioProcessingProperties::goog_experimental_echo_cancellation},
-          {kGoogTypingNoiseDetection,
-           &ConstraintSet::goog_typing_noise_detection,
-           &AudioProcessingProperties::goog_typing_noise_detection},
           {kGoogNoiseSuppression, &ConstraintSet::goog_noise_suppression,
            &AudioProcessingProperties::goog_noise_suppression},
           {kGoogExperimentalNoiseSuppression,
@@ -896,7 +887,6 @@ class ProcessingBasedContainer {
       BoolSet goog_audio_mirroring_set,
       BoolSet goog_auto_gain_control_set,
       BoolSet goog_experimental_echo_cancellation_set,
-      BoolSet goog_typing_noise_detection_set,
       BoolSet goog_noise_suppression_set,
       BoolSet goog_experimental_noise_suppression_set,
       BoolSet goog_highpass_filter_set,
@@ -931,8 +921,6 @@ class ProcessingBasedContainer {
         BooleanContainer(goog_auto_gain_control_set);
     boolean_containers_[kGoogExperimentalEchoCancellation] =
         BooleanContainer(goog_experimental_echo_cancellation_set);
-    boolean_containers_[kGoogTypingNoiseDetection] =
-        BooleanContainer(goog_typing_noise_detection_set);
     boolean_containers_[kGoogNoiseSuppression] =
         BooleanContainer(goog_noise_suppression_set);
     boolean_containers_[kGoogExperimentalNoiseSuppression] =

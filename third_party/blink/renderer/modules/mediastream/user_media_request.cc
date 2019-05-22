@@ -195,11 +195,6 @@ void CountAudioConstraintUses(ExecutionContext* context,
   }
   if (RequestUsesDiscreteConstraint(
           constraints,
-          &WebMediaTrackConstraintSet::goog_typing_noise_detection)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsGoogTypingNoiseDetection);
-  }
-  if (RequestUsesDiscreteConstraint(
-          constraints,
           &WebMediaTrackConstraintSet::goog_experimental_noise_suppression)) {
     counter.Count(
         WebFeature::kMediaStreamConstraintsGoogExperimentalNoiseSuppression);

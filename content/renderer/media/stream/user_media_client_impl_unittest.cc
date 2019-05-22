@@ -917,7 +917,6 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
   EXPECT_EQ(
       blink::AudioProcessingProperties().goog_experimental_echo_cancellation,
       properties.goog_experimental_echo_cancellation);
-  EXPECT_TRUE(properties.goog_typing_noise_detection);
   EXPECT_TRUE(properties.goog_noise_suppression);
   EXPECT_TRUE(properties.goog_experimental_noise_suppression);
   EXPECT_TRUE(properties.goog_highpass_filter);
@@ -977,7 +976,6 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   EXPECT_FALSE(properties.goog_audio_mirroring);
   EXPECT_FALSE(properties.goog_auto_gain_control);
   EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
-  EXPECT_FALSE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
   EXPECT_FALSE(properties.goog_highpass_filter);
@@ -1035,7 +1033,6 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   EXPECT_FALSE(properties.goog_audio_mirroring);
   EXPECT_FALSE(properties.goog_auto_gain_control);
   EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
-  EXPECT_FALSE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
   EXPECT_FALSE(properties.goog_highpass_filter);
@@ -1071,7 +1068,6 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   factory.basic().render_to_associated_sink.SetExact(true);
   factory.basic().echo_cancellation.SetExact(false);
   factory.basic().goog_audio_mirroring.SetExact(true);
-  factory.basic().goog_typing_noise_detection.SetExact(true);
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
   // Request contains only audio
@@ -1099,7 +1095,6 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   EXPECT_TRUE(properties.goog_audio_mirroring);
   EXPECT_FALSE(properties.goog_auto_gain_control);
   EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
-  EXPECT_TRUE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
   EXPECT_FALSE(properties.goog_highpass_filter);

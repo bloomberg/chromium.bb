@@ -161,14 +161,13 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     EXPECT_TRUE(config.high_pass_filter.enabled);
     EXPECT_TRUE(config.noise_suppression.enabled);
     EXPECT_EQ(config.noise_suppression.level, config.noise_suppression.kHigh);
+    EXPECT_FALSE(config.voice_detection.enabled);
 #if defined(OS_ANDROID)
     EXPECT_TRUE(config.echo_canceller.mobile_mode);
-    EXPECT_FALSE(config.voice_detection.enabled);
     EXPECT_EQ(config.gain_controller1.mode,
               config.gain_controller1.kFixedDigital);
 #else
     EXPECT_FALSE(config.echo_canceller.mobile_mode);
-    EXPECT_TRUE(config.voice_detection.enabled);
     EXPECT_EQ(config.gain_controller1.mode,
               config.gain_controller1.kAdaptiveAnalog);
 #endif

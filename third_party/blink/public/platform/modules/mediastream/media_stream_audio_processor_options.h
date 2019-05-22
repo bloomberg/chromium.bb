@@ -83,7 +83,7 @@ struct BLINK_PLATFORM_EXPORT AudioProcessingProperties {
 #else
       true;
 #endif
-  bool goog_typing_noise_detection = true;
+  bool goog_typing_noise_detection = false;
   bool goog_noise_suppression = true;
   bool goog_experimental_noise_suppression = true;
   bool goog_highpass_filter = true;
