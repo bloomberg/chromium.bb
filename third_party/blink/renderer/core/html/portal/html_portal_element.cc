@@ -60,9 +60,18 @@ void HTMLPortalElement::Trace(Visitor* visitor) {
 
 void HTMLPortalElement::Navigate() {
   KURL url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
-  if (!url.IsEmpty() && portal_ptr_) {
-    portal_ptr_->Navigate(url);
+  if (!portal_ptr_ || url.IsEmpty())
+    return;
+
+  if (!url.ProtocolIsInHTTPFamily()) {
+    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kWarning,
+        "Portals only allow navigation to protocols in the HTTP family."));
+    return;
   }
+
+  portal_ptr_->Navigate(url);
 }
 
 void HTMLPortalElement::ConsumePortal() {
