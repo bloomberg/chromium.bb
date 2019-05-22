@@ -58,7 +58,6 @@
 #import "ios/chrome/common/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -999,20 +998,17 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     [textHeaderView animateHighlight];
   }
 
-  web::ContextMenuParams params;
   // Get view coordinates in local space.
   CGPoint viewCoordinate = [sender locationInView:self.tableView];
-  params.location = viewCoordinate;
-  params.view = self.tableView;
-
   // Present sheet/popover using controller that is added to view hierarchy.
   // TODO(crbug.com/754642): Remove TopPresentedViewController().
   UIViewController* topController =
       top_view_controller::TopPresentedViewController();
-
-  self.contextMenuCoordinator =
-      [[ContextMenuCoordinator alloc] initWithBaseViewController:topController
-                                                          params:params];
+  self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
+      initWithBaseViewController:topController
+                           title:nil
+                          inView:self.tableView
+                      atLocation:viewCoordinate];
 
   // Fill the sheet/popover with buttons.
   __weak RecentTabsTableViewController* weakSelf = self;

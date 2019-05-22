@@ -42,7 +42,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/referrer.h"
-#import "ios/web/public/web_state/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -1001,16 +1000,13 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       [self.tableViewModel itemAtIndexPath:touchedItemIndexPath]);
 
   __weak HistoryTableViewController* weakSelf = self;
-  web::ContextMenuParams params;
-  params.location = touchLocation;
-  params.view = self.tableView;
   NSString* menuTitle =
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
-  params.menu_title = [menuTitle copy];
-
   self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:self.navigationController
-                          params:params];
+                           title:menuTitle
+                          inView:self.tableView
+                      atLocation:touchLocation];
 
   // Add "Open in New Tab" option.
   NSString* openInNewTabTitle =

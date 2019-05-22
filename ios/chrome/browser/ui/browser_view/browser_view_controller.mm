@@ -3162,9 +3162,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   DCHECK(_browserState);
 
-  _contextMenuCoordinator =
-      [[ContextMenuCoordinator alloc] initWithBaseViewController:self
-                                                          params:params];
+  _contextMenuCoordinator = [[ContextMenuCoordinator alloc]
+      initWithBaseViewController:self
+                           title:params.menu_title
+                          inView:params.view
+                      atLocation:params.location];
 
   NSString* title = nil;
   ProceduralBlock action = nil;
