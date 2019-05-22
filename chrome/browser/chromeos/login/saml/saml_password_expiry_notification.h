@@ -18,10 +18,10 @@ namespace chromeos {
 // shown if the password is not expected to expire.
 void MaybeShowSamlPasswordExpiryNotification(Profile* profile);
 
-// Shows a password expiry notification. |lessThanNDays| should be 1 if the
+// Shows a password expiry notification. |less_than_n_days| should be 1 if the
 // password expires in less than 1 day, 0 if it has already expired, etc.
 // Negative numbers are treated the same as zero.
-void ShowSamlPasswordExpiryNotification(Profile* profile, int lessThanNDays);
+void ShowSamlPasswordExpiryNotification(Profile* profile, int less_than_n_days);
 
 // Hides the password expiry notification if it is currently shown.
 void DismissSamlPasswordExpiryNotification(Profile* profile);

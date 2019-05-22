@@ -84,25 +84,25 @@ const base::NoDestructor<scoped_refptr<HandleNotificationClickDelegate>>
     kClickDelegate(base::MakeRefCounted<HandleNotificationClickDelegate>(
         base::BindRepeating(&OnNotificationClicked)));
 
-base::string16 GetTitleText(int lessThanNDays) {
-  const bool hasExpired = (lessThanNDays <= 0);
+base::string16 GetTitleText(int less_than_n_days) {
+  const bool hasExpired = (less_than_n_days <= 0);
   return hasExpired ? l10n_util::GetStringUTF16(IDS_PASSWORD_HAS_EXPIRED_TITLE)
                     : l10n_util::GetStringUTF16(IDS_PASSWORD_WILL_EXPIRE_TITLE);
 }
 
-base::string16 GetBodyText(int lessThanNDays) {
+base::string16 GetBodyText(int less_than_n_days) {
   const std::vector<base::string16> body_lines = {
       l10n_util::GetPluralStringFUTF16(IDS_PASSWORD_EXPIRY_DAYS_BODY,
-                                       std::max(lessThanNDays, 0)),
+                                       std::max(less_than_n_days, 0)),
       l10n_util::GetStringUTF16(IDS_PASSWORD_EXPIRY_CHOOSE_NEW_PASSWORD_LINK)};
 
   return base::JoinString(body_lines, *kLineSeparator);
 }
 
-// A time delta of length zero.
-const base::TimeDelta kZeroTimeDelta = base::TimeDelta();
 // A time delta of length one hour.
 const base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
+// A time delta of length one day.
+const base::TimeDelta kOneDay = base::TimeDelta::FromDays(1);
 
 // Traits for running RecheckTask. Runs from the UI thread to show notification.
 const base::TaskTraits kRecheckTaskTraits = {
@@ -153,37 +153,34 @@ void MaybeShowSamlPasswordExpiryNotification(Profile* profile) {
     return;
   }
 
-  SamlPasswordAttributes attrs =
-      SamlPasswordAttributes::LoadFromPrefs(profile->GetPrefs());
-  if (!attrs.has_expiration_time()) {
-    // No reason to believe the password will ever expire.
+  PrefService* prefs = profile->GetPrefs();
+  SamlPasswordAttributes attrs = SamlPasswordAttributes::LoadFromPrefs(prefs);
+  if (!prefs->GetBoolean(prefs::kSamlInSessionPasswordChangeEnabled) ||
+      !attrs.has_expiration_time()) {
+    // No information about password expiry, or this feature is disabled.
     // Hide the notification (just in case it is shown) and return.
     DismissSamlPasswordExpiryNotification(profile);
     return;
   }
 
+  // Calculate how many days until the password will expire.
   const base::TimeDelta time_until_expiry =
       attrs.expiration_time() - base::Time::Now();
-  if (time_until_expiry <= kZeroTimeDelta) {
-    // The password has expired, so we show the notification now.
-    ShowSamlPasswordExpiryNotification(profile, /*less_than_n_days=*/0);
-    return;
-  }
-
-  // The password has not expired, but it will in the future.
-  const int less_than_n_days = time_until_expiry.InDaysFloored() + 1;
-  int advance_warning_days = profile->GetPrefs()->GetInteger(
-      prefs::kSamlPasswordExpirationAdvanceWarningDays);
-  advance_warning_days = std::max(advance_warning_days, 0);
+  const int less_than_n_days =
+      std::max(0, time_until_expiry.InDaysFloored() + 1);
+  const int advance_warning_days = std::max(
+      0, prefs->GetInteger(prefs::kSamlPasswordExpirationAdvanceWarningDays));
 
   if (less_than_n_days <= advance_warning_days) {
-    // The password will expire in less than |advance_warning_days|, so we show
-    // a notification now explaining the password will expire soon.
+    // The password is expired, or expires in less than |advance_warning_days|.
+    // So we show a notification immediately.
     ShowSamlPasswordExpiryNotification(profile, less_than_n_days);
+    // We check again whether to reshow / update the notification after one day:
+    recheck_task_instance->PostDelayed(profile, kOneDay);
     return;
   }
 
-  // We have not even reached the advance warning threshold. Run this code again
+  // We have not yet reached the advance warning threshold. Run this code again
   // once we have arrived at expiry_time minus advance_warning_days...
   base::TimeDelta recheck_delay =
       time_until_expiry - base::TimeDelta::FromDays(advance_warning_days);
@@ -198,11 +195,12 @@ void MaybeShowSamlPasswordExpiryNotification(Profile* profile) {
   recheck_task_instance->PostDelayed(profile, recheck_delay);
 }
 
-void ShowSamlPasswordExpiryNotification(Profile* profile, int lessThanNDays) {
+void ShowSamlPasswordExpiryNotification(Profile* profile,
+                                        int less_than_n_days) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const base::string16 title = GetTitleText(lessThanNDays);
-  const base::string16 body = GetBodyText(lessThanNDays);
+  const base::string16 title = GetTitleText(less_than_n_days);
+  const base::string16 body = GetBodyText(less_than_n_days);
 
   std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
       kNotificationType, kNotificationId, title, body, *kDisplaySource,
