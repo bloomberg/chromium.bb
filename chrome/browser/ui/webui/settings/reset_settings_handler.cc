@@ -246,7 +246,7 @@ void ResetSettingsHandler::ResetProfile(
     const std::string& callback_id,
     bool send_settings,
     reset_report::ChromeResetReport::ResetRequestOrigin request_origin) {
-  DCHECK(!GetResetter()->IsActive());
+  CHECK(!GetResetter()->IsActive());
 
   std::unique_ptr<BrandcodedDefaultSettings> default_settings;
   if (config_fetcher_) {
