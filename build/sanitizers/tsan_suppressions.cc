@@ -97,9 +97,6 @@ char kTSanDefaultSuppressions[] =
     "race:base::PowerMonitor::RemoveObserver\n"
     "race:base::PowerMonitor::IsOnBatteryPower\n"
 
-    // http://crbug.com/258935
-    "race:base::Thread::StopSoon\n"
-
     // http://crbug.com/272095
     "race:base::g_top_manager\n"
 
