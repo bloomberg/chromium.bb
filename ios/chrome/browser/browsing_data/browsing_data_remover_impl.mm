@@ -59,7 +59,7 @@
 #include "ios/chrome/browser/snapshots/snapshots_util.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/net/http_cache_helper.h"
-#import "ios/web/public/browsing_data_removing_util.h"
+#import "ios/web/public/browsing_data/browsing_data_removing_util.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/public/web_view_creation_util.h"

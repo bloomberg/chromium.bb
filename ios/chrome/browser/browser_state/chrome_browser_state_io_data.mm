@@ -43,7 +43,7 @@
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #import "ios/net/cookies/system_cookie_store.h"
-#include "ios/web/public/system_cookie_store_util.h"
+#include "ios/web/public/browsing_data/system_cookie_store_util.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cert/cert_verifier.h"

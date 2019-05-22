@@ -22,7 +22,6 @@ source_set("public") {
   sources = [
     "browser_state.h",
     "browser_url_rewriter.h",
-    "browsing_data_removing_util.h",
     "certificate_policy_cache.h",
     "crw_navigation_item_storage.h",
     "crw_session_certificate_policy_cache_storage.h",
@@ -49,7 +48,6 @@ source_set("public") {
     "security/web_interstitial_delegate.h",
     "serializable_user_data_manager.h",
     "service_manager_connection.h",
-    "system_cookie_store_util.h",
     "url_data_source_ios.h",
     "url_scheme_util.h",
     "url_schemes.h",

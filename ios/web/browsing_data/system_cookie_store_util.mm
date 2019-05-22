@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/system_cookie_store_util.h"
+#include "ios/web/public/browsing_data/system_cookie_store_util.h"
 
 #import <WebKit/WebKit.h>
 
