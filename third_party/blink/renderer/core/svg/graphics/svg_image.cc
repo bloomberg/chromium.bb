@@ -810,6 +810,10 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
 
   frame->ForceSynchronousDocumentInstall("image/svg+xml", Data());
 
+  // Intrinsic sizing relies on computed style (e.g. font-size and
+  // writing-mode).
+  frame->GetDocument()->UpdateStyleAndLayoutTree();
+
   // Set the concrete object size before a container size is available.
   intrinsic_size_ = RoundedIntSize(ConcreteObjectSize(FloatSize(
       LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight)));
