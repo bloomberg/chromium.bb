@@ -130,6 +130,10 @@ void MessageView::CloseSwipeControl() {
   slide_out_controller_.CloseSwipeControl();
 }
 
+void MessageView::SlideOutAndClose(int direction) {
+  slide_out_controller_.SlideOutAndClose(direction);
+}
+
 void MessageView::SetExpanded(bool expanded) {
   // Not implemented by default.
 }
@@ -304,27 +308,31 @@ ui::Layer* MessageView::GetSlideOutLayer() {
 }
 
 void MessageView::OnSlideStarted() {
-  for (auto* observer : slide_observers_) {
-    observer->OnSlideStarted(notification_id_);
+  for (auto& observer : slide_observers_) {
+    observer.OnSlideStarted(notification_id_);
   }
 }
 
 void MessageView::OnSlideChanged(bool in_progress) {
-  for (auto* observer : slide_observers_) {
-    observer->OnSlideChanged(notification_id_);
+  for (auto& observer : slide_observers_) {
+    observer.OnSlideChanged(notification_id_);
   }
 }
 
 void MessageView::AddSlideObserver(MessageView::SlideObserver* observer) {
-  slide_observers_.push_back(observer);
+  slide_observers_.AddObserver(observer);
+}
+
+void MessageView::RemoveSlideObserver(MessageView::SlideObserver* observer) {
+  slide_observers_.RemoveObserver(observer);
 }
 
 void MessageView::OnSlideOut() {
-  for (auto* observer : slide_observers_)
-    observer->OnSlideOut(notification_id_);
-
   MessageCenter::Get()->RemoveNotification(notification_id_,
                                            true /* by_user */);
+
+  for (auto& observer : slide_observers_)
+    observer.OnSlideOut(notification_id_);
 }
 
 void MessageView::OnWillChangeFocus(views::View* before, views::View* now) {}
