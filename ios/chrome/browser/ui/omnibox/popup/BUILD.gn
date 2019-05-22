@@ -31,7 +31,6 @@ source_set("popup") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:util",
-    "//ios/chrome/browser/ui/omnibox:omnibox_protocols",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/omnibox/popup/shortcuts",
     "//ios/chrome/browser/ui/toolbar/buttons",
@@ -51,6 +50,11 @@ source_set("popup_ui") {
   sources = [
     "autocomplete_result_consumer.h",
     "autocomplete_suggestion.h",
+    "favicon_retriever.h",
+    "image_retriever.h",
+    "omnibox_icon.h",
+    "omnibox_icon_view.h",
+    "omnibox_icon_view.mm",
     "omnibox_popup_base_view_controller+internal.h",
     "omnibox_popup_base_view_controller.h",
     "omnibox_popup_base_view_controller.mm",
@@ -73,12 +77,11 @@ source_set("popup_ui") {
     "//components/omnibox/common",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/app/theme",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
-    "//ios/chrome/browser/ui/omnibox:omnibox_protocols",
-    "//ios/chrome/browser/ui/omnibox:omnibox_ui",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
@@ -93,6 +96,8 @@ source_set("popup_internal") {
   sources = [
     "autocomplete_match_formatter.h",
     "autocomplete_match_formatter.mm",
+    "omnibox_icon_formatter.h",
+    "omnibox_icon_formatter.mm",
   ]
   deps = [
     ":popup_ui",
@@ -100,9 +105,11 @@ source_set("popup_internal") {
     "//components/omnibox/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/omnibox:omnibox_ui_internal",
+    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/util",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/images",
     "//ios/third_party/material_components_ios",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

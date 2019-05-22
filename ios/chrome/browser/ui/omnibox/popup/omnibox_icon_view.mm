@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/omnibox_icon_view.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_view.h"
 
-#import "ios/chrome/browser/ui/omnibox/favicon_retriever.h"
-#import "ios/chrome/browser/ui/omnibox/image_retriever.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_icon.h"
+#import "ios/chrome/browser/ui/omnibox/popup/favicon_retriever.h"
+#import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon.h"
 #import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
