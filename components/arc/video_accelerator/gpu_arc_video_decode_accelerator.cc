@@ -451,11 +451,12 @@ void GpuArcVideoDecodeAccelerator::Decode(
   // All the callbacks thus should be called or deleted before |this| is
   // invalidated.
   ExecuteRequest(
-      {base::BindOnce(
-           &GpuArcVideoDecodeAccelerator::DecodeRequest, base::Unretained(this),
-           media::BitstreamBuffer(
-               bitstream_buffer->bitstream_id, shm_handle, true /* read_only */,
-               bitstream_buffer->bytes_used, bitstream_buffer->offset)),
+      {base::BindOnce(&GpuArcVideoDecodeAccelerator::DecodeRequest,
+                      base::Unretained(this),
+                      media::BitstreamBuffer(bitstream_buffer->bitstream_id,
+                                             shm_handle, false /* read_only */,
+                                             bitstream_buffer->bytes_used,
+                                             bitstream_buffer->offset)),
        PendingCallback()});
 }
 

@@ -225,7 +225,7 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
   use_bitstream_cbs_.emplace(bitstream_buffer_serial_, std::move(callback));
   accelerator_->UseOutputBitstreamBuffer(
       media::BitstreamBuffer(bitstream_buffer_serial_, shm_handle,
-                             true /* read_only */, size, offset));
+                             false /* read_only */, size, offset));
 
   // Mask against 30 bits to avoid (undefined) wraparound on signed integer.
   bitstream_buffer_serial_ = (bitstream_buffer_serial_ + 1) & 0x3FFFFFFF;
