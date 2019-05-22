@@ -69,8 +69,6 @@ void ProfileMenuViewBase::ShowBubble(
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     views::Button* anchor_button,
-    gfx::NativeView parent_window,
-    const gfx::Rect& anchor_rect,
     Browser* browser,
     bool is_source_keyboard) {
   if (IsShowing())
@@ -81,13 +79,12 @@ void ProfileMenuViewBase::ShowBubble(
 
   ProfileMenuViewBase* bubble;
   if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
-    bubble = new IncognitoMenuView(anchor_button, anchor_rect, parent_window,
-                                   browser);
+    bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
 #if !defined(OS_CHROMEOS)
-    bubble = new ProfileChooserView(
-        anchor_button, anchor_rect, parent_window, browser, view_mode,
-        manage_accounts_params.service_type, access_point);
+    bubble = new ProfileChooserView(anchor_button, browser, view_mode,
+                                    manage_accounts_params.service_type,
+                                    access_point);
 #else
     NOTREACHED();
     return;
@@ -116,8 +113,6 @@ ProfileMenuViewBase* ProfileMenuViewBase::GetBubbleForTesting() {
 }
 
 ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
-                                         const gfx::Rect& anchor_rect,
-                                         gfx::NativeView parent_window,
                                          Browser* browser)
     : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
@@ -130,13 +125,8 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
   // The sign in webview will be clipped on the bottom corners without these
   // margins, see related bug <http://crbug.com/593203>.
   set_margins(gfx::Insets(2, 0));
-  if (anchor_button) {
-    anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
-  } else {
-    DCHECK(parent_window);
-    SetAnchorRect(anchor_rect);
-    set_parent_window(parent_window);
-  }
+  DCHECK(anchor_button);
+  anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
 
   EnableUpDownKeyboardAccelerators();
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenu);

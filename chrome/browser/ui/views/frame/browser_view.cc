@@ -2997,9 +2997,9 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     return;
   }
 #endif
-  ProfileMenuViewBase::ShowBubble(
-      bubble_view_mode, manage_accounts_params, access_point, avatar_button,
-      nullptr, gfx::Rect(), browser(), focus_first_profile_button);
+  ProfileMenuViewBase::ShowBubble(bubble_view_mode, manage_accounts_params,
+                                  access_point, avatar_button, browser(),
+                                  focus_first_profile_button);
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 

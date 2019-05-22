@@ -123,13 +123,11 @@ gfx::ImageSkia GetGoogleIconForUserMenu(int icon_size) {
 bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
 
 ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
-                                       const gfx::Rect& anchor_rect,
-                                       gfx::NativeView parent_window,
                                        Browser* browser,
                                        profiles::BubbleViewMode view_mode,
                                        signin::GAIAServiceType service_type,
                                        signin_metrics::AccessPoint access_point)
-    : ProfileMenuViewBase(anchor_button, anchor_rect, parent_window, browser),
+    : ProfileMenuViewBase(anchor_button, browser),
       view_mode_(view_mode),
       gaia_service_type_(service_type),
       access_point_(access_point),

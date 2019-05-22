@@ -25,10 +25,8 @@
 #include "ui/views/style/typography.h"
 
 IncognitoMenuView::IncognitoMenuView(views::Button* anchor_button,
-                                     const gfx::Rect& anchor_rect,
-                                     gfx::NativeView parent_window,
                                      Browser* browser)
-    : ProfileMenuViewBase(anchor_button, anchor_rect, parent_window, browser) {
+    : ProfileMenuViewBase(anchor_button, browser) {
   DCHECK(browser->profile()->IsIncognitoProfile());
   GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
 

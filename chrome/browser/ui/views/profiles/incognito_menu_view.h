@@ -23,8 +23,6 @@ class Browser;
 class IncognitoMenuView : public ProfileMenuViewBase {
  public:
   IncognitoMenuView(views::Button* anchor_button,
-                    const gfx::Rect& anchor_rect,
-                    gfx::NativeView parent_window,
                     Browser* browser);
   ~IncognitoMenuView() override;
 

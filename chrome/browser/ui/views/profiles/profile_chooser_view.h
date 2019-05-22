@@ -38,8 +38,6 @@ class ProfileChooserView : public ProfileMenuViewBase,
                            public identity::IdentityManager::Observer {
  public:
   ProfileChooserView(views::Button* anchor_button,
-                     const gfx::Rect& anchor_rect,
-                     gfx::NativeView parent_window,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
                      signin::GAIAServiceType service_type,
