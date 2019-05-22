@@ -205,8 +205,8 @@ keyboard::KeyboardController* GetKeyboardControllerForWidget(
   return keyboard_window == this_window ? keyboard_controller : nullptr;
 }
 
-bool IsPublicAccountUser(const mojom::LoginUserInfoPtr& user) {
-  return user->basic_user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+bool IsPublicAccountUser(const LoginUserInfo& user) {
+  return user.basic_user_info.type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
 bool IsTabletMode() {
@@ -357,10 +357,10 @@ views::View* LockContentsView::TestApi::main_view() const {
   return view_->main_view_;
 }
 
-LockContentsView::UserState::UserState(const mojom::LoginUserInfoPtr& user_info)
-    : account_id(user_info->basic_user_info->account_id) {
-  fingerprint_state = user_info->fingerprint_state;
-  if (user_info->auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
+LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
+    : account_id(user_info.basic_user_info.account_id) {
+  fingerprint_state = user_info.fingerprint_state;
+  if (user_info.auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
     force_online_sign_in = true;
 }
 
@@ -603,8 +603,7 @@ bool LockContentsView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-void LockContentsView::OnUsersChanged(
-    const std::vector<mojom::LoginUserInfoPtr>& users) {
+void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   // The debug view will potentially call this method many times. Make sure to
   // invalidate any child references.
   primary_big_view_ = nullptr;
@@ -618,8 +617,8 @@ void LockContentsView::OnUsersChanged(
 
   // Build user state list. Preserve previous state if the user already exists.
   std::vector<UserState> new_users;
-  for (const mojom::LoginUserInfoPtr& user : users) {
-    UserState* old_state = FindStateForUser(user->basic_user_info->account_id);
+  for (const LoginUserInfo& user : users) {
+    UserState* old_state = FindStateForUser(user.basic_user_info.account_id);
     if (old_state)
       new_users.push_back(std::move(*old_state));
     else
@@ -668,6 +667,29 @@ void LockContentsView::OnUsersChanged(
     primary_big_view_->RequestFocus();
 }
 
+void LockContentsView::OnUserAvatarChanged(const AccountId& account_id,
+                                           const UserAvatar& avatar) {
+  auto replace = [&avatar](const LoginUserInfo& user) {
+    auto changed = user;
+    changed.basic_user_info.avatar = avatar;
+    return changed;
+  };
+
+  LoginBigUserView* big =
+      TryToFindBigUser(account_id, false /*require_auth_active*/);
+  if (big) {
+    big->UpdateForUser(replace(big->GetCurrentUser()));
+    return;
+  }
+
+  LoginUserView* user =
+      users_list_ ? users_list_->GetUserView(account_id) : nullptr;
+  if (user) {
+    user->UpdateForUser(replace(user->current_user()), false /*animate*/);
+    return;
+  }
+}
+
 void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
                                                   bool enabled) {
   LockContentsView::UserState* state = FindStateForUser(user);
@@ -684,9 +706,8 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
-void LockContentsView::OnFingerprintStateChanged(
-    const AccountId& account_id,
-    mojom::FingerprintState state) {
+void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
+                                                 FingerprintState state) {
   UserState* user_state = FindStateForUser(account_id);
   if (!user_state)
     return;
@@ -703,7 +724,7 @@ void LockContentsView::OnFingerprintStateChanged(
   // location to the target animation position and not the current position.
   bool animate = true;
   if (user_state->fingerprint_state ==
-      mojom::FingerprintState::DISABLED_FROM_TIMEOUT) {
+      FingerprintState::DISABLED_FROM_TIMEOUT) {
     animate = false;
   }
 
@@ -711,7 +732,7 @@ void LockContentsView::OnFingerprintStateChanged(
   LayoutAuth(big_view, nullptr /*opt_to_hide*/, animate);
 
   if (user_state->fingerprint_state ==
-      mojom::FingerprintState::DISABLED_FROM_TIMEOUT) {
+      FingerprintState::DISABLED_FROM_TIMEOUT) {
     base::string16 error_text = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT);
     auto* label = new views::Label(error_text);
@@ -829,14 +850,13 @@ void LockContentsView::OnForceOnlineSignInForUser(const AccountId& user) {
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
-void LockContentsView::OnShowEasyUnlockIcon(
-    const AccountId& user,
-    const mojom::EasyUnlockIconOptionsPtr& icon) {
+void LockContentsView::OnShowEasyUnlockIcon(const AccountId& user,
+                                            const EasyUnlockIconOptions& icon) {
   UserState* state = FindStateForUser(user);
   if (!state)
     return;
 
-  state->easy_unlock_state = icon->Clone();
+  state->easy_unlock_state = icon;
   UpdateEasyUnlockIconForUser(user);
 
   // Show tooltip only if the user is actively showing auth.
@@ -848,9 +868,9 @@ void LockContentsView::OnShowEasyUnlockIcon(
   if (tooltip_bubble_->GetVisible())
     tooltip_bubble_->Hide();
 
-  if (icon->autoshow_tooltip) {
+  if (icon.autoshow_tooltip) {
     tooltip_bubble_->SetAnchorView(big_user->auth_user()->password_view());
-    tooltip_bubble_->SetText(icon->tooltip);
+    tooltip_bubble_->SetText(icon.tooltip);
     tooltip_bubble_->Show();
     tooltip_bubble_->SetVisible(true);
   }
@@ -955,41 +975,39 @@ void LockContentsView::OnPublicSessionDisplayNameChanged(
   if (!user_view || !IsPublicAccountUser(user_view->current_user()))
     return;
 
-  mojom::LoginUserInfoPtr user_info = user_view->current_user()->Clone();
-  user_info->basic_user_info->display_name = display_name;
+  LoginUserInfo user_info = user_view->current_user();
+  user_info.basic_user_info.display_name = display_name;
   user_view->UpdateForUser(user_info, false /*animate*/);
 }
 
 void LockContentsView::OnPublicSessionLocalesChanged(
     const AccountId& account_id,
-    const std::vector<mojom::LocaleItemPtr>& locales,
+    const std::vector<LocaleItem>& locales,
     const std::string& default_locale,
     bool show_advanced_view) {
   LoginUserView* user_view = TryToFindUserView(account_id);
   if (!user_view || !IsPublicAccountUser(user_view->current_user()))
     return;
 
-  mojom::LoginUserInfoPtr user_info = user_view->current_user()->Clone();
-  user_info->public_account_info->available_locales = mojo::Clone(locales);
-  user_info->public_account_info->default_locale = default_locale;
-  user_info->public_account_info->show_advanced_view = show_advanced_view;
+  LoginUserInfo user_info = user_view->current_user();
+  user_info.public_account_info->available_locales = locales;
+  user_info.public_account_info->default_locale = default_locale;
+  user_info.public_account_info->show_advanced_view = show_advanced_view;
   user_view->UpdateForUser(user_info, false /*animate*/);
 }
 
 void LockContentsView::OnPublicSessionKeyboardLayoutsChanged(
     const AccountId& account_id,
     const std::string& locale,
-    const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {
+    const std::vector<InputMethodItem>& keyboard_layouts) {
   // Update expanded view because keyboard layouts is user interactive content.
   // I.e. user selects a language locale and the corresponding keyboard layouts
   // will be changed.
   if (expanded_view_->GetVisible() &&
-      expanded_view_->current_user()->basic_user_info->account_id ==
-          account_id) {
-    mojom::LoginUserInfoPtr user_info = expanded_view_->current_user()->Clone();
-    user_info->public_account_info->default_locale = locale;
-    user_info->public_account_info->keyboard_layouts =
-        mojo::Clone(keyboard_layouts);
+      expanded_view_->current_user().basic_user_info.account_id == account_id) {
+    LoginUserInfo user_info = expanded_view_->current_user();
+    user_info.public_account_info->default_locale = locale;
+    user_info.public_account_info->keyboard_layouts = keyboard_layouts;
     expanded_view_->UpdateForUser(user_info);
   }
 
@@ -999,15 +1017,14 @@ void LockContentsView::OnPublicSessionKeyboardLayoutsChanged(
     return;
   }
 
-  mojom::LoginUserInfoPtr user_info = user_view->current_user()->Clone();
+  LoginUserInfo user_info = user_view->current_user();
   // Skip updating keyboard layouts if |locale| is not the default locale
   // of the user. I.e. user changed the default locale in the expanded view,
   // and it should be handled by expanded view.
-  if (user_info->public_account_info->default_locale != locale)
+  if (user_info.public_account_info->default_locale != locale)
     return;
 
-  user_info->public_account_info->keyboard_layouts =
-      mojo::Clone(keyboard_layouts);
+  user_info.public_account_info->keyboard_layouts = keyboard_layouts;
   user_view->UpdateForUser(user_info, false /*animate*/);
 }
 
@@ -1027,7 +1044,7 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
       pairing_status == DetachableBasePairingStatus::kNone ||
       (pairing_status == DetachableBasePairingStatus::kAuthenticated &&
        detachable_base_model_->PairedBaseMatchesLastUsedByUser(
-           *CurrentBigUserView()->GetCurrentUser()->basic_user_info))) {
+           CurrentBigUserView()->GetCurrentUser().basic_user_info))) {
     if (detachable_base_error_bubble_->GetVisible())
       detachable_base_error_bubble_->Hide();
     return;
@@ -1069,29 +1086,6 @@ void LockContentsView::OnSetShowParentAccessDialog(bool show) {
   }
 
   Layout();
-}
-
-void LockContentsView::SetAvatarForUser(const AccountId& account_id,
-                                        const mojom::UserAvatarPtr& avatar) {
-  auto replace = [&](const mojom::LoginUserInfoPtr& user) {
-    auto changed = user->Clone();
-    changed->basic_user_info->avatar = avatar->Clone();
-    return changed;
-  };
-
-  LoginBigUserView* big =
-      TryToFindBigUser(account_id, false /*require_auth_active*/);
-  if (big) {
-    big->UpdateForUser(replace(big->GetCurrentUser()));
-    return;
-  }
-
-  LoginUserView* user =
-      users_list_ ? users_list_->GetUserView(account_id) : nullptr;
-  if (user) {
-    user->UpdateForUser(replace(user->current_user()), false /*animate*/);
-    return;
-  }
 }
 
 void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
@@ -1193,7 +1187,7 @@ void LockContentsView::FocusNextWidget(bool reverse) {
 }
 
 void LockContentsView::CreateLowDensityLayout(
-    const std::vector<mojom::LoginUserInfoPtr>& users) {
+    const std::vector<LoginUserInfo>& users) {
   DCHECK_LE(users.size(), 2u);
 
   main_view_->AddChildView(primary_big_view_);
@@ -1234,7 +1228,7 @@ void LockContentsView::CreateLowDensityLayout(
 }
 
 void LockContentsView::CreateMediumDensityLayout(
-    const std::vector<mojom::LoginUserInfoPtr>& users) {
+    const std::vector<LoginUserInfo>& users) {
   // Here is a diagram of this layout:
   //
   //    a A x B y b
@@ -1303,7 +1297,7 @@ void LockContentsView::CreateMediumDensityLayout(
 }
 
 void LockContentsView::CreateHighDensityLayout(
-    const std::vector<mojom::LoginUserInfoPtr>& users,
+    const std::vector<LoginUserInfo>& users,
     views::BoxLayout* main_layout) {
   // Insert spacing before the auth view.
   auto* fill = new NonAccessibleView();
@@ -1414,7 +1408,7 @@ void LockContentsView::OnAuthenticate(bool auth_success) {
         detachable_base_model_->GetPairingStatus() ==
             DetachableBasePairingStatus::kAuthenticated) {
       detachable_base_model_->SetPairedBaseAsLastUsedByUser(
-          *CurrentBigUserView()->GetCurrentUser()->basic_user_info);
+          CurrentBigUserView()->GetCurrentUser().basic_user_info);
     }
   } else {
     ++unlock_attempt_;
@@ -1448,7 +1442,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
     DCHECK(view);
     if (view->auth_user()) {
       UserState* state = FindStateForUser(
-          view->auth_user()->current_user()->basic_user_info->account_id);
+          view->auth_user()->current_user().basic_user_info.account_id);
       uint32_t to_update_auth;
       if (state->force_online_sign_in) {
         to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
@@ -1466,9 +1460,9 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
           to_update_auth |= LoginAuthUserView::AUTH_PIN;
         if (state->enable_tap_auth)
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
-        if (state->fingerprint_state != mojom::FingerprintState::UNAVAILABLE &&
+        if (state->fingerprint_state != FingerprintState::UNAVAILABLE &&
             state->fingerprint_state !=
-                mojom::FingerprintState::DISABLED_FROM_TIMEOUT) {
+                FingerprintState::DISABLED_FROM_TIMEOUT) {
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
         }
 
@@ -1521,9 +1515,8 @@ void LockContentsView::SwapToBigUser(int user_index) {
   DCHECK(users_list_);
   LoginUserView* view = users_list_->user_view_at(user_index);
   DCHECK(view);
-  mojom::LoginUserInfoPtr previous_big_user =
-      primary_big_view_->GetCurrentUser()->Clone();
-  mojom::LoginUserInfoPtr new_big_user = view->current_user()->Clone();
+  LoginUserInfo previous_big_user = primary_big_view_->GetCurrentUser();
+  LoginUserInfo new_big_user = view->current_user();
 
   view->UpdateForUser(previous_big_user, true /*animate*/);
   primary_big_view_->UpdateForUser(new_big_user);
@@ -1543,31 +1536,29 @@ void LockContentsView::RemoveUser(bool is_primary) {
 
   LoginBigUserView* to_remove =
       is_primary ? primary_big_view_ : opt_secondary_big_view_;
-  DCHECK(to_remove->GetCurrentUser()->can_remove);
-  AccountId user = to_remove->GetCurrentUser()->basic_user_info->account_id;
+  DCHECK(to_remove->GetCurrentUser().can_remove);
+  AccountId user = to_remove->GetCurrentUser().basic_user_info.account_id;
 
   // Ask chrome to remove the user.
   Shell::Get()->login_screen_controller()->RemoveUser(user);
 
   // Display the new user list less |user|.
-  std::vector<mojom::LoginUserInfoPtr> new_users;
+  std::vector<LoginUserInfo> new_users;
   if (!is_primary)
-    new_users.push_back(primary_big_view_->GetCurrentUser()->Clone());
+    new_users.push_back(primary_big_view_->GetCurrentUser());
   if (is_primary && opt_secondary_big_view_)
-    new_users.push_back(opt_secondary_big_view_->GetCurrentUser()->Clone());
+    new_users.push_back(opt_secondary_big_view_->GetCurrentUser());
   if (users_list_) {
     for (int i = 0; i < users_list_->user_count(); ++i) {
-      new_users.push_back(
-          users_list_->user_view_at(i)->current_user()->Clone());
+      new_users.push_back(users_list_->user_view_at(i)->current_user());
     }
   }
-  data_dispatcher_->NotifyUsers(new_users);
+  data_dispatcher_->SetUserList(new_users);
 }
 
 void LockContentsView::OnBigUserChanged() {
-  const mojom::LoginUserInfoPtr& big_user =
-      CurrentBigUserView()->GetCurrentUser();
-  const AccountId big_user_account_id = big_user->basic_user_info->account_id;
+  const LoginUserInfo& big_user = CurrentBigUserView()->GetCurrentUser();
+  const AccountId big_user_account_id = big_user.basic_user_info.account_id;
 
   CurrentBigUserView()->RequestFocus();
 
@@ -1586,7 +1577,7 @@ void LockContentsView::OnBigUserChanged() {
 
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
   if (ash::features::IsSupervisedUserDeprecationNoticeEnabled() &&
-      big_user->basic_user_info->type == user_manager::USER_TYPE_SUPERVISED) {
+      big_user.basic_user_info.type == user_manager::USER_TYPE_SUPERVISED) {
     base::string16 message = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_EXPIRATION_WARNING);
     // Shows supervised user deprecation message as a persistent error bubble.
@@ -1628,7 +1619,7 @@ void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
 
   // Hide easy unlock icon if there is no data is available.
   if (!state->easy_unlock_state) {
-    big_view->auth_user()->SetEasyUnlockIcon(mojom::EasyUnlockIconId::NONE,
+    big_view->auth_user()->SetEasyUnlockIcon(EasyUnlockIconId::NONE,
                                              base::string16());
     return;
   }
@@ -1662,7 +1653,7 @@ void LockContentsView::ShowAuthErrorMessage() {
       unlock_attempt_ >= kLoginAttemptsBeforeGaiaDialog) {
     Shell::Get()->login_screen_controller()->ShowGaiaSignin(
         true /*can_close*/,
-        big_view->auth_user()->current_user()->basic_user_info->account_id);
+        big_view->auth_user()->current_user().basic_user_info.account_id);
     return;
   }
 
@@ -1718,28 +1709,26 @@ void LockContentsView::OnEasyUnlockIconHovered() {
     return;
 
   UserState* state =
-      FindStateForUser(big_view->GetCurrentUser()->basic_user_info->account_id);
+      FindStateForUser(big_view->GetCurrentUser().basic_user_info.account_id);
   DCHECK(state);
-  mojom::EasyUnlockIconOptionsPtr& easy_unlock_state = state->easy_unlock_state;
-  DCHECK(easy_unlock_state);
+  DCHECK(state->easy_unlock_state);
 
-  if (!easy_unlock_state->tooltip.empty()) {
+  if (!state->easy_unlock_state->tooltip.empty()) {
     tooltip_bubble_->SetAnchorView(big_view->auth_user()->password_view());
-    tooltip_bubble_->SetText(easy_unlock_state->tooltip);
+    tooltip_bubble_->SetText(state->easy_unlock_state->tooltip);
     tooltip_bubble_->Show();
   }
 }
 
 void LockContentsView::OnEasyUnlockIconTapped() {
   UserState* state = FindStateForUser(
-      CurrentBigUserView()->GetCurrentUser()->basic_user_info->account_id);
+      CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id);
   DCHECK(state);
-  mojom::EasyUnlockIconOptionsPtr& easy_unlock_state = state->easy_unlock_state;
-  DCHECK(easy_unlock_state);
+  DCHECK(state->easy_unlock_state);
 
-  if (easy_unlock_state->hardlock_on_click) {
+  if (state->easy_unlock_state->hardlock_on_click) {
     AccountId user =
-        CurrentBigUserView()->GetCurrentUser()->basic_user_info->account_id;
+        CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id;
     Shell::Get()->login_screen_controller()->HardlockPod(user);
     // TODO(jdufault): This should get called as a result of HardlockPod.
     OnTapToUnlockEnabledForUserChanged(user, false /*enabled*/);
@@ -1759,18 +1748,18 @@ void LockContentsView::OnPublicAccountTapped(bool is_primary) {
   const LoginBigUserView* user = CurrentBigUserView();
   // If the pod should not show an expanded view, tapping on it will launch
   // Public Session immediately.
-  if (!user->GetCurrentUser()->public_account_info->show_expanded_view) {
+  if (!user->GetCurrentUser().public_account_info->show_expanded_view) {
     std::string default_input_method;
     for (const auto& keyboard :
-         user->GetCurrentUser()->public_account_info->keyboard_layouts) {
-      if (keyboard->selected) {
-        default_input_method = keyboard->ime_id;
+         user->GetCurrentUser().public_account_info->keyboard_layouts) {
+      if (keyboard.selected) {
+        default_input_method = keyboard.ime_id;
         break;
       }
     }
     Shell::Get()->login_screen_controller()->LaunchPublicSession(
-        user->GetCurrentUser()->basic_user_info->account_id,
-        user->GetCurrentUser()->public_account_info->default_locale,
+        user->GetCurrentUser().basic_user_info.account_id,
+        user->GetCurrentUser().public_account_info->default_locale,
         default_input_method);
     return;
   }
@@ -1789,7 +1778,7 @@ void LockContentsView::OnPublicAccountTapped(bool is_primary) {
 }
 
 LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
-    const mojom::LoginUserInfoPtr& user,
+    const LoginUserInfo& user,
     bool is_primary) {
   LoginAuthUserView::Callbacks auth_user_callbacks;
   auth_user_callbacks.on_auth = base::BindRepeating(
@@ -1829,12 +1818,11 @@ LoginBigUserView* LockContentsView::TryToFindBigUser(const AccountId& user,
 
   // Find auth instance.
   if (primary_big_view_ &&
-      primary_big_view_->GetCurrentUser()->basic_user_info->account_id ==
-          user) {
+      primary_big_view_->GetCurrentUser().basic_user_info.account_id == user) {
     view = primary_big_view_;
   } else if (opt_secondary_big_view_ &&
              opt_secondary_big_view_->GetCurrentUser()
-                     ->basic_user_info->account_id == user) {
+                     .basic_user_info.account_id == user) {
     view = opt_secondary_big_view_;
   }
 
@@ -1857,7 +1845,7 @@ LoginUserView* LockContentsView::TryToFindUserView(const AccountId& user) {
 }
 
 ScrollableUsersListView* LockContentsView::BuildScrollableUsersListView(
-    const std::vector<mojom::LoginUserInfoPtr>& users,
+    const std::vector<LoginUserInfo>& users,
     LoginDisplayStyle display_style) {
   auto* view = new ScrollableUsersListView(
       users,

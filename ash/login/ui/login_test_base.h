@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/login/ui/login_data_dispatcher.h"
-#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 
@@ -64,9 +63,9 @@ class LoginTestBase : public AshTestBase {
   // Changes the active number of users. Fires an event on |DataDispatcher()|.
   void AddChildUsers(size_t num_users);
 
-  std::vector<mojom::LoginUserInfoPtr>& users() { return users_; }
+  std::vector<LoginUserInfo>& users() { return users_; }
 
-  const std::vector<mojom::LoginUserInfoPtr>& users() const { return users_; }
+  const std::vector<LoginUserInfo>& users() const { return users_; }
 
   // If the LockScreen is instantiated, returns its data dispatcher. Otherwise,
   // returns a standalone instance.
@@ -81,7 +80,7 @@ class LoginTestBase : public AshTestBase {
   // The widget created using |ShowWidgetWithContent|.
   std::unique_ptr<views::Widget> widget_;
 
-  std::vector<mojom::LoginUserInfoPtr> users_;
+  std::vector<LoginUserInfo> users_;
 
   LoginDataDispatcher data_dispatcher_;
 

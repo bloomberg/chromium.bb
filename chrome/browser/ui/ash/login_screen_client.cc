@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/login_screen_model.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
@@ -266,30 +269,29 @@ void LoginScreenClient::SetPublicSessionKeyboardLayout(
     const AccountId& account_id,
     const std::string& locale,
     std::unique_ptr<base::ListValue> keyboard_layouts) {
-  std::vector<ash::mojom::InputMethodItemPtr> result;
+  std::vector<ash::InputMethodItem> result;
 
   for (const auto& i : *keyboard_layouts) {
     const base::DictionaryValue* dictionary;
     if (!i.GetAsDictionary(&dictionary))
       continue;
 
-    ash::mojom::InputMethodItemPtr input_method_item =
-        ash::mojom::InputMethodItem::New();
+    ash::InputMethodItem input_method_item;
     std::string ime_id;
     dictionary->GetString("value", &ime_id);
-    input_method_item->ime_id = ime_id;
+    input_method_item.ime_id = ime_id;
 
     std::string title;
     dictionary->GetString("title", &title);
-    input_method_item->title = title;
+    input_method_item.title = title;
 
     bool selected;
     dictionary->GetBoolean("selected", &selected);
-    input_method_item->selected = selected;
+    input_method_item.selected = selected;
     result.push_back(std::move(input_method_item));
   }
-  login_screen_->SetPublicSessionKeyboardLayouts(account_id, locale,
-                                                 std::move(result));
+  ash::LoginScreen::Get()->GetModel()->SetPublicSessionKeyboardLayouts(
+      account_id, locale, result);
 }
 
 void LoginScreenClient::OnUserActivity() {

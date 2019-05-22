@@ -589,8 +589,7 @@ void LoginShelfView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
   SetLoginDialogState(state);
 }
 
-void LoginShelfView::OnUsersChanged(
-    const std::vector<mojom::LoginUserInfoPtr>& users) {
+void LoginShelfView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   login_screen_has_users_ = !users.empty();
   UpdateUi();
 }

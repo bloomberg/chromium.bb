@@ -14,10 +14,7 @@ namespace ash {
 class DetachableBaseHandler;
 enum class DetachableBasePairingStatus;
 class LoginDataDispatcher;
-
-namespace mojom {
-class UserInfo;
-}
+struct UserInfo;
 
 // Wrapper around ash::DetachableBaseHandler used by login UI. Exposed as an
 // interface to ease faking the detachable base state in login UI tests, and in
@@ -40,12 +37,10 @@ class ASH_EXPORT LoginDetachableBaseModel {
 
   // Checks if the currently paired base is different than the last base used by
   // the user.
-  virtual bool PairedBaseMatchesLastUsedByUser(
-      const mojom::UserInfo& user_info) = 0;
+  virtual bool PairedBaseMatchesLastUsedByUser(const UserInfo& user_info) = 0;
 
   // Sets the currently paired base as the last base used by the user.
-  virtual bool SetPairedBaseAsLastUsedByUser(
-      const mojom::UserInfo& user_info) = 0;
+  virtual bool SetPairedBaseAsLastUsedByUser(const UserInfo& user_info) = 0;
 };
 
 }  // namespace ash

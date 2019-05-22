@@ -107,6 +107,9 @@ specific_include_rules = {
   "ash_service\.*": [
     "+chromeos/cryptohome",
   ],
+  "login_types\.*": [
+    "+chromeos/components/proximity_auth/public/interfaces/auth_type.mojom.h",
+  ],
   "message_center_controller\.*": [
     "+components/arc/common/notifications.mojom.h"
   ],

@@ -12,7 +12,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller_client.h"
-#include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/public/cpp/session/user_info.h"
 #include "ash/session/multiprofiles_intro_dialog.h"
 #include "ash/session/session_aborted_dialog.h"
 #include "ash/session/session_observer.h"

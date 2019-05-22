@@ -19,6 +19,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -28,6 +29,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -98,10 +100,10 @@ constexpr const char kDebugEnterpriseDomain[] = "library.com";
 
 // Additional state for a user that the debug UI needs to reference.
 struct UserMetadata {
-  explicit UserMetadata(const mojom::UserInfoPtr& user_info)
-      : account_id(user_info->account_id),
-        display_name(user_info->display_name),
-        type(user_info->type) {}
+  explicit UserMetadata(const UserInfo& user_info)
+      : account_id(user_info.account_id),
+        display_name(user_info.display_name),
+        type(user_info.type) {}
 
   AccountId account_id;
   std::string display_name;
@@ -109,9 +111,8 @@ struct UserMetadata {
   bool enable_tap_to_unlock = false;
   bool enable_auth = true;
   user_manager::UserType type = user_manager::USER_TYPE_REGULAR;
-  mojom::EasyUnlockIconId easy_unlock_id = mojom::EasyUnlockIconId::NONE;
-  mojom::FingerprintState fingerprint_state =
-      mojom::FingerprintState::UNAVAILABLE;
+  EasyUnlockIconId easy_unlock_id = EasyUnlockIconId::NONE;
+  FingerprintState fingerprint_state = FingerprintState::UNAVAILABLE;
 };
 
 std::string DetachableBasePairingStatusToString(
@@ -130,43 +131,43 @@ std::string DetachableBasePairingStatusToString(
 }
 
 // Update the user data based on |type| and |user_index|.
-mojom::LoginUserInfoPtr PopulateUserData(const mojom::LoginUserInfoPtr& user,
-                                         user_manager::UserType type,
-                                         int user_index) {
-  mojom::LoginUserInfoPtr result = user->Clone();
-  result->basic_user_info->type = type;
+LoginUserInfo PopulateUserData(const LoginUserInfo& user,
+                               user_manager::UserType type,
+                               int user_index) {
+  LoginUserInfo result = user;
+  result.basic_user_info.type = type;
 
   bool is_public_account = type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   // Set debug user names and email. Useful for the stub user, which does not
   // have a name  and email set.
-  result->basic_user_info->display_name =
+  result.basic_user_info.display_name =
       is_public_account
           ? kDebugPublicAccountNames[user_index %
                                      base::size(kDebugPublicAccountNames)]
           : kDebugUserNames[user_index % base::size(kDebugUserNames)];
-  result->basic_user_info->display_email =
-      result->basic_user_info->account_id.GetUserEmail();
+  result.basic_user_info.display_email =
+      result.basic_user_info.account_id.GetUserEmail();
 
   if (is_public_account) {
-    result->public_account_info = mojom::PublicAccountInfo::New();
-    result->public_account_info->enterprise_domain = kDebugEnterpriseDomain;
-    result->public_account_info->default_locale = kDebugDefaultLocaleCode;
-    result->public_account_info->show_expanded_view = true;
+    result.public_account_info.emplace();
+    result.public_account_info->enterprise_domain = kDebugEnterpriseDomain;
+    result.public_account_info->default_locale = kDebugDefaultLocaleCode;
+    result.public_account_info->show_expanded_view = true;
 
-    std::vector<mojom::LocaleItemPtr> locales;
-    mojom::LocaleItemPtr locale_item = mojom::LocaleItem::New();
-    locale_item->language_code = kDebugDefaultLocaleCode;
-    locale_item->title = kDebugDefaultLocaleTitle;
-    locales.push_back(std::move(locale_item));
-    result->public_account_info->available_locales = std::move(locales);
+    std::vector<LocaleItem> locales;
+    LocaleItem locale_item;
+    locale_item.language_code = kDebugDefaultLocaleCode;
+    locale_item.title = kDebugDefaultLocaleTitle;
+    result.public_account_info->available_locales.push_back(
+        std::move(locale_item));
 
     // Request keyboard layouts for the default locale.
     Shell::Get()
         ->login_screen_controller()
-        ->RequestPublicSessionKeyboardLayouts(
-            result->basic_user_info->account_id, kDebugDefaultLocaleCode);
+        ->RequestPublicSessionKeyboardLayouts(result.basic_user_info.account_id,
+                                              kDebugDefaultLocaleCode);
   } else {
-    result->public_account_info.reset();
+    result.public_account_info.reset();
   }
 
   return result;
@@ -174,9 +175,10 @@ mojom::LoginUserInfoPtr PopulateUserData(const mojom::LoginUserInfoPtr& user,
 
 }  // namespace
 
-// Applies a series of user-defined transformations to a |LoginDataDispatcher|
-// instance; this is used for debugging and development. The debug overlay uses
-// this class to change what data is exposed to the UI.
+// Applies a series of user-defined transformations to a
+// |LoginDataDispatcher| instance; this is used for debugging and
+// development. The debug overlay uses this class to change what data is exposed
+// to the UI.
 class LockDebugView::DebugDataDispatcherTransformer
     : public LoginDataDispatcher::Observer {
  public:
@@ -199,7 +201,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   void SetUserCount(int count) { NotifyUsers(BuildUserList(count)); }
 
   // Create user list.
-  std::vector<mojom::LoginUserInfoPtr> BuildUserList(int count) {
+  std::vector<LoginUserInfo> BuildUserList(int count) {
     DCHECK(!root_users_.empty());
 
     count = std::max(count, 0);
@@ -209,36 +211,36 @@ class LockDebugView::DebugDataDispatcherTransformer
       debug_users_.erase(debug_users_.begin() + count, debug_users_.end());
 
     // Build |users|, add any new users to |debug_users|.
-    std::vector<mojom::LoginUserInfoPtr> users;
+    std::vector<LoginUserInfo> users;
     for (size_t i = 0; i < size_t{count}; ++i) {
-      users.push_back(root_users_[i % root_users_.size()]->Clone());
+      users.push_back(root_users_[i % root_users_.size()]);
       if (i >= root_users_.size()) {
-        users[i]->basic_user_info->account_id = AccountId::FromUserEmailGaiaId(
-            users[i]->basic_user_info->account_id.GetUserEmail() +
-                std::to_string(i),
-            users[i]->basic_user_info->account_id.GetGaiaId() +
-                std::to_string(i));
+        users[i].basic_user_info.account_id = AccountId::FromUserEmailGaiaId(
+            users[i].basic_user_info.account_id.GetUserEmail() +
+                base::NumberToString(i),
+            users[i].basic_user_info.account_id.GetGaiaId() +
+                base::NumberToString(i));
       }
 
       // Setup user data based on the user type in debug_users_.
       user_manager::UserType type = (i < debug_users_.size())
                                         ? debug_users_[i].type
-                                        : users[i]->basic_user_info->type;
+                                        : users[i].basic_user_info.type;
       users[i] = PopulateUserData(users[i], type, i);
 
       if (i >= debug_users_.size())
-        debug_users_.push_back(UserMetadata(users[i]->basic_user_info));
+        debug_users_.push_back(UserMetadata(users[i].basic_user_info));
     }
 
     return users;
   }
 
-  void NotifyUsers(std::vector<mojom::LoginUserInfoPtr> users) {
+  void NotifyUsers(const std::vector<LoginUserInfo>& users) {
     // User notification resets PIN state.
     for (UserMetadata& user : debug_users_)
       user.enable_pin = false;
 
-    debug_dispatcher_.NotifyUsers(users);
+    debug_dispatcher_.SetUserList(users);
   }
 
   int GetUserCount() const { return debug_users_.size(); }
@@ -278,45 +280,45 @@ class LockDebugView::DebugDataDispatcherTransformer
     UserMetadata* debug_user = &debug_users_[user_index];
 
     // EasyUnlockIconId state transition.
-    auto get_next_id = [](mojom::EasyUnlockIconId id) {
+    auto get_next_id = [](EasyUnlockIconId id) {
       switch (id) {
-        case mojom::EasyUnlockIconId::NONE:
-          return mojom::EasyUnlockIconId::SPINNER;
-        case mojom::EasyUnlockIconId::SPINNER:
-          return mojom::EasyUnlockIconId::LOCKED;
-        case mojom::EasyUnlockIconId::LOCKED:
-          return mojom::EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED;
-        case mojom::EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED:
-          return mojom::EasyUnlockIconId::LOCKED_WITH_PROXIMITY_HINT;
-        case mojom::EasyUnlockIconId::LOCKED_WITH_PROXIMITY_HINT:
-          return mojom::EasyUnlockIconId::HARDLOCKED;
-        case mojom::EasyUnlockIconId::HARDLOCKED:
-          return mojom::EasyUnlockIconId::UNLOCKED;
-        case mojom::EasyUnlockIconId::UNLOCKED:
-          return mojom::EasyUnlockIconId::NONE;
+        case EasyUnlockIconId::NONE:
+          return EasyUnlockIconId::SPINNER;
+        case EasyUnlockIconId::SPINNER:
+          return EasyUnlockIconId::LOCKED;
+        case EasyUnlockIconId::LOCKED:
+          return EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED;
+        case EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED:
+          return EasyUnlockIconId::LOCKED_WITH_PROXIMITY_HINT;
+        case EasyUnlockIconId::LOCKED_WITH_PROXIMITY_HINT:
+          return EasyUnlockIconId::HARDLOCKED;
+        case EasyUnlockIconId::HARDLOCKED:
+          return EasyUnlockIconId::UNLOCKED;
+        case EasyUnlockIconId::UNLOCKED:
+          return EasyUnlockIconId::NONE;
       }
-      return mojom::EasyUnlockIconId::NONE;
+      return EasyUnlockIconId::NONE;
     };
     debug_user->easy_unlock_id = get_next_id(debug_user->easy_unlock_id);
 
     // Enable/disable click to unlock.
     debug_user->enable_tap_to_unlock =
-        debug_user->easy_unlock_id == mojom::EasyUnlockIconId::UNLOCKED;
+        debug_user->easy_unlock_id == EasyUnlockIconId::UNLOCKED;
 
     // Prepare icon that we will show.
-    auto icon = mojom::EasyUnlockIconOptions::New();
-    icon->icon = debug_user->easy_unlock_id;
-    if (icon->icon == mojom::EasyUnlockIconId::SPINNER) {
-      icon->aria_label = base::ASCIIToUTF16("Icon is spinning");
-    } else if (icon->icon == mojom::EasyUnlockIconId::LOCKED ||
-               icon->icon == mojom::EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED) {
-      icon->autoshow_tooltip = true;
-      icon->tooltip = base::ASCIIToUTF16(
+    EasyUnlockIconOptions icon;
+    icon.icon = debug_user->easy_unlock_id;
+    if (icon.icon == EasyUnlockIconId::SPINNER) {
+      icon.aria_label = base::ASCIIToUTF16("Icon is spinning");
+    } else if (icon.icon == EasyUnlockIconId::LOCKED ||
+               icon.icon == EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED) {
+      icon.autoshow_tooltip = true;
+      icon.tooltip = base::ASCIIToUTF16(
           "This is a long message to trigger overflow. This should show up "
           "automatically. icon_id=" +
-          std::to_string(static_cast<int>(icon->icon)));
+          base::NumberToString(static_cast<int>(icon.icon)));
     } else {
-      icon->tooltip =
+      icon.tooltip =
           base::ASCIIToUTF16("This should not show up automatically.");
     }
 
@@ -331,9 +333,9 @@ class LockDebugView::DebugDataDispatcherTransformer
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
     UserMetadata* debug_user = &debug_users_[user_index];
 
-    debug_user->fingerprint_state = static_cast<mojom::FingerprintState>(
+    debug_user->fingerprint_state = static_cast<FingerprintState>(
         (static_cast<int>(debug_user->fingerprint_state) + 1) %
-        (static_cast<int>(mojom::FingerprintState::kMaxValue) + 1));
+        (static_cast<int>(FingerprintState::kMaxValue) + 1));
     debug_dispatcher_.SetFingerprintState(debug_user->account_id,
                                           debug_user->fingerprint_state);
   }
@@ -396,10 +398,9 @@ class LockDebugView::DebugDataDispatcherTransformer
                     ? user_manager::USER_TYPE_PUBLIC_ACCOUNT
                     : user_manager::USER_TYPE_REGULAR;
 
-    std::vector<mojom::LoginUserInfoPtr> users =
-        BuildUserList(debug_users_.size());
+    std::vector<LoginUserInfo> users = BuildUserList(debug_users_.size());
     // Update display name and email in debug users.
-    debug_users_[user_index] = UserMetadata(users[user_index]->basic_user_info);
+    debug_users_[user_index] = UserMetadata(users[user_index].basic_user_info);
     NotifyUsers(std::move(users));
   }
 
@@ -442,12 +443,11 @@ class LockDebugView::DebugDataDispatcherTransformer
   void HideWarningBanner() { debug_dispatcher_.HideWarningBanner(); }
 
   // LoginDataDispatcher::Observer:
-  void OnUsersChanged(
-      const std::vector<mojom::LoginUserInfoPtr>& users) override {
+  void OnUsersChanged(const std::vector<LoginUserInfo>& users) override {
     // Update root_users_ to new source data.
     root_users_.clear();
     for (auto& user : users)
-      root_users_.push_back(user->Clone());
+      root_users_.push_back(user);
 
     // Rebuild debug users using new source data.
     SetUserCount(root_users_.size());
@@ -480,9 +480,8 @@ class LockDebugView::DebugDataDispatcherTransformer
     lock_screen_note_state_ = state;
     debug_dispatcher_.SetLockScreenNoteState(state);
   }
-  void OnShowEasyUnlockIcon(
-      const AccountId& user,
-      const mojom::EasyUnlockIconOptionsPtr& icon) override {
+  void OnShowEasyUnlockIcon(const AccountId& user,
+                            const EasyUnlockIconOptions& icon) override {
     debug_dispatcher_.ShowEasyUnlockIcon(user, icon);
   }
   void OnDetachableBasePairingStatusChanged(
@@ -493,7 +492,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   void OnPublicSessionKeyboardLayoutsChanged(
       const AccountId& account_id,
       const std::string& locale,
-      const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) override {
+      const std::vector<InputMethodItem>& keyboard_layouts) override {
     debug_dispatcher_.SetPublicSessionKeyboardLayouts(account_id, locale,
                                                       keyboard_layouts);
   }
@@ -512,7 +511,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   LoginDataDispatcher debug_dispatcher_;
 
   // Original set of users from |root_dispatcher_|.
-  std::vector<mojom::LoginUserInfoPtr> root_users_;
+  std::vector<LoginUserInfo> root_users_;
 
   // Metadata for users that the UI is displaying.
   std::vector<UserMetadata> debug_users_;
@@ -626,8 +625,7 @@ class LockDebugView::DebugLoginDetachableBaseModel
       return DetachableBasePairingStatus::kNone;
     return *pairing_status_;
   }
-  bool PairedBaseMatchesLastUsedByUser(
-      const mojom::UserInfo& user_info) override {
+  bool PairedBaseMatchesLastUsedByUser(const UserInfo& user_info) override {
     if (GetPairingStatus() != DetachableBasePairingStatus::kAuthenticated)
       return false;
 
@@ -635,8 +633,7 @@ class LockDebugView::DebugLoginDetachableBaseModel
       return true;
     return last_used_bases_[user_info.account_id] == base_id_;
   }
-  bool SetPairedBaseAsLastUsedByUser(
-      const mojom::UserInfo& user_info) override {
+  bool SetPairedBaseAsLastUsedByUser(const UserInfo& user_info) override {
     if (GetPairingStatus() != DetachableBasePairingStatus::kAuthenticated)
       return false;
 

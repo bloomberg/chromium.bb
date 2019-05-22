@@ -59,13 +59,12 @@ LoginPublicAccountUserView::Callbacks::Callbacks(const Callbacks& other) =
 LoginPublicAccountUserView::Callbacks::~Callbacks() = default;
 
 LoginPublicAccountUserView::LoginPublicAccountUserView(
-    const mojom::LoginUserInfoPtr& user,
+    const LoginUserInfo& user,
     const Callbacks& callbacks)
     : NonAccessibleView(kLoginPublicAccountUserViewClassName),
       on_tap_(callbacks.on_tap),
       on_public_account_tap_(callbacks.on_public_account_tapped) {
-  DCHECK_EQ(user->basic_user_info->type,
-            user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  DCHECK_EQ(user.basic_user_info.type, user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   DCHECK(callbacks.on_tap);
   DCHECK(callbacks.on_public_account_tapped);
 
@@ -127,13 +126,11 @@ void LoginPublicAccountUserView::SetAuthEnabled(bool enabled, bool animate) {
   PreferredSizeChanged();
 }
 
-void LoginPublicAccountUserView::UpdateForUser(
-    const mojom::LoginUserInfoPtr& user) {
+void LoginPublicAccountUserView::UpdateForUser(const LoginUserInfo& user) {
   user_view_->UpdateForUser(user, true /*animate*/);
 }
 
-const mojom::LoginUserInfoPtr& LoginPublicAccountUserView::current_user()
-    const {
+const LoginUserInfo& LoginPublicAccountUserView::current_user() const {
   return user_view_->current_user();
 }
 
