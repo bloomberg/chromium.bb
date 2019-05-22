@@ -562,8 +562,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest04BasicCertificateRevocationTests,
                      Section4Invalidpre2000CRLnextUpdateTest12) {
   const char* const certs[] = {"TrustAnchorRootCertificate",
                                "pre2000CRLnextUpdateCACert",
-                               "Invalidpre2000CRLnextUpdateTest12EESeetheintrod"
-                               "uctiontoSection4.4formoreinformation."};
+                               "Invalidpre2000CRLnextUpdateTest12EE"};
   const char* const crls[] = {"TrustAnchorRootCRL",
                               "pre2000CRLnextUpdateCACRL"};
   PkitsTestInfo info;

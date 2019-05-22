@@ -200,6 +200,8 @@ def parse_cert_path_lines(lines):
 
     if "is composed of the following objects:" in line:
       continue
+    if "See the introduction to Section 4.4 for more information." in line:
+      continue
 
     if not line or PAGE_NUMBER_MATCHER.match(line):
       continue
