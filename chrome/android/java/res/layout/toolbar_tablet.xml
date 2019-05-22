@@ -47,10 +47,10 @@
         <!-- The src will be set in onFinishInflate. -->
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/refresh_button"
-            style="@style/ToolbarButton"
+            android:src="@drawable/btn_reload_stop"
             android:contentDescription="@string/accessibility_btn_refresh"
-            tools:tint="@color/standard_mode_tint"
-            tools:src="@drawable/btn_reload_stop" />
+            app:tint="@color/standard_mode_tint"
+            style="@style/ToolbarButton" />
 
         <org.chromium.chrome.browser.omnibox.LocationBarTablet
             android:id="@+id/location_bar"

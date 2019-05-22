@@ -13,6 +13,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LevelListDrawable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
@@ -105,8 +106,18 @@ public class ToolbarTablet extends ToolbarLayout
         mReloadButton = findViewById(R.id.refresh_button);
         // ImageView tinting doesn't work with LevelListDrawable, use Drawable tinting instead.
         // See https://crbug.com/891593 for details.
-        Drawable reloadIcon = UiUtils.getTintedDrawable(
-                getContext(), R.drawable.btn_reload_stop, R.color.standard_mode_tint);
+        // Also, using Drawable tinting doesn't work correctly with LevelListDrawable on Android L
+        // and M. As a workaround, we are constructing the LevelListDrawable programmatically. See
+        // https://crbug.com/958031 for details.
+        final LevelListDrawable reloadIcon = new LevelListDrawable();
+        final int reloadLevel = getResources().getInteger(R.integer.reload_button_level_reload);
+        final int stopLevel = getResources().getInteger(R.integer.reload_button_level_stop);
+        final Drawable reloadLevelDrawable = UiUtils.getTintedDrawable(
+                getContext(), R.drawable.btn_toolbar_reload, R.color.standard_mode_tint);
+        reloadIcon.addLevel(reloadLevel, reloadLevel, reloadLevelDrawable);
+        final Drawable stopLevelDrawable = UiUtils.getTintedDrawable(
+                getContext(), R.drawable.btn_close, R.color.standard_mode_tint);
+        reloadIcon.addLevel(stopLevel, stopLevel, stopLevelDrawable);
         mReloadButton.setImageDrawable(reloadIcon);
         mShowTabStack = AccessibilityUtil.isAccessibilityEnabled()
                 && isAccessibilityTabSwitcherPreferenceEnabled();
