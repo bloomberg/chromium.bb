@@ -1638,7 +1638,28 @@
     <message name="IDS_SETTINGS_KERBEROS_PASSWORD" desc="Title for the input that lets users specify their password for a Kerberos account.">
       Password
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_GENERAL_ERROR_MESSAGE" desc="Fallback error message displayed in the Add Kerberos.">
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_NETWORK_PROBLEM" desc="Error message displayed in the Add Kerberos Account dialog when the user has no network connection or enters a bad realm.">
+      Network problem or bad realm
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_INVALID" desc="Error message displayed in the Add Kerberos Account dialog when the user enters a badly formatted username.">
+      Username invalid (should be user@realm.com)
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_UNKNOWN" desc="Error message displayed in the Add Kerberos Account dialog when the user enters a username that is not known to the Kerberos realm.">
+      Username not known to server
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_CONTACTING_SERVER" desc="Error message displayed in the Add Kerberos Account dialog when the OS is not able to contact the server for the given realm.">
+      Contacting server for realm failed
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_INVALID" desc="Error message displayed in the Add Kerberos Account dialog when the user enters the wrong password.">
+      Password invalid
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_EXPIRED" desc="Error message displayed in the Add Kerberos Account dialog when the user's password is expired.">
+      Password expired
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_KDC_ENC_TYPE" desc="Error message displayed in the Add Kerberos Account dialog when the KDC does not support the encryption types specified in the Kerberos configuration (KDC = Key Distribution Center, part of Kerberos infrastructure).">
+      KDC does not support encryption type
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_GENERAL" desc="Fallback error message displayed in the Add Kerberos dialog.">
       Oops! Something went wrong (error code <ph name="ERROR_CODE">$1<ex>123</ex></ph>).
     </message>
   </if>

@@ -105,36 +105,35 @@ Polymer({
     this.passwordErrorText_ = '';
 
     switch (error) {
-      // TODO(ljusten): Proper errors
       case settings.KerberosErrorType.kNone:
         break;
 
       case settings.KerberosErrorType.kNetworkProblem:
-        this.generalErrorText_ = 'Network problem or bad realm';
+        this.generalErrorText_ = this.i18n('kerberosErrorNetworkProblem');
         break;
       case settings.KerberosErrorType.kParsePrincipalFailed:
-        this.usernameErrorText_ = 'Username invalid (should be user@realm.com)';
+        this.usernameErrorText_ = this.i18n('kerberosErrorUsernameInvalid');
         break;
       case settings.KerberosErrorType.kBadPrincipal:
-        this.usernameErrorText_ = 'Username not known to server';
+        this.usernameErrorText_ = this.i18n('kerberosErrorUsernameUnknown');
         break;
       case settings.KerberosErrorType.kContactingKdcFailed:
-        this.usernameErrorText_ = 'Contacting server for realm failed';
+        this.usernameErrorText_ = this.i18n('kerberosErrorContactingServer');
         break;
 
       case settings.KerberosErrorType.kBadPassword:
-        this.passwordErrorText_ = 'Password invalid';
+        this.passwordErrorText_ = this.i18n('kerberosErrorPasswordInvalid');
         break;
       case settings.KerberosErrorType.kPasswordExpired:
-        this.passwordErrorText_ = 'Password expired';
+        this.passwordErrorText_ = this.i18n('kerberosErrorPasswordExpired');
         break;
 
       case settings.KerberosErrorType.kKdcDoesNotSupportEncryptionType:
-        this.generalErrorText_ = 'KDC does not support encryption type';
+        this.generalErrorText_ = this.i18n('kerberosErrorKdcEncType');
         break;
       default:
-        this.generalErrorText_ = this.i18nDynamic(
-            this.locale, 'kerberosGeneralErrorMessage', String(error));
+        this.generalErrorText_ =
+            this.i18n('kerberosErrorGeneral', String(error));
     }
   },
 
