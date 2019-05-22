@@ -22,7 +22,7 @@ using web::shell_test_util::GetCurrentWebState;
 
 @implementation ShellEarlGreyAppInterface
 
-+ (void)loadURL:(NSString*)spec {
++ (void)startLoadingURL:(NSString*)spec {
   web::test::LoadUrl(GetCurrentWebState(), GURL(base::SysNSStringToUTF8(spec)));
 }
 

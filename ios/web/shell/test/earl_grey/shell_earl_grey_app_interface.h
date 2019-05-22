@@ -16,7 +16,7 @@
 
 // Loads |URL| in the current WebState with transition of type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
-+ (void)loadURL:(NSString*)spec;
++ (void)startLoadingURL:(NSString*)spec;
 
 // Returns YES if the current WebState is loading.
 + (BOOL)isCurrentWebStateLoading WARN_UNUSED_RESULT;

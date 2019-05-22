@@ -25,7 +25,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ShellEarlGreyAppInterface)
 
 - (void)loadURL:(const GURL&)URL {
   NSString* spec = base::SysUTF8ToNSString(URL.spec());
-  [ShellEarlGreyAppInterface loadURL:spec];
+  [ShellEarlGreyAppInterface startLoadingURL:spec];
 
   NSString* loadingErrorDescription = [NSString
       stringWithFormat:@"Current WebState did not finish loading %@ URL", spec];
