@@ -271,6 +271,10 @@ const base::Feature kBlockingFocusWithoutUserActivation{
 const base::Feature kAudioWorkletRealtimeThread{
     "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
+const base::Feature kScrollbarInjectScrollGestures{
+    "ScrollbarInjectScrollGestures", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
   // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
   // (NetworkService).
