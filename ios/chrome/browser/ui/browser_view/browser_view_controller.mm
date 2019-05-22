@@ -1610,7 +1610,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // case, display the Long Press InProductHelp if needed.
     auto completion =
         ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-          [self.bubblePresenter presentLongPressBubbleIfEligible];
+          // Do not attempt to use the browserState if |-shutdown| was called
+          // during the BVC presentation animation. Attempting to present
+          // bubbles will crash since bubblePresenter requires a valid
+          // BrowserState.
+          if (!_isShutdown)
+            [self.bubblePresenter presentLongPressBubbleIfEligible];
         };
 
     [self.transitionCoordinator animateAlongsideTransition:nil
@@ -1677,6 +1682,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+
+  // After |-shutdown| is called, |_browserState| is invalid and will cause a
+  // crash.
+  if (!_browserState || _isShutdown)
+    return;
+
   FullscreenControllerFactory::GetInstance()
       ->GetForBrowserState(_browserState)
       ->BrowserTraitCollectionChangedBegin();

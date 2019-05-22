@@ -2105,6 +2105,23 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)finishDismissingTabSwitcher {
+  // In real world devices, it is possible to have an empty tab model at the
+  // finishing block of a BVC presentation animation. This can happen when the
+  // following occur: a) There is JS that closes the last incognito tab, b) that
+  // JS was paused while the user was in the tab switcher, c) the user enters
+  // the tab, activating the JS while the tab is being presented. Effectively,
+  // the BVC finishes the presentation animation, but there are no tabs to
+  // display. The only appropriate action is to dismiss the BVC and return the
+  // user to the tab switcher.
+  if (self.currentTabModel.count == 0U) {
+    _tabSwitcherIsActive = NO;
+    _dismissingTabSwitcher = NO;
+    _modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
+    self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
+    [self showTabSwitcher];
+    return;
+  }
+
   // The tab switcher dismissal animation runs
   // as part of the BVC presentation process.  The BVC is presented before the
   // animations begin, so it should be the current active VC at this point.
