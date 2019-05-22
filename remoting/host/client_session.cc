@@ -253,11 +253,18 @@ void ClientSession::SelectDesktopDisplay(
     }
   }
 
+  LOG(INFO) << "SelectDesktopDisplay " << id << " = '" << select_display.id()
+            << "'";
+  video_stream_->SelectSource(id);
+  show_display_id_ = id;
+
   // If the old and new displays are the different sizes, then SelectSource()
   // will trigger an OnVideoSizeChanged() message which will update the mouse
-  // filters. However, if the old and new displays are the exact same size,
-  // then the video size message will not be generated. In that case, we update
-  // the display offset directly.
+  // filters.
+  // However, if the old and new displays are the exact same size, then the
+  // video size message will not be generated (because the size of the video
+  // has not changed). But we still need to update the mouse clamping filter
+  // with the new display origin, so we update that directly.
   const DisplayGeometry* oldGeo =
       desktop_display_info_.GetDisplayInfo(show_display_id_);
   const DisplayGeometry* newGeo = desktop_display_info_.GetDisplayInfo(id);
@@ -266,11 +273,6 @@ void ClientSession::SelectDesktopDisplay(
       UpdateMouseClampingFilterOffset();
     }
   }
-
-  LOG(INFO) << "SelectDesktopDisplay " << id << " = '" << select_display.id()
-            << "'";
-  video_stream_->SelectSource(id);
-  show_display_id_ = id;
 }
 
 void ClientSession::OnConnectionAuthenticating() {
