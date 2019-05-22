@@ -20,7 +20,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "url/gurl.h"
 #include "url/origin.h"

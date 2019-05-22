@@ -41,10 +41,10 @@ source_set("web") {
     "//base",
     "//ios/web/common",
     "//ios/web/download",
-    "//ios/web/interstitials",
     "//ios/web/navigation",
     "//ios/web/net",
     "//ios/web/public",
+    "//ios/web/security",
     "//ios/web/web_state",
     "//ios/web/web_state:error_translation_util",
     "//ios/web/web_state:web_view_internal_creation_util",
@@ -113,9 +113,9 @@ source_set("earl_grey_test_support") {
     "//base/test:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web/interstitials",
     "//ios/web/public/test",
     "//ios/web/public/test:element_selector",
+    "//ios/web/security",
     "//net",
   ]
 
@@ -140,8 +140,8 @@ source_set("eg_app_support+eg2") {
     "//base/test:test_support",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/earl_grey2:app_framework+link",
-    "//ios/web/interstitials",
     "//ios/web/public/test",
+    "//ios/web/security",
     "//net",
   ]
 
@@ -204,7 +204,6 @@ test("ios_web_unittests") {
     "//ios/web/common:unittests",
     "//ios/web/download:download_unittests",
     "//ios/web/find_in_page:find_in_page_unittests",
-    "//ios/web/interstitials:interstitials_unittests",
     "//ios/web/security:unittests",
     "//ios/web/web_view:unittests",
   ]
@@ -392,7 +391,6 @@ source_set("ios_web_public_unittests") {
   sources = [
     "public/crw_session_certificate_policy_cache_storage_unittest.mm",
     "public/serializable_user_data_manager_unittest.mm",
-    "public/ssl_status_unittest.cc",
     "public/user_agent_unittest.mm",
     "public/web_state/page_viewport_state_unittest.mm",
   ]
@@ -413,12 +411,12 @@ source_set("ios_web_web_state_unittests") {
     "//ios/web",
     "//ios/web/common",
     "//ios/web/find_in_page",
-    "//ios/web/interstitials",
     "//ios/web/navigation",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//ios/web/security",
     "//ios/web/security",
     "//ios/web/test:mojo_bindings",
     "//ios/web/test:test_constants",

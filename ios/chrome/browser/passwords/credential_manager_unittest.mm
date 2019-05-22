@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/test/web_js_test.h"
 #include "ios/web/public/test/web_test_with_web_state.h"
 #include "net/ssl/ssl_connection_status_flags.h"

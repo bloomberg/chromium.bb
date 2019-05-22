@@ -10,7 +10,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
-#include "ios/web/public/security_style.h"
+#include "ios/web/public/security/security_style.h"
 
 namespace net {
 class SSLInfo;

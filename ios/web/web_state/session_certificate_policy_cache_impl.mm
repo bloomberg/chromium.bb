@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "ios/web/public/certificate_policy_cache.h"
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
+#include "ios/web/public/security/certificate_policy_cache.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 

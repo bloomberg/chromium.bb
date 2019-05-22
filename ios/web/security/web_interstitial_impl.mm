@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/interstitials/web_interstitial_impl.h"
+#import "ios/web/security/web_interstitial_impl.h"
 
 #import <WebKit/WebKit.h>
 
@@ -10,9 +10,9 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#import "ios/web/public/interstitials/web_interstitial_delegate.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
+#import "ios/web/public/security/web_interstitial_delegate.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
@@ -25,7 +25,7 @@
 // It intercepts JavaScript-triggered commands and forwards them
 // to the interstitial.
 @interface CRWWebInterstitialImplWKWebViewDelegate
-    : NSObject<WKNavigationDelegate>
+    : NSObject <WKNavigationDelegate>
 // Initializes a CRWWebInterstitialImplWKWebViewDelegate which will
 // forward JavaScript commands from its WKWebView to |interstitial|.
 - (instancetype)initWithInterstitial:(web::WebInterstitialImpl*)interstitial;

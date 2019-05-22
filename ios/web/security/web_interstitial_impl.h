@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_INTERSTITIALS_WEB_INTERSTITIAL_IMPL_H_
-#define IOS_WEB_INTERSTITIALS_WEB_INTERSTITIAL_IMPL_H_
+#ifndef IOS_WEB_SECURITY_WEB_INTERSTITIAL_IMPL_H_
+#define IOS_WEB_SECURITY_WEB_INTERSTITIAL_IMPL_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/web/common/crw_content_view.h"
-#include "ios/web/public/interstitials/web_interstitial.h"
+#include "ios/web/public/security/web_interstitial.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 #include "url/gurl.h"
@@ -99,4 +99,4 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
 
 }  // namespace web
 
-#endif  // IOS_WEB_INTERSTITIALS_WEB_INTERSTITIAL_IMPL_H_
+#endif  // IOS_WEB_SECURITY_WEB_INTERSTITIAL_IMPL_H_

@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/reading_list/favicon_web_state_dispatcher_impl.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"

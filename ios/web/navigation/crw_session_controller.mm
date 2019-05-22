@@ -24,7 +24,7 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/browser_url_rewriter.h"
 #include "ios/web/public/referrer.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

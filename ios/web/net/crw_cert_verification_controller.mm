@@ -13,7 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/certificate_policy_cache.h"
+#include "ios/web/public/security/certificate_policy_cache.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/security/wk_web_view_security_util.h"

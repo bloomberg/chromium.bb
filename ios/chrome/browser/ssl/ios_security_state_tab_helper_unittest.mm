@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

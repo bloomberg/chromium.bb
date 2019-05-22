@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/interstitials/web_interstitial.h"
+#import "ios/web/public/security/web_interstitial.h"
 
 #include <memory>
 

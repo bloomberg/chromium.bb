@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ios/web/public/interstitials/web_interstitial_delegate.h"
+#include "ios/web/public/security/web_interstitial_delegate.h"
 #include "url/gurl.h"
 
 namespace base {

@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
-#include "ios/web/public/interstitials/web_interstitial.h"
+#include "ios/web/public/security/web_interstitial.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"

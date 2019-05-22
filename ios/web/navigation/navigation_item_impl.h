@@ -14,7 +14,7 @@
 #include "ios/web/public/favicon_status.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/referrer.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/ssl_status.h"
 #include "url/gurl.h"
 
 namespace web {

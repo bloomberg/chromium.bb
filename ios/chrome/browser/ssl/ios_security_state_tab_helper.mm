@@ -14,8 +14,8 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/security_style.h"
-#include "ios/web/public/ssl_status.h"
+#include "ios/web/public/security/security_style.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "net/cert/x509_certificate.h"
 

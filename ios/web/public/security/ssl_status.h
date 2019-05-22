@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_SSL_STATUS_H_
-#define IOS_WEB_PUBLIC_SSL_STATUS_H_
+#ifndef IOS_WEB_PUBLIC_SECURITY_SSL_STATUS_H_
+#define IOS_WEB_PUBLIC_SECURITY_SSL_STATUS_H_
 
 #include <memory>
 #include <string>
 
-#include "ios/web/public/security_style.h"
+#include "ios/web/public/security/security_style.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 
@@ -77,4 +77,4 @@ struct SSLStatus {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_SSL_STATUS_H_
+#endif  // IOS_WEB_PUBLIC_SECURITY_SSL_STATUS_H_

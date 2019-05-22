@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/certificate_policy_cache.h"
+#include "ios/web/public/security/certificate_policy_cache.h"
 
 #include "base/logging.h"
 #include "ios/web/public/web_thread.h"
