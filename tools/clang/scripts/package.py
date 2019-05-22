@@ -175,28 +175,15 @@ def main():
     platform = 'Linux_x64'
 
   with open('buildlog.txt', 'w') as log:
-    Tee('Diff in llvm:\n', log)
-    TeeCmd(['svn', 'stat', LLVM_DIR], log, fail_hard=False)
-    TeeCmd(['svn', 'diff', LLVM_DIR], log, fail_hard=False)
-    Tee('Diff in llvm/tools/clang:\n', log)
-    TeeCmd(['svn', 'stat', os.path.join(LLVM_DIR, 'tools', 'clang')],
-           log, fail_hard=False)
-    TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'tools', 'clang')],
-           log, fail_hard=False)
-    # TODO(thakis): compiler-rt is in projects/compiler-rt on Windows but
-    # llvm/compiler-rt elsewhere. So this diff call is currently only right on
-    # Windows.
-    Tee('Diff in llvm/compiler-rt:\n', log)
-    TeeCmd(['svn', 'stat', os.path.join(LLVM_DIR, 'projects', 'compiler-rt')],
-           log, fail_hard=False)
-    TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'projects', 'compiler-rt')],
-           log, fail_hard=False)
-    Tee('Diff in llvm/projects/libcxx:\n', log)
-    TeeCmd(['svn', 'stat', os.path.join(LLVM_DIR, 'projects', 'libcxx')],
-           log, fail_hard=False)
-    TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'projects', 'libcxx')],
-           log, fail_hard=False)
-
+    if os.path.exists(LLVM_DIR):
+      Tee('Diff in llvm:\n', log)
+      cwd = os.getcwd()
+      os.chdir(LLVM_DIR)
+      TeeCmd(['git', 'status'], log, fail_hard=False)
+      TeeCmd(['git', 'diff'], log, fail_hard=False)
+      os.chdir(cwd)
+    else:
+      Tee('No previous llvm checkout.\n', log)
     Tee('Starting build\n', log)
 
     # Do a clobber build.

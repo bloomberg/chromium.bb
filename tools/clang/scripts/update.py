@@ -36,11 +36,14 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '361212'
-CLANG_SUB_REVISION = 1
+CLANG_REVISION = '67510fac36d27b2e22c7cd955fc167136b737b93'
+CLANG_SVN_REVISION = '361212'
+CLANG_SUB_REVISION = 2
 
-PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
+PACKAGE_VERSION = '%s-%s-%s' % (CLANG_SVN_REVISION, CLANG_REVISION[:8],
+                                CLANG_SUB_REVISION)
 RELEASE_VERSION = '9.0.0'
+
 
 CDS_URL = os.environ.get('CDS_CLANG_BUCKET_OVERRIDE',
     'https://commondatastorage.googleapis.com/chromium-browser-clang')

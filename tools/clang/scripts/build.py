@@ -14,12 +14,19 @@ from __future__ import print_function
 
 import argparse
 import glob
+import json
 import os
 import pipes
 import re
 import shutil
 import subprocess
 import sys
+
+try:
+  import urllib2 as urllib
+except ImportError: # For Py3 compatibility
+  import urllib.request as urllib
+  import urllib.error as urllib
 
 from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     FORCE_HEAD_REVISION_FILE, PACKAGE_VERSION, RELEASE_VERSION,
@@ -31,17 +38,14 @@ from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
 # Path constants. (All of these should be absolute paths.)
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
+COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'compiler-rt')
 LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
 LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
-CHROME_TOOLS_SHIM_DIR = os.path.join(LLVM_DIR, 'tools', 'chrometools')
-THREADS_ENABLED_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, 'threads_enabled')
+CHROME_TOOLS_SHIM_DIR = os.path.join(LLVM_DIR, 'llvm', 'tools', 'chrometools')
+THREADS_ENABLED_BUILD_DIR = os.path.join(THIRD_PARTY_DIR,
+                                         'llvm-threads-enabled')
 COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, 'compiler-rt')
-CLANG_DIR = os.path.join(LLVM_DIR, 'tools', 'clang')
-LLD_DIR = os.path.join(LLVM_DIR, 'tools', 'lld')
-COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
-LIBCXX_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxx')
-LIBCXXABI_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxxabi')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 ANDROID_NDK_DIR = os.path.join(
@@ -49,27 +53,8 @@ ANDROID_NDK_DIR = os.path.join(
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
                                'sdk')
 
-LLVM_REPO_URL = os.environ.get('LLVM_REPO_URL',
-                               'https://llvm.org/svn/llvm-project')
-
 BUG_REPORT_URL = ('https://crbug.com and run tools/clang/scripts/upload_crash.py'
                   ' (only works inside Google) which will upload a report')
-
-
-def GetSvnRevision(svn_repo):
-  """Returns current revision of the svn repo at svn_repo."""
-  svn_info = subprocess.check_output('svn info ' + svn_repo, shell=True)
-  m = re.search(r'Revision: (\d+)', svn_info)
-  return m.group(1)
-
-
-def RmCmakeCache(dir):
-  """Delete CMake cache related files from dir."""
-  for dirpath, dirs, files in os.walk(dir):
-    if 'CMakeCache.txt' in files:
-      os.remove(os.path.join(dirpath, 'CMakeCache.txt'))
-    if 'CMakeFiles' in dirs:
-      RmTree(os.path.join(dirpath, 'CMakeFiles'))
 
 
 def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
@@ -113,41 +98,55 @@ def CopyDirectoryContents(src, dst):
     CopyFile(os.path.join(src, f), dst)
 
 
-def Checkout(name, url, dir):
-  """Checkout the SVN module at url into dir. Use name for the log message."""
-  print("Checking out %s r%s into '%s'" % (name, CLANG_REVISION, dir))
+def CheckoutLLVM(commit, dir):
+  """Checkout the LLVM monorepo at a certain git commit in dir. Any local
+  modifications in dir will be lost."""
+  print("Checking out LLVM monorepo %s into '%s'" % (commit, dir))
 
-  command = ['svn', 'checkout', '--force', url + '@' + CLANG_REVISION, dir]
-  # The checkout command usually succeeds and produces lots of unininteresting
-  # output. Hence, pass `--quiet` on the first run and run an explicit command
-  # to print the revision we got afterwards on the first attempt.
-  if RunCommand(command + ['--quiet'], fail_hard=False):
-    RunCommand(['svnversion', dir])
-    return
+  git_dir = os.path.join(dir, '.git')
+  fetch_cmd = ['git', '--git-dir', git_dir, 'fetch']
+  checkout_cmd = ['git', 'checkout', commit]
 
+  # Do a somewhat shallow clone to save on bandwidth for GitHub and for us.
+  # The depth was whosen to be deep enough to contain the version we're
+  # building, and shallow enough to save significantly on bandwidth compared to
+  # a full clone.
+  clone_cmd = ['git', 'clone', '--depth', '10000',
+               'https://github.com/llvm/llvm-project/', dir]
+
+  # Try updating the current repo.
+  if RunCommand(fetch_cmd, fail_hard=False):
+    os.chdir(dir)
+    if RunCommand(checkout_cmd, fail_hard=False):
+      return
+
+  # Otherwise, do a fresh clone.
   if os.path.isdir(dir):
     print("Removing %s." % dir)
     RmTree(dir)
+  if RunCommand(clone_cmd, fail_hard=False):
+    os.chdir(dir)
+    if RunCommand(checkout_cmd, fail_hard=False):
+      return
 
-  print("Retrying.")
-  RunCommand(command)
+  print('CheckoutLLVM failed.')
+  sys.exit(1)
 
 
-def CheckoutRepos(args):
-  if args.skip_checkout:
-    return
+def GetLatestLLVMCommit():
+  """Get the latest commit hash in the LLVM monorepo."""
+  ref = json.load(urllib.urlopen(('https://api.github.com/repos/'
+                                  'llvm/llvm-project/git/refs/heads/master')))
+  assert ref['object']['type'] == 'commit'
+  return ref['object']['sha']
 
-  Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
-  Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
-  Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
-  # Remove compiler-rt at old location.
-  if os.path.exists(os.path.join(LLVM_DIR, 'compiler-rt')):
-    RmTree(os.path.join(LLVM_DIR, 'compiler-rt'))
-  Checkout('compiler-rt', LLVM_REPO_URL + '/compiler-rt/trunk', COMPILER_RT_DIR)
-  if sys.platform == 'darwin':
-    # clang needs a libc++ checkout, else -stdlib=libc++ won't find includes
-    # (i.e. this is needed for bootstrap builds).
-    Checkout('libcxx', LLVM_REPO_URL + '/libcxx/trunk', LIBCXX_DIR)
+
+def GetSvnRevision(commit):
+  """Get the svn revision corresponding to a git commit in the LLVM repo."""
+  commit = json.load(urllib.urlopen(('https://api.github.com/repos/llvm/'
+                                     'llvm-project/git/commits/' + commit)))
+  revision = re.search("llvm-svn: ([0-9]+)$", commit['message']).group(1)
+  return revision
 
 
 def DeleteChromeToolsShim():
@@ -178,17 +177,6 @@ def CreateChromeToolsShim():
     f.write('  add_subdirectory(${CHROMIUM_TOOLS_SRC} ' +
               '${CMAKE_CURRENT_BINARY_DIR}/a)\n')
     f.write('endif (CHROMIUM_TOOLS_SRC)\n')
-
-
-def AddSvnToPathOnWin():
-  """Download svn.exe and add it to PATH."""
-  if sys.platform != 'win32':
-    return
-  svn_ver = 'svn-1.6.6-win'
-  svn_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, svn_ver)
-  if not os.path.exists(svn_dir):
-    DownloadAndUnpack(CDS_URL + '/tools/%s.zip' % svn_ver, LLVM_BUILD_TOOLS_DIR)
-  os.environ['PATH'] = svn_dir + os.pathsep + os.environ.get('PATH', '')
 
 
 def AddCMakeToPath(args):
@@ -284,7 +272,7 @@ def main():
                       help='build with asserts disabled')
   parser.add_argument('--gcc-toolchain', help='(no longer used)')
   parser.add_argument('--lto-lld', action='store_true',
-                      help='build lld with LTO')
+                      help='build lld with LTO (only applies on Linux)')
   parser.add_argument('--llvm-force-head-revision', action='store_true',
                       help='build the latest revision')
   parser.add_argument('--run-tests', action='store_true',
@@ -314,6 +302,7 @@ def main():
     print('--lto-lld requires --bootstrap')
     return 1
   if args.lto_lld and not sys.platform.startswith('linux'):
+    # TODO(hans): Use it on Windows too.
     print('--lto-lld is only effective on Linux. Ignoring the option.')
     args.lto_lld = False
   if args.with_android and not os.path.exists(ANDROID_NDK_DIR):
@@ -339,19 +328,11 @@ def main():
     return 1
 
 
-  # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
-  # and xcode-select wasn't run.  This is needed for running clang and ld
-  # for the build done by this script, but it's also needed for running
-  # macOS system svn, so this needs to happen before calling functions using
-  # svn.
-  SetMacXcodePath()
-
-  AddSvnToPathOnWin()
-
   global CLANG_REVISION, PACKAGE_VERSION
   if args.llvm_force_head_revision:
-    CLANG_REVISION = GetSvnRevision(LLVM_REPO_URL)
-    PACKAGE_VERSION = CLANG_REVISION + '-0'
+    CLANG_REVISION = GetLatestLLVMCommit()
+    PACKAGE_VERSION = '%s-%s-0' % (GetSvnRevision(CLANG_REVISION),
+                                   CLANG_REVISION[:8])
 
   # Don't buffer stdout, so that print statements are immediately flushed.
   sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -360,15 +341,19 @@ def main():
   WriteStampFile('', STAMP_FILE)
   WriteStampFile('', FORCE_HEAD_REVISION_FILE)
 
+  # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
+  # and xcode-select wasn't run.
+  SetMacXcodePath()
+
   AddCMakeToPath(args)
   AddGnuWinToPath()
-
   DeleteChromeToolsShim()
 
-  CheckoutRepos(args)
+  if not args.skip_checkout:
+    CheckoutLLVM(CLANG_REVISION, LLVM_DIR);
 
   if args.skip_build:
-    return
+    return 0
 
   cc, cxx = None, None
 
@@ -377,16 +362,23 @@ def main():
   ldflags = []
 
   targets = 'AArch64;ARM;Mips;PowerPC;SystemZ;WebAssembly;X86'
+
+  projects = 'clang;compiler-rt;lld;chrometools'
+
+  if sys.platform == 'darwin':
+    # clang needs libc++, else -stdlib=libc++ won't find includes
+    # (this is needed for bootstrap builds and for building the fuchsia runtime)
+    projects += ';libcxx'
+
   base_cmake_args = ['-GNinja',
                      '-DCMAKE_BUILD_TYPE=Release',
                      '-DLLVM_ENABLE_ASSERTIONS=%s' %
                          ('OFF' if args.disable_asserts else 'ON'),
+                     '-DLLVM_ENABLE_PROJECTS=' + projects,
+                     '-DLLVM_TARGETS_TO_BUILD=' + targets,
                      '-DLLVM_ENABLE_PIC=OFF',
                      '-DLLVM_ENABLE_UNWIND_TABLES=OFF',
                      '-DLLVM_ENABLE_TERMINFO=OFF',
-                     '-DLLVM_TARGETS_TO_BUILD=' + targets,
-                     # Statically link MSVCRT to avoid DLL dependencies.
-                     '-DLLVM_USE_CRT_RELEASE=MT',
                      '-DCLANG_PLUGIN_SUPPORT=OFF',
                      '-DCLANG_ENABLE_STATIC_ANALYZER=OFF',
                      '-DCLANG_ENABLE_ARCMT=OFF',
@@ -395,16 +387,37 @@ def main():
                      '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
                      ]
 
+  if sys.platform == 'win32':
+    base_cmake_args.append('-DLLVM_USE_CRT_RELEASE=MT')
+
+  if sys.platform == 'darwin':
+    # Use the system libc++abi.
+    # TODO(hans): use https://reviews.llvm.org/D62060 instead
+    base_cmake_args.append('-DLIBCXX_CXX_ABI=libcxxabi')
+    base_cmake_args.append('-DLIBCXX_CXX_ABI_SYSTEM=1')
+
   if sys.platform != 'win32':
     # libxml2 is required by the Win manifest merging tool used in cross-builds.
     base_cmake_args.append('-DLLVM_ENABLE_LIBXML2=FORCE_ON')
 
   if args.bootstrap:
     print('Building bootstrap compiler')
+    if os.path.exists(LLVM_BOOTSTRAP_DIR):
+      RmTree(LLVM_BOOTSTRAP_DIR)
     EnsureDirExists(LLVM_BOOTSTRAP_DIR)
     os.chdir(LLVM_BOOTSTRAP_DIR)
+
+    projects = 'clang'
+    if args.lto_lld:
+      projects += ';lld'
+    if sys.platform == 'darwin':
+      # Need libc++ and compiler-rt for the bootstrap compiler on mac.
+      projects += ';libcxx;compiler-rt'
+
     bootstrap_args = base_cmake_args + [
+        # Need ARM and AArch64 for building the ios clang_rt.
         '-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64',
+        '-DLLVM_ENABLE_PROJECTS=' + projects,
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
@@ -428,15 +441,10 @@ def main():
           "-DCOMPILER_RT_ENABLE_WATCHOS=OFF",
           "-DCOMPILER_RT_ENABLE_TVOS=OFF",
           ])
-    else:
-      # On non-darwin, the bootstrap toolchain doesn't need compiler-rt,
-      # so don't build it during bootstrap. If we ever do need it,
-      # consider setting COMPILER_RT_DEFAULT_TARGET_ONLY.
-      bootstrap_args.append("-DLLVM_TOOL_COMPILER_RT_BUILD=OFF")
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
-    RmCmakeCache('.')
-    RunCommand(['cmake'] + bootstrap_args + [LLVM_DIR], msvc_arch='x64')
+    RunCommand(['cmake'] + bootstrap_args + [os.path.join(LLVM_DIR, 'llvm')],
+               msvc_arch='x64')
     RunCommand(['ninja'], msvc_arch='x64')
     if args.run_tests:
       if sys.platform == 'win32':
@@ -455,7 +463,7 @@ def main():
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
 
-    print('Building final compiler')
+    print('Bootstrap compiler installed; building final compiler.')
 
   # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
   # needed, on OS X it requires libc++. clang only automatically links to libc++
@@ -529,20 +537,16 @@ def main():
         '-DLLVM_ENABLE_LTO=thin',
         '-DLLVM_USE_LINKER=lld']
 
-  RmCmakeCache('.')
-  RunCommand(['cmake'] + threads_enabled_cmake_args + [LLVM_DIR],
+  RunCommand(['cmake'] + threads_enabled_cmake_args +
+             [os.path.join(LLVM_DIR, 'llvm')],
              msvc_arch='x64', env=deployment_env)
   RunCommand(['ninja'] + tools_with_threading, msvc_arch='x64')
 
-  # Build clang and other tools.
-  CreateChromeToolsShim()
-
-  cmake_args = []
-  if cc is not None:  base_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
-  if cxx is not None: base_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
   default_tools = ['plugins', 'blink_gc_plugin', 'translation_unit']
   chrome_tools = list(set(default_tools + args.extra_tools))
-  cmake_args += base_cmake_args + [
+  if cc is not None:  base_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
+  if cxx is not None: base_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
+  cmake_args = base_cmake_args + [
       '-DLLVM_ENABLE_THREADS=OFF',
       '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
       '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
@@ -556,10 +560,14 @@ def main():
     cmake_args += ['-DCOMPILER_RT_ENABLE_IOS=ON',
                    '-DSANITIZER_MIN_OSX_VERSION=10.7']
 
+  # TODO(crbug.com/41866): Use -DLLVM_EXTERNAL_PROJECTS instead.
+  CreateChromeToolsShim()
+
+  if os.path.exists(LLVM_BUILD_DIR):
+    RmTree(LLVM_BUILD_DIR)
   EnsureDirExists(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
-  RmCmakeCache('.')
-  RunCommand(['cmake'] + cmake_args + [LLVM_DIR],
+  RunCommand(['cmake'] + cmake_args + [os.path.join(LLVM_DIR, 'llvm')],
              msvc_arch='x64', env=deployment_env)
   RunCommand(['ninja'], msvc_arch='x64')
 
@@ -590,9 +598,8 @@ def main():
   rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
                                 RELEASE_VERSION, 'lib', platform)
 
-  # Do an out-of-tree build of compiler-rt.
-  # On Windows, this is used to get the 32-bit ASan run-time.
-  # TODO(hans): Remove once the regular build above produces this.
+  # Do an out-of-tree build of compiler-rt for 32-bit Win ASan.
+  # TODO(hans): Do we use 32-bit ASan? Can we drop it?
   if sys.platform == 'win32':
     if os.path.isdir(COMPILER_RT_BUILD_DIR):
       RmTree(COMPILER_RT_BUILD_DIR)
@@ -606,14 +613,12 @@ def main():
         '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags)]
-    RmCmakeCache('.')
-    RunCommand(['cmake'] + compiler_rt_args + [LLVM_DIR],
+    RunCommand(['cmake'] + compiler_rt_args +
+               [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x86', env=deployment_env)
     RunCommand(['ninja', 'compiler-rt'], msvc_arch='x86')
 
     # Copy select output to the main tree.
-    # TODO(hans): Make this (and the .gypi and .isolate files) version number
-    # independent.
     rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
                                   RELEASE_VERSION, 'lib', platform)
     # Blacklists:
@@ -673,7 +678,6 @@ def main():
         '-DSANITIZER_CXX_ABI=libcxxabi',
         '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-u__cxa_demangle',
         '-DANDROID=1']
-      RmCmakeCache('.')
       RunCommand(['cmake'] + android_args + [COMPILER_RT_DIR])
 
       # We use ASan i686 build for fuzzing.
@@ -728,7 +732,6 @@ def main():
         '-DCMAKE_C_COMPILER_WORKS=ON',
         '-DCMAKE_ASM_COMPILER_WORKS=ON',
         ]
-      RmCmakeCache('.')
       RunCommand(['cmake'] +
                  fuchsia_args +
                  [os.path.join(COMPILER_RT_DIR, 'lib', 'builtins')])
@@ -745,17 +748,16 @@ def main():
 
   # Run tests.
   if args.run_tests or args.llvm_force_head_revision:
-    os.chdir(LLVM_BUILD_DIR)
-    RunCommand(['ninja', 'cr-check-all'], msvc_arch='x64')
+    RunCommand(['ninja', '-C', LLVM_BUILD_DIR, 'cr-check-all'], msvc_arch='x64')
+
   if args.run_tests:
     if sys.platform == 'win32':
       CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
-    os.chdir(LLVM_BUILD_DIR)
     test_targets = [ 'check-all' ]
     if sys.platform == 'darwin':
       # TODO(thakis): Run check-all on Darwin too, https://crbug.com/959361
       test_targets = [ 'check-llvm', 'check-clang', 'check-lld' ]
-    RunCommand(['ninja'] + test_targets, msvc_arch='x64')
+    RunCommand(['ninja', '-C', LLVM_BUILD_DIR] + test_targets, msvc_arch='x64')
 
   if sys.platform == 'darwin':
     for dylib in glob.glob(os.path.join(rt_lib_dst_dir, '*.dylib')):
@@ -770,7 +772,6 @@ def main():
 
   WriteStampFile(PACKAGE_VERSION, STAMP_FILE)
   WriteStampFile(PACKAGE_VERSION, FORCE_HEAD_REVISION_FILE)
-
   print('Clang build was successful.')
   return 0
 
