@@ -53,7 +53,7 @@ TEST(CpuIdentityTest, DefaultCommandsBasedOnUarch_Excavator) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
   cpuid.vendor = "AuthenticAMD";
-  cpuid.family = 0x0f;
+  cpuid.family = 0x15;
   cpuid.model = 0x70;  // Excavator
   cpuid.model_name = "";
   EXPECT_EQ("Excavator", GetCpuUarch(cpuid));

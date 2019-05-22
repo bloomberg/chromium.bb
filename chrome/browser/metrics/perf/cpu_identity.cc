@@ -62,7 +62,7 @@ const CpuUarchTableEntry kCpuUarchTable[] = {
     {"0F_03", "Prescott"},
     {"0F_04", "Prescott"},
     {"0F_06", "Presler"},
-    {"0F_70", "Excavator"},   // AMD Stoney Ridge
+    {"15_70", "Excavator"},   // AMD Stoney Ridge
 };
 
 const CpuUarchTableEntry* kCpuUarchTableEnd =
