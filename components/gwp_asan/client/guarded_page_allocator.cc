@@ -65,16 +65,12 @@ void GuardedPageAllocator::SimpleFreeList<T>::Initialize(T max_entries) {
 }
 
 template <typename T>
-bool GuardedPageAllocator::SimpleFreeList<T>::Allocate(T* out,
-                                                       const char* type) {
-  if (num_used_entries_ < max_entries_) {
-    *out = num_used_entries_++;
-    return true;
-  }
+T GuardedPageAllocator::SimpleFreeList<T>::Allocate() {
+  if (num_used_entries_ < max_entries_)
+    return num_used_entries_++;
 
   DCHECK_LE(free_list_.size(), max_entries_);
-  *out = RandomEviction(&free_list_);
-  return true;
+  return RandomEviction(&free_list_);
 }
 
 template <typename T>
@@ -83,47 +79,12 @@ void GuardedPageAllocator::SimpleFreeList<T>::Free(T entry) {
   free_list_.push_back(entry);
 }
 
-GuardedPageAllocator::PartitionAllocSlotFreeList::PartitionAllocSlotFreeList() =
-    default;
-GuardedPageAllocator::PartitionAllocSlotFreeList::
-    ~PartitionAllocSlotFreeList() = default;
-
-void GuardedPageAllocator::PartitionAllocSlotFreeList::Initialize(
-    AllocatorState::SlotIdx max_entries) {
-  max_entries_ = max_entries;
-  type_mapping_.reserve(max_entries);
-}
-
-bool GuardedPageAllocator::PartitionAllocSlotFreeList::Allocate(
-    AllocatorState::SlotIdx* out,
-    const char* type) {
-  if (num_used_entries_ < max_entries_) {
-    type_mapping_[num_used_entries_] = type;
-    *out = num_used_entries_++;
-    return true;
-  }
-
-  if (!free_list_.count(type) || free_list_[type].empty())
-    return false;
-
-  DCHECK_LE(free_list_[type].size(), max_entries_);
-  *out = RandomEviction(&free_list_[type]);
-  return true;
-}
-
-void GuardedPageAllocator::PartitionAllocSlotFreeList::Free(
-    AllocatorState::SlotIdx entry) {
-  DCHECK_LT(entry, num_used_entries_);
-  free_list_[type_mapping_[entry]].push_back(entry);
-}
-
 GuardedPageAllocator::GuardedPageAllocator() {}
 
 void GuardedPageAllocator::Init(size_t max_alloced_pages,
                                 size_t num_metadata,
                                 size_t total_pages,
-                                OutOfMemoryCallback oom_callback,
-                                bool is_partition_alloc) {
+                                OutOfMemoryCallback oom_callback) {
   CHECK_GT(max_alloced_pages, 0U);
   CHECK_LE(max_alloced_pages, num_metadata);
   CHECK_LE(num_metadata, AllocatorState::kMaxMetadata);
@@ -133,7 +94,6 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
   state_.num_metadata = num_metadata;
   state_.total_pages = total_pages;
   oom_callback_ = std::move(oom_callback);
-  is_partition_alloc_ = is_partition_alloc;
 
   state_.page_size = base::GetPageSize();
 
@@ -150,11 +110,7 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
     // there should be no risk of a race here.
     base::AutoLock lock(lock_);
     free_metadata_.Initialize(num_metadata);
-    if (is_partition_alloc_)
-      free_slots_ = std::make_unique<PartitionAllocSlotFreeList>();
-    else
-      free_slots_ = std::make_unique<SimpleFreeList<AllocatorState::SlotIdx>>();
-    free_slots_->Initialize(total_pages);
+    free_slots_.Initialize(total_pages);
   }
 
   slot_to_metadata_idx_.resize(total_pages);
@@ -173,12 +129,7 @@ GuardedPageAllocator::~GuardedPageAllocator() {
     UnmapRegion();
 }
 
-void* GuardedPageAllocator::Allocate(size_t size,
-                                     size_t align,
-                                     const char* type) {
-  if (!is_partition_alloc_)
-    DCHECK_EQ(type, nullptr);
-
+void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
   if (!size || size > state_.page_size || align > state_.page_size)
     return nullptr;
 
@@ -192,7 +143,7 @@ void* GuardedPageAllocator::Allocate(size_t size,
 
   AllocatorState::SlotIdx free_slot;
   AllocatorState::MetadataIdx free_metadata;
-  if (!ReserveSlotAndMetadata(&free_slot, &free_metadata, type))
+  if (!ReserveSlotAndMetadata(&free_slot, &free_metadata))
     return nullptr;
 
   uintptr_t free_page = state_.SlotToAddr(free_slot);
@@ -281,13 +232,11 @@ size_t GuardedPageAllocator::RegionSize() const {
 
 bool GuardedPageAllocator::ReserveSlotAndMetadata(
     AllocatorState::SlotIdx* slot,
-    AllocatorState::MetadataIdx* metadata_idx,
-    const char* type) {
+    AllocatorState::MetadataIdx* metadata_idx) {
   base::AutoLock lock(lock_);
-  if (num_alloced_pages_ == max_alloced_pages_ ||
-      !free_slots_->Allocate(slot, type)) {
-    if (!oom_hit_) {
-      if (++consecutive_failed_allocations_ == kOutOfMemoryCount) {
+  if (num_alloced_pages_ == max_alloced_pages_) {
+    if (++consecutive_failed_allocations_ == kOutOfMemoryCount) {
+      if (!oom_hit_) {
         oom_hit_ = true;
         base::AutoUnlock unlock(lock_);
         std::move(oom_callback_).Run(total_allocations_ - kOutOfMemoryCount);
@@ -296,7 +245,8 @@ bool GuardedPageAllocator::ReserveSlotAndMetadata(
     return false;
   }
 
-  CHECK(free_metadata_.Allocate(metadata_idx, nullptr));
+  *slot = free_slots_.Allocate();
+  *metadata_idx = free_metadata_.Allocate();
   if (metadata_[*metadata_idx].alloc_ptr) {
     // Overwrite the outdated slot_to_metadata_idx mapping from the previous use
     // of this metadata if it's still valid.
@@ -319,7 +269,7 @@ void GuardedPageAllocator::FreeSlotAndMetadata(
   DCHECK_LT(metadata_idx, state_.num_metadata);
 
   base::AutoLock lock(lock_);
-  free_slots_->Free(slot);
+  free_slots_.Free(slot);
   free_metadata_.Free(metadata_idx);
 
   DCHECK_GT(num_alloced_pages_, 0U);

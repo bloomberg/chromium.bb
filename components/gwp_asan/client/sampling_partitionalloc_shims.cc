@@ -28,6 +28,13 @@ SamplingState<PARTITIONALLOC> sampling_state;
 // for every access.
 GuardedPageAllocator* gpa = nullptr;
 
+// TODO(vtsyrklevich): PartitionAlloc ensures that different typed allocations
+// never overlap. For now, we ensure this property by only allowing one
+// allocation for every page. In the future we need to teach the allocator about
+// types so that it keeps track and pages can be reused.
+size_t allocation_counter = 0;
+size_t total_allocations = 0;
+
 bool AllocationHook(void** out, int flags, size_t size, const char* type_name) {
   if (UNLIKELY(sampling_state.Sample())) {
     // Ignore allocation requests with unknown flags.
@@ -36,7 +43,12 @@ bool AllocationHook(void** out, int flags, size_t size, const char* type_name) {
     if (flags & ~kKnownFlags)
       return false;
 
-    if (void* allocation = gpa->Allocate(size, 0, type_name)) {
+    // Ensure PartitionAlloc types are separated for now.
+    if (allocation_counter >= total_allocations)
+      return false;
+    allocation_counter++;
+
+    if (void* allocation = gpa->Allocate(size)) {
       *out = allocation;
       return true;
     }
@@ -74,10 +86,10 @@ void InstallPartitionAllocHooks(size_t max_allocated_pages,
   static crash_reporter::CrashKeyString<24> pa_crash_key(
       kPartitionAllocCrashKey);
   gpa = new GuardedPageAllocator();
-  gpa->Init(max_allocated_pages, num_metadata, total_pages, base::DoNothing(),
-            true);
+  gpa->Init(max_allocated_pages, num_metadata, total_pages, base::DoNothing());
   pa_crash_key.Set(gpa->GetCrashKey());
   sampling_state.Init(sampling_frequency);
+  total_allocations = total_pages;
   // TODO(vtsyrklevich): Allow SetOverrideHooks to be passed in so we can hook
   // PDFium's PartitionAlloc fork.
   base::PartitionAllocHooks::SetOverrideHooks(&AllocationHook, &FreeHook,
