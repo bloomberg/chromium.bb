@@ -109,7 +109,31 @@ int HttpAuthHandlerDigest::Factory::CreateAuthHandler(
   return OK;
 }
 
-HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallenge(
+bool HttpAuthHandlerDigest::Init(HttpAuthChallengeTokenizer* challenge,
+                                 const SSLInfo& ssl_info) {
+  return ParseChallenge(challenge);
+}
+
+int HttpAuthHandlerDigest::GenerateAuthTokenImpl(
+    const AuthCredentials* credentials,
+    const HttpRequestInfo* request,
+    CompletionOnceCallback callback,
+    std::string* auth_token) {
+  // Generate a random client nonce.
+  std::string cnonce = nonce_generator_->GenerateNonce();
+
+  // Extract the request method and path -- the meaning of 'path' is overloaded
+  // in certain cases, to be a hostname.
+  std::string method;
+  std::string path;
+  GetRequestMethodAndPath(request, &method, &path);
+
+  *auth_token =
+      AssembleCredentials(method, path, *credentials, cnonce, nonce_count_);
+  return OK;
+}
+
+HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallengeImpl(
     HttpAuthChallengeTokenizer* challenge) {
   // Even though Digest is not connection based, a "second round" is parsed
   // to differentiate between stale and rejected responses.
@@ -134,30 +158,6 @@ HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallenge(
   return (original_realm_ != original_realm) ?
       HttpAuth::AUTHORIZATION_RESULT_DIFFERENT_REALM :
       HttpAuth::AUTHORIZATION_RESULT_REJECT;
-}
-
-bool HttpAuthHandlerDigest::Init(HttpAuthChallengeTokenizer* challenge,
-                                 const SSLInfo& ssl_info) {
-  return ParseChallenge(challenge);
-}
-
-int HttpAuthHandlerDigest::GenerateAuthTokenImpl(
-    const AuthCredentials* credentials,
-    const HttpRequestInfo* request,
-    CompletionOnceCallback callback,
-    std::string* auth_token) {
-  // Generate a random client nonce.
-  std::string cnonce = nonce_generator_->GenerateNonce();
-
-  // Extract the request method and path -- the meaning of 'path' is overloaded
-  // in certain cases, to be a hostname.
-  std::string method;
-  std::string path;
-  GetRequestMethodAndPath(request, &method, &path);
-
-  *auth_token = AssembleCredentials(method, path, *credentials,
-                                    cnonce, nonce_count_);
-  return OK;
 }
 
 HttpAuthHandlerDigest::HttpAuthHandlerDigest(

@@ -81,19 +81,17 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerDigest : public HttpAuthHandler {
     std::unique_ptr<const NonceGenerator> nonce_generator_;
   };
 
-  HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuthChallengeTokenizer* challenge) override;
-
- protected:
+ private:
+  // HttpAuthHandler
   bool Init(HttpAuthChallengeTokenizer* challenge,
             const SSLInfo& ssl_info) override;
-
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                             const HttpRequestInfo* request,
                             CompletionOnceCallback callback,
                             std::string* auth_token) override;
+  HttpAuth::AuthorizationResult HandleAnotherChallengeImpl(
+      HttpAuthChallengeTokenizer* challenge) override;
 
- private:
   FRIEND_TEST_ALL_PREFIXES(HttpAuthHandlerDigestTest, ParseChallenge);
   FRIEND_TEST_ALL_PREFIXES(HttpAuthHandlerDigestTest, AssembleCredentials);
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest, DigestPreAuthNonceCount);

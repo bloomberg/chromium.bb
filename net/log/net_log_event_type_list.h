@@ -2170,19 +2170,12 @@ EVENT_TYPE(SOCKS5_HANDSHAKE_READ)
 // HTTP Authentication
 // ------------------------------------------------------------------------
 
-// The time spent authenticating to the proxy.
-EVENT_TYPE(AUTH_PROXY)
-
-// The time spent authentication to the server.
-EVENT_TYPE(AUTH_SERVER)
-
-// The channel bindings generated for the connection.
-EVENT_TYPE(AUTH_CHANNEL_BINDINGS)
-
 // Lifetime event for HttpAuthController.
-// Parameters:
+//
+// The BEGIN phase has the following parameters:
 //  {
-//      "source_dependency": <Source ID of controlling entity>
+//      "target": <Either "proxy" or "server">,
+//      "url": <URL of authentication target>
 //  }
 EVENT_TYPE(AUTH_CONTROLLER)
 
@@ -2195,11 +2188,6 @@ EVENT_TYPE(AUTH_BOUND_TO_CONTROLLER)
 
 // Records the invocation and completion of a single token generation operation.
 //
-// The BEGIN phase has the following parameters:
-//  {
-//       "source_dependency": <Source ID of caller>
-//  }
-//
 // The END phase has the following parameters:
 //  {
 //       "net_error": <Net Error. Only present in case of error.>
@@ -2208,16 +2196,21 @@ EVENT_TYPE(AUTH_GENERATE_TOKEN)
 
 // Records the invocation and completion of HandleAuthChallenge operation.
 //
-// The BEGIN phase has the following parameters:
+// Parameters:
 //  {
-//       "source_dependency": <Source ID of caller>
-//  }
-//
-// The END phase has the following parameters:
-//  {
-//       "net_error": <Net Error. Only present in case of error.>
+//       "authorization_result": <One of "accept", "reject", "stale", "invalid",
+//                                "different_realm" depending on the outcome of
+//                                the handling the challenge>
 //  }
 EVENT_TYPE(AUTH_HANDLE_CHALLENGE)
+
+// The channel bindings generated for the connection.
+//  {
+//       "token": <Hex encoded RFC 5929 'tls-server-endpoint' channel binding
+//                 token. Could be empty if one could not be generated (e.g.
+//                 because the underlying channel was not TLS>
+//  }
+EVENT_TYPE(AUTH_CHANNEL_BINDINGS)
 
 // ------------------------------------------------------------------------
 // HTML5 Application Cache

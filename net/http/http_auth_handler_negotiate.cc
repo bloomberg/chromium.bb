@@ -163,11 +163,6 @@ HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
 
 HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() = default;
 
-HttpAuth::AuthorizationResult HttpAuthHandlerNegotiate::HandleAnotherChallenge(
-    HttpAuthChallengeTokenizer* challenge) {
-  return auth_system_->ParseChallenge(challenge);
-}
-
 // Require identity on first pass instead of second.
 bool HttpAuthHandlerNegotiate::NeedsIdentity() {
   return auth_system_->NeedsIdentity();
@@ -246,6 +241,12 @@ int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
   if (rv == ERR_IO_PENDING)
     callback_ = std::move(callback);
   return rv;
+}
+
+HttpAuth::AuthorizationResult
+HttpAuthHandlerNegotiate::HandleAnotherChallengeImpl(
+    HttpAuthChallengeTokenizer* challenge) {
+  return auth_system_->ParseChallenge(challenge);
 }
 
 std::string HttpAuthHandlerNegotiate::CreateSPN(const std::string& server,

@@ -87,9 +87,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
   ~HttpAuthHandlerNegotiate() override;
 
-  // HttpAuthHandler:
-  HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuthChallengeTokenizer* challenge) override;
+  // HttpAuthHandler
   bool NeedsIdentity() override;
   bool AllowsDefaultCredentials() override;
   bool AllowsExplicitCredentials() override;
@@ -97,13 +95,15 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   const std::string& spn_for_testing() const { return spn_; }
 
  protected:
+  // HttpAuthHandler
   bool Init(HttpAuthChallengeTokenizer* challenge,
             const SSLInfo& ssl_info) override;
-
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                             const HttpRequestInfo* request,
                             CompletionOnceCallback callback,
                             std::string* auth_token) override;
+  HttpAuth::AuthorizationResult HandleAnotherChallengeImpl(
+      HttpAuthChallengeTokenizer* challenge) override;
 
  private:
   enum State {

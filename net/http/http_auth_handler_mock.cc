@@ -59,26 +59,6 @@ void HttpAuthHandlerMock::SetGenerateExpectation(bool async, int rv) {
   generate_rv_ = rv;
 }
 
-HttpAuth::AuthorizationResult HttpAuthHandlerMock::HandleAnotherChallenge(
-    HttpAuthChallengeTokenizer* challenge) {
-  EXPECT_THAT(state_, ::testing::AnyOf(State::WAIT_FOR_CHALLENGE,
-                                       State::WAIT_FOR_GENERATE_AUTH_TOKEN));
-  // If we receive an empty challenge for a connection based scheme, or a second
-  // challenge for a non connection based scheme, assume it's a rejection.
-  if (!is_connection_based() || challenge->base64_param().empty()) {
-    state_ = State::DONE;
-    return HttpAuth::AUTHORIZATION_RESULT_REJECT;
-  }
-
-  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "mock")) {
-    state_ = State::DONE;
-    return HttpAuth::AUTHORIZATION_RESULT_INVALID;
-  }
-
-  state_ = State::WAIT_FOR_GENERATE_AUTH_TOKEN;
-  return HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
-}
-
 bool HttpAuthHandlerMock::NeedsIdentity() {
   return first_round_;
 }
@@ -129,6 +109,26 @@ int HttpAuthHandlerMock::GenerateAuthTokenImpl(
     }
     return generate_rv_;
   }
+}
+
+HttpAuth::AuthorizationResult HttpAuthHandlerMock::HandleAnotherChallengeImpl(
+    HttpAuthChallengeTokenizer* challenge) {
+  EXPECT_THAT(state_, ::testing::AnyOf(State::WAIT_FOR_CHALLENGE,
+                                       State::WAIT_FOR_GENERATE_AUTH_TOKEN));
+  // If we receive an empty challenge for a connection based scheme, or a second
+  // challenge for a non connection based scheme, assume it's a rejection.
+  if (!is_connection_based() || challenge->base64_param().empty()) {
+    state_ = State::DONE;
+    return HttpAuth::AUTHORIZATION_RESULT_REJECT;
+  }
+
+  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "mock")) {
+    state_ = State::DONE;
+    return HttpAuth::AUTHORIZATION_RESULT_INVALID;
+  }
+
+  state_ = State::WAIT_FOR_GENERATE_AUTH_TOKEN;
+  return HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
 }
 
 void HttpAuthHandlerMock::OnGenerateAuthToken() {
