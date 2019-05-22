@@ -67,4 +67,6 @@ source_set("unittests") {
     ":msgs",
     "../../third_party/googletest:gtest",
   ]
+
+  configs += [ "../../build:allow_build_from_embedder" ]
 }
