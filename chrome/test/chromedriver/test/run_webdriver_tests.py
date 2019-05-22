@@ -307,7 +307,7 @@ if __name__ == '__main__':
       if test_result.test_status == 'PASS':
         success_count += 1
 
-      if is_unexpected:
+      if is_unexpected and test_result.test_status != 'PASS':
         exit_code += 1
 
     output['num_failures_by_type']['PASS'] = success_count
