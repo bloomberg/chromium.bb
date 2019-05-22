@@ -23,7 +23,7 @@
 
 # Maintained by John J. Boyer, director@chpi.org, www.chpi.org
 
-include chardefs.cti All character definition opcodes
+include en-chardefs.cti All character definition opcodes
 include nemethdefs.cti
 
 # Braille indicators

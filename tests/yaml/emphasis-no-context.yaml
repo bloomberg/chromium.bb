@@ -4,7 +4,7 @@
 table: |
   include tables/unicode-without-blank.dis
   include tables/spaces.uti
-  include tables/chardefs.cti
+  include tables/en-chardefs.cti
 
   emphclass italic
 
