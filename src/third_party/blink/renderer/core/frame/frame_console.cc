@@ -72,7 +72,7 @@ void FrameConsole::ReportMessageToClient(MessageSource source,
   if (source == kConsoleAPIMessageSource) {
     if (!frame_->GetPage())
       return;
-    if (level >= kErrorMessageLevel ||
+    if (level >= mojom::ConsoleMessageLevel::kError ||
         frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
                                                                        url)) {
       std::unique_ptr<SourceLocation> full_location =
@@ -82,7 +82,7 @@ void FrameConsole::ReportMessageToClient(MessageSource source,
     }
   } else {
     if (!location->IsUnknown() &&
-        (level >= kErrorMessageLevel ||
+        (level >= mojom::ConsoleMessageLevel::kError ||
         frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
                                                                        url)))
       stack_trace = location->ToString();
