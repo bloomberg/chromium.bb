@@ -25,6 +25,7 @@
 namespace performance_manager {
 
 class SiteDataReaderTest;
+class SiteDataWriterTest;
 
 FORWARD_DECLARE_TEST(SiteDataReaderTest,
                      DestroyingReaderCancelsPendingCallbacks);
@@ -153,6 +154,7 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
   // Friend all the tests.
   friend class SiteDataImplTest;
   friend class performance_manager::SiteDataReaderTest;
+  friend class performance_manager::SiteDataWriterTest;
 
   SiteDataImpl(const url::Origin& origin,
                OnDestroyDelegate* delegate,
