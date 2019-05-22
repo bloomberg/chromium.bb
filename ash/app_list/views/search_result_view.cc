@@ -436,6 +436,12 @@ bool SearchResultView::IsSearchResultHoveredOrSelected() {
   return IsMouseHovered() || selected();
 }
 
+void SearchResultView::OnMenuClosed() {
+  // Release menu since its menu model delegate (AppContextMenu) could be
+  // released as a result of menu command execution.
+  context_menu_.reset();
+}
+
 void SearchResultView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
@@ -455,7 +461,7 @@ void SearchResultView::OnGetContextMenu(
     const gfx::Point& point,
     ui::MenuSourceType source_type,
     std::unique_ptr<ui::SimpleMenuModel> menu_model) {
-  if (!menu_model || context_menu_->IsShowingMenu())
+  if (!menu_model || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
 
   AppLaunchedMetricParams metric_params = {
@@ -466,7 +472,9 @@ void SearchResultView::OnGetContextMenu(
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
       std::string(), std::move(menu_model), GetWidget(), source_type,
       metric_params, AppListMenuModelAdapter::SEARCH_RESULT,
-      base::OnceClosure(), view_delegate_->GetSearchModel()->tablet_mode());
+      base::BindOnce(&SearchResultView::OnMenuClosed,
+                     weak_ptr_factory_.GetWeakPtr()),
+      view_delegate_->GetSearchModel()->tablet_mode());
   context_menu_->Run(gfx::Rect(point, gfx::Size()),
                      views::MenuAnchorPosition::kTopLeft,
                      views::MenuRunner::HAS_MNEMONICS);

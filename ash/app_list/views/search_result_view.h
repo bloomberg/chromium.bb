@@ -113,6 +113,9 @@ class APP_LIST_EXPORT SearchResultView
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
   bool IsSearchResultHoveredOrSelected() override;
 
+  // Invoked when the context menu closes.
+  void OnMenuClosed();
+
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;
 

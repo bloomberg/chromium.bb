@@ -382,6 +382,9 @@ void SearchResultTileItemView::OnGetContextMenuModel(
 }
 
 void SearchResultTileItemView::OnMenuClosed() {
+  // Release menu since its menu model delegate (AppContextMenu) could be
+  // released as a result of menu command execution.
+  context_menu_.reset();
   OnBlur();
 }
 

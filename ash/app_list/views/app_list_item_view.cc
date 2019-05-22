@@ -784,6 +784,10 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void AppListItemView::OnMenuClosed() {
+  // Release menu since its menu model delegate (AppContextMenu) could be
+  // released as a result of menu command execution.
+  context_menu_.reset();
+
   if (!menu_close_initiated_from_drag_) {
     // If the menu was not closed due to a drag sequence(e.g. multi touch) reset
     // the drag state.
