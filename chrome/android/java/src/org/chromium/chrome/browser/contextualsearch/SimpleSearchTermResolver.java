@@ -57,7 +57,7 @@ public class SimpleSearchTermResolver {
         mResponseCallback = responseCallback;
         if (baseWebContents != null && contextualSearchContext != null
                 && contextualSearchContext.canResolve()) {
-            Log.i(TAG, "ctxs calling nativeStartSearchTermResolutionRequest!!");
+            Log.i(TAG, "calling nativeStartSearchTermResolutionRequest.");
             nativeStartSearchTermResolutionRequest(
                     mNativePointer, contextualSearchContext, baseWebContents);
         }
@@ -108,7 +108,7 @@ public class SimpleSearchTermResolver {
                 selectionStartAdjust, selectionEndAdjust, contextLanguage, thumbnailUrl, caption,
                 quickActionUri, quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload,
                 cocaCardTag);
-        Log.v(TAG, "ctxs onSearchTermResolutionResponse received with " + resolvedSearchTerm);
+        Log.v(TAG, "onSearchTermResolutionResponse received with " + resolvedSearchTerm);
         if (!TextUtils.isEmpty(resolvedSearchTerm.searchTerm())) {
             ResolveResponse responseCallback = mResponseCallback;
             mResponseCallback = null;

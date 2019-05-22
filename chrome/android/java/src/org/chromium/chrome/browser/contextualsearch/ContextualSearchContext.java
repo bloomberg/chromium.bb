@@ -102,7 +102,7 @@ public abstract class ContextualSearchContext {
             context.setInitialSelectedWord(surroundingText.substring(start, end));
         }
         if (context.hasValidSelection() && !TextUtils.isEmpty(context.getInitialSelectedWord())) {
-            Log.i(TAG, "ctxs identified default query: " + context.getWordTapped());
+            Log.i(TAG, "identified default query: " + context.getWordTapped());
             // TODO(donnd): figure out which of these parameters should be passed in.
             context.setResolveProperties("US", true, 0, 0);
             return context;
