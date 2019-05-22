@@ -116,10 +116,6 @@ id<GREYMatcher> PrivacyHandoffButton() {
 id<GREYMatcher> BlockPopupsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
 }
-// Matcher for the Privacy Translate Settings button on the privacy UI.
-id<GREYMatcher> TranslateSettingsButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_TRANSLATE_SETTING);
-}
 // Matcher for the Bandwidth Settings button on the main Settings screen.
 id<GREYMatcher> BandwidthSettingsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS);
@@ -575,17 +571,6 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
   [[EarlGrey selectElementWithMatcher:BlockPopupsButton()]
-      performAction:grey_tap()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  [self closeSubSettingsMenu];
-}
-
-// Verifies the UI elements are accessible on the Content Translations Settings
-// page.
-- (void)testAccessibilityOnContentSettingsTranslatePage {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
-  [[EarlGrey selectElementWithMatcher:TranslateSettingsButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];

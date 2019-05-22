@@ -123,8 +123,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierSettings];
   [model addItem:[self blockPopupsItem]
       toSectionWithIdentifier:SectionIdentifierSettings];
-  [model addItem:[self translateItem]
-      toSectionWithIdentifier:SectionIdentifierSettings];
+  if (!base::FeatureList::IsEnabled(kLanguageSettings)) {
+    [model addItem:[self translateItem]
+        toSectionWithIdentifier:SectionIdentifierSettings];
+  }
   MailtoHandlerProvider* provider =
       ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
   NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
