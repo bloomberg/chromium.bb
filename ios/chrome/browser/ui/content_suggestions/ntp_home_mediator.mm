@@ -474,7 +474,7 @@ const char kNTPHelpURL[] =
     // one is available. If not, use the default avatar and initiate a fetch
     // in the background. When background fetch completes, all observers will
     // be notified to refresh the user's avatar.
-    // TODO(crbug.com/961120): Implement observers. This avatar fetch code
+    // TODO(crbug.com/965966): Implement observers. This avatar fetch code
     // is from the IdentityRefreshLogic in settings_table_view_controller.mm.
     // Code can probably be shared.
     ios::ChromeIdentityService* identityService =
@@ -488,7 +488,7 @@ const char kNTPHelpURL[] =
     // User is not signed in, show default avatar.
     image = [self defaultAvatar];
   }
-  // TODO(crbug.com/961120): Use ResizedAvatarCache when it accepts the
+  // TODO(crbug.com/965962): Use ResizedAvatarCache when it accepts the
   // specification of different image sizes.
   CGFloat dimension = ntp_home::kIdentityAvatarDimension;
   if (image.size.width != dimension || image.size.height != dimension) {

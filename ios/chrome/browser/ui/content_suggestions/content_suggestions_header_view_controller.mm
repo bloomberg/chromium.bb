@@ -347,7 +347,7 @@ using base::UserMetricsAction;
   self.identityDiscButton.imageEdgeInsets = UIEdgeInsetsMake(
       ntp_home::kIdentityAvatarMargin, ntp_home::kIdentityAvatarMargin,
       ntp_home::kIdentityAvatarMargin, ntp_home::kIdentityAvatarMargin);
-  // TODO(crbug.com/961120): Set action on button to launch into Settings.
+  // TODO(crbug.com/965958): Set action on button to launch into Settings.
   [self.headerView setIdentityDiscView:self.identityDiscButton];
 
   // Register to receive the avatar of the currently signed in user.
