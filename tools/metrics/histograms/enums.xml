@@ -29136,6 +29136,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Script"/>
 </enum>
 
+<enum name="InlineUpdateAvailability">
+  <int value="0" label="Untracked (Not Known to UMA)"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Update Not Available"/>
+  <int value="3" label="Update Available"/>
+  <int value="4" label="Developer Triggered Update In Progress"/>
+</enum>
+
 <enum name="InlineUpdateCallFailure">
   <int value="0" label="StartUpdate Failed"/>
   <int value="1" label="StartUpdate Exception"/>
@@ -29154,6 +29162,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Error - Download Not Present"/>
   <int value="8" label="Error - Internal Error"/>
   <int value="9" label="Error - Untracked (Not Known to UMA)"/>
+</enum>
+
+<enum name="InlineUpdateInstallStatus">
+  <int value="0" label="Untracked (Not Known to UMA)"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Requires UI Intent"/>
+  <int value="3" label="Pending"/>
+  <int value="4" label="Downloading"/>
+  <int value="5" label="Downloaded"/>
+  <int value="6" label="Installing"/>
+  <int value="7" label="Installed"/>
+  <int value="8" label="Failed"/>
+  <int value="9" label="Canceled"/>
 </enum>
 
 <enum name="InputMethodCategory">
