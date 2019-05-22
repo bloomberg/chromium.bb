@@ -62,6 +62,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
+#include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
@@ -1401,9 +1402,14 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     }
 
     PrefService* prefs = profile->GetPrefs();
-    if (prefs->GetBoolean(prefs::kSamlInSessionPasswordChangeEnabled) &&
-        user_context_.GetSamlPasswordAttributes().has_value()) {
-      user_context_.GetSamlPasswordAttributes()->SaveToPrefs(prefs);
+    if (prefs->GetBoolean(prefs::kSamlInSessionPasswordChangeEnabled)) {
+      // Update password expiry data if new data came in during SAML login:
+      if (user_context_.GetSamlPasswordAttributes().has_value()) {
+        user_context_.GetSamlPasswordAttributes()->SaveToPrefs(prefs);
+      }
+      // Show password expiry notification if it is expiring - even if it wasn't
+      // a SAML login (ie, show it even if it was an offline login).
+      MaybeShowSamlPasswordExpiryNotification(profile);
     }
 
     // Transfers authentication-related data from the profile that was used for
