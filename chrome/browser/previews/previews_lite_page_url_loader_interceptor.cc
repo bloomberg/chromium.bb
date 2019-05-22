@@ -107,6 +107,10 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
   std::string original_url;
   if (previews::ExtractOriginalURLFromLitePageRedirectURL(
           tentative_resource_request.url, &original_url)) {
+    // Add the original URL to |urls_processed_| so that we will not retrigger
+    // on this navigation. This is used to allow `location.reload()` JavaScript
+    // code to load the original page when a preview has been committed.
+    urls_processed_.insert(GURL(original_url));
     CreateOriginalURLLoader(tentative_resource_request, GURL(original_url),
                             std::move(callback));
     return;
