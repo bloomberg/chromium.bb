@@ -132,6 +132,7 @@ def UrlOpen(url):
   # due to using too old TLS (see crbug.com/897796#c56). As a horrible
   # workaround, shell out to curl instead. It seems curl is recent enough on all
   # our machines that it can connect. On Windows it's in our gnuwin package.
+  # TODO(crbug.com/965937): Use urllib once our Python is recent enough.
   return subprocess.check_output(['curl', '--silent', url])
 
 
@@ -332,6 +333,8 @@ def main():
 
   # The gnuwin package also includes curl, which is needed to interact with the
   # github API below.
+  # TODO(crbug.com/965937): Use urllib once our Python is recent enough, and
+  # move this down to where we fetch other build tools.
   AddGnuWinToPath()
 
   global CLANG_REVISION, PACKAGE_VERSION
