@@ -288,7 +288,9 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
                               use_gl),
         sync_point_client_state_(sync_point_client_state) {}
 
-  ~DirectContextProviderDelegateImpl() override = default;
+  ~DirectContextProviderDelegateImpl() override {
+    sync_point_client_state_->Destroy();
+  }
 
   // SharedImageInterface implementation:
   gpu::Mailbox CreateSharedImage(ResourceFormat format,

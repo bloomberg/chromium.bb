@@ -20,6 +20,11 @@ class VulkanImplementation;
 struct GpuPreferences;
 }  // namespace gpu
 
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}
+
 namespace viz {
 class GpuServiceImpl;
 
@@ -65,6 +70,10 @@ class TestGpuServiceHolder {
   }
 
  private:
+  friend struct base::DefaultSingletonTraits<TestGpuServiceHolder>;
+
+  TestGpuServiceHolder();
+
   void InitializeOnGpuThread(const gpu::GpuPreferences& preferences,
                              bool use_swiftshader_for_vulkan,
                              base::WaitableEvent* completion);

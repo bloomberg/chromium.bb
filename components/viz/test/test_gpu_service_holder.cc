@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,12 +34,14 @@ namespace viz {
 
 // static
 TestGpuServiceHolder* TestGpuServiceHolder::GetSingleton() {
-  static base::NoDestructor<TestGpuServiceHolder> instance(
-      gpu::gles2::ParseGpuPreferences(base::CommandLine::ForCurrentProcess()),
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseGpuInTests));
-  return instance.get();
+  return base::Singleton<TestGpuServiceHolder>::get();
 }
+
+TestGpuServiceHolder::TestGpuServiceHolder()
+    : TestGpuServiceHolder(gpu::gles2::ParseGpuPreferences(
+                               base::CommandLine::ForCurrentProcess()),
+                           !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                               switches::kUseGpuInTests)) {}
 
 TestGpuServiceHolder::TestGpuServiceHolder(
     const gpu::GpuPreferences& gpu_preferences,
