@@ -224,6 +224,28 @@ base::Optional<CorsErrorStatus> CheckAccess(
   return base::nullopt;
 }
 
+bool ShouldCheckCors(const GURL& request_url,
+                     const base::Optional<url::Origin>& request_initiator,
+                     mojom::FetchRequestMode fetch_request_mode) {
+  if (fetch_request_mode == network::mojom::FetchRequestMode::kNavigate ||
+      fetch_request_mode == network::mojom::FetchRequestMode::kNoCors) {
+    return false;
+  }
+
+  // CORS needs a proper origin (including a unique opaque origin). If the
+  // request doesn't have one, CORS should not work.
+  DCHECK(request_initiator);
+
+  // TODO(crbug.com/870173): Remove following scheme check once the network
+  // service is fully enabled.
+  if (request_url.SchemeIs(url::kDataScheme))
+    return false;
+
+  if (request_initiator->IsSameOriginWith(url::Origin::Create(request_url)))
+    return false;
+  return true;
+}
+
 base::Optional<CorsErrorStatus> CheckPreflightAccess(
     const GURL& response_url,
     const int response_status_code,
