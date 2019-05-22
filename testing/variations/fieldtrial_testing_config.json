@@ -921,6 +921,31 @@
             ]
         }
     ],
+    "AutofillServerBehaviors": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "ios",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "API_Enabled",
+                    "params": {
+                        "autofill-server-url": "https://content-autofill.googleapis.com/"
+                    },
+                    "enable_features": [
+                        "AutofillServerCommunication",
+                        "AutofillUseApi"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillSmallFormSupport": [
         {
             "platforms": [
