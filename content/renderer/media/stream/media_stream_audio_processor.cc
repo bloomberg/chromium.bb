@@ -768,19 +768,13 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
   ap->set_stream_delay_ms(total_delay_ms);
 
   DCHECK_LE(volume, WebRtcAudioDeviceImpl::kMaxVolumeLevel);
-  webrtc::GainControl* agc = ap->gain_control();
-  int err = agc->set_stream_analog_level(volume);
-  DCHECK_EQ(err, 0) << "set_stream_analog_level() error: " << err;
-
+  ap->set_stream_analog_level(volume);
   ap->set_stream_key_pressed(key_pressed);
 
-  err = ap->ProcessStream(process_ptrs,
-                          process_frames,
-                          input_format_.sample_rate(),
-                          MapLayout(input_format_.channel_layout()),
-                          output_format_.sample_rate(),
-                          MapLayout(output_format_.channel_layout()),
-                          output_ptrs);
+  int err = ap->ProcessStream(
+      process_ptrs, process_frames, input_format_.sample_rate(),
+      MapLayout(input_format_.channel_layout()), output_format_.sample_rate(),
+      MapLayout(output_format_.channel_layout()), output_ptrs);
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 
   if (typing_detector_) {
@@ -799,8 +793,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
                      rtc::scoped_refptr<MediaStreamAudioProcessor>(this)));
 
   // Return 0 if the volume hasn't been changed, and otherwise the new volume.
-  return (agc->stream_analog_level() == volume) ?
-      0 : agc->stream_analog_level();
+  const int recommended_volume = ap->recommended_stream_analog_level();
+  return (recommended_volume == volume) ? 0 : recommended_volume;
 }
 
 void MediaStreamAudioProcessor::UpdateAecStats() {

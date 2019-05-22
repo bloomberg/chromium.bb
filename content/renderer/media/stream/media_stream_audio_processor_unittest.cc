@@ -157,25 +157,20 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     const webrtc::AudioProcessing::Config config =
         audio_processing->GetConfig();
     EXPECT_TRUE(config.echo_canceller.enabled);
+    EXPECT_TRUE(config.gain_controller1.enabled);
+    EXPECT_TRUE(config.high_pass_filter.enabled);
+    EXPECT_TRUE(config.noise_suppression.enabled);
+    EXPECT_EQ(config.noise_suppression.level, config.noise_suppression.kHigh);
 #if defined(OS_ANDROID)
     EXPECT_TRUE(config.echo_canceller.mobile_mode);
     EXPECT_FALSE(config.voice_detection.enabled);
+    EXPECT_EQ(config.gain_controller1.mode,
+              config.gain_controller1.kFixedDigital);
 #else
     EXPECT_FALSE(config.echo_canceller.mobile_mode);
     EXPECT_TRUE(config.voice_detection.enabled);
-#endif
-    EXPECT_TRUE(config.high_pass_filter.enabled);
-
-    EXPECT_TRUE(audio_processing->noise_suppression()->is_enabled());
-    EXPECT_TRUE(audio_processing->noise_suppression()->level() ==
-        webrtc::NoiseSuppression::kHigh);
-    EXPECT_TRUE(audio_processing->gain_control()->is_enabled());
-#if defined(OS_ANDROID)
-    EXPECT_TRUE(audio_processing->gain_control()->mode() ==
-        webrtc::GainControl::kFixedDigital);
-#else
-    EXPECT_TRUE(audio_processing->gain_control()->mode() ==
-        webrtc::GainControl::kAdaptiveAnalog);
+    EXPECT_EQ(config.gain_controller1.mode,
+              config.gain_controller1.kAdaptiveAnalog);
 #endif
   }
 
