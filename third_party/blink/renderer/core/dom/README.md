@@ -785,7 +785,7 @@ Slot Assignments:
 | ------ | --------------------- |
 | slot-G | [H]                   |
 | slot-O | [slot-P]              |
-| slot-P | [O]                   |
+| slot-P | [Q]                   |
 | slot-R | [slot-S]              |
 | slot-S | [T]                   |
 
