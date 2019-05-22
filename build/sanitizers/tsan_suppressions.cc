@@ -137,9 +137,6 @@ char kTSanDefaultSuppressions[] =
     "race:sctp_express_handle_sack\n"
     "race:system_base_info\n"
 
-    // https://code.google.com/p/v8/issues/detail?id=3143
-    "race:v8::internal::FLAG_track_double_fields\n"
-
     // http://crbug.com/374135
     "race:media::AlsaWrapper::PcmWritei\n"
 
