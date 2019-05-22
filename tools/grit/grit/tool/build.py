@@ -30,7 +30,6 @@ _format_modules = {
   'c_format': 'c_format',
   'chrome_messages_json': 'chrome_messages_json',
   'data_package': 'data_pack',
-  'js_map_format': 'js_map_format',
   'policy_templates': 'policy_templates_json',
   'rc_all': 'rc',
   'rc_header': 'rc_header',
@@ -327,9 +326,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
     if output_type in ('rc_header', 'resource_file_map_source',
                        'resource_map_header', 'resource_map_source'):
       return 'cp1252'
-    if output_type in ('android', 'c_format', 'js_map_format', 'plist',
-                       'plist_strings', 'doc', 'json', 'android_policy',
-                       'chrome_messages_json'):
+    if output_type in ('android', 'c_format',  'plist', 'plist_strings', 'doc',
+                       'json', 'android_policy', 'chrome_messages_json'):
       return 'utf_8'
     # TODO(gfeher) modify here to set utf-8 encoding for admx/adml
     return 'utf_16'

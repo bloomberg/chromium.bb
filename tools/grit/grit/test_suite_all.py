@@ -37,7 +37,6 @@ class TestSuiteAll(unittest.TestSuite):
     import grit.format.data_pack_unittest
     import grit.format.gzip_string_unittest
     import grit.format.html_inline_unittest
-    import grit.format.js_map_format_unittest
     import grit.format.policy_templates_json_unittest
     import grit.format.rc_header_unittest
     import grit.format.rc_unittest
@@ -81,7 +80,6 @@ class TestSuiteAll(unittest.TestSuite):
         grit.format.data_pack_unittest.FormatDataPackUnittest,
         grit.format.gzip_string_unittest.FormatGzipStringUnittest,
         grit.format.html_inline_unittest.HtmlInlineUnittest,
-        grit.format.js_map_format_unittest.JsMapFormatUnittest,
         grit.format.policy_templates_json_unittest.PolicyTemplatesJsonUnittest,
         grit.format.rc_header_unittest.RcHeaderFormatterUnittest,
         grit.format.rc_unittest.FormatRcUnittest,
