@@ -271,7 +271,7 @@ source_set("material_components_ios") {
     "src/components/Ink/src/MaterialInk.h",
     "src/components/Ink/src/private/MDCInkLayer.h",
     "src/components/Ink/src/private/MDCInkLayer.m",
-    "src/components/Ink/src/private/MDCLegacyInkLayer+Testing.h",
+    "src/components/Ink/src/private/MDCLegacyInkLayer+Private.h",
     "src/components/Ink/src/private/MDCLegacyInkLayer.h",
     "src/components/Ink/src/private/MDCLegacyInkLayer.m",
     "src/components/NavigationBar/src/ColorThemer/MDCNavigationBarColorThemer.h",
