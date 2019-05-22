@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">خطا</translation>
 <translation id="1172898394251786223">فیلد بعدی</translation>
 <translation id="1176932207622159128">ذخیره تصویر ممکن نشد</translation>
+<translation id="1180526666083833456">همگام‌سازی و شخصی‌سازی در همه دستگاه‌ها.</translation>
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1201530049782216880">برگه ناشناس جدید</translation>
 <translation id="1209206284964581585">فعلاً پنهان شود</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">۴ هفته گذشته</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
 <translation id="1430915738399379752">چاپ</translation>
+<translation id="1436290164580597469">برای شروع همگام‌سازی، عبارت عبور را وارد کنید.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> مورد</translation>
 <translation id="1491277525950327607">برای جابه‌جایی بین تنظیمات، دو ضربه سریع بزنید</translation>
 <translation id="152234381334907219">هرگز ذخیره نمی‌شود</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">نمایش گذرواژه</translation>
 <translation id="2481538920734869610">افزودن حساب</translation>
 <translation id="2497852260688568942">سرپرستتان همگام‌سازی را غیرفعال کرده است</translation>
+<translation id="2500374554657206846">گزینه‌هایی برای ذخیره گذرواژه</translation>
 <translation id="2523363575747517183">این وب‌سایت به‌طور مکرر تلاش می‌کند برنامه دیگری را باز کند.</translation>
 <translation id="2529021024822217800">باز کردن همه</translation>
+<translation id="2570206273416014374">برخی کوکی‌ها و جستجوها را از نوار نشانی و جعبه جستجو به موتور جستجوی پیش‌فرض ارسال می‌کند.</translation>
 <translation id="2572712655377361602">خط‌مشی دستگاه دسترسی به عکس‌هایتان را مسدود کرد</translation>
 <translation id="2584132361465095047">افزودن حساب…</translation>
 <translation id="2625189173221582860">گذرواژه کپی شد</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">بستن همه برگه‌های حالت ناشناس</translation>
 <translation id="3533436815740441613">برگه جدید</translation>
 <translation id="3551320343578183772">بستن برگه</translation>
+<translation id="3581564640715911333">پیشنهاد ترجمه صفحات نوشته‌شده به زبان‌های دیگر</translation>
 <translation id="3588820906588687999">باز کردن تصویر در برگه جدید</translation>
 <translation id="3603009562372709545">‏کپی URL پیوند</translation>
 <translation id="3607167657931203000">داده‌های تکمیل خودکار</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">صفحات وب از پیش بارگیری شده</translation>
 <translation id="3691593122358196899">نشانک به <ph name="FOLDER_TITLE" /> اضافه شد</translation>
 <translation id="3771033907050503522">برگه‌های ناشناس</translation>
+<translation id="3775743491439407556">همگام‌سازی کار نمی‌کند</translation>
 <translation id="3779810277399252432">اتصال اینترنتی ندارید</translation>
 <translation id="3783017676699494206">ذخیره تصویر</translation>
 <translation id="3789841737615482174">نصب</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">‏برای اسکن کردن کد QR، دوربین را در تنظیمات فعال کنید</translation>
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="430793432425771671">همگام‌سازی همه چیز</translation>
+<translation id="4338650699862464074">‏نشانی وب صفحه‌هایی را که بازدید می‌کنید برای Google ارسال می‌کند.</translation>
 <translation id="4359125752503270327">این صفحه در برنامه دیگری باز می‌شود.</translation>
 <translation id="4370827530403103842">همگام‌سازی کار نمی‌کند. برای رفع اشکال ضربه بزنید.</translation>
 <translation id="4375040482473363939">‏جستجوی کد QR</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="441868831736628555">اعلامیه حریم خصوصی</translation>
+<translation id="4454246407045105932">افزودن زبان</translation>
 <translation id="4476574785019001431">تنظیمات</translation>
 <translation id="4496373720959965247">برگه اضافه کنید و بین صفحه‌ها جابه‌جا شوید</translation>
 <translation id="4508750114462689118">بستن تبلیغ ورود به سیستم</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">‏درحال جستجو با Google</translation>
 <translation id="4619615317237390068">برگه‌ها از دستگاه‌های دیگر</translation>
 <translation id="4620246317052452550">صفحه‌هایی که خوانده‌اید</translation>
+<translation id="4630540211544979320">ترجمه صفحات</translation>
 <translation id="4636930964841734540">اطلاعات</translation>
 <translation id="4659667755519643272">به تعویض‌کننده برگه وارد شود</translation>
 <translation id="4666531726415300315">ورود به سیستم به‌عنوان <ph name="EMAIL" />.
@@ -248,7 +257,9 @@
 
 برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">۱ مقاله خوانده‌نشده در فهرست مطالعه.</translation>
+<translation id="4818522717893377262">افزودن زبان...</translation>
 <translation id="481968316161811770">کوکی‌ها، داده‌های سایت</translation>
+<translation id="4833786495304741580">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند.</translation>
 <translation id="4840495572919996524">‏نشانک‌ها، سابقه، گذرواژه‌ها و سایر موارد، دیگر با حساب Google شما همگام‌سازی نمی‌شود.</translation>
 <translation id="4854345657858711387">تنظیم گذرنویسه</translation>
 <translation id="4860895144060829044">تماس</translation>
@@ -289,6 +300,7 @@
 <translation id="5548760955356983418">‏با Handoff می‌توانید شروع به مرور وب‌سایت در این دستگاه کنید و سپس به‌آسانی در دستگاه Mac خود به مرور ادامه دهید. وب‌سایتی که اکنون باز است در Dock (لنگرگاه) شما در Mac نمایان می‌شود.
 
 Handoff باید در بخش عمومی تنظیمات نیز فعال شود و دستگاه‌های شما باید از یک حساب iCloud استفاده کنند.</translation>
+<translation id="5551897871312988470">پیشنهاد برای ترجمه</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5614553682702429503">گذرواژه ذخیره شود؟</translation>
 <translation id="5626245204502895507">فایل در حال حاضر قابل بارگیری نیست.</translation>
@@ -336,6 +348,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6187302354554850004">آخرین همگام‌سازی: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">خوانده‌نشده</translation>
 <translation id="6196207969502475924">جستجوی گفتاری</translation>
+<translation id="6219688215832490856">هرگز ترجمه نشود</translation>
 <translation id="6254066287920239840">پیوندها به‌جای مرورگر در برنامه باز شوند.</translation>
 <translation id="6255097610484507482">ویرایش کارت اعتباری</translation>
 <translation id="6303969859164067831">خروج از سیستم و خاموش کردن همگام‌سازی</translation>
@@ -390,6 +403,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6973630695168034713">پوشه‌ها</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">‏مدیریت حساب Google</translation>
 <translation id="7004499039102548441">برگه‌های جدید</translation>
 <translation id="7006788746334555276">تنظیمات محتوا</translation>
 <translation id="7015203776128479407">راه‌اندازی اولیه همگام‌سازی کامل نشد. همگام‌سازی خاموش است.</translation>
@@ -460,6 +474,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8059533439631660104">بخش را کوچک می‌کند.</translation>
 <translation id="806745655614357130">داده‌های من مجزا باشد</translation>
 <translation id="8073670137947914548">بارگیری به پایان رسید</translation>
+<translation id="8073872304774253879">بهبود جستجوها و مرور</translation>
 <translation id="8076014560081431679">تنظیمات ذخیره‌شده سایت حذف نمی‌شوند و احتمالاً عادات مرور شما را نشان می‌دهند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">بارگیری فایل دردسترس است. گزینه‌ها نزدیک انتهای صفحه دردسترس است.</translation>
 <translation id="8131740175452115882">تأیید</translation>

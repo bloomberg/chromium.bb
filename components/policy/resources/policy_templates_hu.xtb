@@ -1048,6 +1048,7 @@
       Ha az AutoplayAllowed házirend beállítása Hamis, akkor az ebben a házirendben megadott összes URL-mintán engedélyezett lesz a lejátszás.
 
       Vegye figyelembe, hogy amennyiben fut a <ph name="PRODUCT_NAME" />, és a házirend módosul, akkor a változás csak az újonnan megnyitott lapokon érvényesül. Emiatt egyes lapokon továbbra is a korábbi viselkedés tapasztalható.</translation>
+<translation id="284288632677954003">Olyan URL-eket tartalmazó XML-fájl URL-címe, melyeknek sosem szabad kiváltaniuk böngészőváltást.</translation>
 <translation id="285480231336205327">Nagy kontrasztú mód engedélyezése</translation>
 <translation id="2854919890879212089">Azt eredményezi, hogy a(z) <ph name="PRODUCT_NAME" /> a rendszer alapértelmezett nyomtatóját használja alapértelmezett választásként a nyomtatási előnézetben a legutóbb használt nyomtató helyett.
 
@@ -1218,6 +1219,15 @@
 <translation id="3096595567015595053">Engedélyezett bővítmények listája</translation>
 <translation id="3101501961102569744">Válassza ki, hogyan adja meg a proxyszerver beállításait</translation>
 <translation id="3101709781009526431">Dátum és idő</translation>
+<translation id="3114411414586006215">Ez a házirend szabályozza azon webhelyek listáját, amelyek nem vezetnek böngészőváltáshoz.
+
+      A listához a következő házirenden keresztül is hozzáadhat újabb elemeket: <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Ha a házirend nincs beállítva, nem kerül webhely a listára.
+
+      Ha a házirend be van állítva, minden elemet szabályként kezel a rendszer, a <ph name="URL_LIST_POLICY_NAME" /> házirendhez hasonlóan. A mögötte álló logika azonban a fordítottja: az egyező szabályok nem nyitnak meg másik böngészőt.
+
+      A <ph name="URL_LIST_POLICY_NAME" /> házirendtől eltérően a szabályok mindkét irányban érvényesek. Ez azt jelenti, hogy amikor az Internet Explorer-bővítmény jelen van és engedélyezett, a házirend azt is vezérli, hogy az <ph name="IE_PRODUCT_NAME" /> a <ph name="PRODUCT_NAME" /> böngészőben nyissa-e meg ezeket az URL-eket.</translation>
 <translation id="3117676313396757089">Figyelem: A DHE teljes mértékben eltávolításra kerül a <ph name="PRODUCT_NAME" /> 57-es verziója után (2017 márciusa körül), és ez a házirend onnantól kezdve nem lesz használható.
 
       Ha a házirend nincs beállítva, illetve értéke hamis, akkor a TLS protokoll DHE rejtjelezési csomagjai nem lesznek engedélyezve. Igaz értékre állítva engedélyezve lesznek a DHE rejtjelezési csomagjai, és megmarad a kompatibilitás az elavult szerverekkel. Ez átmeneti intézkedés, a szervert újra kell konfigurálni.
@@ -1410,6 +1420,17 @@
 <translation id="3550875587920006460">Segítségével egyéni ütemezés állítható be frissítések kereséséhez. Minden felhasználóra és az eszköz minden felületére vonatkozik. Beállítása után az eszköz az ütemezésnek megfelelően keres majd frissítéseket. A további ütemezett frissítéskeresések leállításához el kell távolítani a házirendet.</translation>
 <translation id="355118380775352753">Az alternatív böngészőben megnyíló webhelyek</translation>
 <translation id="3554984410014457319">A Google Segéd figyelheti a hangalapú aktiválásra szolgáló kifejezést</translation>
+<translation id="3557208865710006939">Kényszeríti a megadott nyelvek helyesírás-ellenőrzésének engedélyezését. A rendszer figyelmen kívül hagyja a listában található, fel nem ismert nyelveket.
+
+      Ha engedélyezi a házirendet, akkor a megadott nyelveknél, valamint azoknál, amelyeknél a felhasználó aktiválta, engedélyezve lesz a helyesírás-ellenőrzés.
+
+      Ha nem állítja be, illetve ha letiltja a házirendet, a felhasználó helyesírás-ellenőrzéssel kapcsolatos beállításai érintetlenek maradnak.
+
+      Ha a <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> házirend hamis értékre van beállítva, akkor ennek a házirendnek nincs hatása.
+
+      Ha valamelyik nyelv ebben és a <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> házirendben is szerepel, a rendszer ezt a házirendet részesíti előnyben, és engedélyezi a helyesírás-ellenőrzéshez használt nyelvet.
+
+      A jelenleg támogatott nyelvek a következők: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">A felhasználók konfigurálhatják a Chrome OS kiadási csatornáját</translation>
 <translation id="3575011234198230041">HTTP-hitelesítés</translation>
 <translation id="3577251398714997599">Hirdetésbeállítások a tolakodó hirdetéseket tartalmazó webhelyekre vonatkozóan</translation>
@@ -1757,6 +1778,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha beállítja ezt a házirendet, a felhasználók nem módosíthatják vagy bírálhatják felül.
 
           Ha nem állítja be a házirendet, akkor a beragadó billentyűk kezdetben le vannak tiltva, de a felhasználó bármikor engedélyezheti őket.</translation>
+<translation id="4171331498167688968">Ha a házirend értéke hamis, akkor a harmadik felek szoftverei számára engedélyezve lesz a futtatható kódok Chrome-folyamatokba történő beszúrása. Ha a házirend nincs beállítva, vagy értéke igaz, akkor a harmadik felek szoftverei nem tudnak beszúrni futtatható kódot a Chrome-folyamatokba.
+
+      A házirend értékétől függetlenül a böngésző jelenleg nem tiltja le, hogy harmadik felek szoftverei futtatható kódot szúrjanak be a folyamataiba olyan számítógépen, amely <ph name="MS_AD_NAME" />-domainhez csatlakozik.</translation>
 <translation id="4183229833636799228">Alapértelmezett <ph name="FLASH_PLUGIN_NAME" />-beállítás</translation>
 <translation id="4192388905594723944">URL a távoli hozzáférésű kliens hitelesítési tokenjének ellenőrzéséhez</translation>
 <translation id="4203389617541558220">Az eszköz működési idejének korlátozása automatikus újraindítások beütemezésével.
@@ -2113,6 +2137,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="5085647276663819155">Nyomtatási előnézet letiltása</translation>
 <translation id="5090209345759901501">A Flash-tartalmak beállításainak kiterjesztése az összes tartalomra</translation>
+<translation id="5090791951240382356">Különböző forrásokból származó szótárházirendek egyesítésének engedélyezése.</translation>
 <translation id="5093540029655764852">Megadja az ütemezést (napokban), amely szerint a kliens módosítja gépi fiókjelszavát. A jelszót véletlenszerűen generálja a kliens, és nem látható a felhasználó számára.
 
       A felhasználói jelszavakhoz hasonlóan a gépi jelszavakat is rendszeresen módosítani kell. A házirend letiltása, illetve sok napra állítása negatív hatással lehet a biztonságra, mivel több időt biztosít az esetleges támadóknak a gépi fiókjelszó megtalálására és használatára.
@@ -3026,6 +3051,17 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       </translation>
 <translation id="6922884955650325312">A(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul letiltása</translation>
 <translation id="6923366716660828830">Megadja az alapértelmezett keresési szolgáltató nevét. Ha üresen vagy beállítatlanul marad, a keresési URL által megadott gazdagépnév lesz használatban. A házirend csak akkor érvényesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
+<translation id="6924223708804692571">Kényszeríti a megadott nyelvek helyesírás-ellenőrzésének letiltását. A rendszer figyelmen kívül hagyja a listában található, fel nem ismert nyelveket.
+
+      Ha engedélyezi a házirendet, a megadott nyelveknél le lesz tiltva a helyesírás-ellenőrzés. A listán nem szereplő nyelvek esetében a felhasználó dönthet a helyesírás-ellenőrzés be- vagy kikapcsolásáról.
+
+      Ha nem állítja be, illetve ha letiltja a házirendet, a felhasználó helyesírás-ellenőrzéssel kapcsolatos beállításai érintetlenek maradnak.
+
+      Ha a <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> házirend hamis értékre van beállítva, akkor ennek a házirendnek nincs hatása.
+
+      Ha valamelyik nyelv ebben és a <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> házirendben is szerepel, a rendszer az utóbbi házirendet részesíti előnyben, és engedélyezi a helyesírás-ellenőrzéshez használt nyelvet.
+
+      A jelenleg támogatott nyelvek a következők: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Hosszú oldal mentén történő kétoldalas nyomtatás engedélyezése</translation>
 <translation id="6931242315485576290">A Google-lal való adatszinkronizálás tiltása</translation>
 <translation id="6936894225179401731">Megadja a proxyszerverhez csatlakozó egyidejű kapcsolatok maximális számát.
@@ -3163,6 +3199,15 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ennek a házirendnek a beállítása esetén az alkalmazáskészlet rögzített, és a felhasználó nem módosíthatja.
 
       Ha nincs beállítva, akkor a felhasználó módosíthatja az indítóban rögzített alkalmazások listáját.</translation>
+<translation id="713121532817834879">Ez a házirend egy ugyanolyan formátumban lévő XML-fájlra mutató URL, mint az Internet Explorer által használt <ph name="IEEM_SITELIST_POLICY" /> házirend formátuma. A rendszer szabályokat tölt be ebből az XML-fájlból, de nem osztja meg őket az Internet Explorerrel.
+
+      Az XML-fájlban lévő szabályok alkalmazása a következőhöz hasonlóan történik: <ph name="GREYLIST_POLICY_NAME" />. Ezek a szabályok tehát megakadályozzák, hogy a <ph name="PRODUCT_NAME" /> másik böngészőt nyisson meg, és a másik böngészőt is megakadályozzák abban, hogy megnyissa a <ph name="PRODUCT_NAME" /> böngészőt.
+
+      Ha a házirend beállítatlanul marad, vagy a beállított értéke nem érvényes URL, akkor a <ph name="PRODUCT_NAME" /> nem használja azoknak a szabályoknak a forrásaként, amelyek nem aktiválnak böngészőváltást.
+
+      Ha érvényes URL van beállítva, a <ph name="PRODUCT_NAME" /> letölti a webhelyek listáját az adott URL-címről, és úgy alkalmazza a szabályokat, mintha a(z) <ph name="SITELIST_POLICY_NAME" /> házirendben állították volna be őket.
+
+      További információ az Internet Explorer <ph name="IEEM_SITELIST_POLICY" /> házirendjéről: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a videorögzítő eszközökhöz</translation>
 <translation id="7138678301420049075">Egyéb</translation>
 <translation id="7140629953254369759">Utasítja a <ph name="PRODUCT_OS_NAME" /> operációs rendszert, hogy a meghatározott nevű feladatütemező-beállítást használja.
@@ -3211,6 +3256,15 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
           Az automatikus lejátszás csak a(z) <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> házirendben kifejezetten feltüntetett domainek számára engedélyezett. Ha minden webhely számára szeretné engedélyezni az automatikus lejátszást, fontolja meg a http://* és a https://* felvételét erre a listára.
 
           Ha nem állítja be a házirendet, a felhasználó manuálisan tudja módosítani ezt a beállítást.</translation>
+<translation id="7222749588229362483">Lehetővé teszi a kiválasztott házirendek egyesítését, ha forrásuk eltérő, de hatókörük és szintjük egyezik.
+
+        Az egyesítés az egyes források szótáraiban lévő első szintű kulcsok egyesítését jelenti. Ha ütközés van két kulcs között, akkor a rendszer a legmagasabb prioritású forrásból származó kulcsot alkalmazza.
+
+        Ha valamelyik házirend szerepel a listán, és ütközés van két forrás között, akkor – amennyiben hatókörük és szintjük egyezik – a rendszer egyesíti az értékeket egy új házirendszótárban.
+
+        Ha valamelyik házirend szerepel a listán, és ütközés van két forrás között, akkor – amennyiben hatókörük és/vagy szintjük nem egyezik – a rendszer a legmagasabb prioritású házirendet alkalmazza.
+
+        Ha valamelyik házirend nem szerepel a listán, és ütközés van két forrás, hatókör és/vagy szint között, akkor a rendszer a legmagasabb prioritású házirendet alkalmazza.</translation>
 <translation id="7229975860249300121">Tartalmaz egy reguláris kifejezést, amely annak a megállapítására szolgál, hogy mely Google-fiókok állíthatók be a böngésző elsődleges fiókjaként a <ph name="PRODUCT_NAME" /> böngészőben (tehát például ez az a fiók, amely kiválasztásra kerül a szinkronizálás bekapcsolási folyamatában).
 
       Ha egy felhasználó olyan felhasználónévvel próbál elsődleges böngészőfiókot megadni, amelyik nem egyezik ezzel a mintával, megjelenik egy erre figyelmeztető hibaüzenet.
@@ -3833,6 +3887,12 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 
       Ha a házirendet „Felülírás” módra állítja, a felhasználói GPO-k felhasználói házirendjét felváltja a számítógépes GPO-k felhasználói házirendje (a felhasználói GPO-kat nem veszi figyelembe).</translation>
 <translation id="8465065632133292531">Paraméterek POST metódust használó azonnali URL-hez</translation>
+<translation id="8465746466645315861">Ha a házirend nincs beállítva, a felhasználó engedélyezheti vagy letilthatja a helyesírás ellenőrzését a nyelvi beállítások között.
+
+      Ha a házirend igaz értékre van állítva, akkor a helyesírás-ellenőrzés aktiválva van, a felhasználó pedig nem kapcsolhatja ki. <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> és <ph name="LINUX_OS_NAME" /> rendszerek alatt a helyesírás-ellenőrzéshez használt nyelveket egyenként be vagy ki lehet kapcsolni, így a felhasználó lényegében letilthatja az ellenőrzést az egyes nyelvek helyesírás-ellenőrzésének kikapcsolásával. Ennek elkerülése érdekében a <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> házirend használható adott nyelvű helyesírás-ellenőrzés kényszerített bekapcsolására.
+
+      Ha a házirend hamis értékre van állítva, akkor a helyesírás-ellenőrzés le van tiltva, a felhasználó pedig nem aktiválhatja. Amennyiben ennek a házirendnek az értéke hamis, akkor a következő két házirend beállításai nem lépnek érvénybe: <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> és <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />.
+      </translation>
 <translation id="847472800012384958">Előugró ablakok tiltása minden webhely esetén</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Eltávolítja a https:// URL-ekből az adatvédelmi és biztonsági szempontból érzékeny elemeket, mielőtt a <ph name="PRODUCT_NAME" /> által proxy-feloldás során használt PAC-szkripteknek (Proxy Auto Config, automatikus proxy-konfiguráció) továbbítaná őket.

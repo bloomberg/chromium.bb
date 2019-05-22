@@ -1067,6 +1067,7 @@
       Als het beleid AutoplayAllowed is ingesteld op False, mogen URL-patronen die in dit beleid zijn ingesteld nog steeds worden afgespeeld.
 
       Als <ph name="PRODUCT_NAME" /> wordt uitgevoerd en dit beleid wordt gewijzigd, wordt het beleid alleen toegepast op nieuw geopende tabbladen. Daarom kunnen sommige tabbladen nog steeds het eerdere gedrag vertonen.</translation>
+<translation id="284288632677954003">URL van een XML-bestand dat URL's bevat die nooit overschakeling naar een andere browser veroorzaken.</translation>
 <translation id="285480231336205327">Modus voor hoog contrast inschakelen</translation>
 <translation id="2854919890879212089">Zorgt ervoor dat <ph name="PRODUCT_NAME" /> de standaardprinter van het systeem gebruikt als standaardkeuze bij Afdrukvoorbeeld in plaats van de laatst gebruikte printer.
 
@@ -1238,6 +1239,15 @@
 <translation id="3096595567015595053">Lijst met ingeschakelde plug-ins</translation>
 <translation id="3101501961102569744">Kies hoe je proxyserverinstellingen wilt specificeren</translation>
 <translation id="3101709781009526431">Datum en tijd</translation>
+<translation id="3114411414586006215">Dit beleid beheert de lijst met websites die nooit overschakeling naar een andere browser veroorzaken.
+
+      Onthoud dat elementen aan deze lijst kunnen worden toegevoegd via het beleid <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Wanneer dit beleid niet is ingesteld, worden er geen websites toegevoegd aan de lijst.
+
+      Wanneer dit beleid is ingesteld, wordt elk item behandeld als regel, vergelijkbaar met het beleid <ph name="URL_LIST_POLICY_NAME" />. De logica wordt echter omgedraaid: bij overeenkomende regels wordt er geen alternatieve browser geopend.
+
+      Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> zijn de regels op beide richtingen van toepassing. Dat wil zeggen dat wanneer de add-in van Internet Explorer aanwezig en ingeschakeld is, deze ook beheert of <ph name="IE_PRODUCT_NAME" /> deze URL's moet openen in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Waarschuwing: DHE wordt na versie 57 (rond maart 2017) volledig van <ph name="PRODUCT_NAME" /> verwijderd en dit beleid werkt vanaf dat moment niet meer.
 
       Als het beleid niet is ingesteld of is ingesteld op 'False', worden de DHE-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'True' om DHE-coderingssuites in te schakelen en de compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.
@@ -1435,6 +1445,17 @@
 <translation id="3550875587920006460">Hiermee kan een custom planning worden ingesteld om te controleren op updates. Dit is van toepassing op alle gebruikers en op alle interfaces op het apparaat. Nadat de planning is ingesteld, controleert het apparaat op updates in overeenstemming met de planning. Het beleid moet worden verwijderd om meer geplande updatecontroles te annuleren.</translation>
 <translation id="355118380775352753">Websites die worden geopend in de alternatieve browser</translation>
 <translation id="3554984410014457319">De Google Assistent laten luisteren naar de spraakactiveringszin</translation>
+<translation id="3557208865710006939">Talen voor spellingcontrole worden gedwongen ingeschakeld. Niet-herkende talen in de lijst worden genegeerd.
+
+      Als je dit beleid inschakelt, wordt de spellingcontrole ingeschakeld voor de gespecificeerde talen, naast de talen waarvoor de gebruiker de spellingcontrole heeft ingeschakeld.
+
+      Als je dit beleid niet instelt of als je het beleid uitschakelt, worden de gebruikersvoorkeuren voor de spellingcontrole niet gewijzigd.
+
+      Als het beleid <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> is ingesteld op False, heeft dit beleid geen effect.
+
+      Als een taal is opgenomen in zowel dit beleid als het beleid <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, heeft dit beleid voorrang en wordt de taal voor spellingcontrole ingeschakeld.
+
+      De volgende talen worden momenteel ondersteund: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Gebruikers kunnen het releasekanaal voor Chrome OS configureren.</translation>
 <translation id="3575011234198230041">HTTP-verificatie</translation>
 <translation id="3577251398714997599">Advertentie-instellingen voor sites met opdringerige advertenties</translation>
@@ -1780,6 +1801,9 @@
           Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
 
           Als het beleid niet wordt ingesteld, worden de plaktoetsen eerst uitgeschakeld, maar kunnen deze op elk moment worden ingeschakeld door de gebruiker.</translation>
+<translation id="4171331498167688968">Als het beleid is ingesteld op False, is het mogelijk om via software van derden uitvoerbare code in te voegen in de processen van Chrome. Als het beleid niet is ingesteld of is ingesteld op True, kan er geen uitvoerbare code via software van derden worden ingevoegd in de processen van Chrome.
+
+      Ongeacht de waarde van dit beleid voorkomt de browser momenteel niet dat software van derden uitvoerbare code invoegt in zijn processen op een computer die deel uitmaakt van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="4183229833636799228">Standaardinstelling voor <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL voor het valideren van verificatietoken voor client voor externe toegang</translation>
 <translation id="4203389617541558220">De bedrijfstijd van het apparaat beperken door automatisch opnieuw opstarten te plannen.
@@ -2147,6 +2171,7 @@
           Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="5085647276663819155">Afdrukvoorbeeld uitschakelen</translation>
 <translation id="5090209345759901501">Instelling voor Flash-content uitbreiden naar alle content</translation>
+<translation id="5090791951240382356">Toestaan dat woordenboekbeleid van verschillende bronnen wordt samengevoegd</translation>
 <translation id="5093540029655764852">Bepaalt de frequentie (in dagen) waarmee een client het wachtwoord van het computeraccount wijzigt. Het wachtwoord wordt willekeurig gegenereerd door de client en is niet zichtbaar voor de gebruiker.
 
       Computerwachtwoorden moeten net als gebruikerswachtwoorden regelmatig worden gewijzigd. Als dit beleid wordt uitgeschakeld of als een lange periode wordt ingesteld, kan dat negatieve gevolgen hebben voor de veiligheid, omdat potentiële aanvallers langer de tijd hebben om het wachtwoord van het computeraccount te achterhalen en gebruiken.
@@ -3078,6 +3103,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6923366716660828830">Hiermee wordt de naam van de standaardzoekprovider gespecificeerd. Als dit leeg is of niet wordt ingesteld, wordt de hostnaam gebruikt die door de zoek-URL wordt gespecificeerd.
 
           Dit beleid wordt alleen gebruikt als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="6924223708804692571">Talen voor spellingcontrole worden gedwongen uitgeschakeld. Niet-herkende talen in de lijst worden genegeerd.
+
+      Als je dit beleid inschakelt, wordt de spellingcontrole uitgeschakeld voor de gespecificeerde talen. De gebruiker kan de spellingcontrole nog steeds in- of uitschakelen voor talen die niet op de lijst staan.
+
+      Als je dit beleid niet instelt of als je het beleid uitschakelt, worden de gebruikersvoorkeuren voor de spellingcontrole niet gewijzigd.
+
+      Als het beleid <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> is ingesteld op False, heeft dit beleid geen effect.
+
+      Als een taal is opgenomen in zowel dit beleid als het beleid <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, heeft het laatste beleid voorrang en wordt de taal voor spellingcontrole ingeschakeld.
+
+      De volgende talen worden momenteel ondersteund: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Dubbelzijdig afdrukken over lange zijde inschakelen</translation>
 <translation id="6931242315485576290">Synchronisatie van gegevens met Google uitschakelen</translation>
 <translation id="6936894225179401731">Hiermee kun je het maximum aantal gelijktijdige verbindingen met de proxyserver opgeven.
@@ -3222,6 +3258,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid is geconfigureerd, staat de reeks apps vast en kan deze niet worden gewijzigd door de gebruiker.
 
       Als het beleid niet is ingesteld, kan de gebruiker de lijst met vastgezette apps in het opstartprogramma wijzigen.</translation>
+<translation id="713121532817834879">Dit beleid is een URL die met dezelfde indeling naar een XML-bestand verwijst als het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer. Hiermee worden regels vanuit een XML-bestand geladen, zonder dat deze regels worden gedeeld met Internet Explorer.
+
+      De regels in dit XML-bestand zijn op dezelfde manier van toepassing als <ph name="GREYLIST_POLICY_NAME" />. Dit betekent dat deze regels voorkomen dat <ph name="PRODUCT_NAME" /> de alternatieve browser opent en ook voorkomen dat de alternatieve browser <ph name="PRODUCT_NAME" /> opent.
+
+      Wanneer dit beleid niet is ingesteld of niet is ingesteld op een geldige URL, gebruikt <ph name="PRODUCT_NAME" /> dit beleid niet als bron van regels die overschakeling naar een andere browser veroorzaken.
+
+      Wanneer dit beleid is ingesteld op een geldige URL, downloadt<ph name="PRODUCT_NAME" /> de lijst met sites van die URL en worden de regels toegepast alsof ze zijn geconfigureerd met het beleid <ph name="SITELIST_POLICY_NAME" />.
+
+      Ga naar https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode voor meer informatie over het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer</translation>
 <translation id="7132877481099023201">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van video</translation>
 <translation id="7138678301420049075">Overige</translation>
 <translation id="7140629953254369759">Geeft <ph name="PRODUCT_OS_NAME" /> de instructie om de taakplannerconfiguratie met de opgegeven naam te gebruiken.
@@ -3269,6 +3314,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Automatisch afspelen is alleen toegestaan voor domeinen die expliciet worden genoemd in het beleid <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Als je automatisch afspelen wilt inschakelen voor alle sites, kun je http://* en https://* toevoegen aan deze lijst.
 
           Als dit beleid niet wordt ingesteld, kan de gebruiker deze instelling handmatig aanpassen.</translation>
+<translation id="7222749588229362483">Hiermee kunnen de geselecteerde beleidsregels worden samengevoegd als ze afkomstig zijn uit verschillende bronnen en hetzelfde bereik en niveau hebben.
+
+        Het samenvoegen bestaat uit het samenvoegen van sleutels op het eerste niveau van het woordenboek uit elke bron. In het geval van een conflict tussen de sleutels wordt de sleutel uit de bron met de hoogste prioriteit toegepast.
+
+        Als een beleid in de lijst staat, worden de waarden samengevoegd in een nieuwe beleidswoordenboek als er een conflict tussen twee bronnen is, omdat ze hetzelfde bereik en niveau hebben.
+
+        Als een beleid in de lijst staat, wordt het beleid met de hoogste prioriteit toegepast als er een conflict tussen twee bronnen is, maar ook als het bereik en/of het niveau verschilt.
+
+        Als een beleid niet in de lijst staat, wordt het beleid met de hoogste prioriteit toegepast als er een conflict tussen bronnen, het bereik en/of het niveau is.</translation>
 <translation id="7229975860249300121">Bevat een reguliere expressie die wordt gebruikt om te bepalen welke Google-accounts kunnen worden ingesteld als primair browseraccount in <ph name="PRODUCT_NAME" /> (oftewel het account dat wordt gekozen wanneer de gebruiker zich aanmeldt voor synchronisatie).
 
       Er wordt een fout weergegeven als een gebruiker probeert een primair browseraccount in te stellen met een gebruikersnaam die niet met dit patroon overeenkomt.
@@ -3901,6 +3955,12 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 
       Als het beleid is ingesteld op Vervangen, wordt het gebruikersbeleid in GPO's van gebruikers vervangen door het gebruikersbeleid van computer-GPO's (GPO's van gebruikers worden genegeerd).</translation>
 <translation id="8465065632133292531">Parameters voor instant-URL die POST gebruikt</translation>
+<translation id="8465746466645315861">Als dit beleid niet wordt ingesteld, kan de gebruiker de spellingcontrole in- of uitschakelen in de taalinstellingen.
+
+      Als dit beleid is ingesteld op True, is de spellingcontrole ingeschakeld en kan de gebruiker deze niet uitschakelen. Op <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> en <ph name="LINUX_OS_NAME" /> kunnen de talen voor spellingcontrole afzonderlijk in- of uitgeschakeld worden, zodat de gebruiker de spellingcontrole in werkelijkheid nog altijd kan uitschakelen door elke taal voor spellingcontrole uit te schakelen. Als je dit wilt voorkomen, kun je het beleid <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> gebruiken om af te dwingen dat bepaalde talen voor spellingcontrole worden ingeschakeld.
+
+      Als dit beleid is ingesteld op False, wordt de spellingcontrole uitgeschakeld en kan de gebruiker deze niet inschakelen. De beleidsregels <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> en <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> hebben geen invloed wanneer dit beleid is ingesteld op False.
+      </translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Verwijdert privacy- en beveiligingsgerelateerde gedeelten van URL's met https:// voordat deze worden doorgegeven aan PAC-scripts (Proxy Auto Config) die tijdens proxyverwerking worden gebruikt door <ph name="PRODUCT_NAME" />.

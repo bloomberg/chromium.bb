@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">تراجع عن إعادة الت&amp;رتيب</translation>
 <translation id="1125573121925420732">قد يكثر ظهور التحذيرات أثناء إجراء مواقع الويب لتحديثات الأمان، لكنّ هذه المسألة ستتحسَّن قريبًا.</translation>
 <translation id="1126551341858583091">يمثل الحجم على مساحة التخزين المحلية <ph name="CRASH_SIZE" />.</translation>
+<translation id="1127259989763091435">‏هل تريد تأكيد بيانات البطاقة وحفظها في حساب Google؟</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
 <translation id="1131264053432022307">الصورة التي نسختها</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
@@ -145,6 +146,7 @@
 <translation id="1656489000284462475">الاستلام</translation>
 <translation id="1662550410081243962">حفظ طرق الدفع وملؤها</translation>
 <translation id="1663943134801823270">‏يتم أخذ البطاقات والعناوين من Chrome، ويمكنك إدارتها في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
+<translation id="1669987054044193553">التأكيد والحفظ</translation>
 <translation id="1671391448414634642">ستتم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> من الآن فصاعدًا.</translation>
 <translation id="1676269943528358898">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Google Chrome الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Google Chrome أوقَف الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="168841957122794586">تحتوي شهادة الخادم على مفتاح تشفير ضعيف.</translation>
@@ -206,6 +208,7 @@
     سياسة غير صالحة الآن، التي تمنع المتصفَّح من
     توصيل الطلب لموقع <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">تم تعيين الخادم الوكيل على التهيئة التلقائية.</translation>
+<translation id="202813660234680402">لا، عدم الإضافة</translation>
 <translation id="2030481566774242610">هل تقصد <ph name="LINK" />؟</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />التحقق من الخادم الوكيل والجدار الناري<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" />.</translation>
@@ -371,6 +374,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان من <ph name="DOMAIN2" />. وربما سبب ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="2948083400971632585">يمكنك إيقاف أي خوادم وكيلة تمت تهيئتها لاتصال من صفحة الإعدادات.</translation>
+<translation id="295526156371527179">تحذير: لم يتم دمج هذه السياسة كمعجم كما هو موضح بموجب السياسة؛ لأنها ليست معجمًا.</translation>
 <translation id="2955913368246107853">إغلاق شريط البحث</translation>
 <translation id="2969319727213777354">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Google Chrome من التحقق من هذه الشهادات.</translation>
 <translation id="2970515157925768593">تغيير إعداد الجهاز والحساب عن بُعد.</translation>
@@ -691,6 +695,7 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> اقتراحات البحث</translation>
 <translation id="4742407542027196863">إدارة كلمات المرور…</translation>
 <translation id="4744603770635761495">المسار التنفيذي</translation>
+<translation id="47454865135383664">‏هل تريد إضافة البطاقة إلى حساب Google؟</translation>
 <translation id="4750917950439032686">ستكون معلوماتك (مثل كلمات المرور أو أرقام بطاقة الائتمان) خاصة عند إرسالها إلى هذا الموقع.</translation>
 <translation id="4756388243121344051">ال&amp;سجل</translation>
 <translation id="4758311279753947758">إضافة معلومات الاتصال</translation>
@@ -786,6 +791,7 @@
 <translation id="5251803541071282808">السحاب</translation>
 <translation id="5252000469029418751">‏C7 (مغلف)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">‏تحذير: لم يتم دمج هذه السياسة كما هو موضح في سياسة PolicyDictionaryMultipleSourceMergeList؛ لأنها ليست جزءًا من سياسات المعجم التي يمكن دمجها.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">‏مفتاح End</translation>
 <translation id="5284909709419567258">عناوين الشبكة</translation>
@@ -909,6 +915,7 @@
 <translation id="5922853866070715753">أوشكْت على الانتهاء.</translation>
 <translation id="5932224571077948991">يعرض موقع الويب إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="5946937721014915347">جارٍ فتح <ph name="SITE_NAME" />…</translation>
+<translation id="5947933617628957894">نعم، إضافة</translation>
 <translation id="5951495562196540101">لا يمكن التسجيل باستخدام حساب المستهلك (الترخيص المجمّع متوفّر).</translation>
 <translation id="5967592137238574583">تعديل معلومات الاتصال</translation>
 <translation id="5967867314010545767">إزالة من السجل</translation>
@@ -986,6 +993,7 @@
 <translation id="6414888972213066896">لقد سألت والديك ما إذا كانت زيارة هذا الموقع مناسبةً لك</translation>
 <translation id="6415778972515849510">‏يمكن أن يساعدك Chromium على حماية حسابك على Google وتغيير كلمة المرور.</translation>
 <translation id="6417515091412812850">تعذر التحقق مما إذا كانت الشهادة قد تم إبطالها.</translation>
+<translation id="6431585503458005759">عدم الحفظ</translation>
 <translation id="6433490469411711332">تعديل معلومات الاتصال</translation>
 <translation id="6433595998831338502">رفض <ph name="HOST_NAME" /> الاتصال.</translation>
 <translation id="6434309073475700221">إلغاء</translation>
@@ -999,7 +1007,9 @@
 <translation id="6489534406876378309">بدء تحميل الأعطال</translation>
 <translation id="6499038740797743453">هل تريد إعادة تعيين كلمة المرور؟</translation>
 <translation id="6507833130742554667">يتم قبول بطاقات الائتمان وبطاقات السحب الآلي.</translation>
+<translation id="650855688985305916">نعم، حفظ</translation>
 <translation id="6508722015517270189">‏إعادة تشغيل Chrome</translation>
+<translation id="6517596291481585650">تحذير: لم يتم دمج هذه السياسة كقائمة كما هو موضح بموجب السياسة؛ لأنها ليست قائمة.</translation>
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
 <translation id="6534179046333460208">اقتراحات الشبكة المادية</translation>
 <translation id="6554795675067793129">يدير <ph name="ENROLLMENT_DOMAIN" /> حسابك.</translation>
@@ -1025,6 +1035,7 @@
 <translation id="6670613747977017428">الرجوع</translation>
 <translation id="6671697161687535275">‏هل تريد إزالة اقتراح النموذج من Chromium؟</translation>
 <translation id="6685834062052613830">الخروج وإكمال الإعداد</translation>
+<translation id="6689271823431384964">‏يتيح لك Chrome حفظ بطاقاتك في حسابك على Google لأنك سجَّلت الدخول. يمكنك تغيير هذا السلوك في الإعدادات. يتم الحصول على اسم حامل البطاقة من حسابك.</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6710594484020273272">&lt;إدخال عبارة البحث&gt;</translation>
 <translation id="671076103358959139">الرمز المميّز للتسجيل:</translation>
@@ -1134,6 +1145,7 @@
 <translation id="7313965965371928911">تحذيرات <ph name="BEGIN_LINK" />التصفُّح الآمن<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">المساعدة بشأن الاتصال</translation>
+<translation id="733354035281974745">إلغاء حساب الجهاز المحلي</translation>
 <translation id="7334320624316649418">إعادة إ&amp;جراء الترتيب</translation>
 <translation id="733923710415886693">لم يتم الكشف عن شهادة الخادم عن طريق شهادة الشفافية.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1339,6 +1351,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">إذا كنت على دراية بالمخاطر التي تهدد أمانك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الضارة.</translation>
 <translation id="8349305172487531364">شريط الإشارات</translation>
+<translation id="836241887727198552">‏هل تريد حفظ البطاقة في حساب Google؟</translation>
 <translation id="8363502534493474904">إيقاف "وضع الطائرة"</translation>
 <translation id="8364627913115013041">لم يتم تعيينها.</translation>
 <translation id="8368476060205742148">‏خدمات Google Play</translation>
@@ -1381,6 +1394,7 @@
 <translation id="8620436878122366504">لم يوافق عليه والداك حتى الآن</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">حفظ هذه البطاقة إلى هذا الجهاز</translation>
+<translation id="8626112503828625890">‏هل تريد حفظ تفاصيل الفوترة في حساب Google؟</translation>
 <translation id="8663226718884576429">ملخّص الطلب و<ph name="TOTAL_LABEL" /> وتفاصيل إضافية</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />، إجابة، <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>

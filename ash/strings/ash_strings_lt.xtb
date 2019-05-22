@@ -158,6 +158,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> vis tiek galės vėliau prisijungti.</translation>
 <translation id="3321628682574733415">Netinkamas tėvų kodas</translation>
 <translation id="332587331255250389">Pakeiskite akumuliatorių</translation>
+<translation id="3335825575923019462">Ar tikrai norite išjungti automatinius paspaudimus?</translation>
 <translation id="3351879221545518001">Šiuo metu perduodate ekrano vaizdą.</translation>
 <translation id="3364721542077212959">Rašiklio įrankiai</translation>
 <translation id="3368922792935385530">Prijungta</translation>
@@ -400,6 +401,7 @@
 <translation id="7348093485538360975">Ekraninė klaviatūra</translation>
 <translation id="735745346212279324">VPN atjungtas</translation>
 <translation id="7377169924702866686">Įjungtas didžiųjų raidžių klavišas.</translation>
+<translation id="7378594059915113390">Medijos valdikliai</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> sek.</translation>
 <translation id="7398254312354928459">Perjungtas tinklo ryšys</translation>
 <translation id="7405710164030118432">Jei norite atrakinti įrenginį, įveskite „Family Link“ tėvų prieigos kodą</translation>
@@ -485,6 +487,7 @@
 <translation id="8649101189709089199">Teksto ištarimas</translation>
 <translation id="8652175077544655965">Uždaryti nustatymus</translation>
 <translation id="8653151467777939995">Rodyti pranešimų nustatymus. Pranešimai įjungti</translation>
+<translation id="8664483332071009680">Išjungti automatinius paspaudimus?</translation>
 <translation id="8664753092453405566">Rodyti tinklų sąrašą. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Prijungtas mažos galios įkroviklis</translation>

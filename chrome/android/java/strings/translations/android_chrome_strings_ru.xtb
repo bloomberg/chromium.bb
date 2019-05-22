@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2156074688469523661">Прочие сайты (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Совместный доступ</translation>
-<translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Синхронизация сервисов Google</translation>
 <translation id="2259659629660284697">Экспорт паролей…</translation>
@@ -944,7 +943,7 @@
 <translation id="7876243839304621966">Удалить все</translation>
 <translation id="7882131421121961860">Ничего не найдено.</translation>
 <translation id="7882806643839505685">Включить звуки на определенном сайте.</translation>
-<translation id="7886917304091689118">Эта страница уже открыта в Chrome</translation>
+<translation id="7886917304091689118">Выполняется в Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Скачивание 1 файла…}one{Скачивание # файла…}few{Скачивание # файлов…}many{Скачивание # файлов…}other{Скачивание # файла…}}</translation>
 <translation id="7929962904089429003">Открыть меню</translation>
 <translation id="7942131818088350342">Версия <ph name="PRODUCT_NAME" /> устарела.</translation>
@@ -1092,7 +1091,6 @@
 <translation id="9040142327097499898">Отправка уведомлений разрешена, но определение местоположения отключено.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видеофайл}one{# видеофайл}few{# видеофайла}many{# видеофайлов}other{# видеофайла}}</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>
-<translation id="9060538597317784206">Перейти к приложению "<ph name="APP_NAME" />" в Play Маркете. Рейтинг: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Выключить полную версию сайта</translation>
 <translation id="9065203028668620118">Изменить</translation>
 <translation id="9070377983101773829">Голосовой поиск</translation>

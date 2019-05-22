@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Erro</translation>
 <translation id="1172898394251786223">Campo seguinte</translation>
 <translation id="1176932207622159128">Não é Possível Guardar a Imagem</translation>
+<translation id="1180526666083833456">Sincronize e personalize entre dispositivos.</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1201530049782216880">Novo separador de navegação anónima</translation>
 <translation id="1209206284964581585">Ocultar para já</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Últimas 4 semanas</translation>
 <translation id="1407135791313364759">Abrir tudo</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="1436290164580597469">Introduza a frase de acesso para iniciar a sincronização.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
 <translation id="1491277525950327607">Toque duas vezes para ativar ou desativar a definição</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Mostrar palavra-passe</translation>
 <translation id="2481538920734869610">ADICIONAR CONTA</translation>
 <translation id="2497852260688568942">A sincronização foi desativada pelo gestor</translation>
+<translation id="2500374554657206846">Opções para Guardar palavra-passe</translation>
 <translation id="2523363575747517183">Este Website está a tentar repetidamente abrir outra aplicação.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
+<translation id="2570206273416014374">Envia alguns cookies e pesquisas da barra de endereço e da caixa de pesquisa para o motor de pesquisa predefinido.</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta...</translation>
 <translation id="2625189173221582860">Palavra-passe copiada</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Fechar todos os separadores de navegação anónima</translation>
 <translation id="3533436815740441613">Novo separador</translation>
 <translation id="3551320343578183772">Fechar Separador</translation>
+<translation id="3581564640715911333">Proponha a tradução de páginas noutros idiomas</translation>
 <translation id="3588820906588687999">Abrir imagem num novo separador</translation>
 <translation id="3603009562372709545">Copiar URL do Link</translation>
 <translation id="3607167657931203000">Dados de preenchimento automático</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Pré-carregar Páginas Web</translation>
 <translation id="3691593122358196899">Adicionado aos marcadores em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
+<translation id="3775743491439407556">A sincronização não está a funcionar</translation>
 <translation id="3779810277399252432">Sem ligação à Internet.</translation>
 <translation id="3783017676699494206">Guardar Imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">Para ler um código QR, ative a câmara nas definições</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
 <translation id="430793432425771671">Sincronizar Tudo</translation>
+<translation id="4338650699862464074">Envia para a Google os URLs das páginas que visita.</translation>
 <translation id="4359125752503270327">Esta página abre noutra aplicação.</translation>
 <translation id="4370827530403103842">A sincronização não está a funcionar. Toque para corrigir.</translation>
 <translation id="4375040482473363939">Pesquisa de códigos QR</translation>
 <translation id="4378154925671717803">Telemóvel</translation>
 <translation id="441868831736628555">Aviso de Privacidade</translation>
+<translation id="4454246407045105932">Adicione um idioma</translation>
 <translation id="4476574785019001431">Definições</translation>
 <translation id="4496373720959965247">Adicione separadores e alterne entre páginas.</translation>
 <translation id="4508750114462689118">Fechar a promoção de início de sessão</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Pesquisar com o Google</translation>
 <translation id="4619615317237390068">Separadores de outros dispositivos</translation>
 <translation id="4620246317052452550">Páginas lidas</translation>
+<translation id="4630540211544979320">Traduzir páginas</translation>
 <translation id="4636930964841734540">Informações</translation>
 <translation id="4659667755519643272">Aceder ao Comutador de separadores</translation>
 <translation id="4666531726415300315">Sessão iniciada como <ph name="EMAIL" />.
@@ -248,7 +257,9 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
 <translation id="4807020197310989387">1 artigo não lido na Lista de leitura.</translation>
+<translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Cookies, dados de sites</translation>
+<translation id="4833786495304741580">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="4840495572919996524">Os seus marcadores, o histórico, as palavras-passe, entre outros, deixam de ser sincronizados com a sua Conta Google.</translation>
 <translation id="4854345657858711387">Definir um código secreto</translation>
 <translation id="4860895144060829044">Telefonar</translation>
@@ -289,6 +300,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5548760955356983418">A Entrega permite-lhe começar a navegar num Website neste dispositivo e, em seguida, continuar facilmente no seu Mac. O Website atualmente aberto aparece na Dock do seu Mac.
 
 A Entrega também tem de estar ativada na secção Geral das Definições e os seus dispositivos têm de utilizar a mesma conta iCloud.</translation>
+<translation id="5551897871312988470">Propor tradução</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5614553682702429503">Pretende guardar a palavra-passe?</translation>
 <translation id="5626245204502895507">De momento não é possível transferir o ficheiro.</translation>
@@ -336,6 +348,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6187302354554850004">Última sincronização: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Não lidas</translation>
 <translation id="6196207969502475924">Pesquisa por Voz</translation>
+<translation id="6219688215832490856">Nunca traduzir</translation>
 <translation id="6254066287920239840">Abrir links na aplicação em vez de no navegador.</translation>
 <translation id="6255097610484507482">Editar cartão de crédito</translation>
 <translation id="6303969859164067831">Terminar sessão e desativar a sincronização</translation>
@@ -390,6 +403,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">Faça a gestão da sua Conta Google</translation>
 <translation id="7004499039102548441">Separadores recentes</translation>
 <translation id="7006788746334555276">Definições de Conteúdo</translation>
 <translation id="7015203776128479407">A configuração da sincronização inicial não foi concluída. A sincronização está desativada.</translation>
@@ -460,6 +474,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8059533439631660104">Reduz a secção.</translation>
 <translation id="806745655614357130">Manter os meus dados separados</translation>
 <translation id="8073670137947914548">Transferência concluída</translation>
+<translation id="8073872304774253879">Melhorar as pesquisas e a navegação</translation>
 <translation id="8076014560081431679">As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">A transferência de ficheiros está disponível. Opções disponíveis junto à parte inferior do ecrã.</translation>
 <translation id="8131740175452115882">Confirmar</translation>

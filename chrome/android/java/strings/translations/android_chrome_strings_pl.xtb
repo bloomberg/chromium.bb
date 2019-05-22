@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="2156074688469523661">Pozostałe strony (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Udostępnianie</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Kontynuuj jako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synchronizacja i usługi Google</translation>
 <translation id="2259659629660284697">Eksportuj hasła…</translation>
@@ -547,6 +546,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5073204694187207510">Ukryj siatkę pełnego ekranu</translation>
 <translation id="5082793167783849073">Możesz szybko porównać strony, tworząc ich grupę. Aby to zrobić, naciśnij i przytrzymaj link.</translation>
 <translation id="5087580092889165836">Dodaj kartę</translation>
+<translation id="5098406615395468004">Dodaj do moich aplikacji</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="510275257476243843">Pozostała godzina</translation>
 <translation id="5123685120097942451">Karta incognito</translation>
@@ -1093,7 +1093,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="9040142327097499898">Powiadomienia są włączone. Lokalizacja jest wyłączona na tym urządzeniu.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# film}few{# filmy}many{# filmów}other{# filmu}}</translation>
 <translation id="9050666287014529139">Hasło</translation>
-<translation id="9060538597317784206">Wyświetl aplikację <ph name="APP_NAME" /> w sklepie Play. Ocena: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Wyłącz opcję „Wersja na komputer”</translation>
 <translation id="9065203028668620118">Edytuj</translation>
 <translation id="9070377983101773829">Rozpocznij wyszukiwanie głosowe</translation>

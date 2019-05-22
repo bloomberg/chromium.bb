@@ -158,6 +158,7 @@
 <translation id="3308453408813785101">سيظل بإمكان <ph name="USER_EMAIL_ADDRESS" /> تسجيل الدخول لاحقًا.</translation>
 <translation id="3321628682574733415">رمز أحد الوالدين غير صحيح</translation>
 <translation id="332587331255250389">يُرجى استبدال البطارية</translation>
+<translation id="3335825575923019462">هل أنت متأكد من أنك تريد إيقاف النقرات التلقائية؟</translation>
 <translation id="3351879221545518001">أنت حاليًا تبث محتوى الشاشة.</translation>
 <translation id="3364721542077212959">أدوات قلم الشاشة</translation>
 <translation id="3368922792935385530">متصل</translation>
@@ -400,6 +401,7 @@
 <translation id="7348093485538360975">لوحة المفاتيح على الشاشة</translation>
 <translation id="735745346212279324">تم قطع اتصال الشبكة الافتراضية الخاصة</translation>
 <translation id="7377169924702866686">‏مفتاح Caps Lock في وضع التشغيل.</translation>
+<translation id="7378594059915113390">عناصر التحكم في الوسائط</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> من الثواني</translation>
 <translation id="7398254312354928459">تم تبديل اتصال الشبكة</translation>
 <translation id="7405710164030118432">‏لفتح قفل الجهاز، يُرجى إدخال رمز الدخول الخاص بالوالدين في Family Link.</translation>
@@ -485,6 +487,7 @@
 <translation id="8649101189709089199">الاختيار والاستماع</translation>
 <translation id="8652175077544655965">غلق الإعدادات</translation>
 <translation id="8653151467777939995">عرض إعدادات الإشعارات. تم تفعيل الإشعارات</translation>
+<translation id="8664483332071009680">هل تريد إيقاف النقرات التلقائية؟</translation>
 <translation id="8664753092453405566">عرض قائمة الشبكات. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270 درجة</translation>
 <translation id="8676770494376880701">تمّ توصيل شاحن منخفض الطاقة</translation>

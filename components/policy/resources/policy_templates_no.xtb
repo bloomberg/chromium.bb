@@ -1044,6 +1044,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis AutoplayAllowed-regelen er satt til «False» (usann), får eventuelle nettadressemønstre som er angitt i denne regelen, fremdeles lov til å spille av automatisk.
 
       Merk at hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, brukes den kun for nye faner som åpnes. Derfor kan noen faner fremdeles følge den gamle funksjonaliteten.</translation>
+<translation id="284288632677954003">Nettadressen til en XML-fil med nettadresser som aldri skal utløse bytte av nettleser.</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
 <translation id="2854919890879212089">Gjør at <ph name="PRODUCT_NAME" /> bruker skriveren som er standard for systemet, i stedet for skriveren som ble brukt sist, som standardvalg i forhåndsvisning av utskrift.
 
@@ -1215,6 +1216,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3096595567015595053">Liste over aktiverte programtillegg</translation>
 <translation id="3101501961102569744">Velg hvordan innstillinger for proxy-tjener angis</translation>
 <translation id="3101709781009526431">Dato og klokkeslett</translation>
+<translation id="3114411414586006215">Denne regelen styrer listen over nettsteder som aldri utløser bytte av nettleser.
+
+      Vær oppmerksom på at elementer også kan bli lagt til på denne listen gjennom <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />-regelen.
+
+      Når denne regelen ikke er angitt, blir ingen nettsteder lagt til på listen.
+
+      Når denne regelen er angitt, behandles hvert element som en regel, i likhet med <ph name="URL_LIST_POLICY_NAME" />-regelen. Men logikken fungerer motsatt: Regler som gir treff, åpner ikke en alternativ nettleser.
+
+      I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder reglene i begge retninger. Det vil si at når Internet Explorer-tillegget er installert og slått på, styrer det også om <ph name="IE_PRODUCT_NAME" /> skal åpne disse nettadressene i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Advarsel: DHE fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 57 (rundt mars 2017), og da slutter denne regelen å fungere.
 
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke DHE-chifferserier i TLS slått på. Den kan angis som true (sann) for å sikre kompatibilitet med utdaterte tjenere. Dette er en midlertidig løsning, og eventuelle slike tjenere bør konfigureres på nytt.
@@ -1404,6 +1414,17 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3550875587920006460">Gjør det mulig å sette opp en egendefinert tidsplan for når enheten skal se etter oppdateringer. Denne planen gjelder for alle brukere og alle grensesnitt på enheten. Når regelen er angitt, ser enheten etter oppdateringer i henhold til tidsplanen. Regelen må fjernes for å avbryte eventuelle andre oppdateringssjekker som er planlagt.</translation>
 <translation id="355118380775352753">Nettsteder som skal åpnes i en alternativ nettleser</translation>
 <translation id="3554984410014457319">La Google-assistenten lytte etter frasen for taleaktivering</translation>
+<translation id="3557208865710006939">Tvinger aktivering av stavekontroll for bestemte språk. Språk som er på listen, men ikke gjenkjennes, blir ignorert.
+
+      Hvis du slår på denne regelen, blir stavekontroll slått på for de angitte språkene samt språkene brukeren selv har slått på stavekontroll for.
+
+      Hvis du slår av eller ikke angir denne regelen, endres ikke brukerens innstillinger for stavekontroll.
+
+      Hvis <ph name="SPELLCHECK_ENABLED_POLICY_NAME" />-regelen er satt til «false» (usann), har denne regelen ingen virkning.
+
+      Hvis et språk er inkludert i både denne regelen og <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />-regelen, blir denne regelen prioritert og stavekontrollen for språket slått på.
+
+      Disse språkene støttes foreløpig: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk og vi.</translation>
 <translation id="356579196325389849">Brukere kan konfigurere utgivelseskanalen for Chrome OS</translation>
 <translation id="3575011234198230041">HTTP-autentisering</translation>
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
@@ -1757,6 +1778,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
 
           Hvis regelen ikke er angitt, er trege taster i utgangspunktet slått av, men brukerne kan når som helst slå på funksjonen.</translation>
+<translation id="4171331498167688968">Hvis regelen er satt til «false» (usann), kan tredjepartsprogramvare sette inn kjørbar kode i prosessene til Chrome. Hvis regelen er satt til «true» (sann) eller ikke er angitt, forhindres tredjepartsprogramvare fra å sette inn kjørbar kode i prosessene til Chrome.
+
+      Uavhengig av regelverdien blir tredjepartsprogramvare for tiden ikke forhindret fra å sette inn kjørbar kode i nettleserens prosesser på maskiner som er tilknyttet <ph name="MS_AD_NAME" />-domener.</translation>
 <translation id="4183229833636799228">Standard <ph name="FLASH_PLUGIN_NAME" />-innstilling</translation>
 <translation id="4192388905594723944">Nettadressen for validering av autentiseringstokenet for klienten for ekstern tilgang</translation>
 <translation id="4203389617541558220">Begrens enhetens kjøretid ved å angi automatisk omstart.
@@ -2119,6 +2143,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
 <translation id="5085647276663819155">Deaktiver forhåndsvisning av utskrift</translation>
 <translation id="5090209345759901501">Utvid innstillingen for Flash-innhold til alt innhold</translation>
+<translation id="5090791951240382356">Tillat sammenslåing av ordlisteregler fra ulike kilder</translation>
 <translation id="5093540029655764852">Spesifiserer frekvensen (i dager) for når en klient endrer passordet for maskinkontoen sin. Passordet genereres tilfeldig av klienten og er ikke synlig for brukeren.
 
       Akkurat som brukerpassord bør maskinpassord endres jevnlig. Hvis denne regelen deaktiveres eller spesifiseres til et høyt antall dager, kan det ha en negativ effekt på sikkerheten, siden det gir potensielle inntrengere mer tid til å finne og bruke passordet for maskinkontoen.
@@ -3054,6 +3079,17 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6923366716660828830">Angir navnet på standard søkeleverandør. Hvis dette ikke angis, brukes vertsnavnet angitt av søkenettadressen.
 
           Denne retningslinjen tas bare i betraktning hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
+<translation id="6924223708804692571">Tvinger deaktivering av stavekontroll for bestemte språk. Språk som er på listen, men ikke gjenkjennes, blir ignorert.
+
+      Hvis du slår på denne regelen, blir stavekontroll slått av for de angitte språkene. Brukeren kan fortsatt slå på eller av stavekontroll for språk som ikke er på listen.
+
+      Hvis du slår av eller ikke angir denne regelen, endres ikke brukerens innstillinger for stavekontroll.
+
+      Hvis <ph name="SPELLCHECK_ENABLED_POLICY_NAME" />-regelen er satt til «false» (usann), har denne regelen ingen virkning.
+
+      Hvis et språk er inkludert i både denne regelen og <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />-regelen, blir sistnevnte prioritert og stavekontroll slått på for språket.
+
+      Disse språkene støttes foreløpig: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk og vi.</translation>
 <translation id="6926703471186170050">Slå på tosidig utskrift (langside)</translation>
 <translation id="6931242315485576290">Deaktiver synkronisering av data med Google</translation>
 <translation id="6936894225179401731">Angir det maksimalt tillate antallet samtidige tilkoblinger til proxytjeneren.
@@ -3192,6 +3228,15 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen er konfigurert, blir programsettet festet og kan ikke endres av brukeren.
 
       Hvis denne innstillingen ikke angis, kan brukeren endre listen over programmer som er festet i programlisten.</translation>
+<translation id="713121532817834879">Denne regelen er en nettadresse som peker til en XML-fil med samme format som Internet Explorer-regelen <ph name="IEEM_SITELIST_POLICY" />. Denne laster inn regler fra en XML-fil – uten at reglene deles med Internet Explorer.
+
+      Reglene i denne XML-filen gjelder på samme måte som <ph name="GREYLIST_POLICY_NAME" />. Det vil si at disse reglene forhindrer <ph name="PRODUCT_NAME" /> fra å åpne den alternative nettleseren og samtidig forhindrer den alternative nettleseren fra å åpne <ph name="PRODUCT_NAME" />.
+
+      Hvis denne regelen ikke er angitt eller ikke er satt til en gyldig nettadresse, brukes den ikke av <ph name="PRODUCT_NAME" /> som en kilde for regler som ikke utløser bytte av nettleser.
+
+      Når denne regelen er satt til en gyldig nettadresse, laster <ph name="PRODUCT_NAME" /> ned nettstedslisten fra den aktuelle nettadressen og bruker reglene som om de var konfigurert med <ph name="SITELIST_POLICY_NAME" />-regelen.
+
+      Her finner du mer informasjon om Internet Explorer-regelen <ph name="IEEM_SITELIST_POLICY" />: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Nettadresser som uten forespørsel blir gitt tilgang til enheter med videoopptak</translation>
 <translation id="7138678301420049075">Annet</translation>
 <translation id="7140629953254369759">Instruerer <ph name="PRODUCT_OS_NAME" /> om å bruke konfigurasjonen for oppgaveplanlegging med navnet som angis.
@@ -3239,6 +3284,15 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Automatisk avspilling tillates bare for domener som er oppført eksplisitt i <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />-regelen. Hvis du vil slå på automatisk avspilling for alle nettsteder, kan du vurdere å legge til http://* og https://* i denne listen.
 
           Hvis denne regelen ikke er angitt, kan brukeren endre denne innstillingen manuelt.</translation>
+<translation id="7222749588229362483">Gjør det mulig å slå sammen de valgte reglene når de kommer fra ulike kilder med samme omfang og nivå.
+
+        Sammenslåingen består av å slå sammen nøklene på første nivå i ordlistene fra hver av kildene. Ved konflikt mellom nøkler brukes nøkkelen fra kilden som har høyest prioritet.
+
+        Hvis regler står på listen og det oppstår konflikt mellom to kilder med samme omfang og nivå, blir verdiene slått sammen til en ny regelordliste.
+
+        Hvis en regel står på listen og det oppstår konflikt mellom to kilder som dessuten har ulikt omfang eller nivå, brukes regelen som har høyest prioritet.
+
+        Hvis regler ikke står på listen og det oppstår konflikt mellom kilder, omfang eller nivåer, brukes reglene som har høyest prioritet.</translation>
 <translation id="7229975860249300121">Inneholder et regulært uttrykk som brukes til å fastslå hvilke Google-kontoer som kan angis som hovedkontoer for nettlesere i <ph name="PRODUCT_NAME" /> (dvs. kontoen som velges i løpet av flyten for registreringen for synkronisering).
 
       En passende feil vises hvis brukere prøver å angi en hovedkonto for en nettleser med et brukernavn som ikke samsvarer med dette mønsteret.
@@ -3865,6 +3919,12 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Hvis regelen er angitt som «Replace» (Erstatt), erstattes brukerinnstillingene i bruker-GPO-ene med brukerinnstillingene i datamaskin-GPO-ene (bruker-GPO-ene ignoreres).</translation>
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
+<translation id="8465746466645315861">Hvis denne regelen ikke er angitt, kan brukeren slå på eller av stavekontroll i språkinnstillingene.
+
+      Hvis denne regelen er satt til «true» (sann), er stavekontroll slått på, og brukeren kan ikke slå av funksjonen. I <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> og <ph name="LINUX_OS_NAME" /> kan stavekontroll slås på og av individuelt for enkeltspråk, så brukeren kan i praksis fremdeles slå stavekontrollen helt av ved å slå av stavekontroll for hvert enkelt språk. For å unngå dette kan <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />-regelen brukes til å tvinge stavekontroll til å være slått på for bestemte språk.
+
+      Hvis denne regelen er satt til «false» (usann), er stavekontroll slått av, og brukeren kan ikke slå på funksjonen. <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />- og <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />-reglene har ingen virkning når denne regelen er satt til «false».
+      </translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Fjerner sensitive deler som personvern- og sikkerhetsrelaterte deler fra https://-nettadresser før adressene går videre til PAC-skript (Proxy Auto Config), som brukes av <ph name="PRODUCT_NAME" /> til å finne proxy-tjeneradresser.

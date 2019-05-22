@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
 <translation id="1125573121925420732">網站更新安全性設定期間，可能會經常顯示警告。這項行為將於近期內改善。</translation>
 <translation id="1126551341858583091">佔用的本機儲存空間大小：<ph name="CRASH_SIZE" />。</translation>
+<translation id="1127259989763091435">要確認並將卡片儲存至 Google 帳戶嗎？</translation>
 <translation id="112840717907525620">政策快取正確</translation>
 <translation id="1131264053432022307">你複製的圖片</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得你電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
@@ -145,6 +146,7 @@
 <translation id="1656489000284462475">取件</translation>
 <translation id="1662550410081243962">儲存及填入付款方式</translation>
 <translation id="1663943134801823270">信用卡和地址資訊皆來自 Chrome。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />頁面管理這些資訊。</translation>
+<translation id="1669987054044193553">確認並儲存</translation>
 <translation id="1671391448414634642">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁翻譯成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Google Chrome 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Google Chrome 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="168841957122794586">伺服器憑證含有防護力薄弱的加密編譯金鑰。</translation>
@@ -206,6 +208,7 @@
     目前提供的政策無效，因此瀏覽器無法完成你向
     「<ph name="SITE" />」提出的要求。</translation>
 <translation id="2025186561304664664">Proxy 已設為自動設定。</translation>
+<translation id="202813660234680402">否，不要新增</translation>
 <translation id="2030481566774242610">你要找的是 <ph name="LINK" /> 嗎？</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />檢查 Proxy 和防火牆<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">系統不會翻譯<ph name="LANGUAGE" />網頁。</translation>
@@ -371,6 +374,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證來自 <ph name="DOMAIN2" /> 網域。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="2948083400971632585">你可以在設定頁面停用任何為連線設置的 Proxy。</translation>
+<translation id="295526156371527179">警告：這項政策並非字典，因此未依照政策中指定的方式合併為字典。</translation>
 <translation id="2955913368246107853">關閉搜尋列</translation>
 <translation id="2969319727213777354">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Google Chrome 無法驗證這些憑證。</translation>
 <translation id="2970515157925768593">可以在遠端變更你的裝置和帳戶設定。</translation>
@@ -691,6 +695,7 @@
 <translation id="4738601419177586157">「<ph name="TEXT" />」搜尋建議</translation>
 <translation id="4742407542027196863">管理密碼…</translation>
 <translation id="4744603770635761495">可執行檔的路徑</translation>
+<translation id="47454865135383664">要將卡片新增至 Google 帳戶嗎？</translation>
 <translation id="4750917950439032686">你傳送給這個網站的資訊 (例如密碼或信用卡號碼) 不會外洩。</translation>
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
 <translation id="4758311279753947758">新增聯絡資訊</translation>
@@ -786,6 +791,7 @@
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5252000469029418751">C7 (信封)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">警告：這項政策並非可合併的字典政策，因此未依照 PolicyDictionaryMultipleSourceMergeList 政策中指定的方式進行合併。</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">結束</translation>
 <translation id="5284909709419567258">網路位址</translation>
@@ -909,6 +915,7 @@
 <translation id="5922853866070715753">即將完成</translation>
 <translation id="5932224571077948991">網站顯示干擾性或誤導性廣告</translation>
 <translation id="5946937721014915347">正在開啟 <ph name="SITE_NAME" />…</translation>
+<translation id="5947933617628957894">是，我要新增</translation>
 <translation id="5951495562196540101">無法透過個人帳戶註冊 (有封裝授權)。</translation>
 <translation id="5967592137238574583">編輯聯絡資訊</translation>
 <translation id="5967867314010545767">從記錄中移除</translation>
@@ -986,6 +993,7 @@
 <translation id="6414888972213066896">你已詢問家長是否同意你造訪這個網站</translation>
 <translation id="6415778972515849510">Chromium 可協助你保護 Google 帳戶並變更密碼。</translation>
 <translation id="6417515091412812850">無法檢查憑證是否已遭撤銷。</translation>
+<translation id="6431585503458005759">不要儲存</translation>
 <translation id="6433490469411711332">編輯聯絡資訊</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
 <translation id="6434309073475700221">捨棄</translation>
@@ -999,7 +1007,9 @@
 <translation id="6489534406876378309">開始上傳當機報告</translation>
 <translation id="6499038740797743453">要重設密碼嗎？</translation>
 <translation id="6507833130742554667">接受信用卡和簽帳金融卡。</translation>
+<translation id="650855688985305916">是，我要儲存</translation>
 <translation id="6508722015517270189">重新啟動 Chrome</translation>
+<translation id="6517596291481585650">警告：這項政策並非清單，因此未依照政策中指定的方式合併為清單。</translation>
 <translation id="6529602333819889595">重做刪除(&amp;R)</translation>
 <translation id="6534179046333460208">實體化網路建議</translation>
 <translation id="6554795675067793129">你的帳戶是由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
@@ -1025,6 +1035,7 @@
 <translation id="6670613747977017428">返回安全網頁。</translation>
 <translation id="6671697161687535275">要從 Chromium 中移除表單填寫建議嗎？</translation>
 <translation id="6685834062052613830">請登出並完成設定程序</translation>
+<translation id="6689271823431384964">你已登入帳戶，因此 Chrome 詢問你是否要將卡片儲存至 Google 帳戶。你可以在設定中變更這項行為。持卡人姓名來自你的帳戶。</translation>
 <translation id="6710213216561001401">返回</translation>
 <translation id="6710594484020273272">&lt;輸入搜尋字詞&gt;</translation>
 <translation id="671076103358959139">註冊憑證：</translation>
@@ -1134,6 +1145,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />安全瀏覽<ph name="END_LINK" />警告</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">連線說明</translation>
+<translation id="733354035281974745">裝置本機帳戶覆寫</translation>
 <translation id="7334320624316649418">重做重新排序(&amp;R)</translation>
 <translation id="733923710415886693">伺服器憑證未依憑證透明化政策公開。</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1339,6 +1351,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">如果你瞭解安全性風險，也可以選擇在有害程式尚未遭到移除的狀態下<ph name="BEGIN_LINK" />造訪這個網站<ph name="END_LINK" />。</translation>
 <translation id="8349305172487531364">書籤列</translation>
+<translation id="836241887727198552">要將卡片儲存至 Google 帳戶嗎？</translation>
 <translation id="8363502534493474904">關閉飛航模式</translation>
 <translation id="8364627913115013041">未設定。</translation>
 <translation id="8368476060205742148">Google Play 服務</translation>
@@ -1380,6 +1393,7 @@
 <translation id="8620436878122366504">你的家長尚未核准這個網站</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">將這張信用卡儲存到這個裝置</translation>
+<translation id="8626112503828625890">要將帳單詳細資料儲存至 Google 帳戶嗎？</translation>
 <translation id="8663226718884576429">訂單摘要：<ph name="TOTAL_LABEL" />，更多詳細資料</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />，答案：<ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>

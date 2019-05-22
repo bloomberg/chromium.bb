@@ -99,7 +99,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="1618597272655350600">Anuncia uma descrição completa da posição atual</translation>
 <translation id="1627222324347828322">Branco-fantasma</translation>
 <translation id="1630688379087270943">Indicar itálico:</translation>
-<translation id="1639634871799530612">{COUNT,plural, =1{sinal maior que}one{# sinais de maior que}other{# sinais de maior que}}</translation>
+<translation id="1639634871799530612">{COUNT,plural, =1{sinal maior que}one{# indicadores de maior que}other{# indicadores de maior que}}</translation>
 <translation id="1653266918374749391">Cabeçalho de nível 3 anterior</translation>
 <translation id="1657616855184033958">Mostrar filtros de stream de eventos</translation>
 <translation id="1659072772017912254">Não marcado</translation>
@@ -152,7 +152,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="2086961585857038472">Próxima palavra</translation>
 <translation id="2089387485033699258">pt-BR</translation>
 <translation id="2091933974477985526">Área de texto editável anterior</translation>
-<translation id="2100350898815792233">Todos os sinais de pontuação</translation>
+<translation id="2100350898815792233">Todos os indicadores de pontuação</translation>
 <translation id="2110480898214777136">Quebra do começo ao fim ou do fim ao começo dentro de uma página, caixa de diálogo ou outro contêiner</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
@@ -336,7 +336,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3338224621010291843">Controle deslizante <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="335581015389089642">Voz</translation>
 <translation id="3359142382821736686">seprtr</translation>
-<translation id="3374537878095184207">{COUNT,plural, =1{sinal de mais}one{# sinais de mais}other{# sinais de mais}}</translation>
+<translation id="3374537878095184207">{COUNT,plural, =1{sinal de mais}one{# indicadores de mais}other{# indicadores de mais}}</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="3389259863310851658">Campo de formulário anterior</translation>
 <translation id="3390225400784126843">Próximo elemento diferente.</translation>
@@ -372,7 +372,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3622350485154495700">Toque duas vezes com um dedo</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{acento grave}one{# acentos graves}other{# acentos graves}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
-<translation id="3655855170848725876">{COUNT,plural, =1{cifrão}one{# sinais de cifrão}other{# sinais de cifrão}}</translation>
+<translation id="3655855170848725876">{COUNT,plural, =1{cifrão}one{# indicadores de cifrão}other{# indicadores de cifrão}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755">Caixa de listagem <ph name="VALUE" /></translation>
 <translation id="3681531118904532409">Papaia</translation>
@@ -429,7 +429,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">Um carregamento de página em andamento</translation>
 <translation id="4065205963140826639">Tente usar Pesquisa + seta para a direita agora para localizar o botão "Avançar" e pressione Pesquisa + espaço para clicar nele.</translation>
-<translation id="4081085052247739398">{COUNT,plural, =1{til}one{# sinais de til}other{# sinais de til}}</translation>
+<translation id="4081085052247739398">{COUNT,plural, =1{til}one{# indicadores de til}other{# indicadores de til}}</translation>
 <translation id="4086311032171418648">Parando o modo de aprendizado.</translation>
 <translation id="409334809956508737">Objeto anterior</translation>
 <translation id="4099274309791143834">com submenu</translation>
@@ -628,10 +628,10 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="5400836586163650660">Cinza</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Um alerta em uma janela modal</translation>
-<translation id="5407530583102765689">{COUNT,plural, =1{sinal de ponto-e-vírgula}one{# sinais de ponto-e-vírgula}other{# sinais de ponto-e-vírgula}}</translation>
+<translation id="5407530583102765689">{COUNT,plural, =1{sinal de ponto-e-vírgula}one{# indicadores de ponto-e-vírgula}other{# indicadores de ponto-e-vírgula}}</translation>
 <translation id="5411891038905756502">No previous jump point.</translation>
 <translation id="5435274640623994081">Ativar registro de ícone auditivo</translation>
-<translation id="5436105723448703439">{COUNT,plural, =1{sinal de menor que}one{# sinais de menor que}other{# sinais de menor que}}</translation>
+<translation id="5436105723448703439">{COUNT,plural, =1{sinal de menor que}one{# indicadores de menor que}other{# indicadores de menor que}}</translation>
 <translation id="5444587279251314700">(ativo)</translation>
 <translation id="5446809554778706307">Nenhum foco. Pressione Ctrl+T para abrir uma nova guia.</translation>
 <translation id="5451268436205074266">pontos <ph name="DOT" /></translation>
@@ -709,7 +709,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="5901630391730855834">Amarelo</translation>
 <translation id="5906974869830879618">Insira um PIN</translation>
 <translation id="5921587111466148855">Capítulo</translation>
-<translation id="5937336320314038555">{COUNT,plural, =1{sinal de igual}one{# sinais de igual}other{# sinais de igual}}</translation>
+<translation id="5937336320314038555">{COUNT,plural, =1{sinal de igual}one{# indicadores de igual}other{# indicadores de igual}}</translation>
 <translation id="5939518447894949180">Redefinir</translation>
 <translation id="5948123859135882163">Alternar a interpretação de expressões matemáticas entre estrutural e semântica</translation>
 <translation id="5955304353782037793">app</translation>
@@ -770,7 +770,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="6411426777058107714">Nenhum botão de opção anterior.</translation>
 <translation id="6414968628640960377">Elemento diferente anterior.</translation>
 <translation id="6417265370957905582">Google Assistente</translation>
-<translation id="641759969622533235">{COUNT,plural, =1{um sinal de dois-pontos}one{# sinais de dois-pontos}other{# sinais de dois-pontos}}</translation>
+<translation id="641759969622533235">{COUNT,plural, =1{um sinal de dois-pontos}one{# indicadores de dois-pontos}other{# indicadores de dois-pontos}}</translation>
 <translation id="6438968337250688271">Menu <ph name="NAME" /></translation>
 <translation id="6444046323172968959">Diálogo de alerta</translation>
 <translation id="6452403590345320472">Índice</translation>
@@ -903,7 +903,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="7336596009609913925">possui pop-up</translation>
 <translation id="7356165926712028380">Alternar para braille de oito pontos</translation>
 <translation id="7362871137496673139">Nenhum cabeçalho anterior de nível 2.</translation>
-<translation id="7370432716629432284">{COUNT,plural, =1{sinal de "E" comercial}one{# sinais de "E" comercial}other{# sinais de "E" comercial}}</translation>
+<translation id="7370432716629432284">{COUNT,plural, =1{sinal de "E" comercial}one{# indicadores de "E" comercial}other{# indicadores de "E" comercial}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Saindo da tabela.</translation>
 <translation id="738899727977260036">Azul-ardósia</translation>
@@ -966,7 +966,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="7819187121850078213">Janela, guia <ph name="TITLE" /></translation>
 <translation id="7828956995407538686">Outubro</translation>
 <translation id="7839679365527550018">Palavra anterior</translation>
-<translation id="7851816175263618915">Alguns sinais de pontuação</translation>
+<translation id="7851816175263618915">Alguns indicadores de pontuação</translation>
 <translation id="7870596830398826354">Math ML Tree</translation>
 <translation id="7871691770940645922">Tela virtual em braille</translation>
 <translation id="7882421473871500483">Marrom</translation>
@@ -976,14 +976,14 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="7927711904086083099">Não selecionado</translation>
 <translation id="7935627501098484003">Controle de hora</translation>
 <translation id="7939428177581522200">adicionados a seleção</translation>
-<translation id="794091007957014205">{COUNT,plural, =1{sinal de arroba}one{# sinais de arroba}other{# sinais de arroba}}</translation>
+<translation id="794091007957014205">{COUNT,plural, =1{sinal de arroba}one{# indicadores de arroba}other{# indicadores de arroba}}</translation>
 <translation id="7942349550061667556">Vermelho</translation>
 <translation id="7965147473449754028">menu fechado</translation>
 <translation id="7968340748835037139">Verde-escuro</translation>
 <translation id="7972507042926081808">Chocolate</translation>
 <translation id="7974390230414479278">Item de menu</translation>
 <translation id="8007540374018858731">h3</translation>
-<translation id="8009786657110126785">{COUNT,plural, =1{aspas}one{# sinais de aspas}other{# sinais de aspas}}</translation>
+<translation id="8009786657110126785">{COUNT,plural, =1{aspas}one{# indicadores de aspas}other{# indicadores de aspas}}</translation>
 <translation id="8017588669690167134">Fala desativada</translation>
 <translation id="801990297710781303">Nota de rodapé</translation>
 <translation id="8033827949643255796">selecionado</translation>
@@ -1106,7 +1106,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="8316881042119029234">Palha</translation>
 <translation id="8326783648485765113">Verde-grama</translation>
 <translation id="8344569602005188545">horas</translation>
-<translation id="8345569862449483843">{COUNT,plural, =1{sinal de cerquilha}one{# sinais de cerquilha}other{# sinais de cerquilha}}</translation>
+<translation id="8345569862449483843">{COUNT,plural, =1{sinal de cerquilha}one{# indicadores de cerquilha}other{# indicadores de cerquilha}}</translation>
 <translation id="8374154622594089836">mês</translation>
 <translation id="8378855320830505539">Região</translation>
 <translation id="8382679411218029383">Preenchimento automático em linha e lista</translation>
@@ -1195,7 +1195,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="9107530006868467849">Nenhum widget de mídia anterior.</translation>
 <translation id="9108370397979208512">matemática</translation>
 <translation id="9108589040018540527">scbr</translation>
-<translation id="911476240645808512">{COUNT,plural, =1{porcentagem}one{# sinais de porcentagem}other{# sinais de porcentagem}}</translation>
+<translation id="911476240645808512">{COUNT,plural, =1{porcentagem}one{# indicadores de porcentagem}other{# indicadores de porcentagem}}</translation>
 <translation id="9115913704608474258">Novembro</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9133928141873682933">Cáqui</translation>

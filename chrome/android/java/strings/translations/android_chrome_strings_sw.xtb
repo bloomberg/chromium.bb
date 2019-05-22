@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Nakili UR:</translation>
 <translation id="2156074688469523661">Tovuti zilizosalia (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Inashiriki</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, programu ya wavuti. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Endelea ukitumia <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Huduma za Google na usawazishaji</translation>
 <translation id="2259659629660284697">Hamisha manenosiri…</translation>
@@ -547,6 +546,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5073204694187207510">Ficha gridi ya skrini nzima</translation>
 <translation id="5082793167783849073">Linganisha kurasa kwa haraka kwa kuanzisha kikundi. Ili uanze, gusa na ushikilie kiungo.</translation>
 <translation id="5087580092889165836">Ongeza kadi</translation>
+<translation id="5098406615395468004">Ongeza kwenye programu zangu</translation>
 <translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
 <translation id="510275257476243843">Imesalia saa 1</translation>
 <translation id="5123685120097942451">Kichupo fiche</translation>
@@ -1091,7 +1091,6 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="9040142327097499898">Arifa zinaruhusiwa. Kipengele cha mahali kimezimwa kwenye kifaa hiki.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{Video #}other{Video #}}</translation>
 <translation id="9050666287014529139">Kaulisiri</translation>
-<translation id="9060538597317784206">Angalia programu <ph name="APP_NAME" /> kwenye Duka la Google Play. Alama: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Zima Omba Tovuti ya Eneo-kazi</translation>
 <translation id="9065203028668620118">Badilisha</translation>
 <translation id="9070377983101773829">Anza kutafuta kwa kutamka</translation>

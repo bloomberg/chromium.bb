@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Fehler</translation>
 <translation id="1172898394251786223">Nächstes Feld</translation>
 <translation id="1176932207622159128">Speichern v. Bild n. möglich</translation>
+<translation id="1180526666083833456">Geräteübergreifend synchronisieren und personalisieren.</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1201530049782216880">Neuer Inkognito-Tab</translation>
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Letzte 4 Wochen</translation>
 <translation id="1407135791313364759">Alle öffnen</translation>
 <translation id="1430915738399379752">Drucken</translation>
+<translation id="1436290164580597469">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> Elemente</translation>
 <translation id="1491277525950327607">Zum Aktivieren bzw. Deaktivieren doppeltippen</translation>
 <translation id="152234381334907219">Nie speichern für...</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Passwort anzeigen</translation>
 <translation id="2481538920734869610">KONTO HINZUFÜGEN</translation>
 <translation id="2497852260688568942">Die Synchronisierung wurde von Ihrem Administrator deaktiviert</translation>
+<translation id="2500374554657206846">Optionen zum Speichern von Passwörtern</translation>
 <translation id="2523363575747517183">Diese Website versucht wiederholt, eine andere App zu öffnen.</translation>
 <translation id="2529021024822217800">Alle öffnen</translation>
+<translation id="2570206273416014374">Suchanfragen, die in die Adressleiste und das Suchfeld eingegeben wurden, sowie einige Cookies werden an Ihre Standardsuchmaschine gesendet.</translation>
 <translation id="2572712655377361602">Eine Geräterichtlinie hat den Zugriff auf Ihre Fotos blockiert</translation>
 <translation id="2584132361465095047">Konto hinzufügen...</translation>
 <translation id="2625189173221582860">Passwort kopiert</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Alle Inkognito-Tabs schließen</translation>
 <translation id="3533436815740441613">Neuer Tab</translation>
 <translation id="3551320343578183772">Tab schließen</translation>
+<translation id="3581564640715911333">Übersetzung für Seiten in andere Sprachen anbieten</translation>
 <translation id="3588820906588687999">Bild in neuem Tab öffnen</translation>
 <translation id="3603009562372709545">Link-URL kopieren</translation>
 <translation id="3607167657931203000">AutoFill-Daten</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
 <translation id="3691593122358196899">Als Lesezeichen in "<ph name="FOLDER_TITLE" />" gespeichert</translation>
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
+<translation id="3775743491439407556">Synchronisierung funktioniert nicht</translation>
 <translation id="3779810277399252432">Keine Internetverbindung</translation>
 <translation id="3783017676699494206">Bild speichern</translation>
 <translation id="3789841737615482174">Installieren</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">Um einen QR-Code zu scannen, aktivieren Sie in den Einstellungen die Kamera</translation>
 <translation id="4281844954008187215">Nutzungsbedingungen</translation>
 <translation id="430793432425771671">Alles synchronisieren</translation>
+<translation id="4338650699862464074">URLs der von Ihnen besuchten Seiten werden an Google gesendet.</translation>
 <translation id="4359125752503270327">Diese Seite wird in einer anderen Anwendung geöffnet.</translation>
 <translation id="4370827530403103842">Synchronisierung funktioniert nicht. Tippen zum Reparieren.</translation>
 <translation id="4375040482473363939">QR-Code-Suche</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Datenschutzhinweise</translation>
+<translation id="4454246407045105932">Sprache hinzufügen</translation>
 <translation id="4476574785019001431">Einstellungen</translation>
 <translation id="4496373720959965247">Tabs hinzufügen und zwischen Seiten wechseln</translation>
 <translation id="4508750114462689118">Anmeldeangebot schließen</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Mit Google suchen</translation>
 <translation id="4619615317237390068">Tabs von anderen Geräten</translation>
 <translation id="4620246317052452550">Seiten, die Sie gelesen haben</translation>
+<translation id="4630540211544979320">Seiten übersetzen</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4659667755519643272">Tab-Wechsler starten</translation>
 <translation id="4666531726415300315">Angemeldet als <ph name="EMAIL" />.
@@ -248,7 +257,9 @@ Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie 
 
 Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 ungelesener Artikel in Leseliste.</translation>
+<translation id="4818522717893377262">Sprache hinzufügen…</translation>
 <translation id="481968316161811770">Cookies, Websitedaten</translation>
+<translation id="4833786495304741580">Nutzungsstatistiken und Absturzberichte automatisch an Google senden.</translation>
 <translation id="4840495572919996524">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="4854345657858711387">Passcode einrichten</translation>
 <translation id="4860895144060829044">Anrufen</translation>
@@ -289,6 +300,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5548760955356983418">Mit Handoff können Sie auf diesem Gerät auf einer Website stöbern und dann einfach auf Ihrem Mac an derselben Stelle weitermachen. Die aktuell geöffnete Website wird im Dock Ihres Macs angezeigt.
 
 Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein und Ihre Geräte müssen dasselbe iCloud-Konto verwenden.</translation>
+<translation id="5551897871312988470">Übersetzung anbieten</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5614553682702429503">Passwort speichern?</translation>
 <translation id="5626245204502895507">Die Datei kann momentan nicht heruntergeladen werden.</translation>
@@ -336,6 +348,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6187302354554850004">Letzte Synchr.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Ungelesen</translation>
 <translation id="6196207969502475924">Sprachsuche</translation>
+<translation id="6219688215832490856">Nie übersetzen</translation>
 <translation id="6254066287920239840">Links in der App statt im Browser öffnen.</translation>
 <translation id="6255097610484507482">Kreditkarte bearbeiten</translation>
 <translation id="6303969859164067831">Abmelden und die Synchronisierung ausschalten</translation>
@@ -390,6 +403,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6973630695168034713">Ordner</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">Google-Konto verwalten</translation>
 <translation id="7004499039102548441">Zuletzt geöffnete Tabs</translation>
 <translation id="7006788746334555276">Inhaltseinstellungen</translation>
 <translation id="7015203776128479407">Die erstmalige Einrichtung der Synchronisierung wurde nicht abgeschlossen. Synchronisierung ist deaktiviert.</translation>
@@ -460,6 +474,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8059533439631660104">Abschnitt minimieren</translation>
 <translation id="806745655614357130">Daten getrennt halten</translation>
 <translation id="8073670137947914548">Download abgeschlossen</translation>
+<translation id="8073872304774253879">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8076014560081431679">Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Dateidownload verfügbar. Optionen stehen unten auf dem Bildschirm zur Verfügung.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>

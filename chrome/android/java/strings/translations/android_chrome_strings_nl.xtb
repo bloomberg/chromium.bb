@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Delen</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Doorgaan als <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synchronisatie &amp; Google-services</translation>
 <translation id="2259659629660284697">Wachtwoorden exporteren…</translation>
@@ -547,6 +546,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5073204694187207510">Raster op volledig scherm verbergen</translation>
 <translation id="5082793167783849073">Vergelijk pagina's snel door een groep te maken. Tik op een link en houd deze vast om te beginnen.</translation>
 <translation id="5087580092889165836">Pas toevoegen</translation>
+<translation id="5098406615395468004">Toevoegen aan mijn apps</translation>
 <translation id="5100237604440890931">Samengevouwen; klik om uit te vouwen.</translation>
 <translation id="510275257476243843">1 uur resterend</translation>
 <translation id="5123685120097942451">Incognitotabblad</translation>
@@ -830,6 +830,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7062545763355031412">Accepteren en account wijzigen</translation>
 <translation id="7063006564040364415">Kan geen verbinding maken met synchronisatieserver.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 geselecteerd}other{# geselecteerd}}</translation>
+<translation id="7071521146534760487">Account beheren</translation>
 <translation id="7077143737582773186">SD-kaart</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> geselecteerd. Opties beschikbaar bovenaan het scherm.</translation>
 <translation id="7121362699166175603">Hiermee worden de geschiedenis en automatische aanvullingen voor de adresbalk gewist. Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1092,7 +1093,6 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="9040142327097499898">Meldingen zijn toegestaan. Locatie is uitgeschakeld voor dit apparaat.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video's}}</translation>
 <translation id="9050666287014529139">Wachtwoordzin</translation>
-<translation id="9060538597317784206">App <ph name="APP_NAME" /> bekijken in de Play Store. Beoordeling: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">'Desktopsite opvragen' uitschakelen</translation>
 <translation id="9065203028668620118">Bewerken</translation>
 <translation id="9070377983101773829">Gesproken zoekopdracht starten</translation>

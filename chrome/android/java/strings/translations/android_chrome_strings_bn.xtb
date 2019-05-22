@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">ইউআরএল কপি করুন</translation>
 <translation id="2156074688469523661">(<ph name="NUMBER_OF_SITES" />)টি সাইট বাকি আছে</translation>
 <translation id="218608176142494674">শেয়ার করা সংক্রান্ত বিজ্ঞপ্তি</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, ওয়েব অ্যাপ৷ <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> হিসেবে চালিয়ে যান</translation>
 <translation id="2234876718134438132">সিঙ্ক এবং Google পরিষেবাগুলি</translation>
 <translation id="2259659629660284697">পাসওয়ার্ড এক্সপোর্ট করুন...</translation>
@@ -549,6 +548,7 @@
 <translation id="5073204694187207510">ফুলস্ক্রিন গ্রিড লুকান</translation>
 <translation id="5082793167783849073">একটি গ্রুপ তৈরি করে দ্রুত পৃষ্ঠাগুলির তুলনা করুন। শুরু করতে, কোনও একটি লিঙ্ক স্পর্শ করে ধরে থাকুন।</translation>
 <translation id="5087580092889165836">কার্ড জুড়ুন</translation>
+<translation id="5098406615395468004">আমার অ্যাপে যোগ করুন</translation>
 <translation id="5100237604440890931">সঙ্কুচিত - প্রসারিত করতে ক্লিক করুন৷</translation>
 <translation id="510275257476243843">১ ঘণ্টা বাকি আছে</translation>
 <translation id="5123685120097942451">ছদ্মবেশী ট্যাব</translation>
@@ -1094,7 +1094,6 @@
 <translation id="9040142327097499898">বিজ্ঞপ্তির অনুমতি দেওয়া আছে। এই ডিভাইসে লোকেশন বন্ধ করা আছে।</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{#টি ভিডিও}one{#টি ভিডিও}other{#টি ভিডিও}}</translation>
 <translation id="9050666287014529139">পাসফ্রেজ</translation>
-<translation id="9060538597317784206">Play Store এ <ph name="APP_NAME" /> অ্যাপ্লিকেশানটি দেখুন৷  রেটিং: <ph name="APP_RATING" />৷</translation>
 <translation id="9063523880881406963">ডেস্কটপ সাইটের অনুরোধ বন্ধ করুন</translation>
 <translation id="9065203028668620118">সম্পাদনা</translation>
 <translation id="9070377983101773829">ভয়েস সার্চ শুরু করুন</translation>

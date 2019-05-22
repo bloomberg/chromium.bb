@@ -1069,6 +1069,7 @@
       Jika dasar AutoplayAllowed ditetapkan kepada Palsu, maka sebarang corak URL yang ditetapkan dalam dasar ini tetap akan dibenarkan untuk dimainkan.
 
       Sila ambil perhatian bahawa jika <ph name="PRODUCT_NAME" /> sedang berjalan dan dasar ini berubah, dasar ini akan digunakan pada tab baharu yang dibuka sahaja. Oleh sebab itu, sesetengah tab mungkin masih mematuhi gelagat sebelum ini.</translation>
+<translation id="284288632677954003">URL fail XML yang mengandungi URL yang tidak boleh mencetuskan penukaran penyemak imbas.</translation>
 <translation id="285480231336205327">Dayakan mod kontras tinggi</translation>
 <translation id="2854919890879212089">Menyebabkan <ph name="PRODUCT_NAME" /> menggunakan pencetak lalai sistem sebagai pilihan lalai dalam Pratonton Cetakan dan bukannya pencetak yang paling baru digunakan.
 
@@ -1241,6 +1242,15 @@
 <translation id="3096595567015595053">Senarai pemalam yang didayakan</translation>
 <translation id="3101501961102569744">Pilih cara untuk menentukan tetapan pelayan proksi</translation>
 <translation id="3101709781009526431">Tarikh dan masa</translation>
+<translation id="3114411414586006215">Dasar ini mengawal senarai tapak web yang tidak sekali-kali akan menyebabkan penukaran penyemak imbas.
+
+      Sila ambil perhatian bahawa unsur juga boleh ditambahkan pada senarai ini melalui dasar <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Apabila dasar ini dibiarkan tidak ditetapkan, tiada tapak web akan ditambahkan pada senarai.
+
+      Apabila dasar ini ditetapkan, setiap item akan dikendalikan sebagai peraturan, sama seperti dasar <ph name="URL_LIST_POLICY_NAME" />. Walau bagaimanapun, logiknya diterbalikkan: peraturan yang sepadan tidak akan membuka penyemak imbas alternatif.
+
+      Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan terpakai kepada kedua-dua arah. Iaitu, apabila alat tambah Internet Explorer ada dan didayakan, dasar ini juga akan mengawal sama ada <ph name="IE_PRODUCT_NAME" /> harus membuka URL ini dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Amaran: DHE akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 57 (sekitar Mac 2017) dan dasar ini akan berhenti berfungsi selepas itu.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer DHE dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mendayakan suit sifer DHE dan mengekalkan keserasian dengan pelayan yang sudah lapuk. Ini merupakan langkah sementara dan pelayan harus dikonfigurasikan semula.
@@ -1439,6 +1449,17 @@
 <translation id="3550875587920006460">Membolehkan penetapan jadual tersuai untuk menyemak kemas kini. Dasar ini digunakan pada semua pengguna dan semua antara muka pada peranti. Setelah ditetapkan, peranti akan menyemak kemas kini mengikut jadual tersebut. Dasar ini mesti dialih keluar untuk membatalkan sebarang semakan kemas kini berjadual lagi.</translation>
 <translation id="355118380775352753">Tapak web untuk dibuka dalam penyemak imbas alternatif</translation>
 <translation id="3554984410014457319">Benarkan Google Assistant mendengar ungkapan pengaktifan suara</translation>
+<translation id="3557208865710006939">Mendayakan bahasa semak ejaan secara paksa. Bahasa tidak dikenali dalam senarai akan diabaikan.
+
+      Jika anda mendayakan dasar ini, semak ejaan akan didayakan untuk bahasa yang dinyatakan di samping bahasa yang pengguna telah dayakan semak ejaannya.
+
+      Jika anda tidak menetapkan dasar ini atau anda melumpuhkan dasar ini, tiada perubahan akan berlaku kepada pilihan semak ejaan pengguna.
+
+      Jika dasar <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> ditetapkan kepada palsu, dasar ini tidak akan memberikan kesan.
+
+      Jika bahasa disertakan dalam kedua-dua dasar ini dan dasar <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, dasar ini diutamakan dan bahasa semak ejaan akan didayakan.
+
+      Bahasa yang disokong pada masa ini ialah: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Pengguna boleh mengkonfigurasi saluran keluaran OS Chrome</translation>
 <translation id="3575011234198230041">Pengesahan HTTP</translation>
 <translation id="3577251398714997599">Tetapan iklan untuk tapak yang mengandungi iklan yang mengganggu</translation>
@@ -1792,6 +1813,9 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
           Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, kekunci lekit dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
+<translation id="4171331498167688968">Jika dasar ditetapkan kepada palsu, maka perisian pihak ketiga akan dibenarkan untuk menyuntik kod boleh laksana ke dalam proses Chrome. Jika dasar tidak ditetapkan atau ditetapkan kepada benar, maka perisian pihak ketiga akan dihalang daripada menyuntik kod boleh laksana ke dalam proses Chrome.
+
+      Tanpa mengira nilai dasar ini, buat masa ini penyemak imbas tidak akan menyekat perisian pihak ketiga daripada menyuntik kod boleh laksana ke dalam prosesnya pada mesin yang disambungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Tetapan <ph name="FLASH_PLUGIN_NAME" /> lalai</translation>
 <translation id="4192388905594723944">URL untuk mengesahkan token pengesahan pelanggan akses jauh</translation>
 <translation id="4203389617541558220">Hadkan masa hidup peranti dengan menjadualkan but semula automatik.
@@ -2160,6 +2184,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
           Dasar ini hanya tersedia pada tika Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" /> atau tika Windows 10 Pro atau Enterprise yang didaftarkan untuk pengurusan peranti.</translation>
 <translation id="5085647276663819155">Lumpuhkan Pratonton Cetakan</translation>
 <translation id="5090209345759901501">Luaskan tetapan kandungan Flash kepada semua kandungan</translation>
+<translation id="5090791951240382356">Membenarkan penggabungan dasar kamus daripada sumber yang berlainan</translation>
 <translation id="5093540029655764852">Menyatakan kadar (dalam hari) pelanggan menukar kata laluan akaun mesin mereka. Kata laluan dijana secara rawak oleh pelanggan dan tidak dapat dilihat oleh pengguna.
 
       Sama seperti kata laluan pengguna, kata laluan mesin harus ditukar dengan kerap. Tindakan melumpuhkan dasar ini atau menetapkan bilangan hari yang banyak boleh memberikan kesan negatif kepada keselamatan kerana memberi penyerang lebih banyak masa untuk mencari kata laluan akaun dan menggunakannya.
@@ -3251,6 +3276,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dikonfigurasi, set aplikasi akan ditetapkan dan tidak boleh diubah oleh pengguna.
 
       Jika dasar ini tidak ditetapkan, pengguna boleh menukar senarai apl berpin dalam pelancar.</translation>
+<translation id="713121532817834879">Dasar ini ialah URL, yang mengarah ke fail XML dalam format yang sama dengan dasar <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer. Dasar ini memuatkan peraturan daripada fail XML, tanpa berkongsi peraturan tersebut dengan Internet Explorer.
+
+      Peraturan dalam fail XML ini digunakan dengan cara yang sama seperti <ph name="GREYLIST_POLICY_NAME" />. Iaitu, peraturan ini menghalang <ph name="PRODUCT_NAME" /> daripada membuka penyemak imbas alternatif dan juga menghalang penyemak imbas alternatif daripada membuka <ph name="PRODUCT_NAME" />.
+
+      Apabila dasar ini dibiarkan tidak ditetapkan atau tidak ditetapkan kepada URL yang sah, <ph name="PRODUCT_NAME" /> tidak menggunakannya sebagai sumber peraturan yang tidak mencetuskan penukaran penyemak imbas.
+
+      Apabila dasar ini ditetapkan kepada URL yang sah, <ph name="PRODUCT_NAME" /> akan memuat turun senarai tapak daripada URL itu dan menggunakan peraturan tersebut seolah-olah telah dikonfigurasikan dengan dasar <ph name="SITELIST_POLICY_NAME" />.
+
+      Untuk mendapatkan maklumat lanjut tentang dasar <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL yang akan diberikan akses kepada peranti tangkapan video tanpa gesaan</translation>
 <translation id="7138678301420049075">Lain-lain</translation>
 <translation id="7140629953254369759">Arahkan <ph name="PRODUCT_OS_NAME" /> untuk menggunakan konfigurasi penjadual tugas yang dikenal pasti oleh nama yang ditentukan.
@@ -3299,6 +3333,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Main balik automatik hanya dibenarkan untuk domain yang disenaraikan dalam dasar <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> dengan jelas. Jika anda mahu mendayakan main balik automatik untuk semua tapak, pertimbangkan untuk menambahkan http://* dan https://* pada senarai ini.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar tetapan ini secara manual.</translation>
+<translation id="7222749588229362483">Membenarkan dasar yang terpilih digabungkan apabila dasar tersebut berasal daripada sumber yang berlainan, dengan skop dan tahap yang sama.
+
+        Penggabungan ini terdiri daripada penggabungan kekunci peringkat pertama kamus daripada setiap sumber. Sekiranya berlaku percanggahan antara kekunci, kekunci yang berasal daripada sumber yang berkeutamaan tertinggi akan digunakan.
+
+        Jika dasar terkandung dalam senarai dan berlaku percanggahan antara dua sumber, dengan syarat sumber tersebut mempunyai skop dan tahap yang sama, maka nilai akan digabungkan ke dalam kamus dasar yang baharu.
+
+        Jika dasar terkandung dalam senarai dan berlaku percanggahan antara dua sumber serta antara skop dan/atau tahap yang berlainan, maka dasar yang berkeutamaan tertinggi akan digunakan.
+
+        Jika dasar tiada dalam senarai dan berlaku percanggahan antara sumber, skop dan/atau tahap, maka dasar yang berkeutamaan tertinggi akan digunakan.</translation>
 <translation id="7229975860249300121">Mengandungi ungkapan nalar yang digunakan untuk menentukan akaun Google yang boleh ditetapkan sebagai akaun utama penyemak imbas dalam <ph name="PRODUCT_NAME" /> (iaitu akaun yang dipilih semasa aliran ikut serta Penyegerakan).
 
       Ralat yang berkenaan akan dipaparkan jika pengguna cuba menetapkan akaun utama penyemak imbas dengan nama pengguna yang tidak sepadan dengan corak ini.
@@ -3934,6 +3977,12 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
       Jika dasar ini ditetapkan kepada 'Gantikan', dasar pengguna dalam GPO pengguna akan digantikan oleh dasar pengguna dalam GPO komputer (GPO pengguna diabaikan).</translation>
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
+<translation id="8465746466645315861">Jika dasar ini tidak ditetapkan, pengguna boleh mendayakan atau melumpuhkan semak ejaan dalam tetapan bahasa.
+
+      Jika dasar ini ditetapkan kepada benar, semak ejaan didayakan dan pengguna tidak boleh melumpuhkannya. Pada <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> dan <ph name="LINUX_OS_NAME" />, bahasa semak ejaan boleh dihidupkan atau dimatikan secara berasingan, oleh itu pengguna masih boleh melumpuhkan semak ejaan dengan berkesan dengan memilih togol matikan bagi setiap bahasa semak ejaan. Untuk mengelakkannya, dasar <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> boleh digunakan untuk memaksa bahasa semak ejaan tertentu agar didayakan.
+
+      Jika dasar ini ditetapkan kepada palsu, semak ejaan akan dilumpuhkan dan pengguna tidak dapat mendayakannya. Dasar <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> dan <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> tidak akan memberikan sebarang kesan apabila dasar ini ditetapkan kepada palsu.
+      </translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Mengeluarkan bahagian privasi dan keselamatan yang sensitif daripada URL https:// sebelum menyerahkannya kepada skrip PAC (Konfigurasi Automatik Proksi) yang digunakan oleh <ph name="PRODUCT_NAME" /> semasa peleraian proksi.

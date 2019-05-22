@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">URL പകര്‍ത്തുക</translation>
 <translation id="2156074688469523661">ശേഷിക്കുന്ന സൈറ്റുകൾ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">പങ്കിടൽ</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, വെബ് ആപ്പ്. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> എന്ന പേരിൽ തുടരുക</translation>
 <translation id="2234876718134438132">സമന്വയവും Google സേവനങ്ങളും</translation>
 <translation id="2259659629660284697">പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യുക...</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">പൂർണ്ണസ്ക്രീൻ ഗ്രിഡ് മറയ്ക്കുക</translation>
 <translation id="5082793167783849073">ഒരു ഗ്രൂപ്പ് സൃഷ്‌ടിച്ചുകൊണ്ട്, വേഗത്തിൽ പേജുകൾ താരതമ്യം ചെയ്യൂ. ആരംഭിക്കാൻ ഒരു ലിങ്ക് സ്‌പർശിച്ച് പിടിക്കുക.</translation>
 <translation id="5087580092889165836">കാർഡ് ചേർക്കുക</translation>
+<translation id="5098406615395468004">എൻ്റെ ആപ്പുകളിലേക്ക് ചേർക്കുക</translation>
 <translation id="5100237604440890931">ചുരുക്കിയത് - വികസിപ്പിക്കാൻ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="510275257476243843">ഒരു മണിക്കൂർ ശേഷിക്കുന്നു</translation>
 <translation id="5123685120097942451">അദൃശ്യ ടാബ്</translation>
@@ -1092,7 +1092,6 @@
 <translation id="9040142327097499898">അറിയിപ്പുകൾ അനുവദിക്കപ്പെട്ടിരിക്കുന്നു. ഈ ഉപകരണത്തിന്‍റെ ലൊക്കേഷൻ ഓഫാണ്.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# വീഡിയോ}other{# വീഡിയോകൾ}}</translation>
 <translation id="9050666287014529139">പാസ്ഫ്രെയ്‍സ്</translation>
-<translation id="9060538597317784206"><ph name="APP_NAME" /> Play സ്റ്റോറിൽ അപ്ലിക്കേഷൻ കാണുക.  റേറ്റിംഗ്: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">'ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ് അഭ്യർത്ഥിക്കുക' ഓഫാക്കുക</translation>
 <translation id="9065203028668620118">എഡിറ്റുചെയ്യുക</translation>
 <translation id="9070377983101773829">ശബ്ദ തിരയൽ ആരംഭിക്കുക</translation>

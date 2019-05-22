@@ -175,7 +175,6 @@
 <translation id="2154710561487035718">URL ನಕಲಿಸಿ</translation>
 <translation id="2156074688469523661">ಉಳಿದ ಸೈಟ್‌ಗಳು (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">ಹಂಚಿಕೆ</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, ವೆಬ್ ಅಪ್ಲಿಕೇಶನ್. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ನಂತೆ ಮುಂದುವರಿಸಿ</translation>
 <translation id="2234876718134438132">ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳು</translation>
 <translation id="2259659629660284697">ಪಾಸ್‌ವರ್ಡ್‍ಗಳನ್ನು ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಮಾಡಿ…</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">ಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಗ್ರಿಡ್‌ ಅನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="5082793167783849073">ಗುಂಪನ್ನು ರಚಿಸುವ ಮೂಲಕ ಪುಟಗಳನ್ನು ತ್ವರಿತವಾಗಿ ಹೋಲಿಸಿ ನೋಡಿ. ಪ್ರಾರಂಭಿಸಲು, ಲಿಂಕ್ ಸ್ಪರ್ಶಿಸಿ ಹಿಡಿಯಿರಿ.</translation>
 <translation id="5087580092889165836">ಕಾರ್ಡ್ ಸೇರಿಸಿ</translation>
+<translation id="5098406615395468004">ನನ್ನ ಆ್ಯಪ್‌ಗಳಿಗೆ ಸೇರಿಸಿ</translation>
 <translation id="5100237604440890931">ಕುಗ್ಗಿಸಲಾಗಿದೆ - ವಿಸ್ತರಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="510275257476243843">1 ಗಂಟೆ ಉಳಿದಿದೆ</translation>
 <translation id="5123685120097942451">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌</translation>
@@ -1093,7 +1093,6 @@
 <translation id="9040142327097499898">ಅಧಿಸೂಚನೆಗಳಿಗೆ ಅನುಮತಿಯಿದೆ. ಈ ಸಾಧನದ ಸ್ಥಳ ಆಫ್ ಆಗಿದೆ.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ವೀಡಿಯೊ}one{# ವೀಡಿಯೊಗಳು}other{# ವೀಡಿಯೊಗಳು}}</translation>
 <translation id="9050666287014529139">ಪಾಸ್‌ಫ್ರೇಸ್</translation>
-<translation id="9060538597317784206">Play Store ನಲ್ಲಿ <ph name="APP_NAME" /> ಅಪ್ಲಿಕೇಶನ್ ವೀಕ್ಷಿಸಿ. ರೇಟಿಂಗ್: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">ಡೆಸ್ಕ್‌ಟಾಪ್ ಸೈಟ್ ವಿನಂತಿಯನ್ನು ಆಫ್ ಮಾಡಿ</translation>
 <translation id="9065203028668620118">ಎಡಿಟ್</translation>
 <translation id="9070377983101773829">ಧ್ವನಿ ಹುಡುಕಾಟವನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>

@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2156074688469523661">Інші сайти (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Спільний доступ</translation>
-<translation id="2206488550163399966">Веб-додаток <ph name="APP_NAME" />: <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Продовжити як <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Синхронізація та сервіси Google</translation>
 <translation id="2259659629660284697">Експортувати паролі…</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">Сховати повноекранну сітку</translation>
 <translation id="5082793167783849073">Швидко порівнюйте сторінки, створивши групу. Щоб почати, натисніть і втримуйте посилання.</translation>
 <translation id="5087580092889165836">Додати картку</translation>
+<translation id="5098406615395468004">Внести в список "Мої додатки"</translation>
 <translation id="5100237604440890931">Згорнуто – натисніть, щоб розгорнути.</translation>
 <translation id="510275257476243843">Залишилась 1 година</translation>
 <translation id="5123685120097942451">Анонімна вкладка</translation>
@@ -830,6 +830,7 @@
 <translation id="7062545763355031412">Прийняти та перейти в інший обліковий запис</translation>
 <translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Вибрано 1}one{Вибрано #}few{Вибрано #}many{Вибрано #}other{Вибрано #}}</translation>
+<translation id="7071521146534760487">Керувати обліковим записом</translation>
 <translation id="7077143737582773186">Карта SD</translation>
 <translation id="7087918508125750058">Вибрано <ph name="ITEM_COUNT" />. Панель інструментів розташовано вгорі екрана</translation>
 <translation id="7121362699166175603">Видалення історії й варіантів автозавершень в адресному рядку. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1092,7 +1093,6 @@
 <translation id="9040142327097499898">На цьому пристрої вимкнено геодані. Сповіщення дозволено.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# відео}one{# відео}few{# відео}many{# відео}other{# відео}}</translation>
 <translation id="9050666287014529139">Парольна фраза</translation>
-<translation id="9060538597317784206">Перегляньте додаток <ph name="APP_NAME" /> у магазині Google Play. Оцінка: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Вимкнути функцію "Запитувати версію сайту для комп’ютера"</translation>
 <translation id="9065203028668620118">Редагувати</translation>
 <translation id="9070377983101773829">Почати голосовий пошук</translation>

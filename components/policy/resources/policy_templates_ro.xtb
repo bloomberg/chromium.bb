@@ -1038,6 +1038,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica de redare automată permisă este dezactivată, se va permite redarea șabloanelor de adrese URL din această politică.
 
       Dacă <ph name="PRODUCT_NAME" /> rulează și această politică este schimbată, se va aplica doar filelor nou deschise. De aceea, unele file pot avea comportamentul de până atunci.</translation>
+<translation id="284288632677954003">Adresa URL a unui fișier XML care conține adrese URL care nu trebuie să declanșeze niciodată comutarea browserului.</translation>
 <translation id="285480231336205327">Activați modul de contrast ridicat</translation>
 <translation id="2854919890879212089">Determină <ph name="PRODUCT_NAME" /> să folosească imprimanta prestabilită pentru sistem ca opțiune prestabilită în funcția Previzualizare înainte de printare, în locul imprimantei folosite cel mai recent.
 
@@ -1208,6 +1209,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3096595567015595053">Lista de pluginuri activate</translation>
 <translation id="3101501961102569744">Alege modul de specificare a setărilor serverului proxy</translation>
 <translation id="3101709781009526431">Data și ora</translation>
+<translation id="3114411414586006215">Această politică controlează lista site-urilor care nu declanșează niciodată comutarea browserului.
+
+      Reține că pot fi adăugate elemente pe listă folosind și politica <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Când această politică nu este configurată, nu sunt adăugate site-uri pe listă.
+
+      Când această politică este activată, fiecare element este considerat o regulă, similar cu politica <ph name="URL_LIST_POLICY_NAME" />. Cu toate acestea, logica este inversată: regulile care se potrivesc nu vor deschide un browser secundar.
+
+      Spre deosebire de politica <ph name="URL_LIST_POLICY_NAME" />, regulile se aplică în ambele direcții. Cu alte cuvinte, când suplimentul Internet Explorer este prezent și este activat, stabilește și dacă <ph name="IE_PRODUCT_NAME" /> trebuie să deschidă aceste adrese URL în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Avertisment: compatibilitatea cu DHE va fi eliminată complet din <ph name="PRODUCT_NAME" /> după versiunea 57 (aproximativ în martie 2017), iar această politică nu va mai funcționa de la momentul respectiv.
 
       Dacă această politică nu este configurată sau dacă este dezactivată, suitele de codificare DHE din TLS nu vor fi activate. În caz contrar, politica poate fi activată pentru a activa suitele de codificare DHE și pentru a se menține compatibilitatea cu un server învechit. Aceasta este o măsură temporară, iar serverul trebuie să fie reconfigurat.
@@ -1402,6 +1412,17 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3550875587920006460">Permite setarea unui program personalizat pentru a căuta actualizări. Se aplică pentru toți utilizatorii și toate interfețele de pe dispozitiv. Odată setat, dispozitivul va căuta actualizări în funcție de program. Politica trebuie să fie eliminată pentru a anula alte căutări de actualizări programate.</translation>
 <translation id="355118380775352753">Site-uri care vor fi deschise în browserul secundar</translation>
 <translation id="3554984410014457319">Permite Asistentului Google să asculte expresia de activare vocală</translation>
+<translation id="3557208865710006939">Forțează activarea verificării ortografice pentru limbi. Limbile nerecunoscute din listă vor fi ignorate.
+
+      Dacă activezi politica, verificarea ortografică va fi activată pentru limbile indicate, pe lângă limbile pentru care utilizatorul a activat verificarea ortografică.
+
+      Dacă nu setezi sau dacă dezactivezi această politică, nu vor exista modificări în preferințele utilizatorului privind verificarea ortografică.
+
+      Când politica <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> este dezactivată, nu va avea niciun efect.
+
+      Dacă o limbă este inclusă și în această politică, și în politica <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, această politică are prioritate, iar verificarea ortografică pentru limbă este activată.
+
+      Limbile acceptate în prezent sunt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Utilizatorii pot configura canalul de lansare Chrome OS</translation>
 <translation id="3575011234198230041">Autentificare HTTP</translation>
 <translation id="3577251398714997599">Setare pentru anunțurile de pe site-urile cu anunțuri deranjante</translation>
@@ -1752,6 +1773,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
 
           Dacă această politică nu este configurată, tastele adezive vor fi dezactivate inițial, dar pot fi activate oricând de utilizator.</translation>
+<translation id="4171331498167688968">Dacă politica este dezactivată, atunci software-ului de la o terță parte i se va permite să introducă un cod executabil în procesele Chrome. Dacă politica nu este configurată sau este activată, atunci software-ul de la o terță parte va fi împiedicat să introducă codul executabil în procesele Chrome.
+
+      Indiferent de valoarea acestei politici, browserul nu va bloca momentan ca un software de la o terță parte să introducă cod executabil în procesele sale pe un dispozitiv asociat unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Setarea prestabilită pentru <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL pentru validarea indicativului de autentificare al clientului cu acces la distanță</translation>
 <translation id="4203389617541558220">Limitați timpul de funcționare a dispozitivului, programând reporniri automate.
@@ -2108,6 +2132,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="5085647276663819155">Dezactivați Previzualizarea înainte de printare</translation>
 <translation id="5090209345759901501">Extinde setarea privind conținutul Flash la tot conținutul</translation>
+<translation id="5090791951240382356">Permite îmbinarea politicilor din dicționar din surse diferite</translation>
 <translation id="5093540029655764852">Specifică frecvența (în zile) cu care un client schimbă parola contului de dispozitiv. Parola este generată aleatoriu de client și nu este vizibilă utilizatorului.
 
       La fel ca parolele de utilizator, parolele de dispozitiv trebuie schimbate regulat. Dezactivarea acestei politici sau setarea unui număr ridicat de zile poate avea un impact negativ asupra securității, deoarece le oferă potențialilor atacatori mai mult timp să găsească parola contului de dispozitiv și să o folosească.
@@ -3025,6 +3050,17 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       </translation>
 <translation id="6922884955650325312">Blochează pluginul <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Specifică numele furnizorului de căutare prestabilit. Dacă nu este completată sau este nesetată, va fi utilizat numele de gazdă specificat de adresa URL de căutare. Această politică este luată în considerare numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="6924223708804692571">Forțează dezactivarea verificării ortografice pentru limbi. Limbile nerecunoscute din listă vor fi ignorate.
+
+      Dacă activezi politica, verificarea ortografică va fi dezactivată pentru limbile indicate. Utilizatorul mai poate să activeze sau să dezactiveze verificarea ortografică pentru limbile care nu sunt în listă.
+
+      Dacă nu setezi sau dacă dezactivezi această politică, nu vor exista modificări în preferințele utilizatorului privind verificarea ortografică.
+
+      Când politica <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> este dezactivată, nu va avea niciun efect.
+
+      Dacă o limbă este inclusă și în această politică, și în politica <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, cea din urmă are prioritate, iar verificarea ortografică pentru limbă va fi activată.
+
+      Limbile acceptate în prezent sunt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Activează printarea duplex pe lungime</translation>
 <translation id="6931242315485576290">Dezactivează sincronizarea datelor cu Google</translation>
 <translation id="6936894225179401731">Specifică numărul maxim de conexiuni simultane la serverul proxy.
@@ -3161,6 +3197,15 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă această politică este configurată, setul de aplicații este fix și nu poate fi schimbat de către utilizator.
 
       Dacă această politică este lăsată nesetată, utilizatorul poate modifica lista cu aplicații fixate din lansator.</translation>
+<translation id="713121532817834879">Această politică este o adresă URL care direcționează spre un fișier XML cu același format ca cel al politicii <ph name="IEEM_SITELIST_POLICY" /> a Internet Explorer. Această politică încarcă reguli dintr-un fișier XML, fără să permită accesul Internet Explorer la ele.
+
+      Regulile din acest fișier XML se aplică în același fel ca <ph name="GREYLIST_POLICY_NAME" />. Cu alte cuvinte, aceste reguli previn <ph name="PRODUCT_NAME" /> să deschidă browserul secundar și previn browserul secundar să deschidă <ph name="PRODUCT_NAME" />.
+
+      Când această politică nu este configurată sau nu este setată la o adresă URL validă, <ph name="PRODUCT_NAME" /> nu o folosește ca sursă de reguli pentru comutarea browserelor.
+
+      Când această politică este setată la un URL valid, <ph name="PRODUCT_NAME" /> descarcă lista de site-uri de la acea adresă URL și aplică regulile ca și când ar fi fost configurate cu politica <ph name="SITELIST_POLICY_NAME" />.
+
+      Pentru mai multe informații despre politica <ph name="IEEM_SITELIST_POLICY" /> a Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului video</translation>
 <translation id="7138678301420049075">Altele</translation>
 <translation id="7140629953254369759">Indică sistemului de operare <ph name="PRODUCT_OS_NAME" /> să folosească configurarea planificatorului de activități identificat prin numele specificat.
@@ -3209,6 +3254,15 @@ nu poate fi stabilit de utilizator din setările browserului.
           Redarea automată este permisă numai pentru domeniile listate în mod explicit în politica <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Dacă dorești să activezi redarea automată pentru toate site-urile, îți recomandăm să adaugi http://* și https://* în această listă.
 
           Dacă politica nu este setată, utilizatorul va putea modifica această setare manual.</translation>
+<translation id="7222749588229362483">Permite politicilor selectate să fie îmbinate când provin din surse diferite, cu aceleași arii de acoperire și același nivel.
+
+        Îmbinarea constă în îmbinarea cheilor primului nivel al dicționarului din fiecare sursă. În cazul în care există un conflict între chei, se va aplica cheia sursei cu prioritatea cea mai mare.
+
+        Dacă o politică se află în listă, în cazul în care există un conflict între două surse, dat fiind că au aceleași arii de acoperire și același nivel, valorile vor fi îmbinate într-un dicționar nou de politici.
+
+        Dacă o politică se află în listă, în cazul în care există un conflict între două surse, dar și între arii de acoperire și/sau niveluri diferite, se va aplica politica cu prioritatea cea mai mare.
+
+        Dacă o politică nu se află în listă, în cazul în care există un conflict între surse, arii de acoperire și/sau nivel, se va aplica politica cu prioritatea cea mai mare.</translation>
 <translation id="7229975860249300121">Conține o expresie regulată folosită pentru a stabili ce Conturi Google pot fi setate drept conturi principale în browser în <ph name="PRODUCT_NAME" /> (de exemplu contul ales în timpul înscrierii la sincronizare).
 
       Este afișată o eroare corespunzătoare dacă un utilizator încearcă să seteze un cont principal de browser cu un nume de utilizator care nu se potrivește cu acest model.
@@ -3830,6 +3884,12 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
       Dacă politica este setată la „Înlocuiește”, politica privind utilizatorii din GPO-urile utilizatorilor este înlocuită de politica privind utilizatorii din GPO-urile de pe computer (GPO-urile utilizatorilor sunt ignorate).</translation>
 <translation id="8465065632133292531">Parametrii pentru adresa URL a căutării instant care utilizează POST</translation>
+<translation id="8465746466645315861">Dacă politica nu este configurată, utilizatorul poate activa sau dezactiva ortografia din setările limbii.
+
+      Dacă politica este activată, ortografia este activată și nu poate fi dezactivată de utilizator. În <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> și <ph name="LINUX_OS_NAME" />, verificarea ortografică pentru limbi poate fi activată sau dezactivată individual, astfel ca utilizatorul să poate dezactiva ortografia prin dezactivarea verificării ortografice pentru fiecare limbă. Pentru a evita acest lucru, politica <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> poate fi folosită pentru a forța activarea verificării ortografice pentru anumite limbi.
+
+      Dacă politica este dezactivată, ortografia este dezactivată și nu poate fi activată de utilizator. Politicile <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> și <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nu au niciun efect când această politică este dezactivată.
+      </translation>
 <translation id="847472800012384958">Nu permite niciunui site să afișeze ferestre pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Elimină părțile sensibile legate de confidențialitate și de securitate din adresele URL https:// înainte să le trimită la scripturile PAC (Proxy Auto Config) folosite de <ph name="PRODUCT_NAME" /> în timpul rezolvării proxy-ului.

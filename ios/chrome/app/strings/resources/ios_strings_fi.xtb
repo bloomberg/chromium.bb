@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Virhe</translation>
 <translation id="1172898394251786223">Seuraava kenttä</translation>
 <translation id="1176932207622159128">Kuvaa ei voi tall.</translation>
+<translation id="1180526666083833456">Synkronoi ja yksilöi kaikilla laitteilla.</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1201530049782216880">Uusi incognito-välilehti</translation>
 <translation id="1209206284964581585">Piilota toistaiseksi</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Viimeisten 4 viikon ajalta</translation>
 <translation id="1407135791313364759">Avaa kaikki</translation>
 <translation id="1430915738399379752">Tulosta</translation>
+<translation id="1436290164580597469">Syötä tunnuslause, niin voit aloittaa synkronoinnin.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> kohdetta</translation>
 <translation id="1491277525950327607">Muuta asetusta kaksoisnapauttamalla.</translation>
 <translation id="152234381334907219">Tallentamaton</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Näytä salasana</translation>
 <translation id="2481538920734869610">LISÄÄ TILI</translation>
 <translation id="2497852260688568942">Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
+<translation id="2500374554657206846">Salasanan tallentamisen vaihtoehdot</translation>
 <translation id="2523363575747517183">Tämä sivusto yrittää toistuvasti avata toisen sovelluksen.</translation>
 <translation id="2529021024822217800">Avaa kaikki</translation>
+<translation id="2570206273416014374">Lähettää joitakin osoitekentän ja hakukentän kautta tehtyjä hakuja sekä joitakin evästeitä oletushakukoneellesi.</translation>
 <translation id="2572712655377361602">Laitekäytäntö esti pääsyn kuviisi.</translation>
 <translation id="2584132361465095047">Lisää tili…</translation>
 <translation id="2625189173221582860">Salasana kopioitu</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Sulje kaikki incognito-välilehdet</translation>
 <translation id="3533436815740441613">Uusi välilehti</translation>
 <translation id="3551320343578183772">Sulje välilehti</translation>
+<translation id="3581564640715911333">Tarjoudu kääntämään vierailla kielillä kirjoitettuja sivuja</translation>
 <translation id="3588820906588687999">Avaa kuva uudessa välilehdessä</translation>
 <translation id="3603009562372709545">Kopioi linkin URL-osoite</translation>
 <translation id="3607167657931203000">Automaattisen täytön tiedot</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Esilataa verkkosivut</translation>
 <translation id="3691593122358196899">Lisätty kirjanmerkiksi kansioon <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Incognito</translation>
+<translation id="3775743491439407556">Synkronointi ei toimi</translation>
 <translation id="3779810277399252432">Ei internetyhteyttä</translation>
 <translation id="3783017676699494206">Tallenna kuva</translation>
 <translation id="3789841737615482174">Asenna</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">Jos haluat skannata QR-koodin, ota kamera käyttöön asetuksissa.</translation>
 <translation id="4281844954008187215">Käyttöehdot</translation>
 <translation id="430793432425771671">Synkronoi kaikki</translation>
+<translation id="4338650699862464074">Lähettää avaamiesi sivujen URL-osoitteet Googlelle.</translation>
 <translation id="4359125752503270327">Tämä sivu avataan toisessa sovelluksessa.</translation>
 <translation id="4370827530403103842">Synkronointi ei toimi. Korjaa napauttamalla.</translation>
 <translation id="4375040482473363939">QR-koodihaku</translation>
 <translation id="4378154925671717803">Puhelin</translation>
 <translation id="441868831736628555">Tietosuojailmoitus</translation>
+<translation id="4454246407045105932">Lisää kieli</translation>
 <translation id="4476574785019001431">Asetukset</translation>
 <translation id="4496373720959965247">Lisää välilehtiä ja vaihtele sivujen välillä</translation>
 <translation id="4508750114462689118">Sulje kirjautumismainos</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Haetaan Googlella</translation>
 <translation id="4619615317237390068">Välilehdet muista laitteista</translation>
 <translation id="4620246317052452550">Lukemasi sivut</translation>
+<translation id="4630540211544979320">Käännä sivuja</translation>
 <translation id="4636930964841734540">Tietoja</translation>
 <translation id="4659667755519643272">Avaa välilehtien vaihtaja</translation>
 <translation id="4666531726415300315">Olet kirjautunut sisään tilillä <ph name="EMAIL" />.
@@ -248,7 +257,9 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 
 Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
 <translation id="4807020197310989387">Yksi lukematon artikkeli lukulistalla</translation>
+<translation id="4818522717893377262">Lisää kieli…</translation>
 <translation id="481968316161811770">Evästeet, sivuston tiedot</translation>
+<translation id="4833786495304741580">Lähettää automaattisesti käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="4840495572919996524">Kirjanmerkkejä, historiaa, salasanoja tai muita tietojasi ei enää synkronoida Google-tilille.</translation>
 <translation id="4854345657858711387">Määritä tunnuskoodi</translation>
 <translation id="4860895144060829044">Soita</translation>
@@ -289,6 +300,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5548760955356983418">Handoffin avulla voit aloittaa verkkosivuston lukemisen laitteellasi ja jatkaa sitä Macilla. Avoin verkkosivusto näytetään Dockissa.
 
 Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi molempien laitteiden on käytettävä samaa iCloud-tiliä.</translation>
+<translation id="5551897871312988470">Tarjoudu kääntämään</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5614553682702429503">Tallennetaanko salasana?</translation>
 <translation id="5626245204502895507">Tiedostoa ei voi ladata tällä hetkellä.</translation>
@@ -336,6 +348,7 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="6187302354554850004">Viim. synkronoitu: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Lukematon</translation>
 <translation id="6196207969502475924">Puhehaku</translation>
+<translation id="6219688215832490856">Älä käännä koskaan</translation>
 <translation id="6254066287920239840">Avaa linkit sovelluksessa selaimen sijaan.</translation>
 <translation id="6255097610484507482">Luottokortin muokkaus</translation>
 <translation id="6303969859164067831">Kirjaudu ulos ja poista synkronointi käytöstä</translation>
@@ -390,6 +403,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6973630695168034713">Kansiot</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">Hallinnoi Google-tiliäsi</translation>
 <translation id="7004499039102548441">Hiljattain suljetut välilehdet</translation>
 <translation id="7006788746334555276">Sisältöasetukset</translation>
 <translation id="7015203776128479407">Synkronoinnin ensimääritystä ei tehty loppuun. Synkronointi ei ole käytössä.</translation>
@@ -460,6 +474,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8059533439631660104">Tiivistää osion.</translation>
 <translation id="806745655614357130">Pidä tiedot erillään</translation>
 <translation id="8073670137947914548">Lataus valmis</translation>
+<translation id="8073872304774253879">Paranna hakuja ja selausta</translation>
 <translation id="8076014560081431679">Tallennettuja sivustoasetuksia ei poisteta, ja ne saattavat sisältää tietoa selaustavoistasi. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Ladattava tiedosto on saatavilla. Ruudun alaosassa on käytettävissä valintoja.</translation>
 <translation id="8131740175452115882">Vahvista</translation>

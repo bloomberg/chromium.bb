@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
 <translation id="1125573121925420732">ウェブサイトのセキュリティ更新中は警告メッセージが表示されることがあります。これはまもなく改善される予定です。</translation>
 <translation id="1126551341858583091">ローカル ストレージ上のサイズは <ph name="CRASH_SIZE" /> です。</translation>
+<translation id="1127259989763091435">カードを確認して Google アカウントに保存しますか？</translation>
 <translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
 <translation id="1131264053432022307">コピーした画像</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
@@ -143,6 +144,7 @@
 <translation id="1656489000284462475">引取</translation>
 <translation id="1662550410081243962">お支払い方法の保存と入力</translation>
 <translation id="1663943134801823270">Chrome に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
+<translation id="1669987054044193553">確認して保存</translation>
 <translation id="1671391448414634642">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます。</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Google Chrome から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Google Chrome によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="168841957122794586">サーバー証明書に脆弱な暗号鍵が含まれています。</translation>
@@ -201,6 +203,7 @@
 <translation id="2003709556000175978">今すぐパスワードを再設定してください</translation>
 <translation id="20053308747750172">アクセスしているサーバー <ph name="ORIGIN" /> では、サーバーへのすべてのリクエストにセキュリティ ポリシーを適用することが求められていますが、送信されたポリシーが無効であるため、ブラウザは <ph name="SITE" /> のリクエストを満たすことができません。</translation>
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
+<translation id="202813660234680402">いいえ、追加しません</translation>
 <translation id="2030481566774242610">もしかして: <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" />のページは翻訳されません。</translation>
@@ -363,6 +366,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は <ph name="DOMAIN2" /> から発行されています。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="2948083400971632585">接続用に設定されたプロキシは、設定ページで無効にできます。</translation>
+<translation id="295526156371527179">警告: このポリシーは辞書でないため、ポリシーで指定されているとおりに辞書として統合されませんでした。</translation>
 <translation id="2955913368246107853">検索バーを閉じる</translation>
 <translation id="2969319727213777354">安全な接続を確立するには、時計が正しく設定されている必要があります。これは、ウェブサイトが自身を証明するために使用する証明書には有効期限があるためです。デバイスの時計が正しくないため、Google Chrome でこれらの証明書を確認することができません。</translation>
 <translation id="2970515157925768593">デバイスとアカウントの設定をリモートで変更できます。</translation>
@@ -683,6 +687,7 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> の検索候補</translation>
 <translation id="4742407542027196863">パスワードを管理…</translation>
 <translation id="4744603770635761495">実行ファイルのパス</translation>
+<translation id="47454865135383664">カードを Google アカウントに追加しますか？</translation>
 <translation id="4750917950439032686">お客様がこのサイトに送信した情報（パスワード、クレジット カード番号など）が第三者に見られることはありません。</translation>
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4758311279753947758">連絡先情報を追加</translation>
@@ -778,6 +783,7 @@
 <translation id="5251803541071282808">クラウド</translation>
 <translation id="5252000469029418751">C7（封筒）</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">警告: このポリシーは統合可能な辞書ポリシーに含まれていないため、PolicyDictionaryMultipleSourceMergeList ポリシーで指定されているとおりには統合されませんでした。</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">終了</translation>
 <translation id="5284909709419567258">ネットワーク アドレス</translation>
@@ -901,6 +907,7 @@
 <translation id="5922853866070715753">ほぼ完了です</translation>
 <translation id="5932224571077948991">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> を開いています…</translation>
+<translation id="5947933617628957894">はい、追加します</translation>
 <translation id="5951495562196540101">一般ユーザー向けアカウントでは登録できません（ライセンス パッケージが利用可能です）。</translation>
 <translation id="5967592137238574583">連絡先情報の編集</translation>
 <translation id="5967867314010545767">履歴から削除</translation>
@@ -978,6 +985,7 @@
 <translation id="6414888972213066896">このサイトを開いてもよいかの問い合わせを保護者に送信しました</translation>
 <translation id="6415778972515849510">Chromium には Google アカウントの保護とパスワードの変更をサポートする機能があります。</translation>
 <translation id="6417515091412812850">証明書が取り消されたかどうかを確認できません。</translation>
+<translation id="6431585503458005759">保存しません</translation>
 <translation id="6433490469411711332">連絡先情報の編集</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> で接続が拒否されました。</translation>
 <translation id="6434309073475700221">破棄</translation>
@@ -991,7 +999,9 @@
 <translation id="6489534406876378309">クラッシュのアップロードを開始</translation>
 <translation id="6499038740797743453">パスワードを再設定しますか？</translation>
 <translation id="6507833130742554667">クレジット カードとデビットカードをご利用いただけます。</translation>
+<translation id="650855688985305916">はい、保存します</translation>
 <translation id="6508722015517270189">Chrome を再起動する</translation>
+<translation id="6517596291481585650">警告: このポリシーはリストでないため、ポリシーで指定されているとおりにリストとして統合されませんでした。</translation>
 <translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
 <translation id="6534179046333460208">フィジカル ウェブからの URL</translation>
 <translation id="6554795675067793129">あなたのアカウントは <ph name="ENROLLMENT_DOMAIN" /> によって管理されています。</translation>
@@ -1017,6 +1027,7 @@
 <translation id="6670613747977017428">セキュリティで保護されたページに戻ります。</translation>
 <translation id="6671697161687535275">Chromium から候補を削除してもよろしいですか？</translation>
 <translation id="6685834062052613830">ログアウトして設定を完了してください</translation>
+<translation id="6689271823431384964">ログインしている場合は、その Google アカウントにカードを保存できます。この動作は設定で変更できます。カード名義人はアカウントから取得されます。</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="671076103358959139">登録トークン:</translation>
@@ -1123,6 +1134,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />セーフ ブラウジング<ph name="END_LINK" />の警告</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">接続に関するヘルプ</translation>
+<translation id="733354035281974745">デバイスのローカル アカウントのオーバーライド</translation>
 <translation id="7334320624316649418">順序変更のやり直し（&amp;R）</translation>
 <translation id="733923710415886693">サーバーの証明書は、証明書の透明性ポリシーを介して公開されていません。</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1328,6 +1340,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">有害なプログラムが削除されるより前に<ph name="BEGIN_LINK" />このサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="8349305172487531364">ブックマーク バー</translation>
+<translation id="836241887727198552">カードを Google アカウントに保存しますか？</translation>
 <translation id="8363502534493474904">機内モードをオフにする</translation>
 <translation id="8364627913115013041">未設定</translation>
 <translation id="8368476060205742148">Google Play 開発者サービス</translation>
@@ -1370,6 +1383,7 @@
 <translation id="8620436878122366504">保護者がまだサイトを開くことを許可していません</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">このカード情報をこのデバイスに保存する</translation>
+<translation id="8626112503828625890">お支払い情報を Google アカウントに保存しますか？</translation>
 <translation id="8663226718884576429">ご注文の概要、<ph name="TOTAL_LABEL" />、その他の詳細</translation>
 <translation id="8680536109547170164">「<ph name="QUERY" />」に対する答え: 「<ph name="ANSWER" />」</translation>
 <translation id="8685155993131031756">Prc-16K</translation>

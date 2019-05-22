@@ -158,6 +158,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan fortsatt logge på senere.</translation>
 <translation id="3321628682574733415">Feil kode for foreldertilgang</translation>
 <translation id="332587331255250389">Bytt ut batteriet</translation>
+<translation id="3335825575923019462">Er du sikker på at du vil slå av automatiske klikk?</translation>
 <translation id="3351879221545518001">Du caster for øyeblikket skjermen.</translation>
 <translation id="3364721542077212959">Pekepennverktøy</translation>
 <translation id="3368922792935385530">Tilkoblet</translation>
@@ -399,6 +400,7 @@
 <translation id="7348093485538360975">Skjermtastatur</translation>
 <translation id="735745346212279324">VPN frakoblet</translation>
 <translation id="7377169924702866686">Caps Lock er på.</translation>
+<translation id="7378594059915113390">Mediekontroller</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Byttet nettverkstilkobling</translation>
 <translation id="7405710164030118432">For å låse opp enheten, skriv inn koden din for foreldretilgang til Family Link</translation>
@@ -484,6 +486,7 @@
 <translation id="8649101189709089199">Tekstopplesing</translation>
 <translation id="8652175077544655965">Lukk innstillingene</translation>
 <translation id="8653151467777939995">Vis innstillinger for varsler. Varsler er på</translation>
+<translation id="8664483332071009680">Vil du slå av automatiske klikk?</translation>
 <translation id="8664753092453405566">Vis nettverksliste. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>

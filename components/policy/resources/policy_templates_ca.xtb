@@ -941,6 +941,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si la política AutoplayAllowed s'estableix en "false", es podran continuar reproduint vídeos en qualsevol patró d'URL establert en aquesta política.
 
       Tingues en compte que, si <ph name="PRODUCT_NAME" /> s'està executant i aquesta política es modifica, només s'aplicarà a les noves pestanyes obertes. Per tant, és possible que algunes pestanyes continuïn presentant el comportament anterior.</translation>
+<translation id="284288632677954003">URL d'un fitxer XML que conté URL que mai no provoquen un canvi de navegador.</translation>
 <translation id="285480231336205327">Activa el mode d'alt contrast</translation>
 <translation id="2854919890879212089">Fa que <ph name="PRODUCT_NAME" /> utilitzi la impressora predeterminada del sistema com a opció predeterminada a Previsualització de la impressió en lloc d'utilitzar la impressora que s'ha fet servir més recentment.
 
@@ -1104,6 +1105,15 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3096595567015595053">Llista dels connectors activats</translation>
 <translation id="3101501961102569744">Tria com vols especificar la configuració del servidor intermediari</translation>
 <translation id="3101709781009526431">Data i hora</translation>
+<translation id="3114411414586006215">Aquesta política controla la llista de llocs web que mai no provocaran un canvi de navegador.
+
+      Tingues en compte que també es poden afegir elements a aquesta llista a través de la política <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Si aquesta política es deixa sense establir, no s'afegirà cap lloc web a la llista.
+
+      Si aquesta política es defineix, cadascun dels elements es tractarà com una regla, de manera similar a la política <ph name="URL_LIST_POLICY_NAME" />. Ara bé, la lògica és la contrària: les regles que coincideixin no obriran un navegador alternatiu.
+
+      A diferència de la política <ph name="URL_LIST_POLICY_NAME" />, les regles són bidireccionals. És a dir, si hi ha el complement d'Internet Explorer i està activat, també controlarà si <ph name="IE_PRODUCT_NAME" /> ha d'obrir aquests URL a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Advertiment: DHE se suprimirà completament de <ph name="PRODUCT_NAME" /> després de la versió 57 (aproximadament al març de 2017), i aquesta política deixarà de funcionar en aquell moment.
 
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge DHE de TLS no s'activaran. En cas contrari, es pot establir en "true" per activar els sistemes de xifratge DHE i conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.
@@ -1269,6 +1279,17 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3550875587920006460">Permet definir una programació personalitzada per comprovar si hi ha actualitzacions. S'aplica a tots els usuaris i a totes les interfícies del dispositiu. Un cop definida, el dispositiu comprovarà si hi ha actualitzacions segons la programació. Cal suprimir la política per cancel·lar les comprovacions d'actualitzacions programades.</translation>
 <translation id="355118380775352753">Llocs web que s'obriran al navegador alternatiu</translation>
 <translation id="3554984410014457319">Permet que l'Assistent de Google escolti la frase d'activació per veu</translation>
+<translation id="3557208865710006939">Força l'activació dels idiomes del corrector ortogràfic. S'ignoraran els idiomes de la llista que no es reconeguin.
+
+      Si actives aquesta política, s'activarà el corrector ortogràfic en els idiomes especificats, a més dels idiomes en què l'usuari ja l'havia activat.
+
+      Si no defineixes aquesta política o si la desactives, no es modificaran les preferències del corrector ortogràfic de l'usuari.
+
+      Si la política <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> s'estableix en "false", aquesta política no tindrà cap efecte.
+
+      Si un idioma està inclòs tant en aquesta política com a la política <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, es prioritzarà aquesta i s'activarà l'idioma del corrector ortogràfic.
+
+      En aquests moments s'admeten els idiomes següents: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Els usuaris poden configurar el canal de versió de Chrome OS</translation>
 <translation id="3575011234198230041">Autenticació HTTP</translation>
 <translation id="3577251398714997599">Configuració d'anuncis per als llocs web amb anuncis intrusius</translation>
@@ -1592,6 +1613,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si estableixes aquesta política, els usuaris no la podran canviar ni substituir.
 
           Si aquesta política no s'estableix, les tecles permanents estaran desactivades d'entrada, però l'usuari les podrà activar en qualsevol moment.</translation>
+<translation id="4171331498167688968">Si la política s'estableix en "false", el programari de tercers podrà injectar codi executable als processos de Chrome. Si la política no es defineix o s'estableix en "true", el programari de tercers no podrà introduir codi executable als processos de Chrome.
+
+      Independentment del valor d'aquesta política, el navegador no impedirà al programari de tercers introduir codi executable als seus processos en un ordinador que estigui en un domini de <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Configuració predeterminada del connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per validar el testimoni d'autenticació del client per a l'accés remot</translation>
 <translation id="4203389617541558220">Limiteu el temps d'utilització del dispositiu mitjançant la planificació de reinicis automàtics.
@@ -1927,6 +1951,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Aquesta política només està disponible en instàncies de Windows que s'hagin unit a un domini de <ph name="MS_AD_NAME" /> o instàncies de Windows 10 Pro o Enterprise que s'hagin inscrit per a la gestió de dispositius.</translation>
 <translation id="5085647276663819155">Desactiva la previsualització d'impressió</translation>
 <translation id="5090209345759901501">Amplia la configuració del contingut Flash a tot el contingut</translation>
+<translation id="5090791951240382356">Permet combinar polítiques de diccionari de fonts diferents</translation>
 <translation id="5093540029655764852">Indica la freqüència (en dies) amb què un client canvia la contrasenya del compte de l'ordinador. El client genera aleatòriament la contrasenya i l'usuari no la pot veure.
 
       Igual que les contrasenyes d'usuari, les contrasenyes de l'ordinador s'han de canviar amb regularitat. Desactivar aquesta política o reduir la freqüència de canvi de contrasenya pot repercutir negativament en la seguretat, ja que els atacants disposen de més temps per descobrir la contrasenya del compte de l'ordinador i per utilitzar-la.
@@ -2733,6 +2758,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       </translation>
 <translation id="6922884955650325312">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Especifica el nom del proveïdor de cerca predeterminat. Si es deixa buit o no es defineix, s'utilitzarà el nom de l'amfitrió especificat a l'URL de cerca. Aquesta política només es tindrà en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="6924223708804692571">Força la desactivació dels idiomes del corrector ortogràfic. S'ignoraran els idiomes de la llista que no es reconeguin.
+
+      Si actives aquesta política, el corrector ortogràfic es desactivarà per als idiomes especificats. L'usuari pot activar o desactivar igualment el corrector ortogràfic per als idiomes que no són a la llista.
+
+      Si no defineixes aquesta política o si la desactives, no es modificaran les preferències del corrector ortogràfic de l'usuari.
+
+      Si la política <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> s'estableix en "false", aquesta política no tindrà cap efecte.
+
+      Si un idioma està inclòs tant en aquesta política com a la política <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, es prioritzarà la segona i s'activarà l'idioma del corrector ortogràfic.
+
+      En aquests moments s'admeten els idiomes següents: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Permet la impressió a doble cara per la vora llarga</translation>
 <translation id="6931242315485576290">Desactiva la sincronització de dades amb Google</translation>
 <translation id="6936894225179401731">Especifica el nombre màxim de connexions simultànies al servidor intermediari.
@@ -2866,6 +2902,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si configureu aquesta política, el conjunt d'aplicacions queda fixada i l'usuari no la pot modificar.
 
       Si no configureu aquesta política, l'usuari pot modificar la llista d'aplicacions fixades a la barra d'execució ràpida.</translation>
+<translation id="713121532817834879">Aquesta política és un URL que assenyala un fitxer XML en el mateix format que la política <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer. Fa que es carreguin les regles d'un fitxer XML, sense compartir-les amb Internet Explorer.
+
+      Les regles d'aquest fitxer XML s'apliquen de la mateixa manera que <ph name="GREYLIST_POLICY_NAME" />. És a dir, aquestes regles impedeixen que <ph name="PRODUCT_NAME" /> obri un altre navegador i que l'altre navegador obri <ph name="PRODUCT_NAME" />.
+
+      Si aquesta política es deixa sense establir o no s'estableix en un URL vàlid, <ph name="PRODUCT_NAME" /> no la utilitza com a font de regles que no provoquen un canvi de navegador.
+
+      Si aquesta política s'estableix en un URL vàlid, <ph name="PRODUCT_NAME" /> baixa la llista de llocs web de l'URL en qüestió i aplica les regles com si s'haguessin configurat amb la política <ph name="SITELIST_POLICY_NAME" />.
+
+      Per obtenir més informació sobre la política <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, consulta https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL als quals els dispositius de captura de vídeo podran accedir sense confirmació.</translation>
 <translation id="7138678301420049075">Altres</translation>
 <translation id="7140629953254369759">Indica a <ph name="PRODUCT_OS_NAME" /> que utilitzi la configuració del programador de tasques identificada amb el nom especificat.
@@ -2903,6 +2948,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           L'execució automàtica només es permet per als dominis enumerats de manera expressa a la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Per permetre-la per a tots els llocs web, us recomanem afegir http://* i https://* a aquesta enumeració.
 
           Si aquesta política no es defineix, l'usuari podrà canviar l'opció de configuració manualment.</translation>
+<translation id="7222749588229362483">Permet que les polítiques seleccionades es combinin quan procedeixin de fonts diferents i tinguin el mateix abast i nivell.
+
+        Aquest procediment consisteix a combinar les claus de primer nivell del diccionari de cada font. Si es produeix un conflicte entre claus, s'aplicarà la clau que procedeixi de la font amb més prioritat.
+
+        Si una política és a la llista i es produeix un conflicte entre dos fonts, com que tenen el mateix abast i nivell, els valors es combinaran en un diccionari de polítiques nou.
+
+        Si una política és a la llista i es produeix un conflicte entre dos fonts i també entre diferents abasts o nivells, s'aplicarà la política que tingui una prioritat més alta.
+
+        Si una política no és a la llista i es produeix un conflicte entre fonts, abasts o nivells, s'aplicarà la política que tingui una prioritat més alta.</translation>
 <translation id="7229975860249300121">Conté una expressió regular que es fa servir per determinar quins comptes de Google es poden definir com a comptes principals del navegador a <ph name="PRODUCT_NAME" /> (és a dir, el compte que es tria durant el flux d'activació de Sincronització).
 
       Si un usuari prova de definir un compte principal del navegador amb un nom d'usuari que no coincideix amb aquest patró, es mostra un error adient.
@@ -3451,6 +3505,12 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
       Si la política es defineix en "Replace", la política d'usuari que hi ha als GPO d'usuari se substitueixen per la que hi ha als GPO de l'ordinador (els GPO d'usuari s'ignoren).</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
+<translation id="8465746466645315861">Si aquesta política no s'estableix, l'usuari pot activar o desactivar el corrector ortogràfic a la configuració d'idioma.
+
+      Si aquesta política s'estableix en "true", el corrector automàtic està activat i l'usuari no el pot desactivar. A <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> i <ph name="LINUX_OS_NAME" />, els idiomes del corrector ortogràfic es poden activar o desactivar de manera individual perquè l'usuari pugui desactivar-los fàcilment amb el commutador de cada idioma del corrector ortogràfic. Per evitar-ho, es pot utilitzar la política <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> per forçar l'activació de determinats idiomes del corrector ortogràfic.
+
+      Si aquesta política s'estableix en "false", el corrector automàtic es desactiva i l'usuari no el pot activar. Les polítiques <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> i <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> no tenen cap efecte quan aquesta política s'estableix en "false".
+      </translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Suprimeix les parts dels URL de tipus https:// que contenen informació sensible de privadesa i seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.

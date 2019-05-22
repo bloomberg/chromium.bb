@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Uso compartido</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" /> (aplicación web), <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sincronización y servicios</translation>
 <translation id="2259659629660284697">Exportar contraseñas…</translation>
@@ -547,6 +546,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5073204694187207510">Oculta la cuadrícula de pantalla completa</translation>
 <translation id="5082793167783849073">Forma un grupo para comparar las páginas rápidamente. Para comenzar, mantén presionado un vínculo.</translation>
 <translation id="5087580092889165836">Agregar tarjeta</translation>
+<translation id="5098406615395468004">Agregar a Mis apps</translation>
 <translation id="5100237604440890931">Contraído; haz clic para expandir.</translation>
 <translation id="510275257476243843">1 hora restante</translation>
 <translation id="5123685120097942451">Pestaña de incógnito</translation>
@@ -1092,7 +1092,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="9040142327097499898">Las notificaciones están habilitadas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videos}}</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
-<translation id="9060538597317784206">Ver aplicación <ph name="APP_NAME" /> en Play Store (calificación: <ph name="APP_RATING" />)</translation>
 <translation id="9063523880881406963">Desactivar la opción para solicitar versión de escritorio</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9070377983101773829">Iniciar búsqueda por voz</translation>

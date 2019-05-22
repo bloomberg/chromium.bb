@@ -158,6 +158,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se poate conecta în continuare mai târziu.</translation>
 <translation id="3321628682574733415">Codul pentru părinte este incorect</translation>
 <translation id="332587331255250389">Înlocuiește bateria</translation>
+<translation id="3335825575923019462">Sigur vrei să dezactivezi clicurile automate?</translation>
 <translation id="3351879221545518001">În prezent proiectezi ecranul.</translation>
 <translation id="3364721542077212959">Instrumente pentru creion</translation>
 <translation id="3368922792935385530">Conectată</translation>
@@ -399,6 +400,7 @@
 <translation id="7348093485538360975">Tastatură pe ecran</translation>
 <translation id="735745346212279324">Rețea VPN deconectată</translation>
 <translation id="7377169924702866686">Tasta Caps Lock este activată.</translation>
+<translation id="7378594059915113390">Comenzi media</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />s</translation>
 <translation id="7398254312354928459">Conexiunea la rețea a fost comutată</translation>
 <translation id="7405710164030118432">Pentru a debloca dispozitivul, introdu codul de acces parental pentru Family Link</translation>
@@ -484,6 +486,7 @@
 <translation id="8649101189709089199">Selectează și ascultă</translation>
 <translation id="8652175077544655965">Închide setările</translation>
 <translation id="8653151467777939995">Afișează setările pentru notificări. Notificările sunt activate</translation>
+<translation id="8664483332071009680">Dezactivezi clicurile automate?</translation>
 <translation id="8664753092453405566">Afișează lista de rețele. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>

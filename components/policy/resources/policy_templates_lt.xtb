@@ -1073,6 +1073,7 @@
       Jei politika „AutoplayAllowed“ nustatyta į „False“, bus galima leisti turinį, atitinkantį šioje politikoje nustatytus URL šablonus.
 
       Atminkite, kad pakeitus šią politiką veikiant „<ph name="PRODUCT_NAME" />“, ji bus taikoma tik naujai atidarytuose skirtukuose. Todėl kai kuriuose skirtukuose gali išlikti ankstesnė elgsena.</translation>
+<translation id="284288632677954003">XML failo, apimančio URL, kurie turėtų niekada nesuaktyvinti naršyklės jungiklio, URL.</translation>
 <translation id="285480231336205327">Įgalinti didelio kontrasto būseną</translation>
 <translation id="2854919890879212089">Kaip numatytoji funkcijos „Spaudinio peržiūra“ parinktis „<ph name="PRODUCT_NAME" />“ naudojamas sistemos numatytasis spausdintuvas, o ne pastarasis naudotas spausdintuvas.
 
@@ -1243,6 +1244,15 @@
 <translation id="3096595567015595053">Įgalintų papildinių sąrašas</translation>
 <translation id="3101501961102569744">Pasirinkti, kaip nurodyti tarpinio serverio nustatymus</translation>
 <translation id="3101709781009526431">Data ir laikas</translation>
+<translation id="3114411414586006215">Ši politika valdo svetainių, kurios niekada neperjungia naršyklės, sąrašą.
+
+      Atminkite, kad elementų prie šio sąrašo taip pat galima pridėti taikant politiką „<ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />“.
+
+      Kai ši politika nenustatyta, jokios svetainės nepridedamos prie sąrašo.
+
+      Kai ši politika nustatyta, kiekvienas elementas laikomas taisykle, panašiai kaip taikant politiką „<ph name="URL_LIST_POLICY_NAME" />“. Tačiau taikoma atvirkštinė logika: nustačius taisyklių atitiktį alternatyvi naršyklė neatidaroma.
+
+      Taisyklės taikomos abiem kryptimis, priešingai nei „<ph name="URL_LIST_POLICY_NAME" />“. T. y., kai pateikiamas ir įgalinamas „Internet Explorer“ priedas, jis taip pat valdo, ar „<ph name="IE_PRODUCT_NAME" />“ turėtų atidaryti šiuos URL sistemoje „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="3117676313396757089">Įspėjimas: DHE bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ įdiegus 57 versiją (maždaug 2017 m. kovo mėn.) ir ši politika nebegalios.
 
       Jei politika nenustatyta arba nustatyta į „false“, TLS DHE šifruotieji programų komplektai nebus įgalinti. Priešingu atveju ją galima nustatyti į „true“, kad būtų įgalinti DHE šifruotieji programų komplektai ir išsaugotas suderinamumas su pasenusiu serveriu. Tai laikina priemonė; serverį reikia iš naujo sukonfigūruoti.
@@ -1441,6 +1451,17 @@
 <translation id="3550875587920006460">Leidžia nustatyti tinkintą tikrinimo, ar yra naujinių, tvarkaraštį. Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje. Nustačius tvarkaraštį, įrenginys jo laikydamasis tikrins, ar yra naujinių. Norint atšaukti tolesnį tikrinimą, ar yra naujinių, pagal tvarkaraštį, reikės pašalinti šią politiką.</translation>
 <translation id="355118380775352753">Svetainės, skirtos atidaryti alternatyvioje naršyklėje</translation>
 <translation id="3554984410014457319">Leiskite „Google“ padėjėjui klausytis suaktyvinimo balsu frazės</translation>
+<translation id="3557208865710006939">Priverstinai įgalinamos rašybos tikrinimo kalbos. Bus nepaisoma sąraše nurodytų neatpažintų kalbų.
+
+      Jei įgalinsite šią politiką, be kalbų, kurių rašybos tikrinimą įgalino naudotojas, bus įgalintas nurodytų kalbų rašybos tikrinimas.
+
+      Jei šios politikos nenustatysite arba ją išjungsite, nebus atlikta naudotojo rašybos tikrinimo nuostatų pakeitimų.
+
+      Jei politika „<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />“ nustatyta kaip „Netiesa“, ši politika neturės jokio poveikio.
+
+      Jei kalba įtraukta į šią politiką ir politiką „<ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />“, pirmenybė teikiama šiai politikai ir rašybos tikrinimo kalba įgalinama.
+
+      Šiuo metu palaikomos šios kalbos: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Naudotojai gali konfigūruoti „Chrome“ OS leidimo kanalą</translation>
 <translation id="3575011234198230041">HTTP autentifikavimas</translation>
 <translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>
@@ -1794,6 +1815,9 @@
           Jums nustačius šią politiką naudotojai negalės jos pakeisti ar nepaisyti.
 
           Jei ši politika nenustatyta, atmenieji klavišai iš pradžių bus išjungti, bet naudotojas bet kada galės juos įgalinti.</translation>
+<translation id="4171331498167688968">Jei politika nustatyta kaip „Netiesa“, trečiosios šalies programinei įrangai bus leidžiama įdėti vykdomąjį kodą į „Chrome“ procesus. Jei politika nenustatyta arba nustatyta kaip „Tiesa“, trečiosios šalies programinei įrangai nebus leidžiama įdėti vykdomojo kodo į „Chrome“ procesus.
+
+      Neatsižvelgiant į šios politikos vertę, naršyklė šiuo metu neblokuos trečiosios šalies programinės įrangos, kad šiai nebūtų leidžiama įdėti vykdomojo kodo į naršyklės procesus prie domeno <ph name="MS_AD_NAME" /> prijungtame įrenginyje.</translation>
 <translation id="4183229833636799228">Numatytasis „<ph name="FLASH_PLUGIN_NAME" />“ nustatymas</translation>
 <translation id="4192388905594723944">URL, skirtas nuotolinio prisijungimo kliento autentifikavimo prieigos raktui patvirtinti</translation>
 <translation id="4203389617541558220">Apriboti įrenginio veikimo laiką suplanuojant automatinį operacinės sistemos įkėlimą.
@@ -2161,6 +2185,7 @@
           Ši politika pasiekiama tik „Windows“ objektuose, kurie susieti su „<ph name="MS_AD_NAME" />“ domenu, arba „Windows 10 Pro“ ar „Enterprise“ objektuose, kurie užregistruoti naudoti įrenginių tvarkymo funkciją.</translation>
 <translation id="5085647276663819155">Neleisti spaudinio peržiūros</translation>
 <translation id="5090209345759901501">Pritaikyti „Flash“ turinio nustatymą visam turiniui</translation>
+<translation id="5090791951240382356">Leidimas sujungti žodynų politikos nuostatas iš skirtingų šaltinių</translation>
 <translation id="5093540029655764852">Nurodomas dažnis (dienomis), kuriuo klientas keičia savo įrenginio paskyros slaptažodį. Slaptažodį atsitiktinai sugeneruoja klientas ir jis nerodomas naudotojui.
 
       Įrenginių slaptažodžius reikia reguliariai keisti, kaip ir naudotojų slaptažodžius. Išjungus šią politiką ar nustatymą, didelis dienų skaičius gali neigiamai paveikti saugą, nes potencialiems užpuolėjams suteikiama daugiau laiko surasti įrenginio paskyros slaptažodį ir jį naudoti.
@@ -3108,6 +3133,17 @@
 <translation id="6923366716660828830">Nurodomas numatytojo paieškos teikėjo pavadinimas. Jei laukas paliekamas tuščias arba nenustatomas, naudojamas paieškos URL nurodytas prieglobos pavadinimas.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
+<translation id="6924223708804692571">Priverstinai išjungiamos rašybos tikrinimo kalbos. Bus nepaisoma tame sąraše nurodytų neatpažintų kalbų.
+
+      Jei įgalinsite šią politiką, nurodytų kalbų rašybos tikrinimo funkcija bus išjungta. Naudotojas vis tiek gali įgalinti ar išjungti kalbų, kurios nenurodytos sąraše, rašybos tikrinimą.
+
+      Jei šios politikos nenustatysite arba ją išjungsite, nebus atlikta naudotojo rašybos tikrinimo nuostatų pakeitimų.
+
+      Jei politika „<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />“ nustatyta kaip „Netiesa“, ši politika neturės jokio poveikio.
+
+      Jei kalba įtraukta į šią politiką ir politiką „<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />“, pirmenybė teikiama pastarajai politikai ir bus įgalinta rašybos tikrinimo kalba.
+
+      Šiuo metu palaikomos šios kalbos: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Įgalinti ilgojo krašto dvipusį spausdinimą</translation>
 <translation id="6931242315485576290">Neleisti sinchronizuoti duomenų su „Google“</translation>
 <translation id="6936894225179401731">Nurodomas didžiausias galimas prisijungimų prie įgaliotojo serverio vienu metu skaičius.
@@ -3256,6 +3292,15 @@
       Jei sukonfigūruota ši politika, nustatomas programų sąrašas ir naudotojas jo keisti negali.
 
       Jei ši politika paliekama nenustatyta, naudotojas gali pakeisti paleidimo priemonėje prisegtų programų sąrašą.</translation>
+<translation id="713121532817834879">Ši politika – tai URL, nukreipiantis į XML failą tuo pačiu formatu kaip „Internet Explorer“ politika „<ph name="IEEM_SITELIST_POLICY" />“. Įkeliamos taisyklės iš XML failo, nebendrinant jų su „Internet Explorer“.
+
+      Šio XML failo taisyklės taikomos taip pat, kaip politikos „<ph name="GREYLIST_POLICY_NAME" />“. T. y. šios taisyklės apsaugo „<ph name="PRODUCT_NAME" />“, kad nebūtų atidaroma kita naršyklė, ir kitą naršyklę, kad nebūtų atidaroma „<ph name="PRODUCT_NAME" />“.
+
+      Jei ši politika nenustatyta arba nustatyta kaip netinkamas URL, „<ph name="PRODUCT_NAME" />“ nenaudoja jos kaip naršyklių jungiklio suaktyvinimo taisyklių šaltinio.
+
+      Kai ši politika nustatyta kaip tinkamas URL, „<ph name="PRODUCT_NAME" />“ atsisiunčia svetainių sąrašą iš šio URL ir pritaiko taisykles taip, kaip sukonfigūruota naudojant politiką „<ph name="SITELIST_POLICY_NAME" />“.
+
+      Daugiau informacijos apie „Internet Explorer“ politiką „<ph name="IEEM_SITELIST_POLICY" />“ pateikta adresu https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL, kuriems bus suteikta prieiga prie vaizdo įrašų užfiksavimo įrenginių be paraginimo</translation>
 <translation id="7138678301420049075">Kitas</translation>
 <translation id="7140629953254369759">Nurodo „<ph name="PRODUCT_OS_NAME" />“ naudoti užduočių planuoklio konfigūraciją, įvardytą nurodytu pavadinimu.
@@ -3303,6 +3348,15 @@
           Automatinis atkūrimas leidžiamas tik tuose domenuose, kurie yra aiškiai nurodyti politikoje „<ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />“. Jei norite įgalinti atkūrimą visose svetainėse, pabandykite prie šio sąrašo pridėti „http://*“ ir „https://*“.
 
           Jei ši politika bus nenustatyta, naudotojas galės keisti šį nustatymą patys.</translation>
+<translation id="7222749588229362483">Leidžiama sujungti pasirinktas politikos nuostatas, kai jos teikiamos iš skirtingų šaltinių, taikant tokią pat apimtį ir lygį.
+
+        Sujungiant jungiami kiekvieno šaltinio žodyno pirmojo lygio raktai. Jei yra nesuderinamų raktų, bus taikomas raktas iš didžiausio prioriteto šaltinio.
+
+        Jei politika pateikta sąraše, esant dviem nesuderinamiems šaltiniams ir vienodai jų apimčiai bei lygiui, vertės sujungiamos pateikiant naują politikos žodyną.
+
+        Jei politika pateikta sąraše, esant dviem nesuderinamiems šaltiniams, skirtingai apimčiai ir (arba) lygiui, taikoma aukščiausio prioriteto politika.
+
+        Jei politika nepateikta sąraše, esant nesuderinamiems šaltiniams, apimčiai ir (arba) lygiui, taikoma aukščiausio prioriteto politika.</translation>
 <translation id="7229975860249300121">Nurodant, kurios „Google“ paskyros gali būti nustatytos kaip naršyklės pagrindinės paskyros sistemoje „<ph name="PRODUCT_NAME" />“ (t. y. paskyra, kuri pasirenkama atliekant sinchronizavimo pasirinkimo veiksmus), naudojamas reguliarusis reiškinys.
 
       Jei naudotojas bando nustatyti naršyklės pagrindinę paskyrą naudotojo vardu, neatitinkančiu šio šablono, pateikiama atitinkama klaida.
@@ -3938,6 +3992,12 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
       Jei politika nustatyta kaip „Pakeisti“, naudotojo politika naudotojo GPO pakeičiama naudotojo politika kompiuterio GPO (naudotojo GPO nepaisoma).</translation>
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
+<translation id="8465746466645315861">Jei ši politika nenustatyta, naudotojas gali įgalinti arba išjungti rašybos tikrinimą kalbos nustatymuose.
+
+      Jei ši politika nustatyta kaip „Tiesa“, rašybos tikrinimas įgalintas ir naudotojas negali jo išjungti. „<ph name="MS_WIN_NAME" />“, „<ph name="PRODUCT_OS_NAME" />“ ir „<ph name="LINUX_OS_NAME" />“ galima įjungti ar išjungti atskiras rašybos tikrinimo kalbas, tad naudotojas gali išjungti rašybos tikrinimą išjungdamas po vieną rašybos tikrinimo kalbą. Kad to būtų išvengta, gali naudoti politiką „<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />“ nustatant konkrečių rašybos tikrinimo kalbų įgalinimą.
+
+      Jei ši politika nustatyta kaip „Netiesa“, rašybos tikrinimas yra išjungtas ir naudotojas jo įgalinti negali. Jei ši politika nustatyta kaip „Netiesa“, politikos „<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />“ ir „<ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />“ neturi jokio poveikio.
+      </translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="8477885780684655676">1.0 versijos TLS</translation>
 <translation id="8483004350080020634">Perduodamos neskelbtinos https:// URL privatumo ir saugos dalys prieš pateikiant jas PAC (automatinės tarpinio serverio konfigūracijos) scenarijams, kuriuos „<ph name="PRODUCT_NAME" />“ naudoja per tarpinio serverio nustatymo procesą.

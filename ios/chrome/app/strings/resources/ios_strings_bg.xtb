@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Грешка</translation>
 <translation id="1172898394251786223">Следващото поле</translation>
 <translation id="1176932207622159128">Изобр. не може да се запази</translation>
+<translation id="1180526666083833456">Синхронизиране и персонализиране на всички устройства.</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1201530049782216880">Нов раздел в режим „инкогнито“</translation>
 <translation id="1209206284964581585">Скриване засега</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Последните 4 седмици</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
 <translation id="1430915738399379752">Печат</translation>
+<translation id="1436290164580597469">Въведете пропуска, за да стартирате синхронизирането.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> елемента</translation>
 <translation id="1491277525950327607">Докоснете двукратно за превключване на настройката</translation>
 <translation id="152234381334907219">Незапазвани никога</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Показване на паролата</translation>
 <translation id="2481538920734869610">НОВ ПРОФИЛ</translation>
 <translation id="2497852260688568942">Синхронизирането е деактивирано от администратора ви</translation>
+<translation id="2500374554657206846">Опции за запазване на паролата</translation>
 <translation id="2523363575747517183">Този уебсайт многократно се опитва да отвори друго приложение.</translation>
 <translation id="2529021024822217800">Отваряне на всички</translation>
+<translation id="2570206273416014374">Изпраща някои „бисквитки“ и заявките за търсене от адресната лента и полето за търсене до стандартната ви търсеща машина.</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
 <translation id="2584132361465095047">Добавяне на профил…</translation>
 <translation id="2625189173221582860">Паролата е копирана</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Затв. на разделите „инкогнито“</translation>
 <translation id="3533436815740441613">Нов раздел</translation>
 <translation id="3551320343578183772">Затваряне на раздела</translation>
+<translation id="3581564640715911333">Извеждане на предложения за превод на страниците, написани на други езици</translation>
 <translation id="3588820906588687999">Отваряне на изображението в нов раздел</translation>
 <translation id="3603009562372709545">Копиране на URL адреса на връзката</translation>
 <translation id="3607167657931203000">Автоматично попълване на данни</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Предв. зареждане на уеб стр.</translation>
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
+<translation id="3775743491439407556">Синхронизирането не работи</translation>
 <translation id="3779810277399252432">Няма връзка с интернет.</translation>
 <translation id="3783017676699494206">Запазване на изобрaжението</translation>
 <translation id="3789841737615482174">Инсталиране</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">За да сканирате код за бърза реакция, активирайте камерата от настройките</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="430793432425771671">Синхронизиране на всичко</translation>
+<translation id="4338650699862464074">Изпраща до Google URL адресите на посещаваните от вас страници.</translation>
 <translation id="4359125752503270327">Тази страница ще се отвори в друго приложение.</translation>
 <translation id="4370827530403103842">Синхронизирането не работи. Докоснете, за да отстраните проблема.</translation>
 <translation id="4375040482473363939">Търсене по код за бърза реакция</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Съобщение за поверителност</translation>
+<translation id="4454246407045105932">Добавяне на език</translation>
 <translation id="4476574785019001431">Настройки</translation>
 <translation id="4496373720959965247">Добавяне на раздели и превключване между страници</translation>
 <translation id="4508750114462689118">Затваряне на подканата за вход</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Търсене с Google</translation>
 <translation id="4619615317237390068">Раздели от други устройства</translation>
 <translation id="4620246317052452550">Страници, които сте прочели</translation>
+<translation id="4630540211544979320">Превод на страници</translation>
 <translation id="4636930964841734540">Информация</translation>
 <translation id="4659667755519643272">Влизане в превключвателя на раздели</translation>
 <translation id="4666531726415300315">Влезли сте като <ph name="EMAIL" />.
@@ -248,7 +257,9 @@
 
 За да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 непрочетена статия в списъка за четене.</translation>
+<translation id="4818522717893377262">Добавяне на език...</translation>
 <translation id="481968316161811770">„Бисквитки“ и данни за сайтове</translation>
+<translation id="4833786495304741580">Автоматично изпраща до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="4840495572919996524">Вашите отметки, история, пароли и други неща повече няма да се синхронизират с профила ви в Google.</translation>
 <translation id="4854345657858711387">Задайте код за достъп</translation>
 <translation id="4860895144060829044">Обаждане</translation>
@@ -289,6 +300,7 @@
 <translation id="5548760955356983418">С Handoff можете да започнете да разглеждате уебсайт на това устройство, след което лесно да продължите сърфирането от своя Mac. Отвореният сайт ще се покаже в лентата Dock.
 
 Трябва да активирате Handoff и в секцията „General“ на Settings, както и да използвате един и същ профил в iCloud на устройствата си.</translation>
+<translation id="5551897871312988470">Предложения за превод</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5614553682702429503">Да се запази ли паролата?</translation>
 <translation id="5626245204502895507">Понастоящем файлът не можа да бъде изтеглен.</translation>
@@ -336,6 +348,7 @@
 <translation id="6187302354554850004">Последно синхр.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Непрочетени</translation>
 <translation id="6196207969502475924">Гласово търсене</translation>
+<translation id="6219688215832490856">Никога да не се превежда</translation>
 <translation id="6254066287920239840">Отваряне на връзките в приложението вместо в браузъра.</translation>
 <translation id="6255097610484507482">Редактиране на кредитната карта</translation>
 <translation id="6303969859164067831">Изход от профила и изключване на синхронизирането</translation>
@@ -390,6 +403,7 @@
 <translation id="6945221475159498467">Избиране</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6979158407327259162">Google Диск</translation>
+<translation id="6988572888918530647">Управление на профила ви в Google</translation>
 <translation id="7004499039102548441">Скорошни раздели</translation>
 <translation id="7006788746334555276">Настройки за съдържанието</translation>
 <translation id="7015203776128479407">Първоначалното настройване на синхронизирането не бе завършено. Синхронизирането е изключено.</translation>
@@ -460,6 +474,7 @@
 <translation id="8059533439631660104">Свива секцията.</translation>
 <translation id="806745655614357130">Оставяне на данните отделно</translation>
 <translation id="8073670137947914548">Изтеглянето завърши</translation>
+<translation id="8073872304774253879">Подобряване на търсенията и сърфирането</translation>
 <translation id="8076014560081431679">Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Наличен е файл за изтегляне. Съответните опции са достъпни в долната част на екрана.</translation>
 <translation id="8131740175452115882">Потвърждаване</translation>

@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="2156074688469523661">Järelejäänud saidid (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Jagamine</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, veebirakendus. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Jätka kasutajana <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sünkroonimine ja Google'i teen.</translation>
 <translation id="2259659629660284697">Paroolide eksportimine …</translation>
@@ -547,6 +546,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5073204694187207510">Peida täisekraani ruudustik</translation>
 <translation id="5082793167783849073">Looge rühm, et lehti kiiresti võrrelda. Alustamiseks puudutage pikalt linki.</translation>
 <translation id="5087580092889165836">Lisa kaart</translation>
+<translation id="5098406615395468004">Lehele Minu rakendused lisamine</translation>
 <translation id="5100237604440890931">Ahendatud – laiendamiseks klõpsake.</translation>
 <translation id="510275257476243843">Jäänud on 1 tund</translation>
 <translation id="5123685120097942451">Inkognito vaheleht</translation>
@@ -1093,7 +1093,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="9040142327097499898">Märguanded on lubatud. Asukoht on selle seadme puhul välja lülitatud.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videot}}</translation>
 <translation id="9050666287014529139">Parool</translation>
-<translation id="9060538597317784206">Kuvab rakenduse <ph name="APP_NAME" /> Play poes. Hinnang: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Valiku Taotle arvutisaiti väljalülitamine</translation>
 <translation id="9065203028668620118">Muuda</translation>
 <translation id="9070377983101773829">Häälotsingu alustamine</translation>

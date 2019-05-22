@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Fejl</translation>
 <translation id="1172898394251786223">Næste felt</translation>
 <translation id="1176932207622159128">Billedet kan ikke gemmes</translation>
+<translation id="1180526666083833456">Synkroniser og tilpas på flere enheder.</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1201530049782216880">Ny inkognitofane</translation>
 <translation id="1209206284964581585">Skjul indtil videre</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Seneste fire uger</translation>
 <translation id="1407135791313364759">Åbn alle</translation>
 <translation id="1430915738399379752">Udskriv</translation>
+<translation id="1436290164580597469">Angiv adgangssætning for at begynde at synkronisere.</translation>
 <translation id="1449835205994625556">Skjul adgangskode</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementer</translation>
 <translation id="1491277525950327607">Tryk to gange for at skifte indstilling</translation>
@@ -106,8 +108,10 @@
 <translation id="2435457462613246316">Vis adgangskode</translation>
 <translation id="2481538920734869610">TILFØJ KONTO</translation>
 <translation id="2497852260688568942">Synkronisering er deaktiveret af din administrator.</translation>
+<translation id="2500374554657206846">Valgmuligheder for at gemme adgangskode</translation>
 <translation id="2523363575747517183">Dette website forsøger hele tiden at åbne en anden app.</translation>
 <translation id="2529021024822217800">Åbn alle</translation>
+<translation id="2570206273416014374">Sender visse cookies og søgninger fra adresselinjen og søgefeltet til din standardsøgemaskine.</translation>
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
@@ -179,6 +183,7 @@
 <translation id="3533202363250687977">Luk alle inkognitofaner</translation>
 <translation id="3533436815740441613">Ny fane</translation>
 <translation id="3551320343578183772">Luk fanen</translation>
+<translation id="3581564640715911333">Tilbyd at oversætte sider på andre sprog</translation>
 <translation id="3588820906588687999">Åbn billede på ny fane</translation>
 <translation id="3603009562372709545">Kopiér linkets webadresse</translation>
 <translation id="3607167657931203000">AutoFyld-data</translation>
@@ -186,6 +191,7 @@
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
+<translation id="3775743491439407556">Synkronisering fungerer ikke</translation>
 <translation id="3779810277399252432">Ingen internetforbindelse.</translation>
 <translation id="3783017676699494206">Gem billede</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -220,11 +226,13 @@
 <translation id="4272631900155121838">Aktivér kameraet i Indstillinger for at scanne en QR-kode</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
 <translation id="430793432425771671">Synkroniser alt</translation>
+<translation id="4338650699862464074">Sender webadresser for de sider, du besøger, til Google.</translation>
 <translation id="4359125752503270327">Denne side åbner i en anden app.</translation>
 <translation id="4370827530403103842">Synkronisering fungerer ikke. Tryk for at rette problemet.</translation>
 <translation id="4375040482473363939">Søgning efter QR-kode</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Erklæring om privatliv</translation>
+<translation id="4454246407045105932">Tilføj sprog</translation>
 <translation id="4476574785019001431">Indstillinger</translation>
 <translation id="4496373720959965247">Tilføj faner, og skift mellem sider</translation>
 <translation id="4508750114462689118">Luk loginkampagne</translation>
@@ -235,6 +243,7 @@
 <translation id="461440297010471931">Søgning via Google</translation>
 <translation id="4619615317237390068">Faner fra andre enheder</translation>
 <translation id="4620246317052452550">Sider, du har læst</translation>
+<translation id="4630540211544979320">Oversæt sider</translation>
 <translation id="4636930964841734540">Oplysninger</translation>
 <translation id="4659667755519643272">Åbn Faneskift</translation>
 <translation id="4666531726415300315">Logget ind som <ph name="EMAIL" />.
@@ -249,7 +258,9 @@ Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for
 
 Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkronisering<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 ulæst artikel på læselisten.</translation>
+<translation id="4818522717893377262">Tilføj sprog...</translation>
 <translation id="481968316161811770">Cookies, websitedata</translation>
+<translation id="4833786495304741580">Sender automatisk brugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="4840495572919996524">Dine bogmærker, din historik, dine adgangskoder og meget andet synkroniseres ikke længere med din Google-konto.</translation>
 <translation id="4854345657858711387">Angiv en adgangskode</translation>
 <translation id="4860895144060829044">Ring op</translation>
@@ -290,6 +301,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5548760955356983418">Med Handoff kan du begynde at se på et website på denne enhed og derefter nemt fortsætte på din Mac. Det website, du har åbent, vises i docken på din Mac.
 
 Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enheder skal benytte den samme iCloud-konto.</translation>
+<translation id="5551897871312988470">Tilbyd at oversætte</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5614553682702429503">Vil du gemme adgangskoden?</translation>
 <translation id="5626245204502895507">Filen kunne ikke downloades på nuværende tidspunkt.</translation>
@@ -337,6 +349,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6187302354554850004">Sidst synkroniseret: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Ulæst</translation>
 <translation id="6196207969502475924">Talesøgning</translation>
+<translation id="6219688215832490856">Oversæt aldrig</translation>
 <translation id="6254066287920239840">Åbn links i appen i stedet for i browseren.</translation>
 <translation id="6255097610484507482">Rediger kreditkort</translation>
 <translation id="6303969859164067831">Log ud, og deaktiver synkronisering</translation>
@@ -391,6 +404,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6973630695168034713">Mapper</translation>
 <translation id="6979158407327259162">Google Drev</translation>
+<translation id="6988572888918530647">Administrer din Google-konto</translation>
 <translation id="7004499039102548441">Seneste faner</translation>
 <translation id="7006788746334555276">Indstillinger for indhold</translation>
 <translation id="7015203776128479407">Den indledende konfiguration af synkronisering blev ikke afsluttet. Synkronisering er deaktiveret.</translation>
@@ -461,6 +475,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8059533439631660104">Skjuler sektionen.</translation>
 <translation id="806745655614357130">Hold mine data adskilt</translation>
 <translation id="8073670137947914548">Downloaden er fuldført</translation>
+<translation id="8073872304774253879">Gør søgninger og browsing endnu bedre</translation>
 <translation id="8076014560081431679">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Filer kan downloades. Se valgmulighederne nederst på skærmen.</translation>
 <translation id="8131740175452115882">Bekræft</translation>

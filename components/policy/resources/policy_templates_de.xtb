@@ -1050,6 +1050,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wird die Richtlinie "AutoplayAllowed" auf "false" gesetzt, dürfen die in dieser Richtlinie festgelegten URL-Muster dennoch abgespielt werden.
 
       Hinweis: Wenn <ph name="PRODUCT_NAME" /> ausgeführt wird, während Sie diese Richtlinie ändern, wird sie nur auf neue Tabs angewendet. Deshalb folgen einige Tabs möglicherweise noch der vorherigen Einstellung.</translation>
+<translation id="284288632677954003">Die URL einer XML-Datei mit URLs, die grundsätzlich keinen Browserwechsel auslösen sollen.</translation>
 <translation id="285480231336205327">Modus mit hohem Kontrast aktivieren</translation>
 <translation id="2854919890879212089">Hiermit wird festgelegt, dass <ph name="PRODUCT_NAME" /> den Standarddrucker des Betriebssystems als Standarddrucker für die Druckvorschau verwendet, nicht den zuletzt genutzten Drucker.
 
@@ -1217,6 +1218,15 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="3096595567015595053">Liste der aktivierten Plug-ins</translation>
 <translation id="3101501961102569744">Auswählen, wie Proxyserver-Einstellungen angegeben werden</translation>
 <translation id="3101709781009526431">Datum und Uhrzeit</translation>
+<translation id="3114411414586006215">Anhand dieser Richtlinie wird die Liste der Websites verwaltet, die unter keinen Umständen einen Browserwechsel auslösen.
+
+      Diese Liste kann auch über die Richtlinie "<ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />" ergänzt werden.
+
+      Wenn die Richtlinie nicht konfiguriert ist, werden der Liste keine Websites hinzugefügt.
+
+      Wenn die Richtlinie konfiguriert ist, wird jedes Element als Regel angesehen, ähnlich wie bei der Richtlinie "<ph name="URL_LIST_POLICY_NAME" />". Die Logik ist jedoch umgedreht: Wenn es eine Übereinstimmung mit der Regel gibt, wird kein alternativer Browser geöffnet.
+
+      Im Gegensatz zu "<ph name="URL_LIST_POLICY_NAME" />" gelten die Regeln in beide Richtungen. Wenn das Internet Explorer-Add-in also vorhanden und aktiviert ist, wird damit auch gesteuert, ob <ph name="IE_PRODUCT_NAME" /> diese URLs in <ph name="PRODUCT_NAME" /> öffnen soll.</translation>
 <translation id="3117676313396757089">Achtung: DHE wird nach Version 57, etwa im März 2017, vollständig aus <ph name="PRODUCT_NAME" /> entfernt. Anschließend funktioniert diese Richtlinie nicht mehr.
 
       Wenn die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, werden DHE-Verschlüsselungssammlungen in TLS nicht aktiviert. Die Richtlinie kann auf "true" festgelegt werden, um DHE-Verschlüsselungssammlungen zu aktivieren und die Kompatibilität mit veralteten Servern zu gewährleisten. Dies ist eine provisorische Maßnahme. Der Server sollte neu konfiguriert werden.
@@ -1408,6 +1418,17 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3550875587920006460">Mit dieser Richtlinie kann ein benutzerdefinierter Zeitplan zum Prüfen auf Updates festgelegt werden. Er gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Wenn ein Zeitplan aktiviert wird, sucht das Gerät entsprechend nach Updates. Wenn geplante Prüfungen auf Updates nicht mehr durchgeführt werden sollen, muss die Richtlinie entfernt werden.</translation>
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
 <translation id="3554984410014457319">Google Assistant erlauben, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird</translation>
+<translation id="3557208865710006939">Damit werden Sprachen für die Rechtschreibprüfung erzwungen. Sprachen in der Liste, die nicht erkannt werden, werden ignoriert.
+
+      Wenn diese Richtlinie aktiviert ist, wird die Rechtschreibprüfung für die angegebenen Sprachen aktiviert, und zwar zusätzlich zu den Sprachen, für die der Nutzer die Rechtschreibprüfung aktiviert hat.
+
+      Ist sie deaktiviert oder nicht konfiguriert, bleiben die Einstellungen des Nutzers für die Rechtschreibprüfung unverändert.
+
+      Falls die Richtlinie "<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />" auf "false" gesetzt ist, hat sie keine Auswirkungen.
+
+      Sollte eine Sprache sowohl in dieser Richtlinie als auch in der Richtlinie "<ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />" enthalten sein, hat diese Richtlinie Vorrang und die Sprache wird für die Rechtschreibprüfung aktiviert.
+
+      Aktuell werden die folgenden Sprachen unterstützt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Nutzer dürfen die Chrome OS-Release-Version konfigurieren</translation>
 <translation id="3575011234198230041">HTTP-Authentifizierung</translation>
 <translation id="3577251398714997599">Einstellungen für Werbung für Websites mit aufdringlichen Werbeanzeigen</translation>
@@ -1747,6 +1768,9 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Ist die Richtlinie nicht konfiguriert, so ist die Sticky Keys-Bedienungshilfe anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
+<translation id="4171331498167688968">Wenn die Richtlinie auf "false" festgelegt wird, kann Drittanbieter-Software ausführbaren Code in die Prozesse von Chrome einfügen. Wird sie nicht konfiguriert oder auf "true" gesetzt, kann Drittanbieter-Software keinen ausführbaren Code in die Prozesse von Chrome einfügen.
+
+      Unabhängig davon, wie diese Richtlinie festgelegt wird, hindert der Browser aktuell keine Drittanbieter-Software daran, ausführbaren Code in seine Prozesse auf Computern einzufügen, die sich in einer <ph name="MS_AD_NAME" />-Domain befinden.</translation>
 <translation id="4183229833636799228">"<ph name="FLASH_PLUGIN_NAME" />" als Standardeinstellung</translation>
 <translation id="4192388905594723944">URL zur Überprüfung des Client-Authentifizierungs-Tokens für den Remotezugriff</translation>
 <translation id="4203389617541558220">Hiermit kann die Betriebszeit des Geräts durch die Planung automatischer Neustarts begrenzt werden.
@@ -2103,6 +2127,7 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
           Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="5085647276663819155">Druckvorschau deaktivieren</translation>
 <translation id="5090209345759901501">Einstellung für Flash-Inhalt auf alle Inhalte anwenden</translation>
+<translation id="5090791951240382356">Zusammenführen von Wörterbuchrichtlinien aus unterschiedlichen Quellen erlauben</translation>
 <translation id="5093540029655764852">Gibt an (in Tagen), wie häufig ein Client das Computerpasswort ändert. Das Passwort wird vom Client zufällig generiert und ist für den Nutzer nicht sichtbar.
 
       Genau wie Nutzerpasswörter sollten auch Computerpasswörter regelmäßig geändert werden. Eine Deaktivierung dieser Richtlinie oder die Auswahl einer hohen Anzahl von Tagen kann sich negativ auf die Sicherheit auswirken, da potenzielle Angreifer so mehr Zeit haben, das Computerpasswort herauszufinden und zu missbrauchen.
@@ -2997,6 +3022,17 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       </translation>
 <translation id="6922884955650325312">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" blockieren</translation>
 <translation id="6923366716660828830">Gibt den Namen des Standardsuchanbieters an. Wenn die Richtlinie leer oder nicht konfiguriert ist, so wird der durch die Such-URL angegebene Hostname verwendet. Diese Richtlinie wird nur dann umgesetzt, wenn "DefaultSearchProviderEnabled" aktiviert ist.</translation>
+<translation id="6924223708804692571">Damit wird die Deaktivierung von Sprachen für die Rechtschreibprüfung erzwungen. Sprachen in dieser Liste, die nicht erkannt werden, werden ignoriert.
+
+      Wenn diese Richtlinie aktiviert ist, wird die Rechtschreibprüfung für die angegebenen Sprachen deaktiviert. Für nicht in der Liste befindliche Sprachen kann die Rechtschreibprüfung weiterhin vom Nutzer aktiviert oder deaktiviert werden.
+
+      Ist die Richtlinie deaktiviert oder nicht konfiguriert, bleiben die Einstellungen des Nutzers für die Rechtschreibprüfung unverändert.
+
+      Falls die Richtlinie "<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />" auf "false" gesetzt ist, hat sie keine Auswirkungen.
+
+      Sollte eine Sprache sowohl in dieser Richtlinie als auch in der Richtlinie "<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />" enthalten sein, hat letztere Vorrang und die Sprache wird für die Rechtschreibprüfung aktiviert.
+
+      Aktuell werden die folgenden Sprachen unterstützt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Duplexdruck (lange Kante) aktivieren</translation>
 <translation id="6931242315485576290">Synchronisierung der Daten mit Google deaktivieren</translation>
 <translation id="6936894225179401731">Legt die maximale Anzahl gleichzeitiger Verbindungen zum Proxyserver fest.
@@ -3133,6 +3169,15 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Wenn diese Richtlinie konfiguriert wird, werden diese Apps festgelegt und können von Nutzern nicht geändert werden.
 
       Wird diese Richtlinie nicht konfiguriert, können Nutzer die Liste der in der Übersicht angezeigten Apps ändern.</translation>
+<translation id="713121532817834879">Diese Richtlinie ist eine URL, die auf eine XML-Datei im selben Format wie die Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer verweist. Dabei werden Regeln aus einer XML-Datei geladen, ohne diese Regeln mit Internet Explorer zu teilen.
+
+      Die Regeln in dieser XML-Datei gelten genauso wie "<ph name="GREYLIST_POLICY_NAME" />". Das bedeutet, dass diese Regeln verhindern, dass <ph name="PRODUCT_NAME" /> einen alternativen Browser öffnet und <ph name="PRODUCT_NAME" /> von einem alternativen Browser geöffnet wird.
+
+      Wenn diese Richtlinie nicht konfiguriert oder nicht auf eine gültige URL festgelegt ist, wird sie von <ph name="PRODUCT_NAME" /> nicht als Quelle für Regeln verwendet, die keinen Browserwechsel auslösen.
+
+      Ist für die Richtlinie eine gültige URL angegeben, lädt <ph name="PRODUCT_NAME" /> die Websiteliste von dieser URL herunter und wendet die Regeln so an, als wären sie mit der Richtlinie "<ph name="SITELIST_POLICY_NAME" />" konfiguriert worden.
+
+      Weitere Informationen zur Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URLs, denen ohne Nachfrage Zugriff auf Videoaufnahmegeräte gestattet wird</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
 <translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" /> wird angewiesen, die jeweils angegebene Konfiguration des Aufgabenplaners zu nutzen.
@@ -3177,6 +3222,15 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfrag
           Die automatische Wiedergabe ist nur für Domains erlaubt, die ausdrücklich in der Richtlinie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> aufgeführt werden. Wenn Sie die automatische Wiedergabe für alle Websites aktivieren möchten, können Sie http://* und https://* dieser Liste hinzufügen.
 
           Wenn diese Richtlinie nicht aktiviert wird, kann der Nutzer diese Einstellung manuell ändern.</translation>
+<translation id="7222749588229362483">Ermöglicht das Zusammenführen der ausgewählten Richtlinien, wenn diese aus unterschiedlichen Quellen stammen, mit gleichem Bereich und gleicher Ebene.
+
+        Dabei werden die Schlüssel des Wörterbuchs auf der ersten Ebene aus jeder Quelle zusammengeführt. Sollte ein Konflikt zwischen Schlüsseln bestehen, wird der Schlüssel aus der Quelle mit der höheren Priorität angewendet.
+
+        Wenn sich eine Richtlinie auf der Liste befindet und dadurch ein Konflikt zwischen zwei Quellen entsteht, werden, sofern Bereich und Ebene identisch sind, die Werte zu einem neuen Richtlinienwörterbuch zusammengeführt.
+
+        Wenn sich eine Richtlinie auf der Liste befindet und dadurch ein Konflikt zwischen zwei Quellen entsteht, wird, sofern Bereich und/oder Ebene unterschiedlich sind, die Richtlinie mit der höheren Priorität angewendet.
+
+        Befindet sich eine Richtlinie nicht auf der Liste und liegt ein Konflikt zwischen Quellen, Bereichen und/oder Ebenen vor, dann wird die Richtlinie mit der höchsten Priorität verwendet.</translation>
 <translation id="7229975860249300121">Enthält einen regulären Ausdruck, der festlegt, welche Google-Konten in <ph name="PRODUCT_NAME" /> als primäre Browserkonten eingerichtet werden können, also als das Konto, das bei der Zustimmung zur Synchronisierung ausgewählt wurde.
 
 Wenn ein Nutzer ein primäres Browserkonto mit einem Nutzernamen einrichten will, der diesem Muster nicht entspricht, wird ein entsprechender Fehler ausgegeben.
@@ -3797,6 +3851,12 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 
       Wenn die Richtlinie auf "Replace" (Ersetzen) festgelegt wird, werden Nutzerrichtlinien in Nutzer-GPOs durch die Nutzerrichtlinien in Computer-GPOs ersetzt, wobei Nutzer-GPOs ignoriert werden.</translation>
 <translation id="8465065632133292531">Parameter für URL der Suche im Voraus, die POST verwendet</translation>
+<translation id="8465746466645315861">Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer die Rechtschreibprüfung in den Spracheinstellungen aktivieren oder deaktivieren.
+
+      Falls sie auf "true" festgelegt wird, ist die Rechtschreibprüfung aktiviert und kann nicht vom Nutzer deaktiviert werden. Unter <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> und <ph name="LINUX_OS_NAME" /> können die Sprachen für die Rechtschreibprüfung einzeln aktiviert und deaktiviert werden. Dadurch hat der Nutzer die Möglichkeit, die Rechtschreibprüfung durch Deaktivieren aller Sprachen auszuschalten. Soll diese Möglichkeit nicht zur Verfügung stehen, kann die Richtlinie "<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />" genutzt werden, um die Aktivierung bestimmter Sprachen für die Rechtschreibprüfung zu erzwingen.
+
+      Sollte diese Richtlinie auf "false" gesetzt werden, ist die Rechtschreibprüfung deaktiviert und der Nutzer kann sie nicht aktivieren. Die Richtlinien "<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />" und "<ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />" haben keine Auswirkungen, wenn diese Richtlinie auf "false" eingestellt ist.
+      </translation>
 <translation id="847472800012384958">Anzeige von Pop-ups für keine Website zulassen</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Entfernt datenschutz- und sicherheitsrelevante Teile aus https://-URLs, bevor diese an PAC-Skripts (Proxy Auto Config) übergeben werden, die <ph name="PRODUCT_NAME" /> während der Proxy-Auflösung verwendet.

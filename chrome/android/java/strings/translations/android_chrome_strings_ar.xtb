@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">المشاركة</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">المتابعة باسم <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">‏خدمات Google والمزامنة</translation>
 <translation id="2259659629660284697">تصدير كلمات المرور...</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">إخفاء شبكة ملء الشاشة</translation>
 <translation id="5082793167783849073">يُرجى مقارنة الصفحات بسرعة من خلال إنشاء مجموعة. للبدء، المس رابطًا مع الاستمرار.</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
+<translation id="5098406615395468004">الإضافة إلى تطبيقاتي</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
 <translation id="510275257476243843">يتبقى ساعة واحدة</translation>
 <translation id="5123685120097942451">علامة تبويب "التصفُّح المتخفي"</translation>
@@ -830,6 +830,7 @@
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم تحديد عنصر واحد}zero{تم تحديد # عنصر}two{تم تحديد عنصرين (#)}few{تم تحديد # عناصر}many{تم تحديد # عنصرًا}other{تم تحديد # عنصر}}</translation>
+<translation id="7071521146534760487">إدارة الحساب</translation>
 <translation id="7077143737582773186">‏بطاقة SD</translation>
 <translation id="7087918508125750058">تم تحديد <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
 <translation id="7121362699166175603">‏يتم محو السجلّ وعمليات الإكمال التلقائي في شريط العناوين. وقد يتضمّن حسابك على Google نماذج أخرى من سجلّ التصفّح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1092,7 +1093,6 @@
 <translation id="9040142327097499898">الإشعارات مسموح بها. وتحديد الموقع الجغرافي متوقف لهذا الجهاز.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{فيديو واحد (#)}zero{# فيديو}two{فيديوهان (#)}few{# فيديوهات}many{# فيديو}other{# فيديو}}</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>
-<translation id="9060538597317784206">‏عرض تطبيق <ph name="APP_NAME" /> في متجر Play.  التقييم: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">إيقاف طلب موقع الويب لسطح المكتب</translation>
 <translation id="9065203028668620118">تعديل</translation>
 <translation id="9070377983101773829">بدء البحث الصوتي</translation>

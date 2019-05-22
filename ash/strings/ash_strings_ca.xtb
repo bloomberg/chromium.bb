@@ -158,6 +158,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> pot iniciar la sessió més tard.</translation>
 <translation id="3321628682574733415">Codi parental incorrecte</translation>
 <translation id="332587331255250389">Canvia la bateria</translation>
+<translation id="3335825575923019462">Confirmes que vols desactivar els clics automàtics?</translation>
 <translation id="3351879221545518001">Estàs emetent la pantalla.</translation>
 <translation id="3364721542077212959">Eines del llapis òptic</translation>
 <translation id="3368922792935385530">Connectat</translation>
@@ -399,6 +400,7 @@
 <translation id="7348093485538360975">Teclat en pantalla</translation>
 <translation id="735745346212279324">VPN desconnectada</translation>
 <translation id="7377169924702866686">Bloq Maj està activat.</translation>
+<translation id="7378594059915113390">Controls multimèdia</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">S'ha canviat la connexió de xarxa</translation>
 <translation id="7405710164030118432">Introdueix el codi d'accés parental de Family Link per desbloquejar el dispositiu</translation>
@@ -484,6 +486,7 @@
 <translation id="8649101189709089199">Escolta la selecció</translation>
 <translation id="8652175077544655965">Tanca la configuració</translation>
 <translation id="8653151467777939995">Mostra la configuració de notificacions. Les notificacions estan activades.</translation>
+<translation id="8664483332071009680">Vols desactivar els clics automàtics?</translation>
 <translation id="8664753092453405566">Mostra la llista de xarxes. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">S'ha connectat un carregador de baix consum</translation>

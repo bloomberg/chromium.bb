@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2156074688469523661">其余的网站（<ph name="NUMBER_OF_SITES" /> 个）</translation>
 <translation id="218608176142494674">共享</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以“<ph name="USER_FULL_NAME" />”的身份继续</translation>
 <translation id="2234876718134438132">同步功能和 Google 服务</translation>
 <translation id="2259659629660284697">导出密码…</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">隐藏“全屏网格状视图”按钮</translation>
 <translation id="5082793167783849073">通过分组快速比较网页。为此，请先轻触并按住某个链接。</translation>
 <translation id="5087580092889165836">添加新卡</translation>
+<translation id="5098406615395468004">添加到“我的应用”</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="510275257476243843">还剩 1 小时</translation>
 <translation id="5123685120097942451">无痕式标签页</translation>
@@ -1092,7 +1092,6 @@
 <translation id="9040142327097499898">允许显示通知。但此设备的位置信息功能已关闭。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 个视频}other{# 个视频}}</translation>
 <translation id="9050666287014529139">密码</translation>
-<translation id="9060538597317784206">在 Play 商店中查看“<ph name="APP_NAME" />”应用。评分：<ph name="APP_RATING" />。</translation>
 <translation id="9063523880881406963">关闭“请求切换到桌面版网站”</translation>
 <translation id="9065203028668620118">编辑</translation>
 <translation id="9070377983101773829">开始语音搜索</translation>

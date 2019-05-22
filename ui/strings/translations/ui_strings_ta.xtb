@@ -180,8 +180,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1க்கு மேற்பட்ட அறிவிப்புகள் படிக்கப்படாமல் உள்ளன}other{#க்கு மேற்பட்ட அறிவிப்புகள் படிக்கப்படாமல் உள்ளன}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{இன்னும் 1நி}other{இன்னும் #நி}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google அசிஸ்டண்ட்டின் குரல் வினவலைத் தொடங்கும்</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 நொடி உள்ளது}other{# நொடிகள் உள்ளன}}</translation>
+<translation id="8144660977431427332">உங்கள் தேடல்கள் Google அசிஸ்டண்ட்டைப் பயன்படுத்தி தேடப்படுகின்றன. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, தானே நிரப்பியது</translation>
 <translation id="815598010540052116">கீழே உருட்டு</translation>
 <translation id="8170087467028567933">இந்தப் பரிந்துரையை அகற்றினால், உங்கள் எல்லாச் சாதனங்களிலும் உள்ள உங்கள் கணக்கிலிருந்து இது மறைக்கப்படும்.</translation>

@@ -1047,6 +1047,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak ho nastavíte na hodnotu false, ľubovoľné vzory webových adries nastavené v tomto pravidle sa budú môcť prehrávať.
 
       Upozorňujeme, že ak toto pravidlo zmeníte, keď je prehliadač <ph name="PRODUCT_NAME" /> spustený, použije sa iba na nové otvorené karty. Pri niektorých kartách si budete môcť stále všimnúť predchádzajúce správanie.</translation>
+<translation id="284288632677954003">Webová adresa súboru XML s adresami, ktoré by nikdy nemali spustiť prepnutie prehliadačov.</translation>
 <translation id="285480231336205327">Povoliť režim s vysokým kontrastom</translation>
 <translation id="2854919890879212089">Umožňuje nastaviť, aby prehliadač <ph name="PRODUCT_NAME" /> predvolene používal v časti Ukážka tlače namiesto poslednej použitej tlačiarne predvolenú tlačiareň systému.
 
@@ -1219,6 +1220,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3096595567015595053">Zoznam povolených doplnkov</translation>
 <translation id="3101501961102569744">Zvoľte spôsob konfigurácie nastavení servera proxy</translation>
 <translation id="3101709781009526431">Dátum a čas</translation>
+<translation id="3114411414586006215">Toto pravidlo ovláda zoznam webov, ktoré nikdy nespôsobia prepnutie prehliadačov.
+
+      Upozorňujeme, že do tohto zoznamu môžete tiež pridať prvky prostredníctvom pravidla <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Keď toto pravidlo ponecháte nenastavené, do zoznamu sa nepridajú žiadne weby.
+
+      Keď ho nastavíte, jednotlivé položky sa budú považovať za pravidlá, rovnako ako v pravidle <ph name="URL_LIST_POLICY_NAME" />. Platí však opačná logika: pravidlá, ktoré sa zhodujú, neotvoria alternatívny prehliadač.
+
+      Na rozdiel od pravidla <ph name="URL_LIST_POLICY_NAME" /> sa tieto pravidlá uplatňujú oboma smermi. Znamená to, že keď používate doplnok pre Internet Explorer a povolíte ho, ovláda aj to, či má <ph name="IE_PRODUCT_NAME" /> otvoriť tieto webové adresy aj v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Upozornenie: Po verzii 57 (približne v marci 2017) bude šifrovací algoritmus DHE z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránený a toto pravidlo prestane fungovať.
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu False, v protokole TLS nebudú povolené šifrovacie súpravy DHE. Nastavením tohto pravidla na hodnotu True je možné povoliť šifrovacie súpravy DHE a zaistiť kompatibilitu so zastaraným serverom. Ide o krátkodobé riešenie, takže konfigurácia príslušného servera by mala byť upravená.
@@ -1416,6 +1426,17 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="3550875587920006460">Umožňuje nastaviť vlastný plán kontroly dostupnosti aktualizácií. Platí pre všetkých používateľov a rozhrania v zariadení. Po nastavení bude zariadenie kontrolovať dostupnosť aktualizácie podľa tohto plánu. Ak chcete zrušiť všetky ďalšie naplánované kontroly dostupnosti aktualizácií, toto pravidlo musíte odstrániť.</translation>
 <translation id="355118380775352753">Weby, ktoré sa majú otvárať v alternatívnom prehliadači</translation>
 <translation id="3554984410014457319">Povoliť Asistentovi Google počúvať frázy aktivácie hlasom</translation>
+<translation id="3557208865710006939">Vynucuje povolenie jazykov kontroly pravopisu. Nerozpoznané jazyky sa budú v danom zozname ignorovať.
+
+      Ak toto pravidlo povolíte, kontrola pravopisu sa povolí nielen pre jazyky, ktoré nastavil používateľ, ale aj pre tieto špecifikované jazyky.
+
+      Ak ho zakážete alebo nenastavíte, predvoľby kontroly pravopisu používateľa sa nezmenia.
+
+      Ak pravidlo <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> nastavíte na hodnotu false, toto pravidlo nebude mať žiadny účinok.
+
+      Ak je jazyk uvedený v tomto pravidle aj pravidle <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, toto pravidlo má prednosť a kontrola pravopisu pre tento jazyk bude povolená.
+
+      Momentálne sú podporované tieto jazyky: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Používatelia môžu konfigurovať kanál verzií systému Chrome OS</translation>
 <translation id="3575011234198230041">Overenie HTTP</translation>
 <translation id="3577251398714997599">Nastavenie reklám pre weby s obťažujúcimi reklamami</translation>
@@ -1763,6 +1784,9 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
           Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
 
           Ak ho ponecháte nenastavené, pevne umiestnené klávesy sú pôvodne zakázané, ale používateľ ich môže kedykoľvek povoliť.</translation>
+<translation id="4171331498167688968">Ak toto pravidlo nastavíte na hodnotu false, softvér tretej strany bude môcť vkladať spustiteľný kód do procesov Chromu. Ak ho nastavíte na hodnotu true alebo ponecháte nenastavené, softvér tretej strany bude mať vkladanie spustiteľného kódu do procesov Chromu zakázané.
+
+      Bez ohľadu na hodnotu tohto pravidla nebude prehliadač momentálne brániť softvéru tretej strany vkladať spustiteľný kód do jeho procesov v počítači spojenom s doménou <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Predvolené nastavenie doplnku <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Webová adresa na potvrdenie overovacieho tokenu klienta vzdialeného pripojenia</translation>
 <translation id="4203389617541558220">Obmedzuje dobu, počas ktorej je zariadenie zapnuté, prostredníctvom naplánovania automatických reštartov.
@@ -2128,6 +2152,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
           Toto pravidlo je k dispozícii iba v inštanciách systému Windows, ktoré sú zapojené do domény <ph name="MS_AD_NAME" />, alebo v inštanciách systému Windows 10 Pro alebo Enterprise, ktoré sú zaregistrované do správy zariadení.</translation>
 <translation id="5085647276663819155">Zakázať ukážku pred tlačou</translation>
 <translation id="5090209345759901501">Rozšíriť obsah Flash na všetok obsah</translation>
+<translation id="5090791951240382356">Povoliť zlučovanie pravidiel pre slovníky z rôznych zdrojov</translation>
 <translation id="5093540029655764852">Umožňuje nastaviť frekvenciu (v dňoch) toho, ako často klient zmení svoje heslo účtu zariadenia. Heslo je náhodne generované klientom a používateľ ho neuvidí.
 
       Rovnako ako používateľské heslá by sa mali pravidelne meniť aj heslá zariadenia. Zakázanie týchto pravidiel alebo nastavenie veľkého počtu dní môže mať negatívny vplyv na zabezpečenie, pretože poskytuje potenciálnym útočníkom viac času na zistenie hesla účtu zariadenia a jeho použitie.
@@ -3054,6 +3079,17 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 <translation id="6923366716660828830">Určuje názov predvoleného poskytovateľa vyhľadávania. Ak sa pole nevyplní alebo bude pravidlo ponechané nenastavené, použije sa názov hostiteľa určený webovou adresou vyhľadávania.
 
           Toto pravidlo sa vezme do úvahy len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
+<translation id="6924223708804692571">Vynúti zakázanie jazykov kontroly pravopisu. Nerozpoznané jazyky sa budú v danom zozname ignorovať.
+
+      Ak toto pravidlo povolíte, kontrola pravopisu bude pre špecifikované jazyky zakázaná. Pre jazyky, ktoré nie sú v zozname uvedené, môže používateľ kontrolu pravopisu naďalej zapnúť alebo vypnúť.
+
+      Ak ho zakážete alebo nenastavíte, predvoľby kontroly pravopisu používateľa sa nezmenia.
+
+      Ak pravidlo <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> nastavíte na hodnotu false, toto pravidlo nebude mať žiadny účinok.
+
+      Ak je jazyk uvedený v tomto pravidle aj pravidle <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, toto druhé pravidlo má prednosť a jazyk kontroly pravopisu bude povolený.
+
+      Momentálne sú podporované tieto jazyky: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Povoliť obojstrannú tlač s dlhým okrajom</translation>
 <translation id="6931242315485576290">Zakázať synchronizáciu údajov so servermi Google</translation>
 <translation id="6936894225179401731">Určuje maximálny počet súbežných pripojení k serveru proxy.
@@ -3202,6 +3238,15 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Ak je toto pravidlo nakonfigurované, tieto aplikácie sú pevne dané a používateľ ich nemôže zmeniť.
 
       Ak toto pravidlo nastavené nie je, používateľ zoznam aplikácií v spúšťači zmeniť môže.</translation>
+<translation id="713121532817834879">Toto pravidlo je webová adresa, ktorá smeruje na súbor XML v rovnakom formáte ako pravidlo <ph name="IEEM_SITELIST_POLICY" /> prehliadača Internet Explorer. Načíta pravidlá zo súboru XML bez ich zdieľania s prehliadačom Internet Explorer.
+
+      Pravidlá v tomto súbore XML platia rovnako ako <ph name="GREYLIST_POLICY_NAME" />. Znamená to, že prehliadaču <ph name="PRODUCT_NAME" /> bránia otvoriť alternatívny prehliadač a tiež bránia alternatívnemu prehliadaču otvoriť <ph name="PRODUCT_NAME" />.
+
+      Keď toto pravidlo ponecháte nenastavené alebo ho nastavíte na neplatnú webovú adresu, <ph name="PRODUCT_NAME" /> ho nepoužije ako zdroj pravidiel, ktoré nespúšťajú prepnutie prehliadačov.
+
+      Keď ho nastavíte na platnú webovú adresu, <ph name="PRODUCT_NAME" /> stiahne zoznam webov z danej webovej adresy a pravidlá uplatní tak, akoby boli nakonfigurované pravidlom <ph name="SITELIST_POLICY_NAME" />.
+
+      Ďalšie informácie o pravidle <ph name="IEEM_SITELIST_POLICY" /> prehliadača Internet Explorer nájdete na https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Webové adresy, ktorým bude udelený prístup k zariadeniam na zaznamenávanie videa bez zobrazenia výzvy</translation>
 <translation id="7138678301420049075">Ostatné</translation>
 <translation id="7140629953254369759">Systému <ph name="PRODUCT_OS_NAME" /> prikazuje používať konfiguráciu plánovača úloh identifikovanú špecifikovaným názvom.
@@ -3249,6 +3294,15 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
           Automatické prehrávanie je povolené iba pre domény výslovne uvedené v pravidle <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Ak chcete povoliť automatické prehrávanie pre všetky weby, odporúčame do tohto zoznamu pridať výrazy http://* a https://*.
 
           Ak toto pravidlo nenastavíte, používateľ bude môcť nastavenie zmeniť ručne.</translation>
+<translation id="7222749588229362483">Umožňuje zlúčenie vybraných pravidiel s rovnakými rozsahmi a úrovňou, keď pochádzajú z rôznych zdrojov.
+
+        Zlučujú sa kľúče prvej úrovne slovníka z jednotlivých zdrojov. Ak nastane konflikt kľúčov, použije sa ten, ktorý pochádza zo zdroja s najvyššou prioritou.
+
+        Ak sa pravidlo nachádza v zozname a nastane konflikt medzi dvoma zdrojmi, ktoré majú rovnaké rozsahy a úroveň, hodnoty budú zlúčené do nového slovníka pravidiel.
+
+        Ak sa pravidlo nachádza v zozname a nastane konflikt medzi dvoma zdrojmi, ale aj rozsahmi a/alebo úrovňou, použije sa pravidlo s najvyššou prioritou.
+
+        Ak sa pravidlo nenachádza v zozname a nastane konflikt medzi dvoma zdrojmi, rozsahmi a/alebo úrovňou, použije sa pravidlo s najvyššou prioritou.</translation>
 <translation id="7229975860249300121">Obsahuje regulárny výraz, ktorý sa používa na určenie toho, ktoré účty Google je možné nastaviť ako hlavné účty prehliadača <ph name="PRODUCT_NAME" /> (t. j. tie, ktoré sa vyberú pri aktivovaní synchronizácie).
 
       Ak sa používateľ pokúsi nastaviť hlavný účet prehliadača pomocou používateľského mena, ktoré sa nezhoduje s týmto vzorom, zobrazí sa príslušná chyba.
@@ -3884,6 +3938,12 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
       Ak ho nastavíte na možnosť Replace (Nahradiť), pravidlá pre používateľov v objektoch pravidiel skupiny používateľa budú nahradené pravidlami pre používateľov v objektoch pravidiel skupiny v počítači (objekty pravidiel skupiny používateľa budú ignorované).</translation>
 <translation id="8465065632133292531">Parametre pre webovú adresu okamžitého vyhľadávania, ktorá používa metódu POST</translation>
+<translation id="8465746466645315861">Ak toto pravidlo nenastavíte, používateľ môže povoliť alebo zakázať kontrolu pravopisu v jazykových nastaveniach.
+
+      Ak ho nastavíte na hodnotu true, kontrola pravopisu je povolená a používateľ ju nemôže zakázať. V systémoch <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> a <ph name="LINUX_OS_NAME" /> môžete jazyky kontroly pravopisu individuálne zapnúť alebo vypnúť, takže používateľ môže kontrolu pravopisu stále účinne zakázať vypnutím všetkých jej jazykov. Ak tomu chcete zabrániť, môžete pomocou pravidla <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> vynútiť, aby určité jazyky kontroly pravopisu zostali povolené.
+
+      Ak toto pravidlo nastavíte na hodnotu false, kontrola pravopisu je zakázaná a používateľ ju nemôže povoliť. Keď ho nastavíte na hodnotu false, pravidlá <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> a <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nebudú mať žiadny účinok.
+      </translation>
 <translation id="847472800012384958">Zakázať všetkým stránkam zobrazovať kontextové okná</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Umožňuje odstrániť citlivé časti webových adries s predponou https:// týkajúce sa súkromia a zabezpečenia ešte predtým, ako sa odošlú do skriptov PAC (Proxy Auto Config) používaných prehliadačom <ph name="PRODUCT_NAME" /> počas vyvolania proxy servera.

@@ -158,6 +158,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> pode iniciar sessão mais tarde.</translation>
 <translation id="3321628682574733415">Código parental incorreto</translation>
 <translation id="332587331255250389">Substitua a bateria</translation>
+<translation id="3335825575923019462">Tem a certeza de que pretende desativar os cliques automáticos?</translation>
 <translation id="3351879221545518001">Está a transmitir atualmente o ecrã.</translation>
 <translation id="3364721542077212959">Ferramentas da caneta stylus</translation>
 <translation id="3368922792935385530">Ligado</translation>
@@ -399,6 +400,7 @@
 <translation id="7348093485538360975">Teclado no ecrã</translation>
 <translation id="735745346212279324">VPN desligado</translation>
 <translation id="7377169924702866686">Caps Lock ativado.</translation>
+<translation id="7378594059915113390">Controlos de multimédia</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> seg</translation>
 <translation id="7398254312354928459">Ligação de rede alterada</translation>
 <translation id="7405710164030118432">Para desbloquear este dispositivo, introduza o código de acesso parental do seu Family Link.</translation>
@@ -484,6 +486,7 @@
 <translation id="8649101189709089199">Selecionar para falar</translation>
 <translation id="8652175077544655965">Fechar definições</translation>
 <translation id="8653151467777939995">Mostrar definições de notificação. As notificações estão ativadas</translation>
+<translation id="8664483332071009680">Pretende desativar os cliques automáticos?</translation>
 <translation id="8664753092453405566">Mostrar lista de redes. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>

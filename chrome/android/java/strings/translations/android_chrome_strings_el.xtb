@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Αντιγραφή διεύθυνσης URL</translation>
 <translation id="2156074688469523661">Ιστότοποι που απομένουν (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Κοινοποίηση</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, εφαρμογή ιστού. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Συνέχεια ως <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Συγχρονισμός και υπηρ. Google</translation>
 <translation id="2259659629660284697">Εξαγωγή κωδικών πρόσβασης…</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">Απόκρυψη πλέγματος πλήρους οθόνης</translation>
 <translation id="5082793167783849073">Συγκρίνετε γρήγορα σελίδες δημιουργώντας μια ομάδα. Για να ξεκινήσετε, αγγίξτε παρατεταμένα κάποιον σύνδεσμο.</translation>
 <translation id="5087580092889165836">Προσθήκη κάρτας</translation>
+<translation id="5098406615395468004">Προσθήκη στη λίστα Οι εφαρμογές μου</translation>
 <translation id="5100237604440890931">Συμπτυγμένη - Κάντε κλικ για ανάπτυξη</translation>
 <translation id="510275257476243843">Απομένει 1 ώρα</translation>
 <translation id="5123685120097942451">Καρτέλα ανώνυμης περιήγησης</translation>
@@ -830,6 +830,7 @@
 <translation id="7062545763355031412">Αποδοχή και εναλλαγή λογαριασμών</translation>
 <translation id="7063006564040364415">Δεν ήταν δυνατή η σύνδεση στον διακομιστή συγχρονισμού.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 επιλεγμένο}other{# επιλεγμένα}}</translation>
+<translation id="7071521146534760487">Διαχείριση λογαριασμού</translation>
 <translation id="7077143737582773186">Secure Digital</translation>
 <translation id="7087918508125750058">Επιλέχθηκαν <ph name="ITEM_COUNT" />. Οι επιλογές είναι διαθέσιμες κοντά στο επάνω μέρος της οθόνης</translation>
 <translation id="7121362699166175603">Διαγράφει το ιστορικό και τα στοιχεία αυτόματης συμπλήρωσης στη γραμμή διευθύνσεων. Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1092,7 +1093,6 @@
 <translation id="9040142327097499898">Οι ειδοποιήσεις επιτρέπονται. Η Τοποθεσία είναι απενεργοποιημένη σε αυτήν τη συσκευή.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Βίντεο}other{# Βίντεο}}</translation>
 <translation id="9050666287014529139">Φράση πρόσβασής σας</translation>
-<translation id="9060538597317784206">Προβολή της εφαρμογής <ph name="APP_NAME" /> στο Play Store. Βαθμολογία: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Απενεργοποίηση αιτήματος ιστότοπου για υπολογιστές</translation>
 <translation id="9065203028668620118">Επεξεργασία</translation>
 <translation id="9070377983101773829">Έναρξη φωνητικής αναζήτησης</translation>

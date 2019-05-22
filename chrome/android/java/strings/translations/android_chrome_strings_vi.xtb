@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2156074688469523661">Số trang web còn lại (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Chia sẻ</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, ứng dụng web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Tiếp tục bằng <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Đồng bộ hóa và các dịch vụ của Google</translation>
 <translation id="2259659629660284697">Xuất mật khẩu...</translation>
@@ -547,6 +546,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5073204694187207510">Ẩn lưới toàn màn hình</translation>
 <translation id="5082793167783849073">Tạo một nhóm để so sánh nhanh các trang. Để bắt đầu, hãy chạm và giữ một đường dẫn liên kết.</translation>
 <translation id="5087580092889165836">Thêm thẻ</translation>
+<translation id="5098406615395468004">Thêm vào ứng dụng của tôi</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="510275257476243843">Còn 1 giờ</translation>
 <translation id="5123685120097942451">Tab ẩn danh</translation>
@@ -1092,7 +1092,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="9040142327097499898">Cho phép thông báo. Đã tắt vị trí đối với thiết bị này.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video}}</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
-<translation id="9060538597317784206">Xem ứng dụng <ph name="APP_NAME" /> trên Cửa hàng Play. Xếp hạng: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Tắt Yêu cầu trang web cho máy tính</translation>
 <translation id="9065203028668620118">Chỉnh sửa</translation>
 <translation id="9070377983101773829">Bắt đầu tìm kiếm bằng giọng nói</translation>

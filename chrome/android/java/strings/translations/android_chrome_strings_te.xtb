@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">URLను కాపీ చేయి</translation>
 <translation id="2156074688469523661">మిగిలిన సైట్‌లు (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">షేరింగ్</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, వెబ్ యాప్. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" />గా కొనసాగించు</translation>
 <translation id="2234876718134438132">సింక్ మరియు Google సేవలు</translation>
 <translation id="2259659629660284697">పాస్‌వర్డ్‌లను ఎగుమతి చేయండి…</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">పూర్తి స్క్రీన్ గ్రిడ్‌‌ను దాచిపెట్టు</translation>
 <translation id="5082793167783849073">పేజీలను సమూహంగా వర్గీకరించడం ద్వారా వేగంగా సరిపోల్చండి. ప్రారంభించడానికి, లింక్‌ను తాకి &amp; అలాగే నొక్కి ఉంచండి.</translation>
 <translation id="5087580092889165836">కార్డ్‌ను జోడించు</translation>
+<translation id="5098406615395468004">నా యాప్‌లకు జోడించండి</translation>
 <translation id="5100237604440890931">కుదించబడింది - విస్తరింపజేయడానికి క్లిక్ చేయండి.</translation>
 <translation id="510275257476243843">1 గంట మిగిలి ఉంది</translation>
 <translation id="5123685120097942451">అజ్ఞాత ట్యాబ్</translation>
@@ -1092,7 +1092,6 @@
 <translation id="9040142327097499898">నోటిఫికేషన్‌లు అనుమతించబడ్డాయి. ఈ పరికరానికి స్థానం ఆఫ్ చేయబడింది.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# వీడియో}other{# వీడియోలు}}</translation>
 <translation id="9050666287014529139">రహస్య పదబంధం</translation>
-<translation id="9060538597317784206">Play Storeలో <ph name="APP_NAME" /> యాప్‌ను వీక్షించండి.  రేటింగ్: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">డెస్క్‌టాప్ సైట్ అభ్యర్థనను ఆఫ్ చేయండి</translation>
 <translation id="9065203028668620118">సవరించు</translation>
 <translation id="9070377983101773829">వాయిస్ శోధనను ప్రారంభించండి</translation>

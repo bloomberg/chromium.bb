@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Delar</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synk och Googles tjänster</translation>
 <translation id="2259659629660284697">Exportera lösenord …</translation>
@@ -547,6 +546,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5073204694187207510">Dölj helskärmsrutnät</translation>
 <translation id="5082793167783849073">Jämför sidor snabbt genom att skapa en grupp. Börja med att trycka länge på en länk.</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
+<translation id="5098406615395468004">Lägg till i mina appar</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
 <translation id="510275257476243843">1 timme kvar</translation>
 <translation id="5123685120097942451">Inkognitoflik</translation>
@@ -1092,7 +1092,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videor}}</translation>
 <translation id="9050666287014529139">Lösenfras</translation>
-<translation id="9060538597317784206">Visa appen <ph name="APP_NAME" /> i Play Butik. Betyg: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Inaktivera begäran av webbplats för stationär dator</translation>
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="9070377983101773829">Starta röstsökning</translation>

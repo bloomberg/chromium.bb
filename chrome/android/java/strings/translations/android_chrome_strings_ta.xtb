@@ -24,6 +24,7 @@
 <translation id="1175310183703641346">உங்கள் புக்மார்க்குகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகள் இனி உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படாது</translation>
 <translation id="1178581264944972037">இடைநிறுத்து</translation>
 <translation id="1181037720776840403">அகற்று</translation>
+<translation id="1188239144602654184">ARரில் நுழைக</translation>
 <translation id="1197267115302279827">புத்தகக்குறிகளை நகர்த்து</translation>
 <translation id="119944043368869598">அனைத்தையும் அழி</translation>
 <translation id="1201402288615127009">அடுத்து</translation>
@@ -172,7 +173,6 @@
 <translation id="2154710561487035718">URL ஐ நகலெடு</translation>
 <translation id="2156074688469523661">மீதமுள்ள தளங்கள் (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">பகிர்தல்</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, இணைய ஆப்ஸ். <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ஆகத் தொடர்க</translation>
 <translation id="2234876718134438132">ஒத்திசைவு &amp; Google சேவைகள்</translation>
 <translation id="2259659629660284697">கடவுச்சொற்களை ஏற்று…</translation>
@@ -542,6 +542,7 @@
 <translation id="5073204694187207510">முழுத்திரை கட்டத்தை மூடு</translation>
 <translation id="5082793167783849073">ஒரு குழுவை உருவாக்கிப் பக்கங்களை விரைவாக ஒப்பிடலாம். தொடங்க, ஓர் இணைப்பைத் தொட்டுப் பிடிக்கவும்.</translation>
 <translation id="5087580092889165836">கார்டைச் சேர்</translation>
+<translation id="5098406615395468004">எனது ஆப்ஸில் சேர்</translation>
 <translation id="5100237604440890931">சுருக்கப்பட்டது - விரிவாக்க, கிளிக் செய்யவும்.</translation>
 <translation id="510275257476243843">1 மணிநேரம் மீதமுள்ளது</translation>
 <translation id="5123685120097942451">மறைநிலைத் தாவல்</translation>
@@ -589,6 +590,7 @@
 <translation id="5447765697759493033">இந்தத் தளம் மொழிபெயர்க்கப்படாது</translation>
 <translation id="545042621069398927">பதிவிறக்கத்தின் வேகத்தை அதிகப்படுத்துகிறது.</translation>
 <translation id="5456381639095306749">பக்கத்தைப் பதிவிறக்குக</translation>
+<translation id="5475862044948910901">'ஆக்மெண்ட்டட் ரியாலிட்டி' அமர்வைத் தொடங்கவா?</translation>
 <translation id="548278423535722844">வரைபடப் பயன்பாட்டில் திற</translation>
 <translation id="5487521232677179737">தரவை அழி</translation>
 <translation id="5494752089476963479">குறுக்கிடும் அல்லது தவறாக வழிநடத்தும் விளம்பரங்களைக் காட்டும் தளங்களில் விளம்பரங்களைத் தடு</translation>
@@ -851,6 +853,11 @@
 <translation id="7352939065658542140">வீடியோ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{தேர்ந்தெடுத்த 1 உருப்படியைப் பகிரும்}other{தேர்ந்தெடுத்த # உருப்படிகளைப் பகிரும்}}</translation>
 <translation id="7359002509206457351">கட்டண முறைகளை அணுகுவதற்கான அனுமதி</translation>
+<translation id="7365126855094612066">இந்த அமர்வின் போது தளத்தால் பின்வருபவற்றைச் செய்ய இயலும்:
+• உங்களைச் சுற்றியுள்ள இடத்தின் 3D மேப்பை உருவாக்கலாம்
+• கேமரா நகர்வைக் கண்காணிக்கலாம்
+
+இந்தத் தளத்தால் கேமராவைக் கட்டுப்படுத்த இயலாது. கேமராவின் படங்களை நீங்கள் மட்டுமே பார்க்க முடியும்.</translation>
 <translation id="7375125077091615385">வகை:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1077,7 +1084,6 @@
 <translation id="9040142327097499898">அறிவிப்புகள் அனுமதிக்கப்படுகின்றன. இந்தச் சாதனத்திற்கான இருப்பிடம் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# வீடியோ}other{# வீடியோக்கள்}}</translation>
 <translation id="9050666287014529139">கடவுச்சொற்றொடர்</translation>
-<translation id="9060538597317784206">Play Store இல் <ph name="APP_NAME" /> பயன்பாட்டைப் பார்க்கவும்.  மதிப்பீடு: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">டெஸ்க்டாப் தளத்திற்கான கோரிக்கையை முடக்கு</translation>
 <translation id="9065203028668620118">திருத்து</translation>
 <translation id="9070377983101773829">குரல் தேடலைத் தொடங்கு</translation>

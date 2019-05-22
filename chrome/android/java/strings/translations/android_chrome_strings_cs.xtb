@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2156074688469523661">Zbývající weby (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Sdílení</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikace <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Pokračovat jako uživatel <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synchronizace a služby Google</translation>
 <translation id="2259659629660284697">Exportovat hesla…</translation>
@@ -547,6 +546,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5073204694187207510">Skrýt celoobrazovkovou mřížku</translation>
 <translation id="5082793167783849073">Rychle stránky porovnejte tím, že vytvoříte skupinu. Chcete-li začít, podržte odkaz.</translation>
 <translation id="5087580092889165836">Přidat kartu</translation>
+<translation id="5098406615395468004">Přidat mezi moje aplikace</translation>
 <translation id="5100237604440890931">Sbaleno – kliknutím rozbalíte</translation>
 <translation id="510275257476243843">Zbývá: 1 h</translation>
 <translation id="5123685120097942451">Anonymní karta</translation>
@@ -1092,7 +1092,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="9040142327097499898">Oznámení jsou povolena. Poloha je v tomto zařízení vypnutá.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}few{# videa}many{# videa}other{# videí}}</translation>
 <translation id="9050666287014529139">Heslová fráze</translation>
-<translation id="9060538597317784206">Zobrazit aplikaci <ph name="APP_NAME" /> v Obchodě Play. Hodnocení: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Vypnout funkci Verzi webu pro PC</translation>
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="9070377983101773829">Spustit hlasové vyhledávání</translation>

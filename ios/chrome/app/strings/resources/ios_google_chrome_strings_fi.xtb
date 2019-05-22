@@ -1,7 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1282031177488366470">Auta parantamaan Chromen ominaisuuksia ja suorituskykyä</translation>
 <translation id="1326317727527857210">Käytä välilehtiä muilta laitteiltasi kirjautumalla Chromeen.</translation>
+<translation id="1682483655351012182">Chrome-datan synkronointi</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chromen tietosuojailmoitus</translation>
 <translation id="1863312987075920112">Käyttämällä tätä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK_TOS" />käyttöehdot<ph name="END_LINK_TOS" /> ja <ph name="BEGIN_LINK_PRIVACY" />tietosuojailmoituksen<ph name="END_LINK_PRIVACY" />.</translation>

@@ -158,6 +158,7 @@
 <translation id="3308453408813785101">ל-<ph name="USER_EMAIL_ADDRESS" /> תהיה עדיין אפשרות להיכנס לחשבון מאוחר יותר.</translation>
 <translation id="3321628682574733415">קוד הורה שגוי</translation>
 <translation id="332587331255250389">יש להחליף את הסוללה</translation>
+<translation id="3335825575923019462">הקליקים האוטומטיים יושבתו. האם להמשיך?</translation>
 <translation id="3351879221545518001">מתבצעת עכשיו העברה של מסך.</translation>
 <translation id="3364721542077212959">כלי סטיילוס</translation>
 <translation id="3368922792935385530">מחובר</translation>
@@ -399,6 +400,7 @@
 <translation id="7348093485538360975">מקלדת על המסך</translation>
 <translation id="735745346212279324">‏VPN מנותק</translation>
 <translation id="7377169924702866686">‏Caps Lock מופעל.</translation>
+<translation id="7378594059915113390">פקדי מדיה</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> שניות</translation>
 <translation id="7398254312354928459">חיבור הרשת הוחלף</translation>
 <translation id="7405710164030118432">‏כדי לבטל את נעילת המכשיר, יש להזין את קוד גישת ההורה של Family Link</translation>
@@ -486,6 +488,7 @@
 <translation id="8649101189709089199">הקראה</translation>
 <translation id="8652175077544655965">סגירת ההגדרות</translation>
 <translation id="8653151467777939995">צפייה בהגדרות של הודעות. ההודעות מופעלות</translation>
+<translation id="8664483332071009680">האם להשבית את הקליקים האוטומטיים?</translation>
 <translation id="8664753092453405566">צפייה ברשימת הרשתות. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">חובר מטען בעל מתח נמוך</translation>

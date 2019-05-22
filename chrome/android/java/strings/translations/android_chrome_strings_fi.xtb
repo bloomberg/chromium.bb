@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="2156074688469523661">Jäljellä olevat sivustot (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Jakaminen</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, verkkosovellus. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Jatka tilillä <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Synkronointi ja Google-palvelut</translation>
 <translation id="2259659629660284697">Vie salasanat…</translation>
@@ -547,6 +546,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5073204694187207510">Piilota koko näytön ruudukko</translation>
 <translation id="5082793167783849073">Luo ryhmä vertaillaksesi sivuja nopeasti. Aloita koskettamalla linkkiä pitkään.</translation>
 <translation id="5087580092889165836">Lisää kortti</translation>
+<translation id="5098406615395468004">Lisää omiin sovelluksiin</translation>
 <translation id="5100237604440890931">Tiivistetty – laajenna klikkaamalla.</translation>
 <translation id="510275257476243843">1 tunti jäljellä</translation>
 <translation id="5123685120097942451">Incognito-välilehti</translation>
@@ -830,6 +830,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7062545763355031412">Hyväksy ja vaihda tiliä</translation>
 <translation id="7063006564040364415">Synkronointipalvelimeen ei saada yhteyttä.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 valittu}other{# valittu}}</translation>
+<translation id="7071521146534760487">Hallinnoi tiliä</translation>
 <translation id="7077143737582773186">Secure Digital</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> valittu. Toimintoja on käytettävissä näytön yläosassa.</translation>
 <translation id="7121362699166175603">Tyhjentää historian ja osoitekentän automaattiset täydennykset. Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1092,7 +1093,6 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="9040142327097499898">Ilmoitukset sallitaan. Sijainti on poissa käytöstä tällä laitteella.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videota}}</translation>
 <translation id="9050666287014529139">Tunnuslause</translation>
-<translation id="9060538597317784206">Näytä sovellus <ph name="APP_NAME" /> Play Kaupassa. Luokitus: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Poista käytöstä Käytä tietokoneversiota</translation>
 <translation id="9065203028668620118">Muokkaa</translation>
 <translation id="9070377983101773829">Aloita puhehaku</translation>

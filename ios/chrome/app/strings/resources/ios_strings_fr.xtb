@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Erreur</translation>
 <translation id="1172898394251786223">Champ suivant</translation>
 <translation id="1176932207622159128">Imposs. enreg. image</translation>
+<translation id="1180526666083833456">Synchroniser et personnaliser les données sur tous les appareils.</translation>
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1201530049782216880">Nouvel onglet de navigation privée</translation>
 <translation id="1209206284964581585">Masquer pour le moment</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">4 dernières semaines</translation>
 <translation id="1407135791313364759">Tout ouvrir</translation>
 <translation id="1430915738399379752">Imprimer</translation>
+<translation id="1436290164580597469">Saisissez la phrase secrète pour lancer la synchronisation.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> éléments</translation>
 <translation id="1491277525950327607">Appuyer deux fois pour activer/désactiver le paramètre</translation>
 <translation id="152234381334907219">Jamais enregistrés</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Afficher le mot de passe</translation>
 <translation id="2481538920734869610">AJOUTER UN COMPTE</translation>
 <translation id="2497852260688568942">Votre administrateur a désactivé la synchronisation</translation>
+<translation id="2500374554657206846">Options d'enregistrement des mots de passe</translation>
 <translation id="2523363575747517183">Ce site Web a tenté à plusieurs reprises d'ouvrir une autre application.</translation>
 <translation id="2529021024822217800">Tout ouvrir</translation>
+<translation id="2570206273416014374">Envoie des cookies et des recherches effectuées à partir de la barre d'adresse et du champ de recherche à votre moteur de recherche par défaut.</translation>
 <translation id="2572712655377361602">Les règles relatives aux appareils ont bloqué l'accès à vos photos.</translation>
 <translation id="2584132361465095047">Ajouter un compte…</translation>
 <translation id="2625189173221582860">Mot de passe copié</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Fermer tous les onglets de navigation privée</translation>
 <translation id="3533436815740441613">Nouvel onglet</translation>
 <translation id="3551320343578183772">Fermer l'onglet</translation>
+<translation id="3581564640715911333">Proposer de traduire les pages dans d'autres langues</translation>
 <translation id="3588820906588687999">Ouvrir l'image dans un nouvel onglet</translation>
 <translation id="3603009562372709545">Copier l'URL du lien</translation>
 <translation id="3607167657931203000">Saisie automatique</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Précharger pages Web</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3771033907050503522">Ongl. navig. priv.</translation>
+<translation id="3775743491439407556">La synchronisation ne fonctionne pas</translation>
 <translation id="3779810277399252432">Aucune connexion Internet.</translation>
 <translation id="3783017676699494206">Enregistrer l'image</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">Pour scanner un code QR, activez l'appareil photo depuis les paramètres</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="430793432425771671">Tout synchroniser</translation>
+<translation id="4338650699862464074">Envoie à Google les URL des pages que vous consultez.</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
 <translation id="4370827530403103842">La synchronisation ne fonctionne pas. Appuyez pour corriger.</translation>
 <translation id="4375040482473363939">Rechercher via un code QR</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="441868831736628555">Avis de confidentialité</translation>
+<translation id="4454246407045105932">Ajouter une langue</translation>
 <translation id="4476574785019001431">Paramètres</translation>
 <translation id="4496373720959965247">Ajoutez des onglets pour naviguer d'une page à l'autre</translation>
 <translation id="4508750114462689118">Fermer la promo de connexion</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Recherche sur Google</translation>
 <translation id="4619615317237390068">Onglets d'autres appareils</translation>
 <translation id="4620246317052452550">Pages lues</translation>
+<translation id="4630540211544979320">Traduire les pages</translation>
 <translation id="4636930964841734540">Infos</translation>
 <translation id="4659667755519643272">Lancer le sélecteur d'onglets</translation>
 <translation id="4666531726415300315">Connecté en tant que <ph name="EMAIL" />.
@@ -248,7 +257,9 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 
 Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 article non lu dans la liste de lecture.</translation>
+<translation id="4818522717893377262">Ajouter une langue…</translation>
 <translation id="481968316161811770">Cookies/données site</translation>
+<translation id="4833786495304741580">Envoie automatiquement des statistiques d'utilisation et des rapports d'erreur à Google</translation>
 <translation id="4840495572919996524">Vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisés avec votre compte Google.</translation>
 <translation id="4854345657858711387">Définir un code secret</translation>
 <translation id="4860895144060829044">Appeler</translation>
@@ -289,6 +300,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5548760955356983418">Avec Handoff, vous pouvez commencer à consulter un site Web sur cet appareil et poursuivre votre lecture facilement sur votre Mac. Le site Web actuellement ouvert apparaît alors dans le Dock.
 
 Handoff doit également être activé dans la section "Général" des paramètres, et vous devez utiliser le même compte iCloud sur vos appareils.</translation>
+<translation id="5551897871312988470">Proposer de traduire</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5614553682702429503">Enregistrer le mot de passe ?</translation>
 <translation id="5626245204502895507">Impossible de télécharger le fichier pour le moment.</translation>
@@ -336,6 +348,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6187302354554850004">Dernière synchro : <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Non lus</translation>
 <translation id="6196207969502475924">Recherche vocale</translation>
+<translation id="6219688215832490856">Ne jamais traduire</translation>
 <translation id="6254066287920239840">Ouvrir les liens dans l'application et non dans le navigateur.</translation>
 <translation id="6255097610484507482">Modifier la carte de paiement</translation>
 <translation id="6303969859164067831">Se déconnecter et désactiver la synchronisation</translation>
@@ -390,6 +403,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6973630695168034713">Dossiers</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">Gérer votre compte Google</translation>
 <translation id="7004499039102548441">Onglets récents</translation>
 <translation id="7006788746334555276">Paramètres de contenu</translation>
 <translation id="7015203776128479407">La configuration de la synchronisation initiale n'était pas terminée. La synchronisation est désactivée.</translation>
@@ -460,6 +474,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8059533439631660104">Réduit la section.</translation>
 <translation id="806745655614357130">Conserver mes données à part</translation>
 <translation id="8073670137947914548">Téléchargement terminé</translation>
+<translation id="8073872304774253879">Améliorer les recherches et la navigation</translation>
 <translation id="8076014560081431679">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Vous pouvez télécharger des fichiers. Différentes options sont disponibles au bas de l'écran.</translation>
 <translation id="8131740175452115882">Confirmer</translation>

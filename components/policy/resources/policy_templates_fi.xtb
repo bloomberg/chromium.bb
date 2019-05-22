@@ -1050,6 +1050,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos AutoplayAllowed-käytännön arvoksi on määritetty epätosi, kaikki tässä käytännössä määritetyt URL-mallit voidaan silti toistaa.
 
       Huomaa, että jos <ph name="PRODUCT_NAME" /> on käytössä ja tämä käytäntö muuttuu, sitä sovelletaan vain uusiin avattuihin välilehtiin. Tämän vuoksi jotkin välilehdet saattavat edelleen noudattaa edellistä käytäntöä.</translation>
+<translation id="284288632677954003">URL-osoite XML-tiedostoon, jossa luetellut URL-osoitteet eivät koskaan aiheuta selaimen vaihtoa.</translation>
 <translation id="285480231336205327">Ota suuri kontrasti -tila käyttöön</translation>
 <translation id="2854919890879212089">Kun tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> valitsee Tulostuksen esikatselu ‑ikkunassa lähtökohtaisesti järjestelmän oletustulostimen viimeksi käytetyn tulostimen sijaan.
 
@@ -1220,6 +1221,15 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3096595567015595053">Luettelo käytössä olevista laajennuksista</translation>
 <translation id="3101501961102569744">Valitse, miten välityspalvelimen asetukset määritetään</translation>
 <translation id="3101709781009526431">Aika ja päivämäärä</translation>
+<translation id="3114411414586006215">Tämä käytäntö määrittää luettelon sivustoista, jotka eivät koskaan aiheuta selaimen vaihtoa.
+
+      Huomaa, että tähän luetteloon voidaan lisätä elementtejä myös käytännön <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> kautta.
+
+      Jos tätä käytäntöä ei ole määritetty, luetteloon ei lisätä sivustoja.
+
+      Jos tämä käytäntö on määritetty, kutakin merkintää käsitellään sääntönä tavalla, joka vastaa käytäntöä <ph name="URL_LIST_POLICY_NAME" />. Soveltamislogiikka on kuitenkin päinvastainen: kun säännölle löytyy vastaavuus, vaihtoehtoista selainta ei avata.
+
+      Toisin kuin käytännön <ph name="URL_LIST_POLICY_NAME" /> tapauksessa, sääntöjä sovelletaan molempiin suuntiin. Tarkemmin sanoen tämä käytäntö määrittää, avaako <ph name="IE_PRODUCT_NAME" /> nämä URL-osoitteet selaimessa <ph name="PRODUCT_NAME" />, kun Internet Explorer ‑laajennus on käytössä.</translation>
 <translation id="3117676313396757089">Varoitus: DHE poistetaan tuotteesta <ph name="PRODUCT_NAME" /> version 57 jälkeen (arviolta maaliskuussa 2017), eikä tämä käytäntö enää toimi sen jälkeen.
 
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on epätosi, TLS:n DHE-salaustekniikoita ei oteta käyttöön. Jos yhteensopivuus vanhentuneen palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tosi. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen määritykset tulee tehdä uudelleen.
@@ -1413,6 +1423,17 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3550875587920006460">Sallii oman aikataulun luomisen päivitysten tarkistamiselle. Tämä koskee kaikkia käyttäjiä ja kaikkia laitteen käyttöliittymiä. Luomisen jälkeen laite tarkistaa päivitykset aikataulun mukaan. Käytäntö on poistettava, jotta muut ajoitetut päivitysten tarkistukset voidaan peruuttaa.</translation>
 <translation id="355118380775352753">Sivustot, jotka avataan vaihtoehtoisessa selaimessa</translation>
 <translation id="3554984410014457319">Salli Google Assistantin kuunnella äänikomento</translation>
+<translation id="3557208865710006939">Pakottaa oikoluvun kielten käyttöönoton. Luettelossa olevat kielet ohitetaan, jos niitä ei tunnisteta.
+
+      Jos tämä käytäntö on käytössä, oikoluku otetaan käyttöön määritettyjen ja käyttäjän valitsemien kielten osalta.
+
+      Jos tämä käytäntö on poistettu käytöstä tai sitä ei ole määritetty, käyttäjän oikolukuasetuksiin ei tehdä muutoksia.
+
+      Jos käytännön <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> arvoksi asetetaan epätosi, tällä käytännöllä ei ole vaikutusta.
+
+      Jos jokin kieli on määritetty sekä tässä käytännössä että käytännössä <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, tämä käytäntö on etusijalla ja kielen oikoluku otetaan käyttöön.
+
+      Tällä hetkellä tuettuja kieliä ovat seuraavat: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Käyttäjät voivat määrittää Chrome-käyttöjärjestelmän julkaisuversion</translation>
 <translation id="3575011234198230041">HTTP-todennus</translation>
 <translation id="3577251398714997599">Häiritseviä mainoksia sisältävien sivustojen mainosasetukset</translation>
@@ -1764,6 +1785,9 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
           Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
 
           Jos käytäntöä ei ole määritetty, päälle jäävät näppäimet poistetaan oletuksena käytöstä, mutta käyttäjä voi ottaa ne käyttöön milloin tahansa.</translation>
+<translation id="4171331498167688968">Jos käytännön arvo on epätosi, kolmannen osapuolen ohjelmistot voivat lisätä suoritettavaa koodia Chromen prosesseihin. Jos käytännölle ei ole määritetty arvoa tai sen arvo on tosi, kolmannen osapuolen ohjelmistoja estetään lisäämästä suoritettavaa koodia Chromen prosesseihin.
+
+      Tämän käytännön arvosta huolimatta selain ei tällä hetkellä estä kolmannen osapuolen ohjelmistoja lisäämästä suoritettavaa koodia selaimen prosesseihin tietokoneella, joka on liitetty toimialueeseen <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" />-oletusasetus</translation>
 <translation id="4192388905594723944">URL-osoite etäkäytön isännän todennustunnuksen varmentamista varten</translation>
 <translation id="4203389617541558220">Rajoita laitteen käyttöaikaa ajoittamalla automaattisia uudelleenkäynnistyksiä.
@@ -2120,6 +2144,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
           Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
 <translation id="5085647276663819155">Poista tulostusesikatselu käytöstä</translation>
 <translation id="5090209345759901501">Sovella Flash-sisällön asetusta koko sisältöön</translation>
+<translation id="5090791951240382356">Salli eri lähteistä peräisin olevien sanakirjakäytäntöjen yhdistäminen</translation>
 <translation id="5093540029655764852">Määrittää asiakkaan konetilin salasanan vaihtovälin (päivinä). Salasana on asiakkaan sattumanvaraisesti luoma, eikä se näy käyttäjälle.
 
       Konesalasanat on vaihdettava säännöllisesti, aivan kuten käyttäjien salasanat. Tämän käytännön poistaminen käytöstä tai päivien lukumäärän lisääminen saattaa vaikuttaa haitallisesti tietoturvaan, sillä se antaa mahdollisille hyökkääjille enemmän aikaa konetilin salasanan löytämiseen ja käyttämiseen.
@@ -3030,6 +3055,17 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       </translation>
 <translation id="6922884955650325312">Estä <ph name="FLASH_PLUGIN_NAME" />-laajennus.</translation>
 <translation id="6923366716660828830">Määrittää oletushakupalvelun nimen. Jos nimi jätetään tyhjäksi tai käytäntöä ei ole määritetty, käytetään haku-URL-osoitteen määrittämää isäntänimeä. Tämä käytäntö on voimassa vain jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
+<translation id="6924223708804692571">Pakottaa oikoluvun kielten poistamisen käytöstä. Luettelossa olevat kielet ohitetaan, jos niitä ei tunnisteta.
+
+      Jos tämä käytäntö on käytössä, oikoluku poistetaan käytöstä määritettyjen kielten osalta. Jos jotakin kieltä ei mainita luettelossa, käyttäjä voi yhä ottaa sen oikoluvun käyttöön tai poistaa sen käytöstä.
+
+      Jos tämä käytäntö on poistettu käytöstä tai sitä ei ole määritetty, käyttäjän oikolukuasetuksiin ei tehdä muutoksia.
+
+      Jos käytännön <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> arvoksi asetetaan epätosi, tällä käytännöllä ei ole vaikutusta.
+
+      Jos jokin kieli on määritetty sekä tässä käytännössä että käytännössä <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, jälkimmäinen käytäntö on etusijalla ja kielen oikoluku otetaan käyttöön.
+
+      Tällä hetkellä tuettuja kieliä ovat seuraavat: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Pitkän sivun mukaisen kaksipuolisen tulostuksen salliminen</translation>
 <translation id="6931242315485576290">Poista tietojen synkronointi Googlen kanssa käytöstä</translation>
 <translation id="6936894225179401731">Määrittää välityspalvelimen samanaikaisten yhteyksien enimmäismäärän.
@@ -3166,6 +3202,15 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytäntö on määritetty, käyttäjä ei voi vaihtaa sovelluksia.
 
       Jos käytäntöä ei ole määritetty, käyttäjä voi vaihtaa käynnistyspalkkiin kiinnitettyjä sovelluksia.</translation>
+<translation id="713121532817834879">Tämä käytäntö on URL-osoite, jonka kohde-XML-tiedosto käyttää samaa muotoa kuin Internet Explorerin käytäntö <ph name="IEEM_SITELIST_POLICY" />. Tällöin säännöt ladataan XML-tiedostosta, mutta niitä ei jaeta Internet Explorerille.
+
+      XML-tiedoston sääntöjä sovelletaan samaan tapaan kuin käytännössä <ph name="GREYLIST_POLICY_NAME" />. Säännöt siis määrittävät, että <ph name="PRODUCT_NAME" /> ei voi avata vaihtoehtoista selainta eikä vaihtoehtoinen selain voi avata selainta <ph name="PRODUCT_NAME" />.
+
+      Jos tätä käytäntöä ei ole määritetty tai sen arvoksi ei ole asetettu kelvollista URL-osoitetta, <ph name="PRODUCT_NAME" /> ei käytä sitä sellaisten sääntöjen lähteenä, jotka eivät aiheuta selaimen vaihtoa.
+
+      Jos tämän käytännön arvo on kelvollinen URL-osoite, <ph name="PRODUCT_NAME" /> lataa sivustoluettelon kyseisestä osoitteesta ja soveltaa sääntöjä aivan kuin ne olisi määritetty käytännössä <ph name="SITELIST_POLICY_NAME" />.
+
+      Lisätietoja Internet Explorerin käytännöstä <ph name="IEEM_SITELIST_POLICY" /> saat täältä: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL-osoitteet, joille sallitaan pääsy videon kaappauslaitteisiin erikseen lupaa kysymättä</translation>
 <translation id="7138678301420049075">Muu</translation>
 <translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" /> saa ohjeen käyttää tietyn nimistä tehtävien ajoitusmääritystä.
@@ -3212,6 +3257,15 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Automaattinen toisto on sallittu vain käytännössä <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> ilmoitetuille verkkotunnuksille. Jos haluat sallia automaattisen toiston kaikille sivustoille, sinun kannattaa lisätä luetteloon http://* ja https://*.
 
           Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa asetusta manuaalisesti.</translation>
+<translation id="7222749588229362483">Sallii valittujen käytäntöjen yhdistämisen, kun ne tulevat eri lähteistä mutta niiden laajuus ja taso on sama.
+
+        Tällöin kummankin lähteen sanakirjan ensimmäisen tason avaimet yhdistetään. Jos avainten välillä on ristiriitaa, korkeimman prioriteetin lähteestä tulevaa avainta käytetään.
+
+        Jos käytäntö on luettelossa, kahden lähteen välillä on ristiriita ja niiden laajuus ja taso on sama, arvot yhdistetään uudeksi käytäntösanakirjaksi.
+
+        Jos käytäntö on luettelossa ja kahden lähteen ja eri laajuuksien ja/tai tasojen välillä on ristiriita, korkeimman prioriteetin käytäntöä sovelletaan.
+
+        Jos käytäntö ei ole luettelossa ja lähteiden, laajuuksien ja/tai tasojen välillä on ristiriita, korkeimman prioriteetin käytäntöä sovelletaan.</translation>
 <translation id="7229975860249300121">Määrittää säännöllisellä lausekkeella, mitkä Google-tilit <ph name="PRODUCT_NAME" /> voi asettaa selaimen päätiliksi, joka valitaan synkronoinnin käyttöönoton yhteydessä.
 
       Jos käyttäjä yrittää asettaa selaimen päätiliksi tilin, joka ei vastaa kuviota, hän näkee virheviestin.
@@ -3834,6 +3888,12 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 
       Jos käytännöksi on määritetty Korvaa, käyttäjän GPO:iden käyttäjäkäytäntö korvataan tietokoneen GPO:iden käyttäjäkäytännöllä (käyttäjän GPO:t jätetään huomiotta).</translation>
 <translation id="8465065632133292531">POST-metodia käyttävän pikahaun URL-osoitteen parametrit</translation>
+<translation id="8465746466645315861">Jos tätä käytäntöä ei ole määritetty, käyttäjä voi ottaa oikoluvun käyttöön tai pois käytöstä kieliasetuksissa.
+
+      Jos käytännön arvoksi asetetaan tosi, oikoluku on käytössä eikä käyttäjä voi poistaa sitä käytöstä. Käyttöjärjestelmissä <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> ja <ph name="LINUX_OS_NAME" /> oikoluvun kieliä on mahdollista hallita yksittäin, jolloin oikoluku on mahdollista poistaa käytöstä poistamalla kaikki tarkistuksen kielet käytöstä. Tämän välttämiseksi voidaan määrittää käytäntö <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, joka pakottaa tietyt kielet käyttöön oikoluvussa.
+
+      Jos tämän käytännön arvoksi asetetaan epätosi, oikoluku on poissa käytöstä eikä käyttäjä voi ottaa sitä käyttöön. Käytännöillä <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> ja <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> ei ole mitään vaikutusta, jos tämän käytännön arvoksi asetetaan epätosi.
+      </translation>
 <translation id="847472800012384958">Älä anna sivustojen näyttää ponnahdusikkunoita</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Tämä karsii https://-alkuisista URL-osoitteista yksityisyyden ja tietoturvan kannalta riskialttiit osat, ennen kuin osoitteet välitetään PAC-skripteille (Proxy Auto Config), joita <ph name="PRODUCT_NAME" /> käyttää välityspalvelimen selvityksen aikana.

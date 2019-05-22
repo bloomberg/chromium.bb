@@ -1032,6 +1032,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis politikken AutoplayAllowed er angivet som Falsk, kan alle angivne webadressemønstre i denne politik stadig afspilles.
 
       Bemærk! Hvis <ph name="PRODUCT_NAME" /> kører, og denne politik ændres, anvendes den kun for nye åbne faner. Nogle faner kan derfor stadig observere den forrige adfærd.</translation>
+<translation id="284288632677954003">Webadresse for en XML-fil, der indeholder webadresser, som aldrig må aktivere et browserskift.</translation>
 <translation id="285480231336205327">Aktivér høj kontrast</translation>
 <translation id="2854919890879212089">Får <ph name="PRODUCT_NAME" /> til at bruge systemets standardprinter som standardvalg i Vis udskrift i stedet for den senest brugte printer.
 
@@ -1202,6 +1203,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3096595567015595053">Liste over aktiverede plugins</translation>
 <translation id="3101501961102569744">Vælg, hvordan du vil angive indstillinger for proxyserveren</translation>
 <translation id="3101709781009526431">Dato og klokkeslæt</translation>
+<translation id="3114411414586006215">Denne politik styrer listen over websites, der aldrig forårsager et browserskift.
+
+      Bemærk, at elementer også kan føjes til denne liste via politikken <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Hvis denne politik ikke konfigureres, føjes der ikke websites til listen.
+
+      Hvis denne politik konfigureres, behandles hvert element som en regel, i stil med politikken <ph name="URL_LIST_POLICY_NAME" />. Logikken er dog vendt om. Regler, der matcher, åbner ikke en alternativ browser.
+
+      I modsætning til <ph name="URL_LIST_POLICY_NAME" /> gælder reglerne i begge retninger. Det betyder, at Internet Explorer-tilføjelsen også styrer, om <ph name="IE_PRODUCT_NAME" /> skal åbne disse webadresser i <ph name="PRODUCT_NAME" />, når tilføjelsen er til stede og aktiveret.</translation>
 <translation id="3117676313396757089">Advarsel! DHE fjernes helt fra <ph name="PRODUCT_NAME" /> efter version 57 (omkring marts 2017), og på det tidspunkt holder denne politik op med at virke.
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres DHE-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at aktivere DHE-krypteringsprogrammer og for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør konfigureres igen.
@@ -1393,6 +1403,17 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3550875587920006460">Tillader, at der fastsættes en tidsplan for søgning efter opdateringer. Denne indstilling gælder for alle brugere og på alle grænseflader på enheden. Når den er angivet, søger enheden efter opdateringer i overensstemmelse med tidsplanen. Hvis du vil annullere planlagte søgninger efter opdateringer, er du nødt til at fjerne politikken.</translation>
 <translation id="355118380775352753">Websites, der skal åbnes i en alternativ browser</translation>
 <translation id="3554984410014457319">Giv Google Assistent tilladelse til at lytte efter den stemmestyrede aktiveringssætning</translation>
+<translation id="3557208865710006939">Gennemtvinger aktivering af stavekontrollens sprog. Sprog på listen, som ikke genkendes, ignoreres.
+
+      Hvis du aktiverer denne politik, aktiveres stavekontrol for de angivne sprog samt de sprog, som brugeren har aktiveret stavekontrol for.
+
+      Hvis du ikke konfigurerer denne politik, eller hvis du deaktiverer den, sker der ingen ændringer af brugerens præferencer for stavekontrol.
+
+      Hvis politikken <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> angives som falsk, har denne politik ingen indvirkning.
+
+      Hvis et sprog er medtaget i både denne politik og politikken <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, har denne politik forrang, og stavekontrol af sproget aktiveres.
+
+      De aktuelt understøttede sprog er følgende: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Brugerne kan konfigurere udgivelseskanalen for Chrome OS</translation>
 <translation id="3575011234198230041">HTTP-godkendelse</translation>
 <translation id="3577251398714997599">Annonceindstilling for websites med påtrængende annoncer</translation>
@@ -1743,6 +1764,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis du angiver denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
           Hvis denne politik ikke angives, er træge taster deaktiveret, men brugeren kan når som helst aktivere funktionen.</translation>
+<translation id="4171331498167688968">Hvis politikken angives som falsk, får tredjepartssoftware tilladelse til at føje eksekverbar kode til Chromes processer. Hvis politikken ikke konfigureres eller angives som sand, kan tredjepartssoftware ikke føje eksekverbar kode til Chromes processer.
+
+      Uafhængigt af værdien for denne politik forhindrer browseren i øjeblikket ikke tredjepartssoftware i at føje eksekverbar kode til sine processer på en maskine, der er tilsluttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="4183229833636799228">Standardindstilling for <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Webadresse til validering af tokenet til klientgodkendelse for fjernadgang</translation>
 <translation id="4203389617541558220">Begræns enhedens oppetid vha. planlagte automatiske genstarter.
@@ -2096,6 +2120,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Denne politik er kun tilgængelig for Windows-forekomster, der er knyttet til et <ph name="MS_AD_NAME" />-domæne, eller Windows 10 Pro- eller Enterprise-forekomster, der er tilmeldt administration af enheder.</translation>
 <translation id="5085647276663819155">Deaktiver udskriftsvisning</translation>
 <translation id="5090209345759901501">Brug indstillingen for Flash-indhold til alt indhold</translation>
+<translation id="5090791951240382356">Tillad sammenfletning af ordbogspolitikker fra forskellige kilder</translation>
 <translation id="5093540029655764852">Angiver, hvor ofte (i dage) en klient ændrer adgangskoden til sin computerkonto. Adgangskoden genereres tilfældigt af klienten og vises ikke for brugeren.
 
       Ligesom brugeradgangskoder bør adgangskoder til computere ændres regelmæssigt. Hvis du deaktiverer denne politik eller angiver et stort antal dage, kan det forringe sikkerheden, da det giver potentielle hackere længere tid til at finde og bruge adgangskoden til computerkontoen.
@@ -3004,6 +3029,17 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       </translation>
 <translation id="6922884955650325312">Bloker <ph name="FLASH_PLUGIN_NAME" />-pluginnet</translation>
 <translation id="6923366716660828830">Angiver navnet på standardsøgemaskinen. Hvis det ikke udfyldes eller angives, vil det hostname, der er angivet af søgewebadressen, blive anvendt. Denne politik overvejes kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
+<translation id="6924223708804692571">Gennemtvinger deaktivering af stavekontrol af sprog. Ikke-genkendte sprog på denne liste ignoreres.
+
+      Hvis du aktiverer denne politik, deaktiveres stavekontrol for de angivne sprog. Brugeren kan stadig aktivere eller deaktivere stavekontrol for sprog, der ikke er på listen.
+
+      Hvis du ikke konfigurerer denne politik, eller hvis du deaktiverer den, sker der ingen ændringer af brugerens præferencer for stavekontrol.
+
+      Hvis politikken <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> angives som falsk, har denne politik ingen indvirkning.
+
+      Hvis et sprog medtages i både denne politik og politikken <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, har sidstnævnte politik forrang, og stavekontrol af sproget aktiveres.
+
+      De aktuelt understøttede sprog er følgende: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Aktivér duplex-udskrivning med lang kant</translation>
 <translation id="6931242315485576290">Deaktiver synkronisering af data med Google</translation>
 <translation id="6936894225179401731">Angiver det maksimale antal sideløbende forbindelser til proxyserveren.
@@ -3140,6 +3176,15 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Hvis denne politik er konfigureret, er applikationssættet fast og kan ikke ændres af brugeren.
 
       Hvis politikken ikke er angivet, kan brugeren ændre listen over fastgjorte apps på applisten.</translation>
+<translation id="713121532817834879">Denne politik er en webadresse, der henviser til en XML-fil i det samme format som Internet Explorers <ph name="IEEM_SITELIST_POLICY" />-politik. Denne indlæser regler fra en XML-fil uden at dele disse regler med Internet Explorer.
+
+      Reglerne i denne XML-fil gælder på samme måde som <ph name="GREYLIST_POLICY_NAME" />. Det betyder, at disse regler forhindrer <ph name="PRODUCT_NAME" /> i at åbne den alternative browser og forhindrer også den alternative browser i at åbne <ph name="PRODUCT_NAME" />.
+
+      Hvis denne politik ikke konfigureres eller ikke angives med en gyldig webadresse, anvender <ph name="PRODUCT_NAME" /> den ikke som en kilde til regler, der ikke aktiverer et browserskift.
+
+      Når denne politik angives med en gyldig webadresse, vil <ph name="PRODUCT_NAME" /> downloade websitelisten fra den pågældende webadresse og anvende reglerne, som hvis de var konfigureret med <ph name="SITELIST_POLICY_NAME" />-politikken.
+
+      Du kan få flere oplysninger om Internet Explorers <ph name="IEEM_SITELIST_POLICY" />-politik på: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Webadresser, der får adgang til videooptagelsesenheder, uden at du skal give tilladelse hertil.</translation>
 <translation id="7138678301420049075">Andet</translation>
 <translation id="7140629953254369759">Instruerer <ph name="PRODUCT_OS_NAME" /> i at bruge den konfiguration af opgaveplanlægning, der identificeres af det angivne navn.
@@ -3187,6 +3232,15 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
           Automatisk afspilning er kun tilladt på domæner, der udtrykkeligt er angivet i politikken <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Hvis du vil aktivere automatisk afspilning på alle websites, kan du eventuelt føje http://* og https://* til denne liste.
 
           Hvis denne politik ikke angives, kan brugeren ændre indstillingen manuelt.</translation>
+<translation id="7222749588229362483">Tillader, at de valgte politikker sammenflettes, når de stammer fra forskellige kilder, med samme omfang og niveau.
+
+        Sammenfletningen omfatter sammenfletning af nøglerne på første niveau fra hver kildes ordbog. Hvis der er uoverensstemmelser mellem nøglerne, anvendes den nøgle, som stammer fra kilden med højeste prioritet.
+
+        Hvis der er en politik på listen, og der er uoverensstemmelser mellem to kilder, sammenflettes værdierne i en ny ordbogspolitik, hvis de har samme omfang og niveau.
+
+        Hvis der er en politik på listen, og der er uoverensstemmelser mellem to kilder, men også mellem forskellige omfang og/eller niveauer, anvendes politikken med den højeste prioritet.
+
+        Hvis der ikke er en politik på listen, og der er uoverensstemmelser mellem kilder, omfang og/eller niveauer, anvendes politikken med den højeste prioritet.</translation>
 <translation id="7229975860249300121">Indeholder et regulært udtryk, som bruges til at afgøre, hvilke Google-konti der kan angives som primære konti for browseren i <ph name="PRODUCT_NAME" /> (dvs. den konto, der vælges i forbindelse med tilmeldingen til synkronisering).
 
       Der vises en fejl, hvis en bruger forsøger at angive en primær konto for browseren med et brugernavn, som ikke stemmer overens med dette mønster.
@@ -3809,6 +3863,12 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 
       Hvis politikken er indstillet til "Erstat", erstattes brugerpolitikken i brugerrelaterede GPO'er med brugerpolitikken i computerrelaterede GPO'er (brugerrelaterede GPO'er ignoreres).</translation>
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
+<translation id="8465746466645315861">Hvis denne politik ikke konfigureres, kan brugeren aktivere eller deaktivere stavekontrol i sprogindstillingerne.
+
+      Hvis denne politik angives som sand, aktiveres stavekontrol, og brugeren kan ikke deaktivere den. Stavekontrollens sprog kan slås til eller fra enkeltvis i <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> og <ph name="LINUX_OS_NAME" />, så brugeren stadig kan deaktivere stavekontrollen ved at deaktivere hvert enkelt sprog. Du undgår dette ved at bruge politikken <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> til at fastholde aktiveringen af bestemte sprog.
+
+      Hvis denne politik angives som falsk, deaktiveres stavekontrollen, og brugeren kan ikke aktivere den. Politikkerne <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> og <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> har ingen indvirkning, når denne politik er angivet som falsk
+      </translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Renser webadresser af typen https:// for følsomme dele vedrørende personlige oplysninger og sikkerhed, før de overføres til PAC-scripter (Proxy Auto Config), som anvendes af <ph name="PRODUCT_NAME" /> under proxyfortolkning.

@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2156074688469523661">Baki tapak (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Perkongsian</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, apl web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Teruskan sebagai <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Segerak dan perkhidmatan Google</translation>
 <translation id="2259659629660284697">Eksport kata laluan…</translation>
@@ -547,6 +546,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5073204694187207510">Sembunyikan grid skrin penuh</translation>
 <translation id="5082793167783849073">Bandingkan halaman dengan pantas dengan membuat kumpulan. Untuk bermula, sentuh &amp; tahan pautan.</translation>
 <translation id="5087580092889165836">Tambah kad</translation>
+<translation id="5098406615395468004">Tambahkan pada apl saya</translation>
 <translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
 <translation id="5123685120097942451">Tab Inkognito</translation>
@@ -830,6 +830,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7062545763355031412">Terima dan tukar akaun</translation>
 <translation id="7063006564040364415">Tidak dapat bersambung ke pelayan yang disegerakkan.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 dipilih}other{# dipilih}}</translation>
+<translation id="7071521146534760487">Urus akaun</translation>
 <translation id="7077143737582773186">Kad SD</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> dipilih. Pilihan tersedia berhampiran bahagian atas skrin</translation>
 <translation id="7121362699166175603">Mengosongkan sejarah dan autoselesai dalam bar alamat. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1092,7 +1093,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="9040142327097499898">Pemberitahuan dibenarkan. Lokasi dimatikan untuk peranti ini.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Video}}</translation>
 <translation id="9050666287014529139">Frasa laluan</translation>
-<translation id="9060538597317784206">Lihat apl <ph name="APP_NAME" /> di Gedung Play.  Penilaian: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Matikan Minta tapak desktop</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9070377983101773829">Mulakan carian suara</translation>

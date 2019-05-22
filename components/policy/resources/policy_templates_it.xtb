@@ -1022,6 +1022,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se la norma AutoplayAllowed è impostata su False, i pattern URL configurati in questa norma potranno ancora essere riprodotti.
 
       Tieni presente che, se <ph name="PRODUCT_NAME" /> è in esecuzione e la norma cambia, sarà applicata solo alle nuove schede aperte. Pertanto alcune schede potrebbero continuare a osservare il comportamento precedente.</translation>
+<translation id="284288632677954003">URL di un file XML che contiene URL che non devono mai attivare il cambio di browser.</translation>
 <translation id="285480231336205327">Attiva modalità ad alto contrasto</translation>
 <translation id="2854919890879212089">Consente di impostare in <ph name="PRODUCT_NAME" /> l'uso della stampante predefinita del sistema, anziché della stampante usata più di recente, come opzione predefinita della finestra Anteprima di stampa.
 
@@ -1188,6 +1189,15 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3096595567015595053">Elenco dei plug-in attivati</translation>
 <translation id="3101501961102569744">Scegli come specificare le impostazioni del server proxy</translation>
 <translation id="3101709781009526431">Data e ora</translation>
+<translation id="3114411414586006215">Questo criterio consente di stabilire l'elenco di siti web che non causeranno mai un cambio di browser.
+
+      Tieni presente che puoi aggiungere elementi all'elenco anche tramite il criterio <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Se il criterio non viene impostato, nessun sito web viene aggiunto all'elenco.
+
+      Se viene impostato, ogni elemento è considerato come una regola, in modo simile al criterio <ph name="URL_LIST_POLICY_NAME" />. Tuttavia, la logica funziona al contrario: le regole con una corrispondenza non aprono un browser alternativo.
+
+      A differenza del criterio <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, il criterio stabilisce se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Avviso. DHE sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 57 (nel periodo di marzo 2017), dopodiché questa norma non sarà più attiva.
 
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia DHE in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per attivare i pacchetti di crittografia DHE e per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.
@@ -1380,6 +1390,17 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3550875587920006460">Consente di impostare una pianificazione personalizzata per verificare la presenza di aggiornamenti. La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo. Dopo aver impostato il criterio, il dispositivo controllerà se ci sono aggiornamenti disponibili in base alla pianificazione. Il criterio deve essere rimosso per annullare ulteriori controlli pianificati della disponibilità di aggiornamenti.</translation>
 <translation id="355118380775352753">Siti web da aprire in un browser alternativo</translation>
 <translation id="3554984410014457319">Consente all'Assistente Google di ascoltare la frase di attivazione vocale</translation>
+<translation id="3557208865710006939">Forza l'attivazione delle lingue per correttore ortografico. Le lingue non riconosciute nell'elenco verranno ignorate.
+
+      Se il criterio è attivato, il correttore ortografico verrà attivato per le lingue specificate, oltre alle lingue per le quali l'utente ha attivato il correttore ortografico.
+
+      Se il criterio non è impostato o se viene disattivato, le preferenze sul correttore ortografico dell'utente rimarranno invariate.
+
+      Se il criterio <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> è impostato su false, questo criterio non avrà effetto.
+
+      Se una lingua è inclusa sia in questo criterio che nel criterio <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, questo criterio avrà la priorità e verrà attivata la lingua per il correttore ortografico.
+
+      Le lingue attualmente supportate sono: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Gli utenti possono configurare il canale di rilascio di Chrome OS</translation>
 <translation id="3575011234198230041">Autenticazione HTTP</translation>
 <translation id="3577251398714997599">Impostazione annunci per i siti con annunci invasivi</translation>
@@ -1719,6 +1740,9 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
           Se questo criterio viene impostato, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, i tasti permanenti sono inizialmente disattivati, ma possono essere attivati dall'utente in qualsiasi momento.</translation>
+<translation id="4171331498167688968">Se il criterio viene impostato su false, i programmi software di terze parti potranno inserire codice eseguibile nei processi di Chrome. Se il criterio non viene impostato o viene impostato su true, i programmi software di terze parti non potranno inserire codice eseguibile nei processi di Chrome.
+
+      A prescindere dal valore di questo criterio, il browser al momento non impedisce a software di terze parti di inserire codice eseguibile nei propri processi su una macchina collegata a un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Impostazione predefinita per il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per la convalida del token di autenticazione del client di accesso remoto</translation>
 <translation id="4203389617541558220">Consente di limitare il tempo di attività del dispositivo programmando riavvii automatici.
@@ -2069,6 +2093,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="5085647276663819155">Disattiva anteprima di stampa</translation>
 <translation id="5090209345759901501">Applica l'impostazione dei contenuti Flash a tutti i contenuti</translation>
+<translation id="5090791951240382356">Consenti l'unione dei criteri del dizionario provenienti da origini diverse</translation>
 <translation id="5093540029655764852">Consente di specificare la frequenza (in giorni) alla quale un client modifica la password dell'account del computer. La password è generata in modo casuale dal client e non è visibile all'utente.
 
       Come per le password dell'utente, anche le password del computer andrebbero modificate regolarmente. Se disattivi questa norma o imposti un numero di giorni elevato, la sicurezza ne risentirà negativamente poiché in questo modo concederai più tempo ai potenziali utenti malintenzionati per trovare la password dell'account del computer e utilizzarla.
@@ -2970,6 +2995,17 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
       </translation>
 <translation id="6922884955650325312">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Consente di specificare il nome del provider di ricerca predefinito. Se il nome non viene impostato verrà utilizzato il nome host specificato nell'URL di ricerca. Questa norma viene considerata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
+<translation id="6924223708804692571">Forza la disattivazione delle lingue per correttore ortografico. Le lingue non riconosciute di quell'elenco verranno ignorate.
+
+      Se il criterio viene attivato, il correttore ortografico verrà disattivato per le lingue specificate. L'utente può comunque attivare o disattivare il correttore ortografico per le lingue che non sono nell'elenco.
+
+      Se il criterio non è impostato o se viene disattivato, le preferenze sul correttore ortografico dell'utente rimarranno invariate.
+
+      Se il criterio <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> è impostato su false, questo criterio non avrà effetto.
+
+      Se una lingua è inclusa sia in questo criterio che nel criterio <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, quest'ultimo avrà priorità e verrà attivata la lingua per il correttore ortografico.
+
+      Le lingue attualmente supportate sono: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Attiva la stampa fronte/retro su lato lungo</translation>
 <translation id="6931242315485576290">Disattiva la sincronizzazione dei dati con Google</translation>
 <translation id="6936894225179401731">Consente di specificare il numero massimo di connessioni simultanee al server proxy.
@@ -3105,6 +3141,15 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 Se questa norma viene configurata, il gruppo di applicazioni è fisso e non può essere modificato dagli utenti.
 
 Se questa norma non viene impostata gli utenti possono modificare l'elenco di applicazioni bloccate in Avvio applicazioni.</translation>
+<translation id="713121532817834879">Questo criterio è un URL che rimanda a un file XML nello stesso formato del criterio <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer. Se viene impostato, le regole vengono caricate da un file XML senza essere condivise con Internet Explorer.
+
+      Le regole in questo file XML si applicano come nel criterio <ph name="GREYLIST_POLICY_NAME" />. Significa che queste regole impediscono a <ph name="PRODUCT_NAME" /> di aprire un browser alternativo ed evitano inoltre che il browser alternativo apra <ph name="PRODUCT_NAME" />.
+
+      Se il criterio non viene impostato o non è impostato su un URL valido, <ph name="PRODUCT_NAME" /> non lo utilizza come origine di regole che non attivano il cambio del browser.
+
+      Se è impostato su un URL valido, <ph name="PRODUCT_NAME" /> scarica l'elenco dei siti da tale URL e applica le regole come se fossero state configurate con il criterio <ph name="SITELIST_POLICY_NAME" />.
+
+      Per ulteriori informazioni sul criterio<ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video senza richieste</translation>
 <translation id="7138678301420049075">Altro</translation>
 <translation id="7140629953254369759">Indica a <ph name="PRODUCT_OS_NAME" /> di usare la configurazione del programma di pianificazione delle attività identificato dal nome specificato.
@@ -3149,6 +3194,15 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
           La riproduzione automatica è consentita soltanto per i domini elencati esplicitamente nella norma <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se vuoi attivare la riproduzione automatica per tutti i siti, potresti aggiungere http://* e https://* a questo elenco.
 
           Se questa norma non viene impostata, l'utente potrà cambiare manualmente questa impostazione.</translation>
+<translation id="7222749588229362483">Consente di unire i criteri selezionati quando provengono da origini diverse, con stesso ambito e livello.
+
+        L'unione avviene tra le chiavi di livello superiore del dizionario da ciascuna origine. In caso di conflitto tra chiavi, viene applicata quella che proviene dall'origine con la priorità massima.
+
+        Se un criterio è nell'elenco, in caso di conflitto tra due origini, purché facciano riferimento agli stessi ambiti e allo stesso livello, i valori verranno uniti in un nuovo dizionario del criterio.
+
+        Se un criterio è nell'elenco, nel caso ci sia conflitto tra due origini, ma anche tra ambito e/o livello, verrà applicato il criterio con la priorità massima.
+
+        Se un criterio non si trova nell'elenco, nel caso in cui ci siano conflitti tra origine, ambito e/o livello, verrà applicato il criterio con la priorità massima.</translation>
 <translation id="7229975860249300121">Contiene un'espressione regolare che viene usata per stabilire quali Account Google possono essere impostati come account principali del browser in <ph name="PRODUCT_NAME" /> (ossia l'account che viene scelto durante la procedura di attivazione della sincronizzazione).
 
       Viene visualizzato un errore appropriato se un utente cerca di impostare un account principale del browser con un nome utente non corrispondente allo schema indicato.
@@ -3768,6 +3822,12 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       Se vengono impostati su "Replace", i criteri relativi agli utenti nei GPO degli utenti vengono sostituiti da quelli dei GPO del computer (i GPO degli utenti vengono ignorati).</translation>
 <translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
+<translation id="8465746466645315861">Se il criterio non viene impostato, l'utente può attivare o disattivare il controllo ortografico nelle impostazioni della lingua.
+
+      Se impostato su true, il controllo ortografico è attivato e l'utente non può disattivarlo. Su <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> e <ph name="LINUX_OS_NAME" />, è possibile attivare o disattivare singolarmente le lingue per correttore ortografico, perciò l'utente può comunque disattivare il correttore ortografico disattivando ogni lingua per correttore ortografico. Per evitare questo, il criterio <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> può essere utilizzato per l'attivazione forzata di determinate lingue per i correttore ortografico.
+
+      Se il criterio è impostato su false, il controllo ortografico è disattivato e l'utente non può attivarlo. I criteri <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> e <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> non hanno effetto quando questo criterio è impostato su false.
+      </translation>
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Consente di rimuovere le parti sensibili per la privacy e la sicurezza dagli URL https:// prima di trasmetterli agli script PAC (Proxy Auto Config) utilizzati da <ph name="PRODUCT_NAME" /> durante la risoluzione proxy.

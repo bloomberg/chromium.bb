@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2156074688469523661">बाकी साइटें (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">शेयर किया जा रहा है</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, वेब ऐप्लिकेशन. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> के रूप में जारी रखें</translation>
 <translation id="2234876718134438132">सिंक और Google सेवाएं</translation>
 <translation id="2259659629660284697">पासवर्ड निर्यात करें…</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">फ़ुलस्क्रीन ग्रिड को छिपाएं</translation>
 <translation id="5082793167783849073">पेजों की तुलना तुरंत करने के लिए समूह बनाएं. शुरू करने के लिए, लिंक को दबाकर रखें.</translation>
 <translation id="5087580092889165836">कार्ड जोड़ें</translation>
+<translation id="5098406615395468004">'मेरे ऐप्लिकेशन' में जोड़ें</translation>
 <translation id="5100237604440890931">छोटा किया गया - पूरा खोलने के लिए क्लिक करें.</translation>
 <translation id="510275257476243843">1 घंटा शेष</translation>
 <translation id="5123685120097942451">गुप्त टैब</translation>
@@ -1092,7 +1092,6 @@
 <translation id="9040142327097499898">सूचनाओं की अनुमति है. इस डिवाइस के लिए स्थान की जानकारी बंद है.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# वीडियो}one{# वीडियो}other{# वीडियो}}</translation>
 <translation id="9050666287014529139">पासफ़्रेज़ (लंबा पासवर्ड)</translation>
-<translation id="9060538597317784206"><ph name="APP_NAME" /> को Play स्‍टोर पर देखें.  रेटिंग: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">अनुरोध डेस्कटॉप साइट बंद करें</translation>
 <translation id="9065203028668620118">बदलाव करें</translation>
 <translation id="9070377983101773829">बोलकर खोज चालू करें</translation>

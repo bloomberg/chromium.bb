@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Fout</translation>
 <translation id="1172898394251786223">Volgend veld</translation>
 <translation id="1176932207622159128">Kan afbeelding niet opslaan</translation>
+<translation id="1180526666083833456">Synchronisatie en personalisatie op meerdere apparaten.</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1201530049782216880">Nieuw incognitotabblad</translation>
 <translation id="1209206284964581585">Voorlopig verbergen</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Afgelopen 4 weken</translation>
 <translation id="1407135791313364759">Alles openen</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
+<translation id="1436290164580597469">Geef de wachtwoordzin op om de synchronisatie te starten.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
 <translation id="1491277525950327607">Dubbeltik om de instelling in of uit te schakelen</translation>
 <translation id="152234381334907219">Nooit opgeslagen</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Wachtwoord weergeven</translation>
 <translation id="2481538920734869610">ACCOUNT TOEV.</translation>
 <translation id="2497852260688568942">Synchronisatie is uitgeschakeld door je beheerder</translation>
+<translation id="2500374554657206846">Opties voor 'Wachtwoord opslaan'</translation>
 <translation id="2523363575747517183">Deze website probeert herhaaldelijk een andere app te openen.</translation>
 <translation id="2529021024822217800">Alles openen</translation>
+<translation id="2570206273416014374">Hiermee worden bepaalde cookies en zoekopdrachten vanuit de adresbalk en het zoekvak verzonden naar je standaardzoekmachine.</translation>
 <translation id="2572712655377361602">Een apparaatbeleid blokkeert toegang tot je foto's</translation>
 <translation id="2584132361465095047">Account toevoegen…</translation>
 <translation id="2625189173221582860">Wachtwoord gekopieerd</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Alle incognitotabbladen sluiten</translation>
 <translation id="3533436815740441613">Nieuw tabblad</translation>
 <translation id="3551320343578183772">Tabblad sluiten</translation>
+<translation id="3581564640715911333">Aanbieden pagina's in andere talen te vertalen</translation>
 <translation id="3588820906588687999">Afbeelding openen op nieuw tabblad</translation>
 <translation id="3603009562372709545">Link-URL kopiëren</translation>
 <translation id="3607167657931203000">Gegevens van Automatisch aanvullen</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Webpagina's vooraf laden</translation>
 <translation id="3691593122358196899">Bladwijzer gemaakt in <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Incognitotabbladen</translation>
+<translation id="3775743491439407556">Synchronisatie werkt niet</translation>
 <translation id="3779810277399252432">Geen internetverbinding.</translation>
 <translation id="3783017676699494206">Afbeelding opslaan</translation>
 <translation id="3789841737615482174">Installeren</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">Als je een QR-code wilt scannen, schakel je de camera in via Instellingen</translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="430793432425771671">Alles synchroniseren</translation>
+<translation id="4338650699862464074">Hiermee worden de URL's van pagina's die je bezoekt, verzonden naar Google.</translation>
 <translation id="4359125752503270327">Deze pagina wordt geopend in een andere app.</translation>
 <translation id="4370827530403103842">Synchronisatie werkt niet. Tik om te herstellen.</translation>
 <translation id="4375040482473363939">Zoeken naar QR-code</translation>
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="441868831736628555">Privacybeleid</translation>
+<translation id="4454246407045105932">Taal toevoegen</translation>
 <translation id="4476574785019001431">Instellingen</translation>
 <translation id="4496373720959965247">Tabbladen toevoegen en tussen pagina's schakelen</translation>
 <translation id="4508750114462689118">Inlogpromo sluiten</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Zoeken met Google</translation>
 <translation id="4619615317237390068">Tabbladen van andere apparaten</translation>
 <translation id="4620246317052452550">Pagina's die je hebt gelezen</translation>
+<translation id="4630540211544979320">Pagina's vertalen</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4659667755519643272">Tabbladschakelaar openen</translation>
 <translation id="4666531726415300315">Ingelogd als <ph name="EMAIL" />.
@@ -248,7 +257,9 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 
 <ph name="BEGIN_LINK" />Reset de synchronisatie<ph name="END_LINK" /> als je deze instelling wilt wijzigen.</translation>
 <translation id="4807020197310989387">1 ongelezen artikel op de leeslijst.</translation>
+<translation id="4818522717893377262">Taal toevoegen...</translation>
 <translation id="481968316161811770">Cookies en sitegegevens</translation>
+<translation id="4833786495304741580">Hiermee worden automatisch gebruiksstatistieken en crashrapporten naar Google verzonden.</translation>
 <translation id="4840495572919996524">Je bladwijzers, geschiedenis, wachtwoorden en meer worden niet meer gesynchroniseerd met je Google-account.</translation>
 <translation id="4854345657858711387">Een toegangscode instellen</translation>
 <translation id="4860895144060829044">Bellen</translation>
@@ -289,6 +300,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5548760955356983418">Met Handoff kun je een website browsen op dit apparaat en vervolgens gemakkelijk doorgaan op je Mac. De momenteel geopende website wordt weergegeven in het Dock van je Mac.
 
 Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen' en je apparaten moeten hetzelfde iCloud-account gebruiken.</translation>
+<translation id="5551897871312988470">Aanbieden om te vertalen</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5614553682702429503">Wachtwoord opslaan?</translation>
 <translation id="5626245204502895507">Het bestand kan momenteel niet worden gedownload.</translation>
@@ -336,6 +348,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6187302354554850004">Laatst gesynchroniseerd: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Ongelezen</translation>
 <translation id="6196207969502475924">Gesproken zoekopdrachten</translation>
+<translation id="6219688215832490856">Nooit vertalen</translation>
 <translation id="6254066287920239840">Open links in de app in plaats van in de browser.</translation>
 <translation id="6255097610484507482">Creditcard bewerken</translation>
 <translation id="6303969859164067831">Uitloggen en synchronisatie uitschakelen</translation>
@@ -390,6 +403,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6973630695168034713">Mappen</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">Je Google-account beheren</translation>
 <translation id="7004499039102548441">Recent gebruikte tabbladen</translation>
 <translation id="7006788746334555276">Instellingen voor content</translation>
 <translation id="7015203776128479407">Aanvankelijke synchronisatie-instelling is niet voltooid. Synchronisatie is uitgeschakeld.</translation>
@@ -460,6 +474,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8059533439631660104">Hiermee wordt het gedeelte samengevouwen.</translation>
 <translation id="806745655614357130">Mijn gegevens gescheiden houden</translation>
 <translation id="8073670137947914548">Downloaden is voltooid</translation>
+<translation id="8073872304774253879">Zoekopdrachten en browsefunctionaliteit verbeteren</translation>
 <translation id="8076014560081431679">Opgeslagen site-instellingen worden niet verwijderd en kunnen je browsegedrag weerspiegelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Bestand downloaden is beschikbaar. Opties beschikbaar onderaan het scherm.</translation>
 <translation id="8131740175452115882">Bevestigen</translation>

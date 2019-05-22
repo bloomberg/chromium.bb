@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Erro</translation>
 <translation id="1172898394251786223">Próximo campo</translation>
 <translation id="1176932207622159128">Impossível salvar imagem</translation>
+<translation id="1180526666083833456">Sincronize e personalize entre dispositivos.</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1201530049782216880">Nova guia anônima</translation>
 <translation id="1209206284964581585">Ocultar por enquanto</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Últimas quatro semanas</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="1436290164580597469">Digite a senha longa para iniciar a sincronização.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
 <translation id="1491277525950327607">Toque duas vezes para alternar a configuração</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Mostrar senha</translation>
 <translation id="2481538920734869610">ADICIONAR CONTA</translation>
 <translation id="2497852260688568942">A sincronização foi desativada pelo administrador</translation>
+<translation id="2500374554657206846">Opções para salvar senha</translation>
 <translation id="2523363575747517183">Este site está tentando repetidamente abrir outro aplicativo.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
+<translation id="2570206273416014374">Envia alguns cookies e pesquisas da barra de endereço e da caixa de pesquisa para seu mecanismo de pesquisa padrão.</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta…</translation>
 <translation id="2625189173221582860">Senha copiada</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Fechar todas as guias anônimas</translation>
 <translation id="3533436815740441613">Nova guia</translation>
 <translation id="3551320343578183772">Fechar guia</translation>
+<translation id="3581564640715911333">Oferecer para traduzir páginas em outros idiomas</translation>
 <translation id="3588820906588687999">Abrir imagem em "Nova guia"</translation>
 <translation id="3603009562372709545">Copiar URL do link</translation>
 <translation id="3607167657931203000">Dados de preenchimento automático</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Pré-carregar páginas da web</translation>
 <translation id="3691593122358196899">Adicionado como favorito em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Guias anônimas</translation>
+<translation id="3775743491439407556">A sincronização não está funcionando</translation>
 <translation id="3779810277399252432">Sem conexão com a Internet.</translation>
 <translation id="3783017676699494206">Salvar imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">Para ler um código QR, ative a câmera nas configurações</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="430793432425771671">Sincronizar tudo</translation>
+<translation id="4338650699862464074">Envia URLs das páginas que você visita para o Google.</translation>
 <translation id="4359125752503270327">Esta página será aberta em outro aplicativo.</translation>
 <translation id="4370827530403103842">A sincronização não está funcionando. Toque para corrigir.</translation>
 <translation id="4375040482473363939">Pesquisa por código QR</translation>
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="441868831736628555">Aviso de privacidade</translation>
+<translation id="4454246407045105932">Adicionar idioma</translation>
 <translation id="4476574785019001431">Configurações</translation>
 <translation id="4496373720959965247">Adicionar guias e alternar entre páginas</translation>
 <translation id="4508750114462689118">Fechar promoção de login</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Pesquisando com o Google</translation>
 <translation id="4619615317237390068">Guias de outros dispositivos</translation>
 <translation id="4620246317052452550">Páginas lidas</translation>
+<translation id="4630540211544979320">Traduzir páginas</translation>
 <translation id="4636930964841734540">Informações</translation>
 <translation id="4659667755519643272">Entrar no alternador de guias</translation>
 <translation id="4666531726415300315">Conectado como <ph name="EMAIL" />.
@@ -248,7 +257,9 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 
 Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 artigo não lido na lista de leitura.</translation>
+<translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Dados do site e arquivos "cookies"</translation>
+<translation id="4833786495304741580">Envia automaticamente estatísticas de uso e relatórios de erros para o Google.</translation>
 <translation id="4840495572919996524">Seus favoritos, histórico, senhas e outras configurações não serão mais sincronizados com sua Conta do Google.</translation>
 <translation id="4854345657858711387">Defina uma senha</translation>
 <translation id="4860895144060829044">Ligar</translation>
@@ -289,6 +300,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5548760955356983418">A "Transição" permite que você comece a navegar por um website neste dispositivo e, em seguida, continue facilmente no seu Mac. O website aberto aparecerá no Dock do Mac.
 
 A "Transição" também deve ser ativada na seção "Geral" das configurações. Seus dispositivos devem usar a mesma conta do iCloud.</translation>
+<translation id="5551897871312988470">Oferecer para traduzir</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5614553682702429503">Salvar senha?</translation>
 <translation id="5626245204502895507">Não foi possível fazer download do arquivo neste momento.</translation>
@@ -336,6 +348,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6187302354554850004">Última sincronização: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Não lidas</translation>
 <translation id="6196207969502475924">Pesquisa por voz</translation>
+<translation id="6219688215832490856">Nunca traduzir</translation>
 <translation id="6254066287920239840">Abrir links no app em vez de abrir no navegador.</translation>
 <translation id="6255097610484507482">Editar cartão de crédito</translation>
 <translation id="6303969859164067831">Sair e desativar a sincronização</translation>
@@ -390,6 +403,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">Gerenciar sua Conta do Google</translation>
 <translation id="7004499039102548441">Guias recentes</translation>
 <translation id="7006788746334555276">Configurações de conteúdo</translation>
 <translation id="7015203776128479407">A configuração de sincronização inicial não foi concluída. A sincronização está desativada.</translation>
@@ -460,6 +474,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8059533439631660104">Recolhe a seção.</translation>
 <translation id="806745655614357130">Manter meus dados separados</translation>
 <translation id="8073670137947914548">Download concluído</translation>
+<translation id="8073872304774253879">Melhorar as pesquisas e a navegação</translation>
 <translation id="8076014560081431679">As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">O download de arquivo está disponível. Opções disponíveis perto da parte inferior da tela.</translation>
 <translation id="8131740175452115882">Confirmar</translation>

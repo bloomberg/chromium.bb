@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">&amp;Buat asal susun semula</translation>
 <translation id="1125573121925420732">Amaran mungkin biasa dipaparkan semasa tapak web mengemas kini keselamatannya. Ini akan diperbaik tidak lama lagi.</translation>
 <translation id="1126551341858583091">Saiz pada storan setempat ialah <ph name="CRASH_SIZE" />.</translation>
+<translation id="1127259989763091435">Sahkan &amp; simpan kad ke Akaun Google?</translation>
 <translation id="112840717907525620">Cache dasar OK</translation>
 <translation id="1131264053432022307">Imej yang Anda Salin</translation>
 <translation id="1150979032973867961">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
@@ -143,6 +144,7 @@
 <translation id="1656489000284462475">Pengambilan</translation>
 <translation id="1662550410081243962">Simpan dan lengkapkan kaedah pembayaran</translation>
 <translation id="1663943134801823270">Kad dan alamat adalah daripada Chrome. Anda boleh mengurus kad dan alamat ini dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>
+<translation id="1669987054044193553">Sahkan &amp; simpan</translation>
 <translation id="1671391448414634642">Halaman dalam <ph name="SOURCE_LANGUAGE" /> akan diterjemah kepada <ph name="TARGET_LANGUAGE" /> bermula dari sekarang.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Google Chrome cuba menyambung ke <ph name="SITE" /> pada kali ini, tapak web tersebut mengembalikan bukti kelayakan yang luar biasa dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai <ph name="SITE" /> atau skrin log masuk Wi-Fi telah memutuskan sambungan. Maklumat anda masih selamat kerana Google Chrome menghentikan sambungan sebelum sebarang pertukaran data berlaku.</translation>
 <translation id="168841957122794586">Sijil pelayan mengandungi kunci kriptografi yang lemah.</translation>
@@ -201,6 +203,7 @@
 <translation id="2003709556000175978">Tetapkan semula kata laluan anda sekarang</translation>
 <translation id="20053308747750172">Pelayan destinasi anda, <ph name="ORIGIN" />, telah meminta agar dasar keselamatan dikenakan pada semua permintaan yang diterimanya. Akan tetapi kini pelayan tersebut telah menyampaikan dasar yang tidak sah, yang menghalang penyemak imbas daripada memenuhi permintaan anda untuk <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Proksi ditetapkan kepada auto konfigurasi.</translation>
+<translation id="202813660234680402">Tidak, jangan tambahkan</translation>
 <translation id="2030481566774242610">Adakah anda maksudkan <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Menyemak proksi dan tembok api<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">Halaman dalam <ph name="LANGUAGE" /> tidak akan diterjemah.</translation>
@@ -364,6 +367,7 @@
 <translation id="2934466151127459956">Surat-Kerajaan</translation>
 <translation id="2941952326391522266">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya adalah dari <ph name="DOMAIN2" />. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="2948083400971632585">Anda boleh melumpuhkan sebarang proksi yang dikonfigurasi untuk sambungan dari halaman tetapan.</translation>
+<translation id="295526156371527179">Amaran: Dasar ini tidak digabungkan sebagai kamus seperti yang dinyatakan oleh dasar kerana dasar ini bukan kamus.</translation>
 <translation id="2955913368246107853">Tutup bar cari</translation>
 <translation id="2969319727213777354">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Perkara ini perlu dilakukan kerana sijil yang digunakan laman web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Google Chrome tidak boleh mengesahkan sijil ini.</translation>
 <translation id="2970515157925768593">Boleh menukar penyediaan peranti dan akaun anda dari jauh.</translation>
@@ -685,6 +689,7 @@
 <translation id="4738601419177586157">Cadangan carian <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Urus kata laluan…</translation>
 <translation id="4744603770635761495">Laluan Boleh Laku</translation>
+<translation id="47454865135383664">Tambahkan kad pada Akaun Google?</translation>
 <translation id="4750917950439032686">Maklumat anda (contohnya, kata laluan atau nombor kad kredit) adalah berciri peribadi apabila dihantar ke tapak ini.</translation>
 <translation id="4756388243121344051">&amp;Sejarah</translation>
 <translation id="4758311279753947758">Tambahkan maklumat hubungan</translation>
@@ -780,6 +785,7 @@
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5252000469029418751">C7 (Sampul Surat)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">Amaran: Dasar ini tidak digabungkan seperti yang dinyatakan dalam dasar PolicyDictionaryMultipleSourceMergeList kerana dasar ini bukan sebahagian daripada dasar kamus yang boleh digabungkan.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5284909709419567258">Alamat rangkaian</translation>
@@ -903,6 +909,7 @@
 <translation id="5922853866070715753">Hampir selesai</translation>
 <translation id="5932224571077948991">Tapak menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5946937721014915347">Membuka <ph name="SITE_NAME" />…</translation>
+<translation id="5947933617628957894">Ya, tambahkan</translation>
 <translation id="5951495562196540101">Tidak dapat mendaftar dengan akaun pengguna (lesen berpakej tersedia).</translation>
 <translation id="5967592137238574583">Edit Maklumat Hubungan</translation>
 <translation id="5967867314010545767">Buang daripada sejarah</translation>
@@ -980,6 +987,7 @@
 <translation id="6414888972213066896">Anda telah bertanya kepada ibu bapa anda sama ada OK untuk melawat tapak ini</translation>
 <translation id="6415778972515849510">Chromium boleh membantu anda melindungi Akaun Google anda dan menukar kata laluan anda.</translation>
 <translation id="6417515091412812850">Tidak dapat memeriksa sama ada sijil telah dibatalkan.</translation>
+<translation id="6431585503458005759">Jangan simpan</translation>
 <translation id="6433490469411711332">Edit maklumat hubungan</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> enggan menyambung.</translation>
 <translation id="6434309073475700221">Buang</translation>
@@ -993,7 +1001,9 @@
 <translation id="6489534406876378309">Mulakan muat naik ranap sistem</translation>
 <translation id="6499038740797743453">Tetapkan semula kata laluan?</translation>
 <translation id="6507833130742554667">Kad kredit dan debit diterima.</translation>
+<translation id="650855688985305916">Ya, simpan</translation>
 <translation id="6508722015517270189">Mulakan semula Chrome</translation>
+<translation id="6517596291481585650">Amaran: Dasar ini tidak digabungkan sebagai senarai seperti yang dinyatakan oleh dasar kerana dasar ini bukan senarai.</translation>
 <translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
 <translation id="6534179046333460208">Cadangan Web Fizikal</translation>
 <translation id="6554795675067793129">Akaun anda diurus oleh <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1019,6 +1029,7 @@
 <translation id="6670613747977017428">Kembali ke keselamatan.</translation>
 <translation id="6671697161687535275">Alih keluar cadangan borang daripada Chromium?</translation>
 <translation id="6685834062052613830">Log keluar dan selesaikan persediaan</translation>
+<translation id="6689271823431384964">Chrome menawarkan penyimpanan kad dalam Akaun Google anda kerana anda telah log masuk. Anda boleh menukar gelagat ini dalam tetapan. Nama pemegang kad diambil daripada akaun anda.</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6710594484020273272">&lt;Taip istilah carian&gt;</translation>
 <translation id="671076103358959139">Token Pendaftaran:</translation>
@@ -1125,6 +1136,7 @@ Butiran tambahan:
 <translation id="7313965965371928911">Amaran <ph name="BEGIN_LINK" />Penyemakan Imbas Selamat<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Bantuan Sambungan</translation>
+<translation id="733354035281974745">Pembatalan akaun setempat peranti</translation>
 <translation id="7334320624316649418">&amp;Buat semula susun semula</translation>
 <translation id="733923710415886693">Sijil pelayan tidak didedahkan melalui Ketelusan Sijil.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1330,6 +1342,7 @@ Butiran tambahan:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Jika anda memahami risiko terhadap keselamatan anda, anda boleh <ph name="BEGIN_LINK" />lawati tapak ini<ph name="END_LINK" /> sebelum atur cara berbahaya dialih keluar.</translation>
 <translation id="8349305172487531364">Bar penanda halaman</translation>
+<translation id="836241887727198552">Simpan kad dalam Akaun Google?</translation>
 <translation id="8363502534493474904">Matikan mod pesawat</translation>
 <translation id="8364627913115013041">Tidak ditetapkan.</translation>
 <translation id="8368476060205742148">Perkhidmatan Google Play</translation>
@@ -1372,6 +1385,7 @@ Butiran tambahan:
 <translation id="8620436878122366504">Ibu bapa anda belum meluluskannya</translation>
 <translation id="8622948367223941507">Perundangan-Ekstra</translation>
 <translation id="8625384913736129811">Simpan Kad Ini pada Peranti Ini</translation>
+<translation id="8626112503828625890">Simpan butiran pengebilan dalam Akaun Google?</translation>
 <translation id="8663226718884576429">Ringkasan Pesanan, <ph name="TOTAL_LABEL" />, Butiran Lanjut</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, jawapan, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>

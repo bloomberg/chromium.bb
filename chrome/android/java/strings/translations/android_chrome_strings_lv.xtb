@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">Kopēt URL</translation>
 <translation id="2156074688469523661">Pārējās vietnes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">Kopīgošana</translation>
-<translation id="2206488550163399966">Tīmekļa lietotne <ph name="APP_NAME" />. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Turpināt kā: <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sinhronizēšana un Google pakalp.</translation>
 <translation id="2259659629660284697">Paroļu eksportēšana…</translation>
@@ -547,6 +546,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5073204694187207510">Slēpt pilnekrāna režģi</translation>
 <translation id="5082793167783849073">Ātri salīdziniet lapas, izveidojot grupu. Lai sāktu, pieskarieties un turiet saiti.</translation>
 <translation id="5087580092889165836">Pievienot karti</translation>
+<translation id="5098406615395468004">Pievienot sadaļai Manas lietotnes</translation>
 <translation id="5100237604440890931">Sakļauts — noklikšķiniet, lai izvērstu.</translation>
 <translation id="510275257476243843">Atlikusi 1 h</translation>
 <translation id="5123685120097942451">Inkognito cilne</translation>
@@ -1093,7 +1093,6 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="9040142327097499898">Paziņojumi ir atļauti. Atrašanās vietas noteikšana šai ierīcei ir izslēgta.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# videoklips}zero{# videoklipi}one{# videoklips}other{# videoklipi}}</translation>
 <translation id="9050666287014529139">Ieejas frāze</translation>
-<translation id="9060538597317784206">Skatiet lietotni <ph name="APP_NAME" /> Play veikalā. Vērtējums: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Izslēgt iestatījumu “Pieprasīt datora vietni”</translation>
 <translation id="9065203028668620118">Labot</translation>
 <translation id="9070377983101773829">Sākt meklēšanu ar balsi</translation>

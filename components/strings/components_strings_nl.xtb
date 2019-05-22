@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="1125573121925420732">Wanneer de beveiliging van websites wordt geüpdatet, worden vaak waarschuwingen weergegeven. Dit wordt binnenkort verbeterd.</translation>
 <translation id="1126551341858583091">De grootte in de lokale opslag is <ph name="CRASH_SIZE" />.</translation>
+<translation id="1127259989763091435">Kaart bevestigen en opslaan in Google-account?</translation>
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
 <translation id="1131264053432022307">Afbeelding die je hebt gekopieerd</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
@@ -143,6 +144,7 @@
 <translation id="1656489000284462475">Ophaaltijd</translation>
 <translation id="1662550410081243962">Betaalmethoden opslaan en invullen</translation>
 <translation id="1663943134801823270">Passen en adressen zijn afkomstig uit Chrome. Je kunt ze beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
+<translation id="1669987054044193553">Bevestigen en opslaan</translation>
 <translation id="1671391448414634642">Pagina's in het <ph name="SOURCE_LANGUAGE" /> worden vanaf nu vertaald naar het <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Google Chrome deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit kan gebeuren als een aanvaller probeert zich als <ph name="SITE" /> voor te doen of als een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Google Chrome de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="168841957122794586">Het servercertificaat bevat een zwakke cryptografische sleutel.</translation>
@@ -201,6 +203,7 @@
 <translation id="2003709556000175978">Stel je wachtwoord nu opnieuw in</translation>
 <translation id="20053308747750172">De server waar je naartoe gaat (<ph name="ORIGIN" />), heeft gevraagd om een beveiligingsbeleid toe te passen op alle verzoeken aan de server. De server heeft nu echter een ongeldig beleid geleverd, waardoor de browser je verzoek voor <ph name="SITE" /> niet kan uitvoeren.</translation>
 <translation id="2025186561304664664">Proxy is ingesteld op automatische configuratie.</translation>
+<translation id="202813660234680402">Nee, niet toevoegen</translation>
 <translation id="2030481566774242610">Bedoelde je <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Controleer de proxy en firewall<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald.</translation>
@@ -363,6 +366,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is afkomstig van <ph name="DOMAIN2" />. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="2948083400971632585">Via de instellingenpagina kun je proxyservers uitschakelen die voor een verbinding zijn geconfigureerd.</translation>
+<translation id="295526156371527179">Waarschuwing: Dit beleid is niet samengevoegd als woordenboek zoals gespecificeerd door het beleid, omdat het geen woordenboek is.</translation>
 <translation id="2955913368246107853">Zoekbalk sluiten</translation>
 <translation id="2969319727213777354">Als je een beveiligde verbinding tot stand wilt brengen, moet je klok correct zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chrome deze certificaten niet verifiëren.</translation>
 <translation id="2970515157925768593">Op afstand je apparaat- en accountinstellingen wijzigen.</translation>
@@ -678,6 +682,7 @@
 <translation id="4738601419177586157">Zoeksuggestie: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Wachtwoorden beheren…</translation>
 <translation id="4744603770635761495">Uitvoerbaar pad</translation>
+<translation id="47454865135383664">Kaart toevoegen aan Google-account?</translation>
 <translation id="4750917950439032686">Je gegevens (zoals wachtwoorden of creditcardnummers) zijn privé wanneer ze worden verzonden naar deze site.</translation>
 <translation id="4756388243121344051">Gesc&amp;hiedenis</translation>
 <translation id="4758311279753947758">Contactgegevens toevoegen</translation>
@@ -773,6 +778,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (envelop)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">Waarschuwing: Dit beleid is niet samengevoegd zoals gespecificeerd in het beleid PolicyListMultipleSourceMergeList, omdat het geen onderdeel is van het woordenboekbeleid dat kan worden samengevoegd.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Beëindigen</translation>
 <translation id="5284909709419567258">Netwerkadressen</translation>
@@ -896,6 +902,7 @@
 <translation id="5922853866070715753">Bijna klaar</translation>
 <translation id="5932224571077948991">Site geeft opdringerige of misleidende advertenties weer</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> openen…</translation>
+<translation id="5947933617628957894">Ja, toevoegen</translation>
 <translation id="5951495562196540101">Kan consumentenaccount niet inschrijven (verpakte licentie beschikbaar).</translation>
 <translation id="5967592137238574583">Contactgegevens bewerken</translation>
 <translation id="5967867314010545767">Verwijderen uit geschiedenis</translation>
@@ -972,6 +979,7 @@
 <translation id="6414888972213066896">Je hebt je ouder of voogd gevraagd of je deze site mag bezoeken</translation>
 <translation id="6415778972515849510">Chromium kan je helpen je Google-account te beschermen en je wachtwoord te wijzigen.</translation>
 <translation id="6417515091412812850">Kan niet controleren of het certificaat is ingetrokken.</translation>
+<translation id="6431585503458005759">Niet opslaan</translation>
 <translation id="6433490469411711332">Contactgegevens bewerken</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> heeft de verbinding geweigerd.</translation>
 <translation id="6434309073475700221">Annuleren</translation>
@@ -985,7 +993,9 @@
 <translation id="6489534406876378309">Uploaden van crashes starten</translation>
 <translation id="6499038740797743453">Wachtwoord opnieuw instellen?</translation>
 <translation id="6507833130742554667">Creditcards en betaalpassen worden geaccepteerd.</translation>
+<translation id="650855688985305916">Ja, opslaan</translation>
 <translation id="6508722015517270189">Chrome opnieuw starten</translation>
+<translation id="6517596291481585650">Waarschuwing: Dit beleid is niet samengevoegd als lijst zoals gespecificeerd door het beleid, omdat het geen lijst is.</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
 <translation id="6534179046333460208">Fysieke web-suggesties</translation>
 <translation id="6554795675067793129">Je account wordt beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1011,6 +1021,7 @@
 <translation id="6670613747977017428">Terug naar veilige pagina.</translation>
 <translation id="6671697161687535275">Formuliersuggestie verwijderen uit Chromium?</translation>
 <translation id="6685834062052613830">Uitloggen en configuratie voltooien</translation>
+<translation id="6689271823431384964">Chrome biedt aan je kaarten in je Google-account op te slaan omdat je bent ingelogd. Je kunt dit wijzigen in de instellingen. De naam van de kaarthouder is afkomstig uit je account.</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6710594484020273272">&lt;Typ een zoekterm&gt;</translation>
 <translation id="671076103358959139">Inschrijftoken:</translation>
@@ -1117,6 +1128,7 @@ Aanvullende informatie:
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-waarschuwingen</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Hulp bij verbinding maken</translation>
+<translation id="733354035281974745">Lokaal account op apparaat overschrijven</translation>
 <translation id="7334320624316649418">&amp;Opnieuw volgorde wijzigen</translation>
 <translation id="733923710415886693">Het certificaat van de server is niet bekendgemaakt via Certificaattransparantie.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1322,6 +1334,7 @@ Aanvullende informatie:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Als je de beveiligingsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze site bezoeken<ph name="END_LINK" /> voordat de schadelijke programma's zijn verwijderd.</translation>
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
+<translation id="836241887727198552">Kaart opslaan in Google-account?</translation>
 <translation id="8363502534493474904">Zet de vliegtuigmodus uit</translation>
 <translation id="8364627913115013041">Niet ingesteld.</translation>
 <translation id="8368476060205742148">Google Play-services</translation>
@@ -1363,6 +1376,7 @@ Aanvullende informatie:
 <translation id="8620436878122366504">Je ouders hebben dit nog niet goedgekeurd</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Deze pas opslaan op dit apparaat</translation>
+<translation id="8626112503828625890">Factureringsgegevens opslaan in Google-account?</translation>
 <translation id="8663226718884576429">Besteloverzicht, <ph name="TOTAL_LABEL" />, meer informatie</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, antwoord, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>

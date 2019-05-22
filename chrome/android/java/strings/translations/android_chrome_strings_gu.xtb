@@ -174,7 +174,6 @@
 <translation id="2154710561487035718">URL ની કૉપિ કરો</translation>
 <translation id="2156074688469523661">બાકી સાઇટ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="218608176142494674">શેરિંગ</translation>
-<translation id="2206488550163399966"><ph name="APP_NAME" />, વેબ ઍપ. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> તરીકે ચાલુ રાખો</translation>
 <translation id="2234876718134438132">સિંક અને Google સેવાઓ</translation>
 <translation id="2259659629660284697">બધા પાસવર્ડની નિકાસ કરો…</translation>
@@ -547,6 +546,7 @@
 <translation id="5073204694187207510">પૂર્ણસ્ક્રીન ગ્રિડને છુપાવો</translation>
 <translation id="5082793167783849073">ગ્રૂપ બનાવીને ઝડપથી પેજની સરખામણી કરો. શરૂ કરવા માટે, લિંકને સ્પર્શ કરી રાખો.</translation>
 <translation id="5087580092889165836">કાર્ડ ઉમેરો</translation>
+<translation id="5098406615395468004">મારી ઍપમાં ઉમેરો</translation>
 <translation id="5100237604440890931">સંકુચિત - વિસ્તૃત કરવા માટે ક્લિક કરો.</translation>
 <translation id="510275257476243843">1 કલાક બાકી</translation>
 <translation id="5123685120097942451">છૂપા મોડમાંની ટૅબ</translation>
@@ -1092,7 +1092,6 @@
 <translation id="9040142327097499898">નોટિફિકેશનની મંજૂરી છે. આ ઉપકરણ માટે સ્થાન ઍક્સેસ બંધ છે.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# વીડિયો}one{# વીડિયો}other{# વીડિયો}}</translation>
 <translation id="9050666287014529139">પાસફ્રેઝ</translation>
-<translation id="9060538597317784206">Play સ્ટોર પર ઍપ્લિકૅશન <ph name="APP_NAME" /> જુઓ. રેટિંગ: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">વિનંતી ડેસ્કટૉપ સાઇટ બંધ કરો</translation>
 <translation id="9065203028668620118">ફેરફાર કરો</translation>
 <translation id="9070377983101773829">વૉઇસ શોધ પ્રારંભ કરો</translation>

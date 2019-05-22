@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">&amp;Annulla ridisposizione</translation>
 <translation id="1125573121925420732">Gli avvisi potrebbero essere frequenti durante l'aggiornamento della sicurezza dei siti web. La situazione dovrebbe migliorare a breve.</translation>
 <translation id="1126551341858583091">Le dimensioni nello spazio di archiviazione locale sono pari a <ph name="CRASH_SIZE" />.</translation>
+<translation id="1127259989763091435">Confermare e salvare la carta nell'Account Google?</translation>
 <translation id="112840717907525620">Cache dei criteri integra</translation>
 <translation id="1131264053432022307">Immagine copiata</translation>
 <translation id="1150979032973867961">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del computer. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
@@ -145,6 +146,7 @@
 <translation id="1656489000284462475">Ritiro</translation>
 <translation id="1662550410081243962">Salva e compila i metodi di pagamento</translation>
 <translation id="1663943134801823270">Carte di credito e indirizzi provengono da Chrome. Puoi gestirli in <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
+<translation id="1669987054044193553">Conferma e salva</translation>
 <translation id="1671391448414634642">D'ora in poi, le pagine in <ph name="SOURCE_LANGUAGE" /> verranno tradotte in <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Questa volta, quando Google Chrome ha provato a connettersi a <ph name="SITE" />, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Google Chrome ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="168841957122794586">Il certificato del server contiene una chiave crittografica debole.</translation>
@@ -206,6 +208,7 @@
     pubblicato una norma non valida che impedisce al browser
     di soddisfare la tua richiesta per il sito <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">È stata impostata la configurazione automatica del proxy.</translation>
+<translation id="202813660234680402">No, non aggiungere</translation>
 <translation id="2030481566774242610">Forse cercavi <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Controllare il proxy e firewall<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">Le pagine in <ph name="LANGUAGE" /> non verranno tradotte.</translation>
@@ -371,6 +374,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza proviene da <ph name="DOMAIN2" />. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="2948083400971632585">Puoi disattivare tutti i proxy configurati per una connessione dalla pagina delle impostazioni.</translation>
+<translation id="295526156371527179">Avviso: questo criterio non è stato unito come dizionario come specificato dal criterio perché non è un dizionario.</translation>
 <translation id="2955913368246107853">Chiudi la barra di ricerca</translation>
 <translation id="2969319727213777354">Per poter stabilire una connessione protetta, l'orologio deve essere impostato correttamente perché i certificati utilizzati dai siti web per identificarsi sono validi soltanto per determinati periodi di tempo. L'orologio del dispositivo non è impostato sull'orario corretto, pertanto Chrome non può verificare i certificati.</translation>
 <translation id="2970515157925768593">Può modificare da remoto la configurazione del tuo dispositivo e del tuo account.</translation>
@@ -688,6 +692,7 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> suggerimento di ricerca</translation>
 <translation id="4742407542027196863">Gestisci password…</translation>
 <translation id="4744603770635761495">Percorso eseguibile</translation>
+<translation id="47454865135383664">Aggiungere la carta all'Account Google?</translation>
 <translation id="4750917950439032686">Le tue informazioni (ad esempio password o numeri di carte di credito) restano private quando vengono inviate a questo sito.</translation>
 <translation id="4756388243121344051">&amp;Cronologia</translation>
 <translation id="4758311279753947758">Aggiungi informazioni di contatto</translation>
@@ -783,6 +788,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">Avviso: questo criterio non è stato unito come specificato nel criterio PolicyDictionaryMultipleSourceMergeList perché non fa parte dei criteri del dizionario che possono essere uniti.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Fine</translation>
 <translation id="5284909709419567258">Indirizzi di rete</translation>
@@ -906,6 +912,7 @@
 <translation id="5922853866070715753">Hai quasi finito.</translation>
 <translation id="5932224571077948991">Il sito mostra annunci invasivi o fuorvianti</translation>
 <translation id="5946937721014915347">Apertura di <ph name="SITE_NAME" />…</translation>
+<translation id="5947933617628957894">Sì, aggiungi</translation>
 <translation id="5951495562196540101">Impossibile effettuare la registrazione con l'account consumer (è disponibile la licenza inclusa).</translation>
 <translation id="5967592137238574583">Modifica informazioni di contatto</translation>
 <translation id="5967867314010545767">Rimuovi da cronologia</translation>
@@ -982,6 +989,7 @@
 <translation id="6414888972213066896">Hai chiesto ai tuoi genitori l'autorizzazione per visitare questo sito</translation>
 <translation id="6415778972515849510">Chromium può aiutarti a proteggere il tuo Account Google e a modificare la password.</translation>
 <translation id="6417515091412812850">Impossibile controllare se il certificato è stato revocato.</translation>
+<translation id="6431585503458005759">Non memorizzare</translation>
 <translation id="6433490469411711332">Modifica informazioni di contatto</translation>
 <translation id="6433595998831338502">Connessione negata da <ph name="HOST_NAME" />.</translation>
 <translation id="6434309073475700221">Annulla</translation>
@@ -995,7 +1003,9 @@
 <translation id="6489534406876378309">Avvia caricamento arresti anomali</translation>
 <translation id="6499038740797743453">Reimpostare la password?</translation>
 <translation id="6507833130742554667">Le carte di credito e di debito sono accettate.</translation>
+<translation id="650855688985305916">Sì, memorizza</translation>
 <translation id="6508722015517270189">Riavvia Chrome</translation>
+<translation id="6517596291481585650">Avviso: questo criterio non è stato unito come elenco come specificato dal criterio perché non è un elenco.</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="6534179046333460208">Suggerimenti relativi al Physical Web</translation>
 <translation id="6554795675067793129">Il tuo account è gestito da <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1021,6 +1031,7 @@
 <translation id="6670613747977017428">Torna nell'area protetta.</translation>
 <translation id="6671697161687535275">Rimuovere il suggerimento per i moduli da Chromium?</translation>
 <translation id="6685834062052613830">Esci e completa la configurazione</translation>
+<translation id="6689271823431384964">Chrome chiede se vuoi salvare le tue carte nel tuo Account Google perché hai eseguito l'accesso. Puoi modificare questo comportamento nelle impostazioni. Il nome del titolare della carta proviene dal tuo account.</translation>
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6710594484020273272">&lt;Digita un termine di ricerca&gt;</translation>
 <translation id="671076103358959139">Token di registrazione:</translation>
@@ -1130,6 +1141,7 @@ Ulteriori dettagli:
 <translation id="7313965965371928911">Avvisi di <ph name="BEGIN_LINK" />Navigazione sicura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Guida alla connessione</translation>
+<translation id="733354035281974745">Override account locale del dispositivo</translation>
 <translation id="7334320624316649418">&amp;Ripeti ridisposizione</translation>
 <translation id="733923710415886693">Il certificato del server non è stato reso pubblico tramite Certificate Transparency.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1335,6 +1347,7 @@ Ulteriori dettagli:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se sei consapevole dei rischi per la tua sicurezza, potresti <ph name="BEGIN_LINK" />visitare questo sito<ph name="END_LINK" /> senza aspettare che vengano rimossi i programmi pericolosi.</translation>
 <translation id="8349305172487531364">Barra dei Preferiti</translation>
+<translation id="836241887727198552">Memorizzare la carta nell'Account Google?</translation>
 <translation id="8363502534493474904">Disattivare la modalità aereo</translation>
 <translation id="8364627913115013041">Non impostato.</translation>
 <translation id="8368476060205742148">Google Play Services</translation>
@@ -1376,6 +1389,7 @@ Ulteriori dettagli:
 <translation id="8620436878122366504">I tuoi genitori non hanno ancora approvato la richiesta</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Salva la carta su questo dispositivo</translation>
+<translation id="8626112503828625890">Memorizzare i dettagli di fatturazione nell'Account Google?</translation>
 <translation id="8663226718884576429">Riepilogo ordine, <ph name="TOTAL_LABEL" />, altri dettagli</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, risposta, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
