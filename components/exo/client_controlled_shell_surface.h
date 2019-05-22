@@ -119,6 +119,9 @@ class ClientControlledShellSurface
     drag_finished_callback_ = callback;
   }
 
+  // Returns true if this shell surface is currently being dragged.
+  bool IsDragging();
+
   // Pin/unpin the surface. Pinned surface cannot be switched to
   // other windows unless its explicitly unpinned.
   void SetPinned(ash::mojom::WindowPinType type);
@@ -313,6 +316,13 @@ class ClientControlledShellSurface
       ash::OrientationLockType::kAny;
 
   bool preserve_widget_bounds_ = false;
+
+  // Checking DragDetails is not sufficient to determine if a bounds
+  // request happened during a drag move or resize. If the window resizer
+  // requests a bounds update after completing the drag but before the
+  // drag details are cleaned up, we want to consider that as a regular
+  // bounds update, not a drag move/resize update.
+  bool in_drag_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

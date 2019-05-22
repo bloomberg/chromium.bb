@@ -101,13 +101,14 @@ class ClientControlledStateDelegate
     shell_surface_->OnBoundsChangeEvent(
         window_state->GetStateType(), requested_state, display_id,
         bounds_in_screen,
-        window_state->drag_details()
+        window_state->drag_details() && shell_surface_->IsDragging()
             ? window_state->drag_details()->bounds_change
             : 0);
   }
 
  private:
   ClientControlledShellSurface* shell_surface_;
+
   DISALLOW_COPY_AND_ASSIGN(ClientControlledStateDelegate);
 };
 
@@ -493,6 +494,10 @@ void ClientControlledShellSurface::AttemptToStartDrag(
   }
 }
 
+bool ClientControlledShellSurface::IsDragging() {
+  return in_drag_;
+}
+
 void ClientControlledShellSurface::SetCanMaximize(bool can_maximize) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetCanMaximize",
                "can_maximzie", can_maximize);
@@ -595,12 +600,14 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
 }
 
 void ClientControlledShellSurface::OnDragStarted(int component) {
+  in_drag_ = true;
   if (drag_started_callback_)
     drag_started_callback_.Run(component);
 }
 
 void ClientControlledShellSurface::OnDragFinished(bool canceled,
                                                   const gfx::Point& location) {
+  in_drag_ = false;
   if (drag_finished_callback_)
     drag_finished_callback_.Run(location.x(), location.y(), canceled);
 }
