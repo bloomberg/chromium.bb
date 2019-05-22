@@ -385,6 +385,8 @@ def main():
                      # TODO(crbug.com/929645): Use newer toolchain to host.
                      '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
                      '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
+                     # See PR41956: Don't link libcxx into libfuzzer.
+                     '-DCOMPILER_RT_USE_LIBCXX=NO',
                      ]
 
   if sys.platform == 'win32':
