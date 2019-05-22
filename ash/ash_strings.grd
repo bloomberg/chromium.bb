@@ -865,21 +865,26 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_SUBLABEL" desc="The sub label text used when network is activating. The network name is shown above this label.">
         Activating
       </message>
+
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP" desc="The tooltip text used when network is not connected.">
         Disconnected
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y" desc="The message used by accessibility for telling that currently the device is not connected to a network.">
         Not connected to network
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_TOOLTIP" desc="The tooltip text used when network is connecting.">
-        Connecting to <ph name="NETWORK_NAME">$1<ex>public wifi</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and a11y name when connecting to a network.">
+        Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP" desc="The tooltip text used when network is connected.">
-        Connected to <ph name="NETWORK_NAME">$1<ex>public wifi</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and a11y name when connected to a network.">
+        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_TOOLTIP" desc="The tooltip text used when network is activating.">
-        Activating <ph name="NETWORK_NAME">$1<ex>cellular network</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP" desc="The tooltip text used when connected to a network.">
+        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>, <ph name="STRENGTH">$2<ex>Weak signal.</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING" desc="Message for the network tray tooltip and a11y name when activating a network.">
+        Activating <ph name="NAME">$1<ex>YBH Cellular</ex></ph>
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_TOGGLE_TOOLTIP" desc="The tooltip text for the button that toggles network enabled/disabled state.">
         Toggle network connection. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>
       </message>
@@ -1217,18 +1222,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SIM_CARD_LOCKED" desc="Message for the status area when a SIM card is locked.">
         SIM card is locked
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING" desc="Message for the network tray tooltip and network list when activating a network.">
-        Activating <ph name="NAME">$1<ex>YBH Cellular</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and network list when connected to a network.">
-        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE" desc="The accessible message for when connected to a network.">
-        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>, <ph name="STRENGTH">$2<ex>Weak signal.</ex></ph>
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and network list when connecting to a network.">
-        Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE" desc="Message for the network list to activate the network.">
         Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>

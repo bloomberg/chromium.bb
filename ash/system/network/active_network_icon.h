@@ -52,7 +52,8 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
                     TrayNetworkStateModel* model);
   ~ActiveNetworkIcon() override;
 
-  // Provides the a11y and tooltip strings for |type|.
+  // Provides the a11y and tooltip strings for |type|. Output parameters can
+  // be null.
   void GetConnectionStatusStrings(Type type,
                                   base::string16* a11y_name,
                                   base::string16* a11y_desc,
@@ -91,6 +92,8 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
   void NetworkListChanged() override;
 
   void PurgeNetworkIconCache();
+  const chromeos::network_config::mojom::NetworkStateProperties*
+  GetNetworkForType(Type type);
 
   TrayNetworkStateModel* model_;
 

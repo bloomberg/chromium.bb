@@ -183,7 +183,7 @@ TEST_F(ActiveNetworkIconTest, GetConnectionStatusStrings) {
             name);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
+          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP,
           base::UTF8ToUTF16(kCellularNetworkGuid),
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG)),
       tooltip);

@@ -118,6 +118,7 @@ mojom::DeviceStateType GetMojoDeviceStateType(
 }
 
 mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
+                                                    bool technology_enabled,
                                                     const DeviceState* device) {
   mojom::NetworkType type = ShillTypeToMojo(network->type());
   if (type == mojom::NetworkType::kAll) {
@@ -130,7 +131,11 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
   result->type = type;
   result->connectable = network->connectable();
   result->connect_requested = network->connect_requested();
-  result->connection_state = GetMojoConnectionStateType(network);
+  // If a network technology is not enabled, always use NotConnected as the
+  // connection state to avoid any edge cases during device enable/disable.
+  result->connection_state = technology_enabled
+                                 ? GetMojoConnectionStateType(network)
+                                 : mojom::ConnectionStateType::kNotConnected;
   if (!network->last_error().empty())
     result->error_state = network->last_error();
   result->guid = network->guid();
@@ -280,8 +285,7 @@ void CrosNetworkConfig::GetNetworkState(const std::string& guid,
     std::move(callback).Run(nullptr);
     return;
   }
-  std::move(callback).Run(NetworkStateToMojo(
-      network, network_state_handler_->GetDeviceState(network->device_path())));
+  std::move(callback).Run(GetMojoNetworkState(network));
 }
 
 void CrosNetworkConfig::GetNetworkStateList(
@@ -314,9 +318,8 @@ void CrosNetworkConfig::GetNetworkStateList(
   }
   std::vector<mojom::NetworkStatePropertiesPtr> result;
   for (const NetworkState* network : networks) {
-    mojom::NetworkStatePropertiesPtr mojo_network = NetworkStateToMojo(
-        network,
-        network_state_handler_->GetDeviceState(network->device_path()));
+    mojom::NetworkStatePropertiesPtr mojo_network =
+        GetMojoNetworkState(network);
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
@@ -361,9 +364,8 @@ void CrosNetworkConfig::ActiveNetworksChanged(
     const std::vector<const NetworkState*>& active_networks) {
   std::vector<mojom::NetworkStatePropertiesPtr> result;
   for (const NetworkState* network : active_networks) {
-    mojom::NetworkStatePropertiesPtr mojo_network = NetworkStateToMojo(
-        network,
-        network_state_handler_->GetDeviceState(network->device_path()));
+    mojom::NetworkStatePropertiesPtr mojo_network =
+        GetMojoNetworkState(network);
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
@@ -380,6 +382,16 @@ void CrosNetworkConfig::OnShuttingDown() {
   if (network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   network_state_handler_ = nullptr;
+}
+
+mojom::NetworkStatePropertiesPtr CrosNetworkConfig::GetMojoNetworkState(
+    const NetworkState* network) {
+  bool technology_enabled = network->Matches(NetworkTypePattern::VPN()) ||
+                            network_state_handler_->IsTechnologyEnabled(
+                                NetworkTypePattern::Primitive(network->type()));
+  return NetworkStateToMojo(
+      network, technology_enabled,
+      network_state_handler_->GetDeviceState(network->device_path()));
 }
 
 }  // namespace network_config

@@ -40,6 +40,9 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void OnShuttingDown() override;
 
  private:
+  mojom::NetworkStatePropertiesPtr GetMojoNetworkState(
+      const NetworkState* network);
+
   NetworkStateHandler* network_state_handler_;  // Unowned
   mojo::InterfacePtrSet<mojom::CrosNetworkConfigObserver> observers_;
   mojo::BindingSet<mojom::CrosNetworkConfig> bindings_;

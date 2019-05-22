@@ -18,6 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
+using chromeos::network_config::mojom::ActivationStateType;
 using chromeos::network_config::mojom::ConnectionStateType;
 using chromeos::network_config::mojom::DeviceStateProperties;
 using chromeos::network_config::mojom::DeviceStateType;
@@ -91,11 +92,28 @@ void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
       network = model_->active_cellular();
       break;
   }
-  if (network &&
-      chromeos::network_config::StateIsConnected(network->connection_state)) {
-    *a11y_name =
-        l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
-                                   base::UTF8ToUTF16(network->name));
+
+  base::string16 network_name;
+  if (network) {
+    network_name = network->type == NetworkType::kEthernet
+                       ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ETHERNET)
+                       : base::UTF8ToUTF16(network->name);
+  }
+  // Check for Activating first since activating networks may be connected.
+  if (network && network->type == NetworkType::kCellular &&
+      network->cellular->activation_state == ActivationStateType::kActivating) {
+    base::string16 activating_string = l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING, network_name);
+    if (a11y_name)
+      *a11y_name = activating_string;
+    if (a11y_desc)
+      *a11y_desc = base::string16();
+    if (tooltip)
+      *tooltip = activating_string;
+  } else if (network && chromeos::network_config::StateIsConnected(
+                            network->connection_state)) {
+    base::string16 connected_string = l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED, network_name);
     base::string16 signal_strength_string;
     if (chromeos::network_config::NetworkTypeMatchesType(
             network->type, NetworkType::kWireless)) {
@@ -120,27 +138,38 @@ void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
           break;
       }
     }
-    *a11y_desc = signal_strength_string;
-    *tooltip =
-        signal_strength_string.empty()
-            ? *a11y_name
-            : l10n_util::GetStringFUTF16(
-                  IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
-                  base::UTF8ToUTF16(network->name), signal_strength_string);
+    if (a11y_name)
+      *a11y_name = connected_string;
+    if (a11y_desc)
+      *a11y_desc = signal_strength_string;
+    if (tooltip) {
+      *tooltip = signal_strength_string.empty()
+                     ? connected_string
+                     : l10n_util::GetStringFUTF16(
+                           IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP,
+                           network_name, signal_strength_string);
+    }
   } else if (network &&
              network->connection_state == ConnectionStateType::kConnecting) {
-    *a11y_name = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y);
-    *a11y_desc = base::string16();
-    *tooltip = l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_TOOLTIP,
-        base::UTF8ToUTF16(network->name));
+    base::string16 connecting_string = l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING, network_name);
+    if (a11y_name)
+      *a11y_name = connecting_string;
+    if (a11y_desc)
+      *a11y_desc = base::string16();
+    if (tooltip)
+      *tooltip = connecting_string;
   } else {
-    *a11y_name = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y);
-    *a11y_desc = base::string16();
-    *tooltip = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP);
+    if (a11y_name) {
+      *a11y_name = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y);
+    }
+    if (a11y_desc)
+      *a11y_desc = base::string16();
+    if (tooltip) {
+      *tooltip = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP);
+    }
   }
 }
 
