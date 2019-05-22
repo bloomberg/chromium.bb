@@ -869,6 +869,8 @@ jumbo_component("base") {
     "task_runner_util.h",
     "template_util.h",
     "test/malloc_wrapper.h",
+    "third_party/cityhash/city.cc",
+    "third_party/cityhash/city.h",
     "third_party/dmg_fp/dmg_fp.h",
     "third_party/dmg_fp/dtoa_wrapper.cc",
     "third_party/dmg_fp/g_fmt.cc",

@@ -27,6 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_CACHE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_CACHE_H_
 
+#include "base/containers/span.h"
+#include "base/hash/hash.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
@@ -50,8 +52,6 @@ class ShapeCache {
   class SmallStringKey {
     DISALLOW_NEW();
 
-    void HashString();
-
    public:
     static unsigned Capacity() { return kCapacity; }
 
@@ -72,7 +72,8 @@ class ShapeCache {
         characters_[i] = characters[i];
       }
 
-      HashString();
+      hash_ = static_cast<unsigned>(base::FastHash(
+          base::as_bytes(base::make_span(characters_, length_))));
     }
 
     SmallStringKey(base::span<const UChar> characters, TextDirection direction)
@@ -80,7 +81,8 @@ class ShapeCache {
           direction_(static_cast<unsigned>(direction)) {
       DCHECK(characters.size() <= kCapacity);
       memcpy(characters_, characters.data(), characters.size_bytes());
-      HashString();
+      hash_ = static_cast<unsigned>(base::FastHash(
+          base::as_bytes(base::make_span(characters_, length_))));
     }
 
     const UChar* Characters() const { return characters_; }

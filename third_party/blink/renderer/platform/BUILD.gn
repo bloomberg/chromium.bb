@@ -708,7 +708,6 @@ jumbo_component("platform") {
     "fonts/shaping/harfbuzz_shaper.h",
     "fonts/shaping/run_segmenter.cc",
     "fonts/shaping/run_segmenter.h",
-    "fonts/shaping/shape_cache.cc",
     "fonts/shaping/shape_cache.h",
     "fonts/shaping/shape_result.cc",
     "fonts/shaping/shape_result.h",
@@ -1479,11 +1478,6 @@ jumbo_component("platform") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  # This is faster on armv7, untested on other CPUs (e.g. mips, power, etc).
-  # TODO(cavalcantii): add next xxhash.
-  defines = [ "USE_FUNCTION_CITYHASH" ]
-  deps += [ "//third_party/smhasher:cityhash" ]
 
   if (is_mac) {
     sources -= [
