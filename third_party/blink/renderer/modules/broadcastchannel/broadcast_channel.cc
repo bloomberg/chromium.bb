@@ -75,6 +75,7 @@ void BroadcastChannel::close() {
   remote_client_.reset();
   if (binding_.is_bound())
     binding_.Close();
+  feature_handle_for_scheduler_.reset();
 }
 
 const AtomicString& BroadcastChannel::InterfaceName() const {
@@ -119,7 +120,11 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
     : ContextLifecycleObserver(execution_context),
       origin_(execution_context->GetSecurityOrigin()),
       name_(name),
-      binding_(this) {
+      binding_(this),
+      feature_handle_for_scheduler_(
+          execution_context->GetScheduler()->RegisterFeature(
+              SchedulingPolicy::Feature::kBroadcastChannel,
+              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   mojom::blink::BroadcastChannelProviderPtr& provider =
       GetThreadSpecificProvider();
 
