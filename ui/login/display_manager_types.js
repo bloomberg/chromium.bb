@@ -74,7 +74,7 @@ DisplayManagerScreenAttributes.toggleKioskAllowed;
  * Possible types of UI.
  * @enum {string}
  */
-const DISPLAY_TYPE = {
+var DISPLAY_TYPE = {
   UNKNOWN: 'unknown',
   OOBE: 'oobe',
   LOGIN: 'login',
