@@ -338,6 +338,11 @@ void WebRuntimeFeatures::EnablePaymentApp(bool enable) {
 
 void WebRuntimeFeatures::EnablePaymentRequest(bool enable) {
   RuntimeEnabledFeatures::SetPaymentRequestEnabled(enable);
+  if (!enable) {
+    // Disable features that depend on Payment Request API.
+    RuntimeEnabledFeatures::SetPaymentMethodChangeEventEnabled(false);
+    RuntimeEnabledFeatures::SetPaymentAppEnabled(false);
+  }
 }
 
 void WebRuntimeFeatures::EnablePaymentRequestHasEnrolledInstrument(
