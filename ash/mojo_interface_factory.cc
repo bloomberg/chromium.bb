@@ -25,7 +25,6 @@
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/media/media_controller.h"
-#include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -154,11 +153,6 @@ void BindMediaControllerRequestOnMainThread(
   Shell::Get()->media_controller()->BindRequest(std::move(request));
 }
 
-void BindNewWindowControllerRequestOnMainThread(
-    mojom::NewWindowControllerRequest request) {
-  Shell::Get()->new_window_controller()->BindRequest(std::move(request));
-}
-
 void BindNightLightControllerRequestOnMainThread(
     mojom::NightLightControllerRequest request) {
   Shell::Get()->night_light_controller()->BindRequest(std::move(request));
@@ -277,11 +271,8 @@ void RegisterInterfaces(
       base::BindRepeating(&BindMediaControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
-      base::BindRepeating(&BindNewWindowControllerRequestOnMainThread),
+      base::BindRepeating(&BindNightLightControllerRequestOnMainThread),
       main_thread_task_runner);
-    registry->AddInterface(
-        base::BindRepeating(&BindNightLightControllerRequestOnMainThread),
-        main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindNoteTakingControllerRequestOnMainThread),
       main_thread_task_runner);

@@ -143,7 +143,6 @@ class MessageCenterController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
 class MultiDeviceNotificationPresenter;
-class NewWindowController;
 class NightLightController;
 class NoteTakingController;
 class OverlayEventFilter;
@@ -419,9 +418,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return mouse_cursor_filter_.get();
   }
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
-  NewWindowController* new_window_controller() {
-    return new_window_controller_.get();
-  }
   NightLightController* night_light_controller();
   NoteTakingController* note_taking_controller() {
     return note_taking_controller_.get();
@@ -688,7 +684,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
-  std::unique_ptr<NewWindowController> new_window_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionControllerImpl> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;

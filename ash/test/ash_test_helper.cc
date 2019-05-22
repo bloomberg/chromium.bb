@@ -18,6 +18,7 @@
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
+#include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -171,6 +172,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
       std::make_unique<TestKeyboardControllerObserver>(
           shell->ash_keyboard_controller());
 
+  new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
+
   // Remove the app dragging animations delay for testing purposes.
   shell->overview_controller()->set_delayed_animation_task_delay_for_test(
       base::TimeDelta());
@@ -184,6 +187,7 @@ void AshTestHelper::TearDown() {
   app_list_test_helper_.reset();
 
   Shell::DeleteInstance();
+  new_window_delegate_.reset();
 
   // Suspend the tear down until all resources are returned via
   // CompositorFrameSinkClient::ReclaimResources()

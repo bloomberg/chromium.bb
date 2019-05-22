@@ -1,50 +1,64 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ash.mojom;
+#ifndef ASH_PUBLIC_CPP_NEW_WINDOW_DELEGATE_H_
+#define ASH_PUBLIC_CPP_NEW_WINDOW_DELEGATE_H_
 
-// For GURL.
-import "url/mojom/url.mojom";
+#include "ash/public/cpp/ash_public_export.h"
+#include "base/macros.h"
 
-// An exported object in ash which lets an ash consumer set a client interface.
-interface NewWindowController {
-  SetClient(associated NewWindowClient client);
-};
+class GURL;
+
+namespace ash {
 
 // A delegate interface that an ash user sends to ash to handle certain window
 // management responsibilities.
-interface NewWindowClient {
+class ASH_PUBLIC_EXPORT NewWindowDelegate {
+ public:
+  static NewWindowDelegate* GetInstance();
+
   // Invoked when the user uses Ctrl+T to open a new tab.
-  NewTab();
+  virtual void NewTab() = 0;
 
   // Opens a new tab with the specified URL. If the |from_user_interaction|
   // is true then the page will load with a user activation. This means the
   // page will be able to autoplay media without restriction.
-  NewTabWithUrl(url.mojom.Url url, bool from_user_interaction);
+  virtual void NewTabWithUrl(const GURL& url, bool from_user_interaction) = 0;
 
   // Invoked when the user uses Ctrl-N or Ctrl-Shift-N to open a new window.
-  NewWindow(bool incognito);
+  virtual void NewWindow(bool incognito) = 0;
 
   // Invoked when an accelerator is used to open the file manager.
-  OpenFileManager();
+  virtual void OpenFileManager() = 0;
 
   // Invoked when the user opens Crosh.
-  OpenCrosh();
+  virtual void OpenCrosh() = 0;
 
   // Invoked when an accelerator is used to open help center.
-  OpenGetHelp();
+  virtual void OpenGetHelp() = 0;
 
   // Invoked when the user uses Shift+Ctrl+T to restore the closed tab.
-  RestoreTab();
+  virtual void RestoreTab() = 0;
 
   // Show the keyboard shortcut viewer.
-  ShowKeyboardShortcutViewer();
+  virtual void ShowKeyboardShortcutViewer() = 0;
 
   // Shows the task manager window.
-  ShowTaskManager();
+  virtual void ShowTaskManager() = 0;
 
   // Opens the feedback page for "Report Issue". If |from_assistant| is
   // true then the page is triggered from Assistant.
-  OpenFeedbackPage(bool from_assistant);
+  virtual void OpenFeedbackPage(bool from_assistant = false) = 0;
+
+ protected:
+  NewWindowDelegate();
+  virtual ~NewWindowDelegate();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NewWindowDelegate);
 };
+
+}  // namespace ash
+
+#endif  // ASH_PUBLIC_CPP_NEW_WINDOW_DELEGATE_H_

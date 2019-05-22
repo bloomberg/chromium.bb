@@ -66,7 +66,6 @@
 #include "ash/media/media_controller.h"
 #include "ash/media/media_notification_controller_impl.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
-#include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_constants.h"
@@ -559,7 +558,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           std::make_unique<KeyboardBrightnessController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateController>()),
       media_controller_(std::make_unique<MediaController>(connector)),
-      new_window_controller_(std::make_unique<NewWindowController>()),
       session_controller_(std::make_unique<SessionControllerImpl>()),
       note_taking_controller_(std::make_unique<NoteTakingController>()),
       shell_delegate_(std::move(shell_delegate)),

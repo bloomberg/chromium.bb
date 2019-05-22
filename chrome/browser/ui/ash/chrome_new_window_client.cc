@@ -62,8 +62,6 @@
 
 namespace {
 
-ChromeNewWindowClient* g_chrome_new_window_client_instance = nullptr;
-
 void RestoreTabUsingProfile(Profile* profile) {
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile);
@@ -212,32 +210,18 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
 
 }  // namespace
 
-ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
+ChromeNewWindowClient::ChromeNewWindowClient() {
   arc::ArcIntentHelperBridge::SetOpenUrlDelegate(this);
-
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &new_window_controller_);
-
-  // Register this object as the client interface implementation.
-  ash::mojom::NewWindowClientAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info));
-  new_window_controller_->SetClient(std::move(ptr_info));
-
-  DCHECK(!g_chrome_new_window_client_instance);
-  g_chrome_new_window_client_instance = this;
 }
 
 ChromeNewWindowClient::~ChromeNewWindowClient() {
-  DCHECK_EQ(g_chrome_new_window_client_instance, this);
-  g_chrome_new_window_client_instance = nullptr;
-
   arc::ArcIntentHelperBridge::SetOpenUrlDelegate(nullptr);
 }
 
 // static
 ChromeNewWindowClient* ChromeNewWindowClient::Get() {
-  return g_chrome_new_window_client_instance;
+  return static_cast<ChromeNewWindowClient*>(
+      ash::NewWindowDelegate::GetInstance());
 }
 
 // TabRestoreHelper is used to restore a tab. In particular when the user

@@ -9,8 +9,8 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
-#include "ash/new_window_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/utility/screenshot_controller.h"
@@ -177,7 +177,7 @@ void AssistantController::OnDeepLinkReceived(
       break;
     }
     case DeepLinkType::kFeedback:
-      Shell::Get()->new_window_controller()->OpenFeedbackPage(
+      NewWindowDelegate::GetInstance()->OpenFeedbackPage(
           /*from_assistant=*/true);
       break;
     case DeepLinkType::kScreenshot:
@@ -188,7 +188,7 @@ void AssistantController::OnDeepLinkReceived(
       break;
     case DeepLinkType::kTaskManager:
       // Open task manager window.
-      Shell::Get()->new_window_controller()->ShowTaskManager();
+      NewWindowDelegate::GetInstance()->ShowTaskManager();
       break;
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kAlarmTimer:
@@ -257,7 +257,7 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
 
   // The new tab should be opened with a user activation since the user
   // interacted with the Assistant to open the url.
-  Shell::Get()->new_window_controller()->NewTabWithUrl(
+  NewWindowDelegate::GetInstance()->NewTabWithUrl(
       url, /*from_user_interaction=*/true);
   NotifyUrlOpened(url, from_server);
 }

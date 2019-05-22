@@ -31,8 +31,8 @@
 #include "ash/media/media_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
-#include "ash/new_window_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -306,18 +306,18 @@ bool CanHandleNewIncognitoWindow() {
 
 void HandleNewIncognitoWindow() {
   base::RecordAction(UserMetricsAction("Accel_New_Incognito_Window"));
-  Shell::Get()->new_window_controller()->NewWindow(true /* is_incognito */);
+  NewWindowDelegate::GetInstance()->NewWindow(true /* is_incognito */);
 }
 
 void HandleNewTab(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_T)
     base::RecordAction(UserMetricsAction("Accel_NewTab_T"));
-  Shell::Get()->new_window_controller()->NewTab();
+  NewWindowDelegate::GetInstance()->NewTab();
 }
 
 void HandleNewWindow() {
   base::RecordAction(UserMetricsAction("Accel_New_Window"));
-  Shell::Get()->new_window_controller()->NewWindow(false /* is_incognito */);
+  NewWindowDelegate::GetInstance()->NewWindow(false /* is_incognito */);
 }
 
 bool CanCycleInputMethod() {
@@ -342,7 +342,7 @@ void HandleSwitchToNextIme() {
 
 void HandleOpenFeedbackPage() {
   base::RecordAction(UserMetricsAction("Accel_Open_Feedback_Page"));
-  Shell::Get()->new_window_controller()->OpenFeedbackPage();
+  NewWindowDelegate::GetInstance()->OpenFeedbackPage();
 }
 
 void HandleSwitchToLastUsedIme(const ui::Accelerator& accelerator) {
@@ -407,7 +407,7 @@ void HandleRotateScreen() {
 
 void HandleRestoreTab() {
   base::RecordAction(UserMetricsAction("Accel_Restore_Tab"));
-  Shell::Get()->new_window_controller()->RestoreTab();
+  NewWindowDelegate::GetInstance()->RestoreTab();
 }
 
 // Rotate the active window.
@@ -428,7 +428,7 @@ void HandleRotateActiveWindow() {
 }
 
 void HandleShowKeyboardShortcutViewer() {
-  Shell::Get()->new_window_controller()->ShowKeyboardShortcutViewer();
+  NewWindowDelegate::GetInstance()->ShowKeyboardShortcutViewer();
 }
 
 void HandleTakeWindowScreenshot() {
@@ -472,7 +472,7 @@ void HandleToggleMessageCenterBubble() {
 
 void HandleShowTaskManager() {
   base::RecordAction(UserMetricsAction("Accel_Show_Task_Manager"));
-  Shell::Get()->new_window_controller()->ShowTaskManager();
+  NewWindowDelegate::GetInstance()->ShowTaskManager();
 }
 
 void HandleSwapPrimaryDisplay() {
@@ -608,7 +608,7 @@ void HandleShowOrSwitchIme() {
 void HandleCrosh() {
   base::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
 
-  Shell::Get()->new_window_controller()->OpenCrosh();
+  NewWindowDelegate::GetInstance()->OpenCrosh();
 }
 
 bool CanHandleDisableCapsLock(const ui::Accelerator& previous_accelerator) {
@@ -632,11 +632,11 @@ void HandleDisableCapsLock() {
 void HandleFileManager() {
   base::RecordAction(UserMetricsAction("Accel_Open_File_Manager"));
 
-  Shell::Get()->new_window_controller()->OpenFileManager();
+  NewWindowDelegate::GetInstance()->OpenFileManager();
 }
 
 void HandleGetHelp() {
-  Shell::Get()->new_window_controller()->OpenGetHelp();
+  NewWindowDelegate::GetInstance()->OpenGetHelp();
 }
 
 bool CanHandleLock() {

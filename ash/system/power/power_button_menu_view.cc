@@ -5,7 +5,7 @@
 #include "ash/system/power/power_button_menu_view.h"
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/new_window_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -266,7 +266,7 @@ void PowerButtonMenuView::ButtonPressed(views::Button* sender,
     shell->session_controller()->LockScreen();
   } else if (sender == feedback_item_) {
     RecordMenuActionHistogram(PowerButtonMenuActionType::kFeedback);
-    shell->new_window_controller()->OpenFeedbackPage();
+    NewWindowDelegate::GetInstance()->OpenFeedbackPage();
   } else {
     NOTREACHED() << "Invalid sender";
   }

@@ -91,6 +91,8 @@ component("cpp") {
     "login_constants.h",
     "network_icon_image_source.cc",
     "network_icon_image_source.h",
+    "new_window_delegate.cc",
+    "new_window_delegate.h",
     "notification_utils.cc",
     "notification_utils.h",
     "pagination/pagination_controller.cc",
@@ -246,6 +248,8 @@ source_set("test_support") {
     "immersive/immersive_fullscreen_controller_test_api.h",
     "test/test_keyboard_controller_observer.cc",
     "test/test_keyboard_controller_observer.h",
+    "test/test_new_window_delegate.cc",
+    "test/test_new_window_delegate.h",
   ]
 
   deps = [

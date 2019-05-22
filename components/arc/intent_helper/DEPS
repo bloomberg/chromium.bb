@@ -1,7 +1,6 @@
 include_rules = [
   "+ash/link_handler_model.h",
   "+ash/link_handler_model_factory.h",
-  "+ash/new_window_controller.h",
   "+ash/public",
   "+ash/shell.h",
   "+ash/shell_delegate.h",

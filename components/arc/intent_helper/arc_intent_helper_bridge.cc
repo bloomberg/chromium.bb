@@ -7,10 +7,9 @@
 #include <iterator>
 #include <utility>
 
-#include "ash/new_window_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -175,8 +174,7 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
   // simply be brought to the forgeground without forcibly being navigated to
   // downloads, which is probably not ideal.
   // TODO(mash): Support this functionality without ash::Shell access in Chrome.
-  if (ash::Shell::HasInstance())
-    ash::Shell::Get()->new_window_controller()->OpenFileManager();
+  ash::NewWindowDelegate::GetInstance()->OpenFileManager();
 }
 
 void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {

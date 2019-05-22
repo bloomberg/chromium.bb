@@ -44,6 +44,7 @@ namespace ash {
 class AppListTestHelper;
 class AshTestViewsDelegate;
 class TestKeyboardControllerObserver;
+class TestNewWindowDelegate;
 class TestPrefServiceProvider;
 class TestShellDelegate;
 
@@ -124,6 +125,8 @@ class AshTestHelper {
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
   std::unique_ptr<AppListTestHelper> app_list_test_helper_;
+
+  std::unique_ptr<TestNewWindowDelegate> new_window_delegate_;
 
   std::unique_ptr<TestKeyboardControllerObserver>
       test_keyboard_controller_observer_;

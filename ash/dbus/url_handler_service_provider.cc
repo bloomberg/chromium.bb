@@ -6,8 +6,7 @@
 
 #include <utility>
 
-#include "ash/new_window_controller.h"
-#include "ash/shell.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "base/bind.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -74,7 +73,7 @@ void UrlHandlerServiceProvider::OpenUrl(
     return;
   }
 
-  ash::Shell::Get()->new_window_controller()->NewTabWithUrl(
+  NewWindowDelegate::GetInstance()->NewTabWithUrl(
       gurl, false /* from_user_interaction */);
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
