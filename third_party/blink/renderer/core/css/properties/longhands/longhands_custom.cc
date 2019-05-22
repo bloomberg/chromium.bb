@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_counter_value.h"
 #include "third_party/blink/renderer/core/css/css_cursor_image_value.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_font_feature_value.h"
 #include "third_party/blink/renderer/core/css/css_font_variation_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
@@ -106,6 +107,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/color_interpolation.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/color_interpolation_filters.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/color_rendering.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/color_scheme.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/column_count.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/column_fill.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/column_gap.h"
@@ -391,6 +393,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/z_index.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/zoom.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -1856,8 +1859,12 @@ void Color::ApplyInitial(StyleResolverState& state) const {
 
 void Color::ApplyInherit(StyleResolverState& state) const {
   blink::Color color = state.ParentStyle()->GetColor();
-  if (state.ApplyPropertyToRegularStyle())
-    state.Style()->SetColor(color);
+  if (state.ApplyPropertyToRegularStyle()) {
+    if (state.ParentStyle()->IsColorInternalText())
+      state.Style()->SetIsColorInternalText(true);
+    else
+      state.Style()->SetColor(color);
+  }
   if (state.ApplyPropertyToVisitedLinkStyle())
     state.Style()->SetVisitedLinkColor(color);
 }
@@ -1871,8 +1878,15 @@ void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     return;
   }
 
-  if (state.ApplyPropertyToRegularStyle())
-    state.Style()->SetColor(StyleBuilderConverter::ConvertColor(state, value));
+  if (state.ApplyPropertyToRegularStyle()) {
+    if (identifier_value &&
+        identifier_value->GetValueID() == CSSValueID::kInternalRootColor) {
+      state.Style()->SetIsColorInternalText(true);
+    } else {
+      state.Style()->SetColor(
+          StyleBuilderConverter::ConvertColor(state, value));
+    }
+  }
   if (state.ApplyPropertyToVisitedLinkStyle()) {
     state.Style()->SetVisitedLinkColor(
         StyleBuilderConverter::ConvertColor(state, value, true));
@@ -1904,6 +1918,111 @@ const CSSValue* ColorRendering::CSSValueFromComputedStyleInternal(
     Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.ColorRendering());
+}
+
+const CSSValue* ColorScheme::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (range.Peek().Id() == CSSValueID::kAuto)
+    return css_property_parser_helpers::ConsumeIdent(range);
+  if (range.Peek().Id() == CSSValueID::kOnly) {
+    // Handle 'only light'
+    CSSValueList* values = CSSValueList::CreateSpaceSeparated();
+    values->Append(*css_property_parser_helpers::ConsumeIdent(range));
+    if (range.Peek().Id() != CSSValueID::kLight)
+      return nullptr;
+    values->Append(*css_property_parser_helpers::ConsumeIdent(range));
+    return values;
+  }
+
+  CSSValueList* values = CSSValueList::CreateSpaceSeparated();
+  do {
+    CSSValueID id = range.Peek().Id();
+    // 'auto' is handled above, and 'none' is reserved for future use. 'revert'
+    // is not yet implemented as a keyword, but still skip it for compat and
+    // interop.
+    if (id == CSSValueID::kAuto || id == CSSValueID::kNone ||
+        id == CSSValueID::kRevert || id == CSSValueID::kDefault) {
+      return nullptr;
+    }
+    if (id == CSSValueID::kOnly) {
+      values->Append(*css_property_parser_helpers::ConsumeIdent(range));
+      // Has to be 'light only'
+      if (range.AtEnd() && values->length() == 2 &&
+          To<CSSIdentifierValue>(values->Item(0)).GetValueID() ==
+              CSSValueID::kLight) {
+        return values;
+      }
+      return nullptr;
+    }
+    CSSValue* value =
+        css_property_parser_helpers::ConsumeIdent<CSSValueID::kDark,
+                                                  CSSValueID::kLight>(range);
+    if (!value)
+      value = css_property_parser_helpers::ConsumeCustomIdent(range, context);
+    if (!value)
+      return nullptr;
+    values->Append(*value);
+  } while (!range.AtEnd());
+  return values;
+}
+
+const CSSValue* ColorScheme::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  if (style.ColorScheme().IsEmpty())
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  for (auto ident : style.ColorScheme()) {
+    list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(ident));
+  }
+  return list;
+}
+
+const CSSValue* ColorScheme::InitialValue() const {
+  return CSSIdentifierValue::Create(CSSValueID::kAuto);
+}
+
+void ColorScheme::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetColorScheme(Vector<AtomicString>());
+  state.Style()->SetDarkColorScheme(false);
+}
+
+void ColorScheme::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetColorScheme(state.ParentStyle()->ColorScheme());
+  state.Style()->SetDarkColorScheme(state.ParentStyle()->DarkColorScheme());
+}
+
+void ColorScheme::ApplyValue(StyleResolverState& state,
+                             const CSSValue& value) const {
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK(identifier_value->GetValueID() == CSSValueID::kAuto);
+    state.Style()->SetColorScheme(Vector<AtomicString>());
+    state.Style()->SetDarkColorScheme(false);
+  } else if (const auto* scheme_list = DynamicTo<CSSValueList>(value)) {
+    bool prefers_dark =
+        state.GetDocument().GetStyleEngine().GetPreferredColorScheme() ==
+        PreferredColorScheme::kDark;
+    Vector<AtomicString> color_schemes;
+    for (auto& item : *scheme_list) {
+      if (const auto* custom_ident = DynamicTo<CSSCustomIdentValue>(*item)) {
+        color_schemes.push_back(custom_ident->Value());
+      } else if (const auto* ident = DynamicTo<CSSIdentifierValue>(*item)) {
+        color_schemes.push_back(ident->CssText());
+        if (prefers_dark && ident->GetValueID() == CSSValueID::kDark)
+          state.Style()->SetDarkColorScheme(true);
+      } else {
+        NOTREACHED();
+      }
+    }
+    state.Style()->SetColorScheme(color_schemes);
+  } else {
+    NOTREACHED();
+  }
 }
 
 const CSSValue* ColumnCount::ParseSingleValue(

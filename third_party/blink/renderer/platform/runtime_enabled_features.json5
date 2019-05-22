@@ -312,6 +312,11 @@
       name: "CSSCalcAsInt",
       status: "test",
     },
+    // Support for the CSS color-scheme property from the css-color-adjust spec.
+    // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
+    {
+      name: "CSSColorScheme",
+    },
     {
       name: "CSSFocusVisible",
       status: "experimental",

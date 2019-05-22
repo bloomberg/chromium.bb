@@ -114,7 +114,7 @@ Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
                                           const CSSValue& value,
                                           bool for_visited_link) {
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, state.Style()->GetColor(), state.Style()->GetColorScheme(),
+      value, state.Style()->GetColor(), state.Style()->UsedColorScheme(),
       for_visited_link);
 }
 
@@ -1370,7 +1370,7 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor)
     return StyleColor::CurrentColor();
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, Color(), state.Style()->GetColorScheme(), for_visited_link);
+      value, Color(), state.Style()->UsedColorScheme(), for_visited_link);
 }
 
 StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
@@ -1384,7 +1384,7 @@ StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
       return StyleAutoColor::AutoColor();
   }
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, Color(), state.Style()->GetColorScheme(), for_visited_link);
+      value, Color(), state.Style()->UsedColorScheme(), for_visited_link);
 }
 
 SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
@@ -1742,7 +1742,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
       return value;
     if (StyleColor::IsColorKeyword(value_id)) {
       ColorScheme scheme =
-          state ? state->Style()->GetColorScheme() : ColorScheme::kLight;
+          state ? state->Style()->UsedColorScheme() : ColorScheme::kLight;
       Color color = document.GetTextLinkColors().ColorFromCSSValue(
           value, Color(), scheme, false);
       return *CSSColorValue::Create(color.Rgb());

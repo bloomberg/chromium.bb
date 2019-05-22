@@ -1034,7 +1034,7 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
   initial_style->SetEffectiveZoom(initial_style->Zoom());
 
   if (document.GetStyleEngine().GetColorScheme() == ColorScheme::kDark)
-    initial_style->SetDarkColorScheme();
+    initial_style->SetDarkColorScheme(true);
 
   FontDescription document_font_description =
       initial_style->GetFontDescription();

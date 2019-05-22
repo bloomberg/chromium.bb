@@ -36931,6 +36931,7 @@ Called by update_use_counter_css.py.-->
   <int value="634" label="inset-inline-end"/>
   <int value="635" label="inset-inline"/>
   <int value="636" label="inset"/>
+  <int value="637" label="color-scheme"/>
 </enum>
 
 <enum name="MappedEditingCommands">

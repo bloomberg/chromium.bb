@@ -1179,6 +1179,9 @@
     "dark",
     "light",
 
+    // color-scheme
+    "only",
+
     // (prefers-reduced-motion:) media feature
     "reduce",
   ],

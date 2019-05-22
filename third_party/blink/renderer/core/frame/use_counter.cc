@@ -1225,6 +1225,8 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 635;
     case CSSPropertyID::kInset:
       return 636;
+    case CSSPropertyID::kColorScheme:
+      return 637;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in

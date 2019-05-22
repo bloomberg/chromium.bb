@@ -553,6 +553,11 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForFirstLetter(style);
   }
 
+  if (style.IsColorInternalText()) {
+    style.SetColor(
+        LayoutTheme::GetTheme().RootElementColor(style.UsedColorScheme()));
+  }
+
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&
       !LayoutParentStyleForcesZIndexToCreateStackingContext(
