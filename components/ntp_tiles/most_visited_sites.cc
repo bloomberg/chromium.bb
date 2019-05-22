@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/features.h"
@@ -179,6 +180,12 @@ bool MostVisitedSites::DoesSourceExist(TileSource source) const {
       return supervisor_ != nullptr;
     case TileSource::CUSTOM_LINKS:
       return custom_links_ != nullptr;
+    case TileSource::EXPLORE:
+#if defined(OS_ANDROID)
+      return true;
+#else
+      return false;
+#endif
   }
   NOTREACHED();
   return false;
