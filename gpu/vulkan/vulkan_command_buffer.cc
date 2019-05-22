@@ -11,6 +11,70 @@
 
 namespace gpu {
 
+namespace {
+
+VkPipelineStageFlags GetPipelineStageFlags(const VkImageLayout layout) {
+  switch (layout) {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+      return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+      return VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+      return VK_PIPELINE_STAGE_HOST_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+      return VK_PIPELINE_STAGE_TRANSFER_BIT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+      return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+      return VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
+             VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT |
+             VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
+             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+             VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+      return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    default:
+      NOTREACHED() << "layout=" << layout;
+  }
+  return 0;
+}
+
+VkAccessFlags GetAccessMask(const VkImageLayout layout) {
+  switch (layout) {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+      return 0;
+    case VK_IMAGE_LAYOUT_GENERAL:
+      DLOG(WARNING) << "VK_IMAGE_LAYOUT_GENERAL is used.";
+      return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+             VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT |
+             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_HOST_WRITE_BIT |
+             VK_ACCESS_HOST_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+             VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+             VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+      return VK_ACCESS_HOST_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+      return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+      return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+      return VK_ACCESS_TRANSFER_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+      return VK_ACCESS_TRANSFER_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+      return 0;
+    default:
+      NOTREACHED() << "layout=" << layout;
+  }
+  return 0;
+}
+
+}  // namespace
+
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDeviceQueue* device_queue,
                                          VulkanCommandPool* command_pool,
                                          bool primary)
@@ -133,6 +197,50 @@ bool VulkanCommandBuffer::SubmissionFinished() {
     return true;
 
   return device_queue_->GetFenceHelper()->HasPassed(submission_fence_);
+}
+
+void VulkanCommandBuffer::TransitionImageLayout(VkImage image,
+                                                VkImageLayout old_layout,
+                                                VkImageLayout new_layout) {
+  VkImageMemoryBarrier barrier = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      .srcAccessMask = GetAccessMask(old_layout),
+      .dstAccessMask = GetAccessMask(new_layout),
+      .oldLayout = old_layout,
+      .newLayout = new_layout,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .image = image,
+      .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+      .subresourceRange.baseMipLevel = 0,
+      .subresourceRange.levelCount = 1,
+      .subresourceRange.baseArrayLayer = 0,
+      .subresourceRange.layerCount = 1,
+  };
+  vkCmdPipelineBarrier(command_buffer_, GetPipelineStageFlags(old_layout),
+                       GetPipelineStageFlags(new_layout), 0, 0, nullptr, 0,
+                       nullptr, 1, &barrier);
+}
+
+void VulkanCommandBuffer::CopyBufferToImage(VkBuffer buffer,
+                                            VkImage image,
+                                            uint32_t buffer_width,
+                                            uint32_t buffer_height,
+                                            uint32_t width,
+                                            uint32_t height) {
+  VkBufferImageCopy region = {
+      .bufferOffset = 0,
+      .bufferRowLength = buffer_width,
+      .bufferImageHeight = buffer_height,
+      .imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+      .imageSubresource.mipLevel = 0,
+      .imageSubresource.baseArrayLayer = 0,
+      .imageSubresource.layerCount = 1,
+      .imageOffset = {0, 0, 0},
+      .imageExtent = {width, height, 1},
+  };
+  vkCmdCopyBufferToImage(command_buffer_, buffer, image,
+                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 }
 
 void VulkanCommandBuffer::PostExecution() {

@@ -73,6 +73,8 @@ struct VulkanFunctionPointers {
   PFN_vkCreateDevice vkCreateDeviceFn = nullptr;
   PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerPropertiesFn =
       nullptr;
+  PFN_vkGetPhysicalDeviceMemoryProperties
+      vkGetPhysicalDeviceMemoryPropertiesFn = nullptr;
   PFN_vkGetPhysicalDeviceQueueFamilyProperties
       vkGetPhysicalDeviceQueueFamilyPropertiesFn = nullptr;
   PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDevicePropertiesFn = nullptr;
@@ -90,8 +92,10 @@ struct VulkanFunctionPointers {
   PFN_vkAllocateCommandBuffers vkAllocateCommandBuffersFn = nullptr;
   PFN_vkAllocateDescriptorSets vkAllocateDescriptorSetsFn = nullptr;
   PFN_vkAllocateMemory vkAllocateMemoryFn = nullptr;
+  PFN_vkBindBufferMemory vkBindBufferMemoryFn = nullptr;
   PFN_vkBindImageMemory vkBindImageMemoryFn = nullptr;
   PFN_vkCreateCommandPool vkCreateCommandPoolFn = nullptr;
+  PFN_vkCreateBuffer vkCreateBufferFn = nullptr;
   PFN_vkCreateDescriptorPool vkCreateDescriptorPoolFn = nullptr;
   PFN_vkCreateDescriptorSetLayout vkCreateDescriptorSetLayoutFn = nullptr;
   PFN_vkCreateFence vkCreateFenceFn = nullptr;
@@ -102,6 +106,7 @@ struct VulkanFunctionPointers {
   PFN_vkCreateSampler vkCreateSamplerFn = nullptr;
   PFN_vkCreateSemaphore vkCreateSemaphoreFn = nullptr;
   PFN_vkCreateShaderModule vkCreateShaderModuleFn = nullptr;
+  PFN_vkDestroyBuffer vkDestroyBufferFn = nullptr;
   PFN_vkDestroyCommandPool vkDestroyCommandPoolFn = nullptr;
   PFN_vkDestroyDescriptorPool vkDestroyDescriptorPoolFn = nullptr;
   PFN_vkDestroyDescriptorSetLayout vkDestroyDescriptorSetLayoutFn = nullptr;
@@ -118,10 +123,13 @@ struct VulkanFunctionPointers {
   PFN_vkFreeCommandBuffers vkFreeCommandBuffersFn = nullptr;
   PFN_vkFreeDescriptorSets vkFreeDescriptorSetsFn = nullptr;
   PFN_vkFreeMemory vkFreeMemoryFn = nullptr;
+  PFN_vkGetBufferMemoryRequirements vkGetBufferMemoryRequirementsFn = nullptr;
   PFN_vkGetDeviceQueue vkGetDeviceQueueFn = nullptr;
   PFN_vkGetFenceStatus vkGetFenceStatusFn = nullptr;
   PFN_vkGetImageMemoryRequirements vkGetImageMemoryRequirementsFn = nullptr;
+  PFN_vkMapMemory vkMapMemoryFn = nullptr;
   PFN_vkResetFences vkResetFencesFn = nullptr;
+  PFN_vkUnmapMemory vkUnmapMemoryFn = nullptr;
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
@@ -165,6 +173,7 @@ struct VulkanFunctionPointers {
   // Command Buffer functions
   PFN_vkBeginCommandBuffer vkBeginCommandBufferFn = nullptr;
   PFN_vkCmdBeginRenderPass vkCmdBeginRenderPassFn = nullptr;
+  PFN_vkCmdCopyBufferToImage vkCmdCopyBufferToImageFn = nullptr;
   PFN_vkCmdEndRenderPass vkCmdEndRenderPassFn = nullptr;
   PFN_vkCmdExecuteCommands vkCmdExecuteCommandsFn = nullptr;
   PFN_vkCmdNextSubpass vkCmdNextSubpassFn = nullptr;
@@ -208,6 +217,8 @@ struct VulkanFunctionPointers {
 #define vkCreateDevice gpu::GetVulkanFunctionPointers()->vkCreateDeviceFn
 #define vkEnumerateDeviceLayerProperties \
   gpu::GetVulkanFunctionPointers()->vkEnumerateDeviceLayerPropertiesFn
+#define vkGetPhysicalDeviceMemoryProperties \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceMemoryPropertiesFn
 #define vkGetPhysicalDeviceQueueFamilyProperties \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceQueueFamilyPropertiesFn
 #define vkGetPhysicalDeviceProperties \
@@ -230,9 +241,12 @@ struct VulkanFunctionPointers {
 #define vkAllocateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkAllocateDescriptorSetsFn
 #define vkAllocateMemory gpu::GetVulkanFunctionPointers()->vkAllocateMemoryFn
+#define vkBindBufferMemory \
+  gpu::GetVulkanFunctionPointers()->vkBindBufferMemoryFn
 #define vkBindImageMemory gpu::GetVulkanFunctionPointers()->vkBindImageMemoryFn
 #define vkCreateCommandPool \
   gpu::GetVulkanFunctionPointers()->vkCreateCommandPoolFn
+#define vkCreateBuffer gpu::GetVulkanFunctionPointers()->vkCreateBufferFn
 #define vkCreateDescriptorPool \
   gpu::GetVulkanFunctionPointers()->vkCreateDescriptorPoolFn
 #define vkCreateDescriptorSetLayout \
@@ -248,6 +262,7 @@ struct VulkanFunctionPointers {
 #define vkCreateSemaphore gpu::GetVulkanFunctionPointers()->vkCreateSemaphoreFn
 #define vkCreateShaderModule \
   gpu::GetVulkanFunctionPointers()->vkCreateShaderModuleFn
+#define vkDestroyBuffer gpu::GetVulkanFunctionPointers()->vkDestroyBufferFn
 #define vkDestroyCommandPool \
   gpu::GetVulkanFunctionPointers()->vkDestroyCommandPoolFn
 #define vkDestroyDescriptorPool \
@@ -274,11 +289,15 @@ struct VulkanFunctionPointers {
 #define vkFreeDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkFreeDescriptorSetsFn
 #define vkFreeMemory gpu::GetVulkanFunctionPointers()->vkFreeMemoryFn
+#define vkGetBufferMemoryRequirements \
+  gpu::GetVulkanFunctionPointers()->vkGetBufferMemoryRequirementsFn
 #define vkGetDeviceQueue gpu::GetVulkanFunctionPointers()->vkGetDeviceQueueFn
 #define vkGetFenceStatus gpu::GetVulkanFunctionPointers()->vkGetFenceStatusFn
 #define vkGetImageMemoryRequirements \
   gpu::GetVulkanFunctionPointers()->vkGetImageMemoryRequirementsFn
+#define vkMapMemory gpu::GetVulkanFunctionPointers()->vkMapMemoryFn
 #define vkResetFences gpu::GetVulkanFunctionPointers()->vkResetFencesFn
+#define vkUnmapMemory gpu::GetVulkanFunctionPointers()->vkUnmapMemoryFn
 #define vkUpdateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
 #define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
@@ -324,6 +343,8 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkBeginCommandBufferFn
 #define vkCmdBeginRenderPass \
   gpu::GetVulkanFunctionPointers()->vkCmdBeginRenderPassFn
+#define vkCmdCopyBufferToImage \
+  gpu::GetVulkanFunctionPointers()->vkCmdCopyBufferToImageFn
 #define vkCmdEndRenderPass \
   gpu::GetVulkanFunctionPointers()->vkCmdEndRenderPassFn
 #define vkCmdExecuteCommands \

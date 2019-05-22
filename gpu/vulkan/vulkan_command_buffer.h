@@ -45,6 +45,16 @@ class VULKAN_EXPORT VulkanCommandBuffer {
   // is finished.
   bool SubmissionFinished();
 
+  void TransitionImageLayout(VkImage image,
+                             VkImageLayout old_layout,
+                             VkImageLayout new_layout);
+  void CopyBufferToImage(VkBuffer buffer,
+                         VkImage image,
+                         uint32_t buffer_width,
+                         uint32_t buffer_height,
+                         uint32_t width,
+                         uint32_t height);
+
  private:
   friend class CommandBufferRecorderBase;
 

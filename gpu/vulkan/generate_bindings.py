@@ -31,6 +31,7 @@ VULKAN_INSTANCE_FUNCTIONS = [
 VULKAN_PHYSICAL_DEVICE_FUNCTIONS = [
 { 'name': 'vkCreateDevice' },
 { 'name': 'vkEnumerateDeviceLayerProperties' },
+{ 'name': 'vkGetPhysicalDeviceMemoryProperties'},
 { 'name': 'vkGetPhysicalDeviceQueueFamilyProperties' },
 { 'name': 'vkGetPhysicalDeviceProperties' },
 # The following functions belong here but are handled specially:
@@ -44,8 +45,10 @@ VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkAllocateCommandBuffers' },
 { 'name': 'vkAllocateDescriptorSets' },
 { 'name': 'vkAllocateMemory' },
+{ 'name': 'vkBindBufferMemory' },
 { 'name': 'vkBindImageMemory' },
 { 'name': 'vkCreateCommandPool' },
+{ 'name': 'vkCreateBuffer' },
 { 'name': 'vkCreateDescriptorPool' },
 { 'name': 'vkCreateDescriptorSetLayout' },
 { 'name': 'vkCreateFence' },
@@ -56,6 +59,7 @@ VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkCreateSampler' },
 { 'name': 'vkCreateSemaphore' },
 { 'name': 'vkCreateShaderModule' },
+{ 'name': 'vkDestroyBuffer' },
 { 'name': 'vkDestroyCommandPool' },
 { 'name': 'vkDestroyDescriptorPool' },
 { 'name': 'vkDestroyDescriptorSetLayout' },
@@ -72,10 +76,13 @@ VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkFreeCommandBuffers' },
 { 'name': 'vkFreeDescriptorSets' },
 { 'name': 'vkFreeMemory' },
+{ 'name': 'vkGetBufferMemoryRequirements' },
 { 'name': 'vkGetDeviceQueue' },
 { 'name': 'vkGetFenceStatus' },
 { 'name': 'vkGetImageMemoryRequirements' },
+{ 'name': 'vkMapMemory' },
 { 'name': 'vkResetFences' },
+{ 'name': 'vkUnmapMemory' },
 { 'name': 'vkUpdateDescriptorSets' },
 { 'name': 'vkWaitForFences' },
 ]
@@ -110,6 +117,7 @@ VULKAN_QUEUE_FUNCTIONS = [
 VULKAN_COMMAND_BUFFER_FUNCTIONS = [
 { 'name': 'vkBeginCommandBuffer' },
 { 'name': 'vkCmdBeginRenderPass' },
+{ 'name': 'vkCmdCopyBufferToImage' },
 { 'name': 'vkCmdEndRenderPass' },
 { 'name': 'vkCmdExecuteCommands' },
 { 'name': 'vkCmdNextSubpass' },

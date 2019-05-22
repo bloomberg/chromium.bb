@@ -94,6 +94,13 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
   if (!vkEnumerateDeviceLayerPropertiesFn)
     return false;
 
+  vkGetPhysicalDeviceMemoryPropertiesFn =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties>(
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkGetPhysicalDeviceMemoryProperties"));
+  if (!vkGetPhysicalDeviceMemoryPropertiesFn)
+    return false;
+
   vkGetPhysicalDeviceQueueFamilyPropertiesFn =
       reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
           vkGetInstanceProcAddrFn(vk_instance,
@@ -128,6 +135,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkAllocateMemoryFn)
     return false;
 
+  vkBindBufferMemoryFn = reinterpret_cast<PFN_vkBindBufferMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkBindBufferMemory"));
+  if (!vkBindBufferMemoryFn)
+    return false;
+
   vkBindImageMemoryFn = reinterpret_cast<PFN_vkBindImageMemory>(
       vkGetDeviceProcAddrFn(vk_device, "vkBindImageMemory"));
   if (!vkBindImageMemoryFn)
@@ -136,6 +148,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkCreateCommandPoolFn = reinterpret_cast<PFN_vkCreateCommandPool>(
       vkGetDeviceProcAddrFn(vk_device, "vkCreateCommandPool"));
   if (!vkCreateCommandPoolFn)
+    return false;
+
+  vkCreateBufferFn = reinterpret_cast<PFN_vkCreateBuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateBuffer"));
+  if (!vkCreateBufferFn)
     return false;
 
   vkCreateDescriptorPoolFn = reinterpret_cast<PFN_vkCreateDescriptorPool>(
@@ -187,6 +204,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkCreateShaderModuleFn = reinterpret_cast<PFN_vkCreateShaderModule>(
       vkGetDeviceProcAddrFn(vk_device, "vkCreateShaderModule"));
   if (!vkCreateShaderModuleFn)
+    return false;
+
+  vkDestroyBufferFn = reinterpret_cast<PFN_vkDestroyBuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyBuffer"));
+  if (!vkDestroyBufferFn)
     return false;
 
   vkDestroyCommandPoolFn = reinterpret_cast<PFN_vkDestroyCommandPool>(
@@ -270,6 +292,12 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkFreeMemoryFn)
     return false;
 
+  vkGetBufferMemoryRequirementsFn =
+      reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(
+          vkGetDeviceProcAddrFn(vk_device, "vkGetBufferMemoryRequirements"));
+  if (!vkGetBufferMemoryRequirementsFn)
+    return false;
+
   vkGetDeviceQueueFn = reinterpret_cast<PFN_vkGetDeviceQueue>(
       vkGetDeviceProcAddrFn(vk_device, "vkGetDeviceQueue"));
   if (!vkGetDeviceQueueFn)
@@ -286,9 +314,19 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetImageMemoryRequirementsFn)
     return false;
 
+  vkMapMemoryFn = reinterpret_cast<PFN_vkMapMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkMapMemory"));
+  if (!vkMapMemoryFn)
+    return false;
+
   vkResetFencesFn = reinterpret_cast<PFN_vkResetFences>(
       vkGetDeviceProcAddrFn(vk_device, "vkResetFences"));
   if (!vkResetFencesFn)
+    return false;
+
+  vkUnmapMemoryFn = reinterpret_cast<PFN_vkUnmapMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkUnmapMemory"));
+  if (!vkUnmapMemoryFn)
     return false;
 
   vkUpdateDescriptorSetsFn = reinterpret_cast<PFN_vkUpdateDescriptorSets>(
@@ -399,6 +437,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkCmdBeginRenderPassFn = reinterpret_cast<PFN_vkCmdBeginRenderPass>(
       vkGetDeviceProcAddrFn(vk_device, "vkCmdBeginRenderPass"));
   if (!vkCmdBeginRenderPassFn)
+    return false;
+
+  vkCmdCopyBufferToImageFn = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdCopyBufferToImage"));
+  if (!vkCmdCopyBufferToImageFn)
     return false;
 
   vkCmdEndRenderPassFn = reinterpret_cast<PFN_vkCmdEndRenderPass>(

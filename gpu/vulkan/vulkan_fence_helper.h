@@ -107,6 +107,8 @@ class VULKAN_EXPORT VulkanFenceHelper {
       std::vector<VkSemaphore> semaphores);
   void EnqueueImageCleanupForSubmittedWork(VkImage image,
                                            VkDeviceMemory memory);
+  void EnqueueBufferCleanupForSubmittedWork(VkBuffer buffer,
+                                            VkDeviceMemory memory);
   // Helpers for VulkanCommandBuffer, VulkanCommandPool, etc
   template <typename T>
   void EnqueueVulkanObjectCleanupForSubmittedWork(std::unique_ptr<T> obj);

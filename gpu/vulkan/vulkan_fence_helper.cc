@@ -209,6 +209,23 @@ void VulkanFenceHelper::EnqueueImageCleanupForSubmittedWork(
       image, memory));
 }
 
+void VulkanFenceHelper::EnqueueBufferCleanupForSubmittedWork(
+    VkBuffer buffer,
+    VkDeviceMemory memory) {
+  if (buffer == VK_NULL_HANDLE && memory == VK_NULL_HANDLE)
+    return;
+
+  EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
+      [](VkBuffer buffer, VkDeviceMemory memory,
+         VulkanDeviceQueue* device_queue, bool /* is_lost */) {
+        if (buffer != VK_NULL_HANDLE)
+          vkDestroyBuffer(device_queue->GetVulkanDevice(), buffer, nullptr);
+        if (memory != VK_NULL_HANDLE)
+          vkFreeMemory(device_queue->GetVulkanDevice(), memory, nullptr);
+      },
+      buffer, memory));
+}
+
 void VulkanFenceHelper::PerformImmediateCleanup() {
   if (cleanup_tasks_.empty() && tasks_pending_fence_.empty())
     return;
