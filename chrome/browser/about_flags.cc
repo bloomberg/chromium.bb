@@ -3654,6 +3654,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHideArcMediaNotificationsName,
      flag_descriptions::kHideArcMediaNotificationsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kHideArcMediaNotifications)},
+
+    {"enable-cups-printers-ui-overhaul",
+     flag_descriptions::kCupsPrintersUiOverhaulName,
+     flag_descriptions::kCupsPrintersUiOverhaulDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCupsPrintersUiOverhaul)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

@@ -191,6 +191,10 @@ const base::Feature kCrostiniAppSearch{"CrostiniAppSearch",
 const base::Feature kCrostiniAppUninstallGui{"CrostiniAppUninstallGui",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the UI overhaul for Cups Printers in settings page.
+const base::Feature kCupsPrintersUiOverhaul{"CupsPrintersUiOverhaul",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable support for "Plugin VMs" on Chrome OS.
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 
