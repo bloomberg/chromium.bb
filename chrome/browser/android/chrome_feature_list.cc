@@ -175,6 +175,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabPersistentStoreTaskRunner,
     &kTabReparenting,
     &kTabSwitcherOnReturn,
+    &kTabToGTSAnimation,
     &kTrustedWebActivity,
     &kTrustedWebActivityPostMessage,
     &kTrustedWebActivityNotificationDelegationEnrolment,
@@ -532,6 +533,9 @@ const base::Feature kTabReparenting{"TabReparenting",
 
 const base::Feature kTabSwitcherOnReturn{"TabSwitcherOnReturn",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTabToGTSAnimation{"TabToGTSAnimation",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTrustedWebActivity{"TrustedWebActivity",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

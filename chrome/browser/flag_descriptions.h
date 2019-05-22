@@ -1040,6 +1040,9 @@ extern const char kTabGroupsAndroidDescription[];
 extern const char kTabGroupsUiImprovementsAndroidName[];
 extern const char kTabGroupsUiImprovementsAndroidDescription[];
 
+extern const char kTabToGTSAnimationAndroidName[];
+extern const char kTabToGTSAnimationAndroidDescription[];
+
 extern const char kTabGroupsName[];
 extern const char kTabGroupsDescription[];
 

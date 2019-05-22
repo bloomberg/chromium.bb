@@ -2892,6 +2892,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kTabSwitcherOnReturnVariations,
                                     "TabSwitcherOnReturn")},
 
+    {"enable-tab-to-gts-animation",
+     flag_descriptions::kTabToGTSAnimationAndroidName,
+     flag_descriptions::kTabToGTSAnimationAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabToGTSAnimation)},
+
     {"enable-tab-engagement-reporting",
      flag_descriptions::kTabEngagementReportingName,
      flag_descriptions::kTabEngagementReportingDescription, kOsAndroid,
