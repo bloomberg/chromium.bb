@@ -618,6 +618,16 @@ const char kBuiltInModuleKvStorageDescription[] =
     "infrastructure and import maps. The syntax and the APIs exposed are "
     "experimental and will change over time.";
 
+const char kDownloadAutoResumptionNativeName[] =
+    "Enable download auto-resumption in native";
+const char kDownloadAutoResumptionNativeDescription[] =
+    "Enables download auto-resumption in native";
+
+const char kDragToPinTabsName[] = "Drag to Modify Tab Pinnedness";
+const char kDragToPinTabsDescription[] =
+    "Allows users to drag tabs between pinned and unpinned tabs to modify the "
+    "pinned state of the tab.";
+
 const char kEnableBlinkGenPropertyTreesName[] = "Enable BlinkGenPropertyTrees";
 const char kEnableBlinkGenPropertyTreesDescription[] =
     "Enable a new compositing mode where Blink generates the compositor "
@@ -674,11 +684,6 @@ const char kEnableNetworkServiceInProcessName[] =
     "Runs network service in-process";
 const char kEnableNetworkServiceInProcessDescription[] =
     "Runs the network service in the browser process.";
-
-const char kDownloadAutoResumptionNativeName[] =
-    "Enable download auto-resumption in native";
-const char kDownloadAutoResumptionNativeDescription[] =
-    "Enables download auto-resumption in native";
 
 const char kEnableNewDownloadBackendName[] = "Enable new download backend";
 const char kEnableNewDownloadBackendDescription[] =

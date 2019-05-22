@@ -2572,6 +2572,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
 
+    {"drag-to-pin-tabs", flag_descriptions::kDragToPinTabsName,
+     flag_descriptions::kDragToPinTabsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDragToPinTabs)},
+
 #if defined(OS_ANDROID)
     {"enable-reader-mode-in-cct", flag_descriptions::kReaderModeInCCTName,
      flag_descriptions::kReaderModeInCCTDescription, kOsAndroid,

@@ -1316,6 +1316,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "drag-to-pin-tabs",
+    "owners": ["chrome-desktop-ui-seattle@google.com", "cyan", "tbergquist"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-new-download-backend",
     "owners": [ "shaktisahu", "dtrainor" ],
     "expiry_milestone": 76
