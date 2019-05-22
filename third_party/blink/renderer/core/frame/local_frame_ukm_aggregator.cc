@@ -129,6 +129,18 @@ void LocalFrameUkmAggregator::SetTickClockForTesting(
   clock_ = clock;
 }
 
+void LocalFrameUkmAggregator::RecordForcedStyleLayoutUMA(TimeDelta& duration) {
+  if (!calls_to_next_forced_style_layout_uma_) {
+    auto& record = absolute_metric_records_[kForcedStyleAndLayout];
+    record.uma_counter->CountMicroseconds(duration);
+    calls_to_next_forced_style_layout_uma_ =
+        base::RandInt(0, mean_calls_between_forced_style_layout_uma_ * 2);
+  } else {
+    DCHECK_GT(calls_to_next_forced_style_layout_uma_, 0u);
+    --calls_to_next_forced_style_layout_uma_;
+  }
+}
+
 void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
                                            TimeTicks start,
                                            TimeTicks end) {
@@ -142,10 +154,11 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   // ForcedStyleAndLayout happen so frequently on some pages that we overflow
   // the signed 32 counter for number of events in a 30 minute period. So
   // randomly record with probability 1/100.
-  if (record.uma_counter &&
-      (metric_index != static_cast<MetricId>(kForcedStyleAndLayout) ||
-       base::RandInt(0, 99) == 0)) {
-    record.uma_counter->CountMicroseconds(duration);
+  if (record.uma_counter) {
+    if (metric_index == static_cast<size_t>(kForcedStyleAndLayout))
+      RecordForcedStyleLayoutUMA(duration);
+    else
+      record.uma_counter->CountMicroseconds(duration);
   }
 
   // Only record ratios when inside a main frame.

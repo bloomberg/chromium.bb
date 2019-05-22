@@ -262,6 +262,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
   void ResetAllMetrics();
   unsigned SampleFramesToNextEvent();
 
+  // Implements throttling of the ForcedStyleAndLayoutUMA metric.
+  void RecordForcedStyleLayoutUMA(TimeDelta& duration);
+
   // To test event sampling. This and all future intervals will be the given
   // frame count, until this is called again.
   void FramesToNextEventForTest(unsigned num_frames) {
@@ -284,6 +287,10 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // is already beyond the throtting threshold.
   unsigned mean_frames_between_samples_ = 2000;
   unsigned frames_to_next_event_ = 0;
+
+  // Control for the ForcedStyleAndUpdate UMA metric sampling
+  unsigned mean_calls_between_forced_style_layout_uma_ = 100;
+  unsigned calls_to_next_forced_style_layout_uma_ = 0;
 
   // Test data, used for SampleFramesToNextEvent if present
   unsigned frames_to_next_event_for_test_ = 0;
