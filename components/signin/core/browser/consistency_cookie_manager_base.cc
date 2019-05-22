@@ -67,11 +67,10 @@ void ConsistencyCookieManagerBase::UpdateCookie() {
   base::Time now = base::Time::Now();
   base::Time expiry = now + base::TimeDelta::FromDays(2 * 365);  // Two years.
   net::CanonicalCookie cookie(
-      kCookieName, cookie_value,
-      "." + GaiaUrls::GetInstance()->gaia_url().host(), /*path=*/"/",
-      /*creation=*/now, /*expiration=*/expiry, /*last_access=*/now,
-      /*secure=*/true, /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
-      net::COOKIE_PRIORITY_DEFAULT);
+      kCookieName, cookie_value, GaiaUrls::GetInstance()->gaia_url().host(),
+      /*path=*/"/", /*creation=*/now, /*expiration=*/expiry,
+      /*last_access=*/now, /*secure=*/true, /*httponly=*/false,
+      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT);
   cookie_manager->SetCanonicalCookie(
       cookie, "https", net::CookieOptions(),
       network::mojom::CookieManager::SetCanonicalCookieCallback());

@@ -13,8 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/ssl/cert_verifier_browser_test.h"
-#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -26,7 +24,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -50,8 +47,7 @@ class TestConsistencyCookieManager
     // Listen to cookie changes.
     network::mojom::CookieChangeListenerPtr listener_ptr;
     cookie_listener_binding_.Bind(mojo::MakeRequest(&listener_ptr));
-    client->GetCookieManager()->AddCookieChangeListener(
-        GaiaUrls::GetInstance()->gaia_url(), kConsistencyCookieName,
+    client->GetCookieManager()->AddGlobalChangeListener(
         std::move(listener_ptr));
     // Subclasses have to call UpdateCookie() in the constructor.
     UpdateCookie();
@@ -77,7 +73,8 @@ class TestConsistencyCookieManager
   // CookieChangeListener:
   void OnCookieChange(const net::CanonicalCookie& cookie,
                       network::mojom::CookieChangeCause cause) override {
-    ASSERT_EQ(kConsistencyCookieName, cookie.Name());
+    if (cookie.Name() != kConsistencyCookieName)
+      return;
     if (!run_loop_quit_closure_.is_null())
       std::move(run_loop_quit_closure_).Run();
   }
@@ -92,7 +89,7 @@ class TestConsistencyCookieManager
 
 }  // namespace
 
-class ConsistencyCookieBrowserTest : public CertVerifierBrowserTest {
+class ConsistencyCookieBrowserTest : public InProcessBrowserTest {
  public:
   ConsistencyCookieBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
@@ -129,31 +126,23 @@ class ConsistencyCookieBrowserTest : public CertVerifierBrowserTest {
   }
 
  private:
-  // CertVerifierBrowserTest:
+  // InProcessBrowserTest:
   void SetUp() override {
     ASSERT_TRUE(https_server_.InitializeAndListen());
-    CertVerifierBrowserTest::SetUp();
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    const GURL& base_url = https_server_.base_url();
+    command_line->AppendSwitchASCII(switches::kGaiaUrl, base_url.spec());
   }
 
   void SetUpOnMainThread() override {
-    CertVerifierBrowserTest::SetUpOnMainThread();
-
-    // Configure the embedded test server.
-    // DNS rule for the Gaia URL.
-    host_resolver()->AddRule(GaiaUrls::GetInstance()->gaia_url().host(),
-                             https_server_.base_url().host());
-    // Whitelist all certs for the HTTPS server to prevent SSL errors.
-    auto cert = https_server_.GetCertificate();
-    net::CertVerifyResult verify_result;
-    verify_result.cert_status = 0;
-    verify_result.is_issued_by_known_root = true;
-    verify_result.verified_cert = cert;
-    mock_cert_verifier()->AddResultForCert(cert.get(), verify_result, net::OK);
-    // Start the server.
+    InProcessBrowserTest::SetUpOnMainThread();
     https_server_.StartAcceptingConnections();
 
-    Profile* profile = browser()->profile();
     // Setup the CookieConsistencyCookieManager
+    Profile* profile = browser()->profile();
     AccountReconcilor* reconcilor =
         AccountReconcilorFactory::GetForProfile(profile);
     std::unique_ptr<TestConsistencyCookieManager> consistency_cookie_manager =
@@ -170,9 +159,7 @@ class ConsistencyCookieBrowserTest : public CertVerifierBrowserTest {
 
 // Tests that the ConsistencyCookieManager can set and change the cookie in HTTP
 // and javascript.
-// TODO(https://crbug.com/964264): Fails on some bots with error
-// net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN.
-IN_PROC_BROWSER_TEST_F(ConsistencyCookieBrowserTest, DISABLED_Basic) {
+IN_PROC_BROWSER_TEST_F(ConsistencyCookieBrowserTest, Basic) {
   // Check the initial value.
   CheckCookieValue(std::string(kConsistencyCookieName) + "=initial_value");
   // Change the cookie.
