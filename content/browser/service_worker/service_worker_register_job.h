@@ -98,7 +98,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   };
 
   void set_registration(scoped_refptr<ServiceWorkerRegistration> registration);
-  ServiceWorkerRegistration* registration();
+  ServiceWorkerRegistration* registration() const;
   void set_new_version(ServiceWorkerVersion* version);
   ServiceWorkerVersion* new_version();
 
@@ -111,6 +111,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void ContinueWithUpdate(
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
+
+  bool IsUpdateCheckNeeded() const;
 
   // Trigger the UpdateCheckType::kAllScriptsBeforeStartWorker type check if
   // ServiceWorkerImportedScriptUpdateCheck is enabled.

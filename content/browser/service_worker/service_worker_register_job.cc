@@ -172,7 +172,7 @@ void ServiceWorkerRegisterJob::set_registration(
   internal_.registration = std::move(registration);
 }
 
-ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() {
+ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() const {
   DCHECK(phase_ >= REGISTER || job_type_ == UPDATE_JOB) << phase_;
   return internal_.registration.get();
 }
@@ -302,6 +302,25 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
   UpdateAndContinue();
 }
 
+bool ServiceWorkerRegisterJob::IsUpdateCheckNeeded() const {
+  ServiceWorkerVersion* newest_version = registration()->GetNewestVersion();
+
+  // Skip the update check if there is no newest service worker, which means
+  // that a new registration is created.
+  if (!newest_version)
+    return false;
+
+  // Skip the byte-to-byte comparison when either of the script type or the
+  // script url is updated.
+  if (newest_version->script_url() != script_url_ ||
+      newest_version->script_type() != worker_script_type_) {
+    DCHECK_EQ(job_type_, REGISTRATION_JOB);
+    return false;
+  }
+  // Need byte-to-byte comparison unless it should be forcefully skipped.
+  return !skip_script_comparison_;
+}
+
 void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
     ServiceWorkerUpdateChecker::UpdateStatusCallback callback) {
   DCHECK_EQ(GetUpdateCheckType(),
@@ -421,19 +440,12 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
   // PauseAfterDownload is used for an update check during start worker.
   bool need_to_pause_after_download =
       GetUpdateCheckType() == UpdateCheckType::kMainScriptDuringStartWorker &&
-      registration()->newest_installed_version() && !skip_script_comparison_;
+      IsUpdateCheckNeeded();
 
   // Module service workers don't support pause after download so we can't
   // perform script comparison.
   // TODO(asamidoi): Support pause after download in module workers.
   if (worker_script_type_ == blink::mojom::ScriptType::kModule) {
-    need_to_pause_after_download = false;
-  }
-
-  // Skip the byte-for-byte comparison when the script type is updated.
-  if (registration()->newest_installed_version() &&
-      registration()->newest_installed_version()->script_type() !=
-          worker_script_type_) {
     need_to_pause_after_download = false;
   }
 
@@ -461,14 +473,10 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
 
 // This function corresponds to the spec's [[Update]] algorithm.
 void ServiceWorkerRegisterJob::UpdateAndContinue() {
-  const Phase previous_phase = phase_;
   SetPhase(UPDATE);
-
   switch (GetUpdateCheckType()) {
     case UpdateCheckType::kAllScriptsBeforeStartWorker:
-      // Update check is not needed for new registration (|previous_phase| ==
-      // REGISTER).
-      if (skip_script_comparison_ || previous_phase == REGISTER) {
+      if (!IsUpdateCheckNeeded()) {
         StartWorkerForUpdate();
         return;
       }
