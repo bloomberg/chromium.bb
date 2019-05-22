@@ -9,6 +9,10 @@
 <video id="first" controls></video>
 
 <script>
+  if (accessibilityController) {
+    accessibilityController.reset();
+  }
+
   async_test((t) => {
     let first = document.getElementById("first");
 
@@ -22,26 +26,30 @@
       assert_equals(window.internals.interestedElement,
                     first,
                     "'first' should be interested.");
-      assert_equals(document.activeElement,
-                    first,
-                    "'first' should be focused.");
+      assert_not_equals(document.activeElement,
+                        first,
+                        "'first' should not yet be focused.");
+      assert_false(mockSnavService.canExitFocus,
+                  "We haven't yet focused, so we should not be able to exit.");
+      assert_true(mockSnavService.canSelectElement,
+                  "Should be able to select element.");
+      assert_false(mockSnavService.hasDefaultVideoControls,
+                   "Nothing is focused, no default controls");
+
+      eventSender.keyDown('Enter');
+      await snavCallback();
       assert_true(mockSnavService.canExitFocus,
-                  "Since 'first' is focused, we should be able to exit.");
+                  "Should be able to exit focus.");
       assert_true(mockSnavService.canSelectElement,
                   "Should be able to select element.");
       assert_true(mockSnavService.hasDefaultVideoControls,
-                 "Should have default controls");
-
-      eventSender.keyDown('Escape');
-      await snavCallback();
-      assert_false(mockSnavService.hasDefaultVideoControls,
-                  "Should have exited focus.");
+                  "Nothing first uses default controls");
       assert_equals(window.internals.interestedElement,
                     first,
                     "'first' should be interested.");
-      assert_not_equals(document.activeElement,
-                        first,
-                        "'first' should no longer be focused.");
+      assert_equals(document.activeElement,
+                    first,
+                    "'first' should be focused.");
       t.done();
     };
 

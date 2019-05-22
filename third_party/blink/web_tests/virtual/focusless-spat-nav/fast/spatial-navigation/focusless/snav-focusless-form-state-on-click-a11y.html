@@ -18,10 +18,6 @@
   mockSnavService.callback = notCalled;
 
   promise_test(async () => {
-    if (accessibilityController) {
-      accessibilityController.reset();
-    }
-
     let first = document.getElementById("first");
     let second = document.getElementById("second");
 
@@ -33,18 +29,18 @@
     assert_equals(window.internals.interestedElement,
                   first,
                   "'first' should be interested.");
-    assert_not_equals(document.activeElement,
-                      first,
-                      "'first' should not yet be focused.");
-    assert_false(mockSnavService.canExitFocus,
-                 "Nothing focused, should not be able to exit focus.");
+    assert_equals(document.activeElement,
+                  first,
+                  "'first' should be focused.");
+    assert_true(mockSnavService.canExitFocus,
+                 "Should be able to blur 'first'.");
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
-    assert_false(mockSnavService.hasNextFormElement,
+    assert_true(mockSnavService.hasNextFormElement,
                  "Should be able to move to next form element.");
 
+    // State should be unchanged after hitting enter.
     eventSender.keyDown('Enter');
-    await snavCallback();
     assert_true(mockSnavService.canExitFocus,
                 "Should be able to exit focus.");
     assert_true(mockSnavService.canSelectElement,

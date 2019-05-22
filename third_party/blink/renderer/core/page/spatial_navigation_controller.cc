@@ -105,6 +105,20 @@ bool IsFocused(Element* element) {
   return element && element->IsFocused();
 }
 
+bool IsInAccessibilityMode(Page* page) {
+  Frame* frame = page->GetFocusController().FocusedOrMainFrame();
+  auto* local_frame = DynamicTo<LocalFrame>(frame);
+  if (!local_frame)
+    return false;
+
+  Document* document = local_frame->GetDocument();
+  if (!document)
+    return false;
+
+  // We do not support focusless spatial navigation in accessibility mode.
+  return document->ExistingAXObjectCache();
+}
+
 }  // namespace
 
 SpatialNavigationController::SpatialNavigationController(Page& page)
@@ -385,9 +399,17 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
           element->BoundingBoxForScrollIntoView(), WebScrollIntoViewParams());
     }
 
-    DispatchMouseMoveAt(interest_element_);
+    // Despite the name, we actually do move focus in "focusless" mode if we're
+    // also in accessibility mode since much of the existing machinery is tied
+    // to the concept of focus.
+    if (!IsInAccessibilityMode(page_)) {
+      DispatchMouseMoveAt(interest_element_);
+      return;
+    }
 
-    return;
+    // Update |element| in order to use the non-focusless code to apply focus in
+    // accessibility mode.
+    element = interest_element_;
   }
 
   DispatchMouseMoveAt(element);

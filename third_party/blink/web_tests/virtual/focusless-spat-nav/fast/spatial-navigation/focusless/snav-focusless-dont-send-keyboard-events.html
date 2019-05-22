@@ -20,6 +20,10 @@
 <div id="third" tabindex="0">Third</div>
 
 <script>
+  if (accessibilityController) {
+    accessibilityController.reset();
+  }
+
   var resultMap = [
     ["Down", "first"],
     ["Down", "second"],
@@ -36,7 +40,7 @@
     e.addEventListener('keydown', no_keyboard_events_test.unreached_func(
         "Focusless SpatNav should not cause keydown on '" + id + "'"));
 
-    e.addEventListener('keydown', no_keyboard_events_test.unreached_func(
+    e.addEventListener('keyup', no_keyboard_events_test.unreached_func(
         "Focusless SpatNav should not cause keyup on '" + id + "'"));
   }
 
