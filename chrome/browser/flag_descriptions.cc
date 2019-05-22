@@ -2830,17 +2830,23 @@ const char kAshEnablePipRoundedCornersName[] =
 const char kAshEnablePipRoundedCornersDescription[] =
     "Enable rounded corners on the Picture-in-Picture window.";
 
+const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
+const char kAshEnableUnifiedDesktopDescription[] =
+    "Enable unified desktop mode which allows a window to span multiple "
+    "displays.";
+
+extern const char kAshNotificationStackingBarRedesignName[] =
+    "Redesigned notification stacking bar";
+extern const char kAshNotificationStackingBarRedesignDescription[] =
+    "Enables the redesigned notification stacking bar UI with a \"Clear all\" "
+    "button.";
+
 const char kAshSwapSideVolumeButtonsForOrientationName[] =
     "Swap side volume buttons to match screen orientation.";
 const char kAshSwapSideVolumeButtonsForOrientationDescription[] =
     "Make the side volume button that's closer to the top/right always "
     "increase the volume and the button that's closer to the bottom/left "
     "always decrease the volume.";
-
-const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
-const char kAshEnableUnifiedDesktopDescription[] =
-    "Enable unified desktop mode which allows a window to span multiple "
-    "displays.";
 
 const char kBulkPrintersName[] = "Bulk Printers Policy";
 const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
@@ -2906,6 +2912,17 @@ const char kDoubleTapToZoomInTabletModeDescription[] =
     "If Enabled, double tapping in webpages while in tablet mode will zoom the "
     "page.";
 
+const char kEnableAppDataSearchName[] = "Enable app data search in launcher";
+const char kEnableAppDataSearchDescription[] =
+    "Allow launcher search to access data available through Firebase App "
+    "Indexing";
+
+const char kEnableAppReinstallZeroStateName[] =
+    "Enable Zero State App Reinstall Suggestions.";
+const char kEnableAppReinstallZeroStateDescription[] =
+    "Enable Zero State App Reinstall Suggestions feature in launcher, which "
+    "will show app reinstall recommendations at end of zero state list.";
+
 const char kEnableAppGridGhostName[] = "App Grid Ghosting";
 const char kEnableAppGridGhostDescription[] =
     "Enables ghosting during an item drag in launcher.";
@@ -2915,11 +2932,6 @@ const char kEnableAppListSearchAutocompleteName[] =
 const char kEnableAppListSearchAutocompleteDescription[] =
     "Allow App List search box to autocomplete queries for Google searches and "
     "apps.";
-
-const char kEnableAppDataSearchName[] = "Enable app data search in launcher";
-const char kEnableAppDataSearchDescription[] =
-    "Allow launcher search to access data available through Firebase App "
-    "Indexing";
 
 const char kEnableArcUnifiedAudioFocusName[] =
     "Enable unified audio focus on ARC";
@@ -3180,17 +3192,7 @@ const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
 
-const char kEnableAppReinstallZeroStateName[] =
-    "Enable Zero State App Reinstall Suggestions.";
-const char kEnableAppReinstallZeroStateDescription[] =
-    "Enable Zero State App Reinstall Suggestions feature in launcher, which "
-    "will show app reinstall recommendations at end of zero state list.";
-
-extern const char kAshNotificationStackingBarRedesignName[] =
-    "Redesigned notification stacking bar";
-extern const char kAshNotificationStackingBarRedesignDescription[] =
-    "Enables the redesigned notification stacking bar UI with a \"Clear all\" "
-    "button.";
+// Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // defined(OS_CHROMEOS)
 

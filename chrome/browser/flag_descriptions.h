@@ -1691,11 +1691,14 @@ extern const char kAshEnablePersistentWindowBoundsDescription[];
 extern const char kAshEnablePipRoundedCornersName[];
 extern const char kAshEnablePipRoundedCornersDescription[];
 
-extern const char kAshSwapSideVolumeButtonsForOrientationName[];
-extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
-
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
+
+extern const char kAshNotificationStackingBarRedesignName[];
+extern const char kAshNotificationStackingBarRedesignDescription[];
+
+extern const char kAshSwapSideVolumeButtonsForOrientationName[];
+extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
 
 extern const char kBulkPrintersName[];
 extern const char kBulkPrintersDescription[];
@@ -1742,14 +1745,17 @@ extern const char kDisableTabletAutohideTitlebarsDescription[];
 extern const char kDoubleTapToZoomInTabletModeName[];
 extern const char kDoubleTapToZoomInTabletModeDescription[];
 
+extern const char kEnableAppDataSearchName[];
+extern const char kEnableAppDataSearchDescription[];
+
 extern const char kEnableAppGridGhostName[];
 extern const char kEnableAppGridGhostDescription[];
 
 extern const char kEnableAppListSearchAutocompleteName[];
 extern const char kEnableAppListSearchAutocompleteDescription[];
 
-extern const char kEnableAppDataSearchName[];
-extern const char kEnableAppDataSearchDescription[];
+extern const char kEnableAppReinstallZeroStateName[];
+extern const char kEnableAppReinstallZeroStateDescription[];
 
 extern const char kEnableArcUnifiedAudioFocusName[];
 extern const char kEnableArcUnifiedAudioFocusDescription[];
@@ -1915,11 +1921,7 @@ extern const char kVirtualKeyboardDescription[];
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
-extern const char kEnableAppReinstallZeroStateName[];
-extern const char kEnableAppReinstallZeroStateDescription[];
-
-extern const char kAshNotificationStackingBarRedesignName[];
-extern const char kAshNotificationStackingBarRedesignDescription[];
+// Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if defined(OS_CHROMEOS)
 
