@@ -1539,6 +1539,9 @@
                   '|chrome/browser/resources/settings/os_settings_resouces.grd'\
                   '|chrome/browser/resources/settings/os_settings_resouces_vulcanized.grd',
     },
+    'settings_os_settings': {
+      'filepath': 'chrome/browser/resources/settings/chromeos/',
+    },
     'settings_reset_prompt': {
       'filepath': 'chrome/browser/safe_browsing/settings_reset_prompt/'\
                   '|chrome/browser/ui/views/settings_reset_prompt',
@@ -2522,11 +2525,12 @@
                  'michaelpg+watch-md-settings@chromium.org',
                  'stevenjb+watch-md-settings@chromium.org',
                  'hsuregan+watch@chromium.org',
-                 'jhawkins+watch@chromium.org',
                  'jordynass+watch@chromium.org',
                  'maybelle+watch@chromium.org'],
     'settings_forked_os_settings': [
                  'maybelle@chromium.org'],
+    'settings_os_settings': [
+                 'jhawkins+watch@chromium.org'],
     'settings_reset_prompt': ['alito+watch@chromium.org'],
     'site_engagement': ['dominickn+watch-engagement@chromium.org'],
     'site_instance': ['ajwong+watch@chromium.org',
