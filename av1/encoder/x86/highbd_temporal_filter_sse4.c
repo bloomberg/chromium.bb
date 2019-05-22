@@ -218,7 +218,7 @@ static void highbd_apply_temporal_filter_luma_8(
   // Loop variables
   unsigned int h;
 
-  assert(strength >= 4 && strength <= 14 &&
+  assert(strength >= 0 && strength <= 14 &&
          "invalid adjusted temporal filter strength");
   assert(block_width == 8);
 
@@ -891,7 +891,7 @@ void av1_highbd_apply_temporal_filter_sse4_1(
   assert(block_height % 2 == 0 && "block height must be even");
   assert((ss_x == 0 || ss_x == 1) && (ss_y == 0 || ss_y == 1) &&
          "invalid chroma subsampling");
-  assert(strength >= 4 && strength <= 14 &&
+  assert(strength >= 0 && strength <= 14 &&
          "invalid adjusted temporal filter strength");
   assert(blk_fw[0] >= 0 && "filter weight must be positive");
   assert(
