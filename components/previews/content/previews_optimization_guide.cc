@@ -379,6 +379,11 @@ void PreviewsOptimizationGuide::UpdateHints(
   }
 }
 
+void PreviewsOptimizationGuide::ClearFetchedHints() {
+  DCHECK(hint_cache_);
+  hint_cache_->ClearFetchedHints();
+}
+
 void PreviewsOptimizationGuide::OnHintsUpdated(
     base::OnceClosure update_closure) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());

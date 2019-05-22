@@ -93,7 +93,9 @@ class PreviewsDeciderImpl : public PreviewsDecider,
                             uint64_t page_id);
 
   // Clears the history of the black list between |begin_time| and |end_time|,
-  // both inclusive.
+  // both inclusive. Additional, clears the appropriate data from the hint
+  // cache. TODO(mcrouse): Rename to denote clearing all necessary data,
+  // including the Fetched hints and the blacklist.
   void ClearBlackList(base::Time begin_time, base::Time end_time);
 
   // Change the status of whether to ignore the decisions made by

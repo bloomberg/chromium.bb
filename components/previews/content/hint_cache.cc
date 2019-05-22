@@ -121,6 +121,14 @@ bool HintCache::UpdateFetchedHints(
   return false;
 }
 
+void HintCache::ClearFetchedHints() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(hint_store_);
+  // TODO(mcrouse): Update to remove only fetched hints from |memory_cache_|.
+  memory_cache_.Clear();
+  hint_store_->ClearFetchedHintsFromDatabase();
+}
+
 bool HintCache::HasHint(const std::string& host) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   HintCacheStore::EntryKey hint_entry_key;

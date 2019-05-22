@@ -79,6 +79,10 @@ class HintCache {
       base::Time update_time,
       base::OnceClosure callback);
 
+  // Purge fetched hints from the owned |hint_store_| and reset
+  // the |memory_cache_|.
+  void ClearFetchedHints();
+
   // Returns whether the cache has a hint data for |host| locally (whether
   // in memory or persisted on disk).
   bool HasHint(const std::string& host) const;

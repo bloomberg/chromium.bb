@@ -435,6 +435,31 @@ void HintCacheStore::ClearComponentVersion() {
   component_hint_entry_key_prefix_.clear();
 }
 
+void HintCacheStore::ClearFetchedHintsFromDatabase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!data_update_in_flight_);
+
+  if (!IsAvailable()) {
+    return;
+  }
+
+  data_update_in_flight_ = true;
+  auto entries_to_save = std::make_unique<EntryVector>();
+
+  // TODO(mcrouse): Add histogram to record the number of hints being removed.
+  hint_entry_keys_.reset();
+
+  // Removes all |kFetchedHint| store entries. OnUpdateHints will handle
+  // updating status and re-filling hint_entry_keys with the hints still in the
+  // store.
+  database_->UpdateEntriesWithRemoveFilter(
+      std::move(entries_to_save),  // this should be empty.
+      base::BindRepeating(&DatabasePrefixFilter,
+                          GetFetchedHintEntryKeyPrefix()),
+      base::BindOnce(&HintCacheStore::OnUpdateHints,
+                     weak_ptr_factory_.GetWeakPtr(), base::DoNothing::Once()));
+}
+
 void HintCacheStore::MaybeLoadHintEntryKeys(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

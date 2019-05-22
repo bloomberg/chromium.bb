@@ -116,6 +116,9 @@ class PreviewsOptimizationGuide
   void UpdateHints(base::OnceClosure update_closure,
                    std::unique_ptr<PreviewsHints> hints);
 
+  // Clear all fetched hints known to |this|, including those persisted on disk.
+  void ClearFetchedHints();
+
   bool has_hints() const { return !!hints_; }
 
   // Set |time_clock_| for testing.

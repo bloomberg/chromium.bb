@@ -509,3 +509,64 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(HintsFetcherRemoteResponseType::kSuccessful,
                       HintsFetcherRemoteResponseType::kUnsuccessful,
                       HintsFetcherRemoteResponseType::kMalformed));
+
+IN_PROC_BROWSER_TEST_F(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherClearFetchedHints)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+  GURL url = https_url();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the follow histograms as OnePlatform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  EXPECT_GE(
+      RetryForHistogramUntilCountReached(
+          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
+      1);
+
+  LoadHintsForUrl(https_url());
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  // Verifies that the fetched hint is loaded and not the component hint as
+  // fetched hints are prioritized.
+
+  histogram_tester->ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(previews::HintCacheStore::StoreEntryType::kFetchedHint),
+      1);
+
+  histogram_tester->ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(
+          previews::HintCacheStore::StoreEntryType::kComponentHint),
+      0);
+
+  // Wipe the browser history - clear all the fetched hints.
+  browser()->profile()->Wipe();
+
+  // Try to load the same hint to confirm fetched hints are no longer there.
+  LoadHintsForUrl(https_url());
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  // Fetched Hints count should not change.
+  histogram_tester->ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(previews::HintCacheStore::StoreEntryType::kFetchedHint),
+      1);
+
+  // Component Hints count should increase.
+  histogram_tester->ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(
+          previews::HintCacheStore::StoreEntryType::kComponentHint),
+      1);
+}

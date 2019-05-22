@@ -210,6 +210,12 @@ class HintCacheStoreTest : public testing::Test {
     }
   }
 
+  void ClearFetchedHintsFromDatabase() {
+    hint_store()->ClearFetchedHintsFromDatabase();
+    db()->UpdateCallback(true);
+    db()->LoadCallback(true);
+  }
+
   bool IsMetadataSchemaEntryKeyPresent() const {
     return IsKeyPresent(HintCacheStore::GetMetadataTypeEntryKey(
         HintCacheStore::MetadataType::kSchema));
@@ -1234,5 +1240,111 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyCheckFetchedBeforeComponentHints) {
   }
 
   EXPECT_EQ(hint_entry_key, "2_2.0.0_domain1.org");
+}
+
+TEST_F(HintCacheStoreTest, ClearFetchedHints) {
+  base::HistogramTester histogram_tester;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  size_t initial_hint_count = 10;
+  base::Time update_time = base::Time().Now();
+  SeedInitialData(schema_state, initial_hint_count);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  base::Version version("2.0.0");
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_store()->MaybeCreateUpdateDataForComponentHints(
+          base::Version(kUpdateComponentVersion));
+  ASSERT_TRUE(update_data);
+
+  optimization_guide::proto::Hint hint1;
+  hint1.set_key("domain1.org");
+  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint1));
+  optimization_guide::proto::Hint hint2;
+  hint2.set_key("host.domain2.org");
+  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint2));
+
+  UpdateComponentHints(std::move(update_data));
+
+  // Add fetched hints to the store that overlap with the same hosts as the
+  // initial set.
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(update_time);
+
+  optimization_guide::proto::Hint fetched_hint1;
+  fetched_hint1.set_key("domain2.org");
+  fetched_hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
+  optimization_guide::proto::Hint fetched_hint2;
+  fetched_hint2.set_key("domain3.org");
+  fetched_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
+
+  UpdateFetchedHints(std::move(update_data));
+
+  // Hint for host.domain2.org should be a fetched hint ("3_" prefix)
+  // as fetched hints take priority.
+  std::string host_suffix = "host.domain2.org";
+  HintCacheStore::EntryKey hint_entry_key;
+  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  }
+
+  EXPECT_EQ(hint_entry_key, "3_domain2.org");
+
+  host_suffix = "subdomain.domain1.org";
+
+  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  }
+
+  EXPECT_EQ(hint_entry_key, "2_2.0.0_domain1.org");
+
+  // Remove the fetched hints from the HintCacheStore.
+  ClearFetchedHintsFromDatabase();
+
+  host_suffix = "domain1.org";
+  // Component hint should still exist.
+  EXPECT_TRUE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+
+  host_suffix = "domain3.org";
+  // Fetched hint should not still exist.
+  EXPECT_FALSE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+
+  // Add Components back - newer version.
+  base::Version version3("3.0.0");
+  std::unique_ptr<HintUpdateData> update_data2 =
+      hint_store()->MaybeCreateUpdateDataForComponentHints(version3);
+
+  ASSERT_TRUE(update_data2);
+
+  optimization_guide::proto::Hint new_hint2;
+  new_hint2.set_key("domain2.org");
+  new_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data2->MoveHintIntoUpdateData(std::move(new_hint2));
+
+  UpdateComponentHints(std::move(update_data2));
+
+  host_suffix = "host.domain2.org";
+  EXPECT_TRUE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(update_time);
+  optimization_guide::proto::Hint new_hint;
+  new_hint.set_key("domain1.org");
+  new_hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(new_hint));
+
+  UpdateFetchedHints(std::move(update_data));
+
+  // Add fetched hints to the store that overlap with the same hosts as the
+  // initial set.
+  host_suffix = "subdomain.domain1.org";
+
+  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  }
+
+  EXPECT_EQ(hint_entry_key, "3_domain1.org");
 }
 }  // namespace previews

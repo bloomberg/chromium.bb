@@ -187,6 +187,10 @@ void PreviewsDeciderImpl::ClearBlackList(base::Time begin_time,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   previews_black_list_->ClearBlackList(begin_time, end_time);
+
+  // Removes all fetched hints known to the owned optimization guide.
+  if (previews_opt_guide_)
+    previews_opt_guide_->ClearFetchedHints();
 }
 
 void PreviewsDeciderImpl::SetIgnorePreviewsBlacklistDecision(bool ignored) {

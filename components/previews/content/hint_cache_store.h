@@ -134,9 +134,12 @@ class HintCacheStore {
   // TODO(mcrouse): When called, fetched hints in the store that have expired
   // specified by |expiry_time_secs| will be purged and only the new hints and
   // non-expired hints are retained.
-
   void UpdateFetchedHints(std::unique_ptr<HintUpdateData> fetched_hints_data,
                           base::OnceClosure callback);
+
+  // Removes fetched hint store entries from |this|. |hint_entry_keys_| is
+  // updated after the removing fetched hint entries are removed.
+  void ClearFetchedHintsFromDatabase();
 
   // Finds the most specific hint entry key for the specified host. Returns
   // true if a hint entry key is found, in which case |out_hint_entry_key| is
