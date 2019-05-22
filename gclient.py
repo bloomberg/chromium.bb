@@ -1574,12 +1574,13 @@ it or fix the checkout.
       return patch_refs, target_branches
     for given_patch_ref in self._options.patch_refs:
       patch_repo, _, patch_ref = given_patch_ref.partition('@')
-      if not patch_repo or not patch_ref or ':' not in patch_ref:
+      if not patch_repo or not patch_ref:
         raise gclient_utils.Error(
             'Wrong revision format: %s should be of the form '
-            'patch_repo@target_branch:patch_ref.' % given_patch_ref)
-      target_branch, _, patch_ref = patch_ref.partition(':')
-      target_branches[patch_repo] = target_branch
+            'patch_repo@[target_branch:]patch_ref.' % given_patch_ref)
+      if ':' in patch_ref:
+        target_branch, _, patch_ref = patch_ref.partition(':')
+        target_branches[patch_repo] = target_branch
       patch_refs[patch_repo] = patch_ref
     return patch_refs, target_branches
 
@@ -2597,7 +2598,7 @@ def CMDsync(parser, args):
   parser.add_option('--patch-ref', action='append',
                     dest='patch_refs', metavar='GERRIT_REF', default=[],
                     help='Patches the given reference with the format '
-                         'dep@target-ref:patch-ref. '
+                         'dep@[target-ref:]patch-ref. '
                          'For |dep|, you can specify URLs as well as paths, '
                          'with URLs taking preference. '
                          '|patch-ref| will be applied to |dep|, rebased on top '
@@ -2607,7 +2608,10 @@ def CMDsync(parser, args):
                          '|target-ref| is the target branch against which a '
                          'patch was created, it is used to determine which '
                          'commits from the |patch-ref| actually constitute a '
-                         'patch.')
+                         'patch. If not given, we will iterate over all remote '
+                         'branches and select one that contains the revision '
+                         '|dep| is synced at. '
+                         'WARNING: |target-ref| will be mandatory soon.')
   parser.add_option('--with_branch_heads', action='store_true',
                     help='Clone git "branch_heads" refspecs in addition to '
                          'the default refspecs. This adds about 1/2GB to a '

@@ -351,6 +351,28 @@ class GitWrapper(SCMWrapper):
               self.Print('FAILED to break lock: %s: %s' % (to_break, ex))
               raise
 
+  # TODO(ehmaldonado): Remove after bot_update is modified to pass the patch's
+  # branch.
+  def _GetTargetBranchForCommit(self, commit):
+    """Get the remote branch a commit is part of."""
+    _WELL_KNOWN_BRANCHES = [
+        'refs/remotes/origin/master',
+        'refs/remotes/origin/infra/config',
+        'refs/remotes/origin/lkgr',
+    ]
+    for branch in _WELL_KNOWN_BRANCHES:
+      if scm.GIT.IsAncestor(self.checkout_path, commit, branch):
+        return branch
+    remote_refs = self._Capture(
+        ['for-each-ref', 'refs/remotes/%s' % self.remote,
+         '--format=%(refname)']).splitlines()
+    for ref in sorted(remote_refs, reverse=True):
+      if scm.GIT.IsAncestor(self.checkout_path, commit, ref):
+        return ref
+    self.Print('Failed to find a remote ref that contains %s. '
+               'Candidate refs were %s.' % (commit, remote_refs))
+    return None
+
   def apply_patch_ref(self, patch_repo, patch_ref, target_ref, options,
                       file_list):
     """Apply a patch on top of the revision we're synced at.
@@ -395,12 +417,13 @@ class GitWrapper(SCMWrapper):
 
     base_rev = self._Capture(['rev-parse', 'HEAD'])
 
-    if (not target_ref
-        or not target_ref.startswith(('refs/heads/', 'refs/branch-heads/'))):
+    if not target_ref:
+      target_ref = self._GetTargetBranchForCommit(base_rev) or base_rev
+    elif not target_ref.startswith(('refs/heads/', 'refs/branch-heads/')):
       # TODO(ehmaldonado): Support all refs.
       raise gclient_utils.Error(
-          'target_ref must be given and must be in refs/heads/** or '
-          'refs/branch-heads/**. Got %s instead.' % target_ref)
+          'target_ref must be in refs/heads/** or refs/branch-heads/**. '
+          'Got %s instead.' % target_ref)
     elif target_ref == 'refs/heads/master':
       # We handle refs/heads/master separately because bot_update treats it
       # differently than other refs: it will fetch refs/heads/foo to
