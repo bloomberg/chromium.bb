@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "components/gwp_asan/client/export.h"
@@ -223,16 +222,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
 
   bool is_partition_alloc_ = false;
 
-  // Required for a singleton to access the constructor.
-  friend base::NoDestructor<GuardedPageAllocator>;
-
   friend class BaseGpaTest;
   friend class CrashAnalyzerTest;
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, InternalError);
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
-  FRIEND_TEST_ALL_PREFIXES(GuardedPageAllocatorTest,
-                           GetNearestValidPageEdgeCases);
-  FRIEND_TEST_ALL_PREFIXES(GuardedPageAllocatorTest, GetErrorTypeEdgeCases);
 
   DISALLOW_COPY_AND_ASSIGN(GuardedPageAllocator);
 };
