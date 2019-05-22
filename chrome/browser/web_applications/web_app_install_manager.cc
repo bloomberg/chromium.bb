@@ -33,6 +33,20 @@ WebAppInstallManager::WebAppInstallManager(Profile* profile,
 
 WebAppInstallManager::~WebAppInstallManager() = default;
 
+void WebAppInstallManager::Shutdown() {
+  InstallManager::Shutdown();
+
+  {
+    TaskQueue empty;
+    task_queue_.swap(empty);
+    is_running_queued_task_ = false;
+  }
+  tasks_.clear();
+
+  web_contents_.reset();
+  web_contents_ready_ = false;
+}
+
 bool WebAppInstallManager::CanInstallWebApp(
     content::WebContents* web_contents) {
   Profile* web_contents_profile =

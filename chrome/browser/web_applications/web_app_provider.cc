@@ -227,16 +227,14 @@ void WebAppProvider::Observe(int type,
 }
 
 void WebAppProvider::ProfileDestroyed() {
-  // Do Reset() for each subsystem to nullify pointers (detach subsystems).
-  if (install_manager_)
-    install_manager_->Reset();
-
   // KeyedService::Shutdown() gets called when the profile is being destroyed,
   // but after DCHECK'ing that no RenderProcessHosts are being leaked. The
   // "chrome::NOTIFICATION_PROFILE_DESTROYED" notification gets sent before the
   // DCHECK so we use that to clean up RenderProcessHosts instead.
   if (pending_app_manager_)
     pending_app_manager_->Shutdown();
+
+  install_manager_->Shutdown();
 }
 
 void WebAppProvider::SetRegistryReadyCallback(base::OnceClosure callback) {

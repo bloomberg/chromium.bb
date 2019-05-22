@@ -39,6 +39,7 @@ class WebAppInstallManager final : public InstallManager {
   ~WebAppInstallManager() override;
 
   // InstallManager:
+  void Shutdown() override;
   bool CanInstallWebApp(content::WebContents* web_contents) override;
   void InstallWebAppFromManifest(content::WebContents* contents,
                                  WebappInstallSource install_source,
@@ -99,7 +100,8 @@ class WebAppInstallManager final : public InstallManager {
 
   // Tasks can be queued for sequential completion (to be run one at a time).
   // FIFO. This is a subset of |tasks_|.
-  base::queue<base::OnceClosure> task_queue_;
+  using TaskQueue = base::queue<base::OnceClosure>;
+  TaskQueue task_queue_;
   bool is_running_queued_task_ = false;
 
   // A single WebContents, shared between tasks in |task_queue_|.

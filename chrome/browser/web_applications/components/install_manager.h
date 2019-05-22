@@ -110,15 +110,13 @@ class InstallManager {
   explicit InstallManager(Profile* profile);
   virtual ~InstallManager();
 
+  virtual void Shutdown();
+
   // Loads |web_app_url| in a new WebContents and determines if it is
   // installable. Returns the WebContents and whether the app is installable or
   // not.
   void LoadWebAppAndCheckInstallability(const GURL& web_app_url,
                                         WebAppInstallabilityCheckCallback);
-
-  // Called before the web app system gets destroyed.
-  // TODO(calamity): Rename to Shutdown().
-  void Reset();
 
   void AddObserver(InstallManagerObserver* observer);
   void RemoveObserver(InstallManagerObserver* observer);
