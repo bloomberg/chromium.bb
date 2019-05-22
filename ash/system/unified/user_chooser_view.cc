@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -75,6 +76,7 @@ class AddUserButton : public views::Button, public views::ButtonListener {
 
 AddUserButton::AddUserButton(UserChooserDetailedViewController* controller)
     : Button(this), controller_(controller) {
+  SetID(VIEW_ID_ADD_USER_BUTTON);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(kUnifiedTopShortcutSpacing),
       kUnifiedTopShortcutSpacing));
@@ -190,6 +192,9 @@ UserItemButton::UserItemButton(int user_index,
       capture_icon_(new views::ImageView),
       name_(new views::Label),
       email_(new views::Label) {
+  DCHECK_GT(VIEW_ID_USER_ITEM_BUTTON_END,
+            VIEW_ID_USER_ITEM_BUTTON_START + user_index);
+  SetID(VIEW_ID_USER_ITEM_BUTTON_START + user_index);
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(0, kUnifiedTopShortcutSpacing),
       kUnifiedTopShortcutSpacing));

@@ -64,7 +64,7 @@ bool UnifiedSystemTrayTestApi::IsBubbleViewVisible(int view_id,
 void UnifiedSystemTrayTestApi::ClickBubbleView(int view_id) {
   views::View* view = GetBubbleView(view_id);
   if (view && view->GetVisible()) {
-    gfx::Point cursor_location(1, 1);
+    gfx::Point cursor_location = view->GetLocalBounds().CenterPoint();
     views::View::ConvertPointToScreen(view, &cursor_location);
 
     ui::test::EventGenerator generator(GetRootWindow(view->GetWidget()));

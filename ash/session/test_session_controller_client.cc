@@ -10,6 +10,7 @@
 #include "ash/login_status.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_pref_service_provider.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -19,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/user_type.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -209,18 +211,9 @@ void TestSessionControllerClient::RequestSignOut() {
 
 void TestSessionControllerClient::SwitchActiveUser(
     const AccountId& account_id) {
-  std::vector<uint32_t> session_order;
-  session_order.reserve(controller_->GetUserSessions().size());
-
-  for (const auto& user_session : controller_->GetUserSessions()) {
-    if (user_session->user_info.account_id == account_id) {
-      session_order.insert(session_order.begin(), user_session->session_id);
-    } else {
-      session_order.push_back(user_session->session_id);
-    }
-  }
-
-  controller_->SetUserSessionOrder(session_order);
+  controller_->CanSwitchActiveUser(
+      base::BindOnce(&TestSessionControllerClient::DoSwitchUser,
+                     weak_ptr_factory_.GetWeakPtr(), account_id));
 }
 
 void TestSessionControllerClient::CycleActiveUser(
@@ -265,7 +258,16 @@ void TestSessionControllerClient::CycleActiveUser(
   SwitchActiveUser((*it)->user_info.account_id);
 }
 
-void TestSessionControllerClient::ShowMultiProfileLogin() {}
+void TestSessionControllerClient::ShowMultiProfileLogin() {
+  views::Widget::InitParams params;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 400, 300);
+  params.context = Shell::GetPrimaryRootWindow();
+
+  multi_profile_login_widget_ = std::make_unique<views::Widget>();
+  multi_profile_login_widget_->Init(params);
+  multi_profile_login_widget_->Show();
+}
 
 void TestSessionControllerClient::EmitAshInitialized() {}
 
@@ -276,6 +278,25 @@ PrefService* TestSessionControllerClient::GetSigninScreenPrefService() {
 PrefService* TestSessionControllerClient::GetUserPrefService(
     const AccountId& account_id) {
   return prefs_provider_ ? prefs_provider_->GetUserPrefs(account_id) : nullptr;
+}
+
+void TestSessionControllerClient::DoSwitchUser(const AccountId& account_id,
+                                               bool switch_user) {
+  if (!switch_user)
+    return;
+
+  std::vector<uint32_t> session_order;
+  session_order.reserve(controller_->GetUserSessions().size());
+
+  for (const auto& user_session : controller_->GetUserSessions()) {
+    if (user_session->user_info.account_id == account_id) {
+      session_order.insert(session_order.begin(), user_session->session_id);
+    } else {
+      session_order.push_back(user_session->session_id);
+    }
+  }
+
+  controller_->SetUserSessionOrder(session_order);
 }
 
 }  // namespace ash

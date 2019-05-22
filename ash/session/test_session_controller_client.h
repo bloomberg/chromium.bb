@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "ash/public/cpp/session/session_controller_client.h"
@@ -16,6 +17,10 @@
 #include "base/optional.h"
 #include "base/token.h"
 #include "components/user_manager/user_type.h"
+
+namespace views {
+class Widget;
+}
 
 class AccountId;
 class PrefService;
@@ -114,6 +119,8 @@ class TestSessionControllerClient : public ash::SessionControllerClient {
   PrefService* GetUserPrefService(const AccountId& account_id) override;
 
  private:
+  void DoSwitchUser(const AccountId& account_id, bool switch_user);
+
   SessionControllerImpl* const controller_;
   TestPrefServiceProvider* const prefs_provider_;
 
@@ -122,6 +129,8 @@ class TestSessionControllerClient : public ash::SessionControllerClient {
 
   bool use_lower_case_user_id_ = true;
   int request_sign_out_count_ = 0;
+
+  std::unique_ptr<views::Widget> multi_profile_login_widget_;
 
   base::WeakPtrFactory<TestSessionControllerClient> weak_ptr_factory_{this};
 

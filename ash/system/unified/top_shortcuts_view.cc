@@ -41,6 +41,7 @@ class UserAvatarButton : public views::Button {
 
 UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
     : Button(listener) {
+  SetID(VIEW_ID_USER_AVATAR_BUTTON);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
   AddChildView(CreateUserAvatarView(0 /* user_index */));

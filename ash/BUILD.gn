@@ -1797,6 +1797,7 @@ test("ash_unittests") {
     "system/unified/unified_system_info_view_unittest.cc",
     "system/unified/unified_system_tray_controller_unittest.cc",
     "system/unified/unified_system_tray_unittest.cc",
+    "system/unified/user_chooser_detailed_view_controller_unittest.cc",
     "system/update/update_notification_controller_unittest.cc",
     "system/virtual_keyboard/virtual_keyboard_tray_unittest.cc",
     "test/ash_test_helper_unittest.cc",

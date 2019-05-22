@@ -56,15 +56,17 @@ void UserChooserDetailedViewController::HandleUserSwitch(int user_index) {
 
   MultiProfileUMA::RecordSwitchActiveUser(
       MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
+  tray_controller_->CloseBubble();
   controller->SwitchActiveUser(
       controller->GetUserSession(user_index)->user_info.account_id);
-  tray_controller_->CloseBubble();
+  // SwitchActiveUser may delete us.
 }
 
 void UserChooserDetailedViewController::HandleAddUserAction() {
   MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
-  Shell::Get()->session_controller()->ShowMultiProfileLogin();
   tray_controller_->CloseBubble();
+  Shell::Get()->session_controller()->ShowMultiProfileLogin();
+  // ShowMultiProfileLogin may delete us.
 }
 
 views::View* UserChooserDetailedViewController::CreateView() {

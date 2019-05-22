@@ -19,6 +19,8 @@ enum ViewID {
   VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD_ENABLED,
   // Accessibility feature pod button in main view.
   VIEW_ID_ACCESSIBILITY_TRAY_ITEM,
+  // System tray AddUserButton in UserChooserView.
+  VIEW_ID_ADD_USER_BUTTON,
   VIEW_ID_BLUETOOTH_DEFAULT_VIEW,
   // System tray casting row elements.
   VIEW_ID_CAST_CAST_VIEW,
@@ -38,6 +40,15 @@ enum ViewID {
   VIEW_ID_TRAY_UPDATE_ICON,
   // System tray menu item label for updates (e.g. "Restart to update").
   VIEW_ID_TRAY_UPDATE_MENU_LABEL,
+  // System tray UserAvatarButton in TopShortcutsView.
+  VIEW_ID_USER_AVATAR_BUTTON,
+
+  // Start and end of system tray UserItemButton in UserChooserView. First
+  // user gets VIEW_ID_USER_ITEM_BUTTON_START. DCHECKs if the number of user
+  // is more than 10.
+  VIEW_ID_USER_ITEM_BUTTON_START,
+  VIEW_ID_USER_ITEM_BUTTON_END = VIEW_ID_USER_ITEM_BUTTON_START + 10,
+
   VIEW_ID_USER_VIEW_MEDIA_INDICATOR,
   // Keep alphabetized.
 };
