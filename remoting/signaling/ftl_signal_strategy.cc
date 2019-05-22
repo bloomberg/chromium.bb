@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/rand_util.h"
@@ -20,7 +21,6 @@
 #include "remoting/signaling/ftl_messaging_client.h"
 #include "remoting/signaling/ftl_registration_manager.h"
 #include "remoting/signaling/signaling_address.h"
-#include "remoting/signaling/xmpp_stream_parser.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
@@ -87,9 +87,8 @@ class FtlSignalStrategy::Core {
   void HandleGrpcStatusError(const base::Location& location,
                              const grpc::Status& status);
 
-  // Event handlers for XmppStreamParser.
-  void OnStanza(const std::unique_ptr<jingle_xmpp::XmlElement> stanza);
-  void OnParserError();
+  void OnStanza(const SignalingAddress& sender_address,
+                std::unique_ptr<jingle_xmpp::XmlElement> stanza);
 
   std::unique_ptr<OAuthTokenGetter> oauth_token_getter_;
 
@@ -101,9 +100,6 @@ class FtlSignalStrategy::Core {
 
   std::unique_ptr<FtlMessagingClient::MessageCallbackSubscription>
       receive_message_subscription_;
-  std::unique_ptr<XmppStreamParser> stream_parser_;
-
-  std::string message_sender_override_;
 
   Error error_ = OK;
   bool is_sign_in_error_ = false;
@@ -182,7 +178,7 @@ void FtlSignalStrategy::Core::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (receive_message_subscription_) {
-    stream_parser_.reset();
+    local_address_ = SignalingAddress();
     receive_message_subscription_.reset();
     messaging_client_->StopReceivingMessages();
 
@@ -194,7 +190,7 @@ void FtlSignalStrategy::Core::Disconnect() {
 SignalStrategy::State FtlSignalStrategy::Core::GetState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (stream_parser_) {
+  if (!local_address_.empty()) {
     DCHECK(receive_message_subscription_);
     return CONNECTED;
   } else if (receive_message_subscription_) {
@@ -228,7 +224,7 @@ bool FtlSignalStrategy::Core::SendStanza(
     std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!stream_parser_) {
+  if (GetState() != CONNECTED) {
     HOST_LOG << "Dropping signaling message because FTL is not connected.";
     return false;
   }
@@ -238,16 +234,15 @@ bool FtlSignalStrategy::Core::SendStanza(
       SignalingAddress::Parse(stanza.get(), SignalingAddress::TO, &to_error);
   DCHECK(to_error.empty());
 
-  // Remove from and to fields from the stanza to prevent confusion to the peer.
-  stanza->ClearAttr(jingle_xmpp::QN_FROM);
-  stanza->ClearAttr(jingle_xmpp::QN_TO);
+  // Synthesizing the from attribute in the message.
+  stanza->SetAttr(jingle_xmpp::QN_FROM, local_address_.jid());
 
   std::string stanza_id = stanza->Attr(jingle_xmpp::QN_ID);
   SendMessage(to, stanza_id, stanza->Str());
 
   // Return false if the SendMessage() call above resulted in the SignalStrategy
   // being disconnected.
-  return stream_parser_ != nullptr;
+  return GetState() == CONNECTED;
 }
 
 bool FtlSignalStrategy::Core::IsSignInError() const {
@@ -319,14 +314,6 @@ void FtlSignalStrategy::Core::OnReceiveMessagesStreamStarted() {
   local_address_ = SignalingAddress::CreateFtlSignalingAddress(
       user_email_, registration_manager_->GetRegistrationId());
 
-  stream_parser_ = std::make_unique<XmppStreamParser>();
-  stream_parser_->SetCallbacks(
-      base::BindRepeating(&Core::OnStanza, weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&Core::OnParserError, weak_factory_.GetWeakPtr()));
-
-  // XMPP receiver stream starts with an opened <stream> tag.
-  stream_parser_->AppendData("<stream>");
-
   for (auto& observer : listeners_)
     observer.OnSignalStrategyStateChange(CONNECTED);
 }
@@ -350,16 +337,9 @@ void FtlSignalStrategy::Core::OnMessageReceived(
     const ftl::ChromotingMessage& message) {
   auto sender_address = SignalingAddress::CreateFtlSignalingAddress(
       sender_id, sender_registration_id);
-  DCHECK(message_sender_override_.empty());
-  if (!message_sender_override_.empty() &&
-      sender_address.jid() != message_sender_override_) {
-    LOG(ERROR) << "Received message from a different sender before the current "
-               << "stanza is parsed.";
-    return;
-  }
-  message_sender_override_ = sender_address.jid();
-  stream_parser_->AppendData(message.xmpp().stanza());
-  DCHECK(message_sender_override_.empty());
+  auto stanza = base::WrapUnique<jingle_xmpp::XmlElement>(
+      jingle_xmpp::XmlElement::ForStr(message.xmpp().stanza()));
+  OnStanza(sender_address, std::move(stanza));
 }
 
 void FtlSignalStrategy::Core::SendMessage(const SignalingAddress& receiver,
@@ -405,15 +385,14 @@ void FtlSignalStrategy::Core::OnSendMessageResponse(
 
   // Fake an error message so that JingleSession will take it as
   // PEER_IS_OFFLINE.
-  DCHECK(message_sender_override_.empty());
-  message_sender_override_ = receiver.jid();
   LOG(ERROR) << "Failed to send message to peer. Error code: "
              << status.error_code() << ", message: " << status.error_message();
   auto error_iq = std::make_unique<jingle_xmpp::XmlElement>(jingle_xmpp::QN_IQ);
   error_iq->SetAttr(jingle_xmpp::QN_TYPE, jingle_xmpp::STR_ERROR);
   error_iq->SetAttr(jingle_xmpp::QN_ID, stanza_id);
-  OnStanza(std::move(error_iq));
-  DCHECK(message_sender_override_.empty());
+  error_iq->SetAttr(jingle_xmpp::QN_FROM, receiver.jid());
+  error_iq->SetAttr(jingle_xmpp::QN_TO, local_address_.jid());
+  OnStanza(receiver, std::move(error_iq));
 }
 
 void FtlSignalStrategy::Core::HandleGrpcStatusError(
@@ -433,14 +412,25 @@ void FtlSignalStrategy::Core::HandleGrpcStatusError(
 }
 
 void FtlSignalStrategy::Core::OnStanza(
-    const std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
+    const SignalingAddress& sender_address,
+    std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Don't trust the sender/receiver fields coming from the sender.
-  stanza->SetAttr(jingle_xmpp::QN_FROM, message_sender_override_);
-  stanza->SetAttr(jingle_xmpp::QN_TO, local_address_.jid());
-
-  message_sender_override_.clear();
+  // Validate the schema and FTL IDs.
+  if (stanza->Name() != jingle_xmpp::QN_IQ) {
+    LOG(DFATAL) << "Received unexpected non-IQ packet " << stanza->Str();
+    return;
+  }
+  if (SignalingAddress(stanza->Attr(jingle_xmpp::QN_FROM)) != sender_address) {
+    LOG(DFATAL) << "Expected sender: " << sender_address.jid()
+                << ", but received: " << stanza->Attr(jingle_xmpp::QN_FROM);
+    return;
+  }
+  if (SignalingAddress(stanza->Attr(jingle_xmpp::QN_TO)) != local_address_) {
+    LOG(DFATAL) << "Expected receiver: " << local_address_.jid()
+                << ", but received: " << stanza->Attr(jingle_xmpp::QN_TO);
+    return;
+  }
 
   HOST_LOG << "Received incoming stanza:\n"
            << stanza->Str()
@@ -450,13 +440,6 @@ void FtlSignalStrategy::Core::OnStanza(
     if (listener.OnSignalStrategyIncomingStanza(stanza.get()))
       return;
   }
-}
-
-void FtlSignalStrategy::Core::OnParserError() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  error_ = NETWORK_ERROR;
-  Disconnect();
 }
 
 FtlSignalStrategy::FtlSignalStrategy(
