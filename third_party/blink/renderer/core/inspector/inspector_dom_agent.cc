@@ -2200,7 +2200,7 @@ Response InspectorDOMAgent::getRelayoutBoundary(
         "No layout object for node, perhaps orphan or hidden node");
   }
   while (layout_object && !layout_object->IsDocumentElement() &&
-         !layout_object->IsRelayoutBoundaryForInspector())
+         !layout_object->IsRelayoutBoundary())
     layout_object = layout_object->Container();
   Node* result_node =
       layout_object ? layout_object->GeneratingNode() : node->ownerDocument();

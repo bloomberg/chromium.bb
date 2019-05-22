@@ -78,14 +78,23 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     // See NGPhysicalBoxFragment::AddSelfOutlineRects().
     if (!child->IsLineBox()) {
       LayoutObject* child_layout_object = child->GetLayoutObject();
-      auto* child_layout_block_flow =
-          DynamicTo<LayoutBlockFlow>(child_layout_object);
-      if (child_layout_object->IsElementContinuation() ||
-          (child_layout_block_flow &&
-           child_layout_block_flow->IsAnonymousBlockContinuation()))
-        continue;
+      if (auto* child_layout_block_flow =
+              DynamicTo<LayoutBlockFlow>(child_layout_object)) {
+        if (child_layout_object->IsElementContinuation() ||
+            child_layout_block_flow->IsAnonymousBlockContinuation())
+          continue;
+        if (child_layout_block_flow->IsRelayoutBoundary()) {
+          const NGPhysicalBoxFragment* maybe_new_child_fragment =
+              child_layout_block_flow->CurrentFragment();
+          if (maybe_new_child_fragment) {
+            AddOutlineRectsForDescendant(
+                {maybe_new_child_fragment, child.Offset()}, outline_rects,
+                additional_offset, outline_type, containing_block);
+            continue;
+          }
+        }
+      }
     }
-
     AddOutlineRectsForDescendant(child, outline_rects, additional_offset,
                                  outline_type, containing_block);
   }

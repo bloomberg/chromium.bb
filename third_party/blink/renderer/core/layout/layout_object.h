@@ -1963,7 +1963,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   static RespectImageOrientationEnum ShouldRespectImageOrientation(
       const LayoutObject*);
 
-  bool IsRelayoutBoundaryForInspector() const;
+  bool IsRelayoutBoundary() const;
 
   // The visual rect, in the the space of the paint invalidation container
   // (*not* the graphics layer that paints this object).
