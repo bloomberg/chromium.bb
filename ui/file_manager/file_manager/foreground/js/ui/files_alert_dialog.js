@@ -17,8 +17,8 @@ class FilesAlertDialog extends cr.ui.dialogs.AlertDialog {
    * @protected
    * @override
    */
-  initDom_() {
-    super.initDom_();
-    this.frame_.classList.add('files-alert-dialog');
+  initDom() {
+    super.initDom();
+    this.frame.classList.add('files-alert-dialog');
   }
 }

@@ -39,8 +39,8 @@ class MultiProfileShareDialog extends FileManagerDialogBase {
     shareLine.appendChild(this.mailLabel_);
     shareLine.appendChild(this.shareTypeSelect_);
 
-    this.frame_.insertBefore(shareLine, this.buttons);
-    this.frame_.id = 'multi-profile-share-dialog';
+    this.frame.insertBefore(shareLine, this.buttons);
+    this.frame.id = 'multi-profile-share-dialog';
 
     this.currentProfileId_ = new Promise(callback => {
       chrome.fileManagerPrivate.getProfiles(

@@ -18,11 +18,11 @@ cr.define('cr.filebrowser', () => {
     constructor(parentNode) {
       super(parentNode);
 
-      this.frame_.id = 'default-task-dialog';
+      this.frame.id = 'default-task-dialog';
 
       this.list_ = new cr.ui.List();
       this.list_.id = 'default-tasks-list';
-      this.frame_.insertBefore(this.list_, this.text_.nextSibling);
+      this.frame.insertBefore(this.list_, this.text.nextSibling);
 
       this.selectionModel_ = this.list_.selectionModel =
           new cr.ui.ListSingleSelectionModel();
@@ -101,9 +101,9 @@ cr.define('cr.filebrowser', () => {
       }
 
       if (!message) {
-        this.text_.setAttribute('hidden', 'hidden');
+        this.text.setAttribute('hidden', 'hidden');
       } else {
-        this.text_.removeAttribute('hidden');
+        this.text.removeAttribute('hidden');
       }
 
       this.list_.startBatchUpdates();
@@ -151,7 +151,7 @@ cr.define('cr.filebrowser', () => {
     /**
      * @override
      */
-    onContainerKeyDown_(event) {
+    onContainerKeyDown(event) {
       // Handle Escape.
       if (event.keyCode == 27) {
         this.hide();

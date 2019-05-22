@@ -16,11 +16,11 @@ cr.define('cr.filebrowser', () => {
     constructor(parentNode) {
       super(parentNode);
 
-      this.frame_.id = 'install-linux-package-dialog';
+      this.frame.id = 'install-linux-package-dialog';
 
       this.details_frame_ = this.document_.createElement('div');
       this.details_frame_.className = 'install-linux-package-details-frame';
-      this.frame_.insertBefore(this.details_frame_, this.buttons);
+      this.frame.insertBefore(this.details_frame_, this.buttons);
 
       this.details_label_ = this.document_.createElement('div');
       this.details_label_.className = 'install-linux-package-details-label';
@@ -29,12 +29,12 @@ cr.define('cr.filebrowser', () => {
 
       // The OK button normally dismisses the dialog, so add a button we can
       // customize.
-      this.installButton_ = this.okButton_.cloneNode(false /* deep */);
+      this.installButton_ = this.okButton.cloneNode(false /* deep */);
       this.installButton_.textContent =
           str('INSTALL_LINUX_PACKAGE_INSTALL_BUTTON');
       this.installButton_.addEventListener(
           'click', this.onInstallClick_.bind(this));
-      this.buttons.insertBefore(this.installButton_, this.okButton_);
+      this.buttons.insertBefore(this.installButton_, this.okButton);
       this.initialFocusElement_ = this.installButton_;
 
       /** @private {?Entry} */
@@ -50,8 +50,8 @@ cr.define('cr.filebrowser', () => {
       // We re-use the same object, so reset any visual state that may be
       // changed.
       this.installButton_.hidden = false;
-      this.okButton_.hidden = true;
-      this.cancelButton_.hidden = false;
+      this.okButton.hidden = true;
+      this.cancelButton.hidden = false;
 
       this.entry_ = entry;
 
@@ -151,10 +151,10 @@ cr.define('cr.filebrowser', () => {
           assert(this.entry_), this.onInstallLinuxPackage_.bind(this));
 
       this.installButton_.hidden = true;
-      this.cancelButton_.hidden = true;
+      this.cancelButton.hidden = true;
 
-      this.okButton_.hidden = false;
-      this.okButton_.focus();
+      this.okButton.hidden = false;
+      this.okButton.focus();
     }
 
     /**
@@ -167,7 +167,7 @@ cr.define('cr.filebrowser', () => {
      */
     onInstallLinuxPackage_(response, failure_reason) {
       if (response == 'started') {
-        this.text_.textContent =
+        this.text.textContent =
             str('INSTALL_LINUX_PACKAGE_INSTALLATION_STARTED');
         return;
       }
@@ -175,8 +175,8 @@ cr.define('cr.filebrowser', () => {
       // Currently we always display a generic error message. Eventually we'll
       // want a different message for the 'install_already_active' case, and to
       // surface the provided failure reason if one is provided.
-      this.title_.textContent = str('INSTALL_LINUX_PACKAGE_ERROR_TITLE');
-      this.text_.textContent = str('INSTALL_LINUX_PACKAGE_ERROR_DESCRIPTION');
+      this.title.textContent = str('INSTALL_LINUX_PACKAGE_ERROR_TITLE');
+      this.text.textContent = str('INSTALL_LINUX_PACKAGE_ERROR_DESCRIPTION');
       console.error('Failed to begin package installation: ' + failure_reason);
     }
   }

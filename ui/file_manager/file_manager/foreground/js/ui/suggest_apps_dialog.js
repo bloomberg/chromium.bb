@@ -27,14 +27,14 @@ class SuggestAppsDialog extends FileManagerDialogBase {
      */
     this.providersModel_ = providersModel;
 
-    this.frame_.id = 'suggest-app-dialog';
+    this.frame.id = 'suggest-app-dialog';
 
     /**
      * The root element for the Chrome Web Store widget container.
      * @const {!HTMLElement}
      */
     const widgetRoot = this.document_.createElement('div');
-    this.frame_.insertBefore(widgetRoot, this.text_.nextSibling);
+    this.frame.insertBefore(widgetRoot, this.text.nextSibling);
 
     /**
      * The wrapper around Chrome Web Store widget.
@@ -58,8 +58,8 @@ class SuggestAppsDialog extends FileManagerDialogBase {
     this.buttons.hidden = true;
 
     // Override default dialog styles.
-    this.title_.classList.add('suggest-apps-dialog-title');
-    this.text_.classList.add('suggest-apps-dialog-text');
+    this.title.classList.add('suggest-apps-dialog-title');
+    this.text.classList.add('suggest-apps-dialog-text');
 
     /** @private {?string} */
     this.installedItemId_ = null;
@@ -221,7 +221,7 @@ class SuggestAppsDialog extends FileManagerDialogBase {
    * @private
    */
   showInternal_(options, title, webStoreUrl, onDialogClosed) {
-    this.text_.hidden = true;
+    this.text.hidden = true;
     this.dialogText_ = '';
 
     if (!this.widget_.isInInitialState()) {
