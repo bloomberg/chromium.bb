@@ -40,6 +40,24 @@ class DeviceManagementRequestJobImpl;
 class DeviceManagementService;
 class DMAuth;
 
+// Used in the Enterprise.DMServerRequestSuccess histogram, shows how many
+// retries we had to do to execute the DeviceManagementRequestJob.
+enum class DMServerRequestSuccess {
+  // No retries happened, the request succeeded for the first try.
+  kRequestNoRetry = 0,
+
+  // 1..kMaxRetries: number of retries. kMaxRetries is the maximum number of
+  // retries allowed, defined in the .cc file.
+
+  // The request failed (too many retries or non-retriable error).
+  kRequestFailed = 10,
+  // The server responded with an error.
+  kRequestError = 11,
+
+  kMaxValue = kRequestError,
+
+};
+
 // DeviceManagementRequestJob describes a request to send to the device
 // management service. Jobs are created by DeviceManagementService. They can be
 // canceled by deleting the object.
@@ -70,6 +88,8 @@ class POLICY_EXPORT DeviceManagementRequestJob {
     TYPE_CHROME_DESKTOP_REPORT = 19,
     TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL = 20,
     TYPE_UPLOAD_POLICY_VALIDATION_REPORT = 21,
+    // Please also update the histogram suffix EnterpriseDMServerRequest in
+    // histograms.xml
   };
 
   typedef base::Callback<
@@ -79,6 +99,9 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   typedef base::Callback<void(DeviceManagementRequestJob*)> RetryCallback;
 
   virtual ~DeviceManagementRequestJob();
+
+  // Convert job type to string that is used for histograms
+  std::string GetJobTypeAsString() const;
 
   // Functions for configuring the job. These should only be called before
   // Start()ing the job, but never afterwards.
