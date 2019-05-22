@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
@@ -57,6 +58,13 @@ public class TabSwitcherBottomToolbarCoordinator {
             AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
             TabCountProvider tabCountProvider) {
         final ViewGroup root = (ViewGroup) stub.inflate();
+
+        View toolbar = root.findViewById(R.id.bottom_toolbar_buttons);
+        ViewGroup.LayoutParams params = toolbar.getLayoutParams();
+        params.height = root.getResources().getDimensionPixelOffset(
+                FeatureUtilities.isLabeledBottomToolbarEnabled()
+                        ? R.dimen.labeled_bottom_toolbar_height
+                        : R.dimen.bottom_toolbar_height);
 
         TabSwitcherBottomToolbarModel model = new TabSwitcherBottomToolbarModel();
 
