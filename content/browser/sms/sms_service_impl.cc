@@ -22,8 +22,7 @@ SmsServiceImpl::~SmsServiceImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void SmsServiceImpl::CreateService(blink::mojom::SmsManagerRequest request,
-                                   const url::Origin& origin) {
+void SmsServiceImpl::Bind(blink::mojom::SmsManagerRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bindings_.AddBinding(this, std::move(request));

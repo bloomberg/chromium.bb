@@ -65,9 +65,7 @@ TEST_F(SmsServiceImplTest, AddMonitor) {
   auto impl = std::make_unique<SmsServiceImpl>();
   auto mock = std::make_unique<NiceMock<MockSmsProvider>>();
   blink::mojom::SmsManagerPtr service_ptr;
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->Bind(mojo::MakeRequest(&service_ptr));
   base::RunLoop loop;
 
   service_ptr.set_connection_error_handler(base::BindLambdaForTesting([&]() {
@@ -101,9 +99,7 @@ TEST_F(SmsServiceImplTest, InvalidArguments) {
   auto mock = std::make_unique<NiceMock<MockSmsProvider>>();
   impl->SetSmsProviderForTest(std::move(mock));
   blink::mojom::SmsManagerPtr service_ptr;
-  GURL url("http://google.com");
-  impl->CreateService(mojo::MakeRequest(&service_ptr),
-                      url::Origin::Create(url));
+  impl->Bind(mojo::MakeRequest(&service_ptr));
   service_ptr->GetNextMessage(base::TimeDelta::FromSeconds(-1),
                               base::NullCallback());
 

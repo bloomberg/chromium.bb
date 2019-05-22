@@ -140,6 +140,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/browser/sms_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/webvr_service_provider.h"
@@ -4230,6 +4231,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_,
       GetProcess()->GetStoragePartition()->GetNetworkContext()));
+
+  if (base::FeatureList::IsEnabled(features::kSmsReceiver) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    registry_->AddInterface(base::BindRepeating(
+        &RenderFrameHostImpl::BindSmsManagerRequest, base::Unretained(this)));
+  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
@@ -5927,6 +5935,18 @@ blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
   blink::mojom::FileChooserPtr chooser;
   FileChooserImpl::Create(this, mojo::MakeRequest(&chooser));
   return chooser;
+}
+
+void RenderFrameHostImpl::BindSmsManagerRequest(
+    blink::mojom::SmsManagerRequest request) {
+  if (GetParent()) {
+    mojo::ReportBadMessage("Must be in top-level browser context.");
+    return;
+  }
+  SmsService* sms_service = GetProcess()->GetBrowserContext()->GetSmsService();
+  if (sms_service) {
+    sms_service->Bind(std::move(request));
+  }
 }
 
 void RenderFrameHostImpl::GetInterface(

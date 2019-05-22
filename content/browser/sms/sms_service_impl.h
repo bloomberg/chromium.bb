@@ -18,10 +18,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/mojom/sms/sms_manager.mojom.h"
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 // The SmsServiceImpl is responsible for taking the incoming mojo calls from the
@@ -34,8 +30,7 @@ class CONTENT_EXPORT SmsServiceImpl : public blink::mojom::SmsManager,
   ~SmsServiceImpl() override;
 
   // content::SmsService
-  void CreateService(blink::mojom::SmsManagerRequest request,
-                     const url::Origin& origin) override;
+  void Bind(blink::mojom::SmsManagerRequest request) override;
 
   // blink.mojom.SmsManager:
   void GetNextMessage(base::TimeDelta timeout,

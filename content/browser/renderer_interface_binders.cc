@@ -26,7 +26,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/sms_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
@@ -44,7 +43,6 @@
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
-#include "third_party/blink/public/mojom/sms/sms_manager.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -191,18 +189,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetLockManager()
             ->CreateService(std::move(request), origin);
       }));
-  if (base::FeatureList::IsEnabled(features::kSmsReceiver) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    parameterized_binder_registry_.AddInterface(base::BindRepeating(
-        [](blink::mojom::SmsManagerRequest request, RenderProcessHost* host,
-           const url::Origin& origin) {
-          SmsService* sms_service = host->GetBrowserContext()->GetSmsService();
-          if (sms_service) {
-            sms_service->CreateService(std::move(request), origin);
-          }
-        }));
-  }
+
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::NotificationServiceRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {

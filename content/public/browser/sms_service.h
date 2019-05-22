@@ -8,10 +8,6 @@
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/sms/sms_manager.mojom.h"
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 // The interface to be implemented by the browser to mediate between SMS
@@ -23,8 +19,7 @@ class CONTENT_EXPORT SmsService {
 
   static std::unique_ptr<SmsService> Create();
 
-  virtual void CreateService(blink::mojom::SmsManagerRequest request,
-                             const url::Origin& origin) = 0;
+  virtual void Bind(blink::mojom::SmsManagerRequest request) = 0;
 };
 
 }  // namespace content
