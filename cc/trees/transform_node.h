@@ -109,6 +109,13 @@ struct CC_EXPORT TransformNode {
   // outer viewport.
   bool moved_by_inner_viewport_bounds_delta_x : 1;
   bool moved_by_inner_viewport_bounds_delta_y : 1;
+
+  // These are used by the compositor to determine which layers need to be
+  // repositioned by the compositor as a result of browser controls
+  // expanding/contracting the outer viewport size before Blink repositions the
+  // fixed layers.
+  // TODO(bokan): Note: we never change bounds_delta in the x direction so we
+  // can remove this variable.
   bool moved_by_outer_viewport_bounds_delta_x : 1;
   bool moved_by_outer_viewport_bounds_delta_y : 1;
 

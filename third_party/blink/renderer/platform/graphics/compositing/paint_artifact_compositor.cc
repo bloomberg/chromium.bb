@@ -852,7 +852,8 @@ void PaintArtifactCompositor::DecompositeTransforms(
       if (!node->IsIdentityOr2DTranslation() || node->ScrollNode() ||
           node->HasDirectCompositingReasonsOtherThan3dTransform() ||
           !node->FlattensInheritedTransformSameAsParent() ||
-          !node->BackfaceVisibilitySameAsParent()) {
+          !node->BackfaceVisibilitySameAsParent() ||
+          node->IsAffectedByOuterViewportBoundsDelta()) {
         mark_not_decompositable(node);
       }
     }

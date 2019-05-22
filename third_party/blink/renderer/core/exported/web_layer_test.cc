@@ -553,6 +553,70 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdate) {
   EXPECT_FALSE(transform_node->transform_changed);
 }
 
+// This test ensures that the correct transform nodes are created and bits set
+// so that the browser controls movement adjustments needed by bottom-fixed
+// elements will work.
+TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
+  // TODO(bokan): This test will have to be reevaluated for CAP. It looks like
+  // the fixed layer isn't composited in CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        body { height: 2000px; }
+        #fixed {
+          width: 100px;
+          height: 100px;
+          position: fixed;
+          left: 0;
+          background-color: red;
+        }
+      </style>
+      <div id='fixed'></div>
+  )HTML");
+
+  auto* fixed_element = GetElementById("fixed");
+  auto* fixed_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(fixed_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                fixed_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+
+  // Fix the DIV to the bottom of the viewport. Since the viewport height will
+  // expand/contract, the fixed element will need to be moved as the bounds
+  // delta changes.
+  {
+    fixed_element->setAttribute(html_names::kStyleAttr, "bottom: 0");
+    Compositor().BeginFrame();
+
+    auto transform_tree_index = fixed_element_layer->transform_tree_index();
+    auto* transform_node =
+        GetPropertyTrees()->transform_tree.Node(transform_tree_index);
+
+    DCHECK(transform_node);
+    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_x);
+    EXPECT_TRUE(transform_node->moved_by_outer_viewport_bounds_delta_y);
+  }
+
+  // Fix it to the top now. Since the top edge doesn't change (relative to the
+  // renderer origin), we no longer need to move it as the bounds delta
+  // changes.
+  {
+    fixed_element->setAttribute(html_names::kStyleAttr, "top: 0");
+    Compositor().BeginFrame();
+
+    auto transform_tree_index = fixed_element_layer->transform_tree_index();
+    auto* transform_node =
+        GetPropertyTrees()->transform_tree.Node(transform_tree_index);
+
+    DCHECK(transform_node);
+    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_x);
+    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_y);
+  }
+}
+
 // When a property tree change occurs that affects layer transform-origin, the
 // transform can be directly updated without explicitly marking the layer as
 // damaged. The ensure damage occurs, the transform node should have
