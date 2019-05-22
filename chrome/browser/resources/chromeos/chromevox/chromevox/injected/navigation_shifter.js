@@ -226,10 +226,6 @@ cvox.NavigationShifter.prototype.hasAction = function(name) {
   return goog.base(this, 'hasAction', name);
 };
 
-
-/**
- * @override
- */
 cvox.NavigationShifter.create = function(sel) {
   return new cvox.NavigationShifter();
 };

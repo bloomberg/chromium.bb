@@ -62,8 +62,4 @@ cvox.ChromeEarcons.prototype.toggle = function() {
   return cvox.AbstractEarcons.enabled;
 };
 
-
-/**
- * @override
- */
 cvox.HostFactory.earconsConstructor = cvox.ChromeEarcons;

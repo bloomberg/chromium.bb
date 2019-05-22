@@ -128,28 +128,17 @@ cvox.OptionsPage.init = function() {
     });
   };
 
-  var toggleShowDeveloperOptions = function() {
-    $('developerSpeechLogging').hidden = !$('developerSpeechLogging').hidden;
-    $('developerEarconLogging').hidden = !$('developerEarconLogging').hidden;
-    $('developerBrailleLogging').hidden = !$('developerBrailleLogging').hidden;
-    $('developerEventStream').hidden = !$('developerEventStream').hidden;
-    $('showDeveloperLog').hidden = !$('showDeveloperLog').hidden;
-    $('chromeVoxDeveloperOptionsMore').hidden =
-        !($('chromeVoxDeveloperOptionsMore').hidden);
-    $('chromeVoxDeveloperOptionsLess').hidden =
-        !($('chromeVoxDeveloperOptionsLess').hidden);
-  };
-
-  $('chromeVoxDeveloperOptionsMore').addEventListener('click', function(evt) {
-    toggleShowDeveloperOptions();
-  });
-
-  $('chromeVoxDeveloperOptionsLess').addEventListener('click', function(evt) {
-    toggleShowDeveloperOptions();
+  $('chromeVoxDeveloperOptions').addEventListener('expanded-changed', () => {
+    const hidden = !$('chromeVoxDeveloperOptions').expanded;
+    $('developerSpeechLogging').hidden = hidden;
+    $('developerEarconLogging').hidden = hidden;
+    $('developerBrailleLogging').hidden = hidden;
+    $('developerEventStream').hidden = hidden;
+    $('showDeveloperLog').hidden = hidden;
   });
 
   $('openDeveloperLog').addEventListener('click', function(evt) {
-    let logPage = {url: 'cvox2/background/log.html'};
+    const logPage = {url: 'cvox2/background/log.html'};
     chrome.tabs.create(logPage);
   });
 

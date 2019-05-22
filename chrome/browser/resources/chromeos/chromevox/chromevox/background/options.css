@@ -77,14 +77,15 @@ h2 {
 }
 
 .option .developer-option-icon-button {
-  background-color: #fff;
-  float: right;
   height: 60px;
-  vertical-align: middle;
 }
 
 .option input[type='checkbox']:checked {
     background-image: url(checked.png);
+}
+
+#show-log-label {
+  flex: 1;
 }
 
 .option select {
