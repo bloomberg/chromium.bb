@@ -31,6 +31,7 @@
 #include "sql/database_memory_dump_provider.h"
 #include "sql/initialization.h"
 #include "sql/meta_table.h"
+#include "sql/sql_features.h"
 #include "sql/statement.h"
 #include "sql/vfs_wrapper.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -345,6 +346,9 @@ void Database::Close() {
 void Database::Preload() {
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(&scoped_blocking_call);
+
+  if (base::FeatureList::IsEnabled(features::kSqlSkipPreload))
+    return;
 
   if (!db_) {
     DCHECK(poisoned_) << "Cannot preload null db";

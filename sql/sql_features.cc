@@ -8,7 +8,17 @@ namespace sql {
 
 namespace features {
 
-// Flags for SQLite configuration experiments will be defined here.
+// Skip the logic for preloading databases.
+//
+// Enabling this feature turns sql::Database::Preload() into a noop.
+// https://crbug.com/243949 suggests that sql::Database::Preload() was added
+// without any proper benchmarking, and the logic is a pessimization for modern
+// OS schedulers.
+//
+// TODO(pwnall): After the performance impact of the change is assessed, remove
+//               sql::Database::Preload() and this flag.
+const base::Feature kSqlSkipPreload{"SqlSkipPreload",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 

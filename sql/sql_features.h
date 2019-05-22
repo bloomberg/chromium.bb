@@ -12,7 +12,7 @@ namespace sql {
 
 namespace features {
 
-// Flags for SQLite configuration experiments will be declared here.
+COMPONENT_EXPORT(SQL) extern const base::Feature kSqlSkipPreload;
 
 }  // namespace features
 

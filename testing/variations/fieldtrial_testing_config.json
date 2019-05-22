@@ -4873,6 +4873,26 @@
             ]
         }
     ],
+    "SqlSkipPreload": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "ios",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SqlSkipPreload"
+                    ]
+                }
+            ]
+        }
+    ],
     "StabilityDebugging": [
         {
             "platforms": [
