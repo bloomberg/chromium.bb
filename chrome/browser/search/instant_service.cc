@@ -66,7 +66,7 @@ const char kNtpCustomBackgroundAttributionLine2[] = "attribution_line_2";
 const char kNtpCustomBackgroundAttributionActionURL[] =
     "attribution_action_url";
 
-const char kImageFetcherUmaClientName[] = "NtpCustomBackgrounds";
+const char kCustomBackgroundsUmaClientName[] = "NtpCustomBackgrounds";
 
 base::DictionaryValue GetBackgroundInfoAsDict(
     const GURL& background_url,
@@ -813,7 +813,7 @@ void InstantService::FetchCustomBackground(const GURL& image_url,
     })");
 
   image_fetcher::ImageFetcherParams params(traffic_annotation,
-                                           kImageFetcherUmaClientName);
+                                           kCustomBackgroundsUmaClientName);
   image_fetcher_->FetchImage(
       image_url,
       base::BindOnce(&InstantService::UpdateCustomBackgroundColorAsync,

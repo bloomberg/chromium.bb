@@ -59,7 +59,7 @@
 
 namespace {
 
-const char kImageFetcherUmaClientName[] = "NtpIconSource";
+const char kIconSourceUmaClientName[] = "NtpIconSource";
 
 // The color of the letter drawn for a fallback icon.  Changing this may require
 // changing the algorithm in RenderIconBitmap() that guarantees contrast.
@@ -425,7 +425,7 @@ void NtpIconSource::RequestServerFavicon(const NtpIconRequest& request) {
         policy_exception_justification: "Not implemented."
       })");
   image_fetcher::ImageFetcherParams params(traffic_annotation,
-                                           kImageFetcherUmaClientName);
+                                           kIconSourceUmaClientName);
   params.set_frame_size(
       gfx::Size(request.icon_size_in_pixels, request.icon_size_in_pixels));
   image_fetcher_->FetchImage(
