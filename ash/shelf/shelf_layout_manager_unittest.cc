@@ -1132,6 +1132,23 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   EXPECT_EQ(stable_work_area,
             GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
 
+  // Move the mouse to the bottom again to show the shelf.
+  generator->MoveMouseTo(0, display_bottom - 1);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // A tap on the maximized window should hide the shelf, even if the most
+  // recent mouse position was over the shelf (crbug.com/963977).
+  EXPECT_TRUE(widget->IsMouseEventsEnabled());
+  gfx::Rect window_bounds = widget->GetNativeWindow()->GetBoundsInScreen();
+  generator->GestureTapAt(window_bounds.origin() + gfx::Vector2d(10, 10));
+  EXPECT_FALSE(widget->IsMouseEventsEnabled());
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Return the mouse to the top.
+  generator->MoveMouseTo(0, 0);
+
   // Drag mouse to bottom of screen.
   generator->PressLeftButton();
   generator->MoveMouseTo(0, display_bottom - 1);

@@ -1308,6 +1308,11 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
         0);
   }
 
+  // Do not perform any checks based on the cursor position if the mouse cursor
+  // is currently hidden.
+  if (!shelf_widget_->IsMouseEventsEnabled())
+    return SHELF_AUTO_HIDE_HIDDEN;
+
   gfx::Point cursor_position_in_screen =
       display::Screen::GetScreen()->GetCursorScreenPoint();
   // Cursor is invisible in tablet mode and plug in an external mouse in tablet
