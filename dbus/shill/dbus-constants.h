@@ -341,7 +341,6 @@ const char kTypePPPoE[] = "pppoe";
 
 // Flimflam mode options.
 const char kModeManaged[] = "managed";
-const char kModeAdhoc[] = "adhoc";
 
 // Flimflam security options.
 const char kSecurityWpa[] = "wpa";
