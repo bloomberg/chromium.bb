@@ -60,7 +60,7 @@ PerformanceEntryType PerformanceElementTiming::EntryTypeEnum() const {
 }
 
 Element* PerformanceElementTiming::element() const {
-  if (!element_ || !element_->isConnected())
+  if (!element_ || !element_->isConnected() || element_->IsInShadowTree())
     return nullptr;
 
   return element_;

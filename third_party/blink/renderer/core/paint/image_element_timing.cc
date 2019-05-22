@@ -75,6 +75,13 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   if (!frame || !node->IsElementNode())
     return;
 
+  // We do not expose elements in shadow trees, for now. We might expose
+  // something once the discussions at
+  // https://github.com/WICG/element-timing/issues/3 and
+  // https://github.com/w3c/webcomponents/issues/816 have been resolved.
+  if (node->IsInShadowTree())
+    return;
+
   FloatRect intersection_rect = ComputeIntersectionRect(
       frame, layout_object, current_paint_chunk_properties);
   Element* element = ToElement(node);
