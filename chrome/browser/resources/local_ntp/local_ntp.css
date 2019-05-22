@@ -950,14 +950,13 @@ html[darkmode=true] .menu-option-icon {
 #menu-title-wrapper {
   display: inline-block;
   height: 80px;
+  line-height: 80px;
   position: absolute;
+  vertical-align: center;
 }
 
 #menu-title {
   font-size: 16px;
-  height: 20px;
-  line-height: 20px;
-  margin-top: 38px;
   user-select: none;
   width: fit-content;
 }
@@ -1095,11 +1094,42 @@ html[darkmode=true] #backgrounds-menu .bg-sel-tile-title {
   -webkit-mask-size: 20px;
   background-color: rgb(var(--GG900-rgb));
   height: 20px;
+  margin-inline-start: 8px;
+  margin-top: 8px;
+  outline: none;
+  width: 20px;
+}
+
+html[darkmode=true] #menu-back {
+  background-color: rgb(var(--GG200-rgb));
+}
+
+#menu-back-circle {
+  border-radius: 50%;
+  display: inline-block;
+  height: 36px;
   margin-inline-start: 192px;
-  margin-top: 39px;
+  margin-top: 22px;
   outline: none;
   visibility: hidden;
-  width: 20px;
+  width: 36px;
+}
+
+html[darkmode=true] #menu-back-circle:active,
+html[darkmode=true] #menu-back-circle:focus {
+  background: rgb(var(--GG800-rgb));
+}
+
+.on-img-menu #menu-back-circle {
+  margin-inline-start: 212px;
+  visibility: visible;
+}
+
+#menu-back-circle:active,
+#menu-back-circle:focus {
+  background: rgb(var(--GG300-rgb));
+  background-position: center;
+  background-size: 36px 36px;
 }
 
 html[darkmode=true] #menu-back {
@@ -1108,11 +1138,6 @@ html[darkmode=true] #menu-back {
 
 html[dir=rtl] #menu-back {
   transform: scaleX(-1);
-}
-
-.on-img-menu #menu-back {
-  margin-inline-start: 212px;
-  visibility: visible;
 }
 
 #backgrounds-upload-icon {

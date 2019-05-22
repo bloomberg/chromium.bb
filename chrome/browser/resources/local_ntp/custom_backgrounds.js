@@ -96,7 +96,7 @@ customBackgrounds.IDS = {
   EDIT_BG_ICON: 'edit-bg-icon',
   EDIT_BG_MENU: 'edit-bg-menu',
   EDIT_BG_TEXT: 'edit-bg-text',
-  MENU_BACK: 'menu-back',
+  MENU_BACK_CIRCLE: 'menu-back-circle',
   MENU_CANCEL: 'menu-cancel',
   MENU_DONE: 'menu-done',
   MENU_TITLE: 'menu-title',
@@ -1336,7 +1336,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
         customBackgrounds.dialogCollectionsSource);
   };
   $(customBackgrounds.IDS.BACK_CIRCLE).onclick = backInteraction;
-  $(customBackgrounds.IDS.MENU_BACK).onclick = backInteraction;
+  $(customBackgrounds.IDS.MENU_BACK_CIRCLE).onclick = backInteraction;
   $(customBackgrounds.IDS.BACK_CIRCLE).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
         event.keyCode === customBackgrounds.KEYCODES.SPACE) {
