@@ -83,6 +83,7 @@ customBackgrounds.IDS = {
   BACKGROUNDS_UPLOAD: 'backgrounds-upload',
   CANCEL: 'bg-sel-footer-cancel',
   COLORS_BUTTON: 'colors-button',
+  COLORS_MENU: 'colors-menu',
   CUSTOMIZATION_MENU: 'customization-menu',
   CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
   CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
@@ -311,19 +312,17 @@ customBackgrounds.resetSelectionDialog = function() {
 };
 
 /**
- * Apply selected styling to |elem| and remove it from the previously selected
- * element.
- * @param {?Element} elem The element to apply styling to.
+ * Apply selected styling to |button| and make corresponding |menu| visible.
+ * @param {?Element} button The button element to apply styling to.
+ * @param {?Element} menu The menu element to apply styling to.
  */
-customBackgrounds.richerPicker_toggleSelectedOption = function(elem) {
-  if (!elem) {
+customBackgrounds.richerPicker_selectMenuOption = function(button, menu) {
+  if (!button || !menu) {
     return;
   }
-  customBackgrounds.richerPicker_selectedOption.classList.toggle(
-      customBackgrounds.CLASSES.SELECTED, false);
-  elem.classList.toggle(customBackgrounds.CLASSES.SELECTED, true);
-
-  customBackgrounds.richerPicker_selectedOption = elem;
+  button.classList.toggle(customBackgrounds.CLASSES.SELECTED, true);
+  customBackgrounds.richerPicker_selectedOption = button;
+  menu.classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
 };
 
 /**
@@ -948,8 +947,38 @@ customBackgrounds.networkStateChanged = function(online) {
 };
 
 /**
- * Initialize the settings menu, custom backgrounds dialogs, and custom links
- * menu items. Set the text and event handlers for the various elements.
+ * Set customization menu to default options (custom backgrounds).
+ */
+customBackgrounds.richerPicker_setCustomizationMenuToDefaultState = function() {
+  customBackgrounds.richerPicker_resetCustomizationMenu();
+  $(customBackgrounds.IDS.BACKGROUNDS_MENU)
+      .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
+  customBackgrounds.richerPicker_selectedOption =
+      $(customBackgrounds.IDS.BACKGROUNDS_BUTTON);
+};
+
+/**
+ * Resets customization menu options.
+ */
+customBackgrounds.richerPicker_resetCustomizationMenu = function() {
+  customBackgrounds.richerPicker_resetImageMenu(false);
+  $(customBackgrounds.IDS.BACKGROUNDS_MENU)
+      .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+  $(customBackgrounds.IDS.SHORTCUTS_MENU)
+      .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+  $(customBackgrounds.IDS.COLORS_MENU)
+      .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+  if (customBackgrounds.richerPicker_selectedOption) {
+    customBackgrounds.richerPicker_selectedOption.classList.toggle(
+        customBackgrounds.CLASSES.SELECTED, false);
+    customBackgrounds.richerPicker_selectedOption = null;
+  }
+};
+
+/**
+ * Initialize the settings menu, custom backgrounds dialogs, and custom
+ * links menu items. Set the text and event handlers for the various
+ * elements.
  * @param {!Function} showErrorNotification Called when the error notification
  *                    should be displayed.
  * @param {!Function} hideCustomLinkNotification Called when the custom link
@@ -968,9 +997,6 @@ customBackgrounds.init = function(
   $(customBackgrounds.IDS.MENU_TITLE).dataset.mainTitle =
       $(customBackgrounds.IDS.MENU_TITLE).textContent;
 
-  customBackgrounds.richerPicker_selectedOption =
-      $(customBackgrounds.IDS.BACKGROUNDS_BUTTON);
-
   $(customBackgrounds.IDS.EDIT_BG_ICON)
       .setAttribute(
           'aria-label', configData.translatedStrings.customizeThisPage);
@@ -981,8 +1007,7 @@ customBackgrounds.init = function(
   // Edit gear icon interaction events.
   const editBackgroundInteraction = function() {
     if (configData.richerPicker) {
-      $(customBackgrounds.IDS.BACKGROUNDS_MENU)
-          .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
+      customBackgrounds.richerPicker_setCustomizationMenuToDefaultState();
       customBackgrounds.loadChromeBackgrounds();
       $(customBackgrounds.IDS.CUSTOMIZATION_MENU).showModal();
     } else {
@@ -996,7 +1021,7 @@ customBackgrounds.init = function(
 
   $(customBackgrounds.IDS.MENU_CANCEL).onclick = function(event) {
     $(customBackgrounds.IDS.CUSTOMIZATION_MENU).close();
-    customBackgrounds.richerPicker_resetImageMenu(false);
+    customBackgrounds.richerPicker_resetCustomizationMenu();
   };
 
 
@@ -1396,12 +1421,10 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   const richerPickerOpenBackgrounds = function() {
-    $(customBackgrounds.IDS.BACKGROUNDS_MENU)
-        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
-    $(customBackgrounds.IDS.SHORTCUTS_MENU)
-        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
-    customBackgrounds.richerPicker_toggleSelectedOption(
-        $(customBackgrounds.IDS.BACKGROUNDS_BUTTON));
+    customBackgrounds.richerPicker_resetCustomizationMenu();
+    customBackgrounds.richerPicker_selectMenuOption(
+        $(customBackgrounds.IDS.BACKGROUNDS_BUTTON),
+        $(customBackgrounds.IDS.BACKGROUNDS_MENU));
   };
 
   $(customBackgrounds.IDS.BACKGROUNDS_BUTTON).onclick =
@@ -1414,13 +1437,10 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   const richerPickerOpenShortcuts = function() {
-    customBackgrounds.richerPicker_resetImageMenu(false);
-    $(customBackgrounds.IDS.BACKGROUNDS_MENU)
-        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
-    $(customBackgrounds.IDS.SHORTCUTS_MENU)
-        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
-    customBackgrounds.richerPicker_toggleSelectedOption(
-        $(customBackgrounds.IDS.SHORTCUTS_BUTTON));
+    customBackgrounds.richerPicker_resetCustomizationMenu();
+    customBackgrounds.richerPicker_selectMenuOption(
+        $(customBackgrounds.IDS.SHORTCUTS_BUTTON),
+        $(customBackgrounds.IDS.SHORTCUTS_MENU));
   };
 
   $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onclick = richerPickerOpenShortcuts;
@@ -1432,7 +1452,10 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   $(customBackgrounds.IDS.COLORS_BUTTON).onclick = function() {
-    customBackgrounds.richerPicker_resetImageMenu(false);
+    customBackgrounds.richerPicker_resetCustomizationMenu();
+    customBackgrounds.richerPicker_selectMenuOption(
+        $(customBackgrounds.IDS.COLORS_BUTTON),
+        $(customBackgrounds.IDS.COLORS_MENU));
   };
 };
 
