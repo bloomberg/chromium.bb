@@ -1,5 +1,5 @@
 # tags: [ d3d11 no-angle vulkan opengl ]
-# tags: [ win highsierra mac linux sierra android mojave ]
+# tags: [ win win7 highsierra mac linux sierra android mojave ]
 # tags: [ passthrough no-passthrough ]
 # tags: [ intel amd-0x699f nvidia-0x1cb3 amd-0x6613 amd
 #         qualcomm nvidia-0xfe9 nvidia nvidia-0xf02 intel-0xa2e ]
@@ -109,11 +109,12 @@ crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeed
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ Failure ]
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
+crbug.com/966143 [ d3d11 win7 nvidia-0x1cb3 ] conformance/attribs/gl-vertex-attrib-unconsumed-out-of-bounds.html [ RetryOnFailure ]
+crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance2/textures/video/* [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
 crbug.com/782254 [ d3d11 win nvidia-0x1cb3 ] conformance2/rendering/attrib-type-match.html [ RetryOnFailure ]
 
 # WIN / OpenGL / NVIDIA failures
