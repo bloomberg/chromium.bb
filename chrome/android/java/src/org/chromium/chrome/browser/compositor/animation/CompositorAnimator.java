@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.compositor.animation;
 
+import static org.chromium.base.ContextUtils.getApplicationContext;
+
 import android.animation.Animator;
 import android.animation.TimeInterpolator;
+import android.animation.ValueAnimator;
+import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,6 +18,7 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 
@@ -26,6 +31,8 @@ import java.util.ArrayList;
  * An animator that can be used for animations in the Browser Compositor.
  */
 public class CompositorAnimator extends Animator {
+    private static final String TAG = "CompositorAnimator";
+
     /** The different states that this animator can be in. */
     @IntDef({AnimationState.STARTED, AnimationState.RUNNING, AnimationState.CANCELED,
             AnimationState.ENDED})
@@ -36,6 +43,13 @@ public class CompositorAnimator extends Animator {
         int CANCELED = 2;
         int ENDED = 3;
     }
+
+    /**
+     * The scale honoring Settings.Global.ANIMATOR_DURATION_SCALE. Use static to reduce updating.
+     * See {@link ValueAnimator}.
+     **/
+    @VisibleForTesting
+    static float sDurationScale = 1;
 
     /** The {@link CompositorAnimationHandler} running the animation. */
     private final WeakReference<CompositorAnimationHandler> mHandler;
@@ -182,6 +196,17 @@ public class CompositorAnimator extends Animator {
         // By default, animate for 0 to 1.
         mStartValue = 0;
         mEndValue = 1;
+
+        // Try to update from the system setting, but not too frequently.
+        sDurationScale = Settings.Global.getFloat(getApplicationContext().getContentResolver(),
+                Settings.Global.ANIMATOR_DURATION_SCALE, sDurationScale);
+        if (sDurationScale != 1) {
+            Log.i(TAG, "Settings.Global.ANIMATOR_DURATION_SCALE = %f", sDurationScale);
+        }
+    }
+
+    private long getScaledDuration() {
+        return (long) (mDurationMs * sDurationScale);
     }
 
     /**
@@ -193,16 +218,17 @@ public class CompositorAnimator extends Animator {
         mTimeSinceStartMs += deltaTimeMs;
 
         // Clamp to the animator's duration, taking into account the start delay.
-        long finalTimeMs = Math.min(mTimeSinceStartMs - mStartDelayMs, mDurationMs);
+        long finalTimeMs = Math.min(
+                (long) (mTimeSinceStartMs - mStartDelayMs * sDurationScale), getScaledDuration());
 
         // Wait until the start delay has passed.
         if (finalTimeMs < 0) return;
 
         // In the case where duration is 0, the animation is complete.
         mAnimatedFraction = 1;
-        if (mDurationMs > 0) {
+        if (getScaledDuration() > 0) {
             mAnimatedFraction =
-                    mTimeInterpolator.getInterpolation(finalTimeMs / (float) mDurationMs);
+                    mTimeInterpolator.getInterpolation(finalTimeMs / (float) getScaledDuration());
         }
 
         // Push update to listeners.
@@ -210,7 +236,7 @@ public class CompositorAnimator extends Animator {
         for (int i = 0; i < mCachedList.size(); i++) mCachedList.get(i).onAnimationUpdate(this);
         mCachedList.clear();
 
-        if (finalTimeMs == mDurationMs) {
+        if (finalTimeMs == getScaledDuration()) {
             mDidUpdateToCompletion = true;
             end();
         }

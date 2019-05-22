@@ -76,7 +76,7 @@ public class CompositorAnimationHandler {
         }
 
         // If in testing mode, immediately push an update and end the animation.
-        if (sIsInTestingMode) pushUpdate(animator.getDuration());
+        if (sIsInTestingMode) pushUpdate(Long.MAX_VALUE);
     }
 
     /**

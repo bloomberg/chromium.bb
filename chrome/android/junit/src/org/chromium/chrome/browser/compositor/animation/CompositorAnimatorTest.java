@@ -21,6 +21,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.MockLayoutUpdateHost;
 import org.chromium.chrome.browser.util.MathUtils;
 
@@ -100,6 +101,13 @@ public final class CompositorAnimatorTest {
 
         mUpdateListener = new TestUpdateListener();
         mListener = new TestAnimatorListener();
+    }
+
+    @Test
+    public void testUnityScale() {
+        // Make sure the testing environment doesn't have ANIMATOR_DURATION_SCALE set to a value
+        // other than 1.
+        assertEquals(CompositorAnimator.sDurationScale, 1, 0);
     }
 
     @Test
