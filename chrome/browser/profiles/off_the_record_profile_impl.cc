@@ -284,6 +284,8 @@ Profile::ProfileType OffTheRecordProfileImpl::GetProfileType() const {
 #if !defined(OS_CHROMEOS)
   return profile_->IsGuestSession() ? GUEST_PROFILE : INCOGNITO_PROFILE;
 #else
+  // GuestSessionProfile is used for guest sessions on ChromeOS.
+  DCHECK(!profile_->IsGuestSession());
   return INCOGNITO_PROFILE;
 #endif
 }
