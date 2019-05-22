@@ -256,6 +256,12 @@ Polymer({
   },
 
   close: function() {
+    // If the page is already closed, return early to avoid navigating backward
+    // erroneously.
+    if (!this.guid) {
+      return;
+    }
+
     this.guid = '';
 
     // Delay navigating to allow other subpages to load first.
