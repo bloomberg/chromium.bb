@@ -33,6 +33,7 @@ class TestDataRetriever : public WebAppDataRetriever {
   void GetIcons(content::WebContents* web_contents,
                 const std::vector<GURL>& icon_urls,
                 bool skip_page_favicons,
+                WebappInstallSource install_source,
                 GetIconsCallback callback) override;
 
   // Set info to respond on |GetWebApplicationInfo|.

@@ -47,6 +47,7 @@ void TestDataRetriever::CheckInstallabilityAndRetrieveManifest(
 void TestDataRetriever::GetIcons(content::WebContents* web_contents,
                                  const std::vector<GURL>& icon_urls,
                                  bool skip_page_favicons,
+                                 WebappInstallSource install_source,
                                  GetIconsCallback callback) {
   if (get_icons_delegate_) {
     icons_map_ =

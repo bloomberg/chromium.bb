@@ -146,10 +146,8 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
   }
 
   // Skip downloading the page favicons as everything in is the URL list.
-  // TODO(loyso): Pass WebApp.Icon.HttpStatusCodeClassOnSync histogram name
-  // to WebAppDataRetriever. crbug.com/907296.
   data_retriever_->GetIcons(
-      web_contents, icon_urls, /*skip_page_fav_icons*/ true,
+      web_contents, icon_urls, /*skip_page_fav_icons*/ true, install_source_,
       base::BindOnce(&WebAppInstallTask::OnIconsRetrieved,
                      base::Unretained(this), std::move(web_application_info),
                      is_locally_installed));
@@ -265,7 +263,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
   const bool skip_page_favicons = !manifest.icons.empty();
 
   data_retriever_->GetIcons(
-      web_contents(), icon_urls, skip_page_favicons,
+      web_contents(), icon_urls, skip_page_favicons, install_source_,
       base::BindOnce(&WebAppInstallTask::OnIconsRetrievedShowDialog,
                      base::Unretained(this), std::move(web_app_info),
                      for_installable_site));
