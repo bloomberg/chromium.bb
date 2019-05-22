@@ -970,16 +970,8 @@
       name: "OffMainThreadCSSPaint",
     },
     {
-      name: "OffscreenCanvas",
-      status: "stable",
-    },
-    {
       name: "OffscreenCanvasCommit",
       status: "experimental",
-    },
-    {
-      name: "OffscreenCanvasText",
-      status: "stable",
     },
     {
       name: "OnDeviceChange",
