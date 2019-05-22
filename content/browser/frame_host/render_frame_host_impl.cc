@@ -460,6 +460,17 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
       bundle->Clone().release()));
 }
 
+void GetRestrictedCookieManager(
+    RenderFrameHostImpl* frame_host,
+    int process_id,
+    int frame_id,
+    network::mojom::NetworkContext* network_context,
+    network::mojom::RestrictedCookieManagerRequest request) {
+  network_context->GetRestrictedCookieManager(
+      std::move(request), frame_host->GetLastCommittedOrigin(),
+      /* is_service_worker = */ false, process_id, frame_id);
+}
+
 }  // namespace
 
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
@@ -4216,6 +4227,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::BindIdleManagerRequest, base::Unretained(this)));
+
+  registry_->AddInterface(base::BindRepeating(
+      &GetRestrictedCookieManager, base::Unretained(this),
+      GetProcess()->GetID(), routing_id_,
+      GetProcess()->GetStoragePartition()->GetNetworkContext()));
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
