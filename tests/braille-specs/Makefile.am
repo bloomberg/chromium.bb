@@ -4,7 +4,7 @@ EXTRA_DIST =					\
 	ar-ar-g1_harness.yaml			\
 	ar-ar-g2.yaml				\
 	chr-us-g1_harness.yaml			\
-	cs_harness.yaml \
+	cs_harness.yaml				\
 	cs-comp8_harness.yaml			\
 	da-dk-g08.yaml				\
 	da-dk-g16.yaml				\
@@ -45,7 +45,7 @@ EXTRA_DIST =					\
 	en-ueb-michael-robin.yaml		\
 	en-us-comp8-ext-back_harness.yaml	\
 	en-us-comp8-ext-for_harness.yaml	\
-	en-us-g2.yaml			\
+	en-us-g2.yaml				\
 	en-us-g2-dictionary_harness.yaml	\
 	en-us-g2-end-emphasis_harness.yaml	\
 	eo-g1_harness.yaml			\
