@@ -231,7 +231,9 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     private void onLayoutInflated(ViewGroup mainView) {
-        mSplashController.setViewHierarchyBelowSplashscreen(mainView);
+        ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
+        WarmupManager.transferViewHeirarchy(mainView, contentView);
+        mSplashController.bringSplashBackToFront();
         onInitialLayoutInflationComplete();
     }
 
@@ -880,12 +882,17 @@ public class WebappActivity extends SingleTabActivity {
 
     /** Inits the splash screen */
     protected void initSplash() {
-        SplashDelegate delegate = mWebappInfo.isSplashProvidedByWebApk()
-                ? new ProvidedByWebApkSplashDelegate(mWebappInfo)
-                : new SameActivityWebappSplashDelegate(
-                        this, getLifecycleDispatcher(), mTabObserverRegistrar, mWebappInfo);
         // Splash screen is shown after preInflationStartup() is run and the delegate is set.
-        mSplashController.setDelegate(delegate);
+        if (mWebappInfo.isSplashProvidedByWebApk()) {
+            mSplashController.setConfig(new ProvidedByWebApkSplashDelegate(mWebappInfo),
+                    true /* isWindowInitiallyTranslucent */, 0 /* splashHideAnimationDurationMs */);
+        } else {
+            mSplashController.setConfig(
+                    new SameActivityWebappSplashDelegate(
+                            this, getLifecycleDispatcher(), mTabObserverRegistrar, mWebappInfo),
+                    false /* isWindowInitiallyTranslucent */,
+                    SameActivityWebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
+        }
     }
 
     /** Sets the screen orientation. */

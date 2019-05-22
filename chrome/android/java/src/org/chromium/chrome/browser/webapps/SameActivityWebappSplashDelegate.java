@@ -117,11 +117,6 @@ public class SameActivityWebappSplashDelegate implements SplashDelegate, NativeI
     }
 
     @Override
-    public int getSplashHideAnimationDurationMs() {
-        return HIDE_ANIMATION_DURATION_MS;
-    }
-
-    @Override
     public boolean shouldWaitForSubsequentPageLoadToHideSplash() {
         return mWebApkNetworkErrorObserver != null
                 && mWebApkNetworkErrorObserver.isNetworkErrorDialogVisible();

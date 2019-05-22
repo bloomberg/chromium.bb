@@ -9,7 +9,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityToolbarController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.SplashScreenController;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityToolbarView;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -35,7 +35,7 @@ public class TrustedWebActivityCoordinator {
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
             TrustedWebActivityVerifier verifier,
             CustomTabActivityNavigationController navigationController,
-            Lazy<SplashScreenController> splashScreenController,
+            Lazy<TwaSplashController> splashController,
             CustomTabIntentDataProvider intentDataProvider,
             TrustedWebActivityUmaRecorder umaRecorder) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
@@ -43,18 +43,17 @@ public class TrustedWebActivityCoordinator {
 
         navigationController.setLandingPageOnCloseCriterion(verifier::isPageOnVerifiedOrigin);
 
-        initSplashScreen(splashScreenController, intentDataProvider, umaRecorder);
+        initSplashScreen(splashController, intentDataProvider, umaRecorder);
     }
 
-    private void initSplashScreen(Lazy<SplashScreenController> splashScreenController,
+    private void initSplashScreen(Lazy<TwaSplashController> splashController,
             CustomTabIntentDataProvider intentDataProvider,
             TrustedWebActivityUmaRecorder umaRecorder) {
-
-        boolean showSplashScreen = SplashScreenController.intentIsForTwaWithSplashScreen(
-                intentDataProvider.getIntent());
+        boolean showSplashScreen =
+                TwaSplashController.intentIsForTwaWithSplashScreen(intentDataProvider.getIntent());
 
         if (showSplashScreen) {
-            splashScreenController.get();
+            splashController.get();
         }
 
         umaRecorder.recordSplashScreenUsage(showSplashScreen);

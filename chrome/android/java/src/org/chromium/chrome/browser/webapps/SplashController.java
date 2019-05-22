@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
+import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -13,10 +15,12 @@ import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
 
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -24,11 +28,15 @@ import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Method;
 
-/** Shows and hides splash screen. */
+import javax.inject.Inject;
+
+/** Shows and hides splash screen for Webapps, WebAPKs and TWAs. */
 public class SplashController extends EmptyTabObserver implements InflationObserver, Destroyable {
     private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
         private final View mView;
@@ -67,20 +75,37 @@ public class SplashController extends EmptyTabObserver implements InflationObser
         int NUM_ENTRIES = 4;
     }
 
-    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
-    private final TabObserverRegistrar mTabObserverRegistrar;
+    @IntDef({TranslucencyRemoval.NONE, TranslucencyRemoval.ON_SPLASH_SHOWN,
+            TranslucencyRemoval.ON_SPLASH_HIDDEN})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TranslucencyRemoval {
+        int NONE = 0;
+        int ON_SPLASH_SHOWN = 1;
+        int ON_SPLASH_HIDDEN = 2;
+    }
+
+    private static final String TAG = "SplashController";
 
     private final Activity mActivity;
+    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
+    private final TabObserverRegistrar mTabObserverRegistrar;
 
     private SplashDelegate mDelegate;
 
     /** View to which the splash screen is added. */
     private ViewGroup mParentView;
 
+    @Nullable
     private View mSplashView;
 
     @Nullable
     private ViewPropertyAnimator mFadeOutAnimator;
+
+    /** The duration of the splash hide animation. */
+    private long mSplashHideAnimationDurationMs;
+
+    /** Indicates when translucency should be removed. */
+    private @TranslucencyRemoval int mTranslucencyRemovalStrategy;
 
     private boolean mDidPreInflationStartup;
 
@@ -90,35 +115,46 @@ public class SplashController extends EmptyTabObserver implements InflationObser
     /** Time that the splash screen was shown. */
     private long mSplashShownTimestamp;
 
+    /** Whether translucency was removed. */
+    private boolean mRemovedTranslucency;
+
     private ObserverList<SplashscreenObserver> mObservers;
 
+    @Inject
     public SplashController(Activity activity, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabObserverRegistrar tabObserverRegistrar) {
         mActivity = activity;
         mLifecycleDispatcher = lifecycleDispatcher;
         mTabObserverRegistrar = tabObserverRegistrar;
         mObservers = new ObserverList<>();
+        mTranslucencyRemovalStrategy = TranslucencyRemoval.NONE;
 
         mLifecycleDispatcher.register(this);
         mTabObserverRegistrar.registerTabObserver(this);
     }
 
-    public void setDelegate(SplashDelegate delegate) {
+    public void setConfig(SplashDelegate delegate, boolean isWindowInitiallyTranslucent,
+            long splashHideAnimationDurationMs) {
         mDelegate = delegate;
+        mTranslucencyRemovalStrategy =
+                computeTranslucencyRemovalStrategy(isWindowInitiallyTranslucent);
+        mSplashHideAnimationDurationMs = splashHideAnimationDurationMs;
         if (mDidPreInflationStartup) {
             showSplash();
         }
     }
 
     /**
-     * Transfers a {@param viewHierarchy} to the splashscreen's parent view while keeping the
-     * splashscreen on top.
+     * Brings splash view back to the front of the parent's view hierarchy, reattaching the view to
+     * the parent if necessary.
      */
-    public void setViewHierarchyBelowSplashscreen(ViewGroup viewHierarchy) {
-        WarmupManager.transferViewHeirarchy(viewHierarchy, mParentView);
-        if (mSplashView != null) {
-            mParentView.bringChildToFront(mSplashView);
+    public void bringSplashBackToFront() {
+        if (mSplashView == null) return;
+
+        if (mSplashView.getParent() != null) {
+            mParentView.removeView(mSplashView);
         }
+        mParentView.addView(mSplashView);
     }
 
     @VisibleForTesting
@@ -135,7 +171,12 @@ public class SplashController extends EmptyTabObserver implements InflationObser
     }
 
     @Override
-    public void onPostInflationStartup() {}
+    public void onPostInflationStartup() {
+        if (mTranslucencyRemovalStrategy == TranslucencyRemoval.ON_SPLASH_SHOWN) {
+            // In rare cases I see toolbar flickering. TODO(pshmakov): investigate why.
+            mActivity.findViewById(R.id.coordinator).setVisibility(View.INVISIBLE);
+        }
+    }
 
     @Override
     public void destroy() {
@@ -175,10 +216,47 @@ public class SplashController extends EmptyTabObserver implements InflationObser
         try (TraceEvent te = TraceEvent.scoped("SplashScreen.build")) {
             mSplashView = mDelegate.buildSplashView();
         }
+        if (mSplashView == null) {
+            mTabObserverRegistrar.unregisterTabObserver(this);
+            mLifecycleDispatcher.unregister(this);
+            if (mTranslucencyRemovalStrategy != TranslucencyRemoval.NONE) {
+                removeTranslucency();
+            }
+            return;
+        }
+
         mParentView = (ViewGroup) mActivity.findViewById(android.R.id.content);
         mParentView.addView(mSplashView);
 
         recordTraceEventsShowedSplash();
+
+        if (mTranslucencyRemovalStrategy == TranslucencyRemoval.ON_SPLASH_SHOWN) {
+            // Without swapping the pixel format, removing translucency is only safe before
+            // SurfaceView is attached.
+            removeTranslucency();
+        }
+    }
+
+    private static @TranslucencyRemoval int computeTranslucencyRemovalStrategy(
+            boolean isWindowInitiallyTranslucent) {
+        if (!isWindowInitiallyTranslucent) return TranslucencyRemoval.NONE;
+
+        // Activity#convertFromTranslucent() incorrectly makes the Window opaque when a surface view
+        // is attached. This is fixed in http://b/126897750#comment14 The bug causes the SurfaceView
+        // to become black. We need to manually swap the pixel format to restore it. When hardware
+        // acceleration is disabled, swapping the pixel format causes the surface to get recreated.
+        // A bug fix in Android N preserves the old surface till the new one is drawn.
+        //
+        // Removing tranlucency is important for performance, otherwise the windows under Chrome
+        // will continue being drawn (e.g. launcher with wallpaper). Without removing translucency,
+        // we also see visual glitches in the following cases:
+        // - closing activity (example: https://crbug.com/856544#c41)
+        // - send activity to the background (example: https://crbug.com/856544#c30)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && FeatureUtilities.isSwapPixelFormatToFixConvertFromTranslucentEnabled()) {
+            return TranslucencyRemoval.ON_SPLASH_HIDDEN;
+        }
+        return TranslucencyRemoval.ON_SPLASH_SHOWN;
     }
 
     private boolean canHideSplashScreen() {
@@ -187,6 +265,21 @@ public class SplashController extends EmptyTabObserver implements InflationObser
 
     /** Hides the splash screen. */
     private void hideSplash(final Tab tab, final @SplashHidesReason int reason) {
+        if (mTranslucencyRemovalStrategy == TranslucencyRemoval.ON_SPLASH_HIDDEN
+                && !mRemovedTranslucency) {
+            removeTranslucency();
+
+            // Activity#convertFromTranslucent() incorrectly makes the Window opaque -
+            // WindowStateAnimator#setOpaqueLocked(true) - when a surface view is
+            // attached. This is fixed in http://b/126897750#comment14. The
+            // Window currently has format PixelFormat.TRANSLUCENT (Set by the SurfaceView's
+            // ViewParent#requestTransparentRegion() call). Swap the pixel format to
+            // force an opacity change back to non-opaque.
+            mActivity.getWindow().setFormat(PixelFormat.TRANSPARENT);
+
+            mParentView.invalidate();
+        }
+
         if (reason == SplashHidesReason.LOAD_FAILED || reason == SplashHidesReason.CRASH) {
             animateHideSplash(tab, reason);
             return;
@@ -199,6 +292,25 @@ public class SplashController extends EmptyTabObserver implements InflationObser
         compositorView.surfaceRedrawNeededAsync(() -> { animateHideSplash(tab, reason); });
     }
 
+    private void removeTranslucency() {
+        mRemovedTranslucency = true;
+
+        // Removing the temporary translucency, so that underlying windows don't get drawn.
+        try {
+            Method method = Activity.class.getDeclaredMethod("convertFromTranslucent");
+            method.setAccessible(true);
+            method.invoke(mActivity);
+        } catch (ReflectiveOperationException e) {
+            // Method not found or threw an exception.
+            CachedMetrics.BooleanHistogramSample histogram =
+                    new CachedMetrics.BooleanHistogramSample(
+                            "Mobile.Splash.TranslucencyRemovalFailed");
+            histogram.record(true);
+            assert false : "Failed to remove activity translucency reflectively";
+            Log.e(TAG, "Failed to remove activity translucency reflectively");
+        }
+    }
+
     private void animateHideSplash(final Tab tab, final @SplashHidesReason int reason) {
         if (mWasSplashHideAnimationStarted) return;
 
@@ -208,14 +320,16 @@ public class SplashController extends EmptyTabObserver implements InflationObser
 
         recordTraceEventsStartedHidingSplash();
 
-        int animationDurationMs = mDelegate.getSplashHideAnimationDurationMs();
-        if (animationDurationMs == 0) {
+        // Show browser UI in case we hid it in onPostInflationStartup().
+        mActivity.findViewById(R.id.coordinator).setVisibility(View.VISIBLE);
+
+        if (mSplashHideAnimationDurationMs == 0) {
             hideSplashNow(tab, reason);
             return;
         }
         mFadeOutAnimator = mSplashView.animate()
                                    .alpha(0f)
-                                   .setDuration(animationDurationMs)
+                                   .setDuration(mSplashHideAnimationDurationMs)
                                    .withEndAction(() -> { hideSplashNow(tab, reason); });
     }
 
@@ -233,6 +347,7 @@ public class SplashController extends EmptyTabObserver implements InflationObser
 
         mDelegate = null;
         mSplashView = null;
+        mFadeOutAnimator = null;
     }
 
     /**

@@ -9,7 +9,7 @@ import android.view.View;
 import org.chromium.chrome.browser.tab.Tab;
 
 /** Delegate for {@link SplashController}. */
-interface SplashDelegate {
+public interface SplashDelegate {
     /** Builds the splash view. */
     View buildSplashView();
 
@@ -22,9 +22,6 @@ interface SplashDelegate {
      */
     void onSplashHidden(Tab tab, @SplashController.SplashHidesReason int reason,
             long startTimestamp, long endTimestamp);
-
-    /** Returns the duration for the splash hide animation. */
-    int getSplashHideAnimationDurationMs();
 
     /** Returns whether to wait for a subsequent page load to hide the splash screen. */
     boolean shouldWaitForSubsequentPageLoadToHideSplash();
