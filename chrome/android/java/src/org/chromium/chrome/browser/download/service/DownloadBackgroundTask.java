@@ -10,7 +10,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.components.download.DownloadTaskType;
@@ -59,11 +58,8 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         assert BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isStartupSuccessfullyCompleted()
                 || mStartsServiceManagerOnly;
-        Profile profile = mStartsServiceManagerOnly
-                ? null
-                : Profile.getLastUsedProfile().getOriginalProfile();
-        nativeStartBackgroundTask(profile, mCurrentTaskType,
-                needsReschedule -> callback.taskFinished(needsReschedule));
+        nativeStartBackgroundTask(
+                mCurrentTaskType, needsReschedule -> callback.taskFinished(needsReschedule));
     }
 
     @Override
@@ -81,10 +77,7 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         @DownloadTaskType
         int taskType = taskParameters.getExtras().getInt(DownloadTaskScheduler.EXTRA_TASK_TYPE);
 
-        Profile profile = mStartsServiceManagerOnly
-                ? null
-                : Profile.getLastUsedProfile().getOriginalProfile();
-        return nativeStopBackgroundTask(profile, taskType);
+        return nativeStopBackgroundTask(taskType);
     }
 
     @Override
@@ -92,7 +85,6 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         DownloadTaskScheduler.rescheduleAllTasks();
     }
 
-    private native void nativeStartBackgroundTask(
-            Profile profile, int taskType, Callback<Boolean> callback);
-    private native boolean nativeStopBackgroundTask(Profile profile, int taskType);
+    private native void nativeStartBackgroundTask(int taskType, Callback<Boolean> callback);
+    private native boolean nativeStopBackgroundTask(int taskType);
 }
