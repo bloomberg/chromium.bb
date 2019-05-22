@@ -160,9 +160,6 @@ static INLINE void set_offsets_for_motion_search(const AV1_COMP *const cpi,
 
   // Set up source buffers.
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
-
-  // R/D setup.
-  x->rdmult = cpi->rd.RDMULT;
 }
 
 static INLINE void init_simple_motion_search_mvs(PC_TREE *pc_tree) {
