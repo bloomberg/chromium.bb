@@ -912,10 +912,21 @@ using web::wk_navigation_util::IsWKInternalUrl;
 - (void)stopLoading {
   self.pendingNavigationInfo.cancelled = YES;
   _safeBrowsingWarningDetectionTimer.Stop();
+  [self loadCancelled];
 }
 
 - (base::RepeatingTimer*)safeBrowsingWarningDetectionTimer {
   return &_safeBrowsingWarningDetectionTimer;
+}
+
+- (void)loadCancelled {
+  // TODO(crbug.com/821995):  Check if this function should be removed.
+  if (self.navigationState != web::WKNavigationState::FINISHED) {
+    self.navigationState = web::WKNavigationState::FINISHED;
+    if (![self.delegate navigationHandlerWebViewIsHalted:self]) {
+      self.webStateImpl->SetIsLoading(false);
+    }
+  }
 }
 
 // Returns context for pending navigation that has |URL|. null if there is no

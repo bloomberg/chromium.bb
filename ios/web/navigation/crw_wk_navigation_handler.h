@@ -42,6 +42,10 @@ class UserInteractionState;
 - (web::Referrer)currentReferrerForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler;
 
+// Returns YES if WKWebView is halted.
+- (BOOL)navigationHandlerWebViewIsHalted:
+    (CRWWKNavigationHandler*)navigationHandler;
+
 // Returns YES if WKWebView was deallocated or is being deallocated.
 - (BOOL)navigationHandlerWebViewBeingDestroyed:
     (CRWWKNavigationHandler*)navigationHandler;
@@ -127,6 +131,9 @@ class UserInteractionState;
 
 // Instructs this handler to stop loading.
 - (void)stopLoading;
+
+// Informs this handler that any outstanding load operations are cancelled.
+- (void)loadCancelled;
 
 // Returns context for pending navigation that has |URL|. null if there is no
 // matching pending navigation.

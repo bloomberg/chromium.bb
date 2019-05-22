@@ -397,9 +397,6 @@ bool RequiresContentFilterBlockingWorkaround() {
                      navigationContext:(web::NavigationContextImpl*)context;
 // Aborts any load for both the web view and web controller.
 - (void)abortLoad;
-// Updates the internal state and informs the delegate that any outstanding load
-// operations are cancelled.
-- (void)loadCancelled;
 // Called following navigation completion to generate final navigation lifecycle
 // events. Navigation is considered complete when the document has finished
 // loading, or when other page load mechanics are completed on a
@@ -1610,7 +1607,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (!redirect) {
     // Before changing navigation state, the delegate should be informed that
     // any existing request is being cancelled before completion.
-    [self loadCancelled];
+    [self.navigationHandler loadCancelled];
     DCHECK_EQ(web::WKNavigationState::FINISHED,
               self.navigationHandler.navigationState);
   }
@@ -1992,18 +1989,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self.webView stopLoading];
   [self.navigationHandler stopLoading];
   _certVerificationErrors->Clear();
-  [self loadCancelled];
-}
-
-- (void)loadCancelled {
-  // TODO(crbug.com/821995):  Check if this function should be removed.
-  if (self.navigationHandler.navigationState !=
-      web::WKNavigationState::FINISHED) {
-    self.navigationHandler.navigationState = web::WKNavigationState::FINISHED;
-    if (!_isHalted) {
-      self.webStateImpl->SetIsLoading(false);
-    }
-  }
 }
 
 - (void)didFinishNavigation:(web::NavigationContextImpl*)context {
@@ -3458,7 +3443,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         }
       }));
 
-  [self loadCancelled];
+  [self.navigationHandler loadCancelled];
 }
 
 #pragma mark - WebView Helpers
@@ -4530,7 +4515,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     web::NavigationContextImpl* navigationContext =
         [self.navigationHandler.navigationStates
             contextForNavigation:navigation];
-    [self loadCancelled];
+    [self.navigationHandler loadCancelled];
     self.navigationManagerImpl->DiscardNonCommittedItems();
 
     [self.legacyNativeController
@@ -5114,6 +5099,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 #pragma mark - CRWWKNavigationHandlerDelegate
+
+- (BOOL)navigationHandlerWebViewIsHalted:
+    (CRWWKNavigationHandler*)navigationHandler {
+  return _isHalted;
+}
 
 - (BOOL)navigationHandlerWebViewBeingDestroyed:
     (CRWWKNavigationHandler*)navigationHandler {
