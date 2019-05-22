@@ -10,6 +10,8 @@
 deps = {
     "src/tools/cros/":
         "https://src.chromium.org/chrome/trunk/src/tools/cros/",
+    "src/components/variations/service":
+        "https://src.chromium.org/chrome/trunk/src/variations/service/",
 }
 
 # Both contest/test/gpu and tools/perf will pull in telemetry.
