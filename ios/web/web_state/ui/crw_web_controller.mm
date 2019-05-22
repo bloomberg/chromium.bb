@@ -86,7 +86,6 @@
 #include "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "ios/web/public/web_state/web_state_interface_provider.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/security/web_interstitial_impl.h"
@@ -104,6 +103,8 @@
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
+#import "ios/web/web_state/ui/crw_wk_ui_handler.h"
+#import "ios/web/web_state/ui/crw_wk_ui_handler_delegate.h"
 #import "ios/web/web_state/ui/favicon_util.h"
 #include "ios/web/web_state/ui/web_kit_constants.h"
 #import "ios/web/web_state/ui/wk_security_origin_util.h"
@@ -114,7 +115,6 @@
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_view/wk_web_view_util.h"
-#import "ios/web/webui/mojo_facade.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util_ios.h"
@@ -225,8 +225,8 @@ bool RequiresContentFilterBlockingWorkaround() {
                                 CRWWebControllerContainerViewDelegate,
                                 CRWWebViewScrollViewProxyObserver,
                                 WKNavigationDelegate,
-                                WKUIDelegate,
-                                CRWWKNavigationHandlerDelegate> {
+                                CRWWKNavigationHandlerDelegate,
+                                CRWWKUIHandlerDelegate> {
   // The view used to display content.  Must outlive |_webViewProxy|. The
   // container view should be accessed through this property rather than
   // |self.view| from within this class, as |self.view| triggers creation while
@@ -253,8 +253,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   NSMutableArray* _pendingLoadCompleteActions;
   // Flag to say if browsing is enabled.
   BOOL _webUsageEnabled;
-  // The controller that tracks long press and check context menu trigger.
-  CRWContextMenuController* _contextMenuController;
   // Default URL (about:blank).
   GURL _defaultURL;
   // Whether the web page is currently performing window.history.pushState or
@@ -265,9 +263,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   // Set to YES when a hashchange event is manually dispatched for same-document
   // history navigations.
   BOOL _dispatchingSameDocumentHashChangeEvent;
-
-  // Backs up property with the same name.
-  std::unique_ptr<web::MojoFacade> _mojoFacade;
 
   // Referrer for the current page; does not include the fragment.
   NSString* _currentReferrerString;
@@ -299,6 +294,9 @@ bool RequiresContentFilterBlockingWorkaround() {
 // The WKNavigationDelegate handler class.
 @property(nonatomic, readonly, strong)
     CRWWKNavigationHandler* navigationHandler;
+// The WKUIDelegate handler class.
+@property(nonatomic, readonly, strong) CRWWKUIHandler* UIHandler;
+
 // YES if in the process of closing.
 @property(nonatomic, readwrite, assign) BOOL beingDestroyed;
 
@@ -333,9 +331,6 @@ bool RequiresContentFilterBlockingWorkaround() {
 // navigation is in progress or the last committed item otherwise.
 // Returns MOBILE, the default type, if navigation manager is nullptr or empty.
 @property(nonatomic, readonly) web::UserAgentType userAgentType;
-
-// Facade for Mojo API.
-@property(nonatomic, readonly) web::MojoFacade* mojoFacade;
 
 @property(nonatomic, readonly) web::WebState* webState;
 // WebStateImpl instance associated with this CRWWebController, web controller
@@ -556,6 +551,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
     _navigationHandler = [[CRWWKNavigationHandler alloc] init];
     _navigationHandler.delegate = self;
+
+    _UIHandler = [[CRWWKUIHandler alloc] init];
+    _UIHandler.delegate = self;
   }
   return self;
 }
@@ -678,7 +676,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
   [_jsInjector setWebView:webView];
   [_webView setNavigationDelegate:self];
-  [_webView setUIDelegate:self];
+  [_webView setUIDelegate:self.UIHandler];
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
@@ -782,16 +780,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (web::UserAgentType)userAgentType {
   web::NavigationItem* item = self.currentNavItem;
   return item ? item->GetUserAgentType() : web::UserAgentType::MOBILE;
-}
-
-- (web::MojoFacade*)mojoFacade {
-  if (!_mojoFacade) {
-    service_manager::mojom::InterfaceProvider* interfaceProvider =
-        self.webStateImpl->GetWebStateInterfaceProvider();
-    _mojoFacade =
-        std::make_unique<web::MojoFacade>(interfaceProvider, self.webState);
-  }
-  return _mojoFacade.get();
 }
 
 - (WebState*)webState {
@@ -902,7 +890,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webStateImpl->CancelDialogs();
 
   _SSLStatusUpdater = nil;
-  _mojoFacade.reset();
+  [self.UIHandler close];
 
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
@@ -1512,6 +1500,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                  ? ui::PAGE_TRANSITION_LINK
                  : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   }
+}
+
+- (BOOL)isUserInitiatedAction:(WKNavigationAction*)action {
+  return _userInteractionState.IsUserInteracting(self.webView);
 }
 
 #pragma mark - Navigation Helpers
@@ -3504,7 +3496,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     }
 
     web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
-    _contextMenuController =
+    self.UIHandler.contextMenuController =
         [[CRWContextMenuController alloc] initWithWebView:self.webView
                                              browserState:browserState
                                                  delegate:self];
@@ -3596,174 +3588,30 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return web::WKWebViewConfigurationProvider::FromBrowserState(browserState);
 }
 
-#pragma mark - WKUIDelegate Methods
+#pragma mark - CRWWKUIHandlerDelegate
 
-- (WKWebView*)webView:(WKWebView*)webView
+- (const GURL&)documentURLForUIHandler:(CRWWKUIHandler*)UIHandler {
+  return _documentURL;
+}
+
+- (WKWebView*)UIHandler:(CRWWKUIHandler*)UIHandler
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
-               forNavigationAction:(WKNavigationAction*)action
-                    windowFeatures:(WKWindowFeatures*)windowFeatures {
-  // Do not create windows for non-empty invalid URLs.
-  GURL requestURL = net::GURLWithNSURL(action.request.URL);
-  if (!requestURL.is_empty() && !requestURL.is_valid()) {
-    DLOG(WARNING) << "Unable to open a window with invalid URL: "
-                  << requestURL.spec();
-    return nil;
-  }
+                       forWebState:(web::WebState*)webState {
+  CRWWebController* webController =
+      static_cast<web::WebStateImpl*>(webState)->GetWebController();
+  DCHECK(!webController || webState->HasOpener());
 
-  NSString* referrer =
-      [action.request valueForHTTPHeaderField:kReferrerHeaderName];
-  GURL openerURL =
-      referrer.length ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
-
-  // There is no reliable way to tell if there was a user gesture, so this code
-  // checks if user has recently tapped on web view. TODO(crbug.com/809706):
-  // Remove the usage of -userIsInteracting when rdar://19989909 is fixed.
-  bool initiatedByUser = [self isUserInitiatedAction:action];
-
-  if (UIAccessibilityIsVoiceOverRunning()) {
-    // -userIsInteracting returns NO if VoiceOver is On. Inspect action's
-    // description, which may contain the information about user gesture for
-    // certain link clicks.
-    initiatedByUser = initiatedByUser ||
-                      web::GetNavigationActionInitiationTypeWithVoiceOverOn(
-                          action.description) ==
-                          web::NavigationActionInitiationType::kUserInitiated;
-  }
-
-  WebState* childWebState = self.webStateImpl->CreateNewWebState(
-      requestURL, openerURL, initiatedByUser);
-  if (!childWebState)
-    return nil;
-
-  CRWWebController* childWebController =
-      static_cast<WebStateImpl*>(childWebState)->GetWebController();
-
-  DCHECK(!childWebController || childWebController.hasOpener);
-
-  // WKWebView requires WKUIDelegate to return a child view created with
-  // exactly the same |configuration| object (exception is raised if config is
-  // different). |configuration| param and config returned by
-  // WKWebViewConfigurationProvider are different objects because WKWebView
-  // makes a shallow copy of the config inside init, so every WKWebView
-  // owns a separate shallow copy of WKWebViewConfiguration.
-  [childWebController ensureWebViewCreatedWithConfiguration:configuration];
-  return childWebController.webView;
+  [webController ensureWebViewCreatedWithConfiguration:configuration];
+  return webController.webView;
 }
 
-- (void)webViewDidClose:(WKWebView*)webView {
-  if (self.hasOpener)
-    self.webStateImpl->CloseWebState();
+- (BOOL)UIHandler:(CRWWKUIHandler*)UIHandler
+    isUserInitiatedAction:(WKNavigationAction*)action {
+  return [self isUserInitiatedAction:action];
 }
 
-- (void)webView:(WKWebView*)webView
-    runJavaScriptAlertPanelWithMessage:(NSString*)message
-                      initiatedByFrame:(WKFrameInfo*)frame
-                     completionHandler:(void (^)())completionHandler {
-  [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_ALERT
-                 initiatedByFrame:frame
-                          message:message
-                      defaultText:nil
-                       completion:^(BOOL, NSString*) {
-                         completionHandler();
-                       }];
-}
-
-- (void)webView:(WKWebView*)webView
-    runJavaScriptConfirmPanelWithMessage:(NSString*)message
-                        initiatedByFrame:(WKFrameInfo*)frame
-                       completionHandler:
-                           (void (^)(BOOL result))completionHandler {
-  [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_CONFIRM
-                 initiatedByFrame:frame
-                          message:message
-                      defaultText:nil
-                       completion:^(BOOL success, NSString*) {
-                         if (completionHandler) {
-                           completionHandler(success);
-                         }
-                       }];
-}
-
-- (void)webView:(WKWebView*)webView
-    runJavaScriptTextInputPanelWithPrompt:(NSString*)prompt
-                              defaultText:(NSString*)defaultText
-                         initiatedByFrame:(WKFrameInfo*)frame
-                        completionHandler:
-                            (void (^)(NSString* result))completionHandler {
-  GURL origin(web::GURLOriginWithWKSecurityOrigin(frame.securityOrigin));
-  if (web::GetWebClient()->IsAppSpecificURL(origin)) {
-    std::string mojoResponse =
-        self.mojoFacade->HandleMojoMessage(base::SysNSStringToUTF8(prompt));
-    completionHandler(base::SysUTF8ToNSString(mojoResponse));
-    return;
-  }
-
-  [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_PROMPT
-                 initiatedByFrame:frame
-                          message:prompt
-                      defaultText:defaultText
-                       completion:^(BOOL, NSString* input) {
-                         if (completionHandler) {
-                           completionHandler(input);
-                         }
-                       }];
-}
-
-- (BOOL)webView:(WKWebView*)webView
-    shouldPreviewElement:(WKPreviewElementInfo*)elementInfo
-    API_AVAILABLE(ios(10.0)) {
-  return self.webStateImpl->ShouldPreviewLink(
-      net::GURLWithNSURL(elementInfo.linkURL));
-}
-
-- (UIViewController*)webView:(WKWebView*)webView
-    previewingViewControllerForElement:(WKPreviewElementInfo*)elementInfo
-                        defaultActions:
-                            (NSArray<id<WKPreviewActionItem>>*)previewActions
-    API_AVAILABLE(ios(10.0)) {
-  // Prevent |_contextMenuController| from intercepting the default behavior for
-  // the current on-going touch. Otherwise it would cancel the on-going Peek&Pop
-  // action and show its own context menu instead (crbug.com/770619).
-  [_contextMenuController allowSystemUIForCurrentGesture];
-
-  return self.webStateImpl->GetPreviewingViewController(
-      net::GURLWithNSURL(elementInfo.linkURL));
-}
-
-- (void)webView:(WKWebView*)webView
-    commitPreviewingViewController:(UIViewController*)previewingViewController {
-  return self.webStateImpl->CommitPreviewingViewController(
-      previewingViewController);
-}
-
-#pragma mark - WKUIDelegate Helpers
-
-- (BOOL)isUserInitiatedAction:(WKNavigationAction*)action {
-  return _userInteractionState.IsUserInteracting(self.webView);
-}
-
-// Helper to respond to |webView:runJavaScript...| delegate methods.
-// |completionHandler| must not be nil.
-- (void)runJavaScriptDialogOfType:(web::JavaScriptDialogType)type
-                 initiatedByFrame:(WKFrameInfo*)frame
-                          message:(NSString*)message
-                      defaultText:(NSString*)defaultText
-                       completion:(void (^)(BOOL, NSString*))completionHandler {
-  DCHECK(completionHandler);
-
-  // JavaScript dialogs should not be presented if there is no information about
-  // the requesting page's URL.
-  GURL requestURL = net::GURLWithNSURL(frame.request.URL);
-  if (!requestURL.is_valid()) {
-    completionHandler(NO, nil);
-    return;
-  }
-
-  self.webStateImpl->RunJavaScriptDialog(
-      requestURL, type, message, defaultText,
-      base::BindOnce(^(bool success, NSString* input) {
-        completionHandler(success, input);
-      }));
+- (web::WebStateImpl*)webStateImplForUIHandler:(CRWWKUIHandler*)UIHandler {
+  return self.webStateImpl;
 }
 
 #pragma mark - WKNavigationDelegate Methods
