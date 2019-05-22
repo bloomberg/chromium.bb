@@ -60,12 +60,12 @@ void CSSSelector::CreateRareData() {
   DCHECK_NE(Match(), kTag);
   if (has_rare_data_)
     return;
-  AtomicString value(data_.value_);
-  if (data_.value_)
-    data_.value_->Release();
-  auto rare_data = RareData::Create(value);
-  rare_data->AddRef();
-  data_.rare_data_ = rare_data.get();
+  // This transitions the DataUnion from |value_| to |rare_data_| and thus needs to be careful to
+  // correctly manage explicitly destruction of |value_| followed by placement new of |rare_data_|.
+  // A straight-assignment will compile and may kinda work, but will be undefined behavior.
+  auto rare_data = RareData::Create(data_.value_);
+  data_.value_.~AtomicString();
+  new (&data_.rare_data_) scoped_refptr<RareData>(std::move(rare_data));
   has_rare_data_ = true;
 }
 
