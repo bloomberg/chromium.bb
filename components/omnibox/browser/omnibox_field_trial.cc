@@ -223,16 +223,19 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
   return base::TimeDelta::FromMilliseconds(1500);
 }
 
-bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
-  return InZeroSuggestMostVisitedWithoutSerpFieldTrial() ||
-         base::GetFieldTrialParamValueByFeature(omnibox::kOnFocusSuggestions,
-                                                kZeroSuggestVariantRule) ==
-             "MostVisited";
+bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+    OmniboxEventProto::PageClassification page_classification) {
+  return InZeroSuggestMostVisitedWithoutSerpFieldTrial(page_classification) ||
+         internal::GetValueForRuleInContextByFeature(
+             omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
+             page_classification) == "MostVisited";
 }
 
-bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
-  std::string variant = base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule);
+bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
+    OmniboxEventProto::PageClassification page_classification) {
+  std::string variant = internal::GetValueForRuleInContextByFeature(
+      omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
+      page_classification);
   if (variant == "MostVisitedWithoutSERP")
     return true;
 #if defined(OS_ANDROID)
@@ -247,10 +250,11 @@ bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
 }
 
 // static
-bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() {
-  return base::GetFieldTrialParamValueByFeature(omnibox::kOnFocusSuggestions,
-                                                kZeroSuggestVariantRule) ==
-         "Personalized";
+bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
+    OmniboxEventProto::PageClassification page_classification) {
+  return internal::GetValueForRuleInContextByFeature(
+             omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
+             page_classification) == "Personalized";
 }
 
 // static

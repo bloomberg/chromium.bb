@@ -664,8 +664,12 @@ static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
   if (!profile)
     return;
 
-  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial())
+  // ZeroSuggestPrefetcher uses a fake AutocompleteInput classified as OTHER.
+  // See its constructor.
+  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
+          OmniboxEventProto::OTHER)) {
     return;
+  }
 
   // ZeroSuggestPrefetcher deletes itself after it's done prefetching.
   new ZeroSuggestPrefetcher(profile);

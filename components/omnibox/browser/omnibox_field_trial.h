@@ -161,16 +161,19 @@ base::TimeDelta StopTimerFieldTrialDuration();
 // Returns whether the user is in a ZeroSuggest field trial, which shows
 // most visited URLs. This is true for both "MostVisited" and
 // "MostVisitedWithoutSERP" trials.
-bool InZeroSuggestMostVisitedFieldTrial();
+bool InZeroSuggestMostVisitedFieldTrial(
+    metrics::OmniboxEventProto::PageClassification page_classification);
 
 // Returns whether the user is in ZeroSuggest field trial showing most
 // visited URLs except it doesn't show suggestions on Google search result
 // pages.
-bool InZeroSuggestMostVisitedWithoutSerpFieldTrial();
+bool InZeroSuggestMostVisitedWithoutSerpFieldTrial(
+    metrics::OmniboxEventProto::PageClassification page_classification);
 
 // Returns whether the user is in a ZeroSuggest field trial, but should
 // show recently searched-for queries instead.
-bool InZeroSuggestPersonalizedFieldTrial();
+bool InZeroSuggestPersonalizedFieldTrial(
+    metrics::OmniboxEventProto::PageClassification page_classification);
 
 // ---------------------------------------------------------
 // For the Zero Suggest Redirect to Chrome field trial.

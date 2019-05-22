@@ -227,7 +227,8 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
 }
 
 void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
-  if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial()) {
+  if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
+          current_page_classification_)) {
     // Remove the deleted match from the cache, so it is not shown to the user
     // again. Since we cannot remove just one result, blow away the cache.
     client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
@@ -601,21 +602,27 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return DEFAULT_SERP;
   }
 
-  if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial())
+  if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
+          current_page_classification_)) {
     return PersonalizedServiceShouldFallBackToMostVisited(
                client()->GetPrefs(), client()->IsAuthenticated(),
                template_url_service)
                ? MOST_VISITED
                : DEFAULT_SERP;
+  }
 
-  if (OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() &&
+  if (OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
+          current_page_classification_) &&
       client()
           ->GetTemplateURLService()
-          ->IsSearchResultsPageFromDefaultSearchProvider(current_url))
+          ->IsSearchResultsPageFromDefaultSearchProvider(current_url)) {
     return NONE;
+  }
 
-  if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial())
+  if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+          current_page_classification_)) {
     return MOST_VISITED;
+  }
 
   return can_send_current_url ? DEFAULT_SERP_FOR_URL : NONE;
 }

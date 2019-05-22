@@ -152,6 +152,7 @@ class ZeroSuggestProviderTest : public testing::Test,
   void CreatePersonalizedFieldTrial();
   void CreateMostVisitedFieldTrial();
   void CreateContextualSuggestFieldTrial();
+  void SetZeroSuggestVariantForAllContexts(const std::string& variant);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -188,21 +189,23 @@ void ZeroSuggestProviderTest::OnProviderUpdate(bool updated_matches) {
 }
 
 void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      omnibox::kOnFocusSuggestions,
-      {{OmniboxFieldTrial::kZeroSuggestVariantRule, "Personalized"}});
+  SetZeroSuggestVariantForAllContexts("Personalized");
 }
 
 void ZeroSuggestProviderTest::CreateMostVisitedFieldTrial() {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      omnibox::kOnFocusSuggestions,
-      {{OmniboxFieldTrial::kZeroSuggestVariantRule, "MostVisitedWithoutSERP"}});
+  SetZeroSuggestVariantForAllContexts("MostVisitedWithoutSERP");
 }
 
 void ZeroSuggestProviderTest::CreateContextualSuggestFieldTrial() {
+  SetZeroSuggestVariantForAllContexts("ContextualSuggestions");
+}
+
+void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
+    const std::string& variant) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       omnibox::kOnFocusSuggestions,
-      {{OmniboxFieldTrial::kZeroSuggestVariantRule, "ContextualSuggestions"}});
+      {{std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
+        variant}});
 }
 
 TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -180,22 +181,57 @@ TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
 // Test if InZeroSuggestFieldTrial*() properly parses various field trial
 // group names.
 TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
+  OmniboxEventProto::PageClassification page_classification =
+      OmniboxEventProto::OTHER;
+
+  // Verify the behavior with no parameters set on the feature.
   ResetFieldTrialList();
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+      page_classification));
 #else
-  EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+  EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+      page_classification));
 #endif
 
-  ResetFieldTrialList();
-  // ScopedFeatureList reuses the global field trial list already defined
-  // within ResetFieldTrialList.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      omnibox::kOnFocusSuggestions,
-      {{OmniboxFieldTrial::kZeroSuggestVariantRule, "MostVisited"}});
+  // Verify that a wildcard ZeroSuggestVariant rule works.
+  {
+    ResetFieldTrialList();
+    // ScopedFeatureList reuses the global field trial list already defined
+    // within ResetFieldTrialList.
+    std::map<std::string, std::string> params;
+    base::test::ScopedFeatureList feature_list;
+    params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*"] =
+        "MostVisited";
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kOnFocusSuggestions, params);
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+        page_classification));
+  }
 
-  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+  // Sanity check that enabling MostVisited only on the NTP doesn't affect pages
+  // classified as OTHER.
+  {
+    ResetFieldTrialList();
+    // ScopedFeatureList reuses the global field trial list already defined
+    // within ResetFieldTrialList.
+    std::map<std::string, std::string> params;
+    base::test::ScopedFeatureList feature_list;
+
+    std::string ntp_param_name = base::StringPrintf(
+        "%s:%d:*", OmniboxFieldTrial::kZeroSuggestVariantRule,
+        OmniboxEventProto::NTP);
+    params[ntp_param_name] = "MostVisited";
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kOnFocusSuggestions, params);
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+        page_classification));
+#else
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+        page_classification));
+#endif
+  }
 }
 
 TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
