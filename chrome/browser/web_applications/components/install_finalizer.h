@@ -45,7 +45,6 @@ class InstallFinalizer {
     // app will launch in |force_launch_container|.
     LaunchContainer force_launch_container = LaunchContainer::kDefault;
     Source source = Source::kUser;
-    bool error_on_unsupported_requirements = false;
     bool locally_installed = true;
     bool no_network_install = false;
   };

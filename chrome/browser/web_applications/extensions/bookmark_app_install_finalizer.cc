@@ -89,9 +89,6 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   scoped_refptr<CrxInstaller> crx_installer =
       crx_installer_factory_.Run(profile_);
 
-  crx_installer->set_error_on_unsupported_requirements(
-      options.error_on_unsupported_requirements);
-
   extensions::LaunchType launch_type =
       web_app_info.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
 

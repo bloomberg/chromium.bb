@@ -305,7 +305,6 @@ void WebAppInstallTask::OnIconsRetrieved(
 
   InstallFinalizer::FinalizeOptions options;
   options.locally_installed = is_locally_installed;
-  options.error_on_unsupported_requirements = true;
 
   install_finalizer_->FinalizeInstall(
       *web_app_info, options,

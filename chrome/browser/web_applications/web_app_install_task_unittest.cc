@@ -840,10 +840,6 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
                             .finalize_options_list()
                             .at(0)
                             .locally_installed);
-            EXPECT_TRUE(test_install_finalizer()
-                            .finalize_options_list()
-                            .at(0)
-                            .error_on_unsupported_requirements);
 
             std::unique_ptr<WebApplicationInfo> final_web_app_info =
                 test_install_finalizer().web_app_info();
