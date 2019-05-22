@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/url_util.h"
 #include "net/dns/host_resolver.h"
@@ -21,6 +22,9 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_parameters_callback.h"
+#include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 
@@ -124,6 +128,20 @@ void HistogramAuthEvent(HttpAuthHandler* handler, AuthEvent auth_event) {
                             kTargetBucketsEnd);
 }
 
+base::Value ControllerParamsToValue(HttpAuth::Target target,
+                                    const GURL* url,
+                                    NetLogCaptureMode) {
+  base::Value params(base::Value::Type::DICTIONARY);
+  params.SetStringPath("target", HttpAuth::GetAuthTargetString(target));
+  params.SetStringPath("url", url->spec());
+  return params;
+}
+
+NetLogParametersCallback ControllerParamsCallback(HttpAuth::Target target,
+                                                  const GURL& url) {
+  return base::BindRepeating(&ControllerParamsToValue, target, &url);
+}
+
 }  // namespace
 
 HttpAuthController::HttpAuthController(
@@ -145,9 +163,9 @@ HttpAuthController::HttpAuthController(
 }
 
 HttpAuthController::~HttpAuthController() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (net_log_.source().IsValid())
     net_log_.EndEvent(NetLogEventType::AUTH_CONTROLLER);
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void HttpAuthController::BindToCallingNetLog(
@@ -155,6 +173,8 @@ void HttpAuthController::BindToCallingNetLog(
   if (!net_log_.source().IsValid()) {
     net_log_ = NetLogWithSource::Make(caller_net_log.net_log(),
                                       NetLogSourceType::HTTP_AUTH_CONTROLLER);
+    net_log_.BeginEvent(NetLogEventType::AUTH_CONTROLLER,
+                        ControllerParamsCallback(target_, auth_url_));
   }
   caller_net_log.AddEvent(NetLogEventType::AUTH_BOUND_TO_CONTROLLER,
                           net_log_.source().ToEventParametersCallback());
