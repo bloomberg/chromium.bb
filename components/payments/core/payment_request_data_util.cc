@@ -19,6 +19,7 @@
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payments_validators.h"
+#include "net/base/url_util.h"
 #include "url/url_constants.h"
 
 namespace payments {
@@ -147,22 +148,24 @@ void ParseSupportedMethods(
           }
         }
       }
-      } else {
-        // Here |method_data_entry.supported_method| could be a deprecated
-        // supported network (e.g., "visa"), some invalid string or a URL
-        // Payment Method Identifier. Capture this last category if the URL
-        // is valid. A valid URL must have an https scheme and its username and
-        // password must be empty:
-        // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
-        // Avoid duplicate URLs.
-        GURL url(method_data_entry.supported_method);
-        if (url.is_valid() && url.SchemeIs(url::kHttpsScheme) &&
-            !url.has_username() && !url.has_password()) {
-          const auto result = url_payment_method_identifiers.insert(url);
-          if (result.second)
-            out_url_payment_method_identifiers->push_back(url);
-        }
+    } else {
+      // Here |method_data_entry.supported_method| could be a deprecated
+      // supported network (e.g., "visa"), some invalid string or a URL
+      // Payment Method Identifier. Capture this last category if the URL
+      // is valid. A valid URL must have an https scheme (or http for localhost)
+      // and its username and password must be empty:
+      // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
+      // Avoid duplicate URLs.
+      GURL url(method_data_entry.supported_method);
+      if (url.is_valid() &&
+          (url.SchemeIs(url::kHttpsScheme) ||
+           (url.SchemeIsHTTPOrHTTPS() && net::IsLocalhost(url))) &&
+          !url.has_username() && !url.has_password()) {
+        const auto result = url_payment_method_identifiers.insert(url);
+        if (result.second)
+          out_url_payment_method_identifiers->push_back(url);
       }
+    }
   }
 }
 
