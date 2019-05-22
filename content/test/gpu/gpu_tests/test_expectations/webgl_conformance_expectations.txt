@@ -471,19 +471,16 @@ crbug.com/678850 [ android qualcomm-adreno-(tm)-330 ] conformance/attribs/gl-ver
 crbug.com/709704 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/bugs/varying-arrays-should-not-be-reversed.html [ Failure ]
 
 # Nexus 5X
-# The following test recently became so flaky that it had to be
-# upgraded to Fail.
+# Was timing out randomly on android_optional_gpu_tests_rel, but became so
+# flaky (2018-09-10) that it had to be upgraded to Fail.
 crbug.com/882323 [ android qualcomm-adreno-(tm)-418 ] deqp/data/gles2/shaders/conversions.html [ Failure ]
-
 # The following test just started timing out randomly on the
 # android_optional_gpu_tests_rel tryserver with no apparent cause.
 crbug.com/793050 [ android qualcomm-adreno-(tm)-418 ] deqp/data/gles2/shaders/swizzles.html [ RetryOnFailure ]
-
 # This one is causing intermittent timeouts on the device, and it
 # looks like when that happens, the next test also always times
 # out. Skip it for now until it's fixed and running reliably.
 crbug.com/609883 [ android qualcomm-adreno-(tm)-418 ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
-
 # This test is skipped because it is crashing the GPU process.
 crbug.com/784817 [ android qualcomm-adreno-(tm)-418 ] conformance/glsl/bugs/init-array-with-loop.html [ Skip ]
 crbug.com/920737 [ android qualcomm-adreno-(tm)-418 ] conformance/glsl/bugs/loop-if-loop-gradient.html [ RetryOnFailure ]
@@ -494,7 +491,6 @@ crbug.com/912161 [ android qualcomm-adreno-(tm)-418 ] conformance/glsl/construct
 crbug.com/912161 [ android qualcomm-adreno-(tm)-418 ] conformance/glsl/functions/glsl-function-dot.html [ RetryOnFailure ]
 crbug.com/912161 [ android qualcomm-adreno-(tm)-418 ] conformance/glsl/functions/glsl-function-min-gentype.html [ RetryOnFailure ]
 crbug.com/912161 [ android qualcomm-adreno-(tm)-418 ] conformance/glsl/implicit/add_ivec3_vec3.vert.html [ RetryOnFailure ]
-
 # This test is skipped because it is crashing the GPU process.
 crbug.com/609883 [ android qualcomm-adreno-(tm)-418 no-passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 crbug.com/793050 [ android qualcomm-adreno-(tm)-418 ] conformance/ogles/GL/all/all_001_to_004.html [ RetryOnFailure ]
@@ -504,6 +500,7 @@ crbug.com/793050 [ android qualcomm-adreno-(tm)-418 ] conformance/ogles/GL/swizz
 crbug.com/818041 [ android qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/793050 [ android qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/716496 [ android qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/965387 [ android qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
 crbug.com/934545 [ android android-chromium qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/misc/texture-npot-video.html [ RetryOnFailure ]
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] WebglExtension_EXT_sRGB [ Failure ]
