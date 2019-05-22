@@ -63,6 +63,10 @@ char kLSanDefaultSuppressions[] =
     "leak:blink::DOMWrapperWorld::Create\n"
     "leak:blink::ScriptState::Create\n"
 
+    // Crash keys are intentionally leaked.
+    "leak:crash_reporter::(anonymous "
+    "namespace)::CrashKeyBaseSupport::Allocate\n"
+
     // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
 
     // End of suppressions.
