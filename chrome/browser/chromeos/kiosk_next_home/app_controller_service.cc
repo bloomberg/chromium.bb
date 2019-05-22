@@ -211,18 +211,13 @@ const std::string& AppControllerService::MaybeGetAndroidPackageName(
   }
 
   // If we don't find it, try to get the package name from ARC prefs.
-  ArcAppListPrefs* arc_prefs_ = ArcAppListPrefs::Get(profile_);
-  if (!arc_prefs_) {
-    return base::EmptyString();
-  }
-  std::unique_ptr<ArcAppListPrefs::AppInfo> arc_info =
-      arc_prefs_->GetApp(app_id);
-  if (!arc_info) {
+  std::string package_name = arc::AppIdToArcPackageName(app_id, profile_);
+  if (package_name.empty()) {
     return base::EmptyString();
   }
 
   // Now that we have a valid package name, update our caches.
-  android_package_map_[app_id] = arc_info->package_name;
+  android_package_map_[app_id] = package_name;
   return android_package_map_[app_id];
 }
 

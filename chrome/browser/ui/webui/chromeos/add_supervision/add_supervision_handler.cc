@@ -11,7 +11,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/app_service_proxy.h"
@@ -19,60 +19,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/identity_manager.h"
-
-namespace {
-
-// Returns the Arc package name for the specified app_id, which must
-// be the AppID of an ARC app.  TODO(danan):  this functionality is
-// also needed by KioskNext, so find a way to share the same code.
-std::string AppIdToArcPackageName(const std::string& app_id, Profile* profile) {
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-
-  // This should never return null, since we use the primary user profile
-  // which should have ARC prefs.
-  DCHECK(arc_prefs) << "Unable to retrieve ArcAppListPrefs";
-
-  std::unique_ptr<ArcAppListPrefs::AppInfo> arc_info =
-      arc_prefs->GetApp(app_id);
-
-  if (!arc_info) {
-    DLOG(ERROR) << "Couldn't retrieve ARC package name for AppID: " << app_id;
-    return std::string();
-  }
-  return std::move(arc_info)->package_name;
-}
-
-std::string ArcPackageNameToAppId(const std::string& package_name,
-                                  Profile* profile) {
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-
-  // This should never return null, since we use the primary user profile
-  // which should have ARC prefs.
-  DCHECK(arc_prefs) << "Unable to retrieve ArcAppListPrefs";
-
-  return arc_prefs->GetAppIdByPackageName(package_name);
-}
-
-// TODO(danan): This method should be removed once the stickyness
-// attribute is available via the App Service instead.  This function
-// will crash if app_id isn't installed.
-// (https://crbug.com/948408).
-bool IsArcAppSticky(const std::string& app_id, Profile* profile) {
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-
-  // This should never return null, since we use the primary user profile
-  // which should have arc prefs.
-  DCHECK(arc_prefs) << "Unable to retrieve ArcAppListPrefs";
-
-  std::unique_ptr<ArcAppListPrefs::AppInfo> arc_info =
-      arc_prefs->GetApp(app_id);
-
-  DCHECK(arc_info) << "Couldn't retrieve ARC package name for AppID: "
-                   << app_id;
-  return arc_info->sticky;
-}
-
-}  // namespace
 
 AddSupervisionHandler::AddSupervisionHandler(
     add_supervision::mojom::AddSupervisionHandlerRequest request,
@@ -96,17 +42,20 @@ void AddSupervisionHandler::GetInstalledArcApps(
 
   std::vector<std::string> installed_arc_apps;
 
-  proxy->AppRegistryCache().ForEachApp([&installed_arc_apps, profile](
-                                           const apps::AppUpdate& update) {
-    // We don't include "sticky" ARC apps because they are system-required
-    // apps that should not be offered for uninstallation.
-    if (ShouldIncludeAppUpdate(update) &&
-        !IsArcAppSticky(update.AppId(), profile)) {
-      std::string package_name = AppIdToArcPackageName(update.AppId(), profile);
-      if (!package_name.empty())
-        installed_arc_apps.push_back(package_name);
-    }
-  });
+  proxy->AppRegistryCache().ForEachApp(
+      [&installed_arc_apps, profile](const apps::AppUpdate& update) {
+        // We don't include "sticky" ARC apps because they are system-required
+        // apps that should not be offered for uninstallation. TODO(danan):
+        // check for stickyness via the App Service instead when that is
+        // available. (https://crbug.com/948408).
+        if (ShouldIncludeAppUpdate(update) &&
+            !arc::IsArcAppSticky(update.AppId(), profile)) {
+          std::string package_name =
+              arc::AppIdToArcPackageName(update.AppId(), profile);
+          if (!package_name.empty())
+            installed_arc_apps.push_back(package_name);
+        }
+      });
 
   std::move(callback).Run(installed_arc_apps);
 }
@@ -120,12 +69,14 @@ void AddSupervisionHandler::UninstallArcApps(
 
   for (const std::string& package_name : package_names) {
     proxy->AppRegistryCache().ForOneApp(
-        ArcPackageNameToAppId(package_name, profile),
+        arc::ArcPackageNameToAppId(package_name, profile),
         [proxy, package_names, profile](const apps::AppUpdate& update) {
           // We don't include "sticky" ARC apps because they are
           // system-required apps that should not be uninstalled.
+          // TODO(danan): check for stickyness via the App Service instead
+          // when that is available. (https://crbug.com/948408).
           if (ShouldIncludeAppUpdate(update) &&
-              !IsArcAppSticky(update.AppId(), profile)) {
+              !arc::IsArcAppSticky(update.AppId(), profile)) {
             proxy->Uninstall(update.AppId());
           }
         });
