@@ -886,6 +886,10 @@ TEST_F(
           custom_margins_test.TestNames.RequestScrollToOutOfBoundsTextbox);
     });
 
+TEST_F('PrintPreviewCustomMarginsTest', 'ControlsDisabledOnError', function() {
+  this.runMochaTest(custom_margins_test.TestNames.ControlsDisabledOnError);
+});
+
 PrintPreviewDestinationSearchTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {

@@ -17,6 +17,11 @@ Polymer({
   behaviors: [print_preview.InputBehavior, I18nBehavior],
 
   properties: {
+    disabled: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
     side: {
       type: String,
       reflectToAttribute: true,

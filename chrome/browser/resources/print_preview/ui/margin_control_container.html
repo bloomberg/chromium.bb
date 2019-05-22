@@ -26,6 +26,7 @@
     </style>
     <template is="dom-repeat" items="[[marginSides_]]">
       <print-preview-margin-control side="[[item]]" invisible="[[invisible_]]"
+          disabled="[[controlsDisabled_(state, invisible_)]]"
           translate-transform="[[translateTransform_]]"
           clip-size="[[clipSize_]]" scale-transform="[[scaleTransform_]]"
           page-size="[[pageSize]]" on-pointerdown="onPointerDown_"

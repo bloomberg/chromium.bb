@@ -16,6 +16,7 @@ cr.define('custom_margins_test', function() {
     MediaSizeClearsCustomMarginsPDF: 'media size clears custom margins pdf',
     RequestScrollToOutOfBoundsTextbox:
         'request scroll to out of bounds textbox',
+    ControlsDisabledOnError: 'controls disabled on error',
   };
 
   const suiteName = 'CustomMarginsTest';
@@ -290,6 +291,7 @@ cr.define('custom_margins_test', function() {
             const controls = getControls();
             controls.forEach((control, index) => {
               assertFalse(control.invisible);
+              assertFalse(control.disabled);
               assertEquals('1', window.getComputedStyle(control).opacity);
               assertEquals(sides[index], control.side);
               assertEquals(defaultMarginPts, control.getPositionInPts());
@@ -308,6 +310,7 @@ cr.define('custom_margins_test', function() {
             controls.forEach((control, index) => {
               assertEquals('0', window.getComputedStyle(control).opacity);
               assertTrue(control.invisible);
+              assertTrue(control.disabled);
             });
           });
     });
@@ -577,6 +580,28 @@ cr.define('custom_margins_test', function() {
             assertEquals(1047, args.detail.y);
           });
     });
+
+    // Tests that the margin controls can be correctly set from the sticky
+    // settings.
+    test(assert(TestNames.ControlsDisabledOnError), function() {
+      return finishSetup().then(() => {
+        // Simulate setting custom margins.
+        model.set(
+            'settings.margins.value',
+            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+
+        const controls = getControls();
+        controls.forEach(control => assertFalse(control.disabled));
+
+        container.state = print_preview.State.ERROR;
+        // Validate controls are disabled.
+        controls.forEach(control => assertTrue(control.disabled));
+
+        container.state = print_preview.State.READY;
+        controls.forEach(control => assertFalse(control.disabled));
+      });
+    });
+
   });
 
   return {

@@ -209,6 +209,14 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether the controls should be disabled.
+   * @private
+   */
+  controlsDisabled_: function() {
+    return this.state !== print_preview.State.READY || this.invisible_;
+  },
+
+  /**
    * @param {!print_preview.ticket_items.CustomMarginsOrientation} orientation
    *     Orientation value to test.
    * @return {boolean} Whether the given orientation is TOP or BOTTOM.
