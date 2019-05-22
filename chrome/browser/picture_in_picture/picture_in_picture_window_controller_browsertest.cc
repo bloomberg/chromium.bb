@@ -2048,7 +2048,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 
   gfx::Rect next_track_bounds =
       overlay_window->next_track_controls_view_for_testing()
-          ->GetContentsBounds();
+          ->GetBoundsInScreen();
 
   // Unset action handler and check that Next Track button is not displayed when
   // video plays and mouse is hovering over the window.
@@ -2062,7 +2062,33 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   // Next Track button is still at the same previous location.
   EXPECT_EQ(next_track_bounds,
             overlay_window->next_track_controls_view_for_testing()
-                ->GetContentsBounds());
+                ->GetBoundsInScreen());
+}
+
+// Tests that Next Track button bounds are updated right away when
+// Picture-in-Picture window controls are hidden.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       NextTrackButtonBounds) {
+  LoadTabAndEnterPictureInPicture(browser());
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  gfx::Rect next_track_bounds =
+      overlay_window->next_track_controls_view_for_testing()
+          ->GetBoundsInScreen();
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "setMediaSessionActionHandler('nexttrack');"));
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_NE(next_track_bounds,
+            overlay_window->next_track_controls_view_for_testing()
+                ->GetBoundsInScreen());
 }
 
 // Tests that a Previous Track button is displayed in the Picture-in-Picture
@@ -2103,7 +2129,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 
   gfx::Rect previous_track_bounds =
       overlay_window->previous_track_controls_view_for_testing()
-          ->GetContentsBounds();
+          ->GetBoundsInScreen();
 
   // Unset action handler and check that Previous Track button is not displayed
   // when video plays and mouse is hovering over the window.
@@ -2113,11 +2139,36 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   MoveMouseOver(overlay_window);
   EXPECT_FALSE(
       overlay_window->previous_track_controls_view_for_testing()->IsDrawn());
-
   // Previous Track button is still at the same previous location.
   EXPECT_EQ(previous_track_bounds,
             overlay_window->previous_track_controls_view_for_testing()
-                ->GetContentsBounds());
+                ->GetBoundsInScreen());
+}
+
+// Tests that Previous Track button bounds are updated right away when
+// Picture-in-Picture window controls are hidden.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       PreviousTrackButtonBounds) {
+  LoadTabAndEnterPictureInPicture(browser());
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  gfx::Rect previous_track_bounds =
+      overlay_window->previous_track_controls_view_for_testing()
+          ->GetBoundsInScreen();
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "setMediaSessionActionHandler('previoustrack');"));
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_NE(previous_track_bounds,
+            overlay_window->previous_track_controls_view_for_testing()
+                ->GetBoundsInScreen());
 }
 
 // Tests that clicking the Skip Ad button in the Picture-in-Picture window

@@ -515,6 +515,14 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
 }
 
 void OverlayWindowViews::UpdateControlsBounds() {
+  // If controls are hidden, let's update controls bounds immediately.
+  // Otherwise, wait a bit before updating controls bounds to avoid too many
+  // changes happening too quickly.
+  if (!AreControlsVisible()) {
+    OnUpdateControlsBounds();
+    return;
+  }
+
   update_controls_bounds_timer_.reset(new base::OneShotTimer());
   update_controls_bounds_timer_->Start(
       FROM_HERE,
@@ -701,9 +709,6 @@ void OverlayWindowViews::ShowInactive() {
         ash::kPipRoundedCornerRadius);
   }
 #endif
-
-  // Update immediately controls bounds.
-  OnUpdateControlsBounds();
 
   // If this is not the first time the window is shown, this will be a no-op.
   has_been_shown_ = true;
