@@ -116,13 +116,13 @@ void FFmpegAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DecodeBuffer(*buffer, decode_cb_bound);
 }
 
-void FFmpegAudioDecoder::Reset(const base::Closure& closure) {
+void FFmpegAudioDecoder::Reset(base::OnceClosure closure) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
   ResetTimestampState(config_);
-  task_runner_->PostTask(FROM_HERE, closure);
+  task_runner_->PostTask(FROM_HERE, std::move(closure));
 }
 
 void FFmpegAudioDecoder::DecodeBuffer(const DecoderBuffer& buffer,

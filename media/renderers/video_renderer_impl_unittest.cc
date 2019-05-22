@@ -68,7 +68,7 @@ class VideoRendererImplTest : public testing::Test {
     // Monitor decodes from the decoder.
     ON_CALL(*decoder_, Decode(_, _))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::DecodeRequested));
-    ON_CALL(*decoder_, Reset(_))
+    ON_CALL(*decoder_, Reset_(_))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::FlushRequested));
     ON_CALL(*decoder_, GetMaxDecodeRequests()).WillByDefault(Return(1));
     return decoders;
@@ -490,7 +490,7 @@ class VideoRendererImplTest : public testing::Test {
     SatisfyPendingDecode();
   }
 
-  void FlushRequested(const base::Closure& callback) {
+  void FlushRequested(base::OnceClosure& callback) {
     EXPECT_TRUE(
         task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
     decode_results_.clear();
@@ -499,7 +499,8 @@ class VideoRendererImplTest : public testing::Test {
       SatisfyPendingDecode();
     }
 
-    task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE, callback);
+    task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                          std::move(callback));
   }
 
   // Used to protect |time_|.

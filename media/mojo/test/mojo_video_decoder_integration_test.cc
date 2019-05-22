@@ -72,7 +72,7 @@ class MockVideoDecoder : public VideoDecoder {
     // For regular methods, only configure a default action.
     ON_CALL(*this, Decode(_, _))
         .WillByDefault(Invoke(this, &MockVideoDecoder::DoDecode));
-    ON_CALL(*this, Reset(_))
+    ON_CALL(*this, Reset_(_))
         .WillByDefault(Invoke(this, &MockVideoDecoder::DoReset));
   }
 
@@ -97,7 +97,8 @@ class MockVideoDecoder : public VideoDecoder {
 
   MOCK_METHOD2(Decode,
                void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
-  MOCK_METHOD1(Reset, void(const base::Closure&));
+  void Reset(base::OnceClosure cb) override { Reset_(cb); }
+  MOCK_METHOD1(Reset_, void(base::OnceClosure&));
   MOCK_CONST_METHOD0(NeedsBitstreamConversion, bool());
   MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
   MOCK_CONST_METHOD0(GetMaxDecodeRequests, int());
@@ -139,9 +140,10 @@ class MockVideoDecoder : public VideoDecoder {
         FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::OK));
   }
 
-  void DoReset(const base::Closure& reset_cb) {
+  void DoReset(base::OnceClosure& reset_cb) {
     // |reset_cb| must not be called from the same stack.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(reset_cb));
   }
 
  private:
@@ -454,7 +456,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, ResetDuringDecode) {
   EXPECT_CALL(*decoder_, DidGetReleaseMailboxCB()).Times(AtLeast(0));
   EXPECT_CALL(output_cb_, Run(_)).Times(kMaxDecodeRequests);
   EXPECT_CALL(*decoder_, Decode(_, _)).Times(kMaxDecodeRequests);
-  EXPECT_CALL(*decoder_, Reset(_));
+  EXPECT_CALL(*decoder_, Reset_(_));
 
   InSequence s;  // Make sure all callbacks are fired in order.
   EXPECT_CALL(decode_cb, Run(_)).Times(kMaxDecodeRequests);
@@ -482,7 +484,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, ResetDuringDecode_ChunkedWrite) {
   EXPECT_CALL(*decoder_, DidGetReleaseMailboxCB()).Times(AtLeast(0));
   EXPECT_CALL(output_cb_, Run(_)).Times(kMaxDecodeRequests);
   EXPECT_CALL(*decoder_, Decode(_, _)).Times(kMaxDecodeRequests);
-  EXPECT_CALL(*decoder_, Reset(_));
+  EXPECT_CALL(*decoder_, Reset_(_));
 
   InSequence s;  // Make sure all callbacks are fired in order.
   EXPECT_CALL(decode_cb, Run(_)).Times(kMaxDecodeRequests);

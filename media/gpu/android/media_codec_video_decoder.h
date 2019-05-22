@@ -80,7 +80,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Reset(base::OnceClosure closure) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
@@ -224,7 +224,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   base::Optional<DrainType> drain_type_;
 
   // The current reset cb if a Reset() is in progress.
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
 
   // A generation counter that's incremented every time Reset() is called.
   int reset_generation_ = 0;

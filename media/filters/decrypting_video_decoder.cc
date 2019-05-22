@@ -117,7 +117,7 @@ void DecryptingVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DecodePendingBuffer();
 }
 
-void DecryptingVideoDecoder::Reset(const base::Closure& closure) {
+void DecryptingVideoDecoder::Reset(base::OnceClosure closure) {
   DVLOG(2) << "Reset() - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kIdle || state_ == kPendingDecode ||
@@ -127,7 +127,7 @@ void DecryptingVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(!init_cb_);  // No Reset() during pending initialization.
   DCHECK(!reset_cb_);
 
-  reset_cb_ = BindToCurrentLoop(closure);
+  reset_cb_ = BindToCurrentLoop(std::move(closure));
 
   decryptor_->ResetDecoder(Decryptor::kVideo);
 

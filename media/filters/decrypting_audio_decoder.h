@@ -48,7 +48,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Reset(base::OnceClosure closure) override;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok
@@ -97,7 +97,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   InitCB init_cb_;
   OutputCB output_cb_;
   DecodeCB decode_cb_;
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
   WaitingCB waiting_cb_;
 
   // The current decoder configuration.

@@ -151,10 +151,10 @@ void TestVDAVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   decoder_->Decode(std::move(buffer), bitstream_buffer_id);
 }
 
-void TestVDAVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
+void TestVDAVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
-  reset_cb_ = reset_cb;
+  reset_cb_ = std::move(reset_cb);
   decoder_->Reset();
 }
 

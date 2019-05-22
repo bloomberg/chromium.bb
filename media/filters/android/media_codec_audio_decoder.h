@@ -91,7 +91,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Reset(base::OnceClosure closure) override;
   bool NeedsBitstreamConversion() const override;
 
   // MediaCodecLoop::Client implementation

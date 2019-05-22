@@ -46,7 +46,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Reset(base::OnceClosure closure) override;
 
   static const char kDecoderName[];
 
@@ -92,7 +92,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   InitCB init_cb_;
   OutputCB output_cb_;
   DecodeCB decode_cb_;
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
   WaitingCB waiting_cb_;
 
   VideoDecoderConfig config_;

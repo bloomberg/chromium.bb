@@ -706,10 +706,10 @@ void VideoDecoderShim::DecoderImpl::Initialize(
 
   decoder_->Initialize(
       config, true /* low_delay */, nullptr,
-      base::Bind(&VideoDecoderShim::DecoderImpl::OnInitDone,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&VideoDecoderShim::DecoderImpl::OnOutputComplete,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&VideoDecoderShim::DecoderImpl::OnInitDone,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&VideoDecoderShim::DecoderImpl::OnOutputComplete,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::NullCallback());
 #else
   OnInitDone(false);
@@ -742,8 +742,9 @@ void VideoDecoderShim::DecoderImpl::Reset() {
     return;
   }
 
-  decoder_->Reset(base::Bind(&VideoDecoderShim::DecoderImpl::OnResetComplete,
-                             weak_ptr_factory_.GetWeakPtr()));
+  decoder_->Reset(
+      base::BindOnce(&VideoDecoderShim::DecoderImpl::OnResetComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VideoDecoderShim::DecoderImpl::Stop() {

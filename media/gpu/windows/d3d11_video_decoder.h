@@ -108,7 +108,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::RepeatingClosure& closure) override;
+  void Reset(base::OnceClosure closure) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;

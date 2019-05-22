@@ -36,14 +36,14 @@ class CancellationHelper {
     decoder_->Decode(std::move(buffer), decode_cb);
   }
 
-  void Reset(const base::Closure& reset_cb) {
+  void Reset(base::OnceClosure reset_cb) {
     // OffloadableVideoDecoders are required to have a synchronous Reset(), so
     // we don't need to wait for the Reset to complete. Despite this, we don't
     // want to run |reset_cb| before we've reset the cancellation flag or the
     // client may end up issuing another Reset() before this code runs.
     decoder_->Reset(base::DoNothing());
     cancellation_flag_.reset(new base::AtomicFlag());
-    reset_cb.Run();
+    std::move(reset_cb).Run();
   }
 
   OffloadableVideoDecoder* decoder() const { return decoder_.get(); }
@@ -168,18 +168,18 @@ void OffloadingVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                 std::move(buffer), bound_decode_cb));
 }
 
-void OffloadingVideoDecoder::Reset(const base::Closure& reset_cb) {
+void OffloadingVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  base::Closure bound_reset_cb = BindToCurrentLoop(reset_cb);
+  base::OnceClosure bound_reset_cb = BindToCurrentLoop(std::move(reset_cb));
   if (!offload_task_runner_) {
-    helper_->Reset(bound_reset_cb);
+    helper_->Reset(std::move(bound_reset_cb));
   } else {
     helper_->Cancel();
     offload_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CancellationHelper::Reset,
-                       base::Unretained(helper_.get()), bound_reset_cb));
+        FROM_HERE, base::BindOnce(&CancellationHelper::Reset,
+                                  base::Unretained(helper_.get()),
+                                  std::move(bound_reset_cb)));
   }
 }
 

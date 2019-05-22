@@ -101,24 +101,26 @@ GpuVideoDecoder::GpuVideoDecoder(
       this, "media::GpuVideoDecoder", base::ThreadTaskRunnerHandle::Get());
 }
 
-void GpuVideoDecoder::Reset(const base::Closure& closure) {
+void GpuVideoDecoder::Reset(base::OnceClosure closure) {
   DVLOG(3) << "Reset()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (state_ == kDrainingDecoder) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&GpuVideoDecoder::Reset,
-                                  weak_factory_.GetWeakPtr(), closure));
+        FROM_HERE,
+        base::BindOnce(&GpuVideoDecoder::Reset, weak_factory_.GetWeakPtr(),
+                       std::move(closure)));
     return;
   }
 
   if (!vda_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(closure));
     return;
   }
 
   DCHECK(!pending_reset_cb_);
-  pending_reset_cb_ = BindToCurrentLoop(closure);
+  pending_reset_cb_ = BindToCurrentLoop(std::move(closure));
 
   vda_->Reset();
 }

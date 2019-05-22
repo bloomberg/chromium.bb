@@ -274,16 +274,16 @@ void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
   decode_cb.Run(status);
 }
 
-void MojoVideoDecoder::Reset(const base::Closure& reset_cb) {
+void MojoVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
-    task_runner_->PostTask(FROM_HERE, reset_cb);
+    task_runner_->PostTask(FROM_HERE, std::move(reset_cb));
     return;
   }
 
-  reset_cb_ = reset_cb;
+  reset_cb_ = std::move(reset_cb);
   remote_decoder_->Reset(
       base::Bind(&MojoVideoDecoder::OnResetDone, base::Unretained(this)));
 }

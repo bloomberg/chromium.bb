@@ -287,7 +287,7 @@ class FuchsiaVideoDecoder : public VideoDecoder {
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Reset(base::OnceClosure closure) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
@@ -460,7 +460,7 @@ void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   PumpInput();
 }
 
-void FuchsiaVideoDecoder::Reset(const base::Closure& closure) {
+void FuchsiaVideoDecoder::Reset(base::OnceClosure closure) {
   // Call DecodeCB(ABORTED) for all active decode requests.
   for (auto& buffer : input_buffers_) {
     buffer.CallDecodeCallbackIfAny(DecodeStatus::ABORTED);
@@ -477,7 +477,7 @@ void FuchsiaVideoDecoder::Reset(const base::Closure& closure) {
     active_stream_ = false;
   }
 
-  BindToCurrentLoop(closure).Run();
+  BindToCurrentLoop(std::move(closure)).Run();
 }
 
 bool FuchsiaVideoDecoder::NeedsBitstreamConversion() const {

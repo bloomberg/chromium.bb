@@ -40,7 +40,7 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
                   const WaitingCB& waiting_cb) final;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) final;
-  void Reset(const base::Closure& closure) final;
+  void Reset(base::OnceClosure closure) final;
   bool NeedsBitstreamConversion() const final;
 
   // AudioDecoderClient implementation.
@@ -89,7 +89,7 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
 
   // |decode_cb_| and |reset_cb_| are replaced by every by Decode() and Reset().
   DecodeCB decode_cb_;
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
 
   // Flag telling whether this decoder requires bitstream conversion.
   // Passed from |remote_decoder_| as a result of its initialization.

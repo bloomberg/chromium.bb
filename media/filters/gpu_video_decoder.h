@@ -66,7 +66,7 @@ class MEDIA_EXPORT GpuVideoDecoder
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Reset(base::OnceClosure closure) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
@@ -189,7 +189,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   DecodeCB eos_decode_cb_;
 
   // Not null only during reset.
-  base::Closure pending_reset_cb_;
+  base::OnceClosure pending_reset_cb_;
 
   State state_;
 

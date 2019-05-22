@@ -183,14 +183,14 @@ void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   bound_decode_cb.Run(DecodeStatus::OK);
 }
 
-void VpxVideoDecoder::Reset(const base::Closure& reset_cb) {
+void VpxVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = kNormal;
 
   if (bind_callbacks_)
-    BindToCurrentLoop(reset_cb).Run();
+    BindToCurrentLoop(std::move(reset_cb)).Run();
   else
-    reset_cb.Run();
+    std::move(reset_cb).Run();
 
   // Allow Initialize() to be called on another thread now.
   DETACH_FROM_SEQUENCE(sequence_checker_);

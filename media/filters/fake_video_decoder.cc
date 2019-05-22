@@ -132,11 +132,11 @@ void FakeVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   RunOrHoldDecode(wrapped_decode_cb);
 }
 
-void FakeVideoDecoder::Reset(const base::Closure& closure) {
+void FakeVideoDecoder::Reset(base::OnceClosure closure) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(reset_cb_.IsNull());
 
-  reset_cb_.SetCallback(BindToCurrentLoop(closure));
+  reset_cb_.SetCallback(BindToCurrentLoop(std::move(closure)));
   decoded_frames_.clear();
 
   // Defer the reset if a decode is pending.

@@ -97,7 +97,7 @@ class MEDIA_EXPORT OffloadingVideoDecoder : public VideoDecoder {
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& reset_cb) override;
+  void Reset(base::OnceClosure reset_cb) override;
   int GetMaxDecodeRequests() const override;
 
  private:

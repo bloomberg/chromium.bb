@@ -53,7 +53,8 @@ class MockOffloadableVideoDecoder : public OffloadableVideoDecoder {
                     const WaitingCB& waiting_cb));
   MOCK_METHOD2(Decode,
                void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
-  MOCK_METHOD1(Reset, void(const base::Closure&));
+  void Reset(base::OnceClosure cb) override { Reset_(cb); }
+  MOCK_METHOD1(Reset_, void(base::OnceClosure&));
   MOCK_METHOD0(Detach, void(void));
 };
 
@@ -127,9 +128,9 @@ class OffloadingVideoDecoderTest : public testing::Test {
     task_env_.RunUntilIdle();
 
     // Reset so we can call Initialize() again.
-    EXPECT_CALL(*decoder_, Reset(_))
+    EXPECT_CALL(*decoder_, Reset_(_))
         .WillOnce(DoAll(VerifyOn(task_env_.GetMainThreadTaskRunner()),
-                        RunCallback<0>()));
+                        RunOnceCallback<0>()));
     offloading_decoder_->Reset(ExpectResetCB());
     task_env_.RunUntilIdle();
   }
@@ -170,9 +171,9 @@ class OffloadingVideoDecoderTest : public testing::Test {
 
     // Reset so we can call Initialize() again.
     offloading_decoder_->Reset(ExpectResetCB());
-    EXPECT_CALL(*decoder_, Reset(_))
+    EXPECT_CALL(*decoder_, Reset_(_))
         .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
-                        RunCallback<0>()));
+                        RunOnceCallback<0>()));
     task_env_.RunUntilIdle();
   }
 
@@ -291,9 +292,9 @@ TEST_F(OffloadingVideoDecoderTest, ParallelizedOffloading) {
 
   // Reset so we can call Initialize() again.
   offloading_decoder_->Reset(ExpectResetCB());
-  EXPECT_CALL(*decoder_, Reset(_))
+  EXPECT_CALL(*decoder_, Reset_(_))
       .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
-                      RunCallback<0>()));
+                      RunOnceCallback<0>()));
   task_env_.RunUntilIdle();
 }
 
@@ -328,9 +329,9 @@ TEST_F(OffloadingVideoDecoderTest, ParallelizedOffloadingResetAbortsDecodes) {
       .Times(2)
       .WillRepeatedly(VerifyOn(task_env_.GetMainThreadTaskRunner()));
   offloading_decoder_->Reset(ExpectResetCB());
-  EXPECT_CALL(*decoder_, Reset(_))
+  EXPECT_CALL(*decoder_, Reset_(_))
       .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
-                      RunCallback<0>()));
+                      RunOnceClosure<0>()));
   task_env_.RunUntilIdle();
 }
 

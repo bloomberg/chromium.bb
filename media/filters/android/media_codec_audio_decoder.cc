@@ -204,7 +204,7 @@ void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   codec_loop_->ExpectWork();
 }
 
-void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
+void MediaCodecAudioDecoder::Reset(base::OnceClosure closure) {
   DVLOG(2) << __func__;
 
   ClearInputQueue(DecodeStatus::ABORTED);
@@ -220,7 +220,7 @@ void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
 
   SetState(success ? STATE_READY : STATE_ERROR);
 
-  task_runner_->PostTask(FROM_HERE, closure);
+  task_runner_->PostTask(FROM_HERE, std::move(closure));
 }
 
 bool MediaCodecAudioDecoder::NeedsBitstreamConversion() const {

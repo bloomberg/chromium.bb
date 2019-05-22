@@ -289,14 +289,14 @@ void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   decode_cb_bound.Run(DecodeStatus::OK);
 }
 
-void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
+void FFmpegVideoDecoder::Reset(base::OnceClosure closure) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
   // PostTask() to avoid calling |closure| inmediately.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
 }
 
 FFmpegVideoDecoder::~FFmpegVideoDecoder() {

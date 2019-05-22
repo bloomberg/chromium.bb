@@ -54,7 +54,7 @@ class MojoVideoDecoder final : public VideoDecoder,
                   const WaitingCB& waiting_cb) final;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) final;
-  void Reset(const base::Closure& closure) final;
+  void Reset(base::OnceClosure closure) final;
   bool NeedsBitstreamConversion() const final;
   bool CanReadWithoutStalling() const final;
   int GetMaxDecodeRequests() const final;
@@ -103,7 +103,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   WaitingCB waiting_cb_;
   uint64_t decode_counter_ = 0;
   std::map<uint64_t, DecodeCB> pending_decodes_;
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
 
   mojom::VideoDecoderPtr remote_decoder_;
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;

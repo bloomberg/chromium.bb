@@ -76,9 +76,9 @@ void FallbackVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   selected_decoder_->Decode(std::move(buffer), decode_cb);
 }
 
-void FallbackVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
+void FallbackVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DCHECK(selected_decoder_);
-  selected_decoder_->Reset(reset_cb);
+  selected_decoder_->Reset(std::move(reset_cb));
 }
 
 bool FallbackVideoDecoder::NeedsBitstreamConversion() const {

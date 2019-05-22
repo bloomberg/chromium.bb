@@ -870,7 +870,7 @@ void MediaCodecVideoDecoder::ForwardVideoFrame(
 // After |closure| runs:
 // 1) no VideoFrames from before the Reset() will be output, and
 // 2) no DecodeCBs (including EOS) from before the Reset() will be run.
-void MediaCodecVideoDecoder::Reset(const base::Closure& closure) {
+void MediaCodecVideoDecoder::Reset(base::OnceClosure closure) {
   DVLOG(2) << __func__;
   DCHECK(!reset_cb_);
   reset_generation_++;

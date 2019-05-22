@@ -226,7 +226,8 @@ class MockVideoDecoder : public VideoDecoder {
                     const WaitingCB& waiting_cb));
   MOCK_METHOD2(Decode,
                void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
-  MOCK_METHOD1(Reset, void(const base::Closure&));
+  void Reset(base::OnceClosure cb) override { Reset_(cb); }
+  MOCK_METHOD1(Reset_, void(base::OnceClosure&));
   MOCK_CONST_METHOD0(GetMaxDecodeRequests, int());
   MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
   MOCK_CONST_METHOD0(NeedsBitstreamConversion, bool());
@@ -259,7 +260,8 @@ class MockAudioDecoder : public AudioDecoder {
                     const WaitingCB& waiting_cb));
   MOCK_METHOD2(Decode,
                void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
-  MOCK_METHOD1(Reset, void(const base::Closure&));
+  void Reset(base::OnceClosure cb) override { Reset_(cb); }
+  MOCK_METHOD1(Reset_, void(base::OnceClosure&));
 
  private:
   std::string decoder_name_;

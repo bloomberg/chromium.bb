@@ -591,7 +591,7 @@ void D3D11VideoDecoder::DoDecode() {
       base::BindOnce(&D3D11VideoDecoder::DoDecode, weak_factory_.GetWeakPtr()));
 }
 
-void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
+void D3D11VideoDecoder::Reset(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(state_, State::kInitializing);
 
@@ -621,7 +621,7 @@ void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
   if (state_ == State::kWaitingForNewKey || state_ == State::kWaitingForReset)
     state_ = State::kRunning;
 
-  closure.Run();
+  std::move(closure).Run();
 }
 
 bool D3D11VideoDecoder::NeedsBitstreamConversion() const {

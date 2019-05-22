@@ -42,7 +42,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public OffloadableVideoDecoder {
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& reset_cb) override;
+  void Reset(base::OnceClosure reset_cb) override;
 
   // OffloadableVideoDecoder implementation.
   void Detach() override;

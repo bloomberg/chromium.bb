@@ -448,7 +448,7 @@ void VdaVideoDecoder::DecodeOnGpuThread(scoped_refptr<DecoderBuffer> buffer,
   vda_->Decode(std::move(buffer), bitstream_id);
 }
 
-void VdaVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
+void VdaVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DVLOG(2) << __func__;
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_);
@@ -457,11 +457,11 @@ void VdaVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
   DCHECK(!reset_cb_);
 
   if (has_error_) {
-    parent_task_runner_->PostTask(FROM_HERE, reset_cb);
+    parent_task_runner_->PostTask(FROM_HERE, std::move(reset_cb));
     return;
   }
 
-  reset_cb_ = reset_cb;
+  reset_cb_ = std::move(reset_cb);
   gpu_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoDecodeAccelerator::Reset, gpu_weak_vda_));
 }

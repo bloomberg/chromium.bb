@@ -117,8 +117,8 @@ class MojoAudioDecoderTest : public ::testing::Test {
         .WillRepeatedly(
             DoAll(InvokeWithoutArgs(this, &MojoAudioDecoderTest::ReturnOutput),
                   RunCallback<1>(DecodeStatus::OK)));
-    EXPECT_CALL(*mock_audio_decoder_, Reset(_))
-        .WillRepeatedly(RunCallback<0>());
+    EXPECT_CALL(*mock_audio_decoder_, Reset_(_))
+        .WillRepeatedly(RunOnceCallback<0>());
 
     mojo::MakeStrongBinding(
         std::make_unique<MojoAudioDecoderService>(

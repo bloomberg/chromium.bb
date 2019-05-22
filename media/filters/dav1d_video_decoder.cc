@@ -250,15 +250,16 @@ void Dav1dVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   bound_decode_cb.Run(DecodeStatus::OK);
 }
 
-void Dav1dVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
+void Dav1dVideoDecoder::Reset(base::OnceClosure reset_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = DecoderState::kNormal;
   dav1d_flush(dav1d_decoder_);
 
   if (bind_callbacks_)
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     std::move(reset_cb));
   else
-    reset_cb.Run();
+    std::move(reset_cb).Run();
 }
 
 void Dav1dVideoDecoder::Detach() {

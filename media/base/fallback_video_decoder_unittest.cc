@@ -99,7 +99,7 @@ TEST_P(FallbackVideoDecoderUnittest, MethodsRedirectedAsExpected) {
   EXPECT_ON_CORRECT_DECODER(Decode(_, _));
   fallback_decoder_->Decode(nullptr, base::DoNothing());
 
-  EXPECT_ON_CORRECT_DECODER(Reset(_));
+  EXPECT_ON_CORRECT_DECODER(Reset_(_));
   fallback_decoder_->Reset(base::DoNothing());
 
   EXPECT_ON_CORRECT_DECODER(NeedsBitstreamConversion());

@@ -112,7 +112,7 @@ class MEDIA_EXPORT VideoDecoder {
   // Resets decoder state. All pending Decode() requests will be finished or
   // aborted before |closure| is called.
   // Note: No VideoDecoder calls should be made before |closure| is executed.
-  virtual void Reset(const base::Closure& closure) = 0;
+  virtual void Reset(base::OnceClosure closure) = 0;
 
   // Returns true if the decoder needs bitstream conversion before decoding.
   virtual bool NeedsBitstreamConversion() const;

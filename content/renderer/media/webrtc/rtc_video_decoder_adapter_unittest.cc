@@ -68,7 +68,8 @@ class MockVideoDecoder : public media::VideoDecoder {
   MOCK_METHOD2(Decode,
                void(scoped_refptr<media::DecoderBuffer> buffer,
                     const DecodeCB&));
-  MOCK_METHOD1(Reset, void(const base::RepeatingClosure&));
+  void Reset(base::OnceClosure cb) override { Reset_(cb); }
+  MOCK_METHOD1(Reset_, void(base::OnceClosure&));
   bool NeedsBitstreamConversion() const override { return false; }
   bool CanReadWithoutStalling() const override { return true; }
   int GetMaxDecodeRequests() const override { return 1; }

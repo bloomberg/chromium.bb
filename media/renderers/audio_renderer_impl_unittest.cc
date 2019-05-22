@@ -83,7 +83,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     }
     EXPECT_CALL(*decoder, Decode(_, _))
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::DecodeDecoder));
-    EXPECT_CALL(*decoder, Reset(_))
+    EXPECT_CALL(*decoder, Reset_(_))
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::ResetDecoder));
     std::vector<std::unique_ptr<AudioDecoder>> decoders;
     decoders.push_back(std::move(decoder));
@@ -477,15 +477,15 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
       std::move(wait_for_pending_decode_cb_).Run();
   }
 
-  void ResetDecoder(const base::Closure& reset_cb) {
+  void ResetDecoder(base::OnceClosure& reset_cb) {
     if (decode_cb_) {
       // |reset_cb| will be called in DeliverBuffer(), after the decoder is
       // flushed.
-      reset_cb_ = reset_cb;
+      reset_cb_ = std::move(reset_cb);
       return;
     }
 
-    main_thread_task_runner_->PostTask(FROM_HERE, reset_cb);
+    main_thread_task_runner_->PostTask(FROM_HERE, std::move(reset_cb));
   }
 
   void DeliverBuffer(DecodeStatus status, scoped_refptr<AudioBuffer> buffer) {
@@ -518,7 +518,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   // Used for satisfying reads.
   AudioDecoder::OutputCB output_cb_;
   AudioDecoder::DecodeCB decode_cb_;
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
   std::unique_ptr<AudioTimestampHelper> next_timestamp_;
 
   // Run during DecodeDecoder() to unblock WaitForPendingRead().

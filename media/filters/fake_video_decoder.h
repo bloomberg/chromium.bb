@@ -51,7 +51,7 @@ class FakeVideoDecoder : public VideoDecoder {
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
+  void Reset(base::OnceClosure closure) override;
   int GetMaxDecodeRequests() const override;
 
   base::WeakPtr<FakeVideoDecoder> GetWeakPtr();
@@ -110,7 +110,7 @@ class FakeVideoDecoder : public VideoDecoder {
   State state_;
 
   CallbackHolder<InitCB> init_cb_;
-  CallbackHolder<base::Closure> reset_cb_;
+  CallbackHolder<base::OnceClosure> reset_cb_;
 
   OutputCB output_cb_;
 
