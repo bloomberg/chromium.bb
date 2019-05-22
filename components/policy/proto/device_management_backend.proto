@@ -654,6 +654,11 @@ message PolicyFetchResponse {
   // new_public_key_signature).
   // See http://go/chrome-nac-server-design for more information.
   optional bytes new_public_key_verification_data_signature = 9;
+
+  // See PolicyFetchRequest.policy_type. This field is NOT signed by DMServer
+  // and is informational only. Client-side should verify and rely on the
+  // policy_type inside the signed policy_data.
+  optional string policy_type = 10;
 }
 
 // DEPRECATED: Protobuf used to generate the deprecated
