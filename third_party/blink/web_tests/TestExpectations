@@ -5658,9 +5658,9 @@ crbug.com/937991 [ Win7 Release ] http/tests/devtools/cache-storage/cache-data.j
 crbug.com/963141 [ Mac Win ] media/video-object-fit.html [ Pass Failure ]
 crbug.com/963141 media/video-object-fit-change.html [ Pass Failure ]
 crbug.com/963141 [ Mac Win ] media/controls/video-overlay-cast-light-rendering.html [ Pass Failure ]
+crbug.com/963141 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
 
 # Sheriff 2019-05-16
-crbug.com/963764 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
 crbug.com/963740 [ Win ] compositing/video-frame-size-change.html [ Pass Failure ]
 
