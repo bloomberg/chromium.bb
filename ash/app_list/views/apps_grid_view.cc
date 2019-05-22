@@ -1932,8 +1932,6 @@ void AppsGridView::HandleKeyboardReparent(AppListItemView* reparented_view,
   AnnounceReorder(target_index);
   ReparentItemForReorder(reparented_view_in_root_grid, target_index);
 
-  contents_view_->GetAppsContainerView()->ResetForShowApps();
-
   GetViewAtIndex(target_index)->RequestFocus();
   Layout();
   RecordAppMovingTypeMetrics(kMoveByKeyboardOutOfFolder);
