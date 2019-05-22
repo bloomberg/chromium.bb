@@ -840,7 +840,6 @@ audio::-internal-media-controls-overflow-menu-list,
 video::-internal-media-controls-overflow-menu-list {
   position: fixed;
   z-index: 2; /* Keep the menus above the loading animation at z-index 1. */
-  max-width: 75%;
   max-height: 250px;
   width: 200px;
   overflow-x: hidden;
@@ -1028,7 +1027,7 @@ label[pseudo="-internal-media-controls-text-track-list-item"] input {
 }
 
 label[pseudo="-internal-media-controls-text-track-list-item"] input:checked {
-  background-image: -webkit-image-set(url(ic_check_blue.svg) 1x);
+  background: -webkit-image-set(url(ic_check_blue.svg) 1x) no-repeat center center;
 }
 
 video::-webkit-media-controls-overlay-enclosure {
