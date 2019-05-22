@@ -438,6 +438,34 @@ executable("wayland_info_client") {
   ]
 }
 
+source_set("wayland_client_test_helper") {
+  testonly = true
+
+  sources = [
+    "clients/test/wayland_client_test_helper.cc",
+    "clients/test/wayland_client_test_helper.h",
+  ]
+
+  deps = [
+    ":wayland",
+    "//base",
+    "//components/exo",
+    "//ui/aura",
+    "//ui/events:gesture_detection",
+    "//ui/wm",
+  ]
+
+  data_deps = []
+
+  if (is_chromeos) {
+    deps += [
+      "//ash",
+      "//ash:test_support",
+      "//ash/public/cpp",
+    ]
+  }
+}
+
 test("wayland_client_perftests") {
   sources = [
     "clients/perftests.cc",
@@ -450,22 +478,17 @@ test("wayland_client_perftests") {
     ":blur",
     ":client_support",
     ":simple",
-    ":wayland",
-    "//base",
+    ":wayland_client_test_helper",
     "//base/test:test_support",
     "//cc:test_support",
-    "//components/exo",
     "//components/viz/test:test_support",
     "//mojo/core/embedder",
     "//testing/gtest",
     "//testing/perf",
-    "//ui/aura",
     "//ui/aura:test_support",
     "//ui/base",
     "//ui/compositor:test_support",
-    "//ui/events:gesture_detection",
     "//ui/gl:test_support",
-    "//ui/wm",
   ]
 
   data_deps = []
@@ -482,11 +505,7 @@ test("wayland_client_perftests") {
       "//ash/resources:ash_test_resources_200_percent",
     ]
 
-    deps += [
-      "//ash",
-      "//ash:test_support",
-      "//ash/public/cpp",
-    ]
+    deps += [ "//ash:test_support" ]
   }
 }
 
