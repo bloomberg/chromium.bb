@@ -3356,7 +3356,7 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
   const double r0 = cpi->rd.r0;
   const double rk = (double)intra_cost / mc_dep_cost;
-  const double beta = pow(r0 / rk, 0.125);
+  const double beta = r0 / rk;
   int rdmult = av1_get_adaptive_rdmult(cpi, beta);
 
   rdmult = AOMMIN(rdmult, orig_rdmult * 3 / 2);
