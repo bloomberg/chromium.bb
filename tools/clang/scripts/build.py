@@ -22,12 +22,6 @@ import shutil
 import subprocess
 import sys
 
-try:
-  import urllib2 as urllib
-except ImportError: # For Py3 compatibility
-  import urllib.request as urllib
-  import urllib.error as urllib
-
 from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     FORCE_HEAD_REVISION_FILE, PACKAGE_VERSION, RELEASE_VERSION,
                     STAMP_FILE, CopyFile, CopyDiaDllTo, DownloadAndUnpack,
@@ -133,18 +127,26 @@ def CheckoutLLVM(commit, dir):
   sys.exit(1)
 
 
+def UrlOpen(url):
+  # Normally we'd use urllib, but on our bots it can't connect to the GitHub API
+  # due to using too old TLS (see crbug.com/897796#c56). As a horrible
+  # workaround, shell out to curl instead. It seems curl is recent enough on all
+  # our machines that it can connect. On Windows it's in our gnuwin package.
+  return subprocess.check_output(['curl', '--silent', url])
+
+
 def GetLatestLLVMCommit():
   """Get the latest commit hash in the LLVM monorepo."""
-  ref = json.load(urllib.urlopen(('https://api.github.com/repos/'
-                                  'llvm/llvm-project/git/refs/heads/master')))
+  ref = json.loads(UrlOpen(('https://api.github.com/repos/'
+                            'llvm/llvm-project/git/refs/heads/master')))
   assert ref['object']['type'] == 'commit'
   return ref['object']['sha']
 
 
 def GetSvnRevision(commit):
   """Get the svn revision corresponding to a git commit in the LLVM repo."""
-  commit = json.load(urllib.urlopen(('https://api.github.com/repos/llvm/'
-                                     'llvm-project/git/commits/' + commit)))
+  commit = json.loads(UrlOpen(('https://api.github.com/repos/llvm/'
+                               'llvm-project/git/commits/' + commit)))
   revision = re.search("llvm-svn: ([0-9]+)$", commit['message']).group(1)
   return revision
 
@@ -206,7 +208,7 @@ def AddGnuWinToPath():
     return
 
   gnuwin_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gnuwin')
-  GNUWIN_VERSION = '10'
+  GNUWIN_VERSION = '11'
   GNUWIN_STAMP = os.path.join(gnuwin_dir, 'stamp')
   if ReadStampFile(GNUWIN_STAMP) == GNUWIN_VERSION:
     print('GNU Win tools already up to date.')
@@ -328,6 +330,10 @@ def main():
     return 1
 
 
+  # The gnuwin package also includes curl, which is needed to interact with the
+  # github API below.
+  AddGnuWinToPath()
+
   global CLANG_REVISION, PACKAGE_VERSION
   if args.llvm_force_head_revision:
     CLANG_REVISION = GetLatestLLVMCommit()
@@ -346,7 +352,6 @@ def main():
   SetMacXcodePath()
 
   AddCMakeToPath(args)
-  AddGnuWinToPath()
   DeleteChromeToolsShim()
 
   if not args.skip_checkout:
