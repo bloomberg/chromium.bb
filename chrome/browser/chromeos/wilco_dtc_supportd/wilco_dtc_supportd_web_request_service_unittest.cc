@@ -137,6 +137,27 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
 
 }  // namespace
 
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpMethodInvalid) {
+  std::unique_ptr<WebRequestResult> request_result;
+  base::RunLoop run_loop;
+
+  const auto kInvalidHttpMethod = static_cast<
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod>(
+      static_cast<int>(wilco_dtc_supportd::mojom::
+                           WilcoDtcSupportdWebRequestHttpMethod::kMaxValue) +
+      1);
+
+  StartWebRequest(kInvalidHttpMethod, kFakeUrl, kFakeRequestBody,
+                  &request_result, &run_loop);
+  // The test fails with a network error on the same thread.
+  ASSERT_TRUE(request_result);
+  EXPECT_EQ(request_result->status,
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
+                kNetworkError);
+  EXPECT_EQ(request_result->http_status, 0);
+  EXPECT_EQ(request_result->response_body, "");
+}
+
 TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpMethodGetNonEmptyBody) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;
