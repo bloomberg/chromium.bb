@@ -437,6 +437,8 @@ const char* RunTaskTraceNameForPriority(TaskQueue::QueuePriority priority) {
       return "RunControlPriorityTask";
     case TaskQueue::QueuePriority::kHighestPriority:
       return "RunHighestPriorityTask";
+    case TaskQueue::QueuePriority::kVeryHighPriority:
+      return "RunVeryHighPriorityTask";
     case TaskQueue::QueuePriority::kHighPriority:
       return "RunHighPriorityTask";
     case TaskQueue::QueuePriority::kNormalPriority:

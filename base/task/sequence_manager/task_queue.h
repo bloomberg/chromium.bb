@@ -83,17 +83,19 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     // and can starve the best effort queue.
     kHighestPriority = 1,
 
-    kHighPriority = 2,
+    kVeryHighPriority = 2,
+
+    kHighPriority = 3,
 
     // Queues with normal priority are the default.
-    kNormalPriority = 3,
-    kLowPriority = 4,
+    kNormalPriority = 4,
+    kLowPriority = 5,
 
     // Queues with best effort priority will only be run if all other queues are
     // empty. They can be starved by the other queues.
-    kBestEffortPriority = 5,
+    kBestEffortPriority = 6,
     // Must be the last entry.
-    kQueuePriorityCount = 6,
+    kQueuePriorityCount = 7,
     kFirstQueuePriority = kControlPriority,
   };
 
