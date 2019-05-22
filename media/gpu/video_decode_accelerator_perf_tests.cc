@@ -56,9 +56,12 @@ struct PerformanceMetrics {
   // Total measurement duration.
   base::TimeDelta total_duration_;
   // The number of frames decoded.
-  size_t frame_decoded_count_ = 0;
+  size_t frames_decoded_ = 0;
   // The overall number of frames decoded per second.
   double frames_per_second_ = 0.0;
+  // The number of frames dropped because of the decoder running behind, only
+  // relevant for capped performance tests.
+  size_t frames_dropped_ = 0;
   // The average time between subsequent frame deliveries.
   double avg_frame_delivery_time_ms_ = 0.0;
   // The median time between decode start and frame delivery.
@@ -71,6 +74,11 @@ struct PerformanceMetrics {
 // enabled as this affects test results.
 class PerformanceEvaluator : public VideoFrameProcessor {
  public:
+  // Create a new performance evaluator. The caller should makes sure
+  // |frame_renderer| outlives the performance evaluator.
+  explicit PerformanceEvaluator(const FrameRendererDummy* const frame_renderer)
+      : frame_renderer_(frame_renderer) {}
+
   // Interface VideoFrameProcessor
   void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
                          size_t frame_index) override;
@@ -97,6 +105,10 @@ class PerformanceEvaluator : public VideoFrameProcessor {
 
   // Collection of various performance metrics.
   PerformanceMetrics perf_metrics_;
+
+  // Frame renderer used to get the dropped frame rate, owned by the creator of
+  // the performance evaluator.
+  const FrameRendererDummy* const frame_renderer_;
 };
 
 void PerformanceEvaluator::ProcessVideoFrame(
@@ -111,7 +123,7 @@ void PerformanceEvaluator::ProcessVideoFrame(
   base::TimeDelta decode_time = now.since_origin() - video_frame->timestamp();
   frame_decode_times_.push_back(decode_time.InMillisecondsF());
 
-  perf_metrics_.frame_decoded_count_++;
+  perf_metrics_.frames_decoded_++;
 }
 
 void PerformanceEvaluator::StartMeasuring() {
@@ -122,12 +134,13 @@ void PerformanceEvaluator::StartMeasuring() {
 void PerformanceEvaluator::StopMeasuring() {
   end_time_ = base::TimeTicks::Now();
   perf_metrics_.total_duration_ = end_time_ - start_time_;
-  perf_metrics_.frames_per_second_ = perf_metrics_.frame_decoded_count_ /
+  perf_metrics_.frames_per_second_ = perf_metrics_.frames_decoded_ /
                                      perf_metrics_.total_duration_.InSecondsF();
+  perf_metrics_.frames_dropped_ = frame_renderer_->FramesDropped();
 
   perf_metrics_.avg_frame_delivery_time_ms_ =
       perf_metrics_.total_duration_.InMillisecondsF() /
-      perf_metrics_.frame_decoded_count_;
+      perf_metrics_.frames_decoded_;
 
   std::sort(frame_decode_times_.begin(), frame_decode_times_.end());
   size_t median_index = frame_decode_times_.size() / 2;
@@ -138,10 +151,11 @@ void PerformanceEvaluator::StopMeasuring() {
              frame_decode_times_[median_index]) /
                 2.0;
 
-  VLOG(0) << "Number of frames decoded: " << perf_metrics_.frame_decoded_count_;
-  VLOG(0) << "Total duration:           "
+  VLOG(0) << "Frames decoded: " << perf_metrics_.frames_decoded_;
+  VLOG(0) << "Total duration: "
           << perf_metrics_.total_duration_.InMillisecondsF() << "ms";
-  VLOG(0) << "FPS:                      " << perf_metrics_.frames_per_second_;
+  VLOG(0) << "FPS:            " << perf_metrics_.frames_per_second_;
+  VLOG(0) << "Frames Dropped: " << perf_metrics_.frames_dropped_;
   VLOG(0) << "Avg. frame delivery time:   "
           << perf_metrics_.avg_frame_delivery_time_ms_ << "ms";
   VLOG(0) << "Median frame decode time:   "
@@ -150,11 +164,12 @@ void PerformanceEvaluator::StopMeasuring() {
 
 void PerformanceEvaluator::WriteMetricsToFile() const {
   std::string str = base::StringPrintf(
-      "Number of frames decoded: %zu\nTotal duration: %fms\nFPS: %f\nAvg. "
-      "frame delivery time: %fms\nMedian frame decode time: %fms\n",
-      perf_metrics_.frame_decoded_count_,
+      "Frames decoded: %zu\nTotal duration: %fms\nFPS: %f\n"
+      "Frames dropped: %zu\nAvg. frame delivery time: %fms\n"
+      "Median frame decode time: %fms\n",
+      perf_metrics_.frames_decoded_,
       perf_metrics_.total_duration_.InMillisecondsF(),
-      perf_metrics_.frames_per_second_,
+      perf_metrics_.frames_per_second_, perf_metrics_.frames_dropped_,
       perf_metrics_.avg_frame_delivery_time_ms_,
       perf_metrics_.median_frame_decode_time_ms_);
 
@@ -189,10 +204,28 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
 // Video decode test class. Performs setup and teardown for each single test.
 class VideoDecoderTest : public ::testing::Test {
  public:
-  std::unique_ptr<VideoPlayer> CreateVideoPlayer(const Video* video) {
+  // Create a new video player instance. |render_frame_rate| is the rate at
+  // which the video player will simulate rendering frames, if 0 no rendering is
+  // simulated. The |vsync_rate| is used during simulated rendering, if 0 Vsync
+  // is disabled.
+  std::unique_ptr<VideoPlayer> CreateVideoPlayer(const Video* video,
+                                                 uint32_t render_frame_rate = 0,
+                                                 uint32_t vsync_rate = 0) {
     LOG_ASSERT(video);
+
+    // Create dummy frame renderer, simulates rendering at specified frame rate.
+    base::TimeDelta frame_duration;
+    base::TimeDelta vsync_interval_duration;
+    if (render_frame_rate > 0) {
+      frame_duration = base::TimeDelta::FromSeconds(1) / render_frame_rate;
+      vsync_interval_duration = base::TimeDelta::FromSeconds(1) / vsync_rate;
+    }
+    auto frame_renderer =
+        FrameRendererDummy::Create(frame_duration, vsync_interval_duration);
+
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
-    auto performance_evaluator = std::make_unique<PerformanceEvaluator>();
+    auto performance_evaluator =
+        std::make_unique<PerformanceEvaluator>(frame_renderer.get());
     performance_evaluator_ = performance_evaluator.get();
     frame_processors.push_back(std::move(performance_evaluator));
 
@@ -200,7 +233,7 @@ class VideoDecoderTest : public ::testing::Test {
     VideoDecoderClientConfig config;
     config.use_vd = g_env->UseVD();
 
-    return VideoPlayer::Create(video, FrameRendererDummy::Create(),
+    return VideoPlayer::Create(video, std::move(frame_renderer),
                                std::move(frame_processors), config);
   }
 
@@ -209,15 +242,32 @@ class VideoDecoderTest : public ::testing::Test {
 
 }  // namespace
 
-// Play video from start to end while measuring performance.
-// TODO(dstaessens@) Add a test to measure capped decode performance, measuring
-// the number of frames dropped.
+// Play video from start to end while measuring uncapped performance. This test
+// will decode a video as fast as possible, and gives an idea about the maximum
+// output of the decoder.
 TEST_F(VideoDecoderTest, MeasureUncappedPerformance) {
   auto tvp = CreateVideoPlayer(g_env->Video());
 
   performance_evaluator_->StartMeasuring();
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
+  performance_evaluator_->StopMeasuring();
+  performance_evaluator_->WriteMetricsToFile();
+
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+}
+
+// Play video from start to end while measuring capped performance. This test
+// will simulate rendering the video at its actual frame rate, and will
+// calculate the number of frames that were dropped. Vsync is enabled at 60 FPS.
+TEST_F(VideoDecoderTest, MeasureCappedPerformance) {
+  auto tvp = CreateVideoPlayer(g_env->Video(), g_env->Video()->FrameRate(), 60);
+
+  performance_evaluator_->StartMeasuring();
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+  tvp->WaitForRenderer();
   performance_evaluator_->StopMeasuring();
   performance_evaluator_->WriteMetricsToFile();
 

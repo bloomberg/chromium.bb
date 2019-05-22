@@ -187,6 +187,8 @@ void FrameRendererThumbnail::RenderFrame(
   RenderThumbnail(mailbox_holder.texture_target, it->second);
 }
 
+void FrameRendererThumbnail::WaitUntilRenderingDone() {}
+
 scoped_refptr<VideoFrame> FrameRendererThumbnail::CreateVideoFrame(
     VideoPixelFormat pixel_format,
     const gfx::Size& texture_size,

@@ -47,6 +47,9 @@ class FrameRenderer {
   // state can be reset. This is e.g. important when calculating the frame
   // drop rate.
   virtual void RenderFrame(scoped_refptr<VideoFrame> video_frame) = 0;
+  // Wait until all currently queued frames are rendered. This function might
+  // take some time to complete, depending on the number of frames queued.
+  virtual void WaitUntilRenderingDone() = 0;
 
   // Create a texture-backed video frame with specified |pixel_format|, |size|
   // and |texture_target|. The texture's id will be put in |texture_id|.

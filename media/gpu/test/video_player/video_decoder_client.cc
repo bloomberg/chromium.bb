@@ -52,8 +52,10 @@ VideoDecoderClient::~VideoDecoderClient() {
   DestroyDecoder();
   decoder_client_thread_.Stop();
 
-  // Wait until the frame processors are done, before destroying them. As the
-  // decoder has been destroyed no new frames will be sent to the processors.
+  // Wait until the renderer and frame processors are done before destroying
+  // them. This needs to be done after |decoder_client_thread_| is stopped so no
+  // new frames will be queued while waiting.
+  WaitForRenderer();
   WaitForFrameProcessors();
 }
 
@@ -117,6 +119,11 @@ bool VideoDecoderClient::WaitForFrameProcessors() {
   for (auto& frame_processor : frame_processors_)
     success &= frame_processor->WaitUntilDone();
   return success;
+}
+
+void VideoDecoderClient::WaitForRenderer() {
+  LOG_ASSERT(frame_renderer_);
+  frame_renderer_->WaitUntilRenderingDone();
 }
 
 FrameRenderer* VideoDecoderClient::GetFrameRenderer() const {
