@@ -28,6 +28,10 @@
 using base::trace_event::TraceConfig;
 using Metrics = content::BackgroundTracingManagerImpl::Metrics;
 
+namespace {
+const size_t kDefaultTraceBufferSizeInKb = 10 * 1024;
+}  // namespace
+
 namespace content {
 
 class BackgroundTracingActiveScenario::TracingTimer {
@@ -356,8 +360,12 @@ bool BackgroundTracingActiveScenario::StartTracing(
   TraceConfig chrome_config =
       BackgroundTracingConfigImpl::GetConfigForCategoryPreset(preset,
                                                               record_mode);
-  if (requires_anonymized_data_)
+  if (requires_anonymized_data_) {
     chrome_config.EnableArgumentFilter();
+  }
+
+  chrome_config.SetTraceBufferSizeInKb(kDefaultTraceBufferSizeInKb);
+
 #if defined(OS_ANDROID)
   // Set low trace buffer size on Android in order to upload small trace files.
   if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
