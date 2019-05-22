@@ -540,8 +540,6 @@ Signer.prototype.handleWebAuthnError_ = function(exception) {
   if (domError && domError.name) {
     switch (domError.name) {
       case 'NotAllowedError':
-        errorCode = ErrorCodes.TIMEOUT;
-        break;
       case 'InvalidStateError':
         errorCode = ErrorCodes.DEVICE_INELIGIBLE;
         break;
