@@ -60,17 +60,6 @@ Images** tab in the Virtual Device Configuration wizard.
    * Can often be fixed by editing `~/.android/avd/YOUR_DEVICE/config.ini`.
      * Look for `hw.sdCard=no` and set it to `yes`
 
-### Cloning an Image
-Running tests on two emulators is twice as fast as running on one. Rather
-than use the UI to create additional avds, you can clone an existing one via:
-
-```shell
-$ tools/android/emulator/clone_avd.py \
-    --source-ini ~/.android/avd/EMULATOR_ID.ini \
-    --dest-ini ~/.android/avd/EMULATOR_ID_CLONED.ini \
-    --display-name "Cloned Emulator"
-```
-
 ## Starting an Emulator from the Command Line
 Refer to: https://developer.android.com/studio/run/emulator-commandline.html.
 
@@ -80,6 +69,9 @@ Ctrl-C will gracefully close an emulator.
 
 ### Basic Command Line Use
 ```shell
+$ # List virtual devices that you've created:
+$ ~/Android/Sdk/emulator/emulator -list-avds
+$ # Start a named device:
 $ ~/Android/Sdk/emulator/emulator @EMULATOR_ID
 ```
 
@@ -88,6 +80,19 @@ You can run an emulator without creating a window on your desktop (useful for
 `ssh`):
 ```shell
 $ ~/Android/Sdk/emulator/emulator -no-window @EMULATOR_ID
+$ # This also works for new enough emulator builds:
+$ ~/Android/Sdk/emulator/emulator-headless @EMULATOR_ID
+```
+
+### Running Multiple Emulators
+Tests are automatically sharded amongst available devices. If you run multiple
+emulators, then running test suites becomes much faster. Refer to the
+"Multiple AVD instances" section of these [emulator release notes](
+https://androidstudio.googleblog.com/2018/11/emulator-28016-stable.html)
+for more about how this works.
+```shell
+$ # Start 12 emulators. Press Ctrl-C to stop them all.
+$ ( for i in $(seq 12); do ~/Android/Sdk/emulator/emulator @EMULATOR_ID -read-only & done; wait )
 ```
 
 ### Writable system partition
@@ -96,13 +101,6 @@ default (even on rooted devices). If you need to do so (such as to remove a
 system app), you can start your emulator like so:
 ```shell
 $ ~/Android/Sdk/emulator/emulator -writable-system @EMULATOR_ID
-```
-
-### Remote Desktop
-For better graphics performance, use virtualgl (Googlers, see
-http://go/virtualgl):
-```shell
-$ vglrun ~/Android/Sdk/emulator/emulator @EMULATOR_ID
 ```
 
 ## Using an Emulator
