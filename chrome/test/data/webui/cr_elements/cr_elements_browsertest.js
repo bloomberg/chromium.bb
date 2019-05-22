@@ -520,6 +520,29 @@ TEST_F('CrElementsLinkRowTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsExpandButtonTest() {}
+
+CrElementsExpandButtonTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_expand_button_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsExpandButtonTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 /**
  * @constructor

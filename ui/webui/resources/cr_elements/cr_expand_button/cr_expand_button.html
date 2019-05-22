@@ -2,16 +2,15 @@
 
 <link rel="import" href="../../html/cr/ui/focus_without_ink.html">
 <link rel="import" href="../cr_icon_button/cr_icon_button.html">
-<link rel="import" href="../cr_icons_css.html">
-<link rel="import" href="../shared_style_css.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../shared_vars_css.html">
 
 <dom-module id="cr-expand-button">
   <template>
-    <style include="cr-shared-style cr-icons">
+    <style>
       :host {
-        @apply --cr-actionable;
         align-items: center;
+        cursor: pointer;
         display: flex;
         outline: none;
       }
@@ -36,10 +35,8 @@
     </style>
 
     <div id="label"><slot></slot></div>
-    <cr-icon-button id="icon" class$="[[iconName_(expanded)]]"
-        disabled="[[disabled]]" aria-label$="[[alt]]"
-        aria-pressed$="[[getAriaPressed_(expanded)]]" tabindex="[[tabIndex]]">
-    </cr-icon-button>
+    <cr-icon-button id="icon" aria-labelledby="label" disabled="[[disabled]]"
+        tabindex="[[tabIndex]]"></cr-icon-button>
   </template>
   <script src="cr_expand_button.js"></script>
 </dom-module>
