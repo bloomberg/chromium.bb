@@ -35,8 +35,7 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
                 mojom::blink::IDBCursor::PrefetchCallback callback) override {
     ++prefetch_calls_;
     last_prefetch_count_ = count;
-    std::move(callback).Run(mojom::blink::IDBErrorPtr(),
-                            mojom::blink::IDBCursorValuePtr());
+    std::move(callback).Run(mojom::blink::IDBCursorResult::NewEmpty(true));
   }
 
   void PrefetchReset(int32_t used_prefetches,
@@ -48,8 +47,7 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
   void Advance(uint32_t count,
                mojom::blink::IDBCursor::AdvanceCallback callback) override {
     ++advance_calls_;
-    std::move(callback).Run(mojom::blink::IDBErrorPtr(),
-                            mojom::blink::IDBCursorValuePtr());
+    std::move(callback).Run(mojom::blink::IDBCursorResult::NewEmpty(true));
   }
 
   void CursorContinue(
@@ -57,8 +55,7 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
       std::unique_ptr<IDBKey> primary_key,
       mojom::blink::IDBCursor::CursorContinueCallback callback) override {
     ++continue_calls_;
-    std::move(callback).Run(mojom::blink::IDBErrorPtr(),
-                            mojom::blink::IDBCursorValuePtr());
+    std::move(callback).Run(mojom::blink::IDBCursorResult::NewEmpty(true));
   }
 
   void CursorDestroyed() { destroyed_ = true; }

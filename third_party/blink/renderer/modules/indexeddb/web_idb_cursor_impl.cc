@@ -63,32 +63,38 @@ void WebIDBCursorImpl::Advance(uint32_t count, WebIDBCallbacks* callbacks_ptr) {
 
 void WebIDBCursorImpl::AdvanceCallback(
     std::unique_ptr<WebIDBCallbacks> callbacks,
-    mojom::blink::IDBErrorPtr error,
-    mojom::blink::IDBCursorValuePtr cursor_value) {
-  if (error) {
-    callbacks->Error(error->error_code, std::move(error->error_message));
+    mojom::blink::IDBCursorResultPtr result) {
+  if (result->is_error_result()) {
+    callbacks->Error(result->get_error_result()->error_code,
+                     std::move(result->get_error_result()->error_message));
     callbacks.reset();
     return;
   }
 
-  if (!cursor_value) {
+  if (result->is_empty() && result->get_empty()) {
     callbacks->SuccessValue(nullptr);
     callbacks.reset();
     return;
-  }
-
-  if (cursor_value->keys.size() != 1u ||
-      cursor_value->primary_keys.size() != 1u ||
-      cursor_value->values.size() != 1u) {
+  } else if (result->is_empty()) {
     callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;
   }
 
-  callbacks->SuccessCursorContinue(std::move(cursor_value->keys[0]),
-                                   std::move(cursor_value->primary_keys[0]),
-                                   std::move(cursor_value->values[0]));
+  if (result->get_values()->keys.size() != 1u ||
+      result->get_values()->primary_keys.size() != 1u ||
+      result->get_values()->values.size() != 1u) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorContinue(
+      std::move(result->get_values()->keys[0]),
+      std::move(result->get_values()->primary_keys[0]),
+      std::move(result->get_values()->values[0]));
   callbacks.reset();
 }
 
@@ -141,61 +147,76 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
 
 void WebIDBCursorImpl::CursorContinueCallback(
     std::unique_ptr<WebIDBCallbacks> callbacks,
-    mojom::blink::IDBErrorPtr error,
-    mojom::blink::IDBCursorValuePtr value) {
-  if (error) {
-    callbacks->Error(error->error_code, std::move(error->error_message));
+    mojom::blink::IDBCursorResultPtr result) {
+  if (result->is_error_result()) {
+    callbacks->Error(result->get_error_result()->error_code,
+                     std::move(result->get_error_result()->error_message));
     callbacks.reset();
     return;
   }
 
-  if (!value) {
+  if (result->is_empty() && result->get_empty()) {
     callbacks->SuccessValue(nullptr);
     callbacks.reset();
     return;
-  }
-
-  if (value->keys.size() != 1u || value->primary_keys.size() != 1u ||
-      value->values.size() != 1u) {
+  } else if (result->is_empty()) {
     callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;
   }
 
-  callbacks->SuccessCursorContinue(std::move(value->keys[0]),
-                                   std::move(value->primary_keys[0]),
-                                   std::move(value->values[0]));
+  if (result->get_values()->keys.size() != 1u ||
+      result->get_values()->primary_keys.size() != 1u ||
+      result->get_values()->values.size() != 1u) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorContinue(
+      std::move(result->get_values()->keys[0]),
+      std::move(result->get_values()->primary_keys[0]),
+      std::move(result->get_values()->values[0]));
   callbacks.reset();
 }
 
 void WebIDBCursorImpl::PrefetchCallback(
     std::unique_ptr<WebIDBCallbacks> callbacks,
-    mojom::blink::IDBErrorPtr error,
-    mojom::blink::IDBCursorValuePtr value) {
-  if (error) {
-    callbacks->Error(error->error_code, std::move(error->error_message));
+    mojom::blink::IDBCursorResultPtr result) {
+  if (result->is_error_result()) {
+    callbacks->Error(result->get_error_result()->error_code,
+                     std::move(result->get_error_result()->error_message));
     callbacks.reset();
     return;
   }
 
-  if (!value) {
+  if (result->is_empty() && result->get_empty()) {
     callbacks->SuccessValue(nullptr);
     callbacks.reset();
     return;
-  }
-
-  if (value->keys.size() != value->primary_keys.size() ||
-      value->keys.size() != value->values.size()) {
+  } else if (result->is_empty()) {
     callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;
   }
 
-  callbacks->SuccessCursorPrefetch(std::move(value->keys),
-                                   std::move(value->primary_keys),
-                                   std::move(value->values));
+  if (result->get_values()->keys.size() !=
+          result->get_values()->primary_keys.size() ||
+      result->get_values()->keys.size() !=
+          result->get_values()->values.size()) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorPrefetch(
+      std::move(result->get_values()->keys),
+      std::move(result->get_values()->primary_keys),
+      std::move(result->get_values()->values));
   callbacks.reset();
 }
 

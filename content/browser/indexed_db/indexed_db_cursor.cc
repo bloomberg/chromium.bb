@@ -101,9 +101,8 @@ void IndexedDBCursor::Advance(
     Close();
   if (closed_) {
     const IndexedDBDatabaseError error(CreateCursorClosedError());
-    std::move(callback).Run(
-        blink::mojom::IDBError::New(error.code(), error.message()),
-        blink::mojom::IDBCursorValuePtr());
+    std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
+        blink::mojom::IDBError::New(error.code(), error.message())));
     return;
   }
 
@@ -129,8 +128,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     cursor_.reset();
 
     if (s.ok()) {
-      std::move(callback).Run(blink::mojom::IDBErrorPtr(),
-                              blink::mojom::IDBCursorValuePtr());
+      std::move(callback).Run(blink::mojom::IDBCursorResult::NewEmpty(true));
       return s;
     }
 
@@ -139,9 +137,8 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     auto error = CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
                              "Error advancing cursor", transaction_);
     Close();
-    std::move(callback).Run(
-        blink::mojom::IDBError::New(error.code(), error.message()),
-        blink::mojom::IDBCursorValuePtr());
+    std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
+        blink::mojom::IDBError::New(error.code(), error.message())));
     return s;
   }
 
@@ -166,10 +163,9 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
   std::vector<IndexedDBKey> primary_keys = {primary_key()};
   std::vector<blink::mojom::IDBValuePtr> values;
   values.push_back(std::move(mojo_value));
-  blink::mojom::IDBCursorValuePtr cursor_value =
+  std::move(callback).Run(blink::mojom::IDBCursorResult::NewValues(
       blink::mojom::IDBCursorValue::New(
-          std::move(keys), std::move(primary_keys), std::move(values));
-  std::move(callback).Run(blink::mojom::IDBErrorPtr(), std::move(cursor_value));
+          std::move(keys), std::move(primary_keys), std::move(values))));
   return s;
 }
 
@@ -183,9 +179,8 @@ void IndexedDBCursor::Continue(
     Close();
   if (closed_) {
     const IndexedDBDatabaseError error(CreateCursorClosedError());
-    std::move(callback).Run(
-        blink::mojom::IDBError::New(error.code(), error.message()),
-        blink::mojom::IDBCursorValuePtr());
+    std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
+        blink::mojom::IDBError::New(error.code(), error.message())));
     return;
   }
 
@@ -214,8 +209,7 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
     cursor_.reset();
     if (s.ok()) {
       // This happens if we reach the end of the iterator and can't continue.
-      std::move(callback).Run(blink::mojom::IDBErrorPtr(),
-                              blink::mojom::IDBCursorValuePtr());
+      std::move(callback).Run(blink::mojom::IDBCursorResult::NewEmpty(true));
       return s;
     }
 
@@ -225,9 +219,8 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
         CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
                     "Error continuing cursor.", transaction_);
     Close();
-    std::move(callback).Run(
-        blink::mojom::IDBError::New(error.code(), error.message()),
-        blink::mojom::IDBCursorValuePtr());
+    std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
+        blink::mojom::IDBError::New(error.code(), error.message())));
     return s;
   }
 
@@ -252,10 +245,9 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
   std::vector<IndexedDBKey> primary_keys = {this->primary_key()};
   std::vector<blink::mojom::IDBValuePtr> values;
   values.push_back(std::move(mojo_value));
-  blink::mojom::IDBCursorValuePtr cursor_value =
+  std::move(callback).Run(blink::mojom::IDBCursorResult::NewValues(
       blink::mojom::IDBCursorValue::New(
-          std::move(keys), std::move(primary_keys), std::move(values));
-  std::move(callback).Run(blink::mojom::IDBErrorPtr(), std::move(cursor_value));
+          std::move(keys), std::move(primary_keys), std::move(values))));
   return s;
 }
 
@@ -269,9 +261,8 @@ void IndexedDBCursor::PrefetchContinue(
     Close();
   if (closed_) {
     const IndexedDBDatabaseError error(CreateCursorClosedError());
-    std::move(callback).Run(
-        blink::mojom::IDBError::New(error.code(), error.message()),
-        blink::mojom::IDBCursorValuePtr());
+    std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
+        blink::mojom::IDBError::New(error.code(), error.message())));
     return;
   }
 
@@ -318,9 +309,8 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
           CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
                       "Error continuing cursor.", transaction_);
       Close();
-      std::move(callback).Run(
-          blink::mojom::IDBError::New(error.code(), error.message()),
-          blink::mojom::IDBCursorValuePtr());
+      std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
+          blink::mojom::IDBError::New(error.code(), error.message())));
       return s;
     }
 
@@ -355,8 +345,7 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
   }
 
   if (found_keys.empty()) {
-    std::move(callback).Run(blink::mojom::IDBErrorPtr(),
-                            blink::mojom::IDBCursorValuePtr());
+    std::move(callback).Run(blink::mojom::IDBCursorResult::NewEmpty(true));
     return s;
   }
 
@@ -382,11 +371,10 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
     return s;
   }
 
-  blink::mojom::IDBCursorValuePtr cursor_value =
+  std::move(callback).Run(blink::mojom::IDBCursorResult::NewValues(
       blink::mojom::IDBCursorValue::New(std::move(found_keys),
                                         std::move(found_primary_keys),
-                                        std::move(mojo_values));
-  std::move(callback).Run(blink::mojom::IDBErrorPtr(), std::move(cursor_value));
+                                        std::move(mojo_values))));
   return s;
 }
 
