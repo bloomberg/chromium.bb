@@ -4,10 +4,15 @@
 
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_device_button.h"
 
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -17,6 +22,7 @@ namespace {
 
 // Icon sizes in DIP.
 constexpr int kPrimaryIconSize = 20;
+constexpr int kPrimaryIconBorderWidth = 6;
 
 enum class DeviceIconType {
   DESKTOP = 0,
@@ -40,12 +46,35 @@ gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type, bool enabled = true) {
   return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize, icon_color);
 }
 
-gfx::ImageSkia CreateIconView(
+std::unique_ptr<views::ImageView> CreateIconView(
     const sync_pb::SyncEnums::DeviceType device_type) {
+  gfx::ImageSkia image;
   if (device_type == sync_pb::SyncEnums::TYPE_PHONE) {
-    return CreateDeviceIcon(DeviceIconType::PHONE);
+    image = CreateDeviceIcon(DeviceIconType::PHONE);
+  } else {
+    image = CreateDeviceIcon(DeviceIconType::DESKTOP);
   }
-  return CreateDeviceIcon(DeviceIconType::DESKTOP);
+  auto icon_view = std::make_unique<views::ImageView>();
+  icon_view->SetImage(image);
+  icon_view->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
+  return icon_view;
+}
+
+base::string16 GetLastUpdatedTime(const TargetDeviceInfo& device_info) {
+  int time_in_days =
+      (base::Time::Now() - device_info.last_updated_timestamp).InDays();
+  if (time_in_days == 0) {
+    return l10n_util::GetStringUTF16(
+        IDS_OMNIBOX_BUBBLE_ITEM_SUBTITLE_TODAY_SEND_TAB_TO_SELF);
+  } else if (time_in_days == 1) {
+    return l10n_util::GetStringFUTF16(
+        IDS_OMNIBOX_BUBBLE_ITEM_SUBTITLE_DAY_SEND_TAB_TO_SELF,
+        base::UTF8ToUTF16(std::to_string(time_in_days)));
+  }
+  return l10n_util::GetStringFUTF16(
+      IDS_OMNIBOX_BUBBLE_ITEM_SUBTITLE_DAYS_SEND_TAB_TO_SELF,
+      base::UTF8ToUTF16(std::to_string(time_in_days)));
 }
 
 }  // namespace
@@ -57,7 +86,8 @@ SendTabToSelfBubbleDeviceButton::SendTabToSelfBubbleDeviceButton(
     int button_tag)
     : HoverButton(button_listener,
                   CreateIconView(device_info.device_type),
-                  base::UTF8ToUTF16(device_name)) {
+                  base::UTF8ToUTF16(device_name),
+                  GetLastUpdatedTime(device_info)) {
   device_name_ = device_name;
   device_guid_ = device_info.cache_guid;
   device_type_ = device_info.device_type;
