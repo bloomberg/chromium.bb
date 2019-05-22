@@ -338,7 +338,7 @@ void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
 
   if (IsA<LocalFrame>(frame_owner->ContentFrame())) {
     LocalFrameView* frame_view =
-        To<LocalFrameView>(frame_owner->OwnedEmbeddedContentView());
+        DynamicTo<LocalFrameView>(frame_owner->OwnedEmbeddedContentView());
 
     bool is_root_scroller = &EffectiveRootScroller() == &node;
 
