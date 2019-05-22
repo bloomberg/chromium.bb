@@ -16,6 +16,7 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 #include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 
 namespace mojo {
@@ -176,6 +177,7 @@ bool StructTraits<network::mojom::URLRequestBodyDataView,
   }
   (*out)->identifier_ = in.identifier();
   (*out)->contains_password_data_ = in.contains_sensitive_info();
+  (*out)->SetBoundary(blink::FormDataEncoder::GenerateUniqueBoundaryString());
 
   return true;
 }
