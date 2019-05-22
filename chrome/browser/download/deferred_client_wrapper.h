@@ -11,7 +11,9 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "components/download/public/background_service/client.h"
+#include "components/download/public/background_service/clients.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
 
@@ -24,7 +26,9 @@ using ClientFactory = base::OnceCallback<std::unique_ptr<Client>(Profile*)>;
 
 class DeferredClientWrapper : public Client {
  public:
-  DeferredClientWrapper(ClientFactory factory, SimpleFactoryKey* key);
+  DeferredClientWrapper(DownloadClient client_id,
+                        ClientFactory factory,
+                        SimpleFactoryKey* key);
   ~DeferredClientWrapper() override;
 
   // Client implementation.
@@ -81,6 +85,15 @@ class DeferredClientWrapper : public Client {
   std::vector<base::OnceClosure> deferred_closures_;
   ClientFactory client_factory_;
   SimpleFactoryKey* key_;
+
+#if defined(OS_ANDROID)
+  // This is needed to record UMA for when DownloadClientWrapper requests a full
+  // browser start while the browser is running in reduced mode. Reduced mode is
+  // only on Android so it is ifdefed out on other platforms to prevent the
+  // compiler from complaining that it is unused.
+  DownloadClient client_id_;
+#endif
+
   base::WeakPtrFactory<DeferredClientWrapper> weak_ptr_factory_;
 };
 

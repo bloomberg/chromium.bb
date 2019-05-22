@@ -12,16 +12,22 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
+#include "components/download/internal/background_service/stats.h"
+#include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 
 namespace download {
 
-DeferredClientWrapper::DeferredClientWrapper(ClientFactory client_factory,
+DeferredClientWrapper::DeferredClientWrapper(DownloadClient client_id,
+                                             ClientFactory client_factory,
                                              SimpleFactoryKey* key)
     : client_factory_(std::move(client_factory)),
       key_(key),
       weak_ptr_factory_(this) {
+#if defined(OS_ANDROID)
+  client_id_ = client_id;
+#endif
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
       key_, base::BindOnce(&DeferredClientWrapper::DoInflateClient,
                            weak_ptr_factory_.GetWeakPtr()));
@@ -184,6 +190,7 @@ void DeferredClientWrapper::InflateClient() {
     DoInflateClient(profile);
   } else {
 #if defined(OS_ANDROID)
+    stats::LogDownloadClientInflatedFullBrowser(client_id_);
     android_startup::LoadFullBrowser();
 #else
     NOTREACHED();

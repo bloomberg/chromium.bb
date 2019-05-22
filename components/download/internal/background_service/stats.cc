@@ -387,5 +387,11 @@ void LogHashPresence(bool hash_exists) {
   UMA_HISTOGRAM_BOOLEAN("Download.Service.Finish.ReportedHash", hash_exists);
 }
 
+void LogDownloadClientInflatedFullBrowser(DownloadClient client) {
+  std::string client_name(ClientToHistogramSuffix(client));
+  base::UmaHistogramBoolean(
+      "Download.Service.Clients.InflatedFullBrowser." + client_name, true);
+}
+
 }  // namespace stats
 }  // namespace download

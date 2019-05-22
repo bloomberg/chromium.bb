@@ -226,6 +226,10 @@ void LogHasUploadData(DownloadClient client, bool has_upload_data);
 // Records whether or not a completed entry has a hash value.
 void LogHashPresence(bool hash_exists);
 
+// Records count of reduced mode to full browser transitions requested by each
+// client.
+void LogDownloadClientInflatedFullBrowser(DownloadClient client);
+
 }  // namespace stats
 }  // namespace download
 
