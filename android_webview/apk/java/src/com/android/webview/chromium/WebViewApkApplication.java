@@ -7,10 +7,12 @@ package com.android.webview.chromium;
 import android.app.Application;
 import android.content.Context;
 
+import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * Application subclass for SystemWebView and Trichrome.
@@ -50,6 +52,8 @@ public class WebViewApkApplication extends Application {
             return false;
         }
         LibraryLoader.getInstance().switchCommandLineForWebView();
+        ResourceBundle.setAvailablePakLocales(
+                new String[] {}, AwLocaleConfig.getWebViewSupportedPakLocales());
         nativeInitializePakResources();
         return true;
     }
