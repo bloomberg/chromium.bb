@@ -415,7 +415,7 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
       for (const char* default_app_id : kDefaultPinnedApps)
         default_app_ids.push_back(default_app_id);
     }
-    InsertPinsAfterChromeAndBeforeFirstPinnedApp(helper, syncable_service,
+    InsertPinsAfterChromeAndBeforeFirstPinnedApp(helper, app_service,
                                                  default_app_ids, &pin_infos);
     MarkDefaultPinLayoutRolled(helper->profile(), shelf_layout);
   }
