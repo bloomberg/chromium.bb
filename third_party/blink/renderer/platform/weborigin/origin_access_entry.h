@@ -38,30 +38,28 @@
 
 namespace blink {
 
+class KURL;
 class SecurityOrigin;
 
 // A class to wrap network::cors::OriginAccessEntry to use with Blink types.
+// Comments below explains only blink::OriginAccessEntry specific behaviors.
+// See also network::cors::OriginAccessEntry for detailed explanation.
 class PLATFORM_EXPORT OriginAccessEntry {
   USING_FAST_MALLOC(OriginAccessEntry);
 
  public:
-  // If host is empty string and MatchMode is not DisallowSubdomains, the entry
-  // will match all domains in the specified protocol.
-  // IPv6 addresses must include brackets (e.g.
-  // '[2001:db8:85a3::8a2e:370:7334]', not '2001:db8:85a3::8a2e:370:7334').
-  // An entry with a higher priority will win in case there are two conflicting
-  // entries.
-  // TODO(crbug.com/936900): Take a port.
   OriginAccessEntry(
-      const String& protocol,
-      const String& host,
+      const SecurityOrigin& origin,
+      network::mojom::CorsOriginAccessMatchMode,
+      network::mojom::CorsOriginAccessMatchPriority priority =
+          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
+  OriginAccessEntry(
+      const KURL& url,
       network::mojom::CorsOriginAccessMatchMode,
       network::mojom::CorsOriginAccessMatchPriority priority =
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(OriginAccessEntry&& from);
 
-  // MatchesOrigin requires a protocol match (e.g. 'http' != 'https') and a port
-  // match. MatchesDomain relaxes these constraints.
   network::cors::OriginAccessEntry::MatchResult MatchesOrigin(
       const SecurityOrigin&) const;
   network::cors::OriginAccessEntry::MatchResult MatchesDomain(

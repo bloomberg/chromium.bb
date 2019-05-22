@@ -5135,7 +5135,7 @@ Document::EventFactorySet& Document::EventFactories() {
 const OriginAccessEntry& Document::AccessEntryFromURL() {
   if (!access_entry_from_url_) {
     access_entry_from_url_ = std::make_unique<OriginAccessEntry>(
-        Url().Protocol(), Url().Host(),
+        Url(),
         network::mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains);
   }
   return *access_entry_from_url_;
@@ -5397,9 +5397,11 @@ void Document::setDomain(const String& raw_domain,
     return;
   }
 
+  scoped_refptr<SecurityOrigin> new_origin =
+      GetSecurityOrigin()->IsolatedCopy();
+  new_origin->SetDomainFromDOM(new_domain);
   OriginAccessEntry access_entry(
-      GetSecurityOrigin()->Protocol(), new_domain,
-      network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
+      *new_origin, network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
   network::cors::OriginAccessEntry::MatchResult result =
       access_entry.MatchesOrigin(*GetSecurityOrigin());
   if (result == network::cors::OriginAccessEntry::kDoesNotMatchOrigin) {
@@ -5509,7 +5511,7 @@ const KURL Document::SiteForCookies() const {
   base::Optional<OriginAccessEntry> remote_entry;
   if (!top_local_frame) {
     remote_entry.emplace(
-        top_document_url.Protocol(), top_document_url.Host(),
+        top_document_url,
         network::mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains);
   }
   const OriginAccessEntry& access_entry =

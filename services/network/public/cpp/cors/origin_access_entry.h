@@ -43,6 +43,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
   // IPv6 addresses must include brackets (e.g.
   // '[2001:db8:85a3::8a2e:370:7334]', not '2001:db8:85a3::8a2e:370:7334').
   // The priority argument is used to break ties when multiple entries match.
+  // If a valid |port| is specified, MatchesOrigin() takes it into account.
+  // kPortAny can be used to match any port.
   OriginAccessEntry(const std::string& protocol,
                     const std::string& host,
                     const int32_t port,

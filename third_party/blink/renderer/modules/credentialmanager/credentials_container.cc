@@ -165,12 +165,11 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   String effective_domain = origin->Domain();
 
   // TODO(crbug.com/803077): Avoid constructing an OriginAccessEntry just
-  // for the IP address check.
+  // for the IP address check. See also crbug.com/827542.
   bool reject_because_invalid_domain = effective_domain.IsEmpty();
   if (!reject_because_invalid_domain) {
     OriginAccessEntry access_entry(
-        origin->Protocol(), effective_domain,
-        network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
+        *origin, network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
     reject_because_invalid_domain = access_entry.HostIsIPAddress();
   }
   if (reject_because_invalid_domain) {
@@ -184,8 +183,11 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   // https://w3c.github.io/webauthn/#CreateCred-DetermineRpId and
   // https://w3c.github.io/webauthn/#GetAssn-DetermineRpId.
   if (!relying_party_id.IsNull()) {
+    scoped_refptr<SecurityOrigin> relaying_party_origin =
+        origin->IsolatedCopy();
+    relaying_party_origin->SetDomainFromDOM(relying_party_id);
     OriginAccessEntry access_entry(
-        origin->Protocol(), relying_party_id,
+        *relaying_party_origin,
         network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
     if (relying_party_id.IsEmpty() ||
         access_entry.MatchesDomain(*origin) !=
