@@ -2753,11 +2753,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "ssl-committed-interstitials",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "stop-in-background",
     "owners": [ "chrome-catan@google.com" ],
     "expiry_milestone": 76

@@ -995,9 +995,6 @@ extern const char kSmoothScrollingDescription[];
 extern const char kSpeculativeServiceWorkerStartOnQueryInputName[];
 extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 
-extern const char kSSLCommittedInterstitialsName[];
-extern const char kSSLCommittedInterstitialsDescription[];
-
 extern const char kStopInBackgroundName[];
 extern const char kStopInBackgroundDescription[];
 

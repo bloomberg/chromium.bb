@@ -1676,11 +1676,6 @@ const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =
     "a query, any service worker associated with the search engine the query "
     "will be sent to is started early.";
 
-const char kSSLCommittedInterstitialsName[] = "Committed Interstitials";
-const char kSSLCommittedInterstitialsDescription[] =
-    "Use committed error pages instead of transient navigation entries "
-    "for SSL interstitial error pages (i.e. certificate errors).";
-
 extern const char kStrictOriginIsolationName[] = "Strict-Origin-Isolation";
 extern const char kStrictOriginIsolationDescription[] =
     "Experimental security mode that strengthens the site isolation policy. "
