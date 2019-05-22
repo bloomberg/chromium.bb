@@ -1672,6 +1672,9 @@ def CMDrun(parser, args):
     t['task_id']
     for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
   ]
+  for task_id in task_ids:
+    print('Task: {server}/task?id={task}'.format(
+        server=options.swarming, task=task_id))
   if not options.timeout:
     offset = 0
     for s in task_request.task_slices:

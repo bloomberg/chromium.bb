@@ -1986,7 +1986,9 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (ret, actual, sys.stderr.getvalue()))
     self._check_output(
-        u'Triggered task: None/pool=default\nFake output\n', '')
+        u'Triggered task: None/pool=default\n'
+        u'Task: https://localhost:1/task?id=12300\nFake output\n',
+        '')
 
   def test_cancel(self):
     self.expected_requests(
