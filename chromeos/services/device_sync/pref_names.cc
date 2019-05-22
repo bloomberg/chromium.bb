@@ -60,6 +60,10 @@ const char kCryptAuthEnrollmentUserPrivateKey[] =
 // messages from CryptAuth.
 const char kCryptAuthGCMRegistrationId[] = "cryptauth.gcm_registration_id";
 
+// (CryptAuth v2) The dictionary of devices synced from CryptAuth, used to
+// populate and persist the CryptAuthDeviceRegistry.
+const char kCryptAuthDeviceRegistry[] = "cryptauth.device_registry";
+
 // (CryptAuth v2) The dictionary of key bundles enrolled with CryptAuth, used to
 // populate and persist the CryptAuthKeyRegistry.
 const char kCryptAuthKeyRegistry[] = "cryptauth.key_registry";

@@ -28,6 +28,7 @@ extern const char kCryptAuthEnrollmentUserPrivateKey[];
 extern const char kCryptAuthGCMRegistrationId[];
 
 // Prefs for CryptAuth v2:
+extern const char kCryptAuthDeviceRegistry[];
 extern const char kCryptAuthKeyRegistry[];
 extern const char kCryptAuthSchedulerClientDirective[];
 extern const char kCryptAuthSchedulerNextEnrollmentRequestClientMetadata[];

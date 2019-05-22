@@ -4,6 +4,8 @@
 
 #include "chromeos/services/device_sync/cryptauth_device.h"
 
+#include <map>
+
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/components/multidevice/software_feature.h"
