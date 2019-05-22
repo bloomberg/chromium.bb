@@ -182,6 +182,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
     private final long mNativeSigninManagerAndroid;
     private final Context mContext;
+    private final SigninManagerDelegate mDelegate;
     private final AccountTrackerService mAccountTrackerService;
     private final AndroidSyncSettings mAndroidSyncSettings;
     private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
@@ -221,23 +222,26 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     public static SigninManager get() {
         ThreadUtils.assertOnUiThread();
         if (sSigninManager == null) {
-            sSigninManager = new SigninManager();
+            SigninManagerDelegate delegate = new ChromeSigninManagerDelegate();
+            sSigninManager = new SigninManager(delegate);
         }
         return sSigninManager;
     }
 
-    private SigninManager() {
-        this(ContextUtils.getApplicationContext(),
+    private SigninManager(SigninManagerDelegate delegate) {
+        this(ContextUtils.getApplicationContext(), delegate,
                 IdentityServicesProvider.getAccountTrackerService(), AndroidSyncSettings.get());
     }
 
     @VisibleForTesting
-    SigninManager(Context context, AccountTrackerService accountTrackerService,
-            AndroidSyncSettings androidSyncSettings) {
+    SigninManager(Context context, SigninManagerDelegate delegate,
+            AccountTrackerService accountTrackerService, AndroidSyncSettings androidSyncSettings) {
         ThreadUtils.assertOnUiThread();
         assert context != null;
+        assert delegate != null;
         assert accountTrackerService != null;
         assert androidSyncSettings != null;
+        mDelegate = delegate;
         mContext = context;
         mAccountTrackerService = accountTrackerService;
         mAndroidSyncSettings = androidSyncSettings;
