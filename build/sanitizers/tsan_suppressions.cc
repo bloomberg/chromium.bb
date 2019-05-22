@@ -15,12 +15,14 @@
 // See http://dev.chromium.org/developers/testing/threadsanitizer-tsan-v2
 // for the instructions on writing suppressions.
 char kTSanDefaultSuppressions[] =
-    // False positives in libflashplayer.so, libgio.so and libglib.so.
+    // False positives in libflashplayer.so, libgio.so, libglib.so and
+    // libgobject.so.
     // Since we don't instrument them, we cannot reason about the
     // synchronization in them.
     "race:libflashplayer.so\n"
     "race:libgio*.so\n"
     "race:libglib*.so\n"
+    "race:libgobject*.so\n"
 
     // Intentional race in ToolsSanityTest.DataRace in base_unittests.
     "race:base/tools_sanity_unittest.cc\n"
