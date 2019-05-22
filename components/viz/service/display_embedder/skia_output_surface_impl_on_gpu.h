@@ -238,6 +238,8 @@ class SkiaOutputSurfaceImplOnGpu {
   std::unique_ptr<TextureDeleter> texture_deleter_;
   std::unique_ptr<GLRendererCopier> copier_;
 
+  GpuServiceImpl* const gpu_service_;
+
   bool delayed_work_pending_ = false;
 
   gl::GLApi* api_ = nullptr;

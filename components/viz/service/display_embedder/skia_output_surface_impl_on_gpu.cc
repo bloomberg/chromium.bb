@@ -263,6 +263,165 @@ class ContextCurrentTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(ContextCurrentTaskRunner);
 };
 
+class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
+                                          public gpu::SharedImageInterface {
+ public:
+  DirectContextProviderDelegateImpl(
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& workarounds,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
+      gpu::SharedContextState* context_state,
+      gpu::MailboxManager* mailbox_manager,
+      gpu::SharedImageManager* shared_image_manager,
+      bool use_gl,
+      scoped_refptr<gpu::SyncPointClientState> sync_point_client_state)
+      : shared_image_manager_(shared_image_manager),
+        shared_image_factory_(gpu_preferences,
+                              workarounds,
+                              gpu_feature_info,
+                              context_state,
+                              mailbox_manager,
+                              shared_image_manager,
+                              nullptr /* image_factory */,
+                              nullptr /* memory_tracker */,
+                              true /* is_using_skia_renderer */,
+                              use_gl),
+        sync_point_client_state_(sync_point_client_state) {}
+
+  ~DirectContextProviderDelegateImpl() override = default;
+
+  // SharedImageInterface implementation:
+  gpu::Mailbox CreateSharedImage(ResourceFormat format,
+                                 const gfx::Size& size,
+                                 const gfx::ColorSpace& color_space,
+                                 uint32_t usage) override {
+    auto mailbox = gpu::Mailbox::GenerateForSharedImage();
+    if (shared_image_factory_.CreateSharedImage(mailbox, format, size,
+                                                color_space, usage))
+      return mailbox;
+    return gpu::Mailbox();
+  }
+
+  gpu::Mailbox CreateSharedImage(
+      ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      base::span<const uint8_t> pixel_data) override {
+    auto mailbox = gpu::Mailbox::GenerateForSharedImage();
+    if (shared_image_factory_.CreateSharedImage(mailbox, format, size,
+                                                color_space, usage, pixel_data))
+      return mailbox;
+    return gpu::Mailbox();
+  }
+
+  gpu::Mailbox CreateSharedImage(
+      gfx::GpuMemoryBuffer* gpu_memory_buffer,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage) override {
+    // We do not support creating GMB backed SharedImages.
+    NOTIMPLEMENTED();
+    return gpu::Mailbox();
+  }
+
+  void UpdateSharedImage(const gpu::SyncToken& sync_token,
+                         const gpu::Mailbox& mailbox) override {
+    DCHECK(!ShouldWait(sync_token))
+        << "Cannot UpdateSharedImage with SyncToken from different "
+           "command buffer.";
+    shared_image_factory_.UpdateSharedImage(mailbox);
+  }
+
+  void DestroySharedImage(const gpu::SyncToken& sync_token,
+                          const gpu::Mailbox& mailbox) override {
+    DCHECK(!ShouldWait(sync_token))
+        << "Cannot DestroySharedImage with SyncToken from different "
+           "command buffer.";
+    shared_image_factory_.DestroySharedImage(mailbox);
+  }
+
+#if defined(OS_WIN)
+  SwapChainMailboxes CreateSwapChain(ResourceFormat format,
+                                     const gfx::Size& size,
+                                     const gfx::ColorSpace& color_space,
+                                     uint32_t usage) override {
+    NOTREACHED();
+    return {};
+  }
+
+  void PresentSwapChain(const gpu::SyncToken& sync_token,
+                        const gpu::Mailbox& mailbox) override {
+    NOTREACHED();
+  }
+#endif  // OS_WIN
+
+  gpu::SyncToken GenUnverifiedSyncToken() override {
+    return gpu::SyncToken(sync_point_client_state_->namespace_id(),
+                          sync_point_client_state_->command_buffer_id(),
+                          GenerateFenceSyncRelease());
+  }
+
+  gpu::SyncToken GenVerifiedSyncToken() override {
+    gpu::SyncToken sync_token = GenUnverifiedSyncToken();
+    sync_token.SetVerifyFlush();
+    return sync_token;
+  }
+
+  // DirectContextProviderDelegate implementation.
+  gpu::SharedImageManager* GetSharedImageManager() override {
+    return shared_image_manager_;
+  }
+
+  gpu::SharedImageInterface* GetSharedImageInterface() override { return this; }
+
+  gpu::CommandBufferNamespace GetNamespaceID() const override {
+    return sync_point_client_state_->namespace_id();
+  }
+
+  gpu::CommandBufferId GetCommandBufferID() const override {
+    return sync_point_client_state_->command_buffer_id();
+  }
+
+  uint64_t GenerateFenceSyncRelease() override {
+    uint64_t release = ++sync_fence_release_;
+    // Release fence immediately because the relevant GPU calls were already
+    // issued.
+    sync_point_client_state_->ReleaseFenceSync(release);
+    return release;
+  }
+
+  void SignalSyncToken(const gpu::SyncToken& sync_token,
+                       base::OnceClosure callback) override {
+    base::RepeatingClosure maybe_pass_callback =
+        base::AdaptCallbackForRepeating(std::move(callback));
+    if (!sync_point_client_state_->Wait(sync_token, maybe_pass_callback)) {
+      maybe_pass_callback.Run();
+    }
+  }
+
+ private:
+  bool ShouldWait(const gpu::SyncToken& sync_token) {
+    // Don't wait on an invalid SyncToken.
+    if (!sync_token.HasData())
+      return false;
+
+    // Don't wait on SyncTokens our own sync tokens because we've already issued
+    // the relevant calls to the GPU.
+    return sync_point_client_state_->namespace_id() !=
+               sync_token.namespace_id() ||
+           sync_point_client_state_->command_buffer_id() !=
+               sync_token.command_buffer_id();
+  }
+
+  gpu::SharedImageManager* const shared_image_manager_;
+  gpu::SharedImageFactory shared_image_factory_;
+  scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
+  uint64_t sync_fence_release_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(DirectContextProviderDelegateImpl);
+};
+
 }  // namespace
 
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface() = default;
@@ -315,6 +474,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
       context_lost_callback_(context_lost_callback),
+      gpu_service_(gpu_service),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
@@ -579,9 +739,15 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   if (!is_using_vulkan()) {
     // Lazy initialize GLRendererCopier.
     if (!copier_) {
+      auto* channel_manager = gpu_service_->gpu_channel_manager();
+      auto client = std::make_unique<DirectContextProviderDelegateImpl>(
+          gpu_preferences_, channel_manager->gpu_driver_bug_workarounds(),
+          channel_manager->gpu_feature_info(), context_state_.get(),
+          mailbox_manager_, gpu_service_->shared_image_manager(),
+          !is_using_vulkan(), CreateSyncPointClientState(gpu_service_));
       context_provider_ = base::MakeRefCounted<DirectContextProvider>(
           context_state_->context(), gl_surface_, supports_alpha_,
-          gpu_preferences_, feature_info_.get());
+          gpu_preferences_, feature_info_.get(), std::move(client));
       auto result = context_provider_->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
         DLOG(ERROR) << "Couldn't initialize GLRendererCopier";

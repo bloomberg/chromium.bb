@@ -29,10 +29,10 @@ enum ReadbackType {
 };
 
 struct ReadbackTestConfig {
-  ReadbackTestConfig(LayerTreePixelTest::RendererType renderer_type_,
+  ReadbackTestConfig(LayerTreeTest::RendererType renderer_type_,
                      ReadbackType readback_type_)
       : renderer_type(renderer_type_), readback_type(readback_type_) {}
-  LayerTreePixelTest::RendererType renderer_type;
+  LayerTreeTest::RendererType renderer_type;
   ReadbackType readback_type;
 };
 
@@ -415,8 +415,6 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
       base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
-// TODO(crbug.com/948128): Enable these tests for SkiaRenderer using texture
-// readback.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostReadbackPixelTest,
@@ -424,7 +422,8 @@ INSTANTIATE_TEST_SUITE_P(
         ReadbackTestConfig(LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP),
         ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_TEXTURE),
         ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP)));
+        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP),
+        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE)));
 
 class LayerTreeHostReadbackDeviceScalePixelTest
     : public LayerTreeHostReadbackPixelTest {
@@ -511,8 +510,6 @@ TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackNonRootLayerSubrect) {
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
-// TODO(crbug.com/948128): Enable these tests for SkiaRenderer using texture
-// readback.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostReadbackDeviceScalePixelTest,
@@ -520,7 +517,8 @@ INSTANTIATE_TEST_SUITE_P(
         ReadbackTestConfig(LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP),
         ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_TEXTURE),
         ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP)));
+        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP),
+        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE)));
 
 class LayerTreeHostReadbackColorSpacePixelTest
     : public LayerTreeHostReadbackPixelTest {
@@ -558,8 +556,6 @@ TEST_P(LayerTreeHostReadbackColorSpacePixelTest, Readback) {
                base::FilePath(FILE_PATH_LITERAL("srgb_green_in_p3.png")));
 }
 
-// TODO(crbug.com/948128): Enable these tests for SkiaRenderer using texture
-// readback.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostReadbackColorSpacePixelTest,
@@ -567,7 +563,8 @@ INSTANTIATE_TEST_SUITE_P(
         ReadbackTestConfig(LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP),
         ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_TEXTURE),
         ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP)));
+        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP),
+        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE)));
 
 }  // namespace
 }  // namespace cc
