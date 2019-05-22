@@ -75,7 +75,7 @@ WM_CORE_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayersWithClosure(
 
 // Returns a layer tree that mirrors |root|. Used for live window previews. If
 // |sync_bounds| is true, the bounds of all mirror layers except the root are
-// synchronized. See |sync_bounds_| in ui::Layer.
+// synchronized. See |sync_bounds_with_source_| in ui::Layer.
 WM_CORE_EXPORT std::unique_ptr<ui::LayerTreeOwner> MirrorLayers(
     ui::LayerOwner* root,
     bool sync_bounds);

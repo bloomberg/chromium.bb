@@ -61,6 +61,7 @@ void MirrorLayerTree(ui::Layer* source_layer,
   // TODO(afakhry): See if we need to avoid this in certain cases.
   mirror->SetVisible(true);
   mirror->SetOpacity(1);
+  mirror->set_sync_bounds_with_source(true);
 
   if (layer_data.should_reset_transform)
     mirror->SetTransform(gfx::Transform());

@@ -82,7 +82,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // content is only mirrored if painted by a delegate or backed by a surface.
   std::unique_ptr<Layer> Mirror();
 
-  void set_sync_bounds(bool sync_bounds) { sync_bounds_ = sync_bounds; }
+  // This method is relevant only if this layer is a mirror destination layer.
+  // Sets whether this mirror layer's bounds are synchronized with the source
+  // layer's bounds.
+  void set_sync_bounds_with_source(bool sync_bounds) {
+    sync_bounds_with_source_ = sync_bounds;
+  }
 
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
@@ -571,8 +576,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   std::vector<std::unique_ptr<LayerMirror>> mirrors_;
 
-  // If true, changes to the bounds of this layer are propagated to mirrors.
-  bool sync_bounds_ = false;
+  // If true, and this is a destination mirror layer, changes to the bounds of
+  // the source layer are propagated to this mirror layer.
+  bool sync_bounds_with_source_ = false;
 
   gfx::Rect bounds_;
   gfx::Vector2dF subpixel_position_offset_;

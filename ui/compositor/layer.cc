@@ -1266,9 +1266,10 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
     SchedulePaint(gfx::Rect(bounds.size()));
   }
 
-  if (sync_bounds_) {
-    for (const auto& mirror : mirrors_)
-      mirror->dest()->SetBounds(bounds);
+  for (const auto& mirror : mirrors_) {
+    Layer* mirror_dest = mirror->dest();
+    if (mirror_dest->sync_bounds_with_source_)
+      mirror_dest->SetBounds(bounds);
   }
 }
 

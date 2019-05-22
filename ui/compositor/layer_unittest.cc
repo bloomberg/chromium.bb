@@ -875,14 +875,14 @@ TEST_F(LayerWithDelegateTest, Mirroring) {
   DrawTreeLayerDelegate delegate(child->bounds());
   child->set_delegate(&delegate);
 
-  const auto mirror = child->Mirror();
+  const auto mirror1 = child->Mirror();
 
   // Bounds and visibility are preserved.
-  EXPECT_EQ(bounds, mirror->bounds());
-  EXPECT_TRUE(mirror->visible());
+  EXPECT_EQ(bounds, mirror1->bounds());
+  EXPECT_TRUE(mirror1->visible());
 
   root->Add(child.get());
-  root->Add(mirror.get());
+  root->Add(mirror1.get());
 
   DrawTree(root.get());
   EXPECT_TRUE(delegate.painted());
@@ -890,7 +890,7 @@ TEST_F(LayerWithDelegateTest, Mirroring) {
 
   // Both layers should be clean.
   EXPECT_TRUE(child->damaged_region_for_testing().IsEmpty());
-  EXPECT_TRUE(mirror->damaged_region_for_testing().IsEmpty());
+  EXPECT_TRUE(mirror1->damaged_region_for_testing().IsEmpty());
 
   const gfx::Rect damaged_rect(10, 10, 20, 20);
   EXPECT_TRUE(child->SchedulePaint(damaged_rect));
@@ -901,34 +901,39 @@ TEST_F(LayerWithDelegateTest, Mirroring) {
   delegate.Reset();
 
   // Damage should be propagated to the mirror.
-  EXPECT_EQ(damaged_rect, mirror->damaged_region_for_testing().bounds());
+  EXPECT_EQ(damaged_rect, mirror1->damaged_region_for_testing().bounds());
   EXPECT_TRUE(child->damaged_region_for_testing().IsEmpty());
 
   DrawTree(root.get());
   EXPECT_TRUE(delegate.painted());
 
   // Mirror should be clean.
-  EXPECT_TRUE(mirror->damaged_region_for_testing().IsEmpty());
+  EXPECT_TRUE(mirror1->damaged_region_for_testing().IsEmpty());
+
+  const auto mirror2 = child->Mirror();
+  root->Add(mirror2.get());
 
   // Bounds are not synchronized by default.
   const gfx::Rect new_bounds(10, 10, 10, 10);
   child->SetBounds(new_bounds);
-  EXPECT_EQ(bounds, mirror->bounds());
+  EXPECT_EQ(bounds, mirror1->bounds());
+  EXPECT_EQ(bounds, mirror2->bounds());
   child->SetBounds(bounds);
 
-  // Bounds should be synchronized if requested.
-  child->set_sync_bounds(true);
+  // Bounds should be synchronized only for the mirror layer that requested it.
+  mirror1->set_sync_bounds_with_source(true);
   child->SetBounds(new_bounds);
-  EXPECT_EQ(new_bounds, mirror->bounds());
+  EXPECT_EQ(new_bounds, mirror1->bounds());
+  EXPECT_EQ(bounds, mirror2->bounds());
 
   // Check for rounded corner mirror behavior
-  EXPECT_TRUE(mirror->rounded_corner_radii().IsEmpty());
-  EXPECT_FALSE(mirror->is_fast_rounded_corner());
+  EXPECT_TRUE(mirror1->rounded_corner_radii().IsEmpty());
+  EXPECT_FALSE(mirror1->is_fast_rounded_corner());
   constexpr gfx::RoundedCornersF kCornerRadii(2, 3, 4, 5);
   child->SetRoundedCornerRadius(kCornerRadii);
   child->SetIsFastRoundedCorner(true);
-  EXPECT_EQ(kCornerRadii, mirror->rounded_corner_radii());
-  EXPECT_TRUE(mirror->is_fast_rounded_corner());
+  EXPECT_EQ(kCornerRadii, mirror1->rounded_corner_radii());
+  EXPECT_TRUE(mirror1->is_fast_rounded_corner());
 }
 
 // Tests for SurfaceLayer cloning and mirroring. This tests certain properties
