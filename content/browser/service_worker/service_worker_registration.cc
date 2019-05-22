@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_info.h"
+#include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/public/browser/browser_thread.h"
@@ -80,11 +81,7 @@ void ServiceWorkerRegistration::SetStatus(Status status) {
       // - To kUninstalled: finished uninstalling.
       break;
     case Status::kUninstalled:
-      // We can return to kIntact in the rare case of an in-progress register
-      // job that registers after DeleteVersion() deletes.
-      // TODO(crbug.com/964201): Disallow transitions after DeleteVersion aborts
-      // in-progress register jobs, for simplicity.
-      DCHECK_EQ(status, Status::kIntact);
+      NOTREACHED();
       break;
   }
 #endif  // DCHECK_IS_ON()
@@ -493,35 +490,54 @@ void ServiceWorkerRegistration::ContinueActivation(
                      activating_version));
 }
 
-void ServiceWorkerRegistration::DeleteVersion(
-    const scoped_refptr<ServiceWorkerVersion>& version) {
-  DCHECK_EQ(id(), version->registration_id());
+void ServiceWorkerRegistration::ForceDelete() {
+  DCHECK(context_);
+  DCHECK(!is_uninstalled()) << "attempt to delete registration twice";
 
   // Protect the registration since version->Doom() can stop |version|, which
   // destroys start worker callbacks, which might be the only things holding a
   // reference to |this|.
   scoped_refptr<ServiceWorkerRegistration> protect(this);
 
-  UnsetVersion(version.get());
-  version->Doom();
+  // Abort any queued or running jobs for this registration.
+  context_->job_coordinator()->Abort(scope());
 
-  if (!active_version() && !waiting_version()) {
-    // Delete the records from the db.
+  // The rest of this function is similar to Clear() but is slightly different
+  // because this emergency deletion isn't part of the spec and happens
+  // outside of the normal job coordinator.
+  // TODO(falken): Consider merging the two.
+  should_activate_when_ready_ = false;
+
+  // Doom versions. This sets the versions to redundant and tells the
+  // controllees that they are gone.
+  //
+  // There can't be an installing version since we aborted any register job.
+  DCHECK(!installing_version_);
+  auto mask =
+      blink::mojom::ChangedServiceWorkerObjectsMask::New(false, false, false);
+  // Unset the version first so we stop listening to the version as it might
+  // invoke listener methods during Doom().
+  if (scoped_refptr<ServiceWorkerVersion> waiting_version = waiting_version_) {
+    UnsetVersionInternal(waiting_version.get(), mask.get());
+    waiting_version->Doom();
+  }
+  if (scoped_refptr<ServiceWorkerVersion> active_version = active_version_) {
+    UnsetVersionInternal(active_version.get(), mask.get());
+    active_version->Doom();
+  }
+
+  // Delete the registration and its state from storage.
+  if (status() == Status::kIntact) {
     context_->storage()->DeleteRegistration(
         this, scope().GetOrigin(),
         base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, protect));
-    // But not from memory if there is a version in the pipeline.
-    // TODO(crbug.com/964201): This is too clever. Delete this exception and
-    // just abort on-going register jobs.
-    if (installing_version()) {
-      context_->storage()->NotifyDoneUninstallingRegistration(this,
-                                                              Status::kIntact);
-    } else {
-      context_->storage()->NotifyDoneUninstallingRegistration(
-          this, Status::kUninstalled);
-      NotifyRegistrationFailed();
-    }
   }
+  DCHECK(is_uninstalling());
+  context_->storage()->NotifyDoneUninstallingRegistration(this,
+                                                          Status::kUninstalled);
+
+  // Tell observers that this registration is gone.
+  NotifyRegistrationFailed();
 }
 
 void ServiceWorkerRegistration::NotifyRegistrationFinished() {

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 
 namespace content {
 
@@ -69,6 +70,15 @@ void FakeEmbeddedWorkerInstanceClient::StartWorker(
   // |script_loader_factory_ptr_info| from |start_params_->provider_info|
   // to request the script and the browser process should be able to mock it.
   // For installed workers, the map should already be populated.
+  ServiceWorkerVersion* version = helper_->context()->GetLiveVersion(
+      start_params_->service_worker_version_id);
+  if (version && version->status() == ServiceWorkerVersion::REDUNDANT) {
+    // This can happen if ForceDelete() was called on the registration. Early
+    // return because otherwise PopulateScriptCacheMap will DCHECK. If we mocked
+    // things as per the TODO, the script load would fail and we don't need to
+    // special case this.
+    return;
+  }
   helper_->PopulateScriptCacheMap(
       start_params_->service_worker_version_id,
       base::BindOnce(

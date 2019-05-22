@@ -182,7 +182,7 @@ void ServiceWorkerInstalledScriptsSender::Abort(
         ServiceWorkerRegistration* registration =
             owner_->context()->GetLiveRegistration(owner_->registration_id());
         // This can destruct |this|.
-        registration->DeleteVersion(owner_);
+        registration->ForceDelete();
       }
       return;
     case ServiceWorkerInstalledScriptReader::FinishedReason::

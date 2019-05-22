@@ -429,13 +429,7 @@ void ServiceWorkerStorage::StoreRegistration(
 
   DCHECK_NE(version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
-  // The registration must be new or fully uninstalled. In-progress
-  // uninstallation should be canceled first to remove it from the uninstalling
-  // list.
-  // TODO(crbug.com/964201): Also disallow kUninstalled after DeleteVersion
-  // aborts in-progress register jobs, for simplicity.
-  DCHECK_NE(registration->status(),
-            ServiceWorkerRegistration::Status::kUninstalling);
+  DCHECK_EQ(registration->status(), ServiceWorkerRegistration::Status::kIntact);
 
   ServiceWorkerDatabase::RegistrationData data;
   data.registration_id = registration->id();
@@ -481,7 +475,6 @@ void ServiceWorkerStorage::StoreRegistration(
                      base::BindOnce(&ServiceWorkerStorage::DidStoreRegistration,
                                     weak_factory_.GetWeakPtr(),
                                     std::move(callback), data)));
-  registration->SetStatus(ServiceWorkerRegistration::Status::kIntact);
 }
 
 void ServiceWorkerStorage::UpdateToActiveState(

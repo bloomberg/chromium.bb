@@ -184,9 +184,11 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     self_update_delay_ = delay;
   }
 
-  // Unsets the version and deletes its resources. Also deletes this
-  // registration from storage if there is no longer a stored version.
-  void DeleteVersion(const scoped_refptr<ServiceWorkerVersion>& version);
+  // An emergency measure to forcibly delete the registration even if it has
+  // controllees. The controllees will stop using the registration. Called when
+  // a service worker can't be read from disk, a potentially sticky failure
+  // that would prevent the site from being loaded.
+  void ForceDelete();
 
   void RegisterRegistrationFinishedCallback(base::OnceClosure callback);
   void NotifyRegistrationFinished();

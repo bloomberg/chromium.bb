@@ -1387,7 +1387,7 @@ TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
   EXPECT_EQ(nullptr, registration->installing_version());
 }
 
-// Test that update succeeds if the incumbent worker was evicted
+// Test that update fails if the incumbent worker was evicted
 // during the update job (this can happen on disk cache failure).
 TEST_F(ServiceWorkerJobTest, Update_EvictedIncumbent) {
   UpdateJobTestHelper* update_helper = new UpdateJobTestHelper;
@@ -1407,24 +1407,19 @@ TEST_F(ServiceWorkerJobTest, Update_EvictedIncumbent) {
   // Evict the incumbent during that time.
   first_version->StartUpdate();
   instance_client->RunUntilStartWorker();
-  registration->DeleteVersion(first_version);
+  registration->ForceDelete();
 
   // Finish the update job.
   instance_client->UnblockStartWorker();
   base::RunLoop().RunUntilIdle();
 
   // Verify results.
-  ASSERT_TRUE(registration->active_version());
-  EXPECT_NE(first_version.get(), registration->active_version());
-  EXPECT_FALSE(registration->installing_version());
-  EXPECT_FALSE(registration->waiting_version());
+  EXPECT_FALSE(registration->GetNewestVersion());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, first_version->status());
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
-            registration->active_version()->status());
-  ASSERT_EQ(4u, update_helper->attribute_change_log_.size());
-  EXPECT_TRUE(update_helper->update_found_);
+  EXPECT_TRUE(update_helper->attribute_change_log_.empty());
+  EXPECT_FALSE(update_helper->update_found_);
   EXPECT_TRUE(update_helper->registration_failed_);
-  EXPECT_FALSE(registration->is_uninstalled());
+  EXPECT_TRUE(registration->is_uninstalled());
 }
 
 TEST_F(ServiceWorkerJobTest, Update_UninstallingRegistration) {

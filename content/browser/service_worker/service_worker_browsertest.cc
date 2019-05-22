@@ -819,11 +819,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         registration_.get(), version_.get(), status);
   }
 
-  void RemoveLiveRegistrationOnIOThread(int64_t id) {
-    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    wrapper()->context()->RemoveLiveRegistration(id);
-  }
-
   void StartOnIOThread(base::OnceClosure done,
                        base::Optional<blink::ServiceWorkerStatusCode>* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -1131,6 +1126,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  RunOnIOThread(base::BindOnce(&ServiceWorkerRegistration::SetActiveVersion,
+                               base::Unretained(registration_.get()),
+                               base::Unretained(version_.get())));
 
   // Add a non-existent resource to the version.
   std::vector<ServiceWorkerDatabase::ResourceRecord> records;
@@ -1146,12 +1144,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   StartWorker(blink::ServiceWorkerStatusCode::kErrorDiskCache);
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
 
-  // The registration should be deleted from storage since the broken worker was
-  // the stored one.
-  RunOnIOThread(base::BindOnce(&self::RemoveLiveRegistrationOnIOThread,
-                               base::Unretained(this), registration_->id()));
+  // The registration should be deleted from storage.
   FindRegistrationForId(registration_->id(), registration_->scope().GetOrigin(),
                         blink::ServiceWorkerStatusCode::kErrorNotFound);
+  EXPECT_TRUE(registration_->is_uninstalled());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
@@ -1187,12 +1183,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   StartWorker(blink::ServiceWorkerStatusCode::kErrorDiskCache);
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
 
-  // The registration should still be in storage since the waiting worker was
-  // the stored one.
-  RunOnIOThread(base::BindOnce(&self::RemoveLiveRegistrationOnIOThread,
-                               base::Unretained(this), registration_->id()));
+  // The whole registration should be deleted from storage even though the
+  // waiting version was not the broken one.
   FindRegistrationForId(registration_->id(), registration_->scope().GetOrigin(),
-                        blink::ServiceWorkerStatusCode::kOk);
+                        blink::ServiceWorkerStatusCode::kErrorNotFound);
+  EXPECT_TRUE(registration_->is_uninstalled());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Install) {
