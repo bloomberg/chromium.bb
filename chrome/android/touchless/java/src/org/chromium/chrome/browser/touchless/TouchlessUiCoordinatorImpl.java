@@ -79,7 +79,7 @@ public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserv
 
     @Override
     public void onResumeWithNative() {
-        mProgressBarCoordinator.onActivityResume();
+        if (mProgressBarCoordinator != null) mProgressBarCoordinator.onActivityResume();
     }
 
     @Override
