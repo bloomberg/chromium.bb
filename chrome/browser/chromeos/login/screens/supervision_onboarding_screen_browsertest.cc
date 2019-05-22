@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/supervision/onboarding_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
@@ -42,10 +43,6 @@ using net::test_server::HttpResponse;
 namespace chromeos {
 
 namespace {
-
-constexpr char kTestStartPageRelativeUrl[] = "/families/onboarding/start";
-constexpr char kTestCustomHttpHeaderKey[] =
-    "test-supervision-onboarding-header";
 
 chromeos::OobeUI* GetOobeUI() {
   auto* host = chromeos::LoginDisplayHost::default_host();
@@ -86,23 +83,18 @@ class FakeSupervisionServer {
     return received_auth_header_values_.size();
   }
 
-  GURL url_filter_pattern() const { return test_server_->GetURL("/*"); }
-  GURL start_page_url() {
-    return test_server_->GetURL(kTestStartPageRelativeUrl);
-  }
-
  private:
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     // We are not interested in other URLs hitting the server at this point.
     // This will filter bogus requests like favicon fetches and stop us from
     // handling requests that are targeting gaia.
-    if (request.relative_url != kTestStartPageRelativeUrl)
+    if (request.relative_url != supervision::kOnboardingStartPageRelativeUrl)
       return nullptr;
 
     UpdateVerificationData(request);
     auto response = std::make_unique<BasicHttpResponse>();
     if (custom_http_header_value_.has_value()) {
-      response->AddCustomHeader(kTestCustomHttpHeaderKey,
+      response->AddCustomHeader(supervision::kExperimentHeaderName,
                                 custom_http_header_value_.value());
     }
 
@@ -149,21 +141,15 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     if (IsFeatureOn()) {
       command_line->AppendSwitchASCII(
-          chromeos::switches::kSupervisionOnboardingPageUrlPattern,
-          supervision_server()->url_filter_pattern().spec());
-      command_line->AppendSwitchASCII(
-          chromeos::switches::kSupervisionOnboardingStartPageUrl,
-          supervision_server()->start_page_url().spec());
-      command_line->AppendSwitchASCII(
-          chromeos::switches::kSupervisionOnboardingHttpResponseHeader,
-          kTestCustomHttpHeaderKey);
+          switches::kSupervisionOnboardingUrlPrefix,
+          embedded_test_server()->base_url().spec());
 
       // To turn on the feature properly we also ask the server to return the
       // expected custom http header value. Tests that want to simulate other
       // server responses can call these methods again to override this
       // behavior.
-      ExpectCustomHttpHeaderValue("user-eligible");
-      supervision_server()->set_custom_http_header_value("user-eligible");
+      supervision_server()->set_custom_http_header_value(
+          supervision::kDeviceOnboardingExperimentName);
     }
 
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
@@ -208,15 +194,6 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
         ->SetScreenForTesting(std::move(supervision_onboarding_screen));
 
     supervision_onboarding_screen_->Show();
-  }
-
-  // Sets the flow to expect the given header value in server responses. If
-  // the value is not present, we should exit the flow.
-  void ExpectCustomHttpHeaderValue(
-      const std::string& custom_http_header_value) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        chromeos::switches::kSupervisionOnboardingHttpResponseHeaderValue,
-        custom_http_header_value);
   }
 
   void WaitForScreen() {
@@ -348,8 +325,7 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
                        MAYBE_ExitWhenServerSendsWrongHeader) {
-  ExpectCustomHttpHeaderValue("user-eligible-for-supervision");
-  supervision_server()->set_custom_http_header_value("user-not-eligible");
+  supervision_server()->set_custom_http_header_value("wrong_header_value");
 
   LoginAndShowScreen();
   WaitForScreenExit();

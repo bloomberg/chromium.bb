@@ -21,8 +21,6 @@ SupervisionOnboardingScreenHandler::SupervisionOnboardingScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path("login.SupervisionOnboardingScreen.userActed");
-  supervision_onboarding_controller_ =
-      std::make_unique<supervision::OnboardingControllerImpl>();
 }
 
 SupervisionOnboardingScreenHandler::~SupervisionOnboardingScreenHandler() {
@@ -62,6 +60,12 @@ void SupervisionOnboardingScreenHandler::Initialize() {}
 
 void SupervisionOnboardingScreenHandler::BindSupervisionOnboardingController(
     supervision::mojom::OnboardingControllerRequest request) {
+  if (!supervision_onboarding_controller_) {
+    supervision_onboarding_controller_ =
+        std::make_unique<supervision::OnboardingControllerImpl>(
+            ProfileManager::GetPrimaryUserProfile());
+  }
+
   supervision_onboarding_controller_->BindRequest(std::move(request));
 }
 

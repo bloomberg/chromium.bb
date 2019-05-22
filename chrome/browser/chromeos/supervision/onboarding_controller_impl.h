@@ -13,6 +13,9 @@
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "url/gurl.h"
+
+class Profile;
 
 namespace identity {
 class AccessTokenFetcher;
@@ -23,7 +26,7 @@ namespace supervision {
 
 class OnboardingControllerImpl : public mojom::OnboardingController {
  public:
-  OnboardingControllerImpl();
+  explicit OnboardingControllerImpl(Profile* profile);
   ~OnboardingControllerImpl() override;
 
   void BindRequest(mojom::OnboardingControllerRequest request);
@@ -40,6 +43,7 @@ class OnboardingControllerImpl : public mojom::OnboardingController {
   // Callback to OnboardingWebviewHost::LoadPage.
   void LoadPageCallback(const base::Optional<std::string>& custom_header_value);
 
+  Profile* profile_;
   mojom::OnboardingWebviewHostPtr webview_host_;
   mojo::BindingSet<mojom::OnboardingController> bindings_;
   std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;

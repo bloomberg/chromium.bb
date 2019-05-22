@@ -4,13 +4,16 @@
 
 #include "chrome/browser/chromeos/supervision/onboarding_controller_impl.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/supervision/onboarding_constants.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "url/gurl.h"
 
@@ -22,9 +25,23 @@ namespace {
 const char kSupervisionScope[] =
     "https://www.googleapis.com/auth/kid.family.readonly";
 
+GURL SupervisionServerBaseUrl() {
+  GURL command_line_prefix(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kSupervisionOnboardingUrlPrefix));
+  if (command_line_prefix.is_valid())
+    return command_line_prefix;
+
+  return GURL(kSupervisionServerUrlPrefix);
+}
+
 }  // namespace
 
-OnboardingControllerImpl::OnboardingControllerImpl() = default;
+OnboardingControllerImpl::OnboardingControllerImpl(Profile* profile)
+    : profile_(profile) {
+  DCHECK(profile);
+}
+
 OnboardingControllerImpl::~OnboardingControllerImpl() = default;
 
 void OnboardingControllerImpl::BindRequest(
@@ -36,11 +53,8 @@ void OnboardingControllerImpl::BindWebviewHost(
     mojom::OnboardingWebviewHostPtr webview_host) {
   webview_host_ = std::move(webview_host);
 
-  Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  DCHECK(profile);
-
   identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
+      IdentityManagerFactory::GetForProfile(profile_);
 
   std::string account_id = identity_manager->GetPrimaryAccountId();
 
@@ -77,23 +91,11 @@ void OnboardingControllerImpl::AccessTokenCallback(
 
   mojom::OnboardingPage page;
   page.access_token = access_token_info.token;
-  page.url_filter_pattern =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kSupervisionOnboardingPageUrlPattern);
-  page.custom_header_name =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kSupervisionOnboardingHttpResponseHeader);
+  page.custom_header_name = kExperimentHeaderName;
 
-  page.url = GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      chromeos::switches::kSupervisionOnboardingStartPageUrl));
-
-  if (!page.url.is_valid() || page.url_filter_pattern.empty() ||
-      page.custom_header_name->empty()) {
-    DVLOG(1) << "Exiting Supervision Onboarding flow since the required flags "
-                "are unset or invalid.";
-    webview_host_->ExitFlow();
-    return;
-  }
+  page.url_filter_pattern = SupervisionServerBaseUrl().Resolve("/*").spec();
+  page.url =
+      SupervisionServerBaseUrl().Resolve(kOnboardingStartPageRelativeUrl);
 
   webview_host_->LoadPage(
       page.Clone(), base::BindOnce(&OnboardingControllerImpl::LoadPageCallback,
@@ -104,13 +106,9 @@ void OnboardingControllerImpl::LoadPageCallback(
     const base::Optional<std::string>& custom_header_value) {
   DCHECK(webview_host_);
 
-  std::string expected_header_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kSupervisionOnboardingHttpResponseHeaderValue);
-
   if (!custom_header_value.has_value() ||
       !base::EqualsCaseInsensitiveASCII(custom_header_value.value(),
-                                        expected_header_value)) {
+                                        kDeviceOnboardingExperimentName)) {
     webview_host_->ExitFlow();
   }
 }
