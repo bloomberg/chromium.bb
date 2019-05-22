@@ -3282,6 +3282,19 @@
       "disabled_extensions": [
         "GL_MESA_framebuffer_flip_y"
       ]
+    },
+    {
+      "id": 306,
+      "description": "Program binaries don't contain transform feedback varyings on Mali GPUs",
+      "cr_bugs": [961950],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali.*",
+      "features": [
+        "disable_program_caching_for_transform_feedback"
+      ]
     }
   ]
 }
