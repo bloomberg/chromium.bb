@@ -548,7 +548,9 @@ gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
 }
 
 gfx::Size ShelfView::CalculatePreferredSize() const {
-  CalculateIdealBounds();
+  // Use |last_visible_index_| != -1 as sentinel to ensure
+  // CalculateIdealBounds() is called before getting here.
+  DCHECK_NE(last_visible_index_, -1);
 
   int last_button_index = last_visible_index_;
   if (!is_overflow_mode() && overflow_button_ && overflow_button_->GetVisible())
@@ -915,7 +917,7 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
   }
 }
 
-void ShelfView::CalculateIdealBounds() const {
+void ShelfView::CalculateIdealBounds() {
   DCHECK(model_->item_count() == view_model_->view_size());
 
   const int button_spacing = ShelfConstants::button_spacing();
@@ -1366,8 +1368,7 @@ int ShelfView::GetAvailableSpaceForAppIcons() const {
          2 * kAppIconGroupMargin;
 }
 
-ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy()
-    const {
+ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy() {
   // There are two possibilities. Either all the apps fit when centered
   // on the whole screen width, in which case we do that. Or, when space
   // becomes a little tight (which happens especially when the status area

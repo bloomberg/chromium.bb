@@ -33,9 +33,7 @@ class ASH_EXPORT KioskNextShelfView : public ShelfView {
 
  private:
   // ShelfView:
-  // This method is not really const, because it updates properties of the class
-  // members. The problem comes from parent class that violates constness.
-  void CalculateIdealBounds() const override;
+  void CalculateIdealBounds() override;
   void LayoutAppListAndBackButtonHighlight() override;
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextShelfView);

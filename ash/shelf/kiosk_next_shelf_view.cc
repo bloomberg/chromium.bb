@@ -59,7 +59,7 @@ void KioskNextShelfView::Init() {
   set_last_visible_index(model()->item_count() - 1);
 }
 
-void KioskNextShelfView::CalculateIdealBounds() const {
+void KioskNextShelfView::CalculateIdealBounds() {
   DCHECK(shelf()->IsHorizontalAlignment());
   DCHECK_EQ(2, model()->item_count());
 

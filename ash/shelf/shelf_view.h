@@ -330,7 +330,7 @@ class ASH_EXPORT ShelfView : public views::View,
  protected:
   // Calculates the ideal bounds. The bounds of each button corresponding to an
   // item in the model is set in |view_model_|.
-  virtual void CalculateIdealBounds() const;
+  virtual void CalculateIdealBounds();
 
   virtual void LayoutAppListAndBackButtonHighlight();
 
@@ -341,11 +341,6 @@ class ASH_EXPORT ShelfView : public views::View,
   views::View* back_and_app_list_background() {
     return back_and_app_list_background_;
   }
-
-  // view_model() is called from const method CalculateIdealBounds() that
-  // modifies it. This is needed to work around ShelfView's problem with const
-  // correctness around CalculateIdealBounds() method.
-  views::ViewModel* view_model() const { return view_model_.get(); }
 
   void set_first_visible_index(int index) { first_visible_index_ = index; }
   void set_last_visible_index(int index) { last_visible_index_ = index; }
@@ -387,7 +382,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // This method determines which centering strategy is adequate, returns that,
   // and sets the |first_visible_index_| and |last_visible_index_| fields
   // appropriately.
-  AppCenteringStrategy CalculateAppCenteringStrategy() const;
+  AppCenteringStrategy CalculateAppCenteringStrategy();
   void LayoutOverflowButton() const;
 
   // Returns the index of the last view whose max primary axis coordinate is
@@ -575,11 +570,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // * 1 (app list button) for the main shelf when tablet mode is off
   // * > 1 when this shelf view is the overflow shelf view and only shows a
   //   subset of items.
-  mutable int first_visible_index_ = 0;
+  int first_visible_index_ = 0;
 
   // Last index of a launcher button that is visible (does not go into
   // overflow).
-  mutable int last_visible_index_ = -1;
+  int last_visible_index_ = -1;
 
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
