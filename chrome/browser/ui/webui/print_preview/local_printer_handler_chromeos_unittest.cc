@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
+#include "chrome/browser/chromeos/printing/printing_stubs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -72,21 +73,11 @@ Printer CreateEnterprisePrinter(const std::string& id,
   return printer;
 }
 
-class FakeCupsPrintersManager : public CupsPrintersManager {
+class TestCupsPrintersManager : public chromeos::StubCupsPrintersManager {
  public:
-  FakeCupsPrintersManager() = default;
-  ~FakeCupsPrintersManager() override = default;
-
   std::vector<Printer> GetPrinters(PrinterClass printer_class) const override {
     return printers_.Get(printer_class);
   }
-
-  void SavePrinter(const Printer& printer) override {}
-  void RemoveSavedPrinter(const std::string& printer_id) override {}
-  void AddObserver(CupsPrintersManager::Observer* observer) override {}
-  void RemoveObserver(CupsPrintersManager::Observer* observer) override {}
-  void PrinterInstalled(const Printer& printer, bool is_automatic) override {}
-  void RecordSetupAbandoned(const Printer& printer) override {}
 
   bool IsPrinterInstalled(const Printer& printer) const override {
     return installed_.contains(printer.id());
@@ -109,7 +100,7 @@ class FakeCupsPrintersManager : public CupsPrintersManager {
   base::flat_set<std::string> installed_;
 };
 
-class FakePrinterConfigurer : public PrinterConfigurer {
+class TestPrinterConfigurer : public chromeos::StubPrinterConfigurer {
  public:
   void SetUpPrinter(const Printer& printer,
                     PrinterSetupCallback callback) override {
@@ -140,7 +131,7 @@ class LocalPrinterHandlerChromeosTest : public testing::Test {
     PrintBackend::SetPrintBackendForTesting(test_backend_.get());
     local_printer_handler_ = LocalPrinterHandlerChromeos::CreateForTesting(
         &profile_, nullptr, &printers_manager_,
-        std::make_unique<FakePrinterConfigurer>());
+        std::make_unique<TestPrinterConfigurer>());
   }
 
  protected:
@@ -149,7 +140,7 @@ class LocalPrinterHandlerChromeosTest : public testing::Test {
   // Must outlive |printers_manager_|.
   TestingProfile profile_;
   scoped_refptr<TestPrintBackend> test_backend_;
-  FakeCupsPrintersManager printers_manager_;
+  TestCupsPrintersManager printers_manager_;
   std::unique_ptr<LocalPrinterHandlerChromeos> local_printer_handler_;
 
  private:
