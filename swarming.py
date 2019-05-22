@@ -108,6 +108,7 @@ Containment = collections.namedtuple(
     'Containment',
     [
       'lower_priority',
+      'containment_type',
     ])
 
 
@@ -981,6 +982,11 @@ def add_trigger_options(parser):
   parser.add_option(
       '--lower-priority', action='store_true',
       help='Lowers the child process priority')
+  containment_choices = ('NONE', 'AUTO', 'JOB_OBJECT')
+  parser.add_option(
+      '--containment-type', default='NONE', metavar='NONE',
+      choices=containment_choices,
+      help='Containment to use; one of: %s' % ', '.join(containment_choices))
   group.add_option(
       '--raw-cmd', action='store_true', default=False,
       help='When set, the command after -- is used as-is without run_isolated. '
@@ -1151,6 +1157,7 @@ def process_trigger_options(parser, options, args):
       command=command,
       containment=Containment(
         lower_priority=bool(options.lower_priority),
+        containment_type=options.containment_type,
       ),
       relative_cwd=options.relative_cwd,
       dimensions=orig_dims,
