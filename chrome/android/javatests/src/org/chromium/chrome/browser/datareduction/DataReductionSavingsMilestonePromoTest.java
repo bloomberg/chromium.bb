@@ -12,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -38,7 +37,6 @@ public class DataReductionSavingsMilestonePromoTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        ContextUtils.getAppSharedPreferences().edit().clear().apply();
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 

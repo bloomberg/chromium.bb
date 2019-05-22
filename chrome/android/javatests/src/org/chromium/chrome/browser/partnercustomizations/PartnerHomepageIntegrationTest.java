@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.partnercustomizations;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
@@ -22,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -63,13 +61,6 @@ public class PartnerHomepageIntegrationTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // TODO(newt): Remove this once SharedPreferences is cleared automatically at the
-            // beginning of every test. http://crbug.com/441859
-            SharedPreferences sp = ContextUtils.getAppSharedPreferences();
-            sp.edit().clear().apply();
-        });
-
         mActivityTestRule.startMainActivityFromLauncher();
     }
 
