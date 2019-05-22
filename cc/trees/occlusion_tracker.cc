@@ -341,6 +341,9 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
   if (layer->Is3dSorted())
     return;
 
+  if (!layer->draw_properties().rounded_corner_bounds.IsEmpty())
+    return;
+
   SimpleEnclosedRegion opaque_layer_region = layer->VisibleOpaqueRegion();
   if (opaque_layer_region.IsEmpty())
     return;

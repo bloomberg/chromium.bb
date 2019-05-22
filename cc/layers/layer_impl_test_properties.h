@@ -70,6 +70,7 @@ struct CC_EXPORT LayerImplTestProperties {
   bool user_scrollable_vertical = true;
   OverscrollBehavior overscroll_behavior;
   base::Optional<SnapContainerData> snap_container_data;
+  gfx::RRectF rounded_corner_bounds;
 };
 
 }  // namespace cc

@@ -207,7 +207,7 @@ static bool HasRoundedCorner(Layer* layer) {
 }
 
 static bool HasRoundedCorner(LayerImpl* layer) {
-  return false;
+  return !layer->test_properties()->rounded_corner_bounds.IsEmpty();
 }
 
 static gfx::RRectF RoundedCornerBounds(Layer* layer) {
@@ -216,7 +216,7 @@ static gfx::RRectF RoundedCornerBounds(Layer* layer) {
 }
 
 static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {
-  return gfx::RRectF();
+  return layer->test_properties()->rounded_corner_bounds;
 }
 
 static PictureLayer* MaskLayer(Layer* layer) {

@@ -166,17 +166,6 @@ class OcclusionTrackerTest : public testing::Test {
     return layer_ptr;
   }
 
-  LayerImpl* CreateMaskLayer(LayerImpl* owning_layer, const gfx::Size& bounds) {
-    LayerTreeImpl* tree = host_->host_impl()->active_tree();
-    int id = next_layer_impl_id_++;
-    std::unique_ptr<TestContentLayerImpl> layer(
-        new TestContentLayerImpl(tree, id));
-    TestContentLayerImpl* layer_ptr = layer.get();
-    SetProperties(layer_ptr, identity_matrix, gfx::PointF(), bounds);
-    SetMask(owning_layer, std::move(layer));
-    return layer_ptr;
-  }
-
   TestContentLayerImpl* CreateDrawingSurface(LayerImpl* parent,
                                              const gfx::Transform& transform,
                                              const gfx::PointF& position,
@@ -905,6 +894,11 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest {
         parent, layer_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500),
         true);
 
+    gfx::Transform rounded_corner_transform;
+    TestContentLayerImpl* rounded_corner_layer = this->CreateDrawingLayer(
+        parent, rounded_corner_transform, gfx::PointF(30.f, 30.f),
+        gfx::Size(500, 500), true);
+
     blur_layer->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(10.f));
@@ -920,9 +914,18 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest {
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     opacity_layer->test_properties()->filters = filters;
 
+    rounded_corner_layer->test_properties()->rounded_corner_bounds =
+        gfx::RRectF(1, 2, 3, 4, 5, 6);
+
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 1000, 1000));
+
+    // Rounded corners won't contribute to occlusion.
+    this->EnterLayer(rounded_corner_layer, &occlusion);
+    EXPECT_TRUE(occlusion.occlusion_from_outside_target().IsEmpty());
+    EXPECT_TRUE(occlusion.occlusion_from_inside_target().IsEmpty());
+    this->LeaveLayer(rounded_corner_layer, &occlusion);
 
     // Opacity layer won't contribute to occlusion.
     this->VisitLayer(opacity_layer, &occlusion);
