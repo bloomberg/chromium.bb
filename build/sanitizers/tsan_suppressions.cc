@@ -30,9 +30,6 @@ char kTSanDefaultSuppressions[] =
     // Data race on WatchdogCounter [test-only].
     "race:base/threading/watchdog_unittest.cc\n"
 
-    // Races in libevent, http://crbug.com/23244.
-    "race:libevent/event.c\n"
-
     // Data race caused by swapping out the network change notifier with a mock
     // [test-only]. http://crbug.com/927330.
     "race:content/browser/net_info_browsertest.cc\n"
@@ -198,6 +195,23 @@ char kTSanDefaultSuppressions[] =
 
     // http://crbug.com/927330
     "race:net::(anonymous namespace)::g_network_change_notifier\n"
+
+    // https://crbug.com/965717
+    "race:base::internal::ThreadPoolImplTest_"
+    "FileDescriptorWatcherNoOpsAfterShutdown_Test::TestBody\n"
+
+    // https://crbug.com/965719
+    "race:content::ClearSiteDataHandlerBrowserTest::HandleRequest\n"
+
+    // https://crbug.com/965722
+    "race:content::(anonymous namespace)::CorruptDBRequestHandler\n"
+
+    // https://crbug.com/965724
+    "race:content::NetworkServiceRestartBrowserTest::MonitorRequest\n"
+
+    // https://crbug.com/965726
+    "race:content::RenderFrameHostManagerUnloadBrowserTest::"
+    "MonitorResourceRequest\n"
 
     // End of suppressions.
     ;  // Please keep this semicolon.
