@@ -1916,9 +1916,10 @@ void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
                    blk_row);
 }
 
-static void update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                 int blk_row, int blk_col, int plane,
-                                 TX_SIZE tx_size, FRAME_COUNTS *counts,
+static void update_tx_type_count(const AV1_COMP *cpi, const AV1_COMMON *cm,
+                                 MACROBLOCKD *xd, int blk_row, int blk_col,
+                                 int plane, TX_SIZE tx_size,
+                                 FRAME_COUNTS *counts,
                                  uint8_t allow_update_cdf) {
   MB_MODE_INFO *mbmi = xd->mi[0];
   int is_inter = is_inter_block(mbmi);
@@ -1929,8 +1930,23 @@ static void update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   // Only y plane's tx_type is updated
   if (plane > 0) return;
-  TX_TYPE tx_type = av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col, tx_size,
-                                    cm->reduced_tx_set_used);
+  const TX_TYPE tx_type = av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col,
+                                          tx_size, cm->reduced_tx_set_used);
+  if (is_inter) {
+    if (cpi->oxcf.use_inter_dct_only) {
+      assert(tx_type == DCT_DCT);
+    }
+  } else {
+    if (cpi->oxcf.use_intra_dct_only) {
+      assert(tx_type == DCT_DCT);
+    } else if (cpi->oxcf.use_intra_default_tx_only) {
+      const TX_TYPE default_type = get_default_tx_type(
+          PLANE_TYPE_Y, xd, tx_size, cpi->is_screen_content_type);
+      (void)default_type;
+      assert(tx_type == default_type);
+    }
+  }
+
   if (get_ext_tx_types(tx_size, is_inter, cm->reduced_tx_set_used) > 1 &&
       cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
@@ -2027,8 +2043,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   av1_txb_init_levels(tcoeff, width, height, levels);
-  update_tx_type_count(cm, xd, blk_row, blk_col, plane, tx_size, td->counts,
-                       allow_update_cdf);
+  update_tx_type_count(cpi, cm, xd, blk_row, blk_col, plane, tx_size,
+                       td->counts, allow_update_cdf);
 
   const PLANE_TYPE plane_type = pd->plane_type;
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,

@@ -4701,7 +4701,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
   pmi->palette_size[0] = 0;
 
-  if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
+  if (cpi->sf.tx_type_search.fast_intra_tx_type_search ||
+      cpi->oxcf.use_intra_default_tx_only)
     x->use_default_intra_tx_type = 1;
   else
     x->use_default_intra_tx_type = 0;
@@ -4785,7 +4786,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   // If previous searches use only the default tx type, do an extra search for
   // the best tx type.
-  if (x->use_default_intra_tx_type) {
+  if (cpi->sf.tx_type_search.fast_intra_tx_type_search &&
+      !cpi->oxcf.use_intra_default_tx_only) {
     *mbmi = best_mbmi;
     x->use_default_intra_tx_type = 0;
     intra_block_yrd(cpi, x, bsize, bmode_costs, &best_rd, rate, rate_tokenonly,
@@ -11071,9 +11073,10 @@ static void sf_refine_fast_tx_type_search(
   const int num_planes = av1_num_planes(cm);
 
   if (xd->lossless[mbmi->segment_id] == 0 && best_mode_index >= 0 &&
-      ((sf->tx_type_search.fast_inter_tx_type_search == 1 &&
-        is_inter_mode(best_mbmode->mode)) ||
-       (sf->tx_type_search.fast_intra_tx_type_search == 1 &&
+      ((sf->tx_type_search.fast_inter_tx_type_search &&
+        !cpi->oxcf.use_inter_dct_only && is_inter_mode(best_mbmode->mode)) ||
+       (sf->tx_type_search.fast_intra_tx_type_search &&
+        !cpi->oxcf.use_intra_default_tx_only && !cpi->oxcf.use_intra_dct_only &&
         !is_inter_mode(best_mbmode->mode)))) {
     int skip_blk = 0;
     RD_STATS rd_stats_y, rd_stats_uv;
