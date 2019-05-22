@@ -15,18 +15,18 @@
 
 namespace {
 
-constexpr char kDeviceNameKey[] = "name";
-constexpr char kGuidKey[] = "guid";
+constexpr char kHidDeviceNameKey[] = "name";
+constexpr char kHidGuidKey[] = "guid";
 
 base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
   base::Value value(base::Value::Type::DICTIONARY);
-  value.SetStringKey(kDeviceNameKey, device.product_name);
+  value.SetStringKey(kHidDeviceNameKey, device.product_name);
   // The GUID is a temporary ID created on connection that remains valid until
   // the device is disconnected. Ephemeral permissions are keyed by this ID and
   // must be granted again each time the device is connected.
   // TODO(crbug.com/958918): Extract a persistent identifier to allow device
   // permissions to be retained after the device is disconnected.
-  value.SetStringKey(kGuidKey, device.guid);
+  value.SetStringKey(kHidGuidKey, device.guid);
   return value;
 }
 
@@ -42,18 +42,18 @@ HidChooserContext::~HidChooserContext() = default;
 
 // static
 std::string HidChooserContext::GetObjectName(const base::Value& object) {
-  const std::string* name = object.FindStringKey(kDeviceNameKey);
+  const std::string* name = object.FindStringKey(kHidDeviceNameKey);
   DCHECK(name);
   return *name;
 }
 
 bool HidChooserContext::IsValidObject(const base::Value& object) {
   if (!object.is_dict() || object.DictSize() != 2 ||
-      !object.FindStringKey(kDeviceNameKey)) {
+      !object.FindStringKey(kHidDeviceNameKey)) {
     return false;
   }
 
-  const std::string* guid = object.FindStringKey(kGuidKey);
+  const std::string* guid = object.FindStringKey(kHidGuidKey);
   return guid && !guid->empty();
 }
 
@@ -126,7 +126,7 @@ void HidChooserContext::RevokeObjectPermission(
   std::set<std::string>& devices = origin_it->second;
 
   DCHECK(IsValidObject(object));
-  devices.erase(*object.FindStringKey(kGuidKey));
+  devices.erase(*object.FindStringKey(kHidGuidKey));
   NotifyPermissionRevoked(requesting_origin, embedding_origin);
 }
 
