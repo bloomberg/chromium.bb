@@ -163,6 +163,40 @@ void BackdropController::UpdateBackdrop() {
   container_->StackChildAbove(window, backdrop_window_);
 }
 
+aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
+  const aura::Window::Windows windows = container_->children();
+  for (auto window_iter = windows.rbegin(); window_iter != windows.rend();
+       ++window_iter) {
+    aura::Window* window = *window_iter;
+    if (window == backdrop_window_)
+      continue;
+
+    if (window->type() != aura::client::WINDOW_TYPE_NORMAL)
+      continue;
+
+    auto* window_state = wm::GetWindowState(window);
+    if (window_state->IsMinimized())
+      continue;
+
+    // No need to check the visibility or the activateability of the window if
+    // this is an inactive desk's container.
+    if (!desks_util::IsDeskContainer(container_) ||
+        desks_util::IsActiveDeskContainer(container_)) {
+      if (!window->layer()->GetTargetVisibility())
+        continue;
+
+      if (!::wm::CanActivateWindow(window))
+        continue;
+    }
+
+    if (!WindowShouldHaveBackdrop(window))
+      continue;
+
+    return window;
+  }
+  return nullptr;
+}
+
 void BackdropController::OnSplitViewModeStarting() {
   Shell::Get()->split_view_controller()->AddObserver(this);
 }
@@ -249,40 +283,6 @@ void BackdropController::UpdateAccessibilityMode() {
     backdrop_window_->SetTargetHandler(original_event_handler_);
     backdrop_event_handler_.reset();
   }
-}
-
-aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
-  const aura::Window::Windows windows = container_->children();
-  for (auto window_iter = windows.rbegin(); window_iter != windows.rend();
-       ++window_iter) {
-    aura::Window* window = *window_iter;
-    if (window == backdrop_window_)
-      continue;
-
-    if (window->type() != aura::client::WINDOW_TYPE_NORMAL)
-      continue;
-
-    auto* window_state = wm::GetWindowState(window);
-    if (window_state->IsMinimized())
-      continue;
-
-    // No need to check the visibility or the activateability of the window if
-    // this is an inactive desk's container.
-    if (!desks_util::IsDeskContainer(container_) ||
-        desks_util::IsActiveDeskContainer(container_)) {
-      if (!window->layer()->GetTargetVisibility())
-        continue;
-
-      if (!::wm::CanActivateWindow(window))
-        continue;
-    }
-
-    if (!WindowShouldHaveBackdrop(window))
-      continue;
-
-    return window;
-  }
-  return nullptr;
 }
 
 bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {

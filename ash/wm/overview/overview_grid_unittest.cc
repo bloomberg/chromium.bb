@@ -8,13 +8,18 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -183,6 +188,34 @@ TEST_F(OverviewGridTest, SelectedWindow) {
   CheckAnimationStates({window1.get(), window2.get(), window3.get()},
                        target_bounds, {true, true, true}, {false, false, true},
                        base::make_optional(2u));
+}
+
+TEST_F(OverviewGridTest, WindowWithBackdrop) {
+  // Create one non resizable window and one normal window and verify that the
+  // backdrop shows over the non resizable window, and that normal window
+  // becomes maximized upon entering tablet mode.
+  auto window1 = CreateTestWindow(gfx::Rect(100, 100));
+  auto window2 = CreateTestWindow(gfx::Rect(400, 400));
+  window1->SetProperty(aura::client::kResizeBehaviorKey,
+                       ws::mojom::kResizeBehaviorNone);
+  ::wm::ActivateWindow(window1.get());
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  BackdropController* backdrop_controller =
+      GetWorkspaceControllerForContext(window1.get())
+          ->layout_manager()
+          ->backdrop_controller();
+  EXPECT_EQ(window1.get(), backdrop_controller->GetTopmostWindowWithBackdrop());
+  EXPECT_TRUE(backdrop_controller->backdrop_window());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMaximized());
+
+  // Tests that the second window despite being larger than the first window
+  // does not animate as it is hidden behind the backdrop. On exit, it still
+  // animates as the backdrop is not visible yet.
+  std::vector<gfx::RectF> target_bounds = {gfx::RectF(100.f, 100.f),
+                                           gfx::RectF(100.f, 100.f)};
+  CheckAnimationStates({window1.get(), window2.get()}, target_bounds,
+                       {true, false}, {true, true});
 }
 
 }  // namespace ash

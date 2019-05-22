@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_observer.h"
+#include "ash/ash_export.h"
 #include "ash/public/cpp/split_view.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
@@ -38,11 +39,11 @@ class BackdropDelegate;
 // 1) Has a aura::client::kHasBackdrop property = true.
 // 2) BackdropDelegate::HasBackdrop(aura::Window* window) returns true.
 // 3) Active ARC window when the spoken feedback is enabled.
-class BackdropController : public AccessibilityObserver,
-                           public ShellObserver,
-                           public OverviewObserver,
-                           public SplitViewObserver,
-                           public WallpaperControllerObserver {
+class ASH_EXPORT BackdropController : public AccessibilityObserver,
+                                      public ShellObserver,
+                                      public OverviewObserver,
+                                      public SplitViewObserver,
+                                      public WallpaperControllerObserver {
  public:
   explicit BackdropController(aura::Window* container);
   ~BackdropController() override;
@@ -59,6 +60,9 @@ class BackdropController : public AccessibilityObserver,
   // Update the visibility of, and restack the backdrop relative to
   // the other windows in the container.
   void UpdateBackdrop();
+
+  // Returns the current visible top level window in the container.
+  aura::Window* GetTopmostWindowWithBackdrop();
 
   aura::Window* backdrop_window() { return backdrop_window_; }
 
@@ -90,9 +94,6 @@ class BackdropController : public AccessibilityObserver,
   void UpdateAccessibilityMode();
 
   void Layout();
-
-  // Returns the current visible top level window in the container.
-  aura::Window* GetTopmostWindowWithBackdrop();
 
   bool WindowShouldHaveBackdrop(aura::Window* window);
 

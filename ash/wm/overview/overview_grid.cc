@@ -40,6 +40,9 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/i18n/string_search.h"
 #include "base/numerics/ranges.h"
@@ -51,7 +54,6 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -1068,12 +1070,27 @@ void OverviewGrid::CalculateWindowListAnimationStates(
     gfx::Rect src_bounds_temp =
         minimized ? gfx::Rect()
                   : items[i]->GetWindow()->GetBoundsInRootWindow();
-    // On exiting overview, |GetBoundsInRootWindow| will have the overview
-    // translation applied to it, so undo it to get the true target bounds.
-    if (!src_bounds_temp.IsEmpty() && transition == OverviewTransition::kExit) {
-      const gfx::Vector2dF offset =
-          -items[i]->GetWindow()->transform().To2dTranslation();
-      src_bounds_temp.Offset(gfx::ToCeiledVector2d(offset));
+    if (!src_bounds_temp.IsEmpty()) {
+      if (transition == OverviewTransition::kEnter &&
+          Shell::Get()
+              ->tablet_mode_controller()
+              ->IsTabletModeWindowManagerEnabled()) {
+        BackdropController* backdrop_controller =
+            GetActiveWorkspaceController(root_window_)
+                ->layout_manager()
+                ->backdrop_controller();
+        if (backdrop_controller->GetTopmostWindowWithBackdrop() ==
+            items[i]->GetWindow()) {
+          src_bounds_temp = screen_util::GetDisplayWorkAreaBoundsInParent(
+              items[i]->GetWindow());
+        }
+      } else if (transition == OverviewTransition::kExit) {
+        // On exiting overview, |GetBoundsInRootWindow()| will have the overview
+        // translation applied to it, so use |bounds()| and
+        // |ConvertRectToScreen()| to get the true target bounds.
+        src_bounds_temp = items[i]->GetWindow()->bounds();
+        ::wm::ConvertRectToScreen(items[i]->root_window(), &src_bounds_temp);
+      }
     }
     SkIRect src_bounds = gfx::RectToSkIRect(src_bounds_temp);
     SkIRect dst_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(
