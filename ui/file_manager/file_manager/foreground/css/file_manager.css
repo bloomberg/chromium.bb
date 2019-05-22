@@ -141,7 +141,7 @@ div.splitter {
   padding: 0 3px;
 }
 
-.tree-item > .tree-row {
+.tree-item > .ejectable {
   position: inherit;
 }
 

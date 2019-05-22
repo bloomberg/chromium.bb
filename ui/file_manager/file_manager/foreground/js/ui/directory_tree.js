@@ -667,6 +667,11 @@ class DirectoryItem extends cr.ui.TreeItem {
     // Mark the row as ejectable (for CSS styling positioning).
     rowElement.classList.add('ejectable');
 
+    // Disable paper-ripple on this rowElement, crbug.com/965382.
+    const rowRipple = rowElement.querySelector('paper-ripple');
+    if (rowRipple) {
+      rowRipple.setAttribute('style', 'visibility:hidden');
+    }
     // Add paper-ripple effect on the eject button.
     const ripple = cr.doc.createElement('paper-ripple');
     ripple.setAttribute('fit', '');
