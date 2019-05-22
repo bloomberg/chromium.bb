@@ -169,6 +169,22 @@ bool IsOffscreen(const Node* node) {
   return RectInViewport(*node).IsEmpty();
 }
 
+ScrollableArea* ScrollableAreaFor(const Node* node) {
+  if (node->IsDocumentNode()) {
+    LocalFrameView* view = node->GetDocument().View();
+    if (!view)
+      return nullptr;
+
+    return view->GetScrollableArea();
+  }
+
+  LayoutObject* object = node->GetLayoutObject();
+  if (!object || !object->IsBox())
+    return nullptr;
+
+  return ToLayoutBox(object)->GetScrollableArea();
+}
+
 bool HasRemoteFrame(const Node* node) {
   auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node);
   if (!frame_owner_element)
@@ -180,12 +196,6 @@ bool HasRemoteFrame(const Node* node) {
 
 bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
   DCHECK(container);
-
-  if (!container->GetLayoutBox())
-    return false;
-
-  if (!container->GetLayoutBox()->GetScrollableArea())
-    return false;
 
   if (!CanScrollInDirection(container, direction))
     return false;
@@ -226,8 +236,9 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
   // that it returns a ScrollResult so we don't need to call
   // CanScrollInDirection(). Regular arrow-key scrolling (without
   // --enable-spatial-navigation) already uses smooth scrolling by default.
-  container->GetLayoutBox()->GetScrollableArea()->ScrollBy(ScrollOffset(dx, dy),
-                                                           kUserScroll);
+  ScrollableArea* scroller = ScrollableAreaFor(container);
+  DCHECK(scroller);
+  scroller->ScrollBy(ScrollOffset(dx, dy), kUserScroll);
   return true;
 }
 
@@ -248,17 +259,17 @@ static void DeflateIfOverlapped(LayoutRect& a, LayoutRect& b) {
 }
 
 bool IsScrollableNode(const Node* node) {
-  DCHECK(!node->IsDocumentNode());
-
   if (!node)
     return false;
 
-  if (LayoutObject* layout_object = node->GetLayoutObject())
-    return layout_object->IsBox() &&
-           ToLayoutBox(layout_object)->CanBeScrolledAndHasScrollableArea() &&
-           node->hasChildren();
+  if (node->IsDocumentNode())
+    return true;
 
-  return false;
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object || !layout_object->IsBox())
+    return false;
+
+  return ToLayoutBox(layout_object)->CanBeScrolledAndHasScrollableArea();
 }
 
 Node* ScrollableAreaOrDocumentOf(Node* node) {
@@ -280,8 +291,7 @@ bool IsScrollableAreaOrDocument(const Node* node) {
     return false;
 
   auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node);
-  return node->IsDocumentNode() ||
-         (frame_owner_element && frame_owner_element->ContentFrame()) ||
+  return (frame_owner_element && frame_owner_element->ContentFrame()) ||
          IsScrollableNode(node);
 }
 
@@ -294,6 +304,7 @@ bool CanScrollInDirection(const Node* container,
   if (!IsScrollableNode(container))
     return false;
 
+  DCHECK(container->GetLayoutObject());
   switch (direction) {
     case SpatialNavigationDirection::kLeft:
       return (container->GetLayoutObject()->Style()->OverflowX() !=
