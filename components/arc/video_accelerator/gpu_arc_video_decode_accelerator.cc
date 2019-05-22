@@ -70,10 +70,10 @@ arc::mojom::VideoDecodeAccelerator::Result ConvertErrorCode(
 
 // Return true iff |planes| is valid for a video frame located on |dmabuf_fd|
 // and of |pixel_format|.
-static bool VerifyDmabuf(media::VideoPixelFormat pixel_format,
-                         const gfx::Size& coded_size,
-                         int dmabuf_fd,
-                         const std::vector<arc::VideoFramePlane>& planes) {
+bool VerifyDmabuf(media::VideoPixelFormat pixel_format,
+                  const gfx::Size& coded_size,
+                  int dmabuf_fd,
+                  const std::vector<arc::VideoFramePlane>& planes) {
   const size_t num_planes = media::VideoFrame::NumPlanes(pixel_format);
   if (planes.size() != num_planes || num_planes == 0) {
     VLOGF(1) << "Invalid number of dmabuf planes passed: " << planes.size()
@@ -81,12 +81,9 @@ static bool VerifyDmabuf(media::VideoPixelFormat pixel_format,
     return false;
   }
 
-  off_t size = lseek(dmabuf_fd, 0, SEEK_END);
-  lseek(dmabuf_fd, 0, SEEK_SET);
-  if (size < 0) {
-    VPLOGF(1) << "Fail to find the size of dmabuf.";
+  size_t size;
+  if (!arc::GetFileSize(dmabuf_fd, &size))
     return false;
-  }
 
   for (size_t i = 0; i < planes.size(); ++i) {
     const auto& plane = planes[i];
@@ -95,7 +92,7 @@ static bool VerifyDmabuf(media::VideoPixelFormat pixel_format,
               << ", stride: " << plane.stride;
 
     size_t rows = media::VideoFrame::Rows(i, pixel_format, coded_size.height());
-    base::CheckedNumeric<off_t> current_size(plane.offset);
+    base::CheckedNumeric<size_t> current_size(plane.offset);
     current_size += base::CheckMul(plane.stride, rows);
 
     if (!current_size.IsValid() || current_size.ValueOrDie() > size) {
@@ -440,8 +437,15 @@ void GpuArcVideoDecodeAccelerator::Decode(
       return;
     }
   } else {
+    size_t handle_size;
+    if (!GetFileSize(handle_fd.get(), &handle_size)) {
+      client_->NotifyError(
+          mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
+      return;
+    }
+    LOG(ERROR) << handle_size;
     shm_handle = base::SharedMemoryHandle(
-        base::FileDescriptor(handle_fd.release(), true), 0u,
+        base::FileDescriptor(handle_fd.release(), true), handle_size,
         base::UnguessableToken::Create());
   }
 

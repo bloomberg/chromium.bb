@@ -214,6 +214,12 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
     return;
   }
 
+  size_t shmem_size;
+  if (!GetFileSize(fd.get(), &shmem_size)) {
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
   // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
   // TODO(rockot): This fd comes from a mojo::ScopedHandle in
   // GpuArcVideoService::BindSharedMemory. That should be passed through,
@@ -221,7 +227,7 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
   // TODO(rockot): Pass through a real size rather than |0|.
   base::UnguessableToken guid = base::UnguessableToken::Create();
   base::SharedMemoryHandle shm_handle(base::FileDescriptor(fd.release(), true),
-                                      0u, guid);
+                                      shmem_size, guid);
   use_bitstream_cbs_.emplace(bitstream_buffer_serial_, std::move(callback));
   accelerator_->UseOutputBitstreamBuffer(
       media::BitstreamBuffer(bitstream_buffer_serial_, shm_handle,
