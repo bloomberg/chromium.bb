@@ -72,7 +72,6 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
     virtual void ForwardKeyboardEventWithLatencyInfo(
         const NativeWebKeyboardEvent& event,
         const ui::LatencyInfo& latency,
-        ui::KeyEvent* original_key_event,
         bool* update_event) = 0;
     // Returns whether the widget needs to grab mouse capture to work properly.
     virtual bool NeedsMouseCapture() = 0;

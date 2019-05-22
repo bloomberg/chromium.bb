@@ -297,7 +297,7 @@ void RenderWidgetHostViewEventHandler::OnKeyEvent(ui::KeyEvent* event) {
       webkit_event.skip_in_browser = true;
 
     delegate_->ForwardKeyboardEventWithLatencyInfo(
-        webkit_event, *event->latency(), event, &mark_event_as_handled);
+        webkit_event, *event->latency(), &mark_event_as_handled);
   }
   if (mark_event_as_handled)
     event->SetHandled();

@@ -337,7 +337,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const override;
   void ForwardKeyboardEventWithLatencyInfo(const NativeWebKeyboardEvent& event,
                                            const ui::LatencyInfo& latency,
-                                           ui::KeyEvent* original_key_event,
                                            bool* update_event) override;
   RenderFrameHostImpl* GetFocusedFrame() const;
   bool NeedsMouseCapture() override;

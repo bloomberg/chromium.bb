@@ -6,6 +6,7 @@
 #define ASH_PUBLIC_CPP_PAGINATION_PAGINATION_CONTROLLER_H_
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"

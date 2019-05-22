@@ -1549,7 +1549,7 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
     const std::vector<EditCommand>& commands) {
   if (auto* widget_host = GetWidgetForKeyboardEvent()) {
     widget_host->ForwardKeyboardEventWithCommands(key_event, latency_info,
-                                                  &commands, nullptr);
+                                                  &commands);
   }
 }
 
