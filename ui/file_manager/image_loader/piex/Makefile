@@ -3,6 +3,10 @@
 # An IIFE https://developer.mozilla.org/en-US/docs/Glossary/IIFE is used to
 # wrap em++ compiler-generated JS code so it does not pollute |globalThis|.
 #
+# CFI sanitizer options are used to compile our WebAssembly, as recommended
+# by https://webassembly.org/docs/security/#memory-safety (for more details
+# about CFI see https://clang.llvm.org/docs/ControlFlowIntegrity.html).
+#
 PIEX = node_modules/piex
 
 PSRC = $(PIEX)/src/piex.cc \
@@ -15,7 +19,7 @@ PSRC = $(PIEX)/src/piex.cc \
 WAPI = ["cwrap"]
 
 INCS = -I $(PIEX) -I .
-WASM = -s WASM=1 -fno-exceptions -Wall
+WASM = -s WASM=1 -fno-exceptions -Wall -fsanitize=cfi -flto -fvisibility=hidden
 WOPT = -Os --llvm-opts 3 \
 	-s STRICT=1 \
 	-s ALLOW_MEMORY_GROWTH=1 \
