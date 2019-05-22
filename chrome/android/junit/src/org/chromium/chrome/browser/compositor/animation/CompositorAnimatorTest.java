@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.layouts.MockLayoutUpdateHost;
 import org.chromium.chrome.browser.util.MathUtils;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Unit tests for the {@link CompositorAnimator} class.
@@ -218,6 +219,46 @@ public final class CompositorAnimatorTest {
         mHandler.pushUpdate(5);
 
         assertEquals("The animated value is incorrect.", 100, animator.getAnimatedValue(),
+                MathUtils.EPSILON);
+
+        assertEquals(
+                "There should be no active animations.", 0, mHandler.getActiveAnimationCount());
+    }
+
+    @Test
+    public void testAnimationDynamicValue() {
+        CompositorAnimator animator = new CompositorAnimator(mHandler);
+        animator.setDuration(10);
+        final AtomicInteger startValue = new AtomicInteger(50);
+        final AtomicInteger endValue = new AtomicInteger(100);
+
+        animator.setValues(startValue::floatValue, endValue::floatValue);
+        LinearInterpolator interpolator = new LinearInterpolator();
+        animator.setInterpolator(interpolator);
+
+        animator.start();
+
+        assertEquals("The animated value is incorrect.", 50, animator.getAnimatedValue(),
+                MathUtils.EPSILON);
+
+        mHandler.pushUpdate(5);
+
+        assertEquals("The animated value is incorrect.", 75, animator.getAnimatedValue(),
+                MathUtils.EPSILON);
+
+        startValue.set(0);
+        endValue.set(20);
+        assertEquals("The animated value is incorrect.", 10, animator.getAnimatedValue(),
+                MathUtils.EPSILON);
+
+        mHandler.pushUpdate(5);
+
+        assertEquals("The animated value is incorrect.", 20, animator.getAnimatedValue(),
+                MathUtils.EPSILON);
+
+        startValue.set(200);
+        endValue.set(300);
+        assertEquals("The animated value is incorrect.", 300, animator.getAnimatedValue(),
                 MathUtils.EPSILON);
 
         assertEquals(

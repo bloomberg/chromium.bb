@@ -20,6 +20,7 @@ import android.view.animation.LinearInterpolator;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 
 import java.lang.annotation.Retention;
@@ -82,10 +83,10 @@ public class CompositorAnimator extends Animator {
     private float mAnimatedFraction;
 
     /** The value that the animation should start with (ending at {@link #mEndValue}). */
-    private float mStartValue;
+    private Supplier<Float> mStartValue;
 
     /** The value that the animation will transition to (starting at {@link #mStartValue}). */
-    private float mEndValue;
+    private Supplier<Float> mEndValue;
 
     /** The duration of the animation in ms. */
     private long mDurationMs;
@@ -173,6 +174,27 @@ public class CompositorAnimator extends Animator {
                 DECELERATE_INTERPOLATOR);
     }
 
+    /**
+     * A utility for creating a basic animator.
+     * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
+     * @param target The object to modify.
+     * @param property The property of the object to modify.
+     * @param startValue The {@link Supplier} of the starting animation value.
+     * @param endValue The {@link Supplier} of the end animation value.
+     * @param durationMs The duration of the animation in ms.
+     * @return A {@link CompositorAnimator} for the property.
+     */
+    public static <T> CompositorAnimator ofFloatProperty(CompositorAnimationHandler handler,
+            final T target, final FloatProperty<T> property, Supplier<Float> startValue,
+            Supplier<Float> endValue, long durationMs) {
+        CompositorAnimator animator = new CompositorAnimator(handler);
+        animator.setValues(startValue, endValue);
+        animator.setDuration(durationMs);
+        animator.addUpdateListener(
+                (CompositorAnimator a) -> property.setValue(target, a.getAnimatedValue()));
+        return animator;
+    }
+
     /** An interface for listening for frames of an animation. */
     public interface AnimatorUpdateListener {
         /**
@@ -194,8 +216,7 @@ public class CompositorAnimator extends Animator {
         mTimeInterpolator = DECELERATE_INTERPOLATOR;
 
         // By default, animate for 0 to 1.
-        mStartValue = 0;
-        mEndValue = 1;
+        setValues(0, 1);
 
         // Try to update from the system setting, but not too frequently.
         sDurationScale = Settings.Global.getFloat(getApplicationContext().getContentResolver(),
@@ -272,6 +293,16 @@ public class CompositorAnimator extends Animator {
      * @param end The value to end the animation at.
      */
     void setValues(float start, float end) {
+        setValues(() -> start, () -> end);
+    }
+
+    /**
+     * Set the values to animate between.
+     * @param start The value to begin the animation with.
+     * @param end The value to end the animation at.
+     */
+    @VisibleForTesting
+    void setValues(Supplier<Float> start, Supplier<Float> end) {
         mStartValue = start;
         mEndValue = end;
     }
@@ -280,7 +311,7 @@ public class CompositorAnimator extends Animator {
      * @return The current value between the floats set by {@link #setValues(float, float)}.
      */
     public float getAnimatedValue() {
-        return mStartValue + (getAnimatedFraction() * (mEndValue - mStartValue));
+        return mStartValue.get() + (getAnimatedFraction() * (mEndValue.get() - mStartValue.get()));
     }
 
     @Override
