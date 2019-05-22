@@ -5,47 +5,132 @@
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/modules/xr/xr_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
 
+// Rough estimate of avg human eye height in meters.
+const double kDefaultEmulationHeight = 1.6;
+
 // origin offset starts as identity transform
-XRReferenceSpace::XRReferenceSpace(XRSession* session)
-    : XRReferenceSpace(
-          session,
-          MakeGarbageCollected<XRRigidTransform>(nullptr, nullptr)) {}
+XRReferenceSpace::XRReferenceSpace(XRSession* session, Type type)
+    : XRReferenceSpace(session,
+                       MakeGarbageCollected<XRRigidTransform>(nullptr, nullptr),
+                       type) {}
 
 XRReferenceSpace::XRReferenceSpace(XRSession* session,
-                                   XRRigidTransform* origin_offset)
-    : XRSpace(session), origin_offset_(origin_offset) {}
+                                   XRRigidTransform* origin_offset,
+                                   Type type)
+    : XRSpace(session), origin_offset_(origin_offset), type_(type) {}
 
 XRReferenceSpace::~XRReferenceSpace() = default;
 
+XRPose* XRReferenceSpace::getPose(
+    XRSpace* other_space,
+    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+  if (type_ == kTypeViewer) {
+    std::unique_ptr<TransformationMatrix> viewer_pose_matrix =
+        other_space->GetViewerPoseMatrix(std::move(base_pose_matrix));
+    if (!viewer_pose_matrix) {
+      return nullptr;
+    }
+    return MakeGarbageCollected<XRPose>(std::move(viewer_pose_matrix),
+                                        session()->EmulatedPosition());
+  } else {
+    return XRSpace::getPose(other_space, std::move(base_pose_matrix));
+  }
+}
+
+void XRReferenceSpace::UpdateFloorLevelTransform() {
+  const device::mojom::blink::VRDisplayInfoPtr& display_info =
+      session()->GetVRDisplayInfo();
+
+  if (display_info && display_info->stageParameters) {
+    // Use the transform given by xrDisplayInfo's stageParameters if available.
+    const WTF::Vector<float>& m =
+        display_info->stageParameters->standingTransform;
+    floor_level_transform_ = std::make_unique<TransformationMatrix>(
+        m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
+        m[11], m[12], m[13], m[14], m[15]);
+  } else {
+    // Otherwise, create a transform based on the default emulated height.
+    floor_level_transform_ = std::make_unique<TransformationMatrix>();
+    floor_level_transform_->Translate3d(0, kDefaultEmulationHeight, 0);
+  }
+
+  display_info_id_ = session()->DisplayInfoPtrId();
+}
+
 // Returns a default pose if no base pose is available. Only applicable to
-// identity reference spaces.
+// viewer reference spaces.
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultPose() {
-  // An identity reference space always returns an identity matrix.
-  return std::make_unique<TransformationMatrix>();
+  // A viewer reference space always returns an identity matrix.
+  return type_ == kTypeViewer ? std::make_unique<TransformationMatrix>()
+                              : nullptr;
 }
 
 // Transforms a given pose from a "base" reference space used by the XR
 // service to the space represenced by this reference space.
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBasePose(
     const TransformationMatrix& base_pose) {
-  // Always return the default pose because we will only get here for an
-  // "identity" reference space.
-  return DefaultPose();
+  switch (type_) {
+    case kTypeLocal:
+      // Currently all base poses are 'local' poses, so return directly.
+      return std::make_unique<TransformationMatrix>(base_pose);
+      break;
+    case kTypeLocalFloor:
+      // Currently all base poses are 'local' space, so use of 'local-floor'
+      // reference spaces requires adjustment. Ideally the service will
+      // eventually provide poses in the requested space directly, avoiding the
+      // need to do additional transformation here.
+
+      // Check first to see if the xrDisplayInfo has updated since the last
+      // call. If so, update the floor-level transform.
+      if (display_info_id_ != session()->DisplayInfoPtrId())
+        UpdateFloorLevelTransform();
+
+      // Apply the floor-level transform to the base pose.
+      if (floor_level_transform_) {
+        auto pose =
+            std::make_unique<TransformationMatrix>(*floor_level_transform_);
+        pose->Multiply(base_pose);
+        return pose;
+      }
+      break;
+    case kTypeViewer:
+      // Always return the default pose because we will only get here for an
+      // "viewer" reference space.
+      return DefaultPose();
+    case kTypeUnbounded:
+      // For now we assume that poses returned by systems that support unbounded
+      // reference spaces are already in the correct space.
+      return std::make_unique<TransformationMatrix>(base_pose);
+    case kTypeBoundedFloor:
+      break;
+  }
+
+  return nullptr;
 }
 
 // Serves the same purpose as TransformBasePose, but for input poses. Needs to
-// know the head pose so that some cases can properly adjust the input's
-// relative position, but typically will be identical to TransformBasePose.
+// know the head pose so that cases like the viewer frame of reference can
+// properly adjust the input's relative position.
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBaseInputPose(
     const TransformationMatrix& base_input_pose,
     const TransformationMatrix& base_pose) {
-  return TransformBasePose(base_input_pose);
+  switch (type_) {
+    case kTypeViewer:
+    case kTypeLocal:
+    case kTypeLocalFloor:
+    case kTypeUnbounded:
+      return TransformBasePose(base_input_pose);
+    case kTypeBoundedFloor:
+      break;
+  }
+  return nullptr;
 }
 
 std::unique_ptr<TransformationMatrix>
@@ -86,7 +171,8 @@ XRReferenceSpace* XRReferenceSpace::getOffsetReferenceSpace(
 
 XRReferenceSpace* XRReferenceSpace::cloneWithOriginOffset(
     XRRigidTransform* origin_offset) {
-  return MakeGarbageCollected<XRReferenceSpace>(this->session(), origin_offset);
+  return MakeGarbageCollected<XRReferenceSpace>(this->session(), origin_offset,
+                                                type_);
 }
 
 void XRReferenceSpace::Trace(blink::Visitor* visitor) {
@@ -94,6 +180,11 @@ void XRReferenceSpace::Trace(blink::Visitor* visitor) {
   XRSpace::Trace(visitor);
 }
 
-void XRReferenceSpace::OnReset() {}
+void XRReferenceSpace::OnReset() {
+  if (type_ != kTypeViewer) {
+    DispatchEvent(
+        *XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
+  }
+}
 
 }  // namespace blink

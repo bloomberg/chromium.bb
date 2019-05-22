@@ -28,14 +28,10 @@
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
-#include "third_party/blink/renderer/modules/xr/xr_reference_space_options.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state_init.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
-#include "third_party/blink/renderer/modules/xr/xr_stationary_reference_space.h"
-#include "third_party/blink/renderer/modules/xr/xr_unbounded_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
-#include "third_party/blink/renderer/modules/xr/xr_viewer_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_information.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
@@ -50,9 +46,6 @@ namespace {
 const char kSessionEnded[] = "XRSession has already ended.";
 
 const char kUnknownReferenceSpace[] = "Unknown reference space type.";
-
-const char kSubtypeRequired[] =
-    "Subtype must be specified when requesting a stationary reference space.";
 
 const char kReferenceSpaceNotSupported[] =
     "This device does not support the requested reference space type.";
@@ -133,7 +126,6 @@ XRSession::XRSession(
               xr_->GetExecutionContext())),
       sensorless_session_(sensorless_session) {
   render_state_ = MakeGarbageCollected<XRRenderState>();
-  viewer_space_ = MakeGarbageCollected<XRViewerSpace>(this);
   blurred_ = !HasAppropriateFocus();
 
   switch (environment_blend_mode) {
@@ -150,10 +142,6 @@ XRSession::XRSession(
       NOTREACHED() << "Unknown environment blend mode: "
                    << environment_blend_mode;
   }
-}
-
-XRSpace* XRSession::viewerSpace() const {
-  return viewer_space_;
 }
 
 bool XRSession::immersive() const {
@@ -241,50 +229,31 @@ void XRSession::UpdateStageParameters(
   SetXRDisplayInfo(std::move(display_info));
 }
 
-ScriptPromise XRSession::requestReferenceSpace(
-    ScriptState* script_state,
-    const XRReferenceSpaceOptions* options) {
+ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
+                                               const String& type) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSessionEnded));
   }
 
-  if (sensorless_session_ && options->type() != "identity") {
+  if (sensorless_session_ && type != "viewer") {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                            kReferenceSpaceNotSupported));
   }
 
   XRReferenceSpace* reference_space = nullptr;
-  if (options->type() == "identity") {
-    reference_space = MakeGarbageCollected<XRReferenceSpace>(this);
-  } else if (options->type() == "stationary") {
-    if (!options->hasSubtype()) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               kSubtypeRequired));
-    }
-
-    XRStationaryReferenceSpace::Subtype subtype;
-
-    if (options->subtype() == "eye-level") {
-      subtype = XRStationaryReferenceSpace::kSubtypeEyeLevel;
-    } else if (options->subtype() == "floor-level") {
-      subtype = XRStationaryReferenceSpace::kSubtypeFloorLevel;
-    } else if (options->subtype() == "position-disabled") {
-      subtype = XRStationaryReferenceSpace::kSubtypePositionDisabled;
-    } else {
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               kSubtypeRequired));
-    }
-
-    reference_space =
-        MakeGarbageCollected<XRStationaryReferenceSpace>(this, subtype);
-  } else if (options->type() == "bounded") {
+  if (type == "viewer") {
+    reference_space = MakeGarbageCollected<XRReferenceSpace>(
+        this, XRReferenceSpace::Type::kTypeViewer);
+  } else if (type == "local") {
+    reference_space = MakeGarbageCollected<XRReferenceSpace>(
+        this, XRReferenceSpace::Type::kTypeLocal);
+  } else if (type == "local-floor") {
+    reference_space = MakeGarbageCollected<XRReferenceSpace>(
+        this, XRReferenceSpace::Type::kTypeLocalFloor);
+  } else if (type == "bounded-floor") {
     bool supports_bounded = false;
     if (immersive() && display_info_->stageParameters) {
       if (display_info_->stageParameters->bounds) {
@@ -303,9 +272,10 @@ ScriptPromise XRSession::requestReferenceSpace(
           DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                kReferenceSpaceNotSupported));
     }
-  } else if (options->type() == "unbounded") {
+  } else if (type == "unbounded") {
     if (immersive() && environment_integration_) {
-      reference_space = MakeGarbageCollected<XRUnboundedReferenceSpace>(this);
+      reference_space = MakeGarbageCollected<XRReferenceSpace>(
+          this, XRReferenceSpace::Type::kTypeUnbounded);
     } else {
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -1015,7 +985,6 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(render_state_);
   visitor->Trace(world_tracking_state_);
   visitor->Trace(world_information_);
-  visitor->Trace(viewer_space_);
   visitor->Trace(pending_render_state_);
   visitor->Trace(input_sources_);
   visitor->Trace(resize_observer_);

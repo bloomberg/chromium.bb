@@ -19,6 +19,8 @@ let fakeDeviceInitParams = { supportsImmersive:true };
 
 let requestSessionModes = ['immersive-vr'];
 
+let xrViewerSpace = null;
+
 let testFunction = function(session, t, fakeDeviceController) {
   let eventWatcher = new EventWatcher(
     t, session, ["selectstart", "select", "selectend", "watcherdone"]);
@@ -41,7 +43,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       // Frame is active but not an animation frame, so calling getPose is
       // allowed while getViewerPose is not.
       assert_throws('InvalidStateError', () => frame.getViewerPose(currentReferenceSpace));
-      let pose = frame.getPose(session.viewerSpace, currentReferenceSpace);
+      let pose = frame.getPose(xrViewerSpace, currentReferenceSpace);
       assert_not_equals(pose, null);
       assert_true(pose instanceof XRPose);
       assert_false(pose instanceof XRViewerPose);
@@ -89,20 +91,24 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   let currentReferenceSpace = null;
 
-  session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((referenceSpace) => {
-    currentReferenceSpace = referenceSpace;
+  session.requestReferenceSpace('viewer').then(function(viewerSpace) {
+    xrViewerSpace = viewerSpace;
 
-    // Press the primary input button and then release it a short time later.
-    session.requestAnimationFrame((time, xrFrame) => {
-      input_source.primaryInputPressed = true;
+    session.requestReferenceSpace('local').then((referenceSpace) => {
+      currentReferenceSpace = referenceSpace;
 
-        session.requestAnimationFrame((time, xrFrame) => {
-          input_source.primaryInputPressed = false;
+      // Press the primary input button and then release it a short time later.
+      session.requestAnimationFrame((time, xrFrame) => {
+        input_source.primaryInputPressed = true;
 
           session.requestAnimationFrame((time, xrFrame) => {
-            // Need to process one more frame to allow select to propegate.
+            input_source.primaryInputPressed = false;
+
+            session.requestAnimationFrame((time, xrFrame) => {
+              // Need to process one more frame to allow select to propegate.
+            });
           });
-        });
+      });
     });
   });
 

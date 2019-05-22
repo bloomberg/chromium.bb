@@ -15,7 +15,7 @@ namespace vr {
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
                        TestInlineIdentityAlwaysAvailable) {
   LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_inline_identity_available"));
+      GetFileUrlForHtmlTestFile("test_inline_viewer_available"));
   WaitOnJavaScriptStep();
   EndTest();
 }
@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
 #if BUILDFLAG(ENABLE_VR)
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestSensorless, TestSensorlessRejections) {
   LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_stationary_reference_space_rejects"));
+      GetFileUrlForHtmlTestFile("test_local_floor_reference_space_rejects"));
   WaitOnJavaScriptStep();
   EndTest();
 }

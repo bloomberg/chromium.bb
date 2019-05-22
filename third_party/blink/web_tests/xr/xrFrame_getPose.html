@@ -36,8 +36,8 @@ let testFunction = function(session, t, fakeDeviceController) {
     }]);
 
   return Promise.all([
-    session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }),
-    session.requestReferenceSpace({ type: "stationary", subtype: "floor-level" })
+    session.requestReferenceSpace('local'),
+    session.requestReferenceSpace('local-floor')
   ]).then((spaces) => new Promise((resolve) => {
     function onFrame(time, xrFrame) {
       // eye-level space starts out with originOffset = identity matrix

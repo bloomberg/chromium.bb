@@ -39,7 +39,7 @@ identity reference space
         session = xrSession;
 
         step = "requestReferenceSpace";
-        return xrSession.requestReferenceSpace({ type: 'identity' });
+        return xrSession.requestReferenceSpace('viewer');
       })
       .then((referenceSpace) => {
         assert_not_equals(referenceSpace, null);

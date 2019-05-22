@@ -38,7 +38,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       viewMatrix: VALID_VIEW_MATRIX
     }]);
 
-  return session.requestReferenceSpace({ type: "stationary", subtype: "floor-level" })
+  return session.requestReferenceSpace('local-floor')
     .then((referenceSpace) => new Promise((resolve, reject) => {
       function onFirstFrame(time, xrFrame) {
         // On the first frame where the pose has been initialized, the stage

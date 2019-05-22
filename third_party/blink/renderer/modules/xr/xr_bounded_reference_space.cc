@@ -12,12 +12,12 @@
 namespace blink {
 
 XRBoundedReferenceSpace::XRBoundedReferenceSpace(XRSession* session)
-    : XRReferenceSpace(session) {}
+    : XRReferenceSpace(session, Type::kTypeBoundedFloor) {}
 
 XRBoundedReferenceSpace::XRBoundedReferenceSpace(
     XRSession* session,
     XRRigidTransform* origin_offset)
-    : XRReferenceSpace(session, origin_offset) {}
+    : XRReferenceSpace(session, origin_offset, Type::kTypeBoundedFloor) {}
 
 XRBoundedReferenceSpace::~XRBoundedReferenceSpace() = default;
 

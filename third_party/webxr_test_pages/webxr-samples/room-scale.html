@@ -162,12 +162,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // up by a static height so that the scene still renders in
           // approximately the right place.
           console.log('Falling back to floor-level reference space');
-          return session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).catch((e) => {
+          return session.requestReferenceSpace('local-floor').catch((e) => {
             if (!session.mode.startsWith('immersive')) {
               // If we're in inline mode, our underlying platform may not support
               // the stationary reference space, but an identity space is guaranteed.
               console.log('Falling back to identity reference space');
-              return session.requestReferenceSpace({ type: 'identity' }).then((refSpace) => {
+              return session.requestReferenceSpace('viewer').then((refSpace) => {
                 // If we use an identity reference space we need to scoot the
                 // origin down a bit to put the camera at approximately the
                 // right level. (Here we're moving it 1.6 meters, which should

@@ -28,7 +28,7 @@ let testFunction = function() {
       outputContext: context
     });
 
-    return session.requestReferenceSpace({ type: 'identity' }).then(space => {
+    return session.requestReferenceSpace('viewer').then(space => {
       return new Promise(resolve => {
         counter = 0;
         request_frame_callback = (t, frame) => {

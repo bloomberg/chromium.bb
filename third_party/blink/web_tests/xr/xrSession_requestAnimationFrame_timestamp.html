@@ -40,7 +40,7 @@ let testFunction = function(session, t, fakeDeviceController) {
     viewMatrix: VALID_VIEW_MATRIX
   }]);
 
-  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" })
+  return session.requestReferenceSpace('local')
     .then((referenceSpace) => new Promise((resolve, reject) => {
       let counter = 0;
       let windowFrameTime = 0;

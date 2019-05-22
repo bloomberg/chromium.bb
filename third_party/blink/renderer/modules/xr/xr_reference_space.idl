@@ -5,10 +5,11 @@
 // https://immersive-web.github.io/webxr/#xrreferencespace-interface
 
 enum XRReferenceSpaceType {
-  "identity",
-  "stationary",
-  "bounded",
-  "unbounded"
+  "bounded-floor",
+  "local",
+  "local-floor",
+  "unbounded",
+  "viewer",
 };
 
 [

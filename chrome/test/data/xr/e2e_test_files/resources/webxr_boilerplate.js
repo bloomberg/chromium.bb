@@ -33,9 +33,9 @@ var sessionTypes = Object.freeze({
 var sessionTypeToRequest = sessionTypes.IMMERSIVE;
 
 var referenceSpaceMap = {
-  [sessionTypes.IMMERSIVE]: { type: 'stationary', subtype: 'eye-level' },
-  [sessionTypes.MAGIC_WINDOW]: { type: 'identity' },
-  [sessionTypes.AR]: { type: 'identity' }
+  [sessionTypes.IMMERSIVE]: 'local',
+  [sessionTypes.MAGIC_WINDOW]: 'viewer',
+  [sessionTypes.AR]: 'viewer'
 }
 
 class SessionInfo {

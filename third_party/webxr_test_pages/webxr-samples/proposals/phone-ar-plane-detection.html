@@ -260,7 +260,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           "planeDetectionState" : { "enabled" : true}
         });
 
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+        session.requestReferenceSpace('local').then((refSpace) => {
           xrRefSpace = refSpace;
           session.requestAnimationFrame(onXRFrame);
         });

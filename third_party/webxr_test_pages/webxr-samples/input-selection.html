@@ -79,6 +79,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let xrImmersiveRefSpaceOffset = null;
       let xrNonImmersiveRefSpaceBase = null;
       let xrNonImmersiveRefSpaceOffset = null;
+      let xrViewerSpace = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -317,14 +318,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
 
         // Same logic for establishing a reference space as in room-scale.html
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
+        session.requestReferenceSpace('local-floor').then((refSpace) => {
           return refSpace;
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
             // the stationary reference space, but an identity space is guaranteed.
             console.log("falling back to identity reference space");
-            return session.requestReferenceSpace({ type: 'identity' });
+            return session.requestReferenceSpace('viewer');
           } else {
             throw e;
           }
@@ -332,8 +333,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Save the session-specific reference space, and apply the
           // current player orientation/position as originOffset.
           setRefSpace(session, refSpace, false);
-          updateOriginOffset(session);
-          session.requestAnimationFrame(onXRFrame);
+          session.requestReferenceSpace('viewer').then(function(viewerSpace){
+            xrViewerSpace = viewerSpace;
+            session.requestAnimationFrame(onXRFrame);
+          });
         });
       }
 
@@ -347,7 +350,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let session = ev.frame.session;
         let refSpace = getRefSpace(session, true);
 
-        let headPose = ev.frame.getPose(session.viewerSpace, refSpace);
+        let headPose = ev.frame.getPose(xrViewerSpace, refSpace);
         if (!headPose) return;
 
         // Get the position offset in world space from the tracking space origin

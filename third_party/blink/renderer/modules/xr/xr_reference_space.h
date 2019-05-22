@@ -18,10 +18,21 @@ class XRReferenceSpace : public XRSpace {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit XRReferenceSpace(XRSession*);
-  XRReferenceSpace(XRSession*, XRRigidTransform*);
+  enum Type {
+    kTypeViewer,
+    kTypeLocal,
+    kTypeLocalFloor,
+    kTypeBoundedFloor,
+    kTypeUnbounded,
+  };
+
+  XRReferenceSpace(XRSession*, Type);
+  XRReferenceSpace(XRSession*, XRRigidTransform*, Type);
   ~XRReferenceSpace() override;
 
+  XRPose* getPose(
+      XRSpace* other_space,
+      std::unique_ptr<TransformationMatrix> base_pose_matrix) override;
   std::unique_ptr<TransformationMatrix> DefaultPose() override;
   std::unique_ptr<TransformationMatrix> TransformBasePose(
       const TransformationMatrix& base_pose) override;
@@ -46,7 +57,13 @@ class XRReferenceSpace : public XRSpace {
   virtual XRReferenceSpace* cloneWithOriginOffset(
       XRRigidTransform* origin_offset);
 
+  void UpdateFloorLevelTransform();
+
+  unsigned int display_info_id_ = 0;
+
+  std::unique_ptr<TransformationMatrix> floor_level_transform_;
   Member<XRRigidTransform> origin_offset_;
+  Type type_;
 };
 
 }  // namespace blink

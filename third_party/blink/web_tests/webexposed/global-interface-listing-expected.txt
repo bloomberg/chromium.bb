@@ -10677,7 +10677,6 @@ interface XRSession : EventTarget
     getter onselectend
     getter onselectstart
     getter renderState
-    getter viewerSpace
     method cancelAnimationFrame
     method constructor
     method end
@@ -10697,12 +10696,6 @@ interface XRSessionEvent : Event
     getter session
     method constructor
 interface XRSpace : EventTarget
-    attribute @@toStringTag
-    method constructor
-interface XRStationaryReferenceSpace : XRReferenceSpace
-    attribute @@toStringTag
-    method constructor
-interface XRUnboundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
     method constructor
 interface XRView

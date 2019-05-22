@@ -29,8 +29,7 @@ let testFunction = function(session, t, fakeDeviceController) {
     outputContext: getOutputContext()
   });
 
-  let resetPromise = session.requestReferenceSpace(
-      {type: "stationary", subtype: "eye-level"})
+  let resetPromise = session.requestReferenceSpace('local')
   .then((refSpace) => {
     let eventWatcher = new EventWatcher(
         t, refSpace, ["reset", "watcherdone"]);

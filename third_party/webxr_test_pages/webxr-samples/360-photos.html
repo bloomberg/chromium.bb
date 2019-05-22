@@ -137,21 +137,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             outputContext: outputCanvas.getContext('xrpresent')
         });
 
-        // When rendering 360 photos/videos you want to ensure that the user's
-        // head is always at the center of the rendered media. Otherwise users
-        // with 6DoF hardware could walk towards the edges and see a very skewed
-        // or outright broken view of the image. To prevent that, we request a
-        // 'head-model' frame of reference, which suppresses any positional
-        // information from the headset in favor of a head and neck model based
-        // solely on the device orientation. (As an added bonus this mode may
-        // be more power efficient on some hardware!)
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'position-disabled' }).then((refSpace) => {
+        session.requestReferenceSpace('local').then((refSpace) => {
           return refSpace;
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
             // the stationary reference space, but an identity space is guaranteed.
-            return session.requestReferenceSpace({ type: 'identity' });
+            return session.requestReferenceSpace('viewer');
           } else {
             throw e;
           }

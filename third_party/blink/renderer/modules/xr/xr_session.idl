@@ -24,7 +24,6 @@ enum XREnvironmentBlendMode {
 ] interface XRSession : EventTarget {
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
   [SameObject] readonly attribute XRRenderState renderState;
-  [SameObject] readonly attribute XRSpace viewerSpace;
   [MeasureAs=XRSessionGetInputSources] readonly attribute XRInputSourceArray inputSources;
 
   attribute EventHandler onblur;
@@ -37,7 +36,7 @@ enum XREnvironmentBlendMode {
 
   [RaisesException] void updateRenderState(optional XRRenderStateInit init);
 
-  [CallWith=ScriptState] Promise<XRReferenceSpace> requestReferenceSpace([PermissiveDictionaryConversion] XRReferenceSpaceOptions options);
+  [CallWith=ScriptState] Promise<XRReferenceSpace> requestReferenceSpace(XRReferenceSpaceType type);
 
   long requestAnimationFrame(XRFrameRequestCallback callback);
   void cancelAnimationFrame(long handle);

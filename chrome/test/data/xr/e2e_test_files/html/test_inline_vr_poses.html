@@ -22,9 +22,9 @@ test can query for whether each submitted frame used the correct pose.
       // Override the reference space map to only request eye-level stationary
       // reference spaces, as opposed to the identity MagicWindow/AR spaces.
       referenceSpaceMap = {
-        [sessionTypes.IMMERSIVE]: { type: 'stationary', subtype: 'eye-level' },
-        [sessionTypes.MAGIC_WINDOW]: { type: 'stationary', subtype: 'eye-level' },
-        [sessionTypes.AR]: { type: 'stationary', subtype: 'eye-level' }
+        [sessionTypes.IMMERSIVE]: 'local,
+        [sessionTypes.MAGIC_WINDOW]: 'local',
+        [sessionTypes.AR]: 'local'
       }
       requestMagicWindowSession();
 

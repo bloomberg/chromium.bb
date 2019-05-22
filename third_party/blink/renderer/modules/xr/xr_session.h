@@ -35,11 +35,9 @@ class XRInputSourceEvent;
 class XRPresentationContext;
 class XRRay;
 class XRReferenceSpace;
-class XRReferenceSpaceOptions;
 class XRRenderState;
 class XRRenderStateInit;
 class XRViewData;
-class XRViewerSpace;
 class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
@@ -86,8 +84,7 @@ class XRSession final : public EventTargetWithInlineData,
   void updateWorldTrackingState(
       XRWorldTrackingStateInit* worldTrackingStateInit,
       ExceptionState& exception_state);
-  ScriptPromise requestReferenceSpace(ScriptState*,
-                                      const XRReferenceSpaceOptions*);
+  ScriptPromise requestReferenceSpace(ScriptState*, const String&);
 
   int requestAnimationFrame(V8XRFrameRequestCallback*);
   void cancelAnimationFrame(int id);
@@ -221,7 +218,6 @@ class XRSession final : public EventTargetWithInlineData,
   Member<XRRenderState> render_state_;
   Member<XRWorldTrackingState> world_tracking_state_;
   Member<XRWorldInformation> world_information_;
-  Member<XRViewerSpace> viewer_space_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
 
   WTF::Vector<XRViewData> views_;
