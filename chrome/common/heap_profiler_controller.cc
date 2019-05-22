@@ -7,22 +7,14 @@
 #include <cmath>
 
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
-#include "base/metrics/metrics_hashes.h"
-#include "base/profiler/metadata_recorder.h"
 #include "base/rand_util.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "components/metrics/call_stack_profile_builder.h"
-#include "content/public/common/content_switches.h"
 
 namespace {
 
-constexpr char kMetadataSizeField[] = "HeapProfiler.AllocationInBytes";
 constexpr base::TimeDelta kHeapCollectionInterval =
     base::TimeDelta::FromHours(24);
 
@@ -80,14 +72,11 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
     return;
 
   base::ModuleCache module_cache;
-  base::MetadataRecorder metadata_recorder;
-  const uint64_t metadata_name_hash = base::HashMetricName(kMetadataSizeField);
   metrics::CallStackProfileParams params(
       metrics::CallStackProfileParams::BROWSER_PROCESS,
       metrics::CallStackProfileParams::UNKNOWN_THREAD,
       metrics::CallStackProfileParams::PERIODIC_HEAP_COLLECTION);
-  metrics::CallStackProfileBuilder profile_builder(params, nullptr,
-                                                   &metadata_recorder);
+  metrics::CallStackProfileBuilder profile_builder(params);
 
   for (const base::SamplingHeapProfiler::Sample& sample : samples) {
     std::vector<base::Frame> frames;
@@ -98,9 +87,7 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
           module_cache.GetModuleForAddress(address);
       frames.emplace_back(address, module);
     }
-    metadata_recorder.Set(metadata_name_hash, sample.total);
-    profile_builder.RecordMetadata();
-    profile_builder.OnSampleCompleted(std::move(frames));
+    profile_builder.OnSampleCompleted(std::move(frames), sample.total);
   }
 
   profile_builder.OnProfileCompleted(base::TimeDelta(), base::TimeDelta());

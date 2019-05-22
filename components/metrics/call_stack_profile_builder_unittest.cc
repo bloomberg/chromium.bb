@@ -165,13 +165,39 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   ASSERT_EQ(2, profile.stack_sample_size());
   EXPECT_EQ(0, profile.stack_sample(0).stack_index());
   EXPECT_FALSE(profile.stack_sample(0).has_continued_work());
+  EXPECT_FALSE(profile.stack_sample(0).has_weight());
   EXPECT_EQ(1, profile.stack_sample(1).stack_index());
   EXPECT_FALSE(profile.stack_sample(1).has_continued_work());
+  EXPECT_FALSE(profile.stack_sample(1).has_weight());
 
   ASSERT_TRUE(profile.has_profile_duration_ms());
   EXPECT_EQ(500, profile.profile_duration_ms());
   ASSERT_TRUE(profile.has_sampling_period_ms());
   EXPECT_EQ(100, profile.sampling_period_ms());
+}
+
+TEST(CallStackProfileBuilderTest, CustomWeights) {
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
+
+  TestModule module1;
+  base::Frame frame1 = {0x10, &module1};
+  std::vector<base::Frame> frames = {frame1};
+
+  profile_builder->OnSampleCompleted(frames, 42);
+  profile_builder->OnSampleCompleted(frames, 1);
+  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+  ASSERT_EQ(3, profile.stack_sample_size());
+  EXPECT_TRUE(profile.stack_sample(0).has_weight());
+  EXPECT_EQ(42, profile.stack_sample(0).weight());
+  EXPECT_FALSE(profile.stack_sample(1).has_weight());
+  EXPECT_FALSE(profile.stack_sample(2).has_weight());
 }
 
 TEST(CallStackProfileBuilderTest, StacksDeduped) {
