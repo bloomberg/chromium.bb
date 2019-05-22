@@ -1187,9 +1187,6 @@ extern const char kZeroCopyDescription[];
 extern const char kAiaFetchingName[];
 extern const char kAiaFetchingDescription[];
 
-extern const char kAccessibilityTabSwitcherName[];
-extern const char kAccessibilityTabSwitcherDescription[];
-
 extern const char kAllowRemoteContextForNotificationsName[];
 extern const char kAllowRemoteContextForNotificationsDescription[];
 

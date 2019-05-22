@@ -1993,10 +1993,6 @@ const char kAiaFetchingDescription[] =
     "Enable intermediate certificate fetching when a server does not provide "
     "sufficient certificates to build a chain to a trusted root.";
 
-const char kAccessibilityTabSwitcherName[] = "Accessibility Tab Switcher";
-const char kAccessibilityTabSwitcherDescription[] =
-    "Enable the accessibility tab switcher for Android.";
-
 const char kAllowRemoteContextForNotificationsName[] =
     "Allow using remote app context for notifications";
 const char kAllowRemoteContextForNotificationsDescription[] =

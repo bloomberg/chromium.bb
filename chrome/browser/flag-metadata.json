@@ -679,11 +679,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-accessibility-tab-switcher",
-    "owners": [ "dtrainor", "mdjones" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-advanced-ppd-attributes",
     "owners": [ "vkuzkokov", "skau" ],
     "expiry_milestone": 80

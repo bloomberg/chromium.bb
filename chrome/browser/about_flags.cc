@@ -1474,10 +1474,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     "AccountConsistencyVariations")},
 #endif
 #if defined(OS_ANDROID)
-    {"enable-accessibility-tab-switcher",
-     flag_descriptions::kAccessibilityTabSwitcherName,
-     flag_descriptions::kAccessibilityTabSwitcherDescription, kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableAccessibilityTabSwitcher)},
     {"enable-android-autofill-accessibility",
      flag_descriptions::kAndroidAutofillAccessibilityName,
      flag_descriptions::kAndroidAutofillAccessibilityDescription, kOsAndroid,
