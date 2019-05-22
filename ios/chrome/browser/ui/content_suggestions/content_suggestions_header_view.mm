@@ -131,7 +131,7 @@ CGFloat IdentityDiscToolbarOffset() {
   if (!self.identityDiscView)
     return;
 
-  DCHECK(base::FeatureList::IsEnabled(kIdentityDisc));
+  DCHECK(IsIdentityDiscFeatureEnabled());
   self.identityDiscTopConstraint.constant = IdentityDiscToolbarOffset();
 }
 

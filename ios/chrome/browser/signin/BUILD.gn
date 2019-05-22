@@ -97,6 +97,7 @@ source_set("feature_flags") {
   ]
   deps = [
     "//base",
+    "//components/unified_consent",
   ]
 }
 

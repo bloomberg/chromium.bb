@@ -228,7 +228,7 @@ using base::UserMetricsAction;
     self.headerView =
         base::mac::ObjCCastStrict<ContentSuggestionsHeaderView>(self.view);
     [self addFakeTapView];
-    if (base::FeatureList::IsEnabled(kIdentityDisc))
+    if (IsIdentityDiscFeatureEnabled())
       [self addIdentityDisc];
     [self addFakeOmnibox];
 
