@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_UKM_UKM_RECORDER_IMPL_H_
 #define COMPONENTS_UKM_UKM_RECORDER_IMPL_H_
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -70,12 +71,20 @@ class UkmRecorderImpl : public UkmRecorder {
   void SetIsWebstoreExtensionCallback(
       const IsWebstoreExtensionCallback& callback);
 
- protected:
-  // Generates a random number. This is virtual so it can be overriden by tests.
-  virtual int RandInt(int begin, int end);
+  // Sets the sampling seed for testing purposes.
+  void SetSamplingSeedForTesting(uint32_t seed) {
+    // Normally the seed is set during object construction and remains
+    // constant in order to provide consistent results when doing an "is
+    // sampled in" query for a given source and event. A "const cast" is
+    // necessary to override that.
+    *const_cast<uint32_t*>(&sampling_seed_) = seed;
+  }
 
-  // Calculates sampled in/out based on a given |rate|.
-  bool IsSampledIn(int sampling_rate);
+ protected:
+  // Calculates sampled in/out for a specific source/event based on a given
+  // |sampling_rate|. This function is guaranteed to always return the same
+  // result over the life of this object for the same input parameters.
+  bool IsSampledIn(int64_t source_id, uint64_t event_id, int sampling_rate);
 
   // Cache the list of whitelisted entries from the field trial parameter.
   void StoreWhitelistedEntries();
@@ -110,7 +119,7 @@ class UkmRecorderImpl : public UkmRecorder {
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmRecorderImplTest;
   friend ::ukm::UkmUtilsForTest;
-  FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, PageSamplingCondition);
+  FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, IsSampledIn);
 
   struct MetricAggregate {
     uint64_t total_count = 0;
@@ -130,46 +139,6 @@ class UkmRecorderImpl : public UkmRecorder {
     uint64_t dropped_due_to_limits = 0;
     uint64_t dropped_due_to_sampling = 0;
     uint64_t dropped_due_to_whitelist = 0;
-  };
-
-  // Container for sampling in/out choices for events within a single page
-  // load. This is important because some events are emitted multiple times
-  // with different metric values that are expected to be grouped together.
-  // For example, Blink.UseCounter is emitted for *all* used blink features
-  // on a page so its important that this metric either be on or off for
-  // the entire page. The sampling of different events is calculated
-  // independently (i.e. it can't be assumed that because one type of event
-  // is sampled-in that another will be sample-in or sampled-out) but always
-  // remembered for the entire page.
-  class PageSampling {
-   public:
-    PageSampling();
-    ~PageSampling();
-
-    // Sets the sampled-in flag for a given |event_id|.
-    void Set(uint64_t event_id, bool sampled_in);
-
-    // Returns if there is already a flag for a given |event_id|. The value
-    // of that flag is stored in |out_sampled_in|;
-    bool Find(uint64_t event_id, bool* out_sampled_in);
-
-    // Returns if this record has been modified.
-    bool modified() const { return modified_; }
-
-    // Clears the |modified_| flag.
-    void clear_modified() { modified_ = false; }
-
-   private:
-    // Per-event boolean indicating sampled-in for this page, keyed by event_id.
-    std::map<uint64_t, bool> event_sampling_;
-
-    // Boolean indicating if this has been modified, used to clear out old
-    // entries so they don't continue to use memory. "Modified" means Set()
-    // has been called since the last time clear_modified() was called
-    // (currently at every upload of UKM data).
-    bool modified_ = false;
-
-    DISALLOW_COPY_AND_ASSIGN(PageSampling);
   };
 
   using MetricAggregateMap = std::map<uint64_t, MetricAggregate>;
@@ -194,6 +163,11 @@ class UkmRecorderImpl : public UkmRecorder {
   // Indicates if sampling has been enabled.
   bool sampling_enabled_ = true;
 
+  // A pseudo-random number used as the base for sampling choices. This
+  // allows consistent "is sampled in" results for a given source and event
+  // type throughout the life of this object.
+  const uint32_t sampling_seed_;
+
   // Callback for checking extension IDs.
   IsWebstoreExtensionCallback is_webstore_extension_callback_;
 
@@ -206,11 +180,6 @@ class UkmRecorderImpl : public UkmRecorder {
   // Sampling configurations, loaded from a field-trial.
   int default_sampling_rate_ = 0;
   base::flat_map<uint64_t, int> event_sampling_rates_;
-
-  // Result of sampling calculation per event for a source/page. This is
-  // cleared at the start of each page load and ensure that that all events
-  // within a page will be included or excluded together.
-  std::map<int64_t, PageSampling> source_event_sampling_;
 
   // Contains data from various recordings which periodically get serialized
   // and cleared by StoreRecordingsInReport() and may be Purged().
