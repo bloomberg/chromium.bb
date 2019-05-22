@@ -21,7 +21,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -49,7 +48,7 @@ import java.util.List;
  * changes.
  */
 class GridTabSwitcherMediator
-        implements OverviewModeController, TabListRecyclerView.VisibilityListener {
+        implements GridTabSwitcher.GridController, TabListRecyclerView.VisibilityListener {
     // This should be the same as TabListCoordinator.GRID_LAYOUT_SPAN_COUNT for the selected tab
     // to be on the 2nd row.
     static final int INITIAL_SCROLL_INDEX_OFFSET = 2;
@@ -129,6 +128,11 @@ class GridTabSwitcherMediator
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
         mTabModelObserver = new EmptyTabModelObserver() {
+            @Override
+            public void didAddTab(Tab tab, int type) {
+                mShouldIgnoreNextSelect = false;
+            }
+
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 if (type == TabSelectionType.FROM_CLOSE || mShouldIgnoreNextSelect) {

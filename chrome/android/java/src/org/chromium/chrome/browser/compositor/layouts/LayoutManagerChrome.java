@@ -30,9 +30,11 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.widget.GridTabSwitcherLayout;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -64,23 +66,16 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
     private final ObserverList<OverviewModeObserver> mOverviewModeObservers;
 
     /**
-     * {@link OverviewModeController} to delegate all OverviewMode related calls. Note that when
-     * this {@link LayoutManagerChrome} is the current {@link OverviewModeController}, show/hide
-     * calls eventually come back to this class.
-     */
-    protected final OverviewModeController mOverviewModeDelegate;
-
-    /**
      * Creates the {@link LayoutManagerChrome} instance.
      * @param host                 A {@link LayoutManagerHost} instance.
-     * @param overviewModeDelegate OverviewModeController to delegate tab switcher behavior.
+     * @param gridController A controller to delegate the tab switcher behavior. If it's NULL, VTS
+     *                       should be used, otherwise GTS should be used.
      */
     public LayoutManagerChrome(LayoutManagerHost host, boolean createOverviewLayout,
-            @Nullable OverviewModeController overviewModeDelegate) {
+            @Nullable GridTabSwitcher.GridController gridController) {
         super(host);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
-        mOverviewModeDelegate = overviewModeDelegate == null ? this : overviewModeDelegate;
 
         mOverviewModeObservers = new ObserverList<OverviewModeObserver>();
 
@@ -91,7 +86,12 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
         mOverviewListLayout = new OverviewListLayout(context, this, renderHost);
         mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
         if (createOverviewLayout) {
-            mOverviewLayout = new StackLayout(context, this, renderHost);
+            if (gridController != null) {
+                mOverviewLayout =
+                        new GridTabSwitcherLayout(context, this, renderHost, gridController);
+            } else {
+                mOverviewLayout = new StackLayout(context, this, renderHost);
+            }
         }
     }
 
@@ -430,10 +430,10 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
 
             if (mOverviewLayout != null && mScrollDirection == ScrollDirection.DOWN) {
                 RecordUserAction.record("MobileToolbarSwipeOpenStackView");
-                mOverviewModeDelegate.showOverview(true);
+                showOverview(true);
             } else if (mToolbarSwipeLayout != null
                     && (mScrollDirection == ScrollDirection.LEFT
-                               || mScrollDirection == ScrollDirection.RIGHT)) {
+                            || mScrollDirection == ScrollDirection.RIGHT)) {
                 startShowing(mToolbarSwipeLayout, true);
             }
 

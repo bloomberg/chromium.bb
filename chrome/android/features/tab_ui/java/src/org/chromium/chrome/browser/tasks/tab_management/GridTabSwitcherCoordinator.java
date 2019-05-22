@@ -8,7 +8,6 @@ import android.content.Context;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
@@ -96,11 +95,11 @@ public class GridTabSwitcherCoordinator
     }
 
     /**
-     * @return OverviewModeController implementation that will can be used for controlling
-     *         OverviewMode changes.
+     * @return GridController implementation that will can be used for controlling
+     *         grid visibility changes.
      */
     @Override
-    public OverviewModeController getOverviewModeController() {
+    public GridController getGridController() {
         return mMediator;
     }
 

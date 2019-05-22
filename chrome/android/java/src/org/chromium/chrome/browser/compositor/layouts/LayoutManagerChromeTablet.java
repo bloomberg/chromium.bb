@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 import java.util.List;
@@ -36,11 +37,12 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
      * @param host                     A {@link LayoutManagerHost} instance.
-     * @param overviewModeDelegate     OverviewModeController to delegate tab switcher behavior.
+     * @param gridController A controller to delegate the tab switcher behavior. It's always NULL
+     *                       for Tablet.
      */
     public LayoutManagerChromeTablet(
-            LayoutManagerHost host, OverviewModeController overviewModeDelegate) {
-        super(host, false, overviewModeDelegate);
+            LayoutManagerHost host, GridTabSwitcher.GridController gridController) {
+        super(host, false, gridController);
         Context context = host.getContext();
 
         mTabStripLayoutHelperManager =

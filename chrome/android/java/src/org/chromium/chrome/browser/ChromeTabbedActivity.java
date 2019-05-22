@@ -142,6 +142,7 @@ import org.chromium.chrome.browser.tasks.JourneyManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.TasksUma;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
@@ -757,16 +758,7 @@ public class ChromeTabbedActivity
                 UsageStatsService.getInstance().createPageViewObserver(mTabModelSelectorImpl, this);
             }
 
-            if (TabManagementModuleProvider.getDelegate() != null
-                    && (FeatureUtilities.isGridTabSwitcherEnabled()
-                            || FeatureUtilities.isTabGroupsAndroidEnabled())) {
-                GridTabSwitcher gridTabSwitcher =
-                        TabManagementModuleProvider.getDelegate().createGridTabSwitcher(this);
-                mOverviewModeController.overrideOverviewModeController(
-                        gridTabSwitcher.getOverviewModeController());
-            } else {
-                mOverviewModeController.overrideOverviewModeController(mLayoutManager);
-            }
+            mOverviewModeController.overrideOverviewModeController(mLayoutManager);
             mOverviewModeController.addOverviewModeObserver(this);
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_ENGAGEMENT_REPORTING_ANDROID)) {
@@ -972,11 +964,22 @@ public class ChromeTabbedActivity
 
             CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
             if (isTablet()) {
-                mLayoutManager = new LayoutManagerChromeTablet(
-                        compositorViewHolder, mOverviewModeController);
+                mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder, null);
             } else {
-                mLayoutManager =
-                        new LayoutManagerChromePhone(compositorViewHolder, mOverviewModeController);
+                GridTabSwitcher.GridController gridController = null;
+
+                if (FeatureUtilities.isGridTabSwitcherEnabled()
+                        || FeatureUtilities.isTabGroupsAndroidEnabled()) {
+                    TabManagementDelegate tabManagementDelegate =
+                            TabManagementModuleProvider.getDelegate();
+                    if (tabManagementDelegate != null) {
+                        GridTabSwitcher gridTabSwitcher =
+                                tabManagementDelegate.createGridTabSwitcher(this);
+                        gridController = gridTabSwitcher.getGridController();
+                    }
+                }
+
+                mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, gridController);
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
 
