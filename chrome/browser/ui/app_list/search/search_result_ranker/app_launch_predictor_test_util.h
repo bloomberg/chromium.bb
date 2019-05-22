@@ -229,6 +229,13 @@ DEFINE_EQUIVTO_PROTO_LITE_3(FrecencyStoreProto_ValueData,
                             last_score,
                             last_num_updates);
 
+DEFINE_EQUIVTO_PROTO_LITE_1(ZeroStateHourBinPredictorProto,
+                            binned_frequency_table);
+
+DEFINE_EQUIVTO_PROTO_LITE_2(ZeroStateHourBinPredictorProto_FrequencyTable,
+                            total_counts,
+                            frequency);
+
 DEFINE_EQUIVTO_PROTO_LITE_1(HourAppLaunchPredictorProto,
                             binned_frequency_table);
 

@@ -83,6 +83,9 @@ std::unique_ptr<RecurrencePredictor> MakePredictor(
   if (config.has_zero_state_frecency_predictor())
     return std::make_unique<ZeroStateFrecencyPredictor>(
         config.zero_state_frecency_predictor());
+  if (config.has_zero_state_hour_bin_predictor())
+    return std::make_unique<ZeroStateHourBinPredictor>(
+        config.zero_state_hour_bin_predictor());
 
   NOTREACHED();
   return nullptr;

@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
-
-#include <cmath>
-
-#include "base/logging.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.pb.h"
 
 namespace app_list {
+namespace {
+
+constexpr int kHoursADay = 24;
+
+}  // namespace
 
 void RecurrencePredictor::Train(unsigned int target) {
   NOTREACHED();
@@ -137,6 +139,128 @@ void ZeroStateFrecencyPredictor::DecayScore(TargetData* data) {
   if (time_since_update > 0) {
     data->last_score *= std::pow(decay_coeff_, time_since_update);
     data->last_num_updates = num_updates_;
+  }
+}
+
+ZeroStateHourBinPredictor::ZeroStateHourBinPredictor(
+    const ZeroStateHourBinPredictorConfig& config)
+    : config_(config) {
+  if (!proto_.has_last_decay_timestamp())
+    SetLastDecayTimestamp(
+        base::Time::Now().ToDeltaSinceWindowsEpoch().InDays());
+}
+
+ZeroStateHourBinPredictor::~ZeroStateHourBinPredictor() = default;
+
+const char ZeroStateHourBinPredictor::kPredictorName[] =
+    "ZeroStateHourBinPredictor";
+
+const char* ZeroStateHourBinPredictor::GetPredictorName() const {
+  return kPredictorName;
+}
+
+int ZeroStateHourBinPredictor::GetBinFromHourDifference(
+    int hour_difference) const {
+  base::Time shifted_time =
+      base::Time::Now() + base::TimeDelta::FromHours(hour_difference);
+  base::Time::Exploded exploded_time;
+  shifted_time.LocalExplode(&exploded_time);
+
+  const bool is_weekend =
+      exploded_time.day_of_week == 6 || exploded_time.day_of_week == 0;
+
+  // To distinguish workdays from weekend, use now.hour for workdays and
+  // now.hour + 24 for weekend.
+  if (!is_weekend) {
+    return exploded_time.hour;
+  } else {
+    return exploded_time.hour + kHoursADay;
+  }
+}
+
+int ZeroStateHourBinPredictor::GetBin() const {
+  return GetBinFromHourDifference(0);
+}
+
+void ZeroStateHourBinPredictor::Train(unsigned int target) {
+  int hour = GetBin();
+  auto& frequency_table = (*proto_.mutable_binned_frequency_table())[hour];
+  frequency_table.set_total_counts(frequency_table.total_counts() + 1);
+  (*frequency_table.mutable_frequency())[target] += 1;
+}
+
+base::flat_map<unsigned int, float> ZeroStateHourBinPredictor::Rank() {
+  base::flat_map<unsigned int, float> ranks;
+  const auto& frequency_table_map = proto_.binned_frequency_table();
+  for (const auto& hour_and_weight : config_.bin_weights_map()) {
+    // Find adjacent bin and weight.
+    const int adj_bin = GetBinFromHourDifference(hour_and_weight.first);
+    const float weight = hour_and_weight.second;
+
+    const auto find_frequency_table = frequency_table_map.find(adj_bin);
+    if (find_frequency_table == frequency_table_map.end())
+      continue;
+    const auto& frequency_table = find_frequency_table->second;
+
+    // Accumulates the frequency to the output.
+    if (frequency_table.total_counts() > 0) {
+      const int total_counts = frequency_table.total_counts();
+      for (const auto& pair : frequency_table.frequency()) {
+        ranks[pair.first] +=
+            static_cast<float>(pair.second) / total_counts * weight;
+      }
+    }
+  }
+  return ranks;
+}
+
+void ZeroStateHourBinPredictor::ToProto(RecurrencePredictorProto* proto) const {
+  *proto->mutable_zero_state_hour_bin_predictor() = proto_;
+}
+
+void ZeroStateHourBinPredictor::FromProto(
+    const RecurrencePredictorProto& proto) {
+  if (!proto.has_zero_state_hour_bin_predictor())
+    return;
+
+  proto_ = proto.zero_state_hour_bin_predictor();
+  if (ShouldDecay())
+    DecayAll();
+}
+
+bool ZeroStateHourBinPredictor::ShouldDecay() {
+  const int today = base::Time::Now().ToDeltaSinceWindowsEpoch().InDays();
+  // Check if we should decay the frequency
+  return today - proto_.last_decay_timestamp() > 7;
+}
+
+void ZeroStateHourBinPredictor::DecayAll() {
+  SetLastDecayTimestamp(base::Time::Now().ToDeltaSinceWindowsEpoch().InDays());
+  auto& frequency_table_map = *proto_.mutable_binned_frequency_table();
+  for (auto it_table = frequency_table_map.begin();
+       it_table != frequency_table_map.end();) {
+    auto& frequency_table = *it_table->second.mutable_frequency();
+    for (auto it_freq = frequency_table.begin();
+         it_freq != frequency_table.end();) {
+      const int new_frequency = it_freq->second * config_.weekly_decay_coeff();
+      it_table->second.set_total_counts(it_table->second.total_counts() -
+                                        it_freq->second + new_frequency);
+      it_freq->second = new_frequency;
+
+      // Remove item that has zero frequency
+      if (it_freq->second == 0) {
+        frequency_table.erase(it_freq++);
+      } else {
+        it_freq++;
+      }
+    }
+
+    // Remove bin that has zero total_counts
+    if (it_table->second.total_counts() == 0) {
+      frequency_table_map.erase(it_table++);
+    } else {
+      it_table++;
+    }
   }
 }
 

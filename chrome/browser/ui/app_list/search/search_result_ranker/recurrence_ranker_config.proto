@@ -42,10 +42,18 @@ message RecurrenceRankerConfigProto {
     required float decay_coeff = 202;
   }
 
+  message ZeroStateHourBinPredictorConfig {
+    // The decay coeffficient number that control the decay rate. The decay is
+    // once a week.
+    required float weekly_decay_coeff = 301;
+    map<int32, float> bin_weights_map = 302;
+  }
+
   // The choice of which kind of predictor to use, and its configuration.
   oneof predictor_config {
     FakePredictorConfig fake_predictor = 10001;
     ZeroStateFrecencyPredictorConfig zero_state_frecency_predictor = 10002;
     DefaultPredictorConfig default_predictor = 10003;
+    ZeroStateHourBinPredictorConfig zero_state_hour_bin_predictor = 10004;
   }
 }

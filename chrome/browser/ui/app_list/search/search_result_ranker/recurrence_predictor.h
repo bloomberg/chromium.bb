@@ -6,11 +6,9 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_RECURRENCE_PREDICTOR_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.pb.h"
@@ -23,6 +21,8 @@ using DefaultPredictorConfig =
     RecurrenceRankerConfigProto::DefaultPredictorConfig;
 using ZeroStateFrecencyPredictorConfig =
     RecurrenceRankerConfigProto::ZeroStateFrecencyPredictorConfig;
+using ZeroStateHourBinPredictorConfig =
+    RecurrenceRankerConfigProto::ZeroStateHourBinPredictorConfig;
 
 // |RecurrencePredictor| is the interface for all predictors used by
 // |RecurrenceRanker| to drive rankings. If a predictor has some form of
@@ -142,6 +142,49 @@ class ZeroStateFrecencyPredictor : public RecurrencePredictor {
   base::flat_map<unsigned int, ZeroStateFrecencyPredictor::TargetData> targets_;
 
   DISALLOW_COPY_AND_ASSIGN(ZeroStateFrecencyPredictor);
+};
+
+// |ZeroStateHourBinPredictor| ranks targets according to their frequency during
+// the current and neighbor hour bins. It can only be used for zero-state
+// predictions.
+class ZeroStateHourBinPredictor : public RecurrencePredictor {
+ public:
+  explicit ZeroStateHourBinPredictor(
+      const ZeroStateHourBinPredictorConfig& config);
+  ~ZeroStateHourBinPredictor() override;
+
+  // RecurrencePredictor:
+  void Train(unsigned int target) override;
+  base::flat_map<unsigned int, float> Rank() override;
+  void ToProto(RecurrencePredictorProto* proto) const override;
+  void FromProto(const RecurrencePredictorProto& proto) override;
+  const char* GetPredictorName() const override;
+
+  static const char kPredictorName[];
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest, GetTheRightBin);
+  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest,
+                           TrainAndRankSingleBin);
+  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest,
+                           TrainAndRankMultipleBin);
+  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest, ToProto);
+  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest, FromProtoDecays);
+  // Return the bin index that is |hour_difference| away from the current bin
+  // index.
+  int GetBinFromHourDifference(int hour_difference) const;
+  // Return the current bin index of this predictor.
+  int GetBin() const;
+  // Check decay condition.
+  bool ShouldDecay();
+  // Decay the frequency of all items.
+  void DecayAll();
+  void SetLastDecayTimestamp(float value) {
+    proto_.set_last_decay_timestamp(value);
+  }
+  ZeroStateHourBinPredictorProto proto_;
+  ZeroStateHourBinPredictorConfig config_;
+  DISALLOW_COPY_AND_ASSIGN(ZeroStateHourBinPredictor);
 };
 
 }  // namespace app_list
