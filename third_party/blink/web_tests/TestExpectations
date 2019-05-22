@@ -2650,6 +2650,8 @@ crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/Element-getAni
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 crbug.com/875622 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 
+crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Failure ]
+
 crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
 # TODO(chrishtr): rebaseline these
