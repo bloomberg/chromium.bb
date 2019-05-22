@@ -41,15 +41,20 @@ chrome.test.runTests([
       chrome.test.fail(e);
     }
   },
-  // Test the chrome.tabs.onUpdated listener.
+  // Test the chrome.tabs.onUpdated listener through the loading cycle.
   function testTabOnUpdatedListener() {
     var newUrl = 'chrome://version/';
+    var gotLoading = false;
     chrome.tabs.onUpdated.addListener(function localListener(
         tabId, changeInfo, tab) {
       if (changeInfo.status === 'loading') {
-        chrome.tabs.onUpdated.removeListener(localListener);
+        chrome.test.assertFalse(gotLoading);
+        gotLoading = true;
         chrome.test.assertEq(tabProps[1].id, tabId);
         chrome.test.assertEq(newUrl, changeInfo.url);
+      } else if (changeInfo.status === 'complete') {
+        chrome.test.assertTrue(gotLoading);
+        chrome.tabs.onUpdated.removeListener(localListener);
         chrome.test.succeed();
       }
     });

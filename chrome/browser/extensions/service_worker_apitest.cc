@@ -1128,29 +1128,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesFetch) {
       "service_worker/web_accessible_resources/fetch/", "page.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, TabsCreate) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("service_worker/tabs_create"), kFlagNone);
-  ASSERT_TRUE(extension);
-  ui_test_utils::NavigateToURL(browser(),
-                               extension->GetResourceURL("page.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  int starting_tab_count = browser()->tab_strip_model()->count();
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, "window.runServiceWorker()", &result));
-  ASSERT_EQ("chrome.tabs.create callback", result);
-  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
-
-  // Check extension shutdown path.
-  UnloadExtension(extension->id());
-  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
-}
-
 // Tests that updating a packed extension with modified scripts works
 // properly -- we expect that the new script will execute, rather than the
 // previous one.
@@ -1294,22 +1271,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
     extension_service->ReloadExtension(id);
     EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   }
-}
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, Events) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("service_worker/events"), kFlagNone);
-  ASSERT_TRUE(extension);
-  ui_test_utils::NavigateToURL(browser(),
-                               extension->GetResourceURL("page.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, "window.runEventTest()", &result));
-  ASSERT_EQ("chrome.tabs.onUpdated callback", result);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, EventsToStoppedWorker) {
