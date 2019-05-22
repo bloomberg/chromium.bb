@@ -460,7 +460,10 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
 
 void PasswordManager::ProvisionallySavePassword(
     const PasswordForm& form,
-    const password_manager::PasswordManagerDriver* driver) {
+    const PasswordManagerDriver* driver) {
+  if (IsOnlyNewParserEnabled())
+    return;
+
   // If the form was declined by some heuristics, don't show automatic bubble
   // for it, only fallback saving should be available.
   if (form.only_for_fallback)
@@ -528,28 +531,7 @@ void PasswordManager::ProvisionallySavePassword(
   // cached and report the difference through UMA.
   main_frame_url_ = client_->GetMainFrameURL();
 
-  // Report SubmittedFormFrame metric.
-  if (driver) {
-    metrics_util::SubmittedFormFrame frame;
-    if (driver->IsMainFrame()) {
-      frame = metrics_util::SubmittedFormFrame::MAIN_FRAME;
-    } else if (form.origin == main_frame_url_) {
-      frame =
-          metrics_util::SubmittedFormFrame::IFRAME_WITH_SAME_URL_AS_MAIN_FRAME;
-    } else {
-      GURL::Replacements rep;
-      rep.SetPathStr("");
-      std::string main_frame_signon_realm =
-          main_frame_url_.ReplaceComponents(rep).spec();
-      frame =
-          (main_frame_signon_realm == form.signon_realm)
-              ? metrics_util::SubmittedFormFrame::
-                    IFRAME_WITH_DIFFERENT_URL_SAME_SIGNON_REALM_AS_MAIN_FRAME
-              : metrics_util::SubmittedFormFrame::
-                    IFRAME_WITH_DIFFERENT_SIGNON_REALM;
-    }
-    metrics_util::LogSubmittedFormFrame(frame);
-  }
+  ReportSubmittedFormFrameMetric(driver, form);
 }
 
 void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
@@ -991,6 +973,8 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
   // post-submit navigation concludes, we compare the landing URL against the
   // cached and report the difference through UMA.
   main_frame_url_ = client_->GetMainFrameURL();
+
+  ReportSubmittedFormFrameMetric(driver, *matched_manager->GetSubmittedForm());
 
   return matched_manager;
 }
@@ -1540,6 +1524,31 @@ NewPasswordFormManager* PasswordManager::GetMatchedManager(
       return form_manager.get();
   }
   return nullptr;
+}
+
+void PasswordManager::ReportSubmittedFormFrameMetric(
+    const PasswordManagerDriver* driver,
+    const PasswordForm& form) {
+  if (!driver)
+    return;
+  metrics_util::SubmittedFormFrame frame;
+  if (driver->IsMainFrame()) {
+    frame = metrics_util::SubmittedFormFrame::MAIN_FRAME;
+  } else if (form.origin == main_frame_url_) {
+    frame =
+        metrics_util::SubmittedFormFrame::IFRAME_WITH_SAME_URL_AS_MAIN_FRAME;
+  } else {
+    GURL::Replacements rep;
+    rep.SetPathStr("");
+    std::string main_frame_signon_realm =
+        main_frame_url_.ReplaceComponents(rep).spec();
+    frame = (main_frame_signon_realm == form.signon_realm)
+                ? metrics_util::SubmittedFormFrame::
+                      IFRAME_WITH_DIFFERENT_URL_SAME_SIGNON_REALM_AS_MAIN_FRAME
+                : metrics_util::SubmittedFormFrame::
+                      IFRAME_WITH_DIFFERENT_SIGNON_REALM;
+  }
+  metrics_util::LogSubmittedFormFrame(frame);
 }
 
 }  // namespace password_manager

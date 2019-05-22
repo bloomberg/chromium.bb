@@ -337,6 +337,10 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   NewPasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
                                             const autofill::FormData& form);
 
+  // Log a frame (main frame, iframe) of a submitted password form.
+  void ReportSubmittedFormFrameMetric(const PasswordManagerDriver* driver,
+                                      const autofill::PasswordForm& form);
+
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //
