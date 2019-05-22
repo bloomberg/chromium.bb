@@ -21,7 +21,6 @@
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
@@ -207,8 +206,7 @@ TEST_F(AppListAppLaunchedMetricTest, HalfLaunchFromShelf) {
   GetAppListTestHelper()->WaitUntilIdle();
 
   histogram_tester.ExpectBucketCount(
-      "Apps.AppListAppLaunchedV2.Half",
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      "Apps.AppListAppLaunchedV2.Half", AppListLaunchedFrom::kLaunchedFromShelf,
       1 /* Number of times launched from shelf */);
 }
 
@@ -228,7 +226,7 @@ TEST_F(AppListAppLaunchedMetricTest, HalfLaunchFromSearchBox) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.Half",
-      mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      AppListLaunchedFrom::kLaunchedFromSearchBox,
       1 /* Number of times launched from search box */);
 }
 
@@ -253,7 +251,7 @@ TEST_F(AppListAppLaunchedMetricTest, FullscreenSearchLaunchFromSearchBox) {
   GetAppListTestHelper()->WaitUntilIdle();
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.FullscreenSearch",
-      mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      AppListLaunchedFrom::kLaunchedFromSearchBox,
       1 /* Number of times launched from search box */);
 }
 
@@ -277,7 +275,7 @@ TEST_F(AppListAppLaunchedMetricTest, FullscreenSearchLaunchFromShelf) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.FullscreenSearch",
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       1 /* Number of times launched from shelf */);
 }
 
@@ -296,7 +294,7 @@ TEST_F(AppListAppLaunchedMetricTest, FullscreenAllAppsLaunchFromChip) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.FullscreenAllApps",
-      mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      AppListLaunchedFrom::kLaunchedFromSuggestionChip,
       1 /* Number of times launched from chip */);
 }
 
@@ -315,7 +313,7 @@ TEST_F(AppListAppLaunchedMetricTest, FullscreenAllAppsLaunchFromGrid) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.FullscreenAllApps",
-      mojom::AppListLaunchedFrom::kLaunchedFromGrid,
+      AppListLaunchedFrom::kLaunchedFromGrid,
       1 /* Number of times launched from grid */);
 }
 
@@ -334,7 +332,7 @@ TEST_F(AppListAppLaunchedMetricTest, FullscreenAllAppsLaunchFromShelf) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.FullscreenAllApps",
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       1 /* Number of times launched from shelf */);
 }
 
@@ -350,7 +348,7 @@ TEST_F(AppListAppLaunchedMetricTest, PeekingLaunchFromShelf) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.Peeking",
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       1 /* Number of times launched from shelf */);
 }
 
@@ -366,7 +364,7 @@ TEST_F(AppListAppLaunchedMetricTest, PeekingLaunchFromChip) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.Peeking",
-      mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      AppListLaunchedFrom::kLaunchedFromSuggestionChip,
       1 /* Number of times launched from chip */);
 }
 
@@ -381,7 +379,7 @@ TEST_F(AppListAppLaunchedMetricTest, ClosedLaunchFromShelf) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.Closed",
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       1 /* Number of times launched from shelf */);
 
   // Open the launcher to peeking.
@@ -396,7 +394,7 @@ TEST_F(AppListAppLaunchedMetricTest, ClosedLaunchFromShelf) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.Closed",
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       2 /* Number of times launched from shelf */);
 }
 
@@ -413,7 +411,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromShelf) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.HomecherAllApps",
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       1 /* Number of times launched from shelf */);
 }
 
@@ -431,7 +429,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromGrid) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.HomecherAllApps",
-      mojom::AppListLaunchedFrom::kLaunchedFromGrid,
+      AppListLaunchedFrom::kLaunchedFromGrid,
       1 /* Number of times launched from grid */);
 }
 
@@ -450,7 +448,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromChip) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.HomecherAllApps",
-      mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      AppListLaunchedFrom::kLaunchedFromSuggestionChip,
       1 /* Number of times launched from chip */);
 }
 
@@ -473,7 +471,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherSearchLaunchFromShelf) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.HomecherSearch",
-      mojom::AppListLaunchedFrom::kLaunchedFromShelf,
+      AppListLaunchedFrom::kLaunchedFromShelf,
       1 /* Number of times launched from shelf */);
 }
 
@@ -497,7 +495,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherSearchLaunchFromSearchBox) {
 
   histogram_tester.ExpectBucketCount(
       "Apps.AppListAppLaunchedV2.HomecherSearch",
-      mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      AppListLaunchedFrom::kLaunchedFromSearchBox,
       1 /* Number of times launched from search box */);
 }
 
