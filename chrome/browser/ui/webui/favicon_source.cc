@@ -11,13 +11,16 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/web_contents.h"
@@ -50,6 +53,15 @@ bool GetSyncedFaviconForPageURL(
       session_sync_service->GetOpenTabsUIDelegate();
   return open_tabs &&
          open_tabs->GetSyncedFaviconForPageURL(page_url.spec(), sync_bitmap);
+}
+
+// Check if user settings allow querying a Google server using history
+// information.
+bool CanSendHistoryDataToServer(Profile* profile) {
+  return syncer::GetUploadToGoogleState(
+             ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile),
+             syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
+         syncer::UploadState::ACTIVE;
 }
 
 }  // namespace
@@ -151,12 +163,14 @@ void FaviconSource::StartDataRequest(
 
     favicon_request_handler_.GetRawFaviconForPageURL(
         url, desired_size_in_pixel,
-        base::BindRepeating(
+        base::BindOnce(
             &FaviconSource::OnFaviconDataAvailable, base::Unretained(this),
             IconRequest(callback, url, parsed.size_in_dip,
                         parsed.device_scale_factor, unsafe_request_origin)),
         unsafe_request_origin, favicon_service,
+        LargeIconServiceFactory::GetForBrowserContext(profile_),
         base::BindOnce(&GetSyncedFaviconForPageURL, base::Unretained(profile_)),
+        base::BindOnce(&CanSendHistoryDataToServer, base::Unretained(profile_)),
         &cancelable_task_tracker_);
   }
 }

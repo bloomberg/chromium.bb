@@ -1340,6 +1340,11 @@ const FeatureEntry kFeatureEntries[] = {
         kOsMac | kOsWin | kOsCrOS | kOsAndroid,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
+    {"enable-history-favicons-google-server-query",
+     flag_descriptions::kEnableHistoryFaviconsGoogleServerQueryName,
+     flag_descriptions::kEnableHistoryFaviconsGoogleServerQueryDescription,
+     kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
+     FEATURE_VALUE_TYPE(favicon::kEnableHistoryFaviconsGoogleServerQuery)},
 #if defined(OS_CHROMEOS)
     {
         "ash-debug-shortcuts",

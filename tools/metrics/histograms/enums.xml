@@ -32881,6 +32881,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1919199528"
       label="AlwaysShowServerCardsInSyncTransport:disabled"/>
+  <int value="-1916631969" label="kEnableFaviconGoogleServerQuery:disabled"/>
   <int value="-1916060206" label="enable-display-zoom-setting"/>
   <int value="-1915854488" label="enable-offline-pages"/>
   <int value="-1913801713"
@@ -32959,6 +32960,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1826309726" label="ArcCustomTabsExperiment:disabled"/>
+  <int value="-1821684575" label="kEnableFaviconGoogleServerQuery:enabled"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1818947212" label="OutOfBlinkCors:disabled"/>
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>

@@ -18,10 +18,12 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -36,6 +38,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/synced_session.h"
@@ -141,6 +144,16 @@ bool RecentTabsGetSyncedFaviconForPageURL(
       session_sync_service->GetOpenTabsUIDelegate();
   return open_tabs &&
          open_tabs->GetSyncedFaviconForPageURL(page_url.spec(), sync_bitmap);
+}
+
+// Check if user settings allow querying a Google server using history
+// information.
+bool CanSendHistoryDataToServer(Browser* browser) {
+  return syncer::GetUploadToGoogleState(
+             ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+                 browser->profile()),
+             syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
+         syncer::UploadState::ACTIVE;
 }
 
 }  // namespace
@@ -582,13 +595,15 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
   bool is_local_tab = command_id < kFirstOtherDevicesTabCommandId;
   favicon_request_handler_.GetFaviconImageForPageURL(
       url,
-      base::BindRepeating(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
-                          base::Unretained(this), command_id),
+      base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
+                     base::Unretained(this), command_id),
       favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
       FaviconServiceFactory::GetForProfile(browser_->profile(),
                                            ServiceAccessType::EXPLICIT_ACCESS),
+      LargeIconServiceFactory::GetForBrowserContext(browser_->profile()),
       base::BindOnce(&RecentTabsGetSyncedFaviconForPageURL,
                      base::Unretained(session_sync_service_)),
+      base::BindOnce(&CanSendHistoryDataToServer, browser_),
       is_local_tab ? &local_tab_cancelable_task_tracker_
                    : &other_devices_tab_cancelable_task_tracker_);
 }

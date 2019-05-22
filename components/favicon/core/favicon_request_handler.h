@@ -16,9 +16,14 @@
 namespace favicon {
 
 class FaviconService;
+class LargeIconService;
 
 // Class for handling favicon requests by page url, forwarding them to local
-// storage or sync accordingly.
+// storage, sync or Google server accordingly.
+// TODO(victorvianna): Refactor LargeIconService to avoid having to pass both
+// it and FaviconService to the API.
+// TODO(victorvianna): Consider alternative ways to check if history sync is
+// enabled without passing base::OnceCallback<bool()> to the API.
 class FaviconRequestHandler {
  public:
   // Callback that requests the synced bitmap for the page url given in the
@@ -34,45 +39,91 @@ class FaviconRequestHandler {
   ~FaviconRequestHandler();
 
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
-  // Tries to fetch the icon from local storage and falls back to sync if it's
-  // not found.
+  // Tries to fetch the icon from local storage and falls back to sync, or to
+  // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
+  // is enabled. |can_send_history_data| must return whether user settings allow
+  // to query the favicon server using history data (in particular it must check
+  // that history sync is enabled and no custom passphrase is set).
   void GetRawFaviconForPageURL(const GURL& page_url,
                                int desired_size_in_pixel,
                                favicon_base::FaviconRawBitmapCallback callback,
                                FaviconRequestOrigin request_origin,
                                FaviconService* favicon_service,
+                               LargeIconService* large_icon_service,
                                SyncedFaviconGetter synced_favicon_getter,
+                               base::OnceCallback<bool()> can_send_history_data,
                                base::CancelableTaskTracker* tracker);
 
-  // Requests favicon image at |page_url|. Tries to fetch the icon from local
-  // storage and falls back to sync if it's not found.
-  void GetFaviconImageForPageURL(const GURL& page_url,
-                                 favicon_base::FaviconImageCallback callback,
-                                 FaviconRequestOrigin request_origin,
-                                 FaviconService* favicon_service,
-                                 SyncedFaviconGetter synced_favicon_getter,
-                                 base::CancelableTaskTracker* tracker);
+  // Requests favicon image at |page_url|.
+  // Tries to fetch the icon from local storage and falls back to sync, or to
+  // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
+  // is enabled. |can_send_history_data| must return whether user settings allow
+  // to query the favicon server using history data (in particular it must check
+  // that history sync is enabled and no custom passphrase is set).
+  void GetFaviconImageForPageURL(
+      const GURL& page_url,
+      favicon_base::FaviconImageCallback callback,
+      FaviconRequestOrigin request_origin,
+      FaviconService* favicon_service,
+      LargeIconService* large_icon_service,
+      SyncedFaviconGetter synced_favicon_getter,
+      base::OnceCallback<bool()> can_send_history_data,
+      base::CancelableTaskTracker* tracker);
 
  private:
+  static bool CanQueryGoogleServer(
+      LargeIconService* large_icon_service,
+      FaviconRequestOrigin origin,
+      base::OnceCallback<bool()> can_send_history_data);
+
   // Called after the first attempt to retrieve the icon bitmap from local
   // storage. If request succeeded, sends the result. Otherwise attempts to
-  // retrieve from sync.
+  // retrieve from sync or the Google favicon server depending whether
+  // |favicon::kEnableHistoryFaviconsGoogleServerQuery| is enabled.
   void OnBitmapLocalDataAvailable(
       const GURL& page_url,
+      int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback response_callback,
       FaviconRequestOrigin origin,
+      FaviconService* favicon_service,
+      LargeIconService* large_icon_service,
       SyncedFaviconGetter synced_favicon_getter,
-      const favicon_base::FaviconRawBitmapResult& bitmap_result) const;
+      base::OnceCallback<bool()> can_send_history_data,
+      base::CancelableTaskTracker* tracker,
+      const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Called after the first attempt to retrieve the icon image from local
   // storage. If request succeeded, sends the result. Otherwise attempts to
-  // retrieve from sync.
+  // retrieve from sync or the Google favicon server depending whether
+  // |favicon::kEnableHistoryFaviconsGoogleServerQuery| is enabled.
   void OnImageLocalDataAvailable(
       const GURL& page_url,
       favicon_base::FaviconImageCallback response_callback,
       FaviconRequestOrigin origin,
+      FaviconService* favicon_service,
+      LargeIconService* large_icon_service,
       SyncedFaviconGetter synced_favicon_getter,
-      const favicon_base::FaviconImageResult& image_result) const;
+      base::OnceCallback<bool()> can_send_history_data,
+      base::CancelableTaskTracker* tracker,
+      const favicon_base::FaviconImageResult& image_result);
+
+  // Requests an icon from Google favicon server. Since requests work by
+  // populating local storage, a |local_lookup_callback| will be needed in case
+  // of success and an |empty_response_callback| in case of failure.
+  void RequestFromGoogleServer(const GURL& page_url,
+                               base::OnceClosure empty_response_callback,
+                               base::OnceClosure local_lookup_callback,
+                               LargeIconService* large_icon_service,
+                               FaviconRequestOrigin origin);
+
+  // Called once the request to the favicon server has finished. If the request
+  // succeeded, |local_lookup_callback| is called to effectively retrieve the
+  // icon, otherwise |empty_response_callback| is called.
+  void OnGoogleServerDataAvailable(
+      base::OnceClosure empty_response_callback,
+      base::OnceClosure local_lookup_callback,
+      FaviconRequestOrigin origin,
+      favicon_base::GoogleFaviconServerRequestStatus status);
 
   base::WeakPtrFactory<FaviconRequestHandler> weak_ptr_factory_{this};
 
