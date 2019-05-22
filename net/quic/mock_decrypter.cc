@@ -14,6 +14,12 @@ using quic::QuicStringPiece;
 
 namespace net {
 
+namespace {
+
+const size_t kPaddingSize = 12;
+
+}  // namespace
+
 MockDecrypter::MockDecrypter(Perspective perspective) {}
 
 bool MockDecrypter::SetKey(QuicStringPiece key) {
@@ -53,12 +59,16 @@ bool MockDecrypter::DecryptPacket(uint64_t /*packet_number*/,
                                   char* output,
                                   size_t* output_length,
                                   size_t max_output_length) {
-  if (ciphertext.length() > max_output_length) {
+  if (ciphertext.length() < kPaddingSize) {
+    return false;
+  }
+  size_t plaintext_size = ciphertext.length() - kPaddingSize;
+  if (plaintext_size > max_output_length) {
     return false;
   }
 
-  memcpy(output, ciphertext.data(), ciphertext.length());
-  *output_length = ciphertext.length();
+  memcpy(output, ciphertext.data(), plaintext_size);
+  *output_length = plaintext_size;
   return true;
 }
 
