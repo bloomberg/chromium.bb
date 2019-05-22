@@ -2,6 +2,7 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Tool for doing Java refactors over native methods.
 
 Converts
@@ -81,22 +82,22 @@ _JNI_METHOD_DECL = string.Template("""
 _COMMENT_REGEX_STRING = r'(?:(?:(?:\/\*[^\/]*\*\/)+|(?:\/\/[^\n]*?\n))+\s*)*'
 
 _NATIVES_REGEX = re.compile(
-  r'(?P<comments>' + _COMMENT_REGEX_STRING + ')'
-  r'(?P<annotations>(@NativeClassQualifiedName'
-  r'\(\"(?P<native_class_name>.*?)\"\)\s+)?'
-  r'(@NativeCall(\(\"(?P<java_class_name>.*?)\"\))\s+)?)'
-  r'(?P<qualifiers>\w+\s\w+|\w+|\s+)\s+static\s*native '
-  r'(?P<return_type>\S*) '
-  r'(?P<name>native\w+)\((?P<params>.*?)\);\n', re.DOTALL)
+    r'(?P<comments>' + _COMMENT_REGEX_STRING + ')'
+    r'(?P<annotations>(@NativeClassQualifiedName'
+    r'\(\"(?P<native_class_name>.*?)\"\)\s+)?'
+    r'(@NativeCall(\(\"(?P<java_class_name>.*?)\"\))\s+)?)'
+    r'(?P<qualifiers>\w+\s\w+|\w+|\s+)\s+static\s*native '
+    r'(?P<return_type>\S*) '
+    r'(?P<name>native\w+)\((?P<params>.*?)\);\n', re.DOTALL)
 
 _NON_STATIC_NATIVES_REGEX = re.compile(
-  r'(?P<comments>' + _COMMENT_REGEX_STRING + ')'
-  r'(?P<annotations>(@NativeClassQualifiedName'
-  r'\(\"(?P<native_class_name>.*?)\"\)\s+)?'
-  r'(@NativeCall(\(\"(?P<java_class_name>.*?)\"\))\s+)?)'
-  r'(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*native '
-  r'(?P<return_type>\S*) '
-  r'(?P<name>native\w+)\((?P<params>.*?)\);\n', re.DOTALL)
+    r'(?P<comments>' + _COMMENT_REGEX_STRING + ')'
+    r'(?P<annotations>(@NativeClassQualifiedName'
+    r'\(\"(?P<native_class_name>.*?)\"\)\s+)?'
+    r'(@NativeCall(\(\"(?P<java_class_name>.*?)\"\))\s+)?)'
+    r'(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*native '
+    r'(?P<return_type>\S*) '
+    r'(?P<name>native\w+)\((?P<params>.*?)\);\n', re.DOTALL)
 
 JNI_IMPORT_STRING = 'import org.chromium.base.annotations.NativeMethods;'
 JCALLER_IMPORT_STRING = 'import org.chromium.base.annotations.JCaller;'
@@ -104,11 +105,12 @@ IMPORT_REGEX = re.compile(r'^import .*?;', re.MULTILINE)
 
 PICKLE_LOCATION = './jni_ref_pickle'
 
+
 def build_method_declaration(return_type, name, params, annotations, comments):
   out = _JNI_METHOD_DECL.substitute({
-    'RETURN_TYPE': return_type,
-    'NAME': name,
-    'PARAMS': params
+      'RETURN_TYPE': return_type,
+      'NAME': name,
+      'PARAMS': params
   })
   if annotations:
     out = '\n' + annotations + out
@@ -163,8 +165,7 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
   contents = add_chromium_import_to_java_file(contents, JCALLER_IMPORT_STRING)
 
   class_name = jni_generator.ExtractFullyQualifiedJavaClassName(
-    java_file_name, no_comment_content).split('/')[-1]
-
+      java_file_name, no_comment_content).split('/')[-1]
 
   replace_patterns = []
   should_add_comma = []
@@ -182,7 +183,7 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
       qual_end = match.end('qualifiers') + insertion_offset
       insert_str = ' static '
       new_contents = new_contents[:qual_end] + insert_str + new_contents[
-                                                            qual_end:]
+          qual_end:]
       insertion_offset += len(insert_str)
 
       # Insert an object param.
@@ -211,10 +212,10 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
   for i, r in enumerate(replace_patterns):
     if should_add_comma[i]:
       new_contents = re.sub(
-        r, '\g<1>%s.this, ' % class_name, new_contents, flags=re.MULTILINE)
+          r, '\g<1>%s.this, ' % class_name, new_contents, flags=re.MULTILINE)
     else:
       new_contents = re.sub(
-        r, '\g<1>%s.this' % class_name, new_contents, flags=re.MULTILINE)
+          r, '\g<1>%s.this' % class_name, new_contents, flags=re.MULTILINE)
 
   if dry:
     print(new_contents)
@@ -283,11 +284,11 @@ def convert_file_to_proxy_natives(java_file_name, dry=False, verbose=True):
     comments = n_dict['comments']
     annotations = n_dict['annotations']
     methods.append(
-      build_method_declaration(n.return_type, new_name, params, annotations,
-                               comments))
+        build_method_declaration(n.return_type, new_name, params, annotations,
+                                 comments))
 
   fully_qualified_class = jni_generator.ExtractFullyQualifiedJavaClassName(
-    java_file_name, contents)
+      java_file_name, contents)
   class_name = fully_qualified_class.split('/')[-1]
   jni_class_name = class_name + 'Jni'
 
@@ -310,15 +311,15 @@ def convert_file_to_proxy_natives(java_file_name, dry=False, verbose=True):
 
   # Build and insert the @NativeMethods interface.
   interface = _JNI_INTERFACE_TEMPLATES.substitute({
-    'INTERFACE_NAME': 'Natives',
-    'METHODS': ''.join(methods)
+      'INTERFACE_NAME': 'Natives',
+      'METHODS': ''.join(methods)
   })
 
   # Insert the interface at the bottom of the top level class.
   # Most of the time this will be before the last }.
   insertion_point = contents.rfind('}')
   contents = contents[:insertion_point] + '\n' + interface + contents[
-                                                             insertion_point:]
+      insertion_point:]
 
   if not dry:
     with open(java_file_name, 'w') as f:
@@ -334,41 +335,41 @@ def main(argv):
   mutually_ex_group = arg_parser.add_mutually_exclusive_group()
 
   mutually_ex_group.add_argument(
-    '-R',
-    '--recursive',
-    action='store_true',
-    help='Run recursively over all java files '
-         'descendants of the current directory.',
-    default=False)
+      '-R',
+      '--recursive',
+      action='store_true',
+      help='Run recursively over all java files '
+      'descendants of the current directory.',
+      default=False)
   mutually_ex_group.add_argument(
-    '--read_cache',
-    help='Reads paths to refactor from pickled file %s.' % PICKLE_LOCATION,
-    action='store_true',
-    default=False)
+      '--read_cache',
+      help='Reads paths to refactor from pickled file %s.' % PICKLE_LOCATION,
+      action='store_true',
+      default=False)
   mutually_ex_group.add_argument(
-    '--source', help='Path to refactor single source file.', default=None)
+      '--source', help='Path to refactor single source file.', default=None)
 
   arg_parser.add_argument(
-    '--cache',
-    action='store_true',
-    help='Finds all java files with native functions recursively from '
-         'the current directory, then pickles and saves them to %s and then'
-         'exits.' % PICKLE_LOCATION,
-    default=False)
+      '--cache',
+      action='store_true',
+      help='Finds all java files with native functions recursively from '
+      'the current directory, then pickles and saves them to %s and then'
+      'exits.' % PICKLE_LOCATION,
+      default=False)
   arg_parser.add_argument(
-    '--dry_run',
-    default=False,
-    action='store_true',
-    help='Print refactor output to console instead '
-         'of replacing the contents of files.')
+      '--dry_run',
+      default=False,
+      action='store_true',
+      help='Print refactor output to console instead '
+      'of replacing the contents of files.')
   arg_parser.add_argument(
-    '--nonstatic',
-    default=False,
-    action='store_true',
-    help='If true converts native nonstatic methods to static methods'
-         ' instead of converting static methods to new jni.')
+      '--nonstatic',
+      default=False,
+      action='store_true',
+      help='If true converts native nonstatic methods to static methods'
+      ' instead of converting static methods to new jni.')
   arg_parser.add_argument(
-    '--verbose', default=False, action='store_true', help='')
+      '--verbose', default=False, action='store_true', help='')
 
   args = arg_parser.parse_args()
 
@@ -383,19 +384,21 @@ def main(argv):
       print('Found %s java paths.' % len(java_file_paths))
   elif args.recursive:
     ignored_paths = [
-      'third_party', 'src/out', 'out/Debug', 'library_loader', '.cipd',
-      'jni_generator', 'media', 'accessibility', '/vr', 'website', 'gcm_driver',
-      'preferences'
+        'third_party', 'src/out', 'out/Debug', 'library_loader', '.cipd',
+        'jni_generator', 'media', 'accessibility', '/vr', 'website',
+        'gcm_driver', 'preferences'
     ]
 
     for root, dirs, files in os.walk(os.path.abspath('.')):
+
       def getPaths():
         for ignored_path in ignored_paths:
           if ignored_path in root:
             return
 
           java_file_paths.extend(
-            ['%s/%s' % (root, f) for f in files if f.endswith('.java')])
+              ['%s/%s' % (root, f) for f in files if f.endswith('.java')])
+
       getPaths()
 
   else:
@@ -405,8 +408,7 @@ def main(argv):
 
   if args.cache:
     with open(PICKLE_LOCATION, 'w') as file:
-      pickle.dump(
-        filter_files_with_natives(java_file_paths), file)
+      pickle.dump(filter_files_with_natives(java_file_paths), file)
       print('Java files with proxy natives written to ' + PICKLE_LOCATION)
 
   i = 1
