@@ -5667,6 +5667,9 @@ crbug.com/963740 [ Win ] compositing/video-frame-size-change.html [ Pass Failure
 # Sheriff 2019-05-17
 crbug.com/964239 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
 
+# Workaround for bug; should be removed soon.
+crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.https.html [ Timeout ]
+
 # Sheriff 2019-05-20
 crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
 crbug.com/964158 [ Linux ] external/wpt/payment-handler/change-payment-method.https.html [ Pass Crash ]

@@ -198,7 +198,9 @@ class CORE_EXPORT WorkerGlobalScope
   }
 
   TrustedTypePolicyFactory* GetTrustedTypes() const override;
-  TrustedTypePolicyFactory* trustedTypes() const { return GetTrustedTypes(); }
+  TrustedTypePolicyFactory* trustedTypesWorkers() const {
+    return GetTrustedTypes();
+  }
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,

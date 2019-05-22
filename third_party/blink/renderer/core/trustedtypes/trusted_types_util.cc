@@ -113,8 +113,6 @@ String GetStringFromTrustedType(
         string_or_trusted_type,
     const ExecutionContext* execution_context,
     ExceptionState& exception_state) {
-  DCHECK(string_or_trusted_type.IsString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context));
   DCHECK(!string_or_trusted_type.IsNull());
 
   if (string_or_trusted_type.IsString() &&
@@ -210,8 +208,6 @@ String GetStringFromSpecificTrustedType(
 String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
                                 const ExecutionContext* execution_context,
                                 ExceptionState& exception_state) {
-  DCHECK(string_or_trusted_html.IsString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context));
   DCHECK(!string_or_trusted_html.IsNull());
 
   if (string_or_trusted_html.IsTrustedHTML()) {
@@ -255,9 +251,6 @@ String GetStringFromTrustedScript(
     StringOrTrustedScript string_or_trusted_script,
     const ExecutionContext* execution_context,
     ExceptionState& exception_state) {
-  DCHECK(string_or_trusted_script.IsString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context));
-
   // To remain compatible with legacy behaviour, HTMLElement uses extended IDL
   // attributes to allow for nullable union of (DOMString or TrustedScript).
   // Thus, this method is required to handle the case where
@@ -314,8 +307,6 @@ String GetStringFromTrustedScriptURL(
     StringOrTrustedScriptURL string_or_trusted_script_url,
     const ExecutionContext* execution_context,
     ExceptionState& exception_state) {
-  DCHECK(string_or_trusted_script_url.IsString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context));
   DCHECK(!string_or_trusted_script_url.IsNull());
 
   bool require_trusted_type =
@@ -355,8 +346,6 @@ String GetStringFromTrustedScriptURL(
 String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
                                const ExecutionContext* execution_context,
                                ExceptionState& exception_state) {
-  DCHECK(string_or_trusted_url.IsUSVString() ||
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context));
   DCHECK(!string_or_trusted_url.IsNull());
 
   bool require_trusted_type = RequireTrustedTypes(execution_context);
