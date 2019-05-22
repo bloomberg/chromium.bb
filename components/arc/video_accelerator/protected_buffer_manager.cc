@@ -12,13 +12,12 @@
 #include "base/memory/shared_memory.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/protected_buffer_allocator.h"
+#include "media/gpu/macros.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace arc {
 

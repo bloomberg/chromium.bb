@@ -13,11 +13,10 @@
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
+#include "media/gpu/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-
-#define DVLOGF(x) DVLOG(x) << __func__ << "(): "
 
 namespace arc {
 

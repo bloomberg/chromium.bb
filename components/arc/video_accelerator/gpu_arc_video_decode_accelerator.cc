@@ -15,11 +15,8 @@
 #include "media/base/video_types.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
+#include "media/gpu/macros.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
 
 // Make sure arc::mojom::VideoDecodeAccelerator::Result and
 // media::VideoDecodeAccelerator::Error match.

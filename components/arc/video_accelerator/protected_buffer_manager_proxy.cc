@@ -6,9 +6,8 @@
 
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
+#include "media/gpu/macros.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace arc {
 
