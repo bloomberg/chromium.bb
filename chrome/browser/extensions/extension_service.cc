@@ -416,6 +416,7 @@ void ExtensionService::Init() {
   if (load_saved_extensions)
     InstalledLoader(this).LoadAllExtensions();
 
+  CheckManagementPolicy();
   OnInstalledExtensionsLoaded();
 
   LoadExtensionsFromCommandLineFlag(::switches::kDisableExtensionsExcept);
