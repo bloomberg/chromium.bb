@@ -270,11 +270,6 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
     return;
   }
 
-  // Strip off query string parameters
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  GURL base_config_service_url =
-      config_service_url_.ReplaceComponents(replacements);
   config_fetch_start_time_ = base::TimeTicks::Now();
 
   RetrieveRemoteConfig();
