@@ -15,6 +15,8 @@ source_set("platform") {
     "api/task_runner.h",
     "api/task_runner_factory.h",
     "api/time.h",
+    "api/tls_socket.h",
+    "api/tls_socket_creds.h",
     "api/udp_socket.h",
     "base/time.cc",
   ]
