@@ -22,7 +22,10 @@ namespace arc {
 
 GpuArcVideoEncodeAccelerator::GpuArcVideoEncodeAccelerator(
     const gpu::GpuPreferences& gpu_preferences)
-    : gpu_preferences_(gpu_preferences) {}
+    : gpu_preferences_(gpu_preferences),
+      input_storage_type_(
+          media::VideoEncodeAccelerator::Config::StorageType::kShmem),
+      bitstream_buffer_serial_(0) {}
 
 GpuArcVideoEncodeAccelerator::~GpuArcVideoEncodeAccelerator() = default;
 
