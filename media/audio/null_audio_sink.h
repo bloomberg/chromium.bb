@@ -32,6 +32,7 @@ class MEDIA_EXPORT NullAudioSink : public SwitchableAudioRendererSink {
   void Stop() override;
   void Pause() override;
   void Play() override;
+  void Flush() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
   void GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) override;

@@ -85,6 +85,7 @@ class MockAudioOutputIPC : public AudioOutputIPC {
            const base::Optional<base::UnguessableToken>& processing_id));
   MOCK_METHOD0(PlayStream, void());
   MOCK_METHOD0(PauseStream, void());
+  MOCK_METHOD0(FlushStream, void());
   MOCK_METHOD0(CloseStream, void());
   MOCK_METHOD1(SetVolume, void(double volume));
 };
@@ -100,6 +101,7 @@ class AudioOutputDeviceTest : public testing::Test {
   void StartAudioDevice();
   void CallOnStreamCreated();
   void StopAudioDevice();
+  void FlushAudioDevice();
   void CreateDevice(const std::string& device_id,
                     base::TimeDelta timeout = kAuthTimeout);
   void SetDevice(const std::string& device_id);
@@ -222,6 +224,14 @@ void AudioOutputDeviceTest::StopAudioDevice() {
     EXPECT_CALL(*audio_output_ipc_, CloseStream());
 
   audio_device_->Stop();
+  task_env_.FastForwardBy(base::TimeDelta());
+}
+
+void AudioOutputDeviceTest::FlushAudioDevice() {
+  if (device_status_ == OUTPUT_DEVICE_STATUS_OK)
+    EXPECT_CALL(*audio_output_ipc_, FlushStream());
+
+  audio_device_->Flush();
   task_env_.FastForwardBy(base::TimeDelta());
 }
 
@@ -381,6 +391,12 @@ TEST_F(AudioOutputDeviceTest, GetOutputDeviceInfoAsync_Okay) {
 
   audio_device_->Stop();
   task_env_.FastForwardBy(base::TimeDelta());
+}
+
+TEST_F(AudioOutputDeviceTest, StreamIsFlushed) {
+  StartAudioDevice();
+  FlushAudioDevice();
+  StopAudioDevice();
 }
 
 namespace {

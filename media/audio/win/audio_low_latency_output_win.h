@@ -138,6 +138,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   void Start(AudioSourceCallback* callback) override;
   void Stop() override;
   void Close() override;
+  void Flush() override;
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
 

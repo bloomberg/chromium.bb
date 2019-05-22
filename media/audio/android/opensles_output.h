@@ -42,6 +42,7 @@ class OpenSLESOutputStream : public MuteableAudioOutputStream {
   // Implementation of MuteableAudioOutputStream.
   bool Open() override;
   void Close() override;
+  void Flush() override;
   void Start(AudioSourceCallback* callback) override;
   void Stop() override;
   void SetVolume(double volume) override;

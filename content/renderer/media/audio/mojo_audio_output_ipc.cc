@@ -108,6 +108,12 @@ void MojoAudioOutputIPC::PauseStream() {
     stream_->Pause();
 }
 
+void MojoAudioOutputIPC::FlushStream() {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  if (stream_.is_bound())
+    stream_->Flush();
+}
+
 void MojoAudioOutputIPC::CloseStream() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   stream_provider_.reset();

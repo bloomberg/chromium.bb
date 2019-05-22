@@ -52,6 +52,7 @@ class AudioDiscarder : public media::AudioOutputStream {
   void SetVolume(double volume) override {}
   void GetVolume(double* volume) override { *volume = 0; }
   void Close() override { delete this; }
+  void Flush() override {}
 
  private:
   ~AudioDiscarder() override {}

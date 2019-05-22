@@ -95,6 +95,10 @@ class MEDIA_EXPORT AudioOutputIPC {
   // AudioOutputController::Pause().
   virtual void PauseStream() = 0;
 
+  // Flushes an audio stream. This should only be called when the stream is
+  // paused.
+  virtual void FlushStream() = 0;
+
   // Closes the audio stream which should shut down the corresponding
   // AudioOutputController in the peer process. Usage of an AudioOutputIPC must
   // always end with a call to CloseStream(), and the |delegate| passed to other

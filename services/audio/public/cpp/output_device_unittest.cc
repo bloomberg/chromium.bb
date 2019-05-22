@@ -60,6 +60,7 @@ class MockStream : public media::mojom::AudioOutputStream {
   MOCK_METHOD0(Play, void());
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD1(SetVolume, void(double));
+  MOCK_METHOD0(Flush, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockStream);

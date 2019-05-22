@@ -117,6 +117,7 @@ class MockAudioOutputStream : public media::AudioOutputStream,
     Stop();
     delete this;
   }
+  void Flush() override {}
 
   void ThreadMain() override {
     std::unique_ptr<media::AudioOutputStream::AudioSourceCallback>

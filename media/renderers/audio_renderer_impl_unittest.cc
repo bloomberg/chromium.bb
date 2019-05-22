@@ -23,6 +23,7 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/media_client.h"
 #include "media/base/media_util.h"
+#include "media/base/mock_audio_renderer_sink.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,6 +156,17 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     sink_ = new FakeAudioRendererSink(hardware_params_);
     renderer_.reset(new AudioRendererImpl(
         main_thread_task_runner_, sink_.get(),
+        base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
+                   base::Unretained(this)),
+        &media_log_));
+    testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
+    ConfigureDemuxerStream(true);
+  }
+
+  void ConfigureMockRenderer(const AudioParameters& params) {
+    mock_sink_ = new MockAudioRendererSink();
+    renderer_.reset(new AudioRendererImpl(
+        main_thread_task_runner_, mock_sink_.get(),
         base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
                    base::Unretained(this)),
         &media_log_));
@@ -496,6 +508,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   NullMediaLog media_log_;
   std::unique_ptr<AudioRendererImpl> renderer_;
   scoped_refptr<FakeAudioRendererSink> sink_;
+  scoped_refptr<MockAudioRendererSink> mock_sink_;
   base::SimpleTestTickClock tick_clock_;
   PipelineStatistics last_statistics_;
 
@@ -675,6 +688,7 @@ TEST_F(AudioRendererImplTest, Underflow_CapacityResetsAfterFlush) {
   EXPECT_GT(buffer_capacity().value, initial_capacity.value);
 
   // Verify that the buffer capacity is restored to the |initial_capacity|.
+  StopTicking();
   FlushDuringPendingRead();
   EXPECT_EQ(buffer_capacity().value, initial_capacity.value);
 }
@@ -1224,6 +1238,24 @@ TEST_F(AudioRendererImplTest, BitstreamEndOfStream) {
   // Clear the use of |media_client_|, which was set in
   // InitializeBitstreamFormat().
   SetMediaClient(nullptr);
+}
+
+TEST_F(AudioRendererImplTest, SinkIsFlushed) {
+  ConfigureMockRenderer(AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                        kChannelLayout, kOutputSamplesPerSecond,
+                                        1024 * 15));
+
+  Initialize();
+  Preroll();
+  StartTicking();
+  WaitForPendingRead();
+  StopTicking();
+
+  // Start flushing.
+  EXPECT_CALL(*mock_sink_, Flush());
+  WaitableMessageLoopEvent flush_event;
+  renderer_->Flush(flush_event.GetClosure());
+  renderer_.reset();
 }
 
 }  // namespace media

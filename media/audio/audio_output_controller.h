@@ -162,6 +162,9 @@ class MEDIA_EXPORT AudioOutputController
   // case, it must be null.
   void Close(base::OnceClosure closed_task);
 
+  // Flushes the audio output stream
+  void Flush();
+
   // Sets the volume of the audio output stream.
   void SetVolume(double volume);
 
@@ -247,6 +250,7 @@ class MEDIA_EXPORT AudioOutputController
   void DoPlay();
   void DoPause();
   void DoClose();
+  void DoFlush();
   void DoSetVolume(double volume);
   void DoReportError();
   void DoStartDiverting(AudioOutputStream* to_stream);

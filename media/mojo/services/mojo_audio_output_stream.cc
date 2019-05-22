@@ -52,6 +52,11 @@ void MojoAudioOutputStream::Pause() {
   delegate_->OnPauseStream();
 }
 
+void MojoAudioOutputStream::Flush() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  delegate_->OnFlushStream();
+}
+
 void MojoAudioOutputStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (volume < 0 || volume > 1) {

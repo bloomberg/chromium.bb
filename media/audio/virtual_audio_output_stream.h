@@ -44,6 +44,7 @@ class MEDIA_EXPORT VirtualAudioOutputStream
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
   void Close() override;
+  void Flush() override;
 
  private:
   // AudioConverter::InputCallback:

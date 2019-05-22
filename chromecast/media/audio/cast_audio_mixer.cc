@@ -137,6 +137,9 @@ class CastAudioMixer::MixerProxyStream
     source_callback_ = nullptr;
   }
 
+  // There is nothing to flush since the proxy stream is removed during Stop().
+  void Flush() override {}
+
   void SetVolume(double volume) override {
     DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
 

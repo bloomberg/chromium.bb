@@ -54,6 +54,7 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   void StopStream(AudioOutputProxy* stream_proxy) override;
   void StreamVolumeSet(AudioOutputProxy* stream_proxy, double volume) override;
   void CloseStream(AudioOutputProxy* stream_proxy) override;
+  void FlushStream(AudioOutputProxy* stream_proxy) override;
 
  private:
   using CallbackMap =

@@ -106,6 +106,7 @@ class DummyAudioOutputStream : public media::AudioOutputStream {
   void SetVolume(double volume) override {}
   void GetVolume(double* volume) override { *volume = 1; }
   void Close() override {}
+  void Flush() override {}
 };
 
 class MockAudioOutputStreamObserver

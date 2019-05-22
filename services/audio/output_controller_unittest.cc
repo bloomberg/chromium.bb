@@ -132,6 +132,7 @@ class MockAudioOutputStream : public AudioOutputStream,
   MOCK_METHOD0(DidStop, void());
   MOCK_METHOD0(DidClose, void());
   MOCK_METHOD1(DidSetVolume, void(double));
+  MOCK_METHOD0(DidFlush, void());
 
   bool Open() override {
     if (impl_)
@@ -186,6 +187,12 @@ class MockAudioOutputStream : public AudioOutputStream,
   }
 
   void GetVolume(double* volume) override { *volume = volume_; }
+
+  void Flush() override {
+    if (impl_)
+      impl_->Flush();
+    DidFlush();
+  }
 
  protected:
   ~MockAudioOutputStream() override = default;
@@ -452,6 +459,8 @@ class OutputControllerTest : public ::testing::Test {
     loop.Run();
   }
 
+  void Flush() { controller_->Flush(); }
+
   void SimulateErrorThenDeviceChange() {
     audio_manager_.GetTaskRunner()->PostTask(
         FROM_HERE,
@@ -477,12 +486,13 @@ class OutputControllerTest : public ::testing::Test {
     Mock::VerifyAndClearExpectations(&mock_event_handler_);
   }
 
+  StrictMock<MockOutputControllerEventHandler> mock_event_handler_;
+
  private:
   base::TestMessageLoop message_loop_;
   AudioManagerForControllerTest audio_manager_;
   base::UnguessableToken group_id_;
   base::UnguessableToken processing_id_;
-  StrictMock<MockOutputControllerEventHandler> mock_event_handler_;
   StrictMock<MockOutputControllerSyncReader> mock_sync_reader_;
   base::Optional<OutputController> controller_;
   StreamMonitorCoordinator stream_monitor_coordinator_;
@@ -735,6 +745,30 @@ TEST_F(OutputControllerTest,
   Close();
   JoinProcessingGroup(&monitor);
   LeaveProcessingGroup(&monitor);
+}
+
+TEST_F(OutputControllerTest, FlushWhenStreamIsPlayingTriggersError) {
+  Create();
+  Play();
+
+  MockAudioOutputStream* const mock_stream = last_created_stream();
+  EXPECT_CALL(*mock_stream, DidFlush()).Times(0);
+  EXPECT_CALL(mock_event_handler_, OnControllerError()).Times(1);
+  Flush();
+
+  Close();
+}
+
+TEST_F(OutputControllerTest, FlushesWhenStreamIsNotPlaying) {
+  Create();
+  Play();
+  Pause();
+
+  MockAudioOutputStream* const mock_stream = last_created_stream();
+  EXPECT_CALL(*mock_stream, DidFlush()).Times(1);
+  Flush();
+
+  Close();
 }
 
 }  // namespace

@@ -32,6 +32,7 @@ class MEDIA_EXPORT FakeAudioOutputStream : public MuteableAudioOutputStream {
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
   void Close() override;
+  void Flush() override;
   void SetMute(bool muted) override;
 
  private:

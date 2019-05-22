@@ -22,6 +22,9 @@ interface AudioOutputStream {
   // this.
   Pause();
 
+  // Flushes buffered audio.  This should not be called when playing.
+  Flush();
+
   // Sets volume. Volume must be in the range [0, 1].
   SetVolume(double volume);
 };

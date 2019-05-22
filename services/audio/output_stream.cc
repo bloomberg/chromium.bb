@@ -129,6 +129,12 @@ void OutputStream::Pause() {
     log_->OnStopped();
 }
 
+void OutputStream::Flush() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+
+  controller_.Flush();
+}
+
 void OutputStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("audio", "SetVolume", this, "volume",

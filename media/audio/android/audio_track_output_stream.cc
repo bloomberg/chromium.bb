@@ -88,6 +88,10 @@ void AudioTrackOutputStream::Close() {
   audio_manager_->ReleaseOutputStream(this);
 }
 
+// This stream is always used with sub second buffer sizes, where it's
+// sufficient to simply always flush upon Start().
+void AudioTrackOutputStream::Flush() {}
+
 void AudioTrackOutputStream::SetMute(bool muted) {
   if (params_.IsBitstreamFormat() && muted) {
     LOG(WARNING)

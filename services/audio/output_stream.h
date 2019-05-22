@@ -69,6 +69,7 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   // media::mojom::AudioOutputStream implementation.
   void Play() final;
   void Pause() final;
+  void Flush() final;
   void SetVolume(double volume) final;
 
   // OutputController::EventHandler implementation.

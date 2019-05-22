@@ -124,6 +124,10 @@ void PulseAudioOutputStream::Close() {
   manager_->ReleaseOutputStream(this);
 }
 
+// This stream is always used with sub second buffer sizes, where it's
+// sufficient to simply always flush upon Start().
+void PulseAudioOutputStream::Flush() {}
+
 void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
   int bytes_remaining = requested_bytes;
   while (bytes_remaining > 0) {

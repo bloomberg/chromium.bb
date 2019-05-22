@@ -66,6 +66,7 @@ class MockDelegate : public AudioOutputDelegate {
   MOCK_METHOD0(OnPlayStream, void());
   MOCK_METHOD0(OnPauseStream, void());
   MOCK_METHOD1(OnSetVolume, void(double));
+  MOCK_METHOD0(OnFlushStream, void());
 };
 
 class MockDelegateFactory {
@@ -225,6 +226,17 @@ TEST_F(MojoAudioOutputStreamTest, SetVolume_SetsVolume) {
   delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   audio_output_ptr->SetVolume(kNewVolume);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(MojoAudioOutputStreamTest, Flush_FlushesStream) {
+  AudioOutputStreamPtr audio_output_ptr = CreateAudioOutput();
+
+  EXPECT_CALL(client_, GotNotification());
+  EXPECT_CALL(*delegate_, OnFlushStream());
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
+                                           std::move(foreign_socket_));
+  audio_output_ptr->Flush();
   base::RunLoop().RunUntilIdle();
 }
 

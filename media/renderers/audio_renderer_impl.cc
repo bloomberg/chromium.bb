@@ -275,6 +275,11 @@ void AudioRendererImpl::Flush(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT_ASYNC_BEGIN0("media", "AudioRendererImpl::Flush", this);
 
+  // Flush |sink_| now.  |sink_| must only be accessed on |task_runner_| and not
+  // be called under |lock_|.
+  DCHECK(!sink_playing_);
+  sink_->Flush();
+
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPlaying);
   DCHECK(!flush_cb_);

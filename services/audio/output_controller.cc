@@ -317,6 +317,21 @@ void OutputController::Pause() {
   handler_->OnControllerPaused();
 }
 
+void OutputController::Flush() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("audio", "OutputController::Flush");
+  handler_->OnLog("OutputController::Flush");
+
+  if (state_ == kPlaying) {
+    handler_->OnControllerError();
+    return;
+  }
+
+  if (stream_) {
+    stream_->Flush();
+  }
+}
+
 void OutputController::Close() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CloseTime");

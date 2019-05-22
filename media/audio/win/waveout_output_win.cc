@@ -302,6 +302,10 @@ void PCMWaveOutAudioOutputStream::Close() {
   manager_->ReleaseOutputStream(this);
 }
 
+// This stream is always used with sub second buffer sizes, where it's
+// sufficient to simply always flush upon Start().
+void PCMWaveOutAudioOutputStream::Flush() {}
+
 void PCMWaveOutAudioOutputStream::SetVolume(double volume) {
   if (!waveout_)
     return;

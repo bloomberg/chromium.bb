@@ -689,6 +689,12 @@ void CastAudioOutputStream::Stop() {
   }
 }
 
+void CastAudioOutputStream::Flush() {
+  DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
+  DVLOG(2) << this << ": " << __func__;
+  // TODO(alexleung): Implement in follow-up CL.
+}
+
 void CastAudioOutputStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   DCHECK(audio_thread_state_ != kPendingClose);
