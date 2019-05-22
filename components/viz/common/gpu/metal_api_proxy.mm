@@ -32,6 +32,10 @@
   -(R)fn : (A0)a0 a1 : (A1)a1 {          \
     return [device_ fn:a0 a1:a1];        \
   }
+#define PROXY_METHOD3(R, fn, A0, a1, A1, a2, A2) \
+  -(R)fn : (A0)a0 a1 : (A1)a1 : (A2)a2 {          \
+    return [device_ fn:a0 a1:a1 a2:a2];        \
+  }
 #define PROXY_METHOD0_SLOW(R, fn)                                  \
   -(R)fn {                                                         \
     gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
@@ -252,5 +256,30 @@ PROXY_METHOD2(void,
 PROXY_METHOD1_SLOW(nullable id<MTLArgumentEncoder>,
                    newArgumentEncoderWithArguments,
                    NSArray<MTLArgumentDescriptor*>*)
+#if defined(MAC_OS_X_VERSION_10_14)
+PROXY_METHOD1_SLOW(nullable id<MTLTexture>,
+                   newSharedTextureWithDescriptor,
+                   MTLTextureDescriptor*)
+PROXY_METHOD1_SLOW(nullable id<MTLTexture>,
+                   newSharedTextureWithHandle,
+                   MTLSharedTextureHandle*)
+PROXY_METHOD1(NSUInteger,
+              minimumTextureBufferAlignmentForPixelFormat,
+              MTLPixelFormat)
+PROXY_METHOD0(NSUInteger, maxBufferLength)
+PROXY_METHOD0(NSUInteger, maxArgumentBufferSamplerCount)
+PROXY_METHOD3_SLOW(nullable id<MTLIndirectCommandBuffer>,
+                   newIndirectCommandBufferWithDescriptor,
+                   MTLIndirectCommandBufferDescriptor*,
+                   maxCommandCount,
+                   NSUInteger,
+                   options,
+                   MTLResourceOptions)
+PROXY_METHOD0(nullable id<MTLEvent>, newEvent)
+PROXY_METHOD0(nullable id<MTLSharedEvent>, newSharedEvent)
+PROXY_METHOD1(nullable id<MTLSharedEvent>,
+              newSharedEventWithHandle,
+              MTLSharedEventHandle*)
+#endif
 #pragma clang diagnostic pop
 @end
