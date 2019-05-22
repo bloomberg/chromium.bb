@@ -588,8 +588,21 @@
       },
       'chromeos-betty-google-rel': {
         'additional_compile_targets': [
-          'chrome',
+          'chromiumos_preflight',
         ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_friendly_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+              'os': 'Ubuntu-16.04',
+              'pool': 'chrome.tests.cros-vm',
+            },
+          ],
+        },
       },
       'linux-chromeos-google-rel': {
         'additional_compile_targets': [
