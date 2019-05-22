@@ -210,7 +210,7 @@ class FrameData {
   page_load_metrics::mojom::PageLoadTimingPtr timing_;
 
   // Number of resources loaded by the frame (both complete and incomplete).
-  int num_resources_;
+  int num_resources_ = 0;
 
   // Total bytes used to load resources in the frame, including headers.
   size_t bytes_;

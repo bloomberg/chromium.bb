@@ -508,6 +508,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdFrameMimeTypeBytes) {
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kLoading_CacheBytesName,
       ukm::GetExponentialBucketMinForBytes(40 * 1024));
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kLoading_NumResourcesName,
+      4);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
