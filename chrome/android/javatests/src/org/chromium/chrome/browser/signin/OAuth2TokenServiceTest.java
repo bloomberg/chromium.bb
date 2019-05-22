@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.AdvancedMockContext;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -25,12 +24,47 @@ import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 
 /** Tests for OAuth2TokenService. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class OAuth2TokenServiceTest {
     private AdvancedMockContext mContext;
     private FakeAccountManagerDelegate mAccountManager;
+
+    /**
+     * Class handling GetAccessToken callbacks and providing a blocking {@link
+     * getToken}.
+     */
+    class GetAccessTokenCallbackForTest implements OAuth2TokenService.GetAccessTokenCallback {
+        private String mToken;
+        final CountDownLatch mTokenRetrievedCountDown = new CountDownLatch(1);
+
+        /**
+         * Blocks until the callback is called once and returns the token.
+         * See {@link CountDownLatch#await}
+         */
+        public String getToken() {
+            try {
+                mTokenRetrievedCountDown.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Interrupted or timed-out while waiting for updates", e);
+            }
+            return mToken;
+        }
+
+        @Override
+        public void onGetTokenSuccess(String token) {
+            mToken = token;
+            mTokenRetrievedCountDown.countDown();
+        }
+
+        @Override
+        public void onGetTokenFailure(boolean isTransientError) {
+            mToken = null;
+            mTokenRetrievedCountDown.countDown();
+        }
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -94,7 +128,6 @@ public class OAuth2TokenServiceTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @DisabledTest(message = "https://crbug.com/962976")
     public void testGetOAuth2AccessTokenWithTimeoutOnSuccess() {
         String authToken = "someToken";
         // Auth token should be successfully received.
@@ -104,7 +137,6 @@ public class OAuth2TokenServiceTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @DisabledTest(message = "https://crbug.com/962976")
     public void testGetOAuth2AccessTokenWithTimeoutOnError() {
         String authToken = null;
         // Should not crash when auth token is null.
@@ -112,30 +144,18 @@ public class OAuth2TokenServiceTest {
     }
 
     private void runTestOfGetOAuth2AccessTokenWithTimeout(String expectedToken) {
-        String scope = "http://example.com/scope";
+        String scope = "oauth2:http://example.com/scope";
         Account account = AccountManagerFacade.createAccountFromName("test@gmail.com");
-        String oauth2Scope = "oauth2:" + scope;
 
         // Add an account with given auth token for the given scope, already accepted auth popup.
         AccountHolder accountHolder = AccountHolder.builder(account)
-                                              .hasBeenAccepted(oauth2Scope, true)
-                                              .authToken(oauth2Scope, expectedToken)
+                                              .hasBeenAccepted(scope, true)
+                                              .authToken(scope, expectedToken)
                                               .build();
         mAccountManager.addAccountHolderBlocking(accountHolder);
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OAuth2TokenService.getAccessToken(
-                    account, scope, new OAuth2TokenService.GetAccessTokenCallback() {
-                        @Override
-                        public void onGetTokenSuccess(String token) {
-                            Assert.assertEquals(expectedToken, token);
-                        }
-
-                        @Override
-                        public void onGetTokenFailure(boolean isTransientError) {
-                            Assert.fail();
-                        }
-                    });
-        });
+        GetAccessTokenCallbackForTest callback = new GetAccessTokenCallbackForTest();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { OAuth2TokenService.getAccessToken(account, scope, callback); });
+        Assert.assertEquals(expectedToken, callback.getToken());
     }
 }
