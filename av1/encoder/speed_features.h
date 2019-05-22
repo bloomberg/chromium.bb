@@ -716,6 +716,11 @@ typedef struct SPEED_FEATURES {
 
   // check intra prediction for non-RD mode.
   int check_intra_pred_nonrd;
+
+  // Only search compound modes with at least one "good" reference frame.
+  // A reference frame is good if, after looking at its performance among
+  // the single reference modes, it is one of the two best performers.
+  int prune_compound_using_single_ref;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

@@ -12541,6 +12541,39 @@ static int do_tx_search_mode(int do_tx_search_global, int midx, int adaptive) {
   return midx < 7 ? 2 : 0;
 }
 
+static int compare_int64(const void *a, const void *b) {
+  int64_t a64 = *((int64_t *)a);
+  int64_t b64 = *((int64_t *)b);
+  if (a64 < b64) {
+    return -1;
+  } else if (a64 == b64) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+// Find the 2nd best RD for a reference frame (among single reference modes)
+// and store it in the 0-th element in ref_frame_rd.
+static void find_top_2_ref(int64_t ref_frame_rd[REF_FRAMES]) {
+  assert(ref_frame_rd[0] == INT64_MAX);
+  int64_t ref_copy[REF_FRAMES - 1];
+  memcpy(ref_copy, ref_frame_rd + 1,
+         sizeof(ref_frame_rd[0]) * (REF_FRAMES - 1));
+  qsort(ref_copy, REF_FRAMES - 1, sizeof(int64_t), compare_int64);
+  int64_t second_best = ref_copy[1];
+  ref_frame_rd[0] = second_best;
+}
+
+// Check if either frame is one of the top two.
+static INLINE bool in_top_2_ref(int64_t ref_frame_rd[REF_FRAMES],
+                                MV_REFERENCE_FRAME frame1,
+                                MV_REFERENCE_FRAME frame2) {
+  assert(frame2 > 0);
+  return ref_frame_rd[frame1] <= ref_frame_rd[0] ||
+         ref_frame_rd[frame2] <= ref_frame_rd[0];
+}
+
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
                                RD_STATS *rd_cost, BLOCK_SIZE bsize,
@@ -12631,6 +12664,12 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   CompoundTypeRdBuffers rd_buffers;
   alloc_compound_type_rd_buffers(cm, &rd_buffers);
 
+  // The best RD found for the reference frame, among single reference modes.
+  // Note that the 0-th element will contain a cut-off that is later used
+  // to determine if we should skip a compound mode.
+  int64_t ref_frame_rd[REF_FRAMES] = { INT64_MAX, INT64_MAX, INT64_MAX,
+                                       INT64_MAX, INT64_MAX, INT64_MAX,
+                                       INT64_MAX, INT64_MAX };
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     const int do_tx_search = do_tx_search_mode(
         do_tx_search_global, midx, sf->inter_mode_rd_model_estimation_adaptive);
@@ -12639,6 +12678,18 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
     const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
     const int comp_pred = second_ref_frame > INTRA_FRAME;
+
+    // After we done with single reference modes, find the 2nd best RD
+    // for a reference frame. Only search compound modes that have a reference
+    // frame at least as good as the 2nd best.
+    if (sf->prune_compound_using_single_ref &&
+        midx == MAX_SINGLE_REF_MODES + 1) {
+      find_top_2_ref(ref_frame_rd);
+    }
+    if (sf->prune_compound_using_single_ref && midx > MAX_SINGLE_REF_MODES &&
+        comp_pred && !in_top_2_ref(ref_frame_rd, ref_frame, second_ref_frame)) {
+      continue;
+    }
 
     // Reach the first compound prediction mode
     if (sf->prune_comp_search_by_single_result > 0 && comp_pred &&
@@ -12780,7 +12831,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       }
     }
 
-    // Did this mode help.. i.e. is it the new best mode
+    if (sf->prune_compound_using_single_ref && midx <= MAX_SINGLE_REF_MODES &&
+        this_rd < ref_frame_rd[ref_frame]) {
+      ref_frame_rd[ref_frame] = this_rd;
+    }
+    // Did this mode help, i.e., is it the new best mode
     if (this_rd < search_state.best_rd || x->skip) {
       int mode_excluded = 0;
       if (comp_pred) {
