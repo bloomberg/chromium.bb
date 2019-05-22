@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -34,6 +37,7 @@
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 #include "third_party/blink/renderer/modules/vr/vr_stage_parameters.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -406,7 +410,7 @@ ScriptPromise VRDisplay::requestPresent(
   // If the VRDisplay does not advertise the ability to present reject the
   // request.
   if (!capabilities_->canPresent()) {
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "VRDisplay cannot present.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kVRDisplayCannotPresent);
@@ -423,9 +427,9 @@ ScriptPromise VRDisplay::requestPresent(
   if (first_present) {
     if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
                                                     : nullptr)) {
-      DOMException* exception =
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "API can only be initiated by a user gesture.");
+      auto* exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "API can only be initiated by a user gesture.");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kNotInitiatedByUserGesture);
       return promise;
@@ -440,7 +444,7 @@ ScriptPromise VRDisplay::requestPresent(
   // A valid number of layers must be provided in order to present.
   if (layers.size() == 0 || layers.size() > capabilities_->maxLayers()) {
     ForceExitPresent();
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "Invalid number of layers.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kInvalidNumberOfLayers);
@@ -451,7 +455,7 @@ ScriptPromise VRDisplay::requestPresent(
   // previous, valid source, so delay m_layer reassignment
   if (layers[0]->source().IsNull()) {
     ForceExitPresent();
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "Invalid layer source.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kInvalidLayerSource);
@@ -471,9 +475,9 @@ ScriptPromise VRDisplay::requestPresent(
 
   if (!rendering_context || !rendering_context->Is3d()) {
     ForceExitPresent();
-    DOMException* exception =
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Layer source must have a WebGLRenderingContext");
+    auto* exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "Layer source must have a WebGLRenderingContext");
     resolver->Reject(exception);
     ReportPresentationResult(
         PresentationResult::kLayerSourceMissingWebGLContext);
@@ -488,7 +492,7 @@ ScriptPromise VRDisplay::requestPresent(
       (layer_->rightBounds().size() != 0 &&
        layer_->rightBounds().size() != 4)) {
     ForceExitPresent();
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError,
         "Layer bounds must either be an empty array or have 4 values");
     resolver->Reject(exception);
@@ -499,9 +503,9 @@ ScriptPromise VRDisplay::requestPresent(
   for (float value : layer_->leftBounds()) {
     if (std::isnan(value)) {
       ForceExitPresent();
-      DOMException* exception =
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "Layer bounds must not contain NAN values");
+      auto* exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "Layer bounds must not contain NAN values");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
       return promise;
@@ -511,9 +515,9 @@ ScriptPromise VRDisplay::requestPresent(
   for (float value : layer_->rightBounds()) {
     if (std::isnan(value)) {
       ForceExitPresent();
-      DOMException* exception =
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "Layer bounds must not contain NAN values");
+      auto* exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "Layer bounds must not contain NAN values");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
       return promise;
@@ -528,9 +532,9 @@ ScriptPromise VRDisplay::requestPresent(
   } else if (first_present) {
     if (!device_ptr_) {
       ForceExitPresent();
-      DOMException* exception =
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "The service is no longer active.");
+      auto* exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "The service is no longer active.");
       resolver->Reject(exception);
       return promise;
     }
@@ -598,7 +602,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
     this->BeginPresent();
   } else {
     this->ForceExitPresent();
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Presentation request was denied.");
 
     while (!pending_present_resolvers_.IsEmpty()) {
@@ -634,14 +638,14 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
 
   if (!is_presenting_) {
     // Can't stop presenting if we're not presenting.
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "VRDisplay is not presenting.");
     resolver->Reject(exception);
     return promise;
   }
 
   if (!device_ptr_) {
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "VRService is not available.");
     resolver->Reject(exception);
     return promise;
@@ -660,16 +664,16 @@ void VRDisplay::BeginPresent() {
 
   DOMException* exception = nullptr;
   if (!frame_transport_) {
-    exception =
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "VRDisplay presentation path not configured.");
+    exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "VRDisplay presentation path not configured.");
   }
 
   if (layer_->source().IsOffscreenCanvas()) {
     // TODO(junov, crbug.com/695497): Implement OffscreenCanvas presentation
-    exception =
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "OffscreenCanvas presentation not implemented.");
+    exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "OffscreenCanvas presentation not implemented.");
   } else {
     // A canvas must be either Offscreen or plain HTMLCanvas.
     DCHECK(layer_->source().IsHTMLCanvasElement());

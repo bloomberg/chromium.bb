@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
 
+#include <memory>
+#include <utility>
+
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -17,6 +20,7 @@
 #include "third_party/blink/renderer/modules/webmidi/midi_access.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_options.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_port.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
@@ -104,15 +108,17 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
           std::move(accessor_), options_->hasSysex() && options_->sysex(),
           port_descriptors_, GetExecutionContext()));
     case Result::NOT_SUPPORTED:
-      return Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError));
+      return Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError));
     case Result::INITIALIZATION_ERROR:
-      return Reject(
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               "Platform dependent initialization failed."));
+      return Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError,
+          "Platform dependent initialization failed."));
   }
   NOTREACHED();
-  Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                              "Unknown internal error occurred."));
+  Reject(
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
+                                         "Unknown internal error occurred."));
 }
 
 void MIDIAccessInitializer::Trace(Visitor* visitor) {
@@ -126,18 +132,22 @@ ExecutionContext* MIDIAccessInitializer::GetExecutionContext() const {
 
 void MIDIAccessInitializer::OnPermissionsUpdated(PermissionStatus status) {
   permission_service_.reset();
-  if (status == PermissionStatus::GRANTED)
+  if (status == PermissionStatus::GRANTED) {
     accessor_->StartSession();
-  else
-    Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+  } else {
+    Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
+  }
 }
 
 void MIDIAccessInitializer::OnPermissionUpdated(PermissionStatus status) {
   permission_service_.reset();
-  if (status == PermissionStatus::GRANTED)
+  if (status == PermissionStatus::GRANTED) {
     accessor_->StartSession();
-  else
-    Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+  } else {
+    Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
+  }
 }
 
 }  // namespace blink

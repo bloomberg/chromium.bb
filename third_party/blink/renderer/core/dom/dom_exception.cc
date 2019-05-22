@@ -170,17 +170,6 @@ uint16_t FindLegacyErrorCode(const String& name) {
 }  // namespace
 
 // static
-DOMException* DOMException::Create(DOMExceptionCode exception_code,
-                                   const String& sanitized_message,
-                                   const String& unsanitized_message) {
-  const DOMExceptionEntry* entry = FindErrorEntry(exception_code);
-  return MakeGarbageCollected<DOMException>(
-      ToLegacyErrorCode(entry->code), entry->name ? entry->name : "Error",
-      sanitized_message.IsNull() ? String(entry->message) : sanitized_message,
-      unsanitized_message);
-}
-
-// static
 DOMException* DOMException::Create(const String& message, const String& name) {
   return MakeGarbageCollected<DOMException>(FindLegacyErrorCode(name), name,
                                             message, String());

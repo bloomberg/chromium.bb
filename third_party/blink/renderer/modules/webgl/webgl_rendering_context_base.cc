@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/numerics/checked_math.h"
 #include "base/stl_util.h"
@@ -823,7 +824,8 @@ ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
     ScriptState* script_state) {
   if (isContextLost()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            "Context lost."));
   }
 
@@ -841,7 +843,7 @@ ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
   // compatible GPU.
   return ScriptPromise::RejectWithDOMException(
       script_state,
-      DOMException::Create(
+      MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "Context is not compatible. Switching not yet implemented."));
 }

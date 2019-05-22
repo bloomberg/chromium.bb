@@ -40,12 +40,6 @@ class CORE_EXPORT DOMException : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // This function shouldn't be used except for V8ThrowDOMException. Note that
-  // this function does not associate the stacktrace with the created object.
-  static DOMException* Create(DOMExceptionCode,
-                              const String& sanitized_message = String(),
-                              const String& unsanitized_message = String());
-
   // Constructor exposed to script.
   static DOMException* Create(const String& message, const String& name);
 

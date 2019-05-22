@@ -523,7 +523,8 @@ ScriptPromise CredentialsContainer::get(
 
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
-        resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+        resolver->Reject(
+            MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
         return promise;
       }
       options->signal()->AddAlgorithm(
@@ -704,7 +705,8 @@ ScriptPromise CredentialsContainer::create(
 
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
-        resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
+        resolver->Reject(
+            MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
         return promise;
       }
       options->signal()->AddAlgorithm(

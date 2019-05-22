@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
@@ -182,9 +183,9 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (ContextState() == kClosed) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Cannot suspend a context that has been closed"));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot suspend a context that has been closed"));
   } else {
     suspended_by_user_ = true;
 
@@ -208,9 +209,9 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
 
   if (IsContextClosed()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidAccessError,
-                             "cannot resume a closed AudioContext"));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidAccessError,
+                          "cannot resume a closed AudioContext"));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -288,10 +289,10 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
     // We've already closed the context previously, but it hasn't yet been
     // resolved, so just create a new promise and reject it.
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                             "Cannot close a context that is being closed or "
-                             "has already been closed."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Cannot close a context that is being closed or "
+                          "has already been closed."));
   }
 
   close_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

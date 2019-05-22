@@ -178,7 +178,8 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
 
   if (value.IsNeutered()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            "Value buffer has been detached."));
   }
 

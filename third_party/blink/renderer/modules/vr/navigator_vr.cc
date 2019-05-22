@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 #include "third_party/blink/renderer/modules/xr/navigator_xr.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -66,7 +67,8 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
                                          Navigator& navigator) {
   if (!navigator.GetFrame()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kNotAssociatedWithDocumentMessage));
   }
   return NavigatorVR::From(navigator).getVRDisplays(script_state);
@@ -78,7 +80,8 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   auto* document = GetDocument();
   if (!document) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kNotAssociatedWithDocumentMessage));
   }
 
@@ -93,14 +96,16 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   if (!document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr,
                                   ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlockedMessage));
   }
 
   // Block developers from using WebVR if they've already used WebXR.
   if (NavigatorXR::HasWebXrBeenUsed(*document)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kCannotUseBothNewAndOldAPIMessage));
   }
 

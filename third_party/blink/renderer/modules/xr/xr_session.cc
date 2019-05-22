@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -37,6 +40,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_tracking_state_init.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
@@ -233,13 +237,14 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
                                                const String& type) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                           kSessionEnded));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError, kSessionEnded));
   }
 
   if (sensorless_session_ && type != "viewer") {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                            kReferenceSpaceNotSupported));
   }
 
@@ -268,9 +273,9 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
       reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
     } else {
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               kReferenceSpaceNotSupported));
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kNotSupportedError,
+                            kReferenceSpaceNotSupported));
     }
   } else if (type == "unbounded") {
     if (immersive() && environment_integration_) {
@@ -278,15 +283,16 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
           this, XRReferenceSpace::Type::kTypeUnbounded);
     } else {
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               kReferenceSpaceNotSupported));
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kNotSupportedError,
+                            kReferenceSpaceNotSupported));
     }
   }
 
   if (!reference_space) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                            kUnknownReferenceSpace));
   } else {
     reference_spaces_.push_back(reference_space);
@@ -347,8 +353,8 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
                                         XRSpace* space) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                           kSessionEnded));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError, kSessionEnded));
   }
 
   if (!space) {
@@ -365,7 +371,8 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   // we want.
   if (!xr_->xrEnvironmentProviderPtr()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                            kHitTestNotSupported));
   }
 
@@ -435,8 +442,8 @@ void XRSession::OnEnvironmentProviderError() {
   HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises;
   hit_test_promises_.swap(hit_test_promises);
   for (ScriptPromiseResolver* resolver : hit_test_promises) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                          kDeviceDisconnected));
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, kDeviceDisconnected));
   }
 }
 
@@ -444,8 +451,8 @@ ScriptPromise XRSession::end(ScriptState* script_state) {
   // Don't allow a session to end twice.
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                           kSessionEnded));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError, kSessionEnded));
   }
 
   ForceEnd();

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 namespace blink {
@@ -158,7 +159,8 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
   if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kNavigatorDetachedError));
   }
 
@@ -178,7 +180,8 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
   }
 
@@ -210,7 +213,7 @@ void XR::DispatchSupportsSession(PendingSessionQuery* query) {
   if (!device_) {
     // If we don't have a device by the time we reach this call it indicates
     // that there's no WebXR hardware. Reject as not supported.
-    query->resolver->Reject(DOMException::Create(
+    query->resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
     return;
   }
@@ -231,7 +234,8 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kNavigatorDetachedError));
   }
 
@@ -261,7 +265,8 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
   }
 
@@ -270,14 +275,15 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   // session in OnRequestSessionReturned.
   if (!service_ && session_mode != XRSession::kModeInline) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                           kNoDevicesMessage));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotFoundError, kNoDevicesMessage));
   }
 
   // Only one immersive session can be active at a time.
   if (is_immersive && frameProvider()->immersive_session()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
                                            kActiveImmersiveSession));
   }
 
@@ -285,7 +291,8 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   bool has_user_activation = LocalFrame::HasTransientUserActivation(frame);
   if (is_immersive && !has_user_activation) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kRequestRequiresUserActivation));
   }
 
@@ -319,7 +326,7 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
       return;
     }
 
-    query->resolver->Reject(DOMException::Create(
+    query->resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
     return;
   }
@@ -416,7 +423,7 @@ void XR::OnSupportsSessionReturned(PendingSessionQuery* query,
 
   supports_session
       ? query->resolver->Resolve()
-      : query->resolver->Reject(DOMException::Create(
+      : query->resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
 }
 
@@ -441,7 +448,7 @@ void XR::OnRequestSessionReturned(
       return;
     }
 
-    DOMException* exception = DOMException::Create(
+    auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
     query->resolver->Reject(exception);
     return;

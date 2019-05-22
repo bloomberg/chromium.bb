@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <utility>
+
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/webshare/share_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
@@ -118,7 +120,7 @@ void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
                       has_files_
                           ? WebFeature::kWebShareUnsuccessfulContainingFiles
                           : WebFeature::kWebShareUnsuccessfulWithoutFiles);
-    resolver_->Reject(DOMException::Create(
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
         (error == mojom::blink::ShareError::PERMISSION_DENIED)
             ? DOMExceptionCode::kNotAllowedError
             : DOMExceptionCode::kAbortError,
@@ -127,7 +129,7 @@ void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
 }
 
 void NavigatorShare::ShareClientImpl::OnConnectionError() {
-  resolver_->Reject(DOMException::Create(
+  resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kAbortError,
       "Internal error: could not connect to Web Share interface."));
 }
@@ -178,7 +180,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   }
 
   if (!LocalFrame::HasTransientUserActivation(doc->GetFrame())) {
-    DOMException* error = DOMException::Create(
+    auto* error = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
         "Must be handling a user gesture to perform a share request.");
     return ScriptPromise::RejectWithDOMException(script_state, error);
@@ -187,10 +189,10 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   if (!service_) {
     LocalFrame* frame = doc->GetFrame();
     if (!frame) {
-      DOMException* error =
-          DOMException::Create(DOMExceptionCode::kAbortError,
-                               "Internal error: document frame is missing (the "
-                               "navigator may be detached).");
+      auto* error = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError,
+          "Internal error: document frame is missing (the "
+          "navigator may be detached).");
       return ScriptPromise::RejectWithDOMException(script_state, error);
     }
 
@@ -221,7 +223,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 
     if (files.size() > kMaxSharedFileCount ||
         total_bytes > kMaxSharedFileBytes) {
-      DOMException* error = DOMException::Create(
+      auto* error = MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError, "Permission denied");
       return ScriptPromise::RejectWithDOMException(script_state, error);
     }

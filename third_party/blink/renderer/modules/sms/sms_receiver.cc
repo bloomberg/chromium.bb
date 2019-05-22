@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/sms/sms_receiver_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -75,9 +76,9 @@ ScriptPromise SMSReceiver::start(ScriptState* script_state) {
   LocalFrame* frame = GetFrame();
   if (!frame->IsMainFrame()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                             "Must be in top-level browsing context."));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotAllowedError,
+                          "Must be in top-level browsing context."));
   }
 
   StartMonitoring();

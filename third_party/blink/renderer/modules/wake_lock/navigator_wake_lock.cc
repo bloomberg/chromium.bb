@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -34,7 +35,7 @@ ScriptPromise NavigatorWakeLock::getWakeLock(ScriptState* script_state,
                              ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(
+        MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotAllowedError,
             "Access to WakeLock features is disallowed by feature policy"));
   }
@@ -50,7 +51,8 @@ ScriptPromise NavigatorWakeLock::getWakeLock(ScriptState* script_state,
   }
 
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
                                          "WakeLockType Not Supported"));
 }
 
