@@ -44,7 +44,7 @@ constexpr const char* kPartitionAllocHistogramName =
 class CrashAnalyzerTest : public testing::Test {
  protected:
   void SetUp() final {
-    gpa_.Init(1, 1, 1, base::DoNothing());
+    gpa_.Init(1, 1, 1, base::DoNothing(), false);
     InitializeSnapshot();
   }
 

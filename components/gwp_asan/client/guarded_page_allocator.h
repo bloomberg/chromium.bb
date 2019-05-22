@@ -6,6 +6,7 @@
 #define COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 
 #include <atomic>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -54,7 +55,8 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   void Init(size_t max_alloced_pages,
             size_t num_metadata,
             size_t total_pages,
-            OutOfMemoryCallback oom_callback);
+            OutOfMemoryCallback oom_callback,
+            bool is_partition_alloc);
 
   // On success, returns a pointer to size bytes of page-guarded memory. On
   // failure, returns nullptr. The allocation is not guaranteed to be
@@ -65,8 +67,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // It must be less than or equal to the allocation size. If it's left as zero
   // it will default to the default alignment the allocator chooses.
   //
+  // The type parameter should only be set for PartitionAlloc allocations.
+  //
   // Preconditions: Init() must have been called.
-  void* Allocate(size_t size, size_t align = 0);
+  void* Allocate(size_t size, size_t align = 0, const char* type = nullptr);
 
   // Deallocates memory pointed to by ptr. ptr must have been previously
   // returned by a call to Allocate.
@@ -86,17 +90,29 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   }
 
  private:
+  // Virtual base class representing a free list of entries T.
+  template <typename T>
+  class FreeList {
+   public:
+    FreeList() = default;
+    virtual ~FreeList() = default;
+    virtual void Initialize(T max_entries) = 0;
+    virtual bool Allocate(T* out, const char* type) = 0;
+    virtual void Free(T entry) = 0;
+  };
+
   // Manages a free list of slot or metadata indices in the range
   // [0, max_entries). Access to SimpleFreeList objects must be synchronized.
   //
   // SimpleFreeList is specifically designed to pre-allocate data in Initialize
   // so that it never recurses into malloc/free during Allocate/Free.
   template <typename T>
-  class SimpleFreeList {
+  class SimpleFreeList : public FreeList<T> {
    public:
-    void Initialize(T max_entries);
-    T Allocate();
-    void Free(T entry);
+    ~SimpleFreeList() final = default;
+    void Initialize(T max_entries) final;
+    bool Allocate(T* out, const char* type) final;
+    void Free(T entry) final;
 
    private:
     std::vector<T> free_list_;
@@ -105,6 +121,36 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
     // before starting to use random eviction.
     T num_used_entries_ = 0;
     T max_entries_ = 0;
+  };
+
+  // Manages a free list of slot indices especially for PartitionAlloc.
+  // Allocate() is type-aware so that once a page has been used to allocate
+  // a given partition, it never reallocates an object of a different type on
+  // that page. Access to this object must be synchronized.
+  //
+  // PartitionAllocSlotFreeList can perform malloc/free during Allocate/Free,
+  // so it is not safe to use with malloc hooks!
+  //
+  // TODO(vtsyrklevich): Right now we allocate slots to partitions on a
+  // first-come first-serve basis, this makes it likely that all slots will be
+  // used up by common types first. Set aside a fixed amount of slots (~5%) for
+  // one-off partitions so that we make sure to sample rare types as well.
+  class PartitionAllocSlotFreeList : public FreeList<AllocatorState::SlotIdx> {
+   public:
+    PartitionAllocSlotFreeList();
+    ~PartitionAllocSlotFreeList() final;
+    void Initialize(AllocatorState::SlotIdx max_entries) final;
+    bool Allocate(AllocatorState::SlotIdx* out, const char* type) final;
+    void Free(AllocatorState::SlotIdx entry) final;
+
+   private:
+    std::vector<const char*> type_mapping_;
+    std::map<const char*, std::vector<AllocatorState::SlotIdx>> free_list_;
+
+    // Number of used entries. This counter ensures all free entries are used
+    // before starting to use random eviction.
+    AllocatorState::SlotIdx num_used_entries_ = 0;
+    AllocatorState::SlotIdx max_entries_ = 0;
   };
 
   // Unmaps memory allocated by this class, if Init was called.
@@ -127,8 +173,8 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // On success, returns true and writes the reserved indices to |slot| and
   // |metadata_idx|. Otherwise returns false if no allocations are available.
   bool ReserveSlotAndMetadata(AllocatorState::SlotIdx* slot,
-                              AllocatorState::MetadataIdx* metadata_idx)
-      LOCKS_EXCLUDED(lock_);
+                              AllocatorState::MetadataIdx* metadata_idx,
+                              const char* type) LOCKS_EXCLUDED(lock_);
 
   // Marks the specified slot and metadata as unreserved.
   void FreeSlotAndMetadata(AllocatorState::SlotIdx slot,
@@ -150,7 +196,8 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Lock that synchronizes allocating/freeing slots between threads.
   base::Lock lock_;
 
-  SimpleFreeList<AllocatorState::SlotIdx> free_slots_ GUARDED_BY(lock_);
+  std::unique_ptr<FreeList<AllocatorState::SlotIdx>> free_slots_
+      GUARDED_BY(lock_);
   SimpleFreeList<AllocatorState::MetadataIdx> free_metadata_ GUARDED_BY(lock_);
 
   // Number of currently-allocated pages.
@@ -173,8 +220,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   bool oom_hit_ GUARDED_BY(lock_) = false;
   OutOfMemoryCallback oom_callback_;
 
+  bool is_partition_alloc_ = false;
+
+  friend class BaseGpaTest;
   friend class CrashAnalyzerTest;
-  friend class GuardedPageAllocatorTest;
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, InternalError);
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
 
