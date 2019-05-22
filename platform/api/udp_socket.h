@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_API_SOCKET_H_
-#define PLATFORM_API_SOCKET_H_
+#ifndef PLATFORM_API_UDP_SOCKET_H_
+#define PLATFORM_API_UDP_SOCKET_H_
 
 #include <cstdint>
 #include <memory>
@@ -107,4 +107,4 @@ class UdpSocket {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_API_SOCKET_H_
+#endif  // PLATFORM_API_UDP_SOCKET_H_

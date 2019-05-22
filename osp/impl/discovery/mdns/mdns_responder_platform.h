@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "platform/api/socket.h"
+#include "platform/api/udp_socket.h"
 
 struct mDNS_PlatformSupport_struct {
   std::vector<openscreen::platform::UdpSocket*> sockets;

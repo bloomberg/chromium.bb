@@ -10,7 +10,7 @@
 
 #include "osp/impl/quic/quic_connection.h"
 #include "osp_base/ip_address.h"
-#include "platform/api/socket.h"
+#include "platform/api/udp_socket.h"
 #include "third_party/chromium_quic/src/base/callback.h"
 #include "third_party/chromium_quic/src/base/location.h"
 #include "third_party/chromium_quic/src/base/task_runner.h"

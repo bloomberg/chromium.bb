@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/posix/socket.h"
+#include "platform/posix/udp_socket.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -18,7 +18,7 @@
 #include "absl/types/optional.h"
 #include "osp_base/error.h"
 #include "platform/api/logging.h"
-#include "platform/posix/socket.h"
+#include "platform/posix/udp_socket.h"
 
 namespace openscreen {
 namespace platform {

@@ -11,7 +11,7 @@
 
 #include "osp_base/error.h"
 #include "platform/api/logging.h"
-#include "platform/posix/socket.h"
+#include "platform/posix/udp_socket.h"
 
 namespace openscreen {
 namespace platform {

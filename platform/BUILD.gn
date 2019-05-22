@@ -8,14 +8,14 @@ source_set("platform") {
   sources = [
     "api/event_waiter.cc",
     "api/event_waiter.h",
-    "api/logging_util.cc",
     "api/logging.h",
+    "api/logging_util.cc",
     "api/network_interface.cc",
     "api/network_interface.h",
-    "api/socket.h",
     "api/task_runner.h",
     "api/task_runner_factory.h",
     "api/time.h",
+    "api/udp_socket.h",
     "base/time.cc",
   ]
 
@@ -51,13 +51,13 @@ source_set("platform") {
     if (is_posix) {
       sources += [
         "posix/event_waiter.cc",
-        "posix/socket.cc",
-        "posix/socket.h",
+        "posix/udp_socket.cc",
+        "posix/udp_socket.h",
       ]
     }
 
     deps = [
-      ":default_logger"
+      ":default_logger",
     ]
   }
 }
@@ -68,9 +68,7 @@ source_set("default_logger") {
   ]
 
   if (is_posix) {
-    sources += [
-      "posix/log_initializer.cc",
-    ]
+    sources += [ "posix/log_initializer.cc" ]
   }
 
   configs += [ "../build:allow_build_from_embedder" ]
