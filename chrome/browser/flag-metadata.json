@@ -2609,8 +2609,8 @@
   },
   {
     "name": "pull-to-refresh",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "afakhry" ],
+    "expiry_milestone": 83
   },
   {
     "name": "pwa-improved-splash-screen",
