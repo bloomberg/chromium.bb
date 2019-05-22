@@ -31366,6 +31366,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Notified of app change"/>
   <int value="4" label="Get ARC Android id"/>
   <int value="5" label="Launch intent"/>
+  <int value="6" label="Get user info"/>
 </enum>
 
 <enum name="KioskNextHomeLaunchIntentResult">

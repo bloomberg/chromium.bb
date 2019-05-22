@@ -17,7 +17,8 @@ enum class BridgeAction {
   kNotifiedAppChange = 3,
   kGetAndroidId = 4,
   kLaunchIntent = 5,
-  kMaxValue = kLaunchIntent,
+  kGetUserInfo = 6,
+  kMaxValue = kGetUserInfo,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

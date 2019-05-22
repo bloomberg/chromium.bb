@@ -10,7 +10,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/chromeos/kiosk_next_home/metrics_helper.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -48,6 +50,8 @@ class IdentityControllerImplTest : public testing::Test {
     return identity_controller_.get();
   }
 
+  base::HistogramTester histogram_tester_;
+
  private:
   base::test::ScopedTaskEnvironment task_environemnt_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
@@ -66,6 +70,8 @@ TEST_F(IdentityControllerImplTest, GetUserInfo) {
   run_loop.Run();
   EXPECT_EQ(returned_user_info->display_name, kUserDisplayName);
   EXPECT_EQ(returned_user_info->given_name, kUserGivenName);
+  histogram_tester_.ExpectUniqueSample("KioskNextHome.Bridge.Action",
+                                       BridgeAction::kGetUserInfo, 1);
 }
 
 }  // namespace kiosk_next_home
