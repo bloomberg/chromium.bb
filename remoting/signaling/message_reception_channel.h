@@ -49,7 +49,7 @@ class MessageReceptionChannel {
   virtual void StopReceivingMessages() = 0;
 
   // Returns true if the streaming channel is open.
-  virtual bool IsReceivingMessages() = 0;
+  virtual bool IsReceivingMessages() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MessageReceptionChannel);

@@ -128,7 +128,7 @@ void FtlMessagingClient::StopReceivingMessages() {
   reception_channel_->StopReceivingMessages();
 }
 
-bool FtlMessagingClient::IsReceivingMessages() {
+bool FtlMessagingClient::IsReceivingMessages() const {
   return reception_channel_->IsReceivingMessages();
 }
 

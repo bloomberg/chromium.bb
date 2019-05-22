@@ -103,7 +103,7 @@ class MockMessageReceptionChannel : public MessageReceptionChannel {
 
   MOCK_METHOD2(StartReceivingMessages, void(base::OnceClosure, DoneCallback));
   MOCK_METHOD0(StopReceivingMessages, void());
-  MOCK_METHOD0(IsReceivingMessages, bool());
+  MOCK_CONST_METHOD0(IsReceivingMessages, bool());
 
   StreamOpener* stream_opener() { return &stream_opener_; }
 

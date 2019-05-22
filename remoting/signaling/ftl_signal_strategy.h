@@ -13,6 +13,8 @@
 namespace remoting {
 
 class FtlDeviceIdProvider;
+class MessagingClient;
+class RegistrationManager;
 class OAuthTokenGetter;
 
 // FtlSignalStrategy implements SignalStrategy using the FTL messaging service.
@@ -42,6 +44,16 @@ class FtlSignalStrategy : public SignalStrategy {
   bool IsSignInError() const;
 
  private:
+  friend class FtlSignalStrategyTest;
+
+  FtlSignalStrategy(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
+                    std::unique_ptr<RegistrationManager> registration_manager,
+                    std::unique_ptr<MessagingClient> messaging_client);
+
+  void CreateCore(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
+                  std::unique_ptr<RegistrationManager> registration_manager,
+                  std::unique_ptr<MessagingClient> messaging_client);
+
   // This ensures that even if a Listener deletes the current instance during
   // OnSignalStrategyIncomingStanza(), we can delete |core_| asynchronously.
   class Core;

@@ -35,7 +35,7 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
   void StartReceivingMessages(base::OnceClosure on_ready,
                               DoneCallback on_closed) override;
   void StopReceivingMessages() override;
-  bool IsReceivingMessages() override;
+  bool IsReceivingMessages() const override;
 
   const net::BackoffEntry& GetReconnectRetryBackoffEntryForTesting() const;
 

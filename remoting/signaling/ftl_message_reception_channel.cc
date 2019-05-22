@@ -171,7 +171,7 @@ void FtlMessageReceptionChannel::StopReceivingMessagesInternal() {
   stream_pong_timer_.reset();
 }
 
-bool FtlMessageReceptionChannel::IsReceivingMessages() {
+bool FtlMessageReceptionChannel::IsReceivingMessages() const {
   return receive_messages_stream_.get() != nullptr;
 }
 
