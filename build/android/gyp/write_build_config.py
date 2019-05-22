@@ -970,6 +970,7 @@ def main(argv):
       help='Path to R.txt file for the base resources whitelist.')
   parser.add_option(
       '--is-base-module',
+      action='store_true',
       help='Specifies that this module is a base module for some app bundle.')
 
   parser.add_option('--generate-markdown-format-doc', action='store_true',
