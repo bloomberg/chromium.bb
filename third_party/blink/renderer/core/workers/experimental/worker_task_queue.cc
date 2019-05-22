@@ -15,9 +15,11 @@ namespace blink {
 WorkerTaskQueue* WorkerTaskQueue::Create(ExecutionContext* context,
                                          const String& type,
                                          ExceptionState& exception_state) {
+  DCHECK(context->IsContextThread());
+
   if (context->IsContextDestroyed()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
-                                      "The context provided is invalid.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "This frame is already detached.");
     return nullptr;
   }
 
@@ -45,6 +47,12 @@ ScriptPromise WorkerTaskQueue::postFunction(
     ExceptionState& exception_state) {
   DCHECK(document_->IsContextThread());
 
+  if (document_->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "This frame is already detached");
+    return ScriptPromise();
+  }
+
   Task* task = MakeGarbageCollected<Task>(
       script_state, ThreadPool::From(*document_), function, arguments,
       task_type_, exception_state);
@@ -61,6 +69,13 @@ Task* WorkerTaskQueue::postTask(ScriptState* script_state,
                                 const Vector<ScriptValue>& arguments,
                                 ExceptionState& exception_state) {
   DCHECK(document_->IsContextThread());
+
+  if (document_->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "This frame is already detached");
+    return nullptr;
+  }
+
   Task* task = MakeGarbageCollected<Task>(
       script_state, ThreadPool::From(*document_), function, arguments,
       task_type_, exception_state);
