@@ -157,25 +157,38 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
   if (marks_map_.Contains(mark_name))
     return marks_map_.at(mark_name).back()->startTime();
 
-  if (GetRestrictedKeyMap().Contains(mark_name) && performance_->timing()) {
-    double value = static_cast<double>(
-        (performance_->timing()->*(GetRestrictedKeyMap().at(mark_name)))());
-    if (!value) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kInvalidAccessError,
-          "'" + mark_name +
-              "' is empty: either the event hasn't "
-              "happened yet, or it would provide "
-              "cross-origin timing information.");
-      return 0.0;
-    }
-    return value - performance_->timing()->navigationStart();
+  NavigationTimingFunction timing_function =
+      GetRestrictedKeyMap().at(mark_name);
+  if (!timing_function) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kSyntaxError,
+        "The mark '" + mark_name + "' does not exist.");
+    return 0.0;
   }
 
-  exception_state.ThrowDOMException(
-      DOMExceptionCode::kSyntaxError,
-      "The mark '" + mark_name + "' does not exist.");
-  return 0.0;
+  PerformanceTiming* timing = performance_->timing();
+  if (!timing) {
+    // According to
+    // https://w3c.github.io/user-timing/#convert-a-name-to-a-timestamp.
+    exception_state.ThrowTypeError(
+        "When converting a mark name ('" + mark_name +
+        "') to a timestamp given a name that is a read only attribute in the "
+        "PerformanceTiming interface, the global object has to be a Window "
+        "object.");
+    return 0.0;
+  }
+
+  double value = static_cast<double>((timing->*timing_function)());
+  if (!value) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "'" + mark_name +
+                                          "' is empty: either the event hasn't "
+                                          "happened yet, or it would provide "
+                                          "cross-origin timing information.");
+    return 0.0;
+  }
+
+  return value - timing->navigationStart();
 }
 
 double UserTiming::GetTimeOrFindMarkTime(const StringOrDouble& mark_or_time,
