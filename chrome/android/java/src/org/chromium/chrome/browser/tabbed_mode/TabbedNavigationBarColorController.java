@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ui.system;
+package org.chromium.chrome.browser.tabbed_mode;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -37,7 +37,7 @@ import org.chromium.ui.UiUtils;
  * Controls the bottom system navigation bar color for the provided {@link Window}.
  */
 @TargetApi(Build.VERSION_CODES.O_MR1)
-class NavigationBarColorController implements VrModeObserver {
+class TabbedNavigationBarColorController implements VrModeObserver {
     private final Window mWindow;
     private final ViewGroup mRootView;
     private final Resources mResources;
@@ -54,7 +54,7 @@ class NavigationBarColorController implements VrModeObserver {
     private boolean mOverviewModeHiding;
 
     /**
-     * Creates a new {@link NavigationBarColorController} instance.
+     * Creates a new {@link TabbedNavigationBarColorController} instance.
      * @param window The {@link Window} this controller should operate on.
      * @param tabModelSelector The {@link TabModelSelector} used to determine which tab model is
      *                         selected.
@@ -62,7 +62,7 @@ class NavigationBarColorController implements VrModeObserver {
      * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
      *         {@link OverviewModeBehavior} associated with the containing activity.
      */
-    NavigationBarColorController(Window window, TabModelSelector tabModelSelector,
+    TabbedNavigationBarColorController(Window window, TabModelSelector tabModelSelector,
             @Nullable ImmersiveModeManager immersiveModeManager,
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1;
@@ -119,7 +119,7 @@ class NavigationBarColorController implements VrModeObserver {
     }
 
     /**
-     * Destroy this {@link NavigationBarColorController} instance.
+     * Destroy this {@link TabbedNavigationBarColorController} instance.
      */
     public void destroy() {
         if (mTabModelSelector != null) mTabModelSelector.removeObserver(mTabModelSelectorObserver);

@@ -8,16 +8,10 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
-import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.ui.system.SystemUiCoordinator;
-import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * The root UI coordinator. This class will eventually be responsible for inflating and managing
@@ -26,13 +20,10 @@ import org.chromium.ui.base.DeviceFormFactor;
  * The specific things this component will manage and how it will hook into Chrome*Activity are
  * still being discussed See https://crbug.com/931496.
  */
-public class RootUiCoordinator implements Destroyable, NativeInitObserver, InflationObserver,
-                                          ChromeActivity.MenuOrKeyboardActionHandler {
-    private ChromeActivity mActivity;
-    private @Nullable AppMenuCoordinator mAppMenuCoordinator;
-    private @Nullable ImmersiveModeManager mImmersiveModeManager;
-    private SystemUiCoordinator mSystemUiCoordinator;
-    private @Nullable EmptyBackgroundViewWrapper mEmptyBackgroundViewWrapper;
+public class RootUiCoordinator
+        implements Destroyable, InflationObserver, ChromeActivity.MenuOrKeyboardActionHandler {
+    protected ChromeActivity mActivity;
+    protected @Nullable AppMenuCoordinator mAppMenuCoordinator;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -49,10 +40,7 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
     public void destroy() {
         mActivity.unregisterMenuOrKeyboardActionHandler(this);
         mActivity = null;
-        if (mSystemUiCoordinator != null) mSystemUiCoordinator.destroy();
-        if (mImmersiveModeManager != null) mImmersiveModeManager.destroy();
         if (mAppMenuCoordinator != null) mAppMenuCoordinator.destroy();
-        if (mEmptyBackgroundViewWrapper != null) mEmptyBackgroundViewWrapper.destroy();
     }
 
     @Override
@@ -72,32 +60,6 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
                     mAppMenuCoordinator.getAppMenuPropertiesDelegate());
         } else if (mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().getToolbar().disableMenuButton();
-        }
-
-        mImmersiveModeManager = AppHooks.get().createImmersiveModeManager(
-                mActivity.getWindow().getDecorView().findViewById(android.R.id.content));
-        mSystemUiCoordinator = new SystemUiCoordinator(mActivity.getWindow(),
-                mActivity.getTabModelSelector(), mImmersiveModeManager, mActivity.getActivityType(),
-                mActivity.getOverviewModeBehaviorSupplier());
-
-        if (mImmersiveModeManager != null && mActivity.getToolbarManager() != null) {
-            mActivity.getToolbarManager().setImmersiveModeManager(mImmersiveModeManager);
-        }
-    }
-
-    @Override
-    public void onFinishNativeInitialization() {
-        // TODO(https://crbug.com/931496): Move to a TabbedRootUiCoordinator or delegate?
-        // TODO(twellington): Supply TabModelSelector as well and move initialization earlier.
-        if (mActivity.getActivityType() == ChromeActivity.ActivityType.TABBED
-                && DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
-            AppMenuHandler appMenuHandler =
-                    mAppMenuCoordinator == null ? null : mAppMenuCoordinator.getAppMenuHandler();
-            mEmptyBackgroundViewWrapper = new EmptyBackgroundViewWrapper(
-                    mActivity.getTabModelSelector(), mActivity.getTabCreator(false), mActivity,
-                    appMenuHandler, mActivity.getSnackbarManager(),
-                    mActivity.getOverviewModeBehaviorSupplier());
-            mEmptyBackgroundViewWrapper.initialize();
         }
     }
 

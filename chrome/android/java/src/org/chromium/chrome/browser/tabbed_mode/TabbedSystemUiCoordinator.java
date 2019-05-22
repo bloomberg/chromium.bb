@@ -2,47 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ui.system;
+package org.chromium.chrome.browser.tabbed_mode;
 
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.view.Window;
 
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.util.ObservableSupplier;
 
 /**
- * A UI coordinator that manages the system status bar and bottom navigation bar.
+ * A UI coordinator that manages the system status bar and bottom navigation bar for
+ * ChromeTabbedActivity.
  *
- * TODO(https://crbug.com/943371): Move status bar code from Chrome*Activity into a new
- * StatusBarCoordinator.
+ * TODO(https://crbug.com/943371): Create a base SystemUiCoordinator to own the
+ *     StatusBarColorController, and have this class extend that one.
  */
-public class SystemUiCoordinator {
-    private @Nullable NavigationBarColorController mNavigationBarColorController;
+public class TabbedSystemUiCoordinator {
+    private @Nullable TabbedNavigationBarColorController mNavigationBarColorController;
 
     /**
-     * Construct a new {@link SystemUiCoordinator}.
+     * Construct a new {@link TabbedSystemUiCoordinator}.
      *
      * @param window The {@link Window} associated with the containing activity.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
-     * @param activityType The {@link org.chromium.chrome.browser.ChromeActivity.ActivityType} of
-     *         the containing activity.
      * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
      *         {@link OverviewModeBehavior} associated with the containing activity.
      */
-    public SystemUiCoordinator(Window window, TabModelSelector tabModelSelector,
+    public TabbedSystemUiCoordinator(Window window, TabModelSelector tabModelSelector,
             @Nullable ImmersiveModeManager immersiveModeManager,
-            @ChromeActivity.ActivityType int activityType,
             @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
-        // TODO(https://crbug.com/931496): Move to a TabbedSystemUiCoordinator or delegate?
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
-                && activityType == ChromeActivity.ActivityType.TABBED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             assert overviewModeBehaviorSupplier != null;
-            mNavigationBarColorController = new NavigationBarColorController(
+            mNavigationBarColorController = new TabbedNavigationBarColorController(
                     window, tabModelSelector, immersiveModeManager, overviewModeBehaviorSupplier);
         }
     }

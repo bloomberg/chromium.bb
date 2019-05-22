@@ -369,12 +369,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         super.performPreInflationStartup();
 
-        // TODO(https://crbug.com/931496): Remove dependency on ChromeActivity in favor of passing
-        // in direct dependencies on needed classes. While migrating code from Chrome*Activity
-        // to the RootUiCoordinator, passing the activity is an easy way to get access to a
-        // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
-        // a recommended pattern.
-        mRootUiCoordinator = new RootUiCoordinator(this);
+        mRootUiCoordinator = createRootUiCoordinator();
 
         // See comments on #getTouchlessUiCoordinator for why we're doing this here.
         getTouchlessUiCoordinator();
@@ -398,6 +393,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         getWindow().setBackgroundDrawable(getBackgroundDrawable());
+    }
+
+    protected RootUiCoordinator createRootUiCoordinator() {
+        // TODO(https://crbug.com/931496): Remove dependency on ChromeActivity in favor of passing
+        // in direct dependencies on needed classes. While migrating code from Chrome*Activity
+        // to the RootUiCoordinator, passing the activity is an easy way to get access to a
+        // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
+        // a recommended pattern.
+        return new RootUiCoordinator(this);
     }
 
     private C createComponent() {
