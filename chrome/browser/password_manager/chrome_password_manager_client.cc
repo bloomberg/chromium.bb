@@ -733,8 +733,8 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
       popup_controller_, element_bounds_in_screen_space, form,
       base::string16(),  // No generation_element needed for editing.
       0,                 // Unspecified max length.
-      &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
-      web_contents()->GetNativeView());
+      driver->AsWeakPtr(), observer_, web_contents(),
+      password_generation_driver_bindings_.GetCurrentTargetFrame());
   DCHECK(!form.password_value.empty());
   popup_controller_->UpdatePassword(form.password_value);
   popup_controller_->Show(
@@ -1013,9 +1013,8 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
 
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data.password_form,
-      ui_data.generation_element, ui_data.max_length, &password_manager_,
-      driver->AsWeakPtr(), observer_, web_contents(),
-      web_contents()->GetNativeView());
+      ui_data.generation_element, ui_data.max_length, driver->AsWeakPtr(),
+      observer_, web_contents(), driver->render_frame_host());
   popup_controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
 }
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
+#include "components/autofill/content/browser/key_press_handler_manager.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -32,7 +33,6 @@ class WebContents;
 }  // namespace content
 
 namespace password_manager {
-class PasswordManager;
 class PasswordManagerDriver;
 }  // namespace password_manager
 
@@ -77,11 +77,10 @@ class PasswordGenerationPopupControllerImpl
       const autofill::PasswordForm& form,
       const base::string16& generation_element,
       uint32_t max_length,
-      password_manager::PasswordManager* password_manager,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
-      gfx::NativeView container_view);
+      content::RenderFrameHost* frame);
   ~PasswordGenerationPopupControllerImpl() override;
 
   // Create a PasswordGenerationPopupView if one doesn't already exist.
@@ -123,12 +122,13 @@ class PasswordGenerationPopupControllerImpl
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
-      gfx::NativeView container_view);
+      content::RenderFrameHost* frame);
 
   // Handle to the popup. May be NULL if popup isn't showing.
   PasswordGenerationPopupView* view_;
 
  private:
+  class KeyPressRegistrator;
   // PasswordGenerationPopupController implementation:
   void Hide() override;
   void ViewDestroyed() override;
@@ -196,6 +196,8 @@ class PasswordGenerationPopupControllerImpl
   GenerationUIState state_;
 
   autofill::PopupViewCommon view_common_;
+
+  std::unique_ptr<KeyPressRegistrator> key_press_handler_manager_;
 
   base::WeakPtrFactory<PasswordGenerationPopupControllerImpl> weak_ptr_factory_;
 
