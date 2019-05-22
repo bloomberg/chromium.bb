@@ -176,6 +176,20 @@ NGPaintFragment::NGPaintFragment(
   CHECK(physical_fragment_);
 }
 
+void NGPaintFragment::DestroyAll(scoped_refptr<NGPaintFragment> fragment) {
+  DCHECK(fragment);
+  while (fragment) {
+    fragment = std::move(fragment->next_sibling_);
+  }
+}
+
+void NGPaintFragment::RemoveChildren() {
+  if (first_child_) {
+    DestroyAll(std::move(first_child_));
+    DCHECK(!first_child_);
+  }
+}
+
 NGPaintFragment::~NGPaintFragment() {
   // The default destructor will deref |first_child_|, but because children are
   // in a linked-list, it will call this destructor recursively. Remove children
@@ -183,11 +197,10 @@ NGPaintFragment::~NGPaintFragment() {
   RemoveChildren();
 }
 
-void NGPaintFragment::RemoveChildren() {
-  scoped_refptr<NGPaintFragment> child = std::move(first_child_);
-  DCHECK(!first_child_);
-  while (child) {
-    child = std::move(child->next_sibling_);
+void NGPaintFragment::CreateContext::DestroyPreviousInstances() {
+  if (previous_instance) {
+    DestroyAll(previous_instance);
+    painting_layer_needs_repaint = true;
   }
 }
 
@@ -236,15 +249,21 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidation() {
 scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
     scoped_refptr<const NGPhysicalFragment> fragment,
     PhysicalOffset offset,
-    NGPaintFragment* parent,
-    scoped_refptr<NGPaintFragment> previous_instance,
-    bool* populate_children) {
+    CreateContext* context) {
   DCHECK(fragment);
 
   // If the previous instance is given, check if it is re-usable.
   // Re-using NGPaintFragment allows the paint system to identify objects.
-  if (previous_instance) {
-    DCHECK_EQ(previous_instance->parent_, parent);
+  if (context->previous_instance) {
+    // Take the first instance of previous instances, leaving its following
+    // siblings at |context->previous_instance|. There is a trade-off between
+    // faster check of reusability and higher reuse ratio. The current algorithm
+    // assumes that the index of children does not change. If there were
+    // insertions/deletions, all following instances will not match.
+    scoped_refptr<NGPaintFragment> previous_instance =
+        std::move(context->previous_instance);
+    context->previous_instance = std::move(previous_instance->next_sibling_);
+    DCHECK_EQ(previous_instance->parent_, context->parent);
     DCHECK(!previous_instance->next_sibling_);
 
 // TODO(kojii): This fails some tests when reusing line box was enabled.
@@ -270,14 +289,23 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
       previous_instance->offset_ = offset;
       previous_instance->next_for_same_layout_object_ = nullptr;
       previous_instance->is_dirty_inline_ = false;
-      if (!*populate_children)
-        previous_instance->first_child_ = nullptr;
+      // Destroy children of previous instances if the new instance doesn't have
+      // any children. Otherwise keep them in case these previous children maybe
+      // reused to populate children.
+      if (!context->populate_children && previous_instance->first_child_) {
+        context->painting_layer_needs_repaint = true;
+        previous_instance->RemoveChildren();
+      }
       return previous_instance;
     }
+
+    // Mark needing to repaint because exiting the scope here destroys an unused
+    // previous instance.
+    context->painting_layer_needs_repaint = true;
   }
 
-  scoped_refptr<NGPaintFragment> new_instance =
-      base::AdoptRef(new NGPaintFragment(std::move(fragment), offset, parent));
+  scoped_refptr<NGPaintFragment> new_instance = base::AdoptRef(
+      new NGPaintFragment(std::move(fragment), offset, context->parent));
   return new_instance;
 }
 
@@ -287,19 +315,25 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
     scoped_refptr<NGPaintFragment> previous_instance) {
   DCHECK(fragment);
 
-  bool populate_children = fragment->IsContainer();
   bool has_previous_instance = previous_instance.get();
+  CreateContext context(std::move(previous_instance), fragment->IsContainer());
   scoped_refptr<NGPaintFragment> paint_fragment =
-      CreateOrReuse(std::move(fragment), PhysicalOffset(), nullptr,
-                    std::move(previous_instance), &populate_children);
+      CreateOrReuse(std::move(fragment), PhysicalOffset(), &context);
 
-  if (populate_children) {
+  if (context.populate_children) {
     if (has_previous_instance) {
       NGInlineNode::ClearAssociatedFragments(paint_fragment->PhysicalFragment(),
                                              block_break_token);
     }
     HashMap<const LayoutObject*, NGPaintFragment*> last_fragment_map;
-    paint_fragment->PopulateDescendants(PhysicalOffset(), &last_fragment_map);
+    context.last_fragment_map = &last_fragment_map;
+    paint_fragment->PopulateDescendants(&context);
+  }
+
+  context.DestroyPreviousInstances();
+  if (context.painting_layer_needs_repaint) {
+    ObjectPaintInvalidator(*paint_fragment->GetLayoutObject())
+        .SlowSetPaintingLayerNeedsRepaint();
   }
 
   return paint_fragment;
@@ -349,12 +383,12 @@ bool NGPaintFragment::ShouldClipOverflow() const {
 }
 
 // Populate descendants from NGPhysicalFragment tree.
-void NGPaintFragment::PopulateDescendants(
-    const PhysicalOffset inline_offset_to_container_box,
-    HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
+void NGPaintFragment::PopulateDescendants(CreateContext* parent_context) {
   const NGPhysicalFragment& fragment = PhysicalFragment();
   const auto& container = To<NGPhysicalContainerFragment>(fragment);
-  scoped_refptr<NGPaintFragment> previous_children = std::move(first_child_);
+  CreateContext child_context(parent_context, this);
+  // Children should have been moved to |child_context| for possible reuse.
+  DCHECK(!first_child_);
   scoped_refptr<NGPaintFragment>* last_child_ptr = &first_child_;
 
   auto* box_physical_fragment = DynamicTo<NGPhysicalBoxFragment>(fragment);
@@ -366,35 +400,30 @@ void NGPaintFragment::PopulateDescendants(
     if (UNLIKELY(child_fragment->IsOutOfFlowPositioned()))
       continue;
 
-    bool populate_children = child_fragment->IsContainer() &&
-                             !child_fragment->IsBlockFormattingContextRoot();
-    scoped_refptr<NGPaintFragment> previous_child;
-    if (previous_children) {
-      previous_child = std::move(previous_children);
-      previous_children = std::move(previous_child->next_sibling_);
-    }
-    scoped_refptr<NGPaintFragment> child =
-        CreateOrReuse(child_fragment.get(), child_fragment.Offset(), this,
-                      std::move(previous_child), &populate_children);
+    child_context.populate_children =
+        child_fragment->IsContainer() &&
+        !child_fragment->IsBlockFormattingContextRoot();
+    scoped_refptr<NGPaintFragment> child = CreateOrReuse(
+        child_fragment.get(), child_fragment.Offset(), &child_context);
 
     if (children_are_inline) {
       DCHECK(!child_fragment->IsOutOfFlowPositioned());
       if (child_fragment->IsText() || child_fragment->IsInlineBox() ||
           child_fragment->IsAtomicInline()) {
         child->AssociateWithLayoutObject(
-            child_fragment->GetMutableLayoutObject(), last_fragment_map);
+            child_fragment->GetMutableLayoutObject(),
+            child_context.last_fragment_map);
         child->inline_offset_to_container_box_ =
-            inline_offset_to_container_box + child_fragment.Offset();
+            inline_offset_to_container_box_ + child_fragment.Offset();
       } else if (child_fragment->IsLineBox()) {
         child->inline_offset_to_container_box_ =
-            inline_offset_to_container_box + child_fragment.Offset();
+            inline_offset_to_container_box_ + child_fragment.Offset();
       } else {
         DCHECK(child_fragment->IsFloating() || child_fragment->IsListMarker());
       }
 
-      if (populate_children) {
-        child->PopulateDescendants(child->inline_offset_to_container_box_,
-                                   last_fragment_map);
+      if (child_context.populate_children) {
+        child->PopulateDescendants(&child_context);
       }
     }
 
@@ -402,6 +431,12 @@ void NGPaintFragment::PopulateDescendants(
     *last_child_ptr = std::move(child);
     last_child_ptr = &((*last_child_ptr)->next_sibling_);
   }
+
+  // Destroy unused previous instances if any, and propagate states to the
+  // parent context.
+  child_context.DestroyPreviousInstances();
+  parent_context->painting_layer_needs_repaint |=
+      child_context.painting_layer_needs_repaint;
 }
 
 // Add to a linked list for each LayoutObject.

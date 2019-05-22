@@ -292,20 +292,38 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static base::Optional<PhysicalRect> LocalVisualRectFor(const LayoutObject&);
 
  private:
+  struct CreateContext {
+    STACK_ALLOCATED();
+
+   public:
+    CreateContext(scoped_refptr<NGPaintFragment> previous_instance,
+                  bool populate_children)
+        : previous_instance(std::move(previous_instance)),
+          populate_children(populate_children) {}
+    CreateContext(CreateContext* parent_context, NGPaintFragment* parent)
+        : parent(parent),
+          last_fragment_map(parent_context->last_fragment_map),
+          previous_instance(std::move(parent->first_child_)) {}
+
+    void DestroyPreviousInstances();
+
+    NGPaintFragment* parent = nullptr;
+    HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map = nullptr;
+    scoped_refptr<NGPaintFragment> previous_instance;
+    bool populate_children = false;
+    bool painting_layer_needs_repaint = false;
+  };
   static scoped_refptr<NGPaintFragment> CreateOrReuse(
       scoped_refptr<const NGPhysicalFragment> fragment,
       PhysicalOffset offset,
-      NGPaintFragment* parent,
-      scoped_refptr<NGPaintFragment> previous_instance,
-      bool* populate_children);
+      CreateContext* context);
 
-  void PopulateDescendants(
-      const PhysicalOffset inline_offset_to_container_box,
-      HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
+  void PopulateDescendants(CreateContext* parent_context);
   void AssociateWithLayoutObject(
       LayoutObject*,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
 
+  static void DestroyAll(scoped_refptr<NGPaintFragment> fragment);
   void RemoveChildren();
 
   // Helps for PositionForPoint() when |this| falls in different categories.
