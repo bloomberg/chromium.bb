@@ -42,6 +42,7 @@ class LazyLoadImagesSimTest : public SimTest {
           <div style='height:10000px;'></div>
           <div id="deferred_image"></div>
         )HTML"));
+    GetDocument().UpdateStyleAndLayoutTree();
   }
 
   void ExpectCSSBackgroundImageDeferredState(bool deferred) {
