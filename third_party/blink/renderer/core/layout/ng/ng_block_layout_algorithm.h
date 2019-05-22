@@ -29,7 +29,7 @@ class NGPhysicalLineBoxFragment;
 struct NGPreviousInflowPosition {
   LayoutUnit logical_block_offset;
   NGMarginStrut margin_strut;
-  bool empty_block_had_clearance;
+  bool self_collapsing_child_had_clearance;
 };
 
 // This strut holds information for the current inflow child. The data is not
@@ -118,16 +118,16 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const LogicalOffset&,
       const NGLayoutResult&,
       const NGFragment&,
-      bool empty_block_had_clearance);
+      bool self_collapsing_child_had_clearance);
 
-  // Position an empty-block using the parent BFC block offset.
+  // Position an self-collapsing child using the parent BFC block-offset.
   // The fragment doesn't know its offset, but we can still calculate its BFC
   // position because the parent fragment's BFC is known.
   // Example:
   //   BFC Offset is known here because of the padding.
   //   <div style="padding: 1px">
-  //     <div id="empty-div" style="margin: 1px"></div>
-  LayoutUnit PositionEmptyBlockWithParentBfc(
+  //     <div id="zero" style="margin: 1px"></div>
+  LayoutUnit PositionSelfCollapsingChildWithParentBfc(
       const NGLayoutInputNode& child,
       const NGConstraintSpace& child_space,
       const NGInflowChildData& child_data,

@@ -349,7 +349,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // Even if we have something in-flow, it may just be empty items that
   // shouldn't trigger creation of a line. Exit now if that's the case.
   if (line_info->IsEmptyLine()) {
-    container_builder_.SetIsEmptyBlock();
+    container_builder_.SetIsSelfCollapsing();
     container_builder_.SetIsEmptyLineBox();
     container_builder_.SetBaseDirection(line_info->BaseDirection());
     container_builder_.AddChildren(line_box_);

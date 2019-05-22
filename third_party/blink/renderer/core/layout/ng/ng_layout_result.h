@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -97,7 +98,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   // Returns true if the fragment should be considered empty for margin
   // collapsing purposes (e.g. margins "collapse through").
-  bool IsEmptyBlock() const { return is_empty_block_; }
+  bool IsSelfCollapsing() const { return is_self_collapsing_; }
 
   // Return true if this fragment got its block offset increased by the presence
   // of floats.
@@ -187,7 +188,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   NGLayoutResult(const NGLayoutResult&) = delete;
 
   // Delegate constructor that sets up what it can, based on the builder.
-  NGLayoutResult(NGContainerFragmentBuilder* builder, bool cache_space);
+  NGLayoutResult(
+      scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+      NGContainerFragmentBuilder* builder,
+      bool cache_space);
 
   static NGExclusionSpace MergeExclusionSpaces(
       const NGLayoutResult& other,
@@ -221,7 +225,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned has_valid_space_ : 1;
   unsigned has_forced_break_ : 1;
 
-  unsigned is_empty_block_ : 1;
+  unsigned is_self_collapsing_ : 1;
   unsigned is_pushed_by_floats_ : 1;
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
 

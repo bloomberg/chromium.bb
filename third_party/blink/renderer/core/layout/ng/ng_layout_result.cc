@@ -18,7 +18,9 @@ namespace blink {
 NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGBoxFragmentBuilder* builder)
-    : NGLayoutResult(builder, /* cache_space */ true) {
+    : NGLayoutResult(std::move(physical_fragment),
+                     builder,
+                     /* cache_space */ true) {
   is_initial_block_size_indefinite_ =
       builder->is_initial_block_size_indefinite_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
@@ -26,20 +28,20 @@ NGLayoutResult::NGLayoutResult(
   initial_break_before_ = builder->initial_break_before_;
   final_break_after_ = builder->previous_break_after_;
   has_forced_break_ = builder->has_forced_break_;
-  DCHECK(physical_fragment) << "Use the other constructor for aborting layout";
-  physical_fragment_ = std::move(physical_fragment);
 }
 
 NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
     NGLineBoxFragmentBuilder* builder)
-    : NGLayoutResult(builder, /* cache_space */ false) {
-  physical_fragment_ = std::move(physical_fragment);
-}
+    : NGLayoutResult(std::move(physical_fragment),
+                     builder,
+                     /* cache_space */ false) {}
 
 NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
                                NGBoxFragmentBuilder* builder)
-    : NGLayoutResult(builder, /* cache_space */ false) {
+    : NGLayoutResult(/* physical_fragment */ nullptr,
+                     builder,
+                     /* cache_space */ false) {
   adjoining_floats_ = kFloatTypeNone;
   has_descendant_that_depends_on_percentage_block_size_ = false;
   status_ = status;
@@ -67,7 +69,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
       final_break_after_(other.final_break_after_),
       has_valid_space_(other.has_valid_space_),
       has_forced_break_(other.has_forced_break_),
-      is_empty_block_(other.is_empty_block_),
+      is_self_collapsing_(other.is_self_collapsing_),
       is_pushed_by_floats_(other.is_pushed_by_floats_),
       adjoining_floats_(other.adjoining_floats_),
       is_initial_block_size_indefinite_(
@@ -76,11 +78,14 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
           other.has_descendant_that_depends_on_percentage_block_size_),
       status_(other.status_) {}
 
-NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilder* builder,
-                               bool cache_space)
+NGLayoutResult::NGLayoutResult(
+    scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+    NGContainerFragmentBuilder* builder,
+    bool cache_space)
     : space_(cache_space && builder->space_
                  ? NGConstraintSpace(*builder->space_)
                  : NGConstraintSpace()),
+      physical_fragment_(std::move(physical_fragment)),
       unpositioned_list_marker_(builder->unpositioned_list_marker_),
       exclusion_space_(std::move(builder->exclusion_space_)),
       bfc_line_offset_(builder->bfc_line_offset_),
@@ -88,13 +93,25 @@ NGLayoutResult::NGLayoutResult(NGContainerFragmentBuilder* builder,
       end_margin_strut_(builder->end_margin_strut_),
       has_valid_space_(cache_space && builder->space_),
       has_forced_break_(false),
-      is_empty_block_(builder->is_empty_block_),
+      is_self_collapsing_(builder->is_self_collapsing_),
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
       is_initial_block_size_indefinite_(false),
       has_descendant_that_depends_on_percentage_block_size_(
           builder->has_descendant_that_depends_on_percentage_block_size_),
-      status_(kSuccess) {}
+      status_(kSuccess) {
+#if DCHECK_IS_ON()
+  if (is_self_collapsing_ && physical_fragment_) {
+    // A new formatting-context shouldn't be self-collapsing.
+    DCHECK(!physical_fragment_->IsBlockFormattingContextRoot());
+
+    // Self-collapsing children must have a block-size of zero.
+    NGFragment fragment(physical_fragment_->Style().GetWritingMode(),
+                        *physical_fragment_);
+    DCHECK_EQ(LayoutUnit(), fragment.BlockSize());
+  }
+#endif
+}
 
 // Define the destructor here, so that we can forward-declare more in the
 // header.
@@ -149,7 +166,7 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
 
   DCHECK_EQ(has_valid_space_, other.has_valid_space_);
   DCHECK_EQ(has_forced_break_, other.has_forced_break_);
-  DCHECK_EQ(is_empty_block_, other.is_empty_block_);
+  DCHECK_EQ(is_self_collapsing_, other.is_self_collapsing_);
   DCHECK_EQ(is_pushed_by_floats_, other.is_pushed_by_floats_);
   DCHECK_EQ(adjoining_floats_, other.adjoining_floats_);
 

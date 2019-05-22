@@ -148,8 +148,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
                                              nullptr);
   }
 
-  NGContainerFragmentBuilder& SetIsEmptyBlock() {
-    is_empty_block_ = true;
+  NGContainerFragmentBuilder& SetIsSelfCollapsing() {
+    is_self_collapsing_ = true;
     return *this;
   }
 
@@ -253,7 +253,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
 
-  bool is_empty_block_ = false;
+  bool is_self_collapsing_ = false;
   bool is_pushed_by_floats_ = false;
   bool is_legacy_layout_root_ = false;
 

@@ -56,8 +56,8 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   container_builder_.SetIntrinsicBlockSize(result.IntrinsicBlockSize());
   container_builder_.SetUnpositionedListMarker(result.UnpositionedListMarker());
 
-  if (result.IsEmptyBlock())
-    container_builder_.SetIsEmptyBlock();
+  if (result.IsSelfCollapsing())
+    container_builder_.SetIsSelfCollapsing();
   if (result.IsPushedByFloats())
     container_builder_.SetIsPushedByFloats();
   container_builder_.AddAdjoiningFloatTypes(result.AdjoiningFloatTypes());
