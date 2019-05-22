@@ -11,6 +11,7 @@ import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
+import("//chrome/browser/media/router/features.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
@@ -3724,7 +3725,7 @@ test("unit_tests") {
       "../renderer/media/chrome_webrtc_log_message_delegate_unittest.cc",
     ]
 
-    if (!is_nacl) {
+    if (enable_openscreen) {
       sources += [ "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc" ]
     }
 

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/browser/media/router/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -70,6 +71,7 @@ static_library("router") {
       "//mojo/public/cpp/bindings",
       "//ui/base:buildflags",
     ]
+
     sources += [
       "data_decoder_util.cc",
       "data_decoder_util.h",
@@ -138,16 +140,19 @@ static_library("router") {
       "providers/wired_display/wired_display_presentation_receiver_factory.h",
     ]
 
-    # Exclude the packet writer in NaCl, since there is no packet support
-    # in that build configuration. Once NaCl goes away, this check should be
-    # removed.
-    if (!is_nacl) {
+    if (enable_openscreen) {
       sources += [
         "providers/openscreen/network_service_async_packet_sender.cc",
         "providers/openscreen/network_service_async_packet_sender.h",
         "providers/openscreen/network_service_quic_packet_writer.cc",
         "providers/openscreen/network_service_quic_packet_writer.h",
+        "providers/openscreen/platform/logging.cc",
       ]
+
+      configs +=
+          [ "//third_party/openscreen/src/build:allow_build_from_embedder" ]
+
+      deps += [ "//third_party/openscreen/src/platform" ]
     }
   }
 }
