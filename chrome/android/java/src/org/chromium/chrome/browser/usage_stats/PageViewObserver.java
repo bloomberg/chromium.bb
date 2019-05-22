@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.content_public.browser.NavigationHandle;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,6 +33,7 @@ import java.lang.reflect.Method;
 @SuppressLint("NewApi")
 public class PageViewObserver {
     private static final String TAG = "PageViewObserver";
+    private static final String AMP_QUERY_PARAM = "amp_js_v";
 
     private final Activity mActivity;
     private final TabModelSelectorTabModelObserver mTabModelObserver;
@@ -56,7 +58,7 @@ public class PageViewObserver {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
                 if (!tab.isLoading() && !tab.isBeingRestored()) {
-                    updateUrl(tab.getUrl());
+                    updateUsingCanonicalUrl(tab);
                 }
             }
 
@@ -80,12 +82,24 @@ public class PageViewObserver {
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 assert tab == mCurrentTab;
 
-                updateUrl(tab.getUrl());
+                updateUsingCanonicalUrl(tab);
             }
 
             @Override
             public void onCrash(Tab tab) {
                 updateUrl(null);
+            }
+
+            @Override
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+                // We only check isLikelySubframeAmpNavigation here because this is the only
+                // observer method that fires for subframe navigations. The reason we have the
+                // isLikelySubframeAmpNavigation at all is that onDidFinishNavigation triggers very
+                // often, and we only want to bother getting the canonical URL if we think there's a
+                // good chance that it will actually be present.
+                if (isLikelySubframeAmpNavigation(navigation)) {
+                    updateUsingCanonicalUrl(tab);
+                }
             }
         };
 
@@ -130,6 +144,22 @@ public class PageViewObserver {
                 reportStop();
             }
         }
+    }
+
+    private void updateUsingCanonicalUrl(Tab tab) {
+        if (tab.getWebContents() == null || tab.getWebContents().getMainFrame() == null) {
+            updateUrl(tab.getUrl());
+            return;
+        }
+
+        tab.getWebContents().getMainFrame().getCanonicalUrlForSharing((canonicalUrl) -> {
+            if (tab != mCurrentTab) return;
+            String urlToUse = tab.getUrl();
+            if (canonicalUrl != null && canonicalUrl.length() > 0) {
+                urlToUse = canonicalUrl;
+            }
+            updateUrl(urlToUse);
+        });
     }
 
     /**
@@ -202,7 +232,7 @@ public class PageViewObserver {
         // If the newly active tab is hidden, we don't want to check its URL yet; we'll wait until
         // the onShown event fires.
         if (mCurrentTab != null && !tab.isHidden()) {
-            updateUrl(mCurrentTab.getUrl());
+            updateUsingCanonicalUrl(tab);
         }
     }
 
@@ -243,5 +273,19 @@ public class PageViewObserver {
         if (url == null) return "";
         String host = Uri.parse(url).getHost();
         return host == null ? "" : host;
+    }
+
+    private boolean isLikelySubframeAmpNavigation(NavigationHandle navigation) {
+        if (navigation.isInMainFrame()) return false;
+        String subframeUrl = navigation.getUrl();
+        if (subframeUrl == null || subframeUrl.length() == 0) return false;
+
+        // Our heuristic for AMP pages, based on AMPPageLoadMetricsObserver, is to look for a
+        // subframe navigation that contains "amp_js_v" in the query. This might produce a false
+        // positive, but we're OK with that; we'll just call updateUrl an extra time. This is a
+        // no-op if the URL hasn't actually changed.
+        String query = Uri.parse(subframeUrl).getQuery();
+        if (query == null) return false;
+        return query.contains(AMP_QUERY_PARAM);
     }
 }
