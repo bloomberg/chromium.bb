@@ -73,7 +73,6 @@ android_apk("webview_instrumentation_apk") {
     "shell/src/org/chromium/android_webview/test/OnlyRunIn.java",
     "shell/src/org/chromium/android_webview/test/TestContentProvider.java",
   ]
-  locale_config_java_packages = [ "org.chromium.android_webview.test" ]
 
   shared_libraries = [ ":libstandalonelibwebviewchromium" ]
 

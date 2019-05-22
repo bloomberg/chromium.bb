@@ -32,8 +32,6 @@ template("system_webview_apk_tmpl") {
       "//base:base_java",
     ]
 
-    locale_config_java_packages = [ "org.chromium.android_webview" ]
-
     if (!defined(alternative_android_sdk_dep)) {
       alternative_android_sdk_dep = webview_framework_dep
     }
