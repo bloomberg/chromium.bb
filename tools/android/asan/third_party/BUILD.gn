@@ -13,9 +13,7 @@ generate_wrapper("asan_device_setup") {
 
   _lib_archs = []
 
-  if (target_cpu == "arm") {
-    _lib_archs += [ "arm" ]
-  } else if (target_cpu == "arm64") {
+  if (target_cpu == "arm" || target_cpu == "arm64") {
     _lib_archs += [
       "arm",
       "aarch64",
