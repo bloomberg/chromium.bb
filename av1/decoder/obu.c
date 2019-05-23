@@ -535,10 +535,23 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
 
 // Note: This function does not read itu_t_t35_payload_bytes because the exact
 // syntax of itu_t_t35_payload_bytes is not defined in the spec.
-static void read_metadata_itut_t35(struct aom_read_bit_buffer *rb) {
-  const int itu_t_t35_country_code = aom_rb_read_literal(rb, 8);
+static void read_metadata_itut_t35(AV1_COMMON *const cm, const uint8_t *data,
+                                   size_t sz) {
+  size_t i = 0;
+  // itu_t_t35_country_code f(8)
+  if (i >= sz) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "itu_t_t35_country_code is missing");
+  }
+  const int itu_t_t35_country_code = data[i];
+  ++i;
   if (itu_t_t35_country_code == 0xFF) {
-    aom_rb_read_literal(rb, 8);
+    // itu_t_t35_country_code_extension_byte f(8)
+    if (i >= sz) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "itu_t_t35_country_code_extension_byte is missing");
+    }
+    ++i;
   }
   // itu_t_t35_payload_bytes
 }
@@ -656,10 +669,11 @@ static uint8_t get_last_nonzero_byte(const uint8_t *data, size_t sz) {
 // pbi->common.error.error_code and returns 0, or calls aom_internal_error()
 // and does not return.
 static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
+  AV1_COMMON *const cm = &pbi->common;
   size_t type_length;
   uint64_t type_value;
   if (aom_uleb_decode(data, sz, &type_value, &type_length) < 0) {
-    pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+    cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
     return 0;
   }
   const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)type_value;
@@ -672,14 +686,14 @@ static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
     }
     return sz;
   }
-  struct aom_read_bit_buffer rb;
-  av1_init_read_bit_buffer(pbi, &rb, data + type_length, data + sz);
   if (metadata_type == OBU_METADATA_TYPE_ITUT_T35) {
-    read_metadata_itut_t35(&rb);
+    read_metadata_itut_t35(cm, data + type_length, sz - type_length);
     // Ignore itu_t_t35_payload_bytes.
     // TODO(wtc): Check trailing bits.
     return sz;
   }
+  struct aom_read_bit_buffer rb;
+  av1_init_read_bit_buffer(pbi, &rb, data + type_length, data + sz);
   if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
     read_metadata_hdr_cll(&rb);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
