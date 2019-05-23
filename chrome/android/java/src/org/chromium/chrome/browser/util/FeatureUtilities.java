@@ -86,6 +86,7 @@ public class FeatureUtilities {
     private static Boolean sIsTabGroupUiImprovementsAndroidEnabled;
     private static Boolean sFeedEnabled;
     private static Boolean sServiceManagerForBackgroundPrefetch;
+    private static Boolean sIsNetworkServiceEnabled;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
     private static Boolean sIsImmersiveUiModeEnabled;
     private static Boolean sIsTabPersistentStoreTaskRunnerEnabled;
@@ -209,6 +210,7 @@ public class FeatureUtilities {
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
         cacheFeedEnabled();
+        cacheNetworkService();
         cacheAllowStartingServiceManagerOnly();
         cacheServiceManagerForDownloadResumption();
         cacheServiceManagerForBackgroundPrefetch();
@@ -278,6 +280,23 @@ public class FeatureUtilities {
                 allowStartingServiceManagerOnly);
     }
 
+    private static void cacheNetworkService() {
+        boolean networkService = ChromeFeatureList.isEnabled(ChromeFeatureList.NETWORK_SERVICE);
+
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.NETWORK_SERVICE_KEY, networkService);
+    }
+
+    private static boolean isNetworkServiceEnabled() {
+        if (sIsNetworkServiceEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sIsNetworkServiceEnabled =
+                    prefManager.readBoolean(ChromePreferenceManager.NETWORK_SERVICE_KEY, false);
+        }
+        return sIsNetworkServiceEnabled;
+    }
+
     /**
      * @return if allowing to start service manager only mode.
      */
@@ -288,8 +307,7 @@ public class FeatureUtilities {
             sAllowStartingServiceManagerOnly = prefManager.readBoolean(
                     ChromePreferenceManager.ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY, false);
         }
-        return sAllowStartingServiceManagerOnly
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.NETWORK_SERVICE);
+        return sAllowStartingServiceManagerOnly && isNetworkServiceEnabled();
     }
 
     private static void cacheServiceManagerForDownloadResumption() {
