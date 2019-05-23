@@ -60,6 +60,7 @@ jumbo_source_set("browser") {
     "//components/network_session_configurator/browser",
     "//components/offline_pages/buildflags",
     "//components/offline_pages/core/request_header",
+    "//components/os_crypt",
     "//components/payments/content/icon",
     "//components/rappor",
     "//components/services/filesystem:lib",
