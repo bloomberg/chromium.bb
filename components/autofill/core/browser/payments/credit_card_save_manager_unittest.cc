@@ -1719,8 +1719,15 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   ExpectCardUploadDecision(histogram_tester,
                            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
   // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED |
-                              AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
+  int upload_decision = AutofillMetrics::UPLOAD_OFFERED |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
+  ExpectCardUploadDecisionUkm(upload_decision);
 }
 
 TEST_F(CreditCardSaveManagerTest,
@@ -1753,10 +1760,16 @@ TEST_F(CreditCardSaveManagerTest,
   ExpectCardUploadDecision(histogram_tester,
                            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
   // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(
-      AutofillMetrics::UPLOAD_OFFERED |
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE |
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
+  int upload_decision = AutofillMetrics::UPLOAD_OFFERED |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
+  ExpectCardUploadDecisionUkm(upload_decision);
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
@@ -2059,9 +2072,15 @@ TEST_F(CreditCardSaveManagerTest,
   ExpectCardUploadDecision(
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
   // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(
-      AutofillMetrics::UPLOAD_OFFERED |
-      AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
+  int upload_decision = AutofillMetrics::UPLOAD_OFFERED |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
+  ExpectCardUploadDecisionUkm(upload_decision);
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasAddressMiddleName) {
@@ -2097,9 +2116,15 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasAddressMiddleName) {
   ExpectCardUploadDecision(
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
   // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(
-      AutofillMetrics::UPLOAD_OFFERED |
-      AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
+  int upload_decision = AutofillMetrics::UPLOAD_OFFERED |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
+  ExpectCardUploadDecisionUkm(upload_decision);
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesCanMismatch) {
@@ -2144,9 +2169,15 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesCanMismatch) {
   ExpectCardUploadDecision(
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
   // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(
-      AutofillMetrics::UPLOAD_OFFERED |
-      AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
+  int upload_decision = AutofillMetrics::UPLOAD_OFFERED |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
+  ExpectCardUploadDecisionUkm(upload_decision);
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
@@ -3126,7 +3157,19 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, NothingIfNothingFound) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
+  int detected_values = payments_client_->detected_values_in_upload_details();
+  EXPECT_FALSE(detected_values & CreditCardSaveManager::DetectedValue::CVC);
+  EXPECT_FALSE(detected_values &
+               CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME);
+  EXPECT_FALSE(detected_values &
+               CreditCardSaveManager::DetectedValue::ADDRESS_NAME);
+  EXPECT_FALSE(detected_values &
+               CreditCardSaveManager::DetectedValue::POSTAL_CODE);
+  EXPECT_FALSE(detected_values &
+               CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
+  EXPECT_FALSE(
+      detected_values &
+      CreditCardSaveManager::DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT);
 }
 
 TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectCvc) {
@@ -3256,7 +3299,11 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
+  int detected_values = payments_client_->detected_values_in_upload_details();
+  EXPECT_FALSE(detected_values &
+               CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME);
+  EXPECT_FALSE(detected_values &
+               CreditCardSaveManager::DetectedValue::ADDRESS_NAME);
 }
 
 TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectPostalCode) {
@@ -3314,7 +3361,8 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
+  EXPECT_FALSE(payments_client_->detected_values_in_upload_details() &
+               CreditCardSaveManager::DetectedValue::POSTAL_CODE);
 }
 
 TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectAddressLine) {
@@ -3628,13 +3676,20 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
                            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
   ExpectCardUploadDecision(histogram_tester,
                            AutofillMetrics::CVC_VALUE_NOT_FOUND);
+  int upload_decision =
+      AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED |
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME |
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE |
+      AutofillMetrics::CVC_VALUE_NOT_FOUND;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
   // Verify that the correct UKM was logged.
   ExpectMetric(UkmCardUploadDecisionType::kUploadDecisionName,
-               UkmCardUploadDecisionType::kEntryName,
-               AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED |
-                   AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME |
-                   AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE |
-                   AutofillMetrics::CVC_VALUE_NOT_FOUND,
+               UkmCardUploadDecisionType::kEntryName, upload_decision,
                1 /* expected_num_matching_entries */);
 }
 
@@ -3842,11 +3897,18 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
   ExpectCardUploadDecision(histogram_tester, AutofillMetrics::UPLOAD_OFFERED);
   ExpectCardUploadDecision(histogram_tester,
                            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
+
+  int upload_decision = AutofillMetrics::UPLOAD_OFFERED |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
   // Verify that the correct UKM was logged.
   ExpectMetric(UkmCardUploadDecisionType::kUploadDecisionName,
-               UkmCardUploadDecisionType::kEntryName,
-               AutofillMetrics::UPLOAD_OFFERED |
-                   AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME,
+               UkmCardUploadDecisionType::kEntryName, upload_decision,
                1 /* expected_num_matching_entries */);
 }
 
@@ -3884,11 +3946,18 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
   ExpectCardUploadDecision(histogram_tester, AutofillMetrics::UPLOAD_OFFERED);
   ExpectCardUploadDecision(
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
+
+  int upload_decision = AutofillMetrics::UPLOAD_OFFERED |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
   // Verify that the correct UKM was logged.
   ExpectMetric(UkmCardUploadDecisionType::kUploadDecisionName,
-               UkmCardUploadDecisionType::kEntryName,
-               AutofillMetrics::UPLOAD_OFFERED |
-                   AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES,
+               UkmCardUploadDecisionType::kEntryName, upload_decision,
                1 /* expected_num_matching_entries */);
 }
 
@@ -4031,13 +4100,19 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
                            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
   ExpectCardUploadDecision(histogram_tester,
                            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
+  int upload_decision = AutofillMetrics::UPLOAD_OFFERED |
+                        AutofillMetrics::CVC_VALUE_NOT_FOUND |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME |
+                        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
+#if defined(OS_ANDROID)
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
+  upload_decision |= AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+#endif
+
   // Verify that the correct UKM was logged.
   ExpectMetric(UkmCardUploadDecisionType::kUploadDecisionName,
-               UkmCardUploadDecisionType::kEntryName,
-               AutofillMetrics::UPLOAD_OFFERED |
-                   AutofillMetrics::CVC_VALUE_NOT_FOUND |
-                   AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME |
-                   AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE,
+               UkmCardUploadDecisionType::kEntryName, upload_decision,
                1 /* expected_num_matching_entries */);
 }
 

@@ -128,8 +128,13 @@ const base::Feature kAutofillUpstreamDisallowJcb{
     "AutofillUpstreamDisallowJcb", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillUpstreamEditableCardholderName{
-    "AutofillUpstreamEditableCardholderName",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "AutofillUpstreamEditableCardholderName",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kAutofillUpstreamEditableExpirationDate{
     "AutofillUpstreamEditableExpirationDate",
