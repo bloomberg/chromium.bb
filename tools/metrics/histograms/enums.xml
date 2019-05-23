@@ -5288,6 +5288,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Allowed"/>
 </enum>
 
+<enum name="BooleanAlreadyUpdating">
+  <int value="0" label="Not Already Updating"/>
+  <int value="1" label="Already Updating"/>
+</enum>
+
 <enum name="BooleanAnchorElementSameHost">
   <int value="0" label="Anchor element has different host than document host"/>
   <int value="1" label="Anchor element has same host as document host"/>

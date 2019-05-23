@@ -139,6 +139,8 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omaha/ResponseParserTest.java",
   "junit/src/org/chromium/chrome/browser/omaha/UpdateStatusProviderTest.java",
   "junit/src/org/chromium/chrome/browser/omaha/VersionNumberTest.java",
+  "junit/src/org/chromium/chrome/browser/omaha/metrics/HistogramUtilsTest.java",
+  "junit/src/org/chromium/chrome/browser/omaha/metrics/UpdateSuccessMetricsTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/AutocompleteEditTextTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/AutocompleteStateUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/KeyboardHideHelperUnitTest.java",

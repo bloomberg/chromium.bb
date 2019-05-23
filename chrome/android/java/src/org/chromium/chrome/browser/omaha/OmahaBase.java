@@ -527,7 +527,7 @@ public class OmahaBase {
     }
 
     /** Returns the Omaha SharedPreferences. */
-    static SharedPreferences getSharedPreferences() {
+    public static SharedPreferences getSharedPreferences() {
         return ContextUtils.getApplicationContext().getSharedPreferences(
                 PREF_PACKAGE, Context.MODE_PRIVATE);
     }
