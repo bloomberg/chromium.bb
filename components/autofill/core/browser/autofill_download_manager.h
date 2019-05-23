@@ -17,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -30,6 +31,8 @@ namespace autofill {
 
 class AutofillDriver;
 class FormStructure;
+
+const size_t kMaxAPIQueryGetSize = 10240;  // 10 KiB
 
 // A helper to make sure that tests which modify the set of active autofill
 // experiments do not interfere with one another.
@@ -113,6 +116,12 @@ class AutofillDownloadManager {
   // download manager from uploading a multiple votes for a given form/event
   // pair.
   static void ClearUploadHistory(PrefService* pref_service);
+
+ protected:
+  // Gets the length of the payload from request data. Used to simulate
+  // different payload sizes when testing without the need for data. Do not use
+  // this when the length is needed to read/write a buffer.
+  virtual size_t GetPayloadLength(base::StringPiece payload) const;
 
  private:
   friend class AutofillDownloadManagerTest;
