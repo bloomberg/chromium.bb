@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "media/capture/video/chromeos/mojo/camera3.mojom.h"
 #include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
+#include "media/capture/video/chromeos/vendor_tag_ops_delegate.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -47,7 +48,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
 
   void SetCameraModule(cros::mojom::CameraModulePtrInfo camera_module_ptr_info);
 
-  // Resets |camera_module_| and |camera_module_callbacks_|.
+  // Resets various mojo bindings, WaitableEvents, and cached information.
   void Reset();
 
   // Delegation methods for the VideoCaptureDeviceFactory interface.  These
@@ -94,13 +95,20 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // GetDeviceDescriptors.
   bool UpdateBuiltInCameraInfo();
   void UpdateBuiltInCameraInfoOnIpcThread();
+
   // Callback for GetNumberOfCameras Mojo IPC function.  GetNumberOfCameras
   // returns the number of built-in cameras on the device.
   void OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras);
+
   // Callback for SetCallbacks Mojo IPC function. SetCallbacks is called after
   // GetNumberOfCameras is called for the first time, and before any other calls
   // to |camera_module_|.
   void OnSetCallbacksOnIpcThread(int32_t result);
+
+  // Callback for GetVendorTagOps Mojo IPC function, which will initialize the
+  // |vendor_tag_ops_delegate_|.
+  void OnGotVendorTagOpsOnIpcThread();
+
   void GetCameraInfoOnIpcThread(int32_t camera_id,
                                 GetCameraInfoCallback callback);
   void OnGotCameraInfoOnIpcThread(int32_t camera_id,
@@ -162,6 +170,10 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // The Mojo binding serving the camera module callbacks.  Bound to
   // |ipc_task_runner_|.
   mojo::Binding<cros::mojom::CameraModuleCallbacks> camera_module_callbacks_;
+
+  // An internal delegate to handle VendorTagOps mojo connection and query
+  // information of vendor tags.  Bound to |ipc_task_runner_|.
+  VendorTagOpsDelegate vendor_tag_ops_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraHalDelegate);
 };

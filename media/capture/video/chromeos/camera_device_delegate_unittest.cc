@@ -426,6 +426,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
   std::unique_ptr<CameraDeviceDelegate> camera_device_delegate_;
 
@@ -445,7 +446,6 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   size_t num_streams_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::Thread hal_delegate_thread_;
   std::unique_ptr<base::RunLoop> run_loop_;
   DISALLOW_COPY_AND_ASSIGN(CameraDeviceDelegateTest);

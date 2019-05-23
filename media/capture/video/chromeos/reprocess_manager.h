@@ -33,6 +33,7 @@ struct ReprocessTask {
 
 using ReprocessTaskQueue = base::queue<ReprocessTask>;
 
+// TODO(shik): Get the keys from VendorTagOps by names instead (b/130774415).
 constexpr uint32_t kPortraitModeVendorKey = 0x80000000;
 constexpr uint32_t kPortraitModeSegmentationResultVendorKey = 0x80000001;
 constexpr int32_t kReprocessSuccess = 0;
