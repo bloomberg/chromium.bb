@@ -597,6 +597,7 @@ void Tab::AddedToWidget() {
 
 void Tab::OnFocus() {
   controller_->UpdateHoverCard(this, /* should_show */ true);
+  View::OnFocus();
 }
 
 void Tab::OnThemeChanged() {
