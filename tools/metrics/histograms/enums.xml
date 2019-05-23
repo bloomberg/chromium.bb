@@ -30241,6 +30241,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Check complete, site is a PWA"/>
 </enum>
 
+<enum name="InstallationCounterReasonEnum">
+  <int value="0" label="User"/>
+  <int value="1" label="Default App"/>
+  <int value="2" label="OEM"/>
+  <int value="3" label="Policy based App"/>
+  <int value="4" label="Unknown Reason"/>
+</enum>
+
 <enum name="InstallStatus">
   <int value="0" label="FIRST_INSTALL_SUCCESS"/>
   <int value="1" label="INSTALL_REPAIRED"/>
@@ -56558,6 +56566,10 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Group not reported"/>
   <int value="2" label="Trial was disabled"/>
   <int value="3" label="Group not reported and trial was disabled"/>
+</enum>
+
+<enum name="UninstallCounterReasonEnum">
+  <int value="0" label="User"/>
 </enum>
 
 <enum name="UnlockType">

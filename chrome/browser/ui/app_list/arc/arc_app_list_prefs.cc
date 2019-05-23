@@ -212,6 +212,23 @@ ArcAppIconDescriptor MapDefaultAppIconDescriptor(
 // Whether skip install_time for comparing two |AppInfo|.
 bool ignore_compare_app_info_install_time = false;
 
+// Reason for installation enumeration; Used for UMA counter for reason for
+// install.
+enum class InstallationCounterReasonEnum {
+  USER = 0,     // Application installed by user.
+  DEFAULT = 1,  // Application part of the default set.
+  OEM = 2,      // OEM application.
+  POLICY = 3,   // Installed by policy.
+  UNKNOWN = 4,
+  kMaxValue = UNKNOWN,
+};
+
+// Reasons for uninstalls. Only one, USER, for now.
+enum class UninstallCounterReasonEnum {
+  USER = 0,  // Uninstall triggered by user.
+  kMaxValue = USER
+};
+
 }  // namespace
 
 // static
@@ -1557,6 +1574,8 @@ void ArcAppListPrefs::HandlePackageRemoved(const std::string& package_name) {
 }
 
 void ArcAppListPrefs::OnPackageRemoved(const std::string& package_name) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.AppUninstallReason",
+                            UninstallCounterReasonEnum::USER);
   HandlePackageRemoved(package_name);
 
   for (auto& observer : observer_list_)
@@ -1810,6 +1829,18 @@ void ArcAppListPrefs::OnInstallationFinished(
     }
     for (auto& observer : observer_list_)
       observer.OnInstallationFinished(result->package_name, result->success);
+    if (result->success) {
+      InstallationCounterReasonEnum reason =
+          InstallationCounterReasonEnum::USER;
+      if (IsDefault(result->package_name)) {
+        reason = InstallationCounterReasonEnum::DEFAULT;
+      } else if (IsOem(result->package_name)) {
+        reason = InstallationCounterReasonEnum::OEM;
+      } else if (IsControlledByPolicy(result->package_name)) {
+        reason = InstallationCounterReasonEnum::POLICY;
+      }
+      UMA_HISTOGRAM_ENUMERATION("Arc.AppInstalledReason", reason);
+    }
   }
 
   if (!installing_packages_count_) {
