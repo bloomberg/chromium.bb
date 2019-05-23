@@ -354,14 +354,26 @@ OverviewWindowDragController::CompleteNormalDrag(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kNormalDrag);
 
-  // Remove the drop target if any (which may exist when SplitView is
-  // enabled either in tablet or clamshell modes).
-  if (item_->overview_grid()->drop_target_widget())
-    item_->overview_grid()->RemoveDropTarget();
-
-  // Attempt to move a window to a different desk.
   const gfx::Point rounded_screen_point =
       gfx::ToRoundedPoint(location_in_screen);
+  if (should_allow_split_view_) {
+    DCHECK(item_->overview_grid()->drop_target_widget());
+    item_->overview_grid()->RemoveDropTarget();
+    // Update the split view divider bar stuatus if necessary. The divider bar
+    // should be placed above the dragged window after drag ends. Note here the
+    // passed parameters |snap_position_| and |location_in_screen| won't be used
+    // in this function for this case, but they are passed in as placeholders.
+    split_view_controller_->OnWindowDragEnded(
+        item_->GetWindow(), snap_position_, rounded_screen_point);
+
+    // Update window grid bounds and |snap_position_| in case the screen
+    // orientation was changed.
+    UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
+    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
+        IndicatorState::kNone, gfx::Point());
+  }
+
+  // Attempt to move a window to a different desk.
   if (virtual_desks_enabled_) {
     item_->SetOpacity(original_opacity_);
 
@@ -378,19 +390,6 @@ OverviewWindowDragController::CompleteNormalDrag(
   // Attempt to snap a window if SplitView is enabled.
   DCHECK(item_);
   if (should_allow_split_view_) {
-    // Update the split view divider bar stuatus if necessary. The divider bar
-    // should be placed above the dragged window after drag ends. Note here the
-    // passed parameters |snap_position_| and |location_in_screen| won't be used
-    // in this function for this case, but they are passed in as placeholders.
-    split_view_controller_->OnWindowDragEnded(
-        item_->GetWindow(), snap_position_, rounded_screen_point);
-
-    // Update window grid bounds and |snap_position_| in case the screen
-    // orientation was changed.
-    UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
-    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-        IndicatorState::kNone, gfx::Point());
-
     // If the window was dragged around but should not be snapped, move it
     // back to overview window grid.
     if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen) ||
@@ -404,6 +403,7 @@ OverviewWindowDragController::CompleteNormalDrag(
     return DragResult::kSuccessfulDragToSnap;
   }
 
+  item_->set_should_restack_on_animation_end(true);
   overview_session_->PositionWindows(/*animate=*/true);
   return DragResult::kNeverDisambiguated;
 }

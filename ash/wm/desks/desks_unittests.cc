@@ -20,6 +20,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
@@ -84,9 +85,12 @@ void ClickOnMiniView(const DeskMiniView* desk_mini_view,
   event_generator->ClickLeftButton();
 }
 
+// If |drop| is false, the dragged |item| won't be dropped; giving the caller
+// a chance to do some validations before the item is dropped.
 void DragItemToPoint(OverviewItem* item,
                      const gfx::Point& screen_location,
-                     ui::test::EventGenerator* event_generator) {
+                     ui::test::EventGenerator* event_generator,
+                     bool drop = true) {
   DCHECK(item);
 
   const gfx::Point item_center =
@@ -97,7 +101,8 @@ void DragItemToPoint(OverviewItem* item,
   // rather than the drag to close mode.
   event_generator->MoveMouseBy(50, 0);
   event_generator->MoveMouseTo(screen_location);
-  event_generator->ReleaseLeftButton();
+  if (drop)
+    event_generator->ReleaseLeftButton();
 }
 
 // Defines an observer to test DesksController notifications.
@@ -897,8 +902,7 @@ TEST_F(DesksTest, DragWindowToDesk) {
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  const auto* overview_grid =
-      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(1u, overview_grid->size());
 
   auto* overview_session = overview_controller->overview_session();
@@ -934,6 +938,7 @@ TEST_F(DesksTest, DragWindowToDesk) {
   EXPECT_FALSE(DoesActiveDeskContainWindow(window.get()));
   EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
   EXPECT_TRUE(desk_2->windows().contains(window.get()));
+  EXPECT_FALSE(overview_grid->drop_target_widget());
 }
 
 TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
@@ -981,6 +986,73 @@ TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
   EXPECT_EQ(1u, overview_grid->size());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
   EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
+}
+
+class DesksWithSplitViewTest : public AshTestBase {
+ public:
+  DesksWithSplitViewTest() = default;
+  ~DesksWithSplitViewTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kVirtualDesks,
+                              features::kDragToSnapInClamshellMode},
+        /*disabled_features=*/{});
+
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesksWithSplitViewTest);
+};
+
+TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+
+  // Drag it to desk_2's mini_view. The overview grid should now show the
+  // "no-windows" widget, and the window should move to desk_2.
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  DragItemToPoint(overview_item,
+                  desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
+                  GetEventGenerator(), /*drop=*/false);
+  // Validate that before dropping, the SplitView indicators and the drop target
+  // widget are created.
+  EXPECT_TRUE(overview_grid->drop_target_widget());
+  EXPECT_EQ(IndicatorState::kDragArea,
+            overview_session->split_view_drag_indicators()
+                ->current_indicator_state());
+  // Now drop the window, and validate the indicators and the drop target were
+  // removed.
+  GetEventGenerator()->ReleaseLeftButton();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(overview_grid->empty());
+  EXPECT_FALSE(DoesActiveDeskContainWindow(window.get()));
+  EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
+  EXPECT_FALSE(overview_grid->drop_target_widget());
+  EXPECT_EQ(IndicatorState::kNone,
+            overview_session->split_view_drag_indicators()
+                ->current_indicator_state());
 }
 
 // TODO(afakhry): Add more tests:
