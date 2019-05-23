@@ -109,10 +109,9 @@ void CachedImageFetcher::OnImageFetchedFromDatabase(
         data,
         // We're not dealing with multi-frame images.
         /*desired_image_frame_size=*/gfx::Size(),
-        base::Bind(&CachedImageFetcher::OnImageDecodedFromDatabase,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(std::move(image_callback)), suggestion_id,
-                   url));
+        base::BindOnce(&CachedImageFetcher::OnImageDecodedFromDatabase,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(image_callback), suggestion_id, url));
   }
 }
 
