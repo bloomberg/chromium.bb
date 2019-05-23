@@ -209,9 +209,9 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
   }
   ~WidgetSlideAnimationDelegate() override {}
 
-  void AnimateToAnchorView(views::View* anchor_view) {
-    anchor_view_ = anchor_view;
-    gfx::Rect anchor_bounds = anchor_view->GetAnchorBoundsInScreen();
+  void AnimateToAnchorView(views::View* desired_anchor_view) {
+    desired_anchor_view_ = desired_anchor_view;
+    gfx::Rect anchor_bounds = desired_anchor_view->GetAnchorBoundsInScreen();
     anchor_bounds.Inset(bubble_delegate_->anchor_view_insets());
 
     // If an animation is currently running we should start the next animation
@@ -232,10 +232,7 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
     slide_animation_->Show();
   }
 
-  void StopAnimation() {
-    anchor_view_ = nullptr;
-    slide_animation_->Stop();
-  }
+  void StopAnimation() { AnimationCanceled(slide_animation_.get()); }
 
   bool IsAnimating() { return slide_animation_->is_animating(); }
 
@@ -247,14 +244,24 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
         value, starting_bubble_bounds_, target_bubble_bounds_);
 
     if (current_bubble_bounds_ == target_bubble_bounds_) {
-      bubble_delegate_->SetAnchorView(anchor_view_);
+      bubble_delegate_->SetAnchorView(desired_anchor_view_);
+      AnimationEnded(animation);
     }
     bubble_delegate_->GetWidget()->SetBounds(current_bubble_bounds_);
   }
 
+  void AnimationEnded(const gfx::Animation* animation) override {
+    desired_anchor_view_ = nullptr;
+  }
+
+  void AnimationCanceled(const gfx::Animation* animation) override {
+    AnimationEnded(animation);
+    slide_animation_->Stop();
+  }
+
   TabHoverCardBubbleView* const bubble_delegate_;
   std::unique_ptr<gfx::SlideAnimation> slide_animation_;
-  views::View* anchor_view_ = nullptr;
+  views::View* desired_anchor_view_ = nullptr;
   gfx::Rect starting_bubble_bounds_;
   gfx::Rect target_bubble_bounds_;
   gfx::Rect current_bubble_bounds_;
