@@ -802,6 +802,8 @@ class CORE_EXPORT LocalFrameView final
   DoublePoint ConvertFromContainingEmbeddedContentView(
       const DoublePoint&) const;
 
+  void InvalidateForThrottlingChange();
+
   void UpdateGeometriesIfNeeded();
   bool WasViewportResized();
   void SendResizeEventIfNeeded();

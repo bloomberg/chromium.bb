@@ -4003,6 +4003,10 @@ void LocalFrameView::CrossOriginStatusChanged() {
     return;
   }
   RenderThrottlingStatusChanged();
+  // We need to invalidate unconditionally, so if it didn't happen during
+  // RenderThrottlingStatusChanged, do it now.
+  if (CanThrottleRendering())
+    InvalidateForThrottlingChange();
   // Immediately propagate changes to children.
   UpdateRenderThrottlingStatus(IsHiddenForThrottling(), IsSubtreeThrottled(),
                                true);
@@ -4017,26 +4021,8 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     GraphicsLayersDidChange();
 
-  if (!CanThrottleRendering()) {
-    // ScrollingCoordinator needs to update according to the new throttling
-    // status.
-    if (auto* scrolling_coordinator = GetScrollingCoordinator())
-      scrolling_coordinator->NotifyGeometryChanged(this);
-    // Start ticking animation frames again if necessary.
-    if (GetPage())
-      GetPage()->Animator().ScheduleVisualUpdate(frame_.Get());
-    // Force a full repaint of this frame to ensure we are not left with a
-    // partially painted version of this frame's contents if we skipped
-    // painting them while the frame was throttled.
-    LayoutView* layout_view = GetLayoutView();
-    if (layout_view) {
-      layout_view->InvalidatePaintForViewAndCompositedLayers();
-      // Also need to update all paint properties that might be skipped while
-      // the frame was throttled.
-      layout_view->AddSubtreePaintPropertyUpdateReason(
-          SubtreePaintPropertyUpdateReason::kPreviouslySkipped);
-    }
-  }
+  if (!CanThrottleRendering())
+    InvalidateForThrottlingChange();
 
   if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler()) {
     frame_scheduler->SetFrameVisible(!IsHiddenForThrottling());
@@ -4052,6 +4038,27 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
     parent = parent->ParentFrameView();
   }
 #endif
+}
+
+void LocalFrameView::InvalidateForThrottlingChange() {
+  // ScrollingCoordinator needs to update according to the new throttling
+  // status.
+  if (ScrollingCoordinator* coordinator = this->GetScrollingCoordinator())
+    coordinator->NotifyGeometryChanged(this);
+  // Start ticking animation frames again if necessary.
+  if (GetPage())
+    GetPage()->Animator().ScheduleVisualUpdate(frame_.Get());
+  // Force a full repaint of this frame to ensure we are not left with a
+  // partially painted version of this frame's contents if we skipped
+  // painting them while the frame was throttled.
+  LayoutView* layout_view = GetLayoutView();
+  if (layout_view) {
+    layout_view->InvalidatePaintForViewAndCompositedLayers();
+    // Also need to update all paint properties that might be skipped while
+    // the frame was throttled.
+    layout_view->AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kPreviouslySkipped);
+  }
 }
 
 void LocalFrameView::SetNeedsForcedCompositingUpdate() {
