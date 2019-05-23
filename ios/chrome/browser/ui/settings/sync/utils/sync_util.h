@@ -10,11 +10,13 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 
-@class Tab;
 @protocol SyncPresenter;
 
 namespace ios {
 class ChromeBrowserState;
+}
+namespace web {
+class WebState;
 }
 
 // Gets the top-level description message associated with the sync error state
@@ -52,7 +54,7 @@ bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState);
 // Check for sync errors, and display any that ought to be shown to the user.
 // Returns true if an infobar was brought up.
 bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
-                       Tab* tab,
+                       web::WebState* web_state,
                        id<SyncPresenter> presenter);
 
 // Returns true if |errorState| corresponds to a transient sync error.

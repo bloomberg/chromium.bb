@@ -15,12 +15,6 @@
 @protocol TabModelObserver<NSObject>
 @optional
 
-// A tab was inserted at the given index.
-- (void)tabModel:(TabModel*)model
-    didInsertTab:(Tab*)tab
-         atIndex:(NSUInteger)index
-    inForeground:(BOOL)fg;
-
 // A Tab was replaced in the model, at the given index.
 - (void)tabModel:(TabModel*)model
     didReplaceTab:(Tab*)oldTab
@@ -29,12 +23,6 @@
 
 // Some properties about the given tab changed, such as the URL or title.
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab;
-
-// |tab| has been added to the tab model and will open. If |tab| isn't the
-// active tab, |inBackground| is YES, NO otherwise.
-- (void)tabModel:(TabModel*)model
-    newTabWillOpen:(Tab*)tab
-      inBackground:(BOOL)background;
 
 @end
 

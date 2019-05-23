@@ -4412,20 +4412,51 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-#pragma mark - TabModelObserver methods
+// Observer method, |webState| inserted in |webStateList|.
+- (void)webStateList:(WebStateList*)webStateList
+    didInsertWebState:(web::WebState*)webState
+              atIndex:(int)index
+           activating:(BOOL)activating {
+  DCHECK(webState);
+  [self installDelegatesForWebState:webState];
 
-// Observer method, tab inserted.
-- (void)tabModel:(TabModel*)model
-    didInsertTab:(Tab*)tab
-         atIndex:(NSUInteger)modelIndex
-    inForeground:(BOOL)fg {
-  DCHECK(tab);
-  [self installDelegatesForWebState:tab.webState];
-
-  if (fg) {
-    [_paymentRequestManager setActiveWebState:tab.webState];
+  if (activating) {
+    [_paymentRequestManager setActiveWebState:webState];
   }
+
+  DCHECK_EQ(self.tabModel.webStateList, webStateList);
+
+  // Don't initiate Tab animation while session restoration is in progress
+  // (see crbug.com/763964).
+  if ([self.tabModel isRestoringSession])
+    return;
+
+  _temporaryNativeController = nil;
+
+  // When adding new tabs, check what kind of reminder infobar should
+  // be added to the new tab. Try to add only one of them.
+  // This check is done when a new tab is added either through the Tools Menu
+  // "New Tab", through a long press on the Tab Switcher button "New Tab", and
+  // through creating a New Tab from the Tab Switcher. This logic needs to
+  // happen after a new WebState has added and finished initial navigation. If
+  // this happens earlier, the initial navigation may end up clearing the
+  // infobar(s) that are just added.
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(webState);
+  NSString* tabID = TabIdTabHelper::FromWebState(webState)->tab_id();
+  [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
+                                             forTabId:tabID];
+  if (!ReSignInInfoBarDelegate::Create(self.browserState, webState,
+                                       self /* id<SigninPresenter> */)) {
+    DisplaySyncErrors(self.browserState, webState,
+                      self /* id<SyncPresenter> */);
+  }
+
+  [self initiateNewTabAnimationForWebState:webState
+                      willOpenInBackground:!activating];
 }
+
+#pragma mark - TabModelObserver methods
 
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
   DCHECK(tab && ([self.tabModel indexOfTab:tab] != NSNotFound));
@@ -4434,40 +4465,34 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
+// Observer method, tab replaced.
 - (void)tabModel:(TabModel*)model
-    newTabWillOpen:(Tab*)tab
-      inBackground:(BOOL)background {
-  DCHECK(tab);
-  _temporaryNativeController = nil;
+    didReplaceTab:(Tab*)oldTab
+          withTab:(Tab*)newTab
+          atIndex:(NSUInteger)index {
+  [self uninstallDelegatesForWebState:oldTab.webState];
+  [self installDelegatesForWebState:newTab.webState];
 
-  // When adding new tabs, check what kind of reminder infobar should
-  // be added to the new tab. Try to add only one of them.
-  // This check is done when a new tab is added either through the Tools Menu
-  // "New Tab", through a long press on the Tab Switcher button "New Tab", and
-  // through creating a New Tab from the Tab Switcher. This method is called
-  // after a new tab has added and finished initial navigation. If this is added
-  // earlier, the initial navigation may end up clearing the infobar(s) that are
-  // just added.
-  web::WebState* webState = tab.webState;
+  // Add |newTab|'s view to the hierarchy if it's the current Tab.
+  if (self.active && model.currentTab == newTab)
+    [self displayWebState:newTab.webState];
+
+  if (newTab)
+    [_paymentRequestManager setActiveWebState:newTab.webState];
+}
+
+#pragma mark - WebStateListObserver helpers (new tab animations)
+
+- (void)initiateNewTabAnimationForWebState:(web::WebState*)webState
+                      willOpenInBackground:(BOOL)background {
   DCHECK(webState);
-
-  infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(webState);
-  NSString* tabID = TabIdTabHelper::FromWebState(webState)->tab_id();
-  [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
-                                             forTabId:tabID];
-  if (!ReSignInInfoBarDelegate::Create(self.browserState, tab,
-                                       self /* id<SigninPresenter> */)) {
-    DisplaySyncErrors(self.browserState, tab, self /* id<SyncPresenter> */);
-  }
 
   // The rest of this function initiates the new tab animation, which is
   // phone-specific.  Call the foreground tab added completion block; for
   // iPhones, this will get executed after the animation has finished.
   if ([self canShowTabStrip]) {
     if (self.foregroundTabWasAddedCompletionBlock) {
-      // This callback is called before webState is activated (on
-      // kTabModelNewTabWillOpenNotification notification). Dispatch the
+      // This callback is called before webState is activated. Dispatch the
       // callback asynchronously to be sure the activation is complete.
       dispatch_async(dispatch_get_main_queue(), ^{
         // Test existence again as the block may have been deleted.
@@ -4498,35 +4523,17 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     self.inNewTabAnimation = NO;
   } else {
     self.inNewTabAnimation = YES;
-    [self animateNewTab:tab
+    [self animateNewTabForWebState:webState
         inForegroundWithCompletion:startVoiceSearchIfNecessary];
   }
 }
 
-// Observer method, tab replaced.
-- (void)tabModel:(TabModel*)model
-    didReplaceTab:(Tab*)oldTab
-          withTab:(Tab*)newTab
-          atIndex:(NSUInteger)index {
-  [self uninstallDelegatesForWebState:oldTab.webState];
-  [self installDelegatesForWebState:newTab.webState];
-
-  // Add |newTab|'s view to the hierarchy if it's the current Tab.
-  if (self.active && model.currentTab == newTab)
-    [self displayWebState:newTab.webState];
-
-  if (newTab)
-    [_paymentRequestManager setActiveWebState:newTab.webState];
-}
-
-#pragma mark - TabModelObserver helpers (new tab animations)
-
-- (void)animateNewTab:(Tab*)tab
-    inForegroundWithCompletion:(ProceduralBlock)completion {
+- (void)animateNewTabForWebState:(web::WebState*)webState
+      inForegroundWithCompletion:(ProceduralBlock)completion {
   // Create the new page image, and load with the new tab snapshot except if
   // it is the NTP.
   UIView* newPage = nil;
-  GURL tabURL = tab.webState->GetVisibleURL();
+  GURL tabURL = webState->GetVisibleURL();
   // Toolbar snapshot is only used for the UIRefresh animation.
   UIView* toolbarSnapshot;
 
@@ -4541,32 +4548,34 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     toolbarSnapshot.frame = [self.contentArea convertRect:toolbarSnapshot.frame
                                                  fromView:self.view];
     [self.contentArea addSubview:toolbarSnapshot];
-    newPage = [self viewForWebState:tab.webState];
+    newPage = [self viewForWebState:webState];
     newPage.userInteractionEnabled = NO;
     newPage.frame = self.view.bounds;
   } else {
-    [self viewForWebState:tab.webState].frame = self.contentArea.bounds;
+    [self viewForWebState:webState].frame = self.contentArea.bounds;
     // Setting the frame here doesn't trigger a layout pass. Trigger it manually
     // if needed. Not triggering it can create problem if the previous frame
     // wasn't the right one, for example in https://crbug.com/852106.
-    [[self viewForWebState:tab.webState] layoutIfNeeded];
-    newPage = [self viewForWebState:tab.webState];
+    [[self viewForWebState:webState] layoutIfNeeded];
+    newPage = [self viewForWebState:webState];
     newPage.userInteractionEnabled = NO;
   }
 
   // Cleanup steps needed for both UI Refresh and stack-view style animations.
+  UIView* webStateView = [self viewForWebState:webState];
   auto commonCompletion = ^{
-    [self viewForWebState:tab.webState].frame = self.contentArea.bounds;
+    webStateView.frame = self.contentArea.bounds;
     newPage.userInteractionEnabled = YES;
     self.inNewTabAnimation = NO;
-    // Use the model's currentTab here because it is possible that it can
+    // Use the model's currentWebState here because it is possible that it can
     // be reset to a new value before the new Tab animation finished (e.g.
     // if another Tab shows a dialog via |dialogPresenter|). However, that
-    // tab's view hasn't been displayed yet because it was in a new tab
+    // webState's view hasn't been displayed yet because it was in a new tab
     // animation.
-    Tab* currentTab = self.tabModel.currentTab;
-    if (currentTab.webState) {
-      [self webStateSelected:currentTab.webState notifyToolbar:NO];
+    web::WebState* currentWebState = self.currentWebState;
+
+    if (currentWebState) {
+      [self webStateSelected:currentWebState notifyToolbar:NO];
     }
     if (completion)
       completion();

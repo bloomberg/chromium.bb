@@ -35,17 +35,6 @@
 #pragma mark WebStateListObserving
 
 - (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)atIndex
-           activating:(BOOL)activating {
-  DCHECK_GE(atIndex, 0);
-  [_tabModelObservers tabModel:_tabModel
-                  didInsertTab:LegacyTabHelper::GetTabForWebState(webState)
-                       atIndex:static_cast<NSUInteger>(atIndex)
-                  inForeground:activating];
-}
-
-- (void)webStateList:(WebStateList*)webStateList
     didReplaceWebState:(web::WebState*)oldWebState
           withWebState:(web::WebState*)newWebState
                atIndex:(int)atIndex {

@@ -43,7 +43,6 @@
 #import "ios/chrome/browser/tabs/tab_model_closing_web_state_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_favicon_driver_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
-#import "ios/chrome/browser/tabs/tab_model_notification_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_observers.h"
 #import "ios/chrome/browser/tabs/tab_model_observers_bridge.h"
 #import "ios/chrome/browser/tabs/tab_model_selected_tab_observer.h"
@@ -236,9 +235,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // The delegate for sync.
   std::unique_ptr<TabModelSyncedWindowDelegate> _syncedWindowDelegate;
 
-  // The observer that calls -notifyNewTabWillOpen on this object.
-  TabModelNotificationObserver* _tabModelNotificationObserver;
-
   // Counters for metrics.
   WebStateListMetricsObserver* _webStateListMetricsObserver;
 
@@ -385,11 +381,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     _webStateListMetricsObserver = webStateListMetricsObserver.get();
     _webStateListObservers.push_back(std::move(webStateListMetricsObserver));
 
-    auto tabModelNotificationObserver =
-        std::make_unique<TabModelNotificationObserver>(self);
-    _tabModelNotificationObserver = tabModelNotificationObserver.get();
-    _webStateListObservers.push_back(std::move(tabModelNotificationObserver));
-
     for (const auto& webStateListObserver : _webStateListObservers)
       _webStateList->AddObserver(webStateListObserver.get());
     _retainedWebStateListObservers = [retainedWebStateListObservers copy];
@@ -533,10 +524,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [_observers tabModel:self didChangeTab:tab];
 }
 
-- (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background {
-  [_observers tabModel:self newTabWillOpen:tab inBackground:background];
-}
-
 - (void)addObserver:(id<TabModelObserver>)observer {
   [_observers addObserver:observer];
 }
@@ -572,7 +559,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _browserState = nullptr;
 
   // Clear weak pointer to observers before destroying them.
-  _tabModelNotificationObserver = nullptr;
   _webStateListMetricsObserver = nullptr;
 
   // Close all tabs. Do this in an @autoreleasepool as WebStateList observers
@@ -642,15 +628,12 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // The initial restore can only happen before observers are registered.
   DCHECK(!initialRestore || [_observers empty]);
 
-  // Disable calling -notifyNewTabWillOpen: while restoring a session as it
-  // breaks the BVC (see crbug.com/763964).
-  base::ScopedClosureRunner enableTabModelNotificationObserver;
-  if (_tabModelNotificationObserver) {
-    _tabModelNotificationObserver->SetDisabled(true);
-    enableTabModelNotificationObserver.ReplaceClosure(
-        base::BindOnce(&TabModelNotificationObserver::SetDisabled,
-                       base::Unretained(_tabModelNotificationObserver), false));
-  }
+  // Setting the sesion progress to |YES|, so BVC can check it to work around
+  // crbug.com/763964.
+  _restoringSession = YES;
+  base::ScopedClosureRunner updateSessionRestorationProgress(base::BindOnce(^{
+    _restoringSession = NO;
+  }));
 
   if (!window.sessions.count)
     return NO;

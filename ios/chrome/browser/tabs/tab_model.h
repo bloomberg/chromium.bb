@@ -74,6 +74,9 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // The WebStateList owned by the TabModel.
 @property(nonatomic, readonly) WebStateList* webStateList;
 
+// YES if there is a session restoration in progress.
+@property(nonatomic, readonly, getter=isRestoringSession) BOOL restoringSession;
+
 // Initializes tabs from a restored session. |-setCurrentTab| needs to be called
 // in order to display the views associated with the tabs. Waits until the views
 // are ready. |browserState| cannot be nil. |service| cannot be nil; this class
@@ -140,10 +143,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 
 // Notifies observers that the given |tab| was changed.
 - (void)notifyTabChanged:(Tab*)tab;
-
-// Notifies observers that the given tab will open. If it isn't the active tab,
-// |background| is YES, NO otherwise.
-- (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background;
 
 // Adds |observer| to the list of observers. |observer| is not retained. Does
 // nothing if |observer| is already in the list. Any added observers must be
