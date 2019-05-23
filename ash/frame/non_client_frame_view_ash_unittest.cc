@@ -28,7 +28,6 @@
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -393,8 +392,9 @@ TEST_F(NonClientFrameViewAshTest, GetPreferredOnScreenHeightInTabletMaximzied) {
 TEST_F(NonClientFrameViewAshTest, MinimizedWindowsInTabletMode) {
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(new NonClientFrameViewAshTestWidgetDelegate);
-  widget->GetNativeWindow()->SetProperty(aura::client::kResizeBehaviorKey,
-                                         ws::mojom::kResizeBehaviorCanMaximize);
+  widget->GetNativeWindow()->SetProperty(
+      aura::client::kResizeBehaviorKey,
+      aura::client::kResizeBehaviorCanMaximize);
   widget->Maximize();
   widget->Minimize();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -425,8 +425,8 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
     // Windows need to be resizable and maximizable to be used in splitview.
     widget->GetNativeWindow()->SetProperty(
         aura::client::kResizeBehaviorKey,
-        ws::mojom::kResizeBehaviorCanMaximize |
-            ws::mojom::kResizeBehaviorCanResize);
+        aura::client::kResizeBehaviorCanMaximize |
+            aura::client::kResizeBehaviorCanResize);
     return widget;
   };
 

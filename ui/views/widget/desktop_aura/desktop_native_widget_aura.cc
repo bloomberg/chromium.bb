@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -1001,10 +1000,8 @@ ui::GestureRecognizer* DesktopNativeWidgetAura::GetGestureRecognizer() {
 }
 
 void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
-  int32_t behavior = ws::mojom::kResizeBehaviorNone;
-  if (GetWidget()->widget_delegate())
-    behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
-  content_window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);
+  NativeWidgetAura::SetResizeBehaviorFromDelegate(
+      GetWidget()->widget_delegate(), content_window_);
   desktop_window_tree_host_->SizeConstraintsChanged();
 }
 

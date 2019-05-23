@@ -44,7 +44,6 @@
 #include "ash/wm/wm_event.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -150,7 +149,7 @@ class SplitViewControllerTest : public AshTestBase {
   aura::Window* CreateNonSnappableWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateWindow(bounds);
     window->SetProperty(aura::client::kResizeBehaviorKey,
-                        ws::mojom::kResizeBehaviorNone);
+                        aura::client::kResizeBehaviorNone);
     return window;
   }
 
@@ -1886,7 +1885,7 @@ TEST_F(SplitViewControllerTest, ResizabilityChangeTest) {
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   window1->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorNone);
+                       aura::client::kResizeBehaviorNone);
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
@@ -2033,8 +2032,8 @@ TEST_F(SplitViewControllerTest, AdjustTransientChildBounds) {
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
   aura::Window* window = widget->GetNativeWindow();
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize |
-                          ws::mojom::kResizeBehaviorCanMaximize);
+                      aura::client::kResizeBehaviorCanResize |
+                          aura::client::kResizeBehaviorCanMaximize);
   split_view_controller()->SnapWindow(window, SplitViewController::LEFT);
   const gfx::Rect window_bounds = window->GetBoundsInScreen();
 

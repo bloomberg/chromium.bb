@@ -57,6 +57,11 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
       aura::Window* window,
       const Widget::InitParams& params);
 
+  // Sets the window property aura::client::kResizeBehaviorKey based on the
+  // values from the delegate.
+  static void SetResizeBehaviorFromDelegate(WidgetDelegate* delegate,
+                                            aura::Window* window);
+
   // Overridden from internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
   void OnWidgetInitDone() override;

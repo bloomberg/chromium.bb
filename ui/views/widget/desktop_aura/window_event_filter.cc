@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/window_event_filter.h"
 
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -49,7 +48,7 @@ void WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     OnClickedMaximizeButton(event);
   } else {
     if (target->GetProperty(aura::client::kResizeBehaviorKey) &
-        ws::mojom::kResizeBehaviorCanResize) {
+        aura::client::kResizeBehaviorCanResize) {
       MaybeDispatchHostWindowDragMovement(component, event);
     }
   }
@@ -104,7 +103,7 @@ void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
       break;
     case LinuxUI::WindowFrameAction::kToggleMaximize:
       if (target->GetProperty(aura::client::kResizeBehaviorKey) &
-          ws::mojom::kResizeBehaviorCanMaximize)
+          aura::client::kResizeBehaviorCanMaximize)
         ToggleMaximizedState();
       event->SetHandled();
       break;

@@ -22,7 +22,6 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -111,7 +110,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   aura::Window* toplevel =
       features::IsUsingWindowService() ? window->GetRootWindow() : window;
   toplevel->SetProperty(aura::client::kResizeBehaviorKey,
-                        ws::mojom::kResizeBehaviorNone);
+                        aura::client::kResizeBehaviorNone);
   ash::ShellTestApi().ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(widget));
 

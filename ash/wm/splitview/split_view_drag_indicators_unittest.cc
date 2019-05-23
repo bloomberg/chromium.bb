@@ -15,7 +15,6 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -97,7 +96,7 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
   std::unique_ptr<aura::Window> CreateUnsnappableWindow() {
     std::unique_ptr<aura::Window> window(CreateTestWindow());
     window->SetProperty(aura::client::kResizeBehaviorKey,
-                        ws::mojom::kResizeBehaviorNone);
+                        aura::client::kResizeBehaviorNone);
     return window;
   }
 

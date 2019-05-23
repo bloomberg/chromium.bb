@@ -58,7 +58,6 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -2429,8 +2428,8 @@ TEST_F(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
   std::unique_ptr<aura::Window> window(
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize |
-                          ws::mojom::kResizeBehaviorCanMaximize);
+                      aura::client::kResizeBehaviorCanResize |
+                          aura::client::kResizeBehaviorCanMaximize);
   wm::ActivateWindow(window.get());
 
   // Show the AppList over |window|.

@@ -136,8 +136,3 @@ const uint32 kEmbedFlagEmbedderInterceptsEvents = 0x01;
 // the embedded client can always change the visibility of any windows the
 // embedded client creates.
 const uint32 kEmbedFlagEmbedderControlsVisibility = 0x02;
-
-const int32 kResizeBehaviorNone = 0;
-const int32 kResizeBehaviorCanResize = 1;
-const int32 kResizeBehaviorCanMaximize = 2;
-const int32 kResizeBehaviorCanMinimize = 4;

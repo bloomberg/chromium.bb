@@ -30,7 +30,6 @@
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -511,9 +510,9 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize |
-                          ws::mojom::kResizeBehaviorCanMaximize |
-                          ws::mojom::kResizeBehaviorCanMinimize);
+                      aura::client::kResizeBehaviorCanResize |
+                          aura::client::kResizeBehaviorCanMaximize |
+                          aura::client::kResizeBehaviorCanMinimize);
 
   gfx::Point end = location;
 
@@ -606,7 +605,7 @@ TEST_F(ToplevelWindowEventHandlerTest,
                                      target.get());
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanMaximize);
+                      aura::client::kResizeBehaviorCanMaximize);
 
   gfx::Point end = location;
   end.Offset(0, 100);
@@ -795,9 +794,9 @@ TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTopLevel) {
   // Make |w1| resizable to allow touch events to go to it (and not |w2|) thanks
   // to EasyResizeWindowTargeter.
   w1->SetProperty(aura::client::kResizeBehaviorKey,
-                  ws::mojom::kResizeBehaviorCanMaximize |
-                      ws::mojom::kResizeBehaviorCanMinimize |
-                      ws::mojom::kResizeBehaviorCanResize);
+                  aura::client::kResizeBehaviorCanMaximize |
+                      aura::client::kResizeBehaviorCanMinimize |
+                      aura::client::kResizeBehaviorCanResize);
   // Clicking a point within |w2| but close to |w1| should not activate |w2|.
   const gfx::Point touch_point(105, 105);
   generator.MoveTouch(touch_point);
@@ -807,8 +806,8 @@ TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTopLevel) {
   // Make |w1| not resizable to allow touch events to go to |w2| even when close
   // to |w1|.
   w1->SetProperty(aura::client::kResizeBehaviorKey,
-                  ws::mojom::kResizeBehaviorCanMaximize |
-                      ws::mojom::kResizeBehaviorCanMinimize);
+                  aura::client::kResizeBehaviorCanMaximize |
+                      aura::client::kResizeBehaviorCanMinimize);
   // Clicking a point within |w2| should activate that window.
   generator.PressMoveAndReleaseTouchTo(touch_point);
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
@@ -828,8 +827,8 @@ TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTransient) {
   // Make |w11| non-resizable to avoid touch events inside its transient parent
   // |w1| from going to |w11| because of EasyResizeWindowTargeter.
   w11->SetProperty(aura::client::kResizeBehaviorKey,
-                   ws::mojom::kResizeBehaviorCanMaximize |
-                       ws::mojom::kResizeBehaviorCanMinimize);
+                   aura::client::kResizeBehaviorCanMaximize |
+                       aura::client::kResizeBehaviorCanMinimize);
   // Clicking a point within w1 should activate that window.
   generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
@@ -838,9 +837,9 @@ TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTransient) {
   // |w1| that are close to |w11| border to go to |w11| thanks to
   // EasyResizeWindowTargeter.
   w11->SetProperty(aura::client::kResizeBehaviorKey,
-                   ws::mojom::kResizeBehaviorCanMaximize |
-                       ws::mojom::kResizeBehaviorCanMinimize |
-                       ws::mojom::kResizeBehaviorCanResize);
+                   aura::client::kResizeBehaviorCanMaximize |
+                       aura::client::kResizeBehaviorCanMinimize |
+                       aura::client::kResizeBehaviorCanResize);
   // Clicking a point within |w1| but close to |w11| should activate |w11|.
   generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
   EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
@@ -857,7 +856,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   gfx::Point location(5, 5);
 
   target->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorNone);
+                      aura::client::kResizeBehaviorNone);
 
   gfx::Point end = location;
 
@@ -1211,7 +1210,7 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   TabletModeControllerTestApi().EnterTabletMode();
 
   dragged_window_->SetProperty(aura::client::kResizeBehaviorKey,
-                               ws::mojom::kResizeBehaviorNone);
+                               aura::client::kResizeBehaviorNone);
 
   SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
   SendGestureEvent(gfx::Point(700, 500), 700, 500,
@@ -1231,7 +1230,7 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   ASSERT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
 
   dragged_window_->SetProperty(aura::client::kResizeBehaviorKey,
-                               ws::mojom::kResizeBehaviorNone);
+                               aura::client::kResizeBehaviorNone);
 
   SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
   SendGestureEvent(gfx::Point(700, 500), 700, 500,

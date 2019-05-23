@@ -15,7 +15,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -132,7 +131,7 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
   EXPECT_FALSE(window_state->CanSnap());
   delegate.set_maximum_size(gfx::Size());
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize);
+                      aura::client::kResizeBehaviorCanResize);
   // It should be possible to snap a window with a maximum size, if it
   // can be maximized.
   EXPECT_TRUE(window_state->CanSnap());
@@ -284,8 +283,8 @@ TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
   EXPECT_TRUE(window_state->CanSnap());
 
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize |
-                          ws::mojom::kResizeBehaviorCanMaximize);
+                      aura::client::kResizeBehaviorCanResize |
+                          aura::client::kResizeBehaviorCanMaximize);
   delegate.set_maximum_size(gfx::Size());
   EXPECT_TRUE(window_state->CanSnap());
 
@@ -296,7 +295,7 @@ TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
   EXPECT_TRUE(window_state->CanSnap());
 
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize);
+                      aura::client::kResizeBehaviorCanResize);
   EXPECT_TRUE(window_state->CanSnap());
 
   // It should be possible to snap a modal window without maximum size.

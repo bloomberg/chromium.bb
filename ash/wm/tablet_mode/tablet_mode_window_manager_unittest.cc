@@ -34,7 +34,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -160,9 +159,10 @@ class TabletModeWindowManagerTest : public AshTestBase {
     }
     aura::Window* window = aura::test::CreateTestWindowWithDelegateAndType(
         delegate, params.type, 0, params.bounds, NULL, params.show_on_creation);
-    int32_t behavior = ws::mojom::kResizeBehaviorNone;
-    behavior |= params.can_resize ? ws::mojom::kResizeBehaviorCanResize : 0;
-    behavior |= params.can_maximize ? ws::mojom::kResizeBehaviorCanMaximize : 0;
+    int32_t behavior = aura::client::kResizeBehaviorNone;
+    behavior |= params.can_resize ? aura::client::kResizeBehaviorCanResize : 0;
+    behavior |=
+        params.can_maximize ? aura::client::kResizeBehaviorCanMaximize : 0;
     window->SetProperty(aura::client::kResizeBehaviorKey, behavior);
     aura::Window* container =
         wm::GetSwitchableContainersForRoot(Shell::GetPrimaryRootWindow())[0];

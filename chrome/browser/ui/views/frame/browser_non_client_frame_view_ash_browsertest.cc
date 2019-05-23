@@ -78,7 +78,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/class_property.h"
@@ -1262,8 +1261,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   widget->GetNativeWindow()->SetProperty(
       aura::client::kResizeBehaviorKey,
-      ws::mojom::kResizeBehaviorCanMaximize |
-          ws::mojom::kResizeBehaviorCanResize);
+      aura::client::kResizeBehaviorCanMaximize |
+          aura::client::kResizeBehaviorCanResize);
 
   // Test that the header is invisible for the browser window in overview mode
   // and visible when not in overview mode.
@@ -1284,8 +1283,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   BrowserNonClientFrameViewAsh* frame_view2 = GetFrameViewAsh(browser_view2);
   widget2->GetNativeWindow()->SetProperty(
       aura::client::kResizeBehaviorKey,
-      ws::mojom::kResizeBehaviorCanMaximize |
-          ws::mojom::kResizeBehaviorCanResize);
+      aura::client::kResizeBehaviorCanMaximize |
+          aura::client::kResizeBehaviorCanResize);
 
   // Test that when one browser window is snapped, the header is visible for
   // the snapped browser window, but invisible for the browser window still in

@@ -57,7 +57,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -3125,7 +3124,7 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
       const gfx::Rect& bounds = gfx::Rect()) {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
     window->SetProperty(aura::client::kResizeBehaviorKey,
-                        ws::mojom::kResizeBehaviorNone);
+                        aura::client::kResizeBehaviorNone);
     return window;
   }
 

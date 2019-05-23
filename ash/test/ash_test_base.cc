@@ -41,7 +41,6 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/cpp/input_devices/input_device_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -342,9 +341,9 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   window->Show();
 
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanMaximize |
-                          ws::mojom::kResizeBehaviorCanMinimize |
-                          ws::mojom::kResizeBehaviorCanResize);
+                      aura::client::kResizeBehaviorCanMaximize |
+                          aura::client::kResizeBehaviorCanMinimize |
+                          aura::client::kResizeBehaviorCanResize);
   return window;
 }
 

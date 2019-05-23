@@ -141,6 +141,21 @@ void NativeWidgetAura::SetShadowElevationFromInitParams(
   }
 }
 
+// static
+void NativeWidgetAura::SetResizeBehaviorFromDelegate(WidgetDelegate* delegate,
+                                                     aura::Window* window) {
+  int behavior = aura::client::kResizeBehaviorNone;
+  if (delegate) {
+    if (delegate->CanResize())
+      behavior |= aura::client::kResizeBehaviorCanResize;
+    if (delegate->CanMaximize())
+      behavior |= aura::client::kResizeBehaviorCanMaximize;
+    if (delegate->CanMinimize())
+      behavior |= aura::client::kResizeBehaviorCanMinimize;
+  }
+  window->SetProperty(aura::client::kResizeBehaviorKey, behavior);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
@@ -804,10 +819,7 @@ ui::GestureRecognizer* NativeWidgetAura::GetGestureRecognizer() {
 }
 
 void NativeWidgetAura::OnSizeConstraintsChanged() {
-  int32_t behavior = ws::mojom::kResizeBehaviorNone;
-  if (GetWidget()->widget_delegate())
-    behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
-  window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);
+  SetResizeBehaviorFromDelegate(GetWidget()->widget_delegate(), window_);
 }
 
 std::string NativeWidgetAura::GetName() const {
@@ -825,7 +837,7 @@ gfx::Size NativeWidgetAura::GetMaximumSize() const {
   // A window should not have a maximum size and also be maximizable.
   DCHECK(delegate_->GetMaximumSize().IsEmpty() ||
          !(window_->GetProperty(aura::client::kResizeBehaviorKey) &
-           ws::mojom::kResizeBehaviorCanMaximize));
+           aura::client::kResizeBehaviorCanMaximize));
   return delegate_->GetMaximumSize();
 }
 

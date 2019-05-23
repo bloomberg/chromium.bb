@@ -16,7 +16,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/base/ui_base_types.h"
@@ -149,9 +148,9 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     window->Init(ui::LAYER_TEXTURED);
     window->Show();
     window->SetProperty(aura::client::kResizeBehaviorKey,
-                        ws::mojom::kResizeBehaviorCanMaximize |
-                            ws::mojom::kResizeBehaviorCanMinimize |
-                            ws::mojom::kResizeBehaviorCanResize);
+                        aura::client::kResizeBehaviorCanMaximize |
+                            aura::client::kResizeBehaviorCanMinimize |
+                            aura::client::kResizeBehaviorCanResize);
     container->AddChild(window);
     return window;
   }

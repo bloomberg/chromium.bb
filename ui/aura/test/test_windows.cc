@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/strings/string_number_conversions.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -50,9 +49,9 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
   Window* window = new Window(delegate, type);
   window->set_id(id);
   window->Init(ui::LAYER_TEXTURED);
-  window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize |
-                          ws::mojom::kResizeBehaviorCanMaximize);
+  window->SetProperty(
+      client::kResizeBehaviorKey,
+      client::kResizeBehaviorCanResize | client::kResizeBehaviorCanMaximize);
   window->SetBounds(bounds);
   if (show_on_creation)
     window->Show();

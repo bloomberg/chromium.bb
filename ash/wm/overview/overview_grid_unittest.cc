@@ -197,7 +197,7 @@ TEST_F(OverviewGridTest, WindowWithBackdrop) {
   auto window1 = CreateTestWindow(gfx::Rect(100, 100));
   auto window2 = CreateTestWindow(gfx::Rect(400, 400));
   window1->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorNone);
+                       aura::client::kResizeBehaviorNone);
   ::wm::ActivateWindow(window1.get());
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);

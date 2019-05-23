@@ -24,6 +24,12 @@ namespace aura {
 namespace client {
 class FocusClient;
 
+// Values used with property key kResizeBehaviorKey.
+constexpr int kResizeBehaviorNone = 0;
+constexpr int kResizeBehaviorCanResize = 1 << 0;
+constexpr int kResizeBehaviorCanMaximize = 1 << 1;
+constexpr int kResizeBehaviorCanMinimize = 1 << 2;
+
 // Alphabetical sort.
 
 // A property key to store whether accessibility focus falls back to widget or
@@ -128,8 +134,8 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
     kPreFullscreenShowStateKey;
 
 // A property key to store the resize behavior, which is a bitmask of the
-// ws::mojom::kResizeBehavior values.
-AURA_EXPORT extern const WindowProperty<int32_t>* const kResizeBehaviorKey;
+// ResizeBehavior values.
+AURA_EXPORT extern const WindowProperty<int>* const kResizeBehaviorKey;
 
 // Reserves a number of dip around the window (i.e. inset from its exterior
 // border) for event routing back to the top level window. This is used for
