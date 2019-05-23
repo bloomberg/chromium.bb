@@ -27,8 +27,8 @@ base::string16 AddressFormLabelFormatter::GetLabelForProfile(
     const AutofillProfile& profile,
     FieldTypeGroup focused_group) const {
   if (focused_group != ADDRESS_HOME) {
-    return GetLabelNationalAddress(profile, app_locale(),
-                                   field_types_for_labels());
+    return GetLabelNationalAddress(field_types_for_labels(), profile,
+                                   app_locale());
   } else {
     std::vector<base::string16> label_parts;
     AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),

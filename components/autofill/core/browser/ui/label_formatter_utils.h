@@ -99,14 +99,14 @@ base::string16 GetLabelAddress(bool use_street_address,
 // Returns the national address associated with |profile|, e.g.
 // 24 Beacon St., Boston, MA 02133.
 base::string16 GetLabelNationalAddress(
+    const std::vector<ServerFieldType>& types,
     const AutofillProfile& profile,
-    const std::string& app_locale,
-    const std::vector<ServerFieldType>& types);
+    const std::string& app_locale);
 
 // Returns the street address associated with |profile|, e.g. 24 Beacon St.
-base::string16 GetLabelStreetAddress(const AutofillProfile& profile,
-                                     const std::string& app_locale,
-                                     const std::vector<ServerFieldType>& types);
+base::string16 GetLabelStreetAddress(const std::vector<ServerFieldType>& types,
+                                     const AutofillProfile& profile,
+                                     const std::string& app_locale);
 
 // Returns a label to show the user when |focused_field_type_| is not part of
 // a street address. For example, city and postal code are non-street-address

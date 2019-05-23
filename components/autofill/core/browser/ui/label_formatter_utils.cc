@@ -177,17 +177,17 @@ base::string16 GetLabelAddress(bool use_street_address,
                                const std::vector<ServerFieldType>& types) {
   return use_street_address
              ? GetLabelStreetAddress(
-                   profile, app_locale,
-                   ExtractSpecifiedAddressFieldTypes(use_street_address, types))
-             : GetLabelNationalAddress(profile, app_locale,
-                                       ExtractSpecifiedAddressFieldTypes(
-                                           use_street_address, types));
+                   ExtractSpecifiedAddressFieldTypes(use_street_address, types),
+                   profile, app_locale)
+             : GetLabelNationalAddress(
+                   ExtractSpecifiedAddressFieldTypes(use_street_address, types),
+                   profile, app_locale);
 }
 
 base::string16 GetLabelNationalAddress(
+    const std::vector<ServerFieldType>& types,
     const AutofillProfile& profile,
-    const std::string& app_locale,
-    const std::vector<ServerFieldType>& types) {
+    const std::string& app_locale) {
   std::unique_ptr<::i18n::addressinput::AddressData> address_data =
       i18n::CreateAddressDataFromAutofillProfile(
           MakeTrimmedProfile(profile, app_locale, types), app_locale);
@@ -198,10 +198,9 @@ base::string16 GetLabelNationalAddress(
   return base::UTF8ToUTF16(address_line);
 }
 
-base::string16 GetLabelStreetAddress(
-    const AutofillProfile& profile,
-    const std::string& app_locale,
-    const std::vector<ServerFieldType>& types) {
+base::string16 GetLabelStreetAddress(const std::vector<ServerFieldType>& types,
+                                     const AutofillProfile& profile,
+                                     const std::string& app_locale) {
   std::unique_ptr<::i18n::addressinput::AddressData> address_data =
       i18n::CreateAddressDataFromAutofillProfile(
           MakeTrimmedProfile(profile, app_locale, types), app_locale);
