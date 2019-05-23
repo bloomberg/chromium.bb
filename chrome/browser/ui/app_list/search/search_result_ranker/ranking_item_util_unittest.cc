@@ -40,7 +40,7 @@ class RankingItemUtilTest : public AppListTestBase {
   void SetAdaptiveRankerParams(
       const std::map<std::string, std::string>& params) {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        app_list_features::kEnableAdaptiveResultRanker, params);
+        app_list_features::kEnableQueryBasedMixedTypesRanker, params);
   }
 
   std::unique_ptr<OmniboxResult> MakeOmniboxResult(

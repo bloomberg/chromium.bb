@@ -52,16 +52,18 @@ Model ModelForType(RankingItemType type) {
 SearchResultRanker::SearchResultRanker(Profile* profile)
     : enable_zero_state_mixed_types_(
           app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
-  if (app_list_features::IsAdaptiveResultRankerEnabled()) {
+  if (app_list_features::IsQueryBasedMixedTypesRankerEnabled()) {
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
     config.set_condition_limit(0u);
     config.set_condition_decay(0.5f);
 
     config.set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
-        app_list_features::kEnableAdaptiveResultRanker, "target_limit", 200));
+        app_list_features::kEnableQueryBasedMixedTypesRanker, "target_limit",
+        200));
     config.set_target_decay(base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAdaptiveResultRanker, "target_decay", 0.8f));
+        app_list_features::kEnableQueryBasedMixedTypesRanker, "target_decay",
+        0.8f));
 
     config.mutable_default_predictor();
 
@@ -70,8 +72,8 @@ SearchResultRanker::SearchResultRanker(Profile* profile)
         chromeos::ProfileHelper::IsEphemeralUserProfile(profile));
 
     results_list_boost_coefficient_ = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAdaptiveResultRanker, "boost_coefficient",
-        0.1);
+        app_list_features::kEnableQueryBasedMixedTypesRanker,
+        "boost_coefficient", 0.1);
   }
 
   profile_ = profile;

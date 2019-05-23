@@ -60,8 +60,8 @@ RankingItemType RankingItemTypeFromSearchResult(
   // We don't want or expect the expand_omnibox_types parameter to change during
   // the execution of chrome, so make it static.
   static bool expand_omnibox_types = base::GetFieldTrialParamByFeatureAsBool(
-      app_list_features::kEnableAdaptiveResultRanker, "expand_omnibox_types",
-      false);
+      app_list_features::kEnableQueryBasedMixedTypesRanker,
+      "expand_omnibox_types", false);
 
   switch (result.result_type()) {
     case ash::SearchResultType::kInstalledApp:

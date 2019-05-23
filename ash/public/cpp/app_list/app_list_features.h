@@ -41,9 +41,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
 // Enables the feature to autocomplete text typed in the AppList search box.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 
-// Enable an adaptive model that tweaks search result scores.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAdaptiveResultRanker;
-
 // Enable an model that ranks query based apps search result.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedAppsRanker;
 
@@ -76,7 +73,6 @@ bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
-bool ASH_PUBLIC_EXPORT IsAdaptiveResultRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();

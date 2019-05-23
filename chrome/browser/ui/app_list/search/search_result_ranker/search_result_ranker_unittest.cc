@@ -91,10 +91,10 @@ class SearchResultRankerTest : public testing::Test {
       const std::map<std::string, std::string>& params = {}) {
     if (use_group_ranker) {
       scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          app_list_features::kEnableAdaptiveResultRanker, params);
+          app_list_features::kEnableQueryBasedMixedTypesRanker, params);
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {}, {app_list_features::kEnableAdaptiveResultRanker});
+          {}, {app_list_features::kEnableQueryBasedMixedTypesRanker});
     }
 
     auto ranker = std::make_unique<SearchResultRanker>(profile_.get());
