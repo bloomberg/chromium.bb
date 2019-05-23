@@ -2073,9 +2073,6 @@ TEST_F(AbstractPromiseTest, ThreadHopping) {
 
   p1->OnResolved();
 
-  EXPECT_FALSE(p2->IsResolved());
-  EXPECT_FALSE(p3->IsResolved());
-  EXPECT_FALSE(p4->IsResolved());
   EXPECT_FALSE(p5->IsResolved());
   run_loop.Run();
   EXPECT_TRUE(p2->IsResolved());
