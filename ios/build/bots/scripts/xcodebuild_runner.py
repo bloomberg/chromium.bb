@@ -205,7 +205,6 @@ class EgtestsApp(object):
     """
     module = self.module_name + '_module'
     module_data = {
-            'IsAppHostedTestBundle': True,
             'TestBundlePath': '__TESTHOST__%s' % self._xctest_path(),
             'TestHostPath': '%s' % self.egtests_path,
             'TestingEnvironmentVariables': {
@@ -310,7 +309,8 @@ class LaunchCommand(object):
         egtests_app=self.egtests_app.egtests_path,
         filtered_tests=[test.replace(' ', '/') for test in failed_results],
         test_args=test_args,
-        env_vars=env_vars)
+        env_vars=env_vars,
+        host_app_path=self.egtests_app.host_app_path)
     # Regenerates xctest run and gets a command.
     return self.command(eg_app, out_dir, self.destination, shards=1)
 
