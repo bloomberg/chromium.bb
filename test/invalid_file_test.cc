@@ -27,9 +27,16 @@ struct DecodeParam {
                              // filename + ".res".
 };
 
+// Constructs result file name.
+std::string GetResFilename(const DecodeParam &param) {
+  if (param.res_filename != NULL) return param.res_filename;
+  const std::string filename = param.filename;
+  return filename + ".res";
+}
+
 std::ostream &operator<<(std::ostream &os, const DecodeParam &dp) {
   return os << "threads: " << dp.threads << " file: " << dp.filename
-            << " result file: " << dp.res_filename;
+            << " result file: " << GetResFilename(dp);
 }
 
 class InvalidFileTest : public ::libaom_test::DecoderTest,
@@ -99,13 +106,10 @@ class InvalidFileTest : public ::libaom_test::DecoderTest,
     libaom_test::IVFVideoSource decode_video(filename);
     decode_video.Init();
 
-    // Construct result file name. The file holds a list of expected integer
-    // results, one for each decoded frame.  Any result that doesn't match
-    // the file's list will cause a test failure.
-    std::string res_filename = filename + ".res";
-    if (input.res_filename != NULL) {
-      res_filename = input.res_filename;
-    }
+    // The result file holds a list of expected integer results, one for each
+    // decoded frame.  Any result that doesn't match the file's list will
+    // cause a test failure.
+    const std::string res_filename = GetResFilename(input);
     OpenResFile(res_filename);
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(&decode_video, cfg));
