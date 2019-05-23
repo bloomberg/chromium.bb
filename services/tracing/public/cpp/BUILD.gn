@@ -26,6 +26,8 @@ if (!is_nacl && !is_ios) {
     sources = [
       "base_agent.cc",
       "base_agent.h",
+      "perfetto/dummy_producer.cc",
+      "perfetto/dummy_producer.h",
       "perfetto/interning_index.h",
       "perfetto/perfetto_config.cc",
       "perfetto/perfetto_config.h",
@@ -37,6 +39,8 @@ if (!is_nacl && !is_ios) {
       "perfetto/producer_client.h",
       "perfetto/shared_memory.cc",
       "perfetto/shared_memory.h",
+      "perfetto/system_producer.cc",
+      "perfetto/system_producer.h",
       "perfetto/task_runner.cc",
       "perfetto/task_runner.h",
       "perfetto/thread_local_event_sink.cc",

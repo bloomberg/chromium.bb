@@ -8,7 +8,14 @@
 #include "base/task/post_task.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 
+#include "services/tracing/public/cpp/perfetto/dummy_producer.h"
+
 namespace tracing {
+namespace {
+std::unique_ptr<SystemProducer> NewSystemProducer(PerfettoTaskRunner* runner) {
+  return std::make_unique<DummyProducer>(runner);
+}
+}  // namespace
 
 PerfettoTracedProcess::DataSourceBase::DataSourceBase(const std::string& name)
     : name_(name) {
@@ -32,7 +39,8 @@ PerfettoTracedProcess* PerfettoTracedProcess::Get() {
 }
 
 PerfettoTracedProcess::PerfettoTracedProcess()
-    : producer_client_(new ProducerClient(GetTaskRunner())),
+    : producer_client_(std::make_unique<ProducerClient>(GetTaskRunner())),
+      system_producer_endpoint_(NewSystemProducer(GetTaskRunner())),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -41,11 +49,12 @@ PerfettoTracedProcess::~PerfettoTracedProcess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-ProducerClient* PerfettoTracedProcess::SetProducerClientForTesting(
-    ProducerClient* client) {
+std::unique_ptr<ProducerClient>
+PerfettoTracedProcess::SetProducerClientForTesting(
+    std::unique_ptr<ProducerClient> client) {
   data_sources_.clear();
-  auto* old_producer_client_for_testing = producer_client_;
-  producer_client_ = client;
+  auto old_producer_client_for_testing = std::move(producer_client_);
+  producer_client_ = std::move(client);
   return old_producer_client_for_testing;
 }
 
@@ -78,7 +87,7 @@ void PerfettoTracedProcess::AddDataSource(DataSourceBase* data_source) {
 }
 
 ProducerClient* PerfettoTracedProcess::producer_client() {
-  return producer_client_;
+  return producer_client_.get();
 }
 
 void PerfettoTracedProcess::AddDataSourceOnSequence(
@@ -87,6 +96,7 @@ void PerfettoTracedProcess::AddDataSourceOnSequence(
 
   if (data_sources_.insert(data_source).second) {
     producer_client_->NewDataSourceAdded(data_source);
+    system_producer_endpoint_->NewDataSourceAdded(data_source);
   }
 }
 }  // namespace tracing

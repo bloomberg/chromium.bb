@@ -14,6 +14,7 @@ namespace tracing {
 
 class PerfettoProducer;
 class ProducerClient;
+class SystemProducer;
 
 // This represents global process level state that the Perfetto tracing system
 // expects to exist. This includes a single base implementation of DataSources
@@ -65,7 +66,8 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // Sets the ProducerClient and returns the old pointer. If tests want to
   // restore the state of the world they should store the pointer and call this
   // method again with it as the parameter.
-  ProducerClient* SetProducerClientForTesting(ProducerClient* client);
+  std::unique_ptr<ProducerClient> SetProducerClientForTesting(
+      std::unique_ptr<ProducerClient> client);
   static void DeleteSoonForTesting(std::unique_ptr<PerfettoTracedProcess>);
 
   // Returns the taskrunner used by any Perfetto service.
@@ -93,7 +95,12 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   std::set<DataSourceBase*> data_sources_;
   // A PerfettoProducer that connects to the chrome Perfetto service through
   // mojo.
-  ProducerClient* producer_client_;
+  std::unique_ptr<ProducerClient> producer_client_;
+  // A PerfettoProducer that connects to the system Perfetto service. If there
+  // is no system Perfetto service this pointer will be valid, but all function
+  // calls will be noops.
+  std::unique_ptr<SystemProducer> system_producer_endpoint_;
+
   SEQUENCE_CHECKER(sequence_checker_);
   // NOTE: Weak pointers must be invalidated before all other member
   // variables.

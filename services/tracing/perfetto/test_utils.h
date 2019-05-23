@@ -77,7 +77,7 @@ class MockProducerClient : public ProducerClient {
   size_t send_packet_count_;
   std::string all_client_commit_data_requests_;
   std::unique_ptr<TestDataSource> enabled_data_source_;
-  ProducerClient* old_producer_;
+  std::unique_ptr<ProducerClient> old_producer_;
 };
 
 class MockConsumer : public perfetto::Consumer {

@@ -72,12 +72,21 @@ MockProducerClient::MockProducerClient(
       client_enabled_callback_(std::move(client_enabled_callback)),
       client_disabled_callback_(std::move(client_disabled_callback)),
       send_packet_count_(send_packet_count) {
-  old_producer_ =
-      PerfettoTracedProcess::Get()->SetProducerClientForTesting(this);
+  // We want to set the ProducerClient to this mock, but that 'requires' passing
+  // ownership of ourselves to PerfettoTracedProcess. Since someone else manages
+  // our deletion we need to be careful in the deconstructor to not double free
+  // ourselves.
+  std::unique_ptr<MockProducerClient> client;
+  client.reset(this);
+  old_producer_ = PerfettoTracedProcess::Get()->SetProducerClientForTesting(
+      std::move(client));
 }
 
 MockProducerClient::~MockProducerClient() {
-  PerfettoTracedProcess::Get()->SetProducerClientForTesting(old_producer_);
+  // See comment in the constructor. This prevents a double free.
+  auto client = PerfettoTracedProcess::Get()->SetProducerClientForTesting(
+      std::move(old_producer_));
+  client.release();
 }
 
 void MockProducerClient::SetupDataSource(const std::string& data_source_name) {
