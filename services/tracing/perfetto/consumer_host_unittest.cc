@@ -252,11 +252,11 @@ class ThreadedPerfettoService : public mojom::TracingSessionClient {
   perfetto::DataSourceConfig GetProducerClientConfig() {
     perfetto::DataSourceConfig config;
     base::RunLoop wait_loop;
-    task_runner_->PostTaskAndReply(
-        FROM_HERE, base::BindLambdaForTesting([&]() {
-          config = producer_->producer_client()->data_source()->config();
-        }),
-        wait_loop.QuitClosure());
+    task_runner_->PostTaskAndReply(FROM_HERE, base::BindLambdaForTesting([&]() {
+                                     config =
+                                         producer_->data_source()->config();
+                                   }),
+                                   wait_loop.QuitClosure());
     wait_loop.Run();
     return config;
   }

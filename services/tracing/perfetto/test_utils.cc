@@ -1,11 +1,12 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "services/tracing/perfetto/test_utils.h"
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "services/tracing/perfetto/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
@@ -20,7 +21,9 @@ namespace tracing {
 
 TestDataSource::TestDataSource(const std::string& data_source_name,
                                size_t send_packet_count)
-    : DataSourceBase(data_source_name), send_packet_count_(send_packet_count) {}
+    : DataSourceBase(data_source_name), send_packet_count_(send_packet_count) {
+  PerfettoTracedProcess::Get()->AddDataSource(this);
+}
 
 TestDataSource::~TestDataSource() = default;
 
@@ -65,13 +68,11 @@ void TestDataSource::Flush(base::RepeatingClosure flush_complete_callback) {
 }
 
 MockProducerClient::MockProducerClient(
-    size_t send_packet_count,
     base::OnceClosure client_enabled_callback,
     base::OnceClosure client_disabled_callback)
     : ProducerClient(PerfettoTracedProcess::Get()->GetTaskRunner()),
       client_enabled_callback_(std::move(client_enabled_callback)),
-      client_disabled_callback_(std::move(client_disabled_callback)),
-      send_packet_count_(send_packet_count) {
+      client_disabled_callback_(std::move(client_disabled_callback)) {
   // We want to set the ProducerClient to this mock, but that 'requires' passing
   // ownership of ourselves to PerfettoTracedProcess. Since someone else manages
   // our deletion we need to be careful in the deconstructor to not double free
@@ -89,11 +90,7 @@ MockProducerClient::~MockProducerClient() {
   client.release();
 }
 
-void MockProducerClient::SetupDataSource(const std::string& data_source_name) {
-  enabled_data_source_ =
-      std::make_unique<TestDataSource>(data_source_name, send_packet_count_);
-  PerfettoTracedProcess::Get()->AddDataSource(enabled_data_source_.get());
-}
+void MockProducerClient::SetupDataSource(const std::string& data_source_name) {}
 
 void MockProducerClient::StartDataSource(
     uint64_t id,
@@ -269,8 +266,10 @@ MockProducer::MockProducer(const std::string& producer_name,
                            base::OnceClosure on_datasource_registered,
                            base::OnceClosure on_tracing_started,
                            size_t num_packets) {
-  producer_client_ = std::make_unique<MockProducerClient>(
-      num_packets, std::move(on_tracing_started));
+  data_source_ =
+      std::make_unique<TestDataSource>(data_source_name, num_packets);
+  producer_client_ =
+      std::make_unique<MockProducerClient>(std::move(on_tracing_started));
 
   producer_host_ = std::make_unique<MockProducerHost>(
       producer_name, data_source_name, service, producer_client_.get(),
@@ -285,11 +284,10 @@ void MockProducer::WritePacketBigly(base::OnceClosure on_write_complete) {
   PerfettoTracedProcess::Get()
       ->GetTaskRunner()
       ->GetOrCreateTaskRunner()
-      ->PostTaskAndReply(
-          FROM_HERE,
-          base::BindOnce(&TestDataSource::WritePacketBigly,
-                         base::Unretained(producer_client_->data_source())),
-          std::move(on_write_complete));
+      ->PostTaskAndReply(FROM_HERE,
+                         base::BindOnce(&TestDataSource::WritePacketBigly,
+                                        base::Unretained(data_source())),
+                         std::move(on_write_complete));
 }
 
 }  // namespace tracing

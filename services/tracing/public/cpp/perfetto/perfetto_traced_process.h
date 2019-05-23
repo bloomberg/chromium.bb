@@ -68,6 +68,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // method again with it as the parameter.
   std::unique_ptr<ProducerClient> SetProducerClientForTesting(
       std::unique_ptr<ProducerClient> client);
+  void ClearDataSourcesForTesting();
   static void DeleteSoonForTesting(std::unique_ptr<PerfettoTracedProcess>);
 
   // Returns the taskrunner used by any Perfetto service.

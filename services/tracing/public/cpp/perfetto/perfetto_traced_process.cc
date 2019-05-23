@@ -49,10 +49,13 @@ PerfettoTracedProcess::~PerfettoTracedProcess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void PerfettoTracedProcess::ClearDataSourcesForTesting() {
+  data_sources_.clear();
+}
+
 std::unique_ptr<ProducerClient>
 PerfettoTracedProcess::SetProducerClientForTesting(
     std::unique_ptr<ProducerClient> client) {
-  data_sources_.clear();
   auto old_producer_client_for_testing = std::move(producer_client_);
   producer_client_ = std::move(client);
   return old_producer_client_for_testing;
