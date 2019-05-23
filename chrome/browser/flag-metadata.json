@@ -919,6 +919,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "enable-chrome-duet-labels",
+    "owners": [ "amaralp" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "enable-chromeos-account-manager",
     "owners": [ "sinhak@chromium.org" ],
     "expiry_milestone": 76

@@ -2244,6 +2244,10 @@ const char kChromeDuetName[] = "Chrome Duet";
 const char kChromeDuetDescription[] =
     "Enables Chrome Duet, split toolbar Chrome Home, on Android.";
 
+const char kChromeDuetLabelsName[] = "Chrome Duet Labels";
+const char kChromeDuetLabelsDescription[] =
+    "Enables Chrome Duet (split toolbar) labels.";
+
 const char kClearOldBrowsingDataName[] = "Clear older browsing data";
 const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
@@ -56,7 +57,14 @@ public class TabSwitcherBottomToolbarCoordinator {
             OnClickListener newTabClickListener, OnClickListener closeTabsClickListener,
             AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
             TabCountProvider tabCountProvider) {
-        final View root = stub.inflate();
+        final ViewGroup root = (ViewGroup) stub.inflate();
+
+        View toolbar = root.findViewById(R.id.bottom_toolbar_buttons);
+        ViewGroup.LayoutParams params = toolbar.getLayoutParams();
+        params.height = root.getResources().getDimensionPixelOffset(
+                FeatureUtilities.isLabeledBottomToolbarEnabled()
+                        ? R.dimen.labeled_bottom_toolbar_height
+                        : R.dimen.bottom_toolbar_height);
 
         TabSwitcherBottomToolbarModel model = new TabSwitcherBottomToolbarModel();
 
@@ -75,11 +83,13 @@ public class TabSwitcherBottomToolbarCoordinator {
         mCloseAllTabsButton.setVisibility(View.INVISIBLE);
 
         mNewTabButton = root.findViewById(R.id.tab_switcher_new_tab_button);
+        mNewTabButton.setWrapperView(root.findViewById(R.id.new_tab_button_wrapper));
         mNewTabButton.setOnClickListener(newTabClickListener);
         mNewTabButton.setIncognitoStateProvider(incognitoStateProvider);
         mNewTabButton.setThemeColorProvider(themeColorProvider);
 
         mMenuButton = root.findViewById(R.id.menu_button_wrapper);
+        mMenuButton.setWrapperView(root.findViewById(R.id.labeled_menu_button_wrapper));
         mMenuButton.setThemeColorProvider(themeColorProvider);
         mMenuButton.setAppMenuButtonHelper(menuButtonHelper);
     }

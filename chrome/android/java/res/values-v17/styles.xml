@@ -637,6 +637,36 @@
         <item name="android:layout_height">48dp</item>
         <item name="android:layout_gravity">center</item>
     </style>
+    <style name="SplitToolbarButton" parent="BottomToolbarButton">
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_width">24dp</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:clickable">false</item>
+    </style>
+    <style name="TextAppearance.BottomToolbarLabel" parent="TextAppearance.RobotoMediumStyle">
+        <item name="android:textColor">@color/default_text_color_dark_secondary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style name="BottomToolbarButtonWrapper">
+        <item name="android:layout_width">56dp</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+    <style name="BottomToolbarLabel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">7dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.BottomToolbarLabel</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:visibility">gone</item>
+    </style>
 
     <style name="AppMenuItem">
         <item name="android:paddingStart">16dp</item>

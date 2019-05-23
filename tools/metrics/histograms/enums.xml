@@ -32356,6 +32356,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2048927838" label="AutoplayWhitelistSettings:enabled"/>
   <int value="-2048732429" label="enable-alternative-services"/>
   <int value="-2048679945" label="NTPOfflinePageDownloadSuggestions:disabled"/>
+  <int value="-2048395454" label="ChromeDuetLabeled:disabled"/>
   <int value="-2047832738" label="enable-system-timezone-automatic-detection"/>
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2047190657" label="SyncUserConsentSeparateType:enabled"/>
@@ -33108,6 +33109,7 @@ from previous Chrome versions.
   <int value="-966290456" label="WebAuthenticationCtap2:enabled"/>
   <int value="-965842218" label="MultiDeviceApi:disabled"/>
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
+  <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-957200826" label="enable-spdy-proxy-auth"/>
   <int value="-956696029" label="scheduler-configuration"/>
   <int value="-951394314" label="top-chrome-md"/>

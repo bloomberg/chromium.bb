@@ -1343,6 +1343,9 @@ extern const char kCCTTargetTranslateLanguageDescription[];
 extern const char kChromeDuetName[];
 extern const char kChromeDuetDescription[];
 
+extern const char kChromeDuetLabelsName[];
+extern const char kChromeDuetLabelsDescription[];
+
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
 

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -77,10 +78,23 @@ public class BottomControlsCoordinator {
         PropertyModelChangeProcessor.create(
                 model, new ViewHolder(root), BottomControlsViewBinder::bind);
 
+        int bottomToolbarHeightId;
+        int bottomToolbarHeightWithShadowId;
+
+        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) {
+            bottomToolbarHeightId = R.dimen.labeled_bottom_toolbar_height;
+            bottomToolbarHeightWithShadowId = R.dimen.labeled_bottom_toolbar_height_with_shadow;
+        } else {
+            bottomToolbarHeightId = R.dimen.bottom_toolbar_height;
+            bottomToolbarHeightWithShadowId = R.dimen.bottom_toolbar_height_with_shadow;
+        }
+
+        View toolbar = root.findViewById(R.id.bottom_container_slot);
+        ViewGroup.LayoutParams params = toolbar.getLayoutParams();
+        params.height = root.getResources().getDimensionPixelOffset(bottomToolbarHeightId);
         mMediator = new BottomControlsMediator(model, fullscreenManager,
-                root.getResources().getDimensionPixelOffset(R.dimen.bottom_toolbar_height),
-                root.getResources().getDimensionPixelOffset(
-                        R.dimen.bottom_toolbar_height_with_shadow));
+                root.getResources().getDimensionPixelOffset(bottomToolbarHeightId),
+                root.getResources().getDimensionPixelOffset(bottomToolbarHeightWithShadowId));
 
         if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
             mTabGroupUi = TabManagementModuleProvider.getTabManagementModule().createTabGroupUi(

@@ -286,8 +286,9 @@
     <!-- Bottom toolbar dimensions -->
     <dimen name="bottom_toolbar_height">@dimen/min_touch_target_size</dimen>
     <dimen name="bottom_toolbar_height_with_shadow">56dp</dimen>
-    <dimen name="bottom_toolbar_start_padding">12dp</dimen>
-    <dimen name="bottom_toolbar_end_padding">8dp</dimen>
+    <dimen name="labeled_bottom_toolbar_height">68dp</dimen>
+    <dimen name="labeled_bottom_toolbar_height_with_shadow">76dp</dimen>
+    <dimen name="bottom_toolbar_padding">12dp</dimen>
     <dimen name="search_accelerator_width">64dp</dimen>
     <dimen name="search_accelerator_height">36dp</dimen>
     <dimen name="search_accelerator_height_padding">6dp</dimen>
