@@ -945,16 +945,14 @@ void VolumeManager::OnFormatEvent(
       }
       return;
     case chromeos::disks::DiskMountManager::FORMAT_COMPLETED:
-      if (error_code == chromeos::FORMAT_ERROR_NONE) {
-        // If format is completed successfully, try to mount the device.
-        // MountPath auto-detects filesystem format if second argument is
-        // empty. The third argument (mount label) is not used in a disk mount
-        // operation.
-        disk_mount_manager_->MountPath(device_path, std::string(),
-                                       std::string(), {},
-                                       chromeos::MOUNT_TYPE_DEVICE,
-                                       GetExternalStorageAccessMode(profile_));
-      }
+      // Even if format did not complete successfully, try to mount the device
+      // so the user can retry.
+      // MountPath auto-detects filesystem format if second argument is
+      // empty. The third argument (mount label) is not used in a disk mount
+      // operation.
+      disk_mount_manager_->MountPath(device_path, std::string(), std::string(),
+                                     {}, chromeos::MOUNT_TYPE_DEVICE,
+                                     GetExternalStorageAccessMode(profile_));
 
       for (auto& observer : observers_) {
         observer.OnFormatCompleted(device_path,
