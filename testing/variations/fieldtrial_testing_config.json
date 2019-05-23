@@ -515,11 +515,13 @@
                 {
                     "name": "AudioProcess_APM",
                     "params": {
-                        "teardown_timeout_s": "900"
+                        "teardown_timeout_s": "900",
+                        "timeout_seconds": "180"
                     },
                     "enable_features": [
                         "AudioServiceAudioStreams",
                         "AudioServiceOutOfProcess",
+                        "AudioServiceOutOfProcessKillAtHang",
                         "AudioServiceSandbox",
                         "WebRtcApmInAudioService"
                     ]
