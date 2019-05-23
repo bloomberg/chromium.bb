@@ -109,10 +109,14 @@ class NET_EXPORT NetworkChangeNotifier {
     virtual void OnIPAddressChanged() = 0;
 
    protected:
-    IPAddressObserver() {}
-    virtual ~IPAddressObserver() {}
+    IPAddressObserver();
+    virtual ~IPAddressObserver();
 
    private:
+    friend NetworkChangeNotifier;
+    scoped_refptr<base::ObserverListThreadSafe<IPAddressObserver>>
+        observer_list_;
+
     DISALLOW_COPY_AND_ASSIGN(IPAddressObserver);
   };
 
@@ -126,10 +130,14 @@ class NET_EXPORT NetworkChangeNotifier {
     virtual void OnConnectionTypeChanged(ConnectionType type) = 0;
 
    protected:
-    ConnectionTypeObserver() {}
-    virtual ~ConnectionTypeObserver() {}
+    ConnectionTypeObserver();
+    virtual ~ConnectionTypeObserver();
 
    private:
+    friend NetworkChangeNotifier;
+    scoped_refptr<base::ObserverListThreadSafe<ConnectionTypeObserver>>
+        observer_list_;
+
     DISALLOW_COPY_AND_ASSIGN(ConnectionTypeObserver);
   };
 
@@ -148,10 +156,13 @@ class NET_EXPORT NetworkChangeNotifier {
     virtual void OnInitialDNSConfigRead();
 
    protected:
-    DNSObserver() {}
-    virtual ~DNSObserver() {}
+    DNSObserver();
+    virtual ~DNSObserver();
 
    private:
+    friend NetworkChangeNotifier;
+    scoped_refptr<base::ObserverListThreadSafe<DNSObserver>> observer_list_;
+
     DISALLOW_COPY_AND_ASSIGN(DNSObserver);
   };
 
@@ -185,10 +196,14 @@ class NET_EXPORT NetworkChangeNotifier {
     virtual void OnNetworkChanged(ConnectionType type) = 0;
 
    protected:
-    NetworkChangeObserver() {}
-    virtual ~NetworkChangeObserver() {}
+    NetworkChangeObserver();
+    virtual ~NetworkChangeObserver();
 
    private:
+    friend NetworkChangeNotifier;
+    scoped_refptr<base::ObserverListThreadSafe<NetworkChangeObserver>>
+        observer_list_;
+
     DISALLOW_COPY_AND_ASSIGN(NetworkChangeObserver);
   };
 
@@ -203,10 +218,14 @@ class NET_EXPORT NetworkChangeNotifier {
                                        ConnectionType type) = 0;
 
    protected:
-    MaxBandwidthObserver() {}
-    virtual ~MaxBandwidthObserver() {}
+    MaxBandwidthObserver();
+    virtual ~MaxBandwidthObserver();
 
    private:
+    friend NetworkChangeNotifier;
+    scoped_refptr<base::ObserverListThreadSafe<MaxBandwidthObserver>>
+        observer_list_;
+
     DISALLOW_COPY_AND_ASSIGN(MaxBandwidthObserver);
   };
 
@@ -245,10 +264,13 @@ class NET_EXPORT NetworkChangeNotifier {
     virtual void OnNetworkMadeDefault(NetworkHandle network) = 0;
 
    protected:
-    NetworkObserver() {}
-    virtual ~NetworkObserver() {}
+    NetworkObserver();
+    virtual ~NetworkObserver();
 
    private:
+    friend NetworkChangeNotifier;
+    scoped_refptr<base::ObserverListThreadSafe<NetworkObserver>> observer_list_;
+
     DISALLOW_COPY_AND_ASSIGN(NetworkObserver);
   };
 
@@ -536,6 +558,10 @@ class NET_EXPORT NetworkChangeNotifier {
   // have the same type, return it, otherwise return CONNECTION_UNKNOWN.
   static ConnectionType ConnectionTypeFromInterfaces();
 
+  // Clears the global NetworkChangeNotifier pointer.  This should be called
+  // as early as possible in the destructor to prevent races.
+  void ClearGlobalPointer();
+
  private:
   friend class HostResolverManagerDnsTest;
   friend class NetworkChangeNotifierAndroidTest;
@@ -576,6 +602,9 @@ class NET_EXPORT NetworkChangeNotifier {
 
   // Set true to disable non-test notifications (to prevent flakes in tests).
   static bool test_notifications_only_;
+
+  // Indicates if this instance cleared g_network_change_notifier_ yet.
+  bool cleared_global_pointer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifier);
 };

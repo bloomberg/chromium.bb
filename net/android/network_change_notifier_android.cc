@@ -118,6 +118,7 @@ class NetworkChangeNotifierAndroid::BlockingThreadObjects {
 };
 
 NetworkChangeNotifierAndroid::~NetworkChangeNotifierAndroid() {
+  ClearGlobalPointer();
   delegate_->RemoveObserver(this);
 }
 

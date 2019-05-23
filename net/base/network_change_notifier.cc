@@ -114,7 +114,6 @@ class NetworkChangeNotifier::NetworkChangeCalculator
 
   ~NetworkChangeCalculator() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(g_network_change_notifier);
     RemoveConnectionTypeObserver(this);
     RemoveIPAddressObserver(this);
   }
@@ -174,10 +173,17 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeCalculator);
 };
 
+void NetworkChangeNotifier::ClearGlobalPointer() {
+  if (!cleared_global_pointer_) {
+    cleared_global_pointer_ = true;
+    DCHECK_EQ(this, g_network_change_notifier);
+    g_network_change_notifier = nullptr;
+  }
+}
+
 NetworkChangeNotifier::~NetworkChangeNotifier() {
   network_change_calculator_.reset();
-  DCHECK_EQ(this, g_network_change_notifier);
-  g_network_change_notifier = nullptr;
+  ClearGlobalPointer();
 }
 
 // static
@@ -483,92 +489,122 @@ NetworkChangeNotifier* NetworkChangeNotifier::CreateMock() {
   return new MockNetworkChangeNotifier();
 }
 
+NetworkChangeNotifier::IPAddressObserver::IPAddressObserver() = default;
+NetworkChangeNotifier::IPAddressObserver::~IPAddressObserver() = default;
+
+NetworkChangeNotifier::ConnectionTypeObserver::ConnectionTypeObserver() =
+    default;
+NetworkChangeNotifier::ConnectionTypeObserver::~ConnectionTypeObserver() =
+    default;
+
+NetworkChangeNotifier::DNSObserver::DNSObserver() = default;
+NetworkChangeNotifier::DNSObserver::~DNSObserver() = default;
+
+NetworkChangeNotifier::NetworkChangeObserver::NetworkChangeObserver() = default;
+NetworkChangeNotifier::NetworkChangeObserver::~NetworkChangeObserver() =
+    default;
+
+NetworkChangeNotifier::MaxBandwidthObserver::MaxBandwidthObserver() = default;
+NetworkChangeNotifier::MaxBandwidthObserver::~MaxBandwidthObserver() = default;
+
+NetworkChangeNotifier::NetworkObserver::NetworkObserver() = default;
+NetworkChangeNotifier::NetworkObserver::~NetworkObserver() = default;
+
 void NetworkChangeNotifier::AddIPAddressObserver(IPAddressObserver* observer) {
-  if (g_network_change_notifier)
-    g_network_change_notifier->ip_address_observer_list_->AddObserver(observer);
+  if (g_network_change_notifier) {
+    observer->observer_list_ =
+        g_network_change_notifier->ip_address_observer_list_;
+    observer->observer_list_->AddObserver(observer);
+  }
 }
 
 void NetworkChangeNotifier::AddConnectionTypeObserver(
     ConnectionTypeObserver* observer) {
   if (g_network_change_notifier) {
-    g_network_change_notifier->connection_type_observer_list_->AddObserver(
-        observer);
+    observer->observer_list_ =
+        g_network_change_notifier->connection_type_observer_list_;
+    observer->observer_list_->AddObserver(observer);
   }
 }
 
 void NetworkChangeNotifier::AddDNSObserver(DNSObserver* observer) {
   if (g_network_change_notifier) {
-    g_network_change_notifier->resolver_state_observer_list_->AddObserver(
-        observer);
+    observer->observer_list_ =
+        g_network_change_notifier->resolver_state_observer_list_;
+    observer->observer_list_->AddObserver(observer);
   }
 }
 
 void NetworkChangeNotifier::AddNetworkChangeObserver(
     NetworkChangeObserver* observer) {
   if (g_network_change_notifier) {
-    g_network_change_notifier->network_change_observer_list_->AddObserver(
-        observer);
+    observer->observer_list_ =
+        g_network_change_notifier->network_change_observer_list_;
+    observer->observer_list_->AddObserver(observer);
   }
 }
 
 void NetworkChangeNotifier::AddMaxBandwidthObserver(
     MaxBandwidthObserver* observer) {
   if (g_network_change_notifier) {
-    g_network_change_notifier->max_bandwidth_observer_list_->AddObserver(
-        observer);
+    observer->observer_list_ =
+        g_network_change_notifier->max_bandwidth_observer_list_;
+    observer->observer_list_->AddObserver(observer);
   }
 }
 
 void NetworkChangeNotifier::AddNetworkObserver(NetworkObserver* observer) {
   DCHECK(AreNetworkHandlesSupported());
   if (g_network_change_notifier) {
-    g_network_change_notifier->network_observer_list_->AddObserver(observer);
+    observer->observer_list_ =
+        g_network_change_notifier->network_observer_list_;
+    observer->observer_list_->AddObserver(observer);
   }
 }
 
 void NetworkChangeNotifier::RemoveIPAddressObserver(
     IPAddressObserver* observer) {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->ip_address_observer_list_->RemoveObserver(
-        observer);
+  if (observer->observer_list_) {
+    observer->observer_list_->RemoveObserver(observer);
+    observer->observer_list_.reset();
   }
 }
 
 void NetworkChangeNotifier::RemoveConnectionTypeObserver(
     ConnectionTypeObserver* observer) {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->connection_type_observer_list_->RemoveObserver(
-        observer);
+  if (observer->observer_list_) {
+    observer->observer_list_->RemoveObserver(observer);
+    observer->observer_list_.reset();
   }
 }
 
 void NetworkChangeNotifier::RemoveDNSObserver(DNSObserver* observer) {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->resolver_state_observer_list_->RemoveObserver(
-        observer);
+  if (observer->observer_list_) {
+    observer->observer_list_->RemoveObserver(observer);
+    observer->observer_list_.reset();
   }
 }
 
 void NetworkChangeNotifier::RemoveNetworkChangeObserver(
     NetworkChangeObserver* observer) {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->network_change_observer_list_->RemoveObserver(
-        observer);
+  if (observer->observer_list_) {
+    observer->observer_list_->RemoveObserver(observer);
+    observer->observer_list_.reset();
   }
 }
 
 void NetworkChangeNotifier::RemoveMaxBandwidthObserver(
     MaxBandwidthObserver* observer) {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->max_bandwidth_observer_list_->RemoveObserver(
-        observer);
+  if (observer->observer_list_) {
+    observer->observer_list_->RemoveObserver(observer);
+    observer->observer_list_.reset();
   }
 }
 
 void NetworkChangeNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
-  DCHECK(AreNetworkHandlesSupported());
-  if (g_network_change_notifier) {
-    g_network_change_notifier->network_observer_list_->RemoveObserver(observer);
+  if (observer->observer_list_) {
+    observer->observer_list_->RemoveObserver(observer);
+    observer->observer_list_.reset();
   }
 }
 

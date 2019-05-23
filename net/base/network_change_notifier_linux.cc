@@ -107,7 +107,9 @@ NetworkChangeNotifierLinux::NetworkChangeNotifierLinux(
                      base::Unretained(blocking_thread_objects_.get())));
 }
 
-NetworkChangeNotifierLinux::~NetworkChangeNotifierLinux() = default;
+NetworkChangeNotifierLinux::~NetworkChangeNotifierLinux() {
+  ClearGlobalPointer();
+}
 
 // static
 NetworkChangeNotifier::NetworkChangeCalculatorParams

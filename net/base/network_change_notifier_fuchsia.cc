@@ -61,6 +61,7 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
 
 NetworkChangeNotifierFuchsia::~NetworkChangeNotifierFuchsia() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  ClearGlobalPointer();
 }
 
 NetworkChangeNotifier::ConnectionType

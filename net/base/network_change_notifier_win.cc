@@ -55,6 +55,7 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
 
 NetworkChangeNotifierWin::~NetworkChangeNotifierWin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ClearGlobalPointer();
   if (is_watching_) {
     CancelIPChangeNotify(&addr_overlapped_);
     addr_watcher_.StopWatching();
