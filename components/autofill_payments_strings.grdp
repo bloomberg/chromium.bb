@@ -14,6 +14,23 @@
     sign in to Chrome
   </message>
 
+  <if expr="not use_titlecase">
+    <message name="IDS_AUTOFILL_NO_THANKS_DESKTOP_LOCAL_SAVE" desc="The label for cancel button used in autofill credit card local save bubble on desktop.">
+      No thanks
+    </message>
+    <message name="IDS_AUTOFILL_NO_THANKS_DESKTOP_UPLOAD_SAVE" desc="The label for cancel button used in autofill credit card upload save bubble on desktop.">
+      No thanks
+    </message>
+  </if>
+  <if expr="use_titlecase">
+    <message name="IDS_AUTOFILL_NO_THANKS_DESKTOP_LOCAL_SAVE" desc="In Title Case: The label for cancel button used in autofill credit card local save bubble on desktop.">
+      No Thanks
+    </message>
+    <message name="IDS_AUTOFILL_NO_THANKS_DESKTOP_UPLOAD_SAVE" desc="In Title Case: The label for cancel button used in autofill credit card upload save bubble on desktop.">
+      No Thanks
+    </message>
+  </if>
+
   <!-- Autofill Credit Card Assisted Filling Infobar -->
   <if expr="is_android">
     <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_TITLE" desc="Title text for the Autofill Credit Card Assisted Filling Infobar">
@@ -29,6 +46,16 @@
     <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card Assisted Filling infobar accept button.">
       Fill in
     </message>
+    <if expr="not use_titlecase">
+      <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_NO_THANKS" desc="Text to show for the Autofill credit card Assisted Filling infobar cancel button.">
+        No thanks
+      </message>
+    </if>
+    <if expr="use_titlecase">
+      <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_NO_THANKS" desc="In Title Case: Text to show for the Autofill credit card Assisted Filling infobar cancel button.">
+        No Thanks
+      </message>
+    </if>
   </if>
 
   <if expr="not is_android">
@@ -41,9 +68,25 @@
   </if>
 
   <!-- Autofill save credit card bubble or infobar prompt -->
+  <!--TODO(crbug.com/961082): Remove this once the separate label is in use. -->
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT" desc="Text to show for the Autofill save credit card prompt accept button. The prompt can be either a bubble or an infobar.">
     Save
   </message>
+  <if expr="is_android or is_ios">
+    <then>
+      <message name="IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT" desc="Text to show for the Autofill save credit card infobar accept button.">
+        Save
+      </message>
+    </then>
+    <else>
+      <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_LOCAL_SAVE_ACCEPT" desc="Text to show for the Autofill save credit card local save bubble accept button.">
+        Save
+      </message>
+      <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_UPLOAD_SAVE_ACCEPT" desc="Text to show for the Autofill save credit card upload save bubble accept button.">
+        Save
+      </message>
+    </else>
+  </if>
   <if expr="is_android">
     <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONFIRM" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered." formatter_data="android_java">
       Confirm
