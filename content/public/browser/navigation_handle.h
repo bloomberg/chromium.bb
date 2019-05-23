@@ -60,6 +60,8 @@ class CONTENT_EXPORT NavigationHandle {
   // WebContents::GetVisibleURL and WebContents::GetLastCommittedURL. For
   // example, viewing a page's source navigates to the URL of the page, but the
   // virtual URL is prefixed with "view-source:".
+  // Note: The URL of a NavigationHandle can change over its lifetime.
+  // e.g. URLs might be rewritten by the renderer before being committed.
   virtual const GURL& GetURL() = 0;
 
   // Returns the SiteInstance that started the request.

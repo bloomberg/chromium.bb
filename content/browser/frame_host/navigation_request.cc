@@ -2667,8 +2667,7 @@ void NavigationRequest::DidCommitNavigation(
     bool did_replace_entry,
     const GURL& previous_url,
     NavigationType navigation_type) {
-  CHECK_EQ(common_params_.url, params.url);
-
+  common_params_.url = params.url;
   did_replace_entry_ = did_replace_entry;
   should_update_history_ = params.should_update_history;
   previous_url_ = previous_url;

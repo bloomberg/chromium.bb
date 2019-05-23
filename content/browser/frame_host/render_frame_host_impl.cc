@@ -6452,7 +6452,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
             !GetParent());
 
   // Check that the committing navigation token matches the navigation request.
-  std::unique_ptr<NavigationRequest> invalid_request = nullptr;
   if (navigation_request &&
       navigation_request->commit_params().navigation_token !=
           validated_params->navigation_token) {
@@ -6511,36 +6510,12 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     return false;
   }
 
+  // TODO(clamy): We should stop having a special case for same-document
+  // navigation and just put them in the general map of NavigationRequests.
   if (navigation_request &&
-      navigation_request->common_params().url != validated_params->url) {
-    // At this point we know that the right/matching |navigation_request| has
-    // already been found based on token matching performed or the commit
-    // originated from a NavigationClient owned by the NavigationRequest. OTOH,
-    // we cannot use its NavigationHandle, because it has a mismatched URL
-    // (which would cause DCHECKs - for example in
-    // NavigationHandleImpl::DidCommitNavigation).
-    //
-    // Because of the above, if the URL does not match what the NavigationHandle
-    // expects, we want to treat the commit as a new navigation.
-    //
-    // The URL mismatch can happen when loading a Data navigation with
-    // LoadDataWithBaseURL.
-    // TODO(csharrison): Data navigations loaded with LoadDataWithBaseURL get
-    // reset here, because the NavigationHandle tracks the URL but the
-    // params.url tracks the data. The trick of saving the old entry ids for
-    // these navigations should go away when this is properly handled. See
-    // https://crbug.com/588317.
-    //
-    // Other cases are where URL mismatch can happen is when committing an error
-    // page - for example this can happen during CSP/frame-ancestors checks (see
-    // https://crbug.com/759184).
-    //
-    // TODO(clamy): We should support the URL filtering without deleting the
-    // request.
-
-    // Note: the NavigationRequest is not reset here, as this could potentially
-    // lead to the deletion of the pending NavigationEntry.
-    invalid_request = std::move(navigation_request);
+      navigation_request->common_params().url != validated_params->url &&
+      is_same_document_navigation) {
+    same_document_navigation_request_ = std::move(navigation_request);
   }
 
   // Set is loading to true now if it has not been set yet. This happens for
@@ -6561,21 +6536,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // one in order to properly issue DidFinishNavigation calls to
   // WebContentsObservers.
   if (!navigation_request) {
-    // First check if there was a request for this navigation that cannot be
-    // used due to URL mismatch. If that's the case and it corresponds to a
-    // navigation to the pending NavigationEntry, the new request should be
-    // associated with the pending NavigationEntry as well so that the pending
-    // NavigationEntry is properly committed.
-    NavigationEntryImpl* entry_for_navigation = nullptr;
-    if (invalid_request && NavigationRequestWasIntendedForPendingEntry(
-                               invalid_request.get(), *validated_params,
-                               is_same_document_navigation)) {
-      entry_for_navigation = NavigationEntryImpl::FromNavigationEntry(
-          frame_tree_node()->navigator()->GetController()->GetPendingEntry());
-    }
-
     navigation_request = CreateNavigationRequestForCommit(
-        *validated_params, is_same_document_navigation, entry_for_navigation);
+        *validated_params, is_same_document_navigation, nullptr);
   }
 
   DCHECK(navigation_request);
@@ -6606,11 +6568,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);
-
-  // TODO(clamy): We should stop having a special case for same-document
-  // navigation and just put them in the general map of NavigationRequests.
-  if (is_same_document_navigation && invalid_request)
-    same_document_navigation_request_ = std::move(invalid_request);
 
   if (!is_same_document_navigation)
     scheduler_tracked_features_ = 0;
