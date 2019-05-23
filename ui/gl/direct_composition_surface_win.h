@@ -64,17 +64,17 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
   // Returns monitor size.
   static gfx::Size GetOverlayMonitorSize();
 
-  // Returns if the given format is supported for hardware overlays.
-  // Also, if |supports_scaling| is set to true, SCALING mode is supported for
-  // the given format; otherwise, only DIRECT mode is supported.
-  static bool SupportsOverlayFormat(DXGI_FORMAT format, bool* supports_scaling);
+  // Returns overlay support flags for the given format.
+  // Caller should check for DXGI_OVERLAY_SUPPORT_FLAG_DIRECT and
+  // DXGI_OVERLAY_SUPPORT_FLAG_SCALING bits.
+  static UINT GetOverlaySupportFlags(DXGI_FORMAT format);
 
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
 
   static void SetScaledOverlaysSupportedForTesting(bool value);
 
-  static void SetPreferNV12OverlaysForTesting();
+  static void SetPreferYUY2OverlaysForTesting();
 
   bool InitializeNativeWindow();
 
