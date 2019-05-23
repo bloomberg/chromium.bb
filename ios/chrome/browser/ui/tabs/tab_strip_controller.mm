@@ -371,6 +371,9 @@ UIColor* BackgroundColor() {
 // Updates the tab switcher button with the current tab count.
 - (void)updateTabCount;
 
+// Updates the tab view fav icon & progress spinner based on the |webState|.
+- (void)updateTabViewForWebState:(web::WebState*)webState;
+
 @end
 
 @implementation TabStripController
@@ -950,6 +953,33 @@ UIColor* BackgroundColor() {
     _autoscrollDistance = -offset.x;
 }
 
+- (void)updateTabViewForWebState:(web::WebState*)webState {
+  int modelIndex = _tabModel.webStateList->GetIndexOfWebState(webState);
+  if (modelIndex == WebStateList::kInvalidIndex) {
+    DCHECK(false) << "Received notification for a Webstate that is not "
+                  << "contained in the WebStateList";
+    return;
+  }
+  NSUInteger index = [self indexForModelIndex:modelIndex];
+  TabView* view = [_tabArray objectAtIndex:index];
+  [view setTitle:tab_util::GetTabTitle(webState)];
+  [view setFavicon:nil];
+
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(webState);
+  if (faviconDriver && faviconDriver->FaviconIsValid()) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      [view setFavicon:favicon.ToUIImage()];
+  }
+
+  if (webState->IsLoading() && !IsVisibleURLNewTabPage(webState))
+    [view startProgressSpinner];
+  else
+    [view stopProgressSpinner];
+  [view setNeedsDisplay];
+}
+
 #pragma mark -
 #pragma mark WebStateObserving methods
 
@@ -1046,6 +1076,16 @@ UIColor* BackgroundColor() {
   [self updateTabCount];
 }
 
+// Observer method, WebState replaced in |webStateList|.
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  // TabViews do not hold references to their parent Tabs, so it's safe to treat
+  // this as a tab change rather than a tab replace.
+  [self updateTabViewForWebState:newWebState];
+}
+
 #pragma mark -
 #pragma mark TabModelObserver methods
 
@@ -1056,41 +1096,7 @@ UIColor* BackgroundColor() {
   // there is no view to update yet.
   if (_tabModel.count > _tabArray.count - _closingTabs.count)
     return;
-
-  NSUInteger modelIndex = [_tabModel indexOfTab:tab];
-  if (modelIndex == NSNotFound) {
-    DCHECK(false) << "Received notification for a Tab that is not contained in "
-                  << "the TabModel";
-    return;
-  }
-  NSUInteger index = [self indexForModelIndex:modelIndex];
-  TabView* view = [_tabArray objectAtIndex:index];
-  [view setTitle:tab_util::GetTabTitle(tab.webState)];
-  [view setFavicon:nil];
-
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(tab.webState);
-  if (faviconDriver && faviconDriver->FaviconIsValid()) {
-    gfx::Image favicon = faviconDriver->GetFavicon();
-    if (!favicon.IsEmpty())
-      [view setFavicon:favicon.ToUIImage()];
-  }
-
-  if (tab.webState->IsLoading() && !IsVisibleURLNewTabPage(tab.webState))
-    [view startProgressSpinner];
-  else
-    [view stopProgressSpinner];
-  [view setNeedsDisplay];
-}
-
-// Observer method.
-- (void)tabModel:(TabModel*)model
-    didReplaceTab:(Tab*)oldTab
-          withTab:(Tab*)newTab
-          atIndex:(NSUInteger)index {
-  // TabViews do not hold references to their parent Tabs, so it's safe to treat
-  // this as a tab change rather than a tab replace.
-  [self tabModel:model didChangeTab:newTab];
+  [self updateTabViewForWebState:tab.webState];
 }
 
 #pragma mark -

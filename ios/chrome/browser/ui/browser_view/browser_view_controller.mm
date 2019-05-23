@@ -4412,6 +4412,22 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
+// Observer method, WebState replaced in |webStateList|.
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  [self uninstallDelegatesForWebState:oldWebState];
+  [self installDelegatesForWebState:newWebState];
+
+  // Add |newTab|'s view to the hierarchy if it's the current Tab.
+  if (self.active && self.currentWebState == newWebState)
+    [self displayWebState:newWebState];
+
+  if (newWebState)
+    [_paymentRequestManager setActiveWebState:newWebState];
+}
+
 // Observer method, |webState| inserted in |webStateList|.
 - (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
@@ -4463,22 +4479,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (tab == self.tabModel.currentTab) {
     [self updateToolbar];
   }
-}
-
-// Observer method, tab replaced.
-- (void)tabModel:(TabModel*)model
-    didReplaceTab:(Tab*)oldTab
-          withTab:(Tab*)newTab
-          atIndex:(NSUInteger)index {
-  [self uninstallDelegatesForWebState:oldTab.webState];
-  [self installDelegatesForWebState:newTab.webState];
-
-  // Add |newTab|'s view to the hierarchy if it's the current Tab.
-  if (self.active && model.currentTab == newTab)
-    [self displayWebState:newTab.webState];
-
-  if (newTab)
-    [_paymentRequestManager setActiveWebState:newTab.webState];
 }
 
 #pragma mark - WebStateListObserver helpers (new tab animations)

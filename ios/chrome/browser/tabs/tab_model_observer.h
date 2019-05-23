@@ -15,12 +15,6 @@
 @protocol TabModelObserver<NSObject>
 @optional
 
-// A Tab was replaced in the model, at the given index.
-- (void)tabModel:(TabModel*)model
-    didReplaceTab:(Tab*)oldTab
-          withTab:(Tab*)newTab
-          atIndex:(NSUInteger)index;
-
 // Some properties about the given tab changed, such as the URL or title.
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab;
 

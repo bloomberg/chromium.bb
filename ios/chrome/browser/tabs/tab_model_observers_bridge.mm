@@ -32,17 +32,4 @@
   return self;
 }
 
-#pragma mark WebStateListObserving
-
-- (void)webStateList:(WebStateList*)webStateList
-    didReplaceWebState:(web::WebState*)oldWebState
-          withWebState:(web::WebState*)newWebState
-               atIndex:(int)atIndex {
-  DCHECK_GE(atIndex, 0);
-  [_tabModelObservers tabModel:_tabModel
-                 didReplaceTab:LegacyTabHelper::GetTabForWebState(oldWebState)
-                       withTab:LegacyTabHelper::GetTabForWebState(newWebState)
-                       atIndex:static_cast<NSUInteger>(atIndex)];
-}
-
 @end
