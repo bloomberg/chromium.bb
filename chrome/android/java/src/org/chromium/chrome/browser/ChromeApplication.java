@@ -28,6 +28,8 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.memory.MemoryPressureMonitor;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
 import org.chromium.build.BuildHooksConfig;
@@ -116,6 +118,10 @@ public class ChromeApplication extends Application {
             // Disable MemoryPressureMonitor polling when Chrome goes to the background.
             ApplicationStatus.registerApplicationStateListener(
                     ChromeApplication::updateMemoryPressurePolling);
+
+            // Record via UMA all modules that have been requested and are currently installed. This
+            // will tell us the install penetration of each module over time.
+            PostTask.postTask(TaskTraits.BEST_EFFORT, ModuleInstaller::recordModuleAvailability);
 
             // Not losing much to not cover the below conditional since it just has simple setters.
             TraceEvent.end("ChromeApplication.attachBaseContext");

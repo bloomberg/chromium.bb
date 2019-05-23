@@ -19979,6 +19979,18 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Failed"/>
 </enum>
 
+<enum name="FeatureModuleAvailabilityStatus">
+  <int value="0" label="Requested">
+    Feature module has been requested but is not installed yet.
+  </int>
+  <int value="1" label="Installed Requested">
+    Feature module is installed after being requested.
+  </int>
+  <int value="2" label="Installed Unrequested">
+    Feature module is installed but has not been requested previously.
+  </int>
+</enum>
+
 <enum name="FeatureModuleInstallStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>

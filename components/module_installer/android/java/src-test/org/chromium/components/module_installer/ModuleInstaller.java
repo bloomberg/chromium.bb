@@ -19,6 +19,8 @@ public class ModuleInstaller {
 
     public static void initActivity(Context context) {}
 
+    public static void recordModuleAvailability() {}
+
     public static void updateCrashKeys(){};
 
     public static void install(

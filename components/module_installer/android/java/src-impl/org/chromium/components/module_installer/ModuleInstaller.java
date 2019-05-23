@@ -60,6 +60,16 @@ public class ModuleInstaller {
         SplitCompat.install(context);
     }
 
+    /**
+     * Records via UMA all modules that have been requested and are currently installed. The intent
+     * is to measure the install penetration of each module.
+     */
+    public static void recordModuleAvailability() {
+        if (!CommandLine.getInstance().hasSwitch(FAKE_FEATURE_MODULE_INSTALL)) {
+            PlayCoreModuleInstallerBackend.recordModuleAvailability();
+        }
+    }
+
     /** Writes fully installed and emulated modules to crash keys. */
     public static void updateCrashKeys() {
         Context context = ContextUtils.getApplicationContext();
