@@ -18,7 +18,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/mojo/guest_view.mojom.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 
 namespace extensions {
@@ -180,7 +180,7 @@ void MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest(
 mojom::MimeHandlerViewContainerManager*
 MimeHandlerViewEmbedder::GetContainerManager() {
   if (!container_manager_) {
-    render_frame_host_->GetRemoteInterfaces()->GetInterface(
+    render_frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(
         &container_manager_);
   }
   return container_manager_.get();

@@ -42,7 +42,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"
 
@@ -327,9 +327,11 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   render_frame_observer.WaitUntilDeleted();
   // Send the IPC. During destruction MHVFC would cause a UaF since it was not
   // removed from the global map.
-  extensions::mojom::MimeHandlerViewContainerManagerPtr container_manager;
-  embedder_web_contents->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      &container_manager);
+  extensions::mojom::MimeHandlerViewContainerManagerAssociatedPtr
+      container_manager;
+  embedder_web_contents->GetMainFrame()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&container_manager);
   container_manager->DestroyFrameContainer(element_instance_id);
   // Running the following JS code fails if the renderer has crashed.
   ASSERT_TRUE(content::ExecJs(embedder_web_contents, "window.name = 'foo'"));

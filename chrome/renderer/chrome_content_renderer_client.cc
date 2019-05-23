@@ -462,11 +462,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderFrameCreated(
       render_frame, registry);
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    registry->AddInterface(base::BindRepeating(
-        &extensions::MimeHandlerViewContainerManager::BindRequest,
-        render_frame->GetRoutingID()));
-  }
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -532,6 +527,14 @@ void ChromeContentRendererClient::RenderFrameCreated(
     new content_capture::ContentCaptureSender(render_frame,
                                               associated_interfaces);
   }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    associated_interfaces->AddInterface(base::BindRepeating(
+        &extensions::MimeHandlerViewContainerManager::BindRequest,
+        render_frame->GetRoutingID()));
+  }
+#endif
 
   // Owned by |render_frame|.
   page_load_metrics::MetricsRenderFrameObserver* metrics_render_frame_observer =

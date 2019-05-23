@@ -23,7 +23,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -166,9 +166,10 @@ void MimeHandlerViewAttachHelper::ResumeAttachOrDestroy(
   auto* guest_view = pending_guests_[element_instance_id];
   pending_guests_.erase(element_instance_id);
   if (!plugin_rfh) {
-    mojom::MimeHandlerViewContainerManagerPtr container_manager;
-    guest_view->GetEmbedderFrame()->GetRemoteInterfaces()->GetInterface(
-        &container_manager);
+    mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager;
+    guest_view->GetEmbedderFrame()
+        ->GetRemoteAssociatedInterfaces()
+        ->GetInterface(&container_manager);
     container_manager->DestroyFrameContainer(element_instance_id);
     guest_view->Destroy(true);
     return;

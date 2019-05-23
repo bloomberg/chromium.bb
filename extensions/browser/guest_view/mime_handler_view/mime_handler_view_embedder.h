@@ -78,7 +78,7 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   // to after it is created.
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
-  mojom::MimeHandlerViewContainerManagerPtr container_manager_;
+  mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager_;
 
   const std::string internal_id_;
 

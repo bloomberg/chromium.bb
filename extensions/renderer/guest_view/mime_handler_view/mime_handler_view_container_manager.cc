@@ -42,7 +42,7 @@ RenderFrameMap* GetRenderFrameMap() {
 // static
 void MimeHandlerViewContainerManager::BindRequest(
     int32_t routing_id,
-    mojom::MimeHandlerViewContainerManagerRequest request) {
+    mojom::MimeHandlerViewContainerManagerAssociatedRequest request) {
   CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
   auto* render_frame = content::RenderFrame::FromRoutingID(routing_id);
   if (!render_frame)
