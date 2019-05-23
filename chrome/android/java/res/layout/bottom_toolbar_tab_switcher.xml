@@ -28,7 +28,7 @@
 
             <org.chromium.chrome.browser.toolbar.bottom.CloseAllTabsButton
                 android:id="@+id/close_all_tabs_button"
-                style="@style/SplitToolbarButton"
+                style="@style/BottomToolbarButtonWrapper"
                 android:src="@drawable/ic_close_all_tabs"
                 android:contentDescription="@string/accessibility_toolbar_btn_close_all_tabs"
                 app:tint="@color/standard_mode_tint" />
