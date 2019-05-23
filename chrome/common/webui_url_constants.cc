@@ -367,13 +367,15 @@ const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kLockScreenSubPage[] = "lockScreen";
 const char kNativePrintingSettingsSubPage[] = "cupsPrinters";
 const char kNetworkDetailSubPage[] = "networkDetail";
+const char kNetworksSubPage[] = "networks";
 const char kPluginVmDetailsSubPage[] = "pluginVm/details";
 const char kPluginVmSharedPathSubPage[] = "pluginVm/sharedPath";
 const char kPowerSubPage[] = "power";
 const char kSmartLockSettingsSubPage[] = "multidevice/features/smartLock";
-const char kSmbSharesPageAddDialog[] = "smbShares?showAddShare=true";
+const char kSmbSharesSubPage[] = "smbShares";
 const char kStorageSubPage[] = "storage";
 const char kStylusSubPage[] = "stylus";
+// Tether is a child of the 'networks' route.
 const char kTetherSettingsSubPage[] = "networks?type=Tether";
 
 bool IsOSSettingsSubPage(const std::string& sub_page) {
@@ -390,14 +392,20 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
                                           kConnectedDevicesSubPage,
                                           kLockScreenSubPage,
                                           kNetworkDetailSubPage,
+                                          kNetworksSubPage,
                                           kPowerSubPage,
                                           kSmartLockSettingsSubPage,
-                                          kSmbSharesPageAddDialog,
+                                          kSmbSharesSubPage,
                                           kStorageSubPage,
-                                          kStylusSubPage,
-                                          kTetherSettingsSubPage};
+                                          kStylusSubPage};
+  // Sub-pages may have query parameters, e.g. networkDetail?guid=123456.
+  std::string sub_page_without_query = sub_page;
+  std::string::size_type index = sub_page.find('?');
+  if (index != std::string::npos)
+    sub_page_without_query.resize(index);
+
   for (const char* p : kSubPages) {
-    if (sub_page == p)
+    if (sub_page_without_query == p)
       return true;
   }
   return false;
