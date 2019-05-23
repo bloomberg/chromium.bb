@@ -332,12 +332,16 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
         container_size.width - *left - *right - *margin_left - *margin_right;
   }
 
+#if DCHECK_IS_ON()
   // The DCHECK is useful, but only holds true when not saturated.
   if (!(left->MightBeSaturated() || right->MightBeSaturated() ||
         width->MightBeSaturated() || margin_left->MightBeSaturated() ||
-        margin_right->MightBeSaturated()))
+        margin_right->MightBeSaturated() ||
+        container_size.width.MightBeSaturated())) {
     DCHECK_EQ(container_size.width,
               *left + *right + *margin_left + *margin_right + *width);
+  }
+#endif  // #if DCHECK_IS_ON()
 
   // If calculated width is outside of min/max constraints,
   // rerun the algorithm with constrained width.
@@ -493,13 +497,18 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
     height =
         container_size.height - *top - *bottom - *margin_top - *margin_bottom;
   }
+
+#if DCHECK_IS_ON()
   // The DCHECK is useful, but only holds true when not saturated.
   if (!(top->MightBeSaturated() || bottom->MightBeSaturated() ||
         height->MightBeSaturated() || margin_top->MightBeSaturated() ||
-        margin_bottom->MightBeSaturated())) {
+        margin_bottom->MightBeSaturated() ||
+        container_size.height.MightBeSaturated())) {
     DCHECK_EQ(container_size.height,
               *top + *bottom + *margin_top + *margin_bottom + *height);
   }
+#endif  // #if DCHECK_IS_ON()
+
   // If calculated height is outside of min/max constraints,
   // rerun the algorithm with constrained width.
   LayoutUnit min = ResolveMinHeight(space, style, border_padding, child_minmax,
