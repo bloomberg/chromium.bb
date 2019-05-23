@@ -192,6 +192,11 @@ UI. To do this, add a string to
 ...
 ```
 
+*** note
+**Note:** This is for module title only. Other strings specific to the module
+should go in the module, not here (in the base module).
+***
+
 Congrats! You added the DFM Foo to Monochrome. That is a big step but not very
 useful so far. In the next sections you'll learn how to add code and resources
 to it.

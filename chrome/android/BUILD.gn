@@ -38,6 +38,9 @@ if (enable_arcore) {
 if (enable_vr) {
   import("//chrome/android/features/vr/vr_module_tmpl.gni")
 }
+if (dfmify_devtools) {
+  import("//chrome/android/features/devtools/devtools_module_tmpl.gni")
+}
 
 manifest_package = "org.chromium.chrome"
 test_manifest_package = "org.chromium.chrome.tests"
@@ -2255,9 +2258,20 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     manifest_package = manifest_package
     module_name = "AutofillAssistant" + _bundle_name
     base_module_target = ":$_base_module_target_name"
+    uncompress_shared_libraries = true
     version_code = _version_code
     version_name = _version_name
-    uncompress_shared_libraries = true
+  }
+
+  if (dfmify_devtools) {
+    devtools_module_tmpl("${target_name}__devtools_bundle_module") {
+      manifest_package = manifest_package
+      module_name = "Devtools" + _bundle_name
+      base_module_target = ":$_base_module_target_name"
+      uncompress_shared_libraries = true
+      version_code = _version_code
+      version_name = _version_name
+    }
   }
 
   android_app_bundle(target_name) {
@@ -2306,6 +2320,14 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
         module_target = ":${target_name}__autofill_assistant_bundle_module"
       },
     ]
+    if (dfmify_devtools) {
+      extra_modules += [
+        {
+          name = "devtools"
+          module_target = ":${target_name}__devtools_bundle_module"
+        },
+      ]
+    }
   }
 }
 
