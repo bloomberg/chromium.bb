@@ -9,6 +9,7 @@
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_preview_view.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
@@ -16,8 +17,6 @@
 namespace ash {
 
 namespace {
-
-constexpr int kDeskPreviewHeight = 64;
 
 constexpr int kLabelPreviewSpacing = 8;
 
@@ -28,6 +27,8 @@ constexpr gfx::Size kCloseButtonSize{24, 24};
 constexpr SkColor kActiveColor = SkColorSetARGB(0xEE, 0xFF, 0xFF, 0xFF);
 
 constexpr SkColor kInactiveColor = SkColorSetARGB(0x50, 0xFF, 0xFF, 0xFF);
+
+constexpr SkColor kDraggedOverColor = SkColorSetARGB(0xFF, 0x5B, 0xBC, 0xFF);
 
 std::unique_ptr<DeskPreviewView> CreateDeskPreviewView(
     DeskMiniView* mini_view) {
@@ -40,8 +41,9 @@ std::unique_ptr<DeskPreviewView> CreateDeskPreviewView(
 // which it resides, but always has a fixed height `kDeskPreviewHeight`.
 gfx::Rect GetDeskPreviewBounds(aura::Window* root_window) {
   const auto root_size = root_window->GetBoundsInRootWindow().size();
-  return gfx::Rect(kDeskPreviewHeight * root_size.width() / root_size.height(),
-                   kDeskPreviewHeight);
+  const int preview_height = DeskPreviewView::GetHeight();
+  return gfx::Rect(preview_height * root_size.width() / root_size.height(),
+                   preview_height);
 }
 
 }  // namespace
@@ -49,11 +51,12 @@ gfx::Rect GetDeskPreviewBounds(aura::Window* root_window) {
 // -----------------------------------------------------------------------------
 // DeskMiniView
 
-DeskMiniView::DeskMiniView(aura::Window* root_window,
+DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
+                           aura::Window* root_window,
                            Desk* desk,
-                           const base::string16& title,
-                           views::ButtonListener* listener)
-    : views::Button(listener),
+                           const base::string16& title)
+    : views::Button(owner_bar),
+      owner_bar_(owner_bar),
       root_window_(root_window),
       desk_(desk),
       desk_preview_(CreateDeskPreviewView(this)),
@@ -81,7 +84,7 @@ DeskMiniView::DeskMiniView(aura::Window* root_window,
   SetFocusPainter(nullptr);
   SetInkDropMode(InkDropMode::OFF);
 
-  UpdateActivationState();
+  UpdateBorderColor();
 
   SchedulePaint();
 }
@@ -104,16 +107,23 @@ aura::Window* DeskMiniView::GetDeskContainer() const {
 
 void DeskMiniView::OnHoverStateMayHaveChanged() {
   // TODO(afakhry): In tablet mode, discuss showing the close button on long
-  // press. Also, don't show the close button when hovered while window drag is
-  // in progress.
+  // press.
+  // Don't show the close button when hovered while the dragged window is on
+  // the DesksBarView.
   close_desk_button_->SetVisible(DesksController::Get()->CanRemoveDesks() &&
+                                 !owner_bar_->dragged_item_over_bar() &&
                                  IsMouseHovered());
 }
 
-void DeskMiniView::UpdateActivationState() {
+void DeskMiniView::UpdateBorderColor() {
   DCHECK(desk_);
-  desk_preview_->SetBorderColor(desk_->is_active() ? kActiveColor
-                                                   : kInactiveColor);
+  if (owner_bar_->dragged_item_over_bar() &&
+      IsPointOnMiniView(owner_bar_->last_dragged_item_screen_location())) {
+    desk_preview_->SetBorderColor(kDraggedOverColor);
+  } else {
+    desk_preview_->SetBorderColor(desk_->is_active() ? kActiveColor
+                                                     : kInactiveColor);
+  }
 }
 
 const char* DeskMiniView::GetClassName() const {
@@ -194,6 +204,12 @@ void DeskMiniView::OnDeskDestroyed(const Desk* desk) {
   desk_ = nullptr;
 
   // No need to remove `this` as an observer; it's done automatically.
+}
+
+bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {
+  gfx::Point point_in_view = screen_location;
+  ConvertPointFromScreen(this, &point_in_view);
+  return HitTestPoint(point_in_view);
 }
 
 }  // namespace ash

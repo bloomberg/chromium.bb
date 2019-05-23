@@ -46,6 +46,12 @@ class ASH_EXPORT DesksBarView : public views::View,
     return mini_views_;
   }
 
+  const gfx::Point& last_dragged_item_screen_location() const {
+    return last_dragged_item_screen_location_;
+  }
+
+  bool dragged_item_over_bar() const { return dragged_item_over_bar_; }
+
   // Initializes and creates mini_views for any pre-existing desks, before the
   // bar was created. This should only be called after this view has been added
   // to a widget, as it needs to call `GetWidget()` when it's performing a
@@ -54,6 +60,12 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   // Updates the visibility state of the close buttons on all the mini_views.
   void OnHoverStateMayHaveChanged();
+
+  // Called when an item is being dragged in overview mode to update whether it
+  // is currently intersecting with this view, and the |screen_location| of the
+  // current drag position.
+  void SetDragDetails(const gfx::Point& screen_location,
+                      bool dragged_item_over_bar);
 
   // views::View:
   const char* GetClassName() const override;
@@ -106,6 +118,14 @@ class ASH_EXPORT DesksBarView : public views::View,
   // Observes mouse events on the desks bar widget and updates the states of the
   // mini_views accordingly.
   std::unique_ptr<DeskBarHoverObserver> hover_observer_;
+
+  // The screen location of the most recent drag position. This value is valid
+  // only when the below `dragged_item_on_bar_` is true.
+  gfx::Point last_dragged_item_screen_location_;
+
+  // True when the drag location of the overview item is intersecting with this
+  // view.
+  bool dragged_item_over_bar_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DesksBarView);
 };

@@ -173,7 +173,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void InitiateDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void CompleteDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
-  void StartSplitViewDragMode(const gfx::PointF& location_in_screen);
+  void StartNormalDragMode(const gfx::PointF& location_in_screen);
   void Fling(OverviewItem* item,
              const gfx::PointF& location_in_screen,
              float velocity_x,

@@ -90,6 +90,10 @@ class ASH_EXPORT DesksController
   // desk will be activated.
   void ActivateDesk(const Desk* desk);
 
+  // Moves |window| (which must belong to the currently active desk) to
+  // |target_desk| (which must be a different desk).
+  void MoveWindowFromActiveDeskTo(aura::Window* window, Desk* target_desk);
+
   // Called explicitly by the RootWindowController when a root window has been
   // added or about to be removed in order to update all the available desks.
   void OnRootWindowAdded(aura::Window* root_window);

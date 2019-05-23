@@ -289,7 +289,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsState) {
   gfx::PointF start_location(item->target_bounds().CenterPoint());
   overview_session_->InitiateDrag(item, start_location);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
-  overview_session_->StartSplitViewDragMode(start_location);
+  overview_session_->StartNormalDragMode(start_location);
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
 
   // Reset the gesture so we stay in overview mode.
@@ -332,7 +332,7 @@ TEST_F(SplitViewDragIndicatorsTest,
   OverviewItem* item = GetOverviewItemForWindow(unsnappable_window.get());
   gfx::PointF start_location(item->target_bounds().CenterPoint());
   overview_session_->InitiateDrag(item, start_location);
-  overview_session_->StartSplitViewDragMode(start_location);
+  overview_session_->StartNormalDragMode(start_location);
   EXPECT_EQ(IndicatorState::kCannotSnap, indicator_state());
   const gfx::PointF end_location1(0.f, 0.f);
   overview_session_->Drag(item, end_location1);

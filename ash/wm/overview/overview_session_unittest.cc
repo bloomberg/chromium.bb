@@ -3110,7 +3110,7 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
     }
     overview_session()->InitiateDrag(item, start_location);
     if (long_press)
-      overview_session()->StartSplitViewDragMode(start_location);
+      overview_session()->StartNormalDragMode(start_location);
     overview_session()->Drag(item, end_location);
     overview_session()->CompleteDrag(item, end_location);
   }
@@ -3214,7 +3214,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
       overview_session()->window_drag_controller();
   EXPECT_EQ(DragBehavior::kUndefined, drag_controller->current_drag_behavior());
   generator->MoveTouchBy(20, 0);
-  EXPECT_EQ(DragBehavior::kDragToSnap,
+  EXPECT_EQ(DragBehavior::kNormalDrag,
             drag_controller->current_drag_behavior());
   generator->ReleaseTouch();
   EXPECT_EQ(DragBehavior::kNoDrag, drag_controller->current_drag_behavior());

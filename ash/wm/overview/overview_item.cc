@@ -840,10 +840,8 @@ void OverviewItem::HandleDragEvent(const gfx::PointF& location_in_screen) {
 }
 
 void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
-  if (!ShouldAllowSplitView())
-    return;
-
-  overview_session_->StartSplitViewDragMode(location_in_screen);
+  if (ShouldAllowSplitView() || features::IsVirtualDesksEnabled())
+    overview_session_->StartNormalDragMode(location_in_screen);
 }
 
 void OverviewItem::HandleFlingStartEvent(const gfx::PointF& location_in_screen,

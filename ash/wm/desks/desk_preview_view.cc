@@ -17,6 +17,10 @@ namespace ash {
 
 namespace {
 
+// The height of the preview view in dips.
+// TODO(afakhry): Change the height to be dynamic according to the new specs.
+constexpr int kDeskPreviewHeight = 64;
+
 // The desk preview border size in dips.
 constexpr int kBorderSize = 2;
 
@@ -137,6 +141,11 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
 }
 
 DeskPreviewView::~DeskPreviewView() = default;
+
+// static
+int DeskPreviewView::GetHeight() {
+  return kDeskPreviewHeight;
+}
 
 void DeskPreviewView::SetBorderColor(SkColor color) {
   background_view_->layer()->SetColor(color);

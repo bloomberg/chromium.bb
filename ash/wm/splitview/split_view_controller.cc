@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
@@ -17,6 +18,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -903,6 +905,15 @@ void SplitViewController::OnPostWindowStateTypeChange(
 void SplitViewController::OnWindowActivated(ActivationReason reason,
                                             aura::Window* gained_active,
                                             aura::Window* lost_active) {
+  if (features::IsVirtualDesksEnabled() &&
+      DesksController::Get()->AreDesksBeingModified()) {
+    // Activating a desk from its mini view will activate its most-recently used
+    // window, but this should not result in snapping and ending overview mode
+    // now. Overview will be ended explicitly as part of the desk activation
+    // animation.
+    return;
+  }
+
   // This may be called while SnapWindow is still underway because SnapWindow
   // will end the overview start animations which will cause the overview focus
   // window to be activated.

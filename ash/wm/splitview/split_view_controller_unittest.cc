@@ -3207,8 +3207,7 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   OverviewGrid* current_grid =
       overview_session->GetGridWithRootWindow(window1->GetRootWindow());
   ASSERT_TRUE(current_grid);
-  views::Widget* drop_target_widget =
-      current_grid->drop_target_widget_for_testing();
+  views::Widget* drop_target_widget = current_grid->drop_target_widget();
   EXPECT_TRUE(drop_target_widget);
 
   OverviewItem* drop_target = current_grid->GetOverviewItemContaining(
@@ -3234,7 +3233,7 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   EXPECT_TRUE(overview_session->IsWindowInOverview(window1.get()));
   EXPECT_TRUE(overview_session->IsWindowInOverview(window3.get()));
   // Test that the new window item widget has been destroyed.
-  EXPECT_FALSE(current_grid->drop_target_widget_for_testing());
+  EXPECT_FALSE(current_grid->drop_target_widget());
 }
 
 // Tests that if overview is ended because of releasing the dragged window, we
@@ -3360,8 +3359,7 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
           window1.get());
   EXPECT_EQ(current_grid->bounds(), work_area_bounds);
   // The drop target should be visible.
-  views::Widget* drop_target_widget =
-      current_grid->drop_target_widget_for_testing();
+  views::Widget* drop_target_widget = current_grid->drop_target_widget();
   EXPECT_TRUE(drop_target_widget);
   // Drop target's bounds has been set when added it into overview, which is not
   // equals to the window's bounds.
@@ -3409,7 +3407,7 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   current_grid = selector_controller->overview_session()->GetGridWithRootWindow(
       window1->GetRootWindow());
   // The drop target should be visible.
-  drop_target_widget = current_grid->drop_target_widget_for_testing();
+  drop_target_widget = current_grid->drop_target_widget();
   EXPECT_TRUE(drop_target_widget);
   EXPECT_TRUE(drop_target_widget->IsVisible());
   EXPECT_EQ(drop_target_widget->GetNativeWindow()->bounds(),
@@ -3453,7 +3451,7 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   // window's size.
   current_grid = selector_controller->overview_session()->GetGridWithRootWindow(
       window1->GetRootWindow());
-  drop_target_widget = current_grid->drop_target_widget_for_testing();
+  drop_target_widget = current_grid->drop_target_widget();
   EXPECT_TRUE(drop_target_widget);
   EXPECT_TRUE(drop_target_widget->IsVisible());
   EXPECT_EQ(drop_target_widget->GetNativeWindow()->bounds(),

@@ -18,6 +18,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -81,6 +82,22 @@ void ClickOnMiniView(const DeskMiniView* desk_mini_view,
       desk_mini_view->GetBoundsInScreen().CenterPoint();
   event_generator->MoveMouseTo(mini_view_center);
   event_generator->ClickLeftButton();
+}
+
+void DragItemToPoint(OverviewItem* item,
+                     const gfx::Point& screen_location,
+                     ui::test::EventGenerator* event_generator) {
+  DCHECK(item);
+
+  const gfx::Point item_center =
+      gfx::ToRoundedPoint(item->target_bounds().CenterPoint());
+  event_generator->MoveMouseTo(item_center);
+  event_generator->PressLeftButton();
+  // Move the mouse by an enough amount in X to engage in the normal drag mode
+  // rather than the drag to close mode.
+  event_generator->MoveMouseBy(50, 0);
+  event_generator->MoveMouseTo(screen_location);
+  event_generator->ReleaseLeftButton();
 }
 
 // Defines an observer to test DesksController notifications.
@@ -572,7 +589,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   // Activate desk_4 (last one on the right) by clicking on its mini view.
   const Desk* desk_4 = controller->desks()[3].get();
   EXPECT_FALSE(desk_4->is_active());
-  const auto* mini_view = desks_bar_view->mini_views().back().get();
+  auto* mini_view = desks_bar_view->mini_views().back().get();
   EXPECT_EQ(desk_4, mini_view->desk());
   EXPECT_FALSE(mini_view->close_desk_button()->GetVisible());
   const gfx::Point mini_view_center =
@@ -688,7 +705,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(4u, desks_bar_view->mini_views().size());
   Desk* desk_1 = controller->desks()[0].get();
-  const auto* mini_view = desks_bar_view->mini_views().front().get();
+  auto* mini_view = desks_bar_view->mini_views().front().get();
   EXPECT_EQ(desk_1, mini_view->desk());
 
   // Setup observers of both the active and inactive desks to make sure
@@ -764,7 +781,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
-  const auto* mini_view = desks_bar_view->mini_views().back().get();
+  auto* mini_view = desks_bar_view->mini_views().back().get();
   EXPECT_EQ(desk_2, mini_view->desk());
 
   // Setup observers of both the active and inactive desks to make sure
@@ -864,6 +881,106 @@ TEST_F(DesksTest, MinimizedWindow) {
   ActivateDesk(desk_1);
   EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_NE(win0.get(), wm::GetActiveWindow());
+}
+
+TEST_F(DesksTest, DragWindowToDesk) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  const Desk* desk_2 = controller->desks()[1].get();
+
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(1u, overview_grid->size());
+
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  const gfx::RectF target_bounds_before_drag = overview_item->target_bounds();
+
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+  auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
+  EXPECT_EQ(desk_1, desk_1_mini_view->desk());
+  // Drag it and drop it on its same desk's mini_view. Nothing happens, it
+  // should be returned back to its original target bounds.
+  DragItemToPoint(overview_item,
+                  desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
+                  GetEventGenerator());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
+
+  // Now drag it to desk_2's mini_view. The overview grid should now show the
+  // "no-windows" widget, and the window should move to desk_2.
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  EXPECT_EQ(desk_2, desk_2_mini_view->desk());
+  DragItemToPoint(overview_item,
+                  desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
+                  GetEventGenerator());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(overview_grid->empty());
+  EXPECT_FALSE(DoesActiveDeskContainWindow(window.get()));
+  EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
+  EXPECT_TRUE(desk_2->windows().contains(window.get()));
+}
+
+TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(1u, overview_grid->size());
+
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  const gfx::RectF target_bounds_before_drag = overview_item->target_bounds();
+
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+
+  // Drag it and drop it on the new desk button. Nothing happens, it should be
+  // returned back to its original target bounds.
+  DragItemToPoint(
+      overview_item,
+      desks_bar_view->new_desk_button()->GetBoundsInScreen().CenterPoint(),
+      GetEventGenerator());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
+
+  // Drag it and drop it on the bottom right corner of the display. Also,
+  // nothing should happen.
+  DragItemToPoint(overview_item,
+                  window->GetRootWindow()->GetBoundsInScreen().bottom_right(),
+                  GetEventGenerator());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
 }
 
 // TODO(afakhry): Add more tests:

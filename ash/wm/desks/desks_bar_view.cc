@@ -150,6 +150,19 @@ void DesksBarView::OnHoverStateMayHaveChanged() {
     mini_view->OnHoverStateMayHaveChanged();
 }
 
+void DesksBarView::SetDragDetails(const gfx::Point& screen_location,
+                                  bool dragged_item_over_bar) {
+  last_dragged_item_screen_location_ = screen_location;
+  const bool old_dragged_item_over_bar = dragged_item_over_bar_;
+  dragged_item_over_bar_ = dragged_item_over_bar;
+
+  if (!old_dragged_item_over_bar && !dragged_item_over_bar)
+    return;
+
+  for (auto& mini_view : mini_views_)
+    mini_view->UpdateBorderColor();
+}
+
 const char* DesksBarView::GetClassName() const {
   return "DesksBarView";
 }
@@ -253,7 +266,7 @@ void DesksBarView::OnDeskActivationChanged(const Desk* activated,
   for (auto& mini_view : mini_views_) {
     const Desk* desk = mini_view->desk();
     if (desk == activated || desk == deactivated)
-      mini_view->UpdateActivationState();
+      mini_view->UpdateBorderColor();
   }
 }
 
@@ -290,7 +303,7 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
   for (const auto& desk : desks) {
     if (!FindMiniViewForDesk(desk.get())) {
       mini_views_.emplace_back(std::make_unique<DeskMiniView>(
-          root_window, desk.get(), GetMiniViewTitle(mini_views_.size()), this));
+          this, root_window, desk.get(), GetMiniViewTitle(mini_views_.size())));
       DeskMiniView* mini_view = mini_views_.back().get();
       mini_view->set_owned_by_client();
       new_mini_views.emplace_back(mini_view);

@@ -65,6 +65,9 @@ class DeskPreviewView : public views::View {
   explicit DeskPreviewView(DeskMiniView* mini_view);
   ~DeskPreviewView() override;
 
+  // Returns the height of the DeskPreviewView.
+  static int GetHeight();
+
   void SetBorderColor(SkColor color);
 
   // This should be called when there is a change in the desk contents so that

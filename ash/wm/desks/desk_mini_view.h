@@ -16,6 +16,7 @@
 namespace ash {
 
 class CloseDeskButton;
+class DesksBarView;
 class DeskPreviewView;
 
 // A view that acts as a mini representation (a.k.a. desk thumbnail) of a
@@ -26,15 +27,15 @@ class ASH_EXPORT DeskMiniView : public views::Button,
                                 public views::ButtonListener,
                                 public Desk::Observer {
  public:
-  DeskMiniView(aura::Window* root_window,
+  DeskMiniView(DesksBarView* owner_bar,
+               aura::Window* root_window,
                Desk* desk,
-               const base::string16& title,
-               views::ButtonListener* listener);
+               const base::string16& title);
   ~DeskMiniView() override;
 
   aura::Window* root_window() { return root_window_; }
 
-  const Desk* desk() const { return desk_; }
+  Desk* desk() { return desk_; }
 
   const CloseDeskButton* close_desk_button() const {
     return close_desk_button_;
@@ -52,7 +53,7 @@ class ASH_EXPORT DeskMiniView : public views::Button,
 
   // Updates the border color of the DeskPreviewView based on the activation
   // state of the corresponding desk.
-  void UpdateActivationState();
+  void UpdateBorderColor();
 
   // views::Button:
   const char* GetClassName() const override;
@@ -66,7 +67,11 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   void OnContentChanged() override;
   void OnDeskDestroyed(const Desk* desk) override;
 
+  bool IsPointOnMiniView(const gfx::Point& screen_location) const;
+
  private:
+  DesksBarView* const owner_bar_;
+
   // The root window on which this mini_view is created.
   aura::Window* root_window_;
 

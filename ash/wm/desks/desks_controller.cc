@@ -234,6 +234,15 @@ void DesksController::ActivateDesk(const Desk* desk) {
     animator->TakeStartingDeskScreenshot();
 }
 
+void DesksController::MoveWindowFromActiveDeskTo(aura::Window* window,
+                                                 Desk* target_desk) {
+  DCHECK(active_desk_->windows().contains(window));
+  DCHECK_NE(active_desk_, target_desk);
+
+  base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
+  active_desk_->MoveWindowToDesk(window, target_desk);
+}
+
 void DesksController::OnRootWindowAdded(aura::Window* root_window) {
   for (auto& desk : desks_)
     desk->OnRootWindowAdded(root_window);

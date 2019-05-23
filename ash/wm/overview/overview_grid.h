@@ -255,6 +255,19 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // show them once it is created).
   bool IsDesksBarViewActive() const;
 
+  // Called when a window is being dragged in Overview Mode to update the drag
+  // details (screen_location, and whether that location intersects with the
+  // desks bar widget.
+  // Returns true if |screen_location| does intersect with the DesksBarView.
+  bool UpdateDesksBarDragDetails(const gfx::Point& screen_location);
+
+  // Updates the drag details for DesksBarView to end the drag and move the
+  // window of |drag_item| to another desk if it was dropped on a mini_view of
+  // a desk that is different than that of the active desk.
+  // Returns true if the window was successfully moved to another desk.
+  bool MaybeDropItemOnDeskMiniView(const gfx::Point& screen_location,
+                                   OverviewItem* drag_item);
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -281,9 +294,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
 
-  views::Widget* drop_target_widget_for_testing() {
-    return drop_target_widget_.get();
-  }
+  views::Widget* drop_target_widget() { return drop_target_widget_.get(); }
 
   const DesksBarView* GetDesksBarViewForTesting() const {
     return desks_bar_view_;

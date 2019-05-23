@@ -22,6 +22,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
@@ -1312,6 +1313,54 @@ bool OverviewGrid::IsDesksBarViewActive() const {
   // active even if the 2nd to last desk is deleted.
   return DesksController::Get()->desks().size() > 1 ||
          (desks_bar_view_ && !desks_bar_view_->mini_views().empty());
+}
+
+bool OverviewGrid::UpdateDesksBarDragDetails(
+    const gfx::Point& screen_location) {
+  DCHECK(features::IsVirtualDesksEnabled());
+
+  const bool dragged_item_over_bar =
+      desks_widget_->GetWindowBoundsInScreen().Contains(screen_location);
+  desks_bar_view_->SetDragDetails(screen_location, dragged_item_over_bar);
+  return dragged_item_over_bar;
+}
+
+bool OverviewGrid::MaybeDropItemOnDeskMiniView(
+    const gfx::Point& screen_location,
+    OverviewItem* drag_item) {
+  DCHECK(features::IsVirtualDesksEnabled());
+
+  // End the drag for the DesksBarView.
+  desks_bar_view_->SetDragDetails(screen_location,
+                                  /*dragged_item_over_bar=*/false);
+
+  if (!desks_widget_->GetWindowBoundsInScreen().Contains(screen_location))
+    return false;
+
+  auto* desks_controller = DesksController::Get();
+  for (const auto& mini_view : desks_bar_view_->mini_views()) {
+    if (!mini_view->IsPointOnMiniView(screen_location))
+      continue;
+
+    aura::Window* const dragged_window = drag_item->GetWindow();
+    Desk* const target_desk = mini_view->desk();
+    if (target_desk == desks_controller->active_desk())
+      return false;
+
+    // TODO(afakhry): Discuss whether we should restore a minimized window when
+    // dragged and dropped in a different desk.
+
+    desks_controller->MoveWindowFromActiveDeskTo(dragged_window, target_desk);
+    // Restore the dragged item window, so that its transform is reset to
+    // identity.
+    drag_item->RestoreWindow(/*reset_transform=*/true);
+
+    // The item no longer needs to be in the overview grid.
+    overview_session_->RemoveItem(drag_item);
+    return true;
+  }
+
+  return false;
 }
 
 void OverviewGrid::MaybeInitDesksWidget() {

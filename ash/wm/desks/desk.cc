@@ -168,36 +168,45 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
   {
     // Throttle notifying the observers, while we move those windows and notify
     // them only once when done.
-    base::AutoReset<bool> this_desk_throttled(&should_notify_content_changed_,
-                                              false);
-    base::AutoReset<bool> target_desk_throttled(
-        &(target_desk->should_notify_content_changed_), false);
+    auto this_desk_throttled = GetScopedNotifyContentChangedDisabler();
+    auto target_desk_throttled =
+        target_desk->GetScopedNotifyContentChangedDisabler();
 
-    for (auto* window : windows_) {
-      window->RemoveObserver(this);
-
-      // Add the window to the target desk before reparenting such that when the
-      // target desk's DeskContainerObserver notices this reparenting and calls
-      // AddWindowToDesk(), the window had already been added and there's no
-      // need to iterate over its transient hierarchy.
-      target_desk->windows_.emplace(window);
-      window->AddObserver(target_desk);
-
-      // Reparent windows to the target desk's container in the same root
-      // window. Note that `windows_` may contain transient children, which may
-      // not have the same parent as the source desk's container. So, only
-      // reparent the windows which are direct children of the source desks'
-      // container.
-      // TODO(afakhry): Check if this is necessary.
-      aura::Window* root = window->GetRootWindow();
-      aura::Window* source_container = GetDeskContainerForRoot(root);
-      aura::Window* target_container =
-          target_desk->GetDeskContainerForRoot(root);
-      if (window->parent() == source_container)
-        target_container->AddChild(window);
-    }
+    for (auto* window : windows_)
+      MoveWindowToDeskInternal(window, target_desk);
 
     windows_.clear();
+  }
+
+  NotifyContentChanged();
+  target_desk->NotifyContentChanged();
+}
+
+void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
+  DCHECK(target_desk);
+  DCHECK(window);
+  DCHECK(windows_.contains(window));
+  DCHECK(this != target_desk);
+
+  {
+    // TODO(afakhry): Throttling here should not be necessary for a single
+    // window. It should be possible to rely on
+    // DeskContainerObserver::OnWindowAdded() but the problem is we don't have
+    // aura::WindowObserver::OnWindowRemoved(); we instead only have
+    // aura::WindowObserver::OnWillRemoveWindow(). This won't work as we should
+    // only notify and refresh the mini_views once the window is no longer in
+    // the tree. Two possible solutions:
+    //   - Add aura::WindowObserver::OnWindowRemoved(), or
+    //   - Remove `DeskContainerObserver` entirely and rely on
+    //     `WorkspaceLayoutManager`, which already has OnWindowAddedToLayout(),
+    //     and OnWindowRemovedFromLayout().
+    auto this_desk_throttled = GetScopedNotifyContentChangedDisabler();
+    auto target_desk_throttled =
+        target_desk->GetScopedNotifyContentChangedDisabler();
+
+    MoveWindowToDeskInternal(window, target_desk);
+
+    windows_.erase(window);
   }
 
   NotifyContentChanged();
@@ -229,6 +238,31 @@ void Desk::NotifyContentChanged() {
 
   for (auto& observer : observers_)
     observer.OnContentChanged();
+}
+
+void Desk::MoveWindowToDeskInternal(aura::Window* window, Desk* target_desk) {
+  DCHECK(windows_.contains(window));
+
+  window->RemoveObserver(this);
+
+  // Add the window to the target desk before reparenting such that when the
+  // target desk's DeskContainerObserver notices this reparenting and calls
+  // AddWindowToDesk(), the window had already been added and there's no
+  // need to iterate over its transient hierarchy.
+  target_desk->windows_.insert(window);
+  window->AddObserver(target_desk);
+
+  // Reparent windows to the target desk's container in the same root
+  // window. Note that `windows_` may contain transient children, which may
+  // not have the same parent as the source desk's container. So, only
+  // reparent the windows which are direct children of the source desks'
+  // container.
+  // TODO(afakhry): Check if this is necessary.
+  aura::Window* root = window->GetRootWindow();
+  aura::Window* source_container = GetDeskContainerForRoot(root);
+  aura::Window* target_container = target_desk->GetDeskContainerForRoot(root);
+  if (window->parent() == source_container)
+    target_container->AddChild(window);
 }
 
 }  // namespace ash

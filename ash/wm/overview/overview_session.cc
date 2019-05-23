@@ -505,10 +505,10 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
       restore_focus_window_ = nullptr;
   }
 
-  MaybeCreateAndPositionNoWindowsWidget();
-
   GetGridWithOverviewItem(overview_item)->RemoveItem(overview_item);
   --num_items_;
+
+  MaybeCreateAndPositionNoWindowsWidget();
 }
 
 void OverviewSession::AddDropTargetForDraggingFromOverview(
@@ -525,8 +525,8 @@ void OverviewSession::RemoveDropTargetForDraggingFromOverview(
 void OverviewSession::InitiateDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen) {
   window_drag_controller_ =
-      std::make_unique<OverviewWindowDragController>(this);
-  window_drag_controller_->InitiateDrag(item, location_in_screen);
+      std::make_unique<OverviewWindowDragController>(this, item);
+  window_drag_controller_->InitiateDrag(location_in_screen);
 
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->OnSelectorItemDragStarted(item);
@@ -550,9 +550,9 @@ void OverviewSession::CompleteDrag(OverviewItem* item,
     grid->OnSelectorItemDragEnded(snap);
 }
 
-void OverviewSession::StartSplitViewDragMode(
+void OverviewSession::StartNormalDragMode(
     const gfx::PointF& location_in_screen) {
-  window_drag_controller_->StartSplitViewDragMode(location_in_screen);
+  window_drag_controller_->StartNormalDragMode(location_in_screen);
 }
 
 void OverviewSession::Fling(OverviewItem* item,
@@ -706,8 +706,8 @@ void OverviewSession::OnWindowActivating(
       DesksController::Get()->AreDesksBeingModified()) {
     // Activating a desk from its mini view will activate its most-recently used
     // window, but this should not result in ending overview mode now.
-    // DesksBarView will end it explicitly. This will become significant when
-    // the desk activation animation is added.
+    // Overview will be ended explicitly as part of the desk activation
+    // animation.
     return;
   }
 

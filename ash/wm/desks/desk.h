@@ -78,8 +78,12 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   // on this desk will be deactivated.
   void Deactivate(bool update_window_activation);
 
-  // Moves the windows on this desk to |target_desk|.
+  // Moves all the windows on this desk to |target_desk|.
   void MoveWindowsToDesk(Desk* target_desk);
+
+  // Moves a single |window| from this desk to |target_desk|. |window| must
+  // belong to this desk.
+  void MoveWindowToDesk(aura::Window* window, Desk* target_desk);
 
   aura::Window* GetDeskContainerForRoot(aura::Window* root) const;
 
@@ -89,6 +93,8 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   void NotifyContentChanged();
 
  private:
+  void MoveWindowToDeskInternal(aura::Window* window, Desk* target_desk);
+
   // The associated container ID with this desk.
   const int container_id_;
 
