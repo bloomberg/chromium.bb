@@ -135,10 +135,7 @@ const char kSignalingStateClosedMessage[] =
 const char kModifiedSdpMessage[] =
     "The SDP does not match the previously generated SDP for this type";
 const char kOnlySupportedInUnifiedPlanMessage[] =
-    "This operation is only supported in 'unified-plan'. 'unified-plan' will "
-    "become the default behavior in the future, but it is currently "
-    "experimental. To try it out, construct the RTCPeerConnection with "
-    "sdpSemantics:'unified-plan' present in the RTCConfiguration argument.";
+    "This operation is only supported in 'unified-plan'.";
 
 // The maximum number of PeerConnections that can exist simultaneously.
 const int64_t kMaxPeerConnections = 500;
