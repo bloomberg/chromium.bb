@@ -1871,9 +1871,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.sideSwipeController resetContentView];
   }
 
-  // An Infobar message is currently the only presented controller that allows
-  // interaction with the rest of the App while its being presented. Dismiss it
-  // in case the user or system has triggered another presentation.
+  // TODO(crbug.com/965688): An Infobar message is currently the only presented
+  // controller that allows interaction with the rest of the App while its being
+  // presented. Dismiss it in case the user or system has triggered another
+  // presentation.
   if (IsInfobarUIRebootEnabled() &&
       [self.infobarContainerCoordinator isPresentingInfobarBanner]) {
     [self.infobarContainerCoordinator
@@ -3342,9 +3343,24 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   CGPoint dialogLocation = CGPointMake(
       CGRectGetMidX(bounds), CGRectGetMinY(bounds) + self.headerHeight);
   auto* helper = RepostFormTabHelper::FromWebState(webState);
-  helper->PresentDialog(dialogLocation, base::BindOnce(^(bool shouldContinue) {
-                          handler(shouldContinue);
-                        }));
+  ProceduralBlock presentDialog = ^{
+    helper->PresentDialog(dialogLocation,
+                          base::BindOnce(^(bool shouldContinue) {
+                            handler(shouldContinue);
+                          }));
+  };
+
+  // TODO(crbug.com/965688): An Infobar message is currently the only presented
+  // controller that allows interaction with the rest of the App while its being
+  // presented. Dismiss it in case the user or system has triggered repost form.
+  if (IsInfobarUIRebootEnabled() &&
+      [self.infobarContainerCoordinator isPresentingInfobarBanner]) {
+    [self.infobarContainerCoordinator
+        dismissInfobarBannerAnimated:NO
+                          completion:presentDialog];
+  } else {
+    presentDialog();
+  }
 }
 
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
