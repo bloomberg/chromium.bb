@@ -381,7 +381,7 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
       continue;
 
     if (HasObserverFor(PerformanceEntry::kEvent)) {
-      UseCounter::Count(GetFrame()->GetDocument(),
+      UseCounter::Count(GetExecutionContext(),
                         WebFeature::kEventTimingExplicitlyRequested);
       NotifyObserversOfEntry(*entry);
     }
@@ -406,7 +406,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
       MonotonicTimeToDOMHighResTimeStamp(response_end), identifier,
       intrinsic_size.Width(), intrinsic_size.Height(), id, element);
   if (HasObserverFor(PerformanceEntry::kElement)) {
-    UseCounter::Count(GetFrame()->GetDocument(),
+    UseCounter::Count(GetExecutionContext(),
                       WebFeature::kElementTimingExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
   }
@@ -420,7 +420,7 @@ void WindowPerformance::DispatchFirstInputTiming(
     return;
   DCHECK_EQ("firstInput", entry->entryType());
   if (HasObserverFor(PerformanceEntry::kFirstInput)) {
-    UseCounter::Count(GetFrame()->GetDocument(),
+    UseCounter::Count(GetExecutionContext(),
                       WebFeature::kEventTimingExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
   }
