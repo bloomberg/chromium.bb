@@ -1068,12 +1068,6 @@ Status ProcessInputActionSequence(
                         "pointer type");
         }
       }
-      std::string source_type;
-      source->GetString("type", &source_type);
-      if (source_type != type) {
-        return Status(kInvalidArgument,
-                      "input state with same id has a different type");
-      }
       break;
     }
   }
