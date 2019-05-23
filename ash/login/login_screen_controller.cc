@@ -306,10 +306,6 @@ void LoginScreenController::FlushForTesting() {
   login_screen_client_.FlushForTesting();
 }
 
-LoginScreenModel* LoginScreenController::GetModel() {
-  return DataDispatcher();
-}
-
 void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
   login_screen_client_ = std::move(client);
 }
@@ -358,6 +354,18 @@ void LoginScreenController::ClearErrors() {
   NOTIMPLEMENTED();
 }
 
+void LoginScreenController::ShowUserPodCustomIcon(
+    const AccountId& account_id,
+    mojom::EasyUnlockIconOptionsPtr icon) {
+  DataDispatcher()->ShowEasyUnlockIcon(account_id, icon);
+}
+
+void LoginScreenController::HideUserPodCustomIcon(const AccountId& account_id) {
+  auto icon_options = mojom::EasyUnlockIconOptions::New();
+  icon_options->icon = mojom::EasyUnlockIconId::NONE;
+  DataDispatcher()->ShowEasyUnlockIcon(account_id, icon_options);
+}
+
 void LoginScreenController::SetAuthType(
     const AccountId& account_id,
     proximity_auth::mojom::AuthType auth_type,
@@ -372,6 +380,13 @@ void LoginScreenController::SetAuthType(
   }
 }
 
+void LoginScreenController::SetUserList(
+    std::vector<mojom::LoginUserInfoPtr> users) {
+  DCHECK(DataDispatcher());
+
+  DataDispatcher()->NotifyUsers(users);
+}
+
 void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
                                                  bool is_enabled) {
   // Chrome will update pin pod state every time user tries to authenticate.
@@ -380,11 +395,23 @@ void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
     DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
 }
 
+void LoginScreenController::SetFingerprintState(const AccountId& account_id,
+                                                mojom::FingerprintState state) {
+  if (DataDispatcher())
+    DataDispatcher()->SetFingerprintState(account_id, state);
+}
+
 void LoginScreenController::NotifyFingerprintAuthResult(
     const AccountId& account_id,
     bool successful) {
   if (DataDispatcher())
     DataDispatcher()->NotifyFingerprintAuthResult(account_id, successful);
+}
+
+void LoginScreenController::SetAvatarForUser(const AccountId& account_id,
+                                             mojom::UserAvatarPtr avatar) {
+  for (auto& observer : observers_)
+    observer.SetAvatarForUser(account_id, avatar);
 }
 
 void LoginScreenController::EnableAuthForUser(const AccountId& account_id) {
@@ -427,6 +454,27 @@ void LoginScreenController::SetPublicSessionDisplayName(
     const std::string& display_name) {
   if (DataDispatcher())
     DataDispatcher()->SetPublicSessionDisplayName(account_id, display_name);
+}
+
+void LoginScreenController::SetPublicSessionLocales(
+    const AccountId& account_id,
+    std::vector<mojom::LocaleItemPtr> locales,
+    const std::string& default_locale,
+    bool show_advanced_view) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetPublicSessionLocales(
+        account_id, locales, default_locale, show_advanced_view);
+  }
+}
+
+void LoginScreenController::SetPublicSessionKeyboardLayouts(
+    const AccountId& account_id,
+    const std::string& locale,
+    std::vector<mojom::InputMethodItemPtr> keyboard_layouts) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetPublicSessionKeyboardLayouts(account_id, locale,
+                                                      keyboard_layouts);
+  }
 }
 
 void LoginScreenController::SetPublicSessionShowFullManagementDisclosure(

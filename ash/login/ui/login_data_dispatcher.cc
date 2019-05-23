@@ -9,11 +9,7 @@ namespace ash {
 LoginDataDispatcher::Observer::~Observer() = default;
 
 void LoginDataDispatcher::Observer::OnUsersChanged(
-    const std::vector<LoginUserInfo>& users) {}
-
-void LoginDataDispatcher::Observer::OnUserAvatarChanged(
-    const AccountId& account_id,
-    const UserAvatar& avatar) {}
+    const std::vector<mojom::LoginUserInfoPtr>& users) {}
 
 void LoginDataDispatcher::Observer::OnPinEnabledForUserChanged(
     const AccountId& user,
@@ -21,7 +17,7 @@ void LoginDataDispatcher::Observer::OnPinEnabledForUserChanged(
 
 void LoginDataDispatcher::Observer::OnFingerprintStateChanged(
     const AccountId& account_id,
-    FingerprintState state) {}
+    mojom::FingerprintState state) {}
 
 void LoginDataDispatcher::Observer::OnFingerprintAuthResult(
     const AccountId& account_id,
@@ -46,7 +42,7 @@ void LoginDataDispatcher::Observer::OnLockScreenNoteStateChanged(
 
 void LoginDataDispatcher::Observer::OnShowEasyUnlockIcon(
     const AccountId& user,
-    const EasyUnlockIconOptions& icon) {}
+    const mojom::EasyUnlockIconOptionsPtr& icon) {}
 
 void LoginDataDispatcher::Observer::OnShowWarningBanner(
     const base::string16& message) {}
@@ -65,14 +61,14 @@ void LoginDataDispatcher::Observer::OnPublicSessionDisplayNameChanged(
 
 void LoginDataDispatcher::Observer::OnPublicSessionLocalesChanged(
     const AccountId& account_id,
-    const std::vector<LocaleItem>& locales,
+    const std::vector<mojom::LocaleItemPtr>& locales,
     const std::string& default_locale,
     bool show_advanced_view) {}
 
 void LoginDataDispatcher::Observer::OnPublicSessionKeyboardLayoutsChanged(
     const AccountId& account_id,
     const std::string& locale,
-    const std::vector<InputMethodItem>& keyboard_layouts) {}
+    const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {}
 
 void LoginDataDispatcher::Observer::
     OnPublicSessionShowFullManagementDisclosureChanged(
@@ -95,7 +91,8 @@ void LoginDataDispatcher::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void LoginDataDispatcher::SetUserList(const std::vector<LoginUserInfo>& users) {
+void LoginDataDispatcher::NotifyUsers(
+    const std::vector<mojom::LoginUserInfoPtr>& users) {
   for (auto& observer : observers_)
     observer.OnUsersChanged(users);
 }
@@ -107,15 +104,9 @@ void LoginDataDispatcher::SetPinEnabledForUser(const AccountId& user,
 }
 
 void LoginDataDispatcher::SetFingerprintState(const AccountId& account_id,
-                                              FingerprintState state) {
+                                              mojom::FingerprintState state) {
   for (auto& observer : observers_)
     observer.OnFingerprintStateChanged(account_id, state);
-}
-
-void LoginDataDispatcher::SetAvatarForUser(const AccountId& account_id,
-                                           const UserAvatar& avatar) {
-  for (auto& observer : observers_)
-    observer.OnUserAvatarChanged(account_id, avatar);
 }
 
 void LoginDataDispatcher::NotifyFingerprintAuthResult(
@@ -156,7 +147,7 @@ void LoginDataDispatcher::SetLockScreenNoteState(mojom::TrayActionState state) {
 
 void LoginDataDispatcher::ShowEasyUnlockIcon(
     const AccountId& user,
-    const EasyUnlockIconOptions& icon) {
+    const mojom::EasyUnlockIconOptionsPtr& icon) {
   for (auto& observer : observers_)
     observer.OnShowEasyUnlockIcon(user, icon);
 }
@@ -191,7 +182,7 @@ void LoginDataDispatcher::SetPublicSessionDisplayName(
 
 void LoginDataDispatcher::SetPublicSessionLocales(
     const AccountId& account_id,
-    const std::vector<LocaleItem>& locales,
+    const std::vector<mojom::LocaleItemPtr>& locales,
     const std::string& default_locale,
     bool show_advanced_view) {
   for (auto& observer : observers_) {
@@ -203,7 +194,7 @@ void LoginDataDispatcher::SetPublicSessionLocales(
 void LoginDataDispatcher::SetPublicSessionKeyboardLayouts(
     const AccountId& account_id,
     const std::string& locale,
-    const std::vector<InputMethodItem>& keyboard_layouts) {
+    const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {
   for (auto& observer : observers_) {
     observer.OnPublicSessionKeyboardLayoutsChanged(account_id, locale,
                                                    keyboard_layouts);

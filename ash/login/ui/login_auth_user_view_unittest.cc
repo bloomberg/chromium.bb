@@ -60,7 +60,7 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
     view_->SetAuthMethods(auth_methods, can_use_pin);
   }
 
-  LoginUserInfo user_;
+  mojom::LoginUserInfoPtr user_;
   views::View* container_ = nullptr;   // Owned by test widget view hierarchy.
   LoginAuthUserView* view_ = nullptr;  // Owned by test widget view hierarchy.
 
@@ -116,7 +116,7 @@ TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
 
   EXPECT_CALL(*client,
               AuthenticateUserWithEasyUnlock(
-                  user_view->current_user().basic_user_info.account_id));
+                  user_view->current_user()->basic_user_info->account_id));
   SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD |
                  LoginAuthUserView::AUTH_TAP);
   password_view->Clear();
@@ -146,7 +146,7 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
               ShowGaiaSignin(
                   true /*can_close*/,
                   base::Optional<AccountId>(
-                      user_view->current_user().basic_user_info.account_id)));
+                      user_view->current_user()->basic_user_info->account_id)));
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   view_->ButtonPressed(online_sign_in_message, event);
@@ -202,7 +202,7 @@ TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
   EXPECT_CALL(*client, AuthenticateUserWithExternalBinary_(
                            test_auth_user_view.user_view()
                                ->current_user()
-                               .basic_user_info.account_id,
+                               ->basic_user_info->account_id,
                            _));
   power_manager_client()->SetLidState(
       chromeos::PowerManagerClient::LidState::OPEN, base::TimeTicks::Now());

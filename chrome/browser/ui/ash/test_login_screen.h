@@ -8,10 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/login_screen.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/test_login_screen_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 // Test implementation of ash's mojo LoginScreen interface.
@@ -21,8 +19,7 @@
 //
 // Note: A ServiceManagerConnection must be initialized before constructing this
 // object. Consider using content::TestServiceManagerContext on your tests.
-class TestLoginScreen : public ash::mojom::LoginScreen,
-                        public ash::LoginScreen {
+class TestLoginScreen : public ash::mojom::LoginScreen {
  public:
   TestLoginScreen();
   ~TestLoginScreen() override;
@@ -38,14 +35,23 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
   void ShowWarningBanner(const base::string16& message) override;
   void HideWarningBanner() override;
   void ClearErrors() override;
+  void ShowUserPodCustomIcon(
+      const AccountId& account_id,
+      ::ash::mojom::EasyUnlockIconOptionsPtr icon) override;
+  void HideUserPodCustomIcon(const AccountId& account_id) override;
   void SetAuthType(const AccountId& account_id,
                    ::proximity_auth::mojom::AuthType auth_type,
                    const base::string16& initial_value) override;
+  void SetUserList(std::vector<::ash::mojom::LoginUserInfoPtr> users) override;
 
   void SetPinEnabledForUser(const AccountId& account_id,
                             bool is_enabled) override;
+  void SetFingerprintState(const AccountId& account_id,
+                           ::ash::mojom::FingerprintState state) override;
   void NotifyFingerprintAuthResult(const AccountId& account_id,
                                    bool successful) override;
+  void SetAvatarForUser(const AccountId& account_id,
+                        ::ash::mojom::UserAvatarPtr avatar) override;
   void EnableAuthForUser(const AccountId& account_id) override;
   void DisableAuthForUser(
       const AccountId& account_id,
@@ -58,6 +64,14 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
   void IsReadyForPassword(IsReadyForPasswordCallback callback) override;
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name) override;
+  void SetPublicSessionLocales(const AccountId& account_id,
+                               std::vector<::ash::mojom::LocaleItemPtr> locales,
+                               const std::string& default_locale,
+                               bool show_advanced_view) override;
+  void SetPublicSessionKeyboardLayouts(
+      const AccountId& account_id,
+      const std::string& locale,
+      std::vector<::ash::mojom::InputMethodItemPtr> keyboard_layouts) override;
   void SetPublicSessionShowFullManagementDisclosure(
       bool show_full_management_disclosure) override;
   void ShowKioskAppError(const std::string& message) override;
@@ -70,14 +84,9 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
   void SetShowParentAccessDialog(bool show) override;
   void FocusLoginShelf(bool reverse) override;
 
-  // ash::LoginScreen:
-  ash::LoginScreenModel* GetModel() override;
-
  private:
   void Bind(mojo::ScopedMessagePipeHandle handle);
   mojo::Binding<ash::mojom::LoginScreen> binding_{this};
-
-  TestLoginScreenModel test_screen_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLoginScreen);
 };

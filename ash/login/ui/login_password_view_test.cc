@@ -5,7 +5,6 @@
 #include "ash/login/ui/login_password_view.h"
 
 #include "ash/login/ui/login_test_base.h"
-#include "ash/public/cpp/login_types.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -162,7 +161,7 @@ TEST_F(LoginPasswordViewTest, EasyUnlockClickFiresEvent) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Enable icon.
-  view_->SetEasyUnlockIcon(EasyUnlockIconId::SPINNER,
+  view_->SetEasyUnlockIcon(mojom::EasyUnlockIconId::SPINNER,
                            base::string16() /*accessibility_label*/);
   ASSERT_TRUE(test_api.easy_unlock_icon()->GetVisible());
 
@@ -191,7 +190,7 @@ TEST_F(LoginPasswordViewTest, EasyUnlockMouseHover) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Enable icon, enable immediate hovering.
-  view_->SetEasyUnlockIcon(EasyUnlockIconId::SPINNER,
+  view_->SetEasyUnlockIcon(mojom::EasyUnlockIconId::SPINNER,
                            base::string16() /*accessibility_label*/);
   test_api.set_immediately_hover_easy_unlock_icon();
   ASSERT_TRUE(test_api.easy_unlock_icon()->GetVisible());

@@ -9,8 +9,6 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/login_screen.h"
-#include "ash/public/cpp/login_screen_model.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
@@ -104,6 +102,10 @@ ViewsScreenLocker::~ViewsScreenLocker() {
 void ViewsScreenLocker::Init() {
   lock_time_ = base::TimeTicks::Now();
   user_selection_screen_->Init(screen_locker_->users());
+  LoginScreenClient::Get()->login_screen()->SetUserList(
+      user_selection_screen_->UpdateAndReturnUserListForMojo());
+  LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(
+      false /*show_guest*/);
   if (!ime_state_.get())
     ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 
@@ -124,12 +126,6 @@ void ViewsScreenLocker::Init() {
 
 void ViewsScreenLocker::OnLockScreenReady() {
   lock_screen_ready_ = true;
-
-  ash::LoginScreen::Get()->GetModel()->SetUserList(
-      user_selection_screen_->UpdateAndReturnUserListForAsh());
-  LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(
-      false /*show_guest*/);
-
   user_selection_screen_->InitEasyUnlock();
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
                       base::TimeTicks::Now() - lock_time_);
@@ -153,6 +149,13 @@ void ViewsScreenLocker::ClearErrors() {
 
 void ViewsScreenLocker::OnAshLockAnimationFinished() {
   SessionControllerClientImpl::Get()->NotifyChromeLockAnimationsComplete();
+}
+
+void ViewsScreenLocker::SetFingerprintState(
+    const AccountId& account_id,
+    ash::mojom::FingerprintState state) {
+  LoginScreenClient::Get()->login_screen()->SetFingerprintState(account_id,
+                                                                state);
 }
 
 void ViewsScreenLocker::NotifyFingerprintAuthResult(const AccountId& account_id,

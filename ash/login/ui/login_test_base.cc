@@ -109,7 +109,7 @@ void LoginTestBase::SetUserCount(size_t count) {
 
   users_.erase(users_.begin() + count, users_.end());
   // Notify any listeners that the user count has changed.
-  DataDispatcher()->SetUserList(users_);
+  DataDispatcher()->NotifyUsers(users_);
 }
 
 void LoginTestBase::AddUsers(size_t num_users) {
@@ -120,12 +120,12 @@ void LoginTestBase::AddUsers(size_t num_users) {
   }
 
   // Notify any listeners that the user count has changed.
-  DataDispatcher()->SetUserList(users_);
+  DataDispatcher()->NotifyUsers(users_);
 }
 
 void LoginTestBase::AddUserByEmail(const std::string& email) {
   users_.push_back(CreateUser(email));
-  DataDispatcher()->SetUserList(users_);
+  DataDispatcher()->NotifyUsers(users_);
 }
 
 void LoginTestBase::AddPublicAccountUsers(size_t num_public_accounts) {
@@ -136,7 +136,7 @@ void LoginTestBase::AddPublicAccountUsers(size_t num_public_accounts) {
   }
 
   // Notify any listeners that the user count has changed.
-  DataDispatcher()->SetUserList(users_);
+  DataDispatcher()->NotifyUsers(users_);
 }
 
 void LoginTestBase::AddChildUsers(size_t num_users) {
@@ -147,7 +147,7 @@ void LoginTestBase::AddChildUsers(size_t num_users) {
   }
 
   // Notify any listeners that the user count has changed.
-  DataDispatcher()->SetUserList(users_);
+  DataDispatcher()->NotifyUsers(users_);
 }
 
 LoginDataDispatcher* LoginTestBase::DataDispatcher() {

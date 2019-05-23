@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 
 #include "ash/login/ui/login_expanded_public_account_view.h"
-
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/public_account_warning_dialog.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/cpp/login_types.h"
 #include "base/bind_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
@@ -66,35 +64,37 @@ class LoginExpandedPublicAccountViewTest
 
   // Add two fake language items, the first item is selected by default.
   void SetupLanguageInfo() {
-    std::vector<LocaleItem> result;
-    LocaleItem locale_item1;
-    locale_item1.language_code = kEnglishLanguageCode;
-    locale_item1.title = kEnglishLanguageName;
+    std::vector<ash::mojom::LocaleItemPtr> result;
+    ash::mojom::LocaleItemPtr locale_item1 = ash::mojom::LocaleItem::New();
+    locale_item1->language_code = kEnglishLanguageCode;
+    locale_item1->title = kEnglishLanguageName;
 
-    LocaleItem locale_item2;
-    locale_item2.language_code = kFrenchLanguageCode;
-    locale_item2.title = kFrenchLanguageName;
+    ash::mojom::LocaleItemPtr locale_item2 = ash::mojom::LocaleItem::New();
+    locale_item2->language_code = kFrenchLanguageCode;
+    locale_item2->title = kFrenchLanguageName;
     result.push_back(std::move(locale_item1));
     result.push_back(std::move(locale_item2));
-    user_.public_account_info->available_locales = std::move(result);
-    user_.public_account_info->default_locale = kEnglishLanguageCode;
+    user_->public_account_info->available_locales = std::move(result);
+    user_->public_account_info->default_locale = kEnglishLanguageCode;
   }
 
   // Add two fake keyboard items, the second item is selected by default.
   void SetupKeyboardInfo() {
-    std::vector<InputMethodItem> result;
-    InputMethodItem keyboard_item1;
-    keyboard_item1.ime_id = kKeyboardIdForItem1;
-    keyboard_item1.title = kKeyboardNameForItem1;
+    std::vector<ash::mojom::InputMethodItemPtr> result;
+    ash::mojom::InputMethodItemPtr keyboard_item1 =
+        ash::mojom::InputMethodItem::New();
+    keyboard_item1->ime_id = kKeyboardIdForItem1;
+    keyboard_item1->title = kKeyboardNameForItem1;
 
-    InputMethodItem keyboard_item2;
-    keyboard_item2.ime_id = kKeyboardIdForItem2;
-    keyboard_item2.title = kKeyboardNameForItem2;
-    keyboard_item2.selected = true;
+    ash::mojom::InputMethodItemPtr keyboard_item2 =
+        ash::mojom::InputMethodItem::New();
+    keyboard_item2->ime_id = kKeyboardIdForItem2;
+    keyboard_item2->title = kKeyboardNameForItem2;
+    keyboard_item2->selected = true;
     result.push_back(std::move(keyboard_item1));
     result.push_back(std::move(keyboard_item2));
 
-    user_.public_account_info->keyboard_layouts = std::move(result);
+    user_->public_account_info->keyboard_layouts = std::move(result);
   }
 
   void TapOnView(views::View* tap_target) {
@@ -110,7 +110,7 @@ class LoginExpandedPublicAccountViewTest
     }
   }
 
-  LoginUserInfo user_;
+  mojom::LoginUserInfoPtr user_;
 
   // Owned by test widget view hierarchy.
   views::View* container_ = nullptr;
@@ -130,11 +130,11 @@ TEST_P(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
   EXPECT_EQ(public_account_->height(), kBubbleTotalHeightDp);
 
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
-  EXPECT_FALSE(user_.public_account_info->show_advanced_view);
+  EXPECT_FALSE(user_->public_account_info->show_advanced_view);
   EXPECT_FALSE(test_api.advanced_view()->GetVisible());
 
   // Toggle show_advanced_view.
-  user_.public_account_info->show_advanced_view = true;
+  user_->public_account_info->show_advanced_view = true;
   public_account_->UpdateForUser(user_);
 
   // Advanced view is shown and the overall size does not change.
@@ -202,7 +202,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, LaunchPublicSession) {
   // Expect LanuchPublicSession mojo call when the submit button is clicked.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   EXPECT_CALL(*client,
-              LaunchPublicSession(user_.basic_user_info.account_id,
+              LaunchPublicSession(user_->basic_user_info->account_id,
                                   selected_language, selected_keyboard));
 
   // Click on the submit button.
@@ -213,11 +213,11 @@ TEST_P(LoginExpandedPublicAccountViewTest, LaunchPublicSession) {
 // Verifies both language and keyboard menus shows up correctly.
 TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
-  EXPECT_FALSE(user_.public_account_info->show_advanced_view);
+  EXPECT_FALSE(user_->public_account_info->show_advanced_view);
   EXPECT_FALSE(test_api.advanced_view()->GetVisible());
 
   // Toggle show_advanced_view.
-  user_.public_account_info->show_advanced_view = true;
+  user_->public_account_info->show_advanced_view = true;
   public_account_->UpdateForUser(user_);
   EXPECT_TRUE(test_api.advanced_view()->GetVisible());
 
@@ -252,7 +252,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
 
 TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
-  user_.public_account_info->show_advanced_view = true;
+  user_->public_account_info->show_advanced_view = true;
   public_account_->UpdateForUser(user_);
   EXPECT_TRUE(test_api.advanced_view()->GetVisible());
 
@@ -269,7 +269,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   EXPECT_CALL(*client,
               RequestPublicSessionKeyboardLayouts(
-                  user_.basic_user_info.account_id, kFrenchLanguageCode));
+                  user_->basic_user_info->account_id, kFrenchLanguageCode));
 
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
   LoginMenuView::TestApi language_test_api(test_api.language_menu_view());

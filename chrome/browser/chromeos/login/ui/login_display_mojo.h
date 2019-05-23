@@ -19,7 +19,6 @@ class LoginDisplayHostMojo;
 
 // Interface used by UI-agnostic code to send messages to views-based login
 // screen.
-// TODO(estade): rename to LoginDisplayAsh.
 class LoginDisplayMojo : public LoginDisplay,
                          public SigninScreenHandlerDelegate,
                          public user_manager::UserManager::Observer {

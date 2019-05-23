@@ -12,6 +12,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
@@ -285,7 +286,7 @@ ScrollableUsersListView::TestApi::user_views() const {
 }
 
 ScrollableUsersListView::ScrollableUsersListView(
-    const std::vector<LoginUserInfo>& users,
+    const std::vector<mojom::LoginUserInfoPtr>& users,
     const ActionWithUser& on_tap_user,
     LoginDisplayStyle display_style)
     : display_style_(display_style) {
@@ -345,7 +346,7 @@ ScrollableUsersListView::~ScrollableUsersListView() = default;
 LoginUserView* ScrollableUsersListView::GetUserView(
     const AccountId& account_id) {
   for (auto* view : user_views_) {
-    if (view->current_user().basic_user_info.account_id == account_id)
+    if (view->current_user()->basic_user_info->account_id == account_id)
       return view;
   }
   return nullptr;

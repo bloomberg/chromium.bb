@@ -8,7 +8,7 @@
 #include "ash/detachable_base/detachable_base_observer.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/login/ui/login_data_dispatcher.h"
-#include "ash/public/cpp/session/user_info.h"
+#include "ash/public/interfaces/user_info.mojom.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 
@@ -32,10 +32,12 @@ class LoginDetachableBaseModelImpl : public LoginDetachableBaseModel,
   DetachableBasePairingStatus GetPairingStatus() override {
     return detachable_base_handler_->GetPairingStatus();
   }
-  bool PairedBaseMatchesLastUsedByUser(const UserInfo& user_info) override {
+  bool PairedBaseMatchesLastUsedByUser(
+      const mojom::UserInfo& user_info) override {
     return detachable_base_handler_->PairedBaseMatchesLastUsedByUser(user_info);
   }
-  bool SetPairedBaseAsLastUsedByUser(const UserInfo& user_info) override {
+  bool SetPairedBaseAsLastUsedByUser(
+      const mojom::UserInfo& user_info) override {
     return detachable_base_handler_->SetPairedBaseAsLastUsedByUser(user_info);
   }
 

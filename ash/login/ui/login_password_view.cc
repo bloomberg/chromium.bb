@@ -10,7 +10,6 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_constants.h"
-#include "ash/public/cpp/login_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -125,31 +124,31 @@ struct IconBundle {
   const int num_frames = 0;
 };
 
-// Construct an IconBundle instance for a given EasyUnlockIconId value.
-IconBundle GetEasyUnlockResources(EasyUnlockIconId id) {
+// Construct an IconBundle instance for a given mojom::EasyUnlockIconId value.
+IconBundle GetEasyUnlockResources(mojom::EasyUnlockIconId id) {
   switch (id) {
-    case EasyUnlockIconId::NONE:
+    case mojom::EasyUnlockIconId::NONE:
       break;
-    case EasyUnlockIconId::HARDLOCKED:
+    case mojom::EasyUnlockIconId::HARDLOCKED:
       return IconBundle(IDR_EASY_UNLOCK_HARDLOCKED,
                         IDR_EASY_UNLOCK_HARDLOCKED_HOVER,
                         IDR_EASY_UNLOCK_HARDLOCKED_PRESSED);
-    case EasyUnlockIconId::LOCKED:
+    case mojom::EasyUnlockIconId::LOCKED:
       return IconBundle(IDR_EASY_UNLOCK_LOCKED, IDR_EASY_UNLOCK_LOCKED_HOVER,
                         IDR_EASY_UNLOCK_LOCKED_PRESSED);
-    case EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED:
+    case mojom::EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED:
       return IconBundle(IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED,
                         IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_HOVER,
                         IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_PRESSED);
-    case EasyUnlockIconId::LOCKED_WITH_PROXIMITY_HINT:
+    case mojom::EasyUnlockIconId::LOCKED_WITH_PROXIMITY_HINT:
       return IconBundle(IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT,
                         IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_HOVER,
                         IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_PRESSED);
-    case EasyUnlockIconId::UNLOCKED:
+    case mojom::EasyUnlockIconId::UNLOCKED:
       return IconBundle(IDR_EASY_UNLOCK_UNLOCKED,
                         IDR_EASY_UNLOCK_UNLOCKED_HOVER,
                         IDR_EASY_UNLOCK_UNLOCKED_PRESSED);
-    case EasyUnlockIconId::SPINNER:
+    case mojom::EasyUnlockIconId::SPINNER:
       return IconBundle(IDR_EASY_UNLOCK_SPINNER,
                         base::TimeDelta::FromSeconds(2), 45 /*num_frames*/);
   }
@@ -187,7 +186,7 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
                    base::Unretained(this)));
   }
 
-  void SetEasyUnlockIcon(EasyUnlockIconId icon_id,
+  void SetEasyUnlockIcon(mojom::EasyUnlockIconId icon_id,
                          const base::string16& accessibility_label) {
     bool changed_states = icon_id != icon_id_;
     icon_id_ = icon_id;
@@ -246,7 +245,7 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
     if (!GetWidget() || !GetWidget()->GetRootView())
       return;
 
-    if (icon_id_ == EasyUnlockIconId::NONE)
+    if (icon_id_ == mojom::EasyUnlockIconId::NONE)
       return;
 
     IconBundle resources = GetEasyUnlockResources(icon_id_);
@@ -282,7 +281,7 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
   }
 
   // Icon we are currently displaying.
-  EasyUnlockIconId icon_id_ = EasyUnlockIconId::NONE;
+  mojom::EasyUnlockIconId icon_id_ = mojom::EasyUnlockIconId::NONE;
 
   // View which renders the icon.
   AnimatedRoundedImageView* icon_;
@@ -446,22 +445,22 @@ void LoginPasswordView::SetEnabledOnEmptyPassword(bool enabled) {
 }
 
 void LoginPasswordView::SetEasyUnlockIcon(
-    EasyUnlockIconId id,
+    mojom::EasyUnlockIconId id,
     const base::string16& accessibility_label) {
   // Update icon.
   easy_unlock_icon_->SetEasyUnlockIcon(id, accessibility_label);
 
   // Update icon visiblity.
-  bool has_icon = id != EasyUnlockIconId::NONE;
+  bool has_icon = id != mojom::EasyUnlockIconId::NONE;
   easy_unlock_icon_->SetVisible(has_icon);
   easy_unlock_right_margin_->SetVisible(has_icon);
   password_row_->Layout();
 }
 
-void LoginPasswordView::UpdateForUser(const LoginUserInfo& user) {
+void LoginPasswordView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
   textfield_->SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
-      base::UTF8ToUTF16(user.basic_user_info.display_email)));
+      base::UTF8ToUTF16(user->basic_user_info->display_email)));
 }
 
 void LoginPasswordView::SetFocusEnabledForChildViews(bool enable) {

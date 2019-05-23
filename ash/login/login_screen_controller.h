@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/login/login_screen_controller_observer.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
-#include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
@@ -31,7 +30,6 @@ class SystemTrayNotifier;
 // This could send requests to LoginScreenClient and also handle requests from
 // LoginScreenClient through mojo.
 class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
-                                         public LoginScreen,
                                          public KioskAppMenu,
                                          public SystemTrayFocusObserver {
  public:
@@ -113,9 +111,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
     force_fail_auth_for_debug_overlay_ = force_fail;
   }
 
-  // LoginScreen:
-  LoginScreenModel* GetModel() override;
-
   // mojom::LoginScreen:
   void SetClient(mojom::LoginScreenClientPtr client) override;
   void ShowLockScreen(ShowLockScreenCallback on_shown) override;
@@ -127,13 +122,21 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void ShowWarningBanner(const base::string16& message) override;
   void HideWarningBanner() override;
   void ClearErrors() override;
+  void ShowUserPodCustomIcon(const AccountId& account_id,
+                             mojom::EasyUnlockIconOptionsPtr icon) override;
+  void HideUserPodCustomIcon(const AccountId& account_id) override;
   void SetAuthType(const AccountId& account_id,
                    proximity_auth::mojom::AuthType auth_type,
                    const base::string16& initial_value) override;
+  void SetUserList(std::vector<mojom::LoginUserInfoPtr> users) override;
   void SetPinEnabledForUser(const AccountId& account_id,
                             bool is_enabled) override;
+  void SetFingerprintState(const AccountId& account_id,
+                           mojom::FingerprintState state) override;
   void NotifyFingerprintAuthResult(const AccountId& account_id,
                                    bool successful) override;
+  void SetAvatarForUser(const AccountId& account_id,
+                        mojom::UserAvatarPtr avatar) override;
   void EnableAuthForUser(const AccountId& account_id) override;
   void DisableAuthForUser(
       const AccountId& account_id,
@@ -146,6 +149,14 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void IsReadyForPassword(IsReadyForPasswordCallback callback) override;
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name) override;
+  void SetPublicSessionLocales(const AccountId& account_id,
+                               std::vector<mojom::LocaleItemPtr> locales,
+                               const std::string& default_locale,
+                               bool show_advanced_view) override;
+  void SetPublicSessionKeyboardLayouts(
+      const AccountId& account_id,
+      const std::string& locale,
+      std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
   void SetPublicSessionShowFullManagementDisclosure(
       bool is_full_management_disclosure_needed) override;
   void ShowKioskAppError(const std::string& message) override;

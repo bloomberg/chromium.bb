@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/session/user_info.h"
+#include "ash/public/interfaces/user_info.mojom.h"
 #include "base/optional.h"
 #include "base/token.h"
 #include "components/account_id/account_id.h"
@@ -38,6 +38,10 @@ struct ASH_PUBLIC_EXPORT UserInfo {
   UserInfo();
   UserInfo(const UserInfo& other);
   ~UserInfo();
+
+  // TODO(crbug.com/958206): Remove after login mojom migrates to use this and
+  // fix DetachableBaseHandler.
+  mojom::UserInfoPtr ToMojom() const;
 
   user_manager::UserType type = user_manager::USER_TYPE_REGULAR;
   AccountId account_id;

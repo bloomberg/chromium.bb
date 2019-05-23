@@ -185,7 +185,7 @@ void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
   // users this API needs to search all user views for the associated user and
   // potentially activate that user so it is showing its password field.
   CHECK_EQ(account_id,
-           auth_test.user_view()->current_user().basic_user_info.account_id);
+           auth_test.user_view()->current_user()->basic_user_info->account_id);
 
   password_test.SubmitPassword(password);
 

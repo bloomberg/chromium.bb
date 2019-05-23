@@ -4,9 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 
-#include "ash/public/cpp/login_screen.h"
-#include "ash/public/cpp/login_screen_model.h"
-#include "ash/public/cpp/login_types.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -60,6 +58,7 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
   // login screen multiple times. Views-login only supports initialization once.
   if (!initialized_) {
     client->SetDelegate(host_);
+
     client->login_screen()->ShowLoginScreen(
         base::BindOnce(&LoginDisplayMojo::OnLoginScreenShown,
                        weak_factory_.GetWeakPtr(), filtered_users.empty()));
@@ -67,12 +66,8 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
 
   UserSelectionScreen* user_selection_screen = host_->user_selection_screen();
   user_selection_screen->Init(filtered_users);
-  // The login screen will not be ready for the user list until
-  // ShowLoginScreen() is finished.
-  if (ash::LoginScreen::Get()->GetModel()) {
-    ash::LoginScreen::Get()->GetModel()->SetUserList(
-        user_selection_screen->UpdateAndReturnUserListForAsh());
-  }
+  client->login_screen()->SetUserList(
+      user_selection_screen->UpdateAndReturnUserListForMojo());
   client->login_screen()->SetAllowLoginAsGuest(show_guest);
   user_selection_screen->SetUsersLoaded(true /*loaded*/);
 
@@ -263,16 +258,13 @@ void LoginDisplayMojo::CheckUserStatus(const AccountId& account_id) {
 }
 
 void LoginDisplayMojo::OnUserImageChanged(const user_manager::User& user) {
-  ash::LoginScreen::Get()->GetModel()->SetAvatarForUser(
+  LoginScreenClient::Get()->login_screen()->SetAvatarForUser(
       user.GetAccountId(),
-      UserSelectionScreen::BuildAshUserAvatarForUser(user));
+      UserSelectionScreen::BuildMojoUserAvatarForUser(&user));
 }
 
 void LoginDisplayMojo::OnLoginScreenShown(bool users_empty, bool did_show) {
   CHECK(did_show);
-
-  ash::LoginScreen::Get()->GetModel()->SetUserList(
-      host_->user_selection_screen()->UpdateAndReturnUserListForAsh());
 
   // login-prompt-visible is recorded and tracked to verify boot performance
   // does not regress. Autotests may also depend on it (ie,

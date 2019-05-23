@@ -53,7 +53,7 @@ class LoginPublicAccountUserViewTest : public LoginTestBase {
     SetWidget(CreateWidgetWithContent(container));
   }
 
-  LoginUserInfo user_;
+  mojom::LoginUserInfoPtr user_;
 
   LoginPublicAccountUserView* public_account_view_ = nullptr;
   views::View* focusable_view_ = nullptr;

@@ -4,9 +4,15 @@
 
 #include "ash/login/login_screen_controller_observer.h"
 
+#include "ash/login/login_screen_controller.h"
+
 namespace ash {
 
 LoginScreenControllerObserver::~LoginScreenControllerObserver() = default;
+
+void LoginScreenControllerObserver::SetAvatarForUser(
+    const AccountId& account_id,
+    const mojom::UserAvatarPtr& avatar) {}
 
 void LoginScreenControllerObserver::OnFocusLeavingLockScreenApps(bool reverse) {
 }

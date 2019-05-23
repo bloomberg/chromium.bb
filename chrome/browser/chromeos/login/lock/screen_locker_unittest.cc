@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 
-#include "ash/public/cpp/login_screen_model.h"
-#include "ash/public/cpp/login_types.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"

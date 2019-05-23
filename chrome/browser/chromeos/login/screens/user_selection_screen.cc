@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -160,21 +159,21 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
 }
 
 // Determines the initial fingerprint state for the given user.
-ash::FingerprintState GetInitialFingerprintState(
+ash::mojom::FingerprintState GetInitialFingerprintState(
     const user_manager::User* user) {
   // User must be logged in.
   if (!user->is_logged_in())
-    return ash::FingerprintState::UNAVAILABLE;
+    return ash::mojom::FingerprintState::UNAVAILABLE;
 
   // Quick unlock storage must be available.
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForUser(user);
   if (!quick_unlock_storage)
-    return ash::FingerprintState::UNAVAILABLE;
+    return ash::mojom::FingerprintState::UNAVAILABLE;
 
   // Fingerprint is not registered for this account.
   if (!quick_unlock_storage->fingerprint_storage()->HasRecord())
-    return ash::FingerprintState::UNAVAILABLE;
+    return ash::mojom::FingerprintState::UNAVAILABLE;
 
   // Fingerprint unlock attempts should not be exceeded, as the lock screen has
   // not been displayed yet.
@@ -183,14 +182,14 @@ ash::FingerprintState GetInitialFingerprintState(
 
   // It has been too long since the last authentication.
   if (!quick_unlock_storage->HasStrongAuth())
-    return ash::FingerprintState::DISABLED_FROM_TIMEOUT;
+    return ash::mojom::FingerprintState::DISABLED_FROM_TIMEOUT;
 
   // Auth is available.
   if (quick_unlock_storage->IsFingerprintAuthenticationAvailable())
-    return ash::FingerprintState::AVAILABLE;
+    return ash::mojom::FingerprintState::AVAILABLE;
 
   // Default to unavailabe.
-  return ash::FingerprintState::UNAVAILABLE;
+  return ash::mojom::FingerprintState::UNAVAILABLE;
 }
 
 // Returns true if dircrypto migration check should be performed.
@@ -249,7 +248,7 @@ bool CanRemoveUser(const user_manager::User* user) {
 
 void GetMultiProfilePolicy(const user_manager::User* user,
                            bool* out_is_allowed,
-                           ash::MultiProfileUserBehavior* out_policy) {
+                           ash::mojom::MultiProfileUserBehavior* out_policy) {
   const std::string& user_id = user->GetAccountId().GetUserEmail();
   MultiProfileUserController* multi_profile_user_controller =
       ChromeUserManager::Get()->GetMultiProfileUserController();
@@ -406,9 +405,9 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
   user_dict->SetBoolean(kKeyIsActiveDirectory, user->IsActiveDirectoryUser());
-  user_dict->SetBoolean(
-      kKeyAllowFingerprint,
-      GetInitialFingerprintState(user) == ash::FingerprintState::AVAILABLE);
+  user_dict->SetBoolean(kKeyAllowFingerprint,
+                        GetInitialFingerprintState(user) ==
+                            ash::mojom::FingerprintState::AVAILABLE);
 
   FillMultiProfileUserPrefs(user, user_dict, is_signin_to_add);
 
@@ -429,7 +428,7 @@ void UserSelectionScreen::FillMultiProfileUserPrefs(
   }
 
   bool is_user_allowed;
-  ash::MultiProfileUserBehavior policy;
+  ash::mojom::MultiProfileUserBehavior policy;
   GetMultiProfilePolicy(user, &is_user_allowed, &policy);
   user_dict->SetBoolean(kKeyMultiProfilesAllowed, is_user_allowed);
   user_dict->SetInteger(kKeyMultiProfilesPolicy, static_cast<int>(policy));
@@ -475,32 +474,33 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
 }
 
 // static
-ash::UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
-    const user_manager::User& user) {
-  ash::UserAvatar avatar;
-  avatar.image = user.GetImage();
-  if (avatar.image.isNull()) {
-    avatar.image = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+ash::mojom::UserAvatarPtr UserSelectionScreen::BuildMojoUserAvatarForUser(
+    const user_manager::User* user) {
+  auto avatar = ash::mojom::UserAvatar::New();
+  if (!user->GetImage().isNull()) {
+    avatar->image = user->GetImage();
+  } else {
+    avatar->image = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_LOGIN_DEFAULT_USER);
   }
 
   // TODO(jdufault): Unify image handling between this code and
   // user_image_source::GetUserImageInternal.
-  auto load_image_from_resource = [&avatar](int resource_id) {
+  auto load_image_from_resource = [&](int resource_id) {
     auto& rb = ui::ResourceBundle::GetSharedInstance();
     base::StringPiece avatar_data =
         rb.GetRawDataResourceForScale(resource_id, rb.GetMaxScaleFactor());
-    avatar.bytes.assign(avatar_data.begin(), avatar_data.end());
+    avatar->bytes.assign(avatar_data.begin(), avatar_data.end());
   };
-  if (user.has_image_bytes()) {
-    avatar.bytes.assign(
-        user.image_bytes()->front(),
-        user.image_bytes()->front() + user.image_bytes()->size());
-  } else if (user.HasDefaultImage()) {
+  if (user->has_image_bytes()) {
+    avatar->bytes.assign(
+        user->image_bytes()->front(),
+        user->image_bytes()->front() + user->image_bytes()->size());
+  } else if (user->HasDefaultImage()) {
     int resource_id = chromeos::default_user_image::kDefaultImageResourceIDs
-        [user.image_index()];
+        [user->image_index()];
     load_image_from_resource(resource_id);
-  } else if (user.image_is_stub()) {
+  } else if (user->image_is_stub()) {
     load_image_from_resource(IDR_LOGIN_DEFAULT_USER);
   }
 
@@ -796,9 +796,9 @@ UserSelectionScreen::UpdateAndReturnUserListForWebUI() {
   return users_list;
 }
 
-std::vector<ash::LoginUserInfo>
-UserSelectionScreen::UpdateAndReturnUserListForAsh() {
-  std::vector<ash::LoginUserInfo> user_info_list;
+std::vector<ash::mojom::LoginUserInfoPtr>
+UserSelectionScreen::UpdateAndReturnUserListForMojo() {
+  std::vector<ash::mojom::LoginUserInfoPtr> user_info_list;
 
   const AccountId owner = GetOwnerAccountId();
   const bool is_signin_to_add = IsSigninToAdd();
@@ -819,33 +819,34 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
                    : proximity_auth::mojom::AuthType::OFFLINE_PASSWORD);
     user_auth_type_map_[account_id] = initial_auth_type;
 
-    ash::LoginUserInfo user_info;
-    user_info.basic_user_info.type = user->GetType();
-    user_info.basic_user_info.account_id = user->GetAccountId();
-    user_info.basic_user_info.display_name =
+    ash::mojom::LoginUserInfoPtr user_info = ash::mojom::LoginUserInfo::New();
+    user_info->basic_user_info = ash::mojom::UserInfo::New();
+    user_info->basic_user_info->type = user->GetType();
+    user_info->basic_user_info->account_id = user->GetAccountId();
+    user_info->basic_user_info->display_name =
         base::UTF16ToUTF8(user->GetDisplayName());
-    user_info.basic_user_info.display_email = user->display_email();
-    user_info.basic_user_info.avatar = BuildAshUserAvatarForUser(*user);
-    user_info.auth_type = initial_auth_type;
-    user_info.is_signed_in = user->is_logged_in();
-    user_info.is_device_owner = is_owner;
-    user_info.can_remove = CanRemoveUser(user);
-    user_info.fingerprint_state = GetInitialFingerprintState(user);
+    user_info->basic_user_info->display_email = user->display_email();
+    user_info->basic_user_info->avatar = BuildMojoUserAvatarForUser(user);
+    user_info->auth_type = initial_auth_type;
+    user_info->is_signed_in = user->is_logged_in();
+    user_info->is_device_owner = is_owner;
+    user_info->can_remove = CanRemoveUser(user);
+    user_info->fingerprint_state = GetInitialFingerprintState(user);
 
     // Fill multi-profile data.
     if (!is_signin_to_add) {
-      user_info.is_multiprofile_allowed = true;
+      user_info->is_multiprofile_allowed = true;
     } else {
-      GetMultiProfilePolicy(user, &user_info.is_multiprofile_allowed,
-                            &user_info.multiprofile_policy);
+      GetMultiProfilePolicy(user, &user_info->is_multiprofile_allowed,
+                            &user_info->multiprofile_policy);
     }
 
     // Fill public session data.
     if (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+      user_info->public_account_info = ash::mojom::PublicAccountInfo::New();
       std::string domain;
-      user_info.public_account_info.emplace();
       if (GetEnterpriseDomain(&domain))
-        user_info.public_account_info->enterprise_domain = domain;
+        user_info->public_account_info->enterprise_domain = domain;
 
       const std::vector<std::string>* public_session_recommended_locales =
           public_session_recommended_locales_.find(account_id) ==
@@ -858,22 +859,22 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
           GetPublicSessionLocales(public_session_recommended_locales,
                                   &selected_locale, &has_multiple_locales);
       DCHECK(available_locales);
-      user_info.public_account_info->available_locales =
+      user_info->public_account_info->available_locales =
           lock_screen_utils::FromListValueToLocaleItem(
               std::move(available_locales));
-      user_info.public_account_info->default_locale = selected_locale;
-      user_info.public_account_info->show_advanced_view = has_multiple_locales;
+      user_info->public_account_info->default_locale = selected_locale;
+      user_info->public_account_info->show_advanced_view = has_multiple_locales;
       // Do not show expanded view when in demo mode.
-      user_info.public_account_info->show_expanded_view =
+      user_info->public_account_info->show_expanded_view =
           !DemoSession::IsDeviceInDemoMode();
     }
 
-    user_info.can_remove = CanRemoveUser(user);
+    user_info->can_remove = CanRemoveUser(user);
 
     // Send a request to get keyboard layouts for default locale.
     if (is_public_account && LoginScreenClient::HasInstance()) {
       LoginScreenClient::Get()->RequestPublicSessionKeyboardLayouts(
-          account_id, user_info.public_account_info->default_locale);
+          account_id, user_info->public_account_info->default_locale);
     }
 
     user_info_list.push_back(std::move(user_info));

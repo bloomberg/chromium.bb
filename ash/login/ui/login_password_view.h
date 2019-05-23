@@ -8,7 +8,8 @@
 #include "ash/ash_export.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/ui/animated_rounded_image_view.h"
-#include "ash/public/cpp/session/user_info.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
+#include "ash/public/interfaces/user_info.mojom.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -26,8 +27,6 @@ class Textfield;
 
 namespace ash {
 class LoginButton;
-enum class EasyUnlockIconId;
-struct LoginUserInfo;
 
 // Contains a textfield instance with a submit button. The user can type a
 // password into the textfield and hit enter to submit.
@@ -82,11 +81,11 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   void SetEnabledOnEmptyPassword(bool enabled);
 
   // Change the active icon for easy unlock.
-  void SetEasyUnlockIcon(EasyUnlockIconId id,
+  void SetEasyUnlockIcon(mojom::EasyUnlockIconId id,
                          const base::string16& accessibility_label);
 
   // Updates accessibility information for |user|.
-  void UpdateForUser(const LoginUserInfo& user);
+  void UpdateForUser(const mojom::LoginUserInfoPtr& user);
 
   // Enable or disable focus on the child elements (ie, password field and
   // submit button).

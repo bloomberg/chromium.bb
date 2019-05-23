@@ -14,7 +14,6 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/public_account_warning_dialog.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/cpp/login_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -415,7 +414,7 @@ class RightPaneView : public NonAccessibleView,
       Layout();
     } else if (sender == submit_button_) {
       Shell::Get()->login_screen_controller()->LaunchPublicSession(
-          current_user_.basic_user_info.account_id,
+          current_user_->basic_user_info->account_id,
           selected_language_item_.value, selected_keyboard_item_.value);
     } else if (sender == language_selection_) {
       DCHECK(language_menu_view_);
@@ -452,22 +451,22 @@ class RightPaneView : public NonAccessibleView,
     on_learn_more_tapped_.Run();
   }
 
-  void UpdateForUser(const LoginUserInfo& user) {
-    DCHECK_EQ(user.basic_user_info.type,
+  void UpdateForUser(const mojom::LoginUserInfoPtr& user) {
+    DCHECK_EQ(user->basic_user_info->type,
               user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-    current_user_ = user;
+    current_user_ = user->Clone();
     if (!language_changed_by_user_)
-      selected_language_item_.value = user.public_account_info->default_locale;
+      selected_language_item_.value = user->public_account_info->default_locale;
 
-    PopulateLanguageItems(user.public_account_info->available_locales);
-    PopulateKeyboardItems(user.public_account_info->keyboard_layouts);
+    PopulateLanguageItems(user->public_account_info->available_locales);
+    PopulateKeyboardItems(user->public_account_info->keyboard_layouts);
     language_selection_->SetText(
         base::UTF8ToUTF16(selected_language_item_.title));
     keyboard_selection_->SetText(
         base::UTF8ToUTF16(selected_keyboard_item_.title));
 
     if (!show_advanced_changed_by_user_)
-      show_advanced_view_ = user.public_account_info->show_advanced_view;
+      show_advanced_view_ = user->public_account_info->show_advanced_view;
 
     Layout();
   }
@@ -483,14 +482,14 @@ class RightPaneView : public NonAccessibleView,
     language_changed_by_user_ = true;
     selected_language_item_ = item;
     language_selection_->SetText(base::UTF8ToUTF16(item.title));
-    current_user_.public_account_info->default_locale = item.value;
+    current_user_->public_account_info->default_locale = item.value;
 
     // User changed the preferred locale, request to get corresponding keyboard
     // layouts.
     Shell::Get()
         ->login_screen_controller()
         ->RequestPublicSessionKeyboardLayouts(
-            current_user_.basic_user_info.account_id, item.value);
+            current_user_->basic_user_info->account_id, item.value);
   }
 
   void OnKeyboardSelected(LoginMenuView::Item item) {
@@ -498,22 +497,22 @@ class RightPaneView : public NonAccessibleView,
     keyboard_selection_->SetText(base::UTF8ToUTF16(item.title));
   }
 
-  void PopulateLanguageItems(const std::vector<LocaleItem>& locales) {
+  void PopulateLanguageItems(const std::vector<mojom::LocaleItemPtr>& locales) {
     language_items_.clear();
     for (const auto& locale : locales) {
       LoginMenuView::Item item;
-      if (locale.group_name) {
-        item.title = locale.group_name.value();
+      if (locale->group_name) {
+        item.title = locale->group_name.value();
         item.is_group = true;
       } else {
-        item.title = locale.title;
-        item.value = locale.language_code;
+        item.title = locale->title;
+        item.value = locale->language_code;
         item.is_group = false;
-        item.selected = selected_language_item_.value == locale.language_code;
+        item.selected = selected_language_item_.value == locale->language_code;
       }
       language_items_.push_back(item);
 
-      if (selected_language_item_.value == locale.language_code)
+      if (selected_language_item_.value == locale->language_code)
         selected_language_item_ = item;
     }
 
@@ -527,17 +526,17 @@ class RightPaneView : public NonAccessibleView,
   }
 
   void PopulateKeyboardItems(
-      const std::vector<InputMethodItem>& keyboard_layouts) {
+      const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {
     keyboard_items_.clear();
     for (const auto& keyboard : keyboard_layouts) {
       LoginMenuView::Item item;
-      item.title = keyboard.title;
-      item.value = keyboard.ime_id;
+      item.title = keyboard->title;
+      item.value = keyboard->ime_id;
       item.is_group = false;
-      item.selected = keyboard.selected;
+      item.selected = keyboard->selected;
       keyboard_items_.push_back(item);
 
-      if (keyboard.selected)
+      if (keyboard->selected)
         selected_keyboard_item_ = item;
     }
 
@@ -564,7 +563,7 @@ class RightPaneView : public NonAccessibleView,
   friend class LoginExpandedPublicAccountView::TestApi;
 
   bool show_advanced_view_ = false;
-  LoginUserInfo current_user_;
+  mojom::LoginUserInfoPtr current_user_;
 
   views::View* labels_view_ = nullptr;
   SelectionButtonView* advanced_view_button_ = nullptr;
@@ -728,12 +727,14 @@ void LoginExpandedPublicAccountView::ProcessPressedEvent(
   Hide();
 }
 
-void LoginExpandedPublicAccountView::UpdateForUser(const LoginUserInfo& user) {
+void LoginExpandedPublicAccountView::UpdateForUser(
+    const mojom::LoginUserInfoPtr& user) {
   user_view_->UpdateForUser(user, false /*animate*/);
   right_pane_->UpdateForUser(user);
 }
 
-const LoginUserInfo& LoginExpandedPublicAccountView::current_user() const {
+const mojom::LoginUserInfoPtr& LoginExpandedPublicAccountView::current_user()
+    const {
   return user_view_->current_user();
 }
 

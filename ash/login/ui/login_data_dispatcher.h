@@ -11,8 +11,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
-#include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -23,16 +23,16 @@ namespace ash {
 // register observers which are then invoked when data is posted to the data
 // dispatcher.
 //
-// This provides access to data notification events only.
-// LoginDataDispatcher is not responsible for owning data (the login
-// embedder should own the data). This type provides a clean interface between
-// the actual view/UI implemenation and the embedder.
+// This provides access to data notification events only. LoginDataDispatcher is
+// not responsible for owning data (the login embedder should own the data).
+// This type provides a clean interface between the actual view/UI implemenation
+// and the embedder.
 //
 // There are various types which provide data to LoginDataDispatcher. For
 // example, the lock screen uses the session manager, whereas the login screen
 // uses the user manager. The debug overlay proxies the original data dispatcher
 // so it can provide fake state from an arbitrary source.
-class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
+class ASH_EXPORT LoginDataDispatcher {
  public:
   // Types interested in login state should derive from |Observer| and register
   // themselves on the |LoginDataDispatcher| instance passed to the view
@@ -42,11 +42,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
     virtual ~Observer();
 
     // Called when the displayed set of users has changed.
-    virtual void OnUsersChanged(const std::vector<LoginUserInfo>& users);
-
-    // Called when |avatar| for |account_id| has changed.
-    virtual void OnUserAvatarChanged(const AccountId& account_id,
-                                     const UserAvatar& avatar);
+    virtual void OnUsersChanged(
+        const std::vector<mojom::LoginUserInfoPtr>& users);
 
     // Called when pin should be enabled or disabled for |user|. By default, pin
     // should be disabled.
@@ -55,7 +52,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
 
     // Called when fingerprint unlock state changes for user with |account_id|.
     virtual void OnFingerprintStateChanged(const AccountId& account_id,
-                                           FingerprintState state);
+                                           mojom::FingerprintState state);
 
     // Called after a fingerprint authentication attempt.
     virtual void OnFingerprintAuthResult(const AccountId& account_id,
@@ -83,8 +80,9 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
     virtual void OnLockScreenNoteStateChanged(mojom::TrayActionState state);
 
     // Called when an easy unlock icon should be displayed.
-    virtual void OnShowEasyUnlockIcon(const AccountId& user,
-                                      const EasyUnlockIconOptions& icon);
+    virtual void OnShowEasyUnlockIcon(
+        const AccountId& user,
+        const mojom::EasyUnlockIconOptionsPtr& icon);
 
     // Called when a warning banner message should be displayed.
     virtual void OnShowWarningBanner(const base::string16& message);
@@ -108,7 +106,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
     // |account_id|.
     virtual void OnPublicSessionLocalesChanged(
         const AccountId& account_id,
-        const std::vector<LocaleItem>& locales,
+        const std::vector<mojom::LocaleItemPtr>& locales,
         const std::string& default_locale,
         bool show_advanced_view);
 
@@ -117,7 +115,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
     virtual void OnPublicSessionKeyboardLayoutsChanged(
         const AccountId& account_id,
         const std::string& locale,
-        const std::vector<InputMethodItem>& keyboard_layouts);
+        const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts);
 
     // Called when conditions for showing full management disclosure message
     // are changed.
@@ -134,23 +132,15 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   };
 
   LoginDataDispatcher();
-  ~LoginDataDispatcher() override;
+  ~LoginDataDispatcher();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // LoginScreenModel:
-  // TODO(estade): for now, LoginScreenModel overrides are mixed with
-  // non-virtual methods. More of the non-virtual methods will become a part of
-  // the LoginScreenModel interface, so ordering is being preserved. When
-  // LoginScreenModel is complete, separate out the methods that aren't
-  // overrides.
-  void SetUserList(const std::vector<LoginUserInfo>& users) override;
+  void NotifyUsers(const std::vector<mojom::LoginUserInfoPtr>& users);
   void SetPinEnabledForUser(const AccountId& user, bool enabled);
   void SetFingerprintState(const AccountId& account_id,
-                           FingerprintState state) override;
-  void SetAvatarForUser(const AccountId& account_id,
-                        const UserAvatar& avatar) override;
+                           mojom::FingerprintState state);
   void NotifyFingerprintAuthResult(const AccountId& account_id,
                                    bool successful);
   void EnableAuthForUser(const AccountId& account_id);
@@ -160,7 +150,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void SetForceOnlineSignInForUser(const AccountId& user);
   void SetLockScreenNoteState(mojom::TrayActionState state);
   void ShowEasyUnlockIcon(const AccountId& user,
-                          const EasyUnlockIconOptions& icon) override;
+                          const mojom::EasyUnlockIconOptionsPtr& icon);
   void ShowWarningBanner(const base::string16& message);
   void HideWarningBanner();
   void SetSystemInfo(bool show_if_hidden,
@@ -170,13 +160,13 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name);
   void SetPublicSessionLocales(const AccountId& account_id,
-                               const std::vector<LocaleItem>& locales,
+                               const std::vector<mojom::LocaleItemPtr>& locales,
                                const std::string& default_locale,
-                               bool show_advanced_view) override;
+                               bool show_advanced_view);
   void SetPublicSessionKeyboardLayouts(
       const AccountId& account_id,
       const std::string& locale,
-      const std::vector<InputMethodItem>& keyboard_layouts) override;
+      const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts);
   void SetPublicSessionShowFullManagementDisclosure(
       bool show_full_management_disclosure);
   void SetDetachableBasePairingStatus(

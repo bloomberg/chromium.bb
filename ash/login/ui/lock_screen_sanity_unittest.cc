@@ -107,8 +107,9 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLoginScreenClient) {
   // Password submit runs mojo.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
-                           users()[0].basic_user_info.account_id, _, false, _));
+  EXPECT_CALL(*client,
+              AuthenticateUserWithPasswordOrPin_(
+                  users()[0]->basic_user_info->account_id, _, false, _));
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
@@ -361,9 +362,9 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
 
   // Add two users, the first of which can be removed.
   users().push_back(CreateUser("test1@test"));
-  users()[0].can_remove = true;
+  users()[0]->can_remove = true;
   users().push_back(CreateUser("test2@test"));
-  DataDispatcher()->SetUserList(users());
+  DataDispatcher()->NotifyUsers(users());
 
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
@@ -405,7 +406,7 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   EXPECT_TRUE(HasFocusInAnyChildView(primary().menu()));
   EXPECT_CALL(*client, OnRemoveUserWarningShown()).Times(1);
   submit();
-  EXPECT_CALL(*client, RemoveUser(users()[0].basic_user_info.account_id))
+  EXPECT_CALL(*client, RemoveUser(users()[0]->basic_user_info->account_id))
       .Times(1);
   submit();
 
@@ -414,8 +415,8 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   EXPECT_TRUE(MakeLockContentsViewTestApi(contents)
                   .primary_big_view()
                   ->GetCurrentUser()
-                  .basic_user_info.account_id ==
-              users()[1].basic_user_info.account_id);
+                  ->basic_user_info->account_id ==
+              users()[1]->basic_user_info->account_id);
 }
 
 TEST_F(LockScreenSanityTest, LockScreenKillsPreventsClipboardPaste) {
