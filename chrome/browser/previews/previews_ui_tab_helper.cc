@@ -263,6 +263,12 @@ void PreviewsUITabHelper::DidStartNavigation(
     return;
   if (!previews_user_data_)
     return;
+  if (!previews_user_data_->HasCommittedPreviewsType())
+    return;
+  if (previews_user_data_->coin_flip_holdback_result() ==
+      previews::CoinFlipHoldbackResult::kHoldback) {
+    return;
+  }
 
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
