@@ -217,7 +217,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   // Indicates that marking of the current garbage collection cycle is
   // completed.
-  void NotifyMarkingCompleted(size_t marked_bytes);
+  void NotifyMarkingCompleted();
 
   // Indicates the end of a garbage collection cycle. This means that sweeping
   // is finished at this point.
@@ -229,6 +229,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   }
 
   void UpdateReason(BlinkGC::GCReason);
+  void IncreaseMarkedObjectSize(size_t);
   void IncreaseCompactionFreedSize(size_t);
   void IncreaseCompactionFreedPages(size_t);
   void IncreaseAllocatedObjectSize(size_t);

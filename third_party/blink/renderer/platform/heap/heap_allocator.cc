@@ -90,14 +90,9 @@ bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
 
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(address);
   NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
-  const size_t old_size = header->size();
   bool succeed = arena->ExpandObject(header, new_size);
-  if (succeed) {
+  if (succeed)
     state->Heap().AllocationPointAdjusted(arena->ArenaIndex());
-    if (header->IsMarked()) {
-      state->CurrentVisitor()->AdjustMarkedBytes(header, old_size);
-    }
-  }
   return succeed;
 }
 

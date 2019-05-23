@@ -103,8 +103,6 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // Unused cross-component visit methods.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override {}
 
-  size_t marked_bytes() const { return marked_bytes_; }
-
  protected:
   MarkingVisitorBase(ThreadState*, MarkingMode);
   ~MarkingVisitorBase() override = default;
@@ -116,26 +114,13 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // marked upon calling.
   inline bool MarkHeaderNoTracing(HeapObjectHeader*);
 
-  // Account for an object's live bytes. Should only be adjusted when
-  // transitioning an object from unmarked to marked state.
-  ALWAYS_INLINE void AccountMarkedBytes(HeapObjectHeader*);
-
   void RegisterBackingStoreReference(void** slot);
 
   MarkingWorklist::View marking_worklist_;
   NotFullyConstructedWorklist::View not_fully_constructed_worklist_;
   WeakCallbackWorklist::View weak_callback_worklist_;
-  size_t marked_bytes_ = 0;
   const MarkingMode marking_mode_;
 };
-
-ALWAYS_INLINE void MarkingVisitorBase::AccountMarkedBytes(
-    HeapObjectHeader* header) {
-  marked_bytes_ +=
-      header->IsLargeObject()
-          ? reinterpret_cast<LargeObjectPage*>(PageFromObject(header))->size()
-          : header->size();
-}
 
 inline bool MarkingVisitorBase::MarkHeaderNoTracing(HeapObjectHeader* header) {
   DCHECK(header);
@@ -147,11 +132,7 @@ inline bool MarkingVisitorBase::MarkHeaderNoTracing(HeapObjectHeader* header) {
   // freed backing store.
   DCHECK(!header->IsFree());
 
-  if (header->TryMark()) {
-    AccountMarkedBytes(header);
-    return true;
-  }
-  return false;
+  return header->TryMark();
 }
 
 inline void MarkingVisitorBase::MarkHeader(HeapObjectHeader* header,
@@ -195,8 +176,6 @@ class PLATFORM_EXPORT MarkingVisitor : public MarkingVisitorBase {
   // tracing callback for processing of the object. The object is not allowed
   // to be in construction.
   void DynamicallyMarkAddress(Address);
-
-  void AdjustMarkedBytes(HeapObjectHeader*, size_t);
 
  private:
   // Exact version of the marking write barriers.

@@ -99,6 +99,11 @@ void ThreadHeap::DecreaseAllocatedObjectSize(size_t bytes) {
   ProcessHeap::DecreaseTotalAllocatedObjectSize(bytes);
 }
 
+void ThreadHeap::IncreaseMarkedObjectSize(size_t bytes) {
+  stats_collector()->IncreaseMarkedObjectSize(bytes);
+  ProcessHeap::IncreaseTotalMarkedObjectSize(bytes);
+}
+
 void ThreadHeap::IncreaseAllocatedSpace(size_t bytes) {
   stats_collector()->IncreaseAllocatedSpace(bytes);
   ProcessHeap::IncreaseTotalAllocatedSpace(bytes);

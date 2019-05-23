@@ -218,8 +218,6 @@ class PLATFORM_EXPORT HeapObjectHeader {
   size_t size() const;
   void SetSize(size_t size);
 
-  bool IsLargeObject() const;
-
   bool IsWrapperHeaderMarked() const;
   void MarkWrapperHeader();
   void UnmarkWrapperHeader();
@@ -929,10 +927,6 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   CheckHeader();
   encoded_ = static_cast<uint32_t>(size) | (encoded_ & ~kHeaderSizeMask);
-}
-
-NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsLargeObject() const {
-  return (encoded_ & kHeaderSizeMask) == kLargeObjectSizeInHeader;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsInConstruction() const {

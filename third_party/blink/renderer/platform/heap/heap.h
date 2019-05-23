@@ -373,6 +373,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void IncreaseAllocatedObjectSize(size_t);
   void DecreaseAllocatedObjectSize(size_t);
+  void IncreaseMarkedObjectSize(size_t);
   void IncreaseAllocatedSpace(size_t);
   void DecreaseAllocatedSpace(size_t);
 

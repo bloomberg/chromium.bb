@@ -1617,7 +1617,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   }
   Heap().DecommitCallbackStacks();
 
-  const size_t marked_bytes = current_gc_data_.visitor->marked_bytes();
   current_gc_data_.visitor.reset();
 
   if (ShouldVerifyMarking())
@@ -1627,9 +1626,7 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
       Heap().stats_collector()->allocated_bytes_since_prev_gc());
   ProcessHeap::DecreaseTotalMarkedObjectSize(
       Heap().stats_collector()->previous().marked_bytes);
-  ProcessHeap::IncreaseTotalMarkedObjectSize(marked_bytes);
-  Heap().stats_collector()->NotifyMarkingCompleted(marked_bytes);
-
+  Heap().stats_collector()->NotifyMarkingCompleted();
   WTF::Partitions::ReportMemoryUsageHistogram();
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
