@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -165,6 +166,8 @@ public class UpdateMenuItemHelperTest {
     @MediumTest
     @Feature({"Omaha"})
     @RetryOnFailure
+    // TODO(https://crbug.com/965106): Fix tests when InlineUpdateFlow is enabled.
+    @DisableFeatures("InlineUpdateFlow")
     public void testCurrentVersionIsOlder() throws Exception {
         checkUpdateMenuItemIsShowing("0.0.0.0", "1.2.3.4");
     }
@@ -197,6 +200,8 @@ public class UpdateMenuItemHelperTest {
     @Feature({"Omaha"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
+    // TODO(https://crbug.com/965106): Fix tests when InlineUpdateFlow is enabled.
+    @DisableFeatures("InlineUpdateFlow")
     public void testMenuItemNotShownInOverview() throws Exception {
         checkUpdateMenuItemIsShowing("0.0.0.0", "1.2.3.4");
 
