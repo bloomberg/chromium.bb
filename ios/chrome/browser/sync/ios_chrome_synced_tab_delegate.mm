@@ -90,6 +90,11 @@ ui::PageTransition IOSChromeSyncedTabDelegate::GetTransitionAtIndex(
   return item->GetTransitionType();
 }
 
+std::string IOSChromeSyncedTabDelegate::GetPageLanguageAtIndex(int i) const {
+  // TODO(crbug.com/957657): Add page language to NavigationItem.
+  return std::string();
+}
+
 void IOSChromeSyncedTabDelegate::GetSerializedNavigationAtIndex(
     int i,
     sessions::SerializedNavigationEntry* serialized_entry) const {
