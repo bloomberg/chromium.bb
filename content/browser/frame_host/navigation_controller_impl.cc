@@ -3410,8 +3410,12 @@ void NavigationControllerImpl::SetShouldSkipOnBackForwardUIIfNeeded(
   // Note that for a subframe, previous_document_was_activated is true if the
   // gesture happened in any subframe (propagated to main frame) or in the main
   // frame itself.
+  // TODO(crbug.com/934637): Remove the check for HadInnerWebContents() when
+  // pdf and any inner web contents user gesture is properly propagated. This is
+  // a temporary fix for history intervention to be disabled for pdfs
+  // (crbug.com/965434).
   if (replace_entry || previous_document_was_activated ||
-      !is_renderer_initiated) {
+      !is_renderer_initiated || delegate_->HadInnerWebContents()) {
     if (last_committed_entry_index_ != -1) {
       UMA_HISTOGRAM_BOOLEAN(
           "Navigation.BackForward.SetShouldSkipOnBackForwardUI", false);

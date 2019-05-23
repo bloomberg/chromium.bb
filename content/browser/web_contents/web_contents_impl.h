@@ -885,6 +885,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Unpause the throbber if it was paused.
   void DidProceedOnInterstitial() override;
 
+  bool HadInnerWebContents() override;
+
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);
 
@@ -1857,6 +1859,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       ui::NativeTheme::GetInstanceForWeb(),
       base::BindRepeating(&WebContentsImpl::OnDarkModeChanged,
                           base::Unretained(this))};
+
+  // TODO(crbug.com/934637): Remove this field when pdf/any inner web contents
+  // user gesture is properly propagated. This is a temporary fix for history
+  // intervention to be disabled for pdfs (crbug.com/965434).
+  bool had_inner_webcontents_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;
