@@ -40,6 +40,13 @@ public class AssistantPaymentRequestContactDetailsSection
 
     public void setEditor(ContactEditor editor) {
         mEditor = editor;
+        if (mEditor == null) {
+            return;
+        }
+
+        for (AutofillContact contact : getItems()) {
+            addAutocompleteInformationToEditor(contact);
+        }
     }
 
     @Override
@@ -47,7 +54,7 @@ public class AssistantPaymentRequestContactDetailsSection
         if (mEditor != null) {
             mIgnoreProfileChangeNotifications = true;
             mEditor.edit(oldItem,
-                    editedOption -> { onItemCreatedOrEdited(oldItem, oldFullView, editedOption); });
+                    editedOption -> onItemCreatedOrEdited(oldItem, oldFullView, editedOption));
             mIgnoreProfileChangeNotifications = false;
         }
     }
@@ -98,20 +105,32 @@ public class AssistantPaymentRequestContactDetailsSection
      * The Chrome profiles have changed externally. This will rebuild the UI with the new/changed
      * set of profiles, while keeping the selected item if possible.
      */
-    void onProfilesChanged(List<AutofillProfile> profiles) {
+    void onProfilesChanged(List<AutofillProfile> profiles, boolean requestPayerEmail,
+            boolean requestPayerName, boolean requestPayerPhone) {
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
 
+        if (!requestPayerEmail && !requestPayerName && !requestPayerPhone) {
+            return;
+        }
+
+        // Note: we create a temporary editor (necessary for converting profiles to contacts)
+        // instead of using mEditor, which may be null.
+        ContactEditor tempEditor =
+                new ContactEditor(requestPayerName, requestPayerPhone, requestPayerEmail, false);
         AutofillContact previouslySelectedContact = mSelectedOption;
 
         // Convert profiles into a list of |AutofillContact|.
         int selectedContactIndex = -1;
         ContactDetailsSection sectionInformation =
-                new ContactDetailsSection(mContext, profiles, mEditor, null);
+                new ContactDetailsSection(mContext, profiles, tempEditor, null);
         List<AutofillContact> contacts = new ArrayList<>();
         for (int i = 0; i < sectionInformation.getSize(); i++) {
             AutofillContact contact = (AutofillContact) sectionInformation.getItem(i);
+            if (contact == null) {
+                continue;
+            }
             contacts.add(contact);
             if (previouslySelectedContact != null
                     && TextUtils.equals(
@@ -126,7 +145,13 @@ public class AssistantPaymentRequestContactDetailsSection
 
     @Override
     protected void onItemAddedOrUpdated(AutofillContact contact) {
-        // Update autocomplete information in the editor.
+        addAutocompleteInformationToEditor(contact);
+    }
+
+    private void addAutocompleteInformationToEditor(AutofillContact contact) {
+        if (mEditor == null) {
+            return;
+        }
         mEditor.addEmailAddressIfValid(contact.getPayerEmail());
         mEditor.addPayerNameIfValid(contact.getPayerName());
         mEditor.addPhoneNumberIfValid(contact.getPayerPhone());

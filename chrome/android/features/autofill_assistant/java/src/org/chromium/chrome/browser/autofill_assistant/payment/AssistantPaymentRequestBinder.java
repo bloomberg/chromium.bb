@@ -195,9 +195,18 @@ class AssistantPaymentRequestBinder
             if (autofillProfiles == null) {
                 autofillProfiles = Collections.emptyList();
             }
-            view.mContactDetailsSection.onProfilesChanged(autofillProfiles);
-            view.mPaymentMethodSection.onProfilesChanged(autofillProfiles);
-            view.mShippingAddressSection.onProfilesChanged(autofillProfiles);
+            if (shouldShowContactDetails(model)) {
+                view.mContactDetailsSection.onProfilesChanged(autofillProfiles,
+                        model.get(AssistantPaymentRequestModel.REQUEST_EMAIL),
+                        model.get(AssistantPaymentRequestModel.REQUEST_NAME),
+                        model.get(AssistantPaymentRequestModel.REQUEST_PHONE));
+            }
+            if (model.get(AssistantPaymentRequestModel.REQUEST_PAYMENT)) {
+                view.mPaymentMethodSection.onProfilesChanged(autofillProfiles);
+            }
+            if (model.get(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS)) {
+                view.mShippingAddressSection.onProfilesChanged(autofillProfiles);
+            }
             return true;
         }
         return false;

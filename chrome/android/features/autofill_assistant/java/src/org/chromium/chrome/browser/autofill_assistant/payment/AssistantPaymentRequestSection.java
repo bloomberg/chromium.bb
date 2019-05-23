@@ -33,8 +33,8 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
     private final AssistantChoiceList mItemsView;
     private final View mSummaryView;
     private final int mFullViewResId;
-    private final List<Item> mItems;
     private final int mTitleToContentPadding;
+    private final List<Item> mItems;
 
     protected final Context mContext;
     protected T mSelectedOption;
@@ -169,6 +169,17 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
             selectItem(initiallySelectedItem);
             mIgnoreItemSelectedNotifications = false;
         }
+    }
+
+    /**
+     * Returns the list of items.
+     */
+    List<T> getItems() {
+        List<T> items = new ArrayList<>();
+        for (Item item : mItems) {
+            items.add(item.mOption);
+        }
+        return items;
     }
 
     void addOrUpdateItem(@Nullable T option, boolean select) {
