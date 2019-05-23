@@ -5,7 +5,7 @@
 package org.chromium.components.module_installer;
 
 import android.content.SharedPreferences;
-import android.util.Pair;
+import android.util.SparseLongArray;
 
 import com.google.android.play.core.splitinstall.SplitInstallManager;
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory;
@@ -32,12 +32,22 @@ import java.util.Set;
  */
 /* package */ class PlayCoreModuleInstallerBackend
         extends ModuleInstallerBackend implements SplitInstallStateUpdatedListener {
+    private static class InstallTimes {
+        public final boolean mIsCached;
+        public final SparseLongArray mInstallTimes = new SparseLongArray();
+
+        public InstallTimes(boolean isCached) {
+            mIsCached = isCached;
+            mInstallTimes.put(SplitInstallSessionStatus.UNKNOWN, System.currentTimeMillis());
+        }
+    }
+
     private static final String TAG = "PlayCoreModInBackend";
     private static final String KEY_MODULES_ONDEMAND_REQUESTED_PREVIOUSLY =
             "key_modules_requested_previously";
     private static final String KEY_MODULES_DEFERRED_REQUESTED_PREVIOUSLY =
             "key_modules_deferred_requested_previously";
-    private final Map<String, Pair<Long, Boolean>> mInstallStartTimeMap = new HashMap<>();
+    private final Map<String, InstallTimes> mInstallTimesMap = new HashMap<>();
     private final SplitInstallManager mManager;
     private boolean mIsClosed;
 
@@ -109,11 +119,10 @@ import java.util.Set;
         // installed form cache. To do this, we use shared prefs to track modules previously
         // requested. Additionally, storing requested modules helps us to record module install
         // status at next Chrome start.
-        assert !mInstallStartTimeMap.containsKey(moduleName);
-        mInstallStartTimeMap.put(moduleName,
-                Pair.create(System.currentTimeMillis(),
-                        storeModuleRequested(
-                                moduleName, KEY_MODULES_ONDEMAND_REQUESTED_PREVIOUSLY)));
+        assert !mInstallTimesMap.containsKey(moduleName);
+        mInstallTimesMap.put(moduleName,
+                new InstallTimes(storeModuleRequested(
+                        moduleName, KEY_MODULES_ONDEMAND_REQUESTED_PREVIOUSLY)));
 
         SplitInstallRequest request =
                 SplitInstallRequest.newBuilder().addModule(moduleName).build();
@@ -143,8 +152,17 @@ import java.util.Set;
     public void onStateUpdate(SplitInstallSessionState state) {
         assert !mIsClosed;
         switch (state.status()) {
+            case SplitInstallSessionStatus.DOWNLOADING:
+            case SplitInstallSessionStatus.DOWNLOADED:
+            case SplitInstallSessionStatus.INSTALLING:
             case SplitInstallSessionStatus.INSTALLED:
-                finish(true, state.moduleNames(), INSTALL_STATUS_SUCCESS);
+                for (String name : state.moduleNames()) {
+                    mInstallTimesMap.get(name).mInstallTimes.put(
+                            state.status(), System.currentTimeMillis());
+                }
+                if (state.status() == SplitInstallSessionStatus.INSTALLED) {
+                    finish(true, state.moduleNames(), INSTALL_STATUS_SUCCESS);
+                }
                 break;
             case SplitInstallSessionStatus.CANCELED:
             case SplitInstallSessionStatus.FAILED:
@@ -162,16 +180,8 @@ import java.util.Set;
         for (String name : moduleNames) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.FeatureModules.InstallStatus." + name, eventId, INSTALL_STATUS_COUNT);
-
-            assert mInstallStartTimeMap.containsKey(name);
             if (success) {
-                Pair<Long, Boolean> moduleInfo = mInstallStartTimeMap.get(name);
-                long installDurationMs = System.currentTimeMillis() - moduleInfo.first;
-                String histogramSubname =
-                        moduleInfo.second ? "CachedInstallDuration" : "UncachedInstallDuration";
-                RecordHistogram.recordLongTimesHistogram(
-                        "Android.FeatureModules." + histogramSubname + "." + name,
-                        installDurationMs);
+                recordInstallTimes(name);
             }
         }
         onFinished(success, moduleNames);
@@ -193,5 +203,36 @@ import java.util.Set;
         editor.putStringSet(prefKey, newModulesRequestedPreviously);
         editor.apply();
         return modulesRequestedPreviously.contains(moduleName);
+    }
+
+    /** Records via UMA module install times divided into install steps. */
+    private void recordInstallTimes(String moduleName) {
+        recordInstallTime(moduleName, "", SplitInstallSessionStatus.UNKNOWN,
+                SplitInstallSessionStatus.INSTALLED);
+        recordInstallTime(moduleName, ".PendingDownload", SplitInstallSessionStatus.UNKNOWN,
+                SplitInstallSessionStatus.DOWNLOADING);
+        recordInstallTime(moduleName, ".Downloading", SplitInstallSessionStatus.DOWNLOADING,
+                SplitInstallSessionStatus.DOWNLOADED);
+        recordInstallTime(moduleName, ".PendingInstall", SplitInstallSessionStatus.DOWNLOADED,
+                SplitInstallSessionStatus.INSTALLING);
+        recordInstallTime(moduleName, ".Installing", SplitInstallSessionStatus.INSTALLING,
+                SplitInstallSessionStatus.INSTALLED);
+    }
+
+    private void recordInstallTime(
+            String moduleName, String histogramSubname, int startKey, int endKey) {
+        assert mInstallTimesMap.containsKey(moduleName);
+        InstallTimes installTimes = mInstallTimesMap.get(moduleName);
+        if (installTimes.mInstallTimes.get(startKey) == 0
+                || installTimes.mInstallTimes.get(endKey) == 0) {
+            // Time stamps for install times have not been stored. Don't record anything to not skew
+            // data.
+            return;
+        }
+        RecordHistogram.recordLongTimesHistogram(
+                String.format("Android.FeatureModules.%sInstallDuration%s.%s",
+                        installTimes.mIsCached ? "Cached" : "Uncached", histogramSubname,
+                        moduleName),
+                installTimes.mInstallTimes.get(endKey) - installTimes.mInstallTimes.get(startKey));
     }
 }
