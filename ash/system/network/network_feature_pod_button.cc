@@ -151,7 +151,7 @@ void NetworkFeaturePodButton::Update() {
 
   TrayNetworkStateModel* model =
       Shell::Get()->system_tray_model()->network_state_model();
-  NetworkStateProperties* network = model->default_network();
+  const NetworkStateProperties* network = model->default_network();
 
   bool toggled = network || model->GetDeviceState(NetworkType::kWiFi) ==
                                 DeviceStateType::kEnabled;

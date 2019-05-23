@@ -249,6 +249,31 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
       }));
 }
 
+TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
+  cros_network_config()->GetDeviceStateList(
+      base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
+        ASSERT_EQ(3u, devices.size());
+        EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
+        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->state);
+      }));
+  // Disable WiFi
+  bool succeeded = false;
+  cros_network_config()->SetNetworkTypeEnabledState(
+      mojom::NetworkType::kWiFi, false,
+      base::BindOnce(
+          [](bool* succeeded, bool success) { *succeeded = success; },
+          &succeeded));
+  // Wait for callback to complete; this test does not use mojo bindings.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(succeeded);
+  cros_network_config()->GetDeviceStateList(
+      base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
+        ASSERT_EQ(3u, devices.size());
+        EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
+        EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->state);
+      }));
+}
+
 TEST_F(CrosNetworkConfigTest, NetworkListChanged) {
   SetupObserver();
   base::RunLoop().RunUntilIdle();

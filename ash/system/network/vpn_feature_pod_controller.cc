@@ -14,15 +14,11 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
-using chromeos::NetworkHandler;
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
-using chromeos::NetworkTypePattern;
+using chromeos::network_config::mojom::ConnectionStateType;
+using chromeos::network_config::mojom::NetworkStateProperties;
 
 namespace ash {
 
@@ -39,24 +35,7 @@ bool IsVPNVisibleInSystemTray() {
     return true;
 
   // Also show the VPN entry if at least one VPN network is configured.
-  NetworkStateHandler* const handler =
-      NetworkHandler::Get()->network_state_handler();
-  if (handler->FirstNetworkByType(NetworkTypePattern::VPN()))
-    return true;
-  return false;
-}
-
-bool IsVPNEnabled() {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  return handler->FirstNetworkByType(NetworkTypePattern::VPN());
-}
-
-bool IsVPNConnected() {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  const NetworkState* vpn =
-      handler->FirstNetworkByType(NetworkTypePattern::VPN());
-  return IsVPNEnabled() &&
-         (vpn->IsConnectedState() || vpn->IsConnectingState());
+  return Shell::Get()->system_tray_model()->network_state_model()->active_vpn();
 }
 
 }  // namespace
@@ -98,18 +77,18 @@ void VPNFeaturePodController::ActiveNetworkStateChanged() {
 }
 
 void VPNFeaturePodController::Update() {
-  // NetworkHandler can be uninitialized in unit tests.
-  if (!chromeos::NetworkHandler::IsInitialized())
-    return;
-
   button_->SetVisible(IsVPNVisibleInSystemTray());
   if (!button_->GetVisible())
     return;
 
+  const NetworkStateProperties* vpn =
+      Shell::Get()->system_tray_model()->network_state_model()->active_vpn();
+  bool is_active =
+      vpn && vpn->connection_state != ConnectionStateType::kNotConnected;
   button_->SetSubLabel(l10n_util::GetStringUTF16(
-      IsVPNConnected() ? IDS_ASH_STATUS_TRAY_VPN_CONNECTED_SHORT
-                       : IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED_SHORT));
-  button_->SetToggled(IsVPNEnabled() && IsVPNConnected());
+      is_active ? IDS_ASH_STATUS_TRAY_VPN_CONNECTED_SHORT
+                : IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED_SHORT));
+  button_->SetToggled(is_active);
 }
 
 }  // namespace ash

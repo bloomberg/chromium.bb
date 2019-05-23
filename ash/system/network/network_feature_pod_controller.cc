@@ -8,15 +8,14 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_feature_pod_button.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using chromeos::NetworkHandler;
-using chromeos::NetworkTypePattern;
-using chromeos::NetworkState;
+using chromeos::network_config::mojom::NetworkStateProperties;
+using chromeos::network_config::mojom::NetworkType;
 
 namespace ash {
 
@@ -24,32 +23,23 @@ namespace {
 
 // Returns true if the network is actually toggled.
 bool SetNetworkEnabled(bool enabled) {
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-          NetworkTypePattern::NonVirtual());
+  TrayNetworkStateModel* model =
+      Shell::Get()->system_tray_model()->network_state_model();
+  const NetworkStateProperties* network = model->default_network();
 
   // For cellular and tether, users are only allowed to disable them from
   // feature pod toggle.
-  if (!enabled && network && network->Matches(NetworkTypePattern::Cellular())) {
-    NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-        NetworkTypePattern::Cellular(), false,
-        chromeos::network_handler::ErrorCallback());
+  if (!enabled && network &&
+      (network->type == NetworkType::kCellular ||
+       network->type == NetworkType::kTether)) {
+    model->SetNetworkTypeEnabledState(network->type, false);
     return true;
   }
 
-  if (!enabled && network && network->Matches(NetworkTypePattern::Tether())) {
-    NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-        NetworkTypePattern::Tether(), false,
-        chromeos::network_handler::ErrorCallback());
-    return true;
-  }
-
-  if (network && !network->Matches(NetworkTypePattern::WiFi()))
+  if (network && network->type != NetworkType::kWiFi)
     return false;
 
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      NetworkTypePattern::WiFi(), enabled,
-      chromeos::network_handler::ErrorCallback());
+  model->SetNetworkTypeEnabledState(NetworkType::kWiFi, enabled);
   return true;
 }
 

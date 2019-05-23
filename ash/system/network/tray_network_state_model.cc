@@ -68,7 +68,8 @@ void TrayNetworkStateModel::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-DeviceStateProperties* TrayNetworkStateModel::GetDevice(NetworkType type) {
+const DeviceStateProperties* TrayNetworkStateModel::GetDevice(
+    NetworkType type) const {
   auto iter = devices_.find(type);
   if (iter == devices_.end())
     return nullptr;
@@ -76,8 +77,15 @@ DeviceStateProperties* TrayNetworkStateModel::GetDevice(NetworkType type) {
 }
 
 DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
-  DeviceStateProperties* device = GetDevice(type);
+  const DeviceStateProperties* device = GetDevice(type);
   return device ? device->state : DeviceStateType::kUnavailable;
+}
+
+void TrayNetworkStateModel::SetNetworkTypeEnabledState(NetworkType type,
+                                                       bool enabled) {
+  DCHECK(cros_network_config_ptr_);
+  cros_network_config_ptr_->SetNetworkTypeEnabledState(type, enabled,
+                                                       base::DoNothing());
 }
 
 // CrosNetworkConfigObserver
@@ -116,6 +124,7 @@ void TrayNetworkStateModel::BindCrosNetworkConfig(
 }
 
 void TrayNetworkStateModel::GetDeviceStateList() {
+  DCHECK(cros_network_config_ptr_);
   cros_network_config_ptr_->GetDeviceStateList(base::BindOnce(
       &TrayNetworkStateModel::OnGetDeviceStateList, base::Unretained(this)));
 }

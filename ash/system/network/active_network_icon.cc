@@ -192,7 +192,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetSingleImage(
     network_icon::IconType icon_type,
     bool* animating) {
   // If no network, check for cellular initializing.
-  NetworkStateProperties* default_network = model_->default_network();
+  const NetworkStateProperties* default_network = model_->default_network();
   if (!default_network && cellular_uninitialized_msg_ != 0) {
     if (animating)
       *animating = true;
@@ -205,7 +205,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetSingleImage(
 gfx::ImageSkia ActiveNetworkIcon::GetDualImagePrimary(
     network_icon::IconType icon_type,
     bool* animating) {
-  NetworkStateProperties* default_network = model_->default_network();
+  const NetworkStateProperties* default_network = model_->default_network();
   if (default_network && default_network->type == NetworkType::kCellular) {
     if (chromeos::network_config::StateIsConnected(
             default_network->connection_state)) {
@@ -239,7 +239,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImageCellular(
         NetworkType::kCellular, icon_type);
   }
 
-  NetworkStateProperties* active_cellular = model_->active_cellular();
+  const NetworkStateProperties* active_cellular = model_->active_cellular();
   if (!active_cellular) {
     if (animating)
       *animating = false;
@@ -260,7 +260,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageImpl(
     return GetDefaultImageForNoNetwork(icon_type, animating);
   }
   // Don't show connected Ethernet in the tray unless a VPN is present.
-  NetworkStateProperties* active_vpn = model_->active_vpn();
+  const NetworkStateProperties* active_vpn = model_->active_vpn();
   if (network->type == NetworkType::kEthernet && IsTrayIcon(icon_type) &&
       !active_vpn) {
     if (animating)
@@ -303,7 +303,8 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageForNoNetwork(
 }
 
 void ActiveNetworkIcon::SetCellularUninitializedMsg() {
-  DeviceStateProperties* cellular = model_->GetDevice(NetworkType::kCellular);
+  const DeviceStateProperties* cellular =
+      model_->GetDevice(NetworkType::kCellular);
   if (cellular && cellular->state == DeviceStateType::kUninitialized) {
     cellular_uninitialized_msg_ = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
     uninitialized_state_time_ = base::Time::Now();

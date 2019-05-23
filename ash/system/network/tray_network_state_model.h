@@ -43,24 +43,32 @@ class ASH_EXPORT TrayNetworkStateModel
   void RemoveObserver(Observer* observer);
 
   // Returns DeviceStateProperties for |type| if it exists or null.
-  chromeos::network_config::mojom::DeviceStateProperties* GetDevice(
-      chromeos::network_config::mojom::NetworkType type);
+  const chromeos::network_config::mojom::DeviceStateProperties* GetDevice(
+      chromeos::network_config::mojom::NetworkType type) const;
 
   // Returns the DeviceStateType for |type| if a device exists or kUnavailable.
   chromeos::network_config::mojom::DeviceStateType GetDeviceState(
       chromeos::network_config::mojom::NetworkType type);
 
-  chromeos::network_config::mojom::NetworkStateProperties* default_network() {
+  // Convenience method to call cros_network_config_ptr_ method.
+  void SetNetworkTypeEnabledState(
+      chromeos::network_config::mojom::NetworkType type,
+      bool enabled);
+
+  const chromeos::network_config::mojom::NetworkStateProperties*
+  default_network() const {
     return default_network_.get();
   }
-  chromeos::network_config::mojom::NetworkStateProperties*
-  active_non_cellular() {
+  const chromeos::network_config::mojom::NetworkStateProperties*
+  active_non_cellular() const {
     return active_non_cellular_.get();
   }
-  chromeos::network_config::mojom::NetworkStateProperties* active_cellular() {
+  const chromeos::network_config::mojom::NetworkStateProperties*
+  active_cellular() const {
     return active_cellular_.get();
   }
-  chromeos::network_config::mojom::NetworkStateProperties* active_vpn() {
+  const chromeos::network_config::mojom::NetworkStateProperties* active_vpn()
+      const {
     return active_vpn_.get();
   }
 

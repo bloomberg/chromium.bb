@@ -31,6 +31,10 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void GetNetworkStateList(mojom::NetworkFilterPtr filter,
                            GetNetworkStateListCallback callback) override;
   void GetDeviceStateList(GetDeviceStateListCallback callback) override;
+  void SetNetworkTypeEnabledState(
+      mojom::NetworkType type,
+      bool enabled,
+      SetNetworkTypeEnabledStateCallback callback) override;
 
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;

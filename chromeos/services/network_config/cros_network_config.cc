@@ -65,8 +65,8 @@ NetworkTypePattern MojoTypeToPattern(mojom::NetworkType type) {
       return NetworkTypePattern::WiFi();
     case mojom::NetworkType::kWiMAX:
       return NetworkTypePattern::Wimax();
-      NOTREACHED();
   }
+  NOTREACHED();
   return NetworkTypePattern::Default();
 }
 
@@ -252,6 +252,24 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   return result;
 }
 
+bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
+  switch (type) {
+    case mojom::NetworkType::kCellular:
+    case mojom::NetworkType::kTether:
+    case mojom::NetworkType::kWiFi:
+    case mojom::NetworkType::kWiMAX:
+      return true;
+    case mojom::NetworkType::kAll:
+    case mojom::NetworkType::kEthernet:
+    case mojom::NetworkType::kMobile:
+    case mojom::NetworkType::kVPN:
+    case mojom::NetworkType::kWireless:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 CrosNetworkConfig::CrosNetworkConfig(NetworkStateHandler* network_state_handler)
@@ -345,6 +363,32 @@ void CrosNetworkConfig::GetDeviceStateList(
       result.emplace_back(std::move(mojo_device));
   }
   std::move(callback).Run(std::move(result));
+}
+
+void CrosNetworkConfig::SetNetworkTypeEnabledState(
+    mojom::NetworkType type,
+    bool enabled,
+    SetNetworkTypeEnabledStateCallback callback) {
+  if (!NetworkTypeCanBeDisabled(type)) {
+    std::move(callback).Run(false);
+    return;
+  }
+  NetworkTypePattern pattern = MojoTypeToPattern(type);
+  if (!network_state_handler_->IsTechnologyAvailable(pattern)) {
+    NET_LOG(ERROR) << "Technology unavailable: " << type;
+    std::move(callback).Run(false);
+    return;
+  }
+  if (network_state_handler_->IsTechnologyProhibited(pattern)) {
+    NET_LOG(ERROR) << "Technology prohibited: " << type;
+    std::move(callback).Run(false);
+    return;
+  }
+  // Set the technology enabled state and return true. The call to Shill does
+  // not have a 'success' callback (and errors are already logged).
+  network_state_handler_->SetTechnologyEnabled(
+      pattern, enabled, chromeos::network_handler::ErrorCallback());
+  std::move(callback).Run(true);
 }
 
 // NetworkStateHandlerObserver

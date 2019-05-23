@@ -239,6 +239,13 @@ interface CrosNetworkConfig {
 
   // Returns a list of Device properties.
   GetDeviceStateList() => (array<DeviceStateProperties> result);
+
+  // Sets a single network type (e.g. WiFi) to enabled or disabled. Types
+  // describing multiple technologies (e.g. kWireless) are not supported.
+  // Returns false if the type is invalid, unavailable, or can not be disabled.
+  // CrosNetworkConfigObserver::OnDeviceStateListChanged() can be used to be
+  // notified when the enabled state changes.
+  SetNetworkTypeEnabledState(NetworkType type, bool enabled) => (bool success);
 };
 
 interface CrosNetworkConfigObserver {
@@ -247,8 +254,12 @@ interface CrosNetworkConfigObserver {
   OnActiveNetworksChanged(array<NetworkStateProperties> networks);
 
   // Fired when the list of networks changes.
+  // CrosNetworkConfig::GetNetworkStateList() can be used to get the network
+  // states.
   OnNetworkStateListChanged();
 
   // Fired when the list of devices changes or a device property changes.
+  // CrosNetworkConfig::GetDeviceStateList() can be used to retrieve the device
+  // states.
   OnDeviceStateListChanged();
 };
