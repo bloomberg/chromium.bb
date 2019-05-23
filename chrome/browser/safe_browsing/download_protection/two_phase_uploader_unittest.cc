@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/safe_browsing/local_two_phase_testserver.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
@@ -75,12 +76,12 @@ class TwoPhaseUploaderTest : public testing::Test {
     network_service_client_ =
         std::make_unique<network::TestNetworkServiceClient>(
             mojo::MakeRequest(&network_service_client_ptr));
-    network_service_ = network::NetworkService::CreateForTesting();
-    network_service_->SetClient(std::move(network_service_client_ptr),
-                                network::mojom::NetworkServiceParams::New());
+    network::NetworkService* network_service = content::GetNetworkServiceImpl();
+    network_service->SetClient(std::move(network_service_client_ptr),
+                               network::mojom::NetworkServiceParams::New());
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::TestSharedURLLoaderFactory>(
-            network_service_.get());
+            network_service);
   }
 
  protected:
@@ -89,7 +90,6 @@ class TwoPhaseUploaderTest : public testing::Test {
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   std::unique_ptr<network::TestNetworkServiceClient> network_service_client_;
-  std::unique_ptr<network::NetworkService> network_service_;
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
 };
 
