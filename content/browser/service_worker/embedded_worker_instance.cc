@@ -375,18 +375,20 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
   WorkerProcessHandle(
       const base::WeakPtr<ServiceWorkerProcessManager>& process_manager,
       int embedded_worker_id,
-      int process_id)
+      int process_id,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
       : process_manager_(process_manager),
         embedded_worker_id_(embedded_worker_id),
-        process_id_(process_id) {
+        process_id_(process_id),
+        ui_task_runner_(std::move(ui_task_runner)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id_);
   }
 
   ~WorkerProcessHandle() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
+    ui_task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(&ServiceWorkerProcessManager::ReleaseWorkerProcess,
                        process_manager_, embedded_worker_id_));
   }
@@ -399,6 +401,7 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
 
   const int embedded_worker_id_;
   const int process_id_;
+  const scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHandle);
 };
@@ -450,8 +453,8 @@ class EmbeddedWorkerInstance::StartTask {
         break;
       case ProcessAllocationState::ALLOCATING:
         // Abort half-baked process allocation on the UI thread.
-        base::PostTaskWithTraits(
-            FROM_HERE, {BrowserThread::UI},
+        instance_->ui_task_runner_->PostTask(
+            FROM_HERE,
             base::BindOnce(&ServiceWorkerProcessManager::ReleaseWorkerProcess,
                            instance_->context_->process_manager()->AsWeakPtr(),
                            instance_->embedded_worker_id()));
@@ -510,8 +513,8 @@ class EmbeddedWorkerInstance::StartTask {
 
     // Hop to the UI thread for process allocation and setup. We will continue
     // on the IO thread in StartTask::OnSetupCompleted().
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
+    instance_->ui_task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &SetupOnUIThread, instance_->embedded_worker_id(), process_manager,
             can_use_existing_process, std::move(params), std::move(request_),
@@ -543,7 +546,7 @@ class EmbeddedWorkerInstance::StartTask {
       // returning to ensure the process is eventually released.
       process_handle = std::make_unique<WorkerProcessHandle>(
           process_manager, instance_->embedded_worker_id(),
-          process_info->process_id);
+          process_info->process_id, instance_->ui_task_runner_);
 
       if (!instance_->context_)
         status = blink::ServiceWorkerStatusCode::kErrorAbort;
@@ -728,6 +731,8 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       devtools_attached_(false),
       network_accessed_for_script_(false),
       foreground_notified_(false),
+      ui_task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits({BrowserThread::UI})),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_);
@@ -1180,10 +1185,9 @@ void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerAdded() {
 
   foreground_notified_ = true;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&NotifyForegroundServiceWorkerOnUIThread, true /* added */,
-                     process_id()));
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&NotifyForegroundServiceWorkerOnUIThread,
+                                true /* added */, process_id()));
 }
 
 void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
@@ -1197,10 +1201,9 @@ void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
 
   foreground_notified_ = false;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&NotifyForegroundServiceWorkerOnUIThread,
-                     false /* added */, process_id()));
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&NotifyForegroundServiceWorkerOnUIThread,
+                                false /* added */, process_id()));
 }
 
 network::mojom::URLLoaderFactoryPtrInfo

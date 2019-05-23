@@ -361,6 +361,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   mojo::StrongBindingPtr<network::mojom::URLLoaderFactory>
       script_loader_factory_;
 
+  const scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstance);
