@@ -3864,6 +3864,8 @@ static_library("test_support") {
       "ash/fake_tablet_mode_controller.h",
       "ash/test_login_screen.cc",
       "ash/test_login_screen.h",
+      "ash/test_login_screen_model.cc",
+      "ash/test_login_screen_model.h",
       "ash/test_session_controller.cc",
       "ash/test_session_controller.h",
       "ash/test_wallpaper_controller.cc",

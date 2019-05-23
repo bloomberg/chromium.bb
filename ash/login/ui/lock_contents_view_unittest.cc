@@ -115,8 +115,8 @@ TEST_F(LockContentsViewUnitTest, DisplayMode) {
       LoginUserView::TestApi user_test_api(users_list.user_views()[i]);
       EXPECT_EQ(expected_style, user_test_api.display_style());
 
-      const mojom::LoginUserInfoPtr& user = users()[i + 1];
-      EXPECT_EQ(base::UTF8ToUTF16(user->basic_user_info->display_name),
+      const LoginUserInfo& user = users()[i + 1];
+      EXPECT_EQ(base::UTF8ToUTF16(user.basic_user_info.display_name),
                 user_test_api.displayed_name());
     }
   }
@@ -443,12 +443,11 @@ TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Capture user info to validate it did not change during the swap.
-  AccountId primary_user = test_api.primary_big_view()
-                               ->GetCurrentUser()
-                               ->basic_user_info->account_id;
+  AccountId primary_user =
+      test_api.primary_big_view()->GetCurrentUser().basic_user_info.account_id;
   AccountId secondary_user = test_api.opt_secondary_big_view()
                                  ->GetCurrentUser()
-                                 ->basic_user_info->account_id;
+                                 .basic_user_info.account_id;
   EXPECT_NE(primary_user, secondary_user);
 
   // Primary user starts with auth. Secondary user does not have any auth.
@@ -465,12 +464,12 @@ TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
   generator->ClickLeftButton();
 
   // User info is not swapped.
-  EXPECT_EQ(primary_user, test_api.primary_big_view()
-                              ->GetCurrentUser()
-                              ->basic_user_info->account_id);
+  EXPECT_EQ(
+      primary_user,
+      test_api.primary_big_view()->GetCurrentUser().basic_user_info.account_id);
   EXPECT_EQ(secondary_user, test_api.opt_secondary_big_view()
                                 ->GetCurrentUser()
-                                ->basic_user_info->account_id);
+                                .basic_user_info.account_id);
 
   // Active auth user (ie, which user is showing password) is swapped.
   EXPECT_FALSE(test_api.primary_big_view()->IsAuthEnabled());
@@ -494,10 +493,9 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
 
   for (const LoginUserView* const list_user_view : users_list.user_views()) {
     // Capture user info to validate it did not change during the swap.
-    AccountId auth_id =
-        auth_view->GetCurrentUser()->basic_user_info->account_id;
+    AccountId auth_id = auth_view->GetCurrentUser().basic_user_info.account_id;
     AccountId list_user_id =
-        list_user_view->current_user()->basic_user_info->account_id;
+        list_user_view->current_user().basic_user_info.account_id;
     EXPECT_NE(auth_id, list_user_id);
 
     // Send event to swap users.
@@ -507,15 +505,15 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
 
     // User info is swapped.
     EXPECT_EQ(list_user_id,
-              auth_view->GetCurrentUser()->basic_user_info->account_id);
+              auth_view->GetCurrentUser().basic_user_info.account_id);
     EXPECT_EQ(auth_id,
-              list_user_view->current_user()->basic_user_info->account_id);
+              list_user_view->current_user().basic_user_info.account_id);
 
     // Validate that every user is still unique.
     std::unordered_set<std::string> emails;
     for (const LoginUserView* const view : users_list.user_views()) {
       std::string email =
-          view->current_user()->basic_user_info->account_id.GetUserEmail();
+          view->current_user().basic_user_info.account_id.GetUserEmail();
       EXPECT_TRUE(emails.insert(email).second);
     }
   }
@@ -730,16 +728,16 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockForceTooltipCreatesTooltipWidget) {
 
   // Show an icon with |autoshow_tooltip| is false. Tooltip bubble is not
   // activated.
-  auto icon = mojom::EasyUnlockIconOptions::New();
-  icon->icon = mojom::EasyUnlockIconId::LOCKED;
-  icon->autoshow_tooltip = false;
-  DataDispatcher()->ShowEasyUnlockIcon(users()[0]->basic_user_info->account_id,
+  EasyUnlockIconOptions icon;
+  icon.icon = EasyUnlockIconId::LOCKED;
+  icon.autoshow_tooltip = false;
+  DataDispatcher()->ShowEasyUnlockIcon(users()[0].basic_user_info.account_id,
                                        icon);
   EXPECT_FALSE(test_api.tooltip_bubble()->GetVisible());
 
   // Show icon with |autoshow_tooltip| set to true. Tooltip bubble is shown.
-  icon->autoshow_tooltip = true;
-  DataDispatcher()->ShowEasyUnlockIcon(users()[0]->basic_user_info->account_id,
+  icon.autoshow_tooltip = true;
+  DataDispatcher()->ShowEasyUnlockIcon(users()[0].basic_user_info.account_id,
                                        icon);
   EXPECT_TRUE(test_api.tooltip_bubble()->GetVisible());
 }
@@ -772,18 +770,18 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockIconUpdatedDuringUserSwap) {
 
   // Enables easy unlock icon for |view|.
   auto enable_icon = [&](LoginBigUserView* view) {
-    auto icon = mojom::EasyUnlockIconOptions::New();
-    icon->icon = mojom::EasyUnlockIconId::LOCKED;
+    EasyUnlockIconOptions icon;
+    icon.icon = EasyUnlockIconId::LOCKED;
     DataDispatcher()->ShowEasyUnlockIcon(
-        view->GetCurrentUser()->basic_user_info->account_id, icon);
+        view->GetCurrentUser().basic_user_info.account_id, icon);
   };
 
   // Disables easy unlock icon for |view|.
   auto disable_icon = [&](LoginBigUserView* view) {
-    auto icon = mojom::EasyUnlockIconOptions::New();
-    icon->icon = mojom::EasyUnlockIconId::NONE;
+    EasyUnlockIconOptions icon;
+    icon.icon = EasyUnlockIconId::NONE;
     DataDispatcher()->ShowEasyUnlockIcon(
-        view->GetCurrentUser()->basic_user_info->account_id, icon);
+        view->GetCurrentUser().basic_user_info.account_id, icon);
   };
 
   // Makes |view| the active auth view so it will can show auth methods.
@@ -850,9 +848,8 @@ TEST_F(LockContentsViewUnitTest, ShowErrorBubbleOnAuthFailure) {
   // Password submit runs mojo.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client,
-              AuthenticateUserWithPasswordOrPin_(
-                  users()[0]->basic_user_info->account_id, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
+                           users()[0].basic_user_info.account_id, _, false, _));
 
   // Submit password.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -882,9 +879,8 @@ TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
   // Password submit runs mojo.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client,
-              AuthenticateUserWithPasswordOrPin_(
-                  users()[0]->basic_user_info->account_id, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
+                           users()[0].basic_user_info.account_id, _, false, _));
 
   // AuthErrorButton should not be visible yet.
   EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
@@ -971,7 +967,7 @@ TEST_F(LockContentsViewUnitTest, ShowGaiaAuthAfterManyFailedLoginAttempts) {
   EXPECT_CALL(*client,
               ShowGaiaSignin(true /*can_close*/,
                              base::Optional<AccountId>(
-                                 users()[0]->basic_user_info->account_id)))
+                                 users()[0].basic_user_info.account_id)))
       .Times(1);
   submit_password();
   Mock::VerifyAndClearExpectations(client.get());
@@ -989,10 +985,8 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
       DataDispatcher(), std::move(fake_detachable_base_model));
   SetUserCount(2);
 
-  const AccountId& kFirstUserAccountId =
-      users()[0]->basic_user_info->account_id;
-  const AccountId& kSecondUserAccountId =
-      users()[1]->basic_user_info->account_id;
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
+  const AccountId& kSecondUserAccountId = users()[1].basic_user_info.account_id;
 
   // Initialize the detachable base state, so the user 1 has previously used
   // detachable base.
@@ -1071,10 +1065,8 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleForUnauthenticatedDetachableBase) {
       DataDispatcher(), std::move(fake_detachable_base_model));
   SetUserCount(2);
 
-  const AccountId& kFirstUserAccountId =
-      users()[0]->basic_user_info->account_id;
-  const AccountId& kSecondUserAccountId =
-      users()[1]->basic_user_info->account_id;
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
+  const AccountId& kSecondUserAccountId = users()[1].basic_user_info.account_id;
 
   detachable_base_model->InitLastUsedBases({{kSecondUserAccountId, "5678"}});
 
@@ -1134,7 +1126,7 @@ TEST_F(LockContentsViewUnitTest,
       DataDispatcher(), std::move(fake_detachable_base_model));
   SetUserCount(1);
 
-  const AccountId& kUserAccountId = users()[0]->basic_user_info->account_id;
+  const AccountId& kUserAccountId = users()[0].basic_user_info.account_id;
 
   // Initialize the detachable base state, as if the user has previously used
   // detachable base.
@@ -1170,7 +1162,7 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
       DataDispatcher(), std::move(fake_detachable_base_model));
   SetUserCount(1);
 
-  const AccountId& kUserAccountId = users()[0]->basic_user_info->account_id;
+  const AccountId& kUserAccountId = users()[0].basic_user_info.account_id;
 
   // Initialize the detachable base state, as if the user has previously used
   // detachable base.
@@ -1221,7 +1213,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
       DataDispatcher(), std::move(fake_detachable_base_model));
   SetUserCount(1);
 
-  const AccountId& kUserAccountId = users()[0]->basic_user_info->account_id;
+  const AccountId& kUserAccountId = users()[0].basic_user_info.account_id;
 
   // Initialize the detachable base state, as if the user has previously used
   // detachable base.
@@ -1453,12 +1445,11 @@ TEST_F(LockContentsViewUnitTest, SwapAuthAndPublicAccountUserInTwoUserLayout) {
   LockContentsView::TestApi test_api(contents);
 
   // Capture user info to validate it did not change during the swap.
-  AccountId primary_user = test_api.primary_big_view()
-                               ->GetCurrentUser()
-                               ->basic_user_info->account_id;
+  AccountId primary_user =
+      test_api.primary_big_view()->GetCurrentUser().basic_user_info.account_id;
   AccountId secondary_user = test_api.opt_secondary_big_view()
                                  ->GetCurrentUser()
-                                 ->basic_user_info->account_id;
+                                 .basic_user_info.account_id;
   EXPECT_NE(primary_user, secondary_user);
 
   // Primary user starts with auth. Secondary user does not have any auth.
@@ -1480,12 +1471,12 @@ TEST_F(LockContentsViewUnitTest, SwapAuthAndPublicAccountUserInTwoUserLayout) {
   generator->ClickLeftButton();
 
   // User info is not swapped.
-  EXPECT_EQ(primary_user, test_api.primary_big_view()
-                              ->GetCurrentUser()
-                              ->basic_user_info->account_id);
+  EXPECT_EQ(
+      primary_user,
+      test_api.primary_big_view()->GetCurrentUser().basic_user_info.account_id);
   EXPECT_EQ(secondary_user, test_api.opt_secondary_big_view()
                                 ->GetCurrentUser()
-                                ->basic_user_info->account_id);
+                                .basic_user_info.account_id);
 
   // Child view of LoginBigUserView stays the same.
   ASSERT_TRUE(test_api.primary_big_view()->public_account());
@@ -1533,7 +1524,7 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
   };
 
   auto is_public_account = [](const LoginUserView* view) -> bool {
-    return view->current_user()->basic_user_info->type ==
+    return view->current_user().basic_user_info.type ==
            user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   };
 
@@ -1541,9 +1532,9 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
   // account user).
   EXPECT_TRUE(is_public_account(user_view0));
   AccountId primary_id =
-      primary_big_view->GetCurrentUser()->basic_user_info->account_id;
+      primary_big_view->GetCurrentUser().basic_user_info.account_id;
   AccountId list_user_id =
-      user_view0->current_user()->basic_user_info->account_id;
+      user_view0->current_user().basic_user_info.account_id;
   EXPECT_NE(primary_id, list_user_id);
 
   // Send event to swap users.
@@ -1551,9 +1542,8 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
 
   // User info is swapped.
   EXPECT_EQ(list_user_id,
-            primary_big_view->GetCurrentUser()->basic_user_info->account_id);
-  EXPECT_EQ(primary_id,
-            user_view0->current_user()->basic_user_info->account_id);
+            primary_big_view->GetCurrentUser().basic_user_info.account_id);
+  EXPECT_EQ(primary_id, user_view0->current_user().basic_user_info.account_id);
 
   // Child view of primary big user stays the same.
   ASSERT_TRUE(primary_big_view->public_account());
@@ -1564,8 +1554,8 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
   // Case 2: Swap user_view1 (auth user) with primary big user (public account
   // user).
   EXPECT_FALSE(is_public_account(user_view1));
-  primary_id = primary_big_view->GetCurrentUser()->basic_user_info->account_id;
-  list_user_id = user_view1->current_user()->basic_user_info->account_id;
+  primary_id = primary_big_view->GetCurrentUser().basic_user_info.account_id;
+  list_user_id = user_view1->current_user().basic_user_info.account_id;
   EXPECT_NE(primary_id, list_user_id);
 
   // Send event to swap users.
@@ -1573,9 +1563,8 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
 
   // User info is swapped.
   EXPECT_EQ(list_user_id,
-            primary_big_view->GetCurrentUser()->basic_user_info->account_id);
-  EXPECT_EQ(primary_id,
-            user_view1->current_user()->basic_user_info->account_id);
+            primary_big_view->GetCurrentUser().basic_user_info.account_id);
+  EXPECT_EQ(primary_id, user_view1->current_user().basic_user_info.account_id);
 
   // Primary big user becomes auth user and its child view is rebuilt.
   ASSERT_FALSE(primary_big_view->public_account());
@@ -1585,8 +1574,8 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
 
   // Case 3: Swap user_view2 (auth user) with primary big user (auth user).
   EXPECT_FALSE(is_public_account(user_view2));
-  primary_id = primary_big_view->GetCurrentUser()->basic_user_info->account_id;
-  list_user_id = user_view2->current_user()->basic_user_info->account_id;
+  primary_id = primary_big_view->GetCurrentUser().basic_user_info.account_id;
+  list_user_id = user_view2->current_user().basic_user_info.account_id;
   EXPECT_NE(primary_id, list_user_id);
 
   // Send event to swap users.
@@ -1594,9 +1583,8 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
 
   // User info is swapped.
   EXPECT_EQ(list_user_id,
-            primary_big_view->GetCurrentUser()->basic_user_info->account_id);
-  EXPECT_EQ(primary_id,
-            user_view2->current_user()->basic_user_info->account_id);
+            primary_big_view->GetCurrentUser().basic_user_info.account_id);
+  EXPECT_EQ(primary_id, user_view2->current_user().basic_user_info.account_id);
 
   // Child view of primary big user stays the same.
   ASSERT_FALSE(primary_big_view->public_account());
@@ -1607,8 +1595,8 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
   // Case 4: Swap user_view0 (public account user) with with primary big user
   // (auth user).
   EXPECT_TRUE(is_public_account(user_view0));
-  primary_id = primary_big_view->GetCurrentUser()->basic_user_info->account_id;
-  list_user_id = user_view0->current_user()->basic_user_info->account_id;
+  primary_id = primary_big_view->GetCurrentUser().basic_user_info.account_id;
+  list_user_id = user_view0->current_user().basic_user_info.account_id;
   EXPECT_NE(primary_id, list_user_id);
 
   // Send event to swap users.
@@ -1616,9 +1604,8 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
 
   // User info is swapped.
   EXPECT_EQ(list_user_id,
-            primary_big_view->GetCurrentUser()->basic_user_info->account_id);
-  EXPECT_EQ(primary_id,
-            user_view0->current_user()->basic_user_info->account_id);
+            primary_big_view->GetCurrentUser().basic_user_info.account_id);
+  EXPECT_EQ(primary_id, user_view0->current_user().basic_user_info.account_id);
 
   // Primary big user becomes public account user and its child view is rebuilt.
   ASSERT_TRUE(primary_big_view->public_account());
@@ -1774,7 +1761,7 @@ TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
 
   LoginBigUserView* primary_big_view = lock_contents.primary_big_view();
   AccountId primary_id =
-      primary_big_view->GetCurrentUser()->basic_user_info->account_id;
+      primary_big_view->GetCurrentUser().basic_user_info.account_id;
 
   // Open the expanded public session view.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -1782,7 +1769,7 @@ TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
 
   EXPECT_FALSE(main_view->GetVisible());
   EXPECT_TRUE(expanded_view->GetVisible());
-  EXPECT_EQ(expanded_view->current_user()->basic_user_info->account_id,
+  EXPECT_EQ(expanded_view->current_user().basic_user_info.account_id,
             primary_id);
 
   // Expect LanuchPublicSession mojo call when the submit button is clicked.
@@ -1805,8 +1792,7 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   SetUserCount(1);
   SetWidget(CreateWidgetWithContent(contents));
 
-  const AccountId& kFirstUserAccountId =
-      users()[0]->basic_user_info->account_id;
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
   LockContentsView::TestApi contents_test_api(contents);
   LoginAuthUserView::TestApi auth_test_api(
       contents_test_api.primary_big_view()->auth_user());
@@ -1869,8 +1855,7 @@ TEST_F(LockContentsViewUnitTest,
   SetUserCount(1);
   SetWidget(CreateWidgetWithContent(contents));
 
-  const AccountId& kFirstUserAccountId =
-      users()[0]->basic_user_info->account_id;
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
   LockContentsView::TestApi contents_test_api(contents);
   views::View* note_action_button = contents_test_api.note_action();
 
@@ -1911,8 +1896,7 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   SetUserCount(1);
   SetWidget(CreateWidgetWithContent(contents));
 
-  const AccountId& kFirstUserAccountId =
-      users()[0]->basic_user_info->account_id;
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
   LockContentsView::TestApi contents_test_api(contents);
   LoginAuthUserView::TestApi auth_test_api(
       contents_test_api.primary_big_view()->auth_user());
@@ -2150,9 +2134,8 @@ TEST_F(LockContentsViewUnitTest, UsersChangedRetainsExistingState) {
 
   LockContentsView::TestApi test_api(contents);
 
-  AccountId primary_user = test_api.primary_big_view()
-                               ->GetCurrentUser()
-                               ->basic_user_info->account_id;
+  AccountId primary_user =
+      test_api.primary_big_view()->GetCurrentUser().basic_user_info.account_id;
   DataDispatcher()->SetPinEnabledForUser(primary_user, true);
 
   // This user should be identical to the user we enabled PIN for.
@@ -2173,7 +2156,7 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
   SetUserCount(1);
   SetWidget(CreateWidgetWithContent(lock));
 
-  const AccountId& kUserAccountId = users()[0]->basic_user_info->account_id;
+  const AccountId& kUserAccountId = users()[0].basic_user_info.account_id;
 
   LockContentsView::TestApi test_api(lock);
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -2220,8 +2203,8 @@ TEST_F(LockContentsViewUnitTest, RemoveUserFocusMovesBackToPrimaryUser) {
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   AddPublicAccountUsers(1);
   AddUsers(1);
-  users()[1]->can_remove = true;
-  DataDispatcher()->NotifyUsers(users());
+  users()[1].can_remove = true;
+  DataDispatcher()->SetUserList(users());
   SetWidget(CreateWidgetWithContent(lock));
 
   LockContentsView::TestApi test_api(lock);
@@ -2271,8 +2254,8 @@ TEST_F(LockContentsViewUnitTest,
 
   // Change fingerprint state; backlights remain forced off.
   DataDispatcher()->SetFingerprintState(
-      users()[0]->basic_user_info->account_id,
-      mojom::FingerprintState::DISABLED_FROM_ATTEMPTS);
+      users()[0].basic_user_info.account_id,
+      FingerprintState::DISABLED_FROM_ATTEMPTS);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       Shell::Get()->backlights_forced_off_setter()->backlights_forced_off());
@@ -2303,7 +2286,7 @@ TEST_F(LockContentsViewUnitTest,
   // Validate a fingerprint authentication attempt resets backlights being
   // forced off.
   DataDispatcher()->NotifyFingerprintAuthResult(
-      users()[0]->basic_user_info->account_id, false /*successful*/);
+      users()[0].basic_user_info.account_id, false /*successful*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       Shell::Get()->backlights_forced_off_setter()->backlights_forced_off());
@@ -2386,9 +2369,9 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
   LoginBigUserView* auth_view = lock_contents.primary_big_view();
 
   AccountId auth_view_user =
-      auth_view->GetCurrentUser()->basic_user_info->account_id;
+      auth_view->GetCurrentUser().basic_user_info.account_id;
   AccountId list_user =
-      list_user_view->current_user()->basic_user_info->account_id;
+      list_user_view->current_user().basic_user_info.account_id;
 
   Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
       mojom::OobeDialogState::GAIA_SIGNIN);
@@ -2400,9 +2383,9 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
 
   // User info is not swapped.
   EXPECT_EQ(auth_view_user,
-            auth_view->GetCurrentUser()->basic_user_info->account_id);
+            auth_view->GetCurrentUser().basic_user_info.account_id);
   EXPECT_EQ(list_user,
-            list_user_view->current_user()->basic_user_info->account_id);
+            list_user_view->current_user().basic_user_info.account_id);
 
   // Hide OOBE dialog.
   Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
@@ -2413,10 +2396,9 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
   generator->ClickLeftButton();
 
   // User info should be now swapped.
-  EXPECT_EQ(list_user,
-            auth_view->GetCurrentUser()->basic_user_info->account_id);
+  EXPECT_EQ(list_user, auth_view->GetCurrentUser().basic_user_info.account_id);
   EXPECT_EQ(auth_view_user,
-            list_user_view->current_user()->basic_user_info->account_id);
+            list_user_view->current_user().basic_user_info.account_id);
 }
 
 }  // namespace ash

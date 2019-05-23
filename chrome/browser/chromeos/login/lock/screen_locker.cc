@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/login_screen_model.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -762,9 +765,8 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
     if (quick_unlock_storage->fingerprint_storage()->ExceededUnlockAttempts()) {
       VLOG(1) << "Fingerprint unlock is disabled because it reached maximum"
               << " unlock attempt.";
-      delegate_->SetFingerprintState(
-          user.GetAccountId(),
-          ash::mojom::FingerprintState::DISABLED_FROM_ATTEMPTS);
+      ash::LoginScreen::Get()->GetModel()->SetFingerprintState(
+          user.GetAccountId(), ash::FingerprintState::DISABLED_FROM_ATTEMPTS);
       delegate_->ShowErrorMessage(IDS_LOGIN_ERROR_FINGERPRINT_MAX_ATTEMPT,
                                   HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
     }
@@ -810,8 +812,8 @@ void ScreenLocker::MaybeDisablePinAndFingerprintFromTimeout(
       if (quick_unlock_storage->fingerprint_storage()
               ->IsFingerprintAvailable()) {
         VLOG(1) << "Require strong auth to make fingerprint unlock available.";
-        delegate_->SetFingerprintState(
-            account_id, ash::mojom::FingerprintState::DISABLED_FROM_TIMEOUT);
+        ash::LoginScreen::Get()->GetModel()->SetFingerprintState(
+            account_id, ash::FingerprintState::DISABLED_FROM_TIMEOUT);
       }
     }
   }

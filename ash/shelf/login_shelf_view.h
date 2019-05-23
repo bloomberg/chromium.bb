@@ -41,9 +41,9 @@ class KioskAppsButton;
 
 // LoginShelfView contains the shelf buttons visible outside of an active user
 // session. ShelfView and LoginShelfView should never be shown together.
-// This view is attached as a LoginDataDispatcher::Observer when the LockScreen
-// is instantiated in kLogin mode. It cannot attach itself because it does not
-// know when the Login is instantiated.
+// This view is attached as a LoginDataDispatcher::Observer when the
+// LockScreen is instantiated in kLogin mode. It cannot attach itself because it
+// does not know when the Login is instantiated.
 class ASH_EXPORT LoginShelfView : public views::View,
                                   public views::ButtonListener,
                                   public TrayActionObserver,
@@ -147,8 +147,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void OnOobeDialogStateChanged(mojom::OobeDialogState state) override;
 
   // LoginDataDispatcher::Observer:
-  void OnUsersChanged(
-      const std::vector<mojom::LoginUserInfoPtr>& users) override;
+  void OnUsersChanged(const std::vector<LoginUserInfo>& users) override;
 
   // LocaleChangeObserver:
   void OnLocaleChanged() override;

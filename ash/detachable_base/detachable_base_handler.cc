@@ -6,6 +6,7 @@
 
 #include "ash/detachable_base/detachable_base_observer.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/session/user_info.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
@@ -75,7 +76,7 @@ void DetachableBaseHandler::RemoveObserver(DetachableBaseObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DetachableBaseHandler::RemoveUserData(const mojom::UserInfo& user) {
+void DetachableBaseHandler::RemoveUserData(const UserInfo& user) {
   last_used_devices_.erase(user.account_id);
 
   if (local_state_) {
@@ -94,7 +95,7 @@ DetachableBasePairingStatus DetachableBaseHandler::GetPairingStatus() const {
 }
 
 bool DetachableBaseHandler::PairedBaseMatchesLastUsedByUser(
-    const mojom::UserInfo& user) const {
+    const UserInfo& user) const {
   if (GetPairingStatus() != DetachableBasePairingStatus::kAuthenticated)
     return false;
 
@@ -112,7 +113,7 @@ bool DetachableBaseHandler::PairedBaseMatchesLastUsedByUser(
 }
 
 bool DetachableBaseHandler::SetPairedBaseAsLastUsedByUser(
-    const mojom::UserInfo& user) {
+    const UserInfo& user) {
   if (GetPairingStatus() != DetachableBasePairingStatus::kAuthenticated)
     return false;
 
@@ -202,8 +203,7 @@ void DetachableBaseHandler::UpdateTabletMode(
 }
 
 DetachableBaseHandler::DetachableBaseId
-DetachableBaseHandler::GetLastUsedDeviceForUser(
-    const mojom::UserInfo& user) const {
+DetachableBaseHandler::GetLastUsedDeviceForUser(const UserInfo& user) const {
   const auto it = last_used_devices_.find(user.account_id);
   // If the last used device was set within this session, bypass local state.
   if (it != last_used_devices_.end())
