@@ -187,6 +187,18 @@ static void JNI_SendTabToSelfAndroidBridge_DismissEntry(
   }
 }
 
+// Marks the entry with the associated GUID as opened.
+static void JNI_SendTabToSelfAndroidBridge_MarkEntryOpened(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_guid) {
+  SendTabToSelfModel* model = GetModel(j_profile);
+  if (model->IsReady()) {
+    const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+    model->MarkEntryOpened(guid);
+  }
+}
+
 // Returns whether the feature is available for the specified |web_contents|.
 static jboolean JNI_SendTabToSelfAndroidBridge_IsFeatureAvailable(
     JNIEnv* env,

@@ -154,6 +154,13 @@ public class SendTabToSelfAndroidBridgeTest {
 
     @Test
     @SmallTest
+    public void testMarkEntryOpened() {
+        SendTabToSelfAndroidBridge.markEntryOpened(mProfile, GUID);
+        verify(mNativeMock).markEntryOpened(eq(mProfile), eq(GUID));
+    }
+
+    @Test
+    @SmallTest
     public void testDeleteEntry() {
         SendTabToSelfAndroidBridge.deleteEntry(mProfile, GUID);
         verify(mNativeMock).deleteEntry(eq(mProfile), eq(GUID));

@@ -107,6 +107,15 @@ public class SendTabToSelfAndroidBridge {
     public static void dismissEntry(Profile profile, String guid) {
         SendTabToSelfAndroidBridgeJni.get().dismissEntry(profile, guid);
     }
+    /**
+     * Mark the entry associated with the GUID as opened.
+     *
+     * @param profile Profile of the user to mark entry as opened.
+     * @param guid The GUID of the entry to mark as opened.
+     */
+    public static void markEntryOpened(Profile profile, String guid) {
+        SendTabToSelfAndroidBridgeJni.get().markEntryOpened(profile, guid);
+    }
 
     /**
      * Return whether the feature is available for the current user Profile and
@@ -166,6 +175,8 @@ public class SendTabToSelfAndroidBridge {
         void deleteEntry(Profile profile, String guid);
 
         void dismissEntry(Profile profile, String guid);
+
+        void markEntryOpened(Profile profile, String guid);
 
         SendTabToSelfEntry getEntryByGUID(Profile profile, String guid);
 
