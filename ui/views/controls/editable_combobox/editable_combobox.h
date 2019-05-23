@@ -80,10 +80,6 @@ class VIEWS_EXPORT EditableCombobox : public View,
     listener_ = listener;
   }
 
-  void set_show_menu_on_next_focus(bool show_menu_on_next_focus) {
-    show_menu_on_next_focus_ = show_menu_on_next_focus;
-  }
-
   // Selects the specified logical text range for the textfield.
   void SelectRange(const gfx::Range& range);
 
@@ -141,9 +137,7 @@ class VIEWS_EXPORT EditableCombobox : public View,
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   Textfield* textfield_;
-
   Button* arrow_ = nullptr;
-
   std::unique_ptr<ui::ComboboxModel> combobox_model_;
 
   // The EditableComboboxMenuModel used by |menu_runner_|.
@@ -159,9 +153,9 @@ class VIEWS_EXPORT EditableCombobox : public View,
 
   const Type type_;
 
-  // If false, then the menu won't be shown the next time the View is focused.
-  // Set false on creation to avoid showing the menu on the first focus event.
-  bool show_menu_on_next_focus_ = true;
+  // True between mouse press and release, used to avoid opening the menu and
+  // interrupting textfield selection interactions.
+  bool mouse_pressed_ = false;
 
   // Set while the drop-down is showing.
   std::unique_ptr<MenuRunner> menu_runner_;

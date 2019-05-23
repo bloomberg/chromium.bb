@@ -73,7 +73,6 @@ class PasswordPendingView : public PasswordBubbleViewBase,
 
   views::EditableCombobox* username_dropdown_;
   views::ToggleImageButton* password_view_button_;
-  views::View* initially_focused_view_;
 
   // The view for the password value.
   views::EditableCombobox* password_dropdown_;

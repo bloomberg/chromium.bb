@@ -376,14 +376,12 @@ bool EditableCombobox::HandleMouseEvent(Textfield* sender,
   // We show the menu on mouse release instead of mouse press so that the menu
   // showing up doesn't interrupt a potential text selection operation by the
   // user.
-  // If we don't already have focus when the mouse is pressed, we set
-  // |show_menu_on_next_focus_| to false so that the focus event that will
-  // follow the press event and precede the release event does not end up
-  // showing the menu and interrupting a text selection operation.
-  if (mouse_event.type() == ui::ET_MOUSE_PRESSED && !textfield_->HasFocus())
-    show_menu_on_next_focus_ = false;
-  else if (mouse_event.type() == ui::ET_MOUSE_RELEASED)
+  if (mouse_event.type() == ui::ET_MOUSE_PRESSED) {
+    mouse_pressed_ = true;
+  } else if (mouse_event.type() == ui::ET_MOUSE_RELEASED) {
+    mouse_pressed_ = false;
     ShowDropDownMenu(ui::MENU_SOURCE_MOUSE);
+  }
   return false;
 }
 
@@ -402,9 +400,11 @@ void EditableCombobox::OnViewBlurred(View* observed_view) {
 }
 
 void EditableCombobox::OnViewFocused(View* observed_view) {
-  if (show_menu_on_next_focus_)
+  // We only show the menu if the mouse is not currently pressed to avoid
+  // interrupting a text selection operation. The menu will be shown on mouse
+  // release inside HandleMouseEvent.
+  if (!mouse_pressed_)
     ShowDropDownMenu();
-  show_menu_on_next_focus_ = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
