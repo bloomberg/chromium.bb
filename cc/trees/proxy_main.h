@@ -10,10 +10,6 @@
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
 
-namespace viz {
-class LocalSurfaceIdAllocation;
-}
-
 namespace cc {
 
 class MutatorEvents;
@@ -62,8 +58,6 @@ class CC_EXPORT ProxyMain : public Proxy {
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
-  void DidGenerateLocalSurfaceIdAllocation(
-      const viz::LocalSurfaceIdAllocation& allocation);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;
@@ -98,7 +92,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   void SetPaintWorkletLayerPainter(
       std::unique_ptr<PaintWorkletLayerPainter> painter) override;
-  uint32_t GenerateChildSurfaceSequenceNumberSync() override;
   bool MainFrameWillHappenForTesting() override;
   void ReleaseLayerTreeFrameSink() override;
   void UpdateBrowserControlsState(BrowserControlsState constraints,

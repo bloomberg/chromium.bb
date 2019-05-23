@@ -453,8 +453,7 @@ void WindowTreeHost::OnHostResizedInPixels(
   // Allocate a new LocalSurfaceId for the new state.
   viz::LocalSurfaceIdAllocation local_surface_id_allocation(
       new_local_surface_id_allocation);
-  if (ShouldAllocateLocalSurfaceIdOnResize() &&
-      !new_local_surface_id_allocation.IsValid()) {
+  if (!new_local_surface_id_allocation.IsValid()) {
     window_->AllocateLocalSurfaceId();
     local_surface_id_allocation = window_->GetLocalSurfaceIdAllocation();
   }
@@ -516,10 +515,6 @@ gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
       gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
   window()->layer()->transform().TransformRect(&new_bounds);
   return gfx::ToEnclosingRect(new_bounds);
-}
-
-bool WindowTreeHost::ShouldAllocateLocalSurfaceIdOnResize() {
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

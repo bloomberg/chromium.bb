@@ -571,9 +571,6 @@ bool LayerTreeHostImpl::CanDraw() const {
     return false;
   }
 
-  if (waiting_for_local_surface_id_)
-    return false;
-
   if (resourceless_software_draw_)
     return true;
 
@@ -5944,41 +5941,8 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url, ukm::SourceId source_id) {
   }
 }
 
-void LayerTreeHostImpl::OnLayerTreeLocalSurfaceIdAllocationChanged() {
-  if (!waiting_for_local_surface_id_)
-    return;
-
-  const viz::LocalSurfaceId& current_id =
-      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-          .local_surface_id();
-  const viz::LocalSurfaceId& new_id =
-      active_tree()
-          ->local_surface_id_allocation_from_parent()
-          .local_surface_id();
-  if ((current_id.embed_token() != new_id.embed_token()) ||
-      (new_id.parent_sequence_number() > current_id.parent_sequence_number()) ||
-      ((new_id.parent_sequence_number() ==
-        current_id.parent_sequence_number()) &&
-       (new_id.child_sequence_number() >=
-        current_id.child_sequence_number()))) {
-    waiting_for_local_surface_id_ = false;
-    client_->OnCanDrawStateChanged(CanDraw());
-  }
-}
-
-uint32_t LayerTreeHostImpl::GenerateChildSurfaceSequenceNumberSync() {
-  waiting_for_local_surface_id_ = true;
-  child_local_surface_id_allocator_.GenerateIdOrIncrementChild();
-  client_->OnCanDrawStateChanged(CanDraw());
-  return child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-      .local_surface_id()
-      .child_sequence_number();
-}
-
 void LayerTreeHostImpl::AllocateLocalSurfaceId() {
   child_local_surface_id_allocator_.GenerateId();
-  client_->DidGenerateLocalSurfaceIdAllocationOnImplThread(
-      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
 }
 
 void LayerTreeHostImpl::RequestBeginFrameForAnimatedImages() {

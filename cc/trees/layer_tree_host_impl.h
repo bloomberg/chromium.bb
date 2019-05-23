@@ -157,9 +157,6 @@ class LayerTreeHostImplClient {
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) = 0;
 
-  virtual void DidGenerateLocalSurfaceIdAllocationOnImplThread(
-      const viz::LocalSurfaceIdAllocation& allocation) = 0;
-
   virtual void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType tree_type) = 0;
@@ -754,12 +751,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void SetActiveURL(const GURL& url, ukm::SourceId source_id);
 
-  // Called when LayerTreeImpl's LocalSurfaceIdAllocation changes.
-  void OnLayerTreeLocalSurfaceIdAllocationChanged();
-
-  // See SyncSurfaceIdAllocator for details.
-  uint32_t GenerateChildSurfaceSequenceNumberSync();
-
   CompositorFrameReportingController* compositor_frame_reporting_controller()
       const {
     return compositor_frame_reporting_controller_.get();
@@ -1165,10 +1156,6 @@ class CC_EXPORT LayerTreeHostImpl
   base::flat_set<viz::SurfaceRange> last_draw_referenced_surfaces_;
   base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
-
-  // Set to true if waiting to receive a LocalSurfaceIdAllocation that matches
-  // that of |child_local_surface_id_allocator_|.
-  bool waiting_for_local_surface_id_ = false;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 

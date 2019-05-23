@@ -320,10 +320,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Rect GetTransformedRootWindowBoundsInPixels(
       const gfx::Size& size_in_pixels) const;
 
-  // Returns true if a LocalSurfaceId should be allocated when the size changes
-  // and a LocalSurfaceId was not supplied.
-  virtual bool ShouldAllocateLocalSurfaceIdOnResize();
-
   const base::ObserverList<WindowTreeHostObserver>::Unchecked& observers()
       const {
     return observers_;

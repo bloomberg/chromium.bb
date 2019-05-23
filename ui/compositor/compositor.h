@@ -23,7 +23,6 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -68,6 +67,7 @@ namespace viz {
 class FrameSinkManagerImpl;
 class ContextProvider;
 class HostFrameSinkManager;
+class LocalSurfaceIdAllocation;
 class RasterContextProvider;
 }
 
@@ -287,17 +287,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       const gfx::Size& size_in_pixel,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
 
-  // Updates the LocalSurfaceIdAllocation from the parent.
-  viz::LocalSurfaceIdAllocation UpdateLocalSurfaceIdFromParent(
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
-
-  // Returns the current LocalSurfaceIdAllocation, which may not be valid.
-  viz::LocalSurfaceIdAllocation GetLocalSurfaceIdAllocation() const;
-
-  // Returns a new LocalSurfaceIdAllocation by incrementing the child sequence
-  // number.
-  viz::LocalSurfaceIdAllocation RequestNewChildLocalSurfaceId();
-
   // Set the output color profile into which this compositor should render. Also
   // sets the SDR white level (in nits) used to scale HDR color space primaries.
   void SetDisplayColorSpace(
@@ -413,8 +402,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       const gfx::PresentationFeedback& feedback) override;
   void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
-  void DidGenerateLocalSurfaceIdAllocation(
-      const viz::LocalSurfaceIdAllocation& allocation) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -526,8 +513,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   bool disabled_swap_until_resize_ = false;
 
   const char* trace_environment_name_;
-
-  viz::LocalSurfaceIdAllocation last_local_surface_id_allocation_;
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_;
 

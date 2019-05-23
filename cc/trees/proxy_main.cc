@@ -360,11 +360,6 @@ void ProxyMain::DidPresentCompositorFrame(
                                               feedback);
 }
 
-void ProxyMain::DidGenerateLocalSurfaceIdAllocation(
-    const viz::LocalSurfaceIdAllocation& allocation) {
-  layer_tree_host_->DidGenerateLocalSurfaceIdAllocation(allocation);
-}
-
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;
@@ -563,12 +558,6 @@ void ProxyMain::SetPaintWorkletLayerPainter(
 
 bool ProxyMain::SupportsImplScrolling() const {
   return true;
-}
-
-uint32_t ProxyMain::GenerateChildSurfaceSequenceNumberSync() {
-  // This function only makes sense for single-threaded mode.
-  NOTREACHED();
-  return 0u;
 }
 
 bool ProxyMain::MainFrameWillHappenForTesting() {

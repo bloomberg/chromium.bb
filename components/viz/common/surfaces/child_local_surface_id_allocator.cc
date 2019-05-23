@@ -22,16 +22,6 @@ ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator(
 ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
     : ChildLocalSurfaceIdAllocator(base::DefaultTickClock::GetInstance()) {}
 
-// static
-std::unique_ptr<ChildLocalSurfaceIdAllocator>
-ChildLocalSurfaceIdAllocator::CreateWithChildSequenceNumber(uint32_t value) {
-  std::unique_ptr<ChildLocalSurfaceIdAllocator> allocator =
-      std::make_unique<ChildLocalSurfaceIdAllocator>();
-  allocator->current_local_surface_id_allocation_.local_surface_id_
-      .child_sequence_number_ = value;
-  return allocator;
-}
-
 bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceIdAllocation& parent_local_surface_id_allocation) {
   const LocalSurfaceId& current_local_surface_id =
@@ -118,15 +108,6 @@ void ChildLocalSurfaceIdAllocator::GenerateId() {
       TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "ChildLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
       current_local_surface_id_allocation_.local_surface_id_.ToString());
-}
-
-void ChildLocalSurfaceIdAllocator::GenerateIdOrIncrementChild() {
-  if (current_local_surface_id_allocation_.IsValid()) {
-    GenerateId();
-  } else {
-    ++current_local_surface_id_allocation_.local_surface_id_
-          .child_sequence_number_;
-  }
 }
 
 }  // namespace viz

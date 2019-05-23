@@ -497,13 +497,6 @@ void ProxyImpl::DidPresentCompositorFrameOnImplThread(
                                 std::move(callbacks), feedback));
 }
 
-void ProxyImpl::DidGenerateLocalSurfaceIdAllocationOnImplThread(
-    const viz::LocalSurfaceIdAllocation& allocation) {
-  MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyMain::DidGenerateLocalSurfaceIdAllocation,
-                                proxy_main_weak_ptr_, allocation));
-}
-
 void ProxyImpl::NotifyAnimationWorkletStateChange(
     AnimationWorkletMutationState state,
     ElementListType element_list_type) {

@@ -525,21 +525,10 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
                                               feedback);
 }
 
-void SingleThreadProxy::DidGenerateLocalSurfaceIdAllocationOnImplThread(
-    const viz::LocalSurfaceIdAllocation& allocation) {
-  DebugScopedSetMainThread main(task_runner_provider_);
-  layer_tree_host_->DidGenerateLocalSurfaceIdAllocation(allocation);
-}
-
 void SingleThreadProxy::NotifyAnimationWorkletStateChange(
     AnimationWorkletMutationState state,
     ElementListType element_list_type) {
   layer_tree_host_->NotifyAnimationWorkletStateChange(state, element_list_type);
-}
-
-uint32_t SingleThreadProxy::GenerateChildSurfaceSequenceNumberSync() {
-  DebugScopedSetImplThread impl(task_runner_provider_);
-  return host_impl_->GenerateChildSurfaceSequenceNumberSync();
 }
 
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {

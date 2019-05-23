@@ -717,11 +717,6 @@ void LayerTreeHost::DidPresentCompositorFrame(
   client_->DidPresentCompositorFrame(frame_token, feedback);
 }
 
-void LayerTreeHost::DidGenerateLocalSurfaceIdAllocation(
-    const viz::LocalSurfaceIdAllocation& allocation) {
-  client_->DidGenerateLocalSurfaceIdAllocation(allocation);
-}
-
 void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
 }
@@ -1394,29 +1389,14 @@ void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
   // parent agreed upon these without needing to further advance its sequence
   // number. When this occurs the child is already up-to-date and a commit here
   // is simply redundant.
-  //
-  // If |generated_child_surface_sequence_number_| is set, it means a child
-  // sequence number was generated and needs to be compared against.
   if (AreEmbedTokensEqual(current_local_surface_id_from_parent,
                           local_surface_id_from_parent) &&
       AreParentSequencesEqual(current_local_surface_id_from_parent,
-                              local_surface_id_from_parent) &&
-      (!generated_child_surface_sequence_number_ ||
-       local_surface_id_from_parent.child_sequence_number() <
-           *generated_child_surface_sequence_number_)) {
+                              local_surface_id_from_parent)) {
     return;
   }
-  generated_child_surface_sequence_number_.reset();
-
   UpdateDeferMainFrameUpdateInternal();
   SetNeedsCommit();
-}
-
-uint32_t LayerTreeHost::GenerateChildSurfaceSequenceNumberSync() {
-  DCHECK(proxy_);
-  generated_child_surface_sequence_number_ =
-      proxy_->GenerateChildSurfaceSequenceNumberSync();
-  return *generated_child_surface_sequence_number_;
 }
 
 void LayerTreeHost::RequestNewLocalSurfaceId() {
