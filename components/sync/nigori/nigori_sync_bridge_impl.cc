@@ -218,7 +218,9 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     : processor_(std::move(processor)),
       cryptographer_(encryptor),
       passphrase_type_(NigoriSpecifics::UNKNOWN),
-      encrypt_everything_(false) {}
+      encrypt_everything_(false) {
+  processor_->ModelReadyToSync(this, NigoriMetadataBatch());
+}
 
 NigoriSyncBridgeImpl::~NigoriSyncBridgeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

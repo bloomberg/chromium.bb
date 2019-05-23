@@ -55,6 +55,28 @@ MATCHER(HasKeystoreNigori, "") {
          specifics.has_keystore_migration_time();
 }
 
+MATCHER_P(CanDecryptWith, key_params, "") {
+  const Cryptographer& cryptographer = arg;
+  Nigori nigori;
+  nigori.InitByDerivation(key_params.derivation_params, key_params.password);
+  std::string nigori_name;
+  EXPECT_TRUE(
+      nigori.Permute(Nigori::Type::Password, kNigoriKeyName, &nigori_name));
+  const std::string unencrypted = "test";
+  sync_pb::EncryptedData encrypted;
+  encrypted.set_key_name(nigori_name);
+  EXPECT_TRUE(nigori.Encrypt(unencrypted, encrypted.mutable_blob()));
+
+  if (!cryptographer.CanDecrypt(encrypted)) {
+    return false;
+  }
+  std::string decrypted;
+  if (!cryptographer.DecryptToString(encrypted, &decrypted)) {
+    return false;
+  }
+  return decrypted == unencrypted;
+}
+
 KeyParams Pbkdf2KeyParams(std::string key) {
   return {KeyDerivationParams::CreateForPbkdf2(), std::move(key)};
 }
@@ -175,28 +197,6 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   MockNigoriLocalChangeProcessor* processor_;
   testing::NiceMock<MockObserver> observer_;
 };
-
-MATCHER_P(CanDecryptWith, key_params, "") {
-  const Cryptographer& cryptographer = arg;
-  Nigori nigori;
-  nigori.InitByDerivation(key_params.derivation_params, key_params.password);
-  std::string nigori_name;
-  EXPECT_TRUE(
-      nigori.Permute(Nigori::Type::Password, kNigoriKeyName, &nigori_name));
-  const std::string unencrypted = "test";
-  sync_pb::EncryptedData encrypted;
-  encrypted.set_key_name(nigori_name);
-  EXPECT_TRUE(nigori.Encrypt(unencrypted, encrypted.mutable_blob()));
-
-  if (!cryptographer.CanDecrypt(encrypted)) {
-    return false;
-  }
-  std::string decrypted;
-  if (!cryptographer.DecryptToString(encrypted, &decrypted)) {
-    return false;
-  }
-  return decrypted == unencrypted;
-}
 
 // Simplest case of keystore Nigori: we have only one keystore key and no old
 // keys. This keystore key is encrypted in both encryption_keybag and
