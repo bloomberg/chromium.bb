@@ -14,6 +14,8 @@ from blinkpy.w3c.common import CHROMIUM_WPT_DIR, is_file_exportable
 
 _log = logging.getLogger(__name__)
 URL_BASE = 'https://chromium-review.googlesource.com'
+# https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#query-options
+QUERY_OPTIONS = 'o=CURRENT_FILES&o=CURRENT_REVISION&o=COMMIT_FOOTERS&o=DETAILED_ACCOUNTS'
 
 
 class GerritAPI(object):
@@ -52,8 +54,7 @@ class GerritAPI(object):
 
     def query_cl(self, change_id):
         """Quries a commit information from Gerrit."""
-        path = ('/changes/chromium%2Fsrc~master~{}?'
-                'o=CURRENT_FILES&o=CURRENT_REVISION&o=COMMIT_FOOTERS').format(change_id)
+        path = '/changes/chromium%2Fsrc~master~{}?{}'.format(change_id, QUERY_OPTIONS)
         try:
             cl_data = self.get(path)
         except NetworkTimeout:
@@ -65,10 +66,9 @@ class GerritAPI(object):
         cl = GerritCL(data=cl_data, api=self)
         return cl
 
-    def query_exportable_open_cls(self, limit=200):
-        path = ('/changes/?q=project:\"chromium/src\"+branch:master+status:open'
-                '&o=CURRENT_FILES&o=CURRENT_REVISION&o=COMMIT_FOOTERS'
-                '&o=DETAILED_ACCOUNTS&o=DETAILED_LABELS&n={}').format(limit)
+    def query_exportable_open_cls(self, limit=500):
+        path = ('/changes/?q=project:\"chromium/src\"+branch:master+is:open+'
+                '-is:wip&{}&n={}').format(QUERY_OPTIONS, limit)
         # The underlying host.web.get_binary() automatically retries until it
         # times out, at which point NetworkTimeout is raised.
         try:
