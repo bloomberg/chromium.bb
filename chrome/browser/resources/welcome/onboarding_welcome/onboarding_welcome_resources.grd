@@ -14,36 +14,6 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_NUX_GOOGLE_APPS_GMAIL_1X"
-               file="images/gmail_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_GMAIL_2X"
-               file="images/gmail_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_MAPS_1X"
-               file="images/maps_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_MAPS_2X"
-               file="images/maps_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_NEWS_1X"
-               file="images/news_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_NEWS_2X"
-               file="images/news_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_1X"
-               file="images/translate_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_2X"
-               file="images/translate_2x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_1X"
-               file="images/youtube_1x.png"
-               type="BINDATA" />
-      <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_2X"
-               file="images/youtube_2x.png"
-               type="BINDATA" />
       <include name="IDR_NUX_MODULE_ICONS_GOOGLE_DARK"
                file="images/module_icons/google_dark.svg"
                compress="gzip"

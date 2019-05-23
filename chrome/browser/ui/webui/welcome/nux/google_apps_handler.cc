@@ -45,6 +45,7 @@ const char* kGoogleAppsInteractionHistogram =
 constexpr const int kGoogleAppIconSize = 48;  // Pixels.
 
 GoogleAppsHandler::GoogleAppsHandler() {
+#if defined(GOOGLE_CHROME_BUILD)
   // Do not translate icon name as it is not human visible and needs to
   // match CSS.
 
@@ -52,15 +53,13 @@ GoogleAppsHandler::GoogleAppsHandler() {
       static_cast<int>(GoogleApps::kGmail),
       l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_GMAIL),
       "gmail", "https://accounts.google.com/b/0/AddMailService",
-      IDR_NUX_GOOGLE_APPS_GMAIL_1X};
+      IDS_ONBOARDING_WELCOME_GMAIL};
 
   if (IsAppVariationEnabled()) {
-#if defined(GOOGLE_CHROME_BUILD)
     google_apps_.push_back(
         {static_cast<int>(GoogleApps::kSearch),
          l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_SEARCH),
          "search", "https://google.com", IDS_ONBOARDING_WELCOME_SEARCH});
-#endif  // GOOGLE_CHROME_BUILD
   } else {
     google_apps_.push_back(gmail);
   }
@@ -68,12 +67,12 @@ GoogleAppsHandler::GoogleAppsHandler() {
   google_apps_.push_back(
       {static_cast<int>(GoogleApps::kYouTube),
        l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE),
-       "youtube", "https://youtube.com", IDR_NUX_GOOGLE_APPS_YOUTUBE_1X});
+       "youtube", "https://youtube.com", IDS_ONBOARDING_WELCOME_YOUTUBE});
 
   google_apps_.push_back(
       {static_cast<int>(GoogleApps::kMaps),
        l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_MAPS),
-       "maps", "https://maps.google.com", IDR_NUX_GOOGLE_APPS_MAPS_1X});
+       "maps", "https://maps.google.com", IDS_ONBOARDING_WELCOME_MAPS});
 
   if (IsAppVariationEnabled()) {
     google_apps_.push_back(gmail);
@@ -81,14 +80,15 @@ GoogleAppsHandler::GoogleAppsHandler() {
     google_apps_.push_back(
         {static_cast<int>(GoogleApps::kNews),
          l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_NEWS),
-         "news", "https://news.google.com", IDR_NUX_GOOGLE_APPS_NEWS_1X});
+         "news", "https://news.google.com", IDS_ONBOARDING_WELCOME_NEWS});
   }
 
   google_apps_.push_back({static_cast<int>(GoogleApps::kTranslate),
                           l10n_util::GetStringUTF8(
                               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE),
                           "translate", "https://translate.google.com",
-                          IDR_NUX_GOOGLE_APPS_TRANSLATE_1X});
+                          IDS_ONBOARDING_WELCOME_TRANSLATE});
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 GoogleAppsHandler::~GoogleAppsHandler() {}
