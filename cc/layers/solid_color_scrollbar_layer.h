@@ -34,6 +34,8 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
 
   void SetNeedsDisplayRect(const gfx::Rect& rect) override;
 
+  bool HitTestable() const override;
+
   // ScrollbarLayerInterface
   void SetScrollElementId(ElementId element_id) override;
 

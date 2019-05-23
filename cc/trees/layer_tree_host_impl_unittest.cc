@@ -463,13 +463,14 @@ class LayerTreeHostImplTest : public testing::Test,
     scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
     scroll->SetDrawsContent(true);
 
-    std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
-        SolidColorScrollbarLayerImpl::Create(layer_tree_impl, 4, VERTICAL, 10,
-                                             0, false, true);
+    std::unique_ptr<PaintedScrollbarLayerImpl> scrollbar =
+        PaintedScrollbarLayerImpl::Create(layer_tree_impl, 4, VERTICAL, false,
+                                          true);
     scrollbar->SetBounds(scrollbar_size);
     scrollbar->test_properties()->position = gfx::PointF(345, 0);
     scrollbar->SetScrollElementId(scroll->element_id());
     scrollbar->SetDrawsContent(true);
+    scrollbar->SetHitTestable(true);
     scrollbar->test_properties()->opacity = 1.f;
 
     std::unique_ptr<LayerImpl> squash1 = LayerImpl::Create(layer_tree_impl, 5);
@@ -1316,9 +1317,9 @@ TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
   scroll->SetDrawsContent(true);
   scroll->SetHitTestable(true);
 
-  std::unique_ptr<SolidColorScrollbarLayerImpl> drawn_scrollbar =
-      SolidColorScrollbarLayerImpl::Create(layer_tree_impl, 4, VERTICAL, 10, 0,
-                                           false, true);
+  std::unique_ptr<PaintedScrollbarLayerImpl> drawn_scrollbar =
+      PaintedScrollbarLayerImpl::Create(layer_tree_impl, 4, VERTICAL, false,
+                                        true);
   drawn_scrollbar->SetBounds(scrollbar_size);
   drawn_scrollbar->test_properties()->position = gfx::PointF(345, 0);
   drawn_scrollbar->SetScrollElementId(scroll->element_id());
@@ -2367,8 +2368,8 @@ TEST_F(LayerTreeHostImplTest, ViewportScrollbarGeometry) {
   // size.
   const gfx::Size outer_viewport_size = content_size;
 
-  SolidColorScrollbarLayerImpl* v_scrollbar;
-  SolidColorScrollbarLayerImpl* h_scrollbar;
+  PaintedScrollbarLayerImpl* v_scrollbar;
+  PaintedScrollbarLayerImpl* h_scrollbar;
 
   // Setup
   {
@@ -2391,12 +2392,12 @@ TEST_F(LayerTreeHostImplTest, ViewportScrollbarGeometry) {
     // Add scrollbars. They will always exist - even if unscrollable - but their
     // visibility will be determined by whether the content can be scrolled.
     {
-      std::unique_ptr<SolidColorScrollbarLayerImpl> v_scrollbar_unique =
-          SolidColorScrollbarLayerImpl::Create(active_tree, 400, VERTICAL, 10,
-                                               0, false, true);
-      std::unique_ptr<SolidColorScrollbarLayerImpl> h_scrollbar_unique =
-          SolidColorScrollbarLayerImpl::Create(active_tree, 401, HORIZONTAL, 10,
-                                               0, false, true);
+      std::unique_ptr<PaintedScrollbarLayerImpl> v_scrollbar_unique =
+          PaintedScrollbarLayerImpl::Create(active_tree, 400, VERTICAL, false,
+                                            true);
+      std::unique_ptr<PaintedScrollbarLayerImpl> h_scrollbar_unique =
+          PaintedScrollbarLayerImpl::Create(active_tree, 401, HORIZONTAL, false,
+                                            true);
       v_scrollbar = v_scrollbar_unique.get();
       h_scrollbar = h_scrollbar_unique.get();
 
@@ -3988,7 +3989,6 @@ class LayerTreeHostImplTestMultiScrollable : public LayerTreeHostImplTest {
     scrollbar_1_ = scrollbar_1.get();
     scrollbar_1->SetScrollElementId(root_scroll->element_id());
     scrollbar_1->SetDrawsContent(true);
-    scrollbar_1->SetHitTestable(true);
     scrollbar_1->SetBounds(scrollbar_size_1);
     TouchActionRegion touch_action_region;
     touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size_1));
@@ -4019,7 +4019,6 @@ class LayerTreeHostImplTestMultiScrollable : public LayerTreeHostImplTest {
 
     scrollbar_2->SetScrollElementId(child_element_id);
     scrollbar_2->SetDrawsContent(true);
-    scrollbar_2->SetHitTestable(true);
     scrollbar_2->SetBounds(scrollbar_size_2);
     scrollbar_2->SetCurrentPos(0);
     scrollbar_2->test_properties()->position = gfx::PointF(0, 0);
@@ -4112,13 +4111,79 @@ TEST_F(LayerTreeHostImplTestMultiScrollable, ScrollbarFlashWhenMouseEnter) {
   EXPECT_FALSE(animation_task_.is_null());
 }
 
-TEST_F(LayerTreeHostImplTestMultiScrollable, ScrollHitTestOnScrollbar) {
+TEST_F(LayerTreeHostImplTest, ScrollHitTestOnScrollbar) {
   LayerTreeSettings settings = DefaultSettings();
   settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
   settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
   settings.scrollbar_animator = LayerTreeSettings::NO_ANIMATOR;
 
-  SetUpLayers(settings);
+  gfx::Size viewport_size(300, 200);
+  gfx::Size content_size(1000, 1000);
+  gfx::Size child_layer_size(250, 150);
+  gfx::Size scrollbar_size_1(gfx::Size(15, viewport_size.height()));
+  gfx::Size scrollbar_size_2(gfx::Size(15, child_layer_size.height()));
+
+  const int scrollbar_1_id = 10;
+  const int scrollbar_2_id = 11;
+  const int child_scroll_id = 13;
+
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  host_impl_->active_tree()->SetDeviceScaleFactor(1);
+  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
+  host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
+      viewport_size);
+  LayerImpl* root_scroll =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+
+  // scrollbar_1 on root scroll.
+  std::unique_ptr<PaintedScrollbarLayerImpl> scrollbar_1 =
+      PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(),
+                                        scrollbar_1_id, VERTICAL, true, true);
+  scrollbar_1->SetScrollElementId(root_scroll->element_id());
+  scrollbar_1->SetDrawsContent(true);
+  scrollbar_1->SetHitTestable(true);
+  scrollbar_1->SetBounds(scrollbar_size_1);
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size_1));
+  scrollbar_1->SetTouchActionRegion(touch_action_region);
+  scrollbar_1->SetCurrentPos(0);
+  scrollbar_1->test_properties()->position = gfx::PointF(0, 0);
+  scrollbar_1->test_properties()->opacity = 0.f;
+  host_impl_->active_tree()
+      ->InnerViewportContainerLayer()
+      ->test_properties()
+      ->AddChild(std::move(scrollbar_1));
+
+  // scrollbar_2 on child.
+  std::unique_ptr<PaintedScrollbarLayerImpl> scrollbar_2 =
+      PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(),
+                                        scrollbar_2_id, VERTICAL, true, true);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl_->active_tree(), child_scroll_id);
+  child->test_properties()->position = gfx::PointF(50, 50);
+  child->SetBounds(child_layer_size);
+  child->SetDrawsContent(true);
+  child->SetHitTestable(true);
+  child->SetScrollable(gfx::Size(100, 100));
+  child->SetHitTestable(true);
+  child->SetElementId(LayerIdToElementIdForTesting(child->id()));
+  ElementId child_element_id = child->element_id();
+
+  scrollbar_2->SetScrollElementId(child_element_id);
+  scrollbar_2->SetDrawsContent(true);
+  scrollbar_2->SetHitTestable(true);
+  scrollbar_2->SetBounds(scrollbar_size_2);
+  scrollbar_2->SetCurrentPos(0);
+  scrollbar_2->test_properties()->position = gfx::PointF(0, 0);
+  scrollbar_2->test_properties()->opacity = 0.f;
+
+  child->test_properties()->AddChild(std::move(scrollbar_2));
+  root_scroll->test_properties()->AddChild(std::move(child));
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->UpdateScrollbarGeometries();
+  host_impl_->active_tree()->DidBecomeActive();
 
   // Wheel scroll on root scrollbar should process on impl thread.
   {
@@ -4251,9 +4316,9 @@ TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
       outer_viewport_size);
   LayerImpl* root_scroll =
       host_impl_->active_tree()->OuterViewportScrollLayer();
-  std::unique_ptr<SolidColorScrollbarLayerImpl> horiz_scrollbar =
-      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), horiz_id,
-                                           HORIZONTAL, 5, 5, true, true);
+  std::unique_ptr<PaintedScrollbarLayerImpl> horiz_scrollbar =
+      PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(), horiz_id,
+                                        HORIZONTAL, true, true);
   std::unique_ptr<LayerImpl> child =
       LayerImpl::Create(host_impl_->active_tree(), child_scroll_id);
   child->SetBounds(content_size);
@@ -14654,6 +14719,51 @@ TEST_F(LayerTreeHostImplTest, SkipOnDrawDoesNotUpdateDrawParams) {
                      skip_draw);
   EXPECT_EQ(transform, host_impl_->DrawTransform());
   EXPECT_EQ(viewport, host_impl_->active_tree()->GetDeviceViewport());
+}
+
+// Test that a touch scroll over a SolidColorScrollbarLayer, the scrollbar used
+// on Android, does not register as a scrollbar scroll and result in main
+// threaded scrolling.
+TEST_F(LayerTreeHostImplTest, TouchScrollOnAndroidScrollbar) {
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  gfx::Size viewport_size = gfx::Size(360, 600);
+  gfx::Size scroll_content_size = gfx::Size(360, 3800);
+  gfx::Size scrollbar_size = gfx::Size(15, 600);
+
+  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  std::unique_ptr<LayerImpl> root = LayerImpl::Create(layer_tree_impl, 1);
+  root->SetBounds(viewport_size);
+  root->test_properties()->position = gfx::PointF();
+
+  std::unique_ptr<LayerImpl> content = LayerImpl::Create(layer_tree_impl, 2);
+  content->SetBounds(scroll_content_size);
+  content->SetScrollable(viewport_size);
+  content->SetHitTestable(true);
+  content->SetElementId(LayerIdToElementIdForTesting(content->id()));
+  content->SetDrawsContent(true);
+
+  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
+      SolidColorScrollbarLayerImpl::Create(layer_tree_impl, 3, VERTICAL, 10, 0,
+                                           false, true);
+  scrollbar->SetBounds(scrollbar_size);
+  scrollbar->test_properties()->position = gfx::PointF(345, 0);
+  scrollbar->SetScrollElementId(content->element_id());
+  scrollbar->SetDrawsContent(true);
+  scrollbar->test_properties()->opacity = 1.f;
+
+  root->test_properties()->AddChild(std::move(content));
+  root->test_properties()->AddChild(std::move(scrollbar));
+
+  layer_tree_impl->SetRootLayerForTesting(std::move(root));
+  layer_tree_impl->BuildPropertyTreesForTesting();
+  layer_tree_impl->DidBecomeActive();
+
+  // Do a scroll over the scrollbar layer as well as the content layer, which
+  // should result in scrolling the scroll layer on the impl thread as the
+  // scrollbar should not be hit.
+  InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+      BeginState(gfx::Point(350, 50)).get(), InputHandler::TOUCHSCREEN);
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
 }
 
 }  // namespace

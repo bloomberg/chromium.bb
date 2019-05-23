@@ -336,7 +336,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Set or get whether this layer should be a hit test target
   void SetHitTestable(bool should_hit_test);
-  bool HitTestable() const;
+  virtual bool HitTestable() const;
 
   // Set or gets if this layer is a container for fixed position layers in its
   // subtree. Such layers will be positioned and transformed relative to this

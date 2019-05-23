@@ -2112,9 +2112,10 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
   }
 }
 
-struct FindScrollingLayerOrScrollbarFunctor {
+struct HitTestScrollingLayerOrScrollbarFunctor {
   bool operator()(LayerImpl* layer) const {
-    return layer->scrollable() || layer->is_scrollbar();
+    return layer->HitTestable() &&
+           (layer->scrollable() || layer->is_scrollbar());
   }
 };
 
@@ -2126,7 +2127,7 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
   FindClosestMatchingLayerState state;
   LayerImpl* root_layer = layer_list_[0];
   FindClosestMatchingLayer(screen_space_point, root_layer,
-                           FindScrollingLayerOrScrollbarFunctor(), &state);
+                           HitTestScrollingLayerOrScrollbarFunctor(), &state);
   return state.closest_match;
 }
 
