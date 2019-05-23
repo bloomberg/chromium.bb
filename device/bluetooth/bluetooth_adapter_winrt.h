@@ -93,10 +93,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
 
   // BluetoothAdapter:
   bool SetPoweredImpl(bool powered) override;
-  void AddDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void UpdateFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                    DiscoverySessionResultCallback callback) override;
+  void StartScanWithFilter(
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
   void RemoveDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
@@ -227,7 +228,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
 
   std::vector<scoped_refptr<BluetoothAdvertisement>> pending_advertisements_;
 
-  size_t num_discovery_sessions_ = 0;
   EventRegistrationToken advertisement_received_token_;
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
                              IBluetoothLEAdvertisementWatcher>

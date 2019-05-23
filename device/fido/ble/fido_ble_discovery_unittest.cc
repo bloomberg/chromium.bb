@@ -148,7 +148,7 @@ TEST_F(FidoBleDiscoveryTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
 
   // After BluetoothAdapter is powered on, we expect that discovery session
   // starts again.
-  EXPECT_CALL(*adapter(), StartDiscoverySessionWithFilterRaw);
+  EXPECT_CALL(*adapter(), StartScanWithFilter_);
   discovery()->Start();
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   adapter()->NotifyAdapterPoweredChanged(true);

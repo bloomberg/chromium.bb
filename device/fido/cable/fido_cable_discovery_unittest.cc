@@ -239,18 +239,21 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void ExpectDiscoveryWithScanCallback() {
-    EXPECT_CALL(*this, StartDiscoverySessionWithFilterRaw(_, _, _))
-        .WillOnce(::testing::WithArg<1>(
-            [](const auto& callback) { callback.Run(nullptr); }));
+    EXPECT_CALL(*this, StartScanWithFilter_(_, _))
+        .WillOnce(::testing::WithArg<1>([](auto& callback) {
+          std::move(callback).Run(
+              false, device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
+        }));
   }
 
   void ExpectDiscoveryWithScanCallback(
       base::span<const uint8_t, kEphemeralIdSize> eid,
       bool is_apple_device = false) {
-    EXPECT_CALL(*this, StartDiscoverySessionWithFilterRaw(_, _, _))
-        .WillOnce(::testing::WithArg<1>(
-            [this, eid, is_apple_device](const auto& callback) {
-              callback.Run(nullptr);
+    EXPECT_CALL(*this, StartScanWithFilter_(_, _))
+        .WillOnce(
+            ::testing::WithArg<1>([this, eid, is_apple_device](auto& callback) {
+              std::move(callback).Run(
+                  false, device::UMABluetoothDiscoverySessionOutcome::SUCCESS);
               if (is_apple_device) {
                 AddNewTestAppleBluetoothDevice(eid);
               } else {

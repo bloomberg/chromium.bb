@@ -26,7 +26,6 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
-#include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_connection.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_notify_session.h"

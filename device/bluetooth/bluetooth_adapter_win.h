@@ -117,10 +117,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
 
   // BluetoothAdapter:
   bool SetPoweredImpl(bool powered) override;
-  void AddDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void UpdateFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                    DiscoverySessionResultCallback callback) override;
+  void StartScanWithFilter(
+      std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
   void RemoveDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,

@@ -534,7 +534,7 @@ void BluetoothAdapterWinrt::SetDiscoverable(
 }
 
 bool BluetoothAdapterWinrt::IsDiscovering() const {
-  return num_discovery_sessions_ != 0;
+  return NumDiscoverySessions() > 0;
 }
 
 BluetoothAdapter::UUIDList BluetoothAdapterWinrt::GetUUIDs() const {
@@ -875,14 +875,20 @@ bool BluetoothAdapterWinrt::SetPoweredImpl(bool powered) {
   return true;
 }
 
-void BluetoothAdapterWinrt::AddDiscoverySession(
-    BluetoothDiscoveryFilter* discovery_filter,
-    const base::Closure& callback,
-    DiscoverySessionErrorCallback error_callback) {
-  if (num_discovery_sessions_ > 0) {
-    ui_task_runner_->PostTask(FROM_HERE, std::move(callback));
-    return;
-  }
+void BluetoothAdapterWinrt::UpdateFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), /*is_error=*/false,
+                                UMABluetoothDiscoverySessionOutcome::SUCCESS));
+}
+
+void BluetoothAdapterWinrt::StartScanWithFilter(
+    std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    DiscoverySessionResultCallback callback) {
+  // should only have 1 discovery session since we are just starting the scan
+  // now
+  DCHECK_EQ(NumDiscoverySessions(), 1);
 
   HRESULT hr = ActivateBluetoothAdvertisementLEWatcherInstance(
       &ble_advertisement_watcher_);
@@ -891,7 +897,7 @@ void BluetoothAdapterWinrt::AddDiscoverySession(
             << logging::SystemErrorCodeToString(hr);
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(error_callback),
+        base::BindOnce(std::move(callback), /*is_error=*/true,
                        UMABluetoothDiscoverySessionOutcome::UNKNOWN));
     return;
   }
@@ -903,7 +909,7 @@ void BluetoothAdapterWinrt::AddDiscoverySession(
             << logging::SystemErrorCodeToString(hr);
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(error_callback),
+        base::BindOnce(std::move(callback), /*is_error=*/true,
                        UMABluetoothDiscoverySessionOutcome::UNKNOWN));
     return;
   }
@@ -916,7 +922,7 @@ void BluetoothAdapterWinrt::AddDiscoverySession(
   if (!advertisement_received_token) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(error_callback),
+        base::BindOnce(std::move(callback), /*is_error=*/true,
                        UMABluetoothDiscoverySessionOutcome::UNKNOWN));
     return;
   }
@@ -930,7 +936,7 @@ void BluetoothAdapterWinrt::AddDiscoverySession(
     RemoveAdvertisementReceivedHandler();
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(error_callback),
+        base::BindOnce(std::move(callback), /*is_error=*/true,
                        UMABluetoothDiscoverySessionOutcome::UNKNOWN));
     return;
   }
@@ -946,20 +952,21 @@ void BluetoothAdapterWinrt::AddDiscoverySession(
     RemoveAdvertisementReceivedHandler();
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(error_callback),
+        base::BindOnce(std::move(callback), /*is_error=*/true,
                        UMABluetoothDiscoverySessionOutcome::UNKNOWN));
     return;
   }
 
-  ++num_discovery_sessions_;
-  ui_task_runner_->PostTask(FROM_HERE, std::move(callback));
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), false,
+                                UMABluetoothDiscoverySessionOutcome::SUCCESS));
 }
 
 void BluetoothAdapterWinrt::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     DiscoverySessionErrorCallback error_callback) {
-  if (num_discovery_sessions_ == 0) {
+  if (NumDiscoverySessions() == 0) {
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(error_callback),
@@ -967,8 +974,7 @@ void BluetoothAdapterWinrt::RemoveDiscoverySession(
     return;
   }
 
-  if (num_discovery_sessions_ > 1) {
-    --num_discovery_sessions_;
+  if (NumDiscoverySessions() > 1) {
     ui_task_runner_->PostTask(FROM_HERE, std::move(callback));
     return;
   }
@@ -988,7 +994,6 @@ void BluetoothAdapterWinrt::RemoveDiscoverySession(
   for (auto& device : devices_)
     device.second->ClearAdvertisementData();
   ble_advertisement_watcher_.Reset();
-  --num_discovery_sessions_;
   ui_task_runner_->PostTask(FROM_HERE, std::move(callback));
 }
 

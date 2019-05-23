@@ -181,10 +181,12 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
   bool SetPoweredImpl(bool powered) override;
-  void AddDiscoverySession(
-      device::BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      DiscoverySessionErrorCallback error_callback) override;
+  void UpdateFilter(
+      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
+  void StartScanWithFilter(
+      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      DiscoverySessionResultCallback callback) override;
   void RemoveDiscoverySession(
       device::BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
@@ -216,7 +218,6 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
 
   mojom::CentralState state_;
   mojo::Binding<mojom::FakeCentral> binding_;
-  size_t num_discovery_sessions_ = 0;
 };
 
 }  // namespace bluetooth
