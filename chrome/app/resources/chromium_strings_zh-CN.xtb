@@ -51,7 +51,7 @@
 <translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2799223571221894425">重新启动</translation>
-<translation id="2838154144102149890">若要更新，Chromium 需停止在此计算机上运行。这可能会导致已登录此计算机的其他用户丢失未保存的更改。</translation>
+<translation id="2838154144102149890">若要更新，Chromium 需要在此计算机上停止运行。这可能会导致登录此计算机的其他用户丢失未保存的更改。</translation>
 <translation id="2847479871509788944">从Chromium中移除…</translation>
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="2898082584336937987">请在您的手机上安装 Chromium。我们会将一条短信发送到您的手机：<ph name="PHONE_NUMBER" /></translation>
@@ -188,7 +188,7 @@
 <translation id="6810143991807788455">报告当前设置，帮助我们完善 Chromium</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（已复制到 Chromium）</translation>
-<translation id="6868056391275687737">正在运行 Chromium 的其他副本。若要更新，请先关闭它们。</translation>
+<translation id="6868056391275687737">Chromium 的其他副本正在运行。若要更新，请关闭这些副本。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="6964305034639999644">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>

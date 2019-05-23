@@ -6,7 +6,7 @@
 <translation id="1115445892567829615">Chromium আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="113122355610423240">Chromium আপনার ডিফল্ট ব্রাউজার</translation>
 <translation id="1170115874949214249">আপনার ফোনে Chromium ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট রিকভারি ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
-<translation id="1174473354587728743">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chromium কে সেট আপ করতে পারেন৷</translation>
+<translation id="1174473354587728743">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chromium কে সেট-আপ করতে পারেন৷</translation>
 <translation id="1185134272377778587">Chromium সম্পর্কে</translation>
 <translation id="1209657686917656928">{0,plural, =0{Chromium এখন রিলঞ্চ হবে}=1{Chromium ১ সেকেন্ডের মধ্যে রিলঞ্চ হবে}one{Chromium # সেকেন্ডের মধ্যে রিলঞ্চ হবে}other{Chromium # সেকেন্ডের মধ্যে রিলঞ্চ হবে}}</translation>
 <translation id="1267419686153937460">{0,plural, =1{একদিনের মধ্যে Chromium রিলঞ্চ করুন}one{# দিনের মধ্যে Chromium রিলঞ্চ করুন}other{# দিনের মধ্যে Chromium রিলঞ্চ করুন}}</translation>
@@ -34,7 +34,7 @@
 <translation id="2117378023188580026">এই আপডেটটি প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chromium আবার চালু করুন</translation>
 <translation id="2119636228670142020">&amp;Chromium OS সম্পর্কে</translation>
 <translation id="2178765360243863853">আপনার এখনই Chromium আবার চালু করা উচিত</translation>
-<translation id="2241627712206172106">যদি আপনি একটি কম্পিউটার শেয়ার করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chromium-এর সেট আপ করতে পারবেন৷</translation>
+<translation id="2241627712206172106">যদি আপনি একটি কম্পিউটার শেয়ার করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chromium-এর সেট-আপ করতে পারবেন৷</translation>
 <translation id="2265088490657775772">আপনার iPhone এ Chromium ইনস্টল করুন</translation>
 <translation id="2347108572062610441">আপনি Chromium চালু করলে কোন পৃষ্ঠাটি দেখানো হবে তা এই এক্সটেনশনটি পরিবর্তন করেছে।</translation>
 <translation id="2396765026452590966">আপনি Chromium চালু করলে কোন পৃষ্ঠাটি দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশনটি পরিবর্তন করেছে।</translation>

@@ -932,7 +932,7 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐号</translation>
-<translation id="766587987807204883">预提取的报道会显示在此处，即使在离线状态下也可供阅读</translation>
+<translation id="766587987807204883">报道会显示在此处，即使在离线状态下也可以阅读</translation>
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>
@@ -990,6 +990,7 @@
 <translation id="806745655614357130">单独保存我的数据</translation>
 <translation id="8068648041423924542">无法选择证书。</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
+<translation id="8076492880354921740">标签页</translation>
 <translation id="8084114998886531721">保存的密码</translation>
 <translation id="8087000398470557479">此内容来自 <ph name="DOMAIN_NAME" />（由 Google 提供）。</translation>
 <translation id="8103578431304235997">隐身标签页</translation>

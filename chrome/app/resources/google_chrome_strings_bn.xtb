@@ -150,7 +150,7 @@
 <translation id="4794050651896644714">Chrome এ বিবরণ সেভ করুন</translation>
 <translation id="4891791193823137474">Google Chrome-কে ব্যাকগ্রাউন্ডে চলতে দিন</translation>
 <translation id="4895437082222824641">নতুন Chrome ট্যাবে লিঙ্ক খুলুন</translation>
-<translation id="4921569541910214635">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chrome কে সেট আপ করতে পারেন৷</translation>
+<translation id="4921569541910214635">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chrome কে সেট-আপ করতে পারেন৷</translation>
 <translation id="4945319281866068441">{0,plural, =1{এক দিনের মধ্যে Chrome OS রিস্টার্ট করুন}one{# দিনের মধ্যে Chrome OS রিস্টার্ট করুন}other{# দিনের মধ্যে Chrome OS রিস্টার্ট করুন}}</translation>
 <translation id="4953650215774548573">আপনার ডিফল্ট ব্রাউজার হিসাবে Google Chrome-কে সেট করুন</translation>
 <translation id="495931528404527476">Chrome-এ</translation>
@@ -226,7 +226,7 @@
 <translation id="7398801000654795464">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে Chrome-এ প্রবেশ করেছেন৷ আবার সাইন-ইন করতে একই অ্যাকাউন্ট ব্যবহার করুন৷</translation>
 <translation id="7408085963519505752">Chrome OS শর্তাবলী</translation>
 <translation id="7419046106786626209">আপনার ডোমেনে সিঙ্ক উপলভ্য না থাকার কারণে Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
-<translation id="7459554271817304652">ওয়েবে আপনার নিজের মতো করে ব্রাউজার ফিচার সেভ করতে এবং যেকোন কম্পিউটারে Google Chrome থেকে সাইন-ইন সিঙ্ক সেট আপ করুন৷</translation>
+<translation id="7459554271817304652">ওয়েবে আপনার নিজের মতো করে ব্রাউজার ফিচার সেভ করতে এবং যেকোন কম্পিউটারে Google Chrome থেকে সাইন-ইন সিঙ্ক সেট-আপ করুন৷</translation>
 <translation id="7473136999113284234">Chrome স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনি সবসময় নবীনতম ভার্সনটি পান।</translation>
 <translation id="7486227612705979895">অ্যাড্রেস বারে সাজেশন দেওয়ার জন্য Chrome আপনার ড্রাইভ অ্যাক্সেস করবে</translation>
 <translation id="748945194546522577">এই ফাইলটি বিপজ্জনক তাই Chrome এটিকে ব্লক করেছে। আপনি উন্নত সুরক্ষার দ্বারা সুরক্ষিত।</translation>

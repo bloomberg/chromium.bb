@@ -148,7 +148,7 @@
 <translation id="1206407435587370571">আপনার Chromebook এর বৈশিষ্ট্যগুলি জানুন</translation>
 <translation id="1209796539517632982">স্বয়ংক্রিয় নাম সার্ভার</translation>
 <translation id="1211364473545090084">ব্রাউজিং-এর ইতিহাস সেভ না করে ওয়েব ব্রাউজ করার জন্য ছদ্মবেশী উইন্ডো ব্যবহার করুন</translation>
-<translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" />টি আঙ্গুলের ছাপের সেট আপ</translation>
+<translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" />টি আঙ্গুলের ছাপের সেট-আপ</translation>
 <translation id="1215411991991485844">নতুন পটভূমি অ্যাপ্লিকেশন জোড়া হয়েছে</translation>
 <translation id="1217483152325416304">আপনার স্থানীয় ডেটা শীঘ্রই মুছে যাবে</translation>
 <translation id="1217668622537098248">কাজটি হয়ে গেলে লেফ্ট ক্লিকে ফিরে যান</translation>
@@ -254,7 +254,7 @@
 <translation id="1390548061267426325">নিয়মিত ট্যাব রূপে খুলুন</translation>
 <translation id="1393283411312835250">সূর্য ও ক্লাউড</translation>
 <translation id="1395730723686586365">আপডেটার শুরু হয়েছে</translation>
-<translation id="1396139853388185343">প্রিন্টার সেট আপ করার সময় ত্রুটি হয়েছে</translation>
+<translation id="1396139853388185343">প্রিন্টার সেট-আপ করার সময় ত্রুটি হয়েছে</translation>
 <translation id="1396963298126346194">আপনার লেখা ইউজারনেম এবং পাসওয়ার্ড মিলছে না</translation>
 <translation id="1397500194120344683">কোনও উপযুক্ত ডিভাইস নেই। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">বড় করুন</translation>
@@ -696,7 +696,7 @@
 <translation id="2091887806945687916">আওয়াজ</translation>
 <translation id="2097372108957554726">নতুন ডিভাইস রেজিস্টার করতে আপনাকে Chrome-এ সাইন-ইন করতে হবে</translation>
 <translation id="2098305189700762159">খুঁজে পাওয়া যায় নি</translation>
-<translation id="2099172618127234427">আপনি Chrome OS ডিবাগিং বৈশিষ্ট্যগুলি চালু করছেন যা sshd daemon সেট আপ করবে এবং USB ড্রাইভগুলি থেকে বুট করা চালু করবে৷</translation>
+<translation id="2099172618127234427">আপনি Chrome OS ডিবাগিং বৈশিষ্ট্যগুলি চালু করছেন যা sshd daemon সেট-আপ করবে এবং USB ড্রাইভগুলি থেকে বুট করা চালু করবে৷</translation>
 <translation id="2099686503067610784">সার্ভার সার্টিফিকেট "<ph name="CERTIFICATE_NAME" />" মুছবেন?</translation>
 <translation id="2100273922101894616">অটো সাইন-ইন</translation>
 <translation id="2101225219012730419">ভার্সন:</translation>
@@ -1017,7 +1017,7 @@
 <translation id="2571655996835834626">কুকি, জাভাস্ক্রিপ্ট, প্লাগ-ইন, ভৌগোলিক লোকেশন, মাইক্রোফোন, ক্যামেরার মতো ফিচারগুলিতে ওয়েবসাইটের অ্যাক্সেস নিয়ন্ত্রণ করে যে সেটিংস সেটি পরিবর্তন করুন।</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />-এ শুধুমাত্র পাঠযোগ্য অ্যাক্সেস মঞ্জুর করা হয়েছে৷</translation>
 <translation id="2575247648642144396">এই আইকনটি দৃশ্যমান হবে যখন এক্সটেনশন বর্তমান পৃষ্ঠার উপর কাজ করতে পারবে৷ আইকনে ক্লিক করে বা <ph name="EXTENSION_SHORTCUT" /> টিপে এই এক্সটেনশন ব্যবহার করুন৷</translation>
-<translation id="257779572837908839">মিটিংয়ের জন্য Chromebox সেট আপ করুন</translation>
+<translation id="257779572837908839">মিটিংয়ের জন্য Chromebox সেট-আপ করুন</translation>
 <translation id="2580889980133367162">একাধিক ফাইল ডাউনলোড করতে <ph name="HOST" />-কে সবসময় অনুমতি দিন</translation>
 <translation id="2580924999637585241">মোট: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">দীর্ঘ সময়</translation>
@@ -1642,7 +1642,7 @@
 <translation id="3566721612727112615">কোনো সাইট যোগ করা হয়নি</translation>
 <translation id="3569382839528428029">আপনি কি <ph name="APP_NAME" /> এর দ্বারা আপনার স্ক্রিন শেয়ার করতে চান?</translation>
 <translation id="3570985609317741174">ওয়েব কন্টেন্ট</translation>
-<translation id="3571734092741541777">সেট আপ</translation>
+<translation id="3571734092741541777">সেট-আপ</translation>
 <translation id="3574210789297084292">সাইন-ইন করুন</translation>
 <translation id="3574917942258583917">ছদ্মবেশী মোড থেকে বেরিয়ে আসতে চান?</translation>
 <translation id="3576324189521867626">সফলভাবে ইনস্টল হয়েছে</translation>
@@ -2435,7 +2435,7 @@
 <translation id="4824958205181053313">সিঙ্ক বাতিল করতে চান?</translation>
 <translation id="4827675678516992122">কানেক্ট করা যায়নি</translation>
 <translation id="4828937774870308359">অস্ট্রেলীয়</translation>
-<translation id="4829768588131278040">পিন সেট আপ করুন</translation>
+<translation id="4829768588131278040">পিন সেট-আপ করুন</translation>
 <translation id="4830502475412647084">OS আপডেট ইনস্টল করা হচ্ছে</translation>
 <translation id="4830573902900904548">আপনার <ph name="DEVICE_TYPE" /> <ph name="NETWORK_NAME" /> ব্যবহার করে ইন্টারনেটে সংযুক্ত হতে অক্ষম। দয়া করে অন্য নেটওয়ার্ক বেছে নিন। <ph name="LEARN_MORE_LINK_START" />আরও জানুন<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4835385943915508971">অনুরোধকৃত সম্পদে Chrome এর অ্যাক্সেস নেই।</translation>
@@ -2532,7 +2532,7 @@
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="4964455510556214366">সাজানোর ব্যবস্থা</translation>
 <translation id="4964673849688379040">চেক করা হচ্ছে...</translation>
-<translation id="4965808351167763748">Hangouts Meet চালাতে আপনি এই ডিভাইস সেট আপ করতে চান?</translation>
+<translation id="4965808351167763748">Hangouts Meet চালাতে আপনি এই ডিভাইস সেট-আপ করতে চান?</translation>
 <translation id="496888482094675990">Google ড্রাইভ, এক্সর্টানাল স্টোরেজ অথবা আপনার Chrome OS ডিভাইসে আপনি যে ফাইলগুলি সেভ করেছেন ফাইল অ্যাপ সেগুলিতে দ্রুত অ্যাক্সেস দেয়।</translation>
 <translation id="4971412780836297815">সম্পন্ন হলে খুলুন</translation>
 <translation id="4972129977812092092">প্রিন্টার এডিট করুন</translation>
@@ -2553,7 +2553,7 @@
 <translation id="4992473555164495036">আপনার অ্যাডমিনিস্ট্রেটর উপলভ্য ইনপুট পদ্ধতিগুলি সীমাবদ্ধ করেছেন।</translation>
 <translation id="4992926179187649719">'Ok Google' চালু করুন</translation>
 <translation id="4994474651455208930">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট হ্যান্ডলার হওয়ার জন্য জিজ্ঞাসা করার অনুমতি দেয়</translation>
-<translation id="4994754230098574403">সেট আপ করা হচ্ছে</translation>
+<translation id="4994754230098574403">সেট-আপ করা হচ্ছে</translation>
 <translation id="4996978546172906250">এর মাধ্যমে শেয়ার করুন</translation>
 <translation id="4997086284911172121">কোনও ইন্টারনেট সংযোগ নেই।</translation>
 <translation id="4998873842614926205">পরিবর্তনগুলি নিশ্চিত করুন</translation>
@@ -2753,7 +2753,7 @@
 <translation id="5324780743567488672">আপনার লোকেশন ব্যবহার করে স্বয়ংক্রিয়ভাবে সময় অঞ্চল সেট করুন</translation>
 <translation id="5327248766486351172">নাম</translation>
 <translation id="5327570636534774768">একটি ভিন্ন ডোমেনের দ্বারা পরিচালনার জন্য এই ডিভাইসটি চিহ্নিত করা আছে। ডেমো মোড সেট-আপ করার আগে এই ডিভাইসের উপর সেই ডোমেনের অধিকার বাতিল করুন।</translation>
-<translation id="532943162177641444">এই ডিভাইসে ব্যবহার করার জন্য মোবাইল হটস্পট সেট আপ করতে আপনার <ph name="PHONE_NAME" /> এ বিজ্ঞপ্তিটির উপরে ক্লিক করুন।</translation>
+<translation id="532943162177641444">এই ডিভাইসে ব্যবহার করার জন্য মোবাইল হটস্পট সেট-আপ করতে আপনার <ph name="PHONE_NAME" /> এ বিজ্ঞপ্তিটির উপরে ক্লিক করুন।</translation>
 <translation id="5329858601952122676">&amp;মুছুন</translation>
 <translation id="5331069282670671859">এই বিভাগে আপনার কোনও শংসাপত্র নেই</translation>
 <translation id="5331425616433531170">"<ph name="CHROME_EXTENSION_NAME" />" এদের সাথে যুক্ত হতে চায়</translation>
@@ -3722,7 +3722,7 @@
 <translation id="6825184156888454064">নাম অনুসারে সাজান</translation>
 <translation id="6826872289184051766">USB এর মাধ্যমে যাচাই করুন</translation>
 <translation id="6828153365543658583">সাইন-ইনকে নিম্নলিখিত ব্যবহারকারীদের মধ্যে সীমাবদ্ধ রাখুন:</translation>
-<translation id="6828860976882136098">সকল ব্যবহারকারীর জন্য স্বয়ংক্রিয় আপডেট সেট আপ করতে ব্যর্থ হয়েছে (ফ্লাইটপূর্ব সম্পাদন ত্রুটি: <ph name="ERROR_NUMBER" />)</translation>
+<translation id="6828860976882136098">সকল ব্যবহারকারীর জন্য স্বয়ংক্রিয় আপডেট সেট-আপ করতে ব্যর্থ হয়েছে (ফ্লাইটপূর্ব সম্পাদন ত্রুটি: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="6829250331733125857">আপনার <ph name="DEVICE_TYPE" />-এর মাধ্যমে সাহায্য পান।</translation>
 <translation id="682971198310367122">Google এর গোপনীয়তা নীতি</translation>
 <translation id="6831043979455480757">অনুবাদ</translation>
@@ -3739,7 +3739,7 @@
 <translation id="6851497530878285708">অ্যাপ সক্ষম করা হয়েছে</translation>
 <translation id="6853388645642883916">আপডেটার নিদ্রা মোডে রয়েছে</translation>
 <translation id="68541483639528434">অন্যান্য ট্যাব বন্ধ করুন</translation>
-<translation id="6856623341093082836">আপনার টাচস্ক্রীনের যথার্থতা সেট আপ ও অ্যাডজাস্ট করুন</translation>
+<translation id="6856623341093082836">আপনার টাচস্ক্রীনের যথার্থতা সেট-আপ ও অ্যাডজাস্ট করুন</translation>
 <translation id="6857699260879628349">কনফিগারেশনের তথ্য পান</translation>
 <translation id="6860097299815761905">প্রক্সি সেটিংস...</translation>
 <translation id="6860427144121307915">একটি ট্যাবে খুলুন</translation>
@@ -3829,10 +3829,10 @@
 <translation id="6998793565256476099">ভিডিও কনফারেন্সিংয়ের জন্য ডিভাইস যোগ করুন</translation>
 <translation id="7000347579424117903">Ctrl, Alt অথবা Search বোতাম ব্যবহার করতে হবে</translation>
 <translation id="7001036685275644873">Linux অ্যাপ ও ফাইল ব্যাক-আপ নেওয়া হচ্ছে</translation>
-<translation id="7002055706763150362">Chromebook এর জন্য Smart Lock সেট আপ করার জন্য Google এর এটি নিশ্চিত হওয়া প্রয়োজন যে—শুরু করতে আপনিই আপনার পাসওয়ার্ড লিখেছেন।</translation>
+<translation id="7002055706763150362">Chromebook এর জন্য Smart Lock সেট-আপ করার জন্য Google এর এটি নিশ্চিত হওয়া প্রয়োজন যে—শুরু করতে আপনিই আপনার পাসওয়ার্ড লিখেছেন।</translation>
 <translation id="7002454948392136538">এই তত্ত্বাবধান করা ব্যবহারকারীর জন্য পরিচালক বেছে নিন</translation>
 <translation id="7003339318920871147">ওয়েব ডেটাবেসসমূহ</translation>
-<translation id="7003723821785740825">আপনার ডিভাইস আনলক করার জন্য একটি দ্রুততর উপায় সেট আপ করুন</translation>
+<translation id="7003723821785740825">আপনার ডিভাইস আনলক করার জন্য একটি দ্রুততর উপায় সেট-আপ করুন</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID" /></translation>
 <translation id="7004402701596653846">সাইট MIDI ব্যবহার করতে পারে</translation>
 <translation id="7004499039102548441">সাম্প্রতিক ট্যাবগুলি</translation>
@@ -3870,7 +3870,7 @@
 <translation id="7062222374113411376">সম্প্রতি বন্ধ করা সাইটগুলিকে ডেটা পাঠানো ও গ্রহণ শেষ করতে অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="7063129466199351735">শর্টকাটগুলি প্রক্রিয়া করা হচ্ছে...</translation>
 <translation id="7063311912041006059">কোয়েরি ফিল্ডে <ph name="SPECIAL_SYMBOL" /> সহ ইউআরএল লিখুন</translation>
-<translation id="7063957500469387217">Google ক্লাউড প্রিন্টে প্রিন্টারগুলি সেট আপ বা পরিচালনা করুন।</translation>
+<translation id="7063957500469387217">Google ক্লাউড প্রিন্টে প্রিন্টারগুলি সেট-আপ বা পরিচালনা করুন।</translation>
 <translation id="7065223852455347715">এই ডিভাইসটি এমন একটি মোডে লক হয়েছে যা এন্টারপ্রাইজ তালিকাভুক্তি প্রতিরোধ করে৷ যদি আপনি ডিভাইসটিকে তালিকাভুক্ত করতে চান তবে আপনাকে প্রথমে ডিভাইস অ্যাকাউন্ট ফিরিয়ে আনার মধ্য দিয়ে যেতে হবে৷</translation>
 <translation id="7065534935986314333">সিস্টেম সম্বন্ধে</translation>
 <translation id="706626672220389329">শেয়ার মাউন্ট করা যায়নি। নির্দিষ্ট শেয়ারটি আগেই মাউন্ট করা হয়েছে।</translation>
@@ -4097,7 +4097,7 @@
 <translation id="7392915005464253525">বন্ধ হওয়া উইন্ডো পু&amp;নরায় খোলা</translation>
 <translation id="7396845648024431313">সিস্টেমের প্রারম্ভে <ph name="APP_NAME" /> শুরু হবে এবং এমনকি আপনি অন্য সব <ph name="PRODUCT_NAME" /> উইন্ডো বন্ধ করার পরেও ব্যাকগ্রাউন্ডে চলতে থাকবে৷</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7400839060291901923">আপনার <ph name="PHONE_NAME" /> এ সংযোগ সেট আপ করুন</translation>
+<translation id="7400839060291901923">আপনার <ph name="PHONE_NAME" /> এ সংযোগ সেট-আপ করুন</translation>
 <translation id="740624631517654988">পপ-আপ  অবরুদ্ধ</translation>
 <translation id="7407430846095439694">আমদানি করে আটকান</translation>
 <translation id="7409549334477097887">অনেক বড়</translation>
@@ -4122,7 +4122,7 @@
 <translation id="7438976808740265764">Flash Player ২০২০ সালের ডিসেম্বরের পরে আর ব্যবহার করা যাবে না।</translation>
 <translation id="7441736921018636843">এই সেটিংটি পরিবর্তন করতে, আপনার সিঙ্ক পাসফ্রেজটি সরানোর জন্য <ph name="BEGIN_LINK" />সিঙ্ক রিসেট করুন<ph name="END_LINK" /></translation>
 <translation id="7441830548568730290">অন্যান্য ব্যবহারকারী</translation>
-<translation id="7442465037756169001">আপনার Hangouts Meet Hardware সেট আপ করার জন্য প্রস্তুত।</translation>
+<translation id="7442465037756169001">আপনার Hangouts Meet Hardware সেট-আপ করার জন্য প্রস্তুত।</translation>
 <translation id="744341768939279100">একটি নতুন প্রোফাইল তৈরি করুন</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> বন্ধ করুন</translation>
 <translation id="7450761244949417357">এখন <ph name="ALTERNATIVE_BROWSER_NAME" /> চালু হচ্ছে</translation>
@@ -4978,7 +4978,7 @@
 <translation id="8757090071857742562">ডেস্কটপ কাস্ট করতে করা যায়নি। আপনি আপনার স্ক্রিন শেয়ার করা শুরু করার জন্য প্রম্পটটি নিশ্চিত করেছেন কিনা তা দেখুন।</translation>
 <translation id="8757803915342932642">Google ক্লাউড ডিভাইসগুলিতে ডিভাইস</translation>
 <translation id="8758418656925882523">ডিক্টেশন চালু করুন (টাইপ করার জন্য বলুন)</translation>
-<translation id="8759408218731716181">একাধিক সাইন-ইন সেট আপ করা যাবে না</translation>
+<translation id="8759408218731716181">একাধিক সাইন-ইন সেট-আপ করা যাবে না</translation>
 <translation id="8759753423332885148">আরও জানুন৷</translation>
 <translation id="8762886931014513155">আপনার <ph name="DEVICE_TYPE" /> আপডেট করা প্রয়োজন</translation>
 <translation id="8763927697961133303">USB ডিভাইস</translation>

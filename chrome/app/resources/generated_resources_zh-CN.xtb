@@ -802,7 +802,7 @@
 <translation id="2241053333139545397">读取和更改您在一些网站上的数据</translation>
 <translation id="2241634353105152135">仅一次</translation>
 <translation id="2242687258748107519">文件信息</translation>
-<translation id="2246549592927364792">从 Google 获取图片说明？</translation>
+<translation id="2246549592927364792">要从 Google 获取图片说明吗？</translation>
 <translation id="224940702122312781">此网页会消耗很多网络数据流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系统查看器打开</translation>
@@ -1705,7 +1705,7 @@
 <translation id="3664511988987167893">扩展程序图标</translation>
 <translation id="3665589677786828986">Chrome检测到您的部分设置被其他程序篡改了，因此已将这些设置重置为原始默认设置。</translation>
 <translation id="3668570675727296296">语言设置</translation>
-<translation id="366867565525278777">安装失败，因为存储空间不足。需要至少 <ph name="INSTALL_SIZE" /> 的可用空间。要释放空间，请从设备存储空间中删除文件。</translation>
+<translation id="366867565525278777">安装失败，因为存储空间不足。至少需要 <ph name="INSTALL_SIZE" /> 的可用空间。要释放空间，请从设备存储空间中删除文件。</translation>
 <translation id="3668801437375206837">为了更好地诊断蓝牙问题，Google 用户可以在反馈报告中包含其他蓝牙日志。此选项处于选中状态时，您的报告中将包含来自当前会话的 btsnoop 和 HCI 日志，这些日志经过处理，尽可能移除了个人身份信息。只有 Listnr 的 Chrome 操作系统产品组管理员可以访问这些日志。这些日志将于 90 天后被完全清除。</translation>
 <translation id="3668823961463113931">处理程序</translation>
 <translation id="3670113805793654926">来自任何供应商的设备</translation>
@@ -4376,7 +4376,7 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />注意<ph name="END_BOLD" />：在恢复过程中，系统将会重新启动。</translation>
 <translation id="7829298379596169484">正在存取音频输入</translation>
-<translation id="7830594666202422257">已连接到 Linux</translation>
+<translation id="7830594666202422257">连接到 Linux</translation>
 <translation id="7831491651892296503">配置网络时出错</translation>
 <translation id="7831754656372780761">“<ph name="TAB_TITLE" />”<ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">结束时间</translation>
