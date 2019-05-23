@@ -121,6 +121,7 @@ class KeyboardAccessoryProperties {
      */
     static class AutofillBarItem extends BarItem {
         private final AutofillSuggestion mSuggestion;
+        private @Nullable String mFeature;
 
         /**
          * Creates a new autofill item with a suggestion for the view's representation and an action
@@ -135,6 +136,19 @@ class KeyboardAccessoryProperties {
 
         AutofillSuggestion getSuggestion() {
             return mSuggestion;
+        }
+
+        void setFeatureForIPH(String feature) {
+            mFeature = feature;
+        }
+
+        void maybeEmitEventForIPH() {
+            if (mFeature != null) KeyboardAccessoryIPHUtils.emitFillingEvent(mFeature);
+        }
+
+        @Nullable
+        String getFeatureForIPH() {
+            return mFeature;
         }
 
         @Override

@@ -240,6 +240,10 @@ public class KeyboardAccessoryCoordinator {
         return mMediator.hasActiveTab();
     }
 
+    public void prepareUserEducation() {
+        mMediator.prepareUserEducation();
+    }
+
     public ViewPager.OnPageChangeListener getOnPageChangeListener() {
         return mTabLayout.getStablePageChangeListener();
     }

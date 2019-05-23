@@ -32,6 +32,8 @@ import org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.Keybo
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.autofill.PopupItemId;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
@@ -115,8 +117,9 @@ class KeyboardAccessoryMediator
         return retainedItems;
     }
 
-    private List<BarItem> toBarItems(AutofillSuggestion[] suggestions, AutofillDelegate delegate) {
-        List<BarItem> barItems = new ArrayList<>(suggestions.length);
+    private List<AutofillBarItem> toBarItems(
+            AutofillSuggestion[] suggestions, AutofillDelegate delegate) {
+        List<AutofillBarItem> barItems = new ArrayList<>(suggestions.length);
         for (int position = 0; position < suggestions.length; ++position) {
             AutofillSuggestion suggestion = suggestions[position];
             // The accessory doesn't need any special options like clearing or managing for now.
@@ -129,6 +132,30 @@ class KeyboardAccessoryMediator
             barItems.add(new AutofillBarItem(suggestion, createAutofillAction(delegate, position)));
         }
         return barItems;
+    }
+
+    /**
+     * Annotates the first suggestion in with an in-product help bubble. For password suggestions,
+     * the first suggestion is usually autofilled and therefore, the second element is annotated.
+     *
+     * This doesn't necessary mean that the IPH bubble will be shown - a final check will be
+     * performed right before the bubble can be displayed.
+     */
+    void prepareUserEducation() {
+        ListModel<BarItem> items = mModel.get(BAR_ITEMS);
+        boolean skippedFirstPasswordItem = false;
+        for (int i = 0; i < items.size(); ++i) {
+            if (items.get(i).getViewType() != BarItem.Type.SUGGESTION) continue;
+            AutofillBarItem barItem = (AutofillBarItem) items.get(i);
+            if (!skippedFirstPasswordItem && containsPasswordInfo(barItem.getSuggestion())) {
+                // For password suggestions, we want to educate about the 2nd entry.
+                skippedFirstPasswordItem = true;
+                continue;
+            }
+            barItem.setFeatureForIPH(getFeatureBySuggestionId(barItem.getSuggestion()));
+            items.update(i, barItem);
+            break; // Only set IPH for one suggestions in the bar.
+        }
     }
 
     private Collection<BarItem> toBarItems(Action[] actions) {
@@ -251,5 +278,31 @@ class KeyboardAccessoryMediator
     @VisibleForTesting
     PropertyModel getModelForTesting() {
         return mModel;
+    }
+
+    private static String getFeatureBySuggestionId(AutofillSuggestion suggestion) {
+        if (containsPasswordInfo(suggestion)) {
+            return FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE;
+        }
+        if (containsCreditCardInfo(suggestion)) {
+            return FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE;
+        }
+        if (containsAddressInfo(suggestion)) {
+            return FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE;
+        }
+        return null;
+    }
+
+    private static boolean containsPasswordInfo(AutofillSuggestion suggestion) {
+        return suggestion.getSuggestionId() == PopupItemId.ITEM_ID_USERNAME_ENTRY
+                || suggestion.getSuggestionId() == PopupItemId.ITEM_ID_PASSWORD_ENTRY;
+    }
+
+    private static boolean containsCreditCardInfo(AutofillSuggestion suggestion) {
+        return suggestion.getSuggestionId() > 0 && (suggestion.getSuggestionId() & 0xFFFF0000) != 0;
+    }
+
+    private static boolean containsAddressInfo(AutofillSuggestion suggestion) {
+        return suggestion.getSuggestionId() > 0 && (suggestion.getSuggestionId() & 0x0000FFFF) != 0;
     }
 }

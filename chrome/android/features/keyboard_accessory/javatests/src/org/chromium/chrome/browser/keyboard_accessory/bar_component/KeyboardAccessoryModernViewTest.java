@@ -6,9 +6,12 @@ package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
@@ -24,12 +27,15 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,9 +43,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TabLayoutBarItem;
@@ -50,6 +57,10 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.autofill.AutofillSuggestion;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.feature_engagement.TriggerState;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
@@ -77,6 +88,60 @@ public class KeyboardAccessoryModernViewTest {
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
+    private static class TestTracker implements Tracker {
+        private boolean mWasDismissed;
+        private @Nullable String mEmittedEvent;
+
+        @Override
+        public void notifyEvent(String event) {
+            mEmittedEvent = event;
+        }
+
+        public @Nullable String getLastEmittedEvent() {
+            return mEmittedEvent;
+        }
+
+        @Override
+        public boolean shouldTriggerHelpUI(String feature) {
+            return true;
+        }
+
+        @Override
+        public boolean wouldTriggerHelpUI(String feature) {
+            return true;
+        }
+
+        @Override
+        public int getTriggerState(String feature) {
+            return TriggerState.HAS_NOT_BEEN_DISPLAYED;
+        }
+
+        @Override
+        public void dismissed(String feature) {
+            mWasDismissed = true;
+        }
+
+        public boolean wasDismissed() {
+            return mWasDismissed;
+        }
+
+        @Nullable
+        @Override
+        public DisplayLockHandle acquireDisplayLock() {
+            return () -> {};
+        }
+
+        @Override
+        public boolean isInitialized() {
+            return true;
+        }
+
+        @Override
+        public void addOnInitializedCallback(Callback<Boolean> callback) {
+            assert false : "Implement addOnInitializedCallback if you need it.";
+        }
+    }
 
     @Before
     public void setUp() throws InterruptedException {
@@ -162,6 +227,91 @@ public class KeyboardAccessoryModernViewTest {
         CriteriaHelper.pollUiThread(viewsAreRightAligned(view, view.mBarItemsView.getChildAt(1)));
     }
 
+    @Test
+    @MediumTest
+    public void testDismissesPasswordEducationBubbleOnFilling() {
+        AutofillBarItem itemWithIPH =
+                new AutofillBarItem(new AutofillSuggestion("Johnathan", "Smith",
+                                            DropdownItem.NO_ICON, false, -2, false, false, false),
+                        new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
+        itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE);
+
+        TestTracker tracker = new TestTracker();
+        TrackerFactory.setTrackerForTests(tracker);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(VISIBLE, true);
+            mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
+        });
+
+        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
+        waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_password));
+        onView(withText("Johnathan")).perform(click());
+
+        assertThat(tracker.wasDismissed(), is(true));
+        assertThat(tracker.getLastEmittedEvent(),
+                is(EventConstants.KEYBOARD_ACCESSORY_PASSWORD_AUTOFILLED));
+    }
+
+    @Test
+    @MediumTest
+    public void testDismissesAddressEducationBubbleOnFilling() {
+        AutofillBarItem itemWithIPH =
+                new AutofillBarItem(new AutofillSuggestion("Johnathan", "Smith",
+                                            DropdownItem.NO_ICON, false, 1, false, false, false),
+                        new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
+        itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE);
+
+        TestTracker tracker = new TestTracker();
+        TrackerFactory.setTrackerForTests(tracker);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(VISIBLE, true);
+            mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
+        });
+
+        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
+        waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_address));
+        onView(withText("Johnathan")).perform(click());
+
+        assertThat(tracker.wasDismissed(), is(true));
+        assertThat(tracker.getLastEmittedEvent(),
+                is(EventConstants.KEYBOARD_ACCESSORY_ADDRESS_AUTOFILLED));
+    }
+
+    @Test
+    @MediumTest
+    public void testDismissesPaymentEducationBubbleOnFilling() {
+        AutofillBarItem itemWithIPH = new AutofillBarItem(
+                new AutofillSuggestion("Johnathan", "Smith", DropdownItem.NO_ICON, false, 70000,
+                        false, false, false),
+                new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
+        itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE);
+
+        TestTracker tracker = new TestTracker();
+        TrackerFactory.setTrackerForTests(tracker);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(VISIBLE, true);
+            mModel.get(BAR_ITEMS).set(new BarItem[] {itemWithIPH, createTabs()});
+        });
+
+        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
+        waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_payment));
+        onView(withText("Johnathan")).perform(click());
+
+        assertThat(tracker.wasDismissed(), is(true));
+        assertThat(tracker.getLastEmittedEvent(),
+                is(EventConstants.KEYBOARD_ACCESSORY_PAYMENT_AUTOFILLED));
+    }
+
+    private void waitForHelpBubble(Matcher<View> matcher) {
+        View mainDecorView = mActivityTestRule.getActivity().getWindow().getDecorView();
+        onView(isRoot())
+                .inRoot(RootMatchers.withDecorView(not(is(mainDecorView))))
+                .check((root, e) -> waitForView((ViewGroup) root, matcher));
+    }
+
     private void rotateActivityToLandscape() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -184,21 +334,24 @@ public class KeyboardAccessoryModernViewTest {
     private BarItem[] createAutofillChipAndTab(String label, Callback<Action> chipCallback) {
         return new BarItem[] {
                 new AutofillBarItem(new AutofillSuggestion(label, "Smith", DropdownItem.NO_ICON,
-                                            false, 0, false, false, false),
+                                            false, 1, false, false, false),
                         new KeyboardAccessoryData.Action(
                                 "Unused", AUTOFILL_SUGGESTION, chipCallback)),
-                new TabLayoutBarItem(
-                        new KeyboardAccessoryTabLayoutCoordinator.TabLayoutCallbacks() {
-                            @Override
-                            public void onTabLayoutBound(TabLayout tabs) {
-                                if (tabs.getTabCount() > 0) return;
-                                tabs.addTab(tabs.newTab()
-                                                    .setIcon(R.drawable.ic_vpn_key_grey)
-                                                    .setContentDescription("Key Icon"));
-                            }
+                createTabs()};
+    }
 
-                            @Override
-                            public void onTabLayoutUnbound(TabLayout tabs) {}
-                        })};
+    private TabLayoutBarItem createTabs() {
+        return new TabLayoutBarItem(new KeyboardAccessoryTabLayoutCoordinator.TabLayoutCallbacks() {
+            @Override
+            public void onTabLayoutBound(TabLayout tabs) {
+                if (tabs.getTabCount() > 0) return;
+                tabs.addTab(tabs.newTab()
+                                    .setIcon(R.drawable.ic_vpn_key_grey)
+                                    .setContentDescription("Key Icon"));
+            }
+
+            @Override
+            public void onTabLayoutUnbound(TabLayout tabs) {}
+        });
     }
 }

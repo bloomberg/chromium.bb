@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -46,6 +47,8 @@ import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutCoordinator;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
+import org.chromium.components.autofill.PopupItemId;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -338,6 +341,64 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
+    public void testCreatesAddressItemWithIPH() {
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
+        int suggestionId = 0x1; // The address ID is located in the least 16 bit.
+        AutofillSuggestion addressSuggestion = new AutofillSuggestion(
+                "John", "Main Str", 0, false, suggestionId, false, false, false);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
+        autofillSuggestionProvider.notifyObservers(
+                new AutofillSuggestion[] {addressSuggestion, addressSuggestion, addressSuggestion});
+
+        assertThat(getAutofillItemAt(0).getFeatureForIPH(), is(nullValue()));
+        mCoordinator.prepareUserEducation();
+        assertThat(getAutofillItemAt(0).getFeatureForIPH(),
+                is(FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE));
+        assertThat(getAutofillItemAt(1).getFeatureForIPH(), is(nullValue()));
+        assertThat(getAutofillItemAt(2).getFeatureForIPH(), is(nullValue()));
+    }
+
+    @Test
+    public void testCreatesPaymentItemWithIPH() {
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
+        int suggestionId = 0x10000; // The payment ID is located in the higher 16 bit.
+        AutofillSuggestion paymentSuggestion = new AutofillSuggestion(
+                "John", "4828 ****", 0, false, suggestionId, false, false, false);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
+        autofillSuggestionProvider.notifyObservers(
+                new AutofillSuggestion[] {paymentSuggestion, paymentSuggestion, paymentSuggestion});
+
+        assertThat(getAutofillItemAt(0).getFeatureForIPH(), is(nullValue()));
+        mCoordinator.prepareUserEducation();
+        assertThat(getAutofillItemAt(0).getFeatureForIPH(),
+                is(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE));
+        assertThat(getAutofillItemAt(1).getFeatureForIPH(), is(nullValue()));
+        assertThat(getAutofillItemAt(2).getFeatureForIPH(), is(nullValue()));
+    }
+
+    @Test
+    public void testCreatesIPHForSecondPasswordItem() {
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
+        AutofillSuggestion passwordSuggestion1 = new AutofillSuggestion(
+                "John", "****", 0, false, PopupItemId.ITEM_ID_USERNAME_ENTRY, false, false, false);
+        AutofillSuggestion passwordSuggestion2 = new AutofillSuggestion("Eva", "*******", 0, false,
+                PopupItemId.ITEM_ID_PASSWORD_ENTRY, false, false, false);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
+        autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[] {
+                passwordSuggestion1, passwordSuggestion2, passwordSuggestion2});
+
+        assertThat(getAutofillItemAt(0).getFeatureForIPH(), is(nullValue()));
+        mCoordinator.prepareUserEducation();
+        assertThat(getAutofillItemAt(0).getFeatureForIPH(), is(nullValue()));
+        assertThat(getAutofillItemAt(1).getFeatureForIPH(),
+                is(FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE));
+        assertThat(getAutofillItemAt(2).getFeatureForIPH(), is(nullValue()));
+    }
+
+    @Test
     public void testRecordsOneImpressionForEveryInitialContentOnVisibilityChange() {
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
                            KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_BAR_SHOWN),
@@ -469,5 +530,9 @@ public class KeyboardAccessoryControllerTest {
         when(mMockTabSwitchingDelegate.getActiveTab()).thenReturn(tab);
         when(mMockTabSwitchingDelegate.hasTabs()).thenReturn(true);
         mCoordinator.getMediatorForTesting().onActiveTabChanged(0);
+    }
+
+    private AutofillBarItem getAutofillItemAt(int position) {
+        return (AutofillBarItem) mModel.get(BAR_ITEMS).get(position);
     }
 }

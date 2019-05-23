@@ -377,6 +377,7 @@ class ManualFillingMediator extends EmptyTabObserver
         } else {
             mKeyboardAccessory.dismiss();
         }
+        if (extensionState == EXTENDING_KEYBOARD) mKeyboardAccessory.prepareUserEducation();
         if (requiresVisibleSheet(extensionState)) {
             mAccessorySheet.show();
         } else if (requiresHiddenSheet(extensionState)) {

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryIPHUtils.showHelpBubble;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
@@ -48,6 +49,7 @@ class KeyboardAccessoryModernViewBinder {
 
         @Override
         protected void bind(AutofillBarItem item, ChipView chipView) {
+            if (item.getFeatureForIPH() != null) showHelpBubble(item.getFeatureForIPH(), chipView);
             chipView.getPrimaryTextView().setText(item.getSuggestion().getLabel());
             chipView.getSecondaryTextView().setText(item.getSuggestion().getSublabel());
             chipView.getSecondaryTextView().setVisibility(
@@ -56,7 +58,10 @@ class KeyboardAccessoryModernViewBinder {
             chipView.setIcon(iconId != 0 ? iconId : ChipView.INVALID_ICON_ID, false);
             KeyboardAccessoryData.Action action = item.getAction();
             assert action != null : "Tried to bind item without action. Chose a wrong ViewHolder?";
-            chipView.setOnClickListener(view -> action.getCallback().onResult(action));
+            chipView.setOnClickListener(view -> {
+                item.maybeEmitEventForIPH();
+                action.getCallback().onResult(action);
+            });
         }
     }
 
