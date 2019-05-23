@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "net/base/url_util.h"
 
 namespace media_router {
@@ -75,7 +75,7 @@ std::unique_ptr<DialActivity> DialActivity::From(
   if (!url.is_valid())
     return nullptr;
 
-  std::string app_name = AppNameFromDialMediaSource(source);
+  std::string app_name = source.AppNameFromDialSource();
   if (app_name.empty())
     return nullptr;
 

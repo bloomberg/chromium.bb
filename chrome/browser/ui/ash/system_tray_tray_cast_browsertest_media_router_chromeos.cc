@@ -17,7 +17,7 @@
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
@@ -41,7 +41,7 @@ media_router::MediaRoute MakeRoute(const std::string& route_id,
                                    const std::string& sink_id,
                                    bool is_local) {
   return media_router::MediaRoute(
-      route_id, media_router::MediaSourceForDesktop(), sink_id, "description",
+      route_id, media_router::MediaSource::ForDesktop(), sink_id, "description",
       is_local, true /*for_display*/);
 }
 

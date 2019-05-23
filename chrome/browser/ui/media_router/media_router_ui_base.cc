@@ -33,7 +33,6 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -56,8 +55,9 @@ namespace {
 // source if there is none.  This is used by the Media Router to find such a
 // matching route if it exists.
 MediaSource GetSourceForRouteObserver(const std::vector<MediaSource>& sources) {
-  auto source_it =
-      std::find_if(sources.begin(), sources.end(), IsCastPresentationUrl);
+  auto source_it = std::find_if(
+      sources.begin(), sources.end(),
+      [](const auto& source) { return source.IsCastPresentationUrl(); });
   return source_it != sources.end() ? *source_it : MediaSource("");
 }
 
@@ -446,15 +446,15 @@ void MediaRouterUIBase::InitCommon(content::WebContents* initiator) {
 
   // Desktop mirror mode is always available.
   query_result_manager_->SetSourcesForCastMode(
-      MediaCastMode::DESKTOP_MIRROR, {MediaSourceForDesktop()}, origin);
+      MediaCastMode::DESKTOP_MIRROR, {MediaSource::ForDesktop()}, origin);
 
   // File mirroring is always availible.
-  query_result_manager_->SetSourcesForCastMode(MediaCastMode::LOCAL_FILE,
-                                               {MediaSourceForTab(0)}, origin);
+  query_result_manager_->SetSourcesForCastMode(
+      MediaCastMode::LOCAL_FILE, {MediaSource::ForTab(0)}, origin);
 
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator).id();
   if (tab_id != -1) {
-    MediaSource mirroring_source(MediaSourceForTab(tab_id));
+    MediaSource mirroring_source(MediaSource::ForTab(tab_id));
     query_result_manager_->SetSourcesForCastMode(MediaCastMode::TAB_MIRROR,
                                                  {mirroring_source}, origin);
   }
@@ -470,8 +470,10 @@ void MediaRouterUIBase::InitCommon(content::WebContents* initiator) {
 
 void MediaRouterUIBase::OnDefaultPresentationChanged(
     const content::PresentationRequest& presentation_request) {
-  std::vector<MediaSource> sources =
-      MediaSourcesForPresentationUrls(presentation_request.presentation_urls);
+  std::vector<MediaSource> sources;
+  for (const auto& url : presentation_request.presentation_urls) {
+    sources.push_back(MediaSource::ForPresentationUrl(url));
+  }
   presentation_request_ = presentation_request;
   query_result_manager_->SetSourcesForCastMode(
       MediaCastMode::PRESENTATION, sources,
@@ -691,7 +693,7 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetLocalFileRouteParameters(
     content::WebContents* tab_contents) {
   RouteParameters params;
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(tab_contents).id();
-  params.source_id = MediaSourceForTab(tab_id).id();
+  params.source_id = MediaSource::ForTab(tab_id).id();
 
   // Use a placeholder URL as origin for local file casting, which is
   // essentially mirroring.

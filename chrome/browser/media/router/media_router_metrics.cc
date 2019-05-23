@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 

@@ -11,7 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "components/cast_channel/enum_table.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
@@ -316,10 +316,10 @@ CastAppInfo::CastAppInfo(const CastAppInfo& other) = default;
 std::unique_ptr<CastMediaSource> CastMediaSource::FromMediaSourceId(
     const MediaSource::Id& source_id) {
   MediaSource source(source_id);
-  if (IsTabMirroringMediaSource(source))
+  if (source.IsTabMirroringSource())
     return CastMediaSourceForTabMirroring(source_id);
 
-  if (IsDesktopMirroringMediaSource(source))
+  if (source.IsDesktopMirroringSource())
     return CastMediaSourceForDesktopMirroring(source_id);
 
   const GURL& url = source.url();

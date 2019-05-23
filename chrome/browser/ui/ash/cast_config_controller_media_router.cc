@@ -21,7 +21,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -101,7 +101,7 @@ CastDeviceCache::CastDeviceCache(
     : MediaRoutesObserver(GetMediaRouter()),
       MediaSinksObserver(
           GetMediaRouter(),
-          media_router::MediaSourceForDesktop(),
+          media_router::MediaSource::ForDesktop(),
           url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL))),
       update_devices_callback_(update_devices_callback) {}
 
@@ -225,7 +225,7 @@ void CastConfigControllerMediaRouter::RequestDeviceRefresh() {
         // Default to a tab/app capture. This will display the media router
         // description. This means we will properly support DIAL casts.
         device.route.content_source =
-            media_router::IsDesktopMirroringMediaSource(route.media_source())
+            route.media_source().IsDesktopMirroringSource()
                 ? ash::ContentSource::kDesktop
                 : ash::ContentSource::kTab;
         break;
@@ -245,7 +245,7 @@ CastConfigControllerMediaRouter::GetSinksAndRoutes() {
 void CastConfigControllerMediaRouter::CastToSink(const std::string& sink_id) {
   // TODO(imcheng): Pass in tab casting timeout.
   GetMediaRouter()->CreateRoute(
-      media_router::MediaSourceForDesktop().id(), sink_id,
+      media_router::MediaSource::ForDesktop().id(), sink_id,
       url::Origin::Create(GURL("http://cros-cast-origin/")), nullptr,
       base::DoNothing(), base::TimeDelta(), false);
 }

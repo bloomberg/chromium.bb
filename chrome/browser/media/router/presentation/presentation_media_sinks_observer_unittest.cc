@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/media/router/test/mock_screen_availability_listener.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -35,7 +35,7 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
     EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).WillOnce(Return(true));
     observer_.reset(new PresentationMediaSinksObserver(
         &router_, &listener_,
-        MediaSourceForPresentationUrl(
+        MediaSource::ForPresentationUrl(
             GURL("http://example.com/presentation.html")),
         url::Origin::Create(GURL(kOrigin))));
     EXPECT_TRUE(observer_->Init());

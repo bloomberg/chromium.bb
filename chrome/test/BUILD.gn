@@ -3045,7 +3045,6 @@ test("unit_tests") {
     "../common/media_router/issue_unittest.cc",
     "../common/media_router/media_route_unittest.cc",
     "../common/media_router/media_sink_unittest.cc",
-    "../common/media_router/media_source_helper_unittest.cc",
     "../common/media_router/media_source_unittest.cc",
     "../common/net/safe_search_util_unittest.cc",
     "../common/origin_trials/chrome_origin_trial_policy_unittest.cc",

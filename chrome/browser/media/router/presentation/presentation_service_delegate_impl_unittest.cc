@@ -15,7 +15,6 @@
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -129,8 +128,8 @@ class PresentationServiceDelegateImplTest
         presentation_urls_({presentation_url1_}),
         frame_url_(kFrameUrl),
         frame_origin_(url::Origin::Create(GURL(frame_url_))),
-        source1_(MediaSourceForPresentationUrl(presentation_url1_)),
-        source2_(MediaSourceForPresentationUrl(presentation_url2_)),
+        source1_(MediaSource::ForPresentationUrl(presentation_url1_)),
+        source2_(MediaSource::ForPresentationUrl(presentation_url2_)),
         listener1_(presentation_url1_),
         listener2_(presentation_url2_) {}
 
@@ -507,7 +506,7 @@ TEST_F(PresentationServiceDelegateImplTest,
   content::GlobalFrameRoutingId rfh_id(main_frame_process_id_,
                                        main_frame_routing_id_);
   MediaRoute media_route("route_id",
-                         MediaSourceForPresentationUrl(presentation_url),
+                         MediaSource::ForPresentationUrl(presentation_url),
                          "mediaSinkId", "", true, true);
   media_route.set_local_presentation(true);
 
@@ -534,7 +533,7 @@ TEST_F(PresentationServiceDelegateImplTest,
 TEST_F(PresentationServiceDelegateImplTest,
        TestReconnectPresentationForLocalPresentation) {
   MediaRoute media_route("route_id",
-                         MediaSourceForPresentationUrl(presentation_url1_),
+                         MediaSource::ForPresentationUrl(presentation_url1_),
                          "mediaSinkId", "", true, true);
   media_route.set_local_presentation(true);
 
@@ -564,7 +563,7 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToLocalPresentation) {
   PresentationInfo presentation_info(presentation_url1_, kPresentationId);
 
   MediaRoute media_route("route_id",
-                         MediaSourceForPresentationUrl(presentation_info.url),
+                         MediaSource::ForPresentationUrl(presentation_info.url),
                          "mediaSinkId", "", true, true);
   media_route.set_local_presentation(true);
 
@@ -628,7 +627,7 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToPresentation) {
   PresentationInfo presentation_info(presentation_url1_, kPresentationId);
 
   MediaRoute media_route("route_id",
-                         MediaSourceForPresentationUrl(presentation_info.url),
+                         MediaSource::ForPresentationUrl(presentation_info.url),
                          "mediaSinkId", "", true, true);
 
   content::PresentationConnectionPtr connection_ptr;

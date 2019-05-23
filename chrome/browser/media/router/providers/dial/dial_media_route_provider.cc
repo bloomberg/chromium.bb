@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider_metrics.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/origin.h"
 
@@ -415,10 +415,10 @@ void DialMediaRouteProvider::StartObservingMediaSinks(
   }
 
   MediaSource dial_source(media_source);
-  if (!IsDialMediaSource(dial_source))
+  if (!dial_source.IsDialSource())
     return;
 
-  std::string app_name = AppNameFromDialMediaSource(dial_source);
+  std::string app_name = dial_source.AppNameFromDialSource();
   if (app_name.empty())
     return;
 
@@ -444,7 +444,7 @@ void DialMediaRouteProvider::StopObservingMediaSinks(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   MediaSource dial_source(media_source);
-  std::string app_name = AppNameFromDialMediaSource(dial_source);
+  std::string app_name = dial_source.AppNameFromDialSource();
   if (!dial_source.id().empty() && app_name.empty())
     return;
 

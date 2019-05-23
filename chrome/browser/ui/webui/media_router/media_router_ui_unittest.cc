@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 #include "chrome/browser/ui/webui/media_router/web_contents_display_observer.h"
 #include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/common/url_constants.h"
@@ -459,9 +459,9 @@ TEST_F(MediaRouterUITest, FilterNonDisplayJoinableRoutes) {
 TEST_F(MediaRouterUITest, UIMediaRoutesObserverAssignsCurrentCastModes) {
   CreateMediaRouterUI(profile());
   SessionID tab_id = SessionTabHelper::IdForTab(web_contents());
-  MediaSource media_source_1(MediaSourceForTab(tab_id.id()));
+  MediaSource media_source_1(MediaSource::ForTab(tab_id.id()));
   MediaSource media_source_2("mediaSource");
-  MediaSource media_source_3(MediaSourceForDesktop());
+  MediaSource media_source_3(MediaSource::ForDesktop());
   std::unique_ptr<MediaRouterUI::UIMediaRoutesObserver> observer(
       new MediaRouterUI::UIMediaRoutesObserver(
           &mock_router_, MediaSource::Id(),
@@ -509,7 +509,7 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverSkipsUnavailableCastModes) {
   CreateMediaRouterUI(profile());
   MediaSource media_source_1("mediaSource1");
   MediaSource media_source_2("mediaSource2");
-  MediaSource media_source_3(MediaSourceForDesktop());
+  MediaSource media_source_3(MediaSource::ForDesktop());
   std::unique_ptr<MediaRouterUI::UIMediaRoutesObserver> observer(
       new MediaRouterUI::UIMediaRoutesObserver(
           &mock_router_, MediaSource::Id(),
@@ -588,8 +588,8 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
   std::vector<MediaSink> sinks;
   sinks.emplace_back("sink id", "sink name", SinkIconType::GENERIC);
   std::vector<url::Origin> origins;
-  auto presentation_source =
-      MediaSourceForPresentationUrl(presentation_request_.presentation_urls[0]);
+  auto presentation_source = MediaSource::ForPresentationUrl(
+      presentation_request_.presentation_urls[0]);
   for (auto* observer : media_sinks_observers_) {
     if (!(observer->source() == presentation_source)) {
       observer->OnSinksUpdated(sinks, origins);
@@ -618,8 +618,8 @@ TEST_F(MediaRouterUITest, AbortErrorOnClose) {
   std::vector<MediaSink> sinks;
   sinks.emplace_back("sink id", "sink name", SinkIconType::GENERIC);
   std::vector<url::Origin> origins;
-  auto presentation_source =
-      MediaSourceForPresentationUrl(presentation_request_.presentation_urls[0]);
+  auto presentation_source = MediaSource::ForPresentationUrl(
+      presentation_request_.presentation_urls[0]);
   for (auto* observer : media_sinks_observers_) {
     if (observer->source() == presentation_source) {
       observer->OnSinksUpdated(sinks, origins);

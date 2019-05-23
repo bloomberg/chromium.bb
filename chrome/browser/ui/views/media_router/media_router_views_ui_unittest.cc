@@ -16,7 +16,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -183,7 +183,7 @@ TEST_F(MediaRouterViewsUITest, SetDialogHeader) {
 
 TEST_F(MediaRouterViewsUITest, StartCasting) {
   MediaSource media_source =
-      MediaSourceForTab(SessionTabHelper::IdForTab(web_contents()).id());
+      MediaSource::ForTab(SessionTabHelper::IdForTab(web_contents()).id());
   EXPECT_CALL(mock_router_,
               CreateRouteInternal(media_source.id(), kSinkId, _, web_contents(),
                                   _, base::TimeDelta::FromSeconds(60), false));

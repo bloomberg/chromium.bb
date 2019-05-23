@@ -12,7 +12,7 @@
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/media_router/media_router_ui_helper.h"
-#include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -172,9 +172,9 @@ void CastHandler::StartPresentation(
     const std::string& sink_name,
     std::unique_ptr<media_router::StartPresentationContext> context) {
   url::Origin frame_origin = context->presentation_request().frame_origin;
-  std::vector<media_router::MediaSource> sources =
-      media_router::MediaSourcesForPresentationUrls(
-          context->presentation_request().presentation_urls);
+  std::vector<media_router::MediaSource> sources;
+  for (const auto& url : context->presentation_request().presentation_urls)
+    sources.push_back(media_router::MediaSource::ForPresentationUrl(url));
   query_result_manager_->SetSourcesForCastMode(
       media_router::MediaCastMode::PRESENTATION, sources, frame_origin);
   const media_router::MediaSink::Id& sink_id = GetSinkIdByName(sink_name);
@@ -218,7 +218,7 @@ media_router::MediaRoute::Id CastHandler::GetRouteIdForSink(
 
 void CastHandler::StartObservingForSinks(
     protocol::Maybe<std::string> presentation_url) {
-  media_router::MediaSource mirroring_source(media_router::MediaSourceForTab(
+  media_router::MediaSource mirroring_source(media_router::MediaSource::ForTab(
       SessionTabHelper::IdForTab(web_contents_).id()));
   query_result_manager_->SetSourcesForCastMode(
       media_router::MediaCastMode::TAB_MIRROR, {mirroring_source},
