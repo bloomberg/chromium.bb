@@ -469,6 +469,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
 }
 
 TEST_F(ZeroSuggestProviderTest, RedirectToChrome) {
+  CreateContextualSuggestFieldTrial();
   // Coverage for the URL-specific page. (Regression test for a DCHECK).
   // This is exercising ContextualSuggestionsService::CreateExperimentalRequest,
   // and to do that, ZeroSuggestProvider needs to be looking for
@@ -482,7 +483,6 @@ TEST_F(ZeroSuggestProviderTest, RedirectToChrome) {
       "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions";
   features.InitAndEnableFeatureWithParameters(
       omnibox::kZeroSuggestRedirectToChrome, params);
-  CreateContextualSuggestFieldTrial();
 
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
