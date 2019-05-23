@@ -13,8 +13,10 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
@@ -351,6 +353,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   // Set a Clear-Site-Data header that |HandleRequest| will use for every
   // following request.
   void SetClearSiteDataHeader(const std::string& header) {
+    base::AutoLock lock(clear_site_data_header_lock_);
     clear_site_data_header_ = header;
   }
 
@@ -390,8 +393,11 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse());
 
-    if (!clear_site_data_header_.empty())
-      response->AddCustomHeader("Clear-Site-Data", clear_site_data_header_);
+    {
+      base::AutoLock lock(clear_site_data_header_lock_);
+      if (!clear_site_data_header_.empty())
+        response->AddCustomHeader("Clear-Site-Data", clear_site_data_header_);
+    }
 
     std::string value;
     if (net::GetValueForKeyInQuery(request.GetURL(), "header", &value))
@@ -491,7 +497,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   bool is_network_service_enabled_ = false;
 
   // If this is set, |HandleRequest| will always respond with Clear-Site-Data.
-  std::string clear_site_data_header_;
+  base::Lock clear_site_data_header_lock_;
+  std::string clear_site_data_header_ GUARDED_BY(clear_site_data_header_lock_);
 
   // Only used when |is_network_service_enabled_| is false.
   std::unique_ptr<CacheTestUtil> cache_test_util_ = nullptr;

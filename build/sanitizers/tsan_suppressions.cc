@@ -194,9 +194,6 @@ char kTSanDefaultSuppressions[] =
     "race:base::internal::ThreadPoolImplTest_"
     "FileDescriptorWatcherNoOpsAfterShutdown_Test::TestBody\n"
 
-    // https://crbug.com/965719
-    "race:content::ClearSiteDataHandlerBrowserTest::HandleRequest\n"
-
     // https://crbug.com/965722
     "race:content::(anonymous namespace)::CorruptDBRequestHandler\n"
 
