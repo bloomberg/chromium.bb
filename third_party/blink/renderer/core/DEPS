@@ -34,6 +34,7 @@ include_rules = [
     "+cc/input/snap_fling_controller.h",
     "+cc/input/snap_selection_strategy.h",
     "+cc/layers/content_layer_client.h",
+    "+cc/layers/heads_up_display_layer.h",
     "+cc/layers/layer.h",
     "+cc/layers/layer_position_constraint.h",
     "+cc/layers/layer_sticky_position_constraint.h",

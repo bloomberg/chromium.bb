@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 
+#include "cc/layers/heads_up_display_layer.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -17,8 +19,10 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -310,11 +314,17 @@ void JankTracker::NotifyPrePaintFinished() {
     }
   }
 
-  if (use_sweep_line)
+  if (use_sweep_line) {
+    if (!region_experimental_.IsEmpty()) {
+      SetLayoutShiftRects(region_experimental_.GetRects());
+    }
     region_experimental_.Reset();
-  else
+  } else {
+    if (region_.IsEmpty()) {
+      SetLayoutShiftRects(region_.Rects());
+    }
     region_ = Region();
-
+  }
   frame_max_distance_ = 0.0;
 }
 
@@ -367,6 +377,37 @@ std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
     RegionToTracedValue(region_, granularity_scale, *value);
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   return value;
+}
+
+std::vector<gfx::Rect> JankTracker::ConvertIntRectsToGfxRects(
+    const Vector<IntRect>& int_rects) {
+  std::vector<gfx::Rect> rects;
+  for (const IntRect& rect : int_rects) {
+    gfx::Rect r = gfx::Rect(rect.X(), rect.Y(), rect.Width(), rect.Height());
+    rects.emplace_back(r);
+  }
+  return rects;
+}
+
+void JankTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
+  // Store the layout shift rects in the HUD layer.
+  GraphicsLayer* root_graphics_layer =
+      frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();
+  if (!root_graphics_layer)
+    return;
+
+  cc::Layer* cc_layer = root_graphics_layer->CcLayer();
+  if (!cc_layer)
+    return;
+  if (cc_layer->layer_tree_host()) {
+    if (!cc_layer->layer_tree_host()->GetDebugState().show_layout_shift_regions)
+      return;
+    if (cc_layer->layer_tree_host()->hud_layer()) {
+      std::vector<gfx::Rect> rects = ConvertIntRectsToGfxRects(int_rects);
+      cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(rects);
+      cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();
+    }
+  }
 }
 
 }  // namespace blink

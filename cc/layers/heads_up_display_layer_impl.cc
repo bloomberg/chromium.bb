@@ -514,6 +514,16 @@ void HeadsUpDisplayLayerImpl::SetHUDTypeface(sk_sp<SkTypeface> typeface) {
   NoteLayerPropertyChanged();
 }
 
+const std::vector<gfx::Rect>& HeadsUpDisplayLayerImpl::LayoutShiftRects()
+    const {
+  return layout_shift_rects_;
+}
+
+void HeadsUpDisplayLayerImpl::SetLayoutShiftRects(
+    const std::vector<gfx::Rect>& rects) {
+  layout_shift_rects_ = rects;
+}
+
 void HeadsUpDisplayLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
 
@@ -521,6 +531,7 @@ void HeadsUpDisplayLayerImpl::PushPropertiesTo(LayerImpl* layer) {
       static_cast<HeadsUpDisplayLayerImpl*>(layer);
 
   layer_impl->SetHUDTypeface(typeface_);
+  layer_impl->SetLayoutShiftRects(layout_shift_rects_);
 }
 
 void HeadsUpDisplayLayerImpl::UpdateHudContents() {
@@ -980,6 +991,9 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
     std::string label_text;
 
     switch (debug_rects[i].type) {
+      case LAYOUT_SHIFT_RECT_TYPE:
+        // TODO(rnasri@): Handle layout shift rects drawing.
+        break;
       case PAINT_RECT_TYPE:
         new_paint_rects.push_back(debug_rects[i]);
         continue;

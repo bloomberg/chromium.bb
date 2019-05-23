@@ -53,6 +53,9 @@ class CORE_EXPORT JankTracker {
       double jank_fraction_with_move_distance,
       double granularity_scale) const;
   double SubframeWeightingFactor() const;
+  std::vector<gfx::Rect> ConvertIntRectsToGfxRects(
+      const Vector<IntRect>& int_rects);
+  void SetLayoutShiftRects(const Vector<IntRect>& int_rects);
 
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;
