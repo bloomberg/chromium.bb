@@ -94,6 +94,24 @@ AsyncUtil.ConcurrentQueue = class {
   }
 
   /**
+   * Starts a task gated by this concurrent queue.
+   * Typical usage:
+   *
+   *   const unlock = await queue.lock();
+   *   try {
+   *     // Operations of the task.
+   *     ...
+   *   } finally {
+   *     unlock();
+   *   }
+   *
+   * @return {!Promise<function()>} Completion callback to run when finished.
+   */
+  async lock() {
+    return new Promise(resolve => this.run(unlock => resolve(unlock)));
+  }
+
+  /**
    * Cancels the queue. It removes all the not-run (yet) tasks. Note that this
    * does NOT stop tasks currently running.
    */
