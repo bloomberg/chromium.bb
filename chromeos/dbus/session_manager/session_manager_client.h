@@ -73,11 +73,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
     virtual void EmitLoginPromptVisibleCalled() {}
 
     // Called when the ARC instance is stopped after it had already started.
-    // |clean| is true if the instance was stopped as a result of an explicit
-    // request, false if it died unexpectedly.
-    // See details for StartArcInstanceCallback.
-    virtual void ArcInstanceStopped(
-        login_manager::ArcContainerStopReason reason) {}
+    virtual void ArcInstanceStopped() {}
   };
 
   // Interface for performing actions on behalf of the stub implementation.
@@ -338,16 +334,14 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
       const login_manager::StartArcMiniContainerRequest& request,
       VoidDBusMethodCallback callback) = 0;
 
-  // UpgradeArcContainer upgrades a mini-container to a full ARC container. In
-  // case of success, success_callback is called. In case of error,
-  // error_callback will be called with a |low_free_disk_space| signaling
-  // whether the failure was due to low free disk space.
-  using UpgradeErrorCallback =
-      base::OnceCallback<void(bool low_free_disk_space)>;
+  // UpgradeArcContainer upgrades a mini-container to a full ARC container. On
+  // upgrade failure, the container will be shutdown. The container shutdown
+  // will trigger the ArcInstanceStopped signal (as usual). There are no
+  // guarantees over whether this |callback| is invoked or the
+  // ArcInstanceStopped signal is received first.
   virtual void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      base::OnceClosure success_callback,
-      UpgradeErrorCallback error_callback) = 0;
+      VoidDBusMethodCallback callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes
   // |callback| with the result; true on success, false on failure (either

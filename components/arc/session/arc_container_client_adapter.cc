@@ -37,10 +37,9 @@ class ArcContainerClientAdapter
   }
 
   void UpgradeArc(const UpgradeArcContainerRequest& request,
-                  base::OnceClosure success_callback,
-                  UpgradeErrorCallback error_callback) override {
+                  chromeos::VoidDBusMethodCallback callback) override {
     chromeos::SessionManagerClient::Get()->UpgradeArcContainer(
-        request, std::move(success_callback), std::move(error_callback));
+        request, std::move(callback));
   }
 
   void StopArcInstance() override {
@@ -51,10 +50,9 @@ class ArcContainerClientAdapter
   }
 
   // chromeos::SessionManagerClient::Observer overrides:
-  void ArcInstanceStopped(
-      login_manager::ArcContainerStopReason stop_reason) override {
+  void ArcInstanceStopped() override {
     for (auto& observer : observer_list_)
-      observer.ArcInstanceStopped(stop_reason);
+      observer.ArcInstanceStopped();
   }
 
  private:

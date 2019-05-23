@@ -112,8 +112,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
       VoidDBusMethodCallback callback) override;
   void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      base::OnceClosure success_callback,
-      UpgradeErrorCallback error_callback) override;
+      VoidDBusMethodCallback callback) override;
   void StopArcInstance(VoidDBusMethodCallback callback) override;
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,
@@ -123,7 +122,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override;
 
   // Notifies observers as if ArcInstanceStopped signal is received.
-  void NotifyArcInstanceStopped(login_manager::ArcContainerStopReason);
+  void NotifyArcInstanceStopped();
 
   // Returns true if flags for |cryptohome_id| have been set. If the return
   // value is |true|, |*out_flags_for_user| is filled with the flags passed to
@@ -230,11 +229,12 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   }
 
   void set_arc_available(bool available) { arc_available_ = available; }
+  void set_force_upgrade_failure(bool force_upgrade_failure) {
+    force_upgrade_failure_ = force_upgrade_failure;
+  }
   void set_arc_start_time(base::TimeTicks arc_start_time) {
     arc_start_time_ = arc_start_time;
   }
-
-  void set_low_disk(bool low_disk) { low_disk_ = low_disk; }
 
   void set_force_state_keys_missing(bool force_state_keys_missing) {
     force_state_keys_missing_ = force_state_keys_missing;
@@ -289,9 +289,9 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   bool force_state_keys_missing_ = false;
 
   bool arc_available_ = false;
+  bool force_upgrade_failure_ = false;
   base::TimeTicks arc_start_time_;
 
-  bool low_disk_ = false;
   bool container_running_ = false;
 
   // Contains last request passed to StartArcMiniContainer

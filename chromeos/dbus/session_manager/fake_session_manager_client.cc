@@ -580,25 +580,17 @@ void FakeSessionManagerClient::StartArcMiniContainer(
 
 void FakeSessionManagerClient::UpgradeArcContainer(
     const login_manager::UpgradeArcContainerRequest& request,
-    base::OnceClosure success_callback,
-    UpgradeErrorCallback error_callback) {
+    VoidDBusMethodCallback callback) {
   last_upgrade_arc_request_ = request;
 
-  if (!arc_available_) {
-    PostReply(FROM_HERE, std::move(error_callback), false);
-    return;
-  }
-  if (low_disk_) {
+  PostReply(FROM_HERE, std::move(callback), !force_upgrade_failure_);
+  if (force_upgrade_failure_) {
+    // Emulate ArcInstanceStopped signal propagation.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FakeSessionManagerClient::NotifyArcInstanceStopped,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       login_manager::ArcContainerStopReason::LOW_DISK_SPACE));
-    PostReply(FROM_HERE, std::move(error_callback), true);
-    return;
+                       weak_ptr_factory_.GetWeakPtr()));
   }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                std::move(success_callback));
 }
 
 void FakeSessionManagerClient::StopArcInstance(
@@ -613,8 +605,8 @@ void FakeSessionManagerClient::StopArcInstance(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeSessionManagerClient::NotifyArcInstanceStopped,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     login_manager::ArcContainerStopReason::USER_REQUEST));
+                     weak_ptr_factory_.GetWeakPtr()));
+
   container_running_ = false;
 }
 
@@ -637,10 +629,9 @@ void FakeSessionManagerClient::GetArcStartTime(
       arc_available_ ? base::make_optional(arc_start_time_) : base::nullopt);
 }
 
-void FakeSessionManagerClient::NotifyArcInstanceStopped(
-    login_manager::ArcContainerStopReason reason) {
+void FakeSessionManagerClient::NotifyArcInstanceStopped() {
   for (auto& observer : observers_)
-    observer.ArcInstanceStopped(reason);
+    observer.ArcInstanceStopped();
 }
 
 bool FakeSessionManagerClient::GetFlagsForUser(
