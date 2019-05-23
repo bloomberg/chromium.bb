@@ -45,13 +45,7 @@ LocalCardMigrationManager::LocalCardMigrationManager(
       weak_ptr_factory_(this) {
   // This is to initialize StrikeDatabase is if it hasn't been already, so that
   // its cache would be loaded and ready to use when the first LCMM is created.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
-      base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-    // Only init when |kAutofillSaveCreditCardUsesStrikeSystemV2| is enabled.
-    client_->GetStrikeDatabase();
-  }
+  client_->GetStrikeDatabase();
 }
 
 LocalCardMigrationManager::~LocalCardMigrationManager() {}

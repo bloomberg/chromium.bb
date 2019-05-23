@@ -281,10 +281,8 @@ class SaveCardInfobarEGTestHelper {
 }
 
 #pragma mark - Tests
-
-// Upon completion, each test should have the SaveInfobar removed if the
-// |AutofillSaveCreditCardUsesStrikeSystemV2| flag is enabled. This is because
-// the tearDown() function, which is triggered after each test, removes
+// Upon completion, each test should have the SaveInfobar removed. This is
+// because the tearDown() function, which is triggered after each test, removes
 // SaveInfoBar and InfobarEvent::STRIKE_CHANGE_COMPLETE will be expected.
 
 // Ensures that submitting the form should query Google Payments; and the
@@ -311,21 +309,6 @@ class SaveCardInfobarEGTestHelper {
   GREYAssert([self waitForUIElementToAppearOrTimeout:
                        kSaveCardInfobarViewLocalAccessibilityID],
              @"Save card infobar failed to show.");
-}
-
-- (void)testOfferLocalSave_FullData_RequestFails_StrikeDatabaseDisabled {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self offerLocalSave_FullData_RequestFails];
-  chrome_test_util::RemoveAllInfoBars();
-}
-
-- (void)testOfferLocalSave_FullData_RequestFails_StrikeDatabaseEnabled {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self offerLocalSave_FullData_RequestFails];
   [self resetEventWaiterForEvents:{InfobarEvent::STRIKE_CHANGE_COMPLETE}
                           timeout:kWaitForDownloadTimeout];
   chrome_test_util::RemoveAllInfoBars();
@@ -355,21 +338,6 @@ class SaveCardInfobarEGTestHelper {
   GREYAssert([self waitForUIElementToAppearOrTimeout:
                        kSaveCardInfobarViewLocalAccessibilityID],
              @"Save card infobar failed to show.");
-}
-
-- (void)testOfferLocalSave_FullData_PaymentsDeclines_StrikeDatabaseDisabled {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self offerLocalSave_FullData_PaymentsDeclines];
-  chrome_test_util::RemoveAllInfoBars();
-}
-
-- (void)testOfferLocalSave_FullData_PaymentsDeclines_StrikeDatabaseEnabled {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self offerLocalSave_FullData_PaymentsDeclines];
   [self resetEventWaiterForEvents:{InfobarEvent::STRIKE_CHANGE_COMPLETE}
                           timeout:kWaitForDownloadTimeout];
   chrome_test_util::RemoveAllInfoBars();
@@ -421,21 +389,6 @@ class SaveCardInfobarEGTestHelper {
   GREYAssert([self waitForUIElementToAppearOrTimeout:
                        kSaveCardInfobarViewUploadAccessibilityID],
              @"Save card infobar failed to show.");
-}
-
-- (void)testOfferUpstream_FullData_PaymentsAccepts_StrikeDatabaseDisabled {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self offerUpstream_FullData_PaymentsAccepts];
-  chrome_test_util::RemoveAllInfoBars();
-}
-
-- (void)testOfferUpstream_FullData_PaymentsAccepts_StrikeDatabaseEnabled {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self offerUpstream_FullData_PaymentsAccepts];
   [self resetEventWaiterForEvents:{InfobarEvent::STRIKE_CHANGE_COMPLETE}
                           timeout:kWaitForDownloadTimeout];
   chrome_test_util::RemoveAllInfoBars();
@@ -464,21 +417,7 @@ class SaveCardInfobarEGTestHelper {
   GREYAssert([self waitForUIElementToAppearOrTimeout:
                        kSaveCardInfobarViewUploadAccessibilityID],
              @"Save card infobar failed to show.");
-}
 
-- (void)testOfferUpstream_PartialData_PaymentsAccepts_StrikeDatabaseDisabled {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self offerUpstream_PartialData_PaymentsAccepts];
-  chrome_test_util::RemoveAllInfoBars();
-}
-
-- (void)testOfferUpstream_PartialData_PaymentsAccepts_StrikeDatabaseEnabled {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self offerUpstream_PartialData_PaymentsAccepts];
   [self resetEventWaiterForEvents:{InfobarEvent::STRIKE_CHANGE_COMPLETE}
                           timeout:kWaitForDownloadTimeout];
   chrome_test_util::RemoveAllInfoBars();
@@ -512,21 +451,12 @@ class SaveCardInfobarEGTestHelper {
                        kSaveCardInfobarViewUploadAccessibilityID],
              @"Save card infobar failed to show.");
 
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
-    [self resetEventWaiterForEvents:{InfobarEvent::STRIKE_CHANGE_COMPLETE}
-                            timeout:kWaitForDownloadTimeout];
-    // Tap the X button.
-    [[EarlGrey selectElementWithMatcher:closeButtonMatcher()]
-        performAction:grey_tap()];
-    [self waitForEvents];
-
-  } else {
-    // Tap the X button.
-    [[EarlGrey selectElementWithMatcher:closeButtonMatcher()]
-        performAction:grey_tap()];
-  }
-
+  [self resetEventWaiterForEvents:{InfobarEvent::STRIKE_CHANGE_COMPLETE}
+                          timeout:kWaitForDownloadTimeout];
+  // Tap the X button.
+  [[EarlGrey selectElementWithMatcher:closeButtonMatcher()]
+      performAction:grey_tap()];
+  [self waitForEvents];
   // Wait until the save card infobar disappears.
   GREYAssert([self waitForUIElementToDisappearOrTimeout:
                        kSaveCardInfobarViewUploadAccessibilityID],
@@ -537,26 +467,6 @@ class SaveCardInfobarEGTestHelper {
       "Autofill.UploadOfferedCardOrigin",
       autofill::AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD, 1);
   histogram_tester.ExpectTotalCount("Autofill.UploadAcceptedCardOrigin", 0);
-}
-
-- (void)testUMA_Upstream_UserDeclines_StrikeDatabaseDisabled {
-  // TODO(crbug.com/925670): re-enable when fixed.
-  EARL_GREY_TEST_DISABLED(@"Failing regularly on the bots.");
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self UMA_Upstream_UserDeclines];
-}
-
-- (void)testUMA_Upstream_UserDeclines_StrikeDatabaseEnabled {
-  // TODO(crbug.com/925670): re-enable when fixed.
-  EARL_GREY_TEST_DISABLED(@"Failing regularly on the bots.");
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self UMA_Upstream_UserDeclines];
 }
 
 // Ensures that the infobar goes away, an UploadCardRequest RPC is sent to
@@ -642,20 +552,12 @@ class SaveCardInfobarEGTestHelper {
                        kSaveCardInfobarViewLocalAccessibilityID],
              @"Save card infobar failed to show.");
 
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
-    [self resetEventWaiterForEvents:{InfobarEvent::STRIKE_CHANGE_COMPLETE}
-                            timeout:kWaitForDownloadTimeout];
-    // Tap the X button.
-    [[EarlGrey selectElementWithMatcher:closeButtonMatcher()]
-        performAction:grey_tap()];
-    [self waitForEvents];
-
-  } else {
-    // Tap the X button.
-    [[EarlGrey selectElementWithMatcher:closeButtonMatcher()]
-        performAction:grey_tap()];
-  }
+  [self resetEventWaiterForEvents:{InfobarEvent::STRIKE_CHANGE_COMPLETE}
+                          timeout:kWaitForDownloadTimeout];
+  // Tap the X button.
+  [[EarlGrey selectElementWithMatcher:closeButtonMatcher()]
+      performAction:grey_tap()];
+  [self waitForEvents];
 
   // Wait until the save card infobar disappears.
   GREYAssert([self waitForUIElementToDisappearOrTimeout:
@@ -665,26 +567,6 @@ class SaveCardInfobarEGTestHelper {
   // Ensure credit card is not saved locally.
   GREYAssertEqual(0U, personal_data_manager_->GetCreditCards().size(),
                   @"No credit card should have been saved.");
-}
-
-- (void)testUserData_LocalSave_UserDeclines_StrikeDatabaseDisabled {
-  // TODO(crbug.com/925670): re-enable when fixed.
-  EARL_GREY_TEST_DISABLED(@"Failing regularly on the bots.");
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self userData_LocalSave_UserDeclines];
-}
-
-- (void)testUserData_LocalSave_UserDeclines_StrikeDatabaseEnabled {
-  // TODO(crbug.com/925670): re-enable when fixed.
-  EARL_GREY_TEST_DISABLED(@"Failing regularly on the bots.");
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-  [self userData_LocalSave_UserDeclines];
 }
 
 // Ensures that the infobar goes away and the credit card is saved to Chrome if

@@ -848,16 +848,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       // TODO(crbug.com/884817): Respect |delete_begin_| and |delete_end_| and
       // only clear out entries whose last strikes were created in that
       // timeframe.
-      if (base::FeatureList::IsEnabled(
-              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
-          base::FeatureList::IsEnabled(
-              autofill::features::
-                  kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-        autofill::StrikeDatabase* strike_database =
-            autofill::StrikeDatabaseFactory::GetForProfile(profile_);
-        if (strike_database)
-          strike_database->ClearAllStrikes();
-      }
+      autofill::StrikeDatabase* strike_database =
+          autofill::StrikeDatabaseFactory::GetForProfile(profile_);
+      if (strike_database)
+        strike_database->ClearAllStrikes();
 
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(

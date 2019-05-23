@@ -429,17 +429,11 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
       web_data_service->RemoveAutofillDataModifiedBetween(delete_begin,
                                                           delete_end);
 
-      if (base::FeatureList::IsEnabled(
-              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
-          base::FeatureList::IsEnabled(
-              autofill::features::
-                  kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-        // Clear out the Autofill StrikeDatabase in its entirety.
-        autofill::StrikeDatabase* strike_database =
-            autofill::StrikeDatabaseFactory::GetForBrowserState(browser_state_);
-        if (strike_database)
-          strike_database->ClearAllStrikes();
-      }
+      // Clear out the Autofill StrikeDatabase in its entirety.
+      autofill::StrikeDatabase* strike_database =
+          autofill::StrikeDatabaseFactory::GetForBrowserState(browser_state_);
+      if (strike_database)
+        strike_database->ClearAllStrikes();
 
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(

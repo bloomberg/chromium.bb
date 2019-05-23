@@ -160,12 +160,6 @@ extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
 extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[];
 extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[];
 
-// Title and description for the flag to control if credit card save should
-// utilize the updated version of Autofill StrikeDatabase when determining
-// whether save should be offered.
-extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemV2Name[];
-extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemV2Description[];
-
 // Title and description for the flag to control the credit card import from
 // dynamic forms.
 extern const char kEnableAutofillImportDynamicFormsName[];

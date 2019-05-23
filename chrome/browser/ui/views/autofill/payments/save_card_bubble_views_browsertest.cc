@@ -642,9 +642,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
   void ClickOnCancelButton(bool strike_expected = false) {
     SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
     DCHECK(save_card_bubble_views);
-    if (strike_expected &&
-        base::FeatureList::IsEnabled(
-            features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
+    if (strike_expected) {
       ResetEventWaiterForSequence(
           {DialogEvent::STRIKE_CHANGE_COMPLETE, DialogEvent::BUBBLE_CLOSED});
     } else {
@@ -794,11 +792,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ClickingNoThanksClosesBubble) {
   // Enable the updated UI.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCardImprovedUserConsent},
-      // Disabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
 
   // Submitting the form and having Payments decline offering to save should
   // show the local save bubble.
@@ -812,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
   // Clicking [No thanks] should cancel and close it.
   base::HistogramTester histogram_tester;
-  ClickOnCancelButton();
+  ClickOnCancelButton(/*strike_expected=*/true);
 
   // UMA should have recorded bubble rejection.
   histogram_tester.ExpectUniqueSample(
@@ -1373,7 +1368,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       {features::kAutofillSaveCardImprovedUserConsent,
        features::kAutofillUpstream},
       // Disabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
+      {});
 
   // Start sync.
   harness_->SetupSync();
@@ -1395,7 +1390,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
   // Clicking [No thanks] should cancel and close it.
   base::HistogramTester histogram_tester;
-  ClickOnCancelButton();
+  ClickOnCancelButton(/*strike_expected=*/true);
 
   // UMA should have recorded bubble rejection.
   histogram_tester.ExpectUniqueSample(
@@ -2424,82 +2419,10 @@ IN_PROC_BROWSER_TEST_F(
 // TODO(crbug.com/884817): Investigate combining local vs. upload tests using a
 //                         boolean to branch local vs. upload logic.
 
-// Tests StrikeDatabase interaction with the local save bubble. Ensures that no
-// strikes are added if the feature flag is disabled.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       StrikeDatabase_Local_StrikeNotAddedIfExperimentFlagOff) {
-  // Disable the the SaveCreditCardUsesStrikeSystem experiments.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCardImprovedUserConsent},
-      // Disabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
-
-  // Submitting the form and having Payments decline offering to save should
-  // show the local save bubble.
-  // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardAndAddressUploadForm);
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
-                  ->GetVisible());
-
-  base::HistogramTester histogram_tester;
-  ClickOnCancelButton();
-
-  // Ensure that no strike was added because the feature is disabled.
-  histogram_tester.ExpectTotalCount(
-      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave", 0);
-}
-
-// Tests StrikeDatabase interaction with the upload save bubble. Ensures that no
-// strikes are added if the feature flag is disabled.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    StrikeDatabase_Upload_StrikeNotAddedIfExperimentFlagOff) {
-  // Disable the the SaveCreditCardUsesStrikeSystem experiments.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillSaveCardImprovedUserConsent},
-      // Disabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
-
-  // Start sync.
-  harness_->SetupSync();
-
-  // Set up the Payments RPC.
-  SetUploadDetailsRpcPaymentsAccepts();
-
-  // Submitting the form should show the upload save bubble and legal footer.
-  // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence(
-      {DialogEvent::REQUESTED_UPLOAD_SAVE,
-       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardAndAddressUploadForm);
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
-                  ->GetVisible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
-
-  base::HistogramTester histogram_tester;
-
-  ClickOnCancelButton();
-
-  // Ensure that no strike was added because the feature is disabled.
-  histogram_tester.ExpectTotalCount(
-      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave", 0);
-}
-
 // Tests StrikeDatabase interaction with the local save bubble. Ensures that a
 // strike is added if the bubble is ignored.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        StrikeDatabase_Local_AddStrikeIfBubbleIgnored) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystemV2);
-
   TestAutofillClock test_clock;
   test_clock.SetNow(base::Time::Now());
 
@@ -2541,12 +2464,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // strike is added if the bubble is ignored.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        StrikeDatabase_Upload_AddStrikeIfBubbleIgnored) {
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
 
   TestAutofillClock test_clock;
   test_clock.SetNow(base::Time::Now());
@@ -2595,12 +2513,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        StrikeDatabase_Local_AddStrikeIfBubbleDeclined) {
   // Enable the updated UI.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCardImprovedUserConsent,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
 
   // Submitting the form and having Payments decline offering to save should
   // show the local save bubble.
@@ -2630,8 +2544,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitWithFeatures(
       // Enabled
       {features::kAutofillSaveCardImprovedUserConsent,
-       features::kAutofillUpstream,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2},
+       features::kAutofillUpstream},
       // Disabled
       {});
 
@@ -2669,12 +2582,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // strikes are added if the card already has max strikes.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        StrikeDatabase_Local_FullFlowTest) {
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCardImprovedUserConsent,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
 
   bool controller_observer_set = false;
 
@@ -2754,8 +2663,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   scoped_feature_list_.InitWithFeatures(
       // Enabled
       {features::kAutofillSaveCardImprovedUserConsent,
-       features::kAutofillUpstream,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2},
+       features::kAutofillUpstream},
       // Disabled
       {});
 

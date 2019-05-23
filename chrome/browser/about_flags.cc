@@ -2224,13 +2224,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSaveCardImprovedUserConsent)},
-    {"enable-autofill-save-credit-card-uses-strike-system-v2",
-     flag_descriptions::kEnableAutofillSaveCreditCardUsesStrikeSystemV2Name,
-     flag_descriptions::
-         kEnableAutofillSaveCreditCardUsesStrikeSystemV2Description,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2)},
     {"enable-autofill-send-experiment-ids-in-payments-rpcs",
      flag_descriptions::kEnableAutofillSendExperimentIdsInPaymentsRPCsName,
      flag_descriptions::
