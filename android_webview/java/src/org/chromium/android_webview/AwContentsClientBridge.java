@@ -168,6 +168,11 @@ public class AwContentsClientBridge {
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
         new Handler().post(() -> mClient.onReceivedSslError(callback, sslError));
+
+        // Record UMA on ssl error
+        // Use sparse histogram in case new values are added in future releases
+        RecordHistogram.recordSparseHistogram(
+                "Android.WebView.onReceivedSslError.ErrorCode", sslError.getPrimaryError());
         return true;
     }
 
