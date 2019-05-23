@@ -1033,6 +1033,10 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
                                const LayoutPoint& accumulated_offset,
                                HitTestAction hit_test_action) {
   if (ContainingNGBlockFlow()) {
+    // TODO(crbug.com/965976): We should fix the root cause of the missed
+    // layout, and then turn this into a DCHECK.
+    CHECK(!NeedsLayout()) << this;
+
     // In LayoutNG, we reach here only when called from
     // PaintLayer::HitTestContents() without going through any ancestor, in
     // which case the element must have self painting layer.
