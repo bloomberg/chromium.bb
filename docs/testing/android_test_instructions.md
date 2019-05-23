@@ -8,16 +8,17 @@
 
 #### Root Access
 
-Running tests requires being able to run "adb root", which requires using a
-userdebug build on your device.
+Running tests requires root access, which requires using a userdebug build on
+your device.
 
 To use a userdebug build, see
 [Running Builds](https://source.android.com/setup/build/running.html). Googlers
 can refer to [this page](https://goto.google.com/flashdevice).
 
-If you can't run "adb root", you will get an error when trying to install the
-test APKs like "adb: error: failed to copy" and "remote secure_mkdirs failed:
-Operation not permitted".
+If you can't run "adb root", you will get an error when trying to install
+the test APKs like "adb: error: failed to copy" and
+"remote secure_mkdirs failed: Operation not permitted" (use "adb unroot" to
+return adb to normal).
 
 #### ADB Debugging
 
@@ -30,13 +31,7 @@ third_party/android_sdk/public/platform-tools/adb
 In order to allow the ADB to connect to the device, you must enable USB
 debugging:
 
-*   Before Android 4.1 (Jelly Bean):
-    *   Go to "System Settings"
-    *   Go to "Developer options"
-    *   Check "USB debugging".
-    *   Un-check "Verify apps over USB".
-*   On Jelly Bean and above, developer options are hidden by default. To unhide
-    them:
+* Developer options are hidden by default. To unhide them:
     *   Go to "About phone"
     *   Tap 10 times on "Build number"
     *   The "Developer options" menu will now be available.
@@ -67,7 +62,7 @@ adb shell settings put global package_verifier_enable 0
 ### Using Emulators
 
 Running tests on emulators is the same as on device. Refer to
-[android_emulator.md](android_emulator.md) for setting up emulators.
+[android_emulator.md](../android_emulator.md) for setting up emulators.
 
 ## Building Tests
 
@@ -185,7 +180,7 @@ out/Default/run_chrome_junit_tests -f "org.chromium.chrome.browser.media.*"
 
 ### Debugging
 
-Similar to [debugging apk targets](android_debugging_instructions.md#debugging-java):
+Similar to [debugging apk targets](../android_debugging_instructions.md#debugging-java):
 
 ```shell
 out/Default/bin/run_chrome_junit_tests --wait-for-java-debugger
@@ -201,8 +196,8 @@ ninja -C out/Release content_unittests
 # Run a test suite
 out/Release/bin/run_content_unittests [-vv]
 
-# Run a subset of tests
-out/Release/bin/run_content_unittests [-vv] --gtest-filter ByteStreamTest.*
+# Run a subset of tests and enable some "please go faster" options:
+out/Release/bin/run_content_unittests --fast-local-dev -f "ByteStreamTest.*"
 ```
 
 ## Instrumentation Tests
@@ -220,27 +215,14 @@ Examples:
 ContentShell tests:
 
 ```shell
-# Build the code under test
-ninja -C out/Release content_shell_apk
-
-# Build the tests themselves
+# Build the tests:
 ninja -C out/Release content_shell_test_apk
 
-# Run the test (will automagically install the APK under test and the test APK)
+# Run the test suite:
 out/Release/bin/run_content_shell_test_apk [-vv]
-```
 
-ChromePublic tests:
-
-```shell
-# Build the code under test
-ninja -C out/Release chrome_public_apk
-
-# Build the tests themselves
-ninja -C out/Release chrome_public_test_apk
-
-# Run the test (will automagically install the APK under test and the test APK)
-out/Release/bin/run_chrome_public_test_apk [-vv]
+# Run a subset of tests and enable some "please go faster" options:
+out/Release/bin/run_content_shell_test_apk --fast-local-dev -f "*TestClass*"
 ```
 
 Android WebView tests:
@@ -250,18 +232,14 @@ See [WebView's instructions](/android_webview/docs/test-instructions.md).
 In order to run a subset of tests, use -f to filter based on test class/method
 or -A/-E to filter using annotations.
 
-Filtering examples:
+More Filtering examples:
 
 ```shell
-# Run a test suite
-out/Debug/bin/run_content_shell_test_apk
-
 # Run a specific test class
-out/Debug/bin/run_content_shell_test_apk -f AddressDetectionTest.*
+out/Debug/bin/run_content_shell_test_apk -f "AddressDetectionTest.*"
 
 # Run a specific test method
-out/Debug/bin/run_content_shell_test_apk -f \
-AddressDetectionTest#testAddressLimits
+out/Debug/bin/run_content_shell_test_apk -f AddressDetectionTest#testAddressLimits
 
 # Run a subset of tests by size (Smoke, SmallTest, MediumTest, LargeTest,
 # EnormousTest)
@@ -276,7 +254,7 @@ You might want to add stars `*` to each as a regular expression, e.g.
 
 ### Debugging
 
-Similar to [debugging apk targets](android_debugging_instructions.md#debugging-java):
+Similar to [debugging apk targets](../android_debugging_instructions.md#debugging-java):
 
 ```shell
 out/Debug/bin/run_content_shell_test_apk --wait-for-java-debugger
@@ -295,7 +273,7 @@ Any stacks produced by test runner output will already be deobfuscated.
 
 ## Running Blink Web Tests
 
-See [Web Tests](testing/web_tests.md).
+See [Web Tests](web_tests.md).
 
 ## Running GPU tests
 
