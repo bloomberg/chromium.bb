@@ -123,7 +123,7 @@ UIColor* BackgroundColorIncognito() {
     [self.tableView setLayoutMargins:UIEdgeInsetsZero];
   }
   self.tableView.contentInsetAdjustmentBehavior =
-      UIScrollViewContentInsetAdjustmentNever;
+      UIScrollViewContentInsetAdjustmentAutomatic;
   [self.tableView setContentInset:UIEdgeInsetsMake(kTopAndBottomPadding, 0,
                                                    kTopAndBottomPadding, 0)];
   self.tableView.estimatedRowHeight = 0;

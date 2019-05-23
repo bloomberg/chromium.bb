@@ -143,8 +143,6 @@
 
   self.backgroundImageView.image = omniboxIcon.backgroundImage;
   self.backgroundImageView.tintColor = omniboxIcon.backgroundImageTintColor;
-
-  [self layoutIfNeeded];
 }
 
 @end
