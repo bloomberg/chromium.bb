@@ -4,7 +4,7 @@
 
 import("//ios/build/config.gni")
 
-source_set("web_view") {
+source_set("util") {
   sources = [
     "wk_web_view_util.h",
     "wk_web_view_util.mm",
@@ -21,7 +21,7 @@ source_set("unittests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   deps = [
-    ":web_view",
+    ":util",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
