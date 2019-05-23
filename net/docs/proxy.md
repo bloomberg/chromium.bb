@@ -1,4 +1,182 @@
-# Proxy support
+# Proxy support in Chrome
+
+This document establishes basic proxy terminology, as well as describing
+behaviors specific to Chrome.
+
+## Proxy Server
+
+A proxy server is an intermediary used for network requests. It can be
+identified by the 3-tuple (scheme, host, port) where:
+
+* scheme - protocol used to communicate with the proxy (ex: SOCKSv5, HTTPS).
+* host - IP or hostname of the proxy server (ex: 192.168.0.1)
+* port - TCP/UDP port number (ex: 443)
+
+There are a variety of proxy server schemes supported by Chrome. When using an
+explicit proxy in the browser, multiple layers of the network request are
+impacted.
+
+Difference between proxy server schemes include:
+
+* Is communication to the proxy done over a secure channel?
+* Is name resolution (ex: DNS) done client side, or proxy side?
+* What authentication schemes to the proxy server are supported?
+* What network traffic can be sent through the proxy?
+
+Identifiers for proxy servers are often written as strings, using either the
+PAC format (ex: `PROXY foo`) or Chrome's URI format (ex: `http://foo`).
+
+When a proxy server's scheme is not stated, it's assumed to be HTTP in most
+contexts.
+
+This can lead to some confusion, particularly when discussing system proxy
+settings. Major platform UIs have converged on the term "Secure proxy" to mean
+the host:port for an (insecure) HTTP proxy to use for proxying https:// URLs.
+
+So when someone refers to their "HTTPS proxy" be aware of this ambiguity. The
+intended meaning could be either "an HTTP proxy for https:// URLs", or "a proxy
+using the HTTPS scheme".
+
+In this document when we say "an HTTPS proxy", we always mean "a proxy
+that the browser speaks HTTPS to", and not "an (HTTP) proxy used to proxy
+https:// URLs".
+
+## Proxy resolution
+
+Proxying in Chrome is done at the URL level.
+
+When the browser is asked to fetch a URL, it needs to decide which IP endpoint
+to send the request to. This can be either a proxy server, or the target host.
+
+This is called proxy resolution. The input to proxy resolution is a URL, and
+the output is an ordered list of proxy server options.
+
+What proxies to use can be described using either:
+
+* Manual proxy settings - proxy resolution is defined using a declarative set
+  of rules. These rules are expressed as a mapping from URL scheme to proxy
+  server(s), and a list of proxy bypass rules for when to go DIRECT instead of
+  using the mapped proxy.
+
+* PAC script - proxy resolution is defined using a JavaScript program, that is
+  invoked whenever fetching a URL to get the list of proxy servers to use.
+
+* Auto-detect - the WPAD protocol is used to probe the network (using DHCP/DNS)
+  and possibly discover the URL of a PAC script.
+
+## Proxy server schemes
+
+Chrome supports the following proxy server schemes:
+
+* DIRECT
+* HTTP
+* HTTPS
+* SOCKSv4
+* SOCKSv5
+* QUIC
+
+### DIRECT proxy scheme
+
+* Default port: N/A (neither host nor port are applicable)
+* Example identifier (PAC): `DIRECT`
+* Example identifier (URI): `direct://`
+
+This is a pseudo proxy scheme that indicates instead of using a proxy we are
+sending the request directly to the target server.
+
+It is imprecise to call this a "proxy server", but it is a convenient abstraction.
+
+### HTTP proxy scheme
+
+* Default port: 80
+* Example identifier (PAC): `PROXY proxy:8080`, `proxy` (non-standard; don't use)
+* Example identifiers (URI): `http://proxy:8080`, `proxy:8080` (can omit scheme)
+
+Generally when one refers to a "proxy server" or "web proxy", they are talking
+about an HTTP proxy.
+
+When using an HTTP proxy in Chrome, name resolution is always deferred to the
+proxy. HTTP proxies can proxy `http://`, `https://`, `ws://` and `wss://` URLs.
+(Chrome's FTP support is deprecated, and HTTP proxies cannot proxy `ftp://` anymore)
+
+Communication to HTTP proxy servers is insecure, meaning proxied `http://`
+requests are sent in the clear. When proxying `https://` requests through an
+HTTP proxy, the TLS exchange is forwarded through the proxy using the `CONNECT`
+method, so end-to-end encryption is not broken. However when establishing the
+tunnel, the hostname of the target URL is sent to the proxy server in the
+clear.
+
+HTTP proxies in Chrome support the same HTTP authentiation schemes as for
+target servers: Basic, Digest, Negotiate/NTLM.
+
+### HTTPS proxy scheme
+
+* Default port: 443
+* Example identifier (PAC): `HTTPS proxy:8080`
+* Example identifier (URI): `https://proxy:8080`
+
+This works exactly like an HTTP proxy, except the communication to the proxy
+server is protected by TLS. Hence `http://` requests, and hostnames for
+`https://` requests are not sent in the clear as with HTTP proxies.
+
+In addition to HTTP authentication methods, one can also use client
+certificates to authenticate to HTTPS proxies.
+
+### SOCKSv4 proxy scheme
+
+* Default port: 1080
+* Example identifiers (PAC): `SOCKS4 proxy:8080`, `SOCKS proxy:8080`
+* Example identifier (URI): `socks4://proxy:8080`
+
+SOCKSv4 is a simple transport layer proxy that wraps a TCP socket. Its use
+is transparent to the rest of the protocol stack; after an initial
+handshake when connecting the TCP socket (to the proxy), the rest of the
+loading stack is unchanged.
+
+No proxy authentication methods are supported for SOCKSv4.
+
+When using a SOCKSv4 proxy, name resolution for target hosts is always done
+client side, and moreover must resolve to an IPv4 address (SOCKSv4 encodes
+target address as 4 octets, so IPv6 targets are not possible).
+
+There are extensions to SOCKSv4 that allow for proxy side name resolution, and
+IPv6, namely SOCKSv4a. However Chrome does not allow configuring, or falling
+back to v4a.
+
+A better alternative is to just use the newer version of the protocol, SOCKSv5
+(which is still 20+ years old).
+
+### SOCKSv5 proxy scheme
+
+* Default port: 1080
+* Example identifier (PAC): `SOCKS5 proxy:8080`
+* Example identifiers (URI): `socks://proxy:8080`, `socks5://proxy:8080`
+
+[SOCKSv5](https://tools.ietf.org/html/rfc1928) is a transport layer proxy that
+wraps a TCP socket, and allows for name resolution to be deferred to the proxy.
+
+In Chrome when a proxy's scheme is set to SOCKSv5, name resolution is always
+done proxy side (even though the protocol allows for client side as well). In
+Firefox client side vs proxy side name resolution can be configured with
+`network.proxy.socks_remote_dns`; Chrome has no equivalent option and will
+always use proxy side resolution.
+
+No authentication methods are supported for SOCKSv5 in Chrome (although some do
+exist for the protocol).
+
+A handy way to create a SOCKSv5 proxy is with `ssh -D`, which can be used to
+tunnel web traffic to a remote host over SSH.
+
+In Chrome SOCKSv5 is only used to proxy TCP-based URL requests. It cannot be
+used to relay UDP traffic.
+
+### QUIC proxy scheme
+
+* Default (UDP) port: 443
+* Example identifier (PAC): `QUIC proxy:8080`
+* Example identifier (URI): `quic://proxy:8080`
+
+TODO
 
 ## Implicit bypass rules
 
