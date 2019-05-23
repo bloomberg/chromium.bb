@@ -1303,7 +1303,13 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
         bfc_block_offset = NextBorderEdge(*previous_inflow_position);
     }
 
-    ResolveBfcBlockOffset(previous_inflow_position, bfc_block_offset);
+    // A new formatting-context may have previously tried to resolve the BFC
+    // block-offset. In this case we'll have a "forced" BFC block-offset
+    // present, but we shouldn't apply it (instead preferring the child's new
+    // BFC block-offset).
+    DCHECK(!ConstraintSpace().AncestorHasClearancePastAdjoiningFloats());
+    ResolveBfcBlockOffset(previous_inflow_position, bfc_block_offset,
+                          /* forced_bfc_block_offset */ base::nullopt);
     return false;
   }
 
