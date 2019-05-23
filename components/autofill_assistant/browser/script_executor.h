@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/retry_timer.h"
@@ -110,6 +111,7 @@ class ScriptExecutor : public ActionDelegate,
   std::string GetStatusMessage() override;
   void ClickOrTapElement(
       const Selector& selector,
+      ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void GetPaymentInformation(
       std::unique_ptr<PaymentRequestOptions> options) override;

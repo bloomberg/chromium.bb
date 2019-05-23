@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/web_controller.h"
@@ -112,33 +113,20 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  void ClickElement(const Selector& selector) {
-    base::RunLoop run_loop;
-    web_controller_->ClickElement(
-        selector,
-        base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
-                       base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-  }
-
   void ClickElementCallback(const base::Closure& done_callback,
                             const ClientStatus& status) {
     EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     done_callback.Run();
   }
 
-  void TapElement(const Selector& selector) {
+  void ClickOrTapElement(const Selector& selector,
+                         ClickAction::ClickType click_type) {
     base::RunLoop run_loop;
-    web_controller_->TapElement(
-        selector,
+    web_controller_->ClickOrTapElement(
+        selector, click_type,
         base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
-  }
-
-  void TapElementCallback(const base::Closure& done_callback, bool result) {
-    ASSERT_TRUE(result);
-    done_callback.Run();
   }
 
   void WaitForElementRemove(const Selector& selector) {
@@ -638,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
   Selector selector;
   selector.selectors.emplace_back("#button");
-  ClickElement(selector);
+  ClickOrTapElement(selector, ClickAction::CLICK);
 
   WaitForElementRemove(selector);
 }
@@ -649,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#shadowsection");
   selector.selectors.emplace_back("#shadowbutton");
-  ClickElement(selector);
+  ClickOrTapElement(selector, ClickAction::CLICK);
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#iframe");
@@ -660,19 +648,19 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
   Selector selector;
   selector.selectors.emplace_back("#touch_area_two");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
   WaitForElementRemove(selector);
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#touch_area_one");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
   WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementMovingOutOfView) {
   Selector selector;
   selector.selectors.emplace_back("#touch_area_three");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
   WaitForElementRemove(selector);
 }
 
@@ -683,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
 
   Selector selector;
   selector.selectors.emplace_back("#touch_area_one");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
 
   WaitForElementRemove(selector);
 }
@@ -693,9 +681,58 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, DISABLED_TapElementInIFrame) {
   Selector selector;
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#touch_area");
-  TapElement(selector);
+  ClickOrTapElement(selector, ClickAction::TAP);
 
   WaitForElementRemove(selector);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       TapRandomMovingElementRepeatedly) {
+  Selector button_selector({"#random_moving_button"});
+  int num_clicks = 100;
+  for (int i = 0; i < num_clicks; ++i) {
+    ClickOrTapElement(button_selector, ClickAction::JAVASCRIPT);
+  }
+
+  std::vector<Selector> click_counter_selectors;
+  std::vector<std::string> expected_values;
+  expected_values.emplace_back(base::NumberToString(num_clicks));
+  Selector click_counter_selector({"#random_moving_click_counter"});
+  click_counter_selectors.emplace_back(click_counter_selector);
+  GetFieldsValue(click_counter_selectors, expected_values);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapMovingElementRepeatedly) {
+  Selector button_selector({"#moving_button"});
+  int num_clicks = 100;
+  for (int i = 0; i < num_clicks; ++i) {
+    ClickOrTapElement(button_selector, ClickAction::JAVASCRIPT);
+  }
+
+  std::vector<Selector> click_counter_selectors;
+  std::vector<std::string> expected_values;
+  expected_values.emplace_back(base::NumberToString(num_clicks));
+  Selector click_counter_selector({"#moving_click_counter"});
+  click_counter_selectors.emplace_back(click_counter_selector);
+  GetFieldsValue(click_counter_selectors, expected_values);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapStaticElementRepeatedly) {
+  Selector button_selector;
+  button_selector.selectors.emplace_back("#static_button");
+
+  int num_clicks = 100;
+  for (int i = 0; i < num_clicks; ++i) {
+    ClickOrTapElement(button_selector, ClickAction::JAVASCRIPT);
+  }
+
+  std::vector<Selector> click_counter_selectors;
+  std::vector<std::string> expected_values;
+  expected_values.emplace_back(base::NumberToString(num_clicks));
+  Selector click_counter_selector;
+  click_counter_selector.selectors.emplace_back("#static_click_counter");
+  click_counter_selectors.emplace_back(click_counter_selector);
+  GetFieldsValue(click_counter_selectors, expected_values);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
@@ -705,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
   EXPECT_FALSE(content::EvalJs(shell(), javascript).ExtractBool());
   Selector selector({R"(label[for="terms-and-conditions"])"},
                     PseudoType::BEFORE);
-  ClickElement(selector);
+  ClickOrTapElement(selector, ClickAction::CLICK);
   EXPECT_TRUE(content::EvalJs(shell(), javascript).ExtractBool());
 }
 

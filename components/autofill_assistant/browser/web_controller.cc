@@ -189,6 +189,12 @@ const char* const kIsDocumentReadyForInteract =
           || document.readyState == 'complete';
     })";
 
+// Javascript code to click on an element.
+const char* const kClickElement =
+    R"(function (selector) {
+      selector.click();
+    })";
+
 bool ConvertPseudoType(const PseudoType pseudo_type,
                        dom::PseudoType* pseudo_type_output) {
   switch (pseudo_type) {
@@ -891,42 +897,20 @@ void WebController::LoadURL(const GURL& url) {
 
 void WebController::ClickOrTapElement(
     const Selector& selector,
+    ClickAction::ClickType click_type,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector;
-#if defined(OS_ANDROID)
-  TapElement(selector, std::move(callback));
-#else
-  // TODO(crbug.com/806868): Remove 'ClickElement' since this feature is only
-  // available on Android.
-  ClickElement(selector, std::move(callback));
-#endif
-}
-
-void WebController::ClickElement(
-    const Selector& selector,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
   DCHECK(!selector.empty());
   FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForClickOrTap,
                              weak_ptr_factory_.GetWeakPtr(),
-                             std::move(callback), /* is_a_click= */ true));
-}
-
-void WebController::TapElement(
-    const Selector& selector,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
-  DCHECK(!selector.empty());
-  FindElement(selector,
-              /* strict_mode= */ true,
-              base::BindOnce(&WebController::OnFindElementForClickOrTap,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             std::move(callback), /* is_a_click= */ false));
+                             std::move(callback), click_type));
 }
 
 void WebController::OnFindElementForClickOrTap(
     base::OnceCallback<void(const ClientStatus&)> callback,
-    bool is_a_click,
+    ClickAction::ClickType click_type,
     const ClientStatus& status,
     std::unique_ptr<FindElementResult> result) {
   // Found element must belong to a frame.
@@ -941,13 +925,13 @@ void WebController::OnFindElementForClickOrTap(
       kPeriodicCheckRounds, element_object_id,
       base::BindOnce(
           &WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback), is_a_click,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback), click_type,
           std::move(result)));
 }
 
 void WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap(
     base::OnceCallback<void(const ClientStatus&)> callback,
-    bool is_a_click,
+    ClickAction::ClickType click_type,
     std::unique_ptr<FindElementResult> target_element,
     bool result) {
   if (!result) {
@@ -955,12 +939,12 @@ void WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap(
     return;
   }
 
-  ClickOrTapElement(std::move(target_element), is_a_click, std::move(callback));
+  ClickOrTapElement(std::move(target_element), click_type, std::move(callback));
 }
 
 void WebController::ClickOrTapElement(
     std::unique_ptr<FindElementResult> target_element,
-    bool is_a_click,
+    ClickAction::ClickType click_type,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   std::string element_object_id = target_element->object_id;
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
@@ -975,18 +959,35 @@ void WebController::ClickOrTapElement(
           .Build(),
       base::BindOnce(&WebController::OnScrollIntoView,
                      weak_ptr_factory_.GetWeakPtr(), std::move(target_element),
-                     std::move(callback), is_a_click));
+                     std::move(callback), click_type));
 }
 
 void WebController::OnScrollIntoView(
     std::unique_ptr<FindElementResult> target_element,
     base::OnceCallback<void(const ClientStatus&)> callback,
-    bool is_a_click,
+    ClickAction::ClickType click_type,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to scroll the element.";
     std::move(callback).Run(status);
+    return;
+  }
+
+  if (click_type == ClickAction::JAVASCRIPT) {
+    std::string element_object_id = target_element->object_id;
+    std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+    argument.emplace_back(runtime::CallArgument::Builder()
+                              .SetObjectId(element_object_id)
+                              .Build());
+    devtools_client_->GetRuntime()->CallFunctionOn(
+        runtime::CallFunctionOnParams::Builder()
+            .SetObjectId(element_object_id)
+            .SetArguments(std::move(argument))
+            .SetFunctionDeclaration(kClickElement)
+            .Build(),
+        base::BindOnce(&WebController::OnClickJS,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 
@@ -999,13 +1000,23 @@ void WebController::OnScrollIntoView(
                     base::BindOnce(&WebController::TapOrClickOnCoordinates,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    base::Unretained(getter_ptr),
-                                   std::move(callback), is_a_click));
+                                   std::move(callback), click_type));
+}
+
+void WebController::OnClickJS(
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
+    DVLOG(1) << __func__ << " Failed to click (javascript) the element.";
+  }
+  std::move(callback).Run(status);
 }
 
 void WebController::TapOrClickOnCoordinates(
     ElementPositionGetter* getter_to_release,
     base::OnceCallback<void(const ClientStatus&)> callback,
-    bool is_a_click,
+    ClickAction::ClickType click_type,
     bool has_coordinates,
     int x,
     int y) {
@@ -1017,7 +1028,8 @@ void WebController::TapOrClickOnCoordinates(
     return;
   }
 
-  if (is_a_click) {
+  DCHECK(click_type == ClickAction::TAP || click_type == ClickAction::CLICK);
+  if (click_type == ClickAction::CLICK) {
     devtools_client_->GetInput()->DispatchMouseEvent(
         input::DispatchMouseEventParams::Builder()
             .SetX(x)
@@ -1701,10 +1713,11 @@ void WebController::OnFindElementForSendKeyboardInput(
     std::move(callback).Run(status);
     return;
   }
-  ClickElement(selector, base::BindOnce(
-                             &WebController::OnClickElementForSendKeyboardInput,
-                             weak_ptr_factory_.GetWeakPtr(), codepoints,
-                             delay_in_millisecond, std::move(callback)));
+  ClickOrTapElement(
+      selector, ClickAction::CLICK,
+      base::BindOnce(&WebController::OnClickElementForSendKeyboardInput,
+                     weak_ptr_factory_.GetWeakPtr(), codepoints,
+                     delay_in_millisecond, std::move(callback)));
 }
 
 void WebController::GetOuterHtml(

@@ -198,8 +198,9 @@ std::string ScriptExecutor::GetStatusMessage() {
 
 void ScriptExecutor::ClickOrTapElement(
     const Selector& selector,
+    ClickAction::ClickType click_type,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->ClickOrTapElement(selector,
+  delegate_->GetWebController()->ClickOrTapElement(selector, click_type,
                                                    std::move(callback));
 }
 

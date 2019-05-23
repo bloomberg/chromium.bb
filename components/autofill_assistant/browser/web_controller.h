@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
@@ -70,6 +71,7 @@ class WebController {
   // |selector| and return the result through callback.
   virtual void ClickOrTapElement(
       const Selector& selector,
+      ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Fill the address form given by |selector| with the given address
@@ -231,24 +233,14 @@ class WebController {
     base::string16 cvc;
   };
 
-  // Perform a mouse left button click on the element given by |selector| and
-  // return the result through callback.
-  void ClickElement(const Selector& selector,
-                    base::OnceCallback<void(const ClientStatus&)> callback);
-
-  // Perform a touch tap on the element given by |selector| and return the
-  // result through callback.
-  void TapElement(const Selector& selector,
-                  base::OnceCallback<void(const ClientStatus&)> callback);
-
   void OnFindElementForClickOrTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      bool is_a_click,
+      ClickAction::ClickType click_type,
       const ClientStatus& status,
       std::unique_ptr<FindElementResult> result);
   void OnWaitDocumentToBecomeInteractiveForClickOrTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      bool is_a_click,
+      ClickAction::ClickType click_type,
       std::unique_ptr<FindElementResult> target_element,
       bool result);
   void OnFindElementForTap(
@@ -257,16 +249,18 @@ class WebController {
       std::unique_ptr<FindElementResult> result);
   void ClickOrTapElement(
       std::unique_ptr<FindElementResult> target_element,
-      bool is_a_click,
+      ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
+  void OnClickJS(base::OnceCallback<void(const ClientStatus&)> callback,
+                 std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnScrollIntoView(std::unique_ptr<FindElementResult> target_element,
                         base::OnceCallback<void(const ClientStatus&)> callback,
-                        bool is_a_click,
+                        ClickAction::ClickType click_type,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
   void TapOrClickOnCoordinates(
       ElementPositionGetter* getter_to_release,
       base::OnceCallback<void(const ClientStatus&)> callback,
-      bool is_a_click,
+      ClickAction::ClickType click_type,
       bool has_coordinates,
       int x,
       int y);

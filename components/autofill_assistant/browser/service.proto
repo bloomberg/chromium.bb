@@ -633,7 +633,14 @@ enum VisibilityRequirement {
 
 // Contain all arguments to perform a click.
 message ClickProto {
+  enum ClickType {
+    NOT_SET = 0;
+    TAP = 1;
+    JAVASCRIPT = 2;
+    CLICK = 3;
+  }
   optional ElementReferenceProto element_to_click = 1;
+  optional ClickType click_type = 2;
 }
 
 // Contain all arguments to perform a select option action.

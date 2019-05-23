@@ -52,8 +52,9 @@ class MockActionDelegate : public ActionDelegate {
 
   MOCK_METHOD1(SetStatusMessage, void(const std::string& message));
   MOCK_METHOD0(GetStatusMessage, std::string());
-  MOCK_METHOD2(ClickOrTapElement,
+  MOCK_METHOD3(ClickOrTapElement,
                void(const Selector& selector,
+                    ClickAction::ClickType click_type,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
   MOCK_METHOD1(Prompt, void(std::unique_ptr<std::vector<Chip>> chips));
