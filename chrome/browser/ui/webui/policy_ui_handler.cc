@@ -620,18 +620,10 @@ PolicyUIHandler::~PolicyUIHandler() {
 #endif
 }
 
-void PolicyUIHandler::AddLocalizedPolicyStrings(
-    content::WebUIDataSource* source,
-    const policy::PolicyStringMap* strings,
-    size_t count) {
-  for (size_t i = 0; i < count; ++i)
-    source->AddLocalizedString(strings[i].key, strings[i].string_id);
-}
-
 void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       content::WebUIDataSource* source) {
-  AddLocalizedPolicyStrings(source, policy::kPolicySources,
-                            static_cast<size_t>(policy::POLICY_SOURCE_COUNT));
+  AddLocalizedStringsBulk(source, policy::kPolicySources,
+                          policy::POLICY_SOURCE_COUNT);
 
   static constexpr LocalizedString kStrings[] = {
       {"conflict", IDS_POLICY_LABEL_CONFLICT},
@@ -800,8 +792,8 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
   auto chrome_policy_names = std::make_unique<base::ListValue>();
   policy::PolicyNamespace chrome_ns(policy::POLICY_DOMAIN_CHROME, "");
   const policy::Schema* chrome_schema = schema_map->GetSchema(chrome_ns);
-  for (policy::Schema::Iterator it = chrome_schema->GetPropertiesIterator();
-       !it.IsAtEnd(); it.Advance()) {
+  for (auto it = chrome_schema->GetPropertiesIterator(); !it.IsAtEnd();
+       it.Advance()) {
     chrome_policy_names->GetList().push_back(base::Value(it.key()));
   }
   auto chrome_values = std::make_unique<base::DictionaryValue>();
@@ -826,8 +818,8 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
     if (schema && schema->valid()) {
       // Get policy names from the extension's policy schema.
       // Store in a map, not an array, for faster lookup on JS side.
-      for (policy::Schema::Iterator prop = schema->GetPropertiesIterator();
-           !prop.IsAtEnd(); prop.Advance()) {
+      for (auto prop = schema->GetPropertiesIterator(); !prop.IsAtEnd();
+           prop.Advance()) {
         policy_names->GetList().push_back(base::Value(prop.key()));
       }
     }
