@@ -392,7 +392,7 @@
     },
     {
       name: "CSSVariables2",
-      status: "experimental",
+      status: "stable",
     },
     // Support for registered custom properties with <image> syntax.
     {
