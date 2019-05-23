@@ -29,7 +29,6 @@ class IMEEngineHandlerInterface;
 namespace chromeos {
 class ComponentExtensionIMEManager;
 class ComponentExtensionIMEManagerDelegate;
-class ImeFallbackEngine;
 namespace input_method {
 class InputMethodDelegate;
 class ImeKeyboard;
@@ -319,8 +318,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   typedef std::map<std::string, ui::IMEEngineHandlerInterface*> EngineMap;
   typedef std::map<Profile*, EngineMap, ProfileCompare> ProfileEngineMap;
   ProfileEngineMap engine_map_;
-
-  std::unique_ptr<ImeFallbackEngine> ime_fallback_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

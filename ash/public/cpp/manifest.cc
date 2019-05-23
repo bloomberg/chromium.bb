@@ -38,7 +38,6 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
-#include "ui/base/ime/mojo/ime_engine_factory_registry.mojom.h"
 
 namespace ash {
 
@@ -73,14 +72,13 @@ const service_manager::Manifest& GetManifest() {
                   mojom::KioskNextShellController,
                   mojom::CrosDisplayConfigController,
                   mojom::EventRewriterController, mojom::HighlighterController,
-                  mojom::ImeController, ime::mojom::ImeEngineFactoryRegistry,
-                  mojom::KeyboardController, mojom::LocaleUpdateController,
-                  mojom::LoginScreen, mojom::MediaController,
-                  mojom::NightLightController, mojom::NoteTakingController,
-                  mojom::ShutdownController, mojom::SystemTray,
-                  mojom::TabletModeController, mojom::TrayAction,
-                  mojom::VoiceInteractionController, mojom::VpnList,
-                  mojom::WallpaperController>())
+                  mojom::ImeController, mojom::KeyboardController,
+                  mojom::LocaleUpdateController, mojom::LoginScreen,
+                  mojom::MediaController, mojom::NightLightController,
+                  mojom::NoteTakingController, mojom::ShutdownController,
+                  mojom::SystemTray, mojom::TabletModeController,
+                  mojom::TrayAction, mojom::VoiceInteractionController,
+                  mojom::VpnList, mojom::WallpaperController>())
           .ExposeCapability("test", service_manager::Manifest::InterfaceList<
                                         mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")
