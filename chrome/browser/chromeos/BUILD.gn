@@ -2076,8 +2076,6 @@ source_set("chromeos") {
     "extensions/file_system_provider/file_system_provider_api.h",
     "extensions/file_system_provider/provider_function.cc",
     "extensions/file_system_provider/provider_function.h",
-    "extensions/first_run_private_api.cc",
-    "extensions/first_run_private_api.h",
     "extensions/input_method_api.cc",
     "extensions/input_method_api.h",
     "extensions/media_player_api.cc",

@@ -351,12 +351,6 @@
       "58B0C2968C335964D5433E89CA4D86628A0E3D4B"   // http://crbug.com/673004
     ]
   }],
-  "firstRunPrivate": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "location": "component",
-    "platforms": ["chromeos"]
-  },
   "fontSettings": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

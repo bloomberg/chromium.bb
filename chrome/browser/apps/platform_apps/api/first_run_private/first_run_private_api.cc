@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/first_run_private_api.h"
+#include "chrome/browser/apps/platform_apps/api/first_run_private/first_run_private_api.h"
 
 #include <memory>
 #include <utility>
@@ -18,6 +18,9 @@
 #include "components/user_manager/user.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+
+namespace chrome_apps {
+namespace api {
 
 ExtensionFunction::ResponseAction
 FirstRunPrivateGetLocalizedStringsFunction::Run() {
@@ -40,19 +43,16 @@ FirstRunPrivateGetLocalizedStringsFunction::Run() {
   base::string16 product_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   localized_strings->SetString(
-      "greetingText1",
-      l10n_util::GetStringFUTF16(IDS_FIRST_RUN_GREETING_STEP_TEXT_1,
-                                 product_name));
+      "greetingText1", l10n_util::GetStringFUTF16(
+                           IDS_FIRST_RUN_GREETING_STEP_TEXT_1, product_name));
   localized_strings->SetString(
-      "greetingText2",
-      l10n_util::GetStringFUTF16(IDS_FIRST_RUN_GREETING_STEP_TEXT_2,
-                                 product_name));
+      "greetingText2", l10n_util::GetStringFUTF16(
+                           IDS_FIRST_RUN_GREETING_STEP_TEXT_2, product_name));
   localized_strings->SetString(
       "greetingButton",
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_BUTTON));
-  localized_strings->SetString(
-      "closeButton",
-      l10n_util::GetStringUTF16(IDS_CLOSE));
+  localized_strings->SetString("closeButton",
+                               l10n_util::GetStringUTF16(IDS_CLOSE));
   localized_strings->SetString(
       "accessibleTitle",
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_ACCESSIBLE_TITLE));
@@ -67,3 +67,6 @@ ExtensionFunction::ResponseAction FirstRunPrivateLaunchTutorialFunction::Run() {
   chromeos::first_run::LaunchTutorial();
   return RespondNow(NoArguments());
 }
+
+}  // namespace api
+}  // namespace chrome_apps

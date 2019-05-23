@@ -157,8 +157,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kWebrtcLoggingPrivateAudioDebug,
      "webrtcLoggingPrivate.audioDebug",
      APIPermissionInfo::kFlagCannotBeOptional},
-    {APIPermission::kFirstRunPrivate, "firstRunPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kSettingsPrivate, "settingsPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kAutofillPrivate, "autofillPrivate",
