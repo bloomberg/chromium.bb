@@ -688,6 +688,8 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
                 base::android::ConvertUTF8ToJavaString(
                     env, counter_input.minimize_text()),
                 jcounters, counter_input.minimized_count(),
+                counter_input.min_counters_sum(),
+                counter_input.max_counters_sum(),
                 form_delegate_.GetJavaObject()));
         break;
       }

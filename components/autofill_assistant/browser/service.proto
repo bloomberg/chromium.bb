@@ -1315,6 +1315,16 @@ message CounterInputProto {
   // Validation rule used to check whether the current values of this input are
   // valid.
   optional ValidationRule validation_rule = 6;
+
+  // The minimum value of the sum of the counters. All counters decrease button
+  // will be disabled if sum <= min_counters_sum.
+  optional int64 min_counters_sum = 7
+      [default = -0x8000000000000000];  // kint64min
+
+  // The maximum value of the sum of the counters. All counters increase button
+  // will be disabled if sum >= max_counters_sum.
+  optional int64 max_counters_sum = 8
+      [default = 0x7FFFFFFFFFFFFFFF];  // kint64max
 }
 
 // An input that allows the user to choose one or multiple options. This input

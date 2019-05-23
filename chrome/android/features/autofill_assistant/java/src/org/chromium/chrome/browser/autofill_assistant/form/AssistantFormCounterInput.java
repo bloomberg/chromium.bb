@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -34,15 +35,37 @@ class AssistantFormCounterInput extends AssistantFormInput {
         void onCounterChanged(int counterIndex, int value);
     }
 
+    private static class CounterViewHolder {
+        private final View mView;
+        private final TextView mLabelView;
+        private final TextView mSubtextView;
+        private final TextView mValueView;
+        private final View mDecreaseButtonView;
+        private final View mIncreaseButtonView;
+
+        private CounterViewHolder(Context context) {
+            mView = LayoutInflater.from(context).inflate(
+                    R.layout.autofill_assistant_form_counter, /*root= */ null);
+            mLabelView = mView.findViewById(R.id.label);
+            mSubtextView = mView.findViewById(R.id.subtext);
+            mValueView = mView.findViewById(R.id.value);
+            mDecreaseButtonView = mView.findViewById(R.id.decrease_button);
+            mIncreaseButtonView = mView.findViewById(R.id.increase_button);
+        }
+    }
+
     private final String mLabel;
     private final String mExpandText;
     private final String mMinimizeText;
     private final List<AssistantFormCounter> mCounters;
     private final int mMinimizedCount;
+    private final long mMinCountersSum;
+    private final long mMaxCountersSum;
     private final Delegate mDelegate;
 
     AssistantFormCounterInput(String label, String expandText, String minimizeText,
-            List<AssistantFormCounter> counters, int minimizedCount, Delegate delegate) {
+            List<AssistantFormCounter> counters, int minimizedCount, long minCountersSum,
+            long maxCountersSum, Delegate delegate) {
         mLabel = label;
         mExpandText = expandText;
         mMinimizeText = minimizeText;
@@ -51,6 +74,8 @@ class AssistantFormCounterInput extends AssistantFormInput {
         // Don't show the expandable section if there is no text to show when minimized/expanded.
         mMinimizedCount =
                 expandText.isEmpty() || minimizeText.isEmpty() ? Integer.MAX_VALUE : minimizedCount;
+        mMinCountersSum = minCountersSum;
+        mMaxCountersSum = maxCountersSum;
         mDelegate = delegate;
     }
 
@@ -65,17 +90,23 @@ class AssistantFormCounterInput extends AssistantFormInput {
             label.setText(mLabel);
         }
 
+        // Create the views.
         ViewGroup expandableSection = root.findViewById(R.id.expandable_section);
         int labelIndex = root.indexOfChild(label);
+        List<CounterViewHolder> viewHolders = new ArrayList<>();
         for (int i = 0; i < mCounters.size(); i++) {
-            View counterView = createCounterView(context, mCounters.get(i), i);
+            CounterViewHolder viewHolder = new CounterViewHolder(context);
+            viewHolders.add(viewHolder);
             if (i < mMinimizedCount) {
                 // Add the counters below the label.
-                root.addView(counterView, labelIndex + i + 1);
+                root.addView(viewHolder.mView, labelIndex + i + 1);
             } else {
-                expandableSection.addView(counterView);
+                expandableSection.addView(viewHolder.mView);
             }
         }
+
+        // Initialize the views and attach listeners.
+        initializeCounterViews(mCounters, viewHolders);
 
         // If some counters are in the expandable section, show the expand label that will expand
         // the section when clicked.
@@ -120,61 +151,78 @@ class AssistantFormCounterInput extends AssistantFormInput {
         return root;
     }
 
-    private View createCounterView(
-            Context context, AssistantFormCounter counter, int counterIndex) {
-        View view = LayoutInflater.from(context).inflate(
-                R.layout.autofill_assistant_form_counter, /*root= */ null);
-        TextView labelView = view.findViewById(R.id.label);
-        updateLabel(counter, labelView);
+    private void initializeCounterViews(
+            List<AssistantFormCounter> counters, List<CounterViewHolder> views) {
+        assert counters.size() == views.size();
 
-        TextView subtextView = view.findViewById(R.id.subtext);
-        if (!counter.getSubtext().isEmpty()) {
-            subtextView.setVisibility(View.VISIBLE);
-            subtextView.setText(counter.getSubtext());
+        for (int i = 0; i < counters.size(); i++) {
+            AssistantFormCounter counter = counters.get(i);
+            CounterViewHolder view = views.get(i);
+
+            if (!counter.getSubtext().isEmpty()) {
+                view.mSubtextView.setVisibility(View.VISIBLE);
+                view.mSubtextView.setText(counter.getSubtext());
+            }
+
+            updateLabelAndValue(counter, view);
+
+            int index = i; // required for lambda.
+            view.mDecreaseButtonView.setOnClickListener(
+                    unusedView -> updateCounter(counters, views, index, -1));
+            view.mIncreaseButtonView.setOnClickListener(
+                    unusedView -> updateCounter(counters, views, index, +1));
         }
 
-        TextView valueTextView = view.findViewById(R.id.value);
-        View decreaseButton = view.findViewById(R.id.decrease_button);
-        View increaseButton = view.findViewById(R.id.increase_button);
-        updateCounterState(counter, valueTextView, decreaseButton, increaseButton);
-
-        decreaseButton.setOnClickListener(unusedView
-                -> updateCounter(counter, counterIndex, labelView, -1, valueTextView,
-                        decreaseButton, increaseButton));
-
-        increaseButton.setOnClickListener(unusedView
-                -> updateCounter(counter, counterIndex, labelView, +1, valueTextView,
-                        decreaseButton, increaseButton));
-
-        return view;
+        updateButtonsState(counters, views);
     }
 
-    private void updateLabel(AssistantFormCounter counter, TextView labelView) {
+    // It is ok to suppress the warning here as we are only setting a number value to the TextView.
+    @SuppressWarnings("SetTextI18n")
+    private void updateLabelAndValue(AssistantFormCounter counter, CounterViewHolder view) {
+        // Update the label.
         String label = counter.getLabel();
         if (counter.getLabelChoiceFormat().getLimits().length > 0) {
             label = counter.getLabelChoiceFormat().format(counter.getValue());
         }
         label = label.replaceAll(QUOTED_VALUE, Integer.toString(counter.getValue()));
-        labelView.setText(label);
+        view.mLabelView.setText(label);
+
+        // Update the value view.
+        view.mValueView.setText(Integer.toString(counter.getValue()));
     }
 
-    private void updateCounter(AssistantFormCounter counter, int counterIndex, TextView labelView,
-            int delta, TextView valueTextView, View decreaseButton, View increaseButton) {
+    private void updateButtonsState(
+            List<AssistantFormCounter> counters, List<CounterViewHolder> views) {
+        long sum = 0;
+        for (AssistantFormCounter counter : counters) {
+            sum += counter.getValue();
+        }
+
+        boolean canDecreaseSum = sum > mMinCountersSum;
+        boolean canIncreaseSum = sum < mMaxCountersSum;
+
+        for (int i = 0; i < counters.size(); i++) {
+            AssistantFormCounter counter = counters.get(i);
+            CounterViewHolder view = views.get(i);
+            view.mDecreaseButtonView.setEnabled(
+                    canDecreaseSum && counter.getValue() > counter.getMinValue());
+            view.mIncreaseButtonView.setEnabled(
+                    canIncreaseSum && counter.getValue() < counter.getMaxValue());
+        }
+    }
+
+    private void updateCounter(List<AssistantFormCounter> counters, List<CounterViewHolder> views,
+            int counterIndex, int delta) {
+        AssistantFormCounter counter = counters.get(counterIndex);
+
+        // Change the value.
         counter.setValue(counter.getValue() + delta);
         counter.setValue(Math.max(counter.getMinValue(), counter.getValue()));
         counter.setValue(Math.min(counter.getMaxValue(), counter.getValue()));
-        updateCounterState(counter, valueTextView, decreaseButton, increaseButton);
 
-        updateLabel(counter, labelView);
+        updateLabelAndValue(counter, views.get(counterIndex));
+        updateButtonsState(counters, views);
+
         mDelegate.onCounterChanged(counterIndex, counter.getValue());
-    }
-
-    // It is ok to suppress the warning here as we are only setting a number value to the TextView.
-    @SuppressWarnings("SetTextI18n")
-    private void updateCounterState(AssistantFormCounter counter, TextView valueTextView,
-            View decreaseButton, View increaseButton) {
-        valueTextView.setText(Integer.toString(counter.getValue()));
-        decreaseButton.setEnabled(counter.getValue() > counter.getMinValue());
-        increaseButton.setEnabled(counter.getValue() < counter.getMaxValue());
     }
 }

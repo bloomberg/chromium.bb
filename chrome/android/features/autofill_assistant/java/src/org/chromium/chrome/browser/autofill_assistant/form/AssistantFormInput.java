@@ -59,9 +59,10 @@ public abstract class AssistantFormInput {
     @CalledByNative
     private static AssistantFormCounterInput createCounterInput(int inputIndex, String label,
             String expandText, String minimizeText, List<AssistantFormCounter> counters,
-            int minimizedCount, AssistantFormDelegate delegate) {
+            int minimizedCount, long minCountersSum, long maxCountersSum,
+            AssistantFormDelegate delegate) {
         return new AssistantFormCounterInput(label, expandText, minimizeText, counters,
-                minimizedCount,
+                minimizedCount, minCountersSum, maxCountersSum,
                 (counterIndex,
                         value) -> delegate.onCounterChanged(inputIndex, counterIndex, value));
     }
