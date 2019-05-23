@@ -35,13 +35,19 @@ void UpdateBreakpadMemoryValues() {
   const int free_memory =
       static_cast<int>(base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024);
   breakpad_helper::SetCurrentFreeMemoryInKB(free_memory);
-  NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-                                                       NSUserDomainMask, YES);
-  NSString* value = base::mac::ObjCCastStrict<NSString>([paths lastObject]);
-  base::FilePath filePath = base::FilePath(base::SysNSStringToUTF8(value));
-  const int free_disk_space =
-      static_cast<int>(base::SysInfo::AmountOfFreeDiskSpace(filePath) / 1024);
-  breakpad_helper::SetCurrentFreeDiskInKB(free_disk_space);
+
+  NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:@"/"];
+  NSDictionary* results = [fileURL resourceValuesForKeys:@[
+    NSURLVolumeAvailableCapacityForImportantUsageKey
+  ]
+                                                   error:nil];
+  int free_disk_space_kilobytes = -1;
+  if (results) {
+    NSNumber* available_bytes =
+        results[NSURLVolumeAvailableCapacityForImportantUsageKey];
+    free_disk_space_kilobytes = [available_bytes integerValue] / 1024;
+  }
+  breakpad_helper::SetCurrentFreeDiskInKB(free_disk_space_kilobytes);
 }
 
 // Invokes |UpdateBreakpadMemoryValues| and schedules itself to be called
