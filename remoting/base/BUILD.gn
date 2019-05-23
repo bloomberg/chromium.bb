@@ -99,6 +99,8 @@ source_set("authorization") {
     "oauth_token_getter_impl.h",
     "oauth_token_getter_proxy.cc",
     "oauth_token_getter_proxy.h",
+    "offline_token_exchanger.cc",
+    "offline_token_exchanger.h",
   ]
 
   configs += [
