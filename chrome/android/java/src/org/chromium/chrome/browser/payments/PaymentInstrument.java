@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodChangeResponse;
@@ -174,15 +173,6 @@ public abstract class PaymentInstrument extends EditableOption {
             Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
             List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
             InstrumentDetailsCallback callback);
-
-    /**
-     * DO NOT USE. DEPRECATED. Instead of this method, please override updateWith(response),
-     * noUpdatedPaymentDetails(), and isChangingPaymentMethod().
-     * TODO(rouslan): Remove this method when all dependencies stop using it.
-     * https://crbug.com/884680
-     */
-    public void onPaymentDetailsUpdate(
-            @Nullable PaymentCurrencyAmount total, @Nullable String error) {}
 
     /**
      * Update the payment information in response to payment method change event.
