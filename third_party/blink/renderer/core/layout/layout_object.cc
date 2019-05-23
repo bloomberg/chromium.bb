@@ -2306,26 +2306,30 @@ void LayoutObject::UpdateImageObservers(const ComputedStyle* old_style,
   UpdateCursorImages(old_style ? old_style->Cursors() : nullptr,
                      new_style ? new_style->Cursors() : nullptr);
 
-  UpdateFirstLineImageObservers(old_style, new_style);
+  UpdateFirstLineImageObservers(new_style);
 }
 
 void LayoutObject::UpdateFirstLineImageObservers(
-    const ComputedStyle* old_style,
     const ComputedStyle* new_style) {
-  bool has_old_first_line_style =
-      old_style && old_style->HasPseudoStyle(kPseudoIdFirstLine);
   bool has_new_first_line_style =
       new_style && new_style->HasPseudoStyle(kPseudoIdFirstLine);
-  if (!has_old_first_line_style && !has_new_first_line_style)
+  if (!bitfields_.RegisteredAsFirstLineImageObserver() &&
+      !has_new_first_line_style)
     return;
+
+  using FirstLineStyleMap =
+      HashMap<const LayoutObject*, scoped_refptr<const ComputedStyle>>;
+  DEFINE_STATIC_LOCAL(FirstLineStyleMap, first_line_style_map, ());
+  DCHECK_EQ(bitfields_.RegisteredAsFirstLineImageObserver(),
+            first_line_style_map.Contains(this));
+  const auto* old_first_line_style =
+      bitfields_.RegisteredAsFirstLineImageObserver()
+          ? first_line_style_map.at(this)
+          : nullptr;
 
   // Don't call CacheFirstLineStyle() which will update the cache, because this
   // function can be called when the object has not been inserted into the tree
   // and we can't update the pseudo style cache which may depend on ancestors.
-  const auto* cached_old_first_line_style =
-      has_old_first_line_style
-          ? old_style->GetCachedPseudoStyle(kPseudoIdFirstLine)
-          : nullptr;
   const auto* cached_new_first_line_style =
       has_new_first_line_style
           ? new_style->GetCachedPseudoStyle(kPseudoIdFirstLine)
@@ -2339,13 +2343,26 @@ void LayoutObject::UpdateFirstLineImageObservers(
         !cached_new_first_line_style);
   }
 
-  if (cached_old_first_line_style || cached_new_first_line_style) {
-    UpdateFillImages(cached_old_first_line_style
-                         ? &cached_old_first_line_style->BackgroundLayers()
+  if (cached_new_first_line_style &&
+      !cached_new_first_line_style->HasBackgroundImage())
+    cached_new_first_line_style = nullptr;
+
+  if (old_first_line_style || cached_new_first_line_style) {
+    UpdateFillImages(old_first_line_style
+                         ? &old_first_line_style->BackgroundLayers()
                          : nullptr,
                      cached_new_first_line_style
                          ? &cached_new_first_line_style->BackgroundLayers()
                          : nullptr);
+    if (cached_new_first_line_style) {
+      bitfields_.SetRegisteredAsFirstLineImageObserver(true);
+      first_line_style_map.Set(this, cached_new_first_line_style);
+    } else {
+      bitfields_.SetRegisteredAsFirstLineImageObserver(false);
+      first_line_style_map.erase(this);
+    }
+    DCHECK_EQ(bitfields_.RegisteredAsFirstLineImageObserver(),
+              first_line_style_map.Contains(this));
   }
 }
 
@@ -3273,8 +3290,9 @@ void LayoutObject::WillBeDestroyed() {
   if (style_ && !IsText())
     UpdateImageObservers(style_.get(), nullptr);
 
-#if DCHECK_IS_ON()
   // We must have removed all image observers.
+  SECURITY_CHECK(!bitfields_.RegisteredAsFirstLineImageObserver());
+#if DCHECK_IS_ON()
   SECURITY_DCHECK(as_image_observer_count_ == 0u);
 #endif
 
@@ -3696,8 +3714,7 @@ const ComputedStyle* LayoutObject::GetCachedPseudoStyle(
       bitfields_.PendingUpdateFirstLineImageObservers()) {
     // Update image observers now after we have updated the first line
     // style cache.
-    const_cast<LayoutObject*>(this)->UpdateFirstLineImageObservers(nullptr,
-                                                                   Style());
+    const_cast<LayoutObject*>(this)->UpdateFirstLineImageObservers(Style());
   }
   return cached_pseudo_style;
 }

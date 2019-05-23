@@ -2535,8 +2535,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void UpdateImageObservers(const ComputedStyle* old_style,
                             const ComputedStyle* new_style);
-  void UpdateFirstLineImageObservers(const ComputedStyle* old_style,
-                                     const ComputedStyle* new_style);
+  void UpdateFirstLineImageObservers(const ComputedStyle* new_style);
 
   void ApplyPseudoStyleChanges(const ComputedStyle* old_style);
   void ApplyFirstLineChanges(const ComputedStyle* old_style);
@@ -2664,6 +2663,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_effective_root_scroller_(false),
           is_global_root_scroller_(false),
           pending_update_first_line_image_observers_(false),
+          registered_as_first_line_image_observer_(false),
           is_html_legend_element_(false),
           has_non_collapsed_border_decoration_(false),
           positioned_state_(kIsStaticallyPositioned),
@@ -2917,6 +2917,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // first line style before it is inserted into the tree.
     ADD_BOOLEAN_BITFIELD(pending_update_first_line_image_observers_,
                          PendingUpdateFirstLineImageObservers);
+    // Indicates whether this object has been added as a first line image
+    // observer.
+    ADD_BOOLEAN_BITFIELD(registered_as_first_line_image_observer_,
+                         RegisteredAsFirstLineImageObserver);
 
     // Whether this object's |Node| is a HTMLLegendElement. Used to increase
     // performance of |IsRenderedLegend| which is performance sensitive.
