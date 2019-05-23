@@ -575,8 +575,12 @@ Status ExecuteExecuteScript(Session* session,
     if (script.find("//") != std::string::npos)
       script = script + "\n";
 
-    return web_view->CallFunction(session->GetCurrentFrameId(),
-                                  "function(){" + script + "}", *args, value);
+    Status status = web_view->CallUserSyncFunction(
+        session->GetCurrentFrameId(), "function(){" + script + "}", *args,
+        session->script_timeout, value);
+    if (status.code() == kTimeout)
+      return Status(kScriptTimeout);
+    return status;
   }
 }
 
@@ -592,9 +596,16 @@ Status ExecuteExecuteAsyncScript(Session* session,
   if (!params.GetList("args", &args))
     return Status(kInvalidArgument, "'args' must be a list");
 
-  return web_view->CallUserAsyncFunction(
+  // Need to support line oriented comment
+  if (script.find("//") != std::string::npos)
+    script = script + "\n";
+
+  Status status = web_view->CallUserAsyncFunction(
       session->GetCurrentFrameId(), "function(){" + script + "}", *args,
       session->script_timeout, value);
+  if (status.code() == kTimeout)
+    return Status(kScriptTimeout);
+  return status;
 }
 
 Status ExecuteSwitchToFrame(Session* session,

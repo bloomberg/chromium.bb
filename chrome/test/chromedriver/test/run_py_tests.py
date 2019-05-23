@@ -510,6 +510,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
             'var callback = arguments[0];'
             'setTimeout(function(){callback(2);}, 300);'))
 
+  def testExecuteScriptTimeout(self):
+    self._driver.SetTimeouts({'script': 0})
+    self.assertRaises(
+        chromedriver.ScriptTimeout,
+        self._driver.ExecuteScript,
+            'return 2')
+
+    # Regular script can still run afterwards.
+    self._driver.SetTimeouts({'script': 1000})
+    self.assertEquals(
+        4,
+        self._driver.ExecuteScript('return 4'))
+
   def testSwitchToFrame(self):
     self._driver.ExecuteScript(
         'var frame = document.createElement("iframe");'

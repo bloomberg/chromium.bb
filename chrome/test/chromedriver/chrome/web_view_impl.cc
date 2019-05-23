@@ -333,29 +333,41 @@ Status WebViewImpl::TraverseHistoryWithJavaScript(int delta) {
     return Status(kUnknownError, "expected delta to be 1 or -1");
 }
 
-Status WebViewImpl::EvaluateScript(const std::string& frame,
-                                   const std::string& expression,
-                                   std::unique_ptr<base::Value>* result) {
+Status WebViewImpl::EvaluateScriptWithTimeout(
+    const std::string& frame,
+    const std::string& expression,
+    const base::TimeDelta& timeout,
+    std::unique_ptr<base::Value>* result) {
   WebViewImpl* target = GetTargetForFrame(this, frame);
   if (target != nullptr && target != this) {
     if (target->IsDetached())
       return Status(kTargetDetached);
     WebViewImplHolder target_holder(target);
-    return target->EvaluateScript(frame, expression, result);
+    return target->EvaluateScriptWithTimeout(frame, expression, timeout,
+                                             result);
   }
 
   int context_id;
   Status status = GetContextIdForFrame(this, frame, &context_id);
   if (status.IsError())
     return status;
-  return internal::EvaluateScriptAndGetValue(
-      client_.get(), context_id, expression, result);
+  return internal::EvaluateScriptAndGetValue(client_.get(), context_id,
+                                             expression, timeout, result);
 }
 
-Status WebViewImpl::CallFunction(const std::string& frame,
-                                 const std::string& function,
-                                 const base::ListValue& args,
-                                 std::unique_ptr<base::Value>* result) {
+Status WebViewImpl::EvaluateScript(const std::string& frame,
+                                   const std::string& expression,
+                                   std::unique_ptr<base::Value>* result) {
+  return EvaluateScriptWithTimeout(frame, expression, base::TimeDelta::Max(),
+                                   result);
+}
+
+Status WebViewImpl::CallFunctionWithTimeout(
+    const std::string& frame,
+    const std::string& function,
+    const base::ListValue& args,
+    const base::TimeDelta& timeout,
+    std::unique_ptr<base::Value>* result) {
   std::string json;
   base::JSONWriter::Write(args, &json);
   std::string w3c = w3c_compliant_ ? "true" : "false";
@@ -367,10 +379,20 @@ Status WebViewImpl::CallFunction(const std::string& frame,
       json.c_str(),
       w3c.c_str());
   std::unique_ptr<base::Value> temp_result;
-  Status status = EvaluateScript(frame, expression, &temp_result);
+  Status status =
+      EvaluateScriptWithTimeout(frame, expression, timeout, &temp_result);
   if (status.IsError())
       return status;
   return internal::ParseCallFunctionResult(*temp_result, result);
+}
+
+Status WebViewImpl::CallFunction(const std::string& frame,
+                                 const std::string& function,
+                                 const base::ListValue& args,
+                                 std::unique_ptr<base::Value>* result) {
+  // Timeout set to Max is treated as no timeout.
+  return CallFunctionWithTimeout(frame, function, args, base::TimeDelta::Max(),
+                                 result);
 }
 
 Status WebViewImpl::CallAsyncFunction(const std::string& frame,
@@ -380,6 +402,14 @@ Status WebViewImpl::CallAsyncFunction(const std::string& frame,
                                       std::unique_ptr<base::Value>* result) {
   return CallAsyncFunctionInternal(
       frame, function, args, false, timeout, result);
+}
+
+Status WebViewImpl::CallUserSyncFunction(const std::string& frame,
+                                         const std::string& function,
+                                         const base::ListValue& args,
+                                         const base::TimeDelta& timeout,
+                                         std::unique_ptr<base::Value>* result) {
+  return CallFunctionWithTimeout(frame, function, args, timeout, result);
 }
 
 Status WebViewImpl::CallUserAsyncFunction(
@@ -963,8 +993,8 @@ Status WebViewImpl::CallAsyncFunctionInternal(
   async_args.AppendBoolean(is_user_supplied);
   async_args.AppendInteger(timeout.InMilliseconds());
   std::unique_ptr<base::Value> tmp;
-  Status status = CallFunction(
-      frame, kExecuteAsyncScriptScript, async_args, &tmp);
+  Status status = CallFunctionWithTimeout(frame, kExecuteAsyncScriptScript,
+                                          async_args, timeout, &tmp);
   if (status.IsError())
     return status;
 
@@ -1100,6 +1130,7 @@ Status EvaluateScript(DevToolsClient* client,
                       int context_id,
                       const std::string& expression,
                       EvaluateScriptReturnType return_type,
+                      const base::TimeDelta& timeout,
                       std::unique_ptr<base::DictionaryValue>* result) {
   base::DictionaryValue params;
   params.SetString("expression", expression);
@@ -1107,8 +1138,10 @@ Status EvaluateScript(DevToolsClient* client,
     params.SetInteger("contextId", context_id);
   params.SetBoolean("returnByValue", return_type == ReturnByValue);
   std::unique_ptr<base::DictionaryValue> cmd_result;
-  Status status = client->SendCommandAndGetResult(
-      "Runtime.evaluate", params, &cmd_result);
+
+  Timeout local_timeout(timeout);
+  Status status = client->SendCommandAndGetResultWithTimeout(
+      "Runtime.evaluate", params, &local_timeout, &cmd_result);
   if (status.IsError())
     return status;
 
@@ -1136,11 +1169,12 @@ Status EvaluateScript(DevToolsClient* client,
 Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                   int context_id,
                                   const std::string& expression,
+                                  const base::TimeDelta& timeout,
                                   bool* got_object,
                                   std::string* object_id) {
   std::unique_ptr<base::DictionaryValue> result;
   Status status = EvaluateScript(client, context_id, expression, ReturnByObject,
-                                 &result);
+                                 timeout, &result);
   if (status.IsError())
     return status;
   if (!result->HasKey("objectId")) {
@@ -1156,10 +1190,11 @@ Status EvaluateScriptAndGetObject(DevToolsClient* client,
 Status EvaluateScriptAndGetValue(DevToolsClient* client,
                                  int context_id,
                                  const std::string& expression,
+                                 const base::TimeDelta& timeout,
                                  std::unique_ptr<base::Value>* result) {
   std::unique_ptr<base::DictionaryValue> temp_result;
   Status status = EvaluateScript(client, context_id, expression, ReturnByValue,
-                                 &temp_result);
+                                 timeout, &temp_result);
   if (status.IsError())
     return status;
 
@@ -1223,7 +1258,8 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
   bool got_object;
   std::string element_id;
   Status status = internal::EvaluateScriptAndGetObject(
-      client, context_id, expression, &got_object, &element_id);
+      client, context_id, expression, base::TimeDelta::Max(), &got_object,
+      &element_id);
   if (status.IsError())
     return status;
   if (!got_object) {

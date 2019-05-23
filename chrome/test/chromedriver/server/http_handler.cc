@@ -1087,7 +1087,7 @@ HttpHandler::PrepareStandardResponse(
       break;
     case kScriptTimeout:
       response.reset(
-          new net::HttpServerResponseInfo(net::HTTP_REQUEST_TIMEOUT));
+          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
     case kSessionNotCreated:
       response.reset(
