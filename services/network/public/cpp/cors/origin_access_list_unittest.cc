@@ -18,11 +18,10 @@ namespace cors {
 
 namespace {
 
-const auto kAllowSubdomains =
-    mojom::CorsOriginAccessMatchMode::kAllowSubdomains;
+const auto kAllowSubdomains = mojom::CorsDomainMatchMode::kAllowSubdomains;
 
 const auto kDisallowSubdomains =
-    mojom::CorsOriginAccessMatchMode::kDisallowSubdomains;
+    mojom::CorsDomainMatchMode::kDisallowSubdomains;
 
 // OriginAccessListTest is a out of blink version of blink::SecurityPolicyTest,
 // but it contains only tests for the allow/block lists management.
@@ -58,7 +57,7 @@ class OriginAccessListTest : public testing::Test {
   }
   void SetAllowListEntry(const std::string& protocol,
                          const std::string& host,
-                         const mojom::CorsOriginAccessMatchMode mode) {
+                         const mojom::CorsDomainMatchMode mode) {
     std::vector<mojom::CorsOriginPatternPtr> patterns;
     patterns.push_back(mojom::CorsOriginPattern::New(
         protocol, host, mode,
@@ -67,14 +66,14 @@ class OriginAccessListTest : public testing::Test {
   }
   void AddAllowListEntry(const std::string& protocol,
                          const std::string& host,
-                         const mojom::CorsOriginAccessMatchMode mode,
+                         const mojom::CorsDomainMatchMode mode,
                          const mojom::CorsOriginAccessMatchPriority priority) {
     list_.AddAllowListEntryForOrigin(source_origin_, protocol, host, mode,
                                      priority);
   }
   void SetBlockListEntry(const std::string& protocol,
                          const std::string& host,
-                         const mojom::CorsOriginAccessMatchMode mode) {
+                         const mojom::CorsDomainMatchMode mode) {
     std::vector<mojom::CorsOriginPatternPtr> patterns;
     patterns.push_back(mojom::CorsOriginPattern::New(
         protocol, host, mode,
@@ -83,7 +82,7 @@ class OriginAccessListTest : public testing::Test {
   }
   void AddBlockListEntry(const std::string& protocol,
                          const std::string& host,
-                         const mojom::CorsOriginAccessMatchMode mode,
+                         const mojom::CorsDomainMatchMode mode,
                          const mojom::CorsOriginAccessMatchPriority priority) {
     list_.AddBlockListEntryForOrigin(source_origin_, protocol, host, mode,
                                      priority);

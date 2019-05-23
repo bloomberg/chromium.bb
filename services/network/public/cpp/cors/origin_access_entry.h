@@ -24,37 +24,37 @@ class CorsOriginPattern;
 
 namespace cors {
 
-// A class to hold a protocol and host pair and to provide methods to determine
-// if a given origin or domain matches to the pair. The class can have a setting
-// to control if the matching methods accept a partial match.
+// A class to hold a protocol and domain pair and to provide methods to
+// determine if a given origin or domain matches to the pair. The class can have
+// a setting to control if the matching methods accept a partial match.
 class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
  public:
-  static constexpr int32_t kPortAny = -1;
-
   enum MatchResult {
     kMatchesOrigin,
     kMatchesOriginButIsPublicSuffix,
     kDoesNotMatchOrigin
   };
 
-  // If host is empty string and CorsOriginAccessMatchMode is not
+  // If domain is empty string and CorsDomainMatchMode is not
   // DisallowSubdomains, the entry will match all domains in the specified
   // protocol.
   // IPv6 addresses must include brackets (e.g.
   // '[2001:db8:85a3::8a2e:370:7334]', not '2001:db8:85a3::8a2e:370:7334').
   // The priority argument is used to break ties when multiple entries match.
-  // If a valid |port| is specified, MatchesOrigin() takes it into account.
-  // kPortAny can be used to match any port.
+  // If CorsPortMatchMode::kAllowOnlySpecifiedPort is used, |port| is used in
+  // MatchesOrigin().
   OriginAccessEntry(const std::string& protocol,
-                    const std::string& host,
-                    const int32_t port,
-                    const mojom::CorsOriginAccessMatchMode mode,
+                    const std::string& domain,
+                    const uint16_t port,
+                    const mojom::CorsDomainMatchMode domain_match_mode,
+                    const mojom::CorsPortMatchMode port_match_mode,
                     const mojom::CorsOriginAccessMatchPriority priority =
                         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(OriginAccessEntry&& from);
 
   // MatchesOrigin requires a protocol match (e.g. 'http' != 'https'), and a
-  // port match. MatchesDomain relaxes these constraints.
+  // port match if kAllowOnlySpecifiedPort is specified. MatchesDomain relaxes
+  // these constraints.
   MatchResult MatchesOrigin(const url::Origin& origin) const;
   MatchResult MatchesDomain(const std::string& domain) const;
 
@@ -70,8 +70,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
  private:
   const std::string protocol_;
   const std::string host_;
-  const int32_t port_;
-  const mojom::CorsOriginAccessMatchMode mode_;
+  const uint16_t port_;
+  const mojom::CorsDomainMatchMode domain_match_mode_;
+  const mojom::CorsPortMatchMode port_match_mode_;
   const mojom::CorsOriginAccessMatchPriority priority_;
   const bool host_is_ip_address_;
 

@@ -33,8 +33,9 @@ TEST(OriginAccessEntryTest, PublicSuffixListTest) {
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message() << "Host: " << test.host);
     OriginAccessEntry entry(
-        origin.scheme(), test.host, OriginAccessEntry::kPortAny,
-        mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
+        origin.scheme(), test.host, /*port=*/0,
+        mojom::CorsDomainMatchMode::kAllowSubdomains,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
     EXPECT_EQ(test.expected, entry.MatchesOrigin(origin));
   }
@@ -99,8 +100,9 @@ TEST(OriginAccessEntryTest, AllowSubdomainsTest) {
                  << "Host: " << test.host << ", Origin: " << test.origin);
     url::Origin origin_to_test = url::Origin::Create(GURL(test.origin));
     OriginAccessEntry entry(
-        test.protocol, test.host, OriginAccessEntry::kPortAny,
-        mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
+        test.protocol, test.host, /*port=*/0,
+        mojom::CorsDomainMatchMode::kAllowSubdomains,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
     EXPECT_EQ(test.expected_origin, entry.MatchesOrigin(origin_to_test));
     EXPECT_EQ(test.expected_domain, entry.MatchesDomain(origin_to_test.host()));
@@ -149,8 +151,9 @@ TEST(OriginAccessEntryTest, AllowRegistrableDomainsTest) {
   for (const auto& test : inputs) {
     url::Origin origin_to_test = url::Origin::Create(GURL(test.origin));
     OriginAccessEntry entry(
-        test.protocol, test.host, OriginAccessEntry::kPortAny,
-        mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains,
+        test.protocol, test.host, /*port=*/0,
+        mojom::CorsDomainMatchMode::kAllowRegistrableDomains,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
     SCOPED_TRACE(testing::Message()
@@ -203,8 +206,9 @@ TEST(OriginAccessEntryTest, AllowRegistrableDomainsTestWithDottedSuffix) {
   for (const auto& test : inputs) {
     url::Origin origin_to_test = url::Origin::Create(GURL(test.origin));
     OriginAccessEntry entry(
-        test.protocol, test.host, OriginAccessEntry::kPortAny,
-        mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains,
+        test.protocol, test.host, /*port=*/0,
+        mojom::CorsDomainMatchMode::kAllowRegistrableDomains,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
     SCOPED_TRACE(testing::Message()
@@ -254,8 +258,9 @@ TEST(OriginAccessEntryTest, DisallowSubdomainsTest) {
                  << "Host: " << test.host << ", Origin: " << test.origin);
     url::Origin origin_to_test = url::Origin::Create(GURL(test.origin));
     OriginAccessEntry entry(
-        test.protocol, test.host, OriginAccessEntry::kPortAny,
-        mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        test.protocol, test.host, /*port=*/0,
+        mojom::CorsDomainMatchMode::kDisallowSubdomains,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
     EXPECT_EQ(test.expected, entry.MatchesOrigin(origin_to_test));
   }
@@ -281,8 +286,9 @@ TEST(OriginAccessEntryTest, IPAddressTest) {
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message() << "Host: " << test.host);
     OriginAccessEntry entry(
-        test.protocol, test.host, OriginAccessEntry::kPortAny,
-        mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        test.protocol, test.host, /*port=*/0,
+        mojom::CorsDomainMatchMode::kDisallowSubdomains,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
     EXPECT_EQ(test.is_ip_address, entry.host_is_ip_address()) << test.host;
   }
@@ -310,14 +316,16 @@ TEST(OriginAccessEntryTest, IPAddressMatchingTest) {
                  << "Host: " << test.host << ", Origin: " << test.origin);
     url::Origin origin_to_test = url::Origin::Create(GURL(test.origin));
     OriginAccessEntry entry1(
-        test.protocol, test.host, OriginAccessEntry::kPortAny,
-        mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
+        test.protocol, test.host, /*port=*/0,
+        mojom::CorsDomainMatchMode::kAllowSubdomains,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
     EXPECT_EQ(test.expected, entry1.MatchesOrigin(origin_to_test));
 
     OriginAccessEntry entry2(
-        test.protocol, test.host, OriginAccessEntry::kPortAny,
-        mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        test.protocol, test.host, /*port=*/0,
+        mojom::CorsDomainMatchMode::kDisallowSubdomains,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
     EXPECT_EQ(test.expected, entry2.MatchesOrigin(origin_to_test));
   }
@@ -325,26 +333,33 @@ TEST(OriginAccessEntryTest, IPAddressMatchingTest) {
 
 TEST(OriginAccessEntryTest, PortMatchingTest) {
   struct TestCase {
-    int32_t allow_port;
     const std::string origin;
+    uint16_t port;
+    mojom::CorsPortMatchMode mode;
     OriginAccessEntry::MatchResult expected;
   } inputs[] = {
-      {OriginAccessEntry::kPortAny, "http://example.com/",
+      {"http://example.com/", 0, mojom::CorsPortMatchMode::kAllowAnyPort,
        OriginAccessEntry::kMatchesOrigin},
-      {OriginAccessEntry::kPortAny, "http://example.com:8080/",
+      {"http://example.com:8080/", 0, mojom::CorsPortMatchMode::kAllowAnyPort,
        OriginAccessEntry::kMatchesOrigin},
-      {80, "http://example.com/", OriginAccessEntry::kMatchesOrigin},
-      {8080, "http://example.com/", OriginAccessEntry::kDoesNotMatchOrigin},
-      {80, "http://example.com:8080/", OriginAccessEntry::kDoesNotMatchOrigin},
+      {"http://example.com/", 80,
+       mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
+       OriginAccessEntry::kMatchesOrigin},
+      {"http://example.com/", 8080,
+       mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
+       OriginAccessEntry::kDoesNotMatchOrigin},
+      {"http://example.com:8080/", 80,
+       mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
+       OriginAccessEntry::kDoesNotMatchOrigin},
   };
 
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message()
-                 << "Port: " << test.allow_port << ", Origin: " << test.origin);
+                 << "Port: " << test.port << ", Origin: " << test.origin);
     url::Origin origin_to_test = url::Origin::Create(GURL(test.origin));
     OriginAccessEntry entry(
-        origin_to_test.scheme(), origin_to_test.host(), test.allow_port,
-        mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
+        origin_to_test.scheme(), origin_to_test.host(), test.port,
+        mojom::CorsDomainMatchMode::kAllowSubdomains, test.mode,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
     EXPECT_EQ(test.expected, entry.MatchesOrigin(origin_to_test));
   }
@@ -353,15 +368,17 @@ TEST(OriginAccessEntryTest, PortMatchingTest) {
 TEST(OriginAccessEntryTest, CreateCorsOriginPattern) {
   const std::string kProtocol = "https";
   const std::string kDomain = "google.com";
-  const auto kMode = mojom::CorsOriginAccessMatchMode::kAllowSubdomains;
+  const uint16_t kPort = 0;
+  const auto kDomainMode = mojom::CorsDomainMatchMode::kAllowSubdomains;
+  const auto kPortMode = mojom::CorsPortMatchMode::kAllowAnyPort;
   const auto kPriority = mojom::CorsOriginAccessMatchPriority::kDefaultPriority;
 
-  OriginAccessEntry entry(kProtocol, kDomain, OriginAccessEntry::kPortAny,
-                          kMode, kPriority);
+  OriginAccessEntry entry(kProtocol, kDomain, kPort, kDomainMode, kPortMode,
+                          kPriority);
   mojom::CorsOriginPatternPtr pattern = entry.CreateCorsOriginPattern();
   DCHECK_EQ(kProtocol, pattern->protocol);
   DCHECK_EQ(kDomain, pattern->domain);
-  DCHECK_EQ(kMode, pattern->mode);
+  DCHECK_EQ(kDomainMode, pattern->mode);
   DCHECK_EQ(kPriority, pattern->priority);
 }
 

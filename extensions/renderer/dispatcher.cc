@@ -1230,8 +1230,7 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
     WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
         WebString::FromUTF8(entry->domain),
-        entry->mode ==
-            network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
+        entry->mode == network::mojom::CorsDomainMatchMode::kAllowSubdomains,
         entry->priority);
   }
 
@@ -1239,8 +1238,7 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
     WebSecurityPolicy::AddOriginAccessBlockListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
         WebString::FromUTF8(entry->domain),
-        entry->mode ==
-            network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains,
+        entry->mode == network::mojom::CorsDomainMatchMode::kAllowSubdomains,
         entry->priority);
   }
 }

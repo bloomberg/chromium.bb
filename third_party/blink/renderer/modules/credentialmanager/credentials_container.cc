@@ -169,7 +169,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   bool reject_because_invalid_domain = effective_domain.IsEmpty();
   if (!reject_because_invalid_domain) {
     OriginAccessEntry access_entry(
-        *origin, network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
+        *origin, network::mojom::CorsDomainMatchMode::kAllowSubdomains);
     reject_because_invalid_domain = access_entry.HostIsIPAddress();
   }
   if (reject_because_invalid_domain) {
@@ -188,7 +188,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
     relaying_party_origin->SetDomainFromDOM(relying_party_id);
     OriginAccessEntry access_entry(
         *relaying_party_origin,
-        network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
+        network::mojom::CorsDomainMatchMode::kAllowSubdomains);
     if (relying_party_id.IsEmpty() ||
         access_entry.MatchesDomain(*origin) !=
             network::cors::OriginAccessEntry::kMatchesOrigin) {

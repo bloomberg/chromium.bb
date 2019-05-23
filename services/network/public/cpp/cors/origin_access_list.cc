@@ -23,7 +23,7 @@ void OriginAccessList::AddAllowListEntryForOrigin(
     const url::Origin& source_origin,
     const std::string& protocol,
     const std::string& domain,
-    const mojom::CorsOriginAccessMatchMode mode,
+    const mojom::CorsDomainMatchMode mode,
     const mojom::CorsOriginAccessMatchPriority priority) {
   AddForOrigin(source_origin,
                mojom::CorsOriginPattern::New(protocol, domain, mode, priority),
@@ -40,7 +40,7 @@ void OriginAccessList::AddBlockListEntryForOrigin(
     const url::Origin& source_origin,
     const std::string& protocol,
     const std::string& domain,
-    const mojom::CorsOriginAccessMatchMode mode,
+    const mojom::CorsDomainMatchMode mode,
     const mojom::CorsOriginAccessMatchPriority priority) {
   AddForOrigin(source_origin,
                mojom::CorsOriginPattern::New(protocol, domain, mode, priority),
@@ -124,8 +124,8 @@ void OriginAccessList::SetForOrigin(
   for (const auto& pattern : patterns) {
     // TODO(crbug.com/936900): Use pattern->port when it's ready.
     patterns_for_type.push_back(OriginAccessEntry(
-        pattern->protocol, pattern->domain, OriginAccessEntry::kPortAny,
-        pattern->mode, pattern->priority));
+        pattern->protocol, pattern->domain, /*port=*/0, pattern->mode,
+        mojom::CorsPortMatchMode::kAllowAnyPort, pattern->priority));
   }
   if (patterns_map[MapType::kAllowPatterns].empty() &&
       patterns_map[MapType::kBlockPatterns].empty()) {
@@ -144,8 +144,8 @@ void OriginAccessList::AddForOrigin(const url::Origin& source_origin,
   const std::string source = source_origin.Serialize();
   // TODO(crbug.com/936900): Use pattern->port when it's ready.
   (*map)[source][type].push_back(OriginAccessEntry(
-      pattern->protocol, pattern->domain, OriginAccessEntry::kPortAny,
-      pattern->mode, pattern->priority));
+      pattern->protocol, pattern->domain, /*port=*/0, pattern->mode,
+      mojom::CorsPortMatchMode::kAllowAnyPort, pattern->priority));
 }
 
 // static

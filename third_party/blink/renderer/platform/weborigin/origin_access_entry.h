@@ -50,12 +50,12 @@ class PLATFORM_EXPORT OriginAccessEntry {
  public:
   OriginAccessEntry(
       const SecurityOrigin& origin,
-      network::mojom::CorsOriginAccessMatchMode,
+      network::mojom::CorsDomainMatchMode,
       network::mojom::CorsOriginAccessMatchPriority priority =
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(
       const KURL& url,
-      network::mojom::CorsOriginAccessMatchMode,
+      network::mojom::CorsDomainMatchMode,
       network::mojom::CorsOriginAccessMatchPriority priority =
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(OriginAccessEntry&& from);

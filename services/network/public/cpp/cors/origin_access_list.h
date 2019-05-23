@@ -54,7 +54,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
       const url::Origin& source_origin,
       const std::string& protocol,
       const std::string& domain,
-      const mojom::CorsOriginAccessMatchMode mode,
+      const mojom::CorsDomainMatchMode mode,
       const mojom::CorsOriginAccessMatchPriority priority);
 
   // Clears the old block list for |source_origin| and set |patterns| to the
@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
       const url::Origin& source_origin,
       const std::string& protocol,
       const std::string& domain,
-      const mojom::CorsOriginAccessMatchMode mode,
+      const mojom::CorsDomainMatchMode mode,
       const mojom::CorsOriginAccessMatchPriority priority);
 
   // Clears the old allow/block lists for |source_origin|.

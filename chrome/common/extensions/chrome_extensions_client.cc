@@ -235,7 +235,7 @@ void ChromeExtensionsClient::AddOriginAccessPermissions(
       is_extension_active) {
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
         content::kChromeUIScheme, chrome::kChromeUIThemeHost,
-        network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
         network::mojom::CorsOriginAccessMatchPriority::kMaxPriority));
   }
 
@@ -246,7 +246,7 @@ void ChromeExtensionsClient::AddOriginAccessPermissions(
                                  extensions::APIPermission::kManagement)) {
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
         content::kChromeUIScheme, chrome::kChromeUIExtensionIconHost,
-        network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
         network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
   }
 }

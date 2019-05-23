@@ -39,22 +39,24 @@ namespace blink {
 
 OriginAccessEntry::OriginAccessEntry(
     const SecurityOrigin& origin,
-    network::mojom::CorsOriginAccessMatchMode match_mode,
+    network::mojom::CorsDomainMatchMode match_mode,
     network::mojom::CorsOriginAccessMatchPriority priority)
     : private_(origin.Protocol().Ascii().data(),
                origin.Domain().Ascii().data(),
                origin.EffectivePort(),
                match_mode,
+               network::mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
                priority) {}
 
 OriginAccessEntry::OriginAccessEntry(
     const KURL& url,
-    network::mojom::CorsOriginAccessMatchMode match_mode,
+    network::mojom::CorsDomainMatchMode match_mode,
     network::mojom::CorsOriginAccessMatchPriority priority)
     : private_(url.Protocol().Ascii().data(),
                url.Host().Ascii().data(),
                url.Port() ? url.Port() : DefaultPortForProtocol(url.Protocol()),
                match_mode,
+               network::mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
                priority) {}
 
 OriginAccessEntry::OriginAccessEntry(OriginAccessEntry&& from) = default;

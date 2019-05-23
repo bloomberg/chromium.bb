@@ -260,7 +260,7 @@ class CorsURLLoaderTest : public testing::Test {
   void AddAllowListEntryForOrigin(const url::Origin& source_origin,
                                   const std::string& protocol,
                                   const std::string& domain,
-                                  const mojom::CorsOriginAccessMatchMode mode) {
+                                  const mojom::CorsDomainMatchMode mode) {
     origin_access_list_.AddAllowListEntryForOrigin(
         source_origin, protocol, domain, mode,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
@@ -269,7 +269,7 @@ class CorsURLLoaderTest : public testing::Test {
   void AddBlockListEntryForOrigin(const url::Origin& source_origin,
                                   const std::string& protocol,
                                   const std::string& domain,
-                                  const mojom::CorsOriginAccessMatchMode mode) {
+                                  const mojom::CorsDomainMatchMode mode) {
     origin_access_list_.AddBlockListEntryForOrigin(
         source_origin, protocol, domain, mode,
         mojom::CorsOriginAccessMatchPriority::kHighPriority);
@@ -279,7 +279,7 @@ class CorsURLLoaderTest : public testing::Test {
       const url::Origin& source_origin,
       const std::string& protocol,
       const std::string& domain,
-      const mojom::CorsOriginAccessMatchMode mode) {
+      const mojom::CorsDomainMatchMode mode) {
     factory_bound_allow_patterns_.push_back(mojom::CorsOriginPattern::New(
         protocol, domain, mode,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
@@ -1194,9 +1194,9 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_Allowed) {
 
   // Adds an entry to allow the cross origin request beyond the CORS
   // rules.
-  AddAllowListEntryForOrigin(
-      url::Origin::Create(origin), url.scheme(), url.host(),
-      mojom::CorsOriginAccessMatchMode::kDisallowSubdomains);
+  AddAllowListEntryForOrigin(url::Origin::Create(origin), url.scheme(),
+                             url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
   CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
 
@@ -1219,12 +1219,12 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_Blocked) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
 
-  AddAllowListEntryForOrigin(
-      url::Origin::Create(origin), url.scheme(), url.host(),
-      mojom::CorsOriginAccessMatchMode::kDisallowSubdomains);
-  AddBlockListEntryForOrigin(
-      url::Origin::Create(origin), url.scheme(), url.host(),
-      mojom::CorsOriginAccessMatchMode::kDisallowSubdomains);
+  AddAllowListEntryForOrigin(url::Origin::Create(origin), url.scheme(),
+                             url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
+  AddBlockListEntryForOrigin(url::Origin::Create(origin), url.scheme(),
+                             url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
   CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
 
@@ -1248,7 +1248,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_AllowedByFactoryList) {
 
   AddFactoryBoundAllowListEntryForOrigin(
       url::Origin::Create(origin), url.scheme(), url.host(),
-      mojom::CorsOriginAccessMatchMode::kDisallowSubdomains);
+      mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
   CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
 
@@ -1273,10 +1273,10 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_AllowedByFactoryListButBlocked) {
 
   AddFactoryBoundAllowListEntryForOrigin(
       url::Origin::Create(origin), url.scheme(), url.host(),
-      mojom::CorsOriginAccessMatchMode::kDisallowSubdomains);
-  AddBlockListEntryForOrigin(
-      url::Origin::Create(origin), url.scheme(), url.host(),
-      mojom::CorsOriginAccessMatchMode::kDisallowSubdomains);
+      mojom::CorsDomainMatchMode::kDisallowSubdomains);
+  AddBlockListEntryForOrigin(url::Origin::Create(origin), url.scheme(),
+                             url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
   CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
 
@@ -1298,9 +1298,9 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_NoCors) {
 
   // Adds an entry to allow the cross origin request without using
   // CORS.
-  AddAllowListEntryForOrigin(
-      url::Origin::Create(origin), url.scheme(), url.host(),
-      mojom::CorsOriginAccessMatchMode::kDisallowSubdomains);
+  AddAllowListEntryForOrigin(url::Origin::Create(origin), url.scheme(),
+                             url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
   CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kNoCors);
 

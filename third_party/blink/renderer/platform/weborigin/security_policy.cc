@@ -260,8 +260,8 @@ void SecurityPolicy::AddOriginAccessAllowListEntry(
       source_origin.ToUrlOrigin(), WebString(destination_protocol).Utf8(),
       WebString(destination_domain).Utf8(),
       allow_destination_subdomains
-          ? network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains
-          : network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+          ? network::mojom::CorsDomainMatchMode::kAllowSubdomains
+          : network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
       priority);
 }
 
@@ -276,8 +276,8 @@ void SecurityPolicy::AddOriginAccessBlockListEntry(
       source_origin.ToUrlOrigin(), WebString(destination_protocol).Utf8(),
       WebString(destination_domain).Utf8(),
       allow_destination_subdomains
-          ? network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains
-          : network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+          ? network::mojom::CorsDomainMatchMode::kAllowSubdomains
+          : network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
       priority);
 }
 
