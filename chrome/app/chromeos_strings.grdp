@@ -203,6 +203,17 @@
     Finalizing...
   </message>
 
+  <!-- Cellular Setup UI Strings -->
+  <message name="IDS_CELLULAR_SETUP_BACK_LABEL" desc="Label for button to go to previous screen during cellular setup">
+    Back
+  </message>
+  <message name="IDS_CELLULAR_SETUP_FINISH_LABEL" desc="Label for button to finish and exit cellular setup">
+    Finish
+  </message>
+  <message name="IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry a step during cellular setup">
+    Try again
+  </message>
+
   <!-- Chrome OS Strings -->
   <message name="IDS_ECHO_CONSENT_DIALOG_TEXT" desc="Dialog text shown when user is asked to give consent to proceed with redeeming an ECHO offer.">
     <ph name="SERVICE_NAME">$1<ex>Google Drive</ex></ph> wants to check if you are using an eligible Chrome OS device.

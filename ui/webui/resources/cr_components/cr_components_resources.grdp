@@ -276,6 +276,14 @@
                file="cr_components/chromeos/cellular_setup/mojo_interface_provider.js"
                type="chrome_html"
                compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_BUTTON_BAR_HTML"
+               file="cr_components/chromeos/cellular_setup/button_bar.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_BUTTON_BAR_JS"
+               file="cr_components/chromeos/cellular_setup/button_bar.js"
+               type="chrome_html"
+               compress="gzip" />
 
     <!-- Shared between MultiDevice setup flow and OOBE. -->
     <structure name="IDR_WEBUI_CHROMEOS_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_BROWSER_PROXY_HTML"
