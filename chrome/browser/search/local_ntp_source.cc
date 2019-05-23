@@ -993,20 +993,34 @@ void LocalNtpSource::StartDataRequest(
     // URLDataSource::GetContentSecurityPolicy*() methods?
     replacements["contentSecurityPolicy"] = GetContentSecurityPolicy();
 
-    replacements["customizeMenuTitle"] = base::UTF16ToUTF8(
-        l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL));
+    replacements["customizeMenuTitle"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
     replacements["cancelButton"] =
-        base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_BG_CANCEL));
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CANCEL);
     replacements["doneButton"] =
-        base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_LINKS_DONE));
-    replacements["backgroundsOption"] = base::UTF16ToUTF8(
-        l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_BACKGROUNDS_LABEL));
-    replacements["shortcutsOption"] = base::UTF16ToUTF8(
-        l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL));
-    replacements["colorsOption"] = base::UTF16ToUTF8(
-        l10n_util::GetStringUTF16(IDS_NTP_CUSTOMIZE_MENU_COLORS_LABEL));
-    replacements["uploadImage"] = base::UTF16ToUTF8(
-        l10n_util::GetStringUTF16(IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE));
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_LINKS_DONE);
+    replacements["backgroundsOption"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL);
+    replacements["shortcutsOption"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL);
+    replacements["colorsOption"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MENU_COLOR_LABEL);
+    replacements["uploadImage"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_UPLOAD_FROM_DEVICE_LABEL);
+    replacements["noBackground"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL);
+    replacements["myShortcuts"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_LABEL);
+    replacements["shortcutsCurated"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC);
+    replacements["mostVisited"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL);
+    replacements["shortcutsSuggested"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC);
+    replacements["hideShortcuts"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_HIDE_SHORTCUTS_LABEL);
+    replacements["hideShortcutsDesc"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_HIDE_SHORTCUTS_DESC);
 
     replacements["bgPreloader"] = "";
     GURL custom_background_url = GetCustomBackgroundURL(profile_->GetPrefs());

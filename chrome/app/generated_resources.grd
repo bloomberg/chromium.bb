@@ -5075,14 +5075,38 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOMIZE_BUTTON_LABEL" desc="The label for customize button on the New Tab Page.">
         Customize
       </message>
-      <message name="IDS_NTP_CUSTOMIZE_MENU_BACKGROUNDS_LABEL" desc="The label for the backgrounds option in the customization menu on the New Tab Page.">
-       Backgrounds
+      <message name="IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL" desc="The label for the backgrounds option in the customization menu on the New Tab Page.">
+        Background
       </message>
       <message name="IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL" desc="The label for the shortcuts option in the customization menu on the New Tab Page.">
         Shortcuts
       </message>
-      <message name="IDS_NTP_CUSTOMIZE_MENU_COLORS_LABEL" desc="The label for the colors and themes option in the customization menu on the New Tab Page">
-        Colors and themes
+      <message name="IDS_NTP_CUSTOMIZE_MENU_COLOR_LABEL" desc="The label for the colors and themes option in the customization menu on the New Tab Page">
+        Color and theme
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL" desc="The label for the 'No background' tile in the customization menu on the New Tab Page">
+        No background
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_UPLOAD_FROM_DEVICE_LABEL" desc="The label for the 'Upload from device' tile in the customization menu on the New Tab Page">
+        Upload from device
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_HIDE_SHORTCUTS_LABEL" desc="The label for the option to hide shortcuts in the customization menu on the New Tab Page">
+        Hide shortcuts
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_HIDE_SHORTCUTS_DESC" desc="The description for the option to hide shortcuts in the customization menu on the New Tab Page">
+        Don't show shortcuts on this page
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_LABEL" desc="The label for the option to show user selected shortcuts in the customization menu on the New Tab Page">
+        My shortcuts
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL" desc="The label for the option to show most visited sites in the customization menu on the New Tab Page">
+        Most visited sites
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC" desc="The description for the option to show user selected shortcuts in the customization menu on the New Tab Page">
+        Shortcuts are suggested based on websites you visit often
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC" desc="The description for the option to show most visited sites in the customization menu on the New Tab Page">
+        Shortcuts are curated by you
       </message>
 
       <!--Tooltip strings-->
