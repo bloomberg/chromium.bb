@@ -53,6 +53,9 @@ message RegisterVmRequest {
 
   // Generate new 'source uuid' (SMBUS UUID) for the VM.
   bool regenerate_src_uuid = 5;
+
+  // New name to assign to the VM. Can be empty.
+  string new_name = 6;
 }
 
 // Response to RegisterVmRequest.
