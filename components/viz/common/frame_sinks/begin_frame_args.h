@@ -111,8 +111,12 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
+  // The time at which the frame started. Used, for example, by animations to
+  // decide to slow down or skip ahead.
   base::TimeTicks frame_time;
+  // The time by which the receiving pipeline stage should do its work.
   base::TimeTicks deadline;
+  // The inverse of the desired frame rate.
   base::TimeDelta interval;
 
   // |source_id| and |sequence_number| identify a BeginFrame within a single
