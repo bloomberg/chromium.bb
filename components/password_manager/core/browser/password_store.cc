@@ -147,21 +147,25 @@ void PasswordStore::SetAffiliatedMatchHelper(
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::AddLoginInternal, this, form));
 }
 
 void PasswordStore::UpdateLogin(const PasswordForm& form) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::UpdateLoginInternal, this, form));
 }
 
 void PasswordStore::UpdateLoginWithPrimaryKey(
     const autofill::PasswordForm& new_form,
     const autofill::PasswordForm& old_primary_key) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::UpdateLoginWithPrimaryKeyInternal,
                               this, new_form, old_primary_key));
 }
 
 void PasswordStore::RemoveLogin(const PasswordForm& form) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginInternal, this, form));
 }
 
@@ -170,6 +174,7 @@ void PasswordStore::RemoveLoginsByURLAndTime(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginsByURLAndTimeInternal,
                               this, url_filter, delete_begin, delete_end,
                               completion));
@@ -179,6 +184,7 @@ void PasswordStore::RemoveLoginsCreatedBetween(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(
       base::BindOnce(&PasswordStore::RemoveLoginsCreatedBetweenInternal, this,
                      delete_begin, delete_end, completion));
@@ -186,6 +192,7 @@ void PasswordStore::RemoveLoginsCreatedBetween(
 
 void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
                                               base::Time delete_end) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginsSyncedBetweenInternal,
                               this, delete_begin, delete_end));
 }
@@ -195,6 +202,7 @@ void PasswordStore::RemoveStatisticsByOriginAndTime(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(
       &PasswordStore::RemoveStatisticsByOriginAndTimeInternal, this,
       origin_filter, delete_begin, delete_end, completion));
@@ -203,6 +211,7 @@ void PasswordStore::RemoveStatisticsByOriginAndTime(
 void PasswordStore::DisableAutoSignInForOrigins(
     const base::Callback<bool(const GURL&)>& origin_filter,
     const base::Closure& completion) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(
       &PasswordStore::DisableAutoSignInForOriginsInternal, this,
       base::RepeatingCallback<bool(const GURL&)>(origin_filter), completion));
@@ -210,6 +219,7 @@ void PasswordStore::DisableAutoSignInForOrigins(
 
 void PasswordStore::GetLogins(const FormDigest& form,
                               PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   // Per http://crbug.com/121738, we deliberately ignore saved logins for
   // http*://www.google.com/ that were stored prior to 2012. (Google now uses
   // https://accounts.google.com/ for all login forms, so these should be
@@ -247,23 +257,27 @@ void PasswordStore::GetLogins(const FormDigest& form,
 }
 
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   PostLoginsTaskAndReplyToConsumerWithResult(
       consumer,
       base::BindOnce(&PasswordStore::GetAutofillableLoginsImpl, this));
 }
 
 void PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   PostLoginsTaskAndReplyToConsumerWithResult(
       consumer, base::BindOnce(&PasswordStore::GetBlacklistLoginsImpl, this));
 }
 
 void PasswordStore::GetAllLogins(PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   PostLoginsTaskAndReplyToConsumerWithResult(
       consumer, base::BindOnce(&PasswordStore::GetAllLoginsImpl, this));
 }
 
 void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
     PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   PostLoginsTaskAndReplyToConsumerWithProcessedResult(
       consumer, base::BindOnce(&PasswordStore::GetAllLoginsImpl, this),
       base::BindOnce(&PasswordStore::InjectAffiliationAndBrandingInformation,
@@ -273,6 +287,7 @@ void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
 void PasswordStore::ReportMetrics(const std::string& sync_username,
                                   bool custom_passphrase_sync_enabled,
                                   bool is_under_advanced_protection) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   if (background_task_runner_) {
     base::Closure task =
         base::Bind(&PasswordStore::ReportMetricsImpl, this, sync_username,
@@ -295,21 +310,25 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
 }
 
 void PasswordStore::AddSiteStats(const InteractionsStats& stats) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::AddSiteStatsImpl, this, stats));
 }
 
 void PasswordStore::RemoveSiteStats(const GURL& origin_domain) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(
       base::BindOnce(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
 }
 
 void PasswordStore::GetAllSiteStats(PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   PostStatsTaskAndReplyToConsumerWithResult(
       consumer, base::BindOnce(&PasswordStore::GetAllSiteStatsImpl, this));
 }
 
 void PasswordStore::GetSiteStats(const GURL& origin_domain,
                                  PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   PostStatsTaskAndReplyToConsumerWithResult(
       consumer,
       base::BindOnce(&PasswordStore::GetSiteStatsImpl, this, origin_domain));
@@ -335,6 +354,7 @@ PasswordStore::GetBackgroundTaskRunner() {
 }
 
 bool PasswordStore::IsAbleToSavePasswords() const {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   return init_status_ == InitStatus::kSuccess;
 }
 
@@ -668,6 +688,7 @@ void PasswordStore::PostStatsTaskAndReplyToConsumerWithResult(
 }
 
 void PasswordStore::AddLoginInternal(const PasswordForm& form) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.AddLogin");
   BeginTransaction();
   PasswordStoreChangeList changes = AddLoginImpl(form);
@@ -680,6 +701,7 @@ void PasswordStore::AddLoginInternal(const PasswordForm& form) {
 }
 
 void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.UpdateLogin");
   BeginTransaction();
   PasswordStoreChangeList changes = UpdateLoginImpl(form);
@@ -692,6 +714,7 @@ void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
 }
 
 void PasswordStore::RemoveLoginInternal(const PasswordForm& form) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.RemoveLogin");
   BeginTransaction();
   PasswordStoreChangeList changes = RemoveLoginImpl(form);
@@ -706,6 +729,7 @@ void PasswordStore::RemoveLoginInternal(const PasswordForm& form) {
 void PasswordStore::UpdateLoginWithPrimaryKeyInternal(
     const PasswordForm& new_form,
     const PasswordForm& old_primary_key) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   BeginTransaction();
   PasswordStoreChangeList all_changes = RemoveLoginImpl(old_primary_key);
   PasswordStoreChangeList changes = AddLoginImpl(new_form);
@@ -723,6 +747,7 @@ void PasswordStore::RemoveLoginsByURLAndTimeInternal(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   BeginTransaction();
   PasswordStoreChangeList changes =
       RemoveLoginsByURLAndTimeImpl(url_filter, delete_begin, delete_end);
@@ -740,6 +765,7 @@ void PasswordStore::RemoveLoginsCreatedBetweenInternal(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   BeginTransaction();
   PasswordStoreChangeList changes =
       RemoveLoginsCreatedBetweenImpl(delete_begin, delete_end);
@@ -755,6 +781,7 @@ void PasswordStore::RemoveLoginsCreatedBetweenInternal(
 
 void PasswordStore::RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
                                                       base::Time delete_end) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   BeginTransaction();
   PasswordStoreChangeList changes =
       RemoveLoginsSyncedBetweenImpl(delete_begin, delete_end);
@@ -771,6 +798,7 @@ void PasswordStore::RemoveStatisticsByOriginAndTimeInternal(
     base::Time delete_begin,
     base::Time delete_end,
     const base::Closure& completion) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   RemoveStatisticsByOriginAndTimeImpl(origin_filter, delete_begin, delete_end);
   if (!completion.is_null())
     main_task_runner_->PostTask(FROM_HERE, completion);
@@ -779,6 +807,7 @@ void PasswordStore::RemoveStatisticsByOriginAndTimeInternal(
 void PasswordStore::DisableAutoSignInForOriginsInternal(
     const base::Callback<bool(const GURL&)>& origin_filter,
     const base::Closure& completion) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DisableAutoSignInForOriginsImpl(origin_filter);
   if (!completion.is_null())
     main_task_runner_->PostTask(FROM_HERE, completion);
