@@ -36,6 +36,8 @@ jumbo_static_library("core") {
     "payment_shipping_option.h",
     "payments_validators.cc",
     "payments_validators.h",
+    "url_util.cc",
+    "url_util.h",
   ]
 
   if (!is_android) {
@@ -139,6 +141,7 @@ jumbo_source_set("unit_tests") {
     "payment_method_data_unittest.cc",
     "payment_shipping_option_unittest.cc",
     "payments_validators_unittest.cc",
+    "url_util_unittest.cc",
   ]
 
   if (!is_android) {

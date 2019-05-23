@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/link_header_util/link_header_util.h"
 #include "components/payments/core/error_logger.h"
+#include "components/payments/core/url_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
@@ -83,9 +84,7 @@ GURL ParseResponseHeader(const GURL& url,
 }
 
 bool IsValidManifestUrl(const GURL& url, const ErrorLogger& log) {
-  bool is_valid = url.is_valid() &&
-                  (url.SchemeIs(url::kHttpsScheme) ||
-                   (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)));
+  bool is_valid = UrlUtil::IsValidManifestUrl(url);
   if (!is_valid) {
     log.Error(
         base::StringPrintf("\"%s\" is not a valid payment manifest URL with "

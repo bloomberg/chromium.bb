@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -257,12 +256,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             public void onPageLoadFinished(Tab tab, String url) {
                 // Notify closing payment app window so as to abort payment if unsecure.
                 WebContents webContents = tab.getWebContents();
-                if (!OriginSecurityChecker.isOriginSecure(webContents.getLastCommittedUrl())
-                        || (!OriginSecurityChecker.isSchemeCryptographic(
-                                    webContents.getLastCommittedUrl())
-                                   && !OriginSecurityChecker.isOriginLocalhostOrFile(
-                                              webContents.getLastCommittedUrl()))
-                        || !SslValidityChecker.isSslCertificateValid(webContents)) {
+                if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(webContents)) {
                     onClosingPaymentAppWindow(webContents);
                 }
             }

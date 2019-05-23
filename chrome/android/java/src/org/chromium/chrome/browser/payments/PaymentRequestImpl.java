@@ -57,6 +57,7 @@ import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.components.payments.PaymentHandlerHost.PaymentHandlerHostDelegate;
 import org.chromium.components.payments.PaymentValidator;
+import org.chromium.components.payments.UrlUtil;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -426,9 +427,7 @@ public class PaymentRequestImpl
         mRequestPayerEmail = options != null && options.requestPayerEmail;
         mShippingType = options == null ? PaymentShippingType.SHIPPING : options.shippingType;
 
-        if (!OriginSecurityChecker.isSchemeCryptographic(mWebContents.getLastCommittedUrl())
-                && !OriginSecurityChecker.isOriginLocalhostOrFile(
-                        mWebContents.getLastCommittedUrl())) {
+        if (!UrlUtil.isOriginAllowedToUseWebPaymentApis(mWebContents.getLastCommittedUrl())) {
             Log.d(TAG, "Only localhost, file://, and cryptographic scheme origins allowed");
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
@@ -1894,8 +1893,7 @@ public class PaymentRequestImpl
         // If |mWebContents| is destroyed, don't bother checking the localhost or file:// scheme
         // exemption. It doesn't really matter anyways.
         return mWebContents.isDestroyed()
-                || !OriginSecurityChecker.isOriginLocalhostOrFile(
-                        mWebContents.getLastCommittedUrl())
+                || !UrlUtil.isLocalDevelopmentUrl(mWebContents.getLastCommittedUrl())
                 || sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
     }
 

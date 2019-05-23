@@ -20,6 +20,7 @@ static_library("android") {
     "payment_manifest_parser_android.cc",
     "payment_manifest_parser_android.h",
     "payment_validator_android.cc",
+    "url_util.cc",
   ]
 
   deps = [
@@ -42,6 +43,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
     "java/src/org/chromium/components/payments/PaymentManifestParser.java",
     "java/src/org/chromium/components/payments/PaymentValidator.java",
+    "java/src/org/chromium/components/payments/UrlUtil.java",
   ]
   jni_package = "payments"
 }
@@ -57,6 +59,7 @@ android_library("java") {
     "java/src/org/chromium/components/payments/PaymentManifestParser.java",
     "java/src/org/chromium/components/payments/PaymentValidator.java",
     "java/src/org/chromium/components/payments/WebAppManifestSection.java",
+    "java/src/org/chromium/components/payments/UrlUtil.java",
   ]
   deps = [
     "//base:base_java",

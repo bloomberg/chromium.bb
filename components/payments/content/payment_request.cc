@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
-#include "components/payments/content/origin_security_checker.h"
 #include "components/payments/content/payment_details_converter.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
@@ -26,6 +25,7 @@
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payments_experimental_features.h"
 #include "components/payments/core/payments_validators.h"
+#include "components/payments/core/url_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/elide_url.h"
@@ -33,6 +33,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/origin_util.h"
 
 namespace payments {
 namespace {
@@ -98,22 +99,20 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   client_ = std::move(client);
 
   const GURL last_committed_url = delegate_->GetLastCommittedURL();
-  if (!OriginSecurityChecker::IsOriginSecure(last_committed_url)) {
+  if (!content::IsOriginSecure(last_committed_url)) {
     log_.Error(errors::kNotInASecureOrigin);
     OnConnectionTerminated();
     return;
   }
 
   bool allowed_origin =
-      OriginSecurityChecker::IsSchemeCryptographic(last_committed_url) ||
-      OriginSecurityChecker::IsOriginLocalhostOrFile(last_committed_url);
+      UrlUtil::IsOriginAllowedToUseWebPaymentApis(last_committed_url);
   if (!allowed_origin) {
     log_.Error(errors::kProhibitedOrigin);
   }
 
-  bool invalid_ssl =
-      OriginSecurityChecker::IsSchemeCryptographic(last_committed_url) &&
-      !delegate_->IsSslCertificateValid();
+  bool invalid_ssl = last_committed_url.SchemeIsCryptographic() &&
+                     !delegate_->IsSslCertificateValid();
   if (invalid_ssl) {
     log_.Error(errors::kInvalidSslCertificate);
   }
@@ -646,7 +645,7 @@ void PaymentRequest::CanMakePaymentCallback(bool legacy_mode,
            ->CanQuery(top_level_origin_, frame_origin_,
                       spec_->stringified_method_data(),
                       /*per_method_quota=*/false)) {
-    if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
+    if (UrlUtil::IsLocalDevelopmentUrl(frame_origin_)) {
       client_->OnCanMakePayment(
           can_make_payment
               ? CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
@@ -677,10 +676,10 @@ void PaymentRequest::HasEnrolledInstrumentCallback(
           ->CanQuery(top_level_origin_, frame_origin_,
                      spec_->stringified_method_data(), per_method_quota)) {
     RespondToHasEnrolledInstrumentQuery(has_enrolled_instrument,
-                                        /*warn_localhost_or_file=*/false);
-  } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
+                                        /*warn_local_development=*/false);
+  } else if (UrlUtil::IsLocalDevelopmentUrl(frame_origin_)) {
     RespondToHasEnrolledInstrumentQuery(has_enrolled_instrument,
-                                        /*warn_localhost_or_file=*/true);
+                                        /*warn_local_development=*/true);
   } else {
     client_->OnHasEnrolledInstrument(
         HasEnrolledInstrumentQueryResult::QUERY_QUOTA_EXCEEDED);
@@ -692,13 +691,13 @@ void PaymentRequest::HasEnrolledInstrumentCallback(
 
 void PaymentRequest::RespondToHasEnrolledInstrumentQuery(
     bool has_enrolled_instrument,
-    bool warn_localhost_or_file) {
+    bool warn_local_development) {
   HasEnrolledInstrumentQueryResult positive =
-      warn_localhost_or_file
+      warn_local_development
           ? HasEnrolledInstrumentQueryResult::WARNING_HAS_ENROLLED_INSTRUMENT
           : HasEnrolledInstrumentQueryResult::HAS_ENROLLED_INSTRUMENT;
   HasEnrolledInstrumentQueryResult negative =
-      warn_localhost_or_file
+      warn_local_development
           ? HasEnrolledInstrumentQueryResult::WARNING_HAS_NO_ENROLLED_INSTRUMENT
           : HasEnrolledInstrumentQueryResult::HAS_NO_ENROLLED_INSTRUMENT;
 

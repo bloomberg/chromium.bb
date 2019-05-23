@@ -78,8 +78,6 @@ jumbo_static_library("utils") {
     "installable_payment_app_crawler.h",
     "manifest_verifier.cc",
     "manifest_verifier.h",
-    "origin_security_checker.cc",
-    "origin_security_checker.h",
     "payment_manifest_web_data_service.cc",
     "payment_manifest_web_data_service.h",
     "payment_method_manifest_table.cc",

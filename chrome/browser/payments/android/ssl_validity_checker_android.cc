@@ -17,4 +17,12 @@ jboolean JNI_SslValidityChecker_IsSslCertificateValid(
       content::WebContents::FromJavaWebContents(jweb_contents));
 }
 
+// static
+jboolean JNI_SslValidityChecker_IsValidPageInPaymentHandlerWindow(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  return SslValidityChecker::IsValidPageInPaymentHandlerWindow(
+      content::WebContents::FromJavaWebContents(jweb_contents));
+}
+
 }  // namespace payments

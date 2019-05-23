@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/base64.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
@@ -17,14 +16,13 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/icon/icon_size.h"
-#include "components/payments/content/origin_security_checker.h"
+#include "components/payments/core/url_util.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -37,7 +35,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "url/url_constants.h"
 
 namespace payments {
 namespace {
@@ -289,11 +286,7 @@ void PaymentHandlerWebFlowViewController::LoadProgressChanged(
 void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
     content::WebContents* source) {
   DCHECK(source == web_contents());
-  // IsSslCertificateValid checks security_state::SecurityInfo.security_level
-  // which reflects security state.
-  // Allow localhost for test.
-  if (!SslValidityChecker::IsSslCertificateValid(source) &&
-      !net::IsLocalhost(source->GetLastCommittedURL())) {
+  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source)) {
     log_.Error("Aborting payment handler window \"" + target_.spec() +
                "\" because of insecure certificate state on \"" +
                source->GetVisibleURL().spec() + "\"");
@@ -332,22 +325,13 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
-  if (!OriginSecurityChecker::IsOriginSecure(navigation_handle->GetURL()) ||
-      (!OriginSecurityChecker::IsSchemeCryptographic(
-           navigation_handle->GetURL()) &&
-       !OriginSecurityChecker::IsOriginLocalhostOrFile(
-           navigation_handle->GetURL()) &&
-       !navigation_handle->GetURL().IsAboutBlank()) ||
-      !SslValidityChecker::IsSslCertificateValid(
+  if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {
-    // Allow localhost for test.
-    if (!net::IsLocalhost(navigation_handle->GetURL())) {
-      log_.Error("Aborting payment handler window \"" + target_.spec() +
-                 "\" because of navigation to an insecure url \"" +
-                 navigation_handle->GetURL().spec() + "\"");
-      AbortPayment();
-      return;
-    }
+    log_.Error("Aborting payment handler window \"" + target_.spec() +
+               "\" because of navigation to an insecure url \"" +
+               navigation_handle->GetURL().spec() + "\"");
+    AbortPayment();
+    return;
   }
 
   if (first_navigation_complete_callback_) {

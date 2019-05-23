@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/bindings/string_resource.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -143,22 +144,35 @@ bool PaymentsValidators::IsValidPaymentValidationErrorsFormat(
 
 bool PaymentsValidators::IsValidMethodFormat(const String& identifier) {
   KURL url(NullURL(), identifier);
-  if (url.IsValid()) {
-    // Allow localhost payment method for test.
-    if (SecurityOrigin::Create(url)->IsLocalhost())
-      return true;
-
-    // URL PMI validation rules:
-    // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
-    return url.Protocol() == "https" && url.User().IsEmpty() &&
-           url.Pass().IsEmpty();
-  } else {
+  if (!url.IsValid()) {
     // Syntax for a valid standardized PMI:
     // https://www.w3.org/TR/payment-method-id/#dfn-syntax-of-a-standardized-payment-method-identifier
     return ScriptRegexp("^[a-z]+[0-9a-z]*(-[a-z]+[0-9a-z]*)*$",
                         kTextCaseSensitive)
                .Match(identifier) == 0;
   }
+
+  // URL PMI validation rules:
+  // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
+  if (!url.User().IsEmpty() || !url.Pass().IsEmpty())
+    return false;
+
+  if (url.Protocol() == "https")
+    return true;
+
+  if (url.Protocol() != "http")
+    return false;
+
+  // Allow http://localhost for local development.
+  if (SecurityOrigin::Create(url)->IsLocalhost())
+    return true;
+
+  // Allow http:// origins from
+  // --unsafely-treat-insecure-origin-as-secure=<origin> for local development.
+  if (SecurityPolicy::IsUrlTrustworthySafelisted(url))
+    return true;
+
+  return false;
 }
 
 void PaymentsValidators::ValidateAndStringifyObject(
