@@ -427,8 +427,10 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
         continue;
       }
 
+      AddLoginError add_login_error;
       PasswordStoreChangeList changes = password_store_sync_->AddLoginSync(
-          PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
+          PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
+          &add_login_error);
 
       // TODO(crbug.com/939302): It's not yet clear if the DCHECK_LE below is
       // legit. However, recent crashes suggest that 2 changes are returned
@@ -438,8 +440,17 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       // DCHECK_LE(changes.size(), 1U);
       DCHECK_LE(changes.size(), 2U);
       if (changes.empty()) {
+        DCHECK_NE(add_login_error, AddLoginError::kNone);
         metrics_util::LogPasswordSyncState(
             metrics_util::NOT_SYNCING_FAILED_ADD);
+        // If the remote update is invalid, direct the processor to ignore and
+        // move on.
+        if (add_login_error == AddLoginError::kConstraintViolation) {
+          change_processor()->UntrackEntityForClientTagHash(
+              client_tag_of_remote_password);
+          continue;
+        }
+        // For all other types of error, we should stop syncing.
         return syncer::ModelError(
             FROM_HERE, "Failed to add an entry in the password store.");
       }
@@ -511,15 +522,26 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
       PasswordStoreChangeList changes;
       switch (entity_change->type()) {
         case syncer::EntityChange::ACTION_ADD:
+          AddLoginError add_login_error;
           changes = password_store_sync_->AddLoginSync(
-              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
+              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
+              &add_login_error);
           // If the addition has been successful, inform the processor about the
           // assigned storage key. AddLoginSync() might return multiple changes
           // and the last one should be the one representing the actual addition
           // in the DB.
           if (changes.empty()) {
+            DCHECK_NE(add_login_error, AddLoginError::kNone);
             metrics_util::LogApplySyncChangesState(
                 metrics_util::ApplySyncChangesState::kApplyAddFailed);
+            // If the remote update is invalid, direct the processor to ignore
+            // and move on.
+            if (add_login_error == AddLoginError::kConstraintViolation) {
+              change_processor()->UntrackEntityForClientTagHash(
+                  GetClientTag(entity_change->data()));
+              continue;
+            }
+            // For all other types of error, we should stop syncing.
             return syncer::ModelError(
                 FROM_HERE, "Failed to add an entry to the password store.");
           }

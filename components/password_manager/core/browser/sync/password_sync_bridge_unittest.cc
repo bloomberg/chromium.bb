@@ -121,9 +121,15 @@ class FakeDatabase {
 
   PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form,
                                    AddLoginError* error) {
-    data_[primary_key_] = std::make_unique<autofill::PasswordForm>(form);
-    return {
-        PasswordStoreChange(PasswordStoreChange::ADD, form, primary_key_++)};
+    if (error_ == AddLoginError::kNone) {
+      data_[primary_key_] = std::make_unique<autofill::PasswordForm>(form);
+      return {
+          PasswordStoreChange(PasswordStoreChange::ADD, form, primary_key_++)};
+    }
+    if (error) {
+      *error = error_;
+    }
+    return PasswordStoreChangeList();
   }
 
   PasswordStoreChangeList AddLoginForPrimaryKey(
@@ -148,6 +154,8 @@ class FakeDatabase {
     return {PasswordStoreChange(PasswordStoreChange::REMOVE, form, key)};
   }
 
+  void SetAddLoginError(AddLoginError error) { error_ = error; }
+
  private:
   int GetPrimaryKey(const autofill::PasswordForm& form) const {
     for (const auto& pair : data_) {
@@ -160,6 +168,7 @@ class FakeDatabase {
 
   int primary_key_ = 1;
   PrimaryKeyToFormMap data_;
+  AddLoginError error_ = AddLoginError::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDatabase);
 };
@@ -392,6 +401,26 @@ TEST_F(PasswordSyncBridgeTest, ShouldApplyRemoteCreation) {
 
   // Processor shouldn't be notified about remote changes.
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(syncer::EntityChange::CreateAdd(
+      /*storage_key=*/"", SpecificsToEntity(specifics)));
+  base::Optional<syncer::ModelError> error = bridge()->ApplySyncChanges(
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
+  EXPECT_FALSE(error);
+}
+
+TEST_F(PasswordSyncBridgeTest,
+       ShouldIgnoreAndUntrackRemoteCreationWithInvalidData) {
+  ON_CALL(mock_processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+  fake_db()->SetAddLoginError(AddLoginError::kConstraintViolation);
+
+  sync_pb::PasswordSpecifics specifics =
+      CreateSpecificsWithSignonRealm(kSignonRealm1);
+  const std::string client_tag =
+      bridge()->GetClientTag(*SpecificsToEntity(specifics));
+
+  EXPECT_CALL(mock_processor(), UntrackEntityForClientTagHash(client_tag));
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(
@@ -643,9 +672,7 @@ TEST_F(PasswordSyncBridgeTest,
 // ShouldMergeSync() would return an error without crashing.
 TEST_F(PasswordSyncBridgeTest,
        ShouldMergeSyncRemoteAndLocalPasswordsWithErrorWhenStoreAddFails) {
-  // Simulate a failed AddLoginSync() by returning an empty change list.
-  ON_CALL(*mock_password_store_sync(), AddLoginSync(_, _))
-      .WillByDefault(testing::Return(PasswordStoreChangeList()));
+  fake_db()->SetAddLoginError(AddLoginError::kDbError);
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(
@@ -678,6 +705,25 @@ TEST_F(
   base::Optional<syncer::ModelError> error =
       bridge()->MergeSyncData(std::move(metadata_changes), {});
   EXPECT_TRUE(error);
+}
+
+TEST_F(PasswordSyncBridgeTest,
+       ShouldMergeAndIgnoreAndUntrackRemotePasswordWithInvalidData) {
+  fake_db()->SetAddLoginError(AddLoginError::kConstraintViolation);
+
+  sync_pb::PasswordSpecifics specifics =
+      CreateSpecificsWithSignonRealm(kSignonRealm1);
+  const std::string client_tag =
+      bridge()->GetClientTag(*SpecificsToEntity(specifics));
+
+  EXPECT_CALL(mock_processor(), UntrackEntityForClientTagHash(client_tag));
+
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(syncer::EntityChange::CreateAdd(
+      /*storage_key=*/"", SpecificsToEntity(specifics)));
+  base::Optional<syncer::ModelError> error = bridge()->MergeSyncData(
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
+  EXPECT_FALSE(error);
 }
 
 TEST_F(PasswordSyncBridgeTest, ShouldGetAllDataForDebuggingWithHiddenPassword) {
