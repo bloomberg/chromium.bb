@@ -46,8 +46,8 @@ class TestPasswordStore : public PasswordStore {
       const override;
 
   // PasswordStore interface
-  PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) override;
+  PasswordStoreChangeList AddLoginImpl(const autofill::PasswordForm& form,
+                                       AddLoginError* error) override;
   PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) override;
   PasswordStoreChangeList RemoveLoginImpl(

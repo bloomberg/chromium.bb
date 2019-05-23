@@ -390,7 +390,8 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Synchronous implementation provided by subclasses to add the given login.
   virtual PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) = 0;
+      const autofill::PasswordForm& form,
+      AddLoginError* error = nullptr) = 0;
 
   // Synchronous implementation provided by subclasses to update the given
   // login.
@@ -422,8 +423,8 @@ class PasswordStore : protected PasswordStoreSync,
   void LogStatsForBulkDeletionDuringRollback(int num_deletions);
 
   // PasswordStoreSync:
-  PasswordStoreChangeList AddLoginSync(
-      const autofill::PasswordForm& form) override;
+  PasswordStoreChangeList AddLoginSync(const autofill::PasswordForm& form,
+                                       AddLoginError* error) override;
   PasswordStoreChangeList UpdateLoginSync(
       const autofill::PasswordForm& form) override;
   PasswordStoreChangeList RemoveLoginSync(

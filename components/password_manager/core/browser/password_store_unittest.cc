@@ -701,9 +701,9 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
       store->ScheduleTask(
           base::BindOnce(IgnoreResult(&PasswordStore::RemoveLoginSync), store,
                          *all_credentials[0]));
-      store->ScheduleTask(
-          base::BindOnce(IgnoreResult(&PasswordStore::AddLoginSync), store,
-                         *expected_credentials_after_update[0]));
+      store->ScheduleTask(base::BindOnce(
+          IgnoreResult(&PasswordStore::AddLoginSync), store,
+          *expected_credentials_after_update[0], /*error=*/nullptr));
     } else {
       store->ScheduleTask(
           base::BindOnce(IgnoreResult(&PasswordStore::UpdateLoginSync), store,

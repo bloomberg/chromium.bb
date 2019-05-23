@@ -191,7 +191,10 @@ void BindAddStatement(const PasswordForm& form,
               usernames_pickle.size());
 }
 
-void AddCallback(int err, sql::Statement* /*stmt*/) {
+// Output parameter is the first one because of binding order.
+void AddCallback(int* output_err, int err, sql::Statement* /*stmt*/) {
+  DCHECK(output_err);
+  *output_err = err;
   if (err == 19 /*SQLITE_CONSTRAINT*/)
     DLOG(WARNING) << "LoginDatabase::AddLogin updated an existing form";
 }
@@ -929,27 +932,40 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
     LogPasswordReuseMetrics(password_to_realms.second);
 }
 
-PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
+PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
+                                                AddLoginError* error) {
+  if (error) {
+    *error = AddLoginError::kNone;
+  }
   PasswordStoreChangeList list;
-  if (!DoesMatchConstraints(form))
+  if (!DoesMatchConstraints(form)) {
+    if (error) {
+      *error = AddLoginError::kConstraintViolation;
+    }
     return list;
+  }
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
-      ENCRYPTION_RESULT_SUCCESS)
+      ENCRYPTION_RESULT_SUCCESS) {
+    if (error) {
+      *error = AddLoginError::kEncrytionServiceFailure;
+    }
     return list;
+  }
 
   DCHECK(!add_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
   BindAddStatement(form, encrypted_password, &s);
-  db_.set_error_callback(base::Bind(&AddCallback));
+  int sqlite_error_code;
+  db_.set_error_callback(base::BindRepeating(&AddCallback, &sqlite_error_code));
   const bool success = s.Run();
-  db_.reset_error_callback();
   if (success) {
     list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId());
     return list;
   }
   // Repeat the same statement but with REPLACE semantic.
+  sqlite_error_code = 0;
   DCHECK(!add_replace_statement_.empty());
   int old_primary_key = GetPrimaryKey(form);
   s.Assign(
@@ -958,7 +974,14 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
   if (s.Run()) {
     list.emplace_back(PasswordStoreChange::REMOVE, form, old_primary_key);
     list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId());
+  } else if (error) {
+    if (sqlite_error_code == 19 /*SQLITE_CONSTRAINT*/) {
+      *error = AddLoginError::kConstraintViolation;
+    } else {
+      *error = AddLoginError::kDbError;
+    }
   }
+  db_.reset_error_callback();
   return list;
 }
 

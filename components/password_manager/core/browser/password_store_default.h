@@ -47,8 +47,8 @@ class PasswordStoreDefault : public PasswordStore {
   // Implements PasswordStore interface.
   void ReportMetricsImpl(const std::string& sync_username,
                          bool custom_passphrase_sync_enabled) override;
-  PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) override;
+  PasswordStoreChangeList AddLoginImpl(const autofill::PasswordForm& form,
+                                       AddLoginError* error = nullptr) override;
   PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) override;
   PasswordStoreChangeList RemoveLoginImpl(

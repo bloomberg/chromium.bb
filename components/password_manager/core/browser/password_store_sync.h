@@ -47,6 +47,21 @@ enum class FormRetrievalResult {
   kEncrytionServiceFailure,
 };
 
+// Error values for adding a login to the store.
+enum class AddLoginError {
+  // Success.
+  kNone,
+  // Database not available.
+  kDbNotAvailable,
+  // The form doesn't the satisfy the constraints.
+  kConstraintViolation,
+  // A service-level failure (e.g., on a platform using a keyring, the keyring
+  // is temporarily unavailable).
+  kEncrytionServiceFailure,
+  // Database error.
+  kDbError
+};
+
 // PasswordStore interface for PasswordSyncableService. It provides access to
 // synchronous methods of PasswordStore which shouldn't be accessible to other
 // classes. These methods are to be called on the PasswordStore background
@@ -88,7 +103,8 @@ class PasswordStoreSync {
 
   // Synchronous implementation to add the given login.
   virtual PasswordStoreChangeList AddLoginSync(
-      const autofill::PasswordForm& form) = 0;
+      const autofill::PasswordForm& form,
+      AddLoginError* error = nullptr) = 0;
 
   // Synchronous implementation to update the given login.
   virtual PasswordStoreChangeList UpdateLoginSync(

@@ -174,7 +174,9 @@ PasswordStoreX::CreateBackgroundTaskRunner() const {
   return result ? result : PasswordStoreDefault::CreateBackgroundTaskRunner();
 }
 
-PasswordStoreChangeList PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
+PasswordStoreChangeList PasswordStoreX::AddLoginImpl(
+    const PasswordForm& form,
+    password_manager::AddLoginError* error) {
   CheckMigration();
   PasswordStoreChangeList changes;
   if (use_native_backend() && AddLoginToBackend(backend_, form, &changes)) {

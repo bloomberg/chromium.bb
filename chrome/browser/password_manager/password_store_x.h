@@ -155,7 +155,8 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
       const override;
   password_manager::PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) override;
+      const autofill::PasswordForm& form,
+      password_manager::AddLoginError* error = nullptr) override;
   password_manager::PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) override;
   password_manager::PasswordStoreChangeList RemoveLoginImpl(

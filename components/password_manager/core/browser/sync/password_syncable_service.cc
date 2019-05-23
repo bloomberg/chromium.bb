@@ -364,12 +364,26 @@ bool PasswordSyncableService::ReadFromPasswordStore(
 
 void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries) {
   PasswordStoreChangeList changes;
-  WriteEntriesToDatabase(&PasswordStoreSync::AddLoginSync, entries.new_entries,
-                         &changes);
-  WriteEntriesToDatabase(&PasswordStoreSync::UpdateLoginSync,
-                         entries.updated_entries, &changes);
-  WriteEntriesToDatabase(&PasswordStoreSync::RemoveLoginSync,
-                         entries.deleted_entries, &changes);
+
+  for (const std::unique_ptr<autofill::PasswordForm>& form :
+       entries.new_entries) {
+    PasswordStoreChangeList new_changes = password_store_->AddLoginSync(*form);
+    changes.insert(changes.end(), new_changes.begin(), new_changes.end());
+  }
+
+  for (const std::unique_ptr<autofill::PasswordForm>& form :
+       entries.updated_entries) {
+    PasswordStoreChangeList new_changes =
+        password_store_->UpdateLoginSync(*form);
+    changes.insert(changes.end(), new_changes.begin(), new_changes.end());
+  }
+
+  for (const std::unique_ptr<autofill::PasswordForm>& form :
+       entries.deleted_entries) {
+    PasswordStoreChangeList new_changes =
+        password_store_->RemoveLoginSync(*form);
+    changes.insert(changes.end(), new_changes.begin(), new_changes.end());
+  }
 
   // We have to notify password store observers of the change by hand since
   // we use internal password store interfaces to make changes synchronously.
@@ -416,17 +430,6 @@ void PasswordSyncableService::CreateOrUpdateEntry(
     // Entries that remain in the map at the end of associating all sync entries
     // will be treated as additions that need to be propagated to sync.
     unmatched_data_from_password_db->erase(existing_local_entry_iter);
-  }
-}
-
-void PasswordSyncableService::WriteEntriesToDatabase(
-    DatabaseOperation operation,
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& entries,
-    PasswordStoreChangeList* all_changes) {
-  for (const std::unique_ptr<autofill::PasswordForm>& form : entries) {
-    PasswordStoreChangeList new_changes = (password_store_->*operation)(*form);
-    all_changes->insert(all_changes->end(), new_changes.begin(),
-                        new_changes.end());
   }
 }
 

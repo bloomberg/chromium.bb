@@ -119,7 +119,8 @@ class FakeDatabase {
     return FormRetrievalResult::kSuccess;
   }
 
-  PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form) {
+  PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form,
+                                   AddLoginError* error) {
     data_[primary_key_] = std::make_unique<autofill::PasswordForm>(form);
     return {
         PasswordStoreChange(PasswordStoreChange::ADD, form, primary_key_++)};
@@ -192,8 +193,9 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD1(ReadAllLogins, FormRetrievalResult(PrimaryKeyToFormMap*));
   MOCK_METHOD1(RemoveLoginByPrimaryKeySync, PasswordStoreChangeList(int));
   MOCK_METHOD0(DeleteUndecryptableLogins, DatabaseCleanupResult());
-  MOCK_METHOD1(AddLoginSync,
-               PasswordStoreChangeList(const autofill::PasswordForm&));
+  MOCK_METHOD2(AddLoginSync,
+               PasswordStoreChangeList(const autofill::PasswordForm&,
+                                       AddLoginError*));
   MOCK_METHOD1(UpdateLoginSync,
                PasswordStoreChangeList(const autofill::PasswordForm&));
   MOCK_METHOD1(RemoveLoginSync,
@@ -214,7 +216,7 @@ class PasswordSyncBridgeTest : public testing::Test {
         .WillByDefault(testing::Return(&mock_sync_metadata_store_sync_));
     ON_CALL(mock_password_store_sync_, ReadAllLogins(_))
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::ReadAllLogins));
-    ON_CALL(mock_password_store_sync_, AddLoginSync(_))
+    ON_CALL(mock_password_store_sync_, AddLoginSync(_, _))
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::AddLogin));
     ON_CALL(mock_password_store_sync_, UpdateLoginSync(_))
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::UpdateLogin));
@@ -381,7 +383,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldApplyRemoteCreation) {
   testing::InSequence in_sequence;
   EXPECT_CALL(*mock_password_store_sync(), BeginTransaction());
   EXPECT_CALL(*mock_password_store_sync(),
-              AddLoginSync(FormHasSignonRealm(kSignonRealm1)));
+              AddLoginSync(FormHasSignonRealm(kSignonRealm1), _));
   EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kStorageKey, _));
   EXPECT_CALL(*mock_password_store_sync(), CommitTransaction());
   EXPECT_CALL(
@@ -542,7 +544,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldMergeSyncRemoteAndLocalPasswords) {
       .InSequence(s3);
 
   EXPECT_CALL(*mock_password_store_sync(),
-              AddLoginSync(FormHasSignonRealm(kSignonRealm3)))
+              AddLoginSync(FormHasSignonRealm(kSignonRealm3), _))
       .InSequence(s4);
   EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kExpectedPrimaryKeyStr3, _))
       .InSequence(s4);
@@ -642,7 +644,7 @@ TEST_F(PasswordSyncBridgeTest,
 TEST_F(PasswordSyncBridgeTest,
        ShouldMergeSyncRemoteAndLocalPasswordsWithErrorWhenStoreAddFails) {
   // Simulate a failed AddLoginSync() by returning an empty change list.
-  ON_CALL(*mock_password_store_sync(), AddLoginSync(_))
+  ON_CALL(*mock_password_store_sync(), AddLoginSync(_, _))
       .WillByDefault(testing::Return(PasswordStoreChangeList()));
 
   syncer::EntityChangeList entity_change_list;

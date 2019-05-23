@@ -48,7 +48,8 @@ TestPasswordStore::CreateBackgroundTaskRunner() const {
 }
 
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
-    const autofill::PasswordForm& form) {
+    const autofill::PasswordForm& form,
+    AddLoginError* error) {
   PasswordStoreChangeList changes;
   auto& passwords_for_signon_realm = stored_passwords_[form.signon_realm];
   auto iter = std::find_if(
