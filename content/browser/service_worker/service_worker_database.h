@@ -24,6 +24,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -82,7 +83,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     base::Optional<blink::TrialTokenValidator::FeatureToTokensMap>
         origin_trial_tokens;
     blink::mojom::NavigationPreloadState navigation_preload_state;
-    std::set<uint32_t> used_features;
+    std::set<blink::mojom::WebFeature> used_features;
 
     // Not populated until ServiceWorkerStorage::StoreRegistration is called.
     int64_t resources_total_size_bytes;
@@ -430,6 +431,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
                            UserData_UninitializedDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DestroyDatabase);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, InvalidWebFeature);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };

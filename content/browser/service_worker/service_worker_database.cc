@@ -1506,8 +1506,15 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
       out->navigation_preload_state.header = state.header();
   }
 
-  for (uint32_t feature : data.used_features())
-    out->used_features.insert(feature);
+  for (uint32_t feature : data.used_features()) {
+    // Add features that are valid WebFeature values. Invalid values can
+    // legitimately exist on disk when a version of Chrome had the feature and
+    // wrote the data but the value was removed from the WebFeature enum in a
+    // later version of Chrome.
+    auto web_feature = static_cast<blink::mojom::WebFeature>(feature);
+    if (IsKnownEnumValue(web_feature))
+      out->used_features.insert(web_feature);
+  }
 
   if (data.has_script_type()) {
     auto value = data.script_type();
@@ -1574,8 +1581,8 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   state->set_enabled(registration.navigation_preload_state.enabled);
   state->set_header(registration.navigation_preload_state.header);
 
-  for (uint32_t feature : registration.used_features)
-    data.add_used_features(feature);
+  for (blink::mojom::WebFeature web_feature : registration.used_features)
+    data.add_used_features(static_cast<uint32_t>(web_feature));
 
   data.set_script_type(
       static_cast<ServiceWorkerRegistrationData_ServiceWorkerScriptType>(

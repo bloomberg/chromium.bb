@@ -33,8 +33,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
-using std::swap;
-
 namespace content {
 
 namespace {
@@ -447,7 +445,7 @@ void ServiceWorkerStorage::StoreRegistration(
   data.navigation_preload_state = registration->navigation_preload_state();
   data.script_response_time = version->GetInfo().script_response_time;
   for (const blink::mojom::WebFeature feature : version->used_features())
-    data.used_features.insert(static_cast<uint32_t>(feature));
+    data.used_features.insert(feature);
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -1506,7 +1504,6 @@ void ServiceWorkerStorage::DidStoreRegistration(
   context_->NotifyRegistrationStored(new_version.registration_id,
                                      new_version.scope);
   std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
-
 }
 
 void ServiceWorkerStorage::DidUpdateToActiveState(
@@ -1648,20 +1645,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     if (data.origin_trial_tokens)
       version->SetValidOriginTrialTokens(*data.origin_trial_tokens);
 
-    // Some features may be outside the valid range of features, if the data on
-    // disk was written by a later version of Chrome than currently running
-    // (crbug.com/758419).
-    // TODO(falken): Maybe Chrome should have a generic mechanism to detect
-    // profile downgrade and just abort? Or we could just crash here, but that
-    // seems extreme and difficult for a user to escape.
-    std::set<blink::mojom::WebFeature> used_features;
-    for (const uint32_t feature : data.used_features) {
-      if (feature <
-          static_cast<uint32_t>(blink::mojom::WebFeature::kNumberOfFeatures)) {
-        used_features.insert(static_cast<blink::mojom::WebFeature>(feature));
-      }
-    }
-    version->set_used_features(std::move(used_features));
+    version->set_used_features(data.used_features);
   }
   version->set_script_response_time_for_devtools(data.script_response_time);
 
