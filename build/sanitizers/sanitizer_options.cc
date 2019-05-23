@@ -81,7 +81,8 @@ const char *kAsanDefaultOptions =
 #elif defined(OS_WIN)
 const char* kAsanDefaultOptions =
     "check_printf=1 use_sigaltstack=1 "
-    "strip_path_prefix=\\..\\..\\ fast_unwind_on_fatal=1 ";
+    "strip_path_prefix=\\..\\..\\ fast_unwind_on_fatal=1 "
+    "detect_stack_use_after_return=1 ";
 #endif  // OS_LINUX
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
