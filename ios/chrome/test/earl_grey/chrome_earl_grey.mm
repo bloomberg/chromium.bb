@@ -21,7 +21,6 @@
 
 #include "components/strings/grit/components_strings.h"  // nogncheck
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"  // nogncheck
-#import "ios/chrome/test/app/bookmarks_test_util.h"                // nogncheck
 #import "ios/chrome/test/app/chrome_test_util.h"                   // nogncheck
 #import "ios/chrome/test/app/history_test_util.h"                  // nogncheck
 #include "ios/chrome/test/app/navigation_test_util.h"              // nogncheck
@@ -97,6 +96,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
+- (void)closeCurrentTab {
+  [ChromeEarlGreyAppInterface closeCurrentTab];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
 - (NSError*)openNewIncognitoTab {
   [ChromeEarlGreyAppInterface openNewIncognitoTab];
   [self waitForPageToFinishLoading];
@@ -149,9 +153,19 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [self loadURL:URL waitForCompletion:YES];
 }
 
-- (void)closeCurrentTab {
-  [ChromeEarlGreyAppInterface closeCurrentTab];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+#pragma mark - Bookmarks Utilities (EG2)
+
+- (NSError*)waitForBookmarksToFinishLoading {
+  EG_TEST_HELPER_ASSERT_TRUE(
+      [ChromeEarlGreyAppInterface waitForBookmarksToFinishinLoading],
+      @"Bookmark model did not load");
+  return nil;
+}
+
+- (NSError*)clearBookmarks {
+  EG_TEST_HELPER_ASSERT_TRUE([ChromeEarlGreyAppInterface clearBookmarks],
+                             @"Not all bookmarks were removed.");
+  return nil;
 }
 
 @end
@@ -289,28 +303,6 @@ id ExecuteJavaScript(NSString* javascript,
                                    count]);
   }
 
-  return nil;
-}
-
-- (NSError*)waitForBookmarksToFinishLoading {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    return chrome_test_util::BookmarksLoaded();
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Bookmark model did not load");
-  }
-
-  return nil;
-}
-
-- (NSError*)clearBookmarks {
-  bool success = chrome_test_util::ClearBookmarks();
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Not all bookmarks were removed.");
-  }
   return nil;
 }
 

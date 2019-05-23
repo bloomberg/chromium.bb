@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
+#import "base/test/ios/wait_util.h"
 
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
@@ -16,6 +18,8 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForActionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 @implementation ChromeEarlGreyAppInterface
@@ -55,6 +59,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::OpenNewTab();
 }
 
++ (void)closeCurrentTab {
+  chrome_test_util::CloseCurrentTab();
+}
+
 + (void)openNewIncognitoTab {
   chrome_test_util::OpenNewIncognitoTab();
 }
@@ -75,8 +83,16 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   [BrowserCommandDispatcherForMainBVC() goForward];
 }
 
-+ (void)closeCurrentTab {
-  chrome_test_util::CloseCurrentTab();
+#pragma mark - Bookmarks Utilities (EG2)
+
++ (BOOL)waitForBookmarksToFinishinLoading {
+  return WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
+    return chrome_test_util::BookmarksLoaded();
+  });
+}
+
++ (BOOL)clearBookmarks {
+  return chrome_test_util::ClearBookmarks();
 }
 
 @end

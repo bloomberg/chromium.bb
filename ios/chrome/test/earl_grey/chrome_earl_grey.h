@@ -85,6 +85,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)openNewTab;
 
+// Closes the current tab and waits for the UI to complete.
+- (void)closeCurrentTab;
+
 // Opens a new incognito tab and waits for the new tab animation to complete.
 // TODO(crbug.com/963613): Change return type to void when
 // CHROME_EG_ASSERT_NO_ERROR is removed.
@@ -107,8 +110,15 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)waitForPageToFinishLoading;
 
-// Closes the current tab and waits for the UI to complete.
-- (void)closeCurrentTab;
+#pragma mark - Bookmarks Utilities (EG2)
+
+// Waits for the bookmark internal state to be done loading.
+// If the condition is not met within a timeout a GREYAssert is induced.
+- (NSError*)waitForBookmarksToFinishLoading;
+
+// Clears bookmarks if any bookmark still presents. A GREYAssert is induced if
+// bookmarks can not be cleared.
+- (NSError*)clearBookmarks;
 
 @end
 
@@ -157,15 +167,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // If the condition is not met within a timeout returns an NSError indicating
 // why the operation failed, otherwise nil.
 - (NSError*)waitForIncognitoTabCount:(NSUInteger)count WARN_UNUSED_RESULT;
-
-// Waits for the bookmark internal state to be done loading.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)waitForBookmarksToFinishLoading WARN_UNUSED_RESULT;
-
-// Clears bookmarks and if any bookmark still presents. Returns nil on success,
-// or else an NSError indicating why the operation failed.
-- (NSError*)clearBookmarks;
 
 // Waits for the matcher to return an element that is sufficiently visible.
 - (NSError*)waitForSufficientlyVisibleElementWithMatcher:

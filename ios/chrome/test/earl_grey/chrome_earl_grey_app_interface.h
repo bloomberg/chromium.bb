@@ -35,6 +35,9 @@
 // Opens a new tab, and does not wait for animations to complete.
 + (void)openNewTab;
 
+// Closes current tab.
++ (void)closeCurrentTab;
+
 // Opens a new incognito tab, and does not wait for animations to complete.
 + (void)openNewIncognitoTab;
 
@@ -52,8 +55,14 @@
 // Navigates forward to the next page without waiting for the page to load.
 + (void)startGoingForward;
 
-// Closes current tab.
-+ (void)closeCurrentTab;
+#pragma mark - Bookmarks Utilities (EG2)
+
+// Waits for the bookmark internal state to be done loading.
+// Return YES on success.
++ (BOOL)waitForBookmarksToFinishinLoading;
+
+// Clears bookmarks. Returns YES on success.
++ (BOOL)clearBookmarks;
 
 @end
 

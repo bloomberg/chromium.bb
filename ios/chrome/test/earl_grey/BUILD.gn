@@ -336,6 +336,7 @@ source_set("eg_app_support+eg2") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
     "//components/signin/core/browser",
     "//components/strings",
     "//components/unified_consent",
@@ -359,7 +360,6 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/testing:nserror_support",
-    "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/earl_grey2:app_framework+link",
     "//ios/web:eg_app_support+eg2",

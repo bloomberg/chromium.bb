@@ -129,4 +129,10 @@
   [ChromeEarlGrey openNewTab];
 }
 
+// Tests bookmark converted helpers in chrome_earl_grey.h.
+- (void)testBookmarkHelpers {
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
+}
+
 @end
