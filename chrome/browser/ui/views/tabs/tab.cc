@@ -376,7 +376,6 @@ void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
-  controller_->UpdateHoverCard(this, /* should_show */ false);
   if (event.key_code() == ui::VKEY_SPACE && !IsSelected()) {
     controller_->SelectTab(this, event);
     return true;
