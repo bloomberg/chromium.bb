@@ -159,6 +159,12 @@ void BaseAudioContext::Uninitialize() {
   if (!IsDestinationInitialized())
     return;
 
+  // BaseAudioContextTracker needs a valid AudioDestinationNode because it
+  // may use destination-related data (e.g. sample rate and channel count)
+  // to populate the devtool protocol object.
+  if (Tracker())
+    Tracker()->DidDestroyBaseAudioContext(this);
+
   // This stops the audio thread and all audio rendering.
   if (destination_node_)
     destination_node_->Handler().Uninitialize();
@@ -176,9 +182,6 @@ void BaseAudioContext::Uninitialize() {
   listener_->WaitForHRTFDatabaseLoaderThreadCompletion();
 
   Clear();
-
-  if (Tracker())
-    Tracker()->DidDestroyBaseAudioContext(this);
 
   DCHECK(!is_resolving_resume_promises_);
   DCHECK_EQ(resume_resolvers_.size(), 0u);
