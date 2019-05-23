@@ -43,10 +43,8 @@ void ServiceWorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
   // (In the update case) Step 9: "Else, continue the rest of these steps after
   // the algorithm's asynchronous completion, with script being the asynchronous
   // completion value."
-  worker_reporting_proxy.WillEvaluateModuleScript();
-  ScriptValue error = modulator_->ExecuteModule(
-      module_script, Modulator::CaptureEvalErrorFlag::kReport);
-  worker_reporting_proxy.DidEvaluateModuleScript(error.IsEmpty());
+  worker_global_scope->WorkerScriptFetchFinished(
+      *module_script, base::nullopt /* v8_inspector::V8StackTraceId */);
 }
 
 void ServiceWorkerModuleTreeClient::Trace(blink::Visitor* visitor) {

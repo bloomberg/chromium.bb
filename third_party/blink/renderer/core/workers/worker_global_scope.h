@@ -163,6 +163,14 @@ class CORE_EXPORT WorkerGlobalScope
                              std::unique_ptr<Vector<uint8_t>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
 
+  // Should be called (in all successful cases) when the worker top-level
+  // script fetch is finished.
+  // At this time, WorkerGlobalScope::Initialize() should be already called.
+  // Spec: https://html.spec.whatwg.org/C/#run-a-worker Step 12 is completed,
+  // and it's ready to proceed to Step 23.
+  void WorkerScriptFetchFinished(Script&,
+                                 base::Optional<v8_inspector::V8StackTraceId>);
+
   // Fetches and evaluates the top-level classic script.
   virtual void FetchAndRunClassicScript(
       const KURL& script_url,
@@ -216,18 +224,15 @@ class CORE_EXPORT WorkerGlobalScope
   // ReadyToRunClassicScript() is called.
   void ReadyToRunClassicScript();
 
-  // Evaluates the given top-level classic script.
-  void EvaluateClassicScriptInternal(
-      const KURL& script_url,
-      String source_code,
-      std::unique_ptr<Vector<uint8_t>> cached_meta_data);
-
   void InitializeURL(const KURL& url);
 
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
+
+  // https://html.spec.whatwg.org/C/#run-a-worker Step 24.
+  void RunWorkerScript();
 
   // Used for importScripts().
   void ImportScriptsInternal(const Vector<String>& urls, ExceptionState&);
@@ -280,7 +285,8 @@ class CORE_EXPORT WorkerGlobalScope
     kEvaluated,
   };
   ScriptEvalState script_eval_state_;
-  base::OnceClosure evaluate_script_;
+  Member<Script> worker_script_;
+  base::Optional<v8_inspector::V8StackTraceId> stack_id_;
 
   HttpsState https_state_;
 };

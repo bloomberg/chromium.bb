@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -360,14 +361,70 @@ void WorkerGlobalScope::EvaluateClassicScript(
   CHECK(!GetExecutionContext()->IsContextDestroyed())
       << "https://crbug.com/930618: worker global scope was destroyed before "
          "evaluating classic script";
+
+  SingleCachedMetadataHandler* handler =
+      CreateWorkerScriptCachedMetadataHandler(script_url,
+                                              std::move(cached_meta_data));
+  // Cross-origin workers are disallowed, so use
+  // SanitizeScriptErrors::kDoNotSanitize.
+  Script* worker_script = MakeGarbageCollected<ClassicScript>(
+      ScriptSourceCode(source_code, handler, script_url), script_url,
+      ScriptFetchOptions(), SanitizeScriptErrors::kDoNotSanitize);
+  WorkerScriptFetchFinished(*worker_script, stack_id);
+}
+
+void WorkerGlobalScope::WorkerScriptFetchFinished(
+    Script& worker_script,
+    base::Optional<v8_inspector::V8StackTraceId> stack_id) {
+  DCHECK(IsContextThread());
+
+  DCHECK_NE(ScriptEvalState::kEvaluated, script_eval_state_);
+  DCHECK(!worker_script_);
+  worker_script_ = worker_script;
+  stack_id_ = stack_id;
+
+  // Proceed to RunWorkerScript() once WorkerScriptFetchFinished() is called and
+  // |script_eval_state_| becomes kReadyToEvaluate.
+  if (script_eval_state_ == ScriptEvalState::kReadyToEvaluate)
+    RunWorkerScript();
+}
+
+void WorkerGlobalScope::ReadyToRunClassicScript() {
+  DCHECK(IsContextThread());
+
+  DCHECK_EQ(ScriptEvalState::kPauseAfterFetch, script_eval_state_);
+  script_eval_state_ = ScriptEvalState::kReadyToEvaluate;
+
+  // Proceed to RunWorkerScript() once WorkerScriptFetchFinished() is called and
+  // |script_eval_state_| becomes kReadyToEvaluate.
+  if (worker_script_)
+    RunWorkerScript();
+}
+
+// https://html.spec.whatwg.org/C/#run-a-worker
+void WorkerGlobalScope::RunWorkerScript() {
+  DCHECK(IsContextThread());
+  DCHECK(!IsContextPaused());
+  CHECK(!GetExecutionContext()->IsContextDestroyed())
+      << "https://crbug.com/930618: worker global scope was destroyed before "
+         "evaluating classic script";
+
+  DCHECK(worker_script_);
+  DCHECK_EQ(script_eval_state_, ScriptEvalState::kReadyToEvaluate);
+
   WorkerThreadDebugger* debugger =
       WorkerThreadDebugger::From(GetThread()->GetIsolate());
-  if (debugger)
-    debugger->ExternalAsyncTaskStarted(stack_id);
-  EvaluateClassicScriptInternal(script_url, source_code,
-                                std::move(cached_meta_data));
-  if (debugger)
-    debugger->ExternalAsyncTaskFinished(stack_id);
+  if (debugger && stack_id_)
+    debugger->ExternalAsyncTaskStarted(*stack_id_);
+
+  // Step 24. If script is a classic script, then run the classic script script.
+  // Otherwise, it is a module script; run the module script script. [spec text]
+  std::move(worker_script_)->RunScriptOnWorker(*this);
+
+  if (debugger && stack_id_)
+    debugger->ExternalAsyncTaskFinished(*stack_id_);
+
+  script_eval_state_ = ScriptEvalState::kEvaluated;
 }
 
 void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
@@ -388,44 +445,6 @@ void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
                                       user_activation));
   if (debugger)
     debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
-}
-
-void WorkerGlobalScope::ReadyToRunClassicScript() {
-  DCHECK_EQ(ScriptEvalState::kPauseAfterFetch, script_eval_state_);
-  script_eval_state_ = ScriptEvalState::kReadyToEvaluate;
-  if (evaluate_script_)
-    std::move(evaluate_script_).Run();
-}
-
-void WorkerGlobalScope::EvaluateClassicScriptInternal(
-    const KURL& script_url,
-    String source_code,
-    std::unique_ptr<Vector<uint8_t>> cached_meta_data) {
-  DCHECK(IsContextThread());
-  DCHECK_NE(ScriptEvalState::kEvaluated, script_eval_state_);
-
-  if (script_eval_state_ == ScriptEvalState::kPauseAfterFetch) {
-    evaluate_script_ =
-        WTF::Bind(&WorkerGlobalScope::EvaluateClassicScriptInternal,
-                  WrapWeakPersistent(this), script_url, std::move(source_code),
-                  std::move(cached_meta_data));
-    return;
-  }
-
-  SingleCachedMetadataHandler* handler =
-      CreateWorkerScriptCachedMetadataHandler(script_url,
-                                              std::move(cached_meta_data));
-  DCHECK(!source_code.IsNull());
-  ReportingProxy().WillEvaluateClassicScript(
-      source_code.length(), handler ? handler->GetCodeCacheSize() : 0);
-  // Cross-origin workers are disallowed, so use
-  // SanitizeScriptErrors::kDoNotSanitize.
-  bool success = ScriptController()->Evaluate(
-      ScriptSourceCode(source_code, handler, script_url),
-      SanitizeScriptErrors::kDoNotSanitize, nullptr /* error_event */,
-      GetV8CacheOptions());
-  ReportingProxy().DidEvaluateClassicScript(success);
-  script_eval_state_ = ScriptEvalState::kEvaluated;
 }
 
 WorkerGlobalScope::WorkerGlobalScope(
@@ -568,6 +587,7 @@ void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(font_selector_);
   visitor->Trace(animation_frame_provider_);
   visitor->Trace(trusted_types_);
+  visitor->Trace(worker_script_);
   WorkerOrWorkletGlobalScope::Trace(visitor);
   Supplementable<WorkerGlobalScope>::Trace(visitor);
 }

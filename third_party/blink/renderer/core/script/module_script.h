@@ -98,6 +98,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
     return mojom::ScriptType::kModule;
   }
   void RunScript(LocalFrame*, const SecurityOrigin*) override;
+  void RunScriptOnWorker(WorkerGlobalScope&) override;
   String InlineSourceTextForCSP() const override;
 
   friend class ModulatorImplBase;
