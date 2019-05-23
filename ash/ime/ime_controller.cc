@@ -196,9 +196,10 @@ void ImeController::ShowModeIndicator(const gfx::Rect& anchor_bounds,
 
 void ImeController::OnDisplayMetricsChanged(const display::Display& display,
                                             uint32_t changed_metrics) {
-  bool is_mirroring =
-      (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_MIRROR_STATE);
-  client_->UpdateMirroringState(is_mirroring);
+  if (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_MIRROR_STATE) {
+    Shell* shell = Shell::Get();
+    client_->UpdateMirroringState(shell->display_manager()->IsInMirrorMode());
+  }
 }
 
 void ImeController::OnDevicesUpdated(const std::vector<SinkAndRoute>& devices) {
