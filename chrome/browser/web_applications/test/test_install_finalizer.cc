@@ -50,15 +50,13 @@ void TestInstallFinalizer::UninstallExternalWebApp(
   uninstall_external_web_app_urls_.push_back(app_url);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          base::BindLambdaForTesting(
-              [this, app_url](UninstallExternalWebAppCallback callback) {
-                bool result = next_uninstall_external_web_app_results_[app_url];
-                next_uninstall_external_web_app_results_.erase(app_url);
-                std::move(callback).Run(result);
-              }),
-          std::move(callback)));
+      FROM_HERE, base::BindLambdaForTesting(
+                     [this, app_url, callback = std::move(callback)]() mutable {
+                       bool result =
+                           next_uninstall_external_web_app_results_[app_url];
+                       next_uninstall_external_web_app_results_.erase(app_url);
+                       std::move(callback).Run(result);
+                     }));
 }
 
 bool TestInstallFinalizer::CanCreateOsShortcuts() const {

@@ -38,9 +38,11 @@ void TestPendingAppManager::Install(InstallOptions install_options,
   // TODO(nigeltao): Add error simulation when error codes are added to the API.
   auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
   auto result_code = install_result_code_;
-  auto do_install =
-      base::BindLambdaForTesting([this, weak_ptr, install_options,
-                                  result_code](OnceInstallCallback callback) {
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindLambdaForTesting([this, weak_ptr, install_options, result_code,
+                                  callback = std::move(callback)]() mutable {
         // Use a WeakPtr to be able to simulate the Install callback running
         // after PendingAppManager gets deleted.
         if (weak_ptr) {
@@ -52,10 +54,8 @@ void TestPendingAppManager::Install(InstallOptions install_options,
           }
           install_requests_.push_back(install_options);
         }
-        std::move(callback).Run(install_options.url, result_code);
-      });
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(do_install, std::move(callback)));
+        std::move(std::move(callback)).Run(install_options.url, result_code);
+      }));
 }
 
 void TestPendingAppManager::InstallApps(
@@ -68,21 +68,20 @@ void TestPendingAppManager::InstallApps(
 void TestPendingAppManager::UninstallApps(std::vector<GURL> uninstall_urls,
                                           const UninstallCallback& callback) {
   auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
-  auto do_uninstall = base::BindLambdaForTesting(
-      [this, weak_ptr](UninstallCallback callback, GURL url) {
-        if (weak_ptr) {
-          auto i = installed_apps_.find(url);
-          if (i != installed_apps_.end()) {
-            installed_apps_.erase(i);
-            deduped_uninstall_count_++;
-          }
-          uninstall_requests_.push_back(url);
-        }
-        callback.Run(url, true /* succeeded */);
-      });
   for (const auto& url : uninstall_urls) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(do_uninstall, callback, url));
+        FROM_HERE,
+        base::BindLambdaForTesting([this, weak_ptr, url, callback]() {
+          if (weak_ptr) {
+            auto i = installed_apps_.find(url);
+            if (i != installed_apps_.end()) {
+              installed_apps_.erase(i);
+              deduped_uninstall_count_++;
+            }
+            uninstall_requests_.push_back(url);
+          }
+          callback.Run(url, true /* succeeded */);
+        }));
   }
 }
 

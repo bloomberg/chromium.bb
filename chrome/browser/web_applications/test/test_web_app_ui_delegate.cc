@@ -31,12 +31,11 @@ void TestWebAppUiDelegate::NotifyOnAllAppWindowsClosed(
     const AppId& app_id,
     base::OnceClosure callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(base::BindLambdaForTesting(
-                                    [&, app_id](base::OnceClosure callback) {
-                                      app_id_to_num_windows_map_[app_id] = 0;
-                                      std::move(callback).Run();
-                                    }),
-                                std::move(callback)));
+      FROM_HERE, base::BindLambdaForTesting(
+                     [&, app_id, callback = std::move(callback)]() mutable {
+                       app_id_to_num_windows_map_[app_id] = 0;
+                       std::move(callback).Run();
+                     }));
 }
 
 }  // namespace web_app

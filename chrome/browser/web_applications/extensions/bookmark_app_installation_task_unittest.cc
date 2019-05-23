@@ -182,13 +182,11 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            base::BindLambdaForTesting(
-                [&, app_id, code](InstallFinalizedCallback callback) {
-                  registrar_->AddAsInstalled(app_id);
-                  std::move(callback).Run(app_id, code);
-                }),
-            std::move(callback)));
+        base::BindLambdaForTesting(
+            [&, app_id, code, callback = std::move(callback)]() mutable {
+              registrar_->AddAsInstalled(app_id);
+              std::move(callback).Run(app_id, code);
+            }));
   }
 
   void UninstallExternalWebApp(
@@ -206,14 +204,12 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(base::BindLambdaForTesting(
-                           [&, app_id, uninstalled](
-                               UninstallExternalWebAppCallback callback) {
-                             if (uninstalled)
-                               registrar_->RemoveAsInstalled(app_id);
-                             std::move(callback).Run(uninstalled);
-                           }),
-                       std::move(callback)));
+        base::BindLambdaForTesting(
+            [&, app_id, uninstalled, callback = std::move(callback)]() mutable {
+              if (uninstalled)
+                registrar_->RemoveAsInstalled(app_id);
+              std::move(callback).Run(uninstalled);
+            }));
   }
 
   bool CanCreateOsShortcuts() const override { return true; }
