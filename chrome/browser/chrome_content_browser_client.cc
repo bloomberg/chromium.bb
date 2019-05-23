@@ -4045,6 +4045,7 @@ void ChromeContentBrowserClient::HandleServiceRequest(
     service_manager::Service::RunAsyncUntilTermination(
         g_browser_process->pref_service_factory()->CreatePrefService(
             std::move(request)));
+    return;
   }
 
 #if defined(OS_WIN)
@@ -4058,12 +4059,14 @@ void ChromeContentBrowserClient::HandleServiceRequest(
       service_name == quarantine::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<quarantine::QuarantineService>(std::move(request)));
+    return;
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   if (service_name == media::mojom::kMediaServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         media::CreateMediaService(std::move(request)));
+    return;
   }
 #endif
 
@@ -4075,41 +4078,46 @@ void ChromeContentBrowserClient::HandleServiceRequest(
         std::make_unique<simple_browser::SimpleBrowserService>(
             std::move(request), simple_browser::SimpleBrowserService::
                                     UIInitializationMode::kUseEnvironmentUI));
+    return;
   }
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (service_name == chromeos::cellular_setup::mojom::kServiceName &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kUpdatedCellularActivationUi)) {
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kUpdatedCellularActivationUi) &&
+      service_name == chromeos::cellular_setup::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::cellular_setup::CellularSetupService>(
             std::move(request)));
+    return;
   }
 
   if (service_name == chromeos::secure_channel::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::secure_channel::SecureChannelService>(
             std::move(request)));
+    return;
   }
 
   if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::printing::CupsProxyService>(
             std::move(request)));
+    return;
   }
 
   if (service_name == chromeos::network_config::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::network_config::NetworkConfigService>(
             std::move(request)));
+    return;
   }
 
   auto service = ash_service_registry::HandleServiceRequest(service_name,
                                                             std::move(request));
   if (service)
     service_manager::Service::RunAsyncUntilTermination(std::move(service));
-#endif
+#endif  // defined(OS_CHROMEOS)
 }
 
 base::Optional<service_manager::Manifest>
