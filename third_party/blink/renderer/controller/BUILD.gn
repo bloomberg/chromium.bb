@@ -74,7 +74,6 @@ group("blink_unittests_data") {
     "../core/testing/data/",
     "../core/paint/test_data/",
     "../core/animation/test_data/",
-    "../core/css/test_data/",
   ]
 }
 

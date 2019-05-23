@@ -45,6 +45,7 @@ class CORE_EXPORT CSSPaintImageGenerator
       const Document&,
       Observer*);
   static void Init(CSSPaintImageGeneratorCreateFunction);
+  static CSSPaintImageGeneratorCreateFunction* GetCreateFunctionForTesting();
 
   // Invokes the CSS Paint API 'paint' callback. May return a nullptr
   // representing an invalid image if an error occurred.
