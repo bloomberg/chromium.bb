@@ -10,6 +10,7 @@ import("//build/config/jumbo.gni")
 source_set("type_safety") {
   sources = [
     "id_type.h",
+    "strong_alias.h",
   ]
 }
 
@@ -17,6 +18,7 @@ source_set("tests") {
   testonly = true
   sources = [
     "id_type_unittest.cc",
+    "strong_alias_unittest.cc",
   ]
 
   deps = [

@@ -1055,6 +1055,26 @@ struct ParamTraits<util::IdType<TypeMarker, WrappedType, kInvalidValue>> {
   }
 };
 
+template <typename TagType, typename UnderlyingType>
+struct ParamTraits<util::StrongAlias<TagType, UnderlyingType>> {
+  using param_type = util::StrongAlias<TagType, UnderlyingType>;
+  static void Write(base::Pickle* m, const param_type& p) {
+    WriteParam(m, p.value());
+  }
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    UnderlyingType value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    *r = param_type::StrongAlias(value);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    LogParam(p.value(), l);
+  }
+};
+
 // IPC types ParamTraits -------------------------------------------------------
 
 // A ChannelHandle is basically a platform-inspecific wrapper around the
