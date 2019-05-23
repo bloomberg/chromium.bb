@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
 import org.chromium.components.module_installer.ModuleInstaller;
-import org.chromium.ui.base.ResourceBundle;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -161,8 +160,6 @@ public class ChromeApplication extends Application {
         }
         AsyncTask.takeOverAndroidThreadPool();
         JNIUtils.setClassLoader(getClassLoader());
-        ResourceBundle.setAvailablePakLocales(
-                LocaleConfig.COMPRESSED_LOCALES, LocaleConfig.UNCOMPRESSED_LOCALES);
         sFirstTraceEvent.end();
     }
 

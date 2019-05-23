@@ -23,7 +23,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.ui.base.ResourceBundle;
 import org.chromium.ui.resources.ResourceExtractor;
 
 import java.lang.annotation.Retention;
@@ -451,7 +450,6 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
      */
     @Override
     public void initChromiumBrowserProcessForTests() {
-        ResourceBundle.setNoAvailableLocalePaks();
         ResourceExtractor resourceExtractor = ResourceExtractor.get();
         resourceExtractor.setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
         resourceExtractor.startExtractingResources("en");

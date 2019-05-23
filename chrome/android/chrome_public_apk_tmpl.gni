@@ -135,10 +135,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
       "*ic_lock.*",  # Bottom edge seems misaligned.
     ]
 
-    if (!_is_monochrome) {
-      locale_config_java_packages = [ "org.chromium.chrome.browser" ]
-    }
-
     # Use zh-TW strings for zh-HK (https://crbug.com/780847).
     if (!defined(support_zh_hk)) {
       support_zh_hk = true
@@ -311,11 +307,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     ]
 
     if (is_monochrome) {
-      locale_config_java_packages = [
-        "org.chromium.chrome.browser",
-        "org.chromium.android_webview",
-      ]
-
       if (invoker.target_type == "android_app_bundle_module") {
         _suffix = bundle_library_suffix
       } else {

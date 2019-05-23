@@ -35,7 +35,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
-import org.chromium.ui.base.ResourceBundle;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -84,7 +83,6 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     }
 
     public void setUp() throws Exception {
-        ResourceBundle.setAvailablePakLocales(new String[] {}, LocaleConfig.UNCOMPRESSED_LOCALES);
         if (needsAwBrowserContextCreated()) {
             createAwBrowserContext();
         }
