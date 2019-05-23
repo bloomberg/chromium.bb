@@ -19,14 +19,18 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              PageNodeImpl* page_node,
                              FrameNodeImpl* parent_frame_node,
                              int frame_tree_node_id,
-                             const base::UnguessableToken& dev_tools_token)
+                             const base::UnguessableToken& dev_tools_token,
+                             int32_t browsing_instance_id,
+                             int32_t site_instance_id)
     : TypedNodeBase(graph),
       binding_(this),
       parent_frame_node_(parent_frame_node),
       page_node_(page_node),
       process_node_(process_node),
       frame_tree_node_id_(frame_tree_node_id),
-      dev_tools_token_(dev_tools_token) {
+      dev_tools_token_(dev_tools_token),
+      browsing_instance_id_(browsing_instance_id),
+      site_instance_id_(site_instance_id) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(process_node);
   DCHECK(page_node);
@@ -120,6 +124,14 @@ int FrameNodeImpl::frame_tree_node_id() const {
 
 const base::UnguessableToken& FrameNodeImpl::dev_tools_token() const {
   return dev_tools_token_;
+}
+
+int32_t FrameNodeImpl::browsing_instance_id() const {
+  return browsing_instance_id_;
+}
+
+int32_t FrameNodeImpl::site_instance_id() const {
+  return site_instance_id_;
 }
 
 const base::flat_set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {

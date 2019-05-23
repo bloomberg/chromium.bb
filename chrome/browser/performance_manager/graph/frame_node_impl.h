@@ -93,7 +93,9 @@ class FrameNodeImpl
                 PageNodeImpl* page_node,
                 FrameNodeImpl* parent_frame_node,
                 int frame_tree_node_id,
-                const base::UnguessableToken& dev_tools_token);
+                const base::UnguessableToken& dev_tools_token,
+                int32_t browsing_instance_id,
+                int32_t site_instance_id);
   ~FrameNodeImpl() override;
 
   void Bind(
@@ -116,6 +118,8 @@ class FrameNodeImpl
   ProcessNodeImpl* process_node() const;
   int frame_tree_node_id() const;
   const base::UnguessableToken& dev_tools_token() const;
+  int32_t browsing_instance_id() const;
+  int32_t site_instance_id() const;
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
@@ -189,6 +193,15 @@ class FrameNodeImpl
   // is never sent back from the renderer in control calls. It should never be
   // used to look up the FrameTreeNode instance.
   const base::UnguessableToken dev_tools_token_;
+  // The unique ID of the BrowsingInstance this frame belongs to. Frames in the
+  // same BrowsingInstance are allowed to script each other at least
+  // asynchronously (if cross-site), and sometimes synchronously (if same-site,
+  // and thus same SiteInstance).
+  const int32_t browsing_instance_id_;
+  // The unique ID of the SiteInstance this frame belongs to. Frames in the
+  // same SiteInstance may sychronously script each other. Frames with the
+  // same |site_instance_id_| will also have the same |browsing_instance_id_|.
+  const int32_t site_instance_id_;
 
   base::flat_set<FrameNodeImpl*> child_frame_nodes_;
 

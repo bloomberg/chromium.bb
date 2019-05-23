@@ -77,6 +77,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // SiteInstance interface overrides.
   int32_t GetId() override;
+  int32_t GetBrowsingInstanceId() override;
   bool HasProcess() override;
   RenderProcessHost* GetProcess() override;
   BrowserContext* GetBrowserContext() override;

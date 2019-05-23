@@ -79,6 +79,11 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // Returns a unique ID for this SiteInstance.
   virtual int32_t GetId() = 0;
 
+  // Returns a unique ID for the BrowsingInstance (i.e., group of related
+  // browsing contexts) to which this SiteInstance belongs. This allows callers
+  // to identify which SiteInstances can asynchronously script each other.
+  virtual int32_t GetBrowsingInstanceId() = 0;
+
   // Whether this SiteInstance has a running process associated with it.
   // This may return true before the first call to GetProcess(), in cases where
   // we use process-per-site and there is an existing process available.

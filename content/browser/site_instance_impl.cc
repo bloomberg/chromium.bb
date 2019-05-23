@@ -161,6 +161,15 @@ int32_t SiteInstanceImpl::GetId() {
   return id_;
 }
 
+int32_t SiteInstanceImpl::GetBrowsingInstanceId() {
+  // This is being vended out as an opaque ID, and it is always defined for
+  // a BrowsingInstance affiliated IsolationContext, so it's safe to call
+  // "GetUnsafeValue" and expose the inner value directly.
+  return browsing_instance_->isolation_context()
+      .browsing_instance_id()
+      .GetUnsafeValue();
+}
+
 const IsolationContext& SiteInstanceImpl::GetIsolationContext() {
   return browsing_instance_->isolation_context();
 }

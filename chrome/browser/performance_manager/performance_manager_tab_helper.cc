@@ -5,7 +5,6 @@
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -17,11 +16,14 @@
 #include "chrome/browser/performance_manager/render_process_user_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 namespace performance_manager {
 
+// static
 PerformanceManagerTabHelper* PerformanceManagerTabHelper::first_ = nullptr;
+
 // static
 void PerformanceManagerTabHelper::DetachAndDestroyAll() {
   while (first_)
@@ -102,12 +104,15 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
                            render_frame_host->GetProcess())
                            ->process_node();
 
+  auto* site_instance = render_frame_host->GetSiteInstance();
+
   // Create the frame node, and provide a callback that will run in the graph to
   // initialize it.
   std::unique_ptr<FrameNodeImpl> frame = performance_manager_->CreateFrameNode(
       process_node, page_node_.get(), parent_frame_node,
       render_frame_host->GetFrameTreeNodeId(),
       render_frame_host->GetDevToolsFrameToken(),
+      site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
       base::BindOnce(
           [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
             if (!url.is_empty())

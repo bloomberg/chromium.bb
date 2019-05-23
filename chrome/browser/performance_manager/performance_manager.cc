@@ -85,10 +85,13 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
     PageNodeImpl* page_node,
     FrameNodeImpl* parent_frame_node,
     int frame_tree_node_id,
-    const base::UnguessableToken& dev_tools_token) {
+    const base::UnguessableToken& dev_tools_token,
+    int32_t browsing_instance_id,
+    int32_t site_instance_id) {
   return CreateNodeImpl<FrameNodeImpl>(
       FrameNodeCreationCallback(), process_node, page_node, parent_frame_node,
-      frame_tree_node_id, dev_tools_token);
+      frame_tree_node_id, dev_tools_token, browsing_instance_id,
+      site_instance_id);
 }
 
 std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
@@ -97,10 +100,13 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
     FrameNodeImpl* parent_frame_node,
     int frame_tree_node_id,
     const base::UnguessableToken& dev_tools_token,
+    int32_t browsing_instance_id,
+    int32_t site_instance_id,
     FrameNodeCreationCallback creation_callback) {
   return CreateNodeImpl<FrameNodeImpl>(
       std::move(creation_callback), process_node, page_node, parent_frame_node,
-      frame_tree_node_id, dev_tools_token);
+      frame_tree_node_id, dev_tools_token, browsing_instance_id,
+      site_instance_id);
 }
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(

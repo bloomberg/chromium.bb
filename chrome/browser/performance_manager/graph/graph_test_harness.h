@@ -76,10 +76,12 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
       PageNodeImpl* page_node,
       FrameNodeImpl* parent_frame_node = nullptr,
       int frame_tree_node_id = 0,
-      const base::UnguessableToken& token = base::UnguessableToken::Create()) {
-    return std::make_unique<FrameNodeImpl>(graph, process_node, page_node,
-                                           parent_frame_node,
-                                           frame_tree_node_id, token);
+      const base::UnguessableToken& token = base::UnguessableToken::Create(),
+      int32_t browsing_instance_id = 0,
+      int32_t site_instance_id = 0) {
+    return std::make_unique<FrameNodeImpl>(
+        graph, process_node, page_node, parent_frame_node, frame_tree_node_id,
+        token, browsing_instance_id, site_instance_id);
   }
 };
 
