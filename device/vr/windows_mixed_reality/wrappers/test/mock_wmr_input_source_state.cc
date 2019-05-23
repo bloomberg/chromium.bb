@@ -27,15 +27,15 @@ std::unique_ptr<WMRInputSource> MockWMRInputSourceState::GetSource() const {
 }
 
 bool MockWMRInputSourceState::IsGrasped() const {
-  return IsButtonPressed(kGripButton);
+  return IsButtonPressed(XrButtonId::kGrip);
 }
 
 bool MockWMRInputSourceState::IsSelectPressed() const {
-  return IsButtonPressed(kSelectButton);
+  return IsButtonPressed(XrButtonId::kAxisTrigger);
 }
 
 double MockWMRInputSourceState::SelectPressedValue() const {
-  double val = data_.axis_data[kSelectAxis].x;
+  double val = data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisTrigger)].x;
   // Should only be in [0, 1] for triggers.
   DCHECK(val <= 1);
   DCHECK(val >= 0);
@@ -47,21 +47,21 @@ bool MockWMRInputSourceState::SupportsControllerProperties() const {
 }
 
 bool MockWMRInputSourceState::IsThumbstickPressed() const {
-  return IsButtonPressed(kJoystickButton);
+  return IsButtonPressed(XrButtonId::kAxisPrimary);
 }
 
 bool MockWMRInputSourceState::IsTouchpadPressed() const {
-  return IsButtonPressed(kTrackpadButton);
+  return IsButtonPressed(XrButtonId::kAxisSecondary);
 }
 
 bool MockWMRInputSourceState::IsTouchpadTouched() const {
-  auto touched =
-      data_.supported_buttons & data_.buttons_touched & kTrackpadButton;
+  auto touched = data_.supported_buttons & data_.buttons_touched &
+                 XrButtonMaskFromId(XrButtonId::kAxisSecondary);
   return touched != 0;
 }
 
 double MockWMRInputSourceState::ThumbstickX() const {
-  double val = data_.axis_data[kJoystickAxis].x;
+  double val = data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisPrimary)].x;
   // Should be in [-1, 1] for joysticks.
   DCHECK(val <= 1);
   DCHECK(val >= -1);
@@ -69,7 +69,7 @@ double MockWMRInputSourceState::ThumbstickX() const {
 }
 
 double MockWMRInputSourceState::ThumbstickY() const {
-  double val = data_.axis_data[kJoystickAxis].y;
+  double val = data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisPrimary)].y;
   // Should be in [-1, 1] for joysticks.
   DCHECK(val <= 1);
   DCHECK(val >= -1);
@@ -77,7 +77,8 @@ double MockWMRInputSourceState::ThumbstickY() const {
 }
 
 double MockWMRInputSourceState::TouchpadX() const {
-  double val = data_.axis_data[kTrackpadAxis].x;
+  double val =
+      data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisSecondary)].x;
   // Should be in [-1, 1] for touchpads.
   DCHECK(val <= 1);
   DCHECK(val >= -1);
@@ -85,7 +86,8 @@ double MockWMRInputSourceState::TouchpadX() const {
 }
 
 double MockWMRInputSourceState::TouchpadY() const {
-  double val = data_.axis_data[kTrackpadAxis].y;
+  double val =
+      data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisSecondary)].y;
   // Should be in [-1, 1] for touchpads.
   DCHECK(val <= 1);
   DCHECK(val >= -1);
@@ -97,8 +99,9 @@ std::unique_ptr<WMRInputLocation> MockWMRInputSourceState::TryGetLocation(
   return std::make_unique<MockWMRInputLocation>(data_);
 }
 
-bool MockWMRInputSourceState::IsButtonPressed(uint64_t button_mask) const {
-  auto pressed = data_.supported_buttons & data_.buttons_pressed & button_mask;
+bool MockWMRInputSourceState::IsButtonPressed(XrButtonId id) const {
+  auto mask = XrButtonMaskFromId(id);
+  auto pressed = data_.supported_buttons & data_.buttons_pressed & mask;
   return pressed != 0;
 }
 

@@ -112,14 +112,6 @@ For real examples on how to use the input capabilities, look at the tests in
 There are currently several assumptions made that must be adhered to in order
 for input to work properly in both OpenVR and Windows Mixed Reality.
 
-#### Primary Axes
-
-OpenVR assumes that axis 0 is the primary axis (usually a touchpad). However,
-WMR assumes that axis 2 is the primary axis (must be a joystick). This will
-eventually be abstracted away, but in the meantime, if you care about the
-primary axis (i.e. which one shows up as axis 0 in WebXR), you'll need to
-conditionally change which axis you set based on runtime.
-
 #### WMR and Incomplete Gamepads
 
 OpenVR supports arbitrary controller mappings, but WMR only supports one actual

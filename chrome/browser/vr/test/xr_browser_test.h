@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "device/vr/test/test_hook.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -75,6 +76,8 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   void TearDown() override;
 
   virtual RuntimeType GetRuntimeType() const;
+  device::XrAxisType GetPrimaryAxisType() const;
+  device::XrAxisType GetSecondaryAxisType() const;
 
   // Returns a GURL to the XR test HTML file of the given name, e.g.
   // GetHtmlTestFile("foo") returns a GURL for the foo.html file in the XR

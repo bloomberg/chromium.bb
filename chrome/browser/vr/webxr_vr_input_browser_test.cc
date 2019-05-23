@@ -77,9 +77,9 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
     UpdateControllerAndWait(index, controller_data);
   }
 
-  void ToggleTriggerButton(unsigned int index, vr::EVRButtonId button_id) {
+  void ToggleTriggerButton(unsigned int index, device::XrButtonId button_id) {
     auto controller_data = GetCurrentControllerData(index);
-    uint64_t button_mask = vr::ButtonMaskFromId(button_id);
+    uint64_t button_mask = device::XrButtonMaskFromId(button_id);
 
     controller_data.packet_number++;
     controller_data.buttons_pressed ^= button_mask;
@@ -87,19 +87,19 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
 
     bool is_pressed = ((controller_data.buttons_pressed & button_mask) != 0);
 
-    unsigned int axis_offset = GetAxisOffset(button_id);
+    unsigned int axis_offset = device::XrAxisOffsetFromId(button_id);
     DCHECK(controller_data.axis_data[axis_offset].axis_type ==
-           vr::k_eControllerAxis_Trigger);
+           device::XrAxisType::kTrigger);
     controller_data.axis_data[axis_offset].x = is_pressed ? 1.0 : 0.0;
     UpdateControllerAndWait(index, controller_data);
   }
 
   void SetAxes(unsigned int index,
-               vr::EVRButtonId button_id,
+               device::XrButtonId button_id,
                float x,
                float y) {
     auto controller_data = GetCurrentControllerData(index);
-    unsigned int axis_offset = GetAxisOffset(button_id);
+    unsigned int axis_offset = device::XrAxisOffsetFromId(button_id);
     DCHECK(controller_data.axis_data[axis_offset].axis_type != 0);
 
     controller_data.packet_number++;
@@ -109,7 +109,7 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
   }
 
   void TogglePrimaryTrigger(unsigned int index) {
-    ToggleTriggerButton(index, vr::k_EButton_SteamVR_Trigger);
+    ToggleTriggerButton(index, device::XrButtonId::kAxisTrigger);
   }
 
   void PressReleasePrimaryTrigger(unsigned int index) {
@@ -118,20 +118,16 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
   }
 
   unsigned int CreateAndConnectMinimalGamepad(
-      vr::EVRButtonId primary_axis = vr::k_EButton_Axis0) {
+      device::XrAxisType primary_axis_type) {
     // Create a controller that only supports select and one TrackPad, i.e. it
     // has just enough data to be considered a gamepad.
     uint64_t supported_buttons =
-        vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger) |
-        vr::ButtonMaskFromId(primary_axis);
+        device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
+        device::XrButtonMaskFromId(device::XrButtonId::kAxisPrimary);
 
-    unsigned int primary_axis_type = primary_axis == vr::k_EButton_Axis0
-                                         ? vr::k_eControllerAxis_TrackPad
-                                         : vr::k_eControllerAxis_Joystick;
-
-    std::map<vr::EVRButtonId, unsigned int> axis_types = {
-        {primary_axis, primary_axis_type},
-        {vr::k_EButton_SteamVR_Trigger, vr::k_eControllerAxis_Trigger},
+    std::map<device::XrButtonId, unsigned int> axis_types = {
+        {device::XrButtonId::kAxisPrimary, primary_axis_type},
+        {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
     };
 
     return CreateAndConnectController(
@@ -141,12 +137,12 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
 
   unsigned int CreateAndConnectController(
       device::ControllerRole role,
-      std::map<vr::EVRButtonId, unsigned int> axis_types = {},
+      std::map<device::XrButtonId, unsigned int> axis_types = {},
       uint64_t supported_buttons = UINT64_MAX) {
     auto controller = CreateValidController(role);
     controller.supported_buttons = supported_buttons;
     for (const auto& axis_type : axis_types) {
-      unsigned int axis_offset = GetAxisOffset(axis_type.first);
+      unsigned int axis_offset = device::XrAxisOffsetFromId(axis_type.first);
       controller.axis_data[axis_offset].axis_type = axis_type.second;
     }
 
@@ -155,14 +151,14 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
 
   void UpdateControllerSupport(
       unsigned int controller_index,
-      const std::map<vr::EVRButtonId, unsigned int>& axis_types,
+      const std::map<device::XrButtonId, unsigned int>& axis_types,
       uint64_t supported_buttons) {
     auto controller_data = GetCurrentControllerData(controller_index);
 
     for (unsigned int i = 0; i < device::kMaxNumAxes; i++) {
       auto button_id = GetAxisId(i);
       auto it = axis_types.find(button_id);
-      unsigned int new_axis_type = k_eControllerAxis_None;
+      unsigned int new_axis_type = device::XrAxisType::kNone;
       if (it != axis_types.end())
         new_axis_type = it->second;
       controller_data.axis_data[i].axis_type = new_axis_type;
@@ -181,14 +177,9 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
   }
 
  private:
-  vr::EVRButtonId GetAxisId(unsigned int offset) {
-    return static_cast<vr::EVRButtonId>(vr::k_EButton_Axis0 + offset);
-  }
-  unsigned int GetAxisOffset(vr::EVRButtonId button_id) {
-    DCHECK(vr::k_EButton_Axis0 <= button_id &&
-           button_id < (vr::k_EButton_Axis0 + device::kMaxNumAxes));
-    return static_cast<unsigned int>(button_id) -
-           static_cast<unsigned int>(vr::k_EButton_Axis0);
+  device::XrButtonId GetAxisId(unsigned int offset) {
+    return static_cast<device::XrButtonId>(device::XrButtonId::kAxisPrimary +
+                                           offset);
   }
 
   device::ControllerFrameData GetCurrentControllerData(unsigned int index) {
@@ -216,7 +207,8 @@ void WebXrControllerInputMock::OnFrameSubmitted(
 // event is fired and a new input source is created.
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestInputHandednessChange) {
   WebXrControllerInputMock my_mock;
-  unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();
+  unsigned int controller_index =
+      my_mock.CreateAndConnectMinimalGamepad(GetPrimaryAxisType());
 
   LoadUrlAndAwaitInitialization(
       GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
@@ -260,9 +252,9 @@ void TestInputSourcesChangeImpl(WebXrVrBrowserTestBase* t) {
   // There's a potential for a race causing the input sources change event to
   // fire multiple times if we disconnect a controller that has a gamepad.
   uint64_t insufficient_buttons =
-      vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger);
-  std::map<vr::EVRButtonId, unsigned int> insufficient_axis_types = {
-      {vr::k_EButton_SteamVR_Trigger, vr::k_eControllerAxis_Trigger},
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger);
+  std::map<device::XrButtonId, unsigned int> insufficient_axis_types = {
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
   };
   unsigned int controller_index = my_mock.CreateAndConnectController(
       device::ControllerRole::kControllerRoleRight, insufficient_axis_types,
@@ -297,7 +289,8 @@ void TestInputSourcesChangeImpl(WebXrVrBrowserTestBase* t) {
   // it is both added and removed.
   // Since we're changing the controller state without disconnecting it, we can
   // (and should) use the minimal gamepad here.
-  controller_index = my_mock.CreateAndConnectMinimalGamepad();
+  controller_index =
+      my_mock.CreateAndConnectMinimalGamepad(t->GetPrimaryAxisType());
   t->PollJavaScriptBooleanOrFail("inputChangeEvents === 3",
                                  WebXrVrBrowserTestBase::kPollTimeoutShort);
   t->RunJavaScriptOrFail("updateCachedInputSource(0)");
@@ -342,19 +335,19 @@ void TestInputGamepadSameObjectImpl(WebXrVrBrowserTestBase* t) {
   // Note that we need to set the trigger axis because of how OpenVR handles
   // selects.
   uint64_t insufficient_buttons =
-      vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger);
-  std::map<vr::EVRButtonId, unsigned int> insufficient_axis_types = {
-      {vr::k_EButton_SteamVR_Trigger, vr::k_eControllerAxis_Trigger},
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger);
+  std::map<device::XrButtonId, unsigned int> insufficient_axis_types = {
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
   };
 
   // Create a set of buttons and axes that we expect to have enough data to be
   // made into an xr-standard gamepad (which we expect the runtimes to report).
   uint64_t sufficient_buttons =
-      vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger) |
-      vr::ButtonMaskFromId(vr::k_EButton_Axis0);
-  std::map<vr::EVRButtonId, unsigned int> sufficient_axis_types = {
-      {vr::k_EButton_Axis0, vr::k_eControllerAxis_TrackPad},
-      {vr::k_EButton_SteamVR_Trigger, vr::k_eControllerAxis_Trigger},
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisPrimary);
+  std::map<device::XrButtonId, unsigned int> sufficient_axis_types = {
+      {device::XrButtonId::kAxisPrimary, device::XrAxisType::kTrackpad},
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
   };
 
   // Start off without a gamepad.
@@ -426,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadIncompleteData) {
   // Create a controller that only supports select, i.e. it lacks enough data
   // to be considered a gamepad.
   uint64_t supported_buttons =
-      vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger);
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger);
   my_mock.CreateAndConnectController(
       device::ControllerRole::kControllerRoleRight, {}, supported_buttons);
 
@@ -440,16 +433,9 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadIncompleteData) {
 
 void TestGamepadMinimumDataImpl(WebXrVrBrowserTestBase* t) {
   WebXrControllerInputMock my_mock;
-  // The touchpad is the primary axis for OpenVR, while the Joystick is the
-  // primary axis for WMR.
-  vr::EVRButtonId primary_axis;
-  if (t->GetRuntimeType() == XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR) {
-    primary_axis = vr::k_EButton_Axis0;
-  } else {
-    primary_axis = vr::k_EButton_Axis2;
-  }
+
   unsigned int controller_index =
-      my_mock.CreateAndConnectMinimalGamepad(primary_axis);
+      my_mock.CreateAndConnectMinimalGamepad(t->GetPrimaryAxisType());
 
   t->LoadUrlAndAwaitInitialization(
       t->GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
@@ -458,8 +444,10 @@ void TestGamepadMinimumDataImpl(WebXrVrBrowserTestBase* t) {
   // Press the trigger and set the axis to a non-zero amount, so we can ensure
   // we aren't getting just default gamepad data.
   my_mock.TogglePrimaryTrigger(controller_index);
-  my_mock.SetAxes(controller_index, primary_axis, 0.5, -0.5);
-  my_mock.ToggleButtonTouches(controller_index, primary_axis);
+  my_mock.SetAxes(controller_index, device::XrButtonId::kAxisPrimary, 0.5,
+                  -0.5);
+  my_mock.ToggleButtonTouches(controller_index,
+                              device::XrButtonId::kAxisPrimary);
 
   // The trigger should be button 0, and the first set of axes should have it's
   // value set.
@@ -493,15 +481,15 @@ void TestGamepadCompleteDataImpl(WebXrVrBrowserTestBase* t) {
   // Create a controller that supports all reserved buttons.  Note that per
   // third_party/openvr/src/headers/openvr.h, SteamVR_Trigger is Axis1.
   uint64_t supported_buttons =
-      vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger) |
-      vr::ButtonMaskFromId(vr::k_EButton_Axis0) |
-      vr::ButtonMaskFromId(vr::k_EButton_Axis2) |
-      vr::ButtonMaskFromId(vr::k_EButton_Grip);
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisPrimary) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisSecondary) |
+      device::XrButtonMaskFromId(device::XrButtonId::kGrip);
 
-  std::map<vr::EVRButtonId, unsigned int> axis_types = {
-      {vr::k_EButton_Axis0, vr::k_eControllerAxis_TrackPad},
-      {vr::k_EButton_SteamVR_Trigger, vr::k_eControllerAxis_Trigger},
-      {vr::k_EButton_Axis2, vr::k_eControllerAxis_Joystick},
+  std::map<device::XrButtonId, unsigned int> axis_types = {
+      {device::XrButtonId::kAxisPrimary, t->GetPrimaryAxisType()},
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
+      {device::XrButtonId::kAxisSecondary, t->GetSecondaryAxisType()},
   };
 
   unsigned int controller_index = my_mock.CreateAndConnectController(
@@ -515,24 +503,17 @@ void TestGamepadCompleteDataImpl(WebXrVrBrowserTestBase* t) {
   // Setup some state on the optional buttons (as TestGamepadMinimumData should
   // ensure proper state on the required buttons).
   // Set a value on the secondary set of axes.
-  // Because the touchpad is primary for OpenVR but the Joystick is primary in
-  // WMR, we have to use different axes for each.
-  vr::EVRButtonId secondary_axis;
-  if (t->GetRuntimeType() == XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR) {
-    secondary_axis = vr::k_EButton_Axis2;
-  } else {
-    secondary_axis = vr::k_EButton_Axis0;
-  }
-
-  my_mock.SetAxes(controller_index, secondary_axis, 0.25, -0.25);
+  my_mock.SetAxes(controller_index, device::XrButtonId::kAxisSecondary, 0.25,
+                  -0.25);
 
   // Set the secondary trackpad/joystick to be touched.
-  my_mock.ToggleButtonTouches(controller_index,
-                              vr::ButtonMaskFromId(secondary_axis));
+  my_mock.ToggleButtonTouches(
+      controller_index,
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisSecondary));
 
   // Set the grip button to be pressed.
   my_mock.ToggleButtons(controller_index,
-                        vr::ButtonMaskFromId(vr::k_EButton_Grip));
+                        device::XrButtonMaskFromId(device::XrButtonId::kGrip));
 
   // Controller should meet the requirements for the 'xr-standard' mapping.
   t->PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
@@ -576,13 +557,13 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadReservedData) {
   // Create a controller that is missing reserved buttons, but supports an
   // extra button to guarantee that the reserved button is held.
   uint64_t supported_buttons =
-      vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger) |
-      vr::ButtonMaskFromId(vr::k_EButton_Axis0) |
-      vr::ButtonMaskFromId(vr::k_EButton_A);
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisPrimary) |
+      device::XrButtonMaskFromId(device::XrButtonId::kA);
 
-  std::map<vr::EVRButtonId, unsigned int> axis_types = {
-      {vr::k_EButton_Axis0, vr::k_eControllerAxis_Joystick},
-      {vr::k_EButton_SteamVR_Trigger, vr::k_eControllerAxis_Trigger},
+  std::map<device::XrButtonId, unsigned int> axis_types = {
+      {device::XrButtonId::kAxisPrimary, device::XrAxisType::kJoystick},
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
   };
 
   unsigned int controller_index = my_mock.CreateAndConnectController(
@@ -620,7 +601,8 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadReservedData) {
 void TestControllerInputRegisteredImpl(WebXrVrBrowserTestBase* t) {
   WebXrControllerInputMock my_mock;
 
-  unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();
+  unsigned int controller_index =
+      my_mock.CreateAndConnectMinimalGamepad(t->GetPrimaryAxisType());
 
   // Load the test page and enter presentation.
   t->LoadUrlAndAwaitInitialization(
@@ -672,7 +654,9 @@ IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
   // here as that adds support for axis_data[0], which causes OpenVR on WebVR
   // to treat that button as the primary input (per the defacto webvr standard),
   // and we want it to only see the trigger.
-  controller_data.axis_data[1].axis_type = vr::k_eControllerAxis_Trigger;
+  controller_data
+      .axis_data[device::XrAxisOffsetFromId(device::XrButtonId::kAxisTrigger)]
+      .axis_type = device::XrAxisType::kTrigger;
   unsigned int controller_index = my_mock.ConnectController(controller_data);
 
   // Load the test page and enter presentation.

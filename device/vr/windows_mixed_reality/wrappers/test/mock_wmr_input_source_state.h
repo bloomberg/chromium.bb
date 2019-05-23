@@ -9,23 +9,6 @@
 
 namespace device {
 
-// These are copies of various OpenVR mask constants that are used for
-// specifying controller input. However, since we won't necessarily have OpenVR
-// support compiled in, we can't use the constants directly.
-// k_EButton_ApplicationMenu.
-static constexpr uint64_t kMenuButton = 1ull << 1;
-// k_EButton_Grip.
-static constexpr uint64_t kGripButton = 1ull << 2;
-// k_EButton_SteamVR_Touchpad.
-static constexpr uint64_t kTrackpadButton = 1ull << 32;
-// k_EButton_SteamVR_Trigger.
-static constexpr uint64_t kSelectButton = 1ull << 33;
-// k_EButton_Axis2.
-static constexpr uint64_t kJoystickButton = 1ull << 34;
-static constexpr uint64_t kTrackpadAxis = 0;
-static constexpr uint64_t kSelectAxis = 1;
-static constexpr uint64_t kJoystickAxis = 2;
-
 class MockWMRInputSourceState : public WMRInputSourceState {
  public:
   MockWMRInputSourceState(ControllerFrameData data, unsigned int id);
@@ -53,7 +36,7 @@ class MockWMRInputSourceState : public WMRInputSourceState {
       const WMRCoordinateSystem* origin) const override;
 
  private:
-  bool IsButtonPressed(uint64_t button_mask) const;
+  bool IsButtonPressed(XrButtonId id) const;
   ControllerFrameData data_;
   unsigned int id_;
 };
