@@ -263,17 +263,17 @@ NSString* const kActivityServicesSnackbarCategory =
       addObject:[[CopyActivity alloc] initWithURL:data.shareURL]];
 
   if (data.shareURL.SchemeIsHTTPOrHTTPS()) {
-    ReadingListActivity* readingListActivity =
-        [[ReadingListActivity alloc] initWithURL:data.shareURL
-                                           title:data.title
-                                      dispatcher:dispatcher];
-    [applicationActivities addObject:readingListActivity];
-
     if (canSendTabToSelf) {
       SendTabToSelfActivity* sendTabToSelfActivity =
           [[SendTabToSelfActivity alloc] initWithDispatcher:dispatcher];
       [applicationActivities addObject:sendTabToSelfActivity];
     }
+
+    ReadingListActivity* readingListActivity =
+        [[ReadingListActivity alloc] initWithURL:data.shareURL
+                                           title:data.title
+                                      dispatcher:dispatcher];
+    [applicationActivities addObject:readingListActivity];
 
     if (bookmarkModel) {
       BOOL bookmarked = bookmarkModel->loaded() &&

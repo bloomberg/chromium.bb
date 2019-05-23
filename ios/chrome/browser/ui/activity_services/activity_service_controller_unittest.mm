@@ -867,6 +867,10 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
   ASSERT_EQ(6U, [items count]);
   EXPECT_TRUE(ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));
 
+  // When the activity is offered, it should be the second one from the left.
+  UIActivity* activity = [items objectAtIndex:1];
+  EXPECT_TRUE([activity isKindOfClass:[SendTabToSelfActivity class]]);
+
   // Verify searchable data with the send tab to self feature disabled.
   data = [[ShareToData alloc]
         initWithShareURL:GURL("https://chromium.org/printable")
