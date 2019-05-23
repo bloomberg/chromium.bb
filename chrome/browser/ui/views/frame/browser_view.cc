@@ -1914,12 +1914,13 @@ base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
     title = l10n_util::GetStringFUTF16(message_id, title);
   }
 
-  // Finally annotate with the user - add Incognito if it's an incognito
-  // window, otherwise use the avatar name.
+  // Finally annotate with the user - add Incognito or guest if it's an
+  // incognito or guest window, otherwise use the avatar name.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  // TODO(https://crbug.com/947933): Comment and title text are about incognito
-  // mode but the |IsOffTheRecord| function covers both guest and incognito.
-  if (profile->IsOffTheRecord()) {
+  if (profile->IsGuestSession()) {
+    title = l10n_util::GetStringFUTF16(IDS_ACCESSIBLE_GUEST_WINDOW_TITLE_FORMAT,
+                                       title);
+  } else if (profile->IsIncognitoProfile()) {
     title = l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT, title);
   } else if (profile->IsRegularProfile() &&
