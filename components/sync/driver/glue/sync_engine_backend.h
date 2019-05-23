@@ -206,9 +206,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Non-null only between calls to DoInitialize() and DoShutdown().
   std::unique_ptr<SyncBackendRegistrar> registrar_;
 
-  // Non-null only between calls to DoInitialize() and DoShutdown().
-  std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy_;
-
   // The timer used to periodically call SaveChanges.
   std::unique_ptr<base::RepeatingTimer> save_changes_timer_;
 

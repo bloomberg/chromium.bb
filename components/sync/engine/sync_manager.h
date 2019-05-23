@@ -53,7 +53,6 @@ class JsEventHandler;
 class ModelTypeControllerDelegate;
 class ProtocolEvent;
 class SyncCycleSnapshot;
-class SyncEncryptionHandler;
 class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
 struct UserShare;
@@ -215,6 +214,8 @@ class SyncManager {
 
     std::vector<scoped_refptr<ModelSafeWorker>> workers;
 
+    std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy;
+
     // Must outlive SyncManager.
     ExtensionsActivity* extensions_activity;
 
@@ -340,11 +341,6 @@ class SyncManager {
 
   // May be called from any thread.
   virtual UserShare* GetUserShare() = 0;
-
-  // Returns non-owning pointer to ModelTypeConnector. In contrast with
-  // ModelTypeConnectorProxy all calls are executed synchronously, thus the
-  // pointer should be used on sync thread.
-  virtual ModelTypeConnector* GetModelTypeConnector() = 0;
 
   // Returns an instance of the main interface for registering sync types with
   // sync engine.

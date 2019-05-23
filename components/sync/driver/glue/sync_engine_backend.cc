@@ -115,14 +115,6 @@ void SyncEngineBackend::OnInitializationComplete(
     return;
   }
 
-  // Register for encryption related changes now. We have to do this before
-  // the initializing downloading control types or initializing the encryption
-  // handler in order to receive notifications triggered during encryption
-  // startup.
-  DCHECK(encryption_observer_proxy_);
-  sync_manager_->GetEncryptionHandler()->AddObserver(
-      encryption_observer_proxy_.get());
-
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -148,15 +140,6 @@ void SyncEngineBackend::OnInitializationComplete(
 
   ModelTypeSet new_control_types =
       registrar_->ConfigureDataTypes(ControlTypes(), ModelTypeSet());
-
-  // Control types don't have DataTypeControllers, but they need to have
-  // update handlers registered in ModelTypeRegistry. Register them here.
-  ModelTypeConnector* model_type_connector =
-      sync_manager_->GetModelTypeConnector();
-  ModelTypeSet control_types = ControlTypes();
-  for (ModelType type : control_types) {
-    model_type_connector->RegisterDirectoryType(type, GROUP_PASSIVE);
-  }
 
   ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
@@ -326,10 +309,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
 
-  DCHECK(!encryption_observer_proxy_);
-  DCHECK(params.encryption_observer_proxy);
-  encryption_observer_proxy_ = std::move(params.encryption_observer_proxy);
-
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
 
@@ -345,6 +324,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   // building the user agent may block on some platforms.
   args.post_factory->Init(params.sync_user_agent);
   registrar_->GetWorkers(&args.workers);
+  args.encryption_observer_proxy = std::move(params.encryption_observer_proxy);
   args.extensions_activity = params.extensions_activity.get();
   args.change_delegate = registrar_.get();  // as SyncManager::ChangeDelegate
   args.authenticated_account_id = params.authenticated_account_id;

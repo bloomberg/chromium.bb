@@ -283,6 +283,9 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   change_delegate_ = args->change_delegate;
 
+  DCHECK(args->encryption_observer_proxy);
+  encryption_observer_proxy_ = std::move(args->encryption_observer_proxy);
+
   AddObserver(&js_sync_manager_observer_);
   SetJsEventHandler(args->event_handler);
 
@@ -320,7 +323,13 @@ void SyncManagerImpl::Init(InitArgs* args) {
     keystore_keys_handler = sync_encryption_handler_impl.get();
     sync_encryption_handler_ = std::move(sync_encryption_handler_impl);
   }
+
+  // Register for encryption related changes now. We have to do this before
+  // the initial download of control types or initializing the encryption
+  // handler in order to receive notifications triggered during encryption
+  // startup.
   sync_encryption_handler_->AddObserver(this);
+  sync_encryption_handler_->AddObserver(encryption_observer_proxy_.get());
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
 
@@ -415,6 +424,12 @@ void SyncManagerImpl::Init(InitArgs* args) {
     network_connection_tracker_->AddNetworkConnectionObserver(this);
   } else {
     scheduler_->OnCredentialsUpdated();
+  }
+
+  // Control types don't have DataTypeControllers, but they need to have
+  // update handlers registered in ModelTypeRegistry.
+  for (ModelType control_type : ControlTypes()) {
+    model_type_registry_->RegisterDirectoryType(control_type, GROUP_PASSIVE);
   }
 
   NotifyInitializationSuccess();
@@ -999,11 +1014,6 @@ void SyncManagerImpl::SaveChanges() {
 UserShare* SyncManagerImpl::GetUserShare() {
   DCHECK(initialized_);
   return &share_;
-}
-
-ModelTypeConnector* SyncManagerImpl::GetModelTypeConnector() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return model_type_registry_.get();
 }
 
 std::unique_ptr<ModelTypeConnector>

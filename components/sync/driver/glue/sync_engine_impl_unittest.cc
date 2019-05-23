@@ -51,10 +51,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using ::testing::_;
-using ::testing::InvokeWithoutArgs;
-using ::testing::StrictMock;
-
 namespace syncer {
 
 namespace {
@@ -140,23 +136,6 @@ class FakeSyncManagerFactory : public SyncManagerFactory {
   ModelTypeSet progress_marker_types_;
   ModelTypeSet configure_fail_types_;
   FakeSyncManager** fake_manager_;
-};
-
-class NullEncryptionObserver : public SyncEncryptionHandler::Observer {
- public:
-  void OnPassphraseRequired(
-      PassphraseRequiredReason reason,
-      const KeyDerivationParams& key_derivation_params,
-      const sync_pb::EncryptedData& pending_keys) override {}
-  void OnPassphraseAccepted() override {}
-  void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
-                               BootstrapTokenType type) override {}
-  void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                               bool encrypt_everything) override {}
-  void OnEncryptionComplete() override {}
-  void OnCryptographerStateChanged(Cryptographer* cryptographer) override {}
-  void OnPassphraseTypeChanged(PassphraseType type,
-                               base::Time passphrase_time) override {}
 };
 
 class MockInvalidationService : public invalidation::InvalidationService {
@@ -246,8 +225,6 @@ class SyncEngineImplTest : public testing::Test {
     params.host = &host_;
     params.registrar = std::make_unique<SyncBackendRegistrar>(
         std::string(), base::Bind(&CreateModelWorkerForGroup));
-    params.encryption_observer_proxy =
-        std::make_unique<NullEncryptionObserver>();
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
     params.authenticated_account_id = "user@example.com";
     params.sync_manager_factory = std::move(fake_manager_factory_);
