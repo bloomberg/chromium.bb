@@ -90,6 +90,7 @@ class CONTENT_EXPORT LevelDBDatabase
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  LevelDBState* leveldb_state() { return level_db_state_.get(); }
   leveldb::DB* db() { return level_db_state_->db(); }
   leveldb::Env* env() { return level_db_state_->in_memory_env(); }
   base::Time LastModified() const { return last_modified_; }

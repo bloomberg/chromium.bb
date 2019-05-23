@@ -38,7 +38,7 @@ class Origin;
 
 namespace content {
 class IndexedDBConnection;
-class IndexedDBFactory;
+class IndexedDBFactoryImpl;
 
 class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
  public:
@@ -77,7 +77,7 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
       indexed_db::LevelDBFactory* leveldb_factory,
       base::Clock* clock);
 
-  IndexedDBFactory* GetIDBFactory();
+  IndexedDBFactoryImpl* GetIDBFactory();
 
   // Called by StoragePartitionImpl to clear session-only data.
   void Shutdown();
@@ -96,7 +96,9 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   void ResetCachesForTesting() override;
   void SetForceKeepSessionState() override;
 
-  // Methods called by IndexedDBDispatcherHost for quota support.
+  // Methods called by IndexedDBFactoryImpl or IndexedDBDispatcherHost for
+  // quota support.
+  void FactoryOpened(const url::Origin& origin);
   void ConnectionOpened(const url::Origin& origin, IndexedDBConnection* db);
   void ConnectionClosed(const url::Origin& origin, IndexedDBConnection* db);
   void TransactionComplete(const url::Origin& origin);
@@ -179,7 +181,7 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   // backing stores); the cache will be primed as needed by checking disk.
   std::set<url::Origin>* GetOriginSet();
 
-  scoped_refptr<IndexedDBFactory> indexeddb_factory_;
+  std::unique_ptr<IndexedDBFactoryImpl> indexeddb_factory_;
 
   // If |data_path_| is empty then this is an incognito session and the backing
   // store will be held in-memory rather than on-disk.

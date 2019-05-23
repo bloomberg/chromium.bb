@@ -27,6 +27,7 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
+#include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -73,6 +74,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
                               std::move(db),
                               task_runner),
         database_id_(0) {}
+  ~TestableIndexedDBBackingStore() override = default;
 
   const std::vector<IndexedDBBackingStore::Transaction::WriteDescriptor>&
   writes() const {
@@ -87,8 +89,6 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   }
 
  protected:
-  ~TestableIndexedDBBackingStore() override {}
-
   bool WriteBlobFile(
       int64_t database_id,
       const Transaction::WriteDescriptor& descriptor,
@@ -128,36 +128,24 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   DISALLOW_COPY_AND_ASSIGN(TestableIndexedDBBackingStore);
 };
 
+// Factory subclass to allow the test to use the
+// TestableIndexedDBBackingStore subclass.
 class TestIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit TestIDBFactory(IndexedDBContextImpl* idb_context)
       : IndexedDBFactoryImpl(idb_context,
                              indexed_db::GetDefaultLevelDBFactory(),
                              base::DefaultClock::GetInstance()) {}
-
-  scoped_refptr<TestableIndexedDBBackingStore> OpenBackingStoreForTest(
-      const Origin& origin) {
-    IndexedDBDataLossInfo data_loss_info;
-    bool disk_full;
-    leveldb::Status s;
-    scoped_refptr<IndexedDBBackingStore> backing_store;
-    std::tie(backing_store, s, data_loss_info, disk_full) =
-        OpenBackingStore(origin, context()->data_path());
-    scoped_refptr<TestableIndexedDBBackingStore> testable_store =
-        static_cast<TestableIndexedDBBackingStore*>(backing_store.get());
-    return testable_store;
-  }
+  ~TestIDBFactory() override = default;
 
  protected:
-  ~TestIDBFactory() override {}
-
-  scoped_refptr<IndexedDBBackingStore> CreateBackingStore(
+  std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<LevelDBDatabase> db,
       base::SequencedTaskRunner* task_runner) override {
-    return base::MakeRefCounted<TestableIndexedDBBackingStore>(
+    return std::make_unique<TestableIndexedDBBackingStore>(
         backing_store_mode, this, origin, blob_path, std::move(db),
         task_runner);
   }
@@ -174,32 +162,6 @@ class IndexedDBBackingStoreTest : public testing::Test {
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
 
-  void CreateFactoryAndBackingStore() {
-    // Factory and backing store must be created on IDB task runner.
-    base::RunLoop loop;
-    idb_context_->TaskRunner()->PostTask(
-        FROM_HERE, base::BindLambdaForTesting([&]() {
-          const Origin origin = Origin::Create(GURL("http://localhost:81"));
-          idb_factory_ =
-              base::MakeRefCounted<TestIDBFactory>(idb_context_.get());
-          backing_store_ = idb_factory_->OpenBackingStoreForTest(origin);
-          loop.Quit();
-        }));
-    loop.Run();
-  }
-
-  void DestroyFactoryAndBackingStore() {
-    // Factory and backing store must be destroyed on IDB task runner
-    base::RunLoop loop;
-    idb_context_->TaskRunner()->PostTask(FROM_HERE,
-                                         base::BindLambdaForTesting([&]() {
-                                           idb_factory_.reset();
-                                           backing_store_.reset();
-                                           loop.Quit();
-                                         }));
-    loop.Run();
-  }
-
   void SetUp() override {
     special_storage_policy_->SetAllUnlimited(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -208,6 +170,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
         temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
         indexed_db::GetDefaultLevelDBFactory(),
         base::DefaultClock::GetInstance());
+    idb_context_->SetTaskRunnerForTesting(
+        base::SequencedTaskRunnerHandle::Get());
 
     CreateFactoryAndBackingStore();
 
@@ -219,15 +183,34 @@ class IndexedDBBackingStoreTest : public testing::Test {
     key2_ = IndexedDBKey(ASCIIToUTF16("key2"));
   }
 
+  void CreateFactoryAndBackingStore() {
+    const Origin origin = Origin::Create(GURL("http://localhost:81"));
+    idb_factory_ = std::make_unique<TestIDBFactory>(idb_context_.get());
+
+    leveldb::Status s;
+    std::tie(origin_state_handle_, s, std::ignore, std::ignore) =
+        idb_factory_->GetOrOpenOriginFactory(origin, idb_context_->data_path());
+    if (!origin_state_handle_.IsHeld()) {
+      backing_store_ = nullptr;
+      return;
+    }
+    backing_store_ = static_cast<TestableIndexedDBBackingStore*>(
+        origin_state_handle_.origin_state()->backing_store());
+  }
+
+  void DestroyFactoryAndBackingStore() {
+    origin_state_handle_.Release();
+    idb_factory_.reset();
+    backing_store_ = nullptr;
+  }
+
   void TearDown() override {
     DestroyFactoryAndBackingStore();
 
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
 
-  TestableIndexedDBBackingStore* backing_store() const {
-    return backing_store_.get();
-  }
+  TestableIndexedDBBackingStore* backing_store() { return backing_store_; }
 
  protected:
   TestBrowserThreadBundle thread_bundle_;
@@ -236,9 +219,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
-  scoped_refptr<TestIDBFactory> idb_factory_;
+  std::unique_ptr<TestIDBFactory> idb_factory_;
 
-  scoped_refptr<TestableIndexedDBBackingStore> backing_store_;
+  IndexedDBOriginStateHandle origin_state_handle_;
+  TestableIndexedDBBackingStore* backing_store_ = nullptr;
 
   // Sample keys and values that are consistent.
   IndexedDBKey key1_;

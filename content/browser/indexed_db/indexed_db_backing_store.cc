@@ -527,9 +527,7 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       origin_identifier_(ComputeOriginIdentifier(origin)),
       task_runner_(task_runner),
       db_(std::move(db)),
-      active_blob_registry_(this),
-      committing_transaction_count_(0),
-      weak_factory_(this) {
+      active_blob_registry_(this) {
   if (backing_store_mode == Mode::kInMemory) {
     indexed_db_factory_ = nullptr;
     blob_path_ = FilePath();
@@ -2807,12 +2805,6 @@ IndexedDBBackingStore::OpenIndexCursor(
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
 
   return std::move(cursor);
-}
-
-void IndexedDBBackingStore::StartPreCloseTasks() {
-  DCHECK(pre_close_task_queue_);
-  pre_close_task_queue_->Start(base::BindOnce(
-      &IndexedDBBackingStore::GetCompleteMetadata, base::Unretained(this)));
 }
 
 bool IndexedDBBackingStore::IsBlobCleanupPending() {

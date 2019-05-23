@@ -60,7 +60,7 @@ class SafeConnectionWrapper {
       idb_runner_->PostTask(
           FROM_HERE, base::BindOnce(
                          [](std::unique_ptr<IndexedDBConnection> connection) {
-                           connection->ForceClose();
+                           connection->CloseAndReportForceClose();
                          },
                          std::move(connection_)));
     }

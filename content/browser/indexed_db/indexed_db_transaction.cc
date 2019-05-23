@@ -107,6 +107,7 @@ IndexedDBTransaction::AbortOperation IndexedDBTransaction::TaskStack::pop() {
 IndexedDBTransaction::IndexedDBTransaction(
     int64_t id,
     IndexedDBConnection* connection,
+    ErrorCallback error_callback,
     const std::set<int64_t>& object_store_ids,
     blink::mojom::IDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction)
@@ -114,6 +115,7 @@ IndexedDBTransaction::IndexedDBTransaction(
       object_store_ids_(object_store_ids),
       mode_(mode),
       connection_(connection->GetWeakPtr()),
+      error_callback_(std::move(error_callback)),
       transaction_(backing_store_transaction),
       ptr_factory_(this) {
   IDB_ASYNC_TRACE_BEGIN("IndexedDBTransaction::lifetime", this);
@@ -193,7 +195,7 @@ void IndexedDBTransaction::ForcePendingCommit() {
   } else {
     leveldb::Status result = Commit();
     if (!result.ok())
-      database_->ReportError(result);
+      error_callback_.Run(result, "Error force committing.");
   }
 }
 
@@ -248,7 +250,8 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   if (callbacks_.get())
     callbacks_->OnAbort(*this, error);
 
-  database_->TransactionFinished(mode_, false);
+  if (database_)
+    database_->TransactionFinished(mode_, false);
 
   // RemoveTransaction will delete |this|.
   // Note: During force-close situations, the connection can be destroyed during
@@ -334,18 +337,18 @@ leveldb::Status IndexedDBTransaction::BlobWriteComplete(
       return leveldb::Status::OK();
     case IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC:
     case IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC: {
-      // Save the database as |this| can be destroyed in the next line. We also
-      // make
-      // sure to handle the error if we're not being called synchronously.
-      scoped_refptr<IndexedDBDatabase> database = database_;
+      // Save the callback as|this| can be destroyed in the next line.
+      auto callback_copy = error_callback_;
       s = CommitPhaseTwo();
       if (!s.ok() &&
-          result == IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC)
-        database->ReportError(s);
-      break;
+          result == IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC) {
+        callback_copy.Run(
+            s, "Unable to finish transaction commit after writing blobs.");
+      }
+      return s;
     }
   }
-  return s;
+  NOTREACHED();
 }
 
 leveldb::Status IndexedDBTransaction::Commit() {
@@ -464,7 +467,8 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     // SendObservations must be called before OnComplete to ensure consistency
     // of callbacks at renderer.
     if (!connection_changes_map_.empty()) {
-      database_->SendObservations(std::move(connection_changes_map_));
+      if (database_)
+        database_->SendObservations(std::move(connection_changes_map_));
       connection_changes_map_.clear();
     }
     {
@@ -476,7 +480,8 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     if (!pending_observers_.empty() && connection_)
       connection_->ActivatePendingObservers(std::move(pending_observers_));
 
-    database_->TransactionFinished(mode_, true);
+    if (database_)
+      database_->TransactionFinished(mode_, true);
     // RemoveTransaction will delete |this|.
     connection_->RemoveTransaction(id_);
     return s;
@@ -495,7 +500,8 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
                                  "Internal error committing transaction.");
     }
     callbacks_->OnAbort(*this, error);
-    database_->TransactionFinished(mode_, false);
+    if (database_)
+      database_->TransactionFinished(mode_, false);
     // RemoveTransaction will delete |this|.
     connection_->RemoveTransaction(id_);
   }
@@ -530,7 +536,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     }
     if (!result.ok()) {
       processing_event_queue_ = false;
-      database_->ReportError(result);
+      error_callback_.Run(result, "Error executing transaction tasks.");
       return;
     }
 
@@ -546,7 +552,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     // This can delete |this|.
     leveldb::Status result = Commit();
     if (!result.ok())
-      database_->ReportError(result);
+      error_callback_.Run(result, "ERror committing the transaction.");
     return;
   }
 

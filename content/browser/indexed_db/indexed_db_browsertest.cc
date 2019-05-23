@@ -29,7 +29,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -659,18 +659,17 @@ std::unique_ptr<net::test_server::HttpResponse> ServePath(
 
 void CompactIndexedDBBackingStore(scoped_refptr<IndexedDBContextImpl> context,
                                   const Origin& origin) {
-  IndexedDBFactory* factory = context->GetIDBFactory();
+  IndexedDBFactoryImpl* factory = context->GetIDBFactory();
 
-  std::pair<IndexedDBFactory::OriginDBMapIterator,
-            IndexedDBFactory::OriginDBMapIterator>
-      range = factory->GetOpenDatabasesForOrigin(origin);
+  std::vector<IndexedDBDatabase*> databases =
+      factory->GetOpenDatabasesForOrigin(origin);
 
-  if (range.first == range.second)  // If no open db's for this origin
+  if (databases.empty())
     return;
 
   // Compact the first db's backing store since all the db's are in the same
   // backing store.
-  IndexedDBDatabase* db = range.first->second;
+  IndexedDBDatabase* db = databases[0];
   IndexedDBBackingStore* backing_store = db->backing_store();
   backing_store->Compact();
 }

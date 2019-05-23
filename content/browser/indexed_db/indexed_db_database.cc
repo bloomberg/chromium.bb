@@ -27,6 +27,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
@@ -107,7 +108,10 @@ IndexedDBDatabaseError CreateError(uint16_t code,
 // expecting a further callback.
 class IndexedDBDatabase::ConnectionRequest {
  public:
-  explicit ConnectionRequest(scoped_refptr<IndexedDBDatabase> db) : db_(db) {}
+  ConnectionRequest(IndexedDBOriginStateHandle origin_state_handle,
+                    IndexedDBDatabase* db)
+      : origin_state_handle_(std::move(origin_state_handle)),
+        db_(std::move(db)) {}
 
   virtual ~ConnectionRequest() {}
 
@@ -120,6 +124,7 @@ class IndexedDBDatabase::ConnectionRequest {
 
   // Called when a connection is closed; if it corresponds to this connection,
   // need to do cleanup. Otherwise, it may unblock further steps.
+  // |connection| can be null if all connections were closed (see ForceClose).
   virtual void OnConnectionClosed(IndexedDBConnection* connection) = 0;
 
   // Called when the upgrade transaction has started executing.
@@ -128,11 +133,16 @@ class IndexedDBDatabase::ConnectionRequest {
   // Called when the upgrade transaction has finished.
   virtual void UpgradeTransactionFinished(bool committed) = 0;
 
-  // Called for pending tasks that we need to clear for a force close.
-  virtual void AbortForForceClose() = 0;
+  // Called for pending tasks that we need to clear for a force close. Returns
+  // if the request should still execute after all the connections are
+  // removed. This is not called for the active request - instead,
+  // OnConnectionClosed is called with a nullptr |connection|.
+  virtual bool OnForceClose() = 0;
 
  protected:
-  scoped_refptr<IndexedDBDatabase> db_;
+  IndexedDBOriginStateHandle origin_state_handle_;
+  // This is safe because IndexedDBDatabase owns this object.
+  IndexedDBDatabase* db_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionRequest);
@@ -141,9 +151,10 @@ class IndexedDBDatabase::ConnectionRequest {
 class IndexedDBDatabase::OpenRequest
     : public IndexedDBDatabase::ConnectionRequest {
  public:
-  OpenRequest(scoped_refptr<IndexedDBDatabase> db,
+  OpenRequest(IndexedDBOriginStateHandle origin_state_handle,
+              IndexedDBDatabase* db,
               std::unique_ptr<IndexedDBPendingConnection> pending_connection)
-      : ConnectionRequest(db),
+      : ConnectionRequest(std::move(origin_state_handle), db),
         pending_(std::move(pending_connection)),
         weak_factory_(this) {}
 
@@ -181,7 +192,8 @@ class IndexedDBDatabase::OpenRequest
       // DEFAULT_VERSION throws exception.)
       DCHECK(is_new_database);
       pending_->callbacks->OnSuccess(
-          db_->CreateConnection(pending_->database_callbacks,
+          db_->CreateConnection(std::move(origin_state_handle_),
+                                pending_->database_callbacks,
                                 pending_->child_process_id),
           db_->metadata_);
       db_->RequestComplete(this);
@@ -192,7 +204,8 @@ class IndexedDBDatabase::OpenRequest
         (new_version == old_version ||
          new_version == IndexedDBDatabaseMetadata::NO_VERSION)) {
       pending_->callbacks->OnSuccess(
-          db_->CreateConnection(pending_->database_callbacks,
+          db_->CreateConnection(std::move(origin_state_handle_),
+                                pending_->database_callbacks,
                                 pending_->child_process_id),
           db_->metadata_);
       db_->RequestComplete(this);
@@ -249,6 +262,13 @@ class IndexedDBDatabase::OpenRequest
   }
 
   void OnConnectionClosed(IndexedDBConnection* connection) override {
+    if (!connection) {
+      pending_->callbacks->OnError(
+          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+                                 "All connections were closed."));
+      db_->RequestComplete(this);
+      return;
+    }
     // This connection closed prematurely; signal an error and complete.
     if (connection && connection->callbacks() == pending_->database_callbacks) {
       pending_->callbacks->OnError(
@@ -275,7 +295,8 @@ class IndexedDBDatabase::OpenRequest
   // transaction into the correct state.
   void StartUpgrade() {
     DCHECK(!lock_receiver_.locks.empty());
-    connection_ = db_->CreateConnection(pending_->database_callbacks,
+    connection_ = db_->CreateConnection(std::move(origin_state_handle_),
+                                        pending_->database_callbacks,
                                         pending_->child_process_id);
     DCHECK_EQ(db_->connections_.count(connection_.get()), 1UL);
 
@@ -290,9 +311,9 @@ class IndexedDBDatabase::OpenRequest
     std::move(pending_->create_transaction_callback)
         .Run(transaction->AsWeakPtr());
 
-    transaction->ScheduleTask(
-        base::BindOnce(&IndexedDBDatabase::VersionChangeOperation, db_,
-                       pending_->version, pending_->callbacks));
+    transaction->ScheduleTask(BindWeakOperation(
+        &IndexedDBDatabase::VersionChangeOperation, db_->AsWeakPtr(),
+        pending_->version, pending_->callbacks));
     transaction->locks_receiver()->locks = std::move(lock_receiver_.locks);
     transaction->Start();
   }
@@ -321,10 +342,11 @@ class IndexedDBDatabase::OpenRequest
     db_->RequestComplete(this);
   }
 
-  void AbortForForceClose() override {
+  bool OnForceClose() override {
     DCHECK(!connection_);
     pending_->database_callbacks->OnForcedClose();
     pending_.reset();
+    return false;
   }
 
  private:
@@ -343,9 +365,14 @@ class IndexedDBDatabase::OpenRequest
 class IndexedDBDatabase::DeleteRequest
     : public IndexedDBDatabase::ConnectionRequest {
  public:
-  DeleteRequest(scoped_refptr<IndexedDBDatabase> db,
-                scoped_refptr<IndexedDBCallbacks> callbacks)
-      : ConnectionRequest(db), callbacks_(callbacks), weak_factory_(this) {}
+  DeleteRequest(IndexedDBOriginStateHandle origin_state_handle,
+                IndexedDBDatabase* db,
+                scoped_refptr<IndexedDBCallbacks> callbacks,
+                base::OnceClosure on_database_deleted)
+      : ConnectionRequest(std::move(origin_state_handle), db),
+        callbacks_(callbacks),
+        on_database_deleted_(std::move(on_database_deleted)),
+        weak_factory_(this) {}
 
   void Perform() override {
     if (db_->connections_.empty()) {
@@ -382,12 +409,11 @@ class IndexedDBDatabase::DeleteRequest
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
                                    "Internal error deleting database.");
       callbacks_->OnError(error);
-      if (s.IsCorruption()) {
-        url::Origin origin = db_->backing_store_->origin();
-        db_->backing_store_ = nullptr;
-        db_->factory_->HandleBackingStoreCorruption(origin, error);
-      }
-      db_->RequestComplete(this);
+
+      base::WeakPtr<IndexedDBDatabase> database = db_->AsWeakPtr();
+      db_->error_callback_.Run(s, "Internal error deleting database.");
+      if (database)
+        database->RequestComplete(this);
       return;
     }
 
@@ -397,7 +423,7 @@ class IndexedDBDatabase::DeleteRequest
     db_->metadata_.max_object_store_id = kInvalidId;
     db_->metadata_.object_stores.clear();
     callbacks_->OnSuccess(old_version);
-    db_->factory_->DatabaseDeleted(db_->identifier_);
+    std::move(on_database_deleted_).Run();
 
     db_->RequestComplete(this);
   }
@@ -406,41 +432,45 @@ class IndexedDBDatabase::DeleteRequest
 
   void UpgradeTransactionFinished(bool committed) override { NOTREACHED(); }
 
-  void AbortForForceClose() override {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "The request could not be completed.");
-    callbacks_->OnError(error);
-    callbacks_ = nullptr;
-  }
+  // The delete requests should always be run during force close.
+  bool OnForceClose() override { return true; }
 
  private:
   scoped_refptr<IndexedDBCallbacks> callbacks_;
+  base::OnceClosure on_database_deleted_;
 
   base::WeakPtrFactory<DeleteRequest> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DeleteRequest);
 };
 
-std::tuple<scoped_refptr<IndexedDBDatabase>, Status> IndexedDBDatabase::Create(
+// static
+std::tuple<std::unique_ptr<IndexedDBDatabase>, Status>
+IndexedDBDatabase::Create(
     const base::string16& name,
-    scoped_refptr<IndexedDBBackingStore> backing_store,
-    scoped_refptr<IndexedDBFactory> factory,
+    IndexedDBBackingStore* backing_store,
+    IndexedDBFactory* factory,
+    ErrorCallback error_callback,
+    base::OnceClosure destroy_me,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager) {
-  scoped_refptr<IndexedDBDatabase> database =
+  std::unique_ptr<IndexedDBDatabase> database =
       IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
-          name, backing_store, factory, std::move(metadata_coding),
-          unique_identifier, transaction_lock_manager);
+          name, backing_store, factory, std::move(error_callback),
+          std::move(destroy_me), std::move(metadata_coding), unique_identifier,
+          transaction_lock_manager);
   Status s = database->OpenInternal();
   if (!s.ok())
     database = nullptr;
-  return std::tie(database, s);
+  return {std::move(database), s};
 }
 
 IndexedDBDatabase::IndexedDBDatabase(
     const base::string16& name,
-    scoped_refptr<IndexedDBBackingStore> backing_store,
-    scoped_refptr<IndexedDBFactory> factory,
+    IndexedDBBackingStore* backing_store,
+    IndexedDBFactory* factory,
+    ErrorCallback error_callback,
+    base::OnceClosure destroy_me,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager)
@@ -452,8 +482,18 @@ IndexedDBDatabase::IndexedDBDatabase(
       identifier_(unique_identifier),
       factory_(factory),
       metadata_coding_(std::move(metadata_coding)),
-      lock_manager_(transaction_lock_manager) {
+      lock_manager_(transaction_lock_manager),
+      error_callback_(std::move(error_callback)),
+      destroy_me_(std::move(destroy_me)) {
+  DCHECK(destroy_me_);
   DCHECK(factory != nullptr);
+}
+
+IndexedDBDatabase::~IndexedDBDatabase() {
+  DCHECK(!active_request_);
+  DCHECK(pending_requests_.empty());
+  DCHECK(connections_.empty())
+      << "Cannot destroy a database that has connections";
 }
 
 void IndexedDBDatabase::AddObjectStore(
@@ -522,11 +562,6 @@ Status IndexedDBDatabase::OpenInternal() {
       metadata_.version, &metadata_);
 }
 
-IndexedDBDatabase::~IndexedDBDatabase() {
-  DCHECK(!active_request_);
-  DCHECK(pending_requests_.empty());
-}
-
 // kIDBMaxMessageSize is defined based on the original
 // IPC::Channel::kMaximumMessageSize value.  We use kIDBMaxMessageSize to limit
 // the size of arguments we pass into our Mojo calls.  We want to ensure this
@@ -542,14 +577,51 @@ size_t IndexedDBDatabase::GetUsableMessageSizeInBytes() const {
 }
 
 std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
+    IndexedDBOriginStateHandle origin_state_handle,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int child_process_id) {
-  std::unique_ptr<IndexedDBConnection> connection(
-      std::make_unique<IndexedDBConnection>(child_process_id, this,
-                                            database_callbacks));
+  std::unique_ptr<IndexedDBConnection> connection =
+      std::make_unique<IndexedDBConnection>(
+          child_process_id, std::move(origin_state_handle),
+          weak_factory_.GetWeakPtr(),
+          base::BindRepeating(&IndexedDBDatabase::VersionChangeIgnored,
+                              weak_factory_.GetWeakPtr()),
+          base::BindOnce(&IndexedDBDatabase::ConnectionClosed,
+                         connection_close_weak_factory_.GetWeakPtr()),
+          error_callback_, database_callbacks);
   connections_.insert(connection.get());
   backing_store_->GrantChildProcessPermissions(child_process_id);
   return connection;
+}
+
+void IndexedDBDatabase::VersionChangeIgnored() {
+  if (active_request_)
+    active_request_->OnVersionChangeIgnored();
+}
+
+void IndexedDBDatabase::ConnectionClosed(IndexedDBConnection* connection) {
+  DCHECK(connections_.count(connection));
+  DCHECK(connection->IsConnected());
+  DCHECK(connection->transactions().empty());
+  DCHECK(connection->database().get() == this);
+
+  IDB_TRACE("IndexedDBDatabase::Close");
+
+  // Abort transactions before removing the connection; aborting may complete
+  // an upgrade, and thus allow the next open/delete requests to proceed. The
+  // new active_request_ should see the old connection count until explicitly
+  // notified below.
+  connections_.erase(connection);
+
+  base::WeakPtr<IndexedDBDatabase> database = weak_factory_.GetWeakPtr();
+  // Notify the active request, which may need to do cleanup or proceed with
+  // the operation. This may trigger other work, such as more connections or
+  // deletions, so |active_request_| itself may change.
+  if (active_request_)
+    active_request_->OnConnectionClosed(connection);
+
+  if (database)
+    ProcessRequestQueueAndMaybeRelease();
 }
 
 bool IndexedDBDatabase::ValidateObjectStoreId(int64_t object_store_id) const {
@@ -639,14 +711,15 @@ void IndexedDBDatabase::CreateObjectStore(IndexedDBTransaction* transaction,
       auto_increment, &object_store_metadata);
 
   if (!s.ok()) {
-    ReportErrorWithDetails(s, "Internal error creating object store.");
+    error_callback_.Run(s, "Internal error creating object store.");
     return;
   }
 
   AddObjectStore(std::move(object_store_metadata), object_store_id);
+
   transaction->ScheduleAbortTask(
-      base::BindOnce(&IndexedDBDatabase::CreateObjectStoreAbortOperation, this,
-                     object_store_id));
+      base::BindOnce(&IndexedDBDatabase::CreateObjectStoreAbortOperation,
+                     AsWeakPtr(), object_store_id));
 }
 
 void IndexedDBDatabase::DeleteObjectStore(IndexedDBTransaction* transaction,
@@ -660,8 +733,9 @@ void IndexedDBDatabase::DeleteObjectStore(IndexedDBTransaction* transaction,
   if (!ValidateObjectStoreId(object_store_id))
     return;
 
-  transaction->ScheduleTask(base::BindOnce(
-      &IndexedDBDatabase::DeleteObjectStoreOperation, this, object_store_id));
+  transaction->ScheduleTask(
+      BindWeakOperation(&IndexedDBDatabase::DeleteObjectStoreOperation,
+                        AsWeakPtr(), object_store_id));
 }
 
 void IndexedDBDatabase::RenameObjectStore(IndexedDBTransaction* transaction,
@@ -690,14 +764,14 @@ void IndexedDBDatabase::RenameObjectStore(IndexedDBTransaction* transaction,
       &object_store_metadata);
 
   if (!s.ok()) {
-    ReportErrorWithDetails(s, "Internal error renaming object store.");
+    error_callback_.Run(s, "Internal error renaming object store.");
     return;
   }
   DCHECK_EQ(object_store_metadata.name, new_name);
 
   transaction->ScheduleAbortTask(
-      base::BindOnce(&IndexedDBDatabase::RenameObjectStoreAbortOperation, this,
-                     object_store_id, std::move(old_name)));
+      base::BindOnce(&IndexedDBDatabase::RenameObjectStoreAbortOperation,
+                     AsWeakPtr(), object_store_id, std::move(old_name)));
 }
 
 void IndexedDBDatabase::CreateIndex(IndexedDBTransaction* transaction,
@@ -745,7 +819,7 @@ void IndexedDBDatabase::CreateIndex(IndexedDBTransaction* transaction,
 
   AddIndex(object_store_id, std::move(index_metadata), index_id);
   transaction->ScheduleAbortTask(
-      base::BindOnce(&IndexedDBDatabase::CreateIndexAbortOperation, this,
+      base::BindOnce(&IndexedDBDatabase::CreateIndexAbortOperation, AsWeakPtr(),
                      object_store_id, index_id));
 }
 
@@ -767,8 +841,8 @@ void IndexedDBDatabase::DeleteIndex(IndexedDBTransaction* transaction,
     return;
 
   transaction->ScheduleTask(
-      base::BindOnce(&IndexedDBDatabase::DeleteIndexOperation, this,
-                     object_store_id, index_id));
+      BindWeakOperation(&IndexedDBDatabase::DeleteIndexOperation, AsWeakPtr(),
+                        object_store_id, index_id));
 }
 
 Status IndexedDBDatabase::DeleteIndexOperation(
@@ -798,7 +872,7 @@ Status IndexedDBDatabase::DeleteIndexOperation(
   }
 
   transaction->ScheduleAbortTask(
-      base::BindOnce(&IndexedDBDatabase::DeleteIndexAbortOperation, this,
+      base::BindOnce(&IndexedDBDatabase::DeleteIndexAbortOperation, AsWeakPtr(),
                      object_store_id, std::move(index_metadata)));
   return s;
 }
@@ -840,13 +914,13 @@ void IndexedDBDatabase::RenameIndex(IndexedDBTransaction* transaction,
       &index_metadata);
 
   if (!s.ok()) {
-    ReportErrorWithDetails(s, "Internal error renaming index.");
+    error_callback_.Run(s, "Internal error renaming index.");
     return;
   }
   DCHECK_EQ(index_metadata.name, new_name);
 
   transaction->ScheduleAbortTask(
-      base::BindOnce(&IndexedDBDatabase::RenameIndexAbortOperation, this,
+      base::BindOnce(&IndexedDBDatabase::RenameIndexAbortOperation, AsWeakPtr(),
                      object_store_id, index_id, std::move(old_name)));
 }
 
@@ -870,10 +944,12 @@ void IndexedDBDatabase::Commit(IndexedDBTransaction* transaction) {
   // been dispatched to the frontend, so it will find out about that
   // asynchronously.
   if (transaction) {
-    scoped_refptr<IndexedDBFactory> factory = factory_;
+    // The database can be destroyed in the call to Commit(), so save a copy of
+    // the error callback in case of an error.
+    auto error_callback_copy = error_callback_;
     Status result = transaction->Commit();
     if (!result.ok())
-      ReportError(result);
+      error_callback_copy.Run(result, nullptr);
   }
 }
 
@@ -964,9 +1040,10 @@ void IndexedDBDatabase::GetAll(
                                     blink::mojom::IDBDatabaseGetAllResultPtr>(
           std::move(callback), transaction->AsWeakPtr());
 
-  transaction->ScheduleTask(base::BindOnce(
-      &IndexedDBDatabase::GetAllOperation, this, std::move(dispatcher_host),
-      object_store_id, index_id, std::move(key_range),
+  transaction->ScheduleTask(BindWeakOperation(
+      &IndexedDBDatabase::GetAllOperation, AsWeakPtr(),
+      std::move(dispatcher_host), object_store_id, index_id,
+      std::move(key_range),
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE,
       max_count, std::move(aborting_callback)));
 }
@@ -983,8 +1060,8 @@ void IndexedDBDatabase::Get(IndexedDBTransaction* transaction,
   if (!ValidateObjectStoreIdAndOptionalIndexId(object_store_id, index_id))
     return;
 
-  transaction->ScheduleTask(base::BindOnce(
-      &IndexedDBDatabase::GetOperation, this, object_store_id, index_id,
+  transaction->ScheduleTask(BindWeakOperation(
+      &IndexedDBDatabase::GetOperation, AsWeakPtr(), object_store_id, index_id,
       std::move(key_range),
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE,
       callbacks));
@@ -1370,8 +1447,8 @@ void IndexedDBDatabase::Put(IndexedDBTransaction* transaction,
   params->put_mode = put_mode;
   params->callbacks = callbacks;
   params->index_keys = index_keys;
-  transaction->ScheduleTask(base::BindOnce(&IndexedDBDatabase::PutOperation,
-                                           this, std::move(params)));
+  transaction->ScheduleTask(BindWeakOperation(&IndexedDBDatabase::PutOperation,
+                                              AsWeakPtr(), std::move(params)));
 }
 
 Status IndexedDBDatabase::PutOperation(
@@ -1392,8 +1469,8 @@ Status IndexedDBDatabase::PutOperation(
   std::unique_ptr<IndexedDBKey> key;
   if (params->put_mode != blink::mojom::IDBPutMode::CursorUpdate &&
       object_store.auto_increment && !params->key->IsValid()) {
-    std::unique_ptr<IndexedDBKey> auto_inc_key = GenerateKey(
-        backing_store_.get(), transaction, id(), params->object_store_id);
+    std::unique_ptr<IndexedDBKey> auto_inc_key =
+        GenerateKey(backing_store_, transaction, id(), params->object_store_id);
     key_was_generated = true;
     if (!auto_inc_key->IsValid()) {
       params->callbacks->OnError(
@@ -1427,10 +1504,9 @@ Status IndexedDBDatabase::PutOperation(
   std::vector<std::unique_ptr<IndexWriter>> index_writers;
   base::string16 error_message;
   bool obeys_constraints = false;
-  bool backing_store_success =
-      MakeIndexWriters(transaction, backing_store_.get(), id(), object_store,
-                       *key, key_was_generated, params->index_keys,
-                       &index_writers, &error_message, &obeys_constraints);
+  bool backing_store_success = MakeIndexWriters(
+      transaction, backing_store_, id(), object_store, *key, key_was_generated,
+      params->index_keys, &index_writers, &error_message, &obeys_constraints);
   if (!backing_store_success) {
     params->callbacks->OnError(
         CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
@@ -1457,7 +1533,7 @@ Status IndexedDBDatabase::PutOperation(
     IDB_TRACE1("IndexedDBDatabase::PutOperation.UpdateIndexes", "txn.id",
                transaction->id());
     for (const auto& writer : index_writers) {
-      writer->WriteIndexKeys(record_identifier, backing_store_.get(),
+      writer->WriteIndexKeys(record_identifier, backing_store_,
                              transaction->BackingStoreTransaction(), id(),
                              params->object_store_id);
     }
@@ -1468,7 +1544,7 @@ Status IndexedDBDatabase::PutOperation(
       key->type() == blink::mojom::IDBKeyType::Number) {
     IDB_TRACE1("IndexedDBDatabase::PutOperation.AutoIncrement", "txn.id",
                transaction->id());
-    s = UpdateKeyGenerator(backing_store_.get(), transaction, id(),
+    s = UpdateKeyGenerator(backing_store_, transaction, id(),
                            params->object_store_id, *key, !key_was_generated);
     if (!s.ok())
       return s;
@@ -1511,7 +1587,7 @@ void IndexedDBDatabase::SetIndexKeys(
       transaction->BackingStoreTransaction(), metadata_.id, object_store_id,
       *primary_key, &record_identifier, &found);
   if (!s.ok()) {
-    ReportErrorWithDetails(s, "Internal error setting index keys.");
+    error_callback_.Run(s, "Internal error setting index keys.");
     return;
   }
   if (!found) {
@@ -1528,10 +1604,9 @@ void IndexedDBDatabase::SetIndexKeys(
          metadata_.object_stores.end());
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores[object_store_id];
-  bool backing_store_success =
-      MakeIndexWriters(transaction, backing_store_.get(), id(),
-                       object_store_metadata, *primary_key, false, index_keys,
-                       &index_writers, &error_message, &obeys_constraints);
+  bool backing_store_success = MakeIndexWriters(
+      transaction, backing_store_, id(), object_store_metadata, *primary_key,
+      false, index_keys, &index_writers, &error_message, &obeys_constraints);
   if (!backing_store_success) {
     transaction->Abort(IndexedDBDatabaseError(
         blink::kWebIDBDatabaseExceptionUnknownError,
@@ -1545,7 +1620,7 @@ void IndexedDBDatabase::SetIndexKeys(
   }
 
   for (const auto& writer : index_writers) {
-    writer->WriteIndexKeys(record_identifier, backing_store_.get(),
+    writer->WriteIndexKeys(record_identifier, backing_store_,
                            transaction->BackingStoreTransaction(), id(),
                            object_store_id);
   }
@@ -1560,8 +1635,8 @@ void IndexedDBDatabase::SetIndexesReady(IndexedDBTransaction* transaction,
 
   transaction->ScheduleTask(
       blink::mojom::IDBTaskType::Preemptive,
-      base::BindOnce(&IndexedDBDatabase::SetIndexesReadyOperation, this,
-                     index_ids.size()));
+      BindWeakOperation(&IndexedDBDatabase::SetIndexesReadyOperation,
+                        AsWeakPtr(), index_ids.size()));
 }
 
 Status IndexedDBDatabase::SetIndexesReadyOperation(
@@ -1613,8 +1688,8 @@ void IndexedDBDatabase::OpenCursor(
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE;
   params->task_type = task_type;
   params->callbacks = callbacks;
-  transaction->ScheduleTask(base::BindOnce(
-      &IndexedDBDatabase::OpenCursorOperation, this, std::move(params)));
+  transaction->ScheduleTask(BindWeakOperation(
+      &IndexedDBDatabase::OpenCursorOperation, AsWeakPtr(), std::move(params)));
 }
 
 Status IndexedDBDatabase::OpenCursorOperation(
@@ -1688,9 +1763,9 @@ void IndexedDBDatabase::Count(IndexedDBTransaction* transaction,
   if (!ValidateObjectStoreIdAndOptionalIndexId(object_store_id, index_id))
     return;
 
-  transaction->ScheduleTask(base::BindOnce(&IndexedDBDatabase::CountOperation,
-                                           this, object_store_id, index_id,
-                                           std::move(key_range), callbacks));
+  transaction->ScheduleTask(BindWeakOperation(
+      &IndexedDBDatabase::CountOperation, AsWeakPtr(), object_store_id,
+      index_id, std::move(key_range), callbacks));
 }
 
 Status IndexedDBDatabase::CountOperation(
@@ -1745,8 +1820,8 @@ void IndexedDBDatabase::DeleteRange(
     return;
 
   transaction->ScheduleTask(
-      base::BindOnce(&IndexedDBDatabase::DeleteRangeOperation, this,
-                     object_store_id, std::move(key_range), callbacks));
+      BindWeakOperation(&IndexedDBDatabase::DeleteRangeOperation, AsWeakPtr(),
+                        object_store_id, std::move(key_range), callbacks));
 }
 
 Status IndexedDBDatabase::DeleteRangeOperation(
@@ -1779,9 +1854,9 @@ void IndexedDBDatabase::GetKeyGeneratorCurrentNumber(
                                    "Object store id not valid.", transaction));
     return;
   }
-  transaction->ScheduleTask(
-      base::BindOnce(&IndexedDBDatabase::GetKeyGeneratorCurrentNumberOperation,
-                     this, object_store_id, callbacks));
+  transaction->ScheduleTask(BindWeakOperation(
+      &IndexedDBDatabase::GetKeyGeneratorCurrentNumberOperation, AsWeakPtr(),
+      object_store_id, callbacks));
 }
 
 Status IndexedDBDatabase::GetKeyGeneratorCurrentNumberOperation(
@@ -1789,7 +1864,7 @@ Status IndexedDBDatabase::GetKeyGeneratorCurrentNumberOperation(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
   int64_t current_number;
-  Status s = backing_store_.get()->GetKeyGeneratorCurrentNumber(
+  Status s = backing_store_->GetKeyGeneratorCurrentNumber(
       transaction->BackingStoreTransaction(), id(), object_store_id,
       &current_number);
   if (!s.ok()) {
@@ -1812,8 +1887,9 @@ void IndexedDBDatabase::Clear(IndexedDBTransaction* transaction,
   if (!ValidateObjectStoreId(object_store_id))
     return;
 
-  transaction->ScheduleTask(base::BindOnce(&IndexedDBDatabase::ClearOperation,
-                                           this, object_store_id, callbacks));
+  transaction->ScheduleTask(
+      BindWeakOperation(&IndexedDBDatabase::ClearOperation, AsWeakPtr(),
+                        object_store_id, callbacks));
 }
 
 Status IndexedDBDatabase::ClearOperation(
@@ -1866,8 +1942,8 @@ Status IndexedDBDatabase::DeleteObjectStoreOperation(
     return s;
   }
   transaction->ScheduleAbortTask(
-      base::BindOnce(&IndexedDBDatabase::DeleteObjectStoreAbortOperation, this,
-                     std::move(object_store_metadata)));
+      base::BindOnce(&IndexedDBDatabase::DeleteObjectStoreAbortOperation,
+                     AsWeakPtr(), std::move(object_store_metadata)));
   return s;
 }
 
@@ -1884,8 +1960,9 @@ Status IndexedDBDatabase::VersionChangeOperation(
       transaction->BackingStoreTransaction()->transaction(), id(), version,
       &metadata_);
 
-  transaction->ScheduleAbortTask(base::BindOnce(
-      &IndexedDBDatabase::VersionChangeAbortOperation, this, old_version));
+  transaction->ScheduleAbortTask(
+      base::BindOnce(&IndexedDBDatabase::VersionChangeAbortOperation,
+                     AsWeakPtr(), old_version));
 
   active_request_->UpgradeTransactionStarted(old_version);
   return Status::OK();
@@ -1922,39 +1999,36 @@ void IndexedDBDatabase::AppendRequest(
   pending_requests_.push(std::move(request));
 
   if (!active_request_)
-    ProcessRequestQueue();
+    ProcessRequestQueueAndMaybeRelease();
 }
 
 void IndexedDBDatabase::RequestComplete(ConnectionRequest* request) {
   DCHECK_EQ(request, active_request_.get());
-  scoped_refptr<IndexedDBDatabase> protect(this);
   active_request_.reset();
 
-  // Exit early if |active_request_| held the last reference to |this|.
-  if (protect->HasOneRef())
-    return;
-
-  if (!pending_requests_.empty())
-    ProcessRequestQueue();
+  ProcessRequestQueueAndMaybeRelease();
 }
 
-void IndexedDBDatabase::ProcessRequestQueue() {
+void IndexedDBDatabase::ProcessRequestQueueAndMaybeRelease() {
   // Don't run re-entrantly to avoid exploding call stacks for requests that
   // complete synchronously. The loop below will process requests until one is
   // blocked.
   if (processing_pending_requests_)
     return;
-
-  DCHECK(!active_request_);
-  DCHECK(!pending_requests_.empty());
-
-  base::AutoReset<bool> processing(&processing_pending_requests_, true);
-  do {
+  processing_pending_requests_ = true;
+  // If the active request completed synchronously, keep going.
+  while (!active_request_ && !pending_requests_.empty()) {
     active_request_ = std::move(pending_requests_.front());
     pending_requests_.pop();
     active_request_->Perform();
-    // If the active request completed synchronously, keep going.
-  } while (!active_request_ && !pending_requests_.empty());
+  }
+  processing_pending_requests_ = false;
+  MaybeReleaseDatabase();
+}
+
+void IndexedDBDatabase::MaybeReleaseDatabase() {
+  if (!active_request_ && pending_requests_.empty() && connections_.empty())
+    std::move(destroy_me_).Run();
 }
 
 void IndexedDBDatabase::RegisterAndScheduleTransaction(
@@ -1983,80 +2057,50 @@ void IndexedDBDatabase::RegisterAndScheduleTransaction(
       base::BindOnce(&IndexedDBTransaction::Start, transaction->AsWeakPtr()));
 }
 
-void IndexedDBDatabase::OpenConnection(
+void IndexedDBDatabase::ScheduleOpenConnection(
+    IndexedDBOriginStateHandle origin_state_handle,
     std::unique_ptr<IndexedDBPendingConnection> connection) {
-  AppendRequest(std::make_unique<OpenRequest>(this, std::move(connection)));
+  AppendRequest(std::make_unique<OpenRequest>(std::move(origin_state_handle),
+                                              this, std::move(connection)));
 }
 
-void IndexedDBDatabase::DeleteDatabase(
+void IndexedDBDatabase::ScheduleDeleteDatabase(
+    IndexedDBOriginStateHandle origin_state_handle,
     scoped_refptr<IndexedDBCallbacks> callbacks,
-    bool force_close) {
-  AppendRequest(std::make_unique<DeleteRequest>(this, callbacks));
-  // Close the connections only after the request is queued to make sure
-  // the store is still open.
-  if (force_close)
-    ForceClose();
+    base::OnceClosure on_deletion_complete) {
+  AppendRequest(std::make_unique<DeleteRequest>(
+      std::move(origin_state_handle), this, callbacks,
+      std::move(on_deletion_complete)));
 }
 
 void IndexedDBDatabase::ForceClose() {
-  // IndexedDBConnection::ForceClose() may delete this database, so hold ref.
-  scoped_refptr<IndexedDBDatabase> protect(this);
-
+  // Remove all pending requests that don't want to execute during force close
+  // (open requests).
+  base::queue<std::unique_ptr<ConnectionRequest>> requests_to_still_run;
   while (!pending_requests_.empty()) {
     std::unique_ptr<ConnectionRequest> request =
         std::move(pending_requests_.front());
     pending_requests_.pop();
-    request->AbortForForceClose();
+    if (request->OnForceClose())
+      requests_to_still_run.push(std::move(request));
   }
 
-  while (!connections_.empty()) {
-    IndexedDBConnection* connection = *connections_.begin();
-    connection->ForceClose();
-    connections_.erase(connection);
-  }
-  DCHECK(connections_.empty());
-  DCHECK(!active_request_);
-}
+  if (!requests_to_still_run.empty())
+    pending_requests_ = std::move(requests_to_still_run);
 
-void IndexedDBDatabase::VersionChangeIgnored() {
+  // Clear the weak pointers used to bind ConnectionClosed to prevent re-entry.
+  connection_close_weak_factory_.InvalidateWeakPtrs();
+  for (IndexedDBConnection* connection : connections_) {
+    connection->CloseAndReportForceClose();
+  }
+  connections_.clear();
+
+  // OnConnectionClosed usually synchronously calls RequestComplete.
   if (active_request_)
-    active_request_->OnVersionChangeIgnored();
+    active_request_->OnConnectionClosed(nullptr);
+  else
+    ProcessRequestQueueAndMaybeRelease();
 }
-
-void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
-  DCHECK(connections_.count(connection));
-  DCHECK(connection->IsConnected());
-  DCHECK(connection->database() == this);
-
-  IDB_TRACE("IndexedDBDatabase::Close");
-
-  // Abort outstanding transactions from the closing connection. This can not
-  // happen if the close is requested by the connection itself as the
-  // front-end defers the close until all transactions are complete, but can
-  // occur on process termination or forced close.
-  connection->FinishAllTransactions(IndexedDBDatabaseError(
-      blink::kWebIDBDatabaseExceptionUnknownError, "Connection is closing."));
-
-  // Abort transactions before removing the connection; aborting may complete
-  // an upgrade, and thus allow the next open/delete requests to proceed. The
-  // new active_request_ should see the old connection count until explicitly
-  // notified below.
-  connections_.erase(connection);
-
-  // Notify the active request, which may need to do cleanup or proceed with
-  // the operation. This may trigger other work, such as more connections or
-  // deletions, so |active_request_| itself may change.
-  if (active_request_)
-    active_request_->OnConnectionClosed(connection);
-
-  // If there are no more connections (current, active, or pending), tell the
-  // factory to clean us up.
-  if (connections_.empty() && !active_request_ && pending_requests_.empty()) {
-    backing_store_ = nullptr;
-    factory_->ReleaseDatabase(identifier_, forced);
-  }
-}
-
 void IndexedDBDatabase::CreateObjectStoreAbortOperation(
     int64_t object_store_id) {
   IDB_TRACE("IndexedDBDatabase::CreateObjectStoreAbortOperation");
@@ -2092,29 +2136,6 @@ void IndexedDBDatabase::AbortAllTransactionsForConnections() {
     connection->FinishAllTransactions(
         IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
                                "Database is compacting."));
-  }
-}
-
-void IndexedDBDatabase::ReportError(Status status) {
-  DCHECK(!status.ok());
-  if (status.IsCorruption()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 base::ASCIIToUTF16(status.ToString()));
-    factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
-  } else {
-    factory_->HandleBackingStoreFailure(backing_store_->origin());
-  }
-}
-
-void IndexedDBDatabase::ReportErrorWithDetails(Status status,
-                                               const char* message) {
-  DCHECK(!status.ok());
-  if (status.IsCorruption()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 message);
-    factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
-  } else {
-    factory_->HandleBackingStoreFailure(backing_store_->origin());
   }
 }
 

@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -107,7 +106,7 @@ IndexedDBTransaction::Operation BindWeakOperation(Functor&& functor,
                                                   base::WeakPtr<T> ptr,
                                                   Args&&... args) {
   DCHECK(ptr);
-  IndexedDBCursor* raw_ptr = ptr.get();
+  T* raw_ptr = ptr.get();
   return base::BindOnce(
       &indexed_db_callback_helpers_internal::InvokeOrSucceed<T>, std::move(ptr),
       base::BindOnce(std::forward<Functor>(functor), base::Unretained(raw_ptr),

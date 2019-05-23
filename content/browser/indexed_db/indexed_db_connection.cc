@@ -9,9 +9,11 @@
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 
 namespace content {
 
@@ -23,59 +25,62 @@ static int32_t g_next_indexed_db_connection_id;
 
 IndexedDBConnection::IndexedDBConnection(
     int child_process_id,
-    scoped_refptr<IndexedDBDatabase> database,
+    IndexedDBOriginStateHandle origin_state_handle,
+    base::WeakPtr<IndexedDBDatabase> database,
+    base::RepeatingClosure on_version_change_ignored,
+    base::OnceCallback<void(IndexedDBConnection*)> on_close,
+    ErrorCallback error_callback,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks)
     : id_(g_next_indexed_db_connection_id++),
       child_process_id_(child_process_id),
-      database_(database),
-      callbacks_(callbacks),
-      weak_factory_(this) {
+      origin_state_handle_(std::move(origin_state_handle)),
+      database_(std::move(database)),
+      on_version_change_ignored_(std::move(on_version_change_ignored)),
+      on_close_(std::move(on_close)),
+      error_callback_(std::move(error_callback)),
+      callbacks_(callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 IndexedDBConnection::~IndexedDBConnection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (on_close_)
+    std::move(on_close_).Run(this);
 }
 
 void IndexedDBConnection::Close() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!callbacks_.get())
     return;
+
+  // Finish up any transaction, in case there were any running.
+  FinishAllTransactions(IndexedDBDatabaseError(
+      blink::kWebIDBDatabaseExceptionUnknownError, "Connection is closing."));
+
+  // Calling |on_close_| can destroy this object.
   base::WeakPtr<IndexedDBConnection> this_obj = weak_factory_.GetWeakPtr();
-  database_->Close(this, false /* forced */);
-  if (this_obj) {
-    database_ = nullptr;
-    callbacks_ = nullptr;
-    active_observers_.clear();
-  }
+  std::move(on_close_).Run(this);
+  if (this_obj)
+    ClearStateAfterClose();
 }
 
-void IndexedDBConnection::ForceClose() {
+void IndexedDBConnection::CloseAndReportForceClose() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!callbacks_.get())
     return;
 
-  // IndexedDBDatabase::Close() can delete this instance.
-  base::WeakPtr<IndexedDBConnection> this_obj = weak_factory_.GetWeakPtr();
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks(callbacks_);
-  database_->Close(this, true /* forced */);
-  if (this_obj) {
-    database_ = nullptr;
-    callbacks_ = nullptr;
-    active_observers_.clear();
-  }
+  Close();
   callbacks->OnForcedClose();
 }
 
 void IndexedDBConnection::VersionChangeIgnored() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!database_.get())
-    return;
-  database_->VersionChangeIgnored();
+  on_version_change_ignored_.Run();
 }
 
 bool IndexedDBConnection::IsConnected() {
-  return database_.get() != nullptr;
+  return callbacks_.get();
 }
 
 // The observers begin listening to changes only once they are activated.
@@ -120,7 +125,7 @@ IndexedDBTransaction* IndexedDBConnection::CreateTransaction(
   CHECK_EQ(GetTransaction(id), nullptr) << "Duplicate transaction id." << id;
   std::unique_ptr<IndexedDBTransaction> transaction =
       IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
-          id, this, scope, mode, backing_store_transaction);
+          id, this, error_callback_, scope, mode, backing_store_transaction);
   IndexedDBTransaction* transaction_ptr = transaction.get();
   transactions_[id] = std::move(transaction);
   return transaction_ptr;
@@ -175,6 +180,12 @@ IndexedDBConnection::AddTransactionForTesting(
 void IndexedDBConnection::RemoveTransaction(int64_t id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   transactions_.erase(id);
+}
+
+void IndexedDBConnection::ClearStateAfterClose() {
+  callbacks_ = nullptr;
+  active_observers_.clear();
+  origin_state_handle_.Release();
 }
 
 }  // namespace content

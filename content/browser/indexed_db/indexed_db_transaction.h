@@ -50,6 +50,10 @@ class CONTENT_EXPORT IndexedDBTransaction {
  public:
   using Operation = base::OnceCallback<leveldb::Status(IndexedDBTransaction*)>;
   using AbortOperation = base::OnceClosure;
+  // Used to report irrecoverable backend errors. The second argument is
+  // optional.
+  using ErrorCallback =
+      base::RepeatingCallback<void(leveldb::Status, const char*)>;
 
   enum State {
     CREATED,     // Created, but not yet started by coordinator.
@@ -109,7 +113,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
   }
   int64_t id() const { return id_; }
 
-  IndexedDBDatabase* database() const { return database_.get(); }
+  base::WeakPtr<IndexedDBDatabase> database() const { return database_; }
   IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
   IndexedDBConnection* connection() const { return connection_.get(); }
   bool is_commit_pending() const { return is_commit_pending_; }
@@ -147,6 +151,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
   IndexedDBTransaction(
       int64_t id,
       IndexedDBConnection* connection,
+      ErrorCallback error_callback,
       const std::set<int64_t>& object_store_ids,
       blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
@@ -210,7 +215,8 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // there are issues if there is a pending OpenRequest. So use a WeakPtr.
   base::WeakPtr<IndexedDBConnection> connection_;
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
-  scoped_refptr<IndexedDBDatabase> database_;
+  base::WeakPtr<IndexedDBDatabase> database_;
+  ErrorCallback error_callback_;
 
   // Observers in pending queue do not listen to changes until activated.
   std::vector<std::unique_ptr<IndexedDBObserver>> pending_observers_;

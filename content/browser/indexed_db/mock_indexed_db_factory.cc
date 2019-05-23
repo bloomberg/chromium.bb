@@ -12,9 +12,9 @@ MockIndexedDBFactory::MockIndexedDBFactory() {
 MockIndexedDBFactory::~MockIndexedDBFactory() {
 }
 
-IndexedDBFactory::OriginDBs MockIndexedDBFactory::GetOpenDatabasesForOrigin(
+std::vector<IndexedDBDatabase*> MockIndexedDBFactory::GetOpenDatabasesForOrigin(
     const url::Origin& origin) const {
-  return OriginDBs();
+  return std::vector<IndexedDBDatabase*>();
 }
 
 }  // namespace content

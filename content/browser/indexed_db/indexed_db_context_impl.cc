@@ -103,14 +103,14 @@ IndexedDBContextImpl::IndexedDBContextImpl(
   quota_manager_proxy->RegisterClient(new IndexedDBQuotaClient(this));
 }
 
-IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
+IndexedDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   if (!indexeddb_factory_.get()) {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    indexeddb_factory_ = base::MakeRefCounted<IndexedDBFactoryImpl>(
-        this, leveldb_factory_, base::DefaultClock::GetInstance());
+    indexeddb_factory_ =
+        std::make_unique<IndexedDBFactoryImpl>(this, leveldb_factory_, clock_);
   }
   return indexeddb_factory_.get();
 }
@@ -174,15 +174,13 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
       list->Append(std::move(info));
       continue;
     }
-    std::pair<IndexedDBFactory::OriginDBMapIterator,
-              IndexedDBFactory::OriginDBMapIterator>
-        range = indexeddb_factory_->GetOpenDatabasesForOrigin(origin);
+    std::vector<IndexedDBDatabase*> databases =
+        indexeddb_factory_->GetOpenDatabasesForOrigin(origin);
     // TODO(jsbell): Sort by name?
     std::unique_ptr<base::ListValue> database_list(
         std::make_unique<base::ListValue>());
 
-    for (auto it = range.first; it != range.second; ++it) {
-      const IndexedDBDatabase* db = it->second;
+    for (IndexedDBDatabase* db : databases) {
       std::unique_ptr<base::DictionaryValue> db_info(
           std::make_unique<base::DictionaryValue>());
 
@@ -451,6 +449,16 @@ void IndexedDBContextImpl::SetForceKeepSessionState() {
   force_keep_session_state_ = true;
 }
 
+void IndexedDBContextImpl::FactoryOpened(const Origin& origin) {
+  DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
+  if (GetOriginSet()->insert(origin).second) {
+    // A newly created db, notify the quota system.
+    QueryDiskAndUpdateQuotaUsage(origin);
+  } else {
+    EnsureDiskUsageCacheInitialized(origin);
+  }
+}
+
 void IndexedDBContextImpl::ConnectionOpened(const Origin& origin,
                                             IndexedDBConnection* connection) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
@@ -539,7 +547,7 @@ void IndexedDBContextImpl::Shutdown() {
         FROM_HERE,
         base::BindOnce(
             [](const base::FilePath& indexeddb_path,
-               scoped_refptr<IndexedDBFactory> factory,
+               std::unique_ptr<IndexedDBFactory> factory,
                scoped_refptr<storage::SpecialStoragePolicy>
                    special_storage_policy) {
               std::vector<Origin> origins;
@@ -559,7 +567,8 @@ void IndexedDBContextImpl::Shutdown() {
                 base::DeleteFile(*file_path, true);
               }
             },
-            data_path_, indexeddb_factory_, special_storage_policy_));
+            data_path_, std::move(indexeddb_factory_),
+            special_storage_policy_));
   }
 }
 
