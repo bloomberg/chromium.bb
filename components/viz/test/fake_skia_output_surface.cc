@@ -14,6 +14,9 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/resource_metadata.h"
+#include "components/viz/service/display/texture_deleter.h"
+#include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -24,7 +27,10 @@ namespace viz {
 
 FakeSkiaOutputSurface::FakeSkiaOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : context_provider_(std::move(context_provider)), weak_ptr_factory_(this) {}
+    : context_provider_(std::move(context_provider)), weak_ptr_factory_(this) {
+  texture_deleter_ =
+      std::make_unique<TextureDeleter>(base::ThreadTaskRunnerHandle::Get());
+}
 
 FakeSkiaOutputSurface::~FakeSkiaOutputSurface() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -245,7 +251,8 @@ void FakeSkiaOutputSurface::CopyOutput(
 
   DCHECK(sk_surfaces_.find(id) != sk_surfaces_.end());
   auto* surface = sk_surfaces_[id].get();
-  if (request->result_format() != CopyOutputResult::Format::RGBA_BITMAP ||
+  if ((request->result_format() != CopyOutputResult::Format::RGBA_BITMAP &&
+       request->result_format() != CopyOutputResult::Format::RGBA_TEXTURE) ||
       request->is_scaled() ||
       geometry.result_bounds != geometry.result_selection) {
     // TODO(crbug.com/644851): Complete the implementation for all request
@@ -253,6 +260,29 @@ void FakeSkiaOutputSurface::CopyOutput(
     NOTIMPLEMENTED();
     return;
   }
+
+  if (request->result_format() == CopyOutputResult::Format::RGBA_TEXTURE) {
+    // TODO(sgilhuly): This implementation is incomplete and doesn't copy
+    // anything into the mailbox, but currently the only tests that use this
+    // don't actually check the returned texture data.
+    auto* sii = context_provider_->SharedImageInterface();
+    gpu::Mailbox mailbox = sii->CreateSharedImage(
+        ResourceFormat::RGBA_8888, geometry.result_selection.size(),
+        color_space, gpu::SHARED_IMAGE_USAGE_GLES2);
+
+    auto* gl = context_provider_->ContextGL();
+    gpu::SyncToken sync_token;
+    gl->GenSyncTokenCHROMIUM(sync_token.GetData());
+
+    auto release_callback =
+        texture_deleter_->GetReleaseCallback(context_provider_, mailbox);
+
+    request->SendResult(std::make_unique<CopyOutputTextureResult>(
+        geometry.result_bounds, mailbox, sync_token, color_space,
+        std::move(release_callback)));
+    return;
+  }
+
   auto copy_image = surface->makeImageSnapshot()->makeSubset(
       RectToSkIRect(geometry.sampling_bounds));
   // Send copy request by copying into a bitmap.

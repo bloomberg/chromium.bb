@@ -20,11 +20,18 @@
 
 namespace viz {
 
+class TextureDeleter;
+
 class FakeSkiaOutputSurface : public SkiaOutputSurface {
  public:
   static std::unique_ptr<FakeSkiaOutputSurface> Create3d() {
     auto provider = TestContextProvider::Create();
     provider->BindToCurrentThread();
+    return base::WrapUnique(new FakeSkiaOutputSurface(std::move(provider)));
+  }
+
+  static std::unique_ptr<FakeSkiaOutputSurface> Create3d(
+      scoped_refptr<ContextProvider> provider) {
     return base::WrapUnique(new FakeSkiaOutputSurface(std::move(provider)));
   }
 
@@ -107,6 +114,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
 
   scoped_refptr<ContextProvider> context_provider_;
   OutputSurfaceClient* client_ = nullptr;
+
+  std::unique_ptr<TextureDeleter> texture_deleter_;
 
   // The current render pass id set by BeginPaintRenderPass.
   RenderPassId current_render_pass_id_ = 0;

@@ -81,6 +81,7 @@
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
+#include "components/viz/test/fake_skia_output_surface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/media.h"
@@ -10337,8 +10338,8 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
 
   std::unique_ptr<viz::SkiaOutputSurface> CreateDisplaySkiaOutputSurface()
       override {
-    NOTIMPLEMENTED();
-    return nullptr;
+    return viz::FakeSkiaOutputSurface::Create3d(
+        std::move(display_context_provider_));
   }
 
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
@@ -10360,19 +10361,18 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
   scoped_refptr<viz::ContextProvider> display_context_provider_;
 };
 
-enum RendererTestType { TEST_GL, TEST_SKIA };
+enum RendererType { RENDERER_GL, RENDERER_SKIA };
 
 class LayerTreeHostImplTestWithRenderer
     : public LayerTreeHostImplTest,
-      public ::testing::WithParamInterface<RendererTestType> {
+      public ::testing::WithParamInterface<RendererType> {
  protected:
-  bool test_type() const { return GetParam(); }
+  RendererType renderer_type() const { return GetParam(); }
 };
 
-// TODO(crbug.com/948128): Enable this test for SkiaRenderer.
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostImplTestWithRenderer,
-                         ::testing::Values(TEST_GL));
+                         ::testing::Values(RENDERER_GL, RENDERER_SKIA));
 
 TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
   scoped_refptr<viz::TestContextProvider> context_provider =
@@ -10383,7 +10383,7 @@ TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
   constexpr bool disable_display_vsync = false;
   constexpr double refresh_rate = 60.0;
   viz::RendererSettings renderer_settings = viz::RendererSettings();
-  renderer_settings.use_skia_renderer = test_type() == TEST_SKIA;
+  renderer_settings.use_skia_renderer = renderer_type() == RENDERER_SKIA;
   auto layer_tree_frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
       context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
       renderer_settings, base::ThreadTaskRunnerHandle::Get().get(),

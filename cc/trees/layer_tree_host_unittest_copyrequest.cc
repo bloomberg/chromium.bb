@@ -316,7 +316,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
 
         // Destroy the main thread layer right away.
         main_destroyed_->RemoveFromParent();
-        main_destroyed_ = nullptr;
+        main_destroyed_.reset();
 
         // Should callback with a NULL bitmap.
         EXPECT_EQ(1, callback_count_);
@@ -335,7 +335,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
 
         // Destroy the impl thread layer.
         impl_destroyed_->RemoveFromParent();
-        impl_destroyed_ = nullptr;
+        impl_destroyed_.reset();
 
         // No callback yet because it's on the impl side.
         EXPECT_EQ(1, callback_count_);
@@ -833,6 +833,13 @@ TEST_P(LayerTreeHostTestAsyncTwoReadbacksWithoutDraw, Test) {
 class LayerTreeHostCopyRequestTestDeleteSharedImage
     : public LayerTreeHostCopyRequestTest {
  protected:
+  std::unique_ptr<viz::SkiaOutputSurface>
+  CreateDisplaySkiaOutputSurfaceOnThread() override {
+    display_context_provider_ = viz::TestContextProvider::Create();
+    display_context_provider_->BindToCurrentThread();
+    return viz::FakeSkiaOutputSurface::Create3d(display_context_provider_);
+  }
+
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
@@ -884,7 +891,7 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
 
   void DestroyCopyResultAndCheckNumSharedImages() {
     EXPECT_TRUE(result_);
-    result_ = nullptr;
+    result_.reset();
 
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
@@ -903,7 +910,7 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
                   ->shared_image_count());
 
     // Drop the reference to the context provider on the compositor thread.
-    display_context_provider_ = nullptr;
+    display_context_provider_.reset();
     EndTest();
   }
 
@@ -958,11 +965,11 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
   std::unique_ptr<viz::CopyOutputResult> result_;
 };
 
-// TODO(crbug.com/948128): Enable this test for SkiaRenderer.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostCopyRequestTestDeleteSharedImage,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL}));
+    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
+                                LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestDeleteSharedImage, Test) {
   renderer_type_ = renderer_type();
@@ -972,6 +979,13 @@ TEST_P(LayerTreeHostCopyRequestTestDeleteSharedImage, Test) {
 class LayerTreeHostCopyRequestTestCountSharedImages
     : public LayerTreeHostCopyRequestTest {
  protected:
+  std::unique_ptr<viz::SkiaOutputSurface>
+  CreateDisplaySkiaOutputSurfaceOnThread() override {
+    display_context_provider_ = viz::TestContextProvider::Create();
+    display_context_provider_->BindToCurrentThread();
+    return viz::FakeSkiaOutputSurface::Create3d(display_context_provider_);
+  }
+
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
@@ -1048,7 +1062,13 @@ class LayerTreeHostCopyRequestTestCountSharedImages
     }
   }
 
-  virtual void DoEndTest() { EndTest(); }
+  virtual void DoEndTest() {
+    // Drop the reference to the context provider on the main thread. If the
+    // reference is dropped during the test destructor, then there will be a
+    // DCHECK in ~TestContextProvider() for some cases.
+    display_context_provider_.reset();
+    EndTest();
+  }
 
   scoped_refptr<viz::TestContextProvider> display_context_provider_;
   int num_swaps_ = 0;
@@ -1091,11 +1111,11 @@ class LayerTreeHostCopyRequestTestCreatesSharedImage
   std::unique_ptr<viz::SingleReleaseCallback> release_;
 };
 
-// TODO(crbug.com/948128): Enable this test for SkiaRenderer.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostCopyRequestTestCreatesSharedImage,
-    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL}));
+    CombineWithCompositorModes({LayerTreeTest::RENDERER_GL,
+                                LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestCreatesSharedImage, Test) {
   renderer_type_ = renderer_type();
