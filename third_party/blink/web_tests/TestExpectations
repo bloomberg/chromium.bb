@@ -1742,8 +1742,6 @@ crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html 
 
 crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
-crbug.com/936462 virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
-crbug.com/936462 virtual/disable-blink-gen-property-trees/animations/stability/animation-iteration-event-destroy-renderer.html [ Skip ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
