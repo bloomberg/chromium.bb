@@ -534,6 +534,6 @@ Polymer({
       }
     }
 
-    chrome.bluetooth.recordPairing(success, transport);
+    chrome.bluetoothPrivate.recordPairing(success, transport);
   },
 });

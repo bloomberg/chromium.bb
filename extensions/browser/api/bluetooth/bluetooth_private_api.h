@@ -70,6 +70,9 @@ struct Params;
 namespace Pair {
 struct Params;
 }  // namespace Pair
+namespace RecordPairing {
+struct Params;
+}  // namespace RecordPairing
 }  // namespace bluetooth_private
 
 class BluetoothPrivateSetAdapterStateFunction
@@ -232,6 +235,27 @@ class BluetoothPrivatePairFunction : public BluetoothExtensionFunction {
   std::unique_ptr<bluetooth_private::Pair::Params> params_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPrivatePairFunction);
+};
+
+class BluetoothPrivateRecordPairingFunction
+    : public BluetoothExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothPrivate.recordPairing",
+                             BLUETOOTHPRIVATE_RECORDPAIRING)
+
+  BluetoothPrivateRecordPairingFunction();
+
+ protected:
+  ~BluetoothPrivateRecordPairingFunction() override;
+
+  // BluetoothExtensionFunction:
+  bool CreateParams() override;
+  void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+
+ private:
+  std::unique_ptr<bluetooth_private::RecordPairing::Params> params_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothPrivateRecordPairingFunction);
 };
 
 }  // namespace api
