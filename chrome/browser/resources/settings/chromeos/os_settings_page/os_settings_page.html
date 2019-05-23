@@ -8,7 +8,6 @@
 <link rel="import" href="../personalization_page/personalization_page.html">
 <link rel="import" href="../../change_password_page/change_password_page.html">
 <link rel="import" href="../../controls/settings_idle_load.html">
-<link rel="import" href="../../reset_page/reset_profile_banner.html">
 <link rel="import" href="../../settings_page/main_page_behavior.html">
 <link rel="import" href="../../settings_page/settings_section.html">
 <link rel="import" href="../../settings_page_css.html">
@@ -84,10 +83,6 @@
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
       <div id="basicPage">
-        <template is="dom-if" if="[[showResetProfileBanner_]]" restamp>
-          <settings-reset-profile-banner on-close="onResetProfileBannerClosed_">
-          </settings-reset-profile-banner>
-        </template>
         <div id="secondaryUserBanner" hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>
           <div class="flex">$i18n{secondaryUserBannerText}</div>
@@ -271,7 +266,7 @@
                 restamp>
               <settings-section page-title="$i18n{resetPageTitle}"
                   section="reset">
-                <settings-reset-page prefs="{{prefs}}"></settings-reset-page>
+                <os-settings-reset-page></os-settings-reset-page>
               </settings-section>
             </template>
           </div>

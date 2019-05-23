@@ -69,18 +69,6 @@ Polymer({
     },
 
     /**
-     * True if the basic page should currently display the reset profile banner.
-     * @private {boolean}
-     */
-    showResetProfileBanner_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showResetProfileBanner');
-      },
-    },
-
-    // <if expr="chromeos">
-    /**
      * Whether the user is a secondary user. Computed so that it is calculated
      * correctly after loadTimeData is available.
      * @private
@@ -89,7 +77,6 @@ Polymer({
       type: Boolean,
       computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
     },
-    // </if>
 
     /** @private {!settings.Route|undefined} */
     currentRoute_: Object,
@@ -209,7 +196,6 @@ Polymer({
     });
   },
 
-  // <if expr="chromeos">
   /**
    * @return {boolean}
    * @private
@@ -217,12 +203,6 @@ Polymer({
   computeShowSecondaryUserBanner_: function() {
     return !this.hasExpandedSection_ &&
         loadTimeData.getBoolean('isSecondaryUser');
-  },
-  // </if>
-
-  /** @private */
-  onResetProfileBannerClosed_: function() {
-    this.showResetProfileBanner_ = false;
   },
 
   /**
