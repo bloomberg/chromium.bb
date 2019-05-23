@@ -124,13 +124,10 @@ class VIZ_SERVICE_EXPORT Surface final {
   // Returns false if |frame| is invalid.
   // |frame_rejected_callback| will be called once if the frame will not be
   // displayed.
-  // |presented_callback| is called when the |frame| has been turned into light
-  // the first time on display, or if the |frame| is replaced by another prior
-  // to display.
-  QueueFrameResult QueueFrame(CompositorFrame frame,
-                              uint64_t frame_index,
-                              base::ScopedClosureRunner frame_rejected_callback,
-                              PresentedCallback presented_callback);
+  QueueFrameResult QueueFrame(
+      CompositorFrame frame,
+      uint64_t frame_index,
+      base::ScopedClosureRunner frame_rejected_callback);
 
   // Notifies the Surface that a blocking SurfaceId now has an active
   // frame.
@@ -174,6 +171,8 @@ class VIZ_SERVICE_EXPORT Surface final {
   void TakeActiveAndPendingLatencyInfo(
       std::vector<ui::LatencyInfo>* latency_info);
   bool TakePresentedCallback(PresentedCallback* callback);
+  void DidPresentSurface(uint32_t presentation_token,
+                         const gfx::PresentationFeedback& feedback);
   void SendAckToClient();
   void MarkAsDrawn();
   void NotifyAggregatedDamage(const gfx::Rect& damage_rect,
@@ -246,9 +245,7 @@ class VIZ_SERVICE_EXPORT Surface final {
 
  private:
   struct FrameData {
-    FrameData(CompositorFrame&& frame,
-              uint64_t frame_index,
-              PresentedCallback presented_callback);
+    FrameData(CompositorFrame&& frame, uint64_t frame_index);
     FrameData(FrameData&& other);
     ~FrameData();
     FrameData& operator=(FrameData&& other);
@@ -258,8 +255,10 @@ class VIZ_SERVICE_EXPORT Surface final {
     // Whether the frame has been displayed or not.
     bool frame_drawn = false;
     bool frame_acked = false;
-    // TODO(sad): This callback would ideally become part of SurfaceClient API.
-    PresentedCallback presented_callback;
+    // Whether there is a presentation feedback callback bound to this frame.
+    // This typically happens when a frame is swapped - the Display will ask
+    // for a callback that will supply presentation feedback to the client.
+    bool is_presented_callback_bound = false;
   };
 
   // Updates surface references of the surface using the referenced
@@ -345,6 +344,8 @@ class VIZ_SERVICE_EXPORT Surface final {
   bool is_latency_info_taken_ = false;
 
   SurfaceAllocationGroup* const allocation_group_;
+
+  base::WeakPtrFactory<Surface> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

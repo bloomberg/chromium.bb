@@ -202,6 +202,12 @@ void CompositorFrameSinkSupport::OnSurfaceDestroyed(Surface* surface) {
     last_created_surface_id_ = SurfaceId();
 }
 
+void CompositorFrameSinkSupport::OnSurfacePresented(
+    uint32_t frame_token,
+    const gfx::PresentationFeedback& feedback) {
+  DidPresentCompositorFrame(frame_token, feedback);
+}
+
 void CompositorFrameSinkSupport::RefResources(
     const std::vector<TransferableResource>& resources) {
   surface_resource_holder_.RefResources(resources);
@@ -525,9 +531,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
       last_created_surface_id_, frame_index, std::move(hit_test_region_list));
 
   Surface::QueueFrameResult result = current_surface->QueueFrame(
-      std::move(frame), frame_index, std::move(frame_rejected_callback),
-      base::BindOnce(&CompositorFrameSinkSupport::DidPresentCompositorFrame,
-                     weak_factory_.GetWeakPtr(), frame.metadata.frame_token));
+      std::move(frame), frame_index, std::move(frame_rejected_callback));
   switch (result) {
     case Surface::QueueFrameResult::REJECTED:
       TRACE_EVENT_INSTANT0("viz", "QueueFrame failed",

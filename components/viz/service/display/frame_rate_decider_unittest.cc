@@ -78,8 +78,7 @@ class FrameRateDeciderTest : public testing::Test,
   void UpdateFrame(Surface* surface) {
     uint64_t frame_index = surface->GetActiveFrameIndex() + 1u;
     ASSERT_TRUE(surface->QueueFrame(MakeDefaultCompositorFrame(), frame_index,
-                                    base::ScopedClosureRunner(),
-                                    Surface::PresentedCallback()));
+                                    base::ScopedClosureRunner()));
     surface->ActivatePendingFrameForDeadline();
     ASSERT_EQ(surface->GetActiveFrameIndex(), frame_index);
   }

@@ -16,6 +16,7 @@ class TimeTicks;
 }  // namespace base
 
 namespace gfx {
+struct PresentationFeedback;
 class Rect;
 }  // namespace gfx
 
@@ -71,6 +72,11 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
   // Notifies the client that the submitted CompositorFrame has been processed
   // (where processed may mean the frame has been displayed, or discarded).
   virtual void OnSurfaceProcessed(Surface* surface) = 0;
+
+  // Notifies the client that a frame with |token| has been presented.
+  virtual void OnSurfacePresented(
+      uint32_t frame_token,
+      const gfx::PresentationFeedback& feedback) = 0;
 
   // This is called when |surface| or one of its descendents is determined to be
   // damaged at aggregation time.

@@ -37,7 +37,8 @@ Surface::Surface(const SurfaceInfo& surface_info,
       surface_client_(std::move(surface_client)),
       needs_sync_tokens_(needs_sync_tokens),
       block_activation_on_parent_(block_activation_on_parent),
-      allocation_group_(allocation_group) {
+      allocation_group_(allocation_group),
+      weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN1(TRACE_DISABLED_BY_DEFAULT("viz.surface_lifetime"),
                            "Surface", this, "surface_info",
                            surface_info.ToString());
@@ -198,8 +199,7 @@ void Surface::ActivateIfDeadlinePassed() {
 Surface::QueueFrameResult Surface::QueueFrame(
     CompositorFrame frame,
     uint64_t frame_index,
-    base::ScopedClosureRunner frame_rejected_callback,
-    PresentedCallback presented_callback) {
+    base::ScopedClosureRunner frame_rejected_callback) {
   if (frame.size_in_pixels() != surface_info_.size_in_pixels() ||
       frame.device_scale_factor() != surface_info_.device_scale_factor()) {
     TRACE_EVENT_INSTANT0("viz", "Surface invariants violation",
@@ -237,12 +237,9 @@ Surface::QueueFrameResult Surface::QueueFrame(
 
   if (!block_activation && activation_dependencies_.empty()) {
     // If there are no blockers, then immediately activate the frame.
-    ActivateFrame(
-        FrameData(std::move(frame), frame_index, std::move(presented_callback)),
-        base::nullopt);
+    ActivateFrame(FrameData(std::move(frame), frame_index), base::nullopt);
   } else {
-    pending_frame_data_ =
-        FrameData(std::move(frame), frame_index, std::move(presented_callback));
+    pending_frame_data_ = FrameData(std::move(frame), frame_index);
 
     deadline_->Set(ResolveFrameDeadline(pending_frame_data_->frame));
     if (deadline_->HasDeadlinePassed()) {
@@ -312,12 +309,8 @@ void Surface::ActivatePendingFrameForDeadline() {
   ActivatePendingFrame();
 }
 
-Surface::FrameData::FrameData(CompositorFrame&& frame,
-                              uint64_t frame_index,
-                              PresentedCallback presented_callback)
-    : frame(std::move(frame)),
-      frame_index(frame_index),
-      presented_callback(std::move(presented_callback)) {}
+Surface::FrameData::FrameData(CompositorFrame&& frame, uint64_t frame_index)
+    : frame(std::move(frame)), frame_index(frame_index) {}
 
 Surface::FrameData::FrameData(FrameData&& other) = default;
 
@@ -612,11 +605,20 @@ void Surface::TakeActiveAndPendingLatencyInfo(
 }
 
 bool Surface::TakePresentedCallback(PresentedCallback* callback) {
-  if (active_frame_data_ && active_frame_data_->presented_callback) {
-    *callback = std::move(active_frame_data_->presented_callback);
+  if (active_frame_data_ && !active_frame_data_->is_presented_callback_bound) {
+    *callback =
+        base::BindOnce(&Surface::DidPresentSurface, weak_factory_.GetWeakPtr(),
+                       active_frame_data_->frame.metadata.frame_token);
+    active_frame_data_->is_presented_callback_bound = true;
     return true;
   }
   return false;
+}
+
+void Surface::DidPresentSurface(uint32_t presentation_token,
+                                const gfx::PresentationFeedback& feedback) {
+  if (surface_client_)
+    surface_client_->OnSurfacePresented(presentation_token, feedback);
 }
 
 void Surface::SendAckToClient() {
@@ -659,10 +661,11 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
   if (!frame_data->frame_acked)
     surface_client_->OnSurfaceProcessed(this);
 
-  if (frame_data->presented_callback) {
-    std::move(frame_data->presented_callback)
-        .Run(gfx::PresentationFeedback::Failure());
-  }
+  // If we have not bound a presented callback, we'll notify the client when
+  // the frame is unref'd.
+  if (!frame_data->is_presented_callback_bound)
+    DidPresentSurface(frame_data->frame.metadata.frame_token,
+                      gfx::PresentationFeedback::Failure());
 }
 
 void Surface::ClearCopyRequests() {
