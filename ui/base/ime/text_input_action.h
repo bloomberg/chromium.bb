@@ -21,7 +21,7 @@ enum class TextInputAction {
   kPrevious,
   kSearch,
   kSend,
-  kMax = kSend,
+  kMaxValue = kSend,
 };
 
 }  // namespace ui

@@ -113,7 +113,7 @@ IPC_STRUCT_BEGIN(WidgetHostMsg_SelectionBounds_Params)
 IPC_STRUCT_END()
 
 // Traits for TextInputState.
-IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputAction, ui::TextInputAction::kMax)
+IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputAction, ui::TextInputAction::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(content::TextInputState)
