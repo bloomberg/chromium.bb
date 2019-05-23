@@ -52,6 +52,9 @@
 // Navigates forward to the next page without waiting for the page to load.
 + (void)startGoingForward;
 
+// Closes current tab.
++ (void)closeCurrentTab;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_

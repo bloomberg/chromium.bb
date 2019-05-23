@@ -107,6 +107,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)waitForPageToFinishLoading;
 
+// Closes the current tab and waits for the UI to complete.
+- (void)closeCurrentTab;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"
@@ -126,9 +129,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Checks whether current WebState is loading.
 - (BOOL)isLoading WARN_UNUSED_RESULT;
-
-// Closes the current tab and waits for the UI to complete.
-- (void)closeCurrentTab;
 
 // Waits for a static html view containing |text|. If the condition is not met
 // within a timeout, a GREYAssert is induced.

@@ -75,4 +75,8 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   [BrowserCommandDispatcherForMainBVC() goForward];
 }
 
++ (void)closeCurrentTab {
+  chrome_test_util::CloseCurrentTab();
+}
+
 @end

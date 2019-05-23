@@ -125,6 +125,8 @@
   [ChromeEarlGrey closeAllTabsInCurrentMode];
   [ChromeEarlGrey closeAllIncognitoTabs];
   [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey closeCurrentTab];
+  [ChromeEarlGrey openNewTab];
 }
 
 @end

@@ -77,14 +77,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
-- (NSError*)reload {
-  [ChromeEarlGreyAppInterface startReloading];
+- (NSError*)goForward {
+  [ChromeEarlGreyAppInterface startGoingForward];
   [self waitForPageToFinishLoading];
   return nil;
 }
 
-- (NSError*)goForward {
-  [ChromeEarlGreyAppInterface startGoingForward];
+- (NSError*)reload {
+  [ChromeEarlGreyAppInterface startReloading];
   [self waitForPageToFinishLoading];
   return nil;
 }
@@ -147,6 +147,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (NSError*)loadURL:(const GURL&)URL {
   return [self loadURL:URL waitForCompletion:YES];
+}
+
+- (void)closeCurrentTab {
+  [ChromeEarlGreyAppInterface closeCurrentTab];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 @end
@@ -218,11 +223,6 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (BOOL)isLoading {
   return chrome_test_util::IsLoading();
-}
-
-- (void)closeCurrentTab {
-  chrome_test_util::CloseCurrentTab();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 - (NSError*)waitForErrorPage {
