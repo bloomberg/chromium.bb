@@ -119,9 +119,9 @@ std::string GetBoardName() {
 
 std::string GetHighlightsAppId() {
   if (GetBoardName() == "eve")
-    return extension_misc::kHighlightsAlt1AppId;
+    return extension_misc::kHighlightsEveAppId;
   if (GetBoardName() == "nocturne")
-    return extension_misc::kHighlightsAlt2AppId;
+    return extension_misc::kHighlightsNocturneAppId;
   return extension_misc::kHighlightsAppId;
 }
 
@@ -321,9 +321,9 @@ DemoSession* DemoSession::Get() {
 // static
 std::string DemoSession::GetScreensaverAppId() {
   if (GetBoardName() == "eve")
-    return extension_misc::kScreensaverAlt1AppId;
+    return extension_misc::kScreensaverEveAppId;
   if (GetBoardName() == "nocturne")
-    return extension_misc::kScreensaverAlt2AppId;
+    return extension_misc::kScreensaverNocturneAppId;
   return extension_misc::kScreensaverAppId;
 }
 

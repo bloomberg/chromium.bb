@@ -44,15 +44,15 @@ constexpr int kMaxPeriodsWithoutActivity =
 DemoModeApp GetAppFromAppId(const std::string& app_id) {
   // Each version of the Highlights app is bucketed into the same value.
   if (app_id == extension_misc::kHighlightsAppId ||
-      app_id == extension_misc::kHighlightsAlt1AppId ||
-      app_id == extension_misc::kHighlightsAlt2AppId) {
+      app_id == extension_misc::kHighlightsEveAppId ||
+      app_id == extension_misc::kHighlightsNocturneAppId) {
     return DemoModeApp::kHighlights;
   }
 
   // Each version of the Screensaver app is bucketed into the same value.
   if (app_id == extension_misc::kScreensaverAppId ||
-      app_id == extension_misc::kScreensaverAlt1AppId ||
-      app_id == extension_misc::kScreensaverAlt2AppId) {
+      app_id == extension_misc::kScreensaverEveAppId ||
+      app_id == extension_misc::kScreensaverNocturneAppId) {
     return DemoModeApp::kScreensaver;
   }
 

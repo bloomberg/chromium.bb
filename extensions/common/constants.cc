@@ -119,11 +119,11 @@ const char kGeniusAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 
 #if defined(OS_CHROMEOS)
 const char kHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
-const char kHighlightsAlt1AppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
-const char kHighlightsAlt2AppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
+const char kHighlightsEveAppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
+const char kHighlightsNocturneAppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
 const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
-const char kScreensaverAlt1AppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
-const char kScreensaverAlt2AppId[] = "lminefdanffajachfahfpmphfkhahcnj";
+const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
+const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
 #endif
 
 const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";
