@@ -990,7 +990,7 @@ void CanvasResourceProvider::InitializePaintCanvas() {
   // Create an ImageDecodeCache for half float images only if the canvas is
   // using half float back storage.
   cc::ImageDecodeCache* cache_f16 = nullptr;
-  if (ColorParams().PixelFormat() == kF16CanvasPixelFormat)
+  if (ColorParams().GetSkColorType() == kRGBA_F16_SkColorType)
     cache_f16 = ImageDecodeCacheF16();
   canvas_image_provider_ = std::make_unique<CanvasImageProvider>(
       ImageDecodeCacheRGBA8(), cache_f16, gfx::ColorSpace::CreateSRGB(),
@@ -1128,21 +1128,19 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
 
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        kN32_SkColorType, ColorParams().GetSkColorSpace());
+        kN32_SkColorType);
   }
 
-  return Image::SharedCCDecodeCache(ColorParams().ColorSpace(),
-                                    kRGBA8CanvasPixelFormat);
+  return &Image::SharedCCDecodeCache(kN32_SkColorType);
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
 
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        kRGBA_F16_SkColorType, ColorParams().GetSkColorSpace());
+        kRGBA_F16_SkColorType);
   }
-  return Image::SharedCCDecodeCache(ColorParams().ColorSpace(),
-                                    kF16CanvasPixelFormat);
+  return &Image::SharedCCDecodeCache(kRGBA_F16_SkColorType);
 }
 
 void CanvasResourceProvider::RecycleResource(

@@ -77,11 +77,9 @@ void WebGraphicsContext3DProviderImpl::OnContextLost() {
 }
 
 cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache(
-    SkColorType color_type,
-    sk_sp<SkColorSpace> color_space) {
+    SkColorType color_type) {
   DCHECK(GetGrContext()->colorTypeSupportedAsImage(color_type));
-  auto key = std::make_pair(color_type, color_space->hash());
-  auto cache_iterator = image_decode_cache_map_.find(key);
+  auto cache_iterator = image_decode_cache_map_.find(color_type);
   if (cache_iterator != image_decode_cache_map_.end())
     return cache_iterator->second.get();
 
@@ -94,7 +92,7 @@ cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache(
   const bool use_transfer_cache = false;
 
   auto insertion_result = image_decode_cache_map_.emplace(
-      key,
+      color_type,
       std::make_unique<cc::GpuImageDecodeCache>(
           provider_.get(), use_transfer_cache, color_type, kMaxWorkingSetBytes,
           provider_->ContextCapabilities().max_texture_size,
