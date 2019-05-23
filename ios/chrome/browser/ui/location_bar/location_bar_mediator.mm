@@ -249,7 +249,8 @@
 #pragma mark - private
 
 - (void)notifyConsumerOfChangedLocation {
-  [self.consumer updateLocationText:[self currentLocationString]];
+  [self.consumer updateLocationText:[self currentLocationString]
+                           clipTail:[self locationShouldClipTail]];
   GURL URL = self.webState->GetVisibleURL();
   BOOL isNTP = IsURLNewTabPage(URL);
   if (isNTP) {
@@ -270,6 +271,13 @@
 - (NSString*)currentLocationString {
   base::string16 string = self.locationBarModel->GetURLForDisplay();
   return base::SysUTF16ToNSString(string);
+}
+
+// Some URLs (data://) should have their tail clipped when presented; while for
+// others (http://) it would be more appropriate to clip the head.
+- (BOOL)locationShouldClipTail {
+  GURL url = self.locationBarModel->GetURL();
+  return url.SchemeIs(url::kDataScheme);
 }
 
 #pragma mark Security status icon helpers

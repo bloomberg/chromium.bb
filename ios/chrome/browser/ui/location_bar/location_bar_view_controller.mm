@@ -226,8 +226,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 #pragma mark - LocationBarConsumer
 
-- (void)updateLocationText:(NSString*)text {
-  [self.locationBarSteadyView setLocationLabelText:text];
+- (void)updateLocationText:(NSString*)string clipTail:(BOOL)clipTail {
+  [self.locationBarSteadyView setLocationLabelText:string];
+  self.locationBarSteadyView.locationLabel.lineBreakMode =
+      clipTail ? NSLineBreakByTruncatingTail : NSLineBreakByTruncatingHead;
 }
 
 - (void)updateLocationIcon:(UIImage*)icon

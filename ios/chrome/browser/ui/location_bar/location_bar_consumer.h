@@ -11,7 +11,9 @@
 @protocol LocationBarConsumer
 
 // Notifies the consumer to update the location text.
-- (void)updateLocationText:(NSString*)string;
+// |clipTail| indicates whether the tail or the head should be clipped when the
+// location text is too long.
+- (void)updateLocationText:(NSString*)string clipTail:(BOOL)clipTail;
 // Notifies the consumer to update the location icon and security status text.
 - (void)updateLocationIcon:(UIImage*)icon
         securityStatusText:(NSString*)statusText;

@@ -355,9 +355,9 @@ const int kLocationAuthorizationStatusCount = 4;
 
 #pragma mark - LocationBarConsumer
 
-- (void)updateLocationText:(NSString*)text {
+- (void)updateLocationText:(NSString*)text clipTail:(BOOL)clipTail {
   [self.omniboxCoordinator updateOmniboxState];
-  [self.viewController updateLocationText:text];
+  [self.viewController updateLocationText:text clipTail:clipTail];
   [self.viewController updateForNTP:NO];
 }
 

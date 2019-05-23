@@ -67,7 +67,9 @@
 - (void)updateLocationIcon:(UIImage*)icon
         securityStatusText:(NSString*)statusText;
 // Updates the location text in the non-editing mode.
-- (void)updateLocationText:(NSString*)text;
+// |clipTail| indicates whether the tail or the head should be clipped when the
+// location text is too long.
+- (void)updateLocationText:(NSString*)text clipTail:(BOOL)clipTail;
 // Updates the location view to show a fake placeholder in the steady location
 // view and hides the trailing button if |isNTP|. Otherwise, shows the
 // location text and the button as normal.
