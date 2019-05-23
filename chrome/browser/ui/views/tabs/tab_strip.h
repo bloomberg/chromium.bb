@@ -528,6 +528,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   // views::ViewObserver:
   void OnViewIsDeleting(views::View* observed_view) override;
+  void OnViewFocused(views::View* observed_view) override;
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;

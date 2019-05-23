@@ -139,7 +139,8 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
     constexpr base::TimeDelta kFadeInDuration =
         base::TimeDelta::FromMilliseconds(200);
     set_animation_state(FadeAnimationState::FADE_IN);
-    widget_->SetOpacity(0.0f);
+    // Widgets cannot be shown when visible and fully transparent.
+    widget_->SetOpacity(0.01f);
     widget_->Show();
     fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
     fade_animation_->SetDuration(kFadeInDuration);

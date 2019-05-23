@@ -841,6 +841,8 @@ TabStrip::~TabStrip() {
   // but before moving the mouse.
   RemoveMessageLoopObserver();
 
+  new_tab_button_->RemoveObserver(this);
+
   // The children (tabs) may callback to us from their destructor. Delete them
   // so that if they call back we aren't in a weird state.
   RemoveAllChildViews(true);
@@ -2037,6 +2039,7 @@ void TabStrip::Init() {
   new_tab_button_->SetEventTargeter(
       std::make_unique<views::ViewTargeter>(new_tab_button_));
   AddChildView(new_tab_button_);
+  new_tab_button_->AddObserver(this);
 
   UpdateNewTabButtonBorder();
   new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
@@ -2957,6 +2960,11 @@ void TabStrip::OnViewIsDeleting(views::View* observed_view) {
     hover_card_event_sniffer_.reset();
     hover_card_ = nullptr;
   }
+}
+
+void TabStrip::OnViewFocused(views::View* observed_view) {
+  if (observed_view == new_tab_button_)
+    UpdateHoverCard(nullptr, false);
 }
 
 void TabStrip::OnTouchUiChanged() {
