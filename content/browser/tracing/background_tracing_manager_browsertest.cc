@@ -31,6 +31,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "services/tracing/perfetto/privacy_filtering_check.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/zlib/zlib.h"
 
@@ -1499,7 +1500,14 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
   BackgroundTracingManager::GetInstance()->AbortScenarioForTesting();
   background_tracing_helper.WaitForScenarioAborted();
 
-  EXPECT_TRUE(!trace_data.empty());
+  tracing::PrivacyFilteringCheck checker;
+  checker.CheckProtoForUnexpectedFields(trace_data);
+  EXPECT_GT(checker.stats().track_event, 0u);
+  EXPECT_EQ(checker.stats().process_desc, 0u);
+  EXPECT_GT(checker.stats().thread_desc, 0u);
+  EXPECT_TRUE(checker.stats().has_interned_names);
+  EXPECT_TRUE(checker.stats().has_interned_categories);
+  EXPECT_TRUE(checker.stats().has_interned_source_locations);
 }
 
 }  // namespace content
