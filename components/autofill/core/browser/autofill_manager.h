@@ -436,9 +436,6 @@ class AutofillManager : public AutofillHandler,
       const AutofillType& type,
       bool* should_display_gpay_logo) const;
 
-  // Parses the forms using heuristic matching and querying the Autofill server.
-  void ParseForms(const std::vector<FormData>& forms);
-
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
   // needed because IPC messages can arrive out of order.
