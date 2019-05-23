@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
+#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_notifier.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
@@ -103,7 +104,6 @@ class V0CustomElementRegistrationContext;
 class DOMImplementation;
 class DOMWindow;
 class DocumentFragment;
-class DocumentInit;
 class DocumentLoader;
 class DocumentLoadTiming;
 class DocumentMarkerController;
@@ -249,17 +249,14 @@ class CORE_EXPORT Document : public ContainerNode,
   USING_GARBAGE_COLLECTED_MIXIN(Document);
 
  public:
-  static Document* Create(const DocumentInit& init) {
-    return MakeGarbageCollected<Document>(init);
-  }
-  static Document* CreateForTest();
   // Factory for web-exposed Document constructor. The argument document must be
   // a document instance representing window.document, and it works as the
   // source of ExecutionContext and security origin of the new document.
   // https://dom.spec.whatwg.org/#dom-document-document
   static Document* Create(Document&);
 
-  Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
+  explicit Document(const DocumentInit& = DocumentInit::Create(),
+                    DocumentClassFlags = kDefaultDocumentClass);
   ~Document() override;
 
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,

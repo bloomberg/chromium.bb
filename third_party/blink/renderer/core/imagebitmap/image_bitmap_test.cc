@@ -107,7 +107,7 @@ class ImageBitmapTest : public testing::Test {
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
   auto* image_element =
-      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   SkImageInfo raster_image_info =
       SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
@@ -178,7 +178,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   auto* image =
-      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   SkImageInfo raster_image_info =
       SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
@@ -317,7 +317,7 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
   auto* image_element =
-      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
+      MakeGarbageCollected<HTMLImageElement>(*MakeGarbageCollected<Document>());
 
   SkPaint p;
   p.setColor(SK_ColorRED);

@@ -363,7 +363,7 @@ void XMLHttpRequest::InitResponseDocument() {
   if (is_html)
     response_document_ = MakeGarbageCollected<HTMLDocument>(init);
   else
-    response_document_ = XMLDocument::Create(init);
+    response_document_ = MakeGarbageCollected<XMLDocument>(init);
 
   // FIXME: Set Last-Modified.
   response_document_->SetSecurityOrigin(GetMutableSecurityOrigin());

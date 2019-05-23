@@ -60,7 +60,7 @@ class CORE_EXPORT DocumentInit final {
   //       .WithDocumentLoader(loader)
   //       .WithContextDocument(context_document)
   //       .WithURL(url);
-  //   Document* document = Document::Create(init);
+  //   Document* document = MakeGarbageCollected<Document>(init);
   static DocumentInit Create();
   static DocumentInit CreateWithImportsController(HTMLImportsController*);
 

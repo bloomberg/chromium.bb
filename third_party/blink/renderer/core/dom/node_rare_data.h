@@ -24,6 +24,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
@@ -39,8 +40,6 @@ class NodeListsNodeData;
 class NodeMutationObserverData final
     : public GarbageCollected<NodeMutationObserverData> {
  public:
-  static NodeMutationObserverData* Create();
-
   NodeMutationObserverData() = default;
 
   const HeapVector<Member<MutationObserverRegistration>>& Registry() {
@@ -113,10 +112,6 @@ class NodeRareDataBase {
 class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
                      public NodeRareDataBase {
  public:
-  static NodeRareData* Create(NodeRenderingData* node_layout_data) {
-    return MakeGarbageCollected<NodeRareData>(node_layout_data);
-  }
-
   explicit NodeRareData(NodeRenderingData* node_layout_data)
       : NodeRareDataBase(node_layout_data),
         connected_frame_count_(0),
@@ -146,7 +141,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   }
   NodeMutationObserverData& EnsureMutationObserverData() {
     if (!mutation_observer_data_) {
-      mutation_observer_data_ = NodeMutationObserverData::Create();
+      mutation_observer_data_ =
+          MakeGarbageCollected<NodeMutationObserverData>();
     }
     return *mutation_observer_data_;
   }

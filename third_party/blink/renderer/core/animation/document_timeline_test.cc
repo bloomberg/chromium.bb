@@ -163,7 +163,7 @@ TEST_F(AnimationDocumentTimelineTest, EffectiveTime) {
   EXPECT_EQ(200, timeline->CurrentTimeInternal(is_null));
   EXPECT_FALSE(is_null);
 
-  Document* document_without_frame = Document::CreateForTest();
+  auto* document_without_frame = MakeGarbageCollected<Document>();
   DocumentTimeline* inactive_timeline = DocumentTimeline::Create(
       document_without_frame, TimeDelta(), platform_timing);
 

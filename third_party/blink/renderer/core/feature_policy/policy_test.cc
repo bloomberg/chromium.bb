@@ -24,7 +24,7 @@ using testing::UnorderedElementsAre;
 class PolicyTest : public testing::Test {
  public:
   void SetUp() override {
-    document_ = Document::CreateForTest();
+    document_ = MakeGarbageCollected<Document>();
     document_->SetSecurityOrigin(SecurityOrigin::CreateFromString(kSelfOrigin));
     document_->ApplyFeaturePolicyFromHeader(
         "fullscreen *; payment 'self'; midi 'none'; camera 'self' "

@@ -76,7 +76,7 @@ class MockPendingScript : public PendingScript {
 
 class ScriptRunnerTest : public testing::Test {
  public:
-  ScriptRunnerTest() : document_(Document::CreateForTest()) {}
+  ScriptRunnerTest() : document_(MakeGarbageCollected<Document>()) {}
 
   void SetUp() override {
     // We have to create ScriptRunner after initializing platform, because we

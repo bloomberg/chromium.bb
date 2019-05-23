@@ -594,10 +594,6 @@ class Document::NetworkStateObserver final
       online_observer_handle_;
 };
 
-Document* Document::CreateForTest() {
-  return MakeGarbageCollected<Document>(DocumentInit::Create());
-}
-
 Document* Document::Create(Document& document) {
   Document* new_document = MakeGarbageCollected<Document>(
       DocumentInit::Create().WithContextDocument(&document).WithURL(
@@ -788,12 +784,14 @@ Range* Document::CreateRangeAdjustedToTreeScope(const TreeScope& tree_scope,
   // Note: Since |Position::ComputeContainerNode()| returns |nullptr| if
   // |position| is |BeforeAnchor| or |AfterAnchor|.
   Node* const anchor_node = position.AnchorNode();
-  if (anchor_node->GetTreeScope() == tree_scope)
-    return Range::Create(tree_scope.GetDocument(), position, position);
+  if (anchor_node->GetTreeScope() == tree_scope) {
+    return MakeGarbageCollected<Range>(tree_scope.GetDocument(), position,
+                                       position);
+  }
   Node* const shadow_host = tree_scope.AncestorInThisScope(anchor_node);
-  return Range::Create(tree_scope.GetDocument(),
-                       Position::BeforeNode(*shadow_host),
-                       Position::BeforeNode(*shadow_host));
+  return MakeGarbageCollected<Range>(tree_scope.GetDocument(),
+                                     Position::BeforeNode(*shadow_host),
+                                     Position::BeforeNode(*shadow_host));
 }
 
 SelectorQueryCache& Document::GetSelectorQueryCache() {
@@ -3613,7 +3611,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   if (ProcessingBeforeUnload())
     return false;
 
-  BeforeUnloadEvent& before_unload_event = *BeforeUnloadEvent::Create();
+  auto& before_unload_event = *MakeGarbageCollected<BeforeUnloadEvent>();
   before_unload_event.initEvent(event_type_names::kBeforeunload, false, true);
   load_event_progress_ = kBeforeUnloadEventInProgress;
   const TimeTicks beforeunload_event_start = CurrentTimeTicks();
@@ -4526,9 +4524,9 @@ Document* Document::CloneDocumentWithoutChildren() const {
     if (IsXHTMLDocument())
       return XMLDocument::CreateXHTML(
           init.WithRegistrationContext(RegistrationContext()));
-    return XMLDocument::Create(init);
+    return MakeGarbageCollected<XMLDocument>(init);
   }
-  return Create(init);
+  return MakeGarbageCollected<Document>(init);
 }
 
 void Document::CloneDataFromDocument(const Document& other) {
@@ -7321,8 +7319,8 @@ Document& Document::EnsureTemplateDocument() {
             .WithURL(BlankURL())
             .WithNewRegistrationContext());
   } else {
-    template_document_ =
-        Document::Create(DocumentInit::Create().WithURL(BlankURL()));
+    template_document_ = MakeGarbageCollected<Document>(
+        DocumentInit::Create().WithURL(BlankURL()));
   }
 
   template_document_->template_document_host_ = this;  // balanced in dtor.
@@ -8054,7 +8052,7 @@ void Document::SetShowBeforeUnloadDialog(bool show_dialog) {
       return;
 
     mime_handler_view_before_unload_event_listener_ =
-        BeforeUnloadEventListener::Create(this);
+        MakeGarbageCollected<BeforeUnloadEventListener>(this);
     domWindow()->addEventListener(
         event_type_names::kBeforeunload,
         mime_handler_view_before_unload_event_listener_, false);

@@ -82,8 +82,8 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
   if (!execution_context)
     return true;
 
-  // Test case docs (Document::CreateForTest) might not have a window and hence
-  // no TrustedTypesPolicyFactory.
+  // Test case docs (MakeGarbageCollected<Document>()) might not have a window
+  // and hence no TrustedTypesPolicyFactory.
   if (execution_context->GetTrustedTypes())
     execution_context->GetTrustedTypes()->CountTrustedTypeAssignmentError();
 

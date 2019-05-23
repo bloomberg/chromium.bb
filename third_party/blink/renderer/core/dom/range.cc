@@ -122,7 +122,7 @@ int RangeUpdateScope::scope_count_ = 0;
 Range* RangeUpdateScope::current_range_;
 #endif
 
-inline Range::Range(Document& owner_document)
+Range::Range(Document& owner_document)
     : owner_document_(&owner_document),
       start_(*owner_document_),
       end_(*owner_document_) {
@@ -133,11 +133,11 @@ Range* Range::Create(Document& owner_document) {
   return MakeGarbageCollected<Range>(owner_document);
 }
 
-inline Range::Range(Document& owner_document,
-                    Node* start_container,
-                    unsigned start_offset,
-                    Node* end_container,
-                    unsigned end_offset)
+Range::Range(Document& owner_document,
+             Node* start_container,
+             unsigned start_offset,
+             Node* end_container,
+             unsigned end_offset)
     : owner_document_(&owner_document),
       start_(*owner_document_),
       end_(*owner_document_) {
@@ -149,23 +149,14 @@ inline Range::Range(Document& owner_document,
   setEnd(end_container, end_offset);
 }
 
-Range* Range::Create(Document& owner_document,
-                     Node* start_container,
-                     unsigned start_offset,
-                     Node* end_container,
-                     unsigned end_offset) {
-  return MakeGarbageCollected<Range>(owner_document, start_container,
-                                     start_offset, end_container, end_offset);
-}
-
-Range* Range::Create(Document& owner_document,
-                     const Position& start,
-                     const Position& end) {
-  return MakeGarbageCollected<Range>(
-      owner_document, start.ComputeContainerNode(),
-      start.ComputeOffsetInContainerNode(), end.ComputeContainerNode(),
-      end.ComputeOffsetInContainerNode());
-}
+Range::Range(Document& owner_document,
+             const Position& start,
+             const Position& end)
+    : Range(owner_document,
+            start.ComputeContainerNode(),
+            start.ComputeOffsetInContainerNode(),
+            end.ComputeContainerNode(),
+            end.ComputeOffsetInContainerNode()) {}
 
 void Range::Dispose() {
   // A prompt detach from the owning Document helps avoid GC overhead.
@@ -1162,8 +1153,9 @@ void Range::CheckNodeBA(Node* n, ExceptionState& exception_state) const {
 }
 
 Range* Range::cloneRange() const {
-  return Range::Create(*owner_document_.Get(), &start_.Container(),
-                       start_.Offset(), &end_.Container(), end_.Offset());
+  return MakeGarbageCollected<Range>(*owner_document_.Get(),
+                                     &start_.Container(), start_.Offset(),
+                                     &end_.Container(), end_.Offset());
 }
 
 void Range::setStartAfter(Node* ref_node, ExceptionState& exception_state) {

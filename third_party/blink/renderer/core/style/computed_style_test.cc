@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -416,7 +417,7 @@ TEST(ComputedStyleTest, BorderStyle) {
   } while (false)
 
 TEST(ComputedStyleTest, AnimationFlags) {
-  Persistent<Document> document = Document::CreateForTest();
+  Persistent<Document> document = MakeGarbageCollected<Document>();
   TEST_ANIMATION_FLAG(HasCurrentTransformAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentOpacityAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentFilterAnimation, kNonInherited);
@@ -429,7 +430,7 @@ TEST(ComputedStyleTest, AnimationFlags) {
 }
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   RegisterProperty(*document, "--x", "<length>", "0px", false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
@@ -458,7 +459,7 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
 }
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   RegisterProperty(*document, "--x", "<length>", "0px", false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();

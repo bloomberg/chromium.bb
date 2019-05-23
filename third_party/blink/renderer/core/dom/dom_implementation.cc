@@ -91,7 +91,7 @@ XMLDocument* DOMImplementation::createDocument(
     doc = XMLDocument::CreateXHTML(
         init.WithRegistrationContext(document_->RegistrationContext()));
   } else {
-    doc = XMLDocument::Create(init);
+    doc = MakeGarbageCollected<XMLDocument>(init);
   }
 
   doc->SetSecurityOrigin(document_->GetMutableSecurityOrigin());
@@ -296,7 +296,7 @@ Document* DOMImplementation::createDocument(const String& type,
   if (type == "image/svg+xml")
     return XMLDocument::CreateSVG(init);
   if (IsXMLMIMEType(type))
-    return XMLDocument::Create(init);
+    return MakeGarbageCollected<XMLDocument>(init);
 
   return MakeGarbageCollected<HTMLDocument>(init);
 }

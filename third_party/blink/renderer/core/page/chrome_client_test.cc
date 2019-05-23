@@ -42,7 +42,7 @@ TEST_F(ChromeClientTest, SetToolTipFlood) {
   ChromeClient* client = &logger;
   HitTestLocation location(LayoutPoint(10, 20));
   HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
-  Document* doc = Document::CreateForTest();
+  auto* doc = MakeGarbageCollected<Document>();
   auto* element = MakeGarbageCollected<HTMLElement>(html_names::kDivTag, *doc);
   element->setAttribute(html_names::kTitleAttr, "tooltip");
   result.SetInnerNode(element);
@@ -75,7 +75,7 @@ TEST_F(ChromeClientTest, SetToolTipEmptyString) {
   ChromeClient* client = MakeGarbageCollected<EmptyChromeClient>();
   HitTestLocation location(LayoutPoint(10, 20));
   HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
-  auto& doc = *Document::CreateForTest();
+  auto& doc = *MakeGarbageCollected<Document>();
   auto& input_element =
       *MakeGarbageCollected<HTMLInputElement>(doc, CreateElementFlags());
   input_element.setAttribute(html_names::kTypeAttr, "file");

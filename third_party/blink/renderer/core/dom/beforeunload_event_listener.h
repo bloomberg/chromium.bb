@@ -19,10 +19,6 @@ class Visitor;
 // include MimeHandlerView (some PluginDocuments and HTMLDocuments).
 class BeforeUnloadEventListener : public NativeEventListener {
  public:
-  static BeforeUnloadEventListener* Create(Document* document) {
-    return MakeGarbageCollected<BeforeUnloadEventListener>(document);
-  }
-
   explicit BeforeUnloadEventListener(Document*);
 
   void SetShowBeforeUnloadDialog(bool show_dialog) {

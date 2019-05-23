@@ -69,7 +69,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
                           kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.expected_policy, csp->GetInsecureRequestPolicy());
 
-    Document* document = Document::CreateForTest();
+    auto* document = MakeGarbageCollected<Document>();
     document->SetSecurityOrigin(secure_origin);
     document->SetURL(secure_url);
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
@@ -720,7 +720,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
   WTF::OrdinalNumber context_line;
 
   // We need document for HTMLScriptElement tests.
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   document->SetSecurityOrigin(secure_origin);
 
   for (const auto& test : cases) {
@@ -1518,7 +1518,7 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
   const KURL example_url("http://example.com");
-  Document* document = Document::CreateForTest();
+  auto* document = MakeGarbageCollected<Document>();
   String source;
   String context_url;
   String nonce;

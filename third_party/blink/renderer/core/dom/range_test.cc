@@ -52,8 +52,8 @@ TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
   GetDocument().body()->AppendChild(script_element);
 
   Element* const span_element = GetDocument().QuerySelector("span");
-  Range* const range =
-      Range::Create(GetDocument(), span_element, 0, span_element, 1);
+  auto* const range = MakeGarbageCollected<Range>(GetDocument(), span_element,
+                                                  0, span_element, 1);
   Element* const result = GetDocument().CreateRawElement(html_names::kDivTag);
   result->AppendChild(range->extractContents(ASSERT_NO_EXCEPTION));
 
@@ -105,10 +105,14 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   GetDocument().body()->SetInnerHTMLFromString("1234");
   auto* old_text = To<Text>(GetDocument().body()->firstChild());
 
-  Range* range04 = Range::Create(GetDocument(), old_text, 0, old_text, 4);
-  Range* range02 = Range::Create(GetDocument(), old_text, 0, old_text, 2);
-  Range* range22 = Range::Create(GetDocument(), old_text, 2, old_text, 2);
-  Range* range24 = Range::Create(GetDocument(), old_text, 2, old_text, 4);
+  auto* range04 =
+      MakeGarbageCollected<Range>(GetDocument(), old_text, 0, old_text, 4);
+  auto* range02 =
+      MakeGarbageCollected<Range>(GetDocument(), old_text, 0, old_text, 2);
+  auto* range22 =
+      MakeGarbageCollected<Range>(GetDocument(), old_text, 2, old_text, 2);
+  auto* range24 =
+      MakeGarbageCollected<Range>(GetDocument(), old_text, 2, old_text, 4);
 
   old_text->splitText(2, ASSERT_NO_EXCEPTION);
   auto* new_text = To<Text>(old_text->nextSibling());
@@ -155,16 +159,18 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
       GetDocument().getElementById(AtomicString::FromUTF8("inner-right"));
   auto* old_text = To<Text>(outer->childNodes()->item(2));
 
-  Range* range_outer_outside = Range::Create(GetDocument(), outer, 0, outer, 5);
-  Range* range_outer_inside = Range::Create(GetDocument(), outer, 1, outer, 4);
-  Range* range_outer_surrounding_text =
-      Range::Create(GetDocument(), outer, 2, outer, 3);
-  Range* range_inner_left =
-      Range::Create(GetDocument(), inner_left, 0, inner_left, 1);
-  Range* range_inner_right =
-      Range::Create(GetDocument(), inner_right, 0, inner_right, 1);
-  Range* range_from_text_to_middle_of_element =
-      Range::Create(GetDocument(), old_text, 6, outer, 3);
+  auto* range_outer_outside =
+      MakeGarbageCollected<Range>(GetDocument(), outer, 0, outer, 5);
+  auto* range_outer_inside =
+      MakeGarbageCollected<Range>(GetDocument(), outer, 1, outer, 4);
+  auto* range_outer_surrounding_text =
+      MakeGarbageCollected<Range>(GetDocument(), outer, 2, outer, 3);
+  auto* range_inner_left =
+      MakeGarbageCollected<Range>(GetDocument(), inner_left, 0, inner_left, 1);
+  auto* range_inner_right = MakeGarbageCollected<Range>(
+      GetDocument(), inner_right, 0, inner_right, 1);
+  auto* range_from_text_to_middle_of_element =
+      MakeGarbageCollected<Range>(GetDocument(), old_text, 6, outer, 3);
 
   old_text->splitText(3, ASSERT_NO_EXCEPTION);
   auto* new_text = To<Text>(old_text->nextSibling());
@@ -213,10 +219,10 @@ TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
   Element* bar = GetDocument().CreateElementForBinding("bar");
   foo->AppendChild(bar);
 
-  Range* range =
-      Range::Create(GetDocument(), Position(bar, 0), Position(foo, 1));
+  auto* range = MakeGarbageCollected<Range>(GetDocument(), Position(bar, 0),
+                                            Position(foo, 1));
 
-  Document* another_document = Document::CreateForTest();
+  auto* another_document = MakeGarbageCollected<Document>();
   another_document->AppendChild(foo);
 
   EXPECT_EQ(bar, range->startContainer());
@@ -235,7 +241,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
   Element* span2 = GetDocument().getElementById("span2");
   auto* text = To<Text>(div->childNodes()->item(1));
 
-  Range* range = Range::Create(GetDocument(), span2, 0, div, 3);
+  auto* range = MakeGarbageCollected<Range>(GetDocument(), span2, 0, div, 3);
 
   div->RemoveChild(span1);
   text->insertData(0, "bar", ASSERT_NO_EXCEPTION);
@@ -257,7 +263,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
   Element* span2 = GetDocument().getElementById("span2");
   auto* text = To<Text>(div->childNodes()->item(1));
 
-  Range* range = Range::Create(GetDocument(), span2, 0, div, 3);
+  auto* range = MakeGarbageCollected<Range>(GetDocument(), span2, 0, div, 3);
 
   div->RemoveChild(span1);
   text->deleteData(0, 3, ASSERT_NO_EXCEPTION);
@@ -293,8 +299,8 @@ TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
   Node* const div = GetDocument().QuerySelector("div");
   // "x^x
   //  x|x "
-  Range* const range =
-      Range::Create(GetDocument(), div->firstChild(), 1, div->firstChild(), 4);
+  auto* const range = MakeGarbageCollected<Range>(
+      GetDocument(), div->firstChild(), 1, div->firstChild(), 4);
   const FloatRect rect_before = range->BoundingRect();
   EXPECT_GT(rect_before.Width(), 0);
   EXPECT_GT(rect_before.Height(), 0);
@@ -316,7 +322,7 @@ TEST_F(RangeTest, BorderAndTextQuadsWithInputInBetween) {
 
   Node* foo = GetDocument().QuerySelector("div")->firstChild();
   Node* bar = GetDocument().QuerySelector("u")->lastChild();
-  Range* range = Range::Create(GetDocument(), foo, 2, bar, 2);
+  auto* range = MakeGarbageCollected<Range>(GetDocument(), foo, 2, bar, 2);
 
   Vector<FloatQuad> quads;
   range->GetBorderAndTextQuads(quads);
@@ -328,7 +334,8 @@ TEST_F(RangeTest, BorderAndTextQuadsWithInputInBetween) {
 static Vector<FloatQuad> GetBorderAndTextQuads(const Position& start,
                                                const Position& end) {
   DCHECK_LE(start, end);
-  Range* const range = Range::Create(*start.GetDocument(), start, end);
+  auto* const range =
+      MakeGarbageCollected<Range>(*start.GetDocument(), start, end);
   Vector<FloatQuad> quads;
   range->GetBorderAndTextQuads(quads);
   return quads;

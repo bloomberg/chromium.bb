@@ -239,7 +239,7 @@ Document* LocalDOMWindow::CreateDocument(const String& mime_type,
   if (force_xhtml) {
     // This is a hack for XSLTProcessor. See
     // XSLTProcessor::createDocumentFromSource().
-    document = Document::Create(init);
+    document = MakeGarbageCollected<Document>(init);
   } else {
     document = DOMImplementation::createDocument(
         mime_type, init,

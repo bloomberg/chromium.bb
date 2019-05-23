@@ -164,6 +164,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -1026,8 +1027,9 @@ Range* Internals::markerRangeForNode(Node* node,
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
   if (!marker)
     return nullptr;
-  return Range::Create(node->GetDocument(), node, marker->StartOffset(), node,
-                       marker->EndOffset());
+  return MakeGarbageCollected<Range>(node->GetDocument(), node,
+                                     marker->StartOffset(), node,
+                                     marker->EndOffset());
 }
 
 String Internals::markerDescriptionForNode(Node* node,
