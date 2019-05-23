@@ -15,6 +15,7 @@
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/drag_window_controller.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -700,6 +701,31 @@ void OverviewItem::OnDragAnimationCompleted() {
       break;
     }
   }
+}
+
+void OverviewItem::UpdatePhantomsForDragging(
+    const gfx::PointF& location_in_screen) {
+  aura::Window* window = transform_window_.IsMinimized()
+                             ? item_widget_->GetNativeWindow()
+                             : GetWindow();
+
+  if (!phantoms_for_dragging_) {
+    DCHECK_EQ(1.f, window->layer()->opacity());
+    phantoms_for_dragging_ = std::make_unique<DragWindowController>(window);
+  }
+
+  const gfx::Point location = gfx::ToRoundedPoint(location_in_screen);
+  window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
+      root_window_, window, location));
+  phantoms_for_dragging_->Update(location);
+}
+
+void OverviewItem::DestroyPhantomsForDragging() {
+  phantoms_for_dragging_.reset();
+  aura::Window* window = transform_window_.IsMinimized()
+                             ? item_widget_->GetNativeWindow()
+                             : GetWindow();
+  window->layer()->SetOpacity(1.f);
 }
 
 void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {

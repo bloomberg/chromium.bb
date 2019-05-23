@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/screen_util.h"
@@ -146,6 +147,8 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
     presentation_time_recorder_->RequestNext();
 
   item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
+  if (current_drag_behavior_ == DragBehavior::kNormalDrag)
+    item_->UpdatePhantomsForDragging(location_in_screen);
 }
 
 OverviewWindowDragController::DragResult
@@ -182,6 +185,8 @@ void OverviewWindowDragController::StartNormalDragMode(
     const gfx::PointF& location_in_screen) {
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kNormalDrag;
+  Shell::Get()->mouse_cursor_filter()->ShowSharedEdgeIndicator(
+      item_->root_window());
   item_->ScaleUpSelectedItem(
       OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW);
   original_scaled_size_ = item_->target_bounds().size();
@@ -247,6 +252,8 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
 
 void OverviewWindowDragController::ResetGesture() {
   if (current_drag_behavior_ == DragBehavior::kNormalDrag) {
+    Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
+    item_->DestroyPhantomsForDragging();
     overview_session_->RemoveDropTargetForDraggingFromOverview(item_);
     overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         IndicatorState::kNone, gfx::Point());
@@ -353,6 +360,8 @@ OverviewWindowDragController::DragResult
 OverviewWindowDragController::CompleteNormalDrag(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kNormalDrag);
+  Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
+  item_->DestroyPhantomsForDragging();
 
   const gfx::Point rounded_screen_point =
       gfx::ToRoundedPoint(location_in_screen);

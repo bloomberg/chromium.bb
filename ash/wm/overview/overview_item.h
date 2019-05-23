@@ -29,6 +29,7 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+class DragWindowController;
 class OverviewGrid;
 class RoundedLabelWidget;
 
@@ -161,6 +162,12 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // to its original stacking order so that the order of windows is the same as
   // when entering overview.
   void OnDragAnimationCompleted();
+
+  // Updates |phantoms_for_dragging_|. If |phantoms_for_dragging_| is null, then
+  // a new object is created for it.
+  void UpdatePhantomsForDragging(const gfx::PointF& location_in_screen);
+
+  void DestroyPhantomsForDragging();
 
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
   // the shadow is hidden.
@@ -314,6 +321,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // A widget with text that may show up on top of |transform_window_| to notify
   // users this window cannot be snapped.
   std::unique_ptr<RoundedLabelWidget> cannot_snap_widget_;
+
+  // Responsible for phantoms that look like the window on all displays during
+  // dragging.
+  std::unique_ptr<DragWindowController> phantoms_for_dragging_;
 
   // Pointer to the Overview that owns the OverviewGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.
