@@ -72,11 +72,14 @@ class MediaDrmOriginIdManagerTest : public testing::Test {
     MediaDrmOriginId result;
 
     origin_id_manager_->GetOriginId(base::BindOnce(
-        [](base::OnceClosure callback, MediaDrmOriginId* result, bool success,
+        [](base::OnceClosure callback, MediaDrmOriginId* result,
+           MediaDrmOriginIdManager::GetOriginIdStatus status,
            const MediaDrmOriginId& origin_id) {
-          // If |success| = true, then |origin_id| should be not null.
-          // If |success| = false, then |origin_id| should be null.
-          EXPECT_EQ(success, origin_id.has_value());
+          // If |status| = kFailure, then |origin_id| should be null.
+          // Otherwise (successful), |origin_id| should be not null.
+          EXPECT_EQ(
+              status != MediaDrmOriginIdManager::GetOriginIdStatus::kFailure,
+              origin_id.has_value());
           *result = origin_id;
           std::move(callback).Run();
         },

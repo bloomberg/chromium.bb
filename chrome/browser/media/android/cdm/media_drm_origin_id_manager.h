@@ -32,12 +32,19 @@ class PrefService;
 // destroyed when the Profile goes away.
 class MediaDrmOriginIdManager : public KeyedService {
  public:
+  enum class GetOriginIdStatus {
+    kSuccessWithPreProvisionedOriginId = 0,
+    kSuccessWithNewlyProvisionedOriginId = 1,
+    kFailure = 2,
+  };
+
   using MediaDrmOriginId = media::MediaDrmStorage::MediaDrmOriginId;
 
   // |success| is true if an origin ID was obtained and |origin_id| is
   // not null, false otherwise.
   using ProvisionedOriginIdCB =
-      base::OnceCallback<void(bool success, const MediaDrmOriginId& origin_id)>;
+      base::OnceCallback<void(GetOriginIdStatus status,
+                              const MediaDrmOriginId& origin_id)>;
   using ProvisioningResultCB = base::RepeatingCallback<bool()>;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);

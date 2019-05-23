@@ -192,6 +192,10 @@ void AddOriginId(base::Value* origin_id_dict,
 // (successfully or not).
 class MediaDrmProvisionHelper {
  public:
+  using ProvisionedOriginIdCB = base::OnceCallback<void(
+      bool success,
+      const MediaDrmOriginIdManager::MediaDrmOriginId& origin_id)>;
+
   MediaDrmProvisionHelper() {
     DVLOG(1) << __func__;
     DCHECK(media::MediaDrmBridge::IsPerOriginProvisioningSupported());
@@ -202,7 +206,7 @@ class MediaDrmProvisionHelper {
                                 ->GetSharedURLLoaderFactory());
   }
 
-  void Provision(MediaDrmOriginIdManager::ProvisionedOriginIdCB callback) {
+  void Provision(ProvisionedOriginIdCB callback) {
     DVLOG(1) << __func__;
 
     complete_callback_ = std::move(callback);
@@ -267,7 +271,7 @@ class MediaDrmProvisionHelper {
   }
 
   media::CreateFetcherCB create_fetcher_cb_;
-  MediaDrmOriginIdManager::ProvisionedOriginIdCB complete_callback_;
+  ProvisionedOriginIdCB complete_callback_;
   base::UnguessableToken origin_id_;
   scoped_refptr<media::MediaDrmBridge> media_drm_bridge_;
 };
@@ -345,7 +349,7 @@ MediaDrmOriginIdManager::~MediaDrmOriginIdManager() {
   // Reject any pending requests.
   while (!pending_provisioned_origin_id_cbs_.empty()) {
     std::move(pending_provisioned_origin_id_cbs_.front())
-        .Run(false, base::nullopt);
+        .Run(GetOriginIdStatus::kFailure, base::nullopt);
     pending_provisioned_origin_id_cbs_.pop();
   }
 }
@@ -403,7 +407,8 @@ void MediaDrmOriginIdManager::GetOriginId(ProvisionedOriginIdCB callback) {
   }
 
   // There is an origin ID available so pass it to the caller.
-  std::move(callback).Run(true, origin_id);
+  std::move(callback).Run(GetOriginIdStatus::kSuccessWithPreProvisionedOriginId,
+                          origin_id);
 }
 
 void MediaDrmOriginIdManager::StartProvisioningAsync() {
@@ -467,7 +472,8 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
       base::queue<ProvisionedOriginIdCB> pending_requests;
       pending_requests.swap(pending_provisioned_origin_id_cbs_);
       while (!pending_requests.empty()) {
-        std::move(pending_requests.front()).Run(false, base::nullopt);
+        std::move(pending_requests.front())
+            .Run(GetOriginIdStatus::kFailure, base::nullopt);
         pending_requests.pop();
       }
     }
@@ -481,7 +487,9 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
   // origin IDs in the preference.
   DCHECK(origin_id);
   if (!pending_provisioned_origin_id_cbs_.empty()) {
-    std::move(pending_provisioned_origin_id_cbs_.front()).Run(true, origin_id);
+    std::move(pending_provisioned_origin_id_cbs_.front())
+        .Run(GetOriginIdStatus::kSuccessWithNewlyProvisionedOriginId,
+             origin_id);
     pending_provisioned_origin_id_cbs_.pop();
   } else {
     DictionaryPrefUpdate update(pref_service_, kMediaDrmOriginIds);

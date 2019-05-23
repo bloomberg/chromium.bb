@@ -26960,6 +26960,19 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Error adding a new key"/>
 </enum>
 
+<enum name="GetOriginIdResult">
+  <int value="0" label="Success with pre-provisioned origin ID"/>
+  <int value="1" label="Success with newly provisioned origin ID"/>
+  <int value="2" label="Success with unprovisioned origin ID"/>
+  <int value="3"
+      label="Failed on device that supports per-application provisioning"/>
+  <int value="4"
+      label="Failed on device that doesn't support per-application
+             provisioning"/>
+  <int value="5"
+      label="Failed as no factory associated with the profile found"/>
+</enum>
+
 <enum name="GetOutputDeviceInfoCacheHit">
   <int value="0" label="Miss: no cached sink found">
     Output parmeters for a device are requested, and there is no corresponding
