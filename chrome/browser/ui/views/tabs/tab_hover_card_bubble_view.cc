@@ -284,8 +284,11 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_label_->SetMultiLine(false);
   AddChildView(title_label_);
 
-  domain_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
-                                   ChromeTextStyle::STYLE_SECONDARY);
+  domain_label_ =
+      new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
+                       ChromeTextStyle::STYLE_SECONDARY,
+                       gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
+  domain_label_->SetElideBehavior(gfx::ELIDE_HEAD);
   domain_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   domain_label_->SetMultiLine(false);
   AddChildView(domain_label_);
@@ -446,10 +449,8 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
 
   base::string16 domain = url_formatter::FormatUrl(
       data.url,
-      url_formatter::kFormatUrlOmitUsernamePassword |
+      url_formatter::kFormatUrlOmitDefaults |
           url_formatter::kFormatUrlOmitHTTPS |
-          url_formatter::kFormatUrlOmitHTTP |
-          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname |
           url_formatter::kFormatUrlOmitTrivialSubdomains |
           url_formatter::kFormatUrlTrimAfterHost,
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
