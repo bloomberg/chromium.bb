@@ -10,9 +10,11 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/threading/sequence_bound.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
 
 namespace base {
 class FilePath;
@@ -31,6 +33,7 @@ namespace content {
 
 class BrowserContext;
 class ChromeBlobStorageContext;
+class CacheStorageDispatcherHost;
 class CacheStorageManager;
 
 // One instance of this exists per StoragePartition, and services multiple
@@ -58,13 +61,16 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
             scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
   void Shutdown();
 
-  // Only callable on the IO thread.
+  // Only callable on the UI thread.
+  void AddBinding(blink::mojom::CacheStorageRequest request,
+                  const url::Origin& origin);
+
   CacheStorageManager* cache_manager() const;
 
   bool is_incognito() const { return is_incognito_; }
 
   // This function must be called after this object is created but before any
-  // CacheStorageCache operations. It must be called on the IO thread. If
+  // CacheStorageCache operations. It must be called on the UI thread. If
   // |blob_storage_context| is NULL the function immediately returns without
   // forwarding to the CacheStorageManager.
   void SetBlobParametersForCache(
@@ -87,7 +93,13 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
       scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
-  void ShutdownOnIO();
+  void ShutdownOnTaskRunner();
+
+  void SetBlobParametersForCacheOnTaskRunner(
+      ChromeBlobStorageContext* blob_storage_context);
+
+  // Initialized at construction.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Initialized in Init(); true if the user data directory is empty.
   bool is_incognito_ = false;
@@ -97,6 +109,9 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
 
   // Only accessed on the IO thread.
   scoped_refptr<CacheStorageManager> cache_manager_;
+
+  // Initialized from the UI thread and bound to |task_runner_|.
+  base::SequenceBound<CacheStorageDispatcherHost> dispatcher_host_;
 };
 
 }  // namespace content

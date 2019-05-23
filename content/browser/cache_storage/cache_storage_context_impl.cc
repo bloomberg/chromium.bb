@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -22,11 +23,14 @@
 namespace content {
 
 CacheStorageContextImpl::CacheStorageContextImpl(
-    BrowserContext* browser_context) {
+    BrowserContext* browser_context)
+    : task_runner_(
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 CacheStorageContextImpl::~CacheStorageContextImpl() {
+  // Can be destroyed on any thread.
 }
 
 void CacheStorageContextImpl::Init(
@@ -43,18 +47,8 @@ void CacheStorageContextImpl::Init(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-  // This thread-hopping antipattern is needed here for some unit tests, where
-  // browser threads are collapsed the quota manager is initialized before the
-  // posted task can register the quota client.
-  // TODO: Fix the tests to let the quota manager initialize normally.
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    CreateCacheStorageManager(user_data_directory, std::move(cache_task_runner),
-                              std::move(quota_manager_proxy));
-    return;
-  }
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+  task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&CacheStorageContextImpl::CreateCacheStorageManager, this,
                      user_data_directory, std::move(cache_task_runner),
                      std::move(quota_manager_proxy)));
@@ -63,9 +57,23 @@ void CacheStorageContextImpl::Init(
 void CacheStorageContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CacheStorageContextImpl::ShutdownOnIO, this));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CacheStorageContextImpl::ShutdownOnTaskRunner, this));
+}
+
+void CacheStorageContextImpl::AddBinding(
+    blink::mojom::CacheStorageRequest request,
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!dispatcher_host_) {
+    dispatcher_host_ =
+        base::SequenceBound<CacheStorageDispatcherHost>(task_runner_);
+    dispatcher_host_.Post(FROM_HERE, &CacheStorageDispatcherHost::Init,
+                          base::RetainedRef(this));
+  }
+  dispatcher_host_.Post(FROM_HERE, &CacheStorageDispatcherHost::AddBinding,
+                        std::move(request), origin);
 }
 
 CacheStorageManager* CacheStorageContextImpl::cache_manager() const {
@@ -75,12 +83,12 @@ CacheStorageManager* CacheStorageContextImpl::cache_manager() const {
 
 void CacheStorageContextImpl::SetBlobParametersForCache(
     ChromeBlobStorageContext* blob_storage_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (cache_manager_ && blob_storage_context) {
-    cache_manager_->SetBlobParametersForCache(
-        blob_storage_context->context()->AsWeakPtr());
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner, this,
+          base::RetainedRef(blob_storage_context)));
 }
 
 void CacheStorageContextImpl::GetAllOriginsInfo(
@@ -123,19 +131,16 @@ void CacheStorageContextImpl::CreateCacheStorageManager(
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner =
-      base::ThreadTaskRunnerHandle::Get();
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   DCHECK(!cache_manager_);
   cache_manager_ = CacheStorageManager::Create(
-      user_data_directory, std::move(cache_task_runner),
-      std::move(scheduler_task_runner), std::move(quota_manager_proxy));
+      user_data_directory, std::move(cache_task_runner), task_runner_,
+      std::move(quota_manager_proxy));
 }
 
-void CacheStorageContextImpl::ShutdownOnIO() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void CacheStorageContextImpl::ShutdownOnTaskRunner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // Delete session-only ("clear on exit") origins.
   if (special_storage_policy_ &&
@@ -176,6 +181,16 @@ void CacheStorageContextImpl::ShutdownOnIO() {
   // CacheStorageManager will be destroyed when all the references are
   // destroyed.
   cache_manager_ = nullptr;
+}
+
+void CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner(
+    ChromeBlobStorageContext* blob_storage_context) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  if (cache_manager_ && blob_storage_context) {
+    cache_manager_->SetBlobParametersForCache(
+        blob_storage_context->context()->AsWeakPtr());
+  }
 }
 
 }  // namespace content

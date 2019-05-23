@@ -85,7 +85,6 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
-#include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
@@ -1927,20 +1926,8 @@ void RenderProcessHostImpl::BindCacheStorage(
     blink::mojom::CacheStorageRequest request,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!cache_storage_dispatcher_host_) {
-    cache_storage_dispatcher_host_ =
-        base::MakeRefCounted<CacheStorageDispatcherHost>();
-    cache_storage_dispatcher_host_->Init(
-        storage_partition_impl_->GetCacheStorageContext());
-  }
-  // Send the binding to IO thread, because Cache Storage handles Mojo IPC on IO
-  // thread entirely.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CacheStorageDispatcherHost::AddBinding,
-                     cache_storage_dispatcher_host_, std::move(request),
-                     origin));
+  storage_partition_impl_->GetCacheStorageContext()->AddBinding(
+      std::move(request), origin);
 }
 
 void RenderProcessHostImpl::BindIndexedDB(

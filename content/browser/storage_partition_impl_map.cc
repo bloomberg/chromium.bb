@@ -574,12 +574,8 @@ void StoragePartitionImplMap::PostCreateInitialization(
             browser_context_->GetResourceContext(), request_context_getter,
             base::RetainedRef(browser_context_->GetSpecialStoragePolicy())));
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&CacheStorageContextImpl::SetBlobParametersForCache,
-                       partition->GetCacheStorageContext(),
-                       base::RetainedRef(ChromeBlobStorageContext::GetFor(
-                           browser_context_))));
+    partition->GetCacheStorageContext()->SetBlobParametersForCache(
+        ChromeBlobStorageContext::GetFor(browser_context_));
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
