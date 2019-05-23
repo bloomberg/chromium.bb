@@ -63,14 +63,13 @@ Polymer({
     this.focusConfig_ = new Map();
     if (settings.routes.SEARCH_ENGINES) {
       this.focusConfig_.set(
-          settings.routes.SEARCH_ENGINES.path,
-          '#engines-subpage-trigger');
+          settings.routes.SEARCH_ENGINES.path, '#enginesSubpageTrigger');
     }
     // <if expr="chromeos">
     if (settings.routes.GOOGLE_ASSISTANT) {
       this.focusConfig_.set(
           settings.routes.GOOGLE_ASSISTANT.path,
-          '#assistant-subpage-trigger .subpage-arrow');
+          '#assistantSubpageTrigger .subpage-arrow');
     }
     // </if>
   },

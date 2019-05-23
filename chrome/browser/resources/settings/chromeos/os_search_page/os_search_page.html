@@ -73,7 +73,7 @@
 
         <!-- Google Assistant -->
         <template is="dom-if" if="[[isAssistantAllowed_]]">
-          <div id="assistant-subpage-trigger" class="settings-box two-line"
+          <div id="assistantSubpageTrigger" class="settings-box two-line"
               on-click="onGoogleAssistantTap_" actionable>
             <div class="start">
               $i18n{searchGoogleAssistant}
@@ -90,7 +90,7 @@
       <template is="dom-if" if="[[isAssistantAllowed_]]">
         <template is="dom-if" route-path="/googleAssistant">
           <settings-subpage
-              associated-control="[[$$('#assistant-subpage-trigger')]]"
+              associated-control="[[$$('#assistantSubpageTrigger')]]"
               page-title="$i18n{googleAssistantPageTitle}">
             <settings-google-assistant-page prefs="{{prefs}}">
             </settings-google-assistant-page>

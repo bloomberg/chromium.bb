@@ -48,5 +48,15 @@ cr.define('split_settings_flag', function() {
       }
       assertEquals(unattachedBrowserSettingsSections.size, 0);
     });
+
+    test('Assistant is hidden in browser search settings', function() {
+      const searchSection =
+          browserSettings.$$('settings-section[section=search]');
+      assertTrue(!!searchSection);
+      const searchPage = searchSection.querySelector('settings-search-page');
+      assertTrue(!!searchPage);
+      assertTrue(!!searchPage.$.enginesSubpageTrigger);
+      assertFalse(!!searchPage.$.assistantSubpageTrigger);
+    });
   });
 });

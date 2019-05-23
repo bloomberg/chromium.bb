@@ -60,7 +60,7 @@ Polymer({
     if (settings.routes.GOOGLE_ASSISTANT) {
       this.focusConfig_.set(
           settings.routes.GOOGLE_ASSISTANT.path,
-          '#assistant-subpage-trigger .subpage-arrow');
+          '#assistantSubpageTrigger .subpage-arrow');
     }
   },
 
