@@ -199,14 +199,11 @@ const base::Feature kPictureInPicture {
 #endif
 };
 
-// Only decode preload=metadata elements upon visibility. Experiment results
-// vary across platforms and are still being analyzed on macOS and CrOS.
-//
-// Android, Windows, and Linux all saw improvements without regressions, so
-// enable by default there.
+// Only decode preload=metadata elements upon visibility. macOS still has some
+// undiagnosed performance and test issues, so isn't enabled yet.
 const base::Feature kPreloadMetadataLazyLoad {
   "PreloadMetadataLazyLoad",
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
