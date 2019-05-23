@@ -54,11 +54,8 @@ void PreReadFile(const base::FilePath& file_path) {
     base::MemoryMappedFile mapped_file;
     if (mapped_file.Initialize(file_path,
                                base::MemoryMappedFile::READ_CODE_IMAGE)) {
-      // RefSet data indicates we touch only the first half of the DLL
-      // so prefetch approximately the first half.
-
       _WIN32_MEMORY_RANGE_ENTRY address_range = {mapped_file.data(),
-                                                 mapped_file.length() / 2};
+                                                 mapped_file.length()};
 
       // NB: PrefetchVirtualMemory requires the file to be opened with
       // only read access or it will fail.
