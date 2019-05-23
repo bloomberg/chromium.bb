@@ -201,6 +201,10 @@ public class BottomSheetController implements Destroyable {
                 }
 
                 scrim.hideScrim(false);
+
+                // If not using a custom lifecycle, notify the controller that the sheet's content
+                // has been dismissed.
+                hideContent(mBottomSheet.getCurrentSheetContent(), false);
             }
 
             @Override
