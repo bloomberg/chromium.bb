@@ -86,6 +86,7 @@ public class ExploreSitesPage extends BasicNativePage {
     private boolean mHasFetchedNetworkCatalog;
     private boolean mIsLoaded;
     private int mInitialScrollPosition;
+    private boolean mScrollUserActionReported;
 
     /**
      * Create a new instance of the explore sites page.
@@ -167,6 +168,19 @@ public class ExploreSitesPage extends BasicNativePage {
 
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(adapter);
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView v, int x, int y) {
+                // y=0 on initial layout, even if the initial scroll position is requested
+                // that is not 0. Once user starts scrolling via touch, the onScrolled comes
+                // in bunches with |y| having a dY value of every small move, positive (scroll
+                // down) or negative (scroll up) number of dps for each move.
+                if (!mScrollUserActionReported && (y != 0)) {
+                    mScrollUserActionReported = true;
+                    RecordUserAction.record("Android.ExploreSitesPage.Scrolled");
+                }
+            }
+        });
 
         // When we personalize, we don't want to scroll to the 4th category.
         mInitialScrollPosition =
