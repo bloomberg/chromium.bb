@@ -55,8 +55,11 @@ device::Gamepad CreateGamepad(const device::GvrGamepadData& data) {
       device::GamepadButton(pressed, touched, value);
 
   if (touched) {
-    // data.touch_pos values are clamped to [0.0, 1.0], so normalize them to
-    // [-1.0, 1.0]
+    // data.touch_pos values reported by the GVR Android SDK are clamped to
+    // [0.0, 1.0], with (0, 0) corresponding to the top-left of the touchpad.
+    // Normalize the values to use X axis range -1 (left) to 1 (right) and Y
+    // axis range -1 (top) to 1 (bottom).
+    // TODO(https://crbug.com/966060): Revisit this if the convention changes.
     gamepad.axes[0] = (data.touch_pos.x() * 2.0) - 1.0;
     gamepad.axes[1] = (data.touch_pos.y() * 2.0) - 1.0;
   } else {

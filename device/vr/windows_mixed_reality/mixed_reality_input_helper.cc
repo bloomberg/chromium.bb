@@ -251,9 +251,12 @@ std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
   data.touched = data.pressed;
   data.value = data.pressed ? 1.0 : 0.0;
 
+  // TODO(https://crbug.com/966060): Determine if inverting the y value here is
+  // necessary.
   data.has_both_axes = true;
   data.x_axis = source_state->ThumbstickX();
-  data.y_axis = source_state->ThumbstickY();
+  data.y_axis = -source_state->ThumbstickY();
+
   button_map[ButtonName::kThumbstick] = data;
 
   // Add the touchpad
@@ -265,8 +268,10 @@ std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
   // The Touchpad does have Axes, but if it's not touched, they are 0.
   data.has_both_axes = true;
   if (data.touched) {
+    // TODO(https://crbug.com/966060): Determine if inverting the y value here
+    // is necessary.
     data.x_axis = source_state->TouchpadX();
-    data.y_axis = source_state->TouchpadY();
+    data.y_axis = -source_state->TouchpadY();
   } else {
     data.x_axis = 0;
     data.y_axis = 0;

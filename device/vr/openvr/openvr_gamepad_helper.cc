@@ -59,8 +59,11 @@ std::map<vr::EVRButtonId, GamepadBuilder::ButtonData> GetAxesButtons(
         static_cast<vr::TrackedDeviceProperty>(vr::Prop_Axis0Type_Int32 + j));
 
     GamepadBuilder::ButtonData button_data;
+
+    // TODO(https://crbug.com/966060): Determine if inverting the y value here
+    // is necessary.
     double x_axis = controller_state.rAxis[j].x;
-    double y_axis = controller_state.rAxis[j].y;
+    double y_axis = -controller_state.rAxis[j].y;
 
     switch (axis_type) {
       case vr::k_eControllerAxis_Joystick:

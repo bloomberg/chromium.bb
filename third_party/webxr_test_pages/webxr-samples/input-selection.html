@@ -53,6 +53,27 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         </p>
       </details>
     </header>
+    <header>
+        <details open>
+            <summary>None-hand Gamepad</summary>
+            <p>Real-time info for gamepad not associated with a particular hand.</p>
+            <div id="gamepad-hand-none"></div>
+        </details>
+    </header>
+    <header>
+        <details open>
+            <summary>Left-hand Gamepad</summary>
+            <p>Real-time info for gamepad associated with left hand.</p>
+            <div id="gamepad-hand-left"></div>
+        </details>
+    </header>
+    <header>
+        <details open>
+            <summary>Right-hand Gamepad</summary>
+            <p>Real-time info for gamepad associated with right hand.</p>
+            <div id="gamepad-hand-right"></div>
+        </details>
+    </header>
     <script type="module">
       import {Scene} from './js/cottontail/src/scenes/scene.js';
       import {Renderer, createWebGLContext} from './js/cottontail/src/core/renderer.js';
@@ -163,6 +184,68 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
+      function AddCell(row, text) {
+        let cell = document.createElement("td");
+        let textNode = document.createTextNode(text);
+        cell.appendChild(textNode);
+        row.appendChild(cell);
+      }
+
+      function AddRow(tableBody, values) {
+        let row = document.createElement("tr");
+        for (let i = 0; i < values.length; ++i) {
+          AddCell(row, values[i]);
+        }
+        tableBody.appendChild(row);
+      }
+
+      function AddHeader(tableBody, title, cols) {
+        let row = document.createElement("tr");
+        let th = document.createElement("th");
+        th.setAttribute("colspan", cols);
+        th.appendChild(document.createTextNode(title));
+        row.appendChild(th);
+        tableBody.appendChild(row);
+      }
+
+      function BuildButtonTable(buttons) {
+        let table = document.createElement("table");
+        let tableBody = document.createElement("tbody");
+        AddHeader(tableBody, "buttons", 3);
+        AddRow(tableBody, ["pressed", "touched", "value"]);
+        for (let i = 0; i < buttons.length; ++i) {
+          AddRow(tableBody, [buttons[i].pressed, buttons[i].touched, buttons[i].value.toFixed(3)]);
+        }
+        table.appendChild(tableBody);
+        table.setAttribute("border", 1);
+        return table;
+      }
+
+      function BuildAxesTable(axes) {
+        let table = document.createElement("table");
+        let tableBody = document.createElement("tbody");
+        AddHeader(tableBody, "axes", 1);
+        AddRow(tableBody, ["value"]);
+        for (let i = 0; i < axes.length; ++i) {
+          AddRow(tableBody, [axes[i].toFixed(3)]);
+        }
+        table.appendChild(tableBody);
+        table.setAttribute("border", 1);
+        return table;
+      }
+
+      function BuildInfoTable(gamepad, hand) {
+        let table = document.createElement("table");
+        let tableBody = document.createElement("tbody");
+        AddHeader(tableBody, "Gamepad", 2);
+        AddRow(tableBody, ["hand", hand]);
+        AddRow(tableBody, ["id", gamepad.id]);
+        AddRow(tableBody, ["mapping", gamepad.mapping]);
+        table.appendChild(tableBody);
+        table.setAttribute("border", 1);
+        return table;
+      }
+
       function ProcessGamepad(gamepad, input_source) {
         let hand = input_source.handedness;
         if (!(hand in loggedGamepadInfo)) {
@@ -192,16 +275,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         let buttons_fired = controllerTable[hand].update(gamepad);
         for (let button_index of buttons_fired) {
-          console.log("controller for " + hand + " hand fired button " + button_index.toString());
+          let message = "controller for " + hand + " hand fired button " + button_index.toString();
+          console.log(message);
           boxTable[hand].toggle(button_index);
         }
         for (let i = 0; i < gamepad.axes.length; i += 2) {
           let dx = gamepad.axes[i];
           let dy = gamepad.axes[i + 1];
           if (dx != 0 || dy != 0) {
+            // Invert the y axis because gamepads follow the convention that -1
+            // is up/forwards, but we want to have a forward joystick/touchpad
+            // input result in forward motion for the box.
+            // TODO(https://crbug.com/966060): Revisit this if the convention changes.
             movableBoxes[hand].update(dx, -dy);
           }
         }
+        let infoTable = BuildInfoTable(gamepad, hand);
+        let buttonTable = BuildButtonTable(gamepad.buttons);
+        let axesTable = BuildAxesTable(gamepad.axes);
+        let divID = "gamepad-hand-" + hand;
+        let div = document.getElementById(divID);
+        while (div.firstChild) {
+          div.removeChild(div.firstChild);
+        }
+        div.appendChild(infoTable);
+        div.appendChild(buttonTable);
+        div.appendChild(axesTable);
       }
 
       function initXR() {
