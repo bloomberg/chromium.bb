@@ -44,24 +44,6 @@ namespace {
 // Time to backoff syncing after receiving a throttled response.
 const int kSyncDelayAfterThrottled = 2 * 60 * 60;  // 2 hours
 
-const char kGetUpdatesTokenHistogramPrefix[] =
-    "Sync.ReceivedDataTypeGetUpdatesResponseWithToken.";
-
-enum class GetUpdatesToken {
-  kNew = 0,
-  kSame = 1,
-  kDifferent = 2,
-  kMaxValue = kDifferent,
-};
-
-void RecordGetUpdatesToken(syncer::ModelType model_type,
-                           GetUpdatesToken token) {
-  std::string type_string = ModelTypeToHistogramSuffix(model_type);
-  std::string full_histogram_name =
-      kGetUpdatesTokenHistogramPrefix + type_string;
-  base::UmaHistogramEnumeration(full_histogram_name, token);
-}
-
 void LogResponseProfilingData(const ClientToServerResponse& response) {
   if (response.has_profiling_data()) {
     stringstream response_trace;
@@ -389,21 +371,6 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
   if (response->error_code() != sync_pb::SyncEnums::SUCCESS) {
     base::UmaHistogramSparse("Sync.PostedClientToServerMessageError",
                              response->error_code());
-  }
-
-  for (const sync_pb::DataTypeProgressMarker& progress_marker :
-       response->get_updates().new_progress_marker()) {
-    ModelType type =
-        GetModelTypeFromSpecificsFieldNumber(progress_marker.data_type_id());
-    const std::string& old_token =
-        progress_marker_token_per_data_type[progress_marker.data_type_id()];
-    if (old_token.empty()) {
-      RecordGetUpdatesToken(type, GetUpdatesToken::kNew);
-    } else if (old_token == progress_marker.token()) {
-      RecordGetUpdatesToken(type, GetUpdatesToken::kSame);
-    } else {
-      RecordGetUpdatesToken(type, GetUpdatesToken::kDifferent);
-    }
   }
 
   return true;
