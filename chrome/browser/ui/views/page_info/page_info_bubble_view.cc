@@ -470,6 +470,8 @@ PageInfoBubbleView::PageInfoBubbleView(
                              web_contents),
       profile_(profile),
       closing_callback_(std::move(closing_callback)) {
+  DCHECK(closing_callback_);
+
   // Capture the default bubble margin, and move it to the Layout classes. This
   // is necessary so that the views::Separator can extend the full width of the
   // bubble.
@@ -558,7 +560,7 @@ void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
   PageInfoBubbleViewBase::OnWidgetDestroying(widget);
   bool reload_prompt;
   presenter_->OnUIClosing(&reload_prompt);
-  std::move(closing_callback_).Run(GetWidget()->closed_reason(), reload_prompt);
+  std::move(closing_callback_).Run(widget->closed_reason(), reload_prompt);
 }
 
 void PageInfoBubbleView::ButtonPressed(views::Button* button,
