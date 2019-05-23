@@ -66,6 +66,8 @@ source_set("lib") {
   ]
 
   sources = [
+    "background_task_coordinator.cc",
+    "background_task_coordinator.h",
     "collection_store.h",
     "display_decider.cc",
     "display_decider.h",
@@ -117,6 +119,7 @@ source_set("lib") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "background_task_coordinator_unittest.cc",
     "display_decider_unittest.cc",
     "distribution_policy_unittest.cc",
     "icon_store_unittest.cc",

@@ -64,31 +64,15 @@ class DecisionHelper {
   }
 
   void CountNotificationsShownToday() {
-    base::Time last_shown_time;
-    base::Time now(base::Time::Now());
-    base::Time beginning_of_today;
-    bool success = ToLocalHour(0, now, 0, &beginning_of_today);
-    DCHECK(success);
-
-    for (const auto& state : client_states_) {
-      const auto* client_state = state.second;
+    for (const auto& pair : client_states_) {
+      auto type = pair.first;
       // TODO(xingliu): Ensure deprecated clients will not have data in storage.
-      DCHECK(std::find(clients_.begin(), clients_.end(), client_state->type) !=
+      DCHECK(std::find(clients_.begin(), clients_.end(), type) !=
              clients_.end());
-      for (const auto& impression : client_state->impressions) {
-        // Tracks last notification shown to the user.
-        if (impression.create_time > last_shown_time) {
-          last_shown_time = impression.create_time;
-          last_shown_type_ = client_state->type;
-        }
-
-        // Count notification shown today.
-        if (impression.create_time >= beginning_of_today) {
-          shown_per_type_[client_state->type]++;
-          ++shown_;
-        }
-      }
     }
+
+    NotificationsShownToday(client_states_, &shown_per_type_, &shown_,
+                            &last_shown_type_);
   }
 
   // Picks a list of notifications to show.

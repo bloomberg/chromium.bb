@@ -164,6 +164,9 @@ class NotificationSchedulerImpl
         context_->config(), context_->clients(), DistributionPolicy::Create(),
         task_start_time, std::move(notifications), std::move(client_state_ptrs),
         &results);
+
+    // TODO(xingliu): Update impression data after notification shown.
+    // See https://crbug.com/965133.
     for (const auto& guid : results) {
       context_->notification_manager()->DisplayNotification(guid);
     }

@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <string>
 
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -57,6 +58,9 @@ struct SuppressionInfo {
   SuppressionInfo(const SuppressionInfo& other);
   ~SuppressionInfo() = default;
   bool operator==(const SuppressionInfo& other) const;
+
+  // Time that the suppression should release.
+  base::Time ReleaseTime() const;
 
   // The last supression trigger time.
   base::Time last_trigger_time;

@@ -18,3 +18,7 @@ void NotificationBackgroundTaskSchedulerImpl::Schedule(
   // TODO(xingliu): Implements this for non-Android platform.
   NOTIMPLEMENTED();
 }
+
+void NotificationBackgroundTaskSchedulerImpl::Cancel() {
+  NOTIMPLEMENTED();
+}

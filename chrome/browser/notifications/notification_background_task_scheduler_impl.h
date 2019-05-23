@@ -20,6 +20,7 @@ class NotificationBackgroundTaskSchedulerImpl
   // NotificationBackgroundTaskScheduler implementation.
   void Schedule(base::TimeDelta window_start,
                 base::TimeDelta window_end) override;
+  void Cancel() override;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationBackgroundTaskSchedulerImpl);
 };

@@ -24,6 +24,10 @@ constexpr int kDefaultEveningTaskHour = 18;
 // dismiss event.
 constexpr base::TimeDelta kDefaultDimissDuration = base::TimeDelta::FromDays(7);
 
+// Default background task time window duration.
+constexpr base::TimeDelta kDefaultBackgroundTaskWindowDuration =
+    base::TimeDelta::FromHours(1);
+
 // static
 std::unique_ptr<SchedulerConfig> SchedulerConfig::Create() {
   return std::make_unique<SchedulerConfig>();
@@ -37,7 +41,8 @@ SchedulerConfig::SchedulerConfig()
       dismiss_count(3),
       dismiss_duration(kDefaultDimissDuration),
       morning_task_hour(kDefaultMorningTaskHour),
-      evening_task_hour(kDefaultEveningTaskHour) {
+      evening_task_hour(kDefaultEveningTaskHour),
+      background_task_window_duration(kDefaultBackgroundTaskWindowDuration) {
   // TODO(xingliu): Add constructor using finch data.
 }
 

@@ -35,9 +35,13 @@ class NotificationBackgroundTaskScheduler {
   };
 
   // Schedules a background task in a time window between |window_start| and
-  // |window_end|.
+  // |window_end|. This will update the current background task. Only one
+  // background task exists for notification scheduler.
   virtual void Schedule(base::TimeDelta window_start,
                         base::TimeDelta window_end) = 0;
+
+  // Cancels the background task.
+  virtual void Cancel() = 0;
 
   virtual ~NotificationBackgroundTaskScheduler() = default;
 

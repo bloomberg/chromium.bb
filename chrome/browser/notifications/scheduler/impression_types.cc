@@ -28,6 +28,10 @@ bool SuppressionInfo::operator==(const SuppressionInfo& other) const {
          duration == other.duration && recover_goal == other.recover_goal;
 }
 
+base::Time SuppressionInfo::ReleaseTime() const {
+  return last_trigger_time + duration;
+}
+
 ClientState::ClientState()
     : type(SchedulerClientType::kUnknown), current_max_daily_show(0) {}
 
