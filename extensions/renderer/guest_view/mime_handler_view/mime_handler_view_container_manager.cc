@@ -55,6 +55,11 @@ void MimeHandlerViewContainerManager::BindRequest(
 MimeHandlerViewContainerManager* MimeHandlerViewContainerManager::Get(
     content::RenderFrame* render_frame,
     bool create_if_does_not_exits) {
+  if (!render_frame) {
+    // Through some |adoptNode| magic, blink could still call this method for
+    // a plugin element which does not have a frame (https://crbug.com/966371).
+    return nullptr;
+  }
   int32_t routing_id = render_frame->GetRoutingID();
   auto& map = *GetRenderFrameMap();
   if (base::ContainsKey(map, routing_id))

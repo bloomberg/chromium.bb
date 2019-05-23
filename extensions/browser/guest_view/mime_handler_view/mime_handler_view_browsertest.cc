@@ -627,3 +627,16 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   // embedder process.
   ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(), "foo = 0;"));
 }
+
+// This is a minimized repro for a clusterfuzz crasher and is not really related
+// to MimeHandlerView. The test verifies that when
+// HTMLPlugInElement::PluginWrapper is called for a plugin with no node document
+// frame, the renderer does not crash (see https://966371).
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       AdoptNodeInOnLoadDoesNotCrash) {
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/adopt_node_in_onload_no_crash.html"));
+  // Run some JavaScript in embedder and make sure it is not crashed.
+  ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(), "true"));
+}
