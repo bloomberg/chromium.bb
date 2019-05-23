@@ -108,7 +108,7 @@ TEST_F(PaintWorkletProxyClientTest, PaintWorkletProxyClientConstruction) {
   PaintWorkletProxyClient* proxy_client =
       MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr, nullptr);
   EXPECT_EQ(proxy_client->worklet_id_, 1);
-  EXPECT_EQ(proxy_client->compositor_paintee_, nullptr);
+  EXPECT_EQ(proxy_client->paint_dispatcher_, nullptr);
 
   scoped_refptr<PaintWorkletPaintDispatcher> dispatcher =
       base::MakeRefCounted<PaintWorkletPaintDispatcher>();
@@ -116,7 +116,7 @@ TEST_F(PaintWorkletProxyClientTest, PaintWorkletProxyClientConstruction) {
   proxy_client = MakeGarbageCollected<PaintWorkletProxyClient>(
       1, nullptr, std::move(dispatcher));
   EXPECT_EQ(proxy_client->worklet_id_, 1);
-  EXPECT_NE(proxy_client->compositor_paintee_, nullptr);
+  EXPECT_NE(proxy_client->paint_dispatcher_, nullptr);
 }
 
 void RunAddGlobalScopesTestOnWorklet(

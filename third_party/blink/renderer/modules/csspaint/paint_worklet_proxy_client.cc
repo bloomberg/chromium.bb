@@ -23,33 +23,32 @@ const char PaintWorkletProxyClient::kSupplementName[] =
     "PaintWorkletProxyClient";
 
 // static
+PaintWorkletProxyClient* PaintWorkletProxyClient::From(WorkerClients* clients) {
+  return Supplement<WorkerClients>::From<PaintWorkletProxyClient>(clients);
+}
+
+// static
 PaintWorkletProxyClient* PaintWorkletProxyClient::Create(Document* document,
                                                          int worklet_id) {
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
   PaintWorklet* paint_worklet = PaintWorklet::From(*document->domWindow());
-  scoped_refptr<PaintWorkletPaintDispatcher> compositor_painter_dispatcher =
+  scoped_refptr<PaintWorkletPaintDispatcher> compositor_paint_dispatcher =
       local_frame->LocalRootFrameWidget()->EnsureCompositorPaintDispatcher();
   return MakeGarbageCollected<PaintWorkletProxyClient>(
-      worklet_id, paint_worklet, std::move(compositor_painter_dispatcher));
+      worklet_id, paint_worklet, std::move(compositor_paint_dispatcher));
 }
 
 PaintWorkletProxyClient::PaintWorkletProxyClient(
     int worklet_id,
     PaintWorklet* paint_worklet,
-    scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee)
-    : compositor_paintee_(std::move(compositor_paintee)),
+    scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher)
+    : paint_dispatcher_(std::move(paint_dispatcher)),
       worklet_id_(worklet_id),
       state_(RunState::kUninitialized),
       main_thread_runner_(Thread::MainThread()->GetTaskRunner()),
       paint_worklet_(paint_worklet) {
   DCHECK(IsMainThread());
-}
-
-void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
-  visitor->Trace(document_definition_map_);
-  Supplement<WorkerClients>::Trace(visitor);
-  PaintWorkletPainter::Trace(visitor);
 }
 
 void PaintWorkletProxyClient::AddGlobalScope(WorkletGlobalScope* global_scope) {
@@ -66,14 +65,14 @@ void PaintWorkletProxyClient::AddGlobalScope(WorkletGlobalScope* global_scope) {
     return;
   }
 
-  // All the global scopes that share a single PaintWorkletProxyClient are
-  // running on the same thread, and so we can just grab the task runner from
-  // the last one to call this function and use that.
+  // All the global scopes that share a single PaintWorkletProxyClient run on
+  // the same thread with the same scheduler. As such we can just grab a task
+  // runner from the last one to register.
   scoped_refptr<base::SingleThreadTaskRunner> global_scope_runner =
       global_scope->GetThread()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   state_ = RunState::kWorking;
 
-  compositor_paintee_->RegisterPaintWorkletPainter(this, global_scope_runner);
+  paint_dispatcher_->RegisterPaintWorkletPainter(this, global_scope_runner);
 }
 
 void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
@@ -122,15 +121,21 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
 
 void PaintWorkletProxyClient::Dispose() {
   if (state_ == RunState::kWorking) {
-    compositor_paintee_->UnregisterPaintWorkletPainter(this);
+    paint_dispatcher_->UnregisterPaintWorkletPainter(worklet_id_);
   }
-  compositor_paintee_ = nullptr;
+  paint_dispatcher_ = nullptr;
 
   state_ = RunState::kDisposed;
 
   // At worklet scope termination break the reference cycle between
   // PaintWorkletGlobalScope and PaintWorkletProxyClient.
   global_scopes_.clear();
+}
+
+void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
+  visitor->Trace(document_definition_map_);
+  Supplement<WorkerClients>::Trace(visitor);
+  PaintWorkletPainter::Trace(visitor);
 }
 
 sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
@@ -160,11 +165,6 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
 
   return definition->Paint(FloatSize(input->GetSize()), input->EffectiveZoom(),
                            style_map, nullptr);
-}
-
-// static
-PaintWorkletProxyClient* PaintWorkletProxyClient::From(WorkerClients* clients) {
-  return Supplement<WorkerClients>::From<PaintWorkletProxyClient>(clients);
 }
 
 void ProvidePaintWorkletProxyClientTo(WorkerClients* clients,
