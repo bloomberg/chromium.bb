@@ -262,7 +262,8 @@ class CorsURLLoaderTest : public testing::Test {
                                   const std::string& domain,
                                   const mojom::CorsDomainMatchMode mode) {
     origin_access_list_.AddAllowListEntryForOrigin(
-        source_origin, protocol, domain, mode,
+        source_origin, protocol, domain, /*port=*/0, mode,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   }
 
@@ -271,7 +272,8 @@ class CorsURLLoaderTest : public testing::Test {
                                   const std::string& domain,
                                   const mojom::CorsDomainMatchMode mode) {
     origin_access_list_.AddBlockListEntryForOrigin(
-        source_origin, protocol, domain, mode,
+        source_origin, protocol, domain, /*port=*/0, mode,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kHighPriority);
   }
 
@@ -281,7 +283,8 @@ class CorsURLLoaderTest : public testing::Test {
       const std::string& domain,
       const mojom::CorsDomainMatchMode mode) {
     factory_bound_allow_patterns_.push_back(mojom::CorsOriginPattern::New(
-        protocol, domain, mode,
+        protocol, domain, /*port=*/0, mode,
+        mojom::CorsPortMatchMode::kAllowAnyPort,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
     ResetFactory(source_origin, kRendererProcessId);
   }

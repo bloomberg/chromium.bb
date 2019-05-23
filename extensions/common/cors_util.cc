@@ -36,12 +36,13 @@ void AddURLPatternSetToList(
     for (const char* const scheme : kSchemes) {
       if (!pattern.MatchesScheme(scheme))
         continue;
+      // TODO(crbug.com/936900): Specify the port argument.
       list->push_back(network::mojom::CorsOriginPattern::New(
-          scheme, pattern.host(),
+          scheme, pattern.host(), /*port=*/0,
           pattern.match_subdomains()
               ? network::mojom::CorsDomainMatchMode::kAllowSubdomains
               : network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
-          priority));
+          network::mojom::CorsPortMatchMode::kAllowAnyPort, priority));
     }
   }
 }
@@ -85,9 +86,11 @@ CreateCorsOriginAccessBlockList(const Extension& extension) {
       network::mojom::CorsOriginAccessMatchPriority::kLowPriority);
 
   GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
+  // TODO(crbug.com/936900): Specify the port argument.
   block_list.push_back(network::mojom::CorsOriginPattern::New(
-      webstore_launch_url.scheme(), webstore_launch_url.host(),
+      webstore_launch_url.scheme(), webstore_launch_url.host(), /*port=*/0,
       network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kHighPriority));
 
   // TODO(devlin): Should we also block the webstore update URL here? See

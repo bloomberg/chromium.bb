@@ -29,7 +29,7 @@ namespace cors {
 // blacklisting is respected. These lists are managed per source-origin basis.
 class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
  public:
-  using CorsOriginPatternPtr = mojo::InlinedStructPtr<mojom::CorsOriginPattern>;
+  using CorsOriginPatternPtr = mojo::StructPtr<mojom::CorsOriginPattern>;
 
   // Represents if a queried conditions are is allowed, blocked, or not listed
   // in the access list.
@@ -48,13 +48,16 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   void SetAllowListForOrigin(const url::Origin& source_origin,
                              const std::vector<CorsOriginPatternPtr>& patterns);
 
-  // Adds an access pattern by |protocol|, |domain|, |mode|, and |priority|,
-  // to the allow list for |source_origin|.
+  // Adds an access pattern by |protocol|, |domain|, |port|,
+  // |domain_match_mode|, |port_match_mode|, and |priority| to the allow list
+  // for |source_origin|.
   void AddAllowListEntryForOrigin(
       const url::Origin& source_origin,
       const std::string& protocol,
       const std::string& domain,
-      const mojom::CorsDomainMatchMode mode,
+      const uint16_t port,
+      const mojom::CorsDomainMatchMode domain_match_mode,
+      const mojom::CorsPortMatchMode port_match_mode,
       const mojom::CorsOriginAccessMatchPriority priority);
 
   // Clears the old block list for |source_origin| and set |patterns| to the
@@ -63,13 +66,16 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   void SetBlockListForOrigin(const url::Origin& source_origin,
                              const std::vector<CorsOriginPatternPtr>& patterns);
 
-  // Adds an access pattern by |protocol|, |domain|, |mode|, and |priority|,
-  // to the block list for |source_origin|.
+  // Adds an access pattern by |protocol|, |domain|, |port|,
+  // |domain_match_mode|, |port_match_mode|, and |priority| to the block list
+  // for |source_origin|.
   void AddBlockListEntryForOrigin(
       const url::Origin& source_origin,
       const std::string& protocol,
       const std::string& domain,
-      const mojom::CorsDomainMatchMode mode,
+      const uint16_t port,
+      const mojom::CorsDomainMatchMode domain_match_mode,
+      const mojom::CorsPortMatchMode port_match_mode,
       const mojom::CorsOriginAccessMatchPriority priority);
 
   // Clears the old allow/block lists for |source_origin|.

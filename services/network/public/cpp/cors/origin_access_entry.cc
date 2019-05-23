@@ -136,11 +136,10 @@ OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
   return kMatchesOrigin;
 }
 
-mojo::InlinedStructPtr<mojom::CorsOriginPattern>
+mojo::StructPtr<mojom::CorsOriginPattern>
 OriginAccessEntry::CreateCorsOriginPattern() const {
-  // TODO(crbug.com/936900): Pass |port_|.
-  return mojom::CorsOriginPattern::New(protocol_, host_, domain_match_mode_,
-                                       priority_);
+  return mojom::CorsOriginPattern::New(
+      protocol_, host_, port_, domain_match_mode_, port_match_mode_, priority_);
 }
 
 }  // namespace cors

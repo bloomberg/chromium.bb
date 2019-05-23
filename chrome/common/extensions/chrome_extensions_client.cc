@@ -231,22 +231,26 @@ void ChromeExtensionsClient::AddOriginAccessPermissions(
   // conservative. Components shouldn't be subject to enterprise policy controls
   // or blocking access to the webstore so they get the highest priority
   // allowlist entry.
+  // TODO(crbug.com/936900): Specify the port argument.
   if (extensions::Manifest::IsComponentLocation(extension.location()) &&
       is_extension_active) {
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
-        content::kChromeUIScheme, chrome::kChromeUIThemeHost,
+        content::kChromeUIScheme, chrome::kChromeUIThemeHost, /*port=*/0,
         network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
+        network::mojom::CorsPortMatchMode::kAllowAnyPort,
         network::mojom::CorsOriginAccessMatchPriority::kMaxPriority));
   }
 
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
+  // TODO(crbug.com/936900): Specify the port argument.
   if (is_extension_active && extension.permissions_data()->HasAPIPermission(
                                  extensions::APIPermission::kManagement)) {
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
         content::kChromeUIScheme, chrome::kChromeUIExtensionIconHost,
-        network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
+        /*port=*/0, network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
+        network::mojom::CorsPortMatchMode::kAllowAnyPort,
         network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
   }
 }

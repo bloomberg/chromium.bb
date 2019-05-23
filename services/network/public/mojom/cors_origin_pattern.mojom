@@ -41,8 +41,14 @@ struct CorsOriginPattern {
   // The domain part of the destination URL.
   string domain;
 
+  // The port part of the destination URL.
+  uint16 port;
+
   // Specifies a mode for domain match.
-  CorsDomainMatchMode mode;
+  CorsDomainMatchMode domain_match_mode;
+
+  // Specifies a mode for port match.
+  CorsPortMatchMode port_match_mode;
 
   // Order of preference in which the pattern is applied.  Higher priority
   // patterns take precedence over lower ones.  In the case were both a

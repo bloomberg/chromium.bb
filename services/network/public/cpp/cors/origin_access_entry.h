@@ -64,8 +64,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
 
   // Creates mojom::CorsOriginPattern instance that represents |this|
   // OriginAccessEntry instance.
-  mojo::InlinedStructPtr<mojom::CorsOriginPattern> CreateCorsOriginPattern()
-      const;
+  mojo::StructPtr<mojom::CorsOriginPattern> CreateCorsOriginPattern() const;
 
  private:
   const std::string protocol_;

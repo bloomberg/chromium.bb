@@ -86,7 +86,8 @@ class CorsOriginAccessListBrowserTest : public InProcessBrowserTest {
     {
       std::vector<network::mojom::CorsOriginPatternPtr> list;
       list.push_back(network::mojom::CorsOriginPattern::New(
-          scheme, host, mode,
+          scheme, host, /*port=*/0, mode,
+          network::mojom::CorsPortMatchMode::kAllowAnyPort,
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
 
       base::RunLoop run_loop;
@@ -100,7 +101,8 @@ class CorsOriginAccessListBrowserTest : public InProcessBrowserTest {
     {
       std::vector<network::mojom::CorsOriginPatternPtr> list;
       list.push_back(network::mojom::CorsOriginPattern::New(
-          scheme, host, mode,
+          scheme, host, /*port=*/0, mode,
+          network::mojom::CorsPortMatchMode::kAllowAnyPort,
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
 
       base::RunLoop run_loop;

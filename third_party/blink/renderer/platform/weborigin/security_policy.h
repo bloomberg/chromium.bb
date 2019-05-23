@@ -74,6 +74,7 @@ class PLATFORM_EXPORT SecurityPolicy {
                                    const KURL&,
                                    const String& referrer);
 
+  // TODO(crbug.com/936900): Update to take the port.
   static void AddOriginAccessAllowListEntry(
       const SecurityOrigin& source_origin,
       const String& destination_protocol,

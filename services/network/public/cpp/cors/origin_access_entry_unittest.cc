@@ -368,17 +368,19 @@ TEST(OriginAccessEntryTest, PortMatchingTest) {
 TEST(OriginAccessEntryTest, CreateCorsOriginPattern) {
   const std::string kProtocol = "https";
   const std::string kDomain = "google.com";
-  const uint16_t kPort = 0;
-  const auto kDomainMode = mojom::CorsDomainMatchMode::kAllowSubdomains;
-  const auto kPortMode = mojom::CorsPortMatchMode::kAllowAnyPort;
+  const uint16_t kPort = 443;
+  const auto kDomainMatchMode = mojom::CorsDomainMatchMode::kAllowSubdomains;
+  const auto kPortMatchMode = mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort;
   const auto kPriority = mojom::CorsOriginAccessMatchPriority::kDefaultPriority;
 
-  OriginAccessEntry entry(kProtocol, kDomain, kPort, kDomainMode, kPortMode,
-                          kPriority);
+  OriginAccessEntry entry(kProtocol, kDomain, kPort, kDomainMatchMode,
+                          kPortMatchMode, kPriority);
   mojom::CorsOriginPatternPtr pattern = entry.CreateCorsOriginPattern();
   DCHECK_EQ(kProtocol, pattern->protocol);
   DCHECK_EQ(kDomain, pattern->domain);
-  DCHECK_EQ(kDomainMode, pattern->mode);
+  DCHECK_EQ(kPort, pattern->port);
+  DCHECK_EQ(kDomainMatchMode, pattern->domain_match_mode);
+  DCHECK_EQ(kPortMatchMode, pattern->port_match_mode);
   DCHECK_EQ(kPriority, pattern->priority);
 }
 
