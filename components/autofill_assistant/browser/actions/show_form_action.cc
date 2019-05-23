@@ -43,71 +43,10 @@ void ShowFormAction::OnFormValuesChanged(ActionDelegate* delegate,
   // Copy the current values to the action result.
   *processed_action_proto_->mutable_form_result() = *form_result;
 
-  // Check form validity.
-  // TODO(crbug.com/806868): Only check validity of inputs whose value changed
-  // instead of all inputs.
-  bool form_is_valid = true;
-  const FormProto& form = proto_.show_form().form();
-  for (int i = 0; i < form.inputs_size() && form_is_valid; i++) {
-    const FormInputProto& input = form.inputs(i);
-    const FormInputProto::Result& input_result = form_result->input_results(i);
-
-    switch (input.input_type_case()) {
-      case FormInputProto::InputTypeCase::kCounter: {
-        DCHECK(input_result.has_counter());
-        DCHECK_EQ(input.counter().counters_size(),
-                  input_result.counter().values_size());
-
-        // A counter input is valid if at least one of its counters has a value
-        // different than its initial value.
-        bool input_is_valid = false;
-        for (int j = 0; j < input.counter().counters_size(); j++) {
-          if (input_result.counter().values(j) !=
-              input.counter().counters(j).initial_value()) {
-            input_is_valid = true;
-            break;
-          }
-        }
-
-        if (!input_is_valid) {
-          form_is_valid = false;
-        }
-        break;
-      }
-      case FormInputProto::InputTypeCase::kSelection: {
-        DCHECK(input_result.has_selection());
-        DCHECK_EQ(input.selection().choices_size(),
-                  input_result.selection().selected_size());
-
-        // A selection input is valid if the number of selected choices is
-        // greater or equal than |min_selected_choices|.
-        int min_selected = input.selection().min_selected_choices();
-        if (min_selected == 0)
-          break;
-
-        int n = 0;
-        for (bool selected : input_result.selection().selected()) {
-          if (selected && ++n >= min_selected) {
-            break;
-          }
-        }
-
-        if (n < min_selected) {
-          form_is_valid = false;
-        }
-        break;
-      }
-      case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
-        NOTREACHED();
-        break;
-        // Intentionally no default case to make compilation fail if a new value
-        // was added to the enum but not to this list.
-    }
-  }
-
   // Show "Continue" chip.
   // TODO(crbug.com/806868): Make this chip configurable.
   auto chips = std::make_unique<std::vector<Chip>>();
+  bool form_is_valid = IsFormValid(proto_.show_form().form(), *form_result);
 
   if (proto_.show_form().has_chip()) {
     chips->emplace_back(proto_.show_form().chip());
@@ -127,6 +66,120 @@ void ShowFormAction::OnFormValuesChanged(ActionDelegate* delegate,
   }
 
   delegate->Prompt(std::move(chips));
+}
+
+bool ShowFormAction::IsFormValid(const FormProto& form,
+                                 const FormProto::Result& result) {
+  // TODO(crbug.com/806868): Only check validity of inputs whose value changed
+  // instead of all inputs.
+  DCHECK_EQ(form.inputs_size(), result.input_results_size());
+  for (int i = 0; i < form.inputs_size(); i++) {
+    const FormInputProto& input = form.inputs(i);
+    const FormInputProto::Result& input_result = result.input_results(i);
+
+    switch (input.input_type_case()) {
+      case FormInputProto::InputTypeCase::kCounter:
+        DCHECK(input_result.has_counter());
+        if (!IsCounterInputValid(input.counter(), input_result.counter())) {
+          return false;
+        }
+        break;
+      case FormInputProto::InputTypeCase::kSelection:
+        DCHECK(input_result.has_selection());
+        if (!IsSelectionInputValid(input.selection(),
+                                   input_result.selection())) {
+          return false;
+        }
+        break;
+      case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
+        NOTREACHED();
+        break;
+        // Intentionally no default case to make compilation fail if a new value
+        // was added to the enum but not to this list.
+    }
+  }
+
+  return true;
+}
+
+bool ShowFormAction::IsCounterInputValid(
+    const CounterInputProto& input,
+    const CounterInputProto::Result& result) {
+  DCHECK_EQ(input.counters_size(), result.values_size());
+
+  if (!input.has_validation_rule())
+    return true;
+
+  return IsCounterValidationRuleSatisfied(input.validation_rule(), input,
+                                          result);
+}
+
+bool ShowFormAction::IsCounterValidationRuleSatisfied(
+    const CounterInputProto::ValidationRule& rule,
+    const CounterInputProto& input,
+    const CounterInputProto::Result& result) {
+  switch (rule.rule_type_case()) {
+    case CounterInputProto::ValidationRule::RuleTypeCase::kBoolean: {
+      // Satisfied if the number of satisfied sub rules is within
+      // [min_satisfied_rules; max_satisfied_rules].
+      auto boolean_rule = rule.boolean();
+      int n = 0;
+      for (const CounterInputProto::ValidationRule& sub_rule :
+           boolean_rule.sub_rules()) {
+        if (IsCounterValidationRuleSatisfied(sub_rule, input, result)) {
+          n++;
+        }
+      }
+      return n >= boolean_rule.min_satisfied_rules() &&
+             n <= boolean_rule.max_satisfied_rules();
+    }
+    case CounterInputProto::ValidationRule::RuleTypeCase::kCounter: {
+      // Satisfied if the value of |counters[counter_index]| is within
+      // [min_value; max_value].
+      auto counter_rule = rule.counter();
+      int index = counter_rule.counter_index();
+      DCHECK_GE(index, 0);
+      DCHECK_LT(index, result.values_size());
+      int value = result.values(index);
+      return value >= counter_rule.min_value() &&
+             value <= counter_rule.max_value();
+    }
+    case CounterInputProto::ValidationRule::RuleTypeCase::kCountersSum: {
+      // Satisfied if the sum of all counters values is within [min_value;
+      // max_value].
+      auto counters_sum_rule = rule.counters_sum();
+      long sum = 0;
+      for (int value : result.values()) {
+        sum += value;
+      }
+      return sum >= counters_sum_rule.min_value() &&
+             sum <= counters_sum_rule.max_value();
+    }
+    case CounterInputProto::ValidationRule::RuleTypeCase::RULE_TYPE_NOT_SET:
+      // Unknown validation rule: suppose it is satisfied.
+      return true;
+  }
+}
+
+bool ShowFormAction::IsSelectionInputValid(
+    const SelectionInputProto& input,
+    const SelectionInputProto::Result& result) {
+  DCHECK_EQ(input.choices_size(), result.selected_size());
+
+  // A selection input is valid if the number of selected choices is
+  // greater or equal than |min_selected_choices|.
+  int min_selected = input.min_selected_choices();
+  if (min_selected == 0)
+    return true;
+
+  int n = 0;
+  for (bool selected : result.selected()) {
+    if (selected && ++n >= min_selected) {
+      return true;
+    }
+  }
+
+  return n >= min_selected;
 }
 
 void ShowFormAction::OnButtonClicked(ActionDelegate* delegate) {

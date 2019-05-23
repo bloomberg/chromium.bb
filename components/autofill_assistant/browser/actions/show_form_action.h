@@ -27,6 +27,15 @@ class ShowFormAction : public Action {
   void OnFormValuesChanged(ActionDelegate* delegate,
                            const FormProto::Result* form_result);
   void OnButtonClicked(ActionDelegate* delegate);
+  bool IsFormValid(const FormProto& form, const FormProto::Result& result);
+  bool IsCounterInputValid(const CounterInputProto& input,
+                           const CounterInputProto::Result& result);
+  bool IsCounterValidationRuleSatisfied(
+      const CounterInputProto::ValidationRule& rule,
+      const CounterInputProto& input,
+      const CounterInputProto::Result& result);
+  bool IsSelectionInputValid(const SelectionInputProto& input,
+                             const SelectionInputProto::Result& result);
 
   ProcessActionCallback callback_;
   base::WeakPtrFactory<ShowFormAction> weak_ptr_factory_;

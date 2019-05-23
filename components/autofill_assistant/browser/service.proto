@@ -1204,9 +1204,8 @@ message FormInputProto {
   }
 }
 
-// An input that is made of one or more counters. A CounterInputProto is
-// considered valid if at least one of its counters value differs from its
-// |initial_value|.
+// An input that is made of one or more counters. This input is considered valid
+// if its |validation_rule| is satisfied or if it doesn't have one.
 message CounterInputProto {
   // A single counter.
   message Counter {
@@ -1235,6 +1234,61 @@ message CounterInputProto {
     repeated int32 values = 1;
   }
 
+  // A validation rule to validate this input values.
+  message ValidationRule {
+    // A rule to combine sub rules. This rule allows to express the following:
+    //  - Rule A and Rule B must be satisfied.
+    //  - Rule A or Rule B must be satisfied.
+    //  - Rule A must not be satisfied.
+    //  - At least 2 of Rules A, B or C must be satisfied.
+    //
+    // This rule is satisfied if the number of satisfied |sub_rules| is >=
+    // min_satisfied_rules and <= max_satisfied_rules.
+    message BooleanRule {
+      // The sub rules to check.
+      repeated ValidationRule sub_rules = 1;
+
+      // The minimum number of rules that must be satisfied.
+      optional int32 min_satisfied_rules = 2 [default = 0];
+
+      // The maximum number of rules that must be satisfied.
+      optional int32 max_satisfied_rules = 3
+          [default = 0x7FFFFFFF];  // kint32max
+    }
+
+    // A rule on the value of one of the |counters|. This rule is satisfied if
+    // min_value <= counter.value <= max_value.
+    message CounterRule {
+      // The index of the counter in |counters|. Must be >= 0 and <
+      // |counters.size|.
+      optional int32 counter_index = 1;
+
+      // The minimum value this counter can have.
+      optional int32 min_value = 2 [default = -0x80000000];  // kint32min
+
+      // The maximum value this counter can have.
+      optional int32 max_value = 3 [default = 0x7FFFFFFF];  // kint32max
+    }
+
+    // A rule on the sum of the |counters|. This rule satisfied if the sum of
+    // all |counters| is >= min_value and <= max_value. If there is an overflow
+    // when computing the sum, the behavior is undefined.
+    message CountersSumRule {
+      // The minimum value the total can have.
+      optional int64 min_value = 1
+          [default = -0x8000000000000000];  // kint64min
+
+      // The maximum value this counter can have.
+      optional int64 max_value = 2 [default = 0x7FFFFFFFFFFFFFFF];  // kint64max
+    }
+
+    oneof rule_type {
+      BooleanRule boolean = 1;
+      CounterRule counter = 2;
+      CountersSumRule counters_sum = 3;
+    }
+  }
+
   // An optional label shown above the different counters.
   optional string label = 1;
 
@@ -1257,6 +1311,10 @@ message CounterInputProto {
   // is expanded. Clicking this text will minimize the section and hide the
   // counters inside it.
   optional string minimize_text = 5;
+
+  // Validation rule used to check whether the current values of this input are
+  // valid.
+  optional ValidationRule validation_rule = 6;
 }
 
 // An input that allows the user to choose one or multiple options. This input
