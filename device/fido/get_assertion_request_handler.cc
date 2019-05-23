@@ -218,6 +218,11 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     discoveries().push_back(std::move(discovery));
   }
 
+  if (request_.allow_list.empty()) {
+    // Resident credential requests always involve user verification.
+    request_.user_verification = UserVerificationRequirement::kRequired;
+  }
+
   FIDO_LOG(EVENT) << "Starting GetAssertion flow";
   Start();
 }

@@ -3560,6 +3560,34 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionMulti) {
   EXPECT_TRUE(HasUV(callback_receiver));
 }
 
+TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionUVDiscouraged) {
+  device::VirtualCtap2Device::Config config;
+  config.resident_key_support = true;
+  config.internal_uv_support = true;
+  config.u2f_support = true;
+  virtual_device_.SetCtap2Config(config);
+  virtual_device_.mutable_state()->fingerprints_enrolled = true;
+
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
+
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  // |SelectAccount| should not be called when there's only a single response.
+  test_client_.expected_accounts = "<invalid>";
+  PublicKeyCredentialRequestOptionsPtr options(get_credential_options());
+  options->user_verification =
+      blink::mojom::UserVerificationRequirement::DISCOURAGED;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  // The UV=discouraged should have been ignored for a resident-credential
+  // request.
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
 static const char* ProtectionPolicyDescription(
     blink::mojom::ProtectionPolicy p) {
   switch (p) {
