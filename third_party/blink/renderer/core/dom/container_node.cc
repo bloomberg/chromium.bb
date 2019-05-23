@@ -1270,7 +1270,7 @@ Element* ContainerNode::QuerySelector(const AtomicString& selectors,
     return nullptr;
   Element* element = selector_query->QueryFirst(*this);
   if (element && element->GetDocument().InDOMNodeRemovedHandler()) {
-    if (NodeChildRemovalTracker::IsBeingRemoved(element))
+    if (NodeChildRemovalTracker::IsBeingRemoved(*element))
       GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
   }
   return element;

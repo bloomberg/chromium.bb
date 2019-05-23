@@ -37,24 +37,23 @@ class NodeChildRemovalTracker {
   STACK_ALLOCATED();
 
  public:
-  explicit NodeChildRemovalTracker(Node&);
+  explicit NodeChildRemovalTracker(const Node&);
   ~NodeChildRemovalTracker();
 
-  // TODO(tkent): The argument should be |const Node&|.
-  static bool IsBeingRemoved(Node*);
+  static bool IsBeingRemoved(const Node&);
 
  private:
-  Node& GetNode() const { return *node_; }
+  const Node& GetNode() const { return *node_; }
   NodeChildRemovalTracker* Previous() { return previous_; }
 
-  Member<Node> node_;
+  Member<const Node> node_;
   // Using raw pointers are safe because these NodeChildRemovalTrackers are
   // guaranteed to be on a stack.
   NodeChildRemovalTracker* previous_;
   CORE_EXPORT static NodeChildRemovalTracker* last_;
 };
 
-inline NodeChildRemovalTracker::NodeChildRemovalTracker(Node& node)
+inline NodeChildRemovalTracker::NodeChildRemovalTracker(const Node& node)
     : node_(node), previous_(last_) {
   last_ = this;
 }
@@ -63,12 +62,10 @@ inline NodeChildRemovalTracker::~NodeChildRemovalTracker() {
   last_ = previous_;
 }
 
-inline bool NodeChildRemovalTracker::IsBeingRemoved(Node* node) {
-  if (!node)
-    return false;
+inline bool NodeChildRemovalTracker::IsBeingRemoved(const Node& node) {
   for (NodeChildRemovalTracker* removal = last_; removal;
        removal = removal->Previous()) {
-    if (removal->GetNode().IsShadowIncludingInclusiveAncestorOf(*node))
+    if (removal->GetNode().IsShadowIncludingInclusiveAncestorOf(node))
       return true;
   }
 

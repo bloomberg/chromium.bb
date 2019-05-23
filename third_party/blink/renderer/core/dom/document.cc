@@ -4664,12 +4664,14 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 
   clear_focused_element_timer_.Stop();
 
-  // Make sure newFocusedNode is actually in this document
-  if (new_focused_element && (new_focused_element->GetDocument() != this))
-    return true;
+  // Make sure new_focused_element is actually in this document.
+  if (new_focused_element) {
+    if (new_focused_element->GetDocument() != this)
+      return true;
 
-  if (NodeChildRemovalTracker::IsBeingRemoved(new_focused_element))
-    return true;
+    if (NodeChildRemovalTracker::IsBeingRemoved(*new_focused_element))
+      return true;
+  }
 
   if (focused_element_ == new_focused_element)
     return true;
