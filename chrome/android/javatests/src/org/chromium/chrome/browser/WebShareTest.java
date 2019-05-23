@@ -52,6 +52,8 @@ public class WebShareTest {
     private static final String TEST_FILE_CSV = "/content/test/data/android/webshare-csv.html";
     private static final String TEST_FILE_DEX = "/content/test/data/android/webshare-dex.html";
     private static final String TEST_FILE_OGG = "/content/test/data/android/webshare-ogg.html";
+    private static final String TEST_FILE_MANY = "/content/test/data/android/webshare-many.html";
+    private static final String TEST_FILE_LARGE = "/content/test/data/android/webshare-large.html";
 
     private EmbeddedTestServer mTestServer;
 
@@ -243,6 +245,36 @@ public class WebShareTest {
     @Feature({"WebShare"})
     public void testWebShareDex() throws Exception {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_DEX));
+        // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals(
+                "Fail: NotAllowedError: Permission denied", mUpdateWaiter.waitForUpdate());
+    }
+
+    /**
+     * Verify WebShare fails if share of many files is called from a user gesture.
+     * @throws Exception
+     */
+    @Test
+    @MediumTest
+    @Feature({"WebShare"})
+    public void testWebShareMany() throws Exception {
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_MANY));
+        // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals(
+                "Fail: NotAllowedError: Permission denied", mUpdateWaiter.waitForUpdate());
+    }
+
+    /**
+     * Verify WebShare fails if share of large files is called from a user gesture.
+     * @throws Exception
+     */
+    @Test
+    @MediumTest
+    @Feature({"WebShare"})
+    public void testWebShareLarge() throws Exception {
+        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_LARGE));
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
         TouchCommon.singleClickView(mTab.getView());
         Assert.assertEquals(
