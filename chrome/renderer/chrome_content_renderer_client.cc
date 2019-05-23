@@ -1607,10 +1607,10 @@ bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
   // Imports Polyfill so that they will not require native imports. Return true
   // for only pages that have not been updated yet. See
   // https://crbug.com/937747.
-  bool canUsePolyfill = url.host() == chrome::kChromeUIExtensionsHost ||
-                        url.host() == chrome::kChromeUIDownloadsHost;
+  bool can_use_polyfill = url.host() == chrome::kChromeUIExtensionsHost ||
+                          url.host() == chrome::kChromeUIDownloadsHost;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  canUsePolyfill |= url.host() == chrome::kChromeUIPrintHost;
+  can_use_polyfill |= url.host() == chrome::kChromeUIPrintHost;
 #endif
-  return url.SchemeIs(content::kChromeUIScheme) && !canUsePolyfill;
+  return url.SchemeIs(content::kChromeUIScheme) && !can_use_polyfill;
 }
