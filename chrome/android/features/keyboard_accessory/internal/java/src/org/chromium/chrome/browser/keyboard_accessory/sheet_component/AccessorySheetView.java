@@ -51,6 +51,9 @@ class AccessorySheetView extends FrameLayout {
 
     void setCurrentItem(int index) {
         mViewPager.setCurrentItem(index);
+        // There is a small chance that the function is called too early and ViewPager will reset
+        // the current item to 0. Correct that issue by repeating this call past other messages.
+        mViewPager.post(() -> mViewPager.setCurrentItem(index));
     }
 
     ViewPager getViewPager() {
