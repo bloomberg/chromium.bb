@@ -47,6 +47,7 @@ iron-form-element-behavior/*
 
 # paper-behaviors
 paper-behaviors/paper-checked-element-behavior.html
+paper-behaviors/paper-inky-focus-behavior.html
 
 # paper-input
 paper-input/all-imports.html
