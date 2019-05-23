@@ -14,7 +14,7 @@ namespace features {
 // frame without user activation.
 const base::Feature kBlockingDownloadsInAdFrameWithoutUserActivation{
     "BlockingDownloadsInAdFrameWithoutUserActivation",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable defer commits a bit to avoid flash.
 const base::Feature kAvoidFlashBetweenNavigation{
