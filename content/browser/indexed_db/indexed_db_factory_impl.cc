@@ -426,6 +426,11 @@ void IndexedDBFactoryImpl::ContextDestroyed() {
   // Set |context_| to nullptr first to ensure no re-entry into the |cotext_|
   // object during shutdown. This can happen in methods like BlobFilesCleaned.
   context_ = nullptr;
+  // Invalidate the weak factory that is used by the IndexedDBOriginStates to
+  // destruct themselves. This prevents modification of the
+  // |factories_per_origin_| map while it is iterated below, and allows us to
+  // avoid holding a handle to call ForceClose();
+  origin_state_destruction_weak_factory_.InvalidateWeakPtrs();
   for (const auto& pair : factories_per_origin_) {
     pair.second->ForceClose();
   }
@@ -583,12 +588,14 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
             data_loss_info};
 
   it = factories_per_origin_
-           .emplace(origin, std::make_unique<IndexedDBOriginState>(
-                                is_in_memory, clock_, &earliest_sweep_,
-                                base::BindOnce(
-                                    &IndexedDBFactoryImpl::RemoveOriginFactory,
-                                    base::Unretained(this), origin),
-                                std::move(backing_store)))
+           .emplace(origin,
+                    std::make_unique<IndexedDBOriginState>(
+                        is_in_memory, clock_, &earliest_sweep_,
+                        base::BindOnce(
+                            &IndexedDBFactoryImpl::RemoveOriginState,
+                            origin_state_destruction_weak_factory_.GetWeakPtr(),
+                            origin),
+                        std::move(backing_store)))
            .first;
   context_->FactoryOpened(origin);
   return {it->second->CreateHandle(), s, IndexedDBDatabaseError(),
@@ -605,7 +612,7 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
       backing_store_mode, this, origin, blob_path, std::move(db), task_runner);
 }
 
-void IndexedDBFactoryImpl::RemoveOriginFactory(const url::Origin& origin) {
+void IndexedDBFactoryImpl::RemoveOriginState(const url::Origin& origin) {
   factories_per_origin_.erase(origin);
 }
 

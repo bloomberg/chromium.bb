@@ -159,7 +159,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest,
                            ForceCloseOpenDatabasesOnCommitFailure);
 
-  void RemoveOriginFactory(const url::Origin& origin);
+  void RemoveOriginState(const url::Origin& origin);
 
   void OnDatabaseError(const url::Origin& origin,
                        leveldb::Status s,
@@ -186,6 +186,12 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   std::set<url::Origin> backends_opened_since_startup_;
 
+  // Weak pointers from this factory are used to bind the RemoveOriginState()
+  // function, which deletes the IndexedDBOriginState object. This allows those
+  // weak pointers to be invalidated during force close & shutdown to prevent
+  // re-entry (see ContextDestroyed()).
+  base::WeakPtrFactory<IndexedDBFactoryImpl>
+      origin_state_destruction_weak_factory_{this};
   base::WeakPtrFactory<IndexedDBFactoryImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactoryImpl);
 };
