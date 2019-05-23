@@ -163,14 +163,6 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
     fake_gaia_.SetupFakeGaiaForLogin(id.GetUserEmail(), id.GetGaiaId(),
                                      FakeGaiaMixin::kFakeRefreshToken);
 
-    // Since we will login after this method returns, we need to set this
-    // to prevent Chrome from trying to quit after login.
-    login_manager_.set_should_launch_browser(true);
-
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-  }
-
-  void LoginAndShowScreen() {
     LoginManagerMixin::TestUserInfo user_info =
         IsChild() ? child_user_ : regular_user_;
     UserContext user_context =
@@ -193,8 +185,10 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
         ->screen_manager()
         ->SetScreenForTesting(std::move(supervision_onboarding_screen));
 
-    supervision_onboarding_screen_->Show();
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
   }
+
+  void ShowScreen() { supervision_onboarding_screen_->Show(); }
 
   void WaitForScreen() {
     OobeScreenWaiter screen_waiter(SupervisionOnboardingScreenView::kScreenId);
@@ -271,7 +265,7 @@ class SupervisionOnboardingRegularUserTest
 
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingRegularUserTest,
                        FlowExitsImmediately) {
-  LoginAndShowScreen();
+  ShowScreen();
 
   WaitForScreenExit();
   EXPECT_EQ(0u, supervision_server()->GetReceivedRequestsCount());
@@ -290,7 +284,7 @@ class SupervisionOnboardingFeatureTurnedOffTest
 
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingFeatureTurnedOffTest,
                        FlowExitsImmediately) {
-  LoginAndShowScreen();
+  ShowScreen();
 
   WaitForScreenExit();
   EXPECT_EQ(0u, supervision_server()->GetReceivedRequestsCount());
@@ -310,37 +304,24 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
                        ExitWhenServerDoesNotReturnHeader) {
   supervision_server()->clear_custom_http_header_value();
 
-  LoginAndShowScreen();
+  ShowScreen();
   WaitForScreenExit();
 
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 }
 
-// https://crbug.com/965369
-#if defined(OS_CHROMEOS)
-#define MAYBE_ExitWhenServerSendsWrongHeader \
-  DISABLED_ExitWhenServerSendsWrongHeader
-#else
-#define MAYBE_ExitWhenServerSendsWrongHeader ExitWhenServerSendsWrongHeader
-#endif
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
-                       MAYBE_ExitWhenServerSendsWrongHeader) {
+                       ExitWhenServerSendsWrongHeader) {
   supervision_server()->set_custom_http_header_value("wrong_header_value");
 
-  LoginAndShowScreen();
+  ShowScreen();
   WaitForScreenExit();
 
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 }
 
-// https://crbug.com/965369
-#if defined(OS_CHROMEOS)
-#define MAYBE_NextButtonExitsScreen DISABLED_NextButtonExitsScreen
-#else
-#define MAYBE_NextButtonExitsScreen NextButtonExitsScreen
-#endif
-IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, MAYBE_NextButtonExitsScreen) {
-  LoginAndShowScreen();
+IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, NextButtonExitsScreen) {
+  ShowScreen();
   WaitForScreen();
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 
@@ -349,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, MAYBE_NextButtonExitsScreen) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, BackButtonExitsScreen) {
-  LoginAndShowScreen();
+  ShowScreen();
   WaitForScreen();
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 
@@ -358,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, BackButtonExitsScreen) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, SkipButtonExitsScreen) {
-  LoginAndShowScreen();
+  ShowScreen();
   WaitForScreen();
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 
