@@ -694,8 +694,7 @@ class ExternalBeginFrameSourceTest : public ::testing::Test {
   std::unique_ptr<MockBeginFrameObserver> obs_;
 };
 
-// TODO(https://crbug.com/863422): Fix DCHECK failure.
-TEST_F(ExternalBeginFrameSourceTest, DISABLED_OnAnimateOnlyBeginFrameOptIn) {
+TEST_F(ExternalBeginFrameSourceTest, OnAnimateOnlyBeginFrameOptIn) {
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
   EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
   source_->AddObserver(obs_.get());
@@ -707,18 +706,19 @@ TEST_F(ExternalBeginFrameSourceTest, DISABLED_OnAnimateOnlyBeginFrameOptIn) {
   source_->OnBeginFrame(args);
 
   // When opting in, an observer receives animate_only BeginFrames.
-  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2,
-                                        TicksFromMicroseconds(10000));
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 3,
+                                        TicksFromMicroseconds(10001));
   args.animate_only = true;
   EXPECT_CALL(*obs_, WantsAnimateOnlyBeginFrames())
       .WillOnce(::testing::Return(true));
   EXPECT_BEGIN_FRAME_ARGS_USED(*obs_, args);
   source_->OnBeginFrame(args);
+
+  EXPECT_CALL((*client_), OnNeedsBeginFrames(false)).Times(1);
+  source_->RemoveObserver(obs_.get());
 }
 
-// TODO(https://crbug.com/863422): Fix DCHECK failure.
-TEST_F(ExternalBeginFrameSourceTest,
-       DISABLED_OnBeginFrameChecksBeginFrameContinuity) {
+TEST_F(ExternalBeginFrameSourceTest, OnBeginFrameChecksBeginFrameContinuity) {
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
   EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
   source_->AddObserver(obs_.get());
@@ -738,10 +738,13 @@ TEST_F(ExternalBeginFrameSourceTest,
   ExternalBeginFrameSource source2(client_.get());
   source2.AddObserver(obs_.get());
   source2.OnBeginFrame(args);
+
+  EXPECT_CALL((*client_), OnNeedsBeginFrames(false)).Times(2);
+  source_->RemoveObserver(obs_.get());
+  source2.RemoveObserver(obs_.get());
 }
 
-// TODO(https://crbug.com/863422): Fix DCHECK failure.
-TEST_F(ExternalBeginFrameSourceTest, DISABLED_GetMissedBeginFrameArgs) {
+TEST_F(ExternalBeginFrameSourceTest, GetMissedBeginFrameArgs) {
   BeginFrameArgs args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
                                                        2, 10000, 10100, 100);
   source_->OnBeginFrame(args);
@@ -761,6 +764,9 @@ TEST_F(ExternalBeginFrameSourceTest, DISABLED_GetMissedBeginFrameArgs) {
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
   EXPECT_CALL(*obs_, OnBeginFrame(_)).Times(0);
   source_->AddObserver(obs_.get());
+
+  EXPECT_CALL((*client_), OnNeedsBeginFrames(false)).Times(1);
+  source_->RemoveObserver(obs_.get());
 }
 
 // Tests that an observer which returns true from IsRoot is notified after
