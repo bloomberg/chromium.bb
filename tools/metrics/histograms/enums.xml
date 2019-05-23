@@ -19389,6 +19389,7 @@ Called by update_net_error_codes.py.-->
   <int value="1337" label="BLUETOOTHPRIVATE_RECORDPAIRING"/>
   <int value="1338" label="FILEMANAGERPRIVATE_SETARCSTORAGETOASTSHOWNFLAG"/>
   <int value="1339" label="INPUTMETHODPRIVATE_SETCOMPOSITIONRANGE"/>
+  <int value="1340" label="BLUETOOTHPRIVATE_RECORDRECONNECTION"/>
 </enum>
 
 <enum name="ExtensionIconState">

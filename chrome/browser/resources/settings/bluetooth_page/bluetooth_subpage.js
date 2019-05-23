@@ -380,23 +380,33 @@ Polymer({
    * @private
    */
   connectDevice_: function(device) {
+    if (device.connecting || device.connected) {
+      return;
+    }
+
     // If the device is not paired, show the pairing dialog before connecting.
-    const isPairing = !device.paired;
-    if (isPairing) {
+    // TODO(crbug.com/966170): Need to check if the device is pairable as well.
+    const isPaired = device.paired;
+    if (!isPaired) {
       this.pairingDevice_ = device;
       this.openDialog_();
     }
 
     const address = device.address;
     this.bluetoothPrivate.connect(address, result => {
+      if (isPaired) {
+        this.recordUserInitiatedReconnectionAttemptResult_(result);
+      }
+
       // If |pairingDevice_| has changed, ignore the connect result.
       if (this.pairingDevice_ && address != this.pairingDevice_.address) {
         return;
       }
+
       // Let the dialog handle any errors, otherwise close the dialog.
       const dialog = this.$.deviceDialog;
       if (dialog.endConnectionAttempt(
-              device, isPairing /* wasPairing */, chrome.runtime.lastError,
+              device, !isPaired /* wasPairing */, chrome.runtime.lastError,
               result)) {
         this.openDialog_();
       } else if (
@@ -502,5 +512,35 @@ Polymer({
     this.updateTimerId_ = undefined;
 
     this.startOrStopRefreshingDeviceList_();
+  },
+
+  /**
+   * Record metrics for user-initiated attempts to reconnect to an already
+   * paired device.
+   * @param {!chrome.bluetoothPrivate.ConnectResultType} result The connection
+   *     result.
+   * @private
+   */
+  recordUserInitiatedReconnectionAttemptResult_: function(result) {
+    let success;
+    if (chrome.runtime.lastError) {
+      success = false;
+    } else {
+      switch (result) {
+        case chrome.bluetoothPrivate.ConnectResultType.SUCCESS:
+          success = true;
+          break;
+        case chrome.bluetoothPrivate.ConnectResultType.AUTH_CANCELED:
+        case chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS:
+          // Don't record metrics until connection has ended, and don't record
+          // cancellations.
+          return;
+        default:
+          success = false;
+          break;
+      }
+    }
+
+    chrome.bluetoothPrivate.recordReconnection(success);
   }
 });

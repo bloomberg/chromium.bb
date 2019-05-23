@@ -670,6 +670,24 @@ void BluetoothPrivateRecordPairingFunction::DoWork(
   RecordPairingTransport(params_->transport);
 }
 
+BluetoothPrivateRecordReconnectionFunction::
+    BluetoothPrivateRecordReconnectionFunction() = default;
+
+BluetoothPrivateRecordReconnectionFunction::
+    ~BluetoothPrivateRecordReconnectionFunction() = default;
+
+bool BluetoothPrivateRecordReconnectionFunction::CreateParams() {
+  params_ = bt_private::RecordReconnection::Params::Create(*args_);
+  return params_ != nullptr;
+}
+
+void BluetoothPrivateRecordReconnectionFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  base::UmaHistogramBoolean(
+      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.Settings",
+      params_->success);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 }  // namespace api

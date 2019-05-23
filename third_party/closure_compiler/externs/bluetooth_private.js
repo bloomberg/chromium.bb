@@ -165,6 +165,13 @@ chrome.bluetoothPrivate.pair = function(deviceAddress, callback) {};
 chrome.bluetoothPrivate.recordPairing = function(success, transport) {};
 
 /**
+ * Record that a user-initiated reconnection attempt to an already paired device
+ * finished. Do not record cancellations.
+ * @param {boolean} success
+ */
+chrome.bluetoothPrivate.recordReconnection = function(success) {};
+
+/**
  * Fired when a pairing event occurs.
  * @type {!ChromeEvent}
  */

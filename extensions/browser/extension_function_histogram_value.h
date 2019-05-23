@@ -1400,6 +1400,7 @@ enum HistogramValue {
   BLUETOOTHPRIVATE_RECORDPAIRING = 1337,
   FILEMANAGERPRIVATE_SETARCSTORAGETOASTSHOWNFLAG = 1338,
   INPUTMETHODPRIVATE_SETCOMPOSITIONRANGE = 1339,
+  BLUETOOTHPRIVATE_RECORDRECONNECTION = 1340,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
