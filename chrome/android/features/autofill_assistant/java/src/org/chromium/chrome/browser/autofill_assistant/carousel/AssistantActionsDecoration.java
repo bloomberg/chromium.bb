@@ -40,6 +40,7 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
     // Dimensions in device pixels.
     private final int mOuterSpace;
     private final int mInnerSpace;
+    private final int mVerticalSpacing;
     private final int mGradientWidth;
     private final int mLastChildBorderRadius;
     private final int mShadowColor;
@@ -60,6 +61,9 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
                         .autofill_assistant_bottombar_horizontal_spacing);
         mInnerSpace = context.getResources().getDimensionPixelSize(
                 org.chromium.chrome.autofill_assistant.R.dimen.autofill_assistant_actions_spacing);
+        mVerticalSpacing = context.getResources().getDimensionPixelSize(
+                org.chromium.chrome.autofill_assistant.R.dimen
+                        .autofill_assistant_bottombar_vertical_spacing);
         mGradientWidth = context.getResources().getDimensionPixelSize(
                 org.chromium.chrome.autofill_assistant.R.dimen
                         .autofill_assistant_actions_gradient_width);
@@ -129,7 +133,8 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
         }
 
         // Draw a fixed size white-to-transparent linear gradient from left to right.
-        mGradientDrawable.setBounds(0, 0, mGradientWidth, parent.getHeight());
+        mGradientDrawable.setBounds(
+                0, mVerticalSpacing, mGradientWidth, parent.getHeight() - mVerticalSpacing);
         mGradientDrawable.draw(canvas);
 
         canvas.restore();
@@ -173,6 +178,11 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
             @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+        // Add vertical spacing above and below the view. This is necessary to display the shadow of
+        // the last button correctly.
+        outRect.top = mVerticalSpacing;
+        outRect.bottom = mVerticalSpacing;
+
         if (state.getItemCount() <= 1) {
             return;
         }

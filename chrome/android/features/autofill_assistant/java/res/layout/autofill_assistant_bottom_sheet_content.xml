@@ -62,18 +62,4 @@
             android:clipChildren="false"
             android:clipToPadding="false" />
     </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
-
-    <!-- This intermediate container is necessary as the actions carousel needs
-         a parent with clipChildren set to false (because of the shadow around
-         the cancel button that is drawn outside of the actions carousel). We
-         can't put it on this layout root as this breaks scroll views (and thus
-         the scrollable_content sibling above). -->
-    <LinearLayout
-        android:id="@+id/carousels_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="@dimen/autofill_assistant_bottombar_vertical_spacing"
-        android:orientation="vertical"
-        android:clipChildren="false"
-        android:clipToPadding="false" />
 </org.chromium.chrome.browser.autofill_assistant.SizeListenableLinearLayout>

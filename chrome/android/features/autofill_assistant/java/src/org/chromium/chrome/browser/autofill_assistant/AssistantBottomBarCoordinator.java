@@ -87,8 +87,8 @@ class AssistantBottomBarCoordinator
         mContent.mScrollableContentContainer.addView(mDetailsCoordinator.getView());
         mContent.mScrollableContentContainer.addView(mPaymentRequestCoordinator.getView());
         mContent.mScrollableContentContainer.addView(mFormCoordinator.getView());
-        mContent.mCarouselsContainer.addView(mSuggestionsCoordinator.getView());
-        mContent.mCarouselsContainer.addView(mActionsCoordinator.getView());
+        mContent.mBottomBarView.addView(mSuggestionsCoordinator.getView());
+        mContent.mBottomBarView.addView(mActionsCoordinator.getView());
 
         // Set children top margins to have a spacing between them.
         int childSpacing = activity.getResources().getDimensionPixelSize(
@@ -97,7 +97,6 @@ class AssistantBottomBarCoordinator
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
         setChildMarginTop(mFormCoordinator.getView(), childSpacing);
         setChildMarginTop(mSuggestionsCoordinator.getView(), childSpacing);
-        setChildMarginTop(mActionsCoordinator.getView(), childSpacing);
 
         // Hide the carousels when they are empty.
         hideWhenEmpty(
@@ -155,6 +154,19 @@ class AssistantBottomBarCoordinator
                 }
             }
         });
+
+        // Don't clip the content scroll view unless it is scrollable. This is necessary for shadows
+        // (i.e. details shadow and carousel cancel button shadow) but we need to clip the children
+        // when the ScrollView is scrollable, otherwise scrolled content will overlap with the
+        // header and carousels.
+        ScrollView scrollView = mContent.mScrollableContent;
+        scrollView.addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    boolean canScroll =
+                            scrollView.canScrollVertically(-1) || scrollView.canScrollVertically(1);
+                    mContent.mScrollableContent.setClipChildren(canScroll);
+                    mContent.mBottomBarView.setClipChildren(canScroll);
+                });
     }
 
     /**
@@ -301,7 +313,6 @@ class AssistantBottomBarCoordinator
         private final SizeListenableLinearLayout mBottomBarView;
         private final ScrollView mScrollableContent;
         private final LinearLayout mScrollableContentContainer;
-        private final LinearLayout mCarouselsContainer;
 
         public AssistantBottomSheetContent(Context context) {
             mToolbarView = (ViewGroup) LayoutInflater.from(context).inflate(
@@ -311,7 +322,6 @@ class AssistantBottomBarCoordinator
             mScrollableContent = mBottomBarView.findViewById(R.id.scrollable_content);
             mScrollableContentContainer =
                     mScrollableContent.findViewById(R.id.scrollable_content_container);
-            mCarouselsContainer = mBottomBarView.findViewById(R.id.carousels_container);
         }
 
         @Override
