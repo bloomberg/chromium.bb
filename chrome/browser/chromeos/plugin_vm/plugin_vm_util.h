@@ -17,8 +17,6 @@ class Profile;
 
 namespace plugin_vm {
 
-using PluginVmStartedCallback = base::OnceCallback<void(bool)>;
-
 // Generated as crx_file::id_util::GenerateId("org.chromium.plugin_vm");
 constexpr char kPluginVmAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
 
@@ -34,13 +32,13 @@ bool IsPluginVmConfigured(Profile* profile);
 // Returns true if PluginVm is allowed and configured for the current profile.
 bool IsPluginVmEnabled(Profile* profile);
 
+// Determines if the default Plugin VM is running and visible.
+bool IsPluginVmRunning(Profile* profile);
+
 void ShowPluginVmLauncherView(Profile* profile);
 
 // Checks if an window is for plugin vm.
 bool IsPluginVmWindow(const aura::Window* window);
-
-void StartPluginVmForProfile(Profile* profile,
-                             PluginVmStartedCallback callback);
 
 // Retrieves the license key to be used for PluginVm. If
 // none is set this will return an empty string.

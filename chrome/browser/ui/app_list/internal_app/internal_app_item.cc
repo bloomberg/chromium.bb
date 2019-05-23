@@ -6,8 +6,8 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -55,8 +55,8 @@ void InternalAppItem::Activate(int event_flags) {
 
 void InternalAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
   if (!context_menu_) {
-    context_menu_ = std::make_unique<app_list::AppContextMenu>(
-        nullptr, profile(), id(), GetController());
+    context_menu_ = std::make_unique<InternalAppContextMenu>(profile(), id(),
+                                                             GetController());
   }
   context_menu_->GetMenuModel(std::move(callback));
 }

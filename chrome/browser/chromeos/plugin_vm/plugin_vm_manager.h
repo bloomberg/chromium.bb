@@ -28,6 +28,7 @@ class PluginVmManager : public KeyedService {
   ~PluginVmManager() override;
 
   void LaunchPluginVm();
+  void StopPluginVm();
 
  private:
   // The flow to launch a Plugin Vm. We'll probably want to add additional

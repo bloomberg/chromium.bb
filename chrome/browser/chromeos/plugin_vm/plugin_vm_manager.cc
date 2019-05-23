@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -77,6 +78,15 @@ void PluginVmManager::LaunchPluginVm() {
       ->StartPluginVmDispatcher(
           base::BindOnce(&PluginVmManager::OnStartPluginVmDispatcher,
                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PluginVmManager::StopPluginVm() {
+  vm_tools::plugin_dispatcher::StopVmRequest request;
+  request.set_owner_id(owner_id_);
+  request.set_vm_name_uuid(kPluginVmDefaultName);
+
+  chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StopVm(
+      std::move(request), base::DoNothing());
 }
 
 void PluginVmManager::OnStartPluginVmDispatcher(bool success) {
