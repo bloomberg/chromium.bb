@@ -188,6 +188,13 @@ void AutocompleteResult::SortAndCull(
        ++num_matches) {}
   matches_.resize(num_matches);
 
+  if (OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() &&
+      matches_.size() > 2) {
+    // "Bunch" first by search type, then all others.
+    std::stable_sort(std::next(matches_.begin()), matches_.end(),
+                     CompareBySearchVsUrl());
+  }
+
   // There is no default match for chromeOS launcher zero prefix query
   // suggestions.
   if ((input.text().empty() &&
