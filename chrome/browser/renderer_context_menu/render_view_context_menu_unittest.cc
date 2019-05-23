@@ -22,6 +22,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -404,7 +405,8 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
   // incognito mode.
   std::unique_ptr<TestRenderViewContextMenu> CreateContextMenuOnChromeLink() {
     content::ContextMenuParams params = CreateParams(MenuItem::LINK);
-    params.unfiltered_link_url = params.link_url = GURL("chrome://settings");
+    params.unfiltered_link_url = params.link_url =
+        GURL(chrome::kChromeUISettingsURL);
     auto menu = std::make_unique<TestRenderViewContextMenu>(
         web_contents()->GetMainFrame(), params);
     menu->set_protocol_handler_registry(registry_.get());

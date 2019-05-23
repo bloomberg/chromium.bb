@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 
 #include "build/build_config.h"
+#include "chrome/common/webui_url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -12,28 +13,32 @@ namespace signin {
 
 #if !defined(OS_CHROMEOS)
 TEST(SigninPromoTest, TestPromoURL) {
-  GURL expected_url_1(
-      "chrome://chrome-signin/?access_point=0&reason=0&auto_close=1");
-  EXPECT_EQ(expected_url_1,
-            GetEmbeddedPromoURL(
-                signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-                signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, true));
-  GURL expected_url_2("chrome://chrome-signin/?access_point=15&reason=3");
-  EXPECT_EQ(expected_url_2,
-            GetEmbeddedPromoURL(
-                signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO,
-                signin_metrics::Reason::REASON_UNLOCK, false));
+  GURL::Replacements replace_query;
+  replace_query.SetQueryStr("access_point=0&reason=0&auto_close=1");
+  EXPECT_EQ(
+      GURL(chrome::kChromeUIChromeSigninURL).ReplaceComponents(replace_query),
+      GetEmbeddedPromoURL(signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+                          signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+                          true));
+  replace_query.SetQueryStr("access_point=15&reason=3");
+  EXPECT_EQ(
+      GURL(chrome::kChromeUIChromeSigninURL).ReplaceComponents(replace_query),
+      GetEmbeddedPromoURL(
+          signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO,
+          signin_metrics::Reason::REASON_UNLOCK, false));
 }
 
 TEST(SigninPromoTest, TestReauthURL) {
-  GURL expected_url_1(
-      "chrome://chrome-signin/"
-      "?access_point=0&reason=3&auto_close=1&email=example%40domain.com"
-      "&validateEmail=1&readOnlyEmail=1");
-  EXPECT_EQ(expected_url_1,
-            GetEmbeddedReauthURLWithEmail(
-                signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-                signin_metrics::Reason::REASON_UNLOCK, "example@domain.com"));
+  GURL::Replacements replace_query;
+  replace_query.SetQueryStr(
+      "access_point=0&reason=3&auto_close=1"
+      "&email=example%40domain.com&validateEmail=1"
+      "&readOnlyEmail=1");
+  EXPECT_EQ(
+      GURL(chrome::kChromeUIChromeSigninURL).ReplaceComponents(replace_query),
+      GetEmbeddedReauthURLWithEmail(
+          signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+          signin_metrics::Reason::REASON_UNLOCK, "example@domain.com"));
 }
 #endif  // !defined(OS_CHROMEOS)
 

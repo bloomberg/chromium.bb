@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
@@ -91,7 +92,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
 
   const GURL kExpectedUnpackedOverrideUrl =
       ext_unpacked->GetResourceURL(kOverrideResource);
-  const GURL kBookmarksUrl("chrome://bookmarks");
+  const GURL kBookmarksUrl(chrome::kChromeUIBookmarksURL);
   GURL changed_url = kBookmarksUrl;
   EXPECT_TRUE(
       ExtensionWebUI::HandleChromeURLOverride(&changed_url, profile_.get()));

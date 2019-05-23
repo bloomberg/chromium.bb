@@ -410,8 +410,10 @@ TEST_F(TabManagerTest, IsInternalPage) {
       TabManager::IsInternalPage(GURL(chrome::kChromeUINetInternalsURL)));
 
   // Prefix matches are included.
-  EXPECT_TRUE(
-      TabManager::IsInternalPage(GURL("chrome://settings/fakeSetting")));
+  GURL::Replacements replace_fake_path;
+  replace_fake_path.SetPathStr("fakeSetting");
+  EXPECT_TRUE(TabManager::IsInternalPage(
+      GURL(chrome::kChromeUISettingsURL).ReplaceComponents(replace_fake_path)));
 }
 
 // Data race on Linux. http://crbug.com/787842

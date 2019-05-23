@@ -20,6 +20,7 @@
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -103,7 +104,8 @@ class BookmarkContextMenuTest : public testing::Test {
     model_->AddURL(bb_node, 0, ASCIIToUTF16("a"), GURL(test_base + "a"));
     const BookmarkNode* f1 = model_->AddFolder(bb_node, 1, ASCIIToUTF16("F1"));
     model_->AddURL(f1, 0, ASCIIToUTF16("f1a"), GURL(test_base + "f1a"));
-    model_->AddURL(f1, 1, ASCIIToUTF16("f1b"), GURL("chrome://settings"));
+    model_->AddURL(f1, 1, ASCIIToUTF16("f1b"),
+                   GURL(chrome::kChromeUISettingsURL));
     const BookmarkNode* f11 = model_->AddFolder(f1, 2, ASCIIToUTF16("F11"));
     model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
     model_->AddFolder(bb_node, 2, ASCIIToUTF16("F2"));

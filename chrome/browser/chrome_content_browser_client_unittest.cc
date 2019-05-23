@@ -21,6 +21,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/search_engines/template_url_service.h"
@@ -345,13 +346,13 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(InstantNTPURLRewriteTest, UberURLHandler_InstantExtendedNewTabPage) {
-  const GURL url_original("chrome://newtab");
+  const GURL url_original(chrome::kChromeUINewTabURL);
   const GURL url_rewritten("https://www.example.com/newtab");
   InstallTemplateURLWithNewTabPage(url_rewritten);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
       "Group1 use_cacheable_ntp:1"));
 
-  AddTab(browser(), GURL("chrome://blank"));
+  AddTab(browser(), GURL(url::kAboutBlankURL));
   NavigateAndCommitActiveTab(url_original);
 
   NavigationEntry* entry = browser()->tab_strip_model()->
@@ -396,7 +397,7 @@ TEST(ChromeContentBrowserClientTest, HandleWebUI) {
   test_content_browser_client.HandleWebUI(&should_not_redirect, nullptr);
   EXPECT_EQ(http_help, should_not_redirect);
 
-  const GURL chrome_help("chrome://help/");
+  const GURL chrome_help(chrome::kChromeUIHelpURL);
   GURL should_redirect = chrome_help;
   test_content_browser_client.HandleWebUI(&should_redirect, nullptr);
   EXPECT_NE(chrome_help, should_redirect);
@@ -407,7 +408,7 @@ TEST(ChromeContentBrowserClientTest, HandleWebUIReverse) {
   GURL http_settings("http://settings/");
   EXPECT_FALSE(
       test_content_browser_client.HandleWebUIReverse(&http_settings, nullptr));
-  GURL chrome_settings("chrome://settings/");
+  GURL chrome_settings(chrome::kChromeUISettingsURL);
   EXPECT_TRUE(test_content_browser_client.HandleWebUIReverse(&chrome_settings,
                                                              nullptr));
 }

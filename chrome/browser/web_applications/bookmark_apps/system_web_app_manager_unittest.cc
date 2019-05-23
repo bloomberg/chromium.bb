@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,9 +35,9 @@ namespace web_app {
 
 namespace {
 
-const GURL kAppUrl1("chrome://system-app1");
-const GURL kAppUrl2("chrome://system-app2");
-const GURL kAppUrl3("chrome://system-app3");
+const GURL kAppUrl1(content::GetWebUIURL("system-app1"));
+const GURL kAppUrl2(content::GetWebUIURL("system-app2"));
+const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
 
 InstallOptions GetWindowedInstallOptions() {
   InstallOptions options(kAppUrl1, LaunchContainer::kWindow,
