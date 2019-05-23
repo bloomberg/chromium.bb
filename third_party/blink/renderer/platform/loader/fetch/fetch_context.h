@@ -59,7 +59,6 @@ namespace blink {
 enum class ResourceType : uint8_t;
 class ClientHintsPreferences;
 class KURL;
-class PlatformProbeSink;
 class ResourceTimingInfo;
 class WebScopedVirtualTimePauser;
 
@@ -73,13 +72,13 @@ class WebScopedVirtualTimePauser;
 class PLATFORM_EXPORT FetchContext
     : public GarbageCollectedFinalized<FetchContext> {
  public:
-  FetchContext();
+  FetchContext() = default;
 
   static FetchContext& NullInstance();
 
   virtual ~FetchContext() = default;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor*) {}
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&);
 
@@ -140,10 +139,6 @@ class PLATFORM_EXPORT FetchContext
                                        const FetchParameters::ResourceWidth&,
                                        ResourceRequest&);
 
-  PlatformProbeSink* GetPlatformProbeSink() const {
-    return platform_probe_sink_;
-  }
-
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
   // with "keepalive" specified).
@@ -161,8 +156,6 @@ class PLATFORM_EXPORT FetchContext
   }
 
  private:
-  Member<PlatformProbeSink> platform_probe_sink_;
-
   DISALLOW_COPY_AND_ASSIGN(FetchContext);
 };
 

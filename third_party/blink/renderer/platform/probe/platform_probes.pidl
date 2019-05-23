@@ -3,10 +3,4 @@
 // found in the LICENSE file.
 
 interface PlatformProbes {
-  class FetchContext;
-  class ResourceRequest;
-  class ResourceResponse;
-  struct FetchInitiatorInfo;
-
-  PlatformSendRequest([Keep] FetchContext*, uint64_t identifier, ResourceRequest&, const ResourceResponse& redirect_response, const FetchInitiatorInfo&);
 }

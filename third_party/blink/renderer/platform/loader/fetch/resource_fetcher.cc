@@ -1860,10 +1860,6 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
 
     ResourceResponse response;
 
-    blink::probe::PlatformSendRequest probe(&Context(), resource->InspectorId(),
-                                            request, response,
-                                            resource->Options().initiator_info);
-
     resource->VirtualTimePauser().PauseVirtualTime();
     if (resource_load_observer_) {
       DCHECK(!IsDetached());

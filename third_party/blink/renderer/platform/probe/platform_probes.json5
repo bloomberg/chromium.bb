@@ -9,11 +9,5 @@
     ]
   },
   observers: {
-    PlatformTraceEvents: {
-      class: "PlatformTraceEventsAgent",
-      probes: [
-        "PlatformSendRequest",
-      ]
-    }
   }
 }

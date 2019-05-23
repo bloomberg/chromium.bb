@@ -31,8 +31,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/platform_probe_sink.h"
-#include "third_party/blink/renderer/platform/probe/platform_trace_events_agent.h"
 
 namespace blink {
 
@@ -50,16 +48,6 @@ class NullFetchContext final : public FetchContext {
 
 FetchContext& FetchContext::NullInstance() {
   return *MakeGarbageCollected<NullFetchContext>();
-}
-
-FetchContext::FetchContext()
-    : platform_probe_sink_(MakeGarbageCollected<PlatformProbeSink>()) {
-  platform_probe_sink_->AddPlatformTraceEvents(
-      MakeGarbageCollected<PlatformTraceEventsAgent>());
-}
-
-void FetchContext::Trace(blink::Visitor* visitor) {
-  visitor->Trace(platform_probe_sink_);
 }
 
 void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&) {}
