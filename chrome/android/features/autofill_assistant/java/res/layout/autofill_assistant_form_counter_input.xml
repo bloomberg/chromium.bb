@@ -17,12 +17,6 @@
         android:layout_marginBottom="4dp"
         android:textAppearance="@style/TextAppearance.BlackTitle2"/>
     <LinearLayout
-        android:id="@+id/expandable_section"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone"/>
-    <LinearLayout
         android:id="@+id/expand_label_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

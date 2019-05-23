@@ -58,6 +58,12 @@ class AssistantFormCounterInput extends AssistantFormInput {
     private final String mExpandText;
     private final String mMinimizeText;
     private final List<AssistantFormCounter> mCounters;
+
+    /**
+     * The (minimum) number of counters to show when this input is minimized. The counters with
+     * count > 0 will always be shown, so the number of counters actually shown when this input is
+     * minimized might be strictly larger than |mMinimizedCount|.
+     */
     private final int mMinimizedCount;
     private final long mMinCountersSum;
     private final long mMaxCountersSum;
@@ -91,30 +97,28 @@ class AssistantFormCounterInput extends AssistantFormInput {
         }
 
         // Create the views.
-        ViewGroup expandableSection = root.findViewById(R.id.expandable_section);
         int labelIndex = root.indexOfChild(label);
         List<CounterViewHolder> viewHolders = new ArrayList<>();
         for (int i = 0; i < mCounters.size(); i++) {
             CounterViewHolder viewHolder = new CounterViewHolder(context);
             viewHolders.add(viewHolder);
-            if (i < mMinimizedCount) {
-                // Add the counters below the label.
-                root.addView(viewHolder.mView, labelIndex + i + 1);
-            } else {
-                expandableSection.addView(viewHolder.mView);
-            }
+
+            // Add the counters below the label.
+            root.addView(viewHolder.mView, labelIndex + i + 1);
         }
 
         // Initialize the views and attach listeners.
         initializeCounterViews(mCounters, viewHolders);
 
-        // If some counters are in the expandable section, show the expand label that will expand
-        // the section when clicked.
-        if (expandableSection.getChildCount() > 0) {
-            View expandLabelContainer = root.findViewById(R.id.expand_label_container);
-            TextView expandLabel = root.findViewById(R.id.expand_label);
-            TextView minimizeLabel = root.findViewById(R.id.minimize_label);
-            View chevron = root.findViewById(R.id.chevron);
+        // If some counters are hidden in the minimized state, show the expand label that will show
+        // them once clicked.
+        if (mCounters.size() > mMinimizedCount) {
+            setViewsVisibility(mCounters, viewHolders, /* minimized= */ true);
+
+            ViewGroup expandLabelContainer = root.findViewById(R.id.expand_label_container);
+            TextView expandLabel = expandLabelContainer.findViewById(R.id.expand_label);
+            TextView minimizeLabel = expandLabelContainer.findViewById(R.id.minimize_label);
+            View chevron = expandLabelContainer.findViewById(R.id.chevron);
 
             expandLabel.setText(mExpandText);
             minimizeLabel.setText(mMinimizeText);
@@ -122,33 +126,57 @@ class AssistantFormCounterInput extends AssistantFormInput {
             expandLabelContainer.setVisibility(View.VISIBLE);
 
             expandLabelContainer.setOnClickListener(unusedView -> {
-                expandLabel.setOnClickListener(null);
-                expandableSection.setVisibility(View.VISIBLE);
-                expandLabelContainer.setVisibility(View.GONE);
-                expandLabel.setVisibility(View.GONE);
-            });
-
-            expandLabelContainer.setOnClickListener(unusedView -> {
                 TransitionManager.beginDelayedTransition(
-                        (ViewGroup) expandableSection.getRootView(), EXPAND_TRANSITION);
-                boolean expanded = expandableSection.getVisibility() == View.VISIBLE;
-                if (expanded) {
-                    // Shrink.
-                    expandableSection.setVisibility(View.GONE);
+                        (ViewGroup) root.getRootView(), EXPAND_TRANSITION);
+                boolean shouldMinimize = expandLabel.getVisibility() == View.GONE;
+                if (shouldMinimize) {
                     expandLabel.setVisibility(View.VISIBLE);
                     minimizeLabel.setVisibility(View.GONE);
                     chevron.animate().rotation(0).start();
                 } else {
-                    // Expand.
-                    expandableSection.setVisibility(View.VISIBLE);
                     expandLabel.setVisibility(View.GONE);
                     minimizeLabel.setVisibility(View.VISIBLE);
                     chevron.animate().rotation(180).start();
                 }
+
+                setViewsVisibility(mCounters, viewHolders, shouldMinimize);
             });
         }
 
         return root;
+    }
+
+    private void setViewsVisibility(List<AssistantFormCounter> counters,
+            List<CounterViewHolder> viewHolders, boolean minimized) {
+        if (!minimized) {
+            for (CounterViewHolder viewHolder : viewHolders) {
+                viewHolder.mView.setVisibility(View.VISIBLE);
+            }
+            return;
+        }
+
+        // Count the number of counters with count > 0.
+        // TODO(crbug.com/806868): The magic value 0 makes sense for tickets, but might not make
+        // sense for other type of counters. When using this counter input for other things than
+        // tickets, we might want to disable this logic and just show the first mMinimizedCount
+        // counters.
+        int nonZeroCounters = 0;
+        for (int i = 0; i < counters.size(); i++) {
+            if (counters.get(i).getValue() > 0) {
+                nonZeroCounters++;
+            }
+        }
+
+        // Set the views visibility such that:
+        //  - all counters with value > 0 are visible.
+        //  - the first (mMinimizedCount - nonZeroCounters) counters with value = 0 are shown.
+        //  - the remaining counters are hidden.
+        int zeroCountersShown = mMinimizedCount - nonZeroCounters;
+        for (int i = 0; i < counters.size(); i++) {
+            viewHolders.get(i).mView.setVisibility(
+                    counters.get(i).getValue() > 0 || zeroCountersShown-- > 0 ? View.VISIBLE
+                                                                              : View.GONE);
+        }
     }
 
     private void initializeCounterViews(
