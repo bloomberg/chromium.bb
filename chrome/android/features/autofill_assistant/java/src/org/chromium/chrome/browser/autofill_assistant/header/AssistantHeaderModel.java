@@ -28,8 +28,12 @@ public class AssistantHeaderModel extends PropertyModel {
 
     static final WritableBooleanPropertyKey SPIN_POODLE = new WritableBooleanPropertyKey();
 
+    static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
+            new WritableObjectPropertyKey<>();
+
     public AssistantHeaderModel() {
-        super(VISIBLE, STATUS_MESSAGE, PROGRESS, PROGRESS_VISIBLE, SPIN_POODLE);
+        super(VISIBLE, STATUS_MESSAGE, PROGRESS, PROGRESS_VISIBLE, SPIN_POODLE,
+                FEEDBACK_BUTTON_CALLBACK);
     }
 
     @CalledByNative
@@ -50,5 +54,10 @@ public class AssistantHeaderModel extends PropertyModel {
     @CalledByNative
     private void setSpinPoodle(boolean enabled) {
         set(SPIN_POODLE, enabled);
+    }
+
+    @CalledByNative
+    private void setDelegate(AssistantHeaderDelegate delegate) {
+        set(FEEDBACK_BUTTON_CALLBACK, delegate::onFeedbackButtonClicked);
     }
 }

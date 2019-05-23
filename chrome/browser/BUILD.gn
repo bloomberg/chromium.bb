@@ -2147,6 +2147,8 @@ jumbo_split_static_library("browser") {
       "android/app_hooks.h",
       "android/autofill_assistant/assistant_form_delegate.cc",
       "android/autofill_assistant/assistant_form_delegate.h",
+      "android/autofill_assistant/assistant_header_delegate.cc",
+      "android/autofill_assistant/assistant_header_delegate.h",
       "android/autofill_assistant/assistant_overlay_delegate.cc",
       "android/autofill_assistant/assistant_overlay_delegate.h",
       "android/autofill_assistant/assistant_payment_request_delegate.cc",

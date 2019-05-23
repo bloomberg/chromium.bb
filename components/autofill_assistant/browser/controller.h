@@ -110,6 +110,7 @@ class Controller : public ScriptExecutorDelegate,
   void SelectSuggestion(int index) override;
   const std::vector<Chip>& GetActions() const override;
   void SelectAction(int index) override;
+  std::string GetDebugContext() override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
   const PaymentInformation* GetPaymentRequestInformation() const override;
   void SetShippingAddress(

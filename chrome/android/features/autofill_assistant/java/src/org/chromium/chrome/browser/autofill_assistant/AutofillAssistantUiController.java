@@ -205,6 +205,11 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
+    private void showFeedback(String debugContext) {
+        mCoordinator.showFeedback(debugContext);
+    }
+
+    @CalledByNative
     private void showSnackbar(String message) {
         mSnackbarController = AssistantSnackbar.show(mActivity, message, this::safeSnackbarResult);
     }

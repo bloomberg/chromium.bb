@@ -44,7 +44,7 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
 
         // Bind view and mediator through the model.
         AssistantHeaderViewBinder.ViewHolder viewHolder =
-                new AssistantHeaderViewBinder.ViewHolder(bottomBarView, poodle);
+                new AssistantHeaderViewBinder.ViewHolder(context, bottomBarView, poodle);
         AssistantHeaderViewBinder viewBinder = new AssistantHeaderViewBinder();
         PropertyModelChangeProcessor.create(model, viewHolder, viewBinder);
 

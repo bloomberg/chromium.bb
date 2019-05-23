@@ -165,6 +165,9 @@
       <message name="IDS_AUTOFILL_ASSISTANT_SHEET_CLOSED" desc="Text announced when the Autofill Assistant sheet is closed.">
         Google Assistant in Chrome closed.
       </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_SEND_FEEDBACK" desc="Option shown in the menu when clicking the Autofill Assistant profile icon. Clicking this option will open a feedback sharing dialog.">
+        Send feedback
+      </message>
     </messages>
   </release>
 </grit>

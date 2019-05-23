@@ -4,10 +4,15 @@
 
 package org.chromium.chrome.browser.autofill_assistant.header;
 
+import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -27,12 +32,18 @@ class AssistantHeaderViewBinder
         final View mHeader;
         final TextView mStatusMessage;
         final AnimatedProgressBar mProgressBar;
+        final View mProfileIconView;
+        final PopupMenu mProfileIconMenu;
 
-        public ViewHolder(View bottomBarView, AnimatedPoodle poodle) {
+        public ViewHolder(Context context, View bottomBarView, AnimatedPoodle poodle) {
             mPoodle = poodle;
             mHeader = bottomBarView.findViewById(R.id.header);
             mStatusMessage = bottomBarView.findViewById(R.id.status_message);
             mProgressBar = new AnimatedProgressBar(bottomBarView.findViewById(R.id.progress_bar));
+            mProfileIconView = bottomBarView.findViewById(R.id.profile_image);
+            mProfileIconMenu = new PopupMenu(context, mProfileIconView);
+            mProfileIconMenu.inflate(R.menu.profile_icon_menu);
+            mProfileIconView.setOnClickListener(unusedView -> mProfileIconMenu.show());
         }
     }
 
@@ -52,6 +63,8 @@ class AssistantHeaderViewBinder
             setProgressBarVisibility(view, model);
         } else if (AssistantHeaderModel.SPIN_POODLE == propertyKey) {
             view.mPoodle.setSpinEnabled(model.get(AssistantHeaderModel.SPIN_POODLE));
+        } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {
+            setProfileMenuListener(view, model.get(AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK));
         } else {
             assert false : "Unhandled property detected in AssistantHeaderViewBinder!";
         }
@@ -64,5 +77,23 @@ class AssistantHeaderViewBinder
         } else {
             view.mProgressBar.hide();
         }
+    }
+
+    private void setProfileMenuListener(ViewHolder view, @Nullable Runnable feedbackCallback) {
+        view.mProfileIconMenu.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.settings) {
+                PreferencesLauncher.launchSettingsPage(
+                        view.mHeader.getContext(), AutofillAssistantPreferences.class);
+                return true;
+            } else if (itemId == R.id.send_feedback) {
+                if (feedbackCallback != null) {
+                    feedbackCallback.run();
+                }
+                return true;
+            }
+
+            return false;
+        });
     }
 }
