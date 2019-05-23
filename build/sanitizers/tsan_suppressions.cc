@@ -117,9 +117,6 @@ char kTSanDefaultSuppressions[] =
     "race:content::"
     "VideoCaptureImplTest::MockVideoCaptureImpl::~MockVideoCaptureImpl\n"
 
-    // http://crbug.com/347534
-    "race:v8::internal::V8::TearDown\n"
-
     // http://crbug.com/347538
     "race:sctp_timer_start\n"
 
