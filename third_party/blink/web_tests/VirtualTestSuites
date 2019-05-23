@@ -976,5 +976,10 @@
     "prefix": "samesite-by-default-cookies",
     "base": "external/wpt/cookies",
     "args": ["--enable-features=SameSiteByDefaultCookies"]
+  },
+  {
+    "prefix": "cookies-without-samesite-must-be-secure",
+    "base": "external/wpt/cookies/samesite-none-secure",
+    "args": ["--enable-features=SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure"]
   }
 ]
