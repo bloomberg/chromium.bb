@@ -15,6 +15,8 @@ import subprocess
 import sys
 import tarfile
 
+from update import RELEASE_VERSION
+
 # Path constants.
 THIS_DIR = os.path.dirname(__file__)
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
@@ -208,149 +210,165 @@ def main():
 
   # Copy a whitelist of files to the directory we're going to tar up.
   # This supports the same patterns that the fnmatch module understands.
+  # '$V' is replaced by RELEASE_VERSION further down.
   exe_ext = '.exe' if sys.platform == 'win32' else ''
-  want = ['bin/llvm-pdbutil' + exe_ext,
-          'bin/llvm-symbolizer' + exe_ext,
-          'bin/llvm-undname' + exe_ext,
-          # Copy built-in headers (lib/clang/3.x.y/include).
-          'lib/clang/*/include/*',
-          'lib/clang/*/share/asan_blacklist.txt',
-          'lib/clang/*/share/cfi_blacklist.txt',
-          ]
+  want = [
+    'bin/llvm-pdbutil' + exe_ext,
+    'bin/llvm-symbolizer' + exe_ext,
+    'bin/llvm-undname' + exe_ext,
+    # Copy built-in headers (lib/clang/3.x.y/include).
+    'lib/clang/$V/include/*',
+    'lib/clang/$V/share/asan_blacklist.txt',
+    'lib/clang/$V/share/cfi_blacklist.txt',
+  ]
   if sys.platform == 'win32':
-    want.append('bin/clang-cl.exe')
-    want.append('bin/lld-link.exe')
+    want.extend([
+      'bin/clang-cl.exe',
+      'bin/lld-link.exe',
+    ])
   else:
-    want.append('bin/clang')
+    want.extend([
+      'bin/clang',
+
+      # Include libclang_rt.builtins.a for Fuchsia targets.
+      'lib/clang/$V/aarch64-fuchsia/lib/libclang_rt.builtins.a',
+      'lib/clang/$V/x86_64-fuchsia/lib/libclang_rt.builtins.a',
+    ])
   if sys.platform == 'darwin':
     want.extend([
-        # AddressSanitizer runtime.
-        'lib/clang/*/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib',
-        'lib/clang/*/lib/darwin/libclang_rt.asan_osx_dynamic.dylib',
+      # AddressSanitizer runtime.
+      'lib/clang/$V/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib',
+      'lib/clang/$V/lib/darwin/libclang_rt.asan_osx_dynamic.dylib',
 
-        # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-        'lib/clang/*/lib/darwin/libclang_rt.fuzzer_no_main_osx.a',
+      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
+      'lib/clang/$V/lib/darwin/libclang_rt.fuzzer_no_main_osx.a',
 
-        # OS X and iOS builtin libraries (iossim is lipo'd into ios) for the
-        # _IsOSVersionAtLeast runtime function.
-        'lib/clang/*/lib/darwin/libclang_rt.ios.a',
-        'lib/clang/*/lib/darwin/libclang_rt.osx.a',
+      # OS X and iOS builtin libraries (iossim is lipo'd into ios) for the
+      # _IsOSVersionAtLeast runtime function.
+      'lib/clang/$V/lib/darwin/libclang_rt.ios.a',
+      'lib/clang/$V/lib/darwin/libclang_rt.osx.a',
 
-        # Profile runtime (used by profiler and code coverage).
-        'lib/clang/*/lib/darwin/libclang_rt.profile_iossim.a',
-        'lib/clang/*/lib/darwin/libclang_rt.profile_osx.a',
+      # Profile runtime (used by profiler and code coverage).
+      'lib/clang/$V/lib/darwin/libclang_rt.profile_iossim.a',
+      'lib/clang/$V/lib/darwin/libclang_rt.profile_osx.a',
     ])
   elif sys.platform.startswith('linux'):
-    # Add llvm-ar and lld for LTO.
-    want.append('bin/llvm-ar')
-    want.append('bin/lld')
     want.extend([
-        # AddressSanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/*/lib/linux/libclang_rt.asan-i386.a',
-        'lib/clang/*/lib/linux/libclang_rt.asan-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.asan-x86_64.a.syms',
+      'bin/lld',
 
-        # AddressSanitizer C++ runtime.
-        'lib/clang/*/lib/linux/libclang_rt.asan_cxx-i386.a',
-        'lib/clang/*/lib/linux/libclang_rt.asan_cxx-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.asan_cxx-x86_64.a.syms',
+      # Add llvm-ar for LTO.
+      'bin/llvm-ar',
 
-        # AddressSanitizer Android runtime.
-        'lib/clang/*/lib/linux/libclang_rt.asan-aarch64-android.so',
-        'lib/clang/*/lib/linux/libclang_rt.asan-arm-android.so',
-        'lib/clang/*/lib/linux/libclang_rt.asan-i686-android.so',
+      # AddressSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/linux/libclang_rt.asan-i386.a',
+      'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a.syms',
 
-        # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-        'lib/clang/*/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a',
+      # AddressSanitizer C++ runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-i386.a',
+      'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a.syms',
 
-        # HWASAN Android runtime.
-        'lib/clang/*/lib/linux/libclang_rt.hwasan-aarch64-android.so',
+      # AddressSanitizer Android runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.asan-aarch64-android.so',
+      'lib/clang/$V/lib/linux/libclang_rt.asan-arm-android.so',
+      'lib/clang/$V/lib/linux/libclang_rt.asan-i686-android.so',
 
-        # MemorySanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/*/lib/linux/libclang_rt.msan-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.msan-x86_64.a.syms',
+      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
+      'lib/clang/$V/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a',
 
-        # MemorySanitizer C++ runtime.
-        'lib/clang/*/lib/linux/libclang_rt.msan_cxx-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.msan_cxx-x86_64.a.syms',
+      # HWASAN Android runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.hwasan-aarch64-android.so',
 
-        # Profile runtime (used by profiler and code coverage).
-        'lib/clang/*/lib/linux/libclang_rt.profile-i386.a',
-        'lib/clang/*/lib/linux/libclang_rt.profile-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.profile-aarch64-android.a',
-        'lib/clang/*/lib/linux/libclang_rt.profile-arm-android.a',
+      # MemorySanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/linux/libclang_rt.msan-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.msan-x86_64.a.syms',
 
-        # ThreadSanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/*/lib/linux/libclang_rt.tsan-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.tsan-x86_64.a.syms',
+      # MemorySanitizer C++ runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a.syms',
 
-        # ThreadSanitizer C++ runtime.
-        'lib/clang/*/lib/linux/libclang_rt.tsan_cxx-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.tsan_cxx-x86_64.a.syms',
+      # Profile runtime (used by profiler and code coverage).
+      'lib/clang/$V/lib/linux/libclang_rt.profile-i386.a',
+      'lib/clang/$V/lib/linux/libclang_rt.profile-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.profile-aarch64-android.a',
+      'lib/clang/$V/lib/linux/libclang_rt.profile-arm-android.a',
 
-        # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone-i386.a',
-        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone-x86_64.a.syms',
+      # ThreadSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/linux/libclang_rt.tsan-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.tsan-x86_64.a.syms',
 
-        # UndefinedBehaviorSanitizer C++ runtime.
-        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone_cxx-i386.a',
-        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a',
-        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
+      # ThreadSanitizer C++ runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a.syms',
 
-        # UndefinedBehaviorSanitizer Android runtime, needed for CFI.
-        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone-aarch64-android.so',
-        'lib/clang/*/lib/linux/libclang_rt.ubsan_standalone-arm-android.so',
+      # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-i386.a',
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a.syms',
 
-        # Blacklist for MemorySanitizer (used on Linux only).
-        'lib/clang/*/share/msan_blacklist.txt',
+      # UndefinedBehaviorSanitizer C++ runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-i386.a',
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a',
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
+
+      # UndefinedBehaviorSanitizer Android runtime, needed for CFI.
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-aarch64-android.so',
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-arm-android.so',
+
+      # Blacklist for MemorySanitizer (used on Linux only).
+      'lib/clang/$V/share/msan_blacklist.txt',
     ])
   elif sys.platform == 'win32':
     want.extend([
-        # AddressSanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/*/lib/windows/clang_rt.asan-i386.lib',
-        'lib/clang/*/lib/windows/clang_rt.asan-x86_64.lib',
+      # AddressSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/windows/clang_rt.asan-i386.lib',
+      'lib/clang/$V/lib/windows/clang_rt.asan-x86_64.lib',
 
-        # AddressSanitizer C++ runtime.
-        'lib/clang/*/lib/windows/clang_rt.asan_cxx-i386.lib',
-        'lib/clang/*/lib/windows/clang_rt.asan_cxx-x86_64.lib',
+      # AddressSanitizer C++ runtime.
+      'lib/clang/$V/lib/windows/clang_rt.asan_cxx-i386.lib',
+      'lib/clang/$V/lib/windows/clang_rt.asan_cxx-x86_64.lib',
 
-        # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-        'lib/clang/*/lib/windows/clang_rt.fuzzer_no_main-x86_64.lib',
+      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
+      'lib/clang/$V/lib/windows/clang_rt.fuzzer_no_main-x86_64.lib',
 
-        # Thunk for AddressSanitizer needed for static build of a shared lib.
-        'lib/clang/*/lib/windows/clang_rt.asan_dll_thunk-i386.lib',
-        'lib/clang/*/lib/windows/clang_rt.asan_dll_thunk-x86_64.lib',
+      # Thunk for AddressSanitizer needed for static build of a shared lib.
+      'lib/clang/$V/lib/windows/clang_rt.asan_dll_thunk-i386.lib',
+      'lib/clang/$V/lib/windows/clang_rt.asan_dll_thunk-x86_64.lib',
 
-        # AddressSanitizer runtime for component build.
-        'lib/clang/*/lib/windows/clang_rt.asan_dynamic-i386.dll',
-        'lib/clang/*/lib/windows/clang_rt.asan_dynamic-i386.lib',
-        'lib/clang/*/lib/windows/clang_rt.asan_dynamic-x86_64.dll',
-        'lib/clang/*/lib/windows/clang_rt.asan_dynamic-x86_64.lib',
+      # AddressSanitizer runtime for component build.
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic-i386.dll',
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic-i386.lib',
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic-x86_64.dll',
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic-x86_64.lib',
 
-        # Thunk for AddressSanitizer for component build of a shared lib.
-        'lib/clang/*/lib/windows/clang_rt.asan_dynamic_runtime_thunk-i386.lib',
-        'lib/clang/*/lib/windows/clang_rt.asan_dynamic_runtime_thunk-x86_64.lib',
+      # Thunk for AddressSanitizer for component build of a shared lib.
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic_runtime_thunk-i386.lib',
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic_runtime_thunk-x86_64.lib',
 
-        # Profile runtime (used by profiler and code coverage).
-        'lib/clang/*/lib/windows/clang_rt.profile-i386.lib',
-        'lib/clang/*/lib/windows/clang_rt.profile-x86_64.lib',
+      # Profile runtime (used by profiler and code coverage).
+      'lib/clang/$V/lib/windows/clang_rt.profile-i386.lib',
+      'lib/clang/$V/lib/windows/clang_rt.profile-x86_64.lib',
 
-        # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/*/lib/windows/clang_rt.ubsan_standalone-i386.lib',
-        'lib/clang/*/lib/windows/clang_rt.ubsan_standalone-x86_64.lib',
+      # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/windows/clang_rt.ubsan_standalone-i386.lib',
+      'lib/clang/$V/lib/windows/clang_rt.ubsan_standalone-x86_64.lib',
 
-        # UndefinedBehaviorSanitizer C++ runtime.
-        'lib/clang/*/lib/windows/clang_rt.ubsan_standalone_cxx-i386.lib',
-        'lib/clang/*/lib/windows/clang_rt.ubsan_standalone_cxx-x86_64.lib',
+      # UndefinedBehaviorSanitizer C++ runtime.
+      'lib/clang/$V/lib/windows/clang_rt.ubsan_standalone_cxx-i386.lib',
+      'lib/clang/$V/lib/windows/clang_rt.ubsan_standalone_cxx-x86_64.lib',
     ])
 
-  if sys.platform in ('linux2', 'darwin'):
-    # Include libclang_rt.builtins.a for Fuchsia targets.
-    want.extend(['lib/clang/*/aarch64-fuchsia/lib/libclang_rt.builtins.a',
-                 'lib/clang/*/x86_64-fuchsia/lib/libclang_rt.builtins.a',
-                 ])
+  # Check all non-glob wanted files exist on disk.
+  want = [w.replace('$V', RELEASE_VERSION) for w in want]
+  for w in want:
+    if '*' in w: continue
+    if os.path.exists(os.path.join(LLVM_RELEASE_DIR, w)): continue
+    print >>sys.stderr, 'wanted file "%s" but it did not exist' % w
+    return 1
 
+  # TODO(thakis): Try walking over want and copying the files in there instead
+  # of walking the directory and doing fnmatch() against want.
   for root, dirs, files in os.walk(LLVM_RELEASE_DIR):
     # root: third_party/llvm-build/Release+Asserts/lib/..., rel_root: lib/...
     rel_root = root[len(LLVM_RELEASE_DIR)+1:]
