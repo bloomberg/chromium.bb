@@ -32,6 +32,18 @@ namespace ash {
 struct AcceleratorData;
 class ExitWarningHandler;
 
+// See TabletModeVolumeAdjustType at tools/metrics/histograms/enums.xml.
+enum class TabletModeVolumeAdjustType {
+  kAccidentalAdjustWithSwapEnabled = 0,
+  kNormalAdjustWithSwapEnabled = 1,
+  kAccidentalAdjustWithSwapDisabled = 2,
+  kNormalAdjustWithSwapDisabled = 3,
+  kMaxValue = kNormalAdjustWithSwapDisabled,
+};
+
+// Histogram for volume adjustment in tablet mode.
+ASH_EXPORT extern const char kTabletCountOfVolumeAdjustType[];
+
 // Identifiers for toggling accelerator notifications.
 ASH_EXPORT extern const char kHighContrastToggleAccelNotificationId[];
 ASH_EXPORT extern const char kDockedMagnifierToggleAccelNotificationId[];
@@ -43,6 +55,57 @@ ASH_EXPORT extern const char kFullscreenMagnifierToggleAccelNotificationId[];
 class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
                                              public AcceleratorController {
  public:
+  // Some Chrome OS devices have volume up and volume down buttons on their
+  // side. We want the button that's closer to the top/right to increase the
+  // volume and the button that's closer to the bottom/left to decrease the
+  // volume, so we use the buttons' location and the device orientation to
+  // determine whether the buttons should be swapped.
+  struct SideVolumeButtonLocation {
+    // The button can be at the side of the keyboard or the display. Then value
+    // of the region could be kVolumeButtonRegionKeyboard or
+    // kVolumeButtonRegionScreen.
+    std::string region;
+    // Side info of region. The value could be kVolumeButtonSideLeft,
+    // kVolumeButtonSideRight, kVolumeButtonSideTop or kVolumeButtonSideBottom.
+    std::string side;
+  };
+
+  // TestApi is used for tests to get internal implementation details.
+  class TestApi {
+   public:
+    explicit TestApi(AcceleratorControllerImpl* controller);
+    ~TestApi() = default;
+
+    // If |controller_->tablet_mode_volume_adjust_timer_| is running, stops it,
+    // runs its task, and returns true. Otherwise returns false.
+    bool TriggerTabletModeVolumeAdjustTimer() WARN_UNUSED_RESULT;
+
+    // Registers the specified accelerators.
+    void RegisterAccelerators(const AcceleratorData accelerators[],
+                              size_t accelerators_length);
+
+    // Returns the corresponding accelerator data if |action| maps to a
+    // deprecated accelerator, otherwise return nullptr.
+    const DeprecatedAcceleratorData* GetDeprecatedAcceleratorData(
+        AcceleratorAction action);
+
+    // Accessor to accelerator confirmation dialog.
+    AcceleratorConfirmationDialog* GetConfirmationDialog();
+
+    AcceleratorControllerImpl::SideVolumeButtonLocation
+    side_volume_button_location() {
+      return controller_->side_volume_button_location_;
+    }
+    void SetSideVolumeButtonFilePath(base::FilePath path);
+    void SetSideVolumeButtonLocation(const std::string& region,
+                                     const std::string& side);
+
+   private:
+    AcceleratorControllerImpl* controller_;  // Not owned.
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   // Fields of the side volume button location info.
   static constexpr const char* kVolumeButtonRegion = "region";
   static constexpr const char* kVolumeButtonSide = "side";
@@ -72,21 +135,6 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
 
     // Don't process the accelerator and prevent propagation to other targets.
     RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION
-  };
-
-  // Some Chrome OS devices have volume up and volume down buttons on their
-  // side. We want the button that's closer to the top/right to increase the
-  // volume and the button that's closer to the bottom/left to decrease the
-  // volume, so we use the buttons' location and the device orientation to
-  // determine whether the buttons should be swapped.
-  struct SideVolumeButtonLocation {
-    // The button can be at the side of the keyboard or the display. Then value
-    // of the region could be kVolumeButtonRegionKeyboard or
-    // kVolumeButtonRegionScreen.
-    std::string region;
-    // Side info of region. The value could be kVolumeButtonSideLeft,
-    // kVolumeButtonSideRight, kVolumeButtonSideTop or kVolumeButtonSideBottom.
-    std::string side;
   };
 
   // Registers global keyboard accelerators for the specified target. If
@@ -158,30 +206,7 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   // |side_volume_button_location_|.
   void ParseSideVolumeButtonLocationInfo();
 
-  // Accessor to accelerator confirmation dialog.
-  AcceleratorConfirmationDialog* confirmation_dialog_for_testing() {
-    return confirmation_dialog_.get();
-  }
-
-  void set_side_volume_button_file_path_for_testing(base::FilePath path) {
-    side_volume_button_location_file_path_ = path;
-  }
-  void set_side_volume_button_location_for_testing(const std::string& region,
-                                                   const std::string& side) {
-    side_volume_button_location_.region = region;
-    side_volume_button_location_.side = side;
-  }
-  SideVolumeButtonLocation side_volume_button_location_for_testing() {
-    return side_volume_button_location_;
-  }
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest, GlobalAccelerators);
-  FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest,
-                           DontRepeatToggleFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(DeprecatedAcceleratorTester,
-                           TestDeprecatedAcceleratorsBehavior);
-
   // Initializes the accelerators this class handles as a target.
   void Init();
 
@@ -232,6 +257,17 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   // Returns true if the side volume buttons should be swapped. See
   // SideVolumeButonLocation for the details.
   bool ShouldSwapSideVolumeButtons(int source_device_id) const;
+
+  // The metrics recorded include accidental volume adjustments (defined as a
+  // sequence of volume button events in close succession starting with a
+  // volume-up event but ending with an overall-decreased volume, or vice versa)
+  // or normal volume adjustments w/o SwapSideVolumeButtonsForOrientation
+  // feature enabled.
+  void UpdateTabletModeVolumeAdjustHistogram();
+
+  // Starts |tablet_mode_volume_adjust_timer_| while see VOLUME_UP or
+  // VOLUME_DOWN acceleration action when in tablet mode.
+  void StartTabletModeVolumeAdjustTimer(AcceleratorAction action);
 
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
 
@@ -285,6 +321,17 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
 
   // Stores the location info of side volume buttons.
   SideVolumeButtonLocation side_volume_button_location_;
+
+  // Started when VOLUME_DOWN or VOLUME_UP accelerator action is seen while in
+  // tablet mode. Runs UpdateTabletModeVolumeAdjustHistogram() to record
+  // metrics.
+  base::OneShotTimer tablet_mode_volume_adjust_timer_;
+
+  // True if volume adjust starts with VOLUME_UP action.
+  bool volume_adjust_starts_with_up_ = false;
+
+  // The initial volume percentage when volume adjust starts.
+  int initial_volume_percent_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerImpl);
 };

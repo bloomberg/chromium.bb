@@ -99,6 +99,8 @@ namespace ash {
 
 const char kNotifierAccelerator[] = "ash.accelerator-controller";
 
+const char kTabletCountOfVolumeAdjustType[] = "Tablet.CountOfVolumeAdjustType";
+
 const char kHighContrastToggleAccelNotificationId[] =
     "chrome://settings/accessibility/highcontrast";
 const char kDockedMagnifierToggleAccelNotificationId[] =
@@ -113,12 +115,20 @@ using message_center::Notification;
 using message_center::SystemNotificationWarningLevel;
 
 // Toast id and duration for voice interaction shortcuts
-const char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
-const int kToastDurationMs = 2500;
+constexpr char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
+constexpr int kToastDurationMs = 2500;
 
 // Path of the json file that contains side volume button location info.
-const char kSideVolumeButtonLocationFilePath[] =
+constexpr char kSideVolumeButtonLocationFilePath[] =
     "/usr/share/chromeos-assets/side_volume_button/location.json";
+
+// The interval between two volume control actions within one volume adjust.
+constexpr base::TimeDelta kVolumeAdjustTimeout =
+    base::TimeDelta::FromSeconds(2);
+
+void RecordTabletVolumeAdjustTypeHistogram(TabletModeVolumeAdjustType type) {
+  UMA_HISTOGRAM_ENUMERATION(kTabletCountOfVolumeAdjustType, type);
+}
 
 // Ensures that there are no word breaks at the "+"s in the shortcut texts such
 // as "Ctrl+Shift+Space".
@@ -1062,6 +1072,53 @@ constexpr const char* AcceleratorControllerImpl::kVolumeButtonSideBottom;
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorControllerImpl, public:
 
+AcceleratorControllerImpl::TestApi::TestApi(
+    AcceleratorControllerImpl* controller)
+    : controller_(controller) {
+  DCHECK(controller_);
+}
+
+bool AcceleratorControllerImpl::TestApi::TriggerTabletModeVolumeAdjustTimer() {
+  if (!controller_->tablet_mode_volume_adjust_timer_.IsRunning())
+    return false;
+
+  controller_->tablet_mode_volume_adjust_timer_.FireNow();
+  return true;
+}
+
+void AcceleratorControllerImpl::TestApi::RegisterAccelerators(
+    const AcceleratorData accelerators[],
+    size_t accelerators_length) {
+  controller_->RegisterAccelerators(accelerators, accelerators_length);
+}
+
+const DeprecatedAcceleratorData*
+AcceleratorControllerImpl::TestApi::GetDeprecatedAcceleratorData(
+    AcceleratorAction action) {
+  auto it = controller_->actions_with_deprecations_.find(action);
+  if (it == controller_->actions_with_deprecations_.end())
+    return nullptr;
+
+  return it->second;
+}
+
+AcceleratorConfirmationDialog*
+AcceleratorControllerImpl::TestApi::GetConfirmationDialog() {
+  return controller_->confirmation_dialog_.get();
+}
+
+void AcceleratorControllerImpl::TestApi::SetSideVolumeButtonFilePath(
+    base::FilePath path) {
+  controller_->side_volume_button_location_file_path_ = path;
+}
+
+void AcceleratorControllerImpl::TestApi::SetSideVolumeButtonLocation(
+    const std::string& region,
+    const std::string& side) {
+  controller_->side_volume_button_location_.region = region;
+  controller_->side_volume_button_location_.side = side;
+}
+
 AcceleratorControllerImpl::AcceleratorControllerImpl()
     : accelerator_manager_(std::make_unique<ui::AcceleratorManager>()),
       accelerator_history_(std::make_unique<ui::AcceleratorHistory>()),
@@ -1446,8 +1503,13 @@ void AcceleratorControllerImpl::PerformAction(
     return;
 
   if ((action == VOLUME_DOWN || action == VOLUME_UP) &&
-      ShouldSwapSideVolumeButtons(accelerator.source_device_id())) {
-    action = action == VOLUME_DOWN ? VOLUME_UP : VOLUME_DOWN;
+      Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
+    if (ShouldSwapSideVolumeButtons(accelerator.source_device_id()))
+      action = action == VOLUME_DOWN ? VOLUME_UP : VOLUME_DOWN;
+
+    StartTabletModeVolumeAdjustTimer(action);
   }
 
   // If your accelerator invokes more than one line of code, please either
@@ -1935,9 +1997,6 @@ bool AcceleratorControllerImpl::IsValidSideVolumeButtonLocation() const {
 bool AcceleratorControllerImpl::ShouldSwapSideVolumeButtons(
     int source_device_id) const {
   if (!features::IsSwapSideVolumeButtonsForOrientationEnabled() ||
-      !Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled() ||
       !IsInternalKeyboardOrUncategorizedDevice(source_device_id)) {
     return false;
   }
@@ -1962,6 +2021,37 @@ bool AcceleratorControllerImpl::ShouldSwapSideVolumeButtons(
   if (side == kVolumeButtonSideLeft || side == kVolumeButtonSideRight)
     return !IsPrimaryOrientation(screen_orientation);
   return is_landscape_secondary_or_portrait_primary;
+}
+
+void AcceleratorControllerImpl::UpdateTabletModeVolumeAdjustHistogram() {
+  const int volume_percent =
+      chromeos::CrasAudioHandler::Get()->GetOutputVolumePercent();
+  const bool swapped = features::IsSwapSideVolumeButtonsForOrientationEnabled();
+  if ((volume_adjust_starts_with_up_ &&
+       volume_percent >= initial_volume_percent_) ||
+      (!volume_adjust_starts_with_up_ &&
+       volume_percent <= initial_volume_percent_)) {
+    RecordTabletVolumeAdjustTypeHistogram(
+        swapped ? TabletModeVolumeAdjustType::kNormalAdjustWithSwapEnabled
+                : TabletModeVolumeAdjustType::kNormalAdjustWithSwapDisabled);
+  } else {
+    RecordTabletVolumeAdjustTypeHistogram(
+        swapped
+            ? TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapEnabled
+            : TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapDisabled);
+  }
+}
+
+void AcceleratorControllerImpl::StartTabletModeVolumeAdjustTimer(
+    AcceleratorAction action) {
+  if (!tablet_mode_volume_adjust_timer_.IsRunning()) {
+    volume_adjust_starts_with_up_ = action == VOLUME_UP;
+    initial_volume_percent_ =
+        chromeos::CrasAudioHandler::Get()->GetOutputVolumePercent();
+  }
+  tablet_mode_volume_adjust_timer_.Start(
+      FROM_HERE, kVolumeAdjustTimeout, this,
+      &AcceleratorControllerImpl::UpdateTabletModeVolumeAdjustHistogram);
 }
 
 }  // namespace ash

@@ -55113,6 +55113,13 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Background (app in background)"/>
 </enum>
 
+<enum name="TabletModeVolumeAdjustType">
+  <int value="0" label="Accidental adjust with swap enabled"/>
+  <int value="1" label="Normal adjust with swap enabled"/>
+  <int value="2" label="Accidental adjust with swap disabled"/>
+  <int value="3" label="Normal adjust with swap disabled"/>
+</enum>
+
 <enum name="TabLoadingState">
   <int value="0" label="Tab is not loading"/>
   <int value="1" label="Tab is loading"/>
