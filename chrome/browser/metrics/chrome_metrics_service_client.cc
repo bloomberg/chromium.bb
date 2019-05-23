@@ -149,7 +149,7 @@
 #include "content/public/common/service_manager_connection.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #endif
 
@@ -182,7 +182,7 @@ const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 // third_party/crashpad/crashpad/handler/handler_main.cc.
 const char kCrashpadHistogramAllocatorName[] = "CrashpadMetrics";
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 // The stream type assigned to the minidump stream that holds the serialized
 // system profile proto.
 const uint32_t kSystemProfileMinidumpStreamType = 0x4B6B0003;
@@ -193,7 +193,7 @@ const uint32_t kSystemProfileMinidumpStreamType = 0x4B6B0003;
 // not assume it.
 // TODO(manzagop): revisit this if the Crashpad API evolves.
 base::LazyInstance<std::string>::Leaky g_environment_for_crash_reporter;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 
 void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
   metrics::FileMetricsProvider::RegisterPrefs(registry, kBrowserMetricsName);
@@ -469,7 +469,7 @@ std::string ChromeMetricsServiceClient::GetVersionString() {
 }
 
 void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   DCHECK(environment);
 
   // Register the environment with the crash reporter. Note this only registers
@@ -490,7 +490,7 @@ void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
       reinterpret_cast<const void*>(
           g_environment_for_crash_reporter.Get().data()),
       g_environment_for_crash_reporter.Get().size());
-#endif  // OS_WIN || OS_MACOSX
+#endif  // OS_WIN || OS_MACOSX || OS_ANDROID
 }
 
 void ChromeMetricsServiceClient::OnLogCleanShutdown() {
