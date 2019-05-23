@@ -40,6 +40,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <script src='js/webxr-polyfill.js'></script>
 
     <script src='js/webxr-button.js'></script>
+    <script>
+      var inlineSession = null
+      function updateFOV() {
+        var fov = document.getElementById("vertFOV").value;
+        inlineSession.updateRenderState({
+          inlineVerticalFieldOfView: fov
+        });
+      }
+    </script>
   </head>
   <body>
     <header>
@@ -49,7 +58,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           This sample demonstrates use of a non-immersive XRSession to present
           'Magic Window' content prior to entering XR presentation with an
           immersive session.
+        </p>
+        <p>
           <a class="back" href="./index.html">Back</a>
+        </p>
+        <p>
+          You can also modify the vertical FOV.  The browser will clamp
+          the value between 0.01 and 3.13 inclusive.
+        </p>
+        <p>
+          <!-- Note: Not clamping the input box so we can validate 'bad' values -->
+          <label for="vertFOV">Vertical FOV (Radians): </label>
+          <input id="vertFOV" type="number" value="1.57">
+          <button onclick="updateFOV()">Update</button>
         </p>
       </details>
     </header>
@@ -110,8 +131,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionStarted(session) {
-        if (!session.mode)
+        if (!session.mode) {
           session.mode = 'inline';
+          inlineSession = session;
+        }
+
         session.addEventListener('end', onSessionEnded);
 
         if (!gl) {
@@ -136,6 +160,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           baseLayer: new XRWebGLLayer(session, gl),
           outputContext: outputCanvas.getContext('xrpresent')
         });
+
+        if (session.mode === 'inline')
+          updateFOV();
 
         session.requestReferenceSpace('local').then((refSpace) => {
           return refSpace;
@@ -195,9 +222,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
 
           for (let view of pose.views) {
-            let viewport = session.renderState.baseLayer.getViewport(view);
-            gl.viewport(viewport.x, viewport.y,
-                        viewport.width, viewport.height);
+            // TODO(crbug.com/966077): This appears to be returning null for inline.
+            if (session.mode.startsWith('immersive')) {
+              let viewport = session.renderState.baseLayer.getViewport(view);
+              gl.viewport(viewport.x, viewport.y,
+                          viewport.width, viewport.height);
+            }
 
             scene.draw(view.projectionMatrix, view.transform.inverse.matrix);
           }

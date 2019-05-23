@@ -57,6 +57,9 @@ const char kReferenceSpaceNotSupported[] =
 const char kIncompatibleLayer[] =
     "XRLayer was created with a different session.";
 
+const char kInlineVerticalFOVNotSupported[] =
+    "This session does not support inlineVerticalFieldOfView";
+
 const char kNoSpaceSpecified[] = "No XRSpace specified.";
 
 const char kHitTestNotSupported[] = "Device does not support hit-test!";
@@ -64,9 +67,6 @@ const char kHitTestNotSupported[] = "Device does not support hit-test!";
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
 
 const double kDegToRad = M_PI / 180.0;
-
-// TODO(bajones): This is something that we probably want to make configurable.
-const double kMagicWindowVerticalFieldOfView = 75.0f * M_PI / 180.0f;
 
 // Indices into the views array.
 const unsigned int kMonoOrStereoLeftView = 0;
@@ -129,7 +129,7 @@ XRSession::XRSession(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
               xr_->GetExecutionContext())),
       sensorless_session_(sensorless_session) {
-  render_state_ = MakeGarbageCollected<XRRenderState>();
+  render_state_ = MakeGarbageCollected<XRRenderState>(immersive());
   blurred_ = !HasAppropriateFocus();
 
   switch (environment_blend_mode) {
@@ -165,6 +165,12 @@ void XRSession::updateRenderState(XRRenderStateInit* init,
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionEnded);
+    return;
+  }
+
+  if (immersive() && init->hasInlineVerticalFieldOfView()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kInlineVerticalFOVNotSupported);
     return;
   }
 
@@ -972,8 +978,14 @@ WTF::Vector<XRViewData>& XRSession::views() {
       // In non-immersive mode, if there is no explicit projection matrix
       // provided, the projection matrix must be aligned with the
       // output canvas dimensions.
+      bool is_null = true;
+      double inline_vertical_fov =
+          render_state_->inlineVerticalFieldOfView(is_null);
+
+      // inlineVerticalFieldOfView should only be null in immersive mode.
+      DCHECK(!is_null);
       views_[kMonoOrStereoLeftView].UpdateProjectionMatrixFromAspect(
-          kMagicWindowVerticalFieldOfView, aspect, render_state_->depthNear(),
+          inline_vertical_fov, aspect, render_state_->depthNear(),
           render_state_->depthFar());
     }
 

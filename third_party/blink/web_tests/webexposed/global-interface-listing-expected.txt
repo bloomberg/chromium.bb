@@ -10656,6 +10656,7 @@ interface XRRenderState
     getter baseLayer
     getter depthFar
     getter depthNear
+    getter inlineVerticalFieldOfView
     getter outputContext
     method constructor
 interface XRRigidTransform
