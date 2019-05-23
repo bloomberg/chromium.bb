@@ -20456,6 +20456,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20477,6 +20478,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20498,6 +20500,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20520,6 +20523,7 @@
         "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20540,6 +20544,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20562,6 +20567,7 @@
         "name": "gles2_conform_d3d9_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20585,6 +20591,7 @@
         "name": "gles2_conform_gl_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20602,6 +20609,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20619,6 +20627,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20642,6 +20651,7 @@
         "name": "video_decode_accelerator_d3d9_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20663,6 +20673,7 @@
         "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20691,6 +20702,7 @@
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20722,6 +20734,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20773,6 +20786,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20802,6 +20816,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20830,6 +20845,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20860,6 +20876,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20889,6 +20906,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20918,6 +20936,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20947,6 +20966,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",
@@ -20976,6 +20996,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "intel-hd-630-win10-stable",

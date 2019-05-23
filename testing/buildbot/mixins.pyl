@@ -509,6 +509,11 @@
       },
     },
   },
+  'swarming_containment_auto': {
+    'swarming': {
+      'containment_type': 'AUTO',
+    },
+  },
   'walleye': {
     # Pixel 2
     'swarming': {

@@ -3021,6 +3021,7 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
+          'swarming_containment_auto',
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
