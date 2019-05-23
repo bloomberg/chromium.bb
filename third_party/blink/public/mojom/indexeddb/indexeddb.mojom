@@ -235,9 +235,6 @@ interface IDBCallbacks {
   // Database::Get / Cursor::Advance
   SuccessValue(IDBReturnValue? value);
 
-  // Database::GetAll
-  SuccessArray(array<IDBReturnValue> values);
-
   // Database::Put / Cursor::Update
   SuccessKey(IDBKey key);
 

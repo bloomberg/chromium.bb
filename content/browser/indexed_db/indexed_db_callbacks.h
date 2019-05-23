@@ -119,9 +119,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBCursor::Advance
   virtual void OnSuccess(IndexedDBReturnValue* value);
 
-  // IndexedDBDatabase::GetAll
-  virtual void OnSuccessArray(std::vector<IndexedDBReturnValue>* values);
-
   // IndexedDBDatabase::Put / IndexedDBCursor::Update
   virtual void OnSuccess(const blink::IndexedDBKey& key);
 
