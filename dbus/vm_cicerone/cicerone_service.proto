@@ -430,6 +430,12 @@ message CreateLxdContainerRequest {
 
   // LXD image alias.
   string image_alias = 5;
+
+  // rootfs path to create the container from.
+  string rootfs_path = 6;
+
+  // metadata path to create the container from.
+  string metadata_path = 7;
 }
 
 // Response for creating an LXD container.
