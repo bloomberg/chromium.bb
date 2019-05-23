@@ -352,7 +352,7 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
 
 bool DisplayLockContext::ShouldStyle(LifecycleTarget target) const {
   return target == kSelf || update_forced_ || state_ > kUpdating ||
-         (state_ == kUpdating &&
+         (state_ == kUpdating && in_lifecycle_update_ &&
           update_budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
 }
 
@@ -397,8 +397,9 @@ void DisplayLockContext::DidStyle(LifecycleTarget target) {
 
 bool DisplayLockContext::ShouldLayout(LifecycleTarget target) const {
   return target == kSelf || update_forced_ || state_ > kUpdating ||
-         (state_ == kUpdating && update_budget_->ShouldPerformPhase(
-                                     DisplayLockBudget::Phase::kLayout));
+         (state_ == kUpdating && in_lifecycle_update_ &&
+          update_budget_->ShouldPerformPhase(
+              DisplayLockBudget::Phase::kLayout));
 }
 
 void DisplayLockContext::DidLayout(LifecycleTarget target) {
@@ -411,8 +412,9 @@ void DisplayLockContext::DidLayout(LifecycleTarget target) {
 
 bool DisplayLockContext::ShouldPrePaint() const {
   return update_forced_ || state_ > kUpdating ||
-         (state_ == kUpdating && update_budget_->ShouldPerformPhase(
-                                     DisplayLockBudget::Phase::kPrePaint));
+         (state_ == kUpdating && in_lifecycle_update_ &&
+          update_budget_->ShouldPerformPhase(
+              DisplayLockBudget::Phase::kPrePaint));
 }
 
 void DisplayLockContext::DidPrePaint() {
@@ -702,11 +704,13 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
 }
 
 void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
+  in_lifecycle_update_ = true;
   if (state_ == kUpdating)
     update_budget_->WillStartLifecycleUpdate();
 }
 
 void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
+  in_lifecycle_update_ = false;
   if (acquire_resolver_) {
     if (!ElementSupportsDisplayLocking()) {
       FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);

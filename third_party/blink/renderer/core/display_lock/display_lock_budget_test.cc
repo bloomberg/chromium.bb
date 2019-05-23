@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -427,7 +428,9 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   auto* parent = GetDocument().getElementById("parent");
   EXPECT_TRUE(budget->NeedsLifecycleUpdates());
 
-  budget->WillStartLifecycleUpdate();
+  element->GetDisplayLockContext()->WillStartLifecycleUpdate(
+      *GetDocument().GetFrame()->View());
+
   // Initially all of the phase checks should return true, since we don't know
   // which phase the system wants to process next.
   EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
@@ -458,5 +461,70 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
 
   EXPECT_TRUE(parent->GetLayoutObject()->NeedsLayout());
   EXPECT_TRUE(element->GetLayoutObject()->NeedsLayout());
+}
+
+TEST_F(DisplayLockBudgetTest, UpdateHappensInLifecycleOnly) {
+  // Note that we're not testing the display lock here, just the budget so we
+  // can do minimal work to ensure we have a context, ignoring containment and
+  // other requirements.
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      #container {
+        contain: style layout;
+      }
+    </style>
+    <div id="parent"><div id="container"><div id="child"></div></div></div>
+  )HTML");
+
+  auto* element = GetDocument().getElementById("container");
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(element->GetDisplayLockContext());
+  ASSERT_TRUE(element->GetDisplayLockContext()->IsLocked());
+
+  auto budget_owned = base::WrapUnique(
+      new UnyieldingDisplayLockBudget(element->GetDisplayLockContext()));
+  auto* budget = budget_owned.get();
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->update(script_state);
+    ResetBudget(std::move(budget_owned), element->GetDisplayLockContext());
+  }
+
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
+  EXPECT_TRUE(budget->NeedsLifecycleUpdates());
+
+  auto* context = element->GetDisplayLockContext();
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
+
+  // Since we're not in a lifecycle, the budget itself should not want to do any
+  // phases, even though the budget allows it.
+  EXPECT_FALSE(context->ShouldStyle(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldLayout(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldPrePaint());
+
+  context->WillStartLifecycleUpdate(*GetDocument().GetFrame()->View());
+
+  EXPECT_TRUE(context->ShouldStyle(DisplayLockContext::kChildren));
+  EXPECT_TRUE(context->ShouldLayout(DisplayLockContext::kChildren));
+  EXPECT_TRUE(context->ShouldPrePaint());
+
+  context->DidFinishLifecycleUpdate(*GetDocument().GetFrame()->View());
+
+  EXPECT_FALSE(context->ShouldStyle(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldLayout(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldPrePaint());
+
+  // Ensure to flush any tasks scheduled by context calls.
+  test::RunPendingTasks();
 }
 }  // namespace blink

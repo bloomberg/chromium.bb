@@ -292,6 +292,7 @@ class CORE_EXPORT DisplayLockContext final
   base::Optional<LayoutSize> locked_content_logical_size_;
 
   bool update_forced_ = false;
+  bool in_lifecycle_update_ = false;
   bool activatable_ = false;
 
   bool is_locked_after_connect_ = false;
