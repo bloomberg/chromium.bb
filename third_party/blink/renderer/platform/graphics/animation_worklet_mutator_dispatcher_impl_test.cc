@@ -360,28 +360,26 @@ class AnimationWorkletMutatorDispatcherImplAsyncTest
  public:
   AnimationWorkletMutatorDispatcher::AsyncMutationCompleteCallback
   CreateIntermediateResultCallback(MutateStatus expected_result) {
-    return ConvertToBaseOnceCallback(
-        CrossThreadBindOnce(&AnimationWorkletMutatorDispatcherImplAsyncTest ::
-                                VerifyExpectedMutationResult,
-                            CrossThreadUnretained(this), expected_result));
+    return CrossThreadBindOnce(
+        &AnimationWorkletMutatorDispatcherImplAsyncTest ::
+            VerifyExpectedMutationResult,
+        CrossThreadUnretained(this), expected_result);
   }
 
   AnimationWorkletMutatorDispatcher::AsyncMutationCompleteCallback
   CreateNotReachedCallback() {
-    return ConvertToBaseOnceCallback(
-        CrossThreadBindOnce([](MutateStatus unused) {
-          NOTREACHED()
-              << "Mutate complete callback should not have been triggered";
-        }));
+    return CrossThreadBindOnce([](MutateStatus unused) {
+      NOTREACHED() << "Mutate complete callback should not have been triggered";
+    });
   }
 
   AnimationWorkletMutatorDispatcher::AsyncMutationCompleteCallback
   CreateTestCompleteCallback(
       MutateStatus expected_result = MutateStatus::kCompletedWithUpdate) {
-    return ConvertToBaseOnceCallback(
-        CrossThreadBindOnce(&AnimationWorkletMutatorDispatcherImplAsyncTest ::
-                                VerifyCompletedMutationResultAndFinish,
-                            CrossThreadUnretained(this), expected_result));
+    return CrossThreadBindOnce(
+        &AnimationWorkletMutatorDispatcherImplAsyncTest ::
+            VerifyCompletedMutationResultAndFinish,
+        CrossThreadUnretained(this), expected_result);
   }
 
   // Executes run loop until quit closure is called.
