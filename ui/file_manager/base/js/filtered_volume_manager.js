@@ -82,40 +82,23 @@ class FilteredVolumeManager extends cr.EventTarget {
     // Public VolumeManager.volumeInfoList property accessed by callers.
     this.volumeInfoList = new FilteredVolumeInfoList(this.list_);
 
+    /** @private {?VolumeManager} */
     this.volumeManager_ = null;
 
-    /** @private {?Array<function()>} */
-    this.pendingTasks_ = [];
     this.onEventBound_ = this.onEvent_.bind(this);
     this.onVolumeInfoListUpdatedBound_ =
         this.onVolumeInfoListUpdated_.bind(this);
 
     this.disposed_ = false;
 
-    // Start initialize the VolumeManager.
-    const queue = new AsyncUtil.Queue();
+    /** private {Window} */
+    this.backgroundPage_ = opt_backgroundPage;
 
-    if (opt_backgroundPage) {
-      this.backgroundPage_ = opt_backgroundPage;
-    } else {
-      queue.run(callNextStep => {
-        chrome.runtime.getBackgroundPage(
-            /** @type {function(Window=)} */ (opt_backgroundPage => {
-              this.backgroundPage_ = opt_backgroundPage;
-              callNextStep();
-            }));
-      });
-    }
-
-    queue.run(async (callNextStep) => {
-      try {
-        const volumeManager =
-            await this.backgroundPage_.volumeManagerFactory.getInstance();
-        this.onReady_(volumeManager);
-      } finally {
-        callNextStep();
-      }
-    });
+    /**
+     * Tracks async initialization of volume manager.
+     * @private @const {!Promise<void> }
+     */
+    this.initialized_ = this.initialize_();
   }
 
   /**
@@ -160,17 +143,21 @@ class FilteredVolumeManager extends cr.EventTarget {
   }
 
   /**
-   * Called when the VolumeManager gets ready for post initialization.
-   * @param {VolumeManager} volumeManager The initialized VolumeManager
-   *     instance.
+   * Async part of the initialization.
    * @private
    */
-  onReady_(volumeManager) {
+  async initialize_() {
+    if (!this.backgroundPage_) {
+      this.backgroundPage_ = await new Promise(
+          resolve => chrome.runtime.getBackgroundPage(resolve));
+    }
+
+    this.volumeManager_ =
+        await this.backgroundPage_.volumeManagerFactory.getInstance();
+
     if (this.disposed_) {
       return;
     }
-
-    this.volumeManager_ = volumeManager;
 
     // Subscribe to VolumeManager.
     this.volumeManager_.addEventListener(
@@ -202,13 +189,6 @@ class FilteredVolumeManager extends cr.EventTarget {
     // In VolumeInfoList, we only use 'splice' event.
     this.volumeManager_.volumeInfoList.addEventListener(
         'splice', this.onVolumeInfoListUpdatedBound_);
-
-    // Run pending tasks.
-    const pendingTasks = this.pendingTasks_;
-    this.pendingTasks_ = null;
-    for (var i = 0; i < pendingTasks.length; i++) {
-      pendingTasks[i]();
-    }
   }
 
   /**
@@ -290,26 +270,13 @@ class FilteredVolumeManager extends cr.EventTarget {
   }
 
   /**
-   * Returns whether the VolumeManager is initialized or not.
-   * @return {boolean} True if the VolumeManager is initialized.
-   */
-  isInitialized() {
-    return this.pendingTasks_ === null;
-  }
-
-  /**
    * Ensures the VolumeManager is initialized, and then invokes callback.
    * If the VolumeManager is already initialized, callback will be called
    * immediately.
    * @param {function()} callback Called on initialization completion.
    */
   ensureInitialized(callback) {
-    if (!this.isInitialized()) {
-      this.pendingTasks_.push(this.ensureInitialized.bind(this, callback));
-      return;
-    }
-
-    callback();
+    this.initialized_.then(callback);
   }
 
   /**
@@ -350,16 +317,17 @@ class FilteredVolumeManager extends cr.EventTarget {
     this.ensureInitialized(() => {
       const defaultVolume = this.getCurrentProfileVolumeInfo(
           VolumeManagerCommon.VolumeType.DOWNLOADS);
-      if (defaultVolume) {
-        defaultVolume.resolveDisplayRoot(callback, () => {
-          // defaultVolume is DOWNLOADS and resolveDisplayRoot should succeed.
-          throw new Error(
-              'Unexpectedly failed to obtain the default display root.');
-        });
-      } else {
-        console.warn('Unexpectedly failed to obtain the default display root.');
+      if (!defaultVolume) {
+        console.warn('Cannot get default display root');
         callback(null);
+        return;
       }
+
+      defaultVolume.resolveDisplayRoot(callback, () => {
+        // defaultVolume is DOWNLOADS and resolveDisplayRoot should succeed.
+        console.error('Cannot resolve default display root');
+        callback(null);
+      });
     });
   }
 
@@ -402,6 +370,8 @@ class FilteredVolumeManager extends cr.EventTarget {
    *     if the volume is never mounted.
    */
   async whenVolumeInfoReady(volumeId) {
+    await this.initialized_;
+
     const volumeInfo = this.filterDisallowedVolume_(
         await this.volumeManager_.whenVolumeInfoReady(volumeId));
 
@@ -421,13 +391,9 @@ class FilteredVolumeManager extends cr.EventTarget {
    *     when an error occurs.
    */
   mountArchive(fileUrl, successCallback, errorCallback) {
-    if (this.pendingTasks_) {
-      this.pendingTasks_.push(this.mountArchive.bind(
-          this, fileUrl, successCallback, errorCallback));
-      return;
-    }
-
-    this.volumeManager_.mountArchive(fileUrl, successCallback, errorCallback);
+    this.ensureInitialized(() => {
+      this.volumeManager_.mountArchive(fileUrl, successCallback, errorCallback);
+    });
   }
 
   /**
@@ -438,13 +404,9 @@ class FilteredVolumeManager extends cr.EventTarget {
    *     when an error occurs.
    */
   unmount(volumeInfo, successCallback, errorCallback) {
-    if (this.pendingTasks_) {
-      this.pendingTasks_.push(
-          this.unmount.bind(this, volumeInfo, successCallback, errorCallback));
-      return;
-    }
-
-    this.volumeManager_.unmount(volumeInfo, successCallback, errorCallback);
+    this.ensureInitialized(() => {
+      this.volumeManager_.unmount(volumeInfo, successCallback, errorCallback);
+    });
   }
 
   /**
@@ -453,15 +415,8 @@ class FilteredVolumeManager extends cr.EventTarget {
    * @return {!Promise} Fulfilled on success, otherwise rejected with an error
    *     message.
    */
-  configure(volumeInfo) {
-    if (this.pendingTasks_) {
-      return new Promise((fulfill, reject) => {
-        this.pendingTasks_.push(() => {
-          this.volumeManager_.configure(volumeInfo).then(fulfill, reject);
-        });
-      });
-    }
-
+  async configure(volumeInfo) {
+    await this.initialized_;
     return this.volumeManager_.configure(volumeInfo);
   }
 
