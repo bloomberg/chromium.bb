@@ -105,4 +105,27 @@ void CastExtensionHost::Observe(int type,
   LoadInitialURL();
 }
 
+void CastExtensionHost::EnterFullscreenModeForTab(
+    content::WebContents* web_contents,
+    const GURL& origin,
+    const blink::WebFullscreenOptions& options) {
+  SetFullscreen(web_contents, true);
+}
+void CastExtensionHost::ExitFullscreenModeForTab(
+    content::WebContents* web_contents) {
+  SetFullscreen(web_contents, false);
+}
+bool CastExtensionHost::IsFullscreenForTabOrPending(
+    const content::WebContents* web_contents) const {
+  return is_fullscreen_;
+}
+
+void CastExtensionHost::SetFullscreen(content::WebContents* web_contents,
+                                      bool value) {
+  if (value == is_fullscreen_)
+    return;
+  is_fullscreen_ = value;
+  web_contents->GetRenderViewHost()->GetWidget()->SynchronizeVisualProperties();
+}
+
 }  // namespace chromecast
