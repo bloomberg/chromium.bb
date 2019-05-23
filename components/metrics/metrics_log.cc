@@ -163,12 +163,25 @@ void MetricsLog::RecordUserAction(const std::string& key) {
   user_action->set_time_sec(GetCurrentTime());
 }
 
+// static
 void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
                                          SystemProfileProto* system_profile) {
+  RecordCoreSystemProfile(client->GetVersionString(), client->GetChannel(),
+                          client->GetApplicationLocale(),
+                          client->GetAppPackageName(), system_profile);
+}
+
+// static
+void MetricsLog::RecordCoreSystemProfile(
+    const std::string& version,
+    metrics::SystemProfileProto::Channel channel,
+    const std::string& application_locale,
+    const std::string& package_name,
+    SystemProfileProto* system_profile) {
   system_profile->set_build_timestamp(metrics::MetricsLog::GetBuildTime());
-  system_profile->set_app_version(client->GetVersionString());
-  system_profile->set_channel(client->GetChannel());
-  system_profile->set_application_locale(client->GetApplicationLocale());
+  system_profile->set_app_version(version);
+  system_profile->set_channel(channel);
+  system_profile->set_application_locale(application_locale);
 
 #if defined(ADDRESS_SANITIZER) || DCHECK_IS_ON()
   // Set if a build is instrumented (e.g. built with ASAN, or with DCHECKs).
@@ -206,7 +219,6 @@ void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
 #if defined(OS_ANDROID)
   os->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
-  std::string package_name = client->GetAppPackageName();
   if (!package_name.empty() && package_name != "com.android.chrome")
     system_profile->set_app_package_name(package_name);
 #elif defined(OS_IOS)

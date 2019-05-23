@@ -123,6 +123,8 @@ void InstantiatePersistentHistograms(const base::FilePath& metrics_dir) {
   // it. Memory that is not actualy used won't be physically mapped by the
   // system. BrowserMetrics usage, as reported in UMA, has the 99.99
   // percentile around 3MiB as of 2018-10-22.
+  // Please update ServicificationBackgroundServiceTest.java if the |kAllocSize|
+  // is changed.
   const size_t kAllocSize = 4 << 20;     // 4 MiB
   const uint32_t kAllocId = 0x935DDD43;  // SHA1(BrowserMetrics)
   std::string storage = variations::GetVariationParamValueByFeature(

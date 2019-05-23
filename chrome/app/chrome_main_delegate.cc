@@ -31,6 +31,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -550,11 +551,15 @@ bool ChromeMainDelegate::ShouldCreateFeatureList() {
   return false;
 }
 
-#if defined(OS_ANDROID)
 void ChromeMainDelegate::PostTaskSchedulerStart() {
+#if defined(OS_ANDROID)
   startup_data_->CreateProfilePrefService();
-}
 #endif
+  if (base::FeatureList::IsEnabled(
+          features::kWriteBasicSystemProfileToPersistentHistogramsFile)) {
+    startup_data_->RecordCoreSystemProfile();
+  }
+}
 
 #endif
 

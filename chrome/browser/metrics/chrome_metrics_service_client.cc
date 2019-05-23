@@ -100,7 +100,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
 #endif
@@ -1060,10 +1059,7 @@ bool ChromeMetricsServiceClient::
 }
 
 std::string ChromeMetricsServiceClient::GetAppPackageName() {
-#if defined(OS_ANDROID)
-  return base::android::BuildInfo::GetInstance()->package_name();
-#endif
-  return std::string();
+  return metrics::GetAppPackageName();
 }
 
 std::string ChromeMetricsServiceClient::GetUploadSigningKey() {

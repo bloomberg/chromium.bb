@@ -8,6 +8,10 @@
 #include "build/build_config.h"
 #include "components/version_info/version_info.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace metrics {
 
 std::string GetVersionString() {
@@ -41,6 +45,13 @@ SystemProfileProto::Channel AsProtobufChannel(version_info::Channel channel) {
   }
   NOTREACHED();
   return SystemProfileProto::CHANNEL_UNKNOWN;
+}
+
+std::string GetAppPackageName() {
+#if defined(OS_ANDROID)
+  return base::android::BuildInfo::GetInstance()->package_name();
+#endif
+  return std::string();
 }
 
 }  // namespace metrics

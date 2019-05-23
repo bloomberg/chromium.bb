@@ -38,6 +38,13 @@ class StartupData {
   StartupData();
   ~StartupData();
 
+  // Records core profile settings into the SystemProfileProto. It is important
+  // when Chrome is running in the reduced mode, which doesn't start UMA
+  // recording but persists all of the UMA data into a memory mapped file. The
+  // file will be picked up by Chrome next time it is launched in the full
+  // browser mode.
+  void RecordCoreSystemProfile();
+
 #if defined(OS_ANDROID)
   // Initializes all necessary parameters to create the Profile's PrefService.
   void CreateProfilePrefService();

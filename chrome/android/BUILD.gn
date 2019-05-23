@@ -1564,6 +1564,7 @@ _chrome_public_shared_deps = [
 
 generate_jni("test_support_jni_headers") {
   sources = [
+    "javatests/src/org/chromium/chrome/browser/ServicificationBackgroundService.java",
     "javatests/src/org/chromium/chrome/browser/offlinepages/OfflineTestUtil.java",
     "javatests/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchTestBridge.java",
     "javatests/src/org/chromium/chrome/browser/test/MockCertVerifierRuleAndroid.java",
@@ -1579,9 +1580,11 @@ android_library("browser_java_test_support") {
     "javatests/src/org/chromium/chrome/browser/offlinepages/OfflineTestUtil.java",
     "javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
     "javatests/src/org/chromium/chrome/browser/test/MockCertVerifierRuleAndroid.java",
+    "javatests/src/org/chromium/chrome/browser/ServicificationBackgroundService.java",
   ]
   deps = [
     ":chrome_java",
+    "$google_play_services_package:google_play_services_gcm_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android/public/profiles:java",
@@ -1597,6 +1600,7 @@ android_library("browser_java_test_support") {
 static_library("browser_test_support") {
   testonly = true
   sources = [
+    "../browser/android/servicification_background_service_jni.cc",
     "../browser/android/ssl/mock_cert_verifier_rule_android.cc",
     "../browser/android/ssl/mock_cert_verifier_rule_android.h",
     "../browser/offline_pages/android/offline_test_util_jni.cc",

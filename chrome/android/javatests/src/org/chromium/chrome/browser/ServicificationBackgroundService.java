@@ -117,4 +117,10 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
                                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                                         .isStartupSuccessfullyCompleted()));
     }
+
+    public void assertPersistentHistogramsOnDiskSystemProfile() {
+        Assert.assertTrue(nativeTestPersistentHistogramsOnDiskSystemProfile());
+    }
+
+    private static native boolean nativeTestPersistentHistogramsOnDiskSystemProfile();
 }

@@ -6,6 +6,11 @@
 
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
+#include "chrome/common/channel_info.h"
+#include "components/metrics/metrics_log.h"
+#include "components/metrics/persistent_system_profile.h"
+#include "components/metrics/version_utils.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 #if defined(OS_ANDROID)
 #include "base/files/file_util.h"
@@ -58,6 +63,19 @@ StartupData::StartupData()
           std::make_unique<ChromeFeatureListCreator>()) {}
 
 StartupData::~StartupData() = default;
+
+void StartupData::RecordCoreSystemProfile() {
+  metrics::SystemProfileProto system_profile;
+  metrics::MetricsLog::RecordCoreSystemProfile(
+      metrics::GetVersionString(),
+      metrics::AsProtobufChannel(chrome::GetChannel()),
+      chrome_feature_list_creator_->actual_locale(),
+      metrics::GetAppPackageName(), &system_profile);
+
+  // TODO(crbug.com/965482): Records other information, such as field trials.
+  metrics::GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
+      system_profile, /* complete */ false);
+}
 
 #if defined(OS_ANDROID)
 void StartupData::CreateProfilePrefService() {

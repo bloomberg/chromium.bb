@@ -471,6 +471,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWin10AcceleratedDefaultBrowserFlow;
 #endif  // defined(OS_WIN)
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile;
+
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kIncognitoStrings;
 #endif  // defined(OS_ANDROID)
