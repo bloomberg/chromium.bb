@@ -200,6 +200,9 @@ public class ShareServiceImpl implements ShareService {
 
         for (SharedFile file : files) {
             if (isDangerousFilename(file.name) || isDangerousMimeType(file.blob.contentType)) {
+                Log.i(TAG,
+                        "Cannot share potentially dangerous \"" + file.blob.contentType
+                                + "\" file \"" + file.name + "\".");
                 callback.call(ShareError.PERMISSION_DENIED);
                 return;
             }
