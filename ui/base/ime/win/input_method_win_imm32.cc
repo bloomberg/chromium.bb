@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
@@ -212,6 +213,8 @@ LRESULT InputMethodWinImm32::OnImeStartComposition(HWND window_handle,
   composing_window_handle_ = window_handle;
   imm32_manager_.CreateImeWindow(window_handle);
   imm32_manager_.ResetComposition(window_handle);
+  UMA_HISTOGRAM_BOOLEAN("InputMethod.CompositionWithImm32BasedIme",
+                        imm32_manager_.IsImm32ImeActive());
   return 0;
 }
 
