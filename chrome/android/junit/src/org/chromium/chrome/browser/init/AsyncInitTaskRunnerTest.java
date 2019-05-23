@@ -53,7 +53,6 @@ public class AsyncInitTaskRunnerTest {
     public AsyncInitTaskRunnerTest() throws ProcessInitException {
         mLoader = spy(LibraryLoader.getInstance());
         doNothing().when(mLoader).ensureInitialized(anyInt());
-        doNothing().when(mLoader).asyncPrefetchLibrariesToMemory();
         LibraryLoader.setLibraryLoaderForTesting(mLoader);
         mVariationsSeedFetcher = mock(VariationsSeedFetcher.class);
         VariationsSeedFetcher.setVariationsSeedFetcherForTesting(mVariationsSeedFetcher);
@@ -76,6 +75,7 @@ public class AsyncInitTaskRunnerTest {
         });
         // Allow test to run on all builds
         when(mRunner.shouldFetchVariationsSeedDuringFirstRun()).thenReturn(true);
+        doNothing().when(mRunner).prefetchLibrary();
     }
 
     @After
@@ -92,7 +92,6 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
         verify(mLoader).ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-        verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
         verify(mVariationsSeedFetcher, never()).fetchSeed(anyString(), anyString(), anyString());
     }
@@ -119,7 +118,6 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
         verify(mLoader).ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-        verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
         verify(mVariationsSeedFetcher).fetchSeed(anyString(), anyString(), anyString());
     }

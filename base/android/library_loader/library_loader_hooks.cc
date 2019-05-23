@@ -4,6 +4,8 @@
 
 #include "base/android/library_loader/library_loader_hooks.h"
 
+#include <string>
+
 #include "base/android/jni_string.h"
 #include "base/android/library_loader/anchor_functions_buildflags.h"
 #include "base/android/library_loader/library_load_from_apk_status_codes.h"
@@ -248,30 +250,6 @@ void LibraryLoaderExitHook() {
     delete g_at_exit_manager;
     g_at_exit_manager = NULL;
   }
-}
-
-static void JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(JNIEnv* env) {
-#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(
-      IsUsingOrderfileOptimization());
-#endif
-}
-
-static jint JNI_LibraryLoader_PercentageOfResidentNativeLibraryCode(
-    JNIEnv* env) {
-#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  return NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode();
-#else
-  return -1;
-#endif
-}
-
-static void JNI_LibraryLoader_PeriodicallyCollectResidency(JNIEnv* env) {
-#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  NativeLibraryPrefetcher::PeriodicallyCollectResidency();
-#else
-  LOG(WARNING) << "Collecting residency is not supported.";
-#endif
 }
 
 void SetVersionNumber(const char* version_number) {

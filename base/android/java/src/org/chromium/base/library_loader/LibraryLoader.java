@@ -26,20 +26,15 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -100,10 +95,6 @@ public class LibraryLoader {
     // Note that this member should remain a one-way switch, since it accessed from multiple
     // threads without a lock.
     private volatile boolean mInitialized;
-
-    // One-way switch that becomes true once
-    // {@link asyncPrefetchLibrariesToMemory} has been called.
-    private final AtomicBoolean mPrefetchLibraryHasBeenCalled = new AtomicBoolean();
 
     // Guards all fields below.
     private final Object mLock = new Object();
@@ -323,51 +314,6 @@ public class LibraryLoader {
             return ContextUtils.getAppSharedPreferences().getBoolean(
                     REACHED_CODE_PROFILER_ENABLED_KEY, false);
         }
-    }
-
-    /**
-     * Prefetches the native libraries in a background thread.
-     *
-     * Launches a task that, through a short-lived forked process, reads a
-     * part of each page of the native library.  This is done to warm up the
-     * page cache, turning hard page faults into soft ones.
-     *
-     * This is done this way, as testing shows that fadvise(FADV_WILLNEED) is
-     * detrimental to the startup time.
-     */
-    public void asyncPrefetchLibrariesToMemory() {
-        SysUtils.logPageFaultCountToTracing();
-
-        final boolean coldStart = mPrefetchLibraryHasBeenCalled.compareAndSet(false, true);
-        // Collection should start close to the native library load, but doesn't have
-        // to be simultaneous with it. Also, don't prefetch in this case, as this would
-        // skew the results.
-        if (coldStart && CommandLine.getInstance().hasSwitch("log-native-library-residency")) {
-            // nativePeriodicallyCollectResidency() sleeps, run it on another thread,
-            // and not on the thread pool.
-            new Thread(LibraryLoader::nativePeriodicallyCollectResidency).start();
-            return;
-        }
-
-        PostTask.postTask(TaskTraits.USER_BLOCKING, () -> {
-            int percentage = nativePercentageOfResidentNativeLibraryCode();
-            try (TraceEvent e = TraceEvent.scoped("LibraryLoader.asyncPrefetchLibrariesToMemory",
-                         Integer.toString(percentage))) {
-                // Arbitrary percentage threshold. If most of the native library is already
-                // resident (likely with monochrome), don't bother creating a prefetch process.
-                boolean prefetch = coldStart && percentage < 90;
-                if (prefetch) {
-                    nativeForkAndPrefetchNativeLibrary();
-                }
-                if (percentage != -1) {
-                    String histogram = "LibraryLoader.PercentageOfResidentCodeBeforePrefetch"
-                            + (coldStart ? ".ColdStartup" : ".WarmStartup");
-                    RecordHistogram.recordPercentageHistogram(histogram, percentage);
-                }
-            }
-            // Removes a dead flag, don't remove the removal code before M77 at least.
-            ContextUtils.getAppSharedPreferences().edit().remove("dont_prefetch_libraries").apply();
-        });
     }
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
@@ -817,16 +763,4 @@ public class LibraryLoader {
     // Get the version of the native library. This is needed so that we can check we
     // have the right version before initializing the (rest of the) JNI.
     private native String nativeGetVersionNumber();
-
-    // Finds the ranges corresponding to the native library pages, forks a new
-    // process to prefetch these pages and waits for it. The new process then
-    // terminates. This is blocking.
-    private static native void nativeForkAndPrefetchNativeLibrary();
-
-    // Returns the percentage of the native library code page that are currently reseident in
-    // memory.
-    private static native int nativePercentageOfResidentNativeLibraryCode();
-
-    // Periodically logs native library residency from this thread.
-    private static native void nativePeriodicallyCollectResidency();
 }
