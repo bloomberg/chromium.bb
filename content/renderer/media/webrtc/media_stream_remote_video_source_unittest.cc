@@ -176,7 +176,11 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   webrtc::I420Buffer::SetBlack(buffer);
 
   source()->SinkInterfaceForTesting()->OnFrame(
-      webrtc::VideoFrame(buffer, webrtc::kVideoRotation_0, 1000));
+      webrtc::VideoFrame::Builder()
+          .set_video_frame_buffer(buffer)
+          .set_rotation(webrtc::kVideoRotation_0)
+          .set_timestamp_us(1000)
+          .build());
   run_loop.Run();
 
   EXPECT_EQ(1, sink.number_of_frames());

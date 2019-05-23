@@ -427,9 +427,15 @@ void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   const base::TimeDelta timestamp = frame->timestamp();
-  webrtc::VideoFrame rtc_frame(
-      new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(std::move(frame)),
-      timestamp.InMicroseconds(), 0, webrtc::kVideoRotation_0);
+  webrtc::VideoFrame rtc_frame =
+      webrtc::VideoFrame::Builder()
+          .set_video_frame_buffer(
+              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
+                  std::move(frame)))
+          .set_timestamp_rtp(timestamp.InMicroseconds())
+          .set_timestamp_us(0)
+          .set_rotation(webrtc::kVideoRotation_0)
+          .build();
 
   base::AutoLock auto_lock(lock_);
 
