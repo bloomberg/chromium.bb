@@ -78,24 +78,24 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
     ShadowRoot& shadow_root) {
   MediaControlsTouchlessImpl* controls =
       MakeGarbageCollected<MediaControlsTouchlessImpl>(media_element);
-  controls->overlay_ =
-      MakeGarbageCollected<MediaControlsTouchlessOverlayElement>(*controls);
   controls->bottom_container_ =
       MakeGarbageCollected<MediaControlsTouchlessBottomContainerElement>(
           *controls);
+  controls->overlay_ =
+      MakeGarbageCollected<MediaControlsTouchlessOverlayElement>(*controls);
   controls->volume_container_ =
       MakeGarbageCollected<MediaControlsTouchlessVolumeContainerElement>(
           *controls);
 
-  controls->ParserAppendChild(controls->overlay_);
   controls->ParserAppendChild(controls->bottom_container_);
+  controls->ParserAppendChild(controls->overlay_);
   controls->ParserAppendChild(controls->volume_container_);
 
   // Controls start hidden.
-  controls->overlay_->MakeTransparent();
-  controls->volume_container_->MakeTransparent();
   if (!media_element.paused())
     controls->bottom_container_->MakeTransparent();
+  controls->overlay_->MakeTransparent();
+  controls->volume_container_->MakeTransparent();
 
   if (RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled() &&
       media_element.IsHTMLVideoElement()) {
@@ -167,8 +167,8 @@ MediaControlsTouchlessImpl::MediaEventListener() const {
 
 void MediaControlsTouchlessImpl::OnFocusIn() {
   if (MediaElement().ShouldShowControls()) {
-    overlay_->MakeOpaque(true);
     bottom_container_->MakeOpaque(!MediaElement().paused());
+    overlay_->MakeOpaque(true);
   }
 }
 
