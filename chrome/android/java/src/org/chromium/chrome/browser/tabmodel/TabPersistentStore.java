@@ -29,7 +29,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.SequencedTaskRunner;
-import org.chromium.base.task.TaskPriority;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.UrlConstants;
@@ -223,8 +222,7 @@ public class TabPersistentStore extends TabPersister {
         mObservers = new ObserverList<>();
         mObservers.addObserver(observer);
         mPreferences = ContextUtils.getAppSharedPreferences();
-        TaskTraits taskTraits =
-                new TaskTraits().mayBlock(true).taskPriority(TaskPriority.USER_BLOCKING);
+        TaskTraits taskTraits = TaskTraits.USER_BLOCKING_MAY_BLOCK;
         if (FeatureUtilities.isTabPersistentStoreTaskRunnerEnabled()) {
             mSequencedTaskRunner = PostTask.createSequencedTaskRunner(taskTraits);
         } else {

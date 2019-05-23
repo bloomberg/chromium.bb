@@ -160,7 +160,8 @@ public class UiThreadSchedulerTest {
     @Test
     @MediumTest
     public void testTaskNotRunOnUiThreadWithoutUiThreadTaskTraits() throws Exception {
-        TaskRunner uiThreadTaskRunner = PostTask.createSingleThreadTaskRunner(new TaskTraits());
+        TaskRunner uiThreadTaskRunner =
+                PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
         try {
             // Test times out without this.
             UiThreadSchedulerTestUtils.postBrowserMainLoopStartupTasks(true);

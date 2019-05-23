@@ -25,7 +25,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskPriority;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -218,16 +217,14 @@ public class ModuleLoader {
         ModuleMetrics.registerLifecycleState(ModuleMetrics.LifecycleState.NOT_LOADED);
 
         mIsModuleLoading = true;
-        new LoadClassTask().executeWithTaskTraits(
-                new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE).mayBlock(true));
+        new LoadClassTask().executeWithTaskTraits(TaskTraits.USER_VISIBLE_MAY_BLOCK);
     }
 
     public void createClassLoader() {
         if (mClassLoader != null) return;
 
         mIsClassLoaderCreating = true;
-        new ClassLoaderTask().executeWithTaskTraits(
-                new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE).mayBlock(true));
+        new ClassLoaderTask().executeWithTaskTraits(TaskTraits.USER_VISIBLE_MAY_BLOCK);
     }
 
     /**

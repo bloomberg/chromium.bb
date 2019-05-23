@@ -37,7 +37,7 @@ public class PostTaskTest {
         // This test should not timeout.
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
-        PostTask.postTask(new TaskTraits(), new Runnable() {
+        PostTask.postTask(TaskTraits.USER_BLOCKING, new Runnable() {
             @Override
             public void run() {
                 synchronized (lock) {
@@ -60,7 +60,7 @@ public class PostTaskTest {
     @Test
     @SmallTest
     public void testCreateSingleThreadTaskRunner() throws Exception {
-        TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
         // A SingleThreadTaskRunner with default traits will run in the native thread pool
         // and tasks posted won't run until after the native library has loaded.
         assertNotNull(taskQueue);
@@ -70,7 +70,7 @@ public class PostTaskTest {
     @Test
     @SmallTest
     public void testCreateSequencedTaskRunner() throws Exception {
-        TaskRunner taskQueue = PostTask.createSequencedTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
         List<Integer> orderList = new ArrayList<>();
         try {
             SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 1);
@@ -87,7 +87,7 @@ public class PostTaskTest {
     @Test
     @SmallTest
     public void testCreateTaskRunner() throws Exception {
-        TaskRunner taskQueue = PostTask.createTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createTaskRunner(TaskTraits.USER_BLOCKING);
 
         // This should not timeout.
         try {

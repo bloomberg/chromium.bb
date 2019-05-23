@@ -56,7 +56,8 @@ public class SingleThreadTaskRunnerImplTest {
     @Test
     @SmallTest
     public void testPreNativePostTask() {
-        TaskRunner taskQueue = new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits(), false);
+        TaskRunner taskQueue =
+                new SingleThreadTaskRunnerImpl(mHandler, TaskTraits.USER_BLOCKING, false);
         List<Integer> orderList = new ArrayList<>();
         SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 1);
         SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 2);
@@ -72,7 +73,7 @@ public class SingleThreadTaskRunnerImplTest {
     public void testBelongsToCurrentThread() {
         // The handler created during test setup belongs to a different thread.
         SingleThreadTaskRunner taskQueue =
-                new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits(), false);
+                new SingleThreadTaskRunnerImpl(mHandler, TaskTraits.USER_BLOCKING, false);
         try {
             Assert.assertFalse(taskQueue.belongsToCurrentThread());
         } finally {
@@ -82,7 +83,7 @@ public class SingleThreadTaskRunnerImplTest {
         // We create a handler belonging to current thread.
         Looper.prepare();
         SingleThreadTaskRunner taskQueueCurrentThread =
-                new SingleThreadTaskRunnerImpl(new Handler(), new TaskTraits(), false);
+                new SingleThreadTaskRunnerImpl(new Handler(), TaskTraits.USER_BLOCKING, false);
         try {
             Assert.assertTrue(taskQueueCurrentThread.belongsToCurrentThread());
         } finally {
@@ -94,9 +95,9 @@ public class SingleThreadTaskRunnerImplTest {
     @SmallTest
     public void testPrioritization() {
         TaskRunner highPriorityQueue =
-                new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits(), true);
+                new SingleThreadTaskRunnerImpl(mHandler, TaskTraits.USER_BLOCKING, true);
         TaskRunner lowPriorityQueue =
-                new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits(), false);
+                new SingleThreadTaskRunnerImpl(mHandler, TaskTraits.USER_BLOCKING, false);
         try {
             List<Integer> orderList = new ArrayList<>();
             // We want to post all these tasks atomically but we're not on the mHandlerThread so

@@ -33,8 +33,7 @@ public class TaskTraits {
 
     // This is a lowest-priority task which may block, for example non-urgent
     // logging or deletion of temporary files as clean-up.
-    public static final TaskTraits BEST_EFFORT_MAY_BLOCK =
-            new TaskTraits().taskPriority(TaskPriority.BEST_EFFORT).mayBlock(true);
+    public static final TaskTraits BEST_EFFORT_MAY_BLOCK = BEST_EFFORT.mayBlock();
 
     // This task affects UI or responsiveness of future user interactions. It is
     // not an immediate response to a user interaction. Most tasks are likely to
@@ -46,20 +45,37 @@ public class TaskTraits {
     public static final TaskTraits USER_VISIBLE =
             new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE);
 
+    // USER_VISIBLE + may block.
+    public static final TaskTraits USER_VISIBLE_MAY_BLOCK = USER_VISIBLE.mayBlock();
+
     // This task affects UI immediately after a user interaction.
     // Example: Generating data shown in the UI immediately after a click.
-    // Is is different from the mMayBlock property in that it doesn't contribute
-    // to the creation of additional thread pool threads. This is the highest
-    // possible priority.
     public static final TaskTraits USER_BLOCKING =
             new TaskTraits().taskPriority(TaskPriority.USER_BLOCKING);
 
+    // USER_BLOCKING + may block.
+    public static final TaskTraits USER_BLOCKING_MAY_BLOCK = USER_BLOCKING.mayBlock();
+
     // A bit like requestAnimationFrame, this task will be posted onto the Choreographer
     // and will be run on the android main thread after the next vsync.
-    public static final TaskTraits CHOREOGRAPHER_FRAME =
-            new TaskTraits().setIsChoreographerFrame(true);
+    public static final TaskTraits CHOREOGRAPHER_FRAME = new TaskTraits();
+    static {
+        CHOREOGRAPHER_FRAME.mIsChoreographerFrame = true;
+    }
 
-    public TaskTraits() {}
+    // For convenience of the JNI code, we use primitive types only.
+    // Note shutdown behavior is not supported on android.
+    boolean mPrioritySetExplicitly;
+    int mPriority;
+    boolean mMayBlock;
+    byte mExtensionId;
+    byte mExtensionData[];
+    boolean mIsChoreographerFrame;
+
+    // Derive custom traits from existing trait constants.
+    private TaskTraits() {
+        mPriority = TaskPriority.USER_VISIBLE;
+    }
 
     private TaskTraits(TaskTraits other) {
         mPrioritySetExplicitly = other.mPrioritySetExplicitly;
@@ -67,11 +83,6 @@ public class TaskTraits {
         mMayBlock = other.mMayBlock;
         mExtensionId = other.mExtensionId;
         mExtensionData = other.mExtensionData;
-    }
-
-    public TaskTraits(byte extensionId, byte[] extensionData) {
-        mExtensionId = extensionId;
-        mExtensionData = extensionData;
     }
 
     public TaskTraits taskPriority(int taskPriority) {
@@ -88,25 +99,11 @@ public class TaskTraits {
      * required for the mere use of locks. The thread pool uses this property to work out if
      * additional threads are required.
      */
-    public TaskTraits mayBlock(boolean mayBlock) {
+    public TaskTraits mayBlock() {
         TaskTraits taskTraits = new TaskTraits(this);
-        taskTraits.mMayBlock = mayBlock;
+        taskTraits.mMayBlock = true;
         return taskTraits;
     }
-
-    private TaskTraits setIsChoreographerFrame(boolean isChoreographerFrame) {
-        mIsChoreographerFrame = isChoreographerFrame;
-        return this;
-    }
-
-    // For convenience of the JNI code, we use primitive types only.
-    // Note shutdown behavior is not supported on android.
-    boolean mPrioritySetExplicitly;
-    int mPriority = TaskPriority.USER_VISIBLE;
-    boolean mMayBlock;
-    byte mExtensionId = INVALID_EXTENSION_ID;
-    byte mExtensionData[];
-    boolean mIsChoreographerFrame;
 
     /**
      * @return true if this task is using some TaskTraits extension.

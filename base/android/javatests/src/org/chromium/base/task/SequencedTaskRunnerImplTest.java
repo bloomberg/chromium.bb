@@ -31,7 +31,7 @@ public class SequencedTaskRunnerImplTest {
     @Test
     @SmallTest
     public void testPreNativeTasksRunInOrder() {
-        TaskRunner taskQueue = new SequencedTaskRunnerImpl(new TaskTraits());
+        TaskRunner taskQueue = new SequencedTaskRunnerImpl(TaskTraits.USER_BLOCKING);
         List<Integer> orderList = new ArrayList<>();
         try {
             SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 1);

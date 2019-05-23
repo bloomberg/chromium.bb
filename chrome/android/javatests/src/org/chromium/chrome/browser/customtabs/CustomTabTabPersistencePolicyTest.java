@@ -62,7 +62,7 @@ public class CustomTabTabPersistencePolicyTest {
     private TestTabModelDirectory mMockDirectory;
     private AdvancedMockContext mAppContext;
     private SequencedTaskRunner mSequencedTaskRunner =
-            PostTask.createSequencedTaskRunner(new TaskTraits());
+            PostTask.createSequencedTaskRunner(TaskTraits.USER_VISIBLE);
     @Rule
     public UiThreadTestRule mRule = new UiThreadTestRule();
 
