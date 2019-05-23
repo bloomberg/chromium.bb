@@ -3511,6 +3511,10 @@ void CompositedLayerMapping::GraphicsLayersDidChange() {
   frame_view->GraphicsLayersDidChange();
 }
 
+bool CompositedLayerMapping::PaintBlockedByDisplayLock() const {
+  return GetLayoutObject().PaintBlockedByDisplayLock();
+}
+
 #if DCHECK_IS_ON()
 void CompositedLayerMapping::VerifyNotPainting() {
   DCHECK(!GetLayoutObject().GetFrame()->GetPage() ||

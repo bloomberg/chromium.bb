@@ -105,6 +105,8 @@ class PLATFORM_EXPORT GraphicsLayerClient {
     return nullptr;
   }
 
+  virtual bool PaintBlockedByDisplayLock() const { return false; }
+
 #if DCHECK_IS_ON()
   // CompositedLayerMapping overrides this to verify that it is not
   // currently painting contents. An ASSERT fails, if it is.

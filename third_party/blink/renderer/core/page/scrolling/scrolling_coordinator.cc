@@ -237,19 +237,21 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
 }
 
 template <typename Function>
-static void ForAllGraphicsLayers(GraphicsLayer& layer,
-                                 const Function& function) {
-  function(layer);
+static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
+                                         const Function& function) {
+  // Don't recurse into display-locked elements.
+  if (layer.Client().PaintBlockedByDisplayLock())
+    return;
+
+  if (layer.PaintsContentOrHitTest())
+    function(layer);
   for (auto* child : layer.Children())
-    ForAllGraphicsLayers(*child, function);
+    ForAllPaintingGraphicsLayers(*child, function);
 }
 
 // Set the touch action rects on the cc layer from the touch action data stored
 // on the GraphicsLayer's paint chunks.
 static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
-  if (!layer.PaintsContentOrHitTest())
-    return;
-
   if (layer.Client().ShouldThrottleRendering()) {
     layer.CcLayer()->SetTouchActionRegion(cc::TouchActionRegion());
     return;
@@ -628,7 +630,7 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
 
   auto* view_layer = frame->View()->GetLayoutView()->Layer();
   if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
-    ForAllGraphicsLayers(*root, UpdateLayerTouchActionRects);
+    ForAllPaintingGraphicsLayers(*root, UpdateLayerTouchActionRects);
 }
 
 void ScrollingCoordinator::UpdateUserInputScrollable(

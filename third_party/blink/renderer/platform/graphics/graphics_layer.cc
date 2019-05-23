@@ -301,6 +301,9 @@ void GraphicsLayer::PaintRecursively() {
 
 void GraphicsLayer::PaintRecursivelyInternal(
     Vector<GraphicsLayer*>& repainted_layers) {
+  if (client_.PaintBlockedByDisplayLock())
+    return;
+
   if (PaintsContentOrHitTest()) {
     if (Paint())
       repainted_layers.push_back(this);

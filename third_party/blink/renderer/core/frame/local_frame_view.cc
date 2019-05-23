@@ -2530,8 +2530,10 @@ static void CollectDrawableLayersForLayerListRecursively(
     const GraphicsLayer* layer) {
   DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
 
-  if (!layer || layer->Client().ShouldThrottleRendering())
+  if (!layer || layer->Client().ShouldThrottleRendering() ||
+      layer->Client().PaintBlockedByDisplayLock()) {
     return;
+  }
 
   // We need to collect all layers that draw content, as well as some layers
   // that don't for the purposes of hit testing. For example, an empty div
