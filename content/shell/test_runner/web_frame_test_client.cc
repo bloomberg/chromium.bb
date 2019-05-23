@@ -192,8 +192,10 @@ bool WebFrameTestClient::RunModalBeforeUnloadDialog(bool is_reload) {
   return !test_runner()->shouldStayOnPageAfterHandlingBeforeUnload();
 }
 
-void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
-                                                ax::mojom::Event event) {
+void WebFrameTestClient::PostAccessibilityEvent(
+    const blink::WebAXObject& obj,
+    ax::mojom::Event event,
+    ax::mojom::EventFrom event_from) {
   const char* event_name = nullptr;
   switch (event) {
     case ax::mojom::Event::kActiveDescendantChanged:

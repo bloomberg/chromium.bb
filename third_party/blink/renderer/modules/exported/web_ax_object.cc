@@ -99,6 +99,22 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
   }
 };
 
+// A utility class which uses the lifetime of this object to signify when
+// AXObjCache handles programmatic actions.
+class ScopedActionAnnotator {
+ public:
+  explicit ScopedActionAnnotator(AXObject* obj) : obj_(obj) {
+    obj_->AXObjectCache().set_is_handling_action(true);
+  }
+
+  ~ScopedActionAnnotator() {
+    obj_->AXObjectCache().set_is_handling_action(false);
+  }
+
+ private:
+  Persistent<AXObject> obj_;
+};
+
 static bool IsLayoutClean(Document* document) {
   if (!document || !document->View())
     return false;
@@ -645,6 +661,7 @@ WebAXObject WebAXObject::HitTest(const WebPoint& point) const {
   if (IsDetached())
     return WebAXObject();
 
+  ScopedActionAnnotator annotater(private_.Get());
   IntPoint contents_point =
       private_->DocumentFrameView()->SoonToBeRemovedUnscaledViewportToContents(
           point);
@@ -699,6 +716,7 @@ bool WebAXObject::ClearAccessibilityFocus() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->InternalClearAccessibilityFocusAction();
 }
 
@@ -706,6 +724,7 @@ bool WebAXObject::Click() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestClickAction();
 }
 
@@ -713,6 +732,7 @@ bool WebAXObject::Increment() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestIncrementAction();
 }
 
@@ -720,6 +740,7 @@ bool WebAXObject::Decrement() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestDecrementAction();
 }
 
@@ -824,6 +845,7 @@ bool WebAXObject::SetAccessibilityFocus() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->InternalSetAccessibilityFocusAction();
 }
 
@@ -831,6 +853,7 @@ bool WebAXObject::SetSelected(bool selected) const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestSetSelectedAction(selected);
 }
 
@@ -841,6 +864,7 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
   if (IsDetached() || anchor_object.IsDetached() || focus_object.IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   AXPosition ax_base, ax_extent;
   if (static_cast<const AXObject*>(anchor_object)->IsTextObject() ||
       static_cast<const AXObject*>(anchor_object)->IsNativeTextControl()) {
@@ -922,6 +946,7 @@ bool WebAXObject::Focus() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestFocusAction();
 }
 
@@ -929,6 +954,7 @@ bool WebAXObject::SetSequentialFocusNavigationStartingPoint() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestSetSequentialFocusNavigationStartingPointAction();
 }
 
@@ -936,6 +962,7 @@ bool WebAXObject::SetValue(WebString value) const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestSetValueAction(value);
 }
 
@@ -943,6 +970,7 @@ bool WebAXObject::ShowContextMenu() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestShowContextMenuAction();
 }
 
@@ -1482,6 +1510,7 @@ bool WebAXObject::ScrollToMakeVisible() const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestScrollToMakeVisibleAction();
 }
 
@@ -1490,6 +1519,7 @@ bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestScrollToMakeVisibleWithSubFocusAction(subfocus);
 }
 
@@ -1497,6 +1527,7 @@ bool WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {
   if (IsDetached())
     return false;
 
+  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestScrollToGlobalPointAction(point);
 }
 

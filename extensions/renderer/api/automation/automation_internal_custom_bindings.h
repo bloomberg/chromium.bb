@@ -89,7 +89,6 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
 
   void MaybeSendFocusAndBlur(
       AutomationAXTreeWrapper* tree,
-      ax::mojom::EventFrom event_from,
       const ExtensionMsg_AccessibilityEventBundleParams& event_bundle);
 
  private:

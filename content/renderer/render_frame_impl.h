@@ -835,7 +835,8 @@ class CONTENT_EXPORT RenderFrameImpl
   bool AllowContentInitiatedDataUrlNavigations(
       const blink::WebURL& url) override;
   void PostAccessibilityEvent(const blink::WebAXObject& obj,
-                              ax::mojom::Event event) override;
+                              ax::mojom::Event event,
+                              ax::mojom::EventFrom event_from) override;
   void MarkWebAXObjectDirty(const blink::WebAXObject& obj,
                             bool subtree) override;
   void HandleAccessibilityFindInPageResult(int identifier,

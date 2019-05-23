@@ -153,13 +153,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // same order they were added.
   void AddEvent(ui::AXNode* node, Event event);
 
-  // Set the event_from field for all subsequent generated events.
-  void set_event_from(ax::mojom::EventFrom event_from) {
-    event_from_ = event_from;
-  }
-
-  ax::mojom::EventFrom event_from() const { return event_from_; }
-
  protected:
   // AXTreeObserver overrides.
   void OnNodeDataWillChange(AXTree* tree,
@@ -229,9 +222,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // Valid between the call to OnIntAttributeChanged and the call to
   // OnAtomicUpdateFinished. List of nodes whose active descendant changed.
   std::vector<AXNode*> active_descendant_changed_;
-
-  // The value of the event from field in TargetedEvent.
-  ax::mojom::EventFrom event_from_ = ax::mojom::EventFrom::kNone;
 };
 
 }  // namespace ui

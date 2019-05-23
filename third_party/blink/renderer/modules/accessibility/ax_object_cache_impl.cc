@@ -941,20 +941,21 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
 }
 
 void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
-  NotificationVector old_notifications_to_post;
+  std::vector<AXEventParams> old_notifications_to_post;
   notifications_to_post_.swap(old_notifications_to_post);
-  for (auto& pair : old_notifications_to_post) {
-    AXObject* obj = pair.first;
+  for (auto& params : old_notifications_to_post) {
+    AXObject* obj = params.target;
 
-    if (!obj->AXObjectID())
+    if (!obj || !obj->AXObjectID())
       continue;
 
     if (obj->IsDetached())
       continue;
 
-    ax::mojom::Event notification = pair.second;
+    ax::mojom::Event event_type = params.event_type;
+    ax::mojom::EventFrom event_from = params.event_from;
     if (obj->GetDocument() != document) {
-      notifications_to_post_.push_back(std::make_pair(obj, notification));
+      notifications_to_post_.push_back({obj, event_type, event_from});
       continue;
     }
 
@@ -969,9 +970,9 @@ void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
     }
 #endif
 
-    PostPlatformNotification(obj, notification);
+    PostPlatformNotification(obj, event_type, event_from);
 
-    if (notification == ax::mojom::Event::kChildrenChanged &&
+    if (event_type == ax::mojom::Event::kChildrenChanged &&
         obj->CachedParentObject() &&
         obj->LastKnownIsIgnoredValue() != obj->AccessibilityIsIgnored())
       ChildrenChanged(obj->CachedParentObject());
@@ -998,7 +999,7 @@ void AXObjectCacheImpl::PostNotification(AXObject* object,
     return;
 
   modification_count_++;
-  notifications_to_post_.push_back(std::make_pair(object, notification));
+  notifications_to_post_.push_back({object, notification, ComputeEventFrom()});
 }
 
 bool AXObjectCacheImpl::IsAriaOwned(const AXObject* object) const {
@@ -1475,7 +1476,8 @@ bool IsNodeAriaVisible(Node* node) {
 
 void AXObjectCacheImpl::PostPlatformNotification(
     AXObject* obj,
-    ax::mojom::Event notification) {
+    ax::mojom::Event notification,
+    ax::mojom::EventFrom event_from) {
   if (!document_ || !document_->View() ||
       !document_->View()->GetFrame().GetPage())
     return;
@@ -1483,7 +1485,8 @@ void AXObjectCacheImpl::PostPlatformNotification(
   WebLocalFrameImpl* webframe =
       WebLocalFrameImpl::FromFrame(document_->AXObjectCacheOwner().GetFrame());
   if (webframe && webframe->Client()) {
-    webframe->Client()->PostAccessibilityEvent(WebAXObject(obj), notification);
+    webframe->Client()->PostAccessibilityEvent(WebAXObject(obj), notification,
+                                               event_from);
   }
 }
 
@@ -1756,9 +1759,21 @@ void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_object_mapping_);
 
   visitor->Trace(objects_);
-  visitor->Trace(notifications_to_post_);
   visitor->Trace(documents_);
   AXObjectCache::Trace(visitor);
+}
+
+ax::mojom::EventFrom AXObjectCacheImpl::ComputeEventFrom() {
+  if (is_handling_action_)
+    return ax::mojom::EventFrom::kAction;
+
+  if (document_ && document_->View() &&
+      LocalFrame::HasTransientUserActivation(
+          &(document_->View()->GetFrame()))) {
+    return ax::mojom::EventFrom::kUser;
+  }
+
+  return ax::mojom::EventFrom::kPage;
 }
 
 }  // namespace blink

@@ -269,10 +269,6 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
 
   // Unserialize all incoming data.
   for (const auto& update : event_bundle.updates) {
-    // If any updates in this bundle was part of an action, consider all updates
-    // as part of a user action.
-    if (event_generator_.event_from() != ax::mojom::EventFrom::kAction)
-      event_generator_.set_event_from(update.event_from);
     deleted_node_ids_.clear();
     did_send_tree_change_during_unserialization_ = false;
 
@@ -327,8 +323,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   }
 
   // Send all blur and focus events first.
-  owner_->MaybeSendFocusAndBlur(this, event_generator_.event_from(),
-                                event_bundle);
+  owner_->MaybeSendFocusAndBlur(this, event_bundle);
 
   // Send auto-generated AXEventGenerator events.
   for (const auto& targeted_event : event_generator_) {

@@ -1993,7 +1993,6 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
 
 void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
     AutomationAXTreeWrapper* tree,
-    ax::mojom::EventFrom event_from,
     const ExtensionMsg_AccessibilityEventBundleParams& event_bundle) {
   // Get the root-most tree.
   AutomationAXTreeWrapper* root_tree = tree;
@@ -2014,6 +2013,13 @@ void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
 
   if (new_wrapper == old_wrapper && new_node == old_node)
     return;
+
+  ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone;
+  for (const auto& event : event_bundle.events) {
+    if (event.event_type == ax::mojom::Event::kFocus ||
+        event.event_type == ax::mojom::Event::kBlur)
+      event_from = event.event_from;
+  }
 
   // Blur previous focus.
   if (old_node) {

@@ -45,7 +45,8 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                             blink::WebString* actual_value) override;
   bool RunModalBeforeUnloadDialog(bool is_reload) override;
   void PostAccessibilityEvent(const blink::WebAXObject& object,
-                              ax::mojom::Event event) override;
+                              ax::mojom::Event event,
+                              ax::mojom::EventFrom event_from) override;
   void MarkWebAXObjectDirty(const blink::WebAXObject& obj,
                             bool subtree) override;
   void DidChangeSelection(bool is_selection_empty) override;

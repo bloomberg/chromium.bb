@@ -1925,3 +1925,33 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ValidationTest', function() {
       .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'EventFromAction', function() {
+  this.runWithLoadedTree(function() {/*
+    <button>ok</button><button>cancel</button>
+  */}, function(root) {
+    var button = root.findAll({role: RoleType.BUTTON})[1];
+    button.addEventListener(EventType.FOCUS, this.newCallback(function(evt) {
+      assertEquals(RoleType.BUTTON, evt.target.role);
+      assertEquals('action', evt.eventFrom);
+      assertEquals('cancel', evt.target.name);
+    }));
+
+    button.focus();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'EventFromUser', function() {
+  this.runWithLoadedTree(function() {/*
+    <button>ok</button><button>cancel</button>
+  */}, function(root) {
+    var button = root.findAll({role: RoleType.BUTTON})[1];
+    button.addEventListener(EventType.FOCUS, this.newCallback(function(evt) {
+      assertEquals(RoleType.BUTTON, evt.target.role);
+      assertEquals('user', evt.eventFrom);
+      assertEquals('cancel', evt.target.name);
+    }));
+
+    press(9  /* tab */)();
+  });
+});
