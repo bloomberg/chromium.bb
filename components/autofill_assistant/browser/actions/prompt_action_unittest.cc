@@ -162,6 +162,7 @@ TEST_F(PromptActionTest, AutoSelect) {
 
   PromptAction action(proto_);
   action.ProcessAction(&mock_action_delegate_, callback_.Get());
+  EXPECT_THAT(chips_, Pointee(SizeIs(0)));
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
@@ -182,7 +183,6 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
   ok_proto->set_name("Ok");
   ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
-  ok_proto->add_show_only_if_element_exists()->add_selectors("element");
 
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");

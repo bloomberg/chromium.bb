@@ -111,10 +111,15 @@ void PromptAction::UpdateChips() {
   auto chips = std::make_unique<std::vector<Chip>>();
   for (int i = 0; i < proto_.prompt().choices_size(); i++) {
     auto& choice_proto = proto_.prompt().choices(i);
-    if (!precondition_results_[i] && !choice_proto.allow_disabling()) {
-      // hide chip.
+    // Don't show choices with no names, icon or types; they're likely just
+    // there for auto_select_if_element_exists.
+    if (choice_proto.name().empty() && choice_proto.chip_icon() == NO_ICON &&
+        choice_proto.chip_type() == UNKNOWN_CHIP_TYPE)
       continue;
-    }
+
+    // Hide chips whose precondition don't match.
+    if (!precondition_results_[i] && !choice_proto.allow_disabling())
+      continue;
 
     chips->emplace_back();
     Chip& chip = chips->back();
