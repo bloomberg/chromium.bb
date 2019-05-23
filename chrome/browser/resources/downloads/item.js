@@ -243,6 +243,10 @@ cr.define('downloads', function() {
      * @private
      */
     computeIcon_: function() {
+      if (loadTimeData.getBoolean('requestsApVerdicts') &&
+          this.data.dangerType == downloads.DangerType.UNCOMMON_CONTENT) {
+        return 'cr:error';
+      }
       if (this.isDangerous_) {
         return 'cr:warning';
       }

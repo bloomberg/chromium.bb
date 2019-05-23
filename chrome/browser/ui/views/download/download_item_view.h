@@ -169,6 +169,9 @@ class DownloadItemView : public views::InkDropHostView,
   // Height/width of the warning icon, also in dp.
   static constexpr int kWarningIconSize = 24;
 
+  // Height/width of the erro icon, also in dp.
+  static constexpr int kErrorIconSize = 27;
+
   // How long the 'download complete' animation should last for.
   static constexpr int kCompleteAnimationDurationMs = 2500;
 

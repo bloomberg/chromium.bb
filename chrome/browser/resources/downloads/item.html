@@ -159,6 +159,11 @@
         color: var(--google-red-700);
       }
 
+      #file-icon-wrapper iron-icon[icon='cr:error'],
+      .dangerous #description {
+        color: var(--google-yellow-500);
+      }
+
       :host-context([dark]) #file-icon-wrapper iron-icon[icon='cr:warning'],
       :host-context([dark]) .dangerous #description {
         color: var(--google-red-refresh-300);

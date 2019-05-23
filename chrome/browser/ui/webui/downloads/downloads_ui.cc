@@ -54,6 +54,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 
   bool requests_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
       RequestsAdvancedProtectionVerdicts(profile);
+  source->AddBoolean("requestsApVerdicts", requests_ap_verdicts);
 
   static constexpr LocalizedString kStrings[] = {
       {"title", IDS_DOWNLOAD_TITLE},
@@ -95,21 +96,15 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   };
   AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
-  source->AddLocalizedString(
-      "dangerDownloadDesc",
-      requests_ap_verdicts
-          ? IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD_IN_ADVANCED_PROTECTION
-          : IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
+  source->AddLocalizedString("dangerDownloadDesc",
+                             IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
   source->AddLocalizedString(
       "dangerUncommonDesc",
       requests_ap_verdicts
           ? IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD_IN_ADVANCED_PROTECTION
           : IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD);
-  source->AddLocalizedString(
-      "dangerSettingsDesc",
-      requests_ap_verdicts
-          ? IDS_BLOCK_REASON_UNWANTED_DOWNLOAD_IN_ADVANCED_PROTECTION
-          : IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
+  source->AddLocalizedString("dangerSettingsDesc",
+                             IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
 
   if (browser_defaults::kDownloadPageHasShowInFolder)
     source->AddLocalizedString("controlShowInFolder", IDS_DOWNLOAD_LINK_SHOW);
