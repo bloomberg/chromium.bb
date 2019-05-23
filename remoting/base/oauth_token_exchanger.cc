@@ -28,8 +28,6 @@ namespace {
 const int kMaxRetries = 3;
 
 const char API_TACHYON[] = "https://www.googleapis.com/auth/tachyon";
-const char API_CHROMOTING_ME2ME_HOST[] =
-    "https://www.googleapis.com/auth/chromoting.me2me.host";
 
 const char TOKENINFO_SCOPE_KEY[] = "scope";
 
@@ -39,8 +37,7 @@ bool HasNeededScopes(const std::string& scopes) {
   std::vector<base::StringPiece> scopes_list =
       base::SplitStringPiece(scopes, base::kWhitespaceASCII,
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return base::ContainsValue(scopes_list, API_TACHYON) &&
-         base::ContainsValue(scopes_list, API_CHROMOTING_ME2ME_HOST);
+  return base::ContainsValue(scopes_list, API_TACHYON);
 }
 
 }  // namespace

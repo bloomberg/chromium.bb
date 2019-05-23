@@ -33,8 +33,7 @@ constexpr char kChromotingAuthScopeValues[] =
     "https://www.googleapis.com/auth/tachyon";
 
 constexpr char kOauthRedirectUrl[] =
-    "https://chromoting-oauth.talkgadget."
-    "google.com/talkgadget/oauth/chrome-remote-desktop/dev";
+    "https://remotedesktop.google.com/_/oauthredirect";
 
 std::string GetAuthorizationCodeUri(bool show_consent_page) {
   // Replace space characters with a '+' sign when formatting.
@@ -42,8 +41,7 @@ std::string GetAuthorizationCodeUri(bool show_consent_page) {
   std::string uri = base::StringPrintf(
       "https://accounts.google.com/o/oauth2/auth"
       "?scope=%s"
-      "&redirect_uri=https://chromoting-oauth.talkgadget.google.com/"
-      "talkgadget/oauth/chrome-remote-desktop/dev"
+      "&redirect_uri=https://remotedesktop.google.com/_/oauthredirect"
       "&response_type=code"
       "&client_id=%s"
       "&access_type=offline",
