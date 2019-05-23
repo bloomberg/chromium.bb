@@ -124,7 +124,7 @@ Polymer({
   getDialogTitle_: function() {
     const name = /** @type {string} */ (
         CrOnc.getActiveValue(this.managedProperties_.Name));
-    if (name) {
+    if (name && !this.showConnect) {
       return this.i18n('internetConfigName', HTMLEscape(name));
     }
     const type = this.i18n('OncType' + this.managedProperties_.Type);
