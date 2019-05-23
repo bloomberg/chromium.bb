@@ -27,6 +27,7 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcpBase;
+import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -63,6 +64,8 @@ public class TabListCoordinator implements Destroyable {
      * @param createGroupButtonProvider {@link TabListMediator.CreateGroupButtonProvider}
      *         to provide "Create group" button.
      * @param parentView {@link ViewGroup} The root view of the UI.
+     * @param dynamicResourceLoader The {@link DynamicResourceLoader} to register dynamic UI
+     *                              resource for compositor layer animation.
      * @param attachToParent Whether the UI should attach to root view.
      * @param layoutId ID of the layout resource.
      * @param componentName A unique string uses to identify different components for UMA recording.
@@ -70,13 +73,13 @@ public class TabListCoordinator implements Destroyable {
      *                      through actions.xml file.
      */
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
-            TabListMediator.ThumbnailProvider thumbnailProvider,
-            TabListMediator.TitleProvider titleProvider, boolean closeRelatedTabs,
+            @Nullable TabListMediator.ThumbnailProvider thumbnailProvider,
+            @Nullable TabListMediator.TitleProvider titleProvider, boolean closeRelatedTabs,
             @Nullable TabListMediator.CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable TabListMediator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
-            @NonNull ViewGroup parentView, boolean attachToParent, @LayoutRes int layoutId,
-            String componentName) {
+            @NonNull ViewGroup parentView, @Nullable DynamicResourceLoader dynamicResourceLoader,
+            boolean attachToParent, @LayoutRes int layoutId, String componentName) {
         TabListModel tabListModel = new TabListModel();
         mMode = mode;
 
@@ -125,6 +128,10 @@ public class TabListCoordinator implements Destroyable {
 
         mRecyclerView.setHasFixedSize(true);
 
+        if (dynamicResourceLoader != null) {
+            mRecyclerView.createDynamicView(dynamicResourceLoader);
+        }
+
         TabListFaviconProvider tabListFaviconProvider =
                 new TabListFaviconProvider(context, Profile.getLastUsedProfile());
 
@@ -168,5 +175,9 @@ public class TabListCoordinator implements Destroyable {
     @Override
     public void destroy() {
         mMediator.destroy();
+    }
+
+    int getResourceId() {
+        return mRecyclerView.getResourceId();
     }
 }

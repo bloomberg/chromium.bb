@@ -41,7 +41,7 @@ public class TabGridDialogCoordinator {
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                null, compositorViewHolder, false, R.layout.tab_list_recycler_view_layout,
+                null, compositorViewHolder, null, false, R.layout.tab_list_recycler_view_layout,
                 COMPONENT_NAME);
 
         mMediator = new TabGridDialogMediator(context, this::resetWithListOfTabs,

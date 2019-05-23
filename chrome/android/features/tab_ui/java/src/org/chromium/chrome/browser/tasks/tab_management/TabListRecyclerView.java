@@ -8,18 +8,24 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewParent;
 
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
+import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
+import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
  * A custom RecyclerView implementation for the tab grid, to handle show/hide logic in class.
  */
 class TabListRecyclerView extends RecyclerView {
     public static final long BASE_ANIMATION_DURATION_MS = 218;
+    private ViewResourceAdapter mDynamicView;
 
     /**
      * An interface to listen to visibility related changes on this {@link RecyclerView}.
@@ -84,9 +90,46 @@ class TabListRecyclerView extends RecyclerView {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mListener.finishedShowing();
+
+                if (mDynamicView != null)
+                    mDynamicView.dropCachedBitmap();
             }
         });
         if (!animate) mFadeInAnimator.end();
+    }
+
+    /**
+     * @return The ID for registering and using the dynamic resource in compositor.
+     */
+    int getResourceId() {
+        return getId();
+    }
+
+    /**
+     * Create a DynamicResource for this RecyclerView.
+     * The view resource can be obtained by {@link #getResourceId} in compositor layer.
+     */
+    void createDynamicView(DynamicResourceLoader loader) {
+        mDynamicView = new ViewResourceAdapter(this);
+        loader.registerResource(getResourceId(), mDynamicView);
+    }
+
+    @SuppressLint("NewApi") // Used on O+, invalidateChildInParent used for previous versions.
+    @Override
+    public void onDescendantInvalidated(View child, View target) {
+        super.onDescendantInvalidated(child, target);
+        if (mDynamicView != null) {
+            mDynamicView.invalidate(null);
+        }
+    }
+
+    @Override
+    public ViewParent invalidateChildInParent(int[] location, Rect dirty) {
+        ViewParent retVal = super.invalidateChildInParent(location, dirty);
+        if (mDynamicView != null) {
+            mDynamicView.invalidate(dirty);
+        }
+        return retVal;
     }
 
     /**

@@ -24,4 +24,9 @@ public interface GridTabSwitcher {
     interface GridVisibilityObserver extends OverviewModeBehavior.OverviewModeObserver {}
 
     GridController getGridController();
+
+    /**
+     * @return The dynamic resource ID of the GridTabSwitcher RecyclerView.
+     */
+    int getResourceId();
 }
