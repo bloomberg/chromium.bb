@@ -147,7 +147,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   void ClearBluetoothAllowedDevicesMapForTesting() override;
   void FlushNetworkInterfaceForTesting() override;
   void WaitForDeletionTasksForTesting() override;
-
   BackgroundFetchContext* GetBackgroundFetchContext();
   PaymentAppContextImpl* GetPaymentAppContext();
   BroadcastChannelProvider* GetBroadcastChannelProvider();
@@ -209,6 +208,15 @@ class CONTENT_EXPORT StoragePartitionImpl
   const GURL& site_for_service_worker() const {
     return site_for_service_worker_;
   }
+
+  // Use the network context to retrieve the origin policy manager.
+  network::mojom::OriginPolicyManager*
+  GetOriginPolicyManagerForBrowserProcess();
+
+  // Override the origin policy manager for testing use only.
+  void SetOriginPolicyManagerForBrowserProcessForTesting(
+      network::mojom::OriginPolicyManagerPtr test_origin_policy_manager);
+  void ResetOriginPolicyManagerForBrowserProcessForTesting();
 
  private:
   class DataDeletionHelper;
@@ -378,6 +386,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::URLLoaderFactoryPtr url_loader_factory_for_browser_process_;
   bool is_test_url_loader_factory_for_browser_process_ = false;
   network::mojom::CookieManagerPtr cookie_manager_for_browser_process_;
+  network::mojom::OriginPolicyManagerPtr
+      origin_policy_manager_for_browser_process_;
 
   // When the network service is disabled, a NetworkContext is created on the IO
   // thread that wraps access to the URLRequestContext.

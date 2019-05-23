@@ -532,6 +532,9 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
+      CreateUrlLoaderFactoryForNetworkService());
+
   InitializeCorsParams();
 }
 
@@ -559,6 +562,9 @@ NetworkContext::NetworkContext(
       url_request_context_->net_log(), url_request_context_);
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
+
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
+      CreateUrlLoaderFactoryForNetworkService());
 
   InitializeCorsParams();
 }
@@ -590,6 +596,9 @@ NetworkContext::NetworkContext(
 
   for (const auto& key : cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);
+
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
+      CreateUrlLoaderFactoryForNetworkService());
 }
 
 NetworkContext::~NetworkContext() {
@@ -679,11 +688,11 @@ void NetworkContext::SetClient(mojom::NetworkContextClientPtr client) {
 void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     mojom::URLLoaderFactoryParamsPtr params) {
-  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client =
-      base::MakeRefCounted<ResourceSchedulerClient>(
-          params->process_id, ++current_resource_scheduler_client_id_,
-          resource_scheduler_.get(),
-          url_request_context_->network_quality_estimator());
+  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
+  resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
+      params->process_id, ++current_resource_scheduler_client_id_,
+      resource_scheduler_.get(),
+      url_request_context_->network_quality_estimator());
   CreateURLLoaderFactory(std::move(request), std::move(params),
                          std::move(resource_scheduler_client));
 }
@@ -2311,7 +2320,17 @@ void NetworkContext::InitializeCorsParams() {
 
 void NetworkContext::GetOriginPolicyManager(
     mojom::OriginPolicyManagerRequest request) {
-  origin_policy_manager_.AddBinding(std::move(request));
+  origin_policy_manager_->AddBinding(std::move(request));
+}
+
+mojom::URLLoaderFactoryPtr
+NetworkContext::CreateUrlLoaderFactoryForNetworkService() {
+  auto url_loader_factory_params = mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+  mojom::URLLoaderFactoryPtr url_loader_factory;
+  CreateURLLoaderFactory(mojo::MakeRequest(&url_loader_factory),
+                         std::move(url_loader_factory_params));
+  return url_loader_factory;
 }
 
 }  // namespace network

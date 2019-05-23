@@ -405,6 +405,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Gather active URLLoader count.
   size_t GatherActiveLoaderCount();
 
+  // Creates a new url loader factory bound to this network context. For use
+  // inside the network service.
+  mojom::URLLoaderFactoryPtr CreateUrlLoaderFactoryForNetworkService();
+
  private:
   class ContextNetworkDelegate;
 
@@ -604,7 +608,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
 
-  OriginPolicyManager origin_policy_manager_;
+  std::unique_ptr<OriginPolicyManager> origin_policy_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

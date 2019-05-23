@@ -13,20 +13,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/origin_policy_manager.mojom.h"
 
 class GURL;
 
 namespace url {
 class Origin;
 }
-namespace net {
-struct RedirectInfo;
-}  // namespace net
-namespace network {
-struct ResourceResponseHead;
-class SimpleURLLoader;
-}  // namespace network
 
 namespace content {
 class NavigationHandle;
@@ -77,12 +70,8 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   using KnownVersionMap = std::map<url::Origin, std::string>;
   static KnownVersionMap& GetKnownVersionsForTesting();
 
-  void InjectPolicyForTesting(const std::string& policy_content);
-
-  void SetURLLoaderFactoryForTesting(
-      std::unique_ptr<network::mojom::URLLoaderFactory>
-          url_loader_factory_for_testing);
-
+  // TODO(andypaicu): Remove this when we move the store to the network
+  // service layer.
   static PolicyVersionAndReportTo
   GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(
       const std::string& header);
@@ -90,12 +79,6 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   static bool IsExemptedForTesting(const url::Origin& origin);
 
  private:
-  using FetchCallback = base::OnceCallback<void(std::unique_ptr<std::string>)>;
-  using RedirectCallback =
-      base::RepeatingCallback<void(const net::RedirectInfo&,
-                                   const network::ResourceResponseHead&,
-                                   std::vector<std::string>*)>;
-
   explicit OriginPolicyThrottle(NavigationHandle* handle);
 
   static KnownVersionMap& GetKnownVersions();
@@ -106,25 +89,13 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   GetRequestedPolicyAndReportGroupFromHeaderString(const std::string& header);
 
   const url::Origin GetRequestOrigin() const;
-  const GURL GetPolicyURL(const std::string& version) const;
-  void FetchPolicy(const GURL& url,
-                   FetchCallback done,
-                   RedirectCallback redirect);
-  void OnTheGloriousPolicyHasArrived(
-      std::unique_ptr<std::string> policy_content);
-  void OnRedirect(const net::RedirectInfo& redirect_info,
-                  const network::ResourceResponseHead& response_head,
-                  std::vector<std::string>* to_be_removed_headers);
-  void CancelNavigation(OriginPolicyErrorReason reason);
 
-  void Report(OriginPolicyErrorReason reason);
+  void CancelNavigation(OriginPolicyErrorReason reason, const GURL& policy_url);
 
-  // We may need the SimpleURLLoader to download the policy. The loader must
-  // be kept alive while the load is ongoing.
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  void Report(OriginPolicyErrorReason reason, const GURL& policy_url);
 
-  std::unique_ptr<network::mojom::URLLoaderFactory>
-      url_loader_factory_for_testing_;
+  void OnOriginPolicyManagerRetrieveDone(
+      const network::mojom::OriginPolicyPtr origin_policy);
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyThrottle);
 };

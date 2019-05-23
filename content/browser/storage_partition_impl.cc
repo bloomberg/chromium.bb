@@ -1403,6 +1403,8 @@ void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
     url_loader_factory_for_browser_process_.FlushForTesting();
   if (cookie_manager_for_browser_process_)
     cookie_manager_for_browser_process_.FlushForTesting();
+  if (origin_policy_manager_for_browser_process_)
+    origin_policy_manager_for_browser_process_.FlushForTesting();
 }
 
 void StoragePartitionImpl::WaitForDeletionTasksForTesting() {
@@ -1511,6 +1513,27 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
           std::move(original_factory));
   is_test_url_loader_factory_for_browser_process_ = true;
   return url_loader_factory_for_browser_process_.get();
+}
+
+network::mojom::OriginPolicyManager*
+StoragePartitionImpl::GetOriginPolicyManagerForBrowserProcess() {
+  if (!origin_policy_manager_for_browser_process_ ||
+      origin_policy_manager_for_browser_process_.encountered_error()) {
+    GetNetworkContext()->GetOriginPolicyManager(
+        mojo::MakeRequest(&origin_policy_manager_for_browser_process_));
+  }
+  return origin_policy_manager_for_browser_process_.get();
+}
+
+void StoragePartitionImpl::SetOriginPolicyManagerForBrowserProcessForTesting(
+    network::mojom::OriginPolicyManagerPtr test_origin_policy_manager) {
+  origin_policy_manager_for_browser_process_ =
+      std::move(test_origin_policy_manager);
+}
+
+void StoragePartitionImpl::
+    ResetOriginPolicyManagerForBrowserProcessForTesting() {
+  origin_policy_manager_for_browser_process_ = nullptr;
 }
 
 }  // namespace content

@@ -17,7 +17,7 @@ enum OriginPolicyState {
   kCannotLoadPolicy,
   // An invalid redirect has been encountered. The only valid redirect is if
   // we requested the default "/.well-known/origin-policy", to which the
-  // server MUST response with a redirect to the latest origin policy. Any
+  // server MUST respond with a redirect to the latest origin policy. Any
   // other redirect (or more than 1 redirect) is invalid.
   // https://wicg.github.io/origin-policy/#origin-policy-well-known
   kInvalidRedirect,
@@ -34,7 +34,7 @@ struct OriginPolicyContents {
   // The feature policy that is dictated by the origin policy. Each feature
   // is one member of the array.
   // https://w3c.github.io/webappsec-feature-policy/
-  array<string> features;
+  // array<string> features;
 
   // These two fields together represent the CSP that should be applied to the
   // origin, based on the origin policy.
@@ -43,12 +43,19 @@ struct OriginPolicyContents {
   // The "enforced" portion of the CSP. This CSP is to be treated as having
   // an "enforced" disposition.
   // https://w3c.github.io/webappsec-csp/#policy-disposition
-  array<string> content_security_policies;
+  // array<string> content_security_policies;
 
   // The "report-only" portion of the CSP. This CSP is to be treated as having
   // a "report" disposition.
   // https://w3c.github.io/webappsec-csp/#policy-disposition
-  array<string> content_security_policies_report_only;
+  // array<string> content_security_policies_report_only;
+
+  // TODO(andypaicu): remove this when the policy is parsed in the network
+  // service.
+  // For now the raw contents is the only available part. When the policy file
+  // will be parsed in the network service the other (commented) fields will be
+  // properly populated.
+  string raw_policy;
 };
 
 // Represents the result of retrieving an origin policy.
@@ -72,4 +79,9 @@ struct OriginPolicy {
 // An interface for handling all origin policy related operations.
 // https://wicg.github.io/origin-policy/
 interface OriginPolicyManager {
+  // Attempts to retrieve the origin policy for an origin and
+  // `Sec-Origin-Policy` HTTP header value. Calls back with the result.
+  // https://wicg.github.io/origin-policy/#origin-policy-header
+  RetrieveOriginPolicy(url.mojom.Origin origin, string header_value)
+      => (OriginPolicy origin_policy);
 };
