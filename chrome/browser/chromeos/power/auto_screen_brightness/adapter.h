@@ -324,15 +324,18 @@ class Adapter : public AlsReader::Observer,
 
   base::Optional<bool> brightness_monitor_success_;
 
-  // |model_config_exists_| will remain nullopt until |OnModelConfigLoaded| is
-  // called. Its value will then be set to true if the input model config exists
-  // (not nullopt), else its value will be false.
-  base::Optional<bool> model_config_exists_;
+  // |enabled_by_model_configs_| will remain nullopt until |OnModelConfigLoaded|
+  // is called. Its value will then be set to true if the input model config
+  // exists (not nullopt), and if |InitParams| properly sets params and checks
+  // the model is enabled.
+  base::Optional<bool> enabled_by_model_configs_;
 
   bool model_initialized_ = false;
 
   base::Optional<bool> power_manager_service_available_;
 
+  // |adapter_status_| should only be set to |kDisabled| or |kSuccess| by
+  // |UpdateStatus|.
   Status adapter_status_ = Status::kInitializing;
 
   // This is set to true whenever a user makes a manual adjustment, and if

@@ -237,11 +237,11 @@ void Adapter::OnModelInitialized(const Model& model) {
 }
 
 void Adapter::OnModelConfigLoaded(base::Optional<ModelConfig> model_config) {
-  DCHECK(!model_config_exists_.has_value());
+  DCHECK(!enabled_by_model_configs_.has_value());
 
-  model_config_exists_ = model_config.has_value();
+  enabled_by_model_configs_ = model_config.has_value();
 
-  if (model_config_exists_.value()) {
+  if (enabled_by_model_configs_.value()) {
     InitParams(model_config.value());
   }
 
@@ -337,7 +337,7 @@ Adapter::Adapter(Profile* profile,
 
 void Adapter::InitParams(const ModelConfig& model_config) {
   if (!base::FeatureList::IsEnabled(features::kAutoScreenBrightness)) {
-    adapter_status_ = Status::kDisabled;
+    enabled_by_model_configs_ = false;
     return;
   }
 
@@ -357,7 +357,7 @@ void Adapter::InitParams(const ModelConfig& model_config) {
   const int model_curve = base::GetFieldTrialParamByFeatureAsInt(
       features::kAutoScreenBrightness, "model_curve", 2);
   if (model_curve < 0 || model_curve > 2) {
-    adapter_status_ = Status::kDisabled;
+    enabled_by_model_configs_ = false;
     LogParameterError(ParameterError::kAdapterError);
     return;
   }
@@ -376,6 +376,7 @@ void Adapter::InitParams(const ModelConfig& model_config) {
       features::kAutoScreenBrightness, "user_adjustment_effect",
       static_cast<int>(params_.user_adjustment_effect));
   if (user_adjustment_effect_as_int < 0 || user_adjustment_effect_as_int > 2) {
+    enabled_by_model_configs_ = false;
     LogParameterError(ParameterError::kAdapterError);
     return;
   }
@@ -428,10 +429,10 @@ void Adapter::UpdateStatus() {
     return;
   }
 
-  if (!model_config_exists_.has_value())
+  if (!enabled_by_model_configs_.has_value())
     return;
 
-  if (!model_config_exists_.value()) {
+  if (!enabled_by_model_configs_.value()) {
     adapter_status_ = Status::kDisabled;
     SetMetricsReporterDeviceClass();
     return;
