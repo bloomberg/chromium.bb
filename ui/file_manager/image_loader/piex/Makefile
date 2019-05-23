@@ -10,23 +10,20 @@
 PIEX = node_modules/piex
 
 PSRC = $(PIEX)/src/piex.cc \
-			 $(PIEX)/src/tiff_parser.cc \
-			 $(PIEX)/src/image_type_recognition/image_type_recognition_lite.cc \
-			 $(PIEX)/src/tiff_directory/tiff_directory.cc \
-			 $(PIEX)/src/binary_parse/range_checked_byte_ptr.cc \
-			 $(PIEX)/src/binary_parse/cached_paged_byte_array.cc
-
-WAPI = ["cwrap"]
+       $(PIEX)/src/tiff_parser.cc \
+       $(PIEX)/src/image_type_recognition/image_type_recognition_lite.cc \
+       $(PIEX)/src/tiff_directory/tiff_directory.cc \
+       $(PIEX)/src/binary_parse/range_checked_byte_ptr.cc \
+       $(PIEX)/src/binary_parse/cached_paged_byte_array.cc
 
 INCS = -I $(PIEX) -I .
 WASM = -s WASM=1 -fno-exceptions -Wall -fsanitize=cfi -flto -fvisibility=hidden
 WOPT = -Os --llvm-opts 3 \
-	-s STRICT=1 \
-	-s ALLOW_MEMORY_GROWTH=1 \
-	-s ENVIRONMENT='web' \
-	-s NO_DYNAMIC_EXECUTION=1 \
-	-s EXTRA_EXPORTED_RUNTIME_METHODS='$(WAPI)' \
-	-s TOTAL_STACK=$(shell echo $$((8*1024)))
+  -s STRICT=1 \
+  -s ALLOW_MEMORY_GROWTH=1 \
+  -s ENVIRONMENT='web' \
+  -s NO_DYNAMIC_EXECUTION=1 \
+  -s TOTAL_STACK=$(shell echo $$((8*1024)))
 
 IIFE = --pre-js iife.beg --post-js iife.end
 
