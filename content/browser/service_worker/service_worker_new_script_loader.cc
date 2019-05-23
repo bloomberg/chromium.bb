@@ -123,10 +123,9 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // hours passed since the last update check that hit network.
   base::TimeDelta time_since_last_check =
       base::Time::Now() - registration->last_update_check();
-  if (ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
-          is_main_script, registration->update_via_cache()) ||
-      time_since_last_check > kServiceWorkerScriptMaxCacheAge ||
-      version_->force_bypass_cache_for_scripts()) {
+  if (ServiceWorkerUtils::ShouldValidateBrowserCacheForScript(
+          is_main_script, version_->force_bypass_cache_for_scripts(),
+          registration->update_via_cache(), time_since_last_check)) {
     resource_request.load_flags |= net::LOAD_VALIDATE_CACHE;
   }
 

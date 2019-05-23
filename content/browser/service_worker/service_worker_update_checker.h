@@ -51,7 +51,10 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       const GURL& main_script_url,
       int64_t main_script_resource_id,
       scoped_refptr<ServiceWorkerVersion> version_to_update,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+      bool force_bypass_cache,
+      blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
+      base::TimeDelta time_since_last_check);
   ~ServiceWorkerUpdateChecker();
 
   // |callback| is always triggered when Start() finishes. If the scripts are
@@ -87,6 +90,11 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
   UpdateStatusCallback callback_;
 
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+
+  const bool force_bypass_cache_;
+  const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
+  const base::TimeDelta time_since_last_check_;
+
   base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerUpdateChecker);

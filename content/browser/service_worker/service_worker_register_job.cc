@@ -326,6 +326,8 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
   DCHECK_EQ(GetUpdateCheckType(),
             UpdateCheckType::kAllScriptsBeforeStartWorker);
   ServiceWorkerVersion* version_to_update = registration()->GetNewestVersion();
+  base::TimeDelta time_since_last_check =
+      base::Time::Now() - registration()->last_update_check();
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
   version_to_update->script_cache_map()->GetResources(&resources);
   int64_t script_resource_id =
@@ -334,7 +336,9 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
 
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
       std::move(resources), script_url_, script_resource_id, version_to_update,
-      context_->loader_factory_getter()->GetNetworkFactory());
+      context_->loader_factory_getter()->GetNetworkFactory(),
+      force_bypass_cache_, registration()->update_via_cache(),
+      time_since_last_check);
   update_checker_->Start(std::move(callback));
 }
 

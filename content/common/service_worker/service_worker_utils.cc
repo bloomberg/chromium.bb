@@ -194,6 +194,16 @@ bool ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
   return false;
 }
 
+bool ServiceWorkerUtils::ShouldValidateBrowserCacheForScript(
+    bool is_main_script,
+    bool force_bypass_cache,
+    blink::mojom::ServiceWorkerUpdateViaCache cache_mode,
+    base::TimeDelta time_since_last_check) {
+  return (ShouldBypassCacheDueToUpdateViaCache(is_main_script, cache_mode) ||
+          time_since_last_check > kServiceWorkerScriptMaxCacheAge ||
+          force_bypass_cache);
+}
+
 // static
 blink::mojom::FetchCacheMode ServiceWorkerUtils::GetCacheModeFromLoadFlags(
     int load_flags) {

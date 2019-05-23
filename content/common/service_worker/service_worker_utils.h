@@ -69,6 +69,12 @@ class ServiceWorkerUtils {
       bool is_main_script,
       blink::mojom::ServiceWorkerUpdateViaCache cache_mode);
 
+  static bool ShouldValidateBrowserCacheForScript(
+      bool is_main_script,
+      bool force_bypass_cache,
+      blink::mojom::ServiceWorkerUpdateViaCache cache_mode,
+      base::TimeDelta time_since_last_check);
+
   // Converts an enum defined in net/base/load_flags.h to
   // blink::mojom::FetchCacheMode.
   CONTENT_EXPORT static blink::mojom::FetchCacheMode GetCacheModeFromLoadFlags(
