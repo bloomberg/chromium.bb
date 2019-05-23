@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+//#import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -57,10 +58,6 @@
 @end
 
 @implementation FakePasswordFormFiller
-
-@synthesize username = _username;
-@synthesize password = _password;
-@synthesize methodCalled = _methodCalled;
 
 - (void)findAndFillPasswordForms:(NSString*)username
                         password:(NSString*)password
@@ -114,25 +111,13 @@
 @property(nonatomic, readonly, copy) NSString* latestErrorAlertTitle;
 @property(nonatomic, readonly, copy) NSString* latestErrorAlertMessage;
 @property(nonatomic, readonly, copy) NSString* latestSnackbarMessage;
-
-// Resets the values of the properties above.
-- (void)resetState;
+@property(nonatomic, readonly, copy) NSString* latestContextMenuTitle;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
 
 @implementation FakeActivityServiceControllerTestProvider
-
-@synthesize presentActivityServiceViewControllerWasCalled =
-    _presentActivityServiceViewControllerWasCalled;
-@synthesize activityServiceDidEndPresentingWasCalled =
-    _activityServiceDidEndPresentingWasCalled;
-@synthesize latestErrorAlertTitle = _latestErrorAlertTitle;
-@synthesize latestErrorAlertMessage = _latestErrorAlertMessage;
-@synthesize latestSnackbarMessage = _latestSnackbarMessage;
-@synthesize parentViewController = _parentViewController;
-@synthesize fakePasswordFormFiller = _fakePasswordFormFiller;
 
 - (instancetype)initWithParentViewController:(UIViewController*)controller {
   if ((self = [super init])) {
@@ -142,9 +127,13 @@
   return self;
 }
 
+#pragma mark - ActivityServicePassword
+
 - (id<PasswordFormFiller>)currentPasswordFormFiller {
   return _fakePasswordFormFiller;
 }
+
+#pragma mark - ActivityServicePresentation
 
 - (void)presentActivityServiceViewController:(UIViewController*)controller {
   _presentActivityServiceViewControllerWasCalled = YES;
@@ -165,20 +154,22 @@
   _latestErrorAlertMessage = [message copy];
 }
 
+- (void)showActivityServiceContextMenu:(NSString*)title
+                                 items:(NSArray<ContextMenuItem*>*)items {
+  _latestContextMenuTitle = [title copy];
+  EXPECT_GE([items count], 1U);
+}
+
+#pragma mark - ActivityServicePositioner
+
 - (UIView*)shareButtonView {
   return self.parentViewController.view;
 }
 
+#pragma mark - ActivityServicePositioner
+
 - (void)showSnackbarMessage:(MDCSnackbarMessage*)message {
   _latestSnackbarMessage = [message.text copy];
-}
-
-- (void)resetState {
-  _presentActivityServiceViewControllerWasCalled = NO;
-  _activityServiceDidEndPresentingWasCalled = NO;
-  _latestErrorAlertTitle = nil;
-  _latestErrorAlertMessage = nil;
-  _latestSnackbarMessage = nil;
 }
 
 @end

@@ -81,6 +81,7 @@
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
@@ -102,6 +103,7 @@
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/context_menu/context_menu_item.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
@@ -4791,6 +4793,33 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
                                              message:(NSString*)message {
   [self showErrorAlertWithStringTitle:title message:message];
+}
+
+- (void)showActivityServiceContextMenu:(NSString*)title
+                                 items:(NSArray<ContextMenuItem*>*)items {
+  // In case a context menu is being shown, stop it first.
+  [_contextMenuCoordinator stop];
+
+  // Must have at least one item to choose from context menu.
+  DCHECK_GE([items count], 1U);
+
+  // Create a new context menu positioned at the location of the Share button.
+  UIView* inView = [self.primaryToolbarCoordinator
+                        .activityServicePositioner shareButtonView];
+  // This assumes that inView.bounds.origin.x is zero because bounds rect
+  // origin should be at (0,0).
+  DCHECK(CGPointEqualToPoint(CGPointZero, inView.bounds.origin));
+  CGPoint location =
+      CGPointMake(CGRectGetMidX(inView.bounds), CGRectGetMaxY(inView.bounds));
+  _contextMenuCoordinator =
+      [[ContextMenuCoordinator alloc] initWithBaseViewController:self
+                                                           title:title
+                                                          inView:inView
+                                                      atLocation:location];
+  for (ContextMenuItem* item in items) {
+    [_contextMenuCoordinator addItemWithTitle:item.title action:item.action];
+  }
+  [_contextMenuCoordinator start];
 }
 
 #pragma mark - CaptivePortalDetectorTabHelperDelegate
