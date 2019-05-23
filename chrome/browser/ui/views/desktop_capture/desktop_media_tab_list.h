@@ -43,6 +43,7 @@ class DesktopMediaTabList : public DesktopMediaListController::ListView {
 
   // views::View:
   const char* GetClassName() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // DesktopMediaListController::ListView:
   base::Optional<content::DesktopMediaID> GetSelection() override;

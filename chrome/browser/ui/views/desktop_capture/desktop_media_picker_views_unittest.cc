@@ -294,4 +294,52 @@ TEST_F(DesktopMediaPickerViewsTest, DoneWithAudioShare) {
   GetPickerDialogView()->GetDialogClientView()->AcceptWindow();
   base::RunLoop().RunUntilIdle();
 }
+
+// This test validates that a DesktopMediaPickerViews that only has a tab list
+// has a reasonable default size, and chooses reasonable bounds on its own size
+// when the source list grows. Specifically, DesktopMediaPickerViews should
+// never be "too small" (ie: it should always be sized as though it contains at
+// least m sources, for some small fixed m) and never be "too large" (ie: it
+// should only grow to show at most n sources, for some fixed n > m). This unit
+// test checks for three properties of a dialog containing k sources:
+//   1) Adding another source such that k < m does not change the dialog's size
+//   2) Adding another source when k > n does not change the dialog's size
+//   3) Adding a source when m <= k <= n does change the dialog's size
+TEST_F(DesktopMediaPickerViewsTest, TabListHasReasonableSize) {
+  auto AddTabSource = [&]() {
+    media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]->AddSourceByFullMediaID(
+        DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, 0));
+  };
+
+  auto GetDialogHeight = [&]() {
+    return GetPickerDialogView()
+        ->GetDialogClientView()
+        ->GetPreferredSize()
+        .height();
+  };
+
+  // The dialog's height should not change when doing from zero sources to two
+  // sources.
+  int old_size = GetDialogHeight();
+  AddTabSource();
+  AddTabSource();
+  EXPECT_EQ(GetDialogHeight(), old_size);
+
+  // The dialog's height should change when going from two to twelve, though.
+  for (int i = 0; i < 10; i++)
+    AddTabSource();
+  EXPECT_GT(GetDialogHeight(), old_size);
+
+  for (int i = 0; i < 50; i++)
+    AddTabSource();
+
+  // And then it shouldn't change when going from a large number of sources (in
+  // this case 62) to a larger number, because the ScrollView should scroll
+  // large numbers of sources.
+  old_size = GetDialogHeight();
+  for (int i = 0; i < 50; i++)
+    AddTabSource();
+  EXPECT_EQ(GetDialogHeight(), old_size);
+}
+
 }  // namespace views

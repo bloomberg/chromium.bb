@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_tab_list.h"
 
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -153,6 +154,15 @@ DesktopMediaTabList::~DesktopMediaTabList() {
 
 const char* DesktopMediaTabList::GetClassName() const {
   return "DesktopMediaTabList";
+}
+
+gfx::Size DesktopMediaTabList::CalculatePreferredSize() const {
+  int rows = model_->RowCount();
+  // Empirical constants! Don't show too many rows at a time if the user has
+  // hundreds of tabs, but don't show too few if there's only one tab because
+  // the UI then looks squished.
+  rows = base::ClampToRange(rows, 4, 10);
+  return gfx::Size(0, rows * child_->row_height());
 }
 
 base::Optional<content::DesktopMediaID> DesktopMediaTabList::GetSelection() {
