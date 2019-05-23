@@ -169,13 +169,6 @@ bool ChromeExtensionsClient::IsScriptableURL(
   return true;
 }
 
-bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
-  // Suppress fatal everywhere until the cause of bugs like http://crbug/471599
-  // are fixed. This would typically be:
-  // return GetCurrentChannel() > version_info::Channel::DEV;
-  return true;
-}
-
 const GURL& ChromeExtensionsClient::GetWebstoreBaseURL() const {
   return webstore_base_url_;
 }

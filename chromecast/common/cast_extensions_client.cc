@@ -125,10 +125,6 @@ bool CastExtensionsClient::IsScriptableURL(const GURL& url,
   return true;
 }
 
-bool CastExtensionsClient::ShouldSuppressFatalErrors() const {
-  return true;
-}
-
 const GURL& CastExtensionsClient::GetWebstoreBaseURL() const {
   return webstore_base_url_;
 }
