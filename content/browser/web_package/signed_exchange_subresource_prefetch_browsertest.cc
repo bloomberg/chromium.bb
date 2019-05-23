@@ -5,8 +5,13 @@
 #include <string>
 #include <vector>
 
+#include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_browsertest_base.h"
@@ -81,13 +86,27 @@ class SignedExchangeSubresourcePrefetchBrowserTest
   static constexpr uint64_t kTestBlobStorageMinFileSizeBytes = 10;
   static constexpr uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
 
-  const PrefetchedSignedExchangeCache::EntryMap& GetCachedExchanges() {
+  PrefetchedSignedExchangeCache::EntryMap GetCachedExchanges() {
     RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame());
     scoped_refptr<PrefetchedSignedExchangeCache> cache =
         rfh->EnsurePrefetchedSignedExchangeCache();
-    return cache->exchanges_;
+    PrefetchedSignedExchangeCache::EntryMap results;
+    base::RunLoop run_loop;
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(
+            [](scoped_refptr<PrefetchedSignedExchangeCache> cache,
+               PrefetchedSignedExchangeCache::EntryMap* results) {
+              for (const auto& exchanges_it : cache->exchanges_) {
+                (*results)[exchanges_it.first] = exchanges_it.second->Clone();
+              }
+            },
+            cache, &results),
+        run_loop.QuitClosure());
+    run_loop.Run();
+    return results;
   }
 
   void SetBlobLimits() {
@@ -162,7 +181,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
 
   EXPECT_EQ(1, prefetch_url_loader_called_);
 
-  const auto& cached_exchanges = GetCachedExchanges();
+  const auto cached_exchanges = GetCachedExchanges();
   EXPECT_EQ(1u, cached_exchanges.size());
   const auto it = cached_exchanges.find(target_sxg_url);
   ASSERT_TRUE(it != cached_exchanges.end());
@@ -222,7 +241,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
 
   EXPECT_EQ(1, prefetch_url_loader_called_);
 
-  const auto& cached_exchanges = GetCachedExchanges();
+  const auto cached_exchanges = GetCachedExchanges();
   EXPECT_EQ(1u, cached_exchanges.size());
   const auto it = cached_exchanges.find(target_sxg_url);
   ASSERT_TRUE(it != cached_exchanges.end());
@@ -282,7 +301,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
 
   EXPECT_EQ(1, prefetch_url_loader_called_);
 
-  const auto& cached_exchanges = GetCachedExchanges();
+  const auto cached_exchanges = GetCachedExchanges();
   // The content of prefetched SXG is larger than the Blob storage limit.
   // So the SXG should not be stored to the cache.
   EXPECT_EQ(0u, cached_exchanges.size());
@@ -369,7 +388,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script_sxg_url);
 
-  const auto& cached_exchanges = GetCachedExchanges();
+  const auto cached_exchanges = GetCachedExchanges();
   EXPECT_EQ(2u, cached_exchanges.size());
 
   const auto target_it = cached_exchanges.find(target_sxg_url);
@@ -477,7 +496,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script_sxg_url);
 
-  const auto& cached_exchanges = GetCachedExchanges();
+  const auto cached_exchanges = GetCachedExchanges();
   EXPECT_EQ(2u, cached_exchanges.size());
 
   const auto target_it = cached_exchanges.find(target_sxg_url);
@@ -621,7 +640,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   WaitUntilLoaded(script1_sxg_url);
   WaitUntilLoaded(script2_sxg_url);
 
-  const auto& cached_exchanges = GetCachedExchanges();
+  const auto cached_exchanges = GetCachedExchanges();
   EXPECT_EQ(3u, cached_exchanges.size());
 
   const auto target_it = cached_exchanges.find(target_sxg_url);
@@ -732,7 +751,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script_sxg_url);
 
-  const auto& cached_exchanges = GetCachedExchanges();
+  const auto cached_exchanges = GetCachedExchanges();
   EXPECT_EQ(2u, cached_exchanges.size());
 
   const auto target_it = cached_exchanges.find(target_sxg_url);
@@ -971,7 +990,7 @@ IN_PROC_BROWSER_TEST_P(
   WaitUntilLoaded(script1_sxg_url);
   WaitUntilLoaded(script2_sxg_url);
 
-  const auto& cached_exchanges = GetCachedExchanges();
+  const auto cached_exchanges = GetCachedExchanges();
   EXPECT_EQ(3u, cached_exchanges.size());
 
   // The value of "header-integrity" in "allowed-alt-sxg" link header of the
@@ -983,6 +1002,230 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(1, script1_fetch_count);
   EXPECT_EQ(1, script2_sxg_fetch_count);
   EXPECT_EQ(1, script2_fetch_count);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest, CORS) {
+  std::unique_ptr<net::EmbeddedTestServer> data_server =
+      std::make_unique<net::EmbeddedTestServer>(
+          net::EmbeddedTestServer::TYPE_HTTPS);
+
+  const char* prefetch_path = "/prefetch.html";
+  const char* target_sxg_path = "/target.sxg";
+  const char* target_path = "/target.html";
+
+  RegisterRequestHandler(embedded_test_server());
+  RegisterRequestHandler(data_server.get());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(data_server->Start());
+
+  std::string test_server_origin = embedded_test_server()->base_url().spec();
+  // Remove the last "/""
+  test_server_origin.pop_back();
+
+  struct {
+    // Set in the main SXG's inner response header.
+    // Example:
+    //   Link: <http://***/**.data>;rel="preload";as="fetch";crossorigin
+    //                                                       ^^^^^^^^^^^
+    const char* const crossorigin_preload_header;
+    // Set in the data SXG's inner response header.
+    // Example:
+    //   Access-Control-Allow-Origin: *
+    //                                ^
+    const char* const access_control_allow_origin_header;
+    // Set "Access-Control-Allow-Credentials: true" link header in the data
+    // SXG's inner response header.
+    const bool has_access_control_allow_credentials_true_header;
+    // The credentials attribute of Fetch API's request while fetching the data.
+    const char* const request_credentials;
+    // If the data is served from the SXG the result must be "sxg". If the data
+    // is served from the server without SXG, the result must be "server". If
+    // failed to fetch the data, the result must be "failed".
+    const char* const expected_result;
+  } kTestCases[] = {
+      // - If crossorigin is not set in the preload header, cross origin fetch
+      //   goes to the server. It is because the mode of the preload request
+      //   ("no-cors") and the mode of the fetch request ("cors") doesn't match.
+      {nullptr, nullptr, false, "omit", "server"},
+      {nullptr, nullptr, false, "include", "server"},
+      {nullptr, nullptr, false, "same-origin", "server"},
+
+      // - When "crossorigin" is set in the preload header, the mode of the
+      //   preload request is "cors", and the credentials mode is "same-origin".
+      //   - When the credentials mode of the fetch request doesn't match, the
+      //     fetch request goes to the server.
+      {"crossorigin", nullptr, false, "omit", "server"},
+      {"crossorigin", nullptr, false, "include", "server"},
+      //   - When the credentials mode of the fetch request match with the
+      //     credentials mode of the preload request, the prefetched signed
+      //     exchange is used.
+      //     - When the inner response doesn't have ACAO header, fails to load.
+      {"crossorigin", nullptr, false, "same-origin", "failed"},
+      //     - When the inner response has "ACAO: *" header, succeeds to load.
+      {"crossorigin", "*", false, "same-origin", "sxg"},
+      //     - When the inner response has "ACAO: <origin>" header, succeeds to
+      //       load.
+      {"crossorigin", test_server_origin.c_str(), false, "same-origin", "sxg"},
+
+      // - crossorigin="anonymous" must be treated as same as just having
+      //   "crossorigin".
+      {"crossorigin=\"anonymous\"", nullptr, false, "omit", "server"},
+      {"crossorigin=\"anonymous\"", nullptr, false, "include", "server"},
+      {"crossorigin=\"anonymous\"", nullptr, false, "same-origin", "failed"},
+      {"crossorigin=\"anonymous\"", "*", false, "same-origin", "sxg"},
+      {"crossorigin=\"anonymous\"", test_server_origin.c_str(), false,
+       "same-origin", "sxg"},
+
+      // - When crossorigin="use-credentials" is set in the preload header, the
+      //   mode of the preload request is "cors", and the credentials mode is
+      //   "include".
+      //  - When the credentials mode of the fetch request doesn't match, the
+      //    fetch request goes to the server.
+      {"crossorigin=\"use-credentials\"", nullptr, false, "omit", "server"},
+      {"crossorigin=\"use-credentials\"", nullptr, false, "same-origin",
+       "server"},
+      //   - When the credentials mode of the fetch request match with the
+      //     credentials mode of the preload request, the prefetched signed
+      //     exchange is used.
+      //     - When the inner response doesn't have ACAO header, fails to load.
+      {"crossorigin=\"use-credentials\"", nullptr, false, "include", "failed"},
+      //     - Even if the inner response has "ACAO: *" header, fails to load
+      //       the "include" credentials mode request.
+      {"crossorigin=\"use-credentials\"", "*", false, "include", "failed"},
+      //     - Even if the inner response has "ACAO: *" header and "ACAC: true"
+      //       header, fails to load the "include" credentials mode request.
+      {"crossorigin=\"use-credentials\"", "*", true, "include", "failed"},
+      //     - Even if the inner response has "ACAO: <origin>" header, fails to
+      //       load the "include" credentials mode request.
+      {"crossorigin=\"use-credentials\"", test_server_origin.c_str(), false,
+       "include", "failed"},
+      //     - If the inner response has "ACAO: <origin>" header, and
+      //       "ACAC: true" header, succeeds to load.
+      {"crossorigin=\"use-credentials\"", test_server_origin.c_str(), true,
+       "include", "sxg"},
+  };
+
+  const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
+  const GURL target_url = embedded_test_server()->GetURL(target_path);
+
+  const net::SHA256HashValue target_header_integrity = {{0x01}};
+
+  std::string target_sxg_outer_link_header;
+  std::string target_sxg_inner_link_header("Link: ");
+  std::string requests_list_string;
+
+  std::vector<MockSignedExchangeHandlerParams> mock_params;
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
+    if (i) {
+      target_sxg_outer_link_header += ",";
+      target_sxg_inner_link_header += ",";
+      requests_list_string += ",";
+    }
+    const std::string data_sxg_path = base::StringPrintf("/%zu_data.sxg", i);
+    const std::string data_path = base::StringPrintf("/%zu.data", i);
+    const GURL data_sxg_url = embedded_test_server()->GetURL(data_sxg_path);
+    const GURL data_url = data_server->GetURL(data_path);
+    requests_list_string += base::StringPrintf(
+        "new Request('%s', {credentials: '%s'})", data_url.spec().c_str(),
+        kTestCases[i].request_credentials);
+    const net::SHA256HashValue data_header_integrity = {{0x02 + i}};
+    const std::string data_header_integrity_string =
+        GetHeaderIntegrityString(data_header_integrity);
+
+    target_sxg_outer_link_header += base::StringPrintf(
+        "<%s>;rel=\"alternate\";type=\"application/signed-exchange;v=b3\";"
+        "anchor=\"%s\"",
+        data_sxg_url.spec().c_str(), data_url.spec().c_str());
+
+    target_sxg_inner_link_header += base::StringPrintf(
+        "<%s>;rel=\"allowed-alt-sxg\";header-integrity=\"%s\","
+        "<%s>;rel=\"preload\";as=\"fetch\"",
+        data_url.spec().c_str(), data_header_integrity_string.c_str(),
+        data_url.spec().c_str());
+    if (kTestCases[i].crossorigin_preload_header) {
+      target_sxg_inner_link_header +=
+          base::StringPrintf(";%s", kTestCases[i].crossorigin_preload_header);
+    }
+    RegisterResponse(data_sxg_path,
+                     ResponseEntry("sxg", "application/signed-exchange;v=b3",
+                                   {{"x-content-type-options", "nosniff"}}));
+    RegisterResponse(
+        data_path,
+        ResponseEntry(
+            "server", "text/plain",
+            {{"Access-Control-Allow-Origin", test_server_origin.c_str()},
+             {"Access-Control-Allow-Credentials", "true"}}));
+    std::vector<std::string> data_sxg_inner_headers;
+    if (kTestCases[i].access_control_allow_origin_header) {
+      data_sxg_inner_headers.emplace_back(
+          base::StringPrintf("Access-Control-Allow-Origin: %s",
+                             kTestCases[i].access_control_allow_origin_header));
+    }
+    if (kTestCases[i].has_access_control_allow_credentials_true_header) {
+      data_sxg_inner_headers.emplace_back(
+          "Access-Control-Allow-Credentials: true");
+    }
+    mock_params.emplace_back(
+        data_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, data_url,
+        "text/plain", std::move(data_sxg_inner_headers), data_header_integrity);
+  }
+
+  std::vector<std::string> target_sxg_inner_headers = {
+      std::move(target_sxg_inner_link_header)};
+  mock_params.emplace_back(target_sxg_url, SignedExchangeLoadResult::kSuccess,
+                           net::OK, target_url, "text/html",
+                           std::move(target_sxg_inner_headers),
+                           target_header_integrity);
+  MockSignedExchangeHandlerFactory factory(std::move(mock_params));
+
+  RegisterResponse(
+      prefetch_path,
+      ResponseEntry(base::StringPrintf(
+          "<body><link rel='prefetch' href='%s'></body>", target_sxg_path)));
+  RegisterResponse(
+      target_sxg_path,
+      // We mock the SignedExchangeHandler, so just return a HTML
+      // content as "application/signed-exchange;v=b3".
+      ResponseEntry(base::StringPrintf(R"(
+<head><title>Prefetch Target (SXG)</title><script>
+let results = [];
+(async function(requests) {
+  for (let i = 0; i < requests.length; ++i) {
+    try {
+      const res = await fetch(requests[i]);
+      results.push(await res.text());
+    } catch (err) {
+      results.push('failed');
+    }
+  }
+  document.title = 'done';
+})([%s]);
+</script></head>)",
+                                       requests_list_string.c_str()),
+                    "application/signed-exchange;v=b3",
+                    {{"x-content-type-options", "nosniff"},
+                     {"link", target_sxg_outer_link_header}}));
+
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+
+  // Wait until all (main- and sub-resource) SXGs are prefetched.
+  while (GetCachedExchanges().size() < base::size(kTestCases) + 1) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  NavigateToURLAndWaitTitle(target_sxg_url, "done");
+
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("TestCase %zu", i));
+    EXPECT_EQ(
+        EvalJs(shell(), base::StringPrintf("results[%zu]", i)).ExtractString(),
+        kTestCases[i].expected_result);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(

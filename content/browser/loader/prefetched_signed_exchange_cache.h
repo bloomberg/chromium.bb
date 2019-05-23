@@ -38,7 +38,7 @@ class NavigationLoaderInterceptor;
 class CONTENT_EXPORT PrefetchedSignedExchangeCache
     : public base::RefCountedThreadSafe<PrefetchedSignedExchangeCache> {
  public:
-  class Entry {
+  class CONTENT_EXPORT Entry {
    public:
     Entry();
     ~Entry();
