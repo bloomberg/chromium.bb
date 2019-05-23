@@ -15,7 +15,7 @@ TEST(UnifiedConsentFeatureTest, FeatureState) {
 // Linux platforms
 #if defined(OS_ANDROID)
   // Unified consent is disabled by default.
-  EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
+  EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
 #endif
 
 #if defined(OS_CHROMEOS)
