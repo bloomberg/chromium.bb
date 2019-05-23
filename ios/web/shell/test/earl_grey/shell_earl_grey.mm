@@ -60,4 +60,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ShellEarlGreyAppInterface)
   EG_TEST_HELPER_ASSERT_TRUE(containsText, description);
 }
 
+- (BOOL)webUsageEnabledForCurrentWebState {
+  return [ShellEarlGreyAppInterface webUsageEnabledForCurrentWebState];
+}
+
+- (NSString*)instanceGroupForCurrentBrowserState {
+  return [ShellEarlGreyAppInterface instanceGroupForCurrentBrowserState];
+}
+
 @end

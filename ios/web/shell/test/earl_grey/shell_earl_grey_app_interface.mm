@@ -8,6 +8,7 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/testing/nserror_util.h"
+#include "ios/web/public/browser_state.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -45,6 +46,16 @@ using web::shell_test_util::GetCurrentWebState;
 + (BOOL)currentWebStateContainsText:(NSString*)text {
   return web::test::IsWebViewContainingText(GetCurrentWebState(),
                                             base::SysNSStringToUTF8(text));
+}
+
++ (BOOL)webUsageEnabledForCurrentWebState {
+  return GetCurrentWebState()->IsWebUsageEnabled();
+}
+
++ (NSString*)instanceGroupForCurrentBrowserState {
+  web::BrowserState* browserState = GetCurrentWebState()->GetBrowserState();
+  return base::SysUTF8ToNSString(
+      web::BrowserState::GetServiceInstanceGroupFor(browserState).ToString());
 }
 
 @end
