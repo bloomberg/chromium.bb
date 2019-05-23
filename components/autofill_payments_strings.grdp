@@ -181,6 +181,24 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_CONFIRM_AND_SAVE_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
     Confirm &amp; save card to Google Account?
   </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
+    To pay faster next time, store your card and billing address in your Google Account and on this device.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
+    To pay faster next time, add your card and billing address to your Google Account and to this device.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
+    To pay faster next time, save your card and billing address to your Google Account and to this device.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
+    To pay faster next time, store your card and billing address in your Google Account.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
+    To pay faster next time, add your card and billing address to your Google Account.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
+    To pay faster next time, save your card and billing address to your Google Account.
+  </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_STORE" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
     Yes, store
   </message>
