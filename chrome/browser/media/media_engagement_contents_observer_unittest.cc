@@ -264,6 +264,11 @@ class MediaEngagementContentsObserverTest
 
   void Navigate(const GURL& url) {
     content::MockNavigationHandle test_handle(GURL(url), main_rfh());
+    test_ukm_recorder_.UpdateSourceURL(
+        ukm::ConvertToSourceId(test_handle.GetNavigationId(),
+                               ukm::SourceIdType::NAVIGATION_ID),
+        url);
+
     contents_observer_->ReadyToCommitNavigation(&test_handle);
 
     test_handle.set_has_committed(true);
@@ -273,7 +278,8 @@ class MediaEngagementContentsObserverTest
   scoped_refptr<MediaEngagementSession> GetOrCreateSession(
       const url::Origin& origin,
       content::WebContents* opener) {
-    return contents_observer_->GetOrCreateSession(origin, opener, false);
+    content::MockNavigationHandle navigation_handle(origin.GetURL(), nullptr);
+    return contents_observer_->GetOrCreateSession(&navigation_handle, opener);
   }
 
   scoped_refptr<MediaEngagementSession> GetSessionFor(

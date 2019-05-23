@@ -167,6 +167,7 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
     return;
 
   // Only get the opener if the navigation originated from a link.
+  // This is done outside of `GetOrCreateSession()` to simplify unit testing.
   content::WebContents* opener = nullptr;
   if (ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
                                    ui::PAGE_TRANSITION_LINK) ||
@@ -175,9 +176,7 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
     opener = GetOpener();
   }
 
-  bool was_restored =
-      navigation_handle->GetRestoreType() != content::RestoreType::NONE;
-  session_ = GetOrCreateSession(new_origin, opener, was_restored);
+  session_ = GetOrCreateSession(navigation_handle, opener);
 }
 
 MediaEngagementContentsObserver::PlayerState::PlayerState(base::Clock* clock)
@@ -623,9 +622,10 @@ content::WebContents* MediaEngagementContentsObserver::GetOpener() const {
 
 scoped_refptr<MediaEngagementSession>
 MediaEngagementContentsObserver::GetOrCreateSession(
-    const url::Origin& origin,
-    content::WebContents* opener,
-    bool was_restored) const {
+    content::NavigationHandle* navigation_handle,
+    content::WebContents* opener) const {
+  url::Origin origin = url::Origin::Create(navigation_handle->GetURL());
+
   if (origin.opaque())
     return nullptr;
 
@@ -640,8 +640,13 @@ MediaEngagementContentsObserver::GetOrCreateSession(
     return opener_observer->session_;
   }
 
+  MediaEngagementSession::RestoreType restore_type =
+      navigation_handle->GetRestoreType() == content::RestoreType::NONE
+          ? MediaEngagementSession::RestoreType::kNotRestored
+          : MediaEngagementSession::RestoreType::kRestored;
+
   return new MediaEngagementSession(
-      service_, origin,
-      was_restored ? MediaEngagementSession::RestoreType::kRestored
-                   : MediaEngagementSession::RestoreType::kNotRestored);
+      service_, origin, restore_type,
+      ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                             ukm::SourceIdType::NAVIGATION_ID));
 }

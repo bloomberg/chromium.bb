@@ -17,8 +17,6 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom-forward.h"
 #include "url/gurl.h"
 
-class MediaEngagementSession;
-
 namespace autofill {
 class TestAutofillClient;
 }  // namespace autofill
@@ -73,7 +71,6 @@ class METRICS_EXPORT UkmRecorder {
 
  private:
   friend DelegatingUkmRecorder;
-  friend MediaEngagementSession;
   friend TestRecordingHelper;
   friend UkmBackgroundRecorderService;
   friend autofill::TestAutofillClient;
