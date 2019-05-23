@@ -2226,11 +2226,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "mojo-imf",
-    "owners": [ "shuchen" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "native-file-system-api",
     "owners": [ "mek", "pwnall" ],
     "expiry_milestone":  80

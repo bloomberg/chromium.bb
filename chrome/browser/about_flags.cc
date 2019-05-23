@@ -1330,9 +1330,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
      flag_descriptions::kShowTouchHudDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
-    {"mojo-imf", flag_descriptions::kMojoImfName,
-     flag_descriptions::kMojoImfDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kMojoIMF)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",

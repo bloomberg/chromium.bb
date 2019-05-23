@@ -73,10 +73,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kMash;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSingleProcessMash;
 
-#if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kMojoIMF;
-#endif
-
 // Used to enable the new controls UI.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kFormControlsRefresh;
@@ -96,11 +92,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsMultiProcessMash();
 // similar to kMash, but leaves ash and browser running in the same process.
 // See //ash/README.md.
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsSingleProcessMash();
-
-// Returns true if the client connects the active ime engine through mojo IPCs.
-// This can only return true on Chrome OS, and it can only take effect when
-// IsSingleProcessMash() returns true.
-COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsMojoImfEnabled();
 
 // Whether the UI may accommodate touch input in response to hardware changes.
 COMPONENT_EXPORT(UI_BASE_FEATURES)

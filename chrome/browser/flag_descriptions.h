@@ -1864,9 +1864,6 @@ extern const char kLockScreenNotificationDescription[];
 extern const char kMediaSessionNotificationsName[];
 extern const char kMediaSessionNotificationsDescription[];
 
-extern const char kMojoImfName[];
-extern const char kMojoImfDescription[];
-
 extern const char kNetworkPortalNotificationName[];
 extern const char kNetworkPortalNotificationDescription[];
 
