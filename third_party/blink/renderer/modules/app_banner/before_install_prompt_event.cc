@@ -97,7 +97,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
 
   UseCounter::Count(context, WebFeature::kBeforeInstallPromptEventPrompt);
   banner_service_->DisplayAppBanner();
-  return ScriptPromise::CastUndefined(script_state);
+  return user_choice_->Promise(script_state->World());
 }
 
 const AtomicString& BeforeInstallPromptEvent::InterfaceName() const {
