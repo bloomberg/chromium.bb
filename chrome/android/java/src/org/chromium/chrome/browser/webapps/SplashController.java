@@ -309,6 +309,8 @@ public class SplashController extends EmptyTabObserver implements InflationObser
             assert false : "Failed to remove activity translucency reflectively";
             Log.e(TAG, "Failed to remove activity translucency reflectively");
         }
+
+        notifyTranslucencyRemoved();
     }
 
     private void animateHideSplash(final Tab tab, final @SplashHidesReason int reason) {
@@ -362,6 +364,12 @@ public class SplashController extends EmptyTabObserver implements InflationObser
      */
     public void removeObserver(SplashscreenObserver observer) {
         mObservers.removeObserver(observer);
+    }
+
+    private void notifyTranslucencyRemoved() {
+        for (SplashscreenObserver observer : mObservers) {
+            observer.onTranslucencyRemoved();
+        }
     }
 
     private void notifySplashscreenHidden(long startTimestamp, long endTimestmap) {
