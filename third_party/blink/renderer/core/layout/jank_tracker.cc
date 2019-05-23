@@ -291,7 +291,7 @@ void JankTracker::NotifyPrePaintFinished() {
 #endif
 
   TRACE_EVENT_INSTANT2(
-      "loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD, "data",
+      "loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD, "data",
       PerFrameTraceData(jank_fraction, jank_fraction_with_move_distance,
                         granularity_scale),
       "frame", ToTraceValue(&frame));
@@ -363,8 +363,8 @@ std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
     double jank_fraction_with_move_distance,
     double granularity_scale) const {
   auto value = std::make_unique<TracedValue>();
-  value->SetDouble("jank_fraction", jank_fraction);
-  value->SetDouble("jank_fraction_with_move_distance",
+  value->SetDouble("score", jank_fraction);
+  value->SetDouble("score_with_move_distance",
                    jank_fraction_with_move_distance);
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("cumulative_score_with_move_distance",
