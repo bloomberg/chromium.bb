@@ -1089,6 +1089,213 @@ message ChromeUserProfileReport {
   optional string name = 9;
 }
 
+// Sign in information of Profile.
+message ChromeSignedInUser {
+  // The email of the signed in user.
+  optional string email = 1;
+  // The obfuscated GaiaID of the signed in user.
+  optional string obfudscated_gaiaid = 2;
+}
+
+// Icon of an extension.
+message ExtensionIcon {
+  // A number representing the width and height of the icon.
+  optional int32 size = 1;
+  // The url of icon image.
+  optional string url = 2;
+}
+
+// Extension information.
+message Extension {
+  // ID of the installed app/extension for a Chrome app or extension.
+  optional string id = 1;
+  // Currently installed version of the extension.
+  optional string version = 2;
+  // The name of the extension.
+  optional string name = 3;
+  // The description of the extension that is provided by extension author.
+  optional string description = 4;
+
+  // The type of extension.
+  enum ExtensionType {
+    TYPE_UNKNOWN = 0;
+    TYPE_EXTENSION = 1;
+    TYPE_HOSTED_APP = 2;
+    TYPE_PACKAGED_APP = 3;
+    TYPE_LEGACY_PACKAGED_APP = 4;
+    TYPE_THEME = 5;
+    TYPE_USER_SCRIPT = 6;
+  }
+  optional ExtensionType app_type = 5;
+
+  // URL of the homepage.
+  optional string homepage_url = 6;
+
+  // Icons of the extension.
+  repeated ExtensionIcon icons = 7;
+
+  // The installation source of the extension.
+  enum InstallType {
+    // An extension that is installed by user or installed by default but not
+    // component extension.
+    TYPE_NORMAL = 0;
+    // An extension that is loaded as unpacked extension from chrome extension
+    // page or --load-extension command line switch.
+    TYPE_DEVELOPMENT = 1;
+    // An extension that is loaded from the settings in Window Registry or
+    // a preferences JSON file on Mac and Linux.
+    TYPE_SIDELOAD = 2;
+    // An extension that is loaded from policy settings.
+    TYPE_ADMIN = 3;
+    // Chrome component extension and unknown sources.
+    TYPE_OTHER = 4;
+  }
+  optional InstallType install_type = 8;
+
+  // True if the extension is currently enabled.
+  optional bool enabled = 9;
+
+  // The list of api based permissions the extension requires.
+  repeated string permissions = 10;
+
+  // The list of host based permissions the extension requires.
+  repeated string host_permissions = 11;
+}
+
+// Plugin information.
+message Plugin {
+  // The human friendly name of plugin.
+  optional string name = 1;
+
+  // Currently installed version of the plugin.
+  optional string version = 2;
+
+  // The file name from the path of the plugin.
+  optional string filename = 3;
+
+  // More details of the plugin.
+  optional string description = 4;
+}
+
+// Policy information.
+message Policy {
+  // The name of the policy.
+  optional string name = 1;
+
+  // The level of a policy determines its enforceability and whether users can
+  // override it or not.
+  enum PolicyLevel {
+    LEVEL_UNKNOWN = 0;
+    // Recommended policies are a default value configured by admins and users
+    // can choose to override it.
+    LEVEL_RECOMMENDED = 1;
+
+    // Mandatory policies must be enforced and users can't circumvent them.
+    LEVEL_MANDATORY = 2;
+  }
+  optional PolicyLevel level = 2;
+
+  // The scope of a policy flags whether it's applied to the current user or to
+  // the machine.
+  enum PolicyScope {
+    SCOPE_UNKNOWN = 0;
+    // User policies apply to current Session/Profile if it's cloud policy.
+    // Or apply to current OS user on Windows.
+    SCOPE_USER = 1;
+
+    // Machine policies apply to any users of the current machine.
+    SCOPE_MACHINE = 2;
+  }
+  optional PolicyScope scope = 3;
+
+  // The source of a policy indicates where its value is originating from.
+  enum PolicySource {
+    SOURCE_UNKNOWN = 0;
+    // A policy is set by Chrome when it's running in an
+    // enterprise environment.
+    SOURCE_ENTERPRISE_DEFAULT = 1;
+
+    // A policy is set by Google's cloud management tool.
+    SOURCE_CLOUD = 2;
+
+    // A policy is set by active directory on ChromeOS.
+    SOURCE_ACTIVE_DIRECTORY = 3;
+
+    // A policy is overridden by ChromeOS if it's running in a public session or
+    // kiosk mode.
+    SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE = 4;
+
+    // A policy is set by OS built-in tool on desktop.
+    SOURCE_PLATFORM = 5;
+
+    // A policy is set by Google's cloud management tool but has higher
+    // priority.
+    SOURCE_PRIORITY_CLOUD = 6;
+
+    // A policy is set by multiple sources and value has been merged.
+    SOURCE_MERGED = 7;
+  }
+  optional PolicySource source = 4;
+
+  // The value of policy.
+  optional string value = 5;
+}
+
+// Extension policy information.
+message ExtensionPolicy {
+  // The id of extension that policies apply to.
+  optional string extension_id = 1;
+
+  // The list of policies that extension currently uses.
+  repeated Policy policy_reports = 2;
+}
+
+// Cloud policy last fetch time.
+message PolicyFetchTimestamp {
+  // The type of cloud policy.
+  optional string type = 1;
+  // The last time the policies where fetched for the policy type.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 timestamp = 2;
+}
+
+// Chrome user profile level status, used by activated Profiles. Profile name is
+// not listed here as they are in the ChromeUserProfileBasicInfo.
+message ChromeUserProfileInfo {
+  // A string to uniquely identify this profile within the browser.
+  optional string id = 1;
+
+  // The name of the profile, which was entered by the user when creating
+  // the profile. Empty when in incognito mode
+  optional string name = 2;
+
+  // A boolean to indicates if it's a full report which contains all Profile
+  // details. Only activated Profile is able to upload full report, idle Profile
+  // only uploads its |id| and |name|.
+  optional bool is_full_report = 3;
+
+  // Gaia account information if the Profile is signed in.
+  optional ChromeSignedInUser chrome_signed_in_user = 4;
+
+  // A list of extensions installed in the browser.
+  repeated Extension extensions = 5;
+
+  // A list of plugins installed in the browser.
+  repeated Plugin plugins = 6;
+
+  // A list of Chrome browser policies set for this user profile.
+  repeated Policy chrome_policies = 7;
+
+  // A list of extensions' policies set for this user profile. The policies is
+  // only added if the extension is installed.
+  repeated ExtensionPolicy extension_policies = 8;
+
+  // The last time the cloud policies where fetched for each policy type.
+  // Only one policy type which is google/chrome/machine-level-user uploads
+  // timestamp currently. More details in b/132973694
+  repeated PolicyFetchTimestamp policy_fetched_timestamps = 9;
+}
+
 // Report browser level status.
 message BrowserReport {
   // The Chrome browser version, as seen from within Chrome code as opposed to
@@ -1103,25 +1310,56 @@ message BrowserReport {
   optional string executable_path = 3;
 
   // Profile specific reports, one per profile.
+  // This field is replaced by ChromeUserProfileInfo and only used by old Chrome
+  // browser.
   repeated ChromeUserProfileReport chrome_user_profile_reports = 4;
+
+  // A list of all Profiles that is created in the currently browser instance.
+  // Only activated Profiles is able to upload full details while the idle ones
+  // contain id and name only. Please note that some activated Profiles may not
+  // upload full details like idle one due to the limitatin of report size.
+  // These details will be uploaded in the following reports.
+  repeated ChromeUserProfileInfo profile_info_list = 6;
+}
+
+// Report Operating system related information.
+message OSReport {
+  // A string contains OS name.
+  optional string name = 1;
+
+  // A string contains OS architecture.
+  optional string arch = 2;
+
+  // A string contains OS version.
+  optional string version = 3;
 }
 
 // Report the status of a Chrome installation on non-Chrome OS platform.
 message ChromeDesktopReportRequest {
   // The name of the machine within its local network. The string is a JSON
   // encoded structure with a single computername field.
+  // This field is replaced by computer_name and only used by old Chrome
+  // browser.
   optional string machine_name = 1;
   // OS info. The string is a an encoded JSON object as returned by
   // chrome.runtime.getPlatformInfo.
+  // This field is replaced by OSReport and only used by old Chrome browser.
   optional string os_info = 2;
   // The user name from the OS point of view. The string is a JSON encoded
   // structure with a single username field containing "DOMAIN\username".
+  // This field is replaced by os_user_name and only used by old Chrome browser.
   optional string os_user = 3;
   // Browser related info.
   optional BrowserReport browser_report = 4;
   // The device serial number (this might differ with the client ID, depending
   // on the platform)
   optional string serial_number = 5;
+  // A string represents the name of computer.
+  optional string computer_name = 6;
+  // Operating system related information.
+  optional OSReport os_report = 7;
+  // A string contains OS user name.
+  optional string os_user_name = 8;
 }
 
 // A validation issue from validating a policy value that was contained in
