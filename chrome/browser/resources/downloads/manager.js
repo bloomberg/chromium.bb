@@ -267,9 +267,10 @@ cr.define('downloads', function() {
                          }]);
       if (this.restoreFocusAfterRemove_) {
         this.restoreFocusAfterRemove_ = false;
-        if (this.items_.length > 0) {
+        const focusIndex = Math.min(this.items_.length - 1, index);
+        if (focusIndex >= 0) {
           setTimeout(() => {
-            this.$.downloadsList.focusItem(index);
+            this.$.downloadsList.focusItem(focusIndex);
             const item = getDeepActiveElement();
             if (item) {
               item.focusOnRemoveButton();
