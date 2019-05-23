@@ -401,6 +401,25 @@ void NGBlockNode::FinishLayout(
   if (block_flow) {
     NGLayoutInputNode first_child = FirstChild();
     bool has_inline_children = first_child && first_child.IsInline();
+
+    // Don't consider display-locked objects as having any children.
+    if (has_inline_children &&
+        box_->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+      has_inline_children = false;
+      // It could be the case that our children are already clean at the time
+      // the lock was acquired. This means that |box_| self dirty bits might be
+      // set, and child dirty bits might not be. We clear the self bits since we
+      // want to treat the |box_| as layout clean, even when locked. However,
+      // here we also skip appending paint fragments for inline children. This
+      // means that we potentially can end up in a situation where |box_| is
+      // completely layout clean, but its inline children didn't append the
+      // paint fragments to it, which causes problems. In order to solve this,
+      // we set a child dirty bit on |box_| ensuring that when the lock
+      // is removed, or update is forced, we will visit this box again and
+      // properly create the paint fragments. See https://crbug.com/962614.
+      box_->SetChildNeedsLayout(kMarkOnlyThis);
+    }
+
     if (has_inline_children) {
       const auto& physical_fragment =
           To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
@@ -715,7 +734,10 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 
   box_->UpdateAfterLayout();
-  box_->ClearNeedsLayout();
+  // We should only clear the child layout bits if display-locking has not
+  // prevented us from laying the children out.
+  box_->ClearNeedsLayout(
+      !box_->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
 
   // Overflow computation depends on this being set.
   if (LIKELY(block_flow))

@@ -2343,8 +2343,15 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // Set our initial temporary cache status to "hit".
   NGLayoutCacheStatus cache_status = NGLayoutCacheStatus::kHit;
 
-  if (SelfNeedsLayoutForStyle() || NormalChildNeedsLayout() ||
-      PosChildNeedsLayout() || NeedsSimplifiedNormalFlowLayout() ||
+  // If the display-lock blocked child layout, then we don't clear child needs
+  // layout bits. However, we can still use the cached result, since we will
+  // re-layout when unlocking.
+  bool child_needs_layout_unless_locked =
+      !LayoutBlockedByDisplayLock(DisplayLockContext::kChildren) &&
+      (PosChildNeedsLayout() || NormalChildNeedsLayout());
+
+  if (SelfNeedsLayoutForStyle() || child_needs_layout_unless_locked ||
+      NeedsSimplifiedNormalFlowLayout() ||
       (NeedsPositionedMovementLayout() &&
        !NeedsPositionedMovementLayoutOnly())) {
     // Check if we only need "simplified" layout. We don't abort yet, as we
@@ -2449,8 +2456,10 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
   // We can safely re-use this fragment if we are positioned, and only our
   // position constraints changed (left/top/etc). However we need to clear the
-  // dirty layout bit(s).
-  ClearNeedsLayout();
+  // dirty layout bit(s). Note that we may be here because we are display locked
+  // and have cached a locked layout result. In that case, we still need to
+  // retain child bits.
+  ClearNeedsLayout(!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
 
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
