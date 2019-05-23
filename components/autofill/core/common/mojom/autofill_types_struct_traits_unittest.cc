@@ -460,9 +460,9 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormGenerationData) {
 }
 
 TEST_F(AutofillTypeTraitsTestImpl, NewPasswordFormGenerationData) {
-  NewPasswordFormGenerationData input = {
-      .new_password_renderer_id = 1234u,
-      .confirmation_password_renderer_id = 5789u};
+  NewPasswordFormGenerationData input;
+  input.new_password_renderer_id = 1234u,
+  input.confirmation_password_renderer_id = 5789u;
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();

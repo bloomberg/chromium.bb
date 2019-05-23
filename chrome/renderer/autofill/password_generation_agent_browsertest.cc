@@ -1431,9 +1431,9 @@ TEST_F(PasswordGenerationAgentTest, GenerationAvailableByRendererIds) {
 
   // Simulate that the browser informs about eligible for generation form.
   // Check that generation is available only on new password field of this form.
-  NewPasswordFormGenerationData generation_data = {
-      .new_password_renderer_id =
-          password_elements[0].UniqueRendererFormControlId()};
+  NewPasswordFormGenerationData generation_data;
+  generation_data.new_password_renderer_id =
+      password_elements[0].UniqueRendererFormControlId();
 
   password_generation_->FoundFormEligibleForGeneration(generation_data);
   ExpectAutomaticGenerationAvailable(kPasswordElementsIds[0], kAvailable);
