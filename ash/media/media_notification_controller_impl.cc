@@ -5,8 +5,8 @@
 #include "ash/media/media_notification_controller_impl.h"
 
 #include "ash/media/media_notification_constants.h"
+#include "ash/media/media_notification_container_impl.h"
 #include "ash/media/media_notification_item.h"
-#include "ash/media/media_notification_view.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/session_observer.h"
@@ -193,7 +193,7 @@ void MediaNotificationControllerImpl::HideNotification(const std::string& id) {
   message_center::MessageCenter::Get()->RemoveNotification(id, false);
 }
 
-std::unique_ptr<MediaNotificationView>
+std::unique_ptr<MediaNotificationContainerImpl>
 MediaNotificationControllerImpl::CreateMediaNotification(
     const message_center::Notification& notification) {
   base::WeakPtr<MediaNotificationItem> item;
@@ -202,7 +202,8 @@ MediaNotificationControllerImpl::CreateMediaNotification(
   if (it != notifications_.end())
     item = it->second.GetWeakPtr();
 
-  return std::make_unique<MediaNotificationView>(notification, std::move(item));
+  return std::make_unique<MediaNotificationContainerImpl>(notification,
+                                                          std::move(item));
 }
 
 void MediaNotificationControllerImpl::RecordConcurrentNotificationCount() {

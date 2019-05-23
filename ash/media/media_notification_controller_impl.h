@@ -31,7 +31,7 @@ namespace {
 class MediaNotificationBlocker;
 }  // namespace
 
-class MediaNotificationView;
+class MediaNotificationContainerImpl;
 
 // MediaNotificationControllerImpl will show/hide media notifications when media
 // sessions are active. These notifications will show metadata and playback
@@ -58,7 +58,7 @@ class ASH_EXPORT MediaNotificationControllerImpl
   void ShowNotification(const std::string& id) override;
   void HideNotification(const std::string& id) override;
 
-  std::unique_ptr<MediaNotificationView> CreateMediaNotification(
+  std::unique_ptr<MediaNotificationContainerImpl> CreateMediaNotification(
       const message_center::Notification& notification);
 
   ash::MediaNotificationItem* GetItem(const std::string& id) {

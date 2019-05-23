@@ -6,8 +6,8 @@
 
 #include "ash/media/media_notification_background.h"
 #include "ash/media/media_notification_constants.h"
+#include "ash/media/media_notification_container.h"
 #include "ash/media/media_notification_item.h"
-#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -18,11 +18,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
-#include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
@@ -108,24 +105,26 @@ const char MediaNotificationView::kMetadataHistogramName[] =
     "Media.Notification.MetadataPresent";
 
 MediaNotificationView::MediaNotificationView(
-    const message_center::Notification& notification,
-    base::WeakPtr<MediaNotificationItem> item)
-    : message_center::MessageView(notification), item_(std::move(item)) {
+    MediaNotificationContainer* container,
+    base::WeakPtr<MediaNotificationItem> item,
+    views::View* header_row_controls_view,
+    const base::string16& default_app_name)
+    : container_(container),
+      item_(std::move(item)),
+      header_row_controls_view_(header_row_controls_view),
+      default_app_name_(default_app_name) {
+  DCHECK(container_);
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0));
 
-  SetNativeTheme(ui::NativeThemeDarkAura::instance());
-  // |controls_button_view_| has the common notification control buttons.
-  control_buttons_view_ =
-      std::make_unique<message_center::NotificationControlButtonsView>(this);
-  control_buttons_view_->set_owned_by_client();
-
-  // |header_row_| contains app_icon, app_name, control buttons, etc.
   auto header_row =
       std::make_unique<message_center::NotificationHeaderView>(this);
-  header_row->AddChildView(control_buttons_view_.get());
-  header_row->SetAppName(
-      message_center::MessageCenter::Get()->GetSystemNotificationAppName());
+
+  if (header_row_controls_view_)
+    header_row->AddChildView(header_row_controls_view_);
+
+  header_row->SetAppName(default_app_name_);
   header_row->ClearAppIcon();
   header_row->SetProperty(views::kMarginsKey,
                           new gfx::Insets(kMediaNotificationHeaderTopInset,
@@ -205,7 +204,6 @@ MediaNotificationView::MediaNotificationView(
       message_center::kNotificationCornerRadius, kMediaImageMaxWidthPct));
 
   UpdateForegroundColor();
-  UpdateControlButtonsVisibilityWithNotification(notification);
   UpdateCornerRadius(message_center::kNotificationCornerRadius,
                      message_center::kNotificationCornerRadius);
   UpdateViewForExpandedState();
@@ -217,22 +215,6 @@ MediaNotificationView::MediaNotificationView(
 MediaNotificationView::~MediaNotificationView() {
   if (item_)
     item_->SetView(nullptr);
-}
-
-void MediaNotificationView::UpdateWithNotification(
-    const message_center::Notification& notification) {
-  MessageView::UpdateWithNotification(notification);
-
-  UpdateControlButtonsVisibilityWithNotification(notification);
-
-  PreferredSizeChanged();
-  Layout();
-  SchedulePaint();
-}
-
-message_center::NotificationControlButtonsView*
-MediaNotificationView::GetControlButtonsView() const {
-  return control_buttons_view_.get();
 }
 
 void MediaNotificationView::SetExpanded(bool expanded) {
@@ -262,19 +244,6 @@ void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   if (!accessible_name_.empty())
     node_data->SetName(accessible_name_);
-}
-
-void MediaNotificationView::OnMouseEvent(ui::MouseEvent* event) {
-  switch (event->type()) {
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED:
-      UpdateControlButtonsVisibility();
-      break;
-    default:
-      break;
-  }
-
-  View::OnMouseEvent(event);
 }
 
 void MediaNotificationView::ButtonPressed(views::Button* sender,
@@ -315,11 +284,9 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
 
 void MediaNotificationView::UpdateWithMediaMetadata(
     const media_session::MediaMetadata& metadata) {
-  header_row_->SetAppName(
-      metadata.source_title.empty()
-          ? message_center::MessageCenter::Get()->GetSystemNotificationAppName()
-          : metadata.source_title);
-
+  header_row_->SetAppName(metadata.source_title.empty()
+                              ? default_app_name_
+                              : metadata.source_title);
   title_label_->SetText(metadata.title);
   artist_label_->SetText(metadata.artist);
   header_row_->SetSummaryText(metadata.album);
@@ -386,16 +353,6 @@ void MediaNotificationView::UpdateWithMediaIcon(const gfx::ImageSkia& image) {
   }
 }
 
-void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
-    const message_center::Notification& notification) {
-  // Media notifications do not use the settings and snooze buttons.
-  DCHECK(!notification.should_show_settings_button());
-  DCHECK(!notification.should_show_snooze_button());
-
-  control_buttons_view_->ShowCloseButton(!notification.pinned());
-  UpdateControlButtonsVisibility();
-}
-
 void MediaNotificationView::UpdateActionButtonsVisibility() {
   std::set<MediaSessionAction> visible_actions =
       CalculateVisibleActions(IsActuallyExpanded());
@@ -447,6 +404,8 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   header_row_->SetExpanded(expanded);
 
   UpdateActionButtonsVisibility();
+
+  container_->OnExpanded(expanded);
 }
 
 void MediaNotificationView::CreateMediaButton(

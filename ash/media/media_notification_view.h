@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "base/memory/weak_ptr.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -35,13 +34,12 @@ class View;
 namespace ash {
 
 class MediaNotificationBackground;
+class MediaNotificationContainer;
 class MediaNotificationItem;
 
-// MediaNotificationView will show up as a custom notification. It will show the
-// currently playing media and provide playback controls. There will also be
-// control buttons (e.g. close) in the top right corner that will hide and show
-// if the notification is hovered.
-class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
+// MediaNotificationView will show up as a custom view. It will show the
+// currently playing media and provide playback controls.
+class ASH_EXPORT MediaNotificationView : public views::View,
                                          public views::ButtonListener {
  public:
   // The name of the histogram used when recorded whether the artwork was
@@ -62,21 +60,17 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
     kMaxValue = kCount,
   };
 
-  MediaNotificationView(const message_center::Notification& notification,
-                        base::WeakPtr<MediaNotificationItem> item);
+  MediaNotificationView(MediaNotificationContainer* container,
+                        base::WeakPtr<MediaNotificationItem> item,
+                        views::View* header_row_controls_view,
+                        const base::string16& default_app_name);
   ~MediaNotificationView() override;
 
-  // message_center::MessageView:
-  void UpdateWithNotification(
-      const message_center::Notification& notification) override;
-  message_center::NotificationControlButtonsView* GetControlButtonsView()
-      const override;
-  void SetExpanded(bool expanded) override;
-  void UpdateCornerRadius(int top_radius, int bottom_radius) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void SetExpanded(bool expanded);
+  void UpdateCornerRadius(int top_radius, int bottom_radius);
 
   // views::View:
-  void OnMouseEvent(ui::MouseEvent* event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -91,9 +85,6 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
  private:
   friend class MediaNotificationViewTest;
-
-  void UpdateControlButtonsVisibilityWithNotification(
-      const message_center::Notification& notification);
 
   // Creates an image button with an icon that matches |action| and adds it
   // to |button_row_|. When clicked it will trigger |action| on the session.
@@ -114,11 +105,19 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
   void UpdateForegroundColor();
 
+  // Container that receives OnExpanded events.
+  MediaNotificationContainer* const container_;
+
+  // Keeps track of media metadata and controls the session when buttons are
+  // clicked.
   base::WeakPtr<MediaNotificationItem> item_;
 
-  // View containing close and settings buttons.
-  std::unique_ptr<message_center::NotificationControlButtonsView>
-      control_buttons_view_;
+  // Optional View that is put into the header row. E.g. in Ash we show
+  // notification control buttons.
+  views::View* header_row_controls_view_;
+
+  // String to set as the app name of the header when there is no source title.
+  base::string16 default_app_name_;
 
   bool has_artwork_ = false;
 
