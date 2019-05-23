@@ -93,7 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   neverTranslateItem.text =
       l10n_util::GetNSString(IDS_IOS_LANGUAGE_SETTINGS_NEVER_TRANSLATE_TITLE);
   neverTranslateItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  neverTranslateItem.accessoryType = self.languageItem.isBlocked
+  neverTranslateItem.accessoryType = [self.languageItem isBlocked]
                                          ? UITableViewCellAccessoryCheckmark
                                          : UITableViewCellAccessoryNone;
   [model addItem:neverTranslateItem
@@ -105,7 +105,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   offerTranslateItem.text = l10n_util::GetNSString(
       IDS_IOS_LANGUAGE_SETTINGS_OFFER_TO_TRANSLATE_TITLE);
   offerTranslateItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  offerTranslateItem.accessoryType = self.languageItem.isBlocked
+  offerTranslateItem.accessoryType = [self.languageItem isBlocked]
                                          ? UITableViewCellAccessoryNone
                                          : UITableViewCellAccessoryCheckmark;
   if (!self.languageItem.canOfferTranslate) {

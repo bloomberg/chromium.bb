@@ -161,7 +161,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // The last Translate-blocked language cannot be deleted.
   LanguageItem* languageItem = base::mac::ObjCCastStrict<LanguageItem>(item);
-  return (languageItem.isBlocked && [self numberOfBlockedLanguages] <= 1)
+  return ([languageItem isBlocked] && [self numberOfBlockedLanguages] <= 1)
              ? UITableViewCellEditingStyleNone
              : UITableViewCellEditingStyleDelete;
 }
@@ -465,13 +465,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return NO;
 
   // Cannot offer Translate for the last Translate-blocked language.
-  if (languageItem.isBlocked && [self numberOfBlockedLanguages] <= 1) {
+  if ([languageItem isBlocked] && [self numberOfBlockedLanguages] <= 1) {
     return NO;
   }
 
   // Cannot offer Translate for the Translate target language.
-  return [self.dataSource targetLanguageCode] !=
-         languageItem.canonicalLanguageCode;
+  return ![languageItem isTargetLanguage];
 }
 
 // Returns the number of Translate-blocked languages currently in the model.
@@ -484,7 +483,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     if (item.type != ItemTypeLanguage)
       return;
     LanguageItem* languageItem = base::mac::ObjCCastStrict<LanguageItem>(item);
-    if (languageItem.isBlocked)
+    if ([languageItem isBlocked])
       numberOfBlockedLanguages++;
   }];
   return numberOfBlockedLanguages;

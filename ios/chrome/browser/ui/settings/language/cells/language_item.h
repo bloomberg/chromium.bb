@@ -15,19 +15,19 @@
 // The language code for this language.
 @property(nonatomic, assign) std::string languageCode;
 
-// The language code for this language used by the Translate server.
-@property(nonatomic, assign) std::string canonicalLanguageCode;
+// Whether the language is the Translate target language.
+@property(nonatomic, assign, getter=isTargetLanguage) BOOL targetLanguage;
 
-// Whether the language is Translate-blocked.
-@property(nonatomic, getter=isBlocked) BOOL blocked;
+// Whether the language is Translate-blocked (Translate is not offered).
+@property(nonatomic, assign, getter=isBlocked) BOOL blocked;
 
 // Whether the language is supported by the Translate server.
-@property(nonatomic) BOOL supportsTranslate;
+@property(nonatomic, assign) BOOL supportsTranslate;
 
-// Whether Translate can be offered for the language (it can be unblocked). This
-// must be false if |supportsTranslate| is false. It can however be false for
-// other reasons such as the language being the last Translate-blocked language.
-@property(nonatomic) BOOL canOfferTranslate;
+// Whether Translate can be offered for the language (it can be unblocked). True
+// if the language is supported by the Translate server, it is not the last
+// Translate-blocked language, and it is not the Translate target language.
+@property(nonatomic, assign) BOOL canOfferTranslate;
 
 @end
 

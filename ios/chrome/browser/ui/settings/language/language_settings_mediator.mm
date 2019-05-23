@@ -136,8 +136,8 @@
                                      "supported by the platform.";
       continue;
     }
-
-    LanguageItem* languageItem = [self languageItemFromLanguage:it->second];
+    const translate::TranslateLanguageInfo& language = it->second;
+    LanguageItem* languageItem = [self languageItemFromLanguage:language];
 
     // Language codes used in the language settings have the Chrome internal
     // format while the Translate target language has the Translate server
@@ -145,12 +145,19 @@
     // ToTranslateLanguageSynonym() must be used.
     std::string canonicalLanguageCode = languageItem.languageCode;
     language::ToTranslateLanguageSynonym(&canonicalLanguageCode);
-    languageItem.canonicalLanguageCode = canonicalLanguageCode;
+    std::string targetLanguageCode = TranslateServiceIOS::GetTargetLanguage(
+        self.browserState->GetPrefs(),
+        LanguageModelManagerFactory::GetForBrowserState(self.browserState)
+            ->GetPrimaryModel());
+    languageItem.targetLanguage = targetLanguageCode == canonicalLanguageCode;
 
-    // The last translate-blocked language cannot be removed whether or not
-    // Translate is enabled at the moment. Therefore, include this information.
+    // A language is Translate-blocked if the language is not supported by the
+    // Translate server, or user is fluent in the language, or it is the
+    // Translate target language.
     languageItem.blocked =
-        _translatePrefs->IsBlockedLanguage(languageItem.languageCode);
+        !languageItem.supportsTranslate ||
+        _translatePrefs->IsBlockedLanguage(languageItem.languageCode) ||
+        [languageItem isTargetLanguage];
 
     if ([self translateEnabled]) {
       // Show a disclosure indicator to suggest language details are available
@@ -158,7 +165,7 @@
       languageItem.accessibilityTraits |= UIAccessibilityTraitButton;
       languageItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
       languageItem.trailingDetailText =
-          languageItem.isBlocked
+          [languageItem isBlocked]
               ? l10n_util::GetNSString(
                     IDS_IOS_LANGUAGE_SETTINGS_NEVER_TRANSLATE_TITLE)
               : l10n_util::GetNSString(
@@ -197,13 +204,6 @@
 
 - (BOOL)translateEnabled {
   return self.translateEnabledPref.value;
-}
-
-- (std::string)targetLanguageCode {
-  return TranslateServiceIOS::GetTargetLanguage(
-      self.browserState->GetPrefs(),
-      LanguageModelManagerFactory::GetForBrowserState(self.browserState)
-          ->GetPrimaryModel());
 }
 
 #pragma mark - LanguageSettingsCommands

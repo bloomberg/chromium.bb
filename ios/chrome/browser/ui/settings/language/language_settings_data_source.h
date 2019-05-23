@@ -25,9 +25,6 @@
 // Returns whether or not Translate is enabled.
 - (BOOL)translateEnabled;
 
-// Returns the target language code with the Translate server format
-- (std::string)targetLanguageCode;
-
 // The consumer for this protocol.
 @property(nonatomic, weak) id<LanguageSettingsConsumer> consumer;
 
