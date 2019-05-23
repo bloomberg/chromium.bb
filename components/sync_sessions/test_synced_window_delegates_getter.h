@@ -39,15 +39,12 @@ class TestSyncedTabDelegate : public SyncedTabDelegate {
       const std::vector<std::unique_ptr<sessions::SerializedNavigationEntry>>&
           navs);
 
-  void SetPageLanguageAtIndex(int i, const std::string& language);
-
   // SyncedTabDelegate overrides.
   bool IsInitialBlankNavigation() const override;
   int GetCurrentEntryIndex() const override;
   GURL GetVirtualURLAtIndex(int i) const override;
   GURL GetFaviconURLAtIndex(int i) const override;
   ui::PageTransition GetTransitionAtIndex(int i) const override;
-  std::string GetPageLanguageAtIndex(int i) const override;
   void GetSerializedNavigationAtIndex(
       int i,
       sessions::SerializedNavigationEntry* serialized_entry) const override;
@@ -76,7 +73,6 @@ class TestSyncedTabDelegate : public SyncedTabDelegate {
       blocked_navigations_;
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
       entries_;
-  std::vector<std::string> page_language_per_index_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncedTabDelegate);
 };
@@ -103,7 +99,6 @@ class PlaceholderTabDelegate : public SyncedTabDelegate {
   GURL GetVirtualURLAtIndex(int i) const override;
   GURL GetFaviconURLAtIndex(int i) const override;
   ui::PageTransition GetTransitionAtIndex(int i) const override;
-  std::string GetPageLanguageAtIndex(int i) const override;
   void GetSerializedNavigationAtIndex(
       int i,
       sessions::SerializedNavigationEntry* serialized_entry) const override;
