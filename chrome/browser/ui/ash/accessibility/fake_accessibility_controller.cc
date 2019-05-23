@@ -47,6 +47,9 @@ void FakeAccessibilityController::SetFocusHighlightRect(
 void FakeAccessibilityController::SetCaretBounds(
     const gfx::Rect& bounds_in_screen) {}
 
+void FakeAccessibilityController::SetAccessibilityPanelAlwaysVisible(
+    bool always_visible) {}
+
 void FakeAccessibilityController::SetAccessibilityPanelBounds(
     const gfx::Rect& bounds,
     ash::mojom::AccessibilityPanelState state) {}

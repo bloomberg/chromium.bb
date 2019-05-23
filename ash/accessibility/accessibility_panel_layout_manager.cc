@@ -27,6 +27,11 @@ AccessibilityPanelLayoutManager::~AccessibilityPanelLayoutManager() {
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
+void AccessibilityPanelLayoutManager::SetAlwaysVisible(bool always_visible) {
+  always_visible_ = always_visible;
+  UpdateWindowBounds();
+}
+
 void AccessibilityPanelLayoutManager::SetPanelBounds(
     const gfx::Rect& bounds,
     mojom::AccessibilityPanelState state) {
@@ -99,6 +104,12 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
   RootWindowController* root_controller =
       RootWindowController::ForWindow(root_window);
 
+  aura::Window* current = panel_window_;
+  while (current->parent()) {
+    current->parent()->StackChildAtTop(current);
+    current = current->parent();
+  }
+
   gfx::Rect bounds = panel_bounds_;
 
   // The panel can make itself fill the screen (including covering the shelf).
@@ -114,6 +125,13 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
     // fix exists.
     if (Shell::Get()->screen_pinning_controller()->IsPinned())
       bounds.set_height(0);
+  }
+
+  // If a fullscreen browser window is open, give the panel a height of 0
+  // unless it's active or always_visible_ is true.
+  if (!always_visible_ && root_controller->GetWindowForFullscreenMode() &&
+      !::wm::IsActiveWindow(panel_window_)) {
+    bounds.set_height(0);
   }
 
   // Make sure the accessibility panel is always below the Docked Magnifier
