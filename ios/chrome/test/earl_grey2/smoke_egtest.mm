@@ -122,6 +122,7 @@
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey closeAllTabsInCurrentMode];
   [ChromeEarlGrey closeAllIncognitoTabs];
+  [ChromeEarlGrey openNewTab];
 }
 
 @end
