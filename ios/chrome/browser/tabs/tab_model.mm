@@ -44,7 +44,6 @@
 #import "ios/chrome/browser/tabs/tab_model_favicon_driver_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/tabs/tab_model_observers.h"
-#import "ios/chrome/browser/tabs/tab_model_observers_bridge.h"
 #import "ios/chrome/browser/tabs/tab_model_selected_tab_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model_web_state_list_delegate.h"
@@ -365,13 +364,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     _webStateListObservers.push_back(
         std::make_unique<WebStateListObserverBridge>(
             tabModelSelectedTabObserver));
-
-    TabModelObserversBridge* tabModelObserversBridge =
-        [[TabModelObserversBridge alloc] initWithTabModel:self
-                                        tabModelObservers:_observers];
-    [retainedWebStateListObservers addObject:tabModelObserversBridge];
-    _webStateListObservers.push_back(
-        std::make_unique<WebStateListObserverBridge>(tabModelObserversBridge));
 
     _webStateListObservers.push_back(
         std::make_unique<TabModelFaviconDriverObserver>(self, _observers));
