@@ -167,7 +167,7 @@ class ServiceWorkerGlobalScopeProxy final
   void DidInitializeWorkerContext() override;
   void DidLoadClassicScript() override;
   void DidFailToLoadClassicScript() override;
-  void DidFetchScript() override;
+  void DidFetchScript(int64_t app_cache_id) override;
   void DidFailToFetchClassicScript() override;
   void DidFailToFetchModuleScript() override;
   void WillEvaluateClassicScript(size_t script_size,

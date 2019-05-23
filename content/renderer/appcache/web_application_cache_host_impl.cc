@@ -103,6 +103,8 @@ void WebApplicationCacheHostImpl::CacheSelected(
     blink::mojom::AppCacheInfoPtr info) {
   cache_info_ = *info;
   client_->DidChangeCacheAssociation();
+  if (select_cache_for_shared_worker_completion_callback_)
+    std::move(select_cache_for_shared_worker_completion_callback_).Run();
 }
 
 void WebApplicationCacheHostImpl::EventRaised(
@@ -345,7 +347,10 @@ void WebApplicationCacheHostImpl::GetResourceList(
 }
 
 void WebApplicationCacheHostImpl::SelectCacheForSharedWorker(
-    long long app_cache_id) {
+    long long app_cache_id,
+    base::OnceClosure completion_callback) {
+  select_cache_for_shared_worker_completion_callback_ =
+      std::move(completion_callback);
   backend_host_->SelectCacheForSharedWorker(app_cache_id);
 }
 

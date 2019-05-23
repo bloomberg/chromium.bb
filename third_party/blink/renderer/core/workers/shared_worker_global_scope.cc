@@ -91,8 +91,10 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     SharedWorkerThread* thread,
     base::TimeTicks time_origin)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
-  // TODO(bashi): Call this after appcache host is set.
-  ReadyToRunClassicScript();
+  // When off-the-main-thread script fetch is enabled, ReadyToRunClassicScript()
+  // will be called after an app cache is selected.
+  if (!features::IsOffMainThreadSharedWorkerScriptFetchEnabled())
+    ReadyToRunClassicScript();
 }
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
@@ -203,6 +205,12 @@ void SharedWorkerGlobalScope::Connect(MessagePortChannel channel) {
   DispatchEvent(*event);
 }
 
+void SharedWorkerGlobalScope::OnAppCacheSelected() {
+  DCHECK(IsContextThread());
+  DCHECK(features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
+  ReadyToRunClassicScript();
+}
+
 void SharedWorkerGlobalScope::DidReceiveResponseForClassicScript(
     WorkerClassicScriptLoader* classic_script_loader) {
   DCHECK(IsContextThread());
@@ -225,7 +233,7 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
     ReportingProxy().DidFailToFetchClassicScript();
     return;
   }
-  ReportingProxy().DidFetchScript();
+  ReportingProxy().DidFetchScript(classic_script_loader->AppCacheID());
   probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 

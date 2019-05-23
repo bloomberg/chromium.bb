@@ -270,7 +270,7 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
     ReportingProxy().DidFailToFetchClassicScript();
     return;
   }
-  ReportingProxy().DidFetchScript();
+  ReportingProxy().DidFetchScript(classic_script_loader->AppCacheID());
   probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 

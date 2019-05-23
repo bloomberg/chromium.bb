@@ -173,11 +173,16 @@ void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
   delete this;
 }
 
-void EmbeddedSharedWorkerStub::SelectAppCacheID(int64_t app_cache_id) {
+void EmbeddedSharedWorkerStub::SelectAppCacheID(
+    int64_t app_cache_id,
+    base::OnceClosure completion_callback) {
   if (app_cache_host_) {
     // app_cache_host_ could become stale as it's owned by blink's
     // DocumentLoader. This method is assumed to be called while it's valid.
-    app_cache_host_->SelectCacheForSharedWorker(app_cache_id);
+    app_cache_host_->SelectCacheForSharedWorker(app_cache_id,
+                                                std::move(completion_callback));
+  } else {
+    std::move(completion_callback).Run();
   }
 }
 

@@ -35,7 +35,7 @@ class SharedWorkerReportingProxy final
                             mojom::ConsoleMessageLevel,
                             const String& message,
                             SourceLocation*) override;
-  void DidFetchScript() override;
+  void DidFetchScript(int64_t app_cache_id) override;
   void DidFailToFetchClassicScript() override;
   void DidFailToFetchModuleScript() override;
   void DidEvaluateClassicScript(bool success) override;

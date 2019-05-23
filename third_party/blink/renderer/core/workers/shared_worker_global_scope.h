@@ -90,6 +90,8 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
 
   void Connect(MessagePortChannel channel);
 
+  void OnAppCacheSelected();
+
   void Trace(blink::Visitor*) override;
 
  private:

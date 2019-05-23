@@ -63,7 +63,7 @@ void SharedWorkerReportingProxy::ReportConsoleMessage(
   // Not supported in SharedWorker.
 }
 
-void SharedWorkerReportingProxy::DidFetchScript() {
+void SharedWorkerReportingProxy::DidFetchScript(int64_t app_cache_id) {
   DCHECK(!IsMainThread());
   // TODO(nhiroki): Change the task type to kDOMManipulation here and elsewhere
   // in this file. See the HTML spec:
@@ -72,7 +72,7 @@ void SharedWorkerReportingProxy::DidFetchScript() {
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBindOnce(&WebSharedWorkerImpl::DidFetchScript,
-                          CrossThreadUnretained(worker_)));
+                          CrossThreadUnretained(worker_), app_cache_id));
 }
 
 void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {

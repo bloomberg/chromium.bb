@@ -63,7 +63,8 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
   void GetAssociatedCacheInfo(CacheInfo* info) override;
   const base::UnguessableToken& GetHostID() const override;
 
-  void SelectCacheForSharedWorker(long long app_cache_id);
+  void SelectCacheForSharedWorker(long long app_cache_id,
+                                  base::OnceClosure completion_callback);
 
  private:
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };
@@ -81,6 +82,8 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
   blink::mojom::AppCacheInfo cache_info_;
   GURL original_main_resource_url_;  // Used to detect redirection.
   bool was_select_cache_called_;
+  // Invoked when CacheSelected() is called.
+  base::OnceClosure select_cache_for_shared_worker_completion_callback_;
 };
 
 }  // namespace content

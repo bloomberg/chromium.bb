@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
@@ -32,7 +33,7 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     worker_reporting_proxy.DidFailToFetchModuleScript();
     return;
   }
-  worker_reporting_proxy.DidFetchScript();
+  worker_reporting_proxy.DidFetchScript(mojom::blink::kAppCacheNoCacheId);
 
   // Step 12: "Otherwise, continue the rest of these steps after the algorithm's
   // asynchronous completion, with script being the asynchronous completion

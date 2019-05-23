@@ -180,8 +180,11 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   client_->CountFeature(feature);
 }
 
-void WebSharedWorkerImpl::DidFetchScript() {
+void WebSharedWorkerImpl::DidFetchScript(int64_t app_cache_id) {
   DCHECK(IsMainThread());
+  client_->SelectAppCacheID(app_cache_id,
+                            WTF::Bind(&WebSharedWorkerImpl::OnAppCacheSelected,
+                                      weak_ptr_factory_.GetWeakPtr()));
   client_->WorkerScriptLoaded();
 }
 
@@ -276,7 +279,6 @@ void WebSharedWorkerImpl::DidReceiveScriptLoaderResponse() {
   DCHECK(IsMainThread());
   probe::DidReceiveScriptResponse(shadow_page_->GetDocument(),
                                   main_script_loader_->Identifier());
-  client_->SelectAppCacheID(main_script_loader_->AppCacheID());
 }
 
 void WebSharedWorkerImpl::OnScriptLoaderFinished() {
@@ -294,7 +296,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
     // |this| is deleted at this point.
     return;
   }
-  DidFetchScript();
+  DidFetchScript(main_script_loader_->AppCacheID());
   probe::ScriptImported(shadow_page_->GetDocument(),
                         main_script_loader_->Identifier(),
                         main_script_loader_->SourceText());
@@ -308,6 +310,14 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
       shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider(),
       WTF::Bind(&WebSharedWorkerImpl::ContinueStartWorkerContext,
                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebSharedWorkerImpl::OnAppCacheSelected() {
+  DCHECK(IsMainThread());
+  if (features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
+    DCHECK(GetWorkerThread());
+    GetWorkerThread()->OnAppCacheSelected();
+  }
 }
 
 void WebSharedWorkerImpl::ContinueStartWorkerContext() {
