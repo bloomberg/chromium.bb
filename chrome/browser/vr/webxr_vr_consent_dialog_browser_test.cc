@@ -47,7 +47,7 @@ void WebXrVrConsentDialogBrowserTest::SetupFakeConsentManager(
 
 IN_PROC_BROWSER_TEST_F(
     WebXrVrConsentDialogBrowserTest,
-    TestWebXrVrSucceedsWhenUserClicksConsentDialogAllowButton) {
+    DISABLED_TestWebXrVrSucceedsWhenUserClicksConsentDialogAllowButton) {
   SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebXrVrConsentDialogBrowserTest,
-    TestWebXrVrFailsWhenUserClicksConsentDialogCancelButton) {
+    DISABLED_TestWebXrVrFailsWhenUserClicksConsentDialogCancelButton) {
   SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickCancelButton);
 
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(WebXrVrConsentDialogBrowserTest,
-                       TestWebXrVrFailsWhenUserClosesConsentDialog) {
+                       DISABLED_TestWebXrVrFailsWhenUserClosesConsentDialog) {
   SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kCloseDialog);
 
