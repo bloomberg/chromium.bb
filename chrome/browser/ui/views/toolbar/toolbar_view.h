@@ -26,7 +26,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/views/accessible_pane_view.h"
-#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -64,7 +63,7 @@ class FlexLayout;
 class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,
                     public ui::AcceleratorProvider,
-                    public views::AnimationDelegateViews,
+                    public gfx::AnimationDelegate,
                     public LocationBarView::Delegate,
                     public BrowserActionsContainer::Delegate,
                     public CommandObserver,
@@ -207,7 +206,7 @@ class ToolbarView : public views::AccessiblePaneView,
   void SetToolbarVisibility(bool visible);
 
  private:
-  // AnimationDelegateViews:
+  // AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
 

@@ -524,8 +524,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 const char BookmarkBarView::kViewClassName[] = "BookmarkBarView";
 
 BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
-    : AnimationDelegateViews(this),
-      page_navigator_(nullptr),
+    : page_navigator_(nullptr),
       managed_(nullptr),
       bookmark_menu_(nullptr),
       bookmark_drop_menu_(nullptr),

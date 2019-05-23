@@ -60,6 +60,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -71,7 +72,6 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -134,12 +134,10 @@ OmniboxState::~OmniboxState() {
 }  // namespace
 
 // Animation chosen to match the default values in the edwardjung prototype.
-class OmniboxViewViews::PathFadeAnimation
-    : public views::AnimationDelegateViews {
+class OmniboxViewViews::PathFadeAnimation : public gfx::AnimationDelegate {
  public:
   PathFadeAnimation(OmniboxViewViews* view, SkColor starting_color)
-      : AnimationDelegateViews(view),
-        view_(view),
+      : view_(view),
         starting_color_(starting_color),
         animation_(
             {
@@ -162,7 +160,7 @@ class OmniboxViewViews::PathFadeAnimation
 
   void Stop() { animation_.Stop(); }
 
-  // views::AnimationDelegateViews:
+  // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override {
     DCHECK(!view_->model()->user_input_in_progress());
 

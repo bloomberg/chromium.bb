@@ -61,8 +61,7 @@ int CenterPosition(int size, int target_size) {
 }  // namespace
 
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
-    : AnimationDelegateViews(this),
-      browser_(browser),
+    : browser_(browser),
       new_item_animation_(this),
       shelf_animation_(this),
       parent_(parent),

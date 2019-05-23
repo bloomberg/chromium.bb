@@ -30,11 +30,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -70,7 +70,7 @@ constexpr float kFeaturePromoPulseInsetDip = 3.0f;
 
 // An InkDropMask used to animate the size of the BrowserAppMenuButton's ink
 // drop. This is used when showing in-product help.
-class PulsingInkDropMask : public views::AnimationDelegateViews,
+class PulsingInkDropMask : public gfx::AnimationDelegate,
                            public views::InkDropMask {
  public:
   PulsingInkDropMask(views::View* layer_container,
@@ -78,8 +78,7 @@ class PulsingInkDropMask : public views::AnimationDelegateViews,
                      const gfx::Insets& margins,
                      float normal_corner_radius,
                      float max_inset)
-      : AnimationDelegateViews(layer_container),
-        views::InkDropMask(layer_size),
+      : views::InkDropMask(layer_size),
         layer_container_(layer_container),
         margins_(margins),
         normal_corner_radius_(normal_corner_radius),
@@ -110,7 +109,7 @@ class PulsingInkDropMask : public views::AnimationDelegateViews,
     recorder.canvas()->DrawRoundRect(bounds, corner_radius, flags);
   }
 
-  // views::AnimationDelegateViews:
+  // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override {
     DCHECK_EQ(animation, &throb_animation_);
     layer()->SchedulePaint(gfx::Rect(layer()->size()));

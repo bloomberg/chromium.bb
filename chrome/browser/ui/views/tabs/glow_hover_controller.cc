@@ -16,8 +16,7 @@ static const double kPronouncedOpacityScale = 1.0;
 static const int kTrackHoverDurationMs = 200;
 
 GlowHoverController::GlowHoverController(views::View* view)
-    : AnimationDelegateViews(view),
-      view_(view),
+    : view_(view),
       animation_(this),
       opacity_scale_(kSubtleOpacityScale),
       subtle_opacity_scale_(kSubtleOpacityScale) {

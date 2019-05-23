@@ -110,7 +110,7 @@ class Separator;
 class BrowserActionsContainer : public views::View,
                                 public ToolbarActionsBarDelegate,
                                 public views::ResizeAreaDelegate,
-                                public views::AnimationDelegateViews,
+                                public gfx::AnimationDelegate,
                                 public ToolbarActionView::Delegate,
                                 public views::WidgetObserver {
  public:
@@ -217,7 +217,7 @@ class BrowserActionsContainer : public views::View,
   void OnResize(int resize_amount, bool done_resizing) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
-  // Overridden from views::AnimationDelegateViews:
+  // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;

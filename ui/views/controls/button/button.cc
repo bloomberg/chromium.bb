@@ -482,9 +482,7 @@ Button::CreateButtonControllerDelegate() {
 }
 
 Button::Button(ButtonListener* listener)
-    : AnimationDelegateViews(this),
-      listener_(listener),
-      ink_drop_base_color_(gfx::kPlaceholderColor) {
+    : listener_(listener), ink_drop_base_color_(gfx::kPlaceholderColor) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetProperty(kIsButtonProperty, true);
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);

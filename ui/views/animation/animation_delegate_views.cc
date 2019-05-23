@@ -44,7 +44,7 @@ void AnimationDelegateViews::UpdateAnimationRunner() {
   if (!container_)
     return;
 
-  if (!view_ || !view_->GetWidget() || !view_->GetWidget()->GetCompositor()) {
+  if (!view_ || !view_->GetWidget()) {
     // TODO(https://crbug.com/960621): make sure the container has a correct
     // compositor-assisted runner.
     container_->SetAnimationRunner(nullptr);
