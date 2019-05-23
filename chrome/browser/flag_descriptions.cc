@@ -2200,11 +2200,6 @@ const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
 const char kEnableOfflinePreviewsDescription[] =
     "Enable showing offline page previews on slow networks.";
 
-const char kEnableOskOverscrollName[] = "Enable OSK Overscroll";
-const char kEnableOskOverscrollDescription[] =
-    "Enable OSK overscroll support. With this flag on, the OSK will only "
-    "resize the visual viewport.";
-
 const char kEnableWebNfcName[] = "WebNFC";
 const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
 

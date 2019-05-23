@@ -916,9 +916,6 @@ const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 // Block ChildProcessMain thread of the renderer's ChildProcessService until a
 // Java debugger is attached.
 const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
-
-// Enables overscrolling for the OSK on Android.
-const char kEnableOSKOverscroll[]               = "enable-osk-overscroll";
 #endif
 
 // Enable the experimental Accessibility Object Model APIs in development.

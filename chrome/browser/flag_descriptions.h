@@ -1310,9 +1310,6 @@ extern const char kEnableNtpRemoteSuggestionsDescription[];
 extern const char kEnableOfflinePreviewsName[];
 extern const char kEnableOfflinePreviewsDescription[];
 
-extern const char kEnableOskOverscrollName[];
-extern const char kEnableOskOverscrollDescription[];
-
 extern const char kEnableWebNfcName[];
 extern const char kEnableWebNfcDescription[];
 

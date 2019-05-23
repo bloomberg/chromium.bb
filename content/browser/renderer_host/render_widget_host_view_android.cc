@@ -511,10 +511,6 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() {
     return default_bounds_;
 
   gfx::Size size(view_.GetSize());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOSKOverscroll)) {
-    size.Enlarge(0, view_.GetSystemWindowInsetBottom() / view_.GetDipScale());
-  }
 
   return gfx::Rect(size);
 }
