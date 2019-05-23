@@ -154,7 +154,7 @@ class NET_EXPORT_PRIVATE HttpAuth {
   // Iterate through |response_headers|, and pick the best one that we support.
   // Obtains the implementation class for handling the challenge, and passes it
   // back in |*handler|. If no supported challenge was found, |*handler| is set
-  // to NULL.
+  // to nullptr.
   //
   // |disabled_schemes| is the set of schemes that we should not use.
   //
@@ -181,7 +181,7 @@ class NET_EXPORT_PRIVATE HttpAuth {
   // rejection of the previous challenge, except in the Digest case when a
   // "stale" attribute is present.
   //
-  // |handler| must be non-NULL, and is the HttpAuthHandler from the previous
+  // |handler| must be non-nullptr, and is the HttpAuthHandler from the previous
   // authentication round.
   //
   // |response_headers| must contain the new HTTP response.

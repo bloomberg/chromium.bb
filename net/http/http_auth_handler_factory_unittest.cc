@@ -192,7 +192,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
     EXPECT_TRUE(handler->is_connection_based());
 #else
     EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
-    EXPECT_TRUE(handler.get() == NULL);
+    EXPECT_TRUE(handler.get() == nullptr);
 #endif  // BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
   }
 }

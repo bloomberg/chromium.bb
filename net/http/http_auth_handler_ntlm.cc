@@ -46,7 +46,7 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
 #else  // !defined(NTLM_SSPI)
   // TODO(cbentzel): Shouldn't be hitting this case.
   if (!credentials) {
-    LOG(ERROR) << "Username and password are expected to be non-NULL.";
+    LOG(ERROR) << "Username and password are expected to be non-nullptr.";
     return ERR_MISSING_AUTH_CREDENTIALS;
   }
 

@@ -56,17 +56,16 @@ class NET_EXPORT HttpAuthHandlerFactory {
     return http_auth_preferences_;
   }
 
-  // Creates an HttpAuthHandler object based on the authentication
-  // challenge specified by |*challenge|. |challenge| must point to a valid
-  // non-NULL tokenizer.
+  // Creates an HttpAuthHandler object based on the authentication challenge
+  // specified by |*challenge|. |challenge| must point to a valid tokenizer.
   //
   // If an HttpAuthHandler object is successfully created it is passed back to
   // the caller through |*handler| and OK is returned.
   //
   // If |*challenge| specifies an unsupported authentication scheme, |*handler|
-  // is set to NULL and ERR_UNSUPPORTED_AUTH_SCHEME is returned.
+  // is set to nullptr and ERR_UNSUPPORTED_AUTH_SCHEME is returned.
   //
-  // If |*challenge| is improperly formed, |*handler| is set to NULL and
+  // If |*challenge| is improperly formed, |*handler| is set to nullptr and
   // ERR_INVALID_RESPONSE is returned.
   //
   // |create_reason| indicates why the handler is being created. This is used
@@ -178,14 +177,14 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
   // The |*factory| object is assumed to be new-allocated, and its lifetime
   // will be managed by this HttpAuthHandlerRegistryFactory object (including
   // deleting it when it is no longer used.
-  // A NULL |factory| value means that HttpAuthHandlers's will not be created
+  // A nullptr |factory| value means that HttpAuthHandlers's will not be created
   // for |scheme|. If a factory object used to exist for |scheme|, it will be
   // deleted.
   void RegisterSchemeFactory(const std::string& scheme,
                              HttpAuthHandlerFactory* factory);
 
   // Retrieve the factory for the specified |scheme|. If no factory exists
-  // for the |scheme|, NULL is returned. The returned factory must not be
+  // for the |scheme|, nullptr is returned. The returned factory must not be
   // deleted by the caller, and it is guaranteed to be valid until either
   // a new factory is registered for the same scheme, or until this
   // registry factory is destroyed.

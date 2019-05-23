@@ -155,14 +155,15 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
 // will contain "bar".
 // If |combined| is of form "bar", |domain| will be empty and |user| will
 // contain "bar".
-// |domain| and |user| must be non-NULL.
+// |domain| and |user| must be non-nullptr.
 NET_EXPORT_PRIVATE void SplitDomainAndUser(const base::string16& combined,
                                            base::string16* domain,
                                            base::string16* user);
 
 // Determines the maximum token length in bytes for a particular SSPI package.
 //
-// |library| and |max_token_length| must be non-NULL pointers to valid objects.
+// |library| and |max_token_length| must be non-nullptr pointers to valid
+// objects.
 //
 // If the return value is OK, |*max_token_length| contains the maximum token
 // length in bytes.

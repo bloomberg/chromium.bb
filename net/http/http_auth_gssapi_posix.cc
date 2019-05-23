@@ -125,7 +125,7 @@ std::string DisplayCode(GSSAPILibrary* gssapi_lib,
       int msg_len = (msg.length > kMaxMsgLength) ?
           static_cast<int>(kMaxMsgLength) :
           static_cast<int>(msg.length);
-      if (msg_len > 0 && msg.value != NULL) {
+      if (msg_len > 0 && msg.value != nullptr) {
         rv += base::StringPrintf(" %.*s", msg_len,
                                  static_cast<char*>(msg.value));
       }
@@ -242,7 +242,7 @@ std::string DescribeOid(GSSAPILibrary* gssapi_lib, const gss_OID oid) {
   if (char_length > kMaxCharsToPrint) {
     // This might be a plain ASCII string.
     // Check if the first |kMaxCharsToPrint| characters
-    // contain only printable characters and are NULL terminated.
+    // contain only printable characters and are NUL terminated.
     const char* str = reinterpret_cast<const char*>(oid);
     size_t str_length = 0;
     for ( ; str_length < kMaxCharsToPrint; ++str_length) {
@@ -396,22 +396,21 @@ OM_uint32 DelegationTypeToFlag(DelegationType delegation_type) {
 GSSAPISharedLibrary::GSSAPISharedLibrary(const std::string& gssapi_library_name)
     : initialized_(false),
       gssapi_library_name_(gssapi_library_name),
-      gssapi_library_(NULL),
-      import_name_(NULL),
-      release_name_(NULL),
-      release_buffer_(NULL),
-      display_name_(NULL),
-      display_status_(NULL),
-      init_sec_context_(NULL),
-      wrap_size_limit_(NULL),
-      delete_sec_context_(NULL),
-      inquire_context_(NULL) {
-}
+      gssapi_library_(nullptr),
+      import_name_(nullptr),
+      release_name_(nullptr),
+      release_buffer_(nullptr),
+      display_name_(nullptr),
+      display_status_(nullptr),
+      init_sec_context_(nullptr),
+      wrap_size_limit_(nullptr),
+      delete_sec_context_(nullptr),
+      inquire_context_(nullptr) {}
 
 GSSAPISharedLibrary::~GSSAPISharedLibrary() {
   if (gssapi_library_) {
     base::UnloadNativeLibrary(gssapi_library_);
-    gssapi_library_ = NULL;
+    gssapi_library_ = nullptr;
   }
 }
 
@@ -425,7 +424,7 @@ bool GSSAPISharedLibrary::InitImpl() {
   DCHECK(!initialized_);
 #if defined(DLOPEN_KERBEROS)
   gssapi_library_ = LoadSharedLibrary();
-  if (gssapi_library_ == NULL)
+  if (gssapi_library_ == nullptr)
     return false;
 #endif  // defined(DLOPEN_KERBEROS)
   initialized_ = true;
@@ -477,17 +476,18 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary() {
     }
   }
   LOG(WARNING) << "Unable to find a compatible GSSAPI library";
-  return NULL;
+  return nullptr;
 }
 
 #if defined(DLOPEN_KERBEROS)
-#define BIND(lib, x)                                                    \
-  DCHECK(lib);                                                          \
-  gss_##x##_type x = reinterpret_cast<gss_##x##_type>(                  \
-      base::GetFunctionPointerFromNativeLibrary(lib, "gss_" #x));       \
-  if (x == NULL) {                                                      \
-    LOG(WARNING) << "Unable to bind function \"" << "gss_" #x << "\"";  \
-    return false;                                                       \
+#define BIND(lib, x)                                              \
+  DCHECK(lib);                                                    \
+  gss_##x##_type x = reinterpret_cast<gss_##x##_type>(            \
+      base::GetFunctionPointerFromNativeLibrary(lib, "gss_" #x)); \
+  if (x == nullptr) {                                             \
+    LOG(WARNING) << "Unable to bind function \""                  \
+                 << "gss_" #x << "\"";                            \
+    return false;                                                 \
   }
 #else
 #define BIND(lib, x) gss_##x##_type x = gss_##x
@@ -722,9 +722,9 @@ int HttpAuthGSSAPI::GenerateAuthToken(const AuthCredentials* credentials,
 
   gss_buffer_desc input_token = GSS_C_EMPTY_BUFFER;
   input_token.length = decoded_server_auth_token_.length();
-  input_token.value = (input_token.length > 0) ?
-      const_cast<char*>(decoded_server_auth_token_.data()) :
-      NULL;
+  input_token.value = (input_token.length > 0)
+                          ? const_cast<char*>(decoded_server_auth_token_.data())
+                          : nullptr;
   gss_buffer_desc output_token = GSS_C_EMPTY_BUFFER;
   ScopedBuffer scoped_output_token(&output_token, library_);
   int rv =

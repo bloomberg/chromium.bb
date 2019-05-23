@@ -192,7 +192,7 @@ class NET_EXPORT_PRIVATE HttpAuthController
   const std::string auth_path_;
 
   // |handler_| encapsulates the logic for the particular auth-scheme.
-  // This includes the challenge's parameters. If NULL, then there is no
+  // This includes the challenge's parameters. If nullptr, then there is no
   // associated auth handler.
   std::unique_ptr<HttpAuthHandler> handler_;
 

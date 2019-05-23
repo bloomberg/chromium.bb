@@ -25,7 +25,7 @@ void ClearBuffer(gss_buffer_t dest) {
     return;
   dest->length = 0;
   delete [] reinterpret_cast<char*>(dest->value);
-  dest->value = NULL;
+  dest->value = nullptr;
 }
 
 void SetBuffer(gss_buffer_t dest, const void* src, size_t length) {
@@ -61,7 +61,7 @@ void EstablishInitialContext(test::MockGSSAPILibrary* library) {
       0,                                   // Context flags
       1,                                   // Locally initiated
       0);                                  // Open
-  gss_buffer_desc in_buffer = {0, NULL};
+  gss_buffer_desc in_buffer = {0, nullptr};
   gss_buffer_desc out_buffer = {base::size(kInitialAuthResponse),
                                 const_cast<char*>(kInitialAuthResponse)};
   library->ExpectSecurityContext(
@@ -121,20 +121,20 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPICycle) {
       1,                                   // Locally initiated
       1);                                  // Open
   test::MockGSSAPILibrary::SecurityContextQuery queries[] = {
-    test::MockGSSAPILibrary::SecurityContextQuery(
-        "Negotiate",            // Package name
-        GSS_S_CONTINUE_NEEDED,  // Major response code
-        0,                      // Minor response code
-        context1,               // Context
-        NULL,                   // Expected input token
-        kAuthResponse),         // Output token
-    test::MockGSSAPILibrary::SecurityContextQuery(
-        "Negotiate",            // Package name
-        GSS_S_COMPLETE,         // Major response code
-        0,                      // Minor response code
-        context2,               // Context
-        kAuthResponse,          // Expected input token
-        kAuthResponse)          // Output token
+      test::MockGSSAPILibrary::SecurityContextQuery(
+          "Negotiate",            // Package name
+          GSS_S_CONTINUE_NEEDED,  // Major response code
+          0,                      // Minor response code
+          context1,               // Context
+          nullptr,                // Expected input token
+          kAuthResponse),         // Output token
+      test::MockGSSAPILibrary::SecurityContextQuery(
+          "Negotiate",     // Package name
+          GSS_S_COMPLETE,  // Major response code
+          0,               // Minor response code
+          context2,        // Context
+          kAuthResponse,   // Expected input token
+          kAuthResponse)   // Output token
   };
 
   for (size_t i = 0; i < base::size(queries); ++i) {
@@ -148,16 +148,16 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPICycle) {
 
   OM_uint32 major_status = 0;
   OM_uint32 minor_status = 0;
-  gss_cred_id_t initiator_cred_handle = NULL;
-  gss_ctx_id_t context_handle = NULL;
-  gss_name_t target_name = NULL;
-  gss_OID mech_type = NULL;
+  gss_cred_id_t initiator_cred_handle = nullptr;
+  gss_ctx_id_t context_handle = nullptr;
+  gss_name_t target_name = nullptr;
+  gss_OID mech_type = nullptr;
   OM_uint32 req_flags = 0;
   OM_uint32 time_req = 25;
-  gss_channel_bindings_t input_chan_bindings = NULL;
-  gss_buffer_desc input_token = { 0, NULL };
-  gss_OID actual_mech_type= NULL;
-  gss_buffer_desc output_token = { 0, NULL };
+  gss_channel_bindings_t input_chan_bindings = nullptr;
+  gss_buffer_desc input_token = {0, nullptr};
+  gss_OID actual_mech_type = nullptr;
+  gss_buffer_desc output_token = {0, nullptr};
   OM_uint32 ret_flags = 0;
   OM_uint32 time_rec = 0;
   for (size_t i = 0; i < base::size(queries); ++i) {
@@ -213,7 +213,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_TwoRounds) {
   EstablishInitialContext(&mock_library);
   std::string auth_token;
   EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
@@ -251,7 +251,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_MissingTokenSecondRound) {
   EstablishInitialContext(&mock_library);
   std::string auth_token;
   EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
@@ -275,7 +275,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_NonBase64EncodedToken) {
   EstablishInitialContext(&mock_library);
   std::string auth_token;
   EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),

@@ -37,9 +37,9 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
 
   // Initializes the handler using a challenge issued by a server.
   //
-  // |challenge| must be non-NULL and have already tokenized the authentication
-  //      scheme, but none of the tokens occurring after the authentication
-  //      scheme.
+  // |challenge| must be non-nullptr and have already tokenized the
+  //      authentication scheme, but none of the tokens occurring after the
+  //      authentication scheme.
   // |target| and |origin| are both stored for later use, and are not part of
   //      the initial challenge.
   // |ssl_info| must be valid if the underlying connection used a certificate.
@@ -60,7 +60,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // attempt used a stale nonce (and nonce-count) and that a new attempt should
   // be made with a different nonce provided in the challenge.
   //
-  // |challenge| must be non-NULL and have already tokenized the
+  // |challenge| must be non-nullptr and have already tokenized the
   // authentication scheme, but none of the tokens occurring after the
   // authentication scheme.
   HttpAuth::AuthorizationResult HandleAnotherChallenge(
@@ -68,11 +68,11 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
 
   // Generates an authentication token, potentially asynchronously.
   //
-  // When |credentials| is NULL, the default credentials for the currently
+  // When |credentials| is nullptr, the default credentials for the currently
   // logged in user are used. |AllowsDefaultCredentials()| MUST be true in this
   // case.
   //
-  // |request|, |callback|, and |auth_token| must be non-NULL.
+  // |request|, |callback|, and |auth_token| must be non-nullptr.
   //
   // The return value is a net error code.
   //
@@ -171,7 +171,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   };
 
   // Initializes the handler using a challenge issued by a server.
-  // |challenge| must be non-NULL and have already tokenized the
+  // |challenge| must be non-nullptr and have already tokenized the
   // authentication scheme, but none of the tokens occurring after the
   // authentication scheme.
   //
