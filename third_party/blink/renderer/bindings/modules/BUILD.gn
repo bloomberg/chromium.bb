@@ -103,15 +103,15 @@ make_names("event_target_modules_names") {
 
 # ------------------------------------------------------------------------------
 
-compute_interfaces_info_individual("interfaces_info_individual_modules") {
+compute_interfaces_info("interfaces_info_modules") {
   sources = modules_static_interface_idl_files + modules_definition_idl_files +
             modules_static_dependency_idl_files +
             modules_generated_dependency_idl_files
 
   interfaces_info_file =
-      "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle"
+      "$bindings_modules_output_dir/interfaces_info_modules.pickle"
   component_info_file =
-      "$bindings_modules_output_dir/ComponentInfoModules.pickle"
+      "$bindings_modules_output_dir/component_info_modules.pickle"
   deps = [
     ":modules_global_constructors_idls",
     "//third_party/blink/renderer/bindings:global_constructors_idls",
@@ -120,8 +120,8 @@ compute_interfaces_info_individual("interfaces_info_individual_modules") {
 
 compute_global_objects("modules_global_objects") {
   sources = modules_idl_files
-  sources_generated = [ "$bindings_core_output_dir/GlobalObjectsCore.pickle" ]
-  output_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
+  sources_generated = [ "$bindings_core_output_dir/global_objects_core.pickle" ]
+  output_file = "$bindings_modules_output_dir/global_objects_modules.pickle"
   deps = [
     "//third_party/blink/renderer/bindings/core:core_global_objects",
   ]
@@ -130,7 +130,7 @@ compute_global_objects("modules_global_objects") {
 generate_global_constructors("modules_global_constructors_idls") {
   sources = modules_idl_files
   global_objects_file =
-      "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
+      "$bindings_modules_output_dir/global_objects_modules.pickle"
   interfaces = modules_global_constructors_original_interfaces
   basenames = modules_global_constructors_original_interface_basenames
   component = "modules"

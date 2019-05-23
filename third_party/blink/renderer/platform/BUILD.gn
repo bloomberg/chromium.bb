@@ -54,8 +54,8 @@ blink_python_runner("runtime_enabled_features") {
   ]
 
   visibility += [
-    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
-    "//third_party/blink/renderer/bindings/modules:interfaces_info_individual_modules",
+    "//third_party/blink/renderer/bindings/core:interfaces_info_core",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info_modules",
   ]
 }
 

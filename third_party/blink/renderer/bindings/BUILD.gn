@@ -9,34 +9,32 @@ action("interfaces_info") {
   script = "$bindings_scripts_dir/compute_interfaces_info_overall.py"
 
   inputs = [
-    "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle",
-    "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle",
+    "$bindings_core_output_dir/interfaces_info_core.pickle",
+    "$bindings_modules_output_dir/interfaces_info_modules.pickle",
   ]
   outputs = [
-    "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
+    "$bindings_output_dir/interfaces_info.pickle",
   ]
 
   args = [
     "--",
-    rebase_path("$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle",
+    rebase_path("$bindings_core_output_dir/interfaces_info_core.pickle",
                 root_build_dir),
-    rebase_path(
-        "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle",
-        root_build_dir),
-    rebase_path("$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
+    rebase_path("$bindings_modules_output_dir/interfaces_info_modules.pickle",
                 root_build_dir),
+    rebase_path("$bindings_output_dir/interfaces_info.pickle", root_build_dir),
   ]
 
   public_deps = [
-    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
-    "//third_party/blink/renderer/bindings/modules:interfaces_info_individual_modules",
+    "//third_party/blink/renderer/bindings/core:interfaces_info_core",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info_modules",
   ]
 }
 
 generate_global_constructors("global_constructors_idls") {
   sources = core_idl_files + core_idl_with_modules_dependency_files
   global_objects_file =
-      "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
+      "$bindings_modules_output_dir/global_objects_modules.pickle"
   interfaces = modules_core_global_constructors_original_interfaces
   basenames = modules_core_global_constructors_original_interface_basenames
   component = "core"
