@@ -79,7 +79,6 @@ public final class ApplicationData {
             // SharedPreferences are cached in memory, so clearing their files doesn't help anyways.
             // Some preferences need to persist (e.g. multidex.version.xml).
             if (file.getName().equals("shared_prefs")) {
-                removeSharedPrefs(file);
                 continue;
             }
             if (!FileUtils.recursivelyDeleteFile(file)) {
@@ -87,14 +86,5 @@ public final class ApplicationData {
             }
         }
         return true;
-    }
-
-    // TODO(agrieve): Use InMemorySharedPrefs rather than having to delete from disk.
-    private static void removeSharedPrefs(File sharedPrefsDir) {
-        for (File f : sharedPrefsDir.listFiles()) {
-            if (!f.getName().endsWith("multidex.version.xml")) {
-                f.delete();
-            }
-        }
     }
 }

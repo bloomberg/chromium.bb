@@ -41,7 +41,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.DeviceConditions;
@@ -157,17 +156,12 @@ public class OfflineNotificationBackgroundTaskUnitTest {
         mCalendar.set(2017, 1, 1, 0, 0, 0);
 
         OfflineNotificationBackgroundTask.setCalendarForTesting(mCalendar);
-        clearPrefs();
     }
 
     @After
     public void tearDown() {
         // Ensure that an empty content notificaition is not shown in any test.
         verify(mPrefetchedPagesNotifier, never()).showNotification("");
-    }
-
-    private void clearPrefs() {
-        ContextUtils.getAppSharedPreferences().edit().clear().apply();
     }
 
     /**
