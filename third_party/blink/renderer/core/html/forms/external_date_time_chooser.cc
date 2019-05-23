@@ -35,26 +35,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "ui/base/ime/mojo/ime_types.mojom-shared.h"
 
-namespace mojo {
-
-// TODO(https://crbug.com/950157): blink::DateTimeSuggestion should be replaced
-// by blink::mojom::DateTimeSuggestion, then blink::DateTimeSuggestion should be
-// removed.
-template <>
-struct TypeConverter<::blink::mojom::blink::DateTimeSuggestionPtr,
-                     ::blink::DateTimeSuggestion> {
-  static blink::mojom::blink::DateTimeSuggestionPtr Convert(
-      const blink::DateTimeSuggestion& input) {
-    auto output = blink::mojom::blink::DateTimeSuggestion::New();
-    output->value = input.value;
-    output->localized_value = input.localized_value;
-    output->label = input.label;
-    return output;
-  }
-};
-
-}  // namespace mojo
-
 namespace blink {
 
 static ui::mojom::TextInputType ToTextInputType(const AtomicString& source) {
@@ -103,8 +83,7 @@ void ExternalDateTimeChooser::OpenDateTimeChooser(
   date_time_dialog_value->maximum = parameters.maximum;
   date_time_dialog_value->step = parameters.step;
   for (const auto& suggestion : parameters.suggestions) {
-    date_time_dialog_value->suggestions.push_back(
-        mojo::ConvertTo<mojom::blink::DateTimeSuggestionPtr>(suggestion));
+    date_time_dialog_value->suggestions.push_back(suggestion->Clone());
   }
 
   auto response_callback = WTF::Bind(&ExternalDateTimeChooser::ResponseHandler,

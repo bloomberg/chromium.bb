@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 
+#include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
@@ -1907,16 +1908,16 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
       if (option->value().IsEmpty() || option->IsDisabledFormControl() ||
           !IsValidValue(option->value()))
         continue;
-      DateTimeSuggestion suggestion;
-      suggestion.value =
+      auto suggestion = mojom::blink::DateTimeSuggestion::New();
+      suggestion->value =
           input_type_->ParseToNumber(option->value(), Decimal::Nan())
               .ToDouble();
-      if (std::isnan(suggestion.value))
+      if (std::isnan(suggestion->value))
         continue;
-      suggestion.localized_value = LocalizeValue(option->value());
-      suggestion.label =
+      suggestion->localized_value = LocalizeValue(option->value());
+      suggestion->label =
           option->value() == option->label() ? String() : option->label();
-      parameters.suggestions.push_back(suggestion);
+      parameters.suggestions.push_back(std::move(suggestion));
     }
   }
   return true;
