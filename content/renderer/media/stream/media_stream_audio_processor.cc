@@ -378,7 +378,6 @@ void MediaStreamAudioProcessor::Stop() {
   if (!audio_processing_.get())
     return;
 
-  audio_processing_.get()->UpdateHistogramsOnCallEnd();
   blink::StopEchoCancellationDump(audio_processing_.get());
   worker_queue_.reset(nullptr);
 

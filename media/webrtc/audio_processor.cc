@@ -75,8 +75,6 @@ AudioProcessor::AudioProcessor(const AudioParameters& audio_parameters,
 
 AudioProcessor::~AudioProcessor() {
   StopEchoCancellationDump();
-  if (audio_processing_)
-    audio_processing_->UpdateHistogramsOnCallEnd();
 }
 
 // Process the audio from source and return a pointer to the processed data.
