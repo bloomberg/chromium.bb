@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -157,16 +158,16 @@ class OAuthMultiloginHelperTest : public testing::Test {
   MockTokenService* token_service() { return &mock_token_service_; }
 
  protected:
-  void OnOAuthMultiloginFinished(const GoogleServiceAuthError& error) {
+  void OnOAuthMultiloginFinished(signin::SetAccountsInCookieResult result) {
     DCHECK(!callback_called_);
     callback_called_ = true;
-    error_ = error;
+    result_ = result;
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   bool callback_called_ = false;
-  GoogleServiceAuthError error_;
+  signin::SetAccountsInCookieResult result_;
 
   MockCookieManager* mock_cookie_manager_;  // Owned by test_signin_client_
   TestSigninClient test_signin_client_;
@@ -198,7 +199,7 @@ TEST_F(OAuthMultiloginHelperTest, Success) {
   url_loader()->AddResponse(multilogin_url(), kMultiloginSuccessResponse);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(GoogleServiceAuthError::NONE, error_.state());
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Multiple cookies in the multilogin response.
@@ -232,7 +233,7 @@ TEST_F(OAuthMultiloginHelperTest, MultipleCookies) {
                             kMultiloginSuccessResponseTwoCookies);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(GoogleServiceAuthError::NONE, error_.state());
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Failure to get the access token.
@@ -244,7 +245,7 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountAccessTokenFailure) {
       kAccountId,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, error_.state());
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kPersistentError, result_);
 }
 
 // Retry on transient errors in the multilogin call.
@@ -279,7 +280,7 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountTransientMultiloginError) {
   url_loader()->AddResponse(multilogin_url(), kMultiloginSuccessResponse);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(GoogleServiceAuthError::NONE, error_.state());
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Stop retrying after too many transient errors in the multilogin call.
@@ -303,7 +304,7 @@ TEST_F(OAuthMultiloginHelperTest,
 
   // Failure after exceeding the maximum number of retries.
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(GoogleServiceAuthError::SERVICE_UNAVAILABLE, error_.state());
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kTransientError, result_);
 }
 
 // Persistent error in the multilogin call.
@@ -322,8 +323,7 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountPersistentMultiloginError) {
   url_loader()->AddResponse(multilogin_url(), "blah");  // Unexpected response.
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE,
-            error_.state());
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kPersistentError, result_);
 }
 
 // Retry on "invalid token" in the multilogin response.
@@ -371,7 +371,7 @@ TEST_F(OAuthMultiloginHelperTest, InvalidTokenError) {
   url_loader()->AddResponse(multilogin_url(), kMultiloginSuccessResponse);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(GoogleServiceAuthError::NONE, error_.state());
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Retry on "invalid token" in the multilogin response.
@@ -408,7 +408,7 @@ TEST_F(OAuthMultiloginHelperTest, InvalidTokenErrorMaxRetries) {
   // The maximum number of retries is reached, fail.
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, error_.state());
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kTransientError, result_);
 }
 
 }  // namespace signin

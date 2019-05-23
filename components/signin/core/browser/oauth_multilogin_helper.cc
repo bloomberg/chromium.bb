@@ -13,7 +13,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/signin/core/browser/oauth_multilogin_token_fetcher.h"
+#include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth_multilogin_result.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -21,11 +23,6 @@
 namespace {
 
 constexpr int kMaxFetcherRetries = 3;
-
-void RecordMultiloginFinished(GoogleServiceAuthError error) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.MultiloginFinished", error.state(),
-                            GoogleServiceAuthError::NUM_STATES);
-}
 
 std::string FindTokenForAccount(
     const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& token_id_pairs,
@@ -45,7 +42,7 @@ OAuthMultiloginHelper::OAuthMultiloginHelper(
     SigninClient* signin_client,
     OAuth2TokenService* token_service,
     const std::vector<std::string>& account_ids,
-    base::OnceCallback<void(const GoogleServiceAuthError&)> callback)
+    base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback)
     : signin_client_(signin_client),
       token_service_(token_service),
       account_ids_(account_ids),
@@ -93,10 +90,11 @@ void OAuthMultiloginHelper::OnAccessTokensSuccess(
 
 void OAuthMultiloginHelper::OnAccessTokensFailure(
     const GoogleServiceAuthError& error) {
-  // Copy the error because it is owned by token_fetcher_.
-  GoogleServiceAuthError error_copy = error;
   token_fetcher_.reset();
-  std::move(callback_).Run(error_copy);
+  std::move(callback_).Run(
+      error.IsTransientError()
+          ? signin::SetAccountsInCookieResult::kTransientError
+          : signin::SetAccountsInCookieResult::kPersistentError);
   // Do not add anything below this line, because this may be deleted.
 }
 
@@ -109,19 +107,15 @@ void OAuthMultiloginHelper::StartFetchingMultiLogin() {
 
 void OAuthMultiloginHelper::OnOAuthMultiloginFinished(
     const OAuthMultiloginResult& result) {
-  RecordMultiloginFinished(result.error());
-
-  if (result.error().state() == GoogleServiceAuthError::NONE) {
+  if (result.status() == OAuthMultiloginResponseStatus::kOk) {
     VLOG(1) << "Multilogin successful accounts="
             << base::JoinString(account_ids_, " ");
     StartSettingCookies(result);
     return;
   }
 
-  // If Gaia responded with status: "INVALID_TOKENS", we have to mark tokens as
-  // invalid.
-  if (result.error().state() ==
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
+  // If Gaia responded with kInvalidTokens, we have to mark tokens as invalid.
+  if (result.status() == OAuthMultiloginResponseStatus::kInvalidTokens) {
     for (const std::string& failed_account_id : result.failed_accounts()) {
       std::string failed_token =
           FindTokenForAccount(token_id_pairs_, failed_account_id);
@@ -136,18 +130,18 @@ void OAuthMultiloginHelper::OnOAuthMultiloginFinished(
     }
   }
 
-  // Maybe some access tokens were expired, try to get new ones.
   bool is_transient_error =
-      result.error().IsTransientError() || !result.failed_accounts().empty();
+      result.status() == OAuthMultiloginResponseStatus::kInvalidTokens ||
+      result.status() == OAuthMultiloginResponseStatus::kRetry;
 
   if (is_transient_error && ++fetcher_retries_ < kMaxFetcherRetries) {
-    UMA_HISTOGRAM_ENUMERATION("Signin.MultiloginRetry", result.error().state(),
-                              GoogleServiceAuthError::NUM_STATES);
     token_id_pairs_.clear();
     StartFetchingTokens();
     return;
   }
-  std::move(callback_).Run(result.error());
+  std::move(callback_).Run(
+      is_transient_error ? signin::SetAccountsInCookieResult::kTransientError
+                         : signin::SetAccountsInCookieResult::kPersistentError);
   // Do not add anything below this line, because this may be deleted.
 }
 
@@ -198,7 +192,7 @@ void OAuthMultiloginHelper::OnCookieSet(
   }
   UMA_HISTOGRAM_BOOLEAN("Signin.SetCookieSuccess", success);
   if (cookies_to_set_.empty())
-    std::move(callback_).Run(GoogleServiceAuthError::AuthErrorNone());
+    std::move(callback_).Run(signin::SetAccountsInCookieResult::kSuccess);
   // Do not add anything below this line, because this may be deleted.
 }
 

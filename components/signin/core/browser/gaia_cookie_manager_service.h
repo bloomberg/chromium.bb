@@ -40,6 +40,7 @@ class SimpleURLLoader;
 namespace signin {
 
 class UbertokenFetcherImpl;
+enum class SetAccountsInCookieResult;
 
 // The maximum number of retries for a fetcher used in this class.
 constexpr int kMaxFetcherRetries = 8;
@@ -79,10 +80,10 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     SET_ACCOUNTS
   };
 
-  typedef base::OnceCallback<void(const GoogleServiceAuthError& error)>
+  typedef base::OnceCallback<void(signin::SetAccountsInCookieResult)>
       SetAccountsInCookieCompletedCallback;
-  typedef base::OnceCallback<void(const std::string& account_id,
-                                  const GoogleServiceAuthError& error)>
+  typedef base::OnceCallback<void(const std::string&,
+                                  const GoogleServiceAuthError&)>
       AddAccountToCookieCompletedCallback;
 
   // Contains the information and parameters for any request.
@@ -101,7 +102,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     gaia::GaiaSource source() const { return source_; }
 
     void RunSetAccountsInCookieCompletedCallback(
-        const GoogleServiceAuthError& error);
+        signin::SetAccountsInCookieResult result);
     void RunAddAccountToCookieCompletedCallback(
         const std::string& account_id,
         const GoogleServiceAuthError& error);
@@ -292,7 +293,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   void LogOutAllAccounts(gaia::GaiaSource source);
 
   // Call observers when setting accounts in cookie completes.
-  void SignalSetAccountsComplete(const GoogleServiceAuthError& error);
+  void SignalSetAccountsComplete(signin::SetAccountsInCookieResult result);
 
   // Returns true of there are pending log ins or outs.
   bool is_running() const { return requests_.size() > 0; }
@@ -314,7 +315,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
                                 const std::string& uber_token);
 
   // Final call in the Setting accounts in cookie procedure. Public for testing.
-  void OnSetAccountsFinished(const GoogleServiceAuthError& error);
+  void OnSetAccountsFinished(signin::SetAccountsInCookieResult result);
 
  private:
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();

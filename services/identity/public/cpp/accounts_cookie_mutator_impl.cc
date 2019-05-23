@@ -38,7 +38,7 @@ void AccountsCookieMutatorImpl::AddAccountToCookieWithToken(
 void AccountsCookieMutatorImpl::SetAccountsInCookie(
     const std::vector<std::string>& account_ids,
     gaia::GaiaSource source,
-    base::OnceCallback<void(const GoogleServiceAuthError& error)>
+    base::OnceCallback<void(signin::SetAccountsInCookieResult)>
         set_accounts_in_cookies_completed_callback) {
   gaia_cookie_manager_service_->SetAccountsInCookie(
       account_ids, source,

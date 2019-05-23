@@ -12,6 +12,10 @@
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+namespace signin {
+enum class SetAccountsInCookieResult;
+}
+
 namespace identity {
 
 // AccountsCookieMutator is the interface to support merging known local Google
@@ -52,7 +56,7 @@ class AccountsCookieMutator {
   virtual void SetAccountsInCookie(
       const std::vector<std::string>& account_ids,
       gaia::GaiaSource source,
-      base::OnceCallback<void(const GoogleServiceAuthError& error)>
+      base::OnceCallback<void(signin::SetAccountsInCookieResult)>
           set_accounts_in_cookies_completed_callback) = 0;
 
   // Triggers a ListAccounts fetch. Can be used in circumstances where clients

@@ -15,16 +15,17 @@
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class GaiaAuthFetcher;
+class GoogleServiceAuthError;
 class OAuth2TokenService;
 class SigninClient;
 
 namespace signin {
 
 class OAuthMultiloginTokenFetcher;
+enum class SetAccountsInCookieResult;
 
 // This is a helper class that drives the OAuth multilogin process.
 // The main steps are:
@@ -38,7 +39,7 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
       SigninClient* signin_client,
       OAuth2TokenService* token_service,
       const std::vector<std::string>& account_ids,
-      base::OnceCallback<void(const GoogleServiceAuthError&)> callback);
+      base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback);
 
   ~OAuthMultiloginHelper() override;
 
@@ -76,7 +77,7 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
   // Access tokens, in the same order as the account ids.
   std::vector<GaiaAuthFetcher::MultiloginTokenIDPair> token_id_pairs_;
 
-  base::OnceCallback<void(const GoogleServiceAuthError&)> callback_;
+  base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   std::unique_ptr<OAuthMultiloginTokenFetcher> token_fetcher_;
 

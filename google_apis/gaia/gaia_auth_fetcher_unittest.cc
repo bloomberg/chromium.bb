@@ -379,10 +379,9 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccess) {
 
 TEST_F(GaiaAuthFetcherTest, MultiloginSuccess) {
   MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer,
-              OnOAuthMultiloginFinished(::testing::Property(
-                  &OAuthMultiloginResult::error,
-                  ::testing::Eq(GoogleServiceAuthError::AuthErrorNone()))))
+  EXPECT_CALL(consumer, OnOAuthMultiloginFinished(::testing::Property(
+                            &OAuthMultiloginResult::status,
+                            ::testing::Eq(OAuthMultiloginResponseStatus::kOk))))
       .Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, GetURLLoaderFactory());
@@ -414,10 +413,10 @@ TEST_F(GaiaAuthFetcherTest, MultiloginSuccess) {
 
 TEST_F(GaiaAuthFetcherTest, MultiloginFailureNetError) {
   MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer, OnOAuthMultiloginFinished(::testing::Property(
-                            &OAuthMultiloginResult::error,
-                            ::testing::Eq(GoogleServiceAuthError(
-                                GoogleServiceAuthError::REQUEST_CANCELED)))))
+  EXPECT_CALL(consumer,
+              OnOAuthMultiloginFinished(::testing::Property(
+                  &OAuthMultiloginResult::status,
+                  ::testing::Eq(OAuthMultiloginResponseStatus::kRetry))))
       .Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, GetURLLoaderFactory());
@@ -449,10 +448,10 @@ TEST_F(GaiaAuthFetcherTest, MultiloginFailureNetError) {
 
 TEST_F(GaiaAuthFetcherTest, MultiloginFailureServerError) {
   MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer, OnOAuthMultiloginFinished(::testing::Property(
-                            &OAuthMultiloginResult::error,
-                            ::testing::Eq(GoogleServiceAuthError(
-                                GoogleServiceAuthError::SERVICE_ERROR)))))
+  EXPECT_CALL(consumer,
+              OnOAuthMultiloginFinished(::testing::Property(
+                  &OAuthMultiloginResult::status,
+                  ::testing::Eq(OAuthMultiloginResponseStatus::kError))))
       .Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, GetURLLoaderFactory());

@@ -13,6 +13,7 @@
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
+#include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -273,9 +274,9 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllNonExistingAccounts) {
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
-             const GoogleServiceAuthError& error) {
-            EXPECT_EQ(error.state(),
-                      GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+             signin::SetAccountsInCookieResult result) {
+            EXPECT_EQ(result,
+                      signin::SetAccountsInCookieResult::kPersistentError);
             std::move(quit_closure).Run();
           },
           run_loop.QuitClosure()));
@@ -297,9 +298,9 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_SomeNonExistingAccounts) {
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
-             const GoogleServiceAuthError& error) {
-            EXPECT_EQ(error.state(),
-                      GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+             signin::SetAccountsInCookieResult result) {
+            EXPECT_EQ(result,
+                      signin::SetAccountsInCookieResult::kPersistentError);
             std::move(quit_closure).Run();
           },
           run_loop.QuitClosure()));
@@ -322,8 +323,8 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllExistingAccounts) {
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
-             const GoogleServiceAuthError& error) {
-            EXPECT_EQ(error.state(), GoogleServiceAuthError::NONE);
+             signin::SetAccountsInCookieResult result) {
+            EXPECT_EQ(result, signin::SetAccountsInCookieResult::kSuccess);
             std::move(quit_closure).Run();
           },
           run_loop.QuitClosure()));

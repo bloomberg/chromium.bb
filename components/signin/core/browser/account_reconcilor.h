@@ -35,6 +35,7 @@ extern const base::Feature kUseMultiloginEndpoint;
 namespace signin {
 class AccountReconcilorDelegate;
 class ConsistencyCookieManagerBase;
+enum class SetAccountsInCookieResult;
 }
 
 class SigninClient;
@@ -302,7 +303,7 @@ class AccountReconcilor : public KeyedService,
 
   void OnAddAccountToCookieCompleted(const std::string& account_id,
                                      const GoogleServiceAuthError& error);
-  void OnSetAccountsInCookieCompleted(const GoogleServiceAuthError& error);
+  void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
 
   // Lock related methods.
   void IncrementLockCount();

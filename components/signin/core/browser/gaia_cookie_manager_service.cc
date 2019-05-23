@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -181,9 +182,9 @@ const std::string GaiaCookieManagerService::GaiaCookieRequest::GetAccountID() {
 
 void GaiaCookieManagerService::GaiaCookieRequest::
     RunSetAccountsInCookieCompletedCallback(
-        const GoogleServiceAuthError& error) {
+        signin::SetAccountsInCookieResult result) {
   if (set_accounts_in_cookie_completed_callback_)
-    std::move(set_accounts_in_cookie_completed_callback_).Run(error);
+    std::move(set_accounts_in_cookie_completed_callback_).Run(result);
 }
 
 void GaiaCookieManagerService::GaiaCookieRequest::
@@ -512,8 +513,7 @@ void GaiaCookieManagerService::SetAccountsInCookie(
       account_ids, source,
       std::move(set_accounts_in_cookies_completed_callback)));
   if (!signin_client_->AreSigninCookiesAllowed()) {
-    OnSetAccountsFinished(
-        GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+    OnSetAccountsFinished(signin::SetAccountsInCookieResult::kPersistentError);
     return;
   }
   if (requests_.size() == 1) {
@@ -749,10 +749,10 @@ void GaiaCookieManagerService::SignalAddToCookieComplete(
 }
 
 void GaiaCookieManagerService::SignalSetAccountsComplete(
-    const GoogleServiceAuthError& error) {
+    signin::SetAccountsInCookieResult result) {
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::SET_ACCOUNTS);
-  requests_.front().RunSetAccountsInCookieCompletedCallback(error);
+  requests_.front().RunSetAccountsInCookieCompletedCallback(result);
 }
 
 void GaiaCookieManagerService::OnUbertokenFetchComplete(
@@ -980,9 +980,9 @@ void GaiaCookieManagerService::StartFetchingListAccounts() {
 }
 
 void GaiaCookieManagerService::OnSetAccountsFinished(
-    const GoogleServiceAuthError& error) {
+    signin::SetAccountsInCookieResult result) {
   MarkListAccountsStale();
-  SignalSetAccountsComplete(error);
+  SignalSetAccountsComplete(result);
   HandleNextRequest();
 }
 

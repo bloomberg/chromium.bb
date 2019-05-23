@@ -21,6 +21,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
+#include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -354,8 +355,9 @@ class IdentityManagerTest : public testing::Test {
                              network::mojom::CookieChangeCause::EXPLICIT);
   }
 
-  void SimulateOAuthMultiloginFinished(GaiaCookieManagerService* manager,
-                                       const GoogleServiceAuthError& error) {
+  void SimulateOAuthMultiloginFinished(
+      GaiaCookieManagerService* manager,
+      signin::SetAccountsInCookieResult error) {
     manager->OnSetAccountsFinished(error);
   }
 
@@ -1807,10 +1809,11 @@ TEST_F(IdentityManagerTest,
   const std::vector<std::string> account_ids = {kTestAccountId,
                                                 kTestAccountId2};
 
-  GoogleServiceAuthError error_from_set_accounts_in_cookie_completed_callback;
+  signin::SetAccountsInCookieResult
+      error_from_set_accounts_in_cookie_completed_callback;
   auto completion_callback = base::BindLambdaForTesting(
       [&error_from_set_accounts_in_cookie_completed_callback](
-          const GoogleServiceAuthError& error) {
+          signin::SetAccountsInCookieResult error) {
         error_from_set_accounts_in_cookie_completed_callback = error;
       });
 
@@ -1820,10 +1823,10 @@ TEST_F(IdentityManagerTest,
 
   SimulateOAuthMultiloginFinished(
       identity_manager()->GetGaiaCookieManagerService(),
-      GoogleServiceAuthError::AuthErrorNone());
+      signin::SetAccountsInCookieResult::kSuccess);
 
   EXPECT_EQ(error_from_set_accounts_in_cookie_completed_callback,
-            GoogleServiceAuthError::AuthErrorNone());
+            signin::SetAccountsInCookieResult::kSuccess);
 }
 
 TEST_F(IdentityManagerTest,
@@ -1833,10 +1836,11 @@ TEST_F(IdentityManagerTest,
   const std::vector<std::string> account_ids = {kTestAccountId,
                                                 kTestAccountId2};
 
-  GoogleServiceAuthError error_from_set_accounts_in_cookie_completed_callback;
+  signin::SetAccountsInCookieResult
+      error_from_set_accounts_in_cookie_completed_callback;
   auto completion_callback = base::BindLambdaForTesting(
       [&error_from_set_accounts_in_cookie_completed_callback](
-          const GoogleServiceAuthError& error) {
+          signin::SetAccountsInCookieResult error) {
         error_from_set_accounts_in_cookie_completed_callback = error;
       });
 
@@ -1845,7 +1849,8 @@ TEST_F(IdentityManagerTest,
       account_ids, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   // Sample an erroneous response.
-  GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
+  signin::SetAccountsInCookieResult error =
+      signin::SetAccountsInCookieResult::kPersistentError;
 
   SimulateOAuthMultiloginFinished(
       identity_manager()->GetGaiaCookieManagerService(), error);

@@ -1071,11 +1071,10 @@ void GaiaAuthFetcher::OnGetCheckConnectionInfoFetched(const std::string& data,
 void GaiaAuthFetcher::OnOAuthMultiloginFetched(const std::string& data,
                                                net::Error net_error,
                                                int response_code) {
-  GoogleServiceAuthError auth_error = GoogleServiceAuthError::AuthErrorNone();
   OAuthMultiloginResult result =
       (net_error == net::Error::OK)
           ? OAuthMultiloginResult(data)
-          : OAuthMultiloginResult(GenerateAuthError(data, net_error));
+          : OAuthMultiloginResult(OAuthMultiloginResponseStatus::kRetry);
   consumer_->OnOAuthMultiloginFinished(result);
 }
 
