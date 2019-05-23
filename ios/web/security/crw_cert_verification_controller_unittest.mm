@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/net/crw_cert_verification_controller.h"
+#import "ios/web/security/crw_cert_verification_controller.h"
 
 #include "base/mac/foundation_util.h"
 #import "base/test/ios/wait_util.h"

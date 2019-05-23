@@ -9,11 +9,9 @@
 
 namespace web {
 
-CertificatePolicyCache::CertificatePolicyCache() {
-}
+CertificatePolicyCache::CertificatePolicyCache() {}
 
-CertificatePolicyCache::~CertificatePolicyCache() {
-}
+CertificatePolicyCache::~CertificatePolicyCache() {}
 
 void CertificatePolicyCache::AllowCertForHost(net::X509Certificate* cert,
                                               const std::string& host,

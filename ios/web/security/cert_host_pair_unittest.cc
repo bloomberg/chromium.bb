@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/cert_host_pair.h"
+#include "ios/web/security/cert_host_pair.h"
 
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"

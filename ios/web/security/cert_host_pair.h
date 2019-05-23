@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_NET_CERT_HOST_PAIR_H_
-#define IOS_WEB_NET_CERT_HOST_PAIR_H_
+#ifndef IOS_WEB_SECURITY_CERT_HOST_PAIR_H_
+#define IOS_WEB_SECURITY_CERT_HOST_PAIR_H_
 
 #include <string>
 
@@ -37,4 +37,4 @@ class CertHostPair {
 
 }  // namespace web
 
-#endif  // IOS_WEB_NET_CERT_HOST_PAIR_H_
+#endif  // IOS_WEB_SECURITY_CERT_HOST_PAIR_H_

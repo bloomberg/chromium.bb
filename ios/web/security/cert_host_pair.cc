@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/cert_host_pair.h"
+#include "ios/web/security/cert_host_pair.h"
 
 #include <utility>
 
@@ -24,4 +24,4 @@ bool CertHostPair::operator<(const CertHostPair& other) const {
   return std::tie(host_, cert_hash_) < std::tie(other.host_, other.cert_hash_);
 }
 
-}  // web
+}  // namespace web

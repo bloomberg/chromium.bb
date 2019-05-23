@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/net/crw_ssl_status_updater.h"
+#import "ios/web/security/crw_ssl_status_updater.h"
 
 #import "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/navigation_item_impl.h"
@@ -170,8 +170,8 @@ using web::SecurityStyle;
 }
 
 - (void)didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navItem {
-  if ([_delegate respondsToSelector:
-          @selector(SSLStatusUpdater:didChangeSSLStatusForNavigationItem:)]) {
+  if ([_delegate respondsToSelector:@selector
+                 (SSLStatusUpdater:didChangeSSLStatusForNavigationItem:)]) {
     [_delegate SSLStatusUpdater:self
         didChangeSSLStatusForNavigationItem:navItem];
   }

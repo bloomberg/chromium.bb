@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_NET_CRW_SSL_STATUS_UPDATER_H_
-#define IOS_WEB_NET_CRW_SSL_STATUS_UPDATER_H_
+#ifndef IOS_WEB_SECURITY_CRW_SSL_STATUS_UPDATER_H_
+#define IOS_WEB_SECURITY_CRW_SSL_STATUS_UPDATER_H_
 
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
@@ -66,7 +66,7 @@ typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
 @end
 
 // Delegate for CRWSSLStatusUpdater.
-@protocol CRWSSLStatusUpdaterDelegate<NSObject>
+@protocol CRWSSLStatusUpdaterDelegate <NSObject>
 
 @optional
 
@@ -78,4 +78,4 @@ typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
 
 @end
 
-#endif  // IOS_WEB_NET_CRW_SSL_STATUS_UPDATER_H_
+#endif  // IOS_WEB_SECURITY_CRW_SSL_STATUS_UPDATER_H_

@@ -61,9 +61,8 @@ TEST_F(CertPolicyTest, Policy) {
       policy.Check(webkit_cert.get(), net::CERT_STATUS_COMMON_NAME_INVALID));
 
   // Test adding one certificate with two errors.
-  policy.Allow(
-      google_cert.get(),
-      net::CERT_STATUS_DATE_INVALID | net::CERT_STATUS_AUTHORITY_INVALID);
+  policy.Allow(google_cert.get(), net::CERT_STATUS_DATE_INVALID |
+                                      net::CERT_STATUS_AUTHORITY_INVALID);
   EXPECT_EQ(CertPolicy::ALLOWED,
             policy.Check(google_cert.get(), net::CERT_STATUS_DATE_INVALID));
   EXPECT_EQ(

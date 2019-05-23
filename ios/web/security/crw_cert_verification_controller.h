@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_NET_CRW_CERT_VERIFICATION_CONTROLLER_H_
-#define IOS_WEB_NET_CRW_CERT_VERIFICATION_CONTROLLER_H_
+#ifndef IOS_WEB_SECURITY_CRW_CERT_VERIFICATION_CONTROLLER_H_
+#define IOS_WEB_SECURITY_CRW_CERT_VERIFICATION_CONTROLLER_H_
 
 #import <Foundation/Foundation.h>
 
@@ -91,4 +91,4 @@ typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
 
 @end
 
-#endif  // IOS_WEB_NET_CRW_CERT_VERIFICATION_CONTROLLER_H_
+#endif  // IOS_WEB_SECURITY_CRW_CERT_VERIFICATION_CONTROLLER_H_

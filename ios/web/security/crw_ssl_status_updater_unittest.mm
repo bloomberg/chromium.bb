@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/net/crw_ssl_status_updater.h"
+#import "ios/web/security/crw_ssl_status_updater.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
@@ -28,7 +28,7 @@
 
 // Mocks CRWSSLStatusUpdaterTestDataSource.
 @interface CRWSSLStatusUpdaterTestDataSource
-    : NSObject<CRWSSLStatusUpdaterDataSource> {
+    : NSObject <CRWSSLStatusUpdaterDataSource> {
   StatusQueryHandler _verificationCompletionHandler;
 }
 
