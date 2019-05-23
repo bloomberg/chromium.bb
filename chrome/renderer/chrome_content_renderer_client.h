@@ -234,7 +234,7 @@ class ChromeContentRendererClient
     return prerender_dispatcher_.get();
   }
 
-  base::WeakPtr<ChromeRenderThreadObserver> GetChromeObserver() const;
+  ChromeRenderThreadObserver* GetChromeObserver() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);

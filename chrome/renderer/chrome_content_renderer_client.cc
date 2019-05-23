@@ -1321,9 +1321,9 @@ void ChromeContentRendererClient::InitSpellCheck() {
 }
 #endif
 
-base::WeakPtr<ChromeRenderThreadObserver>
-ChromeContentRendererClient::GetChromeObserver() const {
-  return chrome_observer_->GetWeakPtr();
+ChromeRenderThreadObserver* ChromeContentRendererClient::GetChromeObserver()
+    const {
+  return chrome_observer_.get();
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>

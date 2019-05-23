@@ -195,8 +195,7 @@ chrome::mojom::DynamicParams* GetDynamicConfigParams() {
 }
 
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
-    : visited_link_slave_(new visitedlink::VisitedLinkSlave),
-      weak_factory_(this) {
+    : visited_link_slave_(new visitedlink::VisitedLinkSlave) {
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());
@@ -235,11 +234,6 @@ ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}
 const chrome::mojom::DynamicParams&
 ChromeRenderThreadObserver::GetDynamicParams() {
   return *GetDynamicConfigParams();
-}
-
-base::WeakPtr<ChromeRenderThreadObserver>
-ChromeRenderThreadObserver::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void ChromeRenderThreadObserver::RegisterMojoInterfaces(
