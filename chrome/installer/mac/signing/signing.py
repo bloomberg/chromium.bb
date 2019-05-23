@@ -70,10 +70,8 @@ def get_parts(config):
                 verify_options=VerifyOptions.DEEP),
         'helper-app':
             CodeSignedProduct(
-                ('{0.framework_dir}/Helpers/{0.product} Helper.app'
-                 if config.use_new_mac_bundle_structure else
-                 '{0.app_product}.app/Contents/Versions/{0.version}/{0.product} Helper.app'
-                ).format(config),
+                '{0.framework_dir}/Helpers/{0.product} Helper.app'.format(
+                    config),
                 '{}.helper'.format(uncustomized_bundle_id),
                 options=CodeSignOptions.RESTRICT,
                 verify_options=VerifyOptions.DEEP),

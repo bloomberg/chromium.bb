@@ -179,7 +179,6 @@ void RecordLastRunAppBundlePath() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
   // Go up five levels from the versioned sub-directory of the framework, which
   // is at C.app/Contents/Frameworks/C.framework/Versions/V.
   base::FilePath app_bundle_path = chrome::GetFrameworkBundlePath()
@@ -188,10 +187,6 @@ void RecordLastRunAppBundlePath() {
                                        .DirName()
                                        .DirName()
                                        .DirName();
-#else
-  base::FilePath app_bundle_path =
-      chrome::GetVersionedDirectory().DirName().DirName().DirName();
-#endif
   base::ScopedCFTypeRef<CFStringRef> app_bundle_path_cfstring(
       base::SysUTF8ToCFStringRef(app_bundle_path.value()));
   CFPreferencesSetAppValue(

@@ -23,7 +23,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/cloud_print.mojom.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -91,7 +90,6 @@ class ServiceProcessControlBrowserTest
     // point to a bundle so that the service process has an Info.plist.
     base::FilePath exe_path;
     ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
-#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
     exe_path = exe_path.DirName()
                    .DirName()
                    .Append("Contents")
@@ -101,14 +99,6 @@ class ServiceProcessControlBrowserTest
                    .Append(chrome::kChromeVersion)
                    .Append("Helpers")
                    .Append(chrome::kHelperProcessExecutablePath);
-#else
-    exe_path = exe_path.DirName()
-                   .DirName()
-                   .Append("Contents")
-                   .Append("Versions")
-                   .Append(chrome::kChromeVersion)
-                   .Append(chrome::kHelperProcessExecutablePath);
-#endif
     child_process_exe_override_ = std::make_unique<base::ScopedPathOverride>(
         content::CHILD_PROCESS_EXE, exe_path);
 #endif

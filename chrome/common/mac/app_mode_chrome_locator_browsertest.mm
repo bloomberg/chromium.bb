@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,17 +110,11 @@ TEST(ChromeLocatorTest, GetChromeBundleInfoWithPreviousVersion) {
   ASSERT_TRUE(base::DirectoryExists(chrome_bundle_path));
 
   // Make a symlink that pretends to be a previous version.
-#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
   base::FilePath fake_version_directory = chrome_bundle_path.Append("Contents")
                                               .Append("Frameworks")
                                               .Append(chrome::kFrameworkName)
                                               .Append("Versions")
                                               .Append("previous_version");
-#else
-  base::FilePath fake_version_directory = chrome_bundle_path.Append("Contents")
-                                              .Append("Versions")
-                                              .Append("previous_version");
-#endif
   EXPECT_TRUE(
       base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
                                fake_version_directory));

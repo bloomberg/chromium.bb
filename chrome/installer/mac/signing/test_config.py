@@ -32,10 +32,6 @@ class TestConfig(config.CodeSignConfig):
         return 'test.signing.bundle_id'
 
     @property
-    def use_new_mac_bundle_structure(self):
-        return os.getenv('USE_NEW_BUNDLE_STRUCTURE') == '1'
-
-    @property
     def optional_parts(self):
         return set()
 
