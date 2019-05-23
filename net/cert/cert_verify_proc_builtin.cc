@@ -164,9 +164,9 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     // to |policy|. Depending on the policy, errors will be added to the
     // respective certificates, so |errors->ContainsHighSeverityErrors()| will
     // reflect the revocation status of the chain after this call.
-    CheckCertChainRevocation(path->certs, path->last_cert_trust, policy,
-                             stapled_leaf_ocsp_response_, net_fetcher_,
-                             &path->errors);
+    CheckValidatedChainRevocation(path->certs, policy,
+                                  stapled_leaf_ocsp_response_, net_fetcher_,
+                                  &path->errors);
   }
 
  private:

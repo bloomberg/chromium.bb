@@ -14,7 +14,6 @@ namespace net {
 
 class CertPathErrors;
 class CertNetFetcher;
-struct CertificateTrust;
 
 // RevocationPolicy describes how revocation should be carried out for a
 // particular chain.
@@ -58,11 +57,13 @@ struct NET_EXPORT_PRIVATE RevocationPolicy {
 // any failures to |errors|. On failure errors are added to |errors|. On success
 // no errors are added.
 //
+// |certs| must be a successfully validated chain according to RFC 5280 section
+// 6.1, in order from leaf to trust anchor.
+//
 // |net_fetcher| may be null, however this may lead to failed revocation checks
 // depending on |policy|.
-NET_EXPORT_PRIVATE void CheckCertChainRevocation(
+NET_EXPORT_PRIVATE void CheckValidatedChainRevocation(
     const ParsedCertificateList& certs,
-    const CertificateTrust& last_cert_trust,
     const RevocationPolicy& policy,
     base::StringPiece stapled_leaf_ocsp_response,
     CertNetFetcher* net_fetcher,

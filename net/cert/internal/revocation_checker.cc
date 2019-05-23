@@ -181,12 +181,11 @@ RevocationPolicy::RevocationPolicy()
       allow_missing_info(false),
       allow_network_failure(false) {}
 
-void CheckCertChainRevocation(const ParsedCertificateList& certs,
-                              const CertificateTrust& last_cert_trust,
-                              const RevocationPolicy& policy,
-                              base::StringPiece stapled_leaf_ocsp_response,
-                              CertNetFetcher* net_fetcher,
-                              CertPathErrors* errors) {
+void CheckValidatedChainRevocation(const ParsedCertificateList& certs,
+                                   const RevocationPolicy& policy,
+                                   base::StringPiece stapled_leaf_ocsp_response,
+                                   CertNetFetcher* net_fetcher,
+                                   CertPathErrors* errors) {
   // Check each certificate for revocation using OCSP/CRL. Checks proceed
   // from the root certificate towards the leaf certificate. Revocation errors
   // are added to |errors|.
@@ -197,8 +196,10 @@ void CheckCertChainRevocation(const ParsedCertificateList& certs,
         i + 1 < certs.size() ? certs[i + 1].get() : nullptr;
 
     // Trust anchors bypass OCSP/CRL revocation checks. (The only way to revoke
-    // trust anchors is via CRLSet or the built-in SPKI blacklist).
-    if (reverse_i == 0 && last_cert_trust.IsTrustAnchor())
+    // trust anchors is via CRLSet or the built-in SPKI blacklist). Since
+    // |certs| must be a validated chain, the final cert must be a trust
+    // anchor.
+    if (reverse_i == 0)
       continue;
 
     // TODO(eroman): Plumb stapled OCSP for non-leaf certificates from TLS?
