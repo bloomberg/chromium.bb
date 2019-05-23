@@ -325,10 +325,6 @@ class CrossThreadFunction<R(Args...)> {
     return callback_.Run(std::forward<Args>(args)...);
   }
 
-  R Run(Args... args) && {
-    return std::move(callback_).Run(std::forward<Args>(args)...);
-  }
-
   bool IsCancelled() const { return callback_.IsCancelled(); }
   void Reset() { callback_.Reset(); }
   explicit operator bool() const { return static_cast<bool>(callback_); }
