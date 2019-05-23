@@ -61,6 +61,7 @@
 #include "pc/test/fake_video_track_renderer.h"
 #include "pc/test/mock_peer_connection_observers.h"
 #include "rtc_base/fake_clock.h"
+#include "rtc_base/fake_mdns_responder.h"
 #include "rtc_base/fake_network.h"
 #include "rtc_base/firewall_socket_server.h"
 #include "rtc_base/gunit.h"
@@ -551,13 +552,22 @@ class PeerConnectionWrapper : public webrtc::PeerConnectionObserver,
     }
   }
 
-  rtc::FakeNetworkManager* network() const {
+  rtc::FakeNetworkManager* network_manager() const {
     return fake_network_manager_.get();
   }
   cricket::PortAllocator* port_allocator() const { return port_allocator_; }
 
   webrtc::FakeRtcEventLogFactory* event_log_factory() const {
     return event_log_factory_;
+  }
+
+  // Sets the mDNS responder for the owned fake network manager and keeps a
+  // reference to the responder.
+  void SetMdnsResponder(
+      std::unique_ptr<webrtc::FakeMdnsResponder> mdns_responder) {
+    RTC_DCHECK(mdns_responder != nullptr);
+    mdns_responder_ = mdns_responder.get();
+    network_manager()->set_mdns_responder(std::move(mdns_responder));
   }
 
  private:
@@ -921,11 +931,10 @@ class PeerConnectionWrapper : public webrtc::PeerConnectionObserver,
 
     if (remote_async_resolver_) {
       const auto& local_candidate = candidate->candidate();
-      const auto& mdns_responder = network()->GetMdnsResponderForTesting();
       if (local_candidate.address().IsUnresolvedIP()) {
         RTC_DCHECK(local_candidate.type() == cricket::LOCAL_PORT_TYPE);
         rtc::SocketAddress resolved_addr(local_candidate.address());
-        const auto resolved_ip = mdns_responder->GetMappedAddressForName(
+        const auto resolved_ip = mdns_responder_->GetMappedAddressForName(
             local_candidate.address().hostname());
         RTC_DCHECK(!resolved_ip.IsNil());
         resolved_addr.SetResolvedIP(resolved_ip);
@@ -953,6 +962,8 @@ class PeerConnectionWrapper : public webrtc::PeerConnectionObserver,
   std::string debug_name_;
 
   std::unique_ptr<rtc::FakeNetworkManager> fake_network_manager_;
+  // Reference to the mDNS responder owned by |fake_network_manager_| after set.
+  webrtc::FakeMdnsResponder* mdns_responder_ = nullptr;
 
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
@@ -3818,8 +3829,10 @@ TEST_P(PeerConnectionIntegrationTest,
   callee()->SetRemoteAsyncResolver(&caller_async_resolver);
 
   // Enable hostname candidates with mDNS names.
-  caller()->network()->CreateMdnsResponder(network_thread());
-  callee()->network()->CreateMdnsResponder(network_thread());
+  caller()->SetMdnsResponder(
+      absl::make_unique<webrtc::FakeMdnsResponder>(network_thread()));
+  callee()->SetMdnsResponder(
+      absl::make_unique<webrtc::FakeMdnsResponder>(network_thread()));
 
   SetPortAllocatorFlags(kOnlyLocalPorts, kOnlyLocalPorts);
 
@@ -3884,15 +3897,15 @@ class PeerConnectionIntegrationIceStatesTest
 
   void SetUpNetworkInterfaces() {
     // Remove the default interfaces added by the test infrastructure.
-    caller()->network()->RemoveInterface(kDefaultLocalAddress);
-    callee()->network()->RemoveInterface(kDefaultLocalAddress);
+    caller()->network_manager()->RemoveInterface(kDefaultLocalAddress);
+    callee()->network_manager()->RemoveInterface(kDefaultLocalAddress);
 
     // Add network addresses for test.
     for (const auto& caller_address : CallerAddresses()) {
-      caller()->network()->AddInterface(caller_address);
+      caller()->network_manager()->AddInterface(caller_address);
     }
     for (const auto& callee_address : CalleeAddresses()) {
-      callee()->network()->AddInterface(callee_address);
+      callee()->network_manager()->AddInterface(callee_address);
     }
   }
 
