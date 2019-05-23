@@ -41,6 +41,10 @@ class SaveCardBubbleController {
   // Returns an empty string if no message should be displayed.
   virtual base::string16 GetExplanatoryMessage() const = 0;
 
+  // Returns the button label text for save card bubbles.
+  virtual base::string16 GetAcceptButtonText() const = 0;
+  virtual base::string16 GetDeclineButtonText() const = 0;
+
   // Returns the account info of the signed-in user.
   virtual const AccountInfo& GetAccountInfo() const = 0;
 

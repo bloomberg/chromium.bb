@@ -77,6 +77,12 @@ void SaveCardBubbleViews::Hide() {
   CloseBubble();
 }
 
+base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return button == ui::DIALOG_BUTTON_OK ? controller()->GetAcceptButtonText()
+                                        : controller()->GetDeclineButtonText();
+}
+
 views::View* SaveCardBubbleViews::CreateFootnoteView() {
   return nullptr;
 }

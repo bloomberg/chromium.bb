@@ -257,6 +257,35 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
           : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
 }
 
+base::string16 SaveCardBubbleControllerImpl::GetAcceptButtonText() const {
+  switch (current_bubble_type_) {
+    case BubbleType::LOCAL_SAVE:
+    case BubbleType::UPLOAD_SAVE:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+    case BubbleType::MANAGE_CARDS:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DONE);
+    case BubbleType::SIGN_IN_PROMO:
+    case BubbleType::FAILURE:
+    case BubbleType::INACTIVE:
+      NOTREACHED();
+      return base::string16();
+  }
+}
+
+base::string16 SaveCardBubbleControllerImpl::GetDeclineButtonText() const {
+  switch (current_bubble_type_) {
+    case BubbleType::LOCAL_SAVE:
+    case BubbleType::UPLOAD_SAVE:
+      return l10n_util::GetStringUTF16(IDS_NO_THANKS);
+    case BubbleType::MANAGE_CARDS:
+    case BubbleType::SIGN_IN_PROMO:
+    case BubbleType::FAILURE:
+    case BubbleType::INACTIVE:
+      NOTREACHED();
+      return base::string16();
+  }
+}
+
 const AccountInfo& SaveCardBubbleControllerImpl::GetAccountInfo() const {
   return account_info_;
 }

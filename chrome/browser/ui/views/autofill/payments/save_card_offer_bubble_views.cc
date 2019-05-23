@@ -113,13 +113,6 @@ int SaveCardOfferBubbleViews::GetDialogButtons() const {
              : ui::DIALOG_BUTTON_OK;
 }
 
-base::string16 SaveCardOfferBubbleViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
-                                       : IDS_NO_THANKS);
-}
-
 bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_CANCEL)

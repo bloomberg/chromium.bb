@@ -76,11 +76,6 @@ int SaveCardManageCardsBubbleViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-base::string16 SaveCardManageCardsBubbleViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DONE);
-}
-
 SaveCardManageCardsBubbleViews::~SaveCardManageCardsBubbleViews() {}
 
 std::unique_ptr<views::View>
