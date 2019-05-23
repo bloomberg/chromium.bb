@@ -780,6 +780,7 @@ test("gfx_unittests") {
       "path_win_unittest.cc",
       "platform_font_win_unittest.cc",
       "system_fonts_win_unittest.cc",
+      "win/direct_write_unittest.cc",
       "win/text_analysis_source_unittest.cc",
     ]
 
