@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_writable_file_stream.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_writer.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -30,6 +31,16 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
   ScriptPromise result = resolver->Promise();
 
   resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(this));
+  return result;
+}
+
+ScriptPromise NativeFileSystemFileHandle::createWritable(
+    ScriptState* script_state) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise result = resolver->Promise();
+
+  resolver->Resolve(
+      MakeGarbageCollected<NativeFileSystemWritableFileStream>(this));
   return result;
 }
 
