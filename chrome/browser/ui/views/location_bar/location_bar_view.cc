@@ -142,6 +142,7 @@ LocationBarView::LocationBarView(Browser* browser,
                                  Delegate* delegate,
                                  bool is_popup_mode)
     : LocationBar(profile),
+      AnimationDelegateViews(this),
       ChromeOmniboxEditController(command_updater),
       browser_(browser),
       delegate_(delegate),
@@ -1126,7 +1127,7 @@ bool LocationBarView::CanStartDragForView(View* sender,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, private gfx::AnimationDelegate implementation:
+// LocationBarView, private views::AnimationDelegateViews implementation:
 void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
   DCHECK_EQ(animation, &hover_animation_);
   RefreshBackground();
