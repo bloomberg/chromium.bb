@@ -430,6 +430,11 @@ enum class EnterTabSwitcherSnapshotResult {
 @property(nonatomic, strong)
     SigninInteractionCoordinator* signinInteractionCoordinator;
 
+// Returns YES if the settings are presented, either from
+// _settingsNavigationController or from SigninInteractionCoordinator.
+@property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
+    BOOL settingsViewPresented;
+
 // Activates |mainBVC| and |otrBVC| and sets |currentBVC| as primary iff
 // |currentBVC| can be made active.
 - (void)activateBVCAndMakeCurrentBVCPrimary;
@@ -927,6 +932,11 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (BOOL)isFirstLaunchAfterUpgrade {
   return [[PreviousSessionInfo sharedInstance] isFirstSessionAfterUpgrade];
+}
+
+- (BOOL)isSettingsViewPresented {
+  return _settingsNavigationController ||
+         self.signinInteractionCoordinator.isSettingsViewPresented;
 }
 
 #pragma mark - StartupInformation implementation.
@@ -1533,6 +1543,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove showing settings from MainController.
 - (void)showAutofillSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController)
     return;
   _settingsNavigationController = [SettingsNavigationController
@@ -1550,6 +1561,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // This dispatch is necessary to give enough time for the tools menu to
   // disappear before taking a screenshot.
   dispatch_async(dispatch_get_main_queue(), ^{
+    DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
     if (_settingsNavigationController)
       return;
     _settingsNavigationController = [SettingsNavigationController
@@ -1640,6 +1652,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings from MainController.
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
     DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
@@ -1665,7 +1678,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove Google services settings from MainController.
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
     DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
     baseViewController = self.currentBVC;
@@ -1697,6 +1710,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // When unified consent feather is enabled,
   // |showGoogleServicesSettingsFromViewController:| should be called.
   DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showSyncSettingsFromViewController:baseViewController];
@@ -1713,6 +1727,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSyncPassphraseSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showSyncPassphraseSettingsFromViewController:baseViewController];
@@ -1729,6 +1744,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSavedPasswordsSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showSavedPasswordsSettingsFromViewController:baseViewController];
@@ -1745,6 +1761,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showProfileSettingsFromViewController:baseViewController];
@@ -1761,6 +1778,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showCreditCardSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showCreditCardSettingsFromViewController:baseViewController];
@@ -1998,9 +2016,6 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
-  if (_settingsNavigationController) {
-    return false;
-  }
   if (_tabSwitcherIsActive) {
     // Only attempt to dismiss the tab switcher and open a new tab if:
     // - there are no tabs open in either tab model, and
@@ -2188,6 +2203,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController {
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController)
     return;
   [[DeferredInitializationRunner sharedInstance]
@@ -2209,17 +2225,25 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
-  DCHECK(_settingsNavigationController);
-  [_settingsNavigationController settingsWillBeDismissed];
-  UIViewController* presentingViewController =
-      [_settingsNavigationController presentingViewController];
-  DCHECK(presentingViewController);
-  [presentingViewController dismissViewControllerAnimated:animated
-                                               completion:^{
-                                                 if (completion)
-                                                   completion();
-                                               }];
-  _settingsNavigationController = nil;
+  if (_settingsNavigationController) {
+    [_settingsNavigationController settingsWillBeDismissed];
+    UIViewController* presentingViewController =
+        [_settingsNavigationController presentingViewController];
+    DCHECK(presentingViewController);
+    [presentingViewController dismissViewControllerAnimated:animated
+                                                 completion:completion];
+    _settingsNavigationController = nil;
+    return;
+  }
+  // |self.signinInteractionCoordinator| can also present settings, like
+  // the advanced sign-in settings navigation controller. If the settings has
+  // to be cloase, it is thus the responsibility of the main controller to
+  // dismiss the the advanced sign-in settings by dismssing the settings
+  // presented by |self.signinInteractionCoordinator|.
+  DCHECK(self.signinInteractionCoordinator.isSettingsViewPresented);
+  [self.signinInteractionCoordinator
+      abortAndDismissSettingsViewAnimated:animated
+                               completion:completion];
 }
 
 #pragma mark - WebStateListObserving
@@ -2438,11 +2462,12 @@ enum class EnterTabSwitcherSnapshotResult {
   // As a top level rule, if the settings are showing, they need to be
   // dismissed. Then, based on whether the BVC is present or not, a different
   // completion callback is called.
-  if (![self isTabSwitcherActive] && _settingsNavigationController) {
+  if (![self isTabSwitcherActive] && self.isSettingsViewPresented) {
     // In this case, the settings are up and the BVC is showing. Close the
     // settings then call the BVC completion.
+    DCHECK(!self.signinInteractionCoordinator.isActive);
     [self closeSettingsAnimated:NO completion:completionWithBVC];
-  } else if (_settingsNavigationController) {
+  } else if (self.isSettingsViewPresented) {
     // In this case, the settings are up but the BVC is not showing. Close the
     // settings then call the no-BVC completion.
     [self closeSettingsAnimated:NO completion:completionWithoutBVC];

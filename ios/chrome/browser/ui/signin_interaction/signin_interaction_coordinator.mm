@@ -136,8 +136,23 @@
                                                 completion:nil];
 }
 
+- (void)abortAndDismissSettingsViewAnimated:(BOOL)animated
+                                 completion:(ProceduralBlock)completion {
+  DCHECK(!self.controller);
+  DCHECK(self.advancedSigninSettingsCoordinator);
+  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES
+                                                  animated:animated
+                                                completion:completion];
+}
+
+#pragma mark - Properties
+
 - (BOOL)isActive {
-  return self.controller != nil;
+  return self.controller != nil || self.isSettingsViewPresented;
+}
+
+- (BOOL)isSettingsViewPresented {
+  return self.advancedSigninSettingsCoordinator != nil;
 }
 
 #pragma mark - AdvancedSigninSettingsCoordinatorDelegate
