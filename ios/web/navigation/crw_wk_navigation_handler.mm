@@ -15,6 +15,7 @@
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/navigation_manager_util.h"
+#import "ios/web/navigation/wk_back_forward_list_item_holder.h"
 #import "ios/web/navigation/wk_navigation_action_policy_util.h"
 #import "ios/web/navigation/wk_navigation_action_util.h"
 #import "ios/web/navigation/wk_navigation_util.h"
@@ -57,6 +58,9 @@ using web::wk_navigation_util::IsWKInternalUrl;
   // happens: 1) a SafeBrowsing warning is detected; 2) any WKNavigationDelegate
   // method is called; 3) |stopLoading| is called.
   base::RepeatingTimer _safeBrowsingWarningDetectionTimer;
+
+  // Referrer for the current page; does not include the fragment.
+  NSString* _currentReferrerString;
 }
 
 - (instancetype)init {
@@ -199,8 +203,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
     if (isFirstLoadInOpenedWindow && isMainFrame) {
       GURL aboutBlankURL(url::kAboutBlankURL);
       web::NavigationManager::WebLoadParams loadParams(aboutBlankURL);
-      loadParams.referrer =
-          [self.delegate currentReferrerForNavigationHandler:self];
+      loadParams.referrer = self.currentReferrer;
 
       self.webStateImpl->GetNavigationManager()->LoadURLWithParams(loadParams);
     }
@@ -640,6 +643,12 @@ using web::wk_navigation_util::IsWKInternalUrl;
   return [self.delegate userInteractionStateForNavigationHandler:self];
 }
 
+- (web::NavigationItemImpl*)currentNavItem {
+  return self.navigationManagerImpl
+             ? self.navigationManagerImpl->GetCurrentItemImpl()
+             : nullptr;
+}
+
 // This method should be called on receiving WKNavigationDelegate callbacks. It
 // will log a metric if the callback occurs after the reciever has already been
 // closed. It also stops the SafeBrowsing warning detection timer, since after
@@ -949,6 +958,106 @@ using web::wk_navigation_util::IsWKInternalUrl;
     }
   }
   return nullptr;
+}
+
+- (BOOL)isCurrentNavigationBackForward {
+  if (!self.currentNavItem)
+    return NO;
+  WKNavigationType currentNavigationType =
+      self.currentBackForwardListItemHolder->navigation_type();
+  return currentNavigationType == WKNavigationTypeBackForward;
+}
+
+- (BOOL)isCurrentNavigationItemPOST {
+  // |self.navigationHandler.pendingNavigationInfo| will be nil if the
+  // decidePolicy* delegate methods were not called.
+  NSString* HTTPMethod =
+      self.pendingNavigationInfo
+          ? self.pendingNavigationInfo.HTTPMethod
+          : self.currentBackForwardListItemHolder->http_method();
+  if ([HTTPMethod isEqual:@"POST"]) {
+    return YES;
+  }
+  if (!self.currentNavItem) {
+    return NO;
+  }
+  return self.currentNavItem->HasPostData();
+}
+
+// Returns the WKBackForwardListItemHolder for the current navigation item.
+- (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder {
+  web::NavigationItem* item = self.currentNavItem;
+  DCHECK(item);
+  web::WKBackForwardListItemHolder* holder =
+      web::WKBackForwardListItemHolder::FromNavigationItem(item);
+  DCHECK(holder);
+  return holder;
+}
+
+- (void)commitPendingNavigationInfoInWebView:(WKWebView*)webView {
+  if (self.pendingNavigationInfo.referrer) {
+    _currentReferrerString = [self.pendingNavigationInfo.referrer copy];
+  }
+  [self updateCurrentBackForwardListItemHolderInWebView:webView];
+
+  self.pendingNavigationInfo = nil;
+}
+
+// Updates the WKBackForwardListItemHolder navigation item.
+- (void)updateCurrentBackForwardListItemHolderInWebView:(WKWebView*)webView {
+  if (!self.currentNavItem) {
+    // TODO(crbug.com/925304): Pending item (which stores the holder) should be
+    // owned by NavigationContext object. Pending item should never be null.
+    return;
+  }
+
+  web::WKBackForwardListItemHolder* holder =
+      self.currentBackForwardListItemHolder;
+
+  WKNavigationType navigationType =
+      self.pendingNavigationInfo ? self.pendingNavigationInfo.navigationType
+                                 : WKNavigationTypeOther;
+  holder->set_back_forward_list_item(webView.backForwardList.currentItem);
+  holder->set_navigation_type(navigationType);
+  holder->set_http_method(self.pendingNavigationInfo.HTTPMethod);
+
+  // Only update the MIME type in the holder if there was MIME type information
+  // as part of this pending load. It will be nil when doing a fast
+  // back/forward navigation, for instance, because the callback that would
+  // populate it is not called in that flow.
+  if (self.pendingNavigationInfo.MIMEType)
+    holder->set_mime_type(self.pendingNavigationInfo.MIMEType);
+}
+
+- (web::Referrer)currentReferrer {
+  // Referrer string doesn't include the fragment, so in cases where the
+  // previous URL is equal to the current referrer plus the fragment the
+  // previous URL is returned as current referrer.
+  NSString* referrerString = _currentReferrerString;
+
+  // In case of an error evaluating the JavaScript simply return empty string.
+  if (referrerString.length == 0)
+    return web::Referrer();
+
+  web::NavigationItem* item = self.currentNavItem;
+  GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  NSString* previousURLString = base::SysUTF8ToNSString(navigationURL.spec());
+  // Check if the referrer is equal to the previous URL minus the hash symbol.
+  // L'#' is used to convert the char '#' to a unichar.
+  if ([previousURLString length] > referrerString.length &&
+      [previousURLString hasPrefix:referrerString] &&
+      [previousURLString characterAtIndex:referrerString.length] == L'#') {
+    referrerString = previousURLString;
+  }
+  // Since referrer is being extracted from the destination page, the correct
+  // policy from the origin has *already* been applied. Since the extracted URL
+  // is the post-policy value, and the source policy is no longer available,
+  // the policy is set to Always so that whatever WebKit decided to send will be
+  // re-sent when replaying the entry.
+  // TODO(crbug.com/227769): When possible, get the real referrer and policy in
+  // advance and use that instead.
+  return web::Referrer(GURL(base::SysNSStringToUTF8(referrerString)),
+                       web::ReferrerPolicyAlways);
 }
 
 @end

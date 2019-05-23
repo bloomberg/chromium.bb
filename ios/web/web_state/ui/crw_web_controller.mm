@@ -250,9 +250,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   // history navigations.
   BOOL _dispatchingSameDocumentHashChangeEvent;
 
-  // Referrer for the current page; does not include the fragment.
-  NSString* _currentReferrerString;
-
   // The WKNavigation captured when |stopLoading| was called. Used for reporting
   // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
   // helps with diagnosing a navigation related crash (crbug.com/565457).
@@ -443,11 +440,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Sets last committed NavigationItem's title to the given |title|, which can
 // not be nil.
 - (void)setNavigationItemTitle:(NSString*)title;
-// Returns YES if the current navigation item corresponds to a web page
-// loaded by a POST request.
-- (BOOL)isCurrentNavigationItemPOST;
-// Returns YES if current navigation item is WKNavigationTypeBackForward.
-- (BOOL)isCurrentNavigationBackForward;
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
@@ -731,37 +723,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   web::URLVerificationTrustLevel trustLevel =
       web::URLVerificationTrustLevel::kNone;
   return [self currentURLWithTrustLevel:&trustLevel];
-}
-
-- (web::Referrer)currentReferrer {
-  // Referrer string doesn't include the fragment, so in cases where the
-  // previous URL is equal to the current referrer plus the fragment the
-  // previous URL is returned as current referrer.
-  NSString* referrerString = _currentReferrerString;
-
-  // In case of an error evaluating the JavaScript simply return empty string.
-  if ([referrerString length] == 0)
-    return web::Referrer();
-
-  web::NavigationItem* item = self.currentNavItem;
-  GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
-  NSString* previousURLString = base::SysUTF8ToNSString(navigationURL.spec());
-  // Check if the referrer is equal to the previous URL minus the hash symbol.
-  // L'#' is used to convert the char '#' to a unichar.
-  if ([previousURLString length] > [referrerString length] &&
-      [previousURLString hasPrefix:referrerString] &&
-      [previousURLString characterAtIndex:[referrerString length]] == L'#') {
-    referrerString = previousURLString;
-  }
-  // Since referrer is being extracted from the destination page, the correct
-  // policy from the origin has *already* been applied. Since the extracted URL
-  // is the post-policy value, and the source policy is no longer available,
-  // the policy is set to Always so that whatever WebKit decided to send will be
-  // re-sent when replaying the entry.
-  // TODO(stuartmorgan): When possible, get the real referrer and policy in
-  // advance and use that instead. https://crbug.com/227769.
-  return web::Referrer(GURL(base::SysNSStringToUTF8(referrerString)),
-                       web::ReferrerPolicyAlways);
 }
 
 - (web::UserAgentType)userAgentType {
@@ -1412,30 +1373,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webStateImpl->OnTitleChanged();
 }
 
-- (BOOL)isCurrentNavigationItemPOST {
-  // |self.navigationHandler.pendingNavigationInfo| will be nil if the
-  // decidePolicy* delegate methods were not called.
-  NSString* HTTPMethod =
-      self.navigationHandler.pendingNavigationInfo
-          ? self.navigationHandler.pendingNavigationInfo.HTTPMethod
-          : [self currentBackForwardListItemHolder] -> http_method();
-  if ([HTTPMethod isEqual:@"POST"]) {
-    return YES;
-  }
-  if (!self.currentNavItem) {
-    return NO;
-  }
-  return self.currentNavItem->HasPostData();
-}
-
-- (BOOL)isCurrentNavigationBackForward {
-  if (!self.currentNavItem)
-    return NO;
-  WKNavigationType currentNavigationType =
-      [self currentBackForwardListItemHolder]->navigation_type();
-  return currentNavigationType == WKNavigationTypeBackForward;
-}
-
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
   // The current back-forward list item MUST be in the WKWebView's back-forward
   // list to be valid.
@@ -1443,16 +1380,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return list.currentItem == item ||
          [list.forwardList indexOfObject:item] != NSNotFound ||
          [list.backList indexOfObject:item] != NSNotFound;
-}
-
-// Returns the WKBackForwardListItemHolder for the current navigation item.
-- (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder {
-  web::NavigationItem* item = self.currentNavItem;
-  DCHECK(item);
-  web::WKBackForwardListItemHolder* holder =
-      web::WKBackForwardListItemHolder::FromNavigationItem(item);
-  DCHECK(holder);
-  return holder;
 }
 
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
@@ -1620,7 +1547,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 
   context->SetNavigationItemUniqueID(item->GetUniqueID());
-  context->SetIsPost([self isCurrentNavigationItemPOST]);
+  context->SetIsPost([self.navigationHandler isCurrentNavigationItemPOST]);
   context->SetIsSameDocument(sameDocumentNavigation);
 
   if (!IsWKInternalUrl(requestURL) && !placeholderNavigation) {
@@ -1692,7 +1619,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 
   web::WKBackForwardListItemHolder* holder =
-      [self currentBackForwardListItemHolder];
+      self.navigationHandler.currentBackForwardListItemHolder;
   BOOL repostedForm =
       [holder->http_method() isEqual:@"POST"] &&
       (holder->navigation_type() == WKNavigationTypeFormResubmitted ||
@@ -3821,7 +3748,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         base::SysNSStringToUTF8(context->GetMimeType()));
   }
 
-  [self commitPendingNavigationInfo];
+  [self.navigationHandler commitPendingNavigationInfoInWebView:webView];
 
   [self removeAllWebFrames];
 
@@ -4153,7 +4080,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // we should be distinguishing better, and be clear about the expected
 // WebDelegate and WCO callbacks in each case.
 - (void)webPageChangedWithContext:(web::NavigationContextImpl*)context {
-  web::Referrer referrer = [self currentReferrer];
+  web::Referrer referrer = self.navigationHandler.currentReferrer;
   // If no referrer was known in advance, record it now. (If there was one,
   // keep it since it will have a more accurate URL and policy than what can
   // be extracted from the landing page.)
@@ -4220,7 +4147,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     if (@available(iOS 12.2, *)) {
       if (![self.webView.backForwardList.currentItem.URL
               isEqual:self.webView.URL] &&
-          self.isCurrentNavigationItemPOST) {
+          [self.navigationHandler isCurrentNavigationItemPOST]) {
         UMA_HISTOGRAM_BOOLEAN("WebController.BackForwardListOutOfSync", true);
         // Sometimes on error the backForward list is out of sync with the
         // webView, go back or forward to fix it. See crbug.com/951880.
@@ -4241,7 +4168,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   web::NavigationContextImpl* navigationContext =
       [self.navigationHandler.navigationStates contextForNavigation:navigation];
   navigationContext->SetError(error);
-  navigationContext->SetIsPost([self isCurrentNavigationItemPOST]);
+  navigationContext->SetIsPost(
+      [self.navigationHandler isCurrentNavigationItemPOST]);
   // TODO(crbug.com/803631) DCHECK that self.currentNavItem is the navigation
   // item associated with navigationContext.
 
@@ -4378,47 +4306,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return provisionalLoad;
 }
 
-// Updates current state with any pending information. Should be called when a
-// navigation is committed.
-- (void)commitPendingNavigationInfo {
-  if (self.navigationHandler.pendingNavigationInfo.referrer) {
-    _currentReferrerString =
-        [self.navigationHandler.pendingNavigationInfo.referrer copy];
-  }
-  [self updateCurrentBackForwardListItemHolder];
-
-  self.navigationHandler.pendingNavigationInfo = nil;
-}
-
-// Updates the WKBackForwardListItemHolder navigation item.
-- (void)updateCurrentBackForwardListItemHolder {
-  if (!self.currentNavItem) {
-    // TODO(crbug.com/925304): Pending item (which stores the holder) should be
-    // owned by NavigationContext object. Pending item should never be null.
-    return;
-  }
-
-  web::WKBackForwardListItemHolder* holder =
-      [self currentBackForwardListItemHolder];
-
-  WKNavigationType navigationType =
-      self.navigationHandler.pendingNavigationInfo
-          ? self.navigationHandler.pendingNavigationInfo.navigationType
-          : WKNavigationTypeOther;
-  holder->set_back_forward_list_item(self.webView.backForwardList.currentItem);
-  holder->set_navigation_type(navigationType);
-  holder->set_http_method(
-      self.navigationHandler.pendingNavigationInfo.HTTPMethod);
-
-  // Only update the MIME type in the holder if there was MIME type information
-  // as part of this pending load. It will be nil when doing a fast
-  // back/forward navigation, for instance, because the callback that would
-  // populate it is not called in that flow.
-  if (self.navigationHandler.pendingNavigationInfo.MIMEType)
-    holder->set_mime_type(
-        self.navigationHandler.pendingNavigationInfo.MIMEType);
-}
-
 // Returns YES if the current live view is a web view with an image MIME type.
 - (BOOL)contentIsImage {
   if (!self.webView)
@@ -4540,7 +4427,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   GURL webViewURL = net::GURLWithNSURL(self.webView.URL);
 
-  if (![self isCurrentNavigationBackForward])
+  if (![self.navigationHandler isCurrentNavigationBackForward])
     return;
 
   web::NavigationContextImpl* existingContext = [self.navigationHandler
@@ -4953,11 +4840,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (web::UserInteractionState*)userInteractionStateForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler {
   return &_userInteractionState;
-}
-
-- (web::Referrer)currentReferrerForNavigationHandler:
-    (CRWWKNavigationHandler*)navigationHandler {
-  return self.currentReferrer;
 }
 
 - (GURL)navigationHandlerDocumentURL:
