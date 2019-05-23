@@ -31,7 +31,7 @@
       second.style.display = "none";
       // Need a rAF for automated testing since focus won't be reevaluated
       // until BeginFrame.
-      requestAnimationFrame(resolve);
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
     });
   }
 
