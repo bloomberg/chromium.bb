@@ -32,6 +32,8 @@
 #include "components/vector_icons/vector_icons.h"     // nogncheck
 #endif
 
+using metrics::OmniboxEventProto;
+
 LocationBarModelImpl::LocationBarModelImpl(LocationBarModelDelegate* delegate,
                                            size_t max_url_display_chars)
     : delegate_(delegate), max_url_display_chars_(max_url_display_chars) {
@@ -128,6 +130,46 @@ bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
     *search_terms = extracted_search_terms;
 
   return true;
+}
+
+OmniboxEventProto::PageClassification
+LocationBarModelImpl::GetPageClassification(OmniboxFocusSource focus_source) {
+  // We may be unable to fetch the current URL during startup or shutdown when
+  // the omnibox exists but there is no attached page.
+  GURL gurl;
+  if (!delegate_->GetURL(&gurl))
+    return OmniboxEventProto::OTHER;
+
+  if (focus_source == OmniboxFocusSource::SEARCH_BUTTON)
+    return OmniboxEventProto::SEARCH_BUTTON_AS_STARTING_FOCUS;
+  if (delegate_->IsInstantNTP()) {
+    // Note that we treat OMNIBOX as the source if focus_source_ is INVALID,
+    // i.e., if input isn't actually in progress.
+    return (focus_source == OmniboxFocusSource::FAKEBOX)
+               ? OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS
+               : OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
+  }
+  if (!gurl.is_valid())
+    return OmniboxEventProto::INVALID_SPEC;
+  if (delegate_->IsNewTabPage(gurl))
+    return OmniboxEventProto::NTP;
+  if (gurl.spec() == url::kAboutBlankURL)
+    return OmniboxEventProto::BLANK;
+  if (delegate_->IsHomePage(gurl))
+    return OmniboxEventProto::HOME_PAGE;
+
+  TemplateURLService* template_url_service = delegate_->GetTemplateURLService();
+  if (template_url_service &&
+      template_url_service->IsSearchResultsPageFromDefaultSearchProvider(
+          gurl)) {
+    return GetDisplaySearchTerms(nullptr)
+               ? OmniboxEventProto::
+                     SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT
+               : OmniboxEventProto::
+                     SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
+  }
+
+  return OmniboxEventProto::OTHER;
 }
 
 const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {

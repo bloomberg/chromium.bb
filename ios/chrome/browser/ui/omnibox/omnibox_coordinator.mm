@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -110,7 +111,7 @@
 
 - (void)setNextFocusSourceAsSearchButton {
   OmniboxEditModel* model = _editView->model();
-  model->set_focus_source(OmniboxEditModel::FocusSource::SEARCH_BUTTON);
+  model->set_focus_source(OmniboxFocusSource::SEARCH_BUTTON);
 }
 
 - (BOOL)isOmniboxFirstResponder {

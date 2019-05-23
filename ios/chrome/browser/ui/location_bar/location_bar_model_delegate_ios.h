@@ -35,6 +35,9 @@ class LocationBarModelDelegateIOS : public LocationBarModelDelegate {
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
   bool IsOfflinePage() const override;
+  bool IsInstantNTP() const override;
+  bool IsNewTabPage(const GURL& url) const override;
+  bool IsHomePage(const GURL& url) const override;
 
  private:
   // Helper method to extract the NavigationItem from which the states are

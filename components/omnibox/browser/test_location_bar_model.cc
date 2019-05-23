@@ -52,6 +52,11 @@ bool TestLocationBarModel::GetDisplaySearchTerms(base::string16* search_terms) {
   return true;
 }
 
+metrics::OmniboxEventProto::PageClassification
+TestLocationBarModel::GetPageClassification(OmniboxFocusSource focus_source) {
+  return metrics::OmniboxEventProto::OTHER;
+}
+
 const gfx::VectorIcon& TestLocationBarModel::GetVectorIcon() const {
   return *icon_;
 }

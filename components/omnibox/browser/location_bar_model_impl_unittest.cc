@@ -54,6 +54,12 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
     return state;
   }
 
+  bool IsInstantNTP() const override { return false; }
+
+  bool IsNewTabPage(const GURL& url) const override { return false; }
+
+  bool IsHomePage(const GURL& url) const override { return false; }
+
   AutocompleteClassifier* GetAutocompleteClassifier() override {
     return omnibox_client_.GetAutocompleteClassifier();
   }

@@ -33,6 +33,8 @@ class LocationBarModelImpl : public LocationBarModel {
   GURL GetURL() const override;
   security_state::SecurityLevel GetSecurityLevel() const override;
   bool GetDisplaySearchTerms(base::string16* search_terms) override;
+  metrics::OmniboxEventProto::PageClassification GetPageClassification(
+      OmniboxFocusSource focus_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetSecureDisplayText() const override;
   base::string16 GetSecureAccessibilityText() const override;

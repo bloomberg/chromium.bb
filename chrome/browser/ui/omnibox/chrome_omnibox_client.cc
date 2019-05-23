@@ -176,31 +176,12 @@ gfx::Image ChromeOmniboxClient::GetFavicon() const {
       ->GetFavicon();
 }
 
-bool ChromeOmniboxClient::IsInstantNTP() const {
-  return search::IsInstantNTP(controller_->GetWebContents());
-}
-
-bool ChromeOmniboxClient::IsSearchResultsPage() const {
-  Profile* profile = Profile::FromBrowserContext(
-      controller_->GetWebContents()->GetBrowserContext());
-  return TemplateURLServiceFactory::GetForProfile(profile)->
-      IsSearchResultsPageFromDefaultSearchProvider(GetURL());
-}
-
 bool ChromeOmniboxClient::IsLoading() const {
   return controller_->GetWebContents()->IsLoading();
 }
 
 bool ChromeOmniboxClient::IsPasteAndGoEnabled() const {
   return controller_->command_updater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL);
-}
-
-bool ChromeOmniboxClient::IsNewTabPage(const GURL& url) const {
-  return url.spec() == chrome::kChromeUINewTabURL;
-}
-
-bool ChromeOmniboxClient::IsHomePage(const GURL& url) const {
-  return url.spec() == profile_->GetPrefs()->GetString(prefs::kHomePage);
 }
 
 bool ChromeOmniboxClient::IsDefaultSearchProviderEnabled() const {

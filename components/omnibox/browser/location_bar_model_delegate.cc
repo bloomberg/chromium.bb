@@ -35,6 +35,18 @@ bool LocationBarModelDelegate::IsOfflinePage() const {
   return false;
 }
 
+bool LocationBarModelDelegate::IsInstantNTP() const {
+  return false;
+}
+
+bool LocationBarModelDelegate::IsNewTabPage(const GURL& url) const {
+  return false;
+}
+
+bool LocationBarModelDelegate::IsHomePage(const GURL& url) const {
+  return false;
+}
+
 AutocompleteClassifier* LocationBarModelDelegate::GetAutocompleteClassifier() {
   return nullptr;
 }
