@@ -60,7 +60,7 @@ const char kLinksTestURL2Text[] = "arrived";
   // Create a tab that will act as the parent tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLinksTestURL1Text]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text]);
   Tab* parentTab = chrome_test_util::GetCurrentTab();
 
   // Child tab should be inserted after the parent.
@@ -90,13 +90,13 @@ const char kLinksTestURL2Text[] = "arrived";
   const GURL URL2 = self.testServer->GetURL(kLinksTestURL2);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLinksTestURL2Text]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL2Text]);
   GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLinksTestURL1Text]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text]);
   GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 

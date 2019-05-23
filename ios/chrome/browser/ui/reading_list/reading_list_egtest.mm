@@ -434,7 +434,7 @@ void AssertIsShowingDistillablePageNativeContent(bool online,
   // There will be multiple reloads, wait for the page to be displayed.
   if (online) {
     // Due to the reloads, a timeout longer than what is provided in
-    // [ChromeEarlGrey waitForWebViewContainingText] is required, so call
+    // [ChromeEarlGrey waitForWebStateContainingText] is required, so call
     // WebViewContainingText directly.
     GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                    kLoadOfflineTimeout,

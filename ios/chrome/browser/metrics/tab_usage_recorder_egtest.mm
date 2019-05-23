@@ -658,7 +658,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"Whee"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"Whee"]);
   NSUInteger tabIndex = [ChromeEarlGrey mainTabCount] - 1;
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());

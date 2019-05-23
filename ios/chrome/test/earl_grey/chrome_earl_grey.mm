@@ -452,38 +452,6 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-#pragma mark - WebState Utilities to not break downstream builds.
-
-// Remove methods below since a cl below will be submitted
-// https://chrome-internal-review.googlesource.com/c/chrome/ios_internal/+/1284395
-
-- (NSError*)waitForElementWithMatcherSufficientlyVisible:
-    (id<GREYMatcher>)matcher {
-  return [self waitForSufficientlyVisibleElementWithMatcher:matcher];
-}
-
-- (NSError*)waitForWebViewContainingText:(std::string)text {
-  return [self waitForWebStateContainingText:text];
-}
-
-- (NSError*)waitForWebViewNotContainingText:(std::string)text {
-  return [self waitForWebStateNotContainingText:text];
-}
-
-- (NSError*)tapWebViewElementWithID:(NSString*)elementID {
-  return [self tapWebStateElementWithID:elementID];
-}
-
-- (NSError*)waitForWebViewContainingLoadedImageElementWithID:
-    (std::string)imageID {
-  return [self waitForWebStateContainingLoadedImageElementWithID:imageID];
-}
-
-- (NSError*)waitForWebViewContainingBlockedImageElementWithID:
-    (std::string)imageID {
-  return [self waitForWebStateContainingBlockedImageElementWithID:imageID];
-}
-
 #pragma mark - Sync Utilities
 
 - (void)clearSyncServerData {

@@ -179,14 +179,14 @@
   // Load the test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:testPageContents]);
+      [ChromeEarlGrey waitForWebStateContainingText:testPageContents]);
   web::WebState* firstWebState = chrome_test_util::GetCurrentTab().webState;
 
   // And do the same in a second tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:testPageContents]);
+      [ChromeEarlGrey waitForWebStateContainingText:testPageContents]);
   web::WebState* secondWebState = chrome_test_util::GetCurrentTab().webState;
 
   // Check visibility before and after switching tabs.

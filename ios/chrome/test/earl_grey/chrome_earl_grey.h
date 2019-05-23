@@ -130,9 +130,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
 
-// Taps html element with |elementID| in the current web view.
-- (NSError*)tapWebViewElementWithID:(NSString*)elementID WARN_UNUSED_RESULT;
-
 // Waits for a static html view containing |text|. If the condition is not met
 // within a timeout, a GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
@@ -173,39 +170,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Waits for the matcher to return an element that is sufficiently visible.
 - (NSError*)waitForSufficientlyVisibleElementWithMatcher:
     (id<GREYMatcher>)matcher WARN_UNUSED_RESULT;
-
-#pragma mark - WebView Utilities to not break downstream builds.
-
-// Remove methods below since a cl below will be submitted
-// https://chrome-internal-review.googlesource.com/c/chrome/ios_internal/+/1284395
-
-// Waits for the matcher to return an element that is sufficiently visible.
-- (NSError*)waitForElementWithMatcherSufficientlyVisible:
-    (id<GREYMatcher>)matcher WARN_UNUSED_RESULT;
-
-// Waits for the current web state to contain |text|. Returns nil if the
-// condition is met within a timeout, otherwise an NSError indicating why the
-// operation failed.
-- (NSError*)waitForWebViewContainingText:(std::string)text WARN_UNUSED_RESULT;
-
-// Waits for there to be no web state containing |text|.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)waitForWebViewNotContainingText:(std::string)text
-    WARN_UNUSED_RESULT;
-
-// Taps html element with |elementID| in the current web state.
-- (NSError*)tapWebViewElementWithID:(NSString*)elementID WARN_UNUSED_RESULT;
-
-// Waits for there to be a web state containing loaded image with |image_id|.
-// When loaded, the image element will have the same size as actual image.
-- (NSError*)waitForWebViewContainingLoadedImageElementWithID:
-    (std::string)imageID WARN_UNUSED_RESULT;
-
-// Waits for there to be a web state containing a blocked |image_id|.  When
-// blocked, the image element will be smaller than the actual image size.
-- (NSError*)waitForWebViewContainingBlockedImageElementWithID:
-    (std::string)imageID WARN_UNUSED_RESULT;
 
 #pragma mark - WebState Utilities
 
