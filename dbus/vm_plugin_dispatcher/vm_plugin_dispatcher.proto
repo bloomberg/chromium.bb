@@ -218,3 +218,20 @@ message ShowVmResponse {
   // Result of the operation.
   VmErrorCode error = 1;
 }
+
+message VmStateChangedSignal {
+  // The owner of the VM.
+  string owner_id = 1;
+
+  // VM name.
+  string vm_name = 2;
+
+  // VM uuid.
+  string vm_uuid = 3;
+
+  // Current VM state.
+  VmState vm_state = 4;
+
+  // Previous VM state.
+  VmState vm_state_prev = 5;
+}
