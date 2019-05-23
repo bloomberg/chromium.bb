@@ -8,16 +8,18 @@ If you change this, please run and update the tests."""
 
 from __future__ import print_function
 
+import argparse
 import base64
 import collections
 import errno
 import hashlib
-import optparse
 import os
 import re
+import shutil
 from string import Template
 import subprocess
 import sys
+import tempfile
 import textwrap
 import zipfile
 
@@ -1515,35 +1517,6 @@ def WrapOutput(output):
   return '\n'.join(ret)
 
 
-def ExtractJarInputFile(jar_file, input_file, out_dir):
-  """Extracts input file from jar and returns the filename.
-
-  The input file is extracted to the same directory that the generated jni
-  headers will be placed in.  This is passed as an argument to script.
-
-  Args:
-    jar_file: the jar file containing the input files to extract.
-    input_files: the list of files to extract from the jar file.
-    out_dir: the name of the directories to extract to.
-
-  Returns:
-    the name of extracted input file.
-  """
-  jar_file = zipfile.ZipFile(jar_file)
-
-  out_dir = os.path.join(out_dir, os.path.dirname(input_file))
-  try:
-    os.makedirs(out_dir)
-  except OSError as e:
-    if e.errno != errno.EEXIST:
-      raise
-  extracted_file_name = os.path.join(out_dir, os.path.basename(input_file))
-  with open(extracted_file_name, 'wb') as outfile:
-    outfile.write(jar_file.read(input_file))
-
-  return extracted_file_name
-
-
 def GenerateJNIHeader(input_file, output_file, options):
   try:
     if os.path.splitext(input_file)[1] == '.class':
@@ -1573,15 +1546,15 @@ def GetScriptName():
   return os.sep.join(script_components[base_index:])
 
 
-def main(argv):
+def main():
   usage = """usage: %prog [OPTIONS]
 This script will parse the given java source code extracting the native
 declarations and print the header file to stdout (or a file).
 See SampleForTests.java for more details.
   """
-  option_parser = optparse.OptionParser(usage=usage)
+  parser = argparse.ArgumentParser(usage=usage)
 
-  option_parser.add_option(
+  parser.add_argument(
       '-j',
       '--jar_file',
       dest='jar_file',
@@ -1590,73 +1563,77 @@ See SampleForTests.java for more details.
       ' Uses javap to extract the methods from a'
       ' pre-compiled class. --input should point'
       ' to pre-compiled Java .class files.')
-  option_parser.add_option(
+  parser.add_argument(
       '-n',
       dest='namespace',
       help='Uses as a namespace in the generated header '
       'instead of the javap class name, or when there is '
       'no JNINamespace annotation in the java source.')
-  option_parser.add_option(
+  parser.add_argument(
       '--input_file',
-      help='Single input file name. The output file name '
-      'will be derived from it. Must be used with '
-      '--output_dir.')
-  option_parser.add_option(
-      '--output_dir', help='The output directory. Must be used with '
-      '--input')
-  option_parser.add_option(
+      action='append',
+      required=True,
+      dest='input_files',
+      help='Input file names, or paths within a .jar if '
+      '--jar-file is used.')
+  parser.add_argument(
+      '--output_file',
+      action='append',
+      dest='output_files',
+      help='Output file names.')
+  parser.add_argument(
       '--script_name',
       default=GetScriptName(),
       help='The name of this script in the generated '
       'header.')
-  option_parser.add_option(
+  parser.add_argument(
       '--includes',
       help='The comma-separated list of header files to '
       'include in the generated header.')
-  option_parser.add_option(
+  parser.add_argument(
       '--ptr_type',
       default='int',
-      type='choice',
       choices=['int', 'long'],
       help='The type used to represent native pointers in '
       'Java code. For 32-bit, use int; '
       'for 64-bit, use long.')
-  option_parser.add_option(
-      '--cpp', default='cpp', help='The path to cpp command.')
-  option_parser.add_option(
+  parser.add_argument('--cpp', default='cpp', help='The path to cpp command.')
+  parser.add_argument(
       '--javap', default='javap', help='The path to javap command.')
-  option_parser.add_option(
+  parser.add_argument(
       '--enable_profiling',
       action='store_true',
       help='Add additional profiling instrumentation.')
-  option_parser.add_option(
+  parser.add_argument(
       '--enable_tracing',
       action='store_true',
       help='Add TRACE_EVENTs to generated functions.')
-  option_parser.add_option(
+  parser.add_argument(
       '--always_mangle', action='store_true', help='Mangle all function names')
-  option_parser.add_option(
+  parser.add_argument(
       '--use_proxy_hash',
       action='store_true',
       help='Hashes the native declaration of methods used '
       'in @JniNatives interface. And uses a shorter name and package'
       ' than GEN_JNI.')
-  options, args = option_parser.parse_args(argv)
-  if options.jar_file:
-    input_file = ExtractJarInputFile(options.jar_file, options.input_file,
-                                     options.output_dir)
-  elif options.input_file:
-    input_file = options.input_file
-  else:
-    option_parser.print_help()
-    print('\nError: Must specify --jar_file or --input_file.')
-    return 1
-  output_file = None
-  if options.output_dir:
-    root_name = os.path.splitext(os.path.basename(input_file))[0]
-    output_file = os.path.join(options.output_dir, root_name) + '_jni.h'
-  GenerateJNIHeader(input_file, output_file, options)
+  args = parser.parse_args()
+  input_files = args.input_files
+  output_files = args.output_files
+  if not output_files:
+    output_files = [None] * len(input_files)
+
+  temp_dir = tempfile.mkdtemp()
+  try:
+    if args.jar_file:
+      with zipfile.ZipFile(args.jar_file) as z:
+        z.extractall(temp_dir, input_files)
+      input_files = [os.path.join(temp_dir, f) for f in input_files]
+
+    for java_path, header_path in zip(input_files, output_files):
+      GenerateJNIHeader(java_path, header_path, args)
+  finally:
+    shutil.rmtree(temp_dir)
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
