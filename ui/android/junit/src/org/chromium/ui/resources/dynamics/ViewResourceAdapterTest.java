@@ -174,6 +174,13 @@ public class ViewResourceAdapterTest {
     }
 
     @Test
+    public void testDropCachedBitmapNotDirty() {
+        mAdapter.getBitmap();
+        mAdapter.dropCachedBitmap();
+        assertFalse(mAdapter.isDirty());
+    }
+
+    @Test
     public void testDropCachedBitmapGCed() {
         WeakReference<Bitmap> bitmapWeakReference = new WeakReference<>(mAdapter.getBitmap());
         assertNotNull(bitmapWeakReference.get());

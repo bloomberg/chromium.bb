@@ -36,18 +36,19 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
     public ViewResourceAdapter(View view) {
         mView = view;
         mView.addOnLayoutChangeListener(this);
+        mDirtyRect.set(0, 0, mView.getWidth(), mView.getHeight());
     }
 
     /**
-     * If this resource is not dirty ({@link #isDirty()} returned {@code false}), this will return
-     * the last {@link Bitmap} built from the {@link View}.  Otherwise it will recapture a
+     * If this resource is dirty ({@link #isDirty()} returned {@code true}), it will recapture a
      * {@link Bitmap} of the {@link View}.
      * @see {@link DynamicResource#getBitmap()}.
      * @return A {@link Bitmap} representing the {@link View}.
      */
     @Override
     public Bitmap getBitmap() {
-        if (!isDirty()) return mBitmap;
+        if (!isDirty() && mBitmap != null) return mBitmap;
+
         TraceEvent.begin("ViewResourceAdapter:getBitmap");
         if (validateBitmap()) {
             Canvas canvas = new Canvas(mBitmap);
@@ -88,8 +89,6 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
 
     @Override
     public boolean isDirty() {
-        if (mBitmap == null) mDirtyRect.set(0, 0, mView.getWidth(), mView.getHeight());
-
         return !mDirtyRect.isEmpty();
     }
 

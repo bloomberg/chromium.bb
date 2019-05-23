@@ -5,6 +5,7 @@
 package org.chromium.ui.resources.dynamics;
 
 import org.chromium.ui.resources.Resource;
+import org.chromium.ui.resources.ResourceLoader.ResourceLoaderCallback;
 
 /**
  * A representation of a dynamic resource.  The contents of the resource might change from frame to
@@ -14,6 +15,9 @@ public interface DynamicResource extends Resource {
     /**
      * Note that this is called for every access to the resource during a frame.  If a resource is
      * dirty, it should not be dirty again during the same looper call.
+     * {@link DynamicResourceLoader#loadResource(int)} only notifies
+     * {@link ResourceLoaderCallback#onResourceLoaded} if the resource is dirty.
+     * Therefore, if the resource is not dirty, {@link #getBitmap()} doesn't get called.
      *
      * TODO(dtrainor): Add checks so that a dynamic resource **can't** be built more than once each
      * frame.
