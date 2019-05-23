@@ -61,11 +61,23 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)loadURL:(const GURL&)URL;
 
+// Reloads the page and waits for the loading to complete within a timeout, or a
+// GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)reload;
+
 // Navigates back to the previous page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)goBack;
+
+// Navigates forward to the next page and waits for the loading to complete
+// within a timeout, or a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)goForward;
 
 // Opens a new tab and waits for the new tab animation to complete within a
 // timeout, or a GREYAssert is induced.
@@ -114,18 +126,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Checks whether current WebState is loading.
 - (BOOL)isLoading WARN_UNUSED_RESULT;
-
-// Reloads the page and waits for the loading to complete within a timeout, or a
-// GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)reload;
-
-// Navigates forward to the next page and waits for the loading to complete
-// within a timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)goForward;
 
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;

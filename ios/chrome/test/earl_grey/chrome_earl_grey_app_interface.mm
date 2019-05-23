@@ -16,6 +16,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::BrowserCommandDispatcherForMainBVC;
+
 @implementation ChromeEarlGreyAppInterface
 
 + (NSError*)clearBrowsingHistory {
@@ -45,6 +47,10 @@
   return chrome_test_util::IsLoading();
 }
 
++ (void)startReloading {
+  [BrowserCommandDispatcherForMainBVC() reload];
+}
+
 + (void)openNewTab {
   chrome_test_util::OpenNewTab();
 }
@@ -60,8 +66,13 @@
 + (BOOL)closeAllIncognitoTabs {
   return chrome_test_util::CloseAllIncognitoTabs();
 }
-+ (void)goBack {
-  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
+
++ (void)startGoingBack {
+  [BrowserCommandDispatcherForMainBVC() goBack];
+}
+
++ (void)startGoingForward {
+  [BrowserCommandDispatcherForMainBVC() goForward];
 }
 
 @end

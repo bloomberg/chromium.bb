@@ -29,6 +29,9 @@
 // Returns YES if the current WebState is loading.
 + (BOOL)isLoading;
 
+// Reloads the page without waiting for the page to load.
++ (void)startReloading;
+
 // Opens a new tab, and does not wait for animations to complete.
 + (void)openNewTab;
 
@@ -43,8 +46,11 @@
 // Closes all incognito tabs. Return YES on success.
 + (BOOL)closeAllIncognitoTabs;
 
-// Navigates back to the previous page.
-+ (void)goBack;
+// Navigates back to the previous page without waiting for the page to load.
++ (void)startGoingBack;
+
+// Navigates forward to the next page without waiting for the page to load.
++ (void)startGoingForward;
 
 @end
 

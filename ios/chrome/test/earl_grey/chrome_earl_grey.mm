@@ -68,9 +68,23 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-- (NSError*)goBack {
-  [ChromeEarlGreyAppInterface goBack];
+#pragma mark - Navigation Utilities (EG2)
 
+- (NSError*)goBack {
+  [ChromeEarlGreyAppInterface startGoingBack];
+
+  [self waitForPageToFinishLoading];
+  return nil;
+}
+
+- (NSError*)reload {
+  [ChromeEarlGreyAppInterface startReloading];
+  [self waitForPageToFinishLoading];
+  return nil;
+}
+
+- (NSError*)goForward {
+  [ChromeEarlGreyAppInterface startGoingForward];
   [self waitForPageToFinishLoading];
   return nil;
 }
@@ -117,7 +131,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
-#pragma mark - Navigation Utilities (EG2)
 
 - (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait {
   [ChromeEarlGreyAppInterface
@@ -205,20 +218,6 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (BOOL)isLoading {
   return chrome_test_util::IsLoading();
-}
-
-- (NSError*)reload {
-  [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
-  [self waitForPageToFinishLoading];
-
-  return nil;
-}
-
-- (NSError*)goForward {
-  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
-  [self waitForPageToFinishLoading];
-
-  return nil;
 }
 
 - (void)closeCurrentTab {

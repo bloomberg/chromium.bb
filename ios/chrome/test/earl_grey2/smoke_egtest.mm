@@ -111,8 +111,10 @@
 // Tests navigation-related converted helpers in chrome_earl_grey.h.
 - (void)testURLNavigation {
   [ChromeEarlGrey loadURL:GURL("chrome://terms")];
-  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey reload];
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey goForward];
 }
 
 // Tests tab open/close-related converted helpers in chrome_earl_grey.h.
