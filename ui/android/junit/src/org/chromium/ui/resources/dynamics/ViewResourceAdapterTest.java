@@ -12,6 +12,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import static org.chromium.base.util.GarbageCollectionTestUtil.isGarbageCollected;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -212,26 +214,5 @@ public class ViewResourceAdapterTest {
         rect = mAdapter.getDirtyRect();
         assertEquals(mViewWidth, rect.width());
         assertEquals(mViewHeight, rect.height());
-    }
-
-    /**
-     * Sanity test for {@link #isGarbageCollected(WeakReference)}.
-     */
-    @Test
-    public void testIsGarbageCollected() {
-        Bitmap bitmap = Bitmap.createBitmap(1, 2, Bitmap.Config.ARGB_8888);
-        WeakReference<Bitmap> bitmapWeakReference = new WeakReference<>(bitmap);
-        assertNotNull(bitmapWeakReference.get());
-        assertFalse(isGarbageCollected(bitmapWeakReference));
-
-        bitmap = null;
-        assertTrue(isGarbageCollected(bitmapWeakReference));
-    }
-
-    private boolean isGarbageCollected(WeakReference<Bitmap> reference) {
-        Runtime runtime = Runtime.getRuntime();
-        runtime.runFinalization();
-        runtime.gc();
-        return reference.get() == null;
     }
 }

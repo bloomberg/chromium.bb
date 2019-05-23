@@ -3405,6 +3405,7 @@ if (is_android) {
     testonly = true
     java_files = [
       "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogram.java",
+      "android/junit/src/org/chromium/base/util/GarbageCollectionTestUtil.java",
       "test/android/junit/src/org/chromium/base/task/test/BackgroundShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/task/test/CustomShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRunner.java",
@@ -3436,6 +3437,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/process_launcher/ChildConnectionAllocatorTest.java",
       "android/junit/src/org/chromium/base/process_launcher/ChildProcessConnectionTest.java",
       "android/junit/src/org/chromium/base/task/TaskTraitsTest.java",
+      "android/junit/src/org/chromium/base/util/GarbageCollectionTestUtilTest.java",
       "test/android/junit/src/org/chromium/base/test/SetUpStatementTest.java",
       "test/android/junit/src/org/chromium/base/test/TestListInstrumentationRunListenerTest.java",
       "test/android/junit/src/org/chromium/base/test/util/AnnotationProcessingUtilsTest.java",
