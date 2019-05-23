@@ -110,6 +110,8 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
 
     default:
       // Some sort of failure occurred. Silently drop device request.
+      FIDO_LOG(ERROR) << "Unexpected status " << static_cast<int>(result)
+                      << " from U2F device";
       std::move(callback())
           .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
       break;
@@ -165,6 +167,8 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
 
     default:
       // An error has occurred, quit trying this device.
+      FIDO_LOG(ERROR) << "Unexpected status " << static_cast<int>(result)
+                      << " from U2F device";
       std::move(callback())
           .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
       break;
