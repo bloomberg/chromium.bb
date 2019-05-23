@@ -117,6 +117,18 @@ message SupportedScriptProto {
   optional PresentationProto presentation = 2;
 }
 
+// A message to describe a chip.
+message ChipProto {
+  // The type of the chip.
+  optional ChipType type = 1;
+
+  // The icon shown next to the text.
+  optional ChipIcon icon = 2;
+
+  // The text shown on the chip.
+  optional string text = 3;
+}
+
 enum ChipType {
   UNKNOWN_CHIP_TYPE = 0;
 
@@ -1156,6 +1168,10 @@ message ConfigureBottomSheetProto {
 message ShowFormProto {
   // The form to display.
   optional FormProto form = 1;
+
+  // The chip to display below the form. This chip will be enabled only if all
+  // form inputs are valid.
+  optional ChipProto chip = 2;
 }
 
 message FormProto {

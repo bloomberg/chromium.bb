@@ -16,6 +16,7 @@ namespace autofill_assistant {
 // A structure to represent a Chip shown in the carousel.
 struct Chip {
   Chip();
+  Chip(const ChipProto& chip_proto);
   ~Chip();
   Chip(Chip&&);
   Chip& operator=(Chip&&);

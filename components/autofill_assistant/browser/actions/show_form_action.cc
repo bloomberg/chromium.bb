@@ -108,10 +108,17 @@ void ShowFormAction::OnFormValuesChanged(ActionDelegate* delegate,
   // Show "Continue" chip.
   // TODO(crbug.com/806868): Make this chip configurable.
   auto chips = std::make_unique<std::vector<Chip>>();
-  chips->emplace_back();
-  chips->back().text =
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
-  chips->back().type = HIGHLIGHTED_ACTION;
+
+  if (proto_.show_form().has_chip()) {
+    chips->emplace_back(proto_.show_form().chip());
+    SetDefaultChipType(chips.get());
+  } else {
+    chips->emplace_back();
+    chips->back().text =
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+    chips->back().type = HIGHLIGHTED_ACTION;
+  }
+
   chips->back().disabled = !form_is_valid;
   if (form_is_valid) {
     chips->back().callback =
