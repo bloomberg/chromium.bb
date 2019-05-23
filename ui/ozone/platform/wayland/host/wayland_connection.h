@@ -81,10 +81,13 @@ class WaylandConnection : public PlatformEventSource,
   void CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
                                 base::File file,
                                 uint64_t length,
-                                const gfx::Size& size) override;
+                                const gfx::Size& size,
+                                uint32_t buffer_id) override;
   void PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                 const gfx::Rect& damage) override;
-  void DestroyShmBuffer(gfx::AcceleratedWidget widget) override;
+                                 const gfx::Rect& damage,
+                                 uint32_t buffer_id) override;
+  void DestroyShmBuffer(gfx::AcceleratedWidget widget,
+                        uint32_t buffer_id) override;
 
   // These methods are exclusively used by the WaylandBufferManager to notify
   // the |client_associated_ptr_| about buffer swaps' results.

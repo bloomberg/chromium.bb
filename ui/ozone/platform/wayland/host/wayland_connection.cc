@@ -241,23 +241,26 @@ void WaylandConnection::CommitBuffer(gfx::AcceleratedWidget widget,
 void WaylandConnection::CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
                                                  base::File file,
                                                  uint64_t length,
-                                                 const gfx::Size& size) {
+                                                 const gfx::Size& size,
+                                                 uint32_t buffer_id) {
   DCHECK(shm_buffer_manager_);
   if (!shm_buffer_manager_->CreateBufferForWidget(widget, std::move(file),
-                                                  length, size))
+                                                  length, size, buffer_id))
     TerminateGpuProcess("Failed to create SHM buffer.");
 }
 
 void WaylandConnection::PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                                  const gfx::Rect& damage) {
+                                                  const gfx::Rect& damage,
+                                                  uint32_t buffer_id) {
   DCHECK(shm_buffer_manager_);
-  if (!shm_buffer_manager_->PresentBufferForWidget(widget, damage))
+  if (!shm_buffer_manager_->PresentBufferForWidget(widget, damage, buffer_id))
     TerminateGpuProcess("Failed to present SHM buffer.");
 }
 
-void WaylandConnection::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
+void WaylandConnection::DestroyShmBuffer(gfx::AcceleratedWidget widget,
+                                         uint32_t buffer_id) {
   DCHECK(shm_buffer_manager_);
-  if (!shm_buffer_manager_->DestroyBuffer(widget))
+  if (!shm_buffer_manager_->DestroyBuffer(widget, buffer_id))
     TerminateGpuProcess("Failed to destroy SHM buffer.");
 }
 

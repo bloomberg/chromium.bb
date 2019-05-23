@@ -149,7 +149,8 @@ void WaylandConnectionProxy::CreateShmBufferForWidget(
     gfx::AcceleratedWidget widget,
     base::File file,
     size_t length,
-    const gfx::Size size) {
+    const gfx::Size size,
+    uint32_t buffer_id) {
   DCHECK(gpu_thread_runner_);
   // Do a mojo call on the GpuMainThread instead of the io child thread to
   // ensure proper functionality.
@@ -157,57 +158,63 @@ void WaylandConnectionProxy::CreateShmBufferForWidget(
       FROM_HERE,
       base::BindOnce(&WaylandConnectionProxy::CreateShmBufferInternal,
                      base::Unretained(this), widget, std::move(file), length,
-                     std::move(size)));
+                     std::move(size), buffer_id));
 }
 
 void WaylandConnectionProxy::CreateShmBufferInternal(
     gfx::AcceleratedWidget widget,
     base::File file,
     size_t length,
-    const gfx::Size size) {
+    const gfx::Size size,
+    uint32_t buffer_id) {
   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   if (!wc_ptr_.is_bound())
     BindHostInterface();
 
   DCHECK(wc_ptr_);
-  wc_ptr_->CreateShmBufferForWidget(widget, std::move(file), length, size);
+  wc_ptr_->CreateShmBufferForWidget(widget, std::move(file), length, size,
+                                    buffer_id);
 }
 
 void WaylandConnectionProxy::PresentShmBufferForWidget(
     gfx::AcceleratedWidget widget,
-    const gfx::Rect& damage) {
+    const gfx::Rect& damage,
+    uint32_t buffer_id) {
   DCHECK(gpu_thread_runner_);
   // Do a mojo call on the GpuMainThread instead of the io child thread to
   // ensure proper functionality.
   gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandConnectionProxy::PresentShmBufferForWidgetInternal,
-                     base::Unretained(this), widget, damage));
+                     base::Unretained(this), widget, damage, buffer_id));
 }
 
 void WaylandConnectionProxy::PresentShmBufferForWidgetInternal(
     gfx::AcceleratedWidget widget,
-    const gfx::Rect& damage) {
+    const gfx::Rect& damage,
+    uint32_t buffer_id) {
   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK(wc_ptr_);
-  wc_ptr_->PresentShmBufferForWidget(widget, damage);
+  wc_ptr_->PresentShmBufferForWidget(widget, damage, buffer_id);
 }
 
-void WaylandConnectionProxy::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
+void WaylandConnectionProxy::DestroyShmBuffer(gfx::AcceleratedWidget widget,
+                                              uint32_t buffer_id) {
   DCHECK(gpu_thread_runner_);
   // Do a mojo call on the GpuMainThread instead of the io child thread to
   // ensure proper functionality.
   gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandConnectionProxy::DestroyShmBufferInternal,
-                     base::Unretained(this), widget));
+                     base::Unretained(this), widget, buffer_id));
 }
 
 void WaylandConnectionProxy::DestroyShmBufferInternal(
-    gfx::AcceleratedWidget widget) {
+    gfx::AcceleratedWidget widget,
+    uint32_t buffer_id) {
   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK(wc_ptr_);
-  wc_ptr_->DestroyShmBuffer(widget);
+  wc_ptr_->DestroyShmBuffer(widget, buffer_id);
 }
 
 WaylandWindow* WaylandConnectionProxy::GetWindow(

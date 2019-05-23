@@ -31,7 +31,7 @@ WaylandCanvasSurface::WaylandCanvasSurface(WaylandConnectionProxy* connection,
 
 WaylandCanvasSurface::~WaylandCanvasSurface() {
   if (sk_surface_)
-    connection_->DestroyShmBuffer(widget_);
+    connection_->DestroyShmBuffer(widget_, buffer_id_);
 }
 
 sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
@@ -54,8 +54,8 @@ sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
           std::move(shm_region));
   base::subtle::ScopedFDPair fd_pair = platform_shm.PassPlatformHandle();
   base::File file(fd_pair.fd.release());
-  connection_->CreateShmBufferForWidget(widget_, std::move(file), length,
-                                        size_);
+  connection_->CreateShmBufferForWidget(widget_, std::move(file), length, size_,
+                                        ++buffer_id_);
 
   auto shm_mapping_on_heap =
       std::make_unique<base::WritableSharedMemoryMapping>(
@@ -80,13 +80,13 @@ void WaylandCanvasSurface::ResizeCanvas(const gfx::Size& viewport_size) {
   // smaller than the old size).
   if (sk_surface_) {
     sk_surface_.reset();
-    connection_->DestroyShmBuffer(widget_);
+    connection_->DestroyShmBuffer(widget_, buffer_id_);
   }
   size_ = viewport_size;
 }
 
 void WaylandCanvasSurface::PresentCanvas(const gfx::Rect& damage) {
-  connection_->PresentShmBufferForWidget(widget_, damage);
+  connection_->PresentShmBufferForWidget(widget_, damage, buffer_id_);
 }
 
 std::unique_ptr<gfx::VSyncProvider>

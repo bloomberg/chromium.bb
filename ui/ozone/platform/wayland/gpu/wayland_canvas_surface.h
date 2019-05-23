@@ -39,6 +39,11 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
   gfx::Size size_;
   sk_sp<SkSurface> sk_surface_;
 
+  // The id of the current existing buffer. Even though, there can only be one
+  // buffer (SkSurface) at a time, the buffer manager on the browser process
+  // side requires buffer id to be passed.
+  uint32_t buffer_id_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(WaylandCanvasSurface);
 };
 

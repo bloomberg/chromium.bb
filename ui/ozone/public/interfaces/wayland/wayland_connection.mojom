@@ -55,20 +55,25 @@ interface WaylandConnection {
   // Methods used for software rendering:
   //
   // Asks Wayland to create a wl_buffer based on the shared memory |file|
-  // descriptor. There can be only one buffer per |widget|.
+  // descriptor. The |length| is the length of the shared memory, |size|
+  // is the size of buffer in bytes and |buffer_id| is the id of the buffer.
   CreateShmBufferForWidget(gfx.mojom.AcceleratedWidget widget,
                            mojo_base.mojom.File file,
                            uint64 length,
-                           gfx.mojom.Size size);
+                           gfx.mojom.Size size,
+                           uint32 buffer_id);
 
-  // Asks Wayland to damage and commit previously created buffer for the
-  // |widget|.
+  // Attaches a wl_buffer to a WaylandWindow's surface with the following
+  // |widget|. The |damage| describes changed the region of the buffer.
+  // The |buffer_id| is a unique id for the buffer, which is used to
+  // identify imported wl_buffers on the browser process side mapped with
+  // the ones on the gpu process.
   PresentShmBufferForWidget(gfx.mojom.AcceleratedWidget widget,
-                            gfx.mojom.Rect damage);
+                            gfx.mojom.Rect damage,
+                            uint32 buffer_id);
 
-  // Destroys the previously created shared memory based buffer for the
-  // |widget|.
-  DestroyShmBuffer(gfx.mojom.AcceleratedWidget widget);
+  // Destroys the buffer with |buffer_id| for the |widget|.
+  DestroyShmBuffer(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id);
 };
 
 

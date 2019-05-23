@@ -107,14 +107,16 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   void CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
                                 base::File file,
                                 size_t length,
-                                const gfx::Size size);
+                                const gfx::Size size,
+                                uint32_t buffer_id);
 
   // Asks to damage and commit previously created buffer for the |widget|.
   void PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                 const gfx::Rect& damage);
+                                 const gfx::Rect& damage,
+                                 uint32_t buffer_id);
 
   // Asks to destroy shared memory based buffer for the |widget|.
-  void DestroyShmBuffer(gfx::AcceleratedWidget widget);
+  void DestroyShmBuffer(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
   // Methods, which must be used when a single process mode is used (GPU is
   // hosted in the browser process).
@@ -153,10 +155,13 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   void CreateShmBufferInternal(gfx::AcceleratedWidget widget,
                                base::File file,
                                size_t length,
-                               const gfx::Size size);
+                               const gfx::Size size,
+                               uint32_t buffer_id);
   void PresentShmBufferForWidgetInternal(gfx::AcceleratedWidget widget,
-                                         const gfx::Rect& damage);
-  void DestroyShmBufferInternal(gfx::AcceleratedWidget widget);
+                                         const gfx::Rect& damage,
+                                         uint32_t buffer_id);
+  void DestroyShmBufferInternal(gfx::AcceleratedWidget widget,
+                                uint32_t buffer_id);
 
   void BindHostInterface();
 

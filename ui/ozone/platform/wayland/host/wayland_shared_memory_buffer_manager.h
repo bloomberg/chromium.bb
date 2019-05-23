@@ -33,20 +33,34 @@ class WaylandShmBufferManager {
   bool CreateBufferForWidget(gfx::AcceleratedWidget widget,
                              base::File file,
                              size_t length,
-                             const gfx::Size& size);
+                             const gfx::Size& size,
+                             uint32_t buffer_id);
 
-  // Attaches and commits a |wl_buffer| created for the |widget| in the Create
-  // method.
+  // Attaches and commits a |wl_buffer| with |buffer_id| to a surface with the
+  // |widget|.
   bool PresentBufferForWidget(gfx::AcceleratedWidget widget,
-                              const gfx::Rect& damage);
+                              const gfx::Rect& damage,
+                              uint32_t buffer_id);
 
-  // Destroyes a |wl_buffer|, which was created for the |widget| in the Create
-  // method.
-  bool DestroyBuffer(gfx::AcceleratedWidget widget);
+  // Destroyes a |wl_buffer| with the |buffer_id| for a surface with the
+  // |widget|.
+  bool DestroyBuffer(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
  private:
+  struct Buffer {
+    Buffer() = delete;
+    Buffer(gfx::AcceleratedWidget widget, wl::Object<wl_buffer> buffer);
+    ~Buffer();
+
+    // Widget this buffer is created for.
+    gfx::AcceleratedWidget widget;
+
+    // Actual wayland buffer object.
+    wl::Object<wl_buffer> buffer;
+  };
+
   // A container of created buffers.
-  base::flat_map<gfx::AcceleratedWidget, wl::Object<wl_buffer>> shm_buffers_;
+  base::flat_map<uint32_t, std::unique_ptr<Buffer>> shm_buffers_;
 
   // Non-owned pointer to the main connection.
   WaylandConnection* connection_ = nullptr;
