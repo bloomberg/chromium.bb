@@ -352,6 +352,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Element at that rect is visible in the viewport. Returns the new absolute
   // rect of the target rect after all scrolls are completed, in the coordinate
   // space of the local root frame.
+  // TODO(nburris): The returned rect is actually in document coordinates, not
+  // root frame coordinates.
   LayoutRect ScrollRectToVisible(const LayoutRect&,
                                  const WebScrollIntoViewParams&);
 

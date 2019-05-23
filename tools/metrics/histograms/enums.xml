@@ -23271,6 +23271,8 @@ Called by update_net_error_codes.py.-->
   <int value="2898" label="PaymentRequestPaymentMethodChange"/>
   <int value="2899" label="V8Animation_UpdatePlaybackRate_Method"/>
   <int value="2900" label="TwoValuedOverflow"/>
+  <int value="2901" label="TextFragmentAnchor"/>
+  <int value="2902" label="TextFragmentAnchorMatchFound"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

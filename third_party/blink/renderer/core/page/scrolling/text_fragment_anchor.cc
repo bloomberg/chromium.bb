@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
 namespace blink {
 
@@ -67,9 +68,13 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreate(const KURL& url,
 TextFragmentAnchor::TextFragmentAnchor(
     const std::vector<TextFragmentSelector>& text_fragment_selectors,
     LocalFrame& frame)
-    : frame_(&frame) {
+    : frame_(&frame),
+      metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
+          frame_->GetDocument())) {
   DCHECK(!text_fragment_selectors.empty());
   DCHECK(frame_->View());
+
+  metrics_->DidCreateAnchor(text_fragment_selectors.size());
 
   text_fragment_finders_.reserve(text_fragment_selectors.size());
   for (TextFragmentSelector selector : text_fragment_selectors)
@@ -83,15 +88,25 @@ bool TextFragmentAnchor::Invoke() {
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextMatch());
 
-  if (!user_scrolled_)
-    first_match_needs_scroll_ = true;
+  if (user_scrolled_)
+    metrics_->ScrollCancelled();
 
-  for (auto& finder : text_fragment_finders_)
-    finder.FindMatch(*frame_->GetDocument());
+  first_match_needs_scroll_ = !user_scrolled_;
 
-  // Scrolling into view from the call above might cause us to set
-  // search_finished_ so recompute here.
+  {
+    // FindMatch might cause scrolling and set user_scrolled_ so reset it when
+    // it's done.
+    base::AutoReset<bool>(&user_scrolled_, user_scrolled_);
+
+    metrics_->ResetMatchCount();
+    for (auto& finder : text_fragment_finders_)
+      finder.FindMatch(*frame_->GetDocument());
+  }
+
   search_finished_ = frame_->GetDocument()->IsLoadCompleted();
+
+  if (search_finished_)
+    metrics_->ReportMetrics();
 
   return !search_finished_;
 }
@@ -109,18 +124,23 @@ void TextFragmentAnchor::PerformPreRafActions() {}
 
 void TextFragmentAnchor::DidCompleteLoad() {
   // If there is a pending layout we'll finish the search from Invoke.
-  if (!frame_->View()->NeedsLayout())
+  if (!frame_->View()->NeedsLayout()) {
+    metrics_->ReportMetrics();
     search_finished_ = true;
+  }
 }
 
 void TextFragmentAnchor::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
+  visitor->Trace(metrics_);
   FragmentAnchor::Trace(visitor);
 }
 
 void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   if (search_finished_)
     return;
+
+  metrics_->DidFindMatch();
 
   if (first_match_needs_scroll_) {
     first_match_needs_scroll_ = false;
@@ -137,11 +157,25 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
 
     DCHECK(node.GetLayoutObject());
 
-    node.GetLayoutObject()->ScrollRectToVisible(
-        bounding_box,
-        WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                                ScrollAlignment::kAlignCenterIfNeeded,
-                                kProgrammaticScroll));
+    LayoutRect scrolled_bounding_box =
+        node.GetLayoutObject()->ScrollRectToVisible(
+            bounding_box,
+            WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
+                                    ScrollAlignment::kAlignCenterIfNeeded,
+                                    kProgrammaticScroll));
+    metrics_->DidScroll();
+
+    // We scrolled the text into view if the main document scrolled or the text
+    // bounding box changed, i.e. if it was scrolled in a nested scroller.
+    // TODO(nburris): The rect returned by ScrollRectToVisible,
+    // scrolled_bounding_box, should be in frame coordinates in which case
+    // just checking its location would suffice, but there is a bug where it is
+    // actually in document coordinates and therefore does not change with a
+    // main document scroll.
+    if (!frame_->View()->GetScrollableArea()->GetScrollOffset().IsZero() ||
+        scrolled_bounding_box.Location() != bounding_box.Location()) {
+      metrics_->DidNonZeroScroll();
+    }
   }
   EphemeralRange dom_range =
       EphemeralRange(ToPositionInDOMTree(range.StartPosition()),
@@ -151,6 +185,10 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   frame_->GetDocument()->Markers().AddTextMatchMarker(
       dom_range, TextMatchMarker::MatchStatus::kInactive);
   frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(true);
+}
+
+void TextFragmentAnchor::DidFindAmbiguousMatch() {
+  metrics_->DidFindAmbiguousMatch();
 }
 
 }  // namespace blink

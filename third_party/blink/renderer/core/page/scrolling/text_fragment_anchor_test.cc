@@ -846,6 +846,53 @@ TEST_F(TextFragmentAnchorTest, OneContextTerm) {
   EXPECT_EQ(10u, markers.at(0)->EndOffset());
 }
 
+// Test that a user scroll cancels the scroll into view.
+TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
+  SimRequest request("https://example.com/test.html#targetText=test",
+                     "text/html");
+  SimSubresourceRequest css_request("https://example.com/test.css", "text/css");
+  LoadURL("https://example.com/test.html#targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+        visibility: hidden;
+      }
+    </style>
+    <link rel=stylesheet href=test.css>
+    <p id="text">This is a test page</p>
+  )HTML");
+
+  Compositor().PaintFrame();
+  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
+                                                   kUserScroll);
+
+  // Set the target text to visible and change its position to cause a layout
+  // and invoke the fragment anchor.
+  css_request.Complete("p { visibility: visible; top: 1001px; }");
+
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+  EXPECT_FALSE(ViewportRect().Contains(BoundingRectInFrame(p)));
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "test"
+  auto* text = To<Text>(p.firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(10u, markers.at(0)->StartOffset());
+  EXPECT_EQ(14u, markers.at(0)->EndOffset());
+}
+
 }  // namespace
 
 }  // namespace blink

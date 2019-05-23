@@ -2292,6 +2292,8 @@ enum WebFeature {
   kPaymentRequestPaymentMethodChange = 2898,
   kV8Animation_UpdatePlaybackRate_Method = 2899,
   kTwoValuedOverflow = 2900,
+  kTextFragmentAnchor = 2901,
+  kTextFragmentAnchorMatchFound = 2902,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

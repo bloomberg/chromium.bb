@@ -130,6 +130,26 @@ TextFragmentFinder::TextFragmentFinder(Client& client,
 void TextFragmentFinder::FindMatch(Document& document) {
   PositionInFlatTree search_start =
       PositionInFlatTree::FirstPositionInNode(document);
+
+  EphemeralRangeInFlatTree match =
+      FindMatchFromPosition(document, search_start);
+
+  if (match.IsNotNull()) {
+    client_.DidFindMatch(match);
+
+    // Continue searching to see if we have an ambiguous selector.
+    // TODO(crbug.com/919204): This is temporary and only for measuring
+    // ambiguous matching during prototyping.
+    EphemeralRangeInFlatTree ambiguous_match =
+        FindMatchFromPosition(document, match.EndPosition());
+    if (ambiguous_match.IsNotNull())
+      client_.DidFindAmbiguousMatch();
+  }
+}
+
+EphemeralRangeInFlatTree TextFragmentFinder::FindMatchFromPosition(
+    Document& document,
+    PositionInFlatTree search_start) {
   PositionInFlatTree search_end;
   if (document.documentElement() && document.documentElement()->lastChild()) {
     search_end =
@@ -149,7 +169,7 @@ void TextFragmentFinder::FindMatch(Document& document) {
         FindMatchInRangeWithContext(selector_.Start(), selector_.Prefix(),
                                     kNoContext, search_start, search_end);
     if (start_match.IsNull())
-      return;
+      return start_match;
 
     // TODO(crbug.com/924964): Determine what we should do if the start text and
     // end text are the same (and there are no context terms). This
@@ -165,8 +185,7 @@ void TextFragmentFinder::FindMatch(Document& document) {
     }
   }
 
-  if (match.IsNotNull())
-    client_.DidFindMatch(match);
+  return match;
 }
 
 }  // namespace blink
