@@ -133,9 +133,9 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   // or fails, and at that time the vector is cleared.
   if (element_timings_.size() == 1) {
     frame->GetChromeClient().NotifySwapTime(
-        *frame, ConvertToBaseOnceCallback(CrossThreadBindOnce(
-                    &ImageElementTiming::ReportImagePaintSwapTime,
-                    WrapCrossThreadWeakPersistent(this))));
+        *frame,
+        CrossThreadBindOnce(&ImageElementTiming::ReportImagePaintSwapTime,
+                            WrapCrossThreadWeakPersistent(this)));
   }
 }
 

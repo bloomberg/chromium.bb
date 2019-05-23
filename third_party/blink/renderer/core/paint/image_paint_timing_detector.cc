@@ -174,12 +174,13 @@ void ImagePaintTimingDetector::NotifyBackgroundImageRemoved(
 }
 
 void ImagePaintTimingDetector::RegisterNotifySwapTime() {
-  WebWidgetClient::ReportTimeCallback callback =
-      WTF::Bind(&ImagePaintTimingDetector::ReportSwapTime,
-                WrapWeakPersistent(this), last_registered_frame_index_);
+  auto callback = CrossThreadBindOnce(&ImagePaintTimingDetector::ReportSwapTime,
+                                      WrapCrossThreadWeakPersistent(this),
+                                      last_registered_frame_index_);
   if (notify_swap_time_override_for_testing_) {
     // Run is not to run the |callback|, but to queue it.
-    notify_swap_time_override_for_testing_.Run(std::move(callback));
+    notify_swap_time_override_for_testing_.Run(
+        ConvertToBaseOnceCallback(std::move(callback)));
     num_pending_swap_callbacks_++;
     return;
   }

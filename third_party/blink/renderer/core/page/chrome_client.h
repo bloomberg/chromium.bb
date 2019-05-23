@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow
@@ -400,8 +401,10 @@ class CORE_EXPORT ChromeClient
   // The |callback| will be fired when the corresponding renderer frame for the
   // |frame| is submitted (still called "swapped") to the display compositor
   // (either with DidSwap or DidNotSwap).
-  virtual void NotifySwapTime(LocalFrame& frame,
-                              WebWidgetClient::ReportTimeCallback callback) {}
+  using ReportTimeCallback =
+      WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
+                                        base::TimeTicks)>;
+  virtual void NotifySwapTime(LocalFrame& frame, ReportTimeCallback callback) {}
 
   virtual void FallbackCursorModeLockCursor(LocalFrame* frame,
                                             bool left,

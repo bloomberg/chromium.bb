@@ -184,8 +184,8 @@ void PaintTiming::RegisterNotifySwapTime(PaintEvent event,
   // happen.
   if (!GetFrame() || !GetFrame()->GetPage())
     return;
-  GetFrame()->GetPage()->GetChromeClient().NotifySwapTime(
-      *GetFrame(), ConvertToBaseOnceCallback(std::move(callback)));
+  GetFrame()->GetPage()->GetChromeClient().NotifySwapTime(*GetFrame(),
+                                                          std::move(callback));
 }
 
 void PaintTiming::ReportSwapTime(PaintEvent event,

@@ -351,9 +351,8 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
   // not previously empty.
   if (event_timings_.size() == 1) {
     GetFrame()->GetChromeClient().NotifySwapTime(
-        *GetFrame(), ConvertToBaseOnceCallback(CrossThreadBindOnce(
-                         &WindowPerformance::ReportEventTimings,
-                         WrapCrossThreadWeakPersistent(this))));
+        *GetFrame(), CrossThreadBindOnce(&WindowPerformance::ReportEventTimings,
+                                         WrapCrossThreadWeakPersistent(this)));
   }
 }
 

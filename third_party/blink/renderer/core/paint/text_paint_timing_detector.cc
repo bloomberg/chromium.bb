@@ -139,8 +139,7 @@ void TextPaintTimingDetector::RegisterNotifySwapTime(
   LocalFrame& frame = frame_view_->GetFrame();
   if (!frame.GetPage())
     return;
-  frame.GetPage()->GetChromeClient().NotifySwapTime(
-      frame, ConvertToBaseOnceCallback(std::move(callback)));
+  frame.GetPage()->GetChromeClient().NotifySwapTime(frame, std::move(callback));
   awaiting_swap_promise_ = true;
 }
 

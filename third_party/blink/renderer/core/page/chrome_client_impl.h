@@ -248,8 +248,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                      const PaintImage&,
                      base::OnceCallback<void(bool)>) override;
 
-  void NotifySwapTime(LocalFrame& frame,
-                      WebWidgetClient::ReportTimeCallback callback) override;
+  void NotifySwapTime(LocalFrame& frame, ReportTimeCallback callback) override;
 
   void FallbackCursorModeLockCursor(LocalFrame* frame,
                                     bool left,
