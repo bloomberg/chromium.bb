@@ -432,10 +432,21 @@ template("mac_toolchain") {
       # constructed using shell variable $OLDPWD (automatically set when
       # cd is used) as computing the relative path is a bit complex and
       # using pwd would requires a sub-shell to be created.
+      #
+      # A special case exists for copying symbolic links. The pax command,
+      # as noted above, preserves symbolic links but only if they are a child
+      # node of source. But if the source itself is a symbolic link to a
+      # directory, the cd into it will copy it as a logical tree rather than
+      # a symbolic link. Similarly, if source is a symbolic link to a file,
+      # then the copy_command hard link will not produce a symbolic link, it
+      # would hard link the file pointed to by the symbolic link.
       _copydir = "mkdir -p {{output}} && cd {{source}} && " +
                  "pax -rwl . \"\$OLDPWD\"/{{output}}"
-      command = "rm -rf {{output}} && if [[ -d {{source}} ]]; then " +
-                _copydir + "; else " + copy_command + "; fi"
+      _copylink = "ln -s \$(readlink {{source}}) {{output}}"
+      command = "rm -rf {{output}} && " +
+                "if [[ -L {{source}} ]]; then $_copylink; " +
+                "elif [[ -d {{source}} ]]; then $_copydir; " +
+                "else $copy_command; fi"
 
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
       pool = ":bundle_pool($default_toolchain)"
