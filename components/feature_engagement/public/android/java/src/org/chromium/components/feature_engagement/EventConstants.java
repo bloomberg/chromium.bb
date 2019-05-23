@@ -175,6 +175,9 @@ public final class EventConstants {
     public static final String KEYBOARD_ACCESSORY_PAYMENT_AUTOFILLED =
             "keyboard_accessory_payment_suggestion_accepted";
 
+    /** The Explore Sites tile was tapped. */
+    public static final String EXPLORE_SITES_TILE_TAPPED = "explore_sites_tile_tapped";
+
     /**
      * Do not instantiate.
      */

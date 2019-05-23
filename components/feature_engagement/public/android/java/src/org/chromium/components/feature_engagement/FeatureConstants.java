@@ -53,6 +53,7 @@ public @interface FeatureConstants {
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
     String HOMEPAGE_TILE_FEATURE = "IPH_HomepageTile";
     String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
+    String EXPLORE_SITES_TILE_FEATURE = "IPH_ExploreSitesTile";
 
     /**
      * An IPH feature that encourages users who search a query from a web page in a new tab, to use
