@@ -265,20 +265,6 @@ using base::UserMetricsAction;
   return self.headerView;
 }
 
-#pragma mark - UIViewController
-
-- (void)viewWillTransitionToSize:(CGSize)size
-       withTransitionCoordinator:
-           (id<UIViewControllerTransitionCoordinator>)coordinator {
-  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-  [coordinator
-      animateAlongsideTransition:^(
-          id<UIViewControllerTransitionCoordinatorContext> context) {
-        [self.headerView adjustIdentityDiscConstraints];
-      }
-                      completion:nil];
-}
-
 #pragma mark - Private
 
 // Initialize and add a search field tap target and a voice search button.

@@ -41,13 +41,6 @@
 // Can only be added once.
 - (void)addToolbarView:(UIView*)toolbarView;
 
-// Adjusts the autolayout constraints for |identityDiscView| when
-// UIViewController changes size. When an iPhone is rotated from portrait
-// (no top toolbar) to landscape (with top toolbar), the placement of Identity
-// Disc has to be shifted down below the top toolbar. Otherwise, the Identity
-// Disc may be obscured by the top toolbar in landscape mode.
-- (void)adjustIdentityDiscConstraints;
-
 // Returns the progress of the search field position along
 // |ntp_header::kAnimationDistance| as the offset changes.
 - (CGFloat)searchFieldProgressForOffset:(CGFloat)offset

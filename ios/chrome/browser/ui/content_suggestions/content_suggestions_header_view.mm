@@ -54,8 +54,8 @@ CGFloat ToolbarHeight() {
 
 // Returns the amount of vertical space to allow for the existence of a top
 // toolbar when iPhone is in landscape orientation.
-CGFloat IdentityDiscToolbarOffset() {
-  return IsCompactHeight() ? ToolbarHeight() : 0;
+CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
+  return IsCompactHeight(environment) ? ToolbarHeight() : 0;
 }
 
 }  // namespace
@@ -114,7 +114,7 @@ CGFloat IdentityDiscToolbarOffset() {
   id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
   self.identityDiscTopConstraint = [self.identityDiscView.topAnchor
       constraintEqualToAnchor:layoutGuide.topAnchor
-                     constant:IdentityDiscToolbarOffset()];
+                     constant:IdentityDiscToolbarOffset(self)];
   CGFloat dimension =
       ntp_home::kIdentityAvatarDimension + 2 * ntp_home::kIdentityAvatarMargin;
   [NSLayoutConstraint activateConstraints:@[
@@ -124,15 +124,6 @@ CGFloat IdentityDiscToolbarOffset() {
         constraintEqualToAnchor:layoutGuide.trailingAnchor],
     self.identityDiscTopConstraint
   ]];
-}
-
-- (void)adjustIdentityDiscConstraints {
-  // identityDiscView may not be set.
-  if (!self.identityDiscView)
-    return;
-
-  DCHECK(IsIdentityDiscFeatureEnabled());
-  self.identityDiscTopConstraint.constant = IdentityDiscToolbarOffset();
 }
 
 - (void)addViewsToSearchField:(UIView*)searchField {
@@ -403,6 +394,27 @@ CGFloat IdentityDiscToolbarOffset() {
                          [UIColor colorWithWhite:0 alpha:alpha];
                    }
                    completion:nil];
+}
+
+#pragma mark - UITraitEnvironment
+
+// Adjusts the autolayout constraints for |identityDiscView| when view changes
+// size. When an iPhone is rotated from portrait (no top toolbar) to landscape
+// (with top toolbar), the placement of Identity Disc has to be shifted down
+// below the top toolbar. Otherwise, the Identity Disc may be obscured by the
+// top toolbar in landscape mode.
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  // identityDiscView may not be set if feature is not enabled.
+  if (!self.identityDiscView)
+    return;
+  DCHECK(IsIdentityDiscFeatureEnabled());
+  if ((self.traitCollection.verticalSizeClass !=
+       previousTraitCollection.verticalSizeClass) ||
+      (self.traitCollection.horizontalSizeClass !=
+       previousTraitCollection.horizontalSizeClass)) {
+    self.identityDiscTopConstraint.constant = IdentityDiscToolbarOffset(self);
+  }
 }
 
 #pragma mark - Property accessors
