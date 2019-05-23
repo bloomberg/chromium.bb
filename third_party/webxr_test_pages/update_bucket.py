@@ -7,6 +7,7 @@ from __future__ import print_function
 
 import argparse
 import logging
+import mimetypes
 import os
 import re
 import subprocess
@@ -38,6 +39,12 @@ BUCKET_COPY_RE = re.compile(r'^r(\d+)')
 WINDOWS_EXES = {
   'git': 'git.bat',
   'gsutil.py': 'gsutil.py.bat',
+}
+
+SUFFIX_TYPES = {
+  'js': 'application/javascript',
+  'css': 'text/css',
+  'html': 'text/html',
 }
 
 g_flags = None
@@ -126,6 +133,21 @@ def write_to_bucket(cr_position):
   run_modify('gsutil.py', '-m', 'rsync', '-x', 'media', '-r', './' + TEST_SUBDIR,
           destination)
 
+  # The copy used mime types based on system-local mappings which may be
+  # misconfigured. Sanity check and fix if needed.
+  check_and_fix_content_types(destination)
+
+def check_and_fix_content_types(destination):
+  mimetypes.init()
+  for suffix, content_type in SUFFIX_TYPES.iteritems():
+    configured_type = mimetypes.types_map.get('.' + suffix)
+    if configured_type != content_type:
+      logging.info('Fixing content type mismatch for .%s: found %s, '
+                   'expected %s.' % (suffix, configured_type, content_type))
+      run_modify('gsutil.py', '-m', 'setmeta', '-h',
+                 'Content-type:' + content_type,
+                 destination + '/**.' + suffix)
+
 def write_index():
   """Updates Cloud Storage index.html based on available test copies"""
   cr_positions = get_bucket_copies()
@@ -192,6 +214,14 @@ def update_test_copies():
 
   return need_index_update
 
+def numeric_string(value):
+  """Ensure value is a string containing an integer."""
+  # This is used for validating flag values - the usual idiom would be to use
+  # "type=int", but that would convert the value to an integer, and it's more
+  # convenient to keep it string-valued for use in concatenation elsewhere.
+  # Throws an exception if the integer conversion fails.
+  return str(int(value))
+
 def main():
   parser = argparse.ArgumentParser(
       description="""
@@ -230,7 +260,8 @@ content from failed uploads using the cloud console before retrying.
   parser.add_argument('--ignore-unclean-status', action="store_true",
                       help=("Proceed with copy even if there are uncommitted "
                             "local changes in the git working directory"))
-  parser.add_argument('--force-destination-cr-position',
+  parser.add_argument('--force-destination-cr-position', metavar='NUMBER',
+                      type=numeric_string,
                       help=("Force writing current content to the specified "
                             "destination CR position instead of determining "
                             "the name based on local git history, bypassing "
