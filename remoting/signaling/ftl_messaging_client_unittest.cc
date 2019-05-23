@@ -264,6 +264,31 @@ TEST_F(FtlMessagingClientTest, TestPullMessages_Unauthenticated) {
   run_loop.Run();
 }
 
+TEST_F(FtlMessagingClientTest, TestPullMessages_IgnoresMessageWithoutRegId) {
+  base::RunLoop run_loop;
+
+  auto subscription = messaging_client_->RegisterMessageCallback(
+      CreateNotReachedMessageCallback());
+
+  messaging_client_->PullMessages(test::CheckStatusThenQuitRunLoopCallback(
+      FROM_HERE, grpc::StatusCode::OK, &run_loop));
+
+  ftl::PullMessagesResponse response;
+  ftl::InboxMessage* message = response.add_messages();
+  *message = CreateInboxMessage(kMessage1Id, kMessage1Text);
+  message->clear_sender_registration_id();
+  ServerWaitAndRespondToPullMessagesRequest(response, grpc::Status::OK);
+  ServerWaitAndRespondToAckMessagesRequest(
+      base::BindLambdaForTesting([&](const ftl::AckMessagesRequest& request) {
+        EXPECT_EQ(1, request.messages_size());
+        EXPECT_EQ(kFakeReceiverId, request.messages(0).receiver_id().id());
+        EXPECT_EQ(kMessage1Id, request.messages(0).message_id());
+        return grpc::Status::OK;
+      }),
+      base::DoNothing());
+  run_loop.Run();
+}
+
 TEST_F(FtlMessagingClientTest, TestPullMessages_IgnoresUnknownMessageType) {
   base::RunLoop run_loop;
 
@@ -275,9 +300,7 @@ TEST_F(FtlMessagingClientTest, TestPullMessages_IgnoresUnknownMessageType) {
 
   ftl::PullMessagesResponse response;
   ftl::InboxMessage* message = response.add_messages();
-  message->set_message_id(kMessage1Id);
-  message->mutable_sender_id()->set_id(kFakeSenderId);
-  message->mutable_receiver_id()->set_id(kFakeReceiverId);
+  *message = CreateInboxMessage(kMessage1Id, kMessage1Text);
   message->set_message_type(ftl::InboxMessage_MessageType_UNKNOWN);
   ServerWaitAndRespondToPullMessagesRequest(response, grpc::Status::OK);
   ServerWaitAndRespondToAckMessagesRequest(

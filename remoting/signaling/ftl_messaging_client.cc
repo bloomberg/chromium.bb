@@ -216,6 +216,11 @@ void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
   }
   message_tracker_.TrackId(message.message_id());
 
+  if (message.sender_registration_id().empty()) {
+    LOG(WARNING) << "Ignored incoming message with no sender registration ID.";
+    return;
+  }
+
   if (message.message_type() !=
       ftl::InboxMessage_MessageType_CHROMOTING_MESSAGE) {
     LOG(WARNING) << "Received message with unknown type: "
