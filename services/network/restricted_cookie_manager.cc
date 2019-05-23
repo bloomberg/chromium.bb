@@ -20,8 +20,6 @@
 #include "net/cookies/cookie_util.h"
 #include "services/network/cookie_managers_shared.h"
 #include "services/network/cookie_settings.h"
-#include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace network {
 
@@ -81,18 +79,10 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 RestrictedCookieManager::RestrictedCookieManager(
     net::CookieStore* cookie_store,
     const CookieSettings* cookie_settings,
-    const url::Origin& origin,
-    mojom::NetworkContextClient* network_context_client,
-    bool is_service_worker,
-    int32_t process_id,
-    int32_t frame_id)
+    const url::Origin& origin)
     : cookie_store_(cookie_store),
       cookie_settings_(cookie_settings),
       origin_(origin),
-      network_context_client_(network_context_client),
-      is_service_worker_(is_service_worker),
-      process_id_(process_id),
-      frame_id_(frame_id),
       weak_ptr_factory_(this) {
   DCHECK(cookie_store);
 }
@@ -123,6 +113,10 @@ void RestrictedCookieManager::GetAllForUrl(
 
   // TODO(morlovich): Try to validate site_for_cookies as well.
 
+  if (!cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies)) {
+    std::move(callback).Run({});
+    return;
+  }
 
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions net_options;
@@ -167,18 +161,6 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     }
     result.emplace_back(cookie);
   }
-
-  bool blocked =
-      !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
-
-  network_context_client_->OnCookiesRead(is_service_worker_, process_id_,
-                                         frame_id_, url, site_for_cookies,
-                                         result, blocked);
-  if (blocked) {
-    std::move(callback).Run({});
-    return;
-  }
-
   std::move(callback).Run(std::move(result));
 }
 
@@ -194,13 +176,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
   }
 
   // TODO(morlovich): Try to validate site_for_cookies as well.
-  bool blocked =
-      !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
-
-  network_context_client_->OnCookieChange(is_service_worker_, process_id_,
-                                          frame_id_, url, site_for_cookies,
-                                          cookie, blocked);
-  if (blocked) {
+  if (!cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies)) {
     std::move(callback).Run(false);
     return;
   }

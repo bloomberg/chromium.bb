@@ -761,8 +761,6 @@ ServiceWorkerContextWrapper::GetProviderHostIds(const GURL& origin) const {
 
   std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_host_ids(
       new std::vector<GlobalFrameRoutingId>());
-  if (!context_core_)
-    return provider_host_ids;
 
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_core_->GetClientProviderHostIterator(

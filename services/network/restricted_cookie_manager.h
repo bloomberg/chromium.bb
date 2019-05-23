@@ -27,10 +27,6 @@ class CookieStore;
 
 namespace network {
 
-namespace mojom {
-class NetworkContextClient;
-}  // namespace mojom
-
 class CookieSettings;
 
 // RestrictedCookieManager implementation.
@@ -40,19 +36,10 @@ class CookieSettings;
 class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
     : public mojom::RestrictedCookieManager {
  public:
-  // All the pointers passed to the constructor are expected to point to
-  // objects that will outlive |this|.
-  //
-  // |is_service_worker|, |process_id| and |frame_id| will be used when
-  // reporting activity to |network_context_client|.
+  // |*cookie_store|, |*cookie_settings| must outlive this.
   RestrictedCookieManager(net::CookieStore* cookie_store,
                           const CookieSettings* cookie_settings,
-                          const url::Origin& origin,
-                          mojom::NetworkContextClient* network_context_client,
-                          bool is_service_worker,
-                          int32_t process_id,
-                          int32_t frame_id);
-
+                          const url::Origin& origin);
   ~RestrictedCookieManager() override;
 
   void GetAllForUrl(const GURL& url,
@@ -98,10 +85,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   net::CookieStore* const cookie_store_;
   const CookieSettings* const cookie_settings_;
   const url::Origin origin_;
-  mojom::NetworkContextClient* const network_context_client_;
-  const bool is_service_worker_;
-  const int32_t process_id_;
-  const int32_t frame_id_;
 
   base::LinkedList<Listener> listeners_;
 
