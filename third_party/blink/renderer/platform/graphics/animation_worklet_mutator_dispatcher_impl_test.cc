@@ -350,10 +350,6 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 // -----------------------------------------------------------------------
 // Asynchronous version of tests.
 
-// Callback wrapping portion of the async test that is required to run on the
-// compositor thread.
-using MutateAsyncCallback = WTF::CrossThreadFunction<void()>;
-
 using MutatorDispatcherRef =
     scoped_refptr<AnimationWorkletMutatorDispatcherImpl>;
 
