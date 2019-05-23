@@ -31,6 +31,7 @@ class UpdateRobotTokenResponse;
 class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
  public:
   typedef base::OnceCallback<void(OAuthTokenGetter::Status status,
+                                  const std::string& refresh_token,
                                   const std::string& access_token)>
       TokenCallback;
 
@@ -38,6 +39,18 @@ class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~OAuthTokenExchanger() override;
 
+  void set_offline_mode(bool offline_mode) { offline_mode_ = offline_mode; }
+
+  // |access_token| should be an OAuth access token derived from the refresh
+  // token from the host's config. This will test the token's scopes to see if
+  // an exchange is needed. The test only happens once - the result is
+  // cached for subsequent calls.
+  // If exchange occurred, the new access and refresh tokens (fetched
+  // from OAuth "token" endpoint) are returned to |on_new_token| callback.
+  // If exchange did not occur, the provided |access_token| and an empty string
+  // for the refresh token are returned.
+  // A caller can determine if exchange occurred by comparing the returned
+  // access token with the input |access_token| for equality.
   void ExchangeToken(const std::string& access_token,
                      TokenCallback on_new_token);
 
@@ -54,6 +67,7 @@ class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
   class DirectoryServiceClient;
 
   void NotifyCallbacks(OAuthTokenGetter::Status status,
+                       const std::string& refresh_token,
                        const std::string& access_token);
   void RequestNewToken();
   void OnRobotTokenResponse(const grpc::Status& status,
@@ -62,6 +76,8 @@ class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   base::queue<TokenCallback> pending_callbacks_;
   std::string oauth_access_token_;
+
+  bool offline_mode_ = false;
 
   // True if the OAuth refresh token is lacking required scopes and the
   // token-exchange service is needed to provide a new access-token.

@@ -68,7 +68,9 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
                               const std::string& refresh_token);
   void GetOauthTokensFromAuthCode();
   void RefreshAccessToken();
-  void OnExchangeTokenResponse(Status status, const std::string& access_token);
+  void OnExchangeTokenResponse(Status status,
+                               const std::string& refresh_token,
+                               const std::string& access_token);
 
   // Fetches the OAuth scopes for |oauth_access_token_|. If it is missing the
   // new scopes required by FTL signaling, it exchanges it for a new access

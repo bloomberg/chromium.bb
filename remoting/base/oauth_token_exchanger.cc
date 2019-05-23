@@ -52,6 +52,7 @@ class OAuthTokenExchanger::DirectoryServiceClient {
   ~DirectoryServiceClient();
 
   void UpdateRobotToken(const std::string& access_token,
+                        bool offline,
                         UpdateRobotTokenCallback callback);
 
  private:
@@ -72,11 +73,12 @@ OAuthTokenExchanger::DirectoryServiceClient::~DirectoryServiceClient() =
 
 void OAuthTokenExchanger::DirectoryServiceClient::UpdateRobotToken(
     const std::string& access_token,
+    bool offline,
     UpdateRobotTokenCallback callback) {
   auto update_robot_token_request = apis::v1::UpdateRobotTokenRequest();
   update_robot_token_request.set_client_id(
       google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING_HOST));
-  update_robot_token_request.set_offline(false);
+  update_robot_token_request.set_offline(offline);
 
   auto async_request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce(&RemotingDirectoryService::Stub::AsyncUpdateRobotToken,
@@ -111,7 +113,8 @@ void OAuthTokenExchanger::ExchangeToken(const std::string& access_token,
   }
 
   // Return the original token, as it already has required scopes.
-  NotifyCallbacks(OAuthTokenGetter::SUCCESS, oauth_access_token_);
+  NotifyCallbacks(OAuthTokenGetter::SUCCESS, std::string() /* refresh_token */,
+                  oauth_access_token_);
 }
 
 void OAuthTokenExchanger::OnGetTokensResponse(const std::string& refresh_token,
@@ -119,14 +122,14 @@ void OAuthTokenExchanger::OnGetTokensResponse(const std::string& refresh_token,
                                               int expires_in_seconds) {
   // |expires_in_seconds| is unused - the exchanged token is assumed to be
   // valid for at least as long as the original access token.
-  NotifyCallbacks(OAuthTokenGetter::SUCCESS, access_token);
+  NotifyCallbacks(OAuthTokenGetter::SUCCESS, refresh_token, access_token);
 }
 
 void OAuthTokenExchanger::OnGetTokenInfoResponse(
     std::unique_ptr<base::DictionaryValue> token_info) {
   base::Value* scopes_value = token_info->FindKey(TOKENINFO_SCOPE_KEY);
   if (!scopes_value || !scopes_value->is_string()) {
-    NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string());
+    NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string(), std::string());
     return;
   }
   std::string scopes = scopes_value->GetString();
@@ -137,34 +140,37 @@ void OAuthTokenExchanger::OnGetTokenInfoResponse(
   if (need_token_exchange_.value()) {
     RequestNewToken();
   } else {
-    NotifyCallbacks(OAuthTokenGetter::SUCCESS, oauth_access_token_);
+    NotifyCallbacks(OAuthTokenGetter::SUCCESS,
+                    std::string() /* refresh_token */, oauth_access_token_);
   }
 }
 
 void OAuthTokenExchanger::OnOAuthError() {
   LOG(ERROR) << "OAuth error.";
-  NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string());
+  NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string(), std::string());
 }
 
 void OAuthTokenExchanger::OnNetworkError(int response_code) {
   LOG(ERROR) << "Network error: " << response_code;
-  NotifyCallbacks(OAuthTokenGetter::NETWORK_ERROR, std::string());
+  NotifyCallbacks(OAuthTokenGetter::NETWORK_ERROR, std::string(),
+                  std::string());
 }
 
 void OAuthTokenExchanger::NotifyCallbacks(OAuthTokenGetter::Status status,
+                                          const std::string& refresh_token,
                                           const std::string& access_token) {
   // Protect against recursion by moving the callbacks into a temporary list.
   base::queue<TokenCallback> callbacks;
   callbacks.swap(pending_callbacks_);
   while (!callbacks.empty()) {
-    std::move(callbacks.front()).Run(status, access_token);
+    std::move(callbacks.front()).Run(status, refresh_token, access_token);
     callbacks.pop();
   }
 }
 
 void OAuthTokenExchanger::RequestNewToken() {
   directory_service_client_->UpdateRobotToken(
-      oauth_access_token_,
+      oauth_access_token_, offline_mode_,
       base::BindOnce(&OAuthTokenExchanger::OnRobotTokenResponse,
                      base::Unretained(this)));
 }
@@ -175,13 +181,13 @@ void OAuthTokenExchanger::OnRobotTokenResponse(
   if (!status.ok()) {
     LOG(ERROR) << "Received error code: " << status.error_code()
                << ", message: " << status.error_message();
-    NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string());
+    NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string(), std::string());
     return;
   }
 
   if (!response.has_auth_code()) {
     LOG(ERROR) << "Received response without auth_code.";
-    NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string());
+    NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string(), std::string());
     return;
   }
 

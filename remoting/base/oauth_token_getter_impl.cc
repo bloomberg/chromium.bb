@@ -292,6 +292,7 @@ void OAuthTokenGetterImpl::ExchangeAccessToken() {
 
 void OAuthTokenGetterImpl::OnExchangeTokenResponse(
     Status status,
+    const std::string& refresh_token,
     const std::string& access_token) {
   oauth_access_token_ = access_token;
   switch (status) {
