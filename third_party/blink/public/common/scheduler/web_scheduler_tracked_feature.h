@@ -59,7 +59,9 @@ enum class WebSchedulerTrackedFeature {
 
   kBroadcastChannel = 27,
 
-  kMaxValue = kBroadcastChannel
+  kIndexedDBConnection = 28,
+
+  kMaxValue = kIndexedDBConnection
 };
 
 }  // namespace scheduler
