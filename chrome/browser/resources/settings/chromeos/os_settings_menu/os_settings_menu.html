@@ -68,9 +68,14 @@
         outline: auto 5px -webkit-focus-ring-color;
       }
 
-      #advancedButton > span,
+      #advancedButton > span {
+        flex: 1;
+      }
 
-      #advancedButton > iron-icon,
+      #advancedButton > iron-icon {
+        @apply --cr-icon-height-width;
+        margin-inline-end: 14px;  /* 16px - 2px from margin for outline. */
+      }
 
       #menuSeparator {
         /* Per bettes@, this is different from the other separator lines. */
