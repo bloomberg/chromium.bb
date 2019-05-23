@@ -562,7 +562,6 @@ jumbo_component("views") {
       "controls/menu/menu_config_linux.cc",
       "linux_ui/status_icon_linux.cc",
     ]
-    sources += [ "widget/desktop_aura/desktop_window_tree_host_chromeos.cc" ]
   }
 
   if (is_win) {
