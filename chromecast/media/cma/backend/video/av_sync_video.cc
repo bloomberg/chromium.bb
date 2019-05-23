@@ -141,21 +141,32 @@ void AvSyncVideo::UpkeepAvSync() {
   last_apts_value_ = new_raw_apts;
 
   DCHECK(video_pts_);
-  bool bad_vpts_rate = false;
+
+  int64_t desired_apts_timestamp;
   double vpts_slope;
   double error;
   if (video_pts_->EstimateSlope(&vpts_slope, &error) &&
       std::abs(vpts_slope - 1.0 / current_media_playback_rate_) >
           kExpectedSlopeVariance) {
-    // Note: do NOT flush video PTS samples immediately; it's better to have
-    // choppy audio when the video is not playing out at the expected rate,
-    // instead of being completely out of sync. Instead, we mark the slope as
-    // bad and flush VPTS if there is a hard correction.
-    bad_vpts_rate = true;
-  }
+    // VPTS slope is bad. This can be because the video is actually playing out
+    // at the wrong rate (eg when video playback can't keep up and is too slow),
+    // or could be due to bad VPTS data (eg after resume, from old timestamps
+    // before pause). We assume the most recent VPTS sample is OK (so far this
+    // has always been true) and check if we need to do a hard correction to
+    // account for cases where the video is actually playing at the wrong rate
+    // before flushing the VPTS regression.
+    LOG(ERROR) << "Calculated bad vpts_slope " << vpts_slope
+               << " corresponding to playback rate =~ " << (1.0 / vpts_slope)
+               << ". Expected playback rate = " << current_media_playback_rate_;
 
-  int64_t desired_apts_timestamp;
-  if (!video_pts_->EstimateY(new_raw_apts, &desired_apts_timestamp, &error)) {
+    int64_t last_vpts = video_pts_->samples().back().x;
+    int64_t last_vpts_timestamp = video_pts_->samples().back().y;
+    desired_apts_timestamp =
+        last_vpts_timestamp +
+        (new_raw_apts - last_vpts) / current_media_playback_rate_;
+    FlushVideoPts();
+  } else if (!video_pts_->EstimateY(new_raw_apts, &desired_apts_timestamp,
+                                    &error)) {
     LOG(INFO) << "Failed to estimate desired APTS timestamp";
     return;
   }
@@ -167,13 +178,6 @@ void AvSyncVideo::UpkeepAvSync() {
     if (new_apts_timestamp < last_apts_timestamp_) {
       LOG(INFO) << "Audio timestamp moved backward";
     }
-    if (bad_vpts_rate) {
-      LOG(ERROR) << "Calculated bad vpts_slope " << vpts_slope
-                 << " corresponding to playback rate =~ " << (1.0 / vpts_slope)
-                 << ". Expected playback rate = "
-                 << current_media_playback_rate_;
-      FlushVideoPts();
-    }
     LOG(INFO) << "Hard correction; APTS = " << new_raw_apts
               << ", ts = " << new_apts_timestamp
               << ", desired = " << desired_apts_timestamp
@@ -181,7 +185,8 @@ void AvSyncVideo::UpkeepAvSync() {
     HardCorrection(new_raw_apts, desired_apts_timestamp);
     return;
   }
-  if (!bad_vpts_rate) {
+  if (video_pts_) {
+    // Only do audio rate upkeep if the VPTS data was OK (ie, no bad slope).
     AudioRateUpkeep(apts_timestamp_error, new_apts_timestamp);
   }
 }
