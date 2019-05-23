@@ -328,7 +328,11 @@ void HeadlessShell::PollReadyState() {
 
 void HeadlessShell::OnReadyState(
     std::unique_ptr<runtime::EvaluateResult> result) {
-  if (result->GetResult()->GetValue()->is_string()) {
+  // result->GetResult() can be nullptr if
+  // HeadlessDevToolsClientImpl::DispatchMessageReply sees an error.
+  // It shouldn't, because the result is actually non-optional according to
+  // js_protocol.pdl; but there is no good way to graft that into here. Sigh.
+  if (result->GetResult() && result->GetResult()->GetValue()->is_string()) {
     std::stringstream stream(result->GetResult()->GetValue()->GetString());
     std::string ready_state;
     std::string url;
