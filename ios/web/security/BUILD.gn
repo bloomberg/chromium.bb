@@ -6,6 +6,7 @@ import("//ios/build/config.gni")
 
 source_set("security") {
   configs += [ "//build/config/compiler:enable_arc" ]
+
   deps = [
     "//base",
     "//ios/web/common",
@@ -22,6 +23,7 @@ source_set("security") {
     "cert_host_pair.cc",
     "cert_host_pair.h",
     "cert_policy.cc",
+    "cert_verification_error.h",
     "certificate_policy_cache.cc",
     "crw_cert_verification_controller.h",
     "crw_cert_verification_controller.mm",

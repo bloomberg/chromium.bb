@@ -86,6 +86,7 @@
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/security/cert_host_pair.h"
+#include "ios/web/security/cert_verification_error.h"
 #import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/crw_ssl_status_updater.h"
 #import "ios/web/security/web_interstitial_impl.h"
@@ -169,25 +170,10 @@ enum class BackForwardNavigationType {
   BACK_FORWARD_NAVIGATION_TYPE_COUNT
 };
 
-// Represents cert verification error, which happened inside
-// |webView:didReceiveAuthenticationChallenge:completionHandler:| and should
-// be checked inside |webView:didFailProvisionalNavigation:withError:|.
-struct CertVerificationError {
-  CertVerificationError(BOOL is_recoverable, net::CertStatus status)
-      : is_recoverable(is_recoverable), status(status) {}
-
-  BOOL is_recoverable;
-  net::CertStatus status;
-};
-
-// Type of Cache object for storing cert verification errors.
-typedef base::MRUCache<web::CertHostPair, CertVerificationError>
-    CertVerificationErrorsCacheType;
-
 // Maximum number of errors to store in cert verification errors cache.
 // Cache holds errors only for pending navigations, so the actual number of
 // stored errors is not expected to be high.
-const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
+const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
 // URLs that are fed into UIWebView as history push/replace get escaped,
 // potentially changing their format. Code that attempts to determine whether a
@@ -285,7 +271,7 @@ bool RequiresContentFilterBlockingWorkaround() {
   // Key is leaf-cert/host pair. This storage is used to carry calculated
   // cert status from |didReceiveAuthenticationChallenge:| to
   // |didFailProvisionalNavigation:| delegate method.
-  std::unique_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
+  std::unique_ptr<web::CertVerificationErrorsCacheType> _certVerificationErrors;
 
   // State of user interaction with web content.
   web::UserInteractionState _userInteractionState;
@@ -536,7 +522,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _certVerificationController = [[CRWCertVerificationController alloc]
         initWithBrowserState:browserState];
     _certVerificationErrors =
-        std::make_unique<CertVerificationErrorsCacheType>(kMaxCertErrorsCount);
+        std::make_unique<web::CertVerificationErrorsCacheType>(
+            kMaxCertErrorsCount);
     web::BrowsingDataRemover::FromBrowserState(browserState)->AddObserver(self);
     web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
@@ -3031,13 +3018,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
             SecTrustGetCertificateAtIndex(trust, 0),
             std::vector<SecCertificateRef>());
     if (leafCert) {
-      BOOL is_recoverable =
+      bool is_recoverable =
           policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;
       std::string host =
           base::SysNSStringToUTF8(challenge.protectionSpace.host);
       _certVerificationErrors->Put(
           web::CertHostPair(leafCert, host),
-          CertVerificationError(is_recoverable, certStatus));
+          web::CertVerificationError(is_recoverable, certStatus));
     }
   }
   completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
@@ -3373,7 +3360,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   NSURL* requestURL = error.userInfo[web::kNSErrorFailingURLKey];
   NSString* host = [requestURL host];
   scoped_refptr<net::X509Certificate> leafCert;
-  BOOL recoverable = NO;
+  bool recoverable = false;
   if (chain.count && host.length) {
     // The complete cert chain may not be available, so the leaf cert is used
     // as a key to retrieve _certVerificationErrors, as well as for storing the
