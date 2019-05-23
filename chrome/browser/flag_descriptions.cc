@@ -3134,6 +3134,10 @@ const char kStreamlinedUsbPrinterSetupDescription[] =
     "Automatically sets up capable USB printers when plugged in. Shows a "
     "notification with the setup result.";
 
+const char kSyncWifiConfigurationsName[] = "Sync Wi-Fi network configurations";
+const char kSyncWifiConfigurationsDescription[] =
+    "Enables the option to sync Wi-Fi network configurations with Chrome Sync.";
+
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =
     "Enables Instant Tethering. Instant Tethering allows your nearby Google "

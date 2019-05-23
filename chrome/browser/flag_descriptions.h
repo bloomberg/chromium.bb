@@ -1881,6 +1881,9 @@ extern const char kSmartTextSelectionDescription[];
 extern const char kStreamlinedUsbPrinterSetupName[];
 extern const char kStreamlinedUsbPrinterSetupDescription[];
 
+extern const char kSyncWifiConfigurationsName[];
+extern const char kSyncWifiConfigurationsDescription[];
+
 extern const char kTetherName[];
 extern const char kTetherDescription[];
 
