@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -153,8 +154,8 @@ public class AndroidPermissionRequester {
                     TextView dialogText = (TextView) view.findViewById(R.id.text);
                     dialogText.setText(deniedStringId);
 
-                    AlertDialog.Builder builder =
-                            new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog);
+                    AlertDialog.Builder builder = new UiUtils.CompatibleAlertDialogBuilder(
+                            activity, R.style.Theme_Chromium_AlertDialog);
                     builder.setView(view);
                     builder.setPositiveButton(R.string.infobar_update_permissions_button_text,
                             new DialogInterface.OnClickListener() {

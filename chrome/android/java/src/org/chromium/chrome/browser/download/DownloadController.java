@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
@@ -209,7 +210,8 @@ public class DownloadController {
                         null));
 
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog)
+                new UiUtils
+                        .CompatibleAlertDialogBuilder(activity, R.style.Theme_Chromium_AlertDialog)
                         .setView(view)
                         .setPositiveButton(R.string.infobar_update_permissions_button_text,
                                 (DialogInterface.OnClickListener) (dialog, id)

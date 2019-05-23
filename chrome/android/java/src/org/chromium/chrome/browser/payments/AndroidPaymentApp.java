@@ -17,7 +17,6 @@ import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.util.JsonWriter;
 
 import org.chromium.IsReadyToPayService;
@@ -33,6 +32,7 @@ import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.io.IOException;
@@ -294,7 +294,7 @@ public class AndroidPaymentApp
             return;
         }
 
-        new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog)
+        new UiUtils.CompatibleAlertDialogBuilder(activity, R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
                                 ? R.string.external_payment_app_leave_private_warning
