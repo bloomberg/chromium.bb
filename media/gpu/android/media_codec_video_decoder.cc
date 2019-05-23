@@ -594,10 +594,10 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
 }
 
 void MediaCodecVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                    const DecodeCB& decode_cb) {
+                                    DecodeCB decode_cb) {
   DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   if (state_ == State::kError) {
-    decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
   pending_decodes_.emplace_back(std::move(buffer), std::move(decode_cb));
@@ -750,7 +750,7 @@ bool MediaCodecVideoDecoder::QueueInput() {
     DCHECK(!eos_decode_cb_);
     eos_decode_cb_ = std::move(pending_decode.decode_cb);
   } else {
-    pending_decode.decode_cb.Run(DecodeStatus::OK);
+    std::move(pending_decode.decode_cb).Run(DecodeStatus::OK);
   }
   pending_decodes_.pop_front();
   return true;
@@ -967,7 +967,7 @@ bool MediaCodecVideoDecoder::InTerminalState() {
 
 void MediaCodecVideoDecoder::CancelPendingDecodes(DecodeStatus status) {
   for (auto& pending_decode : pending_decodes_)
-    pending_decode.decode_cb.Run(status);
+    std::move(pending_decode.decode_cb).Run(status);
   pending_decodes_.clear();
   if (eos_decode_cb_)
     std::move(eos_decode_cb_).Run(status);

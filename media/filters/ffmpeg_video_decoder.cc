@@ -236,22 +236,22 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                const DecodeCB& decode_cb) {
+                                DecodeCB decode_cb) {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buffer.get());
   DCHECK(decode_cb);
   CHECK_NE(state_, kUninitialized);
 
-  DecodeCB decode_cb_bound = BindToCurrentLoop(decode_cb);
+  DecodeCB decode_cb_bound = BindToCurrentLoop(std::move(decode_cb));
 
   if (state_ == kError) {
-    decode_cb_bound.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb_bound).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   if (state_ == kDecodeFinished) {
-    decode_cb_bound.Run(DecodeStatus::OK);
+    std::move(decode_cb_bound).Run(DecodeStatus::OK);
     return;
   }
 
@@ -277,7 +277,7 @@ void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   if (!FFmpegDecode(*buffer)) {
     state_ = kError;
-    decode_cb_bound.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb_bound).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -286,7 +286,7 @@ void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   // VideoDecoderShim expects that |decode_cb| is called only after
   // |output_cb_|.
-  decode_cb_bound.Run(DecodeStatus::OK);
+  std::move(decode_cb_bound).Run(DecodeStatus::OK);
 }
 
 void FFmpegVideoDecoder::Reset(base::OnceClosure closure) {

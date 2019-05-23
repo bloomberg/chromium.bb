@@ -776,9 +776,10 @@ void VideoDecoderShim::DecoderImpl::DoDecode() {
   awaiting_decoder_ = true;
   const PendingDecode& decode = pending_decodes_.front();
   decode_id_ = decode.decode_id;
-  decoder_->Decode(decode.buffer,
-                   base::Bind(&VideoDecoderShim::DecoderImpl::OnDecodeComplete,
-                              weak_ptr_factory_.GetWeakPtr()));
+  decoder_->Decode(
+      decode.buffer,
+      base::BindOnce(&VideoDecoderShim::DecoderImpl::OnDecodeComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
   pending_decodes_.pop();
 }
 

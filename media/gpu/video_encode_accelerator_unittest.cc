@@ -958,9 +958,6 @@ class VideoFrameQualityValidator
   const VideoPixelFormat pixel_format_;
   const bool verify_quality_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
-  VideoDecoder::DecodeCB decode_cb_;
-  // Decode callback of an EOS buffer.
-  VideoDecoder::DecodeCB eos_decode_cb_;
   // Callback of Flush(). Called after all frames are decoded.
   const base::Closure flush_complete_cb_;
   const base::Closure decode_error_cb_;
@@ -981,10 +978,6 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
       pixel_format_(pixel_format),
       verify_quality_(verify_quality),
       decoder_(new FFmpegVideoDecoder(&media_log_)),
-      decode_cb_(base::BindRepeating(&VideoFrameQualityValidator::DecodeDone,
-                                     AsWeakPtr())),
-      eos_decode_cb_(base::BindRepeating(&VideoFrameQualityValidator::FlushDone,
-                                         AsWeakPtr())),
       flush_complete_cb_(flush_complete_cb),
       decode_error_cb_(decode_error_cb),
       decoder_state_(UNINITIALIZED) {
@@ -1126,10 +1119,15 @@ void VideoFrameQualityValidator::Decode() {
     scoped_refptr<DecoderBuffer> next_buffer = decode_buffers_.front();
     decode_buffers_.pop();
     decoder_state_ = DECODING;
-    if (next_buffer->end_of_stream())
-      decoder_->Decode(next_buffer, eos_decode_cb_);
-    else
-      decoder_->Decode(next_buffer, decode_cb_);
+    if (next_buffer->end_of_stream()) {
+      decoder_->Decode(
+          next_buffer,
+          base::BindOnce(&VideoFrameQualityValidator::FlushDone, AsWeakPtr()));
+    } else {
+      decoder_->Decode(
+          next_buffer,
+          base::BindOnce(&VideoFrameQualityValidator::DecodeDone, AsWeakPtr()));
+    }
   }
 }
 

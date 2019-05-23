@@ -59,10 +59,7 @@ MATCHER(ContainsFailedToSendLog, "") {
 
 class FFmpegVideoDecoderTest : public testing::Test {
  public:
-  FFmpegVideoDecoderTest()
-      : decoder_(new FFmpegVideoDecoder(&media_log_)),
-        decode_cb_(base::Bind(&FFmpegVideoDecoderTest::DecodeDone,
-                              base::Unretained(this))) {
+  FFmpegVideoDecoderTest() : decoder_(new FFmpegVideoDecoder(&media_log_)) {
     // Initialize various test buffers.
     frame_buffer_.reset(new uint8_t[kCodedSize.GetArea()]);
     end_of_stream_buffer_ = DecoderBuffer::CreateEOSBuffer();
@@ -187,7 +184,8 @@ class FFmpegVideoDecoderTest : public testing::Test {
     DecodeStatus status;
     EXPECT_CALL(*this, DecodeDone(_)).WillOnce(SaveArg<0>(&status));
 
-    decoder_->Decode(buffer, decode_cb_);
+    decoder_->Decode(buffer, base::BindOnce(&FFmpegVideoDecoderTest::DecodeDone,
+                                            base::Unretained(this)));
 
     base::RunLoop().RunUntilIdle();
 
@@ -205,8 +203,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
-
-  VideoDecoder::DecodeCB decode_cb_;
 
   // Various buffers for testing.
   std::unique_ptr<uint8_t[]> frame_buffer_;

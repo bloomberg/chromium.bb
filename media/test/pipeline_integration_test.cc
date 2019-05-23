@@ -387,9 +387,10 @@ class FailingVideoDecoder : public VideoDecoder {
     std::move(init_cb).Run(true);
   }
   void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override {
+              DecodeCB decode_cb) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
   }
   void Reset(base::OnceClosure closure) override { std::move(closure).Run(); }
   bool NeedsBitstreamConversion() const override { return true; }

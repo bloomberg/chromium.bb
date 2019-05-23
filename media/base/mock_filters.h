@@ -224,8 +224,10 @@ class MockVideoDecoder : public VideoDecoder {
                     InitCB& init_cb,
                     const OutputCB& output_cb,
                     const WaitingCB& waiting_cb));
-  MOCK_METHOD2(Decode,
-               void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB cb) override {
+    Decode_(std::move(buffer), cb);
+  }
+  MOCK_METHOD2(Decode_, void(scoped_refptr<DecoderBuffer> buffer, DecodeCB&));
   void Reset(base::OnceClosure cb) override { Reset_(cb); }
   MOCK_METHOD1(Reset_, void(base::OnceClosure&));
   MOCK_CONST_METHOD0(GetMaxDecodeRequests, int());

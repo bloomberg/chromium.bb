@@ -52,8 +52,7 @@ class MojoVideoDecoder final : public VideoDecoder,
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) final;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) final;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) final;
   void Reset(base::OnceClosure closure) final;
   bool NeedsBitstreamConversion() const final;
   bool CanReadWithoutStalling() const final;

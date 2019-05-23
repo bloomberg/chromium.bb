@@ -128,18 +128,18 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void TestVDAVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                 const DecodeCB& decode_cb) {
+                                 DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
   // If the |buffer| is an EOS buffer the decoder must be flushed.
   if (buffer->end_of_stream()) {
-    flush_cb_ = decode_cb;
+    flush_cb_ = std::move(decode_cb);
     decoder_->Flush();
     return;
   }
 
   int32_t bitstream_buffer_id = GetNextBitstreamBufferId();
-  decode_cbs_[bitstream_buffer_id] = decode_cb;
+  decode_cbs_[bitstream_buffer_id] = std::move(decode_cb);
 
   // Record picture buffer decode start time. A cache is used because not each
   // bitstream buffer decode will result in a call to PictureReady(). Pictures
@@ -311,7 +311,7 @@ void TestVDAVideoDecoder::NotifyEndOfBitstreamBuffer(
       << "Couldn't find decode callback for picture buffer with id "
       << bitstream_buffer_id;
 
-  it->second.Run(DecodeStatus::OK);
+  std::move(it->second).Run(DecodeStatus::OK);
   decode_cbs_.erase(it);
 }
 

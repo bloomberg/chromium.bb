@@ -497,16 +497,17 @@ void D3D11VideoDecoder::OnGpuInitComplete(bool success) {
 }
 
 void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                               const DecodeCB& decode_cb) {
+                               DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (state_ == State::kError) {
     // TODO(liberato): consider posting, though it likely doesn't matter.
-    decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
-  input_buffer_queue_.push_back(std::make_pair(std::move(buffer), decode_cb));
+  input_buffer_queue_.push_back(
+      std::make_pair(std::move(buffer), std::move(decode_cb)));
 
   // Post, since we're not supposed to call back before this returns.  It
   // probably doesn't matter since we're in the gpu process anyway.
@@ -529,7 +530,7 @@ void D3D11VideoDecoder::DoDecode() {
       return;
     }
     current_buffer_ = std::move(input_buffer_queue_.front().first);
-    current_decode_cb_ = input_buffer_queue_.front().second;
+    current_decode_cb_ = std::move(input_buffer_queue_.front().second);
     input_buffer_queue_.pop_front();
     if (current_buffer_->end_of_stream()) {
       // Flush, then signal the decode cb once all pictures have been output.
@@ -600,7 +601,7 @@ void D3D11VideoDecoder::Reset(base::OnceClosure closure) {
     std::move(current_decode_cb_).Run(DecodeStatus::ABORTED);
 
   for (auto& queue_pair : input_buffer_queue_)
-    queue_pair.second.Run(DecodeStatus::ABORTED);
+    std::move(queue_pair.second).Run(DecodeStatus::ABORTED);
   input_buffer_queue_.clear();
 
   // TODO(liberato): how do we signal an error?
@@ -779,7 +780,7 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
     std::move(current_decode_cb_).Run(DecodeStatus::DECODE_ERROR);
 
   for (auto& queue_pair : input_buffer_queue_)
-    queue_pair.second.Run(DecodeStatus::DECODE_ERROR);
+    std::move(queue_pair.second).Run(DecodeStatus::DECODE_ERROR);
   input_buffer_queue_.clear();
 }
 

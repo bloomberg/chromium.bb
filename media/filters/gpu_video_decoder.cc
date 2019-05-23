@@ -56,9 +56,8 @@ enum { kMaxInFlightDecodes = 4 };
 enum { kBufferCountBeforeGC = 1024 };
 
 struct GpuVideoDecoder::PendingDecoderBuffer {
-  PendingDecoderBuffer(std::unique_ptr<base::SharedMemory> s,
-                       const DecodeCB& done_cb)
-      : shared_memory(std::move(s)), done_cb(done_cb) {}
+  PendingDecoderBuffer(std::unique_ptr<base::SharedMemory> s, DecodeCB done_cb)
+      : shared_memory(std::move(s)), done_cb(std::move(done_cb)) {}
   std::unique_ptr<base::SharedMemory> shared_memory;
   DecodeCB done_cb;
 };
@@ -415,16 +414,14 @@ void GpuVideoDecoder::DestroyVDA() {
 }
 
 void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                             const DecodeCB& decode_cb) {
+                             DecodeCB decode_cb) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(!pending_reset_cb_);
 
   DVLOG(3) << __func__ << " " << buffer->AsHumanReadableString();
 
-  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
-
   if (state_ == kError || !vda_) {
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    BindToCurrentLoop(std::move(decode_cb)).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -445,7 +442,7 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   if (buffer->end_of_stream()) {
     DVLOG(3) << __func__ << " Initiating Flush for EOS.";
     state_ = kDrainingDecoder;
-    eos_decode_cb_ = bound_decode_cb;
+    eos_decode_cb_ = BindToCurrentLoop(std::move(decode_cb));
     vda_->Flush();
     return;
   }
@@ -453,7 +450,7 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   size_t size = buffer->data_size();
   auto shared_memory = GetSharedMemory(size);
   if (!shared_memory) {
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    BindToCurrentLoop(std::move(decode_cb)).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -478,7 +475,7 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   bitstream_buffers_in_decoder_.emplace(
       bitstream_buffer.id(),
-      PendingDecoderBuffer(std::move(shared_memory), decode_cb));
+      PendingDecoderBuffer(std::move(shared_memory), std::move(decode_cb)));
   DCHECK_LE(static_cast<int>(bitstream_buffers_in_decoder_.size()),
             kMaxInFlightDecodes);
 
@@ -819,8 +816,8 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
   }
 
   PutSharedMemory(std::move(it->second.shared_memory), id);
-  it->second.done_cb.Run(state_ == kError ? DecodeStatus::DECODE_ERROR
-                                          : DecodeStatus::OK);
+  std::move(it->second.done_cb)
+      .Run(state_ == kError ? DecodeStatus::DECODE_ERROR : DecodeStatus::OK);
   bitstream_buffers_in_decoder_.erase(it);
 }
 
@@ -841,10 +838,8 @@ GpuVideoDecoder::~GpuVideoDecoder() {
     std::move(request_overlay_info_cb_).Run(false, ProvideOverlayInfoCB());
   }
 
-  for (auto it = bitstream_buffers_in_decoder_.begin();
-       it != bitstream_buffers_in_decoder_.end(); ++it) {
-    it->second.done_cb.Run(DecodeStatus::ABORTED);
-  }
+  for (auto& pair : bitstream_buffers_in_decoder_)
+    std::move(pair.second.done_cb).Run(DecodeStatus::ABORTED);
   bitstream_buffers_in_decoder_.clear();
 
   if (pending_reset_cb_)
@@ -890,7 +885,7 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   // won't be another decode request to report the error.
   if (!bitstream_buffers_in_decoder_.empty()) {
     auto it = bitstream_buffers_in_decoder_.begin();
-    it->second.done_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(it->second.done_cb).Run(DecodeStatus::DECODE_ERROR);
     bitstream_buffers_in_decoder_.erase(it);
   }
 

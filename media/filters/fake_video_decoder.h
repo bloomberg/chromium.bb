@@ -25,7 +25,7 @@
 
 namespace media {
 
-typedef base::Callback<void(int)> BytesDecodedCB;
+using BytesDecodedCB = base::RepeatingCallback<void(int)>;
 
 class FakeVideoDecoder : public VideoDecoder {
  public:
@@ -49,8 +49,7 @@ class FakeVideoDecoder : public VideoDecoder {
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure closure) override;
   int GetMaxDecodeRequests() const override;
 
@@ -85,16 +84,14 @@ class FakeVideoDecoder : public VideoDecoder {
   };
 
   // Callback for updating |total_bytes_decoded_|.
-  void OnFrameDecoded(int buffer_size,
-                      const DecodeCB& decode_cb,
-                      DecodeStatus status);
+  void OnFrameDecoded(int buffer_size, DecodeCB decode_cb, DecodeStatus status);
 
   // Runs |decode_cb| or puts it to |held_decode_callbacks_| depending on
   // current value of |hold_decode_|.
-  void RunOrHoldDecode(const DecodeCB& decode_cb);
+  void RunOrHoldDecode(DecodeCB decode_cb);
 
   // Runs |decode_cb| with a frame from |decoded_frames_|.
-  void RunDecodeCallback(const DecodeCB& decode_cb);
+  void RunDecodeCallback(DecodeCB decode_cb);
 
   void DoReset();
 

@@ -35,7 +35,7 @@ class MEDIA_EXPORT VideoDecoder {
   // Callback type for Decode(). Called after the decoder has completed decoding
   // corresponding DecoderBuffer, indicating that it's ready to accept another
   // buffer to decode.
-  using DecodeCB = base::Callback<void(DecodeStatus)>;
+  using DecodeCB = base::OnceCallback<void(DecodeStatus)>;
 
   VideoDecoder();
 
@@ -107,7 +107,7 @@ class MEDIA_EXPORT VideoDecoder {
   // |decode_cb| must be called after that. Callers will not call Decode()
   // again until after the flush completes.
   virtual void Decode(scoped_refptr<DecoderBuffer> buffer,
-                      const DecodeCB& decode_cb) = 0;
+                      DecodeCB decode_cb) = 0;
 
   // Resets decoder state. All pending Decode() requests will be finished or
   // aborted before |closure| is called.

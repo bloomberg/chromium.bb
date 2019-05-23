@@ -91,7 +91,7 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void DecryptingVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                    const DecodeCB& decode_cb) {
+                                    DecodeCB decode_cb) {
   DVLOG(3) << "Decode()";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kIdle || state_ == kDecodeFinished || state_ == kError)
@@ -99,7 +99,7 @@ void DecryptingVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DCHECK(decode_cb);
   CHECK(!decode_cb_) << "Overlapping decodes are not supported.";
 
-  decode_cb_ = BindToCurrentLoop(decode_cb);
+  decode_cb_ = BindToCurrentLoop(std::move(decode_cb));
 
   if (state_ == kError) {
     std::move(decode_cb_).Run(DecodeStatus::DECODE_ERROR);

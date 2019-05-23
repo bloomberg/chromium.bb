@@ -48,8 +48,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;

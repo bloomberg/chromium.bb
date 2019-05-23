@@ -250,10 +250,11 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
   scoped_refptr<DecoderBuffer> bitstream_buffer = DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(fragment_bytes.data()), fragment_size);
   bitstream_buffer->set_timestamp(base::TimeTicks::Now().since_origin());
-  VideoDecoder::DecodeCB decode_cb = BindToCurrentLoop(
-      base::BindRepeating(&VideoDecoderClient::DecodeDoneTask, weak_this_));
 
-  decoder_->Decode(std::move(bitstream_buffer), decode_cb);
+  VideoDecoder::DecodeCB decode_cb = BindToCurrentLoop(
+      base::BindOnce(&VideoDecoderClient::DecodeDoneTask, weak_this_));
+  decoder_->Decode(std::move(bitstream_buffer), std::move(decode_cb));
+
   num_outstanding_decode_requests_++;
 
   // Throw event when we encounter a config info in a H.264 stream.
@@ -270,10 +271,11 @@ void VideoDecoderClient::FlushTask() {
 
   // Changing the state to flushing will abort any pending decodes.
   decoder_client_state_ = VideoDecoderClientState::kFlushing;
-  VideoDecoder::DecodeCB flush_done_cb = BindToCurrentLoop(
-      base::BindRepeating(&VideoDecoderClient::FlushDoneTask, weak_this_));
 
-  decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), flush_done_cb);
+  VideoDecoder::DecodeCB flush_done_cb = BindToCurrentLoop(
+      base::BindOnce(&VideoDecoderClient::FlushDoneTask, weak_this_));
+  decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), std::move(flush_done_cb));
+
   FireEvent(VideoPlayerEvent::kFlushing);
 }
 

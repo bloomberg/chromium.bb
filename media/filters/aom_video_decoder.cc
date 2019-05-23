@@ -196,17 +196,17 @@ void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void AomVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                             const DecodeCB& decode_cb) {
+                             DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(buffer);
   DCHECK(decode_cb);
   DCHECK_NE(state_, DecoderState::kUninitialized)
       << "Called Decode() before successful Initialize()";
 
-  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
+  DecodeCB bound_decode_cb = BindToCurrentLoop(std::move(decode_cb));
 
   if (state_ == DecoderState::kError) {
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -215,18 +215,18 @@ void AomVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   if (buffer->end_of_stream()) {
     DCHECK_EQ(state_, DecoderState::kNormal);
     state_ = DecoderState::kDecodeFinished;
-    bound_decode_cb.Run(DecodeStatus::OK);
+    std::move(bound_decode_cb).Run(DecodeStatus::OK);
     return;
   }
 
   if (!DecodeBuffer(buffer.get())) {
     state_ = DecoderState::kError;
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   // VideoDecoderShim expects |decode_cb| call after |output_cb_|.
-  bound_decode_cb.Run(DecodeStatus::OK);
+  std::move(bound_decode_cb).Run(DecodeStatus::OK);
 }
 
 void AomVideoDecoder::Reset(const base::Closure& reset_cb) {

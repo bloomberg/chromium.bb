@@ -66,7 +66,7 @@ class VideoRendererImplTest : public testing::Test {
         .WillByDefault(DoAll(SaveArg<4>(&output_cb_),
                              RunOnceCallback<3>(expect_init_success_)));
     // Monitor decodes from the decoder.
-    ON_CALL(*decoder_, Decode(_, _))
+    ON_CALL(*decoder_, Decode_(_, _))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::DecodeRequested));
     ON_CALL(*decoder_, Reset_(_))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::FlushRequested));
@@ -471,11 +471,11 @@ class VideoRendererImplTest : public testing::Test {
 
  private:
   void DecodeRequested(scoped_refptr<DecoderBuffer> buffer,
-                       const VideoDecoder::DecodeCB& decode_cb) {
+                       VideoDecoder::DecodeCB& decode_cb) {
     EXPECT_TRUE(
         task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
     CHECK(!decode_cb_);
-    decode_cb_ = decode_cb;
+    decode_cb_ = std::move(decode_cb);
 
     // Wake up WaitForPendingDecode() if needed.
     if (wait_for_pending_decode_cb_)
@@ -513,7 +513,7 @@ class VideoRendererImplTest : public testing::Test {
   base::TimeDelta next_frame_timestamp_;
 
   // Run during DecodeRequested() to unblock WaitForPendingDecode().
-  base::Closure wait_for_pending_decode_cb_;
+  base::OnceClosure wait_for_pending_decode_cb_;
 
   base::circular_deque<std::pair<DecodeStatus, scoped_refptr<VideoFrame>>>
       decode_results_;

@@ -69,7 +69,7 @@ class PendingDecode {
  public:
   PendingDecode(scoped_refptr<DecoderBuffer> buffer,
                 VideoDecoder::DecodeCB decode_cb)
-      : buffer_(buffer), decode_cb_(decode_cb) {
+      : buffer_(buffer), decode_cb_(std::move(decode_cb)) {
     DCHECK(buffer_);
   }
   ~PendingDecode() {
@@ -285,8 +285,7 @@ class FuchsiaVideoDecoder : public VideoDecoder {
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure closure) override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
@@ -444,7 +443,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                 const DecodeCB& decode_cb) {
+                                 DecodeCB decode_cb) {
   DCHECK_LT(static_cast<int>(pending_decodes_.size()) + num_used_input_buffers_,
             GetMaxDecodeRequests());
 
@@ -452,11 +451,12 @@ void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     // Post the callback to the current sequence as DecoderStream doesn't expect
     // Decode() to complete synchronously.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
-  pending_decodes_.push_back(PendingDecode(buffer, decode_cb));
+  pending_decodes_.push_back(PendingDecode(buffer, std::move(decode_cb)));
   PumpInput();
 }
 

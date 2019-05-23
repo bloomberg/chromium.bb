@@ -225,29 +225,30 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void Dav1dVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                               const DecodeCB& decode_cb) {
+                               DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer);
   DCHECK(decode_cb);
   DCHECK_NE(state_, DecoderState::kUninitialized)
       << "Called Decode() before successful Initialize()";
 
-  DecodeCB bound_decode_cb =
-      bind_callbacks_ ? BindToCurrentLoop(decode_cb) : decode_cb;
+  DecodeCB bound_decode_cb = bind_callbacks_
+                                 ? BindToCurrentLoop(std::move(decode_cb))
+                                 : std::move(decode_cb);
 
   if (state_ == DecoderState::kError) {
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   if (!DecodeBuffer(std::move(buffer))) {
     state_ = DecoderState::kError;
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   // VideoDecoderShim expects |decode_cb| call after |output_cb_|.
-  bound_decode_cb.Run(DecodeStatus::OK);
+  std::move(bound_decode_cb).Run(DecodeStatus::OK);
 }
 
 void Dav1dVideoDecoder::Reset(base::OnceClosure reset_cb) {

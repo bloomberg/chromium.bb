@@ -96,7 +96,7 @@ INSTANTIATE_TEST_SUITE_P(DoesPreferredInitFail,
 TEST_P(FallbackVideoDecoderUnittest, MethodsRedirectedAsExpected) {
   Initialize(PreferredShouldSucceed());
 
-  EXPECT_ON_CORRECT_DECODER(Decode(_, _));
+  EXPECT_ON_CORRECT_DECODER(Decode_(_, _));
   fallback_decoder_->Decode(nullptr, base::DoNothing());
 
   EXPECT_ON_CORRECT_DECODER(Reset_(_));

@@ -71,9 +71,9 @@ void FallbackVideoDecoder::FallbackInitialize(const VideoDecoderConfig& config,
 }
 
 void FallbackVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                  const DecodeCB& decode_cb) {
+                                  DecodeCB decode_cb) {
   DCHECK(selected_decoder_);
-  selected_decoder_->Decode(std::move(buffer), decode_cb);
+  selected_decoder_->Decode(std::move(buffer), std::move(decode_cb));
 }
 
 void FallbackVideoDecoder::Reset(base::OnceClosure reset_cb) {

@@ -46,7 +46,7 @@ void ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB(
 }
 
 void ReportMojoVideoDecoderErrorStatusToUMAAndRunCB(
-    const VideoDecoder::DecodeCB& decode_cb,
+    VideoDecoder::DecodeCB decode_cb,
     DecodeStatus status) {
   // Send the same histogram as GpuVideoDecoder to avoid breaking the existing
   // tests.
@@ -57,7 +57,7 @@ void ReportMojoVideoDecoderErrorStatusToUMAAndRunCB(
                               media::VideoDecodeAccelerator::ERROR_MAX + 1);
   }
 
-  decode_cb.Run(status);
+  std::move(decode_cb).Run(status);
 }
 
 }  // namespace
@@ -210,16 +210,17 @@ void MojoVideoDecoder::OnInitializeDone(bool status,
 }
 
 void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                              const DecodeCB& decode_cb) {
+                              DecodeCB decode_cb) {
   DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  DecodeCB bound_decode_cb =
-      base::Bind(&ReportMojoVideoDecoderErrorStatusToUMAAndRunCB, decode_cb);
+  DecodeCB bound_decode_cb = base::BindOnce(
+      &ReportMojoVideoDecoderErrorStatusToUMAAndRunCB, std::move(decode_cb));
 
   if (has_connection_error_) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(bound_decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE,
+        base::BindOnce(std::move(bound_decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
@@ -227,12 +228,13 @@ void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
       mojo_decoder_buffer_writer_->WriteDecoderBuffer(std::move(buffer));
   if (!mojo_buffer) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(bound_decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE,
+        base::BindOnce(std::move(bound_decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
   uint64_t decode_id = decode_counter_++;
-  pending_decodes_[decode_id] = bound_decode_cb;
+  pending_decodes_[decode_id] = std::move(bound_decode_cb);
   remote_decoder_->Decode(std::move(mojo_buffer),
                           base::Bind(&MojoVideoDecoder::OnDecodeDone,
                                      base::Unretained(this), decode_id));
@@ -269,9 +271,9 @@ void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
     Stop();
     return;
   }
-  DecodeCB decode_cb = it->second;
+  DecodeCB decode_cb = std::move(it->second);
   pending_decodes_.erase(it);
-  decode_cb.Run(status);
+  std::move(decode_cb).Run(status);
 }
 
 void MojoVideoDecoder::Reset(base::OnceClosure reset_cb) {
@@ -407,8 +409,8 @@ void MojoVideoDecoder::Stop() {
   if (!weak_this)
     return;
 
-  for (const auto& pending_decode : pending_decodes_) {
-    pending_decode.second.Run(DecodeStatus::DECODE_ERROR);
+  for (auto& pending_decode : pending_decodes_) {
+    std::move(pending_decode.second).Run(DecodeStatus::DECODE_ERROR);
     if (!weak_this)
       return;
   }

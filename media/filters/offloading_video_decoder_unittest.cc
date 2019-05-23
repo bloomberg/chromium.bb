@@ -51,8 +51,10 @@ class MockOffloadableVideoDecoder : public OffloadableVideoDecoder {
                     InitCB& init_cb,
                     const OutputCB& output_cb,
                     const WaitingCB& waiting_cb));
-  MOCK_METHOD2(Decode,
-               void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB cb) override {
+    Decode_(std::move(buffer), cb);
+  }
+  MOCK_METHOD2(Decode_, void(scoped_refptr<DecoderBuffer> buffer, DecodeCB&));
   void Reset(base::OnceClosure cb) override { Reset_(cb); }
   MOCK_METHOD1(Reset_, void(base::OnceClosure&));
   MOCK_METHOD0(Detach, void(void));
@@ -119,10 +121,10 @@ class OffloadingVideoDecoderTest : public testing::Test {
     task_env_.RunUntilIdle();
 
     // Verify decode works and is called on the right thread.
-    EXPECT_CALL(*decoder_, Decode(_, _))
+    EXPECT_CALL(*decoder_, Decode_(_, _))
         .WillOnce(DoAll(VerifyOn(task_env_.GetMainThreadTaskRunner()),
                         RunClosure(base::Bind(output_cb, nullptr)),
-                        RunCallback<1>(DecodeStatus::OK)));
+                        RunOnceCallback<1>(DecodeStatus::OK)));
     offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(),
                                 ExpectDecodeCB(DecodeStatus::OK));
     task_env_.RunUntilIdle();
@@ -163,10 +165,10 @@ class OffloadingVideoDecoderTest : public testing::Test {
     // Verify decode works and is called on the right thread.
     offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(),
                                 ExpectDecodeCB(DecodeStatus::OK));
-    EXPECT_CALL(*decoder_, Decode(_, _))
+    EXPECT_CALL(*decoder_, Decode_(_, _))
         .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
                         RunClosure(base::Bind(output_cb, nullptr)),
-                        RunCallback<1>(DecodeStatus::OK)));
+                        RunOnceCallback<1>(DecodeStatus::OK)));
     task_env_.RunUntilIdle();
 
     // Reset so we can call Initialize() again.
@@ -272,16 +274,20 @@ TEST_F(OffloadingVideoDecoderTest, ParallelizedOffloading) {
   EXPECT_GT(offloading_decoder_->GetMaxDecodeRequests(), 1);
 
   // Verify decode works and is called on the right thread.
-  VideoDecoder::DecodeCB decode_cb = base::BindRepeating(
-      &OffloadingVideoDecoderTest::DecodeDone, base::Unretained(this));
-  offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb);
-  offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb);
+  offloading_decoder_->Decode(
+      DecoderBuffer::CreateEOSBuffer(),
+      base::BindOnce(&OffloadingVideoDecoderTest::DecodeDone,
+                     base::Unretained(this)));
+  offloading_decoder_->Decode(
+      DecoderBuffer::CreateEOSBuffer(),
+      base::BindOnce(&OffloadingVideoDecoderTest::DecodeDone,
+                     base::Unretained(this)));
 
-  EXPECT_CALL(*decoder_, Decode(_, _))
+  EXPECT_CALL(*decoder_, Decode_(_, _))
       .Times(2)
       .WillRepeatedly(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
                             RunClosure(base::BindRepeating(output_cb, nullptr)),
-                            RunCallback<1>(DecodeStatus::OK)));
+                            RunOnceCallback<1>(DecodeStatus::OK)));
   EXPECT_CALL(*this, DecodeDone(DecodeStatus::OK))
       .Times(2)
       .WillRepeatedly(VerifyOn(task_env_.GetMainThreadTaskRunner()));
@@ -319,12 +325,16 @@ TEST_F(OffloadingVideoDecoderTest, ParallelizedOffloadingResetAbortsDecodes) {
   EXPECT_GT(offloading_decoder_->GetMaxDecodeRequests(), 1);
 
   // Verify decode works and is called on the right thread.
-  VideoDecoder::DecodeCB decode_cb = base::BindRepeating(
-      &OffloadingVideoDecoderTest::DecodeDone, base::Unretained(this));
-  offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb);
-  offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb);
+  offloading_decoder_->Decode(
+      DecoderBuffer::CreateEOSBuffer(),
+      base::BindOnce(&OffloadingVideoDecoderTest::DecodeDone,
+                     base::Unretained(this)));
+  offloading_decoder_->Decode(
+      DecoderBuffer::CreateEOSBuffer(),
+      base::BindOnce(&OffloadingVideoDecoderTest::DecodeDone,
+                     base::Unretained(this)));
 
-  EXPECT_CALL(*decoder_, Decode(_, _)).Times(0);
+  EXPECT_CALL(*decoder_, Decode_(_, _)).Times(0);
   EXPECT_CALL(*this, DecodeDone(DecodeStatus::ABORTED))
       .Times(2)
       .WillRepeatedly(VerifyOn(task_env_.GetMainThreadTaskRunner()));
