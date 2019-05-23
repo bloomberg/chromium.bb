@@ -931,6 +931,11 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
         in_picture_ = true;
         picture_data_ = PictureData();
         return;
+      } else if (!Match(tag_impl, kSourceTag) && !Match(tag_impl, kImgTag)) {
+        // If found an "atypical" picture child, don't process it as a picture
+        // child.
+        in_picture_ = false;
+        picture_data_.picked = false;
       }
 
       StartTagScanner scanner(
@@ -945,8 +950,9 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
       std::unique_ptr<PreloadRequest> request = scanner.CreatePreloadRequest(
           predicted_base_element_url_, source, client_hints_preferences_,
           picture_data_, *document_parameters_);
-      if (request)
+      if (request) {
         requests.push_back(std::move(request));
+      }
       return;
     }
     default: { return; }
