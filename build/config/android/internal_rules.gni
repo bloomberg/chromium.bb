@@ -810,8 +810,6 @@ template("test_runner_script") {
         executable_args += [
           "--additional-apk",
           "@WrappedPath(@FileArg($_rebased_build_config:deps_info:apk_path))",
-          "--additional-apk-incremental",
-          "@WrappedPath(@FileArg($_rebased_build_config:deps_info:incremental_apk_path))",
         ]
       }
     }
