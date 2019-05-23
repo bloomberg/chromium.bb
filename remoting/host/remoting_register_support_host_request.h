@@ -37,6 +37,15 @@ class RemotingRegisterSupportHostRequest final
  private:
   using RemoteSupportService = apis::v1::RemoteSupportService;
 
+  // MuxingSignalStrategy might notify a CONNECTED state for more than once, so
+  // this is necessary to prevent trying to register twice when a strategy is
+  // connected after the timeout.
+  enum class State {
+    NOT_STARTED,
+    REGISTERING,
+    REGISTERED,
+  };
+
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
   bool OnSignalStrategyIncomingStanza(
@@ -56,6 +65,8 @@ class RemotingRegisterSupportHostRequest final
   RegisterCallback callback_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;
   GrpcAuthenticatedExecutor grpc_executor_;
+
+  State state_ = State::NOT_STARTED;
 
   std::unique_ptr<RemoteSupportService::Stub> remote_support_;
 

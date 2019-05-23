@@ -84,6 +84,11 @@ bool RemotingRegisterSupportHostRequest::OnSignalStrategyIncomingStanza(
 }
 
 void RemotingRegisterSupportHostRequest::RegisterHost() {
+  if (state_ != State::NOT_STARTED) {
+    return;
+  }
+  state_ = State::REGISTERING;
+
   apis::v1::RegisterSupportHostRequest request;
   request.set_public_key(key_pair_->GetPublicKey());
   if (signal_strategy_->ftl_signal_strategy()->GetState() ==
@@ -113,9 +118,11 @@ void RemotingRegisterSupportHostRequest::OnRegisterHostResult(
     const grpc::Status& status,
     const apis::v1::RegisterSupportHostResponse& response) {
   if (!status.ok()) {
+    state_ = State::NOT_STARTED;
     RunCallback({}, {}, MapError(status.error_code()));
     return;
   }
+  state_ = State::REGISTERED;
   base::TimeDelta lifetime =
       base::TimeDelta::FromSeconds(response.support_id_lifetime_seconds());
   RunCallback(response.support_id(), lifetime, protocol::ErrorCode::OK);

@@ -12,9 +12,6 @@
 
 namespace remoting {
 
-class FtlSignalStrategy;
-class XmppSignalStrategy;
-
 // WARNING: This class is designed to be used exclusively by
 // JingleSessionManager on the host during the XMPP->FTL signaling migration
 // process. It doesn't support anything other than sending and receiving
@@ -28,9 +25,8 @@ class XmppSignalStrategy;
 // on another thread.
 class MuxingSignalStrategy final : public SignalStrategy {
  public:
-  MuxingSignalStrategy(
-      std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy,
-      std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy);
+  MuxingSignalStrategy(std::unique_ptr<SignalStrategy> ftl_signal_strategy,
+                       std::unique_ptr<SignalStrategy> xmpp_signal_strategy);
   ~MuxingSignalStrategy() override;
 
   // SignalStrategy implementations.
@@ -38,12 +34,18 @@ class MuxingSignalStrategy final : public SignalStrategy {
   // This will connect both |ftl_signal_strategy_| and |xmpp_signal_strategy_|.
   void Connect() override;
 
-  // Returns:
-  // * DISCONNECTED if both of the signal strategies are disconnected
-  // * CONNECTED if both of the signal strategies are connected, or only one of
-  //   the strategy is connected while a timeout has been elapsed (the other
-  //   strategy can be either disconnected or connecting)
-  // * CONNECTING in other cases
+  // The state is a mapping of the MuxingState (defined in
+  // MuxingSignalStrategy::Core):
+  //
+  // ALL_DISCONNECTED -> DISCONNECTED
+  // SOME_CONNECTING, ONLY_ONE_CONNECTED_BEFORE_TIMEOUT -> CONNECTING
+  // ALL_CONNECTED, ONLY_ONE_CONNECTED_AFTER_TIMEOUT -> CONNECTED
+  //
+  // Note that MuxingSignalStrategy will notify listeners whenever the muxing
+  // state is changed, which means listeners may get notified for
+  // CONNECTING->CONNECTING and CONNECTED->CONNECTED transitions. This is to
+  // allow heartbeat sender to send new heartbeat when a strategy is connected
+  // or disconnected after the timeout.
   State GetState() const override;
 
   // GetLocalAddress() can only be called inside
@@ -56,8 +58,8 @@ class MuxingSignalStrategy final : public SignalStrategy {
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
   std::string GetNextId() override;
 
-  FtlSignalStrategy* ftl_signal_strategy();
-  XmppSignalStrategy* xmpp_signal_strategy();
+  SignalStrategy* ftl_signal_strategy();
+  SignalStrategy* xmpp_signal_strategy();
 
  private:
   class Core;
@@ -77,8 +79,8 @@ class MuxingSignalStrategy final : public SignalStrategy {
   Core* GetCoreImpl();
 
   // These will be moved to |core_| once the core is created.
-  std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy_;
-  std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy_;
+  std::unique_ptr<SignalStrategy> ftl_signal_strategy_;
+  std::unique_ptr<SignalStrategy> xmpp_signal_strategy_;
 
   std::unique_ptr<Core> core_;
   DISALLOW_COPY_AND_ASSIGN(MuxingSignalStrategy);

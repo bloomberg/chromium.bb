@@ -17,9 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
-#include "remoting/signaling/xmpp_signal_strategy.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -33,8 +31,8 @@ constexpr base::TimeDelta kWaitForAllStrategiesConnectedTimeout =
 
 class MuxingSignalStrategy::Core final : public SignalStrategy::Listener {
  public:
-  Core(std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy,
-       std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy);
+  Core(std::unique_ptr<SignalStrategy> ftl_signal_strategy,
+       std::unique_ptr<SignalStrategy> xmpp_signal_strategy);
   ~Core() override;
 
   void Invalidate();
@@ -46,18 +44,24 @@ class MuxingSignalStrategy::Core final : public SignalStrategy::Listener {
   void RemoveListener(SignalStrategy::Listener* listener);
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
 
-  FtlSignalStrategy* ftl_signal_strategy() {
-    return ftl_signal_strategy_.get();
-  }
+  SignalStrategy* ftl_signal_strategy() { return ftl_signal_strategy_.get(); }
 
-  XmppSignalStrategy* xmpp_signal_strategy() {
-    return xmpp_signal_strategy_.get();
-  }
+  SignalStrategy* xmpp_signal_strategy() { return xmpp_signal_strategy_.get(); }
 
  private:
+  enum class MuxingState {
+    ALL_DISCONNECTED,
+    SOME_CONNECTING,
+    ONLY_ONE_CONNECTED_BEFORE_TIMEOUT,
+    ALL_CONNECTED,
+    ONLY_ONE_CONNECTED_AFTER_TIMEOUT,
+  };
+
   SignalStrategy* GetSignalStrategyForStanza(
       const jingle_xmpp::XmlElement* stanza);
-  void UpdateTimerState();
+
+  // Returns true if the state is updated.
+  bool UpdateState();
 
   void OnWaitForAllStrategiesConnectedTimeout();
 
@@ -72,11 +76,11 @@ class MuxingSignalStrategy::Core final : public SignalStrategy::Listener {
 
   base::ObserverList<SignalStrategy::Listener> listeners_;
 
-  std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy_;
-  std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy_;
+  std::unique_ptr<SignalStrategy> ftl_signal_strategy_;
+  std::unique_ptr<SignalStrategy> xmpp_signal_strategy_;
 
   SignalingAddress current_local_address_;
-  State previous_state_;
+  MuxingState state_ = MuxingState::ALL_DISCONNECTED;
 
   base::OneShotTimer wait_for_all_strategies_connected_timeout_timer_;
 
@@ -87,18 +91,19 @@ class MuxingSignalStrategy::Core final : public SignalStrategy::Listener {
 };
 
 MuxingSignalStrategy::Core::Core(
-    std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy,
-    std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy)
+    std::unique_ptr<SignalStrategy> ftl_signal_strategy,
+    std::unique_ptr<SignalStrategy> xmpp_signal_strategy)
     : weak_factory_(this) {
   ftl_signal_strategy_ = std::move(ftl_signal_strategy);
   xmpp_signal_strategy_ = std::move(xmpp_signal_strategy);
   DCHECK(ftl_signal_strategy_);
   DCHECK(xmpp_signal_strategy_);
+  DCHECK_EQ(State::DISCONNECTED, ftl_signal_strategy_->GetState());
+  DCHECK_EQ(State::DISCONNECTED, xmpp_signal_strategy_->GetState());
   ftl_signal_strategy_->AddListener(this);
   xmpp_signal_strategy_->AddListener(this);
 
-  UpdateTimerState();
-  previous_state_ = GetState();
+  UpdateState();
 }
 
 MuxingSignalStrategy::Core::~Core() {
@@ -123,16 +128,19 @@ void MuxingSignalStrategy::Core::Connect() {
 
 SignalStrategy::State MuxingSignalStrategy::Core::GetState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (IsEveryStrategyDisconnected()) {
-    return State::DISCONNECTED;
+  switch (state_) {
+    case MuxingState::ALL_DISCONNECTED:
+      return State::DISCONNECTED;
+    case MuxingState::SOME_CONNECTING:
+    case MuxingState::ONLY_ONE_CONNECTED_BEFORE_TIMEOUT:
+      return State::CONNECTING;
+    case MuxingState::ONLY_ONE_CONNECTED_AFTER_TIMEOUT:
+    case MuxingState::ALL_CONNECTED:
+      return State::CONNECTED;
+    default:
+      NOTREACHED();
+      return State::DISCONNECTED;
   }
-
-  if (IsAnyStrategyConnected() &&
-      !wait_for_all_strategies_connected_timeout_timer_.IsRunning()) {
-    return State::CONNECTED;
-  }
-
-  return State::CONNECTING;
 }
 
 const SignalingAddress& MuxingSignalStrategy::Core::GetLocalAddress() const {
@@ -175,19 +183,56 @@ SignalStrategy* MuxingSignalStrategy::Core::GetSignalStrategyForStanza(
     return nullptr;
   }
   if (receiver.channel() == SignalingAddress::Channel::FTL) {
+    DCHECK(ftl_signal_strategy_->GetLocalAddress().empty() ||
+           ftl_signal_strategy_->GetLocalAddress().channel() ==
+               SignalingAddress::Channel::FTL)
+        << "|ftl_signal_strategy_|'s local address channel is not FTL. "
+        << "You might have flipped the signal strategies. "
+        << "Local address: " << ftl_signal_strategy_->GetLocalAddress().jid();
     return ftl_signal_strategy_.get();
+  } else {
+    DCHECK(xmpp_signal_strategy_->GetLocalAddress().empty() ||
+           xmpp_signal_strategy_->GetLocalAddress().channel() !=
+               SignalingAddress::Channel::FTL)
+        << "|xmpp_signal_strategy_|'s local address channel is FTL. "
+        << "You might have flipped the signal strategies. "
+        << "Local address: " << xmpp_signal_strategy_->GetLocalAddress().jid();
   }
   return xmpp_signal_strategy_.get();
 }
 
-void MuxingSignalStrategy::Core::UpdateTimerState() {
-  if (IsEveryStrategyConnected() || IsEveryStrategyDisconnected()) {
+bool MuxingSignalStrategy::Core::UpdateState() {
+  MuxingState new_state = state_;
+  if (IsEveryStrategyConnected()) {
     wait_for_all_strategies_connected_timeout_timer_.AbandonAndStop();
+    new_state = MuxingState::ALL_CONNECTED;
+  } else if (IsEveryStrategyDisconnected()) {
+    wait_for_all_strategies_connected_timeout_timer_.AbandonAndStop();
+    new_state = MuxingState::ALL_DISCONNECTED;
   } else if (IsAnyStrategyConnected()) {
-    wait_for_all_strategies_connected_timeout_timer_.Start(
-        FROM_HERE, kWaitForAllStrategiesConnectedTimeout, this,
-        &MuxingSignalStrategy::Core::OnWaitForAllStrategiesConnectedTimeout);
+    if (state_ == MuxingState::ALL_CONNECTED  // One connection is dropped
+        || (state_ == MuxingState::ONLY_ONE_CONNECTED_BEFORE_TIMEOUT &&
+            !wait_for_all_strategies_connected_timeout_timer_.IsRunning())) {
+      new_state = MuxingState::ONLY_ONE_CONNECTED_AFTER_TIMEOUT;
+    } else if (state_ != MuxingState::ONLY_ONE_CONNECTED_AFTER_TIMEOUT) {
+      new_state = MuxingState::ONLY_ONE_CONNECTED_BEFORE_TIMEOUT;
+      if (!wait_for_all_strategies_connected_timeout_timer_.IsRunning()) {
+        wait_for_all_strategies_connected_timeout_timer_.Start(
+            FROM_HERE, kWaitForAllStrategiesConnectedTimeout, this,
+            &MuxingSignalStrategy::Core::
+                OnWaitForAllStrategiesConnectedTimeout);
+      }
+    }
+    // Otherwise we are not changing the state unless all strategies are
+    // connected or all strategies are disconnected.
+  } else {
+    new_state = MuxingState::SOME_CONNECTING;
   }
+  if (state_ == new_state) {
+    return false;
+  }
+  state_ = new_state;
+  return true;
 }
 
 void MuxingSignalStrategy::Core::OnWaitForAllStrategiesConnectedTimeout() {
@@ -201,13 +246,11 @@ void MuxingSignalStrategy::Core::OnWaitForAllStrategiesConnectedTimeout() {
 
 void MuxingSignalStrategy::Core::OnSignalStrategyStateChange(
     SignalStrategy::State unused) {
-  UpdateTimerState();
-  State new_state = GetState();
-  if (previous_state_ != new_state) {
+  bool is_state_changed = UpdateState();
+  if (is_state_changed) {
     for (auto& listener : listeners_) {
-      listener.OnSignalStrategyStateChange(new_state);
+      listener.OnSignalStrategyStateChange(GetState());
     }
-    previous_state_ = new_state;
   }
 }
 
@@ -247,8 +290,8 @@ bool MuxingSignalStrategy::Core::IsEveryStrategyDisconnected() const {
 }
 
 MuxingSignalStrategy::MuxingSignalStrategy(
-    std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy,
-    std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy)
+    std::unique_ptr<SignalStrategy> ftl_signal_strategy,
+    std::unique_ptr<SignalStrategy> xmpp_signal_strategy)
     : ftl_signal_strategy_(std::move(ftl_signal_strategy)),
       xmpp_signal_strategy_(std::move(xmpp_signal_strategy)) {}
 
@@ -291,11 +334,11 @@ std::string MuxingSignalStrategy::GetNextId() {
   return base::NumberToString(base::RandUint64());
 }
 
-FtlSignalStrategy* MuxingSignalStrategy::ftl_signal_strategy() {
+SignalStrategy* MuxingSignalStrategy::ftl_signal_strategy() {
   return GetCore()->ftl_signal_strategy();
 }
 
-XmppSignalStrategy* MuxingSignalStrategy::xmpp_signal_strategy() {
+SignalStrategy* MuxingSignalStrategy::xmpp_signal_strategy() {
   return GetCore()->xmpp_signal_strategy();
 }
 
