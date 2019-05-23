@@ -252,12 +252,6 @@ class NET_EXPORT HttpUtil {
   static bool ParseContentEncoding(const std::string& content_encoding,
                                    std::set<std::string>* used_encodings);
 
-  // Computes the partitioning http cache key given the top frame and initiator
-  // origins. Returns empty string if split cache is not enabled.
-  static std::string ComputeCacheKey(
-      const base::Optional<url::Origin>& top_frame_origin,
-      const base::Optional<url::Origin>& initiator_origin);
-
   // Used to iterate over the name/value pairs of HTTP headers.  To iterate
   // over the values in a multi-value header, use ValuesIterator.
   // See AssembleRawHeaders for joining line continuations (this iterator

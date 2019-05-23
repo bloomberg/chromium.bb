@@ -1222,25 +1222,4 @@ bool HttpUtil::ParseContentEncoding(const std::string& content_encoding,
   return true;
 }
 
-std::string HttpUtil::ComputeCacheKey(
-    const base::Optional<url::Origin>& top_frame_origin,
-    const base::Optional<url::Origin>& initiator) {
-  std::string cache_key;
-
-  if (!base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin))
-    return cache_key;
-
-  if (top_frame_origin) {
-    // Prepend the key with "_dk_" to mark it as double keyed (and makes it an
-    // invalid url so that it doesn't get confused with a single-keyed
-    // entry). Separate the origin and url with invalid whitespace and control
-    // characters.
-    cache_key = base::StrCat({"_dk_", top_frame_origin->Serialize(), " \n"});
-  }
-
-  // TODO(crbug.com/950069): Use initiator for experimenting the split cache
-  // using both top frame and initiator origins.
-  return cache_key;
-}
-
 }  // namespace net

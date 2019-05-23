@@ -27,6 +27,7 @@
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -289,11 +290,22 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // The origin of the top frame of the page making the request (where
   // applicable). Note that this is experimental and may not always be set.
+  // DEPRECATED: This was introduced for the cache key and will be removed once
+  // |network_isolation_key| is set for most cases.
   const base::Optional<url::Origin>& top_frame_origin() const {
     return top_frame_origin_;
   }
   void set_top_frame_origin(const base::Optional<url::Origin>& origin) {
     top_frame_origin_ = origin;
+  }
+
+  // This key is used to isolate requests from different contexts in accessing
+  // shared network resources like the cache.
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
+  void set_network_isolation_key(const NetworkIsolationKey& key) {
+    network_isolation_key_ = key;
   }
 
   // Indicate whether SameSite cookies should be attached even though the
@@ -334,10 +346,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   const base::Optional<url::Origin>& initiator() const { return initiator_; }
   // This method may only be called before Start().
   void set_initiator(const base::Optional<url::Origin>& initiator);
-
-  // The key used to partition resources in the HTTP cache.
-  const std::string& cache_key() const { return cache_key_; }
-  void set_cache_key(const std::string& cache_key);
 
   // The request method, as an uppercase string.  "GET" is the default value.
   // The request method may only be changed before Start() is called and
@@ -868,11 +876,14 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   std::vector<GURL> url_chain_;
   GURL site_for_cookies_;
+
+  // DEPRECATED: See comment on the getter function.
   base::Optional<url::Origin> top_frame_origin_;
+
+  NetworkIsolationKey network_isolation_key_;
 
   bool attach_same_site_cookies_;
   base::Optional<url::Origin> initiator_;
-  std::string cache_key_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.
   std::string referrer_;

@@ -233,6 +233,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Called whenever an external cache in the system reuses the resource
   // referred to by |url| and |http_method|, inside a page with a top-level
   // URL at |top_frame_origin|.
+  // TODO(crbug.com/965126): Use NetworkIsolationKey instead of top frame
+  // origin.
   void OnExternalCacheHit(const GURL& url,
                           const std::string& http_method,
                           base::Optional<url::Origin> top_frame_origin);
@@ -432,10 +434,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // currently in use.
   int AsyncDoomEntry(const std::string& key, Transaction* transaction);
 
-  // Dooms the entry associated with a GET for a given |url|, loaded from
-  // a page with top-level frame at |top_frame_origin|.
+  // Dooms the entry associated with a GET for a given url and network
+  // isolation key.
   void DoomMainEntryForUrl(const GURL& url,
-                           base::Optional<url::Origin> top_frame_origin);
+                           const NetworkIsolationKey& isolation_key);
 
   // Closes a previously doomed entry.
   void FinalizeDoomedEntry(ActiveEntry* entry);

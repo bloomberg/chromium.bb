@@ -1055,7 +1055,7 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
 
   // Keep track of the fraction of requests that we can double-key.
   UMA_HISTOGRAM_BOOLEAN("HttpCache.TopFrameOriginPresent",
-                        request_->top_frame_origin.has_value());
+                        request_->network_isolation_key.IsFullyPopulated());
 
   if (!ShouldPassThrough()) {
     cache_key_ = cache_->GenerateCacheKey(request_);
@@ -1838,7 +1838,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
   // Invalidate any cached GET with a successful POST.
   if (!(effective_load_flags_ & LOAD_DISABLE_CACHE) && method_ == "POST" &&
       NonErrorResponse(new_response->headers->response_code())) {
-    cache_->DoomMainEntryForUrl(request_->url, request_->top_frame_origin);
+    cache_->DoomMainEntryForUrl(request_->url, request_->network_isolation_key);
   }
 
   RecordNoStoreHeaderHistogram(request_->load_flags, new_response);
@@ -2482,7 +2482,7 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   // cache otherwise resources from different pages could share a cached entry
   // in such cases.
   if (base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin) &&
-      (!request_->top_frame_origin || request_->top_frame_origin->opaque())) {
+      request_->network_isolation_key.IsTransient()) {
     return true;
   }
 

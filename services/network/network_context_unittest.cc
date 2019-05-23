@@ -1424,7 +1424,7 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit_Split) {
 
     // Since this is splitting the cache, the key also includes the top-level
     // frame origin.
-    EXPECT_EQ(base::StrCat({"_dk_http://a.com \n", test_url.spec()}),
+    EXPECT_EQ(base::StrCat({"_dk_http://a.com ", test_url.spec()}),
               mock_cache.disk_cache()->GetExternalCacheHits().back());
   }
 }

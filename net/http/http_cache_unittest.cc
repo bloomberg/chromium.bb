@@ -5818,14 +5818,14 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   MockTransaction transaction(kSimpleGET_Transaction);
   AddMockTransaction(&transaction);
   MockHttpRequest req1(transaction);
-  req1.top_frame_origin = origin_a;
+  req1.network_isolation_key = NetworkIsolationKey(origin_a);
 
   // Attempt to populate the cache.
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   // Same for a different origin.
   MockHttpRequest req1b(transaction);
-  req1b.top_frame_origin = origin_b;
+  req1b.network_isolation_key = NetworkIsolationKey(origin_b);
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req1b,
                                 nullptr);
 
@@ -5842,7 +5842,7 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   transaction.status = "HTTP/1.1 205 No Content";
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
-  req2.top_frame_origin = origin_a;
+  req2.network_isolation_key = NetworkIsolationKey(origin_a);
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
@@ -9624,7 +9624,7 @@ TEST_F(HttpCacheTest, SplitCache) {
 
   // Now request with a.com as the top frame origin. It shouldn't be cached
   // since the cached resource has a different top frame origin.
-  trans_info.top_frame_origin = origin_a;
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
@@ -9637,7 +9637,7 @@ TEST_F(HttpCacheTest, SplitCache) {
   EXPECT_TRUE(response.was_cached);
 
   // Now request with b.com as the top frame origin. It shouldn't be cached.
-  trans_info.top_frame_origin = origin_b;
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_b);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
@@ -9648,15 +9648,15 @@ TEST_F(HttpCacheTest, SplitCache) {
   EXPECT_TRUE(response.was_cached);
 
   // a.com should still be cached.
-  trans_info.top_frame_origin = origin_a;
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
 
   // Now make a request with an opaque top frame origin.  It shouldn't be
   // cached.
-  trans_info.top_frame_origin = origin_data;
-  EXPECT_TRUE(trans_info.top_frame_origin->opaque());
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_data);
+  EXPECT_TRUE(trans_info.network_isolation_key.ToString().empty());
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
@@ -9676,7 +9676,7 @@ TEST_F(HttpCacheTest, SplitCache) {
                                               kUploadId);
 
   MockHttpRequest post_info = MockHttpRequest(kSimplePOST_Transaction);
-  post_info.top_frame_origin = origin_a;
+  post_info.network_isolation_key = NetworkIsolationKey(origin_a);
   post_info.upload_data_stream = &upload_data_stream;
 
   RunTransactionTestWithRequest(cache.http_cache(), kSimplePOST_Transaction,
@@ -9706,7 +9706,8 @@ TEST_F(HttpCacheTest, NonSplitCache) {
 
   // Now request with a.com as the top frame origin. It should use the same
   // cached object.
-  trans_info.top_frame_origin = url::Origin::Create(GURL("http://a.com/"));
+  trans_info.network_isolation_key =
+      NetworkIsolationKey(url::Origin::Create(GURL("http://a.com/")));
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);

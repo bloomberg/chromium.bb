@@ -32,6 +32,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
@@ -321,7 +322,12 @@ void URLRequestHttpJob::Start() {
 
   request_info_.url = request_->url();
   request_info_.method = request_->method();
-  request_info_.top_frame_origin = request_->top_frame_origin();
+
+  // TODO(crbug.com/963476): Remove this when network_isolation_key is being set
+  // in request_.
+  request_info_.network_isolation_key =
+      NetworkIsolationKey(request_->top_frame_origin());
+
   request_info_.load_flags = request_->load_flags();
   request_info_.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(request_->traffic_annotation());
@@ -362,8 +368,6 @@ void URLRequestHttpJob::Start() {
 
   AddExtraHeaders();
   AddCookieHeaderAndStart();
-
-  request_info_.cache_key = request_->cache_key();
 }
 
 void URLRequestHttpJob::Kill() {
