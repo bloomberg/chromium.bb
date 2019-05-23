@@ -3445,7 +3445,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
     const double mc_saved_base = (mi_count * cpi->rd.mc_saved_base);
     beta = (mc_saved + 100.0) / (mc_saved_base + 100.0);
   }
-  offset = (6 * av1_get_deltaq_offset(cpi, cm->base_qindex, beta)) / 8;
+  offset = (7 * av1_get_deltaq_offset(cpi, cm->base_qindex, beta)) / 8;
   // printf("beta %g, offset %d\n", beta, offset);
 
   aom_clear_system_state();
