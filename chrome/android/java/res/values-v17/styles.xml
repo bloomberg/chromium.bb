@@ -637,10 +637,13 @@
         <item name="android:layout_width">43dp</item>
         <item name="android:paddingEnd">3.5dp</item>
     </style>
-    <style name="BottomToolbarButton">
+    <style name="BottomToolbarButton" parent="ToolbarButton">
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+    <style name="SplitToolbarButton" parent="BottomToolbarButton">
         <item name="android:layout_height">24dp</item>
         <item name="android:layout_width">24dp</item>
-        <item name="android:layout_gravity">center</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="android:clickable">false</item>
     </style>
