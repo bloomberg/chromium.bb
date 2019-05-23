@@ -23,6 +23,7 @@
 namespace autofill {
 
 using features::kAutofillKeyboardAccessory;
+using mojom::FocusedFieldType;
 
 const char kAutofillKeyboardAccessoryAnimationDurationKey[] =
     "animation_duration_millis";
@@ -207,6 +208,12 @@ bool ShouldAutoselectFirstSuggestionOnArrowDown() {
 #else
   return false;
 #endif
+}
+
+bool IsFillable(FocusedFieldType focused_field_type) {
+  return focused_field_type == FocusedFieldType::kFillableTextField ||
+         focused_field_type == FocusedFieldType::kFillableUsernameField ||
+         focused_field_type == FocusedFieldType::kFillablePasswordField;
 }
 
 }  // namespace autofill

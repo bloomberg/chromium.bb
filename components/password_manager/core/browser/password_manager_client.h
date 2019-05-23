@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/hsts_query.h"
@@ -129,8 +130,7 @@ class PasswordManagerClient {
   // same frame (e.g. tabbed from email to password field).
   virtual void FocusedInputChanged(
       password_manager::PasswordManagerDriver* driver,
-      bool is_fillable,
-      bool is_password_field) = 0;
+      autofill::mojom::FocusedFieldType focused_field_type) = 0;
 
   // Informs the embedder of a password forms that the user should choose from.
   // Returns true if the prompt is indeed displayed. If the prompt is not

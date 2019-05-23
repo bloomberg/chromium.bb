@@ -36,6 +36,7 @@ using autofill::AccessorySheetData;
 using autofill::FooterCommand;
 using autofill::PasswordForm;
 using autofill::UserInfo;
+using autofill::mojom::FocusedFieldType;
 using FillingSource = ManualFillingController::FillingSource;
 
 namespace {
@@ -181,13 +182,17 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
 
 void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     const url::Origin& origin,
-    bool is_fillable,
-    bool is_password_field,
+    FocusedFieldType focused_field_type,
     bool is_manual_generation_available) {
   std::vector<UserInfo> info_to_add;
   std::vector<FooterCommand> footer_commands_to_add;
 
-  if (is_fillable) {
+  const bool is_password_field =
+      focused_field_type == FocusedFieldType::kFillablePasswordField;
+
+  if (focused_field_type == FocusedFieldType::kFillableTextField ||
+      focused_field_type == FocusedFieldType::kFillableUsernameField ||
+      focused_field_type == FocusedFieldType::kFillablePasswordField) {
     const std::vector<PasswordAccessorySuggestion> suggestions =
         GetSuggestions();
     info_to_add.resize(suggestions.size());
@@ -195,12 +200,12 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
                    [is_password_field](const auto& x) {
                      return Translate(is_password_field, x);
                    });
+  }
 
-    if (is_password_field && is_manual_generation_available) {
-      base::string16 generate_password_title = l10n_util::GetStringUTF16(
-          IDS_PASSWORD_MANAGER_ACCESSORY_GENERATE_PASSWORD_BUTTON_TITLE);
-      footer_commands_to_add.push_back(FooterCommand(generate_password_title));
-    }
+  if (is_password_field && is_manual_generation_available) {
+    base::string16 generate_password_title = l10n_util::GetStringUTF16(
+        IDS_PASSWORD_MANAGER_ACCESSORY_GENERATE_PASSWORD_BUTTON_TITLE);
+    footer_commands_to_add.push_back(FooterCommand(generate_password_title));
   }
 
   base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
@@ -210,13 +215,13 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
   bool has_suggestions = !info_to_add.empty();
 
   GetManualFillingController()->RefreshSuggestionsForField(
-      is_fillable,
+      focused_field_type,
       autofill::CreateAccessorySheetData(
           autofill::FallbackSheetType::PASSWORD,
           GetTitle(has_suggestions, GetFocusedFrameOrigin()),
           std::move(info_to_add), std::move(footer_commands_to_add)));
 
-  if (is_password_field && is_fillable) {
+  if (is_password_field) {
     GetManualFillingController()->ShowWhenKeyboardIsVisible(
         FillingSource::PASSWORD_FALLBACKS);
   } else {

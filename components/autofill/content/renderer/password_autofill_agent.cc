@@ -641,9 +641,7 @@ void PasswordAutofillAgent::FocusStateNotifier::FocusedInputChanged(
     FocusedFieldType focused_field_type) {
   // Forward the request if the type changed or the field is fillable.
   if (focused_field_type != focused_field_type_ ||
-      focused_field_type == FocusedFieldType::kFillableTextField ||
-      focused_field_type == FocusedFieldType::kFillableUsernameField ||
-      focused_field_type == FocusedFieldType::kFillablePasswordField) {
+      IsFillable(focused_field_type)) {
     agent_->GetPasswordManagerDriver()->FocusedInputChanged(focused_field_type);
   }
 

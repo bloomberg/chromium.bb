@@ -1020,8 +1020,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
 
 void ChromePasswordManagerClient::FocusedInputChanged(
     password_manager::PasswordManagerDriver* driver,
-    bool is_fillable,
-    bool is_password_field) {
+    autofill::mojom::FocusedFieldType focused_field_type) {
 #if defined(OS_ANDROID)
   if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     bool is_manual_generation_available =
@@ -1033,8 +1032,7 @@ void ChromePasswordManagerClient::FocusedInputChanged(
         content_driver->render_frame_host()->GetLastCommittedOrigin();
 
     PasswordAccessoryController::GetOrCreate(web_contents())
-        ->RefreshSuggestionsForField(last_committed_origin, is_fillable,
-                                     is_password_field,
+        ->RefreshSuggestionsForField(last_committed_origin, focused_field_type,
                                      is_manual_generation_available);
   }
 #endif  // defined(OS_ANDROID)

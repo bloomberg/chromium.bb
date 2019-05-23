@@ -31,8 +31,7 @@ void StubPasswordManagerClient::HideManualFallbackForSaving() {}
 
 void StubPasswordManagerClient::FocusedInputChanged(
     password_manager::PasswordManagerDriver* driver,
-    bool is_fillable,
-    bool is_password_field) {}
+    autofill::mojom::FocusedFieldType focused_field_type) {}
 
 bool StubPasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,

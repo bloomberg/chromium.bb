@@ -14,9 +14,11 @@
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "content/public/browser/web_contents.h"
 
 using autofill::AccessorySheetData;
+using autofill::mojom::FocusedFieldType;
 
 ManualFillingControllerImpl::~ManualFillingControllerImpl() = default;
 
@@ -60,17 +62,16 @@ void ManualFillingControllerImpl::OnFilledIntoFocusedField(
 }
 
 void ManualFillingControllerImpl::RefreshSuggestionsForField(
-    bool is_fillable,
+    FocusedFieldType focused_field_type,
     const AccessorySheetData& accessory_sheet_data) {
   view_->OnItemsAvailable(accessory_sheet_data);
 
   // TODO(crbug.com/905669): The decision for showing the sheet or not will need
   // to take into account if Autofill suggestions are also available.
-  if (is_fillable) {
+  if (autofill::IsFillable(focused_field_type))
     view_->SwapSheetWithKeyboard();
-  } else {
+  else
     view_->CloseAccessorySheet();
-  }
 }
 
 void ManualFillingControllerImpl::ShowWhenKeyboardIsVisible(

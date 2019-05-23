@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/filling_status.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/image/image.h"
 
@@ -59,10 +60,9 @@ class ManualFillingController {
   // --------------------------------------------
 
   // Forwards |accessory_sheet_data| to the view provided by a type-specific
-  // controller to be shown on the accessory sheet. If a field lost focus,
-  // |is_fillable| should be false.
+  // controller to be shown on the accessory sheet.
   virtual void RefreshSuggestionsForField(
-      bool is_fillable,
+      autofill::mojom::FocusedFieldType focused_field_type,
       const autofill::AccessorySheetData& accessory_sheet_data) = 0;
 
   // Completes a filling attempt by recording metrics, giving feedback to the

@@ -67,10 +67,10 @@ class PasswordAccessoryControllerImpl
           best_matches,
       const url::Origin& origin) override;
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
-  void RefreshSuggestionsForField(const url::Origin& origin,
-                                  bool is_fillable,
-                                  bool is_password_field,
-                                  bool is_manual_generation_available) override;
+  void RefreshSuggestionsForField(
+      const url::Origin& origin,
+      autofill::mojom::FocusedFieldType focused_field_type,
+      bool is_manual_generation_available) override;
   void DidNavigateMainFrame() override;
   void GetFavicon(
       int desired_size_in_pixel,

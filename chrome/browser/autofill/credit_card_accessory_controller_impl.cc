@@ -70,7 +70,7 @@ void CreditCardAccessoryControllerImpl::RefreshSuggestionsForField() {
 
   bool has_suggestions = !info_to_add.empty();
   GetManualFillingController()->RefreshSuggestionsForField(
-      /*is_fillable=*/true,
+      mojom::FocusedFieldType::kFillableTextField,
       autofill::CreateAccessorySheetData(
           FallbackSheetType::CREDIT_CARD, GetTitle(has_suggestions),
           std::move(info_to_add), std::move(footer_commands)));

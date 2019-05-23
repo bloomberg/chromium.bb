@@ -123,8 +123,7 @@ void IOSChromePasswordManagerClient::HideManualFallbackForSaving() {
 
 void IOSChromePasswordManagerClient::FocusedInputChanged(
     password_manager::PasswordManagerDriver* driver,
-    bool is_fillable,
-    bool is_password_field) {
+    autofill::mojom::FocusedFieldType focused_field_type) {
   NOTIMPLEMENTED();
 }
 

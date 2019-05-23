@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/autofill/accessory_controller.h"
 #include "components/autofill/core/common/filling_status.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/image/image.h"
@@ -70,12 +71,10 @@ class PasswordAccessoryController
   virtual void OnFilledIntoFocusedField(autofill::FillingStatus status) = 0;
 
   // Makes sure, that all shown suggestions are appropriate for the currently
-  // focused field and for fields that lost the focus. If a field lost focus,
-  // |is_fillable| will be false.
+  // focused field and for fields that lost the focus.
   virtual void RefreshSuggestionsForField(
       const url::Origin& origin,
-      bool is_fillable,
-      bool is_password_field,
+      autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) = 0;
 
   // Reacts to a navigation on the main frame, e.g. by clearing caches.

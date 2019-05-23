@@ -26,7 +26,7 @@ class ManualFillingControllerImpl
 
   // ManualFillingController:
   void RefreshSuggestionsForField(
-      bool is_fillable,
+      autofill::mojom::FocusedFieldType focused_field_type,
       const autofill::AccessorySheetData& accessory_sheet_data) override;
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
   void ShowWhenKeyboardIsVisible(FillingSource source) override;

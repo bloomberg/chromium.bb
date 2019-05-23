@@ -62,8 +62,9 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestionsForField) {
   autofill::AccessorySheetData result(autofill::FallbackSheetType::PASSWORD,
                                       base::string16());
 
-  EXPECT_CALL(mock_mf_controller_, RefreshSuggestionsForField(
-                                       /*is_fillable=*/true, _))
+  EXPECT_CALL(mock_mf_controller_,
+              RefreshSuggestionsForField(
+                  mojom::FocusedFieldType::kFillableTextField, _))
       .WillOnce(SaveArg<1>(&result));
 
   controller_.RefreshSuggestionsForField();

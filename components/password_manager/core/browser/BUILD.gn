@@ -219,6 +219,7 @@ jumbo_static_library("browser") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
+    "//components/autofill/core/common/mojom:mojo_types",
     "//components/favicon/core",
     "//components/keyed_service/core",
     "//components/os_crypt",

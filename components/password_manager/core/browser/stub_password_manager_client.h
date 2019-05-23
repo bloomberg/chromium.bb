@@ -32,9 +32,9 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       bool has_generated_password,
       bool update_password) override;
   void HideManualFallbackForSaving() override;
-  void FocusedInputChanged(password_manager::PasswordManagerDriver* driver,
-                           bool is_fillable,
-                           bool is_password_field) override;
+  void FocusedInputChanged(
+      password_manager::PasswordManagerDriver* driver,
+      autofill::mojom::FocusedFieldType focused_field_type) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,

@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+using autofill::mojom::FocusedFieldType;
 using testing::_;
 using testing::AnyNumber;
 using testing::NiceMock;
@@ -36,8 +37,8 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
       void(const std::map<base::string16, const autofill::PasswordForm*>&,
            const url::Origin&));
   MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::FillingStatus));
-  MOCK_METHOD4(RefreshSuggestionsForField,
-               void(const url::Origin&, bool, bool, bool));
+  MOCK_METHOD3(RefreshSuggestionsForField,
+               void(const url::Origin&, FocusedFieldType, bool));
   MOCK_METHOD0(DidNavigateMainFrame, void());
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));
@@ -133,8 +134,8 @@ TEST_F(ManualFillingControllerTest, ClosesViewWhenRefreshingSuggestions) {
   EXPECT_CALL(*view(), CloseAccessorySheet());
   EXPECT_CALL(*view(), SwapSheetWithKeyboard())
       .Times(0);  // Don't touch the keyboard!
-  controller()->RefreshSuggestionsForField(
-      /*is_fillable=*/false, dummy_accessory_sheet_data());
+  controller()->RefreshSuggestionsForField(FocusedFieldType::kUnfillableElement,
+                                           dummy_accessory_sheet_data());
 }
 
 // TODO(fhorschig): Check for recorded metrics here or similar to this.
@@ -145,8 +146,8 @@ TEST_F(ManualFillingControllerTest,
 
   EXPECT_CALL(*view(), CloseAccessorySheet()).Times(0);
   EXPECT_CALL(*view(), SwapSheetWithKeyboard());
-  controller()->RefreshSuggestionsForField(
-      /*is_fillable=*/true, dummy_accessory_sheet_data());
+  controller()->RefreshSuggestionsForField(FocusedFieldType::kFillableTextField,
+                                           dummy_accessory_sheet_data());
 }
 
 // TODO(fhorschig): Check for recorded metrics here or similar to this.
