@@ -254,6 +254,12 @@ idl_impl("bindings_core_impl_generated") {
                      generated_core_callback_function_files
   non_dict_output_dir = bindings_core_v8_output_dir
   target_component = "core"
+
+  # TODO(peria): Drop dependency on bindings:interfaces_info.
+  deps = [
+    "//third_party/blink/renderer/bindings:interfaces_info",
+    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
+  ]
 }
 
 # Even though the idl_impl() call above generates .cpp and .h files for both

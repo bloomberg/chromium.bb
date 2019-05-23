@@ -48,8 +48,7 @@ generate_web_idl_collection("core_web_idl_collection") {
   component = "core"
   output_dir = bindings_core_output_dir
   deps = [
-    "//third_party/blink/renderer/bindings/core:core_global_constructors_idls",
-    "//third_party/blink/renderer/core:generated_testing_idls",
+    ":core_global_constructors_idls",
     "//third_party/blink/renderer/core:generated_testing_idls_internal_runtime_flags",
     "//third_party/blink/renderer/core:generated_testing_idls_settings",
   ]
