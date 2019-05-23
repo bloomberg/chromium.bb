@@ -121,16 +121,6 @@ class ConnectionFilterImpl : public ConnectionFilter {
     gpu_clients_.erase(service_identity);
   }
 
-  template <typename Interface>
-  static void BindOnTaskRunner(
-      const scoped_refptr<base::TaskRunner>& task_runner,
-      const InterfaceBinder<Interface>& binder,
-      mojo::InterfaceRequest<Interface> request,
-      const service_manager::BindSourceInfo& source_info) {
-    task_runner->PostTask(
-        FROM_HERE, base::BindOnce(binder, std::move(request), source_info));
-  }
-
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
       registry_;
