@@ -425,3 +425,11 @@ function testDriveMountedDuringInitialization(callback) {
 
   reportPromise(test(), callback);
 }
+
+function testErrorPropagatedDuringInitialization(done) {
+  chrome.fileManagerPrivate.getVolumeMetadataList = () => {
+    throw new Error('Dummy error for test purpose');
+  };
+
+  reportPromise(assertRejected(volumeManagerFactory.getInstance()), done);
+}
