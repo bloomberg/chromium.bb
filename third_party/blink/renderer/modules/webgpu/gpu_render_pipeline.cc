@@ -84,23 +84,23 @@ DawnDepthStencilStateDescriptor AsDawnType(
   return dawn_desc;
 }
 
-using DawnInputStateInfo = std::tuple<DawnInputStateDescriptor,
-                                      Vector<DawnVertexInputDescriptor>,
-                                      Vector<DawnVertexAttributeDescriptor>>;
+using DawnVertexInputInfo = std::tuple<DawnVertexInputDescriptor,
+                                       Vector<DawnVertexBufferDescriptor>,
+                                       Vector<DawnVertexAttributeDescriptor>>;
 
-DawnInputStateInfo GPUVertexInputAsDawnInputState(
+DawnVertexInputInfo GPUVertexInputAsDawnInputState(
     v8::Isolate* isolate,
     const GPUVertexInputDescriptor* descriptor,
     ExceptionState& exception_state) {
-  DawnInputStateDescriptor dawn_desc;
+  DawnVertexInputDescriptor dawn_desc;
   dawn_desc.indexFormat =
       AsDawnEnum<DawnIndexFormat>(descriptor->indexFormat());
   dawn_desc.numAttributes = 0;
   dawn_desc.attributes = nullptr;
-  dawn_desc.numInputs = 0;
-  dawn_desc.inputs = nullptr;
+  dawn_desc.numBuffers = 0;
+  dawn_desc.buffers = nullptr;
 
-  Vector<DawnVertexInputDescriptor> dawn_vertex_inputs;
+  Vector<DawnVertexBufferDescriptor> dawn_vertex_buffers;
   Vector<DawnVertexAttributeDescriptor> dawn_vertex_attributes;
 
   if (descriptor->hasVertexBuffers()) {
@@ -110,7 +110,7 @@ DawnInputStateInfo GPUVertexInputAsDawnInputState(
     if (!vertex_buffers_value->IsArray()) {
       exception_state.ThrowTypeError("vertexBuffers must be an array");
 
-      return std::make_tuple(dawn_desc, std::move(dawn_vertex_inputs),
+      return std::make_tuple(dawn_desc, std::move(dawn_vertex_buffers),
                              std::move(dawn_vertex_attributes));
     }
 
@@ -129,16 +129,16 @@ DawnInputStateInfo GPUVertexInputAsDawnInputState(
       V8GPUVertexBufferDescriptor::ToImpl(isolate, value, &vertex_buffer,
                                           exception_state);
       if (exception_state.HadException()) {
-        return std::make_tuple(dawn_desc, std::move(dawn_vertex_inputs),
+        return std::make_tuple(dawn_desc, std::move(dawn_vertex_buffers),
                                std::move(dawn_vertex_attributes));
       }
 
-      DawnVertexInputDescriptor dawn_vertex_input;
-      dawn_vertex_input.inputSlot = i;
-      dawn_vertex_input.stride = vertex_buffer.stride();
-      dawn_vertex_input.stepMode =
+      DawnVertexBufferDescriptor dawn_vertex_buffer;
+      dawn_vertex_buffer.inputSlot = i;
+      dawn_vertex_buffer.stride = vertex_buffer.stride();
+      dawn_vertex_buffer.stepMode =
           AsDawnEnum<DawnInputStepMode>(vertex_buffer.stepMode());
-      dawn_vertex_inputs.push_back(dawn_vertex_input);
+      dawn_vertex_buffers.push_back(dawn_vertex_buffer);
 
       for (wtf_size_t j = 0; j < vertex_buffer.attributes().size(); ++j) {
         const GPUVertexAttributeDescriptor* attribute =
@@ -157,10 +157,10 @@ DawnInputStateInfo GPUVertexInputAsDawnInputState(
   dawn_desc.numAttributes =
       static_cast<uint32_t>(dawn_vertex_attributes.size());
   dawn_desc.attributes = dawn_vertex_attributes.data();
-  dawn_desc.numInputs = static_cast<uint32_t>(dawn_vertex_inputs.size());
-  dawn_desc.inputs = dawn_vertex_inputs.data();
+  dawn_desc.numBuffers = static_cast<uint32_t>(dawn_vertex_buffers.size());
+  dawn_desc.buffers = dawn_vertex_buffers.data();
 
-  return std::make_tuple(dawn_desc, std::move(dawn_vertex_inputs),
+  return std::make_tuple(dawn_desc, std::move(dawn_vertex_buffers),
                          std::move(dawn_vertex_attributes));
 }
 
@@ -207,9 +207,9 @@ GPURenderPipeline* GPURenderPipeline::Create(
   v8::Isolate* isolate = script_state->GetIsolate();
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
                                  "GPUVertexInputDescriptor");
-  DawnInputStateInfo input_state_info = GPUVertexInputAsDawnInputState(
+  DawnVertexInputInfo vertex_input_info = GPUVertexInputAsDawnInputState(
       isolate, webgpu_desc->vertexInput(), exception_state);
-  dawn_desc.inputState = &std::get<0>(input_state_info);
+  dawn_desc.vertexInput = &std::get<0>(vertex_input_info);
 
   if (exception_state.HadException()) {
     return nullptr;
