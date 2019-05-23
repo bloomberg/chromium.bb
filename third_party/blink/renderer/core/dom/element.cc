@@ -2631,7 +2631,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     ClearChildNeedsReattachLayoutTree();
   }
   DCHECK(!NeedsStyleRecalc());
-  DCHECK(!ChildNeedsStyleRecalc());
+  DCHECK(!ChildNeedsStyleRecalc() ||
+         StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren));
   DCHECK(!NeedsReattachLayoutTree());
   DCHECK(!ChildNeedsReattachLayoutTree());
 }
