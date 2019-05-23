@@ -153,7 +153,7 @@
         <div class="secondary">[[subLabel_]]</div>
       </div>
       <paper-button class="action-button" on-click="onSigninTap_"
-          disabled="[[syncStatus.setupInProgress]]" id="sign-in"
+          disabled="[[syncStatus.firstSetupInProgress]]" id="sign-in"
           hidden="[[shouldShowAvatarRow_]]">
         $i18n{peopleSignIn}
       </paper-button>
@@ -184,7 +184,7 @@
               [[getAccountLabel_(
                   '$i18nPolymer{syncingTo}', shownAccount_.email,
                   syncStatus.hasError, syncStatus.signedIn,
-                  syncStatus.disabled, syncStatus.setupInProgress,
+                  syncStatus.disabled, syncStatus.firstSetupInProgress,
                   unifiedConsentEnabled)]]
             </div>
           </div>
@@ -196,21 +196,21 @@
         <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
         <paper-button id="sync-button" class="action-button"
             hidden="[[syncStatus.signedIn]]" on-click="onSyncButtonTap_"
-            disabled="[[syncStatus.setupInProgress]]">
+            disabled="[[syncStatus.firstSetupInProgress]]">
           $i18n{peopleSignIn}
         </paper-button>
         <paper-button id="turn-off" class="secondary-button"
             hidden="[[!shouldShowTurnOffButton_(syncStatus.signedIn,
                 showSetupButtons_)]]"
             on-click="onTurnOffButtonTap_"
-            disabled="[[syncStatus.setupInProgress]]">
+            disabled="[[syncStatus.firstSetupInProgress]]">
           $i18n{turnOffSync}
         </paper-button>
         <paper-button id="sync-error-button" class="action-button"
             hidden="[[!shouldShowErrorActionButton_(syncStatus,
                 showSetupButtons_)]]"
             on-click="onErrorButtonTap_"
-            disabled="[[syncStatus.setupInProgress]]">
+            disabled="[[syncStatus.firstSetupInProgress]]">
           [[syncStatus.statusActionText]]
         </paper-button>
         <div id="setup-buttons" hidden="[[!showSetupButtons_]]">
@@ -232,13 +232,13 @@
             </button>
           </template>
           <button class="dropdown-item" on-click="onSigninTap_"
-              disabled="[[syncStatus.setupInProgress]]" id="sign-in-item">
+              disabled="[[syncStatus.firstSetupInProgress]]" id="sign-in-item">
             <img class="account-icon small" alt=""
                 src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
             <span>$i18n{useAnotherAccount}</span>
           </button>
           <button class="dropdown-item" on-click="onSignoutTap_"
-              disabled="[[syncStatus.setupInProgress]]" id="sign-out-item">
+              disabled="[[syncStatus.firstSetupInProgress]]" id="sign-out-item">
             <iron-icon icon="settings:exit-to-app"></iron-icon>
             <span>$i18n{peopleSignOut}</span>
           </button>

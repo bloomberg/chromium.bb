@@ -350,7 +350,7 @@
     </template>
 
     <template is="dom-if" if="[[!unifiedConsentEnabled]]">
-      <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
+      <cr-toast id="toast" open="[[syncStatus.firstSetupInProgress]]">
         <div>$i18n{syncWillStart}</div>
         <paper-button on-click="onSyncSetupCancel_">
           $i18n{cancelSync}

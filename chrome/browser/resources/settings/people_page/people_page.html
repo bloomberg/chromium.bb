@@ -178,7 +178,7 @@
               <template is="dom-if" if="[[showSignin_(syncStatus)]]">
                 <div class="separator"></div>
                 <paper-button class="action-button" on-click="onSigninTap_"
-                    disabled="[[syncStatus.setupInProgress]]">
+                    disabled="[[syncStatus.firstSetupInProgress]]">
                   $i18n{syncSignin}
                 </paper-button>
               </template>
@@ -186,7 +186,7 @@
                 <div class="separator"></div>
                 <paper-button id="disconnectButton" class="secondary-button"
                     on-click="onDisconnectTap_"
-                    disabled="[[syncStatus.setupInProgress]]">
+                    disabled="[[syncStatus.firstSetupInProgress]]">
                   $i18n{syncDisconnect}
                 </paper-button>
               </template>

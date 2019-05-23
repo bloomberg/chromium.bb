@@ -306,8 +306,8 @@ Polymer({
       return;
     }
 
-    const userActionCancelsSetup =
-        this.syncStatus && this.syncStatus.setupInProgress && this.didAbort_;
+    const userActionCancelsSetup = this.syncStatus &&
+        this.syncStatus.firstSetupInProgress && this.didAbort_;
     if (this.unifiedConsentEnabled && userActionCancelsSetup &&
         !this.setupCancelConfirmed_) {
       chrome.metricsPrivate.recordUserAction(
@@ -362,7 +362,7 @@ Polymer({
         // When the user tries to leave the sync setup, show the 'Leave site'
         // dialog.
         if (this.unifiedConsentEnabled && this.syncStatus &&
-            this.syncStatus.setupInProgress) {
+            this.syncStatus.firstSetupInProgress) {
           event.preventDefault();
           event.returnValue = '';
 

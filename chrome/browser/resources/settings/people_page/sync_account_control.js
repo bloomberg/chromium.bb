@@ -93,7 +93,7 @@ Polymer({
     showSetupButtons_: {
       type: Boolean,
       computed: 'computeShowSetupButtons_(unifiedConsentEnabled,' +
-          'hideButtons, syncStatus.setupInProgress)',
+          'hideButtons, syncStatus.firstSetupInProgress)',
     },
   },
 
@@ -210,7 +210,7 @@ Polymer({
    * @private
    */
   getAccountLabel_: function(label, account) {
-    if (this.unifiedConsentEnabled && this.syncStatus.setupInProgress) {
+    if (this.unifiedConsentEnabled && this.syncStatus.firstSetupInProgress) {
       return this.syncStatus.statusText || account;
     }
     return this.syncStatus.signedIn && !this.syncStatus.hasError &&
@@ -456,7 +456,7 @@ Polymer({
    */
   computeShowSetupButtons_: function() {
     return !this.hideButtons && !!this.unifiedConsentEnabled &&
-        !!this.syncStatus.setupInProgress;
+        !!this.syncStatus.firstSetupInProgress;
   },
 
   /** @private */
