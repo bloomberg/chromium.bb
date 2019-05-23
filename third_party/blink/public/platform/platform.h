@@ -514,7 +514,7 @@ class BLINK_PLATFORM_EXPORT Platform {
     kWebGPUContextType,  // WebGPU context
   };
   struct ContextAttributes {
-    bool prefer_integrated_gpu = false;
+    bool prefer_low_power_gpu = false;
     bool fail_if_major_performance_caveat = false;
     ContextType context_type = kGLES2ContextType;
     // Offscreen contexts usually share a surface for the default frame buffer

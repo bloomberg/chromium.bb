@@ -57,9 +57,9 @@ exit_on_context_lost
 flush_on_framebuffer_change
 force_cube_complete
 force_cube_map_positive_x_allocation
-force_discrete_gpu
-force_integrated_gpu
+force_high_performance_gpu
 force_int_or_srgb_cube_texture_complete
+force_low_power_gpu
 force_update_scissor_state_when_binding_fbo0
 get_frag_data_info_bug
 gl_clear_broken

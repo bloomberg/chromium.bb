@@ -888,9 +888,9 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
   attributes.bind_generates_resource = false;
   attributes.enable_raster_interface = web_attributes.enable_raster_interface;
 
-  attributes.gpu_preference = web_attributes.prefer_integrated_gpu
-                                  ? gl::PreferIntegratedGpu
-                                  : gl::PreferDiscreteGpu;
+  attributes.gpu_preference = web_attributes.prefer_low_power_gpu
+                                  ? gl::GpuPreference::kLowPower
+                                  : gl::GpuPreference::kHighPerformance;
 
   attributes.fail_if_major_perf_caveat =
       web_attributes.fail_if_major_performance_caveat;
@@ -959,7 +959,7 @@ RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
 
   gpu::ContextCreationAttribs attributes;
   // TODO(kainino): It's not clear yet how GPU preferences work for WebGPU.
-  attributes.gpu_preference = gl::PreferDiscreteGpu;
+  attributes.gpu_preference = gl::GpuPreference::kHighPerformance;
   attributes.enable_gles2_interface = false;
   attributes.context_type = gpu::CONTEXT_TYPE_WEBGPU;
 

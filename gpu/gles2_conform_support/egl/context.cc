@@ -280,7 +280,7 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
   command_buffer->set_handler(decoder.get());
 
   gl::GLContextAttribs context_attribs;
-  context_attribs.gpu_preference = gl::PreferDiscreteGpu;
+  context_attribs.gpu_preference = gl::GpuPreference::kHighPerformance;
   scoped_refptr<gl::GLContext> gl_context(
       gl::init::CreateGLContext(nullptr, gl_surface, context_attribs));
   if (!gl_context)

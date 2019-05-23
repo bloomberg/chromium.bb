@@ -348,7 +348,7 @@
         "value": "2"
       },
       "features": [
-        "force_discrete_gpu"
+        "force_high_performance_gpu"
       ]
     },
     {
@@ -2363,7 +2363,7 @@
       "device_id": ["0x0116", "0x0126"],
       "multi_gpu_style": "amd_switchable",
       "features": [
-        "force_discrete_gpu"
+        "force_high_performance_gpu"
       ]
     },
     {

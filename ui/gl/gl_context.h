@@ -66,7 +66,7 @@ enum ContextPriority {
 };
 
 struct GLContextAttribs {
-  GpuPreference gpu_preference = PreferIntegratedGpu;
+  GpuPreference gpu_preference = GpuPreference::kLowPower;
   bool bind_generates_resource = true;
   bool webgl_compatibility_context = false;
   bool global_texture_share_group = false;

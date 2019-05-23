@@ -59,17 +59,17 @@ TEST_F(GpuDriverBugListTest, AppendSingleWorkaround) {
 TEST_F(GpuDriverBugListTest, AppendForceGPUWorkaround) {
   base::CommandLine command_line(0, nullptr);
   command_line.AppendSwitch(
-      GpuDriverBugWorkaroundTypeToString(FORCE_DISCRETE_GPU));
+      GpuDriverBugWorkaroundTypeToString(FORCE_HIGH_PERFORMANCE_GPU));
   std::set<int> workarounds;
   workarounds.insert(EXIT_ON_CONTEXT_LOST);
-  workarounds.insert(FORCE_INTEGRATED_GPU);
+  workarounds.insert(FORCE_LOW_POWER_GPU);
   EXPECT_EQ(2u, workarounds.size());
-  EXPECT_EQ(1u, workarounds.count(FORCE_INTEGRATED_GPU));
+  EXPECT_EQ(1u, workarounds.count(FORCE_LOW_POWER_GPU));
   GpuDriverBugList::AppendWorkaroundsFromCommandLine(
       &workarounds, command_line);
   EXPECT_EQ(2u, workarounds.size());
-  EXPECT_EQ(0u, workarounds.count(FORCE_INTEGRATED_GPU));
-  EXPECT_EQ(1u, workarounds.count(FORCE_DISCRETE_GPU));
+  EXPECT_EQ(0u, workarounds.count(FORCE_LOW_POWER_GPU));
+  EXPECT_EQ(1u, workarounds.count(FORCE_HIGH_PERFORMANCE_GPU));
 }
 
 // Test for invariant "Assume the newly last added entry has the largest ID".

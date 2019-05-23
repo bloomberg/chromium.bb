@@ -26,7 +26,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     gpu::CommandBufferNamespace,
     gpu::CommandBufferNamespace::INVALID,
     gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES - 1)
-IPC_ENUM_TRAITS_MAX_VALUE(gl::GpuPreference, gl::GpuPreferenceLast)
+IPC_ENUM_TRAITS_MAX_VALUE(gl::GpuPreference, gl::GpuPreference::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::ContextType, gpu::CONTEXT_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::ColorSpace, gpu::COLOR_SPACE_LAST)
 

@@ -66,7 +66,7 @@ class GLHelperBenchmark : public testing::Test {
     attributes.samples = 4;
     attributes.sample_buffers = 1;
     attributes.bind_generates_resource = false;
-    attributes.gpu_preference = gl::PreferDiscreteGpu;
+    attributes.gpu_preference = gl::GpuPreference::kHighPerformance;
 
     context_ = std::make_unique<gpu::GLInProcessContext>();
     auto result = context_->Initialize(
