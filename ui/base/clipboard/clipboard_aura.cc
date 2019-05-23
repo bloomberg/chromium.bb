@@ -279,14 +279,18 @@ class AuraClipboard {
 
   // Reads bookmark from the data at the top of clipboard stack.
   void ReadBookmark(base::string16* title, std::string* url) const {
-    title->clear();
-    url->clear();
+    if (title)
+      title->clear();
+    if (url)
+      url->clear();
     if (!HasFormat(BOOKMARK))
       return;
 
     const ClipboardData* data = GetData();
-    *title = base::UTF8ToUTF16(data->bookmark_title());
-    *url = data->bookmark_url();
+    if (title)
+      *title = base::UTF8ToUTF16(data->bookmark_title());
+    if (url)
+      *url = data->bookmark_url();
   }
 
   void ReadData(const std::string& type, std::string* result) const {

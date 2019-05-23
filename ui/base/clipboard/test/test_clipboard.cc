@@ -115,10 +115,13 @@ void TestClipboard::ReadCustomData(ClipboardType clipboard_type,
 void TestClipboard::ReadBookmark(base::string16* title,
                                  std::string* url) const {
   const DataStore& store = GetDefaultStore();
-  auto it = store.data.find(ClipboardFormatType::GetUrlWType());
-  if (it != store.data.end())
-    *url = it->second;
-  *title = base::UTF8ToUTF16(store.url_title);
+  if (url) {
+    auto it = store.data.find(ClipboardFormatType::GetUrlWType());
+    if (it != store.data.end())
+      *url = it->second;
+  }
+  if (title)
+    *title = base::UTF8ToUTF16(store.url_title);
 }
 
 void TestClipboard::ReadData(const ClipboardFormatType& format,
