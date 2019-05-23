@@ -222,7 +222,7 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
 
   EXPECT_FALSE(manager_->IsProcessingImage());
 
-  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSize,
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
 }
 
@@ -241,7 +241,7 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
   fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
   ProcessImageUntilConfigured();
 
-  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSize,
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 2);
 }
 
@@ -262,7 +262,7 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
 
   ProcessImageUntilConfigured();
 
-  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSize,
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
 }
 
@@ -276,7 +276,7 @@ TEST_F(PluginVmImageManagerTest, CancelledDownloadTest) {
   // Finishing image processing as it should really happen.
   manager_->OnDownloadCancelled();
 
-  histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSize, 0);
+  histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSizeHistogram, 0);
 }
 
 TEST_F(PluginVmImageManagerTest, ImportNonExistingImageTest) {
@@ -289,13 +289,17 @@ TEST_F(PluginVmImageManagerTest, ImportNonExistingImageTest) {
   // Should fail as fake downloaded file isn't set.
   manager_->StartImport();
   test_browser_thread_bundle_.RunUntilIdle();
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
+                                        kDownloadedPluginVmImageSizeInMb, 1);
 }
 
 TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
   SetPluginVmImagePref("", kHash);
   EXPECT_CALL(*observer_, OnDownloadFailed());
   ProcessImageUntilImporting();
-  histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSize, 0);
+
+  histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSizeHistogram, 0);
 }
 
 TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {

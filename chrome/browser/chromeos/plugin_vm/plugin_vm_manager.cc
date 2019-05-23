@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -65,6 +66,7 @@ PluginVmManager::~PluginVmManager() {}
 void PluginVmManager::LaunchPluginVm() {
   if (!IsPluginVmAllowedForProfile(profile_)) {
     LOG(ERROR) << "Attempted to launch PluginVm when it is not allowed";
+    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
     return;
   }
 
@@ -92,6 +94,7 @@ void PluginVmManager::StopPluginVm() {
 void PluginVmManager::OnStartPluginVmDispatcher(bool success) {
   if (!success) {
     LOG(ERROR) << "Failed to start Plugin Vm Dispatcher.";
+    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
     return;
   }
 
@@ -108,10 +111,12 @@ void PluginVmManager::OnListVms(
     base::Optional<vm_tools::plugin_dispatcher::ListVmResponse> reply) {
   if (!reply.has_value() || reply->error()) {
     LOG(ERROR) << "Failed to list VMs.";
+    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
     return;
   }
   if (reply->vm_info_size() != 1) {
     LOG(ERROR) << "Default VM is missing.";
+    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
     return;
   }
 
@@ -139,6 +144,7 @@ void PluginVmManager::OnListVms(
       // TODO(timloh): We need some way to handle states like stopping, perhaps
       // we should retry after a few seconds?
       LOG(ERROR) << "Didn't start VM as it is in state " << vm_state;
+      RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
       break;
   }
 }
@@ -147,6 +153,7 @@ void PluginVmManager::OnStartVm(
     base::Optional<vm_tools::plugin_dispatcher::StartVmResponse> reply) {
   if (!reply.has_value() || reply->error()) {
     LOG(ERROR) << "Failed to start VM.";
+    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
     return;
   }
 
@@ -167,10 +174,12 @@ void PluginVmManager::OnShowVm(
     base::Optional<vm_tools::plugin_dispatcher::ShowVmResponse> reply) {
   if (!reply.has_value() || reply->error()) {
     LOG(ERROR) << "Failed to show VM.";
+    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
     return;
   }
 
   VLOG(1) << "ShowVm completed successfully.";
+  RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kSuccess);
 }
 
 }  // namespace plugin_vm

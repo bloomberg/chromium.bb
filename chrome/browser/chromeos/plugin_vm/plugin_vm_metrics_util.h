@@ -9,9 +9,19 @@
 
 namespace plugin_vm {
 
-extern const char kPluginVmImageDownloadedSize[];
+extern const char kPluginVmImageDownloadedSizeHistogram[];
+extern const char kPluginVmLaunchResultHistogram[];
 
-void RecordPluginVmImageDownloadedSize(uint64_t bytes_downloaded);
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PluginVmLaunchResult {
+  kSuccess = 0,
+  kError = 1,
+  kMaxValue = kError,
+};
+
+void RecordPluginVmImageDownloadedSizeHistogram(uint64_t bytes_downloaded);
+void RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult launch_result);
 
 }  // namespace plugin_vm
 

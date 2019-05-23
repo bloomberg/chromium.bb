@@ -117,7 +117,7 @@ void PluginVmImageManager::OnDownloadCompleted(
   state_ = State::DOWNLOADED;
   if (observer_)
     observer_->OnDownloadCompleted();
-  RecordPluginVmImageDownloadedSize(info.bytes_downloaded);
+  RecordPluginVmImageDownloadedSizeHistogram(info.bytes_downloaded);
 }
 
 void PluginVmImageManager::OnDownloadCancelled() {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 
+#include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -29,10 +31,15 @@ class PluginVmManagerTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient());
   }
 
+  void SetUp() override {
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile testing_profile_;
   PluginVmTestHelper test_helper_;
   PluginVmManager plugin_vm_manager_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PluginVmManagerTest);
@@ -45,6 +52,9 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmRequiresPluginVmAllowed) {
   EXPECT_FALSE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_FALSE(VmPluginDispatcherClient().show_vm_called());
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
+                                        PluginVmLaunchResult::kError, 1);
 }
 
 TEST_F(PluginVmManagerTest, LaunchPluginVmStartAndShow) {
@@ -62,6 +72,9 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmStartAndShow) {
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
+                                        PluginVmLaunchResult::kSuccess, 1);
 }
 
 TEST_F(PluginVmManagerTest, LaunchPluginVmShow) {
@@ -79,6 +92,9 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShow) {
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
+                                        PluginVmLaunchResult::kSuccess, 1);
 }
 
 }  // namespace plugin_vm
