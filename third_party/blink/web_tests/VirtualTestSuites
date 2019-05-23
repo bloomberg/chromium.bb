@@ -971,5 +971,10 @@
     "prefix": "user-timing-l2",
     "base": "external/wpt/user-timing",
     "args": ["--disable-blink-features=CustomUserTiming"]
+  },
+  {
+    "prefix": "samesite-by-default-cookies",
+    "base": "external/wpt/cookies",
+    "args": ["--enable-features=SameSiteByDefaultCookies"]
   }
 ]
