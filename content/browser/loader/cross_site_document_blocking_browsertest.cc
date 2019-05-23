@@ -575,6 +575,12 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
 
   // These files should be disallowed without sniffing.
   //   nosniff.*   - Won't sniff correctly, but blocked because of nosniff.
+  //
+  // TODO(lukasza): https://crbug.com/944162: Once
+  // kMimeHandlerViewInCrossProcessFrame feature ships cover "fake.pdf" below
+  // (this can't be tested in content_browsertests, because covering of
+  // application/pdf is handled by //chrome-layer
+  // ChromeContentBrowserClient::OnNetworkServiceCreated.
   const char* nosniff_blocked_resources[] = {
       "nosniff.html", "nosniff.xml", "nosniff.json", "nosniff.txt", "fake.zip"};
   for (const char* resource : nosniff_blocked_resources) {

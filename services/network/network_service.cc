@@ -644,6 +644,11 @@ void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
   CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
 }
 
+void NetworkService::AddExtraMimeTypesForCorb(
+    const std::vector<std::string>& mime_types) {
+  CrossOriginReadBlocking::AddExtraMimeTypesForCorb(mime_types);
+}
+
 void NetworkService::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   base::MemoryPressureListener::NotifyMemoryPressure(memory_pressure_level);

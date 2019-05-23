@@ -208,44 +208,29 @@ bool ShouldEnforceInitiatorLock() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService);
 }
 
-const base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
-  // The types below may be blocked by CORB without any confirmation sniffing
-  // (in contrast to HTML/JSON/XML which require confirmation sniffing because
-  // images, scripts, etc. are frequently mislabelled by http servers as
-  // HTML/JSON/XML).
-  //
-  // The list below has been populated based on most commonly used content types
-  // according to HTTP Archive - see:
-  // https://github.com/whatwg/fetch/issues/860#issuecomment-457330454
-  //
-  // TODO(lukasza): https://crbug.com/802836: Add application/msword,
-  // application/pdf and text/csv to the list of content types below after
-  // https://crbug.com/929300 is resolved.  See also the CR comment in
-  // https://crrev.com/c/1604244/3/services/network/cross_origin_read_blocking.cc#229
-  //
-  // TODO(lukasza): https://crbug.com/802836#c11: Add
-  // application/signed-exchange.
-  static const base::NoDestructor<base::flat_set<std::string>> s_types([] {
-    const char* kMimeTypes[] = {
-        "application/x-gzip",
-        "application/x-protobuf",
-        "application/zip",
-    };
-    std::vector<std::string> types;
-    types.reserve(base::size(kMimeTypes));
-    for (const char* type : kMimeTypes)
-      types.push_back(std::string(type));
+// The function below returns a set of MIME types below may be blocked by CORB
+// without any confirmation sniffing (in contrast to HTML/JSON/XML which require
+// confirmation sniffing because images, scripts, etc. are frequently
+// mislabelled by http servers as HTML/JSON/XML).
+base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
+  static base::NoDestructor<base::flat_set<std::string>> s_types({
+      // The list below has been populated based on most commonly used content
+      // types according to HTTP Archive - see:
+      // https://github.com/whatwg/fetch/issues/860#issuecomment-457330454
+      //
+      // TODO(lukasza): https://crbug.com/802836#c11: Add
+      // application/signed-exchange.
+      "application/x-gzip",
+      "application/x-protobuf",
+      "application/zip",
+  });
 
-    // All items need to be lower-case, to support case-insensitive comparisons
-    // later.
-    DCHECK(std::all_of(types.begin(), types.end(), [](const std::string& s) {
-      return s == base::ToLowerASCII(s);
-    }));
+  // All items need to be lower-case, to support case-insensitive comparisons
+  // later.
+  DCHECK(std::all_of(
+      s_types->begin(), s_types->end(),
+      [](const std::string& s) { return s == base::ToLowerASCII(s); }));
 
-    base::flat_set<std::string> result(types);
-    result.shrink_to_fit();
-    return result;
-  }());
   return *s_types;
 }
 
@@ -1007,6 +992,18 @@ void CrossOriginReadBlocking::RemoveExceptionForPlugin(int process_id) {
   std::set<int>& plugin_proxies = GetPluginProxyingProcesses();
   size_t number_of_elements_removed = plugin_proxies.erase(process_id);
   DCHECK_EQ(1u, number_of_elements_removed);
+}
+
+// static
+void CrossOriginReadBlocking::AddExtraMimeTypesForCorb(
+    const std::vector<std::string>& mime_types) {
+  // All items need to be lower-case, to support case-insensitive comparisons.
+  DCHECK(std::all_of(
+      mime_types.begin(), mime_types.end(),
+      [](const std::string& s) { return s == base::ToLowerASCII(s); }));
+  base::flat_set<std::string>& never_sniffed_types = GetNeverSniffedMimeTypes();
+  never_sniffed_types.insert(mime_types.begin(), mime_types.end());
+  never_sniffed_types.shrink_to_fit();
 }
 
 }  // namespace network

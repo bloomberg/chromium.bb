@@ -278,9 +278,9 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
       {"application/x-protobuf", MimeType::kNeverSniffed},
       {"application/x-gzip", MimeType::kNeverSniffed},
       {"application/zip", MimeType::kNeverSniffed},
-      // TODO(lukasza): https://crbug.com/802836: Add application/pdf and
+      // TODO(lukasza): https://crbug.com/944162: Add application/pdf and
       // text/csv to the list of content types tested here (after
-      // https://crbug.com/929300 is resolved).
+      // kMimeHandlerViewInCrossProcessFrame gets enabled by default).
   };
 
   for (const auto& test : tests) {
