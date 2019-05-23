@@ -28,7 +28,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -498,7 +497,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
 
-  chrome_test_util::CloseAllTabs();
+  [ChromeEarlGrey closeAllTabs];
 }
 
 // Verifies that metrics reporting works properly under possible settings of the

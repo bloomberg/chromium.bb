@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -60,7 +59,7 @@ bool ShowTabSwitcher() {
 namespace tab_usage_recorder_test_util {
 
 NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
-  int nb_incognito_tab = chrome_test_util::GetIncognitoTabCount();
+  int nb_incognito_tab = [ChromeEarlGrey incognitoTabCount];
   [ChromeEarlGreyUI openToolsMenu];
   id<GREYMatcher> new_incognito_tab_button_matcher =
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
@@ -69,7 +68,7 @@ NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForIncognitoTabCount:(nb_incognito_tab + 1)]);
   ConditionBlock condition = ^bool {
-    return chrome_test_util::IsIncognitoMode();
+    return [ChromeEarlGrey isIncognitoMode];
   };
 
   bool success = base::test::ios::WaitUntilConditionOrTimeout(
@@ -79,12 +78,12 @@ NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
         @"Waiting switch to incognito mode.");
   }
 
-  chrome_test_util::EvictOtherTabModelTabs();
+  [ChromeEarlGrey evictOtherTabModelTabs];
   return nil;
 }
 
 NSError* SwitchToNormalMode() {
-  if (!chrome_test_util::IsIncognitoMode()) {
+  if (![ChromeEarlGrey isIncognitoMode]) {
     return testing::NSErrorWithLocalizedDescription(
         @"Switching to normal mode is only allowed from Incognito.");
   }
@@ -110,7 +109,7 @@ NSError* SwitchToNormalMode() {
           setValue:@(NO)
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
   ConditionBlock condition = ^bool {
-    return !chrome_test_util::IsIncognitoMode();
+    return ![ChromeEarlGrey isIncognitoMode];
   };
 
   if (!base::test::ios::WaitUntilConditionOrTimeout(kWaitElementTimeout,

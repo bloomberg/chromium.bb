@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -145,7 +144,7 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   VerifyNumberOfInfobarsInManager(1);
 
   // Switch back to the first tab and make sure no infobar is visible.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0U);
+  [ChromeEarlGrey selectTabAtIndex:0U];
   VerifyTestInfoBarVisibleForCurrentTab(false, infoBarMessage);
   VerifyNumberOfInfobarsInManager(0);
 

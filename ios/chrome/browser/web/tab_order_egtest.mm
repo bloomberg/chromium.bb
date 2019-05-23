@@ -60,7 +60,7 @@ const char kLinksTestURL2Text[] = "arrived";
   // Create a tab that will act as the parent tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text]);
+      [ChromeEarlGrey waitForWebViewContainingText:kLinksTestURL1Text]);
   Tab* parentTab = chrome_test_util::GetCurrentTab();
 
   // Child tab should be inserted after the parent.
@@ -90,14 +90,14 @@ const char kLinksTestURL2Text[] = "arrived";
   const GURL URL2 = self.testServer->GetURL(kLinksTestURL2);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL2Text]);
-  GREYAssertEqual(3U, chrome_test_util::GetMainTabCount(),
+      [ChromeEarlGrey waitForWebViewContainingText:kLinksTestURL2Text]);
+  GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text]);
-  GREYAssertEqual(3U, chrome_test_util::GetMainTabCount(),
+      [ChromeEarlGrey waitForWebViewContainingText:kLinksTestURL1Text]);
+  GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 
   // New child tab should be inserted BEFORE |childTab1|.
@@ -123,7 +123,7 @@ const char kLinksTestURL2Text[] = "arrived";
                   @"Unexpected next tab");
 
   // Verify that |childTab1| is now at index 3.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(3);
+  [ChromeEarlGrey selectTabAtIndex:3];
   GREYAssertEqual(childTab1, chrome_test_util::GetCurrentTab(),
                   @"Unexpected current tab");
 
@@ -136,7 +136,7 @@ const char kLinksTestURL2Text[] = "arrived";
 
   // Verify that |anotherTab| is at index 5.
   Tab* anotherTab = chrome_test_util::GetCurrentTab();
-  chrome_test_util::SelectTabAtIndexInCurrentMode(5);
+  [ChromeEarlGrey selectTabAtIndex:5];
   GREYAssertEqual(anotherTab, chrome_test_util::GetCurrentTab(),
                   @"Unexpected current tab");
 }

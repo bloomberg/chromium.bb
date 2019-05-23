@@ -351,6 +351,48 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // success, or else an NSError indicating why the operation failed.
 - (NSError*)signOutAndClearAccounts WARN_UNUSED_RESULT;
 
+#pragma mark - Tab Utilities
+
+// Selects tab with given index in current mode (incognito or main
+// (non-incognito)).
+- (void)selectTabAtIndex:(NSUInteger)index;
+
+// Closes tab with the given index in current mode (incognito or main
+// (non-incognito)).
+- (void)closeTabAtIndex:(NSUInteger)index;
+
+// Returns YES if the browser is in incognito mode, and NO otherwise.
+- (BOOL)isIncognitoMode WARN_UNUSED_RESULT;
+
+// Closes all tabs in the all modes (incognito and main (non-incognito)), and
+// does not wait for the UI to complete. If current mode is Incognito, mode will
+// be switched to main (non-incognito) after closing the incognito tabs.
+- (void)closeAllTabs;
+
+// Returns the number of main (non-incognito) tabs.
+- (NSUInteger)mainTabCount WARN_UNUSED_RESULT;
+
+// Returns the number of incognito tabs.
+- (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
+
+// Simulates a backgrounding and raises an EarlGrey exception if simulation not
+// succeeded.
+- (void)simulateTabsBackgrounding;
+
+// Returns the number of main (non-incognito) tabs currently evicted.
+- (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
+
+// Evicts the tabs associated with the non-current browser mode.
+- (void)evictOtherTabModelTabs;
+
+// Sets the normal tabs as 'cold start' tabs and raises an EarlGrey exception if
+// operation not succeeded.
+- (void)setCurrentTabsToBeColdStartTabs;
+
+// Resets the tab usage recorder on current mode and raises an EarlGrey
+// exception if operation not succeeded.
+- (void)resetTabUsageRecorder;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_

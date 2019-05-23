@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -229,7 +228,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
   // Go back to the previous tab.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   // Make sure the additional items are still displayed.
   [CellWithMatcher(grey_accessibilityID(@"AdditionalSuggestion2"))
@@ -367,7 +366,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
              @"Collection view not visible");
 
   // Check the page has been correctly opened.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(1);
+  [ChromeEarlGrey selectTabAtIndex:1];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
@@ -397,7 +396,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
                                           pageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+  GREYAssertTrue([ChromeEarlGrey isIncognitoMode],
                  @"Test did not switch to incognito");
 }
 

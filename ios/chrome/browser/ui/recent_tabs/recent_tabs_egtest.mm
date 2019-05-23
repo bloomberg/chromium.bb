@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -54,11 +53,11 @@ void CloseAllNormalTabs() {
 // Makes sure at least one tab is opened and opens the recent tab panel.
 void OpenRecentTabsPanel() {
   // At least one tab is needed to be able to open the recent tabs panel.
-  if (chrome_test_util::IsIncognitoMode()) {
-    if (chrome_test_util::GetIncognitoTabCount() == 0)
+  if ([ChromeEarlGrey isIncognitoMode]) {
+    if ([ChromeEarlGrey incognitoTabCount] == 0)
       CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
   } else {
-    if (chrome_test_util::GetMainTabCount() == 0)
+    if ([ChromeEarlGrey mainTabCount] == 0)
       CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   }
 
@@ -158,12 +157,12 @@ id<GREYMatcher> TitleOfTestPage() {
 
   // Tap on the entry for the test page in the Recent Tabs panel and check that
   // a tab containing the test page was opened in the main WebStateList.
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 0,
+  GREYAssertTrue([ChromeEarlGrey mainTabCount] == 0,
                  @"Unexpected tabs in the main WebStateList");
   [[EarlGrey selectElementWithMatcher:TitleOfTestPage()]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
+  GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 1,
                  @"Unexpected tab added to the incognito WebStateList");
 }
 

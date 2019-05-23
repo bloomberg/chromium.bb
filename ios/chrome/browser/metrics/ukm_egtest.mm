@@ -22,7 +22,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -42,9 +41,7 @@ using chrome_test_util::AccountsSyncButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ClearBrowsingDataView;
-using chrome_test_util::GetIncognitoTabCount;
 using chrome_test_util::GoogleServicesSettingsButton;
-using chrome_test_util::IsIncognitoMode;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
@@ -135,15 +132,16 @@ void ClearBrowsingData() {
 }
 
 void OpenNewIncognitoTab() {
-  NSUInteger incognito_tab_count = GetIncognitoTabCount();
+  NSUInteger incognito_tab_count = [ChromeEarlGrey incognitoTabCount];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count + 1)]);
-  GREYAssert(IsIncognitoMode(), @"Failed to switch to incognito mode.");
+  GREYAssert([ChromeEarlGrey isIncognitoMode],
+             @"Failed to switch to incognito mode.");
 }
 
 void CloseCurrentIncognitoTab() {
-  NSUInteger incognito_tab_count = GetIncognitoTabCount();
+  NSUInteger incognito_tab_count = [ChromeEarlGrey incognitoTabCount];
   [ChromeEarlGrey closeCurrentTab];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)]);
@@ -160,11 +158,12 @@ void CloseAllIncognitoTabs() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
       performAction:grey_tap()];
-  GREYAssert(!IsIncognitoMode(), @"Failed to switch to normal mode.");
+  GREYAssert(![ChromeEarlGrey isIncognitoMode],
+             @"Failed to switch to normal mode.");
 }
 
 void OpenNewRegularTab() {
-  NSUInteger tab_count = chrome_test_util::GetMainTabCount();
+  NSUInteger tab_count = [ChromeEarlGrey mainTabCount];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)]);
@@ -295,7 +294,7 @@ void SignOut() {
 // Make sure opening a real tab after Incognito doesn't enable UKM.
 - (void)testIncognitoPlusRegular {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
-  chrome_test_util::CloseAllTabs();
+  [ChromeEarlGrey closeAllTabs];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:(0)]);
 
   OpenNewIncognitoTab();

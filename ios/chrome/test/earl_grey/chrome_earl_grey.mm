@@ -263,7 +263,7 @@ id ExecuteJavaScript(NSString* javascript,
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return chrome_test_util::GetMainTabCount() == count;
+    return [self mainTabCount] == count;
   });
 
   if (!success) {
@@ -280,7 +280,7 @@ id ExecuteJavaScript(NSString* javascript,
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return chrome_test_util::GetIncognitoTabCount() == count;
+    return [self incognitoTabCount] == count;
   });
 
   if (!success) {
@@ -648,6 +648,56 @@ id ExecuteJavaScript(NSString* javascript,
         @"Real accounts couldn't be cleared.");
   }
   return nil;
+}
+
+#pragma mark - Tab Utilities
+
+- (void)selectTabAtIndex:(NSUInteger)index {
+  chrome_test_util::SelectTabAtIndexInCurrentMode(index);
+}
+
+- (BOOL)isIncognitoMode {
+  return chrome_test_util::IsIncognitoMode();
+}
+
+- (void)closeTabAtIndex:(NSUInteger)index {
+  chrome_test_util::CloseTabAtIndex(index);
+}
+
+- (void)closeAllTabs {
+  chrome_test_util::CloseAllTabs();
+}
+
+- (NSUInteger)mainTabCount {
+  return chrome_test_util::GetMainTabCount();
+}
+
+- (NSUInteger)incognitoTabCount {
+  return chrome_test_util::GetIncognitoTabCount();
+}
+
+- (NSUInteger)evictedMainTabCount {
+  return chrome_test_util::GetEvictedMainTabCount();
+}
+
+- (void)evictOtherTabModelTabs {
+  chrome_test_util::EvictOtherTabModelTabs();
+}
+
+- (void)simulateTabsBackgrounding {
+  EG_TEST_HELPER_ASSERT_TRUE(chrome_test_util::SimulateTabsBackgrounding(),
+                             @"Fail to simulate tab backgrounding.");
+}
+
+- (void)setCurrentTabsToBeColdStartTabs {
+  EG_TEST_HELPER_ASSERT_TRUE(
+      chrome_test_util::SetCurrentTabsToBeColdStartTabs(),
+      @"Fail to state tabs as cold start tabs");
+}
+
+- (void)resetTabUsageRecorder {
+  EG_TEST_HELPER_ASSERT_TRUE(chrome_test_util::ResetTabUsageRecorder(),
+                             @"Fail to reset the TabUsageRecorder");
 }
 
 @end

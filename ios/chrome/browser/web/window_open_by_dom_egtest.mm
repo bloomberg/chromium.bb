@@ -12,7 +12,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -144,7 +143,7 @@ id<GREYMatcher> PopupBlocker() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
       performAction:link_tap];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:4]);

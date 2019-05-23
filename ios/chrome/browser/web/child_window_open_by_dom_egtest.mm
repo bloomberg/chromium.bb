@@ -6,7 +6,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/content_settings/core/common/content_settings.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -73,12 +72,12 @@ const char kWindow2Closed[] = "window2.closed: true";
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kNamedWindowLink]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kNamedWindowLink]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   // Check that they're the same window.
   CHROME_EG_ASSERT_NO_ERROR(
@@ -95,12 +94,12 @@ const char kWindow2Closed[] = "window2.closed: true";
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kUnnamedWindowLink]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kUnnamedWindowLink]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   // Check that they aren't the same window object.
   CHROME_EG_ASSERT_NO_ERROR(
@@ -117,13 +116,13 @@ const char kWindow2Closed[] = "window2.closed: true";
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kNamedWindowLink]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   // Open an unnamed window.
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kUnnamedWindowLink]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   // Check that they aren't the same window object.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
@@ -142,7 +141,7 @@ const char kWindow2Closed[] = "window2.closed: true";
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:@"openWindowWithName"]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   // Check that named window 1 is opened and named window 2 isn't.
   const char kCheckWindow1Link[] = "checkNamedWindow1Closed";
@@ -164,14 +163,14 @@ const char kWindow2Closed[] = "window2.closed: true";
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:@"openWindowWithName"]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kCheckWindow2Link]);
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kWindow2Open]);
 
   // Close the opened window. Check that named window 1 and 2 are both closed.
-  chrome_test_util::CloseTabAtIndex(1);
+  [ChromeEarlGrey closeTabAtIndex:1];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
       tapWebStateElementWithID:[NSString
@@ -190,7 +189,7 @@ const char kWindow2Closed[] = "window2.closed: true";
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:@"openWindowNoName"]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
 
   // Check that unnamed window 1 is opened and unnamed window 2 isn't.
   const char kCheckWindow1Link[] = "checkUnnamedWindow1Closed";
@@ -211,7 +210,7 @@ const char kWindow2Closed[] = "window2.closed: true";
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:@"openWindowNoName"]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kCheckWindow2Link]);
   CHROME_EG_ASSERT_NO_ERROR(
@@ -219,7 +218,7 @@ const char kWindow2Closed[] = "window2.closed: true";
 
   // Close the first opened window. Check that unnamed window 1 is closed and
   // unnamed window 2 is still open.
-  chrome_test_util::CloseTabAtIndex(1);
+  [ChromeEarlGrey closeTabAtIndex:1];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
       tapWebStateElementWithID:[NSString
                                    stringWithUTF8String:kCheckWindow1Link]]);
@@ -231,7 +230,7 @@ const char kWindow2Closed[] = "window2.closed: true";
       [ChromeEarlGrey waitForWebStateContainingText:kWindow2Open]);
 
   // Close the second opened window. Check that unnamed window 2 is closed.
-  chrome_test_util::CloseTabAtIndex(1);
+  [ChromeEarlGrey closeTabAtIndex:1];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kCheckWindow2Link]);
   CHROME_EG_ASSERT_NO_ERROR(

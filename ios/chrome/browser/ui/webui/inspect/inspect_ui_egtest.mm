@@ -9,7 +9,6 @@
 #import "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -162,7 +161,7 @@ ElementSelector* StartLoggingButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kWarningMessageButtonId]);
 
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   // Validate messages and labels are displayed.
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
@@ -226,7 +225,7 @@ ElementSelector* StartLoggingButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementInIFrameWithID:warnButtonID]);
 
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   // Validate messages and labels are displayed.
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
@@ -272,7 +271,7 @@ ElementSelector* StartLoggingButton() {
   // Log a message and verify it is displayed.
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kDebugMessageButtonId]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
@@ -288,7 +287,7 @@ ElementSelector* StartLoggingButton() {
   // Log another message and verify it is displayed.
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kLogMessageButtonId]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kLogMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
@@ -323,7 +322,7 @@ ElementSelector* StartLoggingButton() {
   // Log a message and verify it is displayed.
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kDebugMessageButtonId]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(
@@ -361,7 +360,7 @@ ElementSelector* StartLoggingButton() {
   // Log a message and verify it is displayed.
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey tapWebStateElementWithID:kDebugMessageButtonId]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kDebugMessageLabel]);
   CHROME_EG_ASSERT_NO_ERROR(

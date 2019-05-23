@@ -9,7 +9,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -216,7 +215,7 @@ bool WaitForDownloadButton() {
 
   // Wait until the new tab is open and switch to that tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  chrome_test_util::SelectTabAtIndexInCurrentMode(1U);
+  [ChromeEarlGrey selectTabAtIndex:1U];
   GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
 
   // Proceed with download.

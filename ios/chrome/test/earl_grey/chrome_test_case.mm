@@ -17,7 +17,6 @@
 #include "components/signin/core/browser/signin_switches.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/signin_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -261,7 +260,7 @@ const CFTimeInterval kDrainTimeout = 5;
 }
 
 + (void)closeAllTabs {
-  chrome_test_util::CloseAllTabs();
+  [ChromeEarlGrey closeAllTabs];
   [[GREYUIThreadExecutor sharedInstance]
       drainUntilIdleWithTimeout:kDrainTimeout];
 }

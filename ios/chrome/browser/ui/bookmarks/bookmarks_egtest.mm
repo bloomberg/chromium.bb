@@ -33,7 +33,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -1292,12 +1291,12 @@ id<GREYMatcher> SearchIconButton() {
   // Switch to the next Tab and verify "Second URL" appears.
   // TODO(crbug.com/695749): see we if can add switchToNextTab to
   // chrome_test_util so that we don't need to pass tabIndex here.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex + 1);
+  [ChromeEarlGrey selectTabAtIndex:tabIndex + 1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(getSecondURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Switch to the next Tab and verify "First URL" appears.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex + 2);
+  [ChromeEarlGrey selectTabAtIndex:tabIndex + 2];
   [[EarlGrey selectElementWithMatcher:OmniboxText(getFirstURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -2113,7 +2112,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify there are 3 normal tabs.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 0,
+  GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 0,
                  @"Incognito tab count should be 0");
 
   // Verify the order of open tabs.
@@ -2130,7 +2129,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify there are 6 normal tabs and no new incognito tabs.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:6]);
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
+  GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 1,
                  @"Incognito tab count should be 1");
 
   // Close the incognito tab to go back to normal mode.
@@ -2156,11 +2155,11 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify there are 3 incognito tabs and no new normal tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:3]);
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
+  GREYAssertTrue([ChromeEarlGrey mainTabCount] == 1,
                  @"Main tab count should be 1");
 
   // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+  GREYAssertTrue([ChromeEarlGrey isIncognitoMode],
                  @"Failed to switch to incognito mode");
 
   // Verify the order of open tabs.
@@ -2177,7 +2176,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify there are 5 incognito tabs and no new normal tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:5]);
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
+  GREYAssertTrue([ChromeEarlGrey mainTabCount] == 1,
                  @"Main tab count should be 1");
 
   // Verify the order of open tabs.
@@ -2210,7 +2209,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify there is 1 new normal tab created and no new incognito tab created.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 0,
+  GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 0,
                  @"Incognito tab count should be 0");
 
   // Verify "Second URL" appears in the omnibox.
@@ -2230,11 +2229,11 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify there is 1 incognito tab created and no new normal tab created.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+  GREYAssertTrue([ChromeEarlGrey mainTabCount] == 2,
                  @"Main tab count should be 2");
 
   // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+  GREYAssertTrue([ChromeEarlGrey isIncognitoMode],
                  @"Failed to switch to incognito mode");
 
   // Verify "French URL" appears in the omnibox.
@@ -2252,13 +2251,13 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+  GREYAssertTrue([ChromeEarlGrey isIncognitoMode],
                  @"Failed to staying at incognito mode");
 
   // Verify no new tabs created.
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
+  GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 1,
                  @"Incognito tab count should be 1");
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+  GREYAssertTrue([ChromeEarlGrey mainTabCount] == 2,
                  @"Main tab count should be 2");
 
   [BookmarksTestCase openBookmarks];
@@ -2274,11 +2273,11 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify a new incognito tab is created.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:2]);
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+  GREYAssertTrue([ChromeEarlGrey mainTabCount] == 2,
                  @"Main tab count should be 2");
 
   // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+  GREYAssertTrue([ChromeEarlGrey isIncognitoMode],
                  @"Failed to staying at incognito mode");
 
   // Verify "Second URL" appears in the omnibox.
@@ -2298,11 +2297,11 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify a new normal tab is created and no incognito tab is created.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 2,
+  GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 2,
                  @"Incognito tab count should be 2");
 
   // Verify the current tab is a normal tab.
-  GREYAssertFalse(chrome_test_util::IsIncognitoMode(),
+  GREYAssertFalse([ChromeEarlGrey isIncognitoMode],
                   @"Failed to switch to normal mode");
 
   // Verify "French URL" appears in the omnibox.

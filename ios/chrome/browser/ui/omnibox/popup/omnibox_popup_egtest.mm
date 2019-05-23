@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -317,7 +316,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Close the first page.
-  chrome_test_util::CloseTabAtIndex(0);
+  [ChromeEarlGrey closeTabAtIndex:0];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
   // Try to switch to the first tab.

@@ -151,7 +151,7 @@
 // Tests that BVC properly handles open URL. When tab switcher is showing,
 // the URL should be opened in a new tab, and BVC should be shown.
 - (void)testOpenURLFromTabSwitcher {
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:0]);
   id<UIApplicationDelegate> appDelegate =
       [[UIApplication sharedApplication] delegate];
@@ -179,14 +179,14 @@
   // Load the test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:testPageContents]);
+      [ChromeEarlGrey waitForWebViewContainingText:testPageContents]);
   web::WebState* firstWebState = chrome_test_util::GetCurrentTab().webState;
 
   // And do the same in a second tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:testPageContents]);
+      [ChromeEarlGrey waitForWebViewContainingText:testPageContents]);
   web::WebState* secondWebState = chrome_test_util::GetCurrentTab().webState;
 
   // Check visibility before and after switching tabs.
@@ -194,12 +194,12 @@
   GREYAssert(!firstWebState->IsVisible(),
              @"firstWebState unexpectedly visible");
 
-  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+  [ChromeEarlGrey selectTabAtIndex:0];
   GREYAssert(firstWebState->IsVisible(), @"firstWebState not visible");
   GREYAssert(!secondWebState->IsVisible(),
              @"secondWebState unexpectedly visible");
 
-  chrome_test_util::SelectTabAtIndexInCurrentMode(1);
+  [ChromeEarlGrey selectTabAtIndex:1];
   GREYAssert(secondWebState->IsVisible(), @"secondWebState not visible");
   GREYAssert(!firstWebState->IsVisible(),
              @"firstWebState unexpectedly visible");
