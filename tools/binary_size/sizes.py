@@ -426,7 +426,11 @@ def main():
     sys.stderr.write(msg + '    ' + ' '.join(platforms) + '\n')
     return 2
 
-  isolated_script_output = {'valid': False, 'failures': []}
+  isolated_script_output = {
+      'valid': False,
+      'failures': [],
+      'version': 'simplified'
+  }
   test_name = 'sizes'
 
   results_directory = None
@@ -442,6 +446,7 @@ def main():
     isolated_script_output = {
         'valid': True,
         'failures': [test_name] if rc else [],
+        'version': 'simplified',
     }
   finally:
     if results_directory:
