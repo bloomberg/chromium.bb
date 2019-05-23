@@ -70,7 +70,7 @@ DownloadMediaParserBridge::DownloadMediaParserBridge(
 
 DownloadMediaParserBridge::~DownloadMediaParserBridge() = default;
 
-void DownloadMediaParserBridge::Destory(JNIEnv* env, jobject obj) {
+void DownloadMediaParserBridge::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
