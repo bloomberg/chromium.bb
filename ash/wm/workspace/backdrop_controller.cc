@@ -236,8 +236,11 @@ void BackdropController::OnSplitViewDividerPositionChanged() {
 }
 
 void BackdropController::OnWallpaperPreviewStarted() {
-  wm::GetActiveWindow()->SetProperty(kBackdropWindowMode,
-                                     BackdropWindowMode::kDisabled);
+  aura::Window* active_window = wm::GetActiveWindow();
+  if (active_window) {
+    active_window->SetProperty(kBackdropWindowMode,
+                               BackdropWindowMode::kDisabled);
+  }
   UpdateBackdrop();
 }
 
