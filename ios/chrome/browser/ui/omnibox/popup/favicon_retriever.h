@@ -12,7 +12,8 @@ class GURL;
 // favicon retrieving logic from the View layer.
 @protocol FaviconRetriever <NSObject>
 // Fetches favicon given a page URL.
-// |completion| is guaranteed to only be called asynchronously on main thread.
+// |completion| is guaranteed to only be called on main thread, but could be
+// called at any time, even before this returns.
 // It might never be called if the favicon is not available.
 // It might be called multiple times per request.
 - (void)fetchFavicon:(GURL)pageURL completion:(void (^)(UIImage*))completion;

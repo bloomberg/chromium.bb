@@ -195,9 +195,7 @@ const CGFloat kOmniboxIconSize = 16;
   // Only use cached attributes when they are a non-default icon. Never show
   // monograms or default globe icon.
   if (cachedAttributes.faviconImage && !cachedAttributes.usesDefaultImage) {
-    dispatch_async(dispatch_get_main_queue(), ^() {
       completion(cachedAttributes.faviconImage);
-    });
   }
 }
 
