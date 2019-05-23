@@ -255,8 +255,7 @@ namespace {
 // representing the target clause (on Windows). Returns an invalid range if
 // there is no such a range.
 gfx::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
-  for (size_t i = 0; i < composition.ime_text_spans.size(); ++i) {
-    const ui::ImeTextSpan& underline = composition.ime_text_spans[i];
+  for (const auto& underline : composition.ime_text_spans) {
     if (underline.thickness == ui::ImeTextSpan::Thickness::kThick)
       return gfx::Range(underline.start_offset, underline.end_offset);
   }

@@ -168,10 +168,10 @@ void LabelButtonAssetBorder::Paint(const View& view, gfx::Canvas* canvas) {
 
 gfx::Size LabelButtonAssetBorder::GetMinimumSize() const {
   gfx::Size minimum_size;
-  for (int i = 0; i < 2; ++i) {
-    for (int j = 0; j < Button::STATE_COUNT; ++j) {
-      if (painters_[i][j])
-        minimum_size.SetToMax(painters_[i][j]->GetMinimumSize());
+  for (const auto& painters_for_focus_state : painters_) {
+    for (const auto& painter_for_button_state : painters_for_focus_state) {
+      if (painter_for_button_state)
+        minimum_size.SetToMax(painter_for_button_state->GetMinimumSize());
     }
   }
   return minimum_size;

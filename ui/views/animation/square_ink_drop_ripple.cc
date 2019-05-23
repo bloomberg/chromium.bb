@@ -382,8 +382,8 @@ void SquareInkDropRipple::SetStateToHidden() {
 
 void SquareInkDropRipple::AbortAllAnimations() {
   root_layer_.GetAnimator()->AbortAllAnimations();
-  for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
-    painted_layers_[i]->GetAnimator()->AbortAllAnimations();
+  for (auto& painted_layer : painted_layers_)
+    painted_layer->GetAnimator()->AbortAllAnimations();
 }
 
 void SquareInkDropRipple::AnimateToTransforms(

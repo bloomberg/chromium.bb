@@ -15,7 +15,7 @@ class VIEWS_EXPORT ButtonControllerDelegate {
  public:
   explicit ButtonControllerDelegate(Button* button) : button_(button) {}
 
-  virtual ~ButtonControllerDelegate() {}
+  virtual ~ButtonControllerDelegate() = default;
 
   // Parallels methods in views::Button:
   virtual void RequestFocusFromEvent() = 0;

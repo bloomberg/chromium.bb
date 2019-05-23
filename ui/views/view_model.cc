@@ -55,8 +55,8 @@ void ViewModelBase::MoveViewOnly(int index, int target_index) {
 void ViewModelBase::Clear() {
   Entries entries;
   entries.swap(entries_);
-  for (size_t i = 0; i < entries.size(); ++i)
-    delete entries[i].view;
+  for (const auto& entry : entries)
+    delete entry.view;
 }
 
 int ViewModelBase::GetIndexOfView(const View* view) const {

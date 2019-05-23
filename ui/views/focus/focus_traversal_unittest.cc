@@ -704,8 +704,8 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   SCOPED_TRACE("TraversalWithNonEnabledViews");
 
   // Let's disable some views.
-  for (size_t i = 0; i < base::size(kDisabledIDs); i++) {
-    View* v = FindViewByID(kDisabledIDs[i]);
+  for (int kDisabledID : kDisabledIDs) {
+    View* v = FindViewByID(kDisabledID);
     ASSERT_TRUE(v != nullptr);
     v->SetEnabled(false);
   }
@@ -744,8 +744,8 @@ TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
   SCOPED_TRACE("TraversalWithInvisibleViews");
 
   // Let's make some views invisible.
-  for (size_t i = 0; i < base::size(kInvisibleIDs); i++) {
-    View* v = FindViewByID(kInvisibleIDs[i]);
+  for (int kInvisibleID : kInvisibleIDs) {
+    View* v = FindViewByID(kInvisibleID);
     ASSERT_TRUE(v != nullptr);
     v->SetVisible(false);
   }

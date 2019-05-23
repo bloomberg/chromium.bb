@@ -94,15 +94,11 @@ void RadioButton::SetChecked(bool checked) {
     // component or even if views want to use the group for a different purpose.
     Views other;
     GetViewsInGroupFromParent(GetGroup(), &other);
-    for (auto i(other.begin()); i != other.end(); ++i) {
-      if (*i != this) {
-        if (strcmp((*i)->GetClassName(), kViewClassName)) {
-          NOTREACHED() << "radio-button-nt has same group as other non "
-                          "radio-button-nt views.";
-          continue;
-        }
-        RadioButton* peer = static_cast<RadioButton*>(*i);
-        peer->SetChecked(false);
+    for (auto* peer : other) {
+      if (peer != this) {
+        DCHECK(!strcmp(peer->GetClassName(), kViewClassName))
+            << "radio-button-nt has same group as non radio-button-nt views.";
+        static_cast<RadioButton*>(peer)->SetChecked(false);
       }
     }
   }

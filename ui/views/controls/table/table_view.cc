@@ -149,9 +149,9 @@ TableView::TableView(ui::TableModel* model,
   row_height_ = LayoutProvider::GetControlHeightForFont(kTextContext,
                                                         kTextStyle, font_list_);
 
-  for (size_t i = 0; i < columns.size(); ++i) {
+  for (const auto& column : columns) {
     VisibleColumn visible_column;
-    visible_column.column = columns[i];
+    visible_column.column = column;
     visible_columns_.push_back(visible_column);
   }
 
@@ -273,11 +273,11 @@ void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
 }
 
 bool TableView::IsColumnVisible(int id) const {
-  for (size_t i = 0; i < visible_columns_.size(); ++i) {
-    if (visible_columns_[i].column.id == id)
-      return true;
-  }
-  return false;
+  const auto ids_match = [id](const auto& column) {
+    return column.column.id == id;
+  };
+  return std::any_of(visible_columns_.cbegin(), visible_columns_.cend(),
+                     ids_match);
 }
 
 void TableView::AddColumn(const ui::TableColumn& col) {
@@ -286,11 +286,8 @@ void TableView::AddColumn(const ui::TableColumn& col) {
 }
 
 bool TableView::HasColumn(int id) const {
-  for (size_t i = 0; i < columns_.size(); ++i) {
-    if (columns_[i].id == id)
-      return true;
-  }
-  return false;
+  const auto ids_match = [id](const auto& column) { return column.id == id; };
+  return std::any_of(columns_.cbegin(), columns_.cend(), ids_match);
 }
 
 bool TableView::HasFocusIndicator() const {
@@ -915,8 +912,8 @@ void TableView::UpdateVisibleColumnSizes() {
     return;
 
   std::vector<ui::TableColumn> columns;
-  for (size_t i = 0; i < visible_columns_.size(); ++i)
-    columns.push_back(visible_columns_[i].column);
+  for (const auto& visible_column : visible_columns_)
+    columns.push_back(visible_column.column);
 
   const int cell_margin = GetCellMargin();
   const int cell_element_spacing = GetCellElementSpacing();
@@ -992,12 +989,10 @@ void TableView::SchedulePaintForSelection() {
 }
 
 ui::TableColumn TableView::FindColumnByID(int id) const {
-  for (size_t i = 0; i < columns_.size(); ++i) {
-    if (columns_[i].id == id)
-      return columns_[i];
-  }
-  NOTREACHED();
-  return ui::TableColumn();
+  const auto ids_match = [id](const auto& column) { return column.id == id; };
+  const auto i = std::find_if(columns_.cbegin(), columns_.cend(), ids_match);
+  DCHECK(i != columns_.cend());
+  return *i;
 }
 
 void TableView::AdvanceActiveVisibleColumn(AdvanceDirection direction) {

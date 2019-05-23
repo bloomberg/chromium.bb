@@ -203,8 +203,8 @@ void MenuRunnerImpl::SiblingMenuCreated(MenuItemView* menu) {
 
 MenuRunnerImpl::~MenuRunnerImpl() {
   delete menu_;
-  for (auto i = sibling_menus_.begin(); i != sibling_menus_.end(); ++i)
-    delete *i;
+  for (auto* sibling_menu : sibling_menus_)
+    delete sibling_menu;
 }
 
 bool MenuRunnerImpl::ShouldShowMnemonics(int32_t run_types) {

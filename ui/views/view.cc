@@ -297,9 +297,8 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
   // Notify interested Views that visible bounds within the root view may have
   // changed.
   if (descendants_to_notify_) {
-    for (auto i(descendants_to_notify_->begin());
-         i != descendants_to_notify_->end(); ++i) {
-      (*i)->OnVisibleBoundsChanged();
+    for (auto* i : *descendants_to_notify_) {
+      i->OnVisibleBoundsChanged();
     }
   }
 
@@ -1738,12 +1737,13 @@ void View::DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents) {
   if (!layer())
     return;
 
-  ui::Layer* new_parent = layer()->parent();
+  // Copy children(), since the loop below will mutate its result.
   std::vector<ui::Layer*> children = layer()->children();
-  for (size_t i = 0; i < children.size(); ++i) {
-    layer()->Remove(children[i]);
+  ui::Layer* new_parent = layer()->parent();
+  for (auto* child : children) {
+    layer()->Remove(child);
     if (new_parent)
-      new_parent->Add(children[i]);
+      new_parent->Add(child);
   }
 
   LayerOwner::DestroyLayer();

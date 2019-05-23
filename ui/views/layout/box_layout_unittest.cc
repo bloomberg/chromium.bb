@@ -18,6 +18,12 @@ namespace views {
 
 namespace {
 
+constexpr BoxLayout::MainAxisAlignment kMainAlignments[3] = {
+    BoxLayout::MainAxisAlignment::kStart,
+    BoxLayout::MainAxisAlignment::kCenter,
+    BoxLayout::MainAxisAlignment::kEnd,
+};
+
 class BoxLayoutTest : public testing::Test {
  public:
   void SetUp() override { host_ = std::make_unique<View>(); }
@@ -421,13 +427,8 @@ TEST_F(BoxLayoutTest, FlexGrowVertical) {
   EXPECT_EQ(gfx::Rect(10, 40, 30, 10).ToString(), v2->bounds().ToString());
   EXPECT_EQ(gfx::Rect(10, 60, 30, 30).ToString(), v3->bounds().ToString());
 
-  std::vector<BoxLayout::MainAxisAlignment> main_alignments;
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kStart);
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kCenter);
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kEnd);
-
-  for (size_t i = 0; i < main_alignments.size(); ++i) {
-    layout->set_main_axis_alignment(main_alignments[i]);
+  for (auto main_alignment : kMainAlignments) {
+    layout->set_main_axis_alignment(main_alignment);
 
     // Set the first view to consume all free space.
     layout->SetFlexForView(v1, 1);
@@ -525,13 +526,8 @@ TEST_F(BoxLayoutTest, FlexShrinkHorizontal) {
   EXPECT_EQ(gfx::Rect(40, 10, 10, 30).ToString(), v2->bounds().ToString());
   EXPECT_EQ(gfx::Rect(60, 10, 15, 30).ToString(), v3->bounds().ToString());
 
-  std::vector<BoxLayout::MainAxisAlignment> main_alignments;
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kStart);
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kCenter);
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kEnd);
-
-  for (size_t i = 0; i < main_alignments.size(); ++i) {
-    layout->set_main_axis_alignment(main_alignments[i]);
+  for (auto main_alignment : kMainAlignments) {
+    layout->set_main_axis_alignment(main_alignment);
 
     // Set the first view to shrink as much as necessary.
     layout->SetFlexForView(v1, 1);
@@ -576,13 +572,8 @@ TEST_F(BoxLayoutTest, FlexShrinkVerticalWithRemainder) {
   host_->AddChildView(v3);
   host_->SetBounds(0, 0, 20, 20);
 
-  std::vector<BoxLayout::MainAxisAlignment> main_alignments;
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kStart);
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kCenter);
-  main_alignments.push_back(BoxLayout::MainAxisAlignment::kEnd);
-
-  for (size_t i = 0; i < main_alignments.size(); ++i) {
-    layout->set_main_axis_alignment(main_alignments[i]);
+  for (auto main_alignment : kMainAlignments) {
+    layout->set_main_axis_alignment(main_alignment);
 
     // The first view shrinks by 1/3 of the excess, the second view shrinks by
     // 2/3 of the excess and the third view should maintain its preferred size.

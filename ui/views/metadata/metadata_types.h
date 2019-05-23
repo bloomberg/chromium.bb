@@ -118,7 +118,7 @@ class VIEWS_EXPORT ClassMetaData {
 // accessors to get/set the value of the member on an object.
 class VIEWS_EXPORT MemberMetaDataBase {
  public:
-  MemberMetaDataBase() {}
+  MemberMetaDataBase() = default;
   virtual ~MemberMetaDataBase() = default;
 
   // Access the value of this member and return it as a string.

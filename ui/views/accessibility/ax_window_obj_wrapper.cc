@@ -68,10 +68,8 @@ AXAuraObjWrapper* AXWindowObjWrapper::GetParent() {
 
 void AXWindowObjWrapper::GetChildren(
     std::vector<AXAuraObjWrapper*>* out_children) {
-  aura::Window::Windows children = window_->children();
-  for (size_t i = 0; i < children.size(); ++i) {
-    out_children->push_back(aura_obj_cache_->GetOrCreate(children[i]));
-  }
+  for (auto* child : window_->children())
+    out_children->push_back(aura_obj_cache_->GetOrCreate(child));
 
   // Also consider any associated widgets as children.
   Widget* widget = GetWidgetForWindow(window_);
@@ -191,9 +189,8 @@ void AXWindowObjWrapper::FireEvent(aura::Window* window,
       root_view->NotifyAccessibilityEvent(event_type, true);
   }
 
-  aura::Window::Windows children = window->children();
-  for (size_t i = 0; i < children.size(); ++i)
-    FireEvent(children[i], ax::mojom::Event::kLocationChanged);
+  for (auto* child : window->children())
+    FireEvent(child, ax::mojom::Event::kLocationChanged);
 }
 
 }  // namespace views
