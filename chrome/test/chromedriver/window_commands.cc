@@ -1054,8 +1054,10 @@ Status ProcessInputActionSequence(
     DCHECK(source);
 
     std::string source_id;
+    std::string source_type;
     source->GetString("id", &source_id);
-    if (source_id == id) {
+    source->GetString("type", &source_type);
+    if (source_id == id && source_type == type) {
       found = true;
       if (type == "pointer") {
         std::string source_pointer_type;
