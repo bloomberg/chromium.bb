@@ -12,22 +12,12 @@ namespace blink {
 
 namespace {
 
-std::unique_ptr<TracedValue> BuildData(
-    const probe::PlatformSendRequest& probe) {
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("id", String::Number(probe.identifier));
-  return value;
-}
-
 }  // namespace
 
 void PlatformTraceEventsAgent::Will(const probe::PlatformSendRequest& probe) {
-  TRACE_EVENT_BEGIN1("devtools.timeline", "PlatformResourceSendRequest", "data",
-                     BuildData(probe));
 }
 
 void PlatformTraceEventsAgent::Did(const probe::PlatformSendRequest& probe) {
-  TRACE_EVENT_END0("devtools.timeline", "PlatformResourceSendRequest");
 }
 
 }  // namespace blink
