@@ -22,8 +22,7 @@ namespace internal {
 
 base::Optional<AllocatorSettings> GetAllocatorSettings(
     const base::Feature& feature,
-    bool is_canary_dev,
-    bool is_browser_process);
+    bool boost_sampling);
 
 namespace {
 
@@ -40,15 +39,14 @@ size_t processSamplingTest(const char* process_sampling,
   std::map<std::string, std::string> parameters;
   parameters["ProcessSamplingProbability"] = process_sampling;
   if (process_sampling_boost)
-    parameters["ProcessSamplingBoost"] = process_sampling_boost;
+    parameters["ProcessSamplingBoost2"] = process_sampling_boost;
 
   base::test::ScopedFeatureList scoped_feature;
   scoped_feature.InitAndEnableFeatureWithParameters(kTestFeature1, parameters);
 
   size_t enabled = 0;
   for (size_t i = 0; i < kLoopIterations; i++) {
-    if (GetAllocatorSettings(kTestFeature1, process_sampling_boost != nullptr,
-                             false))
+    if (GetAllocatorSettings(kTestFeature1, process_sampling_boost != nullptr))
       enabled++;
   }
 
@@ -71,7 +69,7 @@ std::set<size_t> allocationSamplingTest(
 
   std::set<size_t> frequencies;
   for (size_t i = 0; i < kLoopIterations; i++) {
-    if (auto settings = GetAllocatorSettings(kTestFeature2, false, false))
+    if (auto settings = GetAllocatorSettings(kTestFeature2, false))
       frequencies.insert(settings->sampling_frequency);
   }
 
@@ -82,13 +80,16 @@ std::set<size_t> allocationSamplingTest(
 
 TEST(GwpAsanTest, ProcessSamplingWorks) {
   EXPECT_EQ(processSamplingTest("1.0", nullptr), kLoopIterations);
-  EXPECT_EQ(processSamplingTest("1.0", "99999"), kLoopIterations);
-  EXPECT_EQ(processSamplingTest("0.01", "99"), kLoopIterations);
+  EXPECT_EQ(processSamplingTest("1.0", "100000"), kLoopIterations);
+  EXPECT_EQ(processSamplingTest("0.01", "100"), kLoopIterations);
 
   EXPECT_EQ(processSamplingTest("0.0", nullptr), 0U);
-  EXPECT_EQ(processSamplingTest("0.0", "99999"), 0U);
+  EXPECT_EQ(processSamplingTest("0.0", "100000"), 0U);
 
   size_t num_enabled = processSamplingTest("0.5", nullptr);
+  EXPECT_GT(num_enabled, 0U);
+  EXPECT_LT(num_enabled, kLoopIterations);
+  num_enabled = processSamplingTest("0.01", "50");
   EXPECT_GT(num_enabled, 0U);
   EXPECT_LT(num_enabled, kLoopIterations);
 }

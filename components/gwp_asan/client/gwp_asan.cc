@@ -54,10 +54,8 @@ constexpr int kDefaultAllocationSamplingRange = 64;
 
 constexpr double kDefaultProcessSamplingProbability = 0.2;
 // The multiplier to increase the ProcessSamplingProbability in scenarios where
-// we want to perform additional testing (e.g. on canary/dev builds or in the
-// browser process.) The multiplier increase is cumulative when multiple
-// conditions apply.
-constexpr int kDefaultProcessSamplingBoost = 4;
+// we want to perform additional testing (e.g., on canary/dev builds).
+constexpr int kDefaultProcessSamplingBoost2 = 5;
 
 const base::Feature kGwpAsanMalloc{"GwpAsanMalloc",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
@@ -65,9 +63,7 @@ const base::Feature kGwpAsanPartitionAlloc{"GwpAsanPartitionAlloc",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Returns whether this process should be sampled to enable GWP-ASan.
-bool SampleProcess(const base::Feature& feature,
-                   bool is_canary_dev,
-                   bool is_browser_process) {
+bool SampleProcess(const base::Feature& feature, bool boost_sampling) {
   double process_sampling_probability =
       GetFieldTrialParamByFeatureAsDouble(feature, "ProcessSamplingProbability",
                                           kDefaultProcessSamplingProbability);
@@ -79,24 +75,20 @@ bool SampleProcess(const base::Feature& feature,
   }
 
   int process_sampling_boost = GetFieldTrialParamByFeatureAsInt(
-      feature, "ProcessSamplingBoost", kDefaultProcessSamplingBoost);
-  base::CheckedNumeric<int> multiplier = 1;
-  if (is_canary_dev)
-    multiplier += process_sampling_boost;
-  if (is_browser_process)
-    multiplier += process_sampling_boost;
-
-  if (!multiplier.IsValid() || multiplier.ValueOrDie() < 1) {
-    DLOG(ERROR) << "GWP-ASan ProcessSampling multiplier is out-of-range";
+      feature, "ProcessSamplingBoost2", kDefaultProcessSamplingBoost2);
+  if (process_sampling_boost < 1) {
+    DLOG(ERROR) << "GWP-ASan ProcessSampling multiplier is out-of-range: "
+                << process_sampling_boost;
     return false;
   }
 
   base::CheckedNumeric<double> sampling_prob_mult =
       process_sampling_probability;
-  sampling_prob_mult *= multiplier.ValueOrDie();
+  if (boost_sampling)
+    sampling_prob_mult *= process_sampling_boost;
   if (!sampling_prob_mult.IsValid()) {
     DLOG(ERROR) << "GWP-ASan multiplier caused out-of-range multiply: "
-                << multiplier.ValueOrDie();
+                << process_sampling_boost;
     return false;
   }
 
@@ -138,8 +130,7 @@ size_t AllocationSamplingFrequency(const base::Feature& feature) {
 // Exported for testing.
 GWP_ASAN_EXPORT base::Optional<AllocatorSettings> GetAllocatorSettings(
     const base::Feature& feature,
-    bool is_canary_dev,
-    bool is_browser_process) {
+    bool boost_sampling) {
   if (!base::FeatureList::IsEnabled(feature))
     return base::nullopt;
 
@@ -178,7 +169,7 @@ GWP_ASAN_EXPORT base::Optional<AllocatorSettings> GetAllocatorSettings(
   if (!alloc_sampling_freq)
     return base::nullopt;
 
-  if (!SampleProcess(feature, is_canary_dev, is_browser_process))
+  if (!SampleProcess(feature, boost_sampling))
     return base::nullopt;
 
   return AllocatorSettings{max_allocations, max_metadata, total_pages,
@@ -187,11 +178,11 @@ GWP_ASAN_EXPORT base::Optional<AllocatorSettings> GetAllocatorSettings(
 
 }  // namespace internal
 
-void EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
+void EnableForMalloc(bool boost_sampling) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   static bool init_once = [&]() -> bool {
-    auto settings = internal::GetAllocatorSettings(
-        internal::kGwpAsanMalloc, is_canary_dev, is_browser_process);
+    auto settings = internal::GetAllocatorSettings(internal::kGwpAsanMalloc,
+                                                   boost_sampling);
     if (!settings)
       return false;
 
@@ -207,11 +198,11 @@ void EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 }
 
-void EnableForPartitionAlloc(bool is_canary_dev) {
+void EnableForPartitionAlloc(bool boost_sampling) {
 #if BUILDFLAG(USE_PARTITION_ALLOC)
   static bool init_once = [&]() -> bool {
     auto settings = internal::GetAllocatorSettings(
-        internal::kGwpAsanPartitionAlloc, is_canary_dev, false);
+        internal::kGwpAsanPartitionAlloc, boost_sampling);
     if (!settings)
       return false;
 
