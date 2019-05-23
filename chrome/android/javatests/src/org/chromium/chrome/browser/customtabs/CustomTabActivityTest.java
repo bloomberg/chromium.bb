@@ -88,6 +88,7 @@ import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -741,11 +742,7 @@ public class CustomTabActivityTest {
                                      .getAppMenuPropertiesDelegate())
                                     .getMenuItemForTitle(TEST_MENU_TITLE);
             Assert.assertNotNull(item);
-            getActivity()
-                    .getRootUiCoordinatorForTesting()
-                    .getAppMenuCoordinatorForTesting()
-                    .getAppMenuHandler()
-                    .onOptionsItemSelected(item);
+            AppMenuTestSupport.onOptionsItemSelected(getActivity(), item);
         });
 
         onFinished.waitForCallback("Pending Intent was not sent.");
@@ -791,13 +788,8 @@ public class CustomTabActivityTest {
                 InstrumentationRegistry.getInstrumentation().addMonitor(filter, null, false);
         openAppMenuAndAssertMenuShown();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            MenuItem item = getActivity()
-                                    .getRootUiCoordinatorForTesting()
-                                    .getAppMenuCoordinatorForTesting()
-                                    .getAppMenuHandler()
-                                    .getAppMenu()
-                                    .getMenu()
-                                    .findItem(R.id.open_in_browser_id);
+            MenuItem item =
+                    AppMenuTestSupport.getMenu(getActivity()).findItem(R.id.open_in_browser_id);
             Assert.assertNotNull(item);
             getActivity().onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
         });

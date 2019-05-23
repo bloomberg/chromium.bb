@@ -10,6 +10,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
+import org.chromium.chrome.browser.appmenu.AppMenuCoordinatorFactory;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 
@@ -51,7 +52,7 @@ public class RootUiCoordinator
         // TODO(https://crbug.com/931496): Revisit this as part of the broader
         // discussion around activity-specific UI customizations.
         if (mActivity.supportsAppMenu()) {
-            mAppMenuCoordinator = new AppMenuCoordinator(mActivity,
+            mAppMenuCoordinator = AppMenuCoordinatorFactory.createAppMenuCoordinator(mActivity,
                     mActivity.getLifecycleDispatcher(), mActivity.getToolbarManager(), mActivity,
                     mActivity.getWindow().getDecorView(),
                     mActivity.getOverviewModeBehaviorSupplier());

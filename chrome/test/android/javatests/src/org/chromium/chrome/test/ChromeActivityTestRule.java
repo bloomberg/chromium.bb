@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -163,11 +164,8 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     /** Retrieves the application Menu */
     public Menu getMenu() throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(getActivity()
-                                                             .getRootUiCoordinatorForTesting()
-                                                             .getAppMenuCoordinatorForTesting()
-                                                             .getAppMenuHandler()
-                                                             .getAppMenu()::getMenu);
+        return TestThreadUtils.runOnUiThreadBlocking(
+                () -> AppMenuTestSupport.getMenu(getActivity()));
     }
 
     /**

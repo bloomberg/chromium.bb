@@ -317,8 +317,8 @@ public class TabModalPresenter
                 mDidClearTextControls = true;
             }
 
-            // TODO(https://crbug.com/956260): Provide AppMenuHandler or interface with needed
-            //  methods rather than pulling off ToolbarManager.
+            // TODO(https://crbug.com/956260): Provide AppMenuHandler rather than pulling off
+            // ToolbarManager.
             // Hide app menu in case it is opened.
             mChromeActivity.getToolbarManager().getAppMenuHandler().hideAppMenu();
 

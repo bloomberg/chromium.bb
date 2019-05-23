@@ -9,10 +9,10 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.appmenu.AppMenu;
-import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
+import org.chromium.chrome.browser.appmenu.AppMenuDelegate;
+import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuIconRowFooter;
-import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.datareduction.DataReductionMainMenuItem;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
@@ -22,15 +22,15 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ObservableSupplier;
 
 /**
- * An {@link AppMenuPropertiesDelegate} for ChromeTabbedActivity.
+ * An {@link AppMenuPropertiesDelegateImpl} for ChromeTabbedActivity.
  */
-public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
-    AppMenuCoordinator.AppMenuDelegate mAppMenuDelegate;
+public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateImpl {
+    AppMenuDelegate mAppMenuDelegate;
 
     public TabbedAppMenuPropertiesDelegate(Context context, ActivityTabProvider activityTabProvider,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView,
-            AppMenuCoordinator.AppMenuDelegate appMenuDelegate,
+            AppMenuDelegate appMenuDelegate,
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
                 toolbarManager, decorView, overviewModeBehaviorSupplier);
@@ -55,10 +55,10 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
     }
 
     @Override
-    public void onFooterViewInflated(AppMenu menu, View view) {
+    public void onFooterViewInflated(AppMenuHandler appMenuHandler, View view) {
         if (view instanceof AppMenuIconRowFooter) {
             ((AppMenuIconRowFooter) view)
-                    .initialize(mContext, menu, mBookmarkBridge, mActivityTabProvider.get(),
+                    .initialize(appMenuHandler, mBookmarkBridge, mActivityTabProvider.get(),
                             mAppMenuDelegate);
         }
     }
@@ -72,7 +72,7 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
     }
 
     @Override
-    public void onHeaderViewInflated(AppMenu menu, View view) {
+    public void onHeaderViewInflated(AppMenuHandler appMenuHandler, View view) {
         if (view instanceof DataReductionMainMenuItem) {
             view.findViewById(R.id.data_reduction_menu_divider).setVisibility(View.GONE);
         }

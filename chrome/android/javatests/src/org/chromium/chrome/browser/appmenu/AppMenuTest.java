@@ -51,20 +51,20 @@ public class AppMenuTest {
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
 
     private AppMenu mAppMenu;
-    private AppMenuHandler mAppMenuHandler;
+    private AppMenuHandlerImpl mAppMenuHandler;
 
     /**
-     * AppMenuHandler that will be used to intercept item selections for testing.
+     * AppMenuHandlerImpl that will be used to intercept item selections for testing.
      */
-    public static class AppMenuHandlerForTest extends AppMenuHandler {
+    public static class AppMenuHandlerForTest extends AppMenuHandlerImpl {
         int mLastSelectedItemId = -1;
 
         /**
-         * AppMenuHandler for intercepting options item selections.
+         * AppMenuHandlerImpl for intercepting options item selections.
          */
         public AppMenuHandlerForTest(AppMenuPropertiesDelegate delegate,
-                AppMenuCoordinator.AppMenuDelegate appMenuDelegate, int menuResourceId,
-                View decorView, ActivityLifecycleDispatcher activityLifecycleDispatcher,
+                AppMenuDelegate appMenuDelegate, int menuResourceId, View decorView,
+                ActivityLifecycleDispatcher activityLifecycleDispatcher,
                 ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
             super(delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
                     overviewModeBehaviorSupplier);
@@ -81,7 +81,7 @@ public class AppMenuTest {
         // We need list selection; ensure we are not in touch mode.
         InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
 
-        AppMenuCoordinator.setAppMenuHandlerFactoryForTesting(
+        AppMenuCoordinatorImpl.setAppMenuHandlerFactoryForTesting(
                 (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
                         overviewModeBehaviorSupplier) -> {
                     mAppMenuHandler = new AppMenuHandlerForTest(delegate, appMenuDelegate,
@@ -93,10 +93,10 @@ public class AppMenuTest {
         mActivityTestRule.startMainActivityWithURL(TEST_URL);
 
         showAppMenuAndAssertMenuShown();
-        mAppMenu = mActivityTestRule.getActivity()
-                           .getRootUiCoordinatorForTesting()
-                           .getAppMenuCoordinatorForTesting()
-                           .getAppMenuHandler()
+        mAppMenu = ((AppMenuCoordinatorImpl) mActivityTestRule.getActivity()
+                            .getRootUiCoordinatorForTesting()
+                            .getAppMenuCoordinatorForTesting())
+                           .getAppMenuHandlerImplForTesting()
                            .getAppMenu();
         PostTask.runOrPostTask(
                 UiThreadTaskTraits.DEFAULT, () -> mAppMenu.getListView().setSelection(0));

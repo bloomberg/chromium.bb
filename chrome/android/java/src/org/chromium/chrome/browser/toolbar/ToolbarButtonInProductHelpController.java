@@ -103,8 +103,8 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         View anchorView = activity.getToolbarManager().getMenuButtonView();
         if (anchorView == null) return;
 
-        // TODO(https://crbug.com/956260): Provide AppMenuHandler or interface with needed methods
-        // rather than pulling off ToolbarManager.
+        // TODO(https://crbug.com/956260): Provide AppMenuHandler rather than pulling off
+        //  ToolbarManager.
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
                 getDataReductionMenuItemHighlight(), false, R.string.iph_data_saver_detail_text,
                 R.string.iph_data_saver_detail_accessibility_text, anchorView,
@@ -144,7 +144,6 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
     /**
      * Attempts to show an IPH text bubble for those that trigger on a cold start.
-     * @param activity The activity to use for the IPH.
      */
     public void maybeShowColdStartIPH() {
         maybeShowDownloadHomeIPH();

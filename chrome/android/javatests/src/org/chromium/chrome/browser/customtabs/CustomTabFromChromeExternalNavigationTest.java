@@ -24,21 +24,18 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
-import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -192,12 +189,7 @@ public class CustomTabFromChromeExternalNavigationTest {
                                    instanceof CustomTabNavigationDelegate);
 
         CustomTabsTestUtils.openAppMenuAndAssertMenuShown(mCustomTabActivityTestRule.getActivity());
-        Menu menu = mCustomTabActivityTestRule.getActivity()
-                            .getRootUiCoordinatorForTesting()
-                            .getAppMenuCoordinatorForTesting()
-                            .getAppMenuHandler()
-                            .getAppMenu()
-                            .getMenu();
+        Menu menu = mCustomTabActivityTestRule.getMenu();
 
         Assert.assertTrue(menu.findItem(R.id.icon_row_menu_id).isVisible());
         Assert.assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
@@ -207,16 +199,5 @@ public class CustomTabFromChromeExternalNavigationTest {
         Assert.assertFalse(menu.findItem(R.id.request_desktop_site_row_menu_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.add_to_homescreen_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.open_webapk_id).isVisible());
-    }
-
-    private void showAppMenuAndAssertMenuShown(final AppMenuHandler appMenuHandler) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { appMenuHandler.showAppMenu(null, false, false); });
-        CriteriaHelper.pollUiThread(new Criteria("AppMenu did not show") {
-            @Override
-            public boolean isSatisfied() {
-                return appMenuHandler.isAppMenuShowing();
-            }
-        });
     }
 }

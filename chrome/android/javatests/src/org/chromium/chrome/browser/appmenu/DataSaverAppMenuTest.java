@@ -44,17 +44,17 @@ public class DataSaverAppMenuTest {
     private TestDataReductionProxySettings mSettings;
 
     /**
-     * AppMenuHandler that will be used to intercept the delegate for testing.
+     * AppMenuHandlerImpl that will be used to intercept the delegate for testing.
      */
-    public static class AppMenuHandlerForTest extends AppMenuHandler {
+    public static class AppMenuHandlerForTest extends AppMenuHandlerImpl {
         AppMenuPropertiesDelegate mDelegate;
 
         /**
-         * AppMenuHandler for intercepting options item selections.
+         * AppMenuHandlerImpl for intercepting options item selections.
          */
         public AppMenuHandlerForTest(AppMenuPropertiesDelegate delegate,
-                AppMenuCoordinator.AppMenuDelegate appMenuDelegate, int menuResourceId,
-                View decorView, ActivityLifecycleDispatcher activityLifecycleDispatcher,
+                AppMenuDelegate appMenuDelegate, int menuResourceId, View decorView,
+                ActivityLifecycleDispatcher activityLifecycleDispatcher,
                 ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
             super(delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
                     overviewModeBehaviorSupplier);
@@ -85,7 +85,7 @@ public class DataSaverAppMenuTest {
 
     @Before
     public void setUp() throws Exception {
-        AppMenuCoordinator.setAppMenuHandlerFactoryForTesting(
+        AppMenuCoordinatorImpl.setAppMenuHandlerFactoryForTesting(
                 (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
                         overviewModeBehaviorSupplier) -> {
                     mAppMenuHandler = new AppMenuHandlerForTest(delegate, appMenuDelegate,

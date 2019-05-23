@@ -12,12 +12,12 @@ public interface AppMenuObserver {
      * Informs when the App Menu visibility changes.
      * @param isVisible Whether the menu is now visible.
      */
-    public void onMenuVisibilityChanged(boolean isVisible);
+    void onMenuVisibilityChanged(boolean isVisible);
 
     /**
      * Note that this will be called with {@code false} once the menu is opened.
      * @param highlighting Whether or not the menu is highlighting (or planning to highlight) an
      *                     item.
      */
-    public void onMenuHighlightChanged(boolean highlighting);
+    void onMenuHighlightChanged(boolean highlighting);
 }

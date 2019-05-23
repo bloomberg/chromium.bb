@@ -126,7 +126,7 @@ public abstract class ToolbarLayout
             final ImageButton menuButton = getMenuButton();
             if (menuButton != null) {
                 menuButton.setOnTouchListener(appMenuButtonHelper);
-                menuButton.setAccessibilityDelegate(appMenuButtonHelper);
+                menuButton.setAccessibilityDelegate(appMenuButtonHelper.getAccessibilityDelegate());
             }
         }
     }

@@ -196,7 +196,8 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         if (mMenuButton == null) return;
 
         mMenuButton.getImageButton().setOnTouchListener(appMenuButtonHelper);
-        mMenuButton.getImageButton().setAccessibilityDelegate(appMenuButtonHelper);
+        mMenuButton.getImageButton().setAccessibilityDelegate(
+                appMenuButtonHelper.getAccessibilityDelegate());
     }
 
     /**

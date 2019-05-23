@@ -13,7 +13,7 @@ import org.chromium.ui.widget.ChromeImageView;
 /**
  * An AppCompatImageView that supports the checkable state.
  */
-public class AppMenuItemIcon extends ChromeImageView implements Checkable {
+class AppMenuItemIcon extends ChromeImageView implements Checkable {
     private static final int[] CHECKED_STATE_SET = new int[] {android.R.attr.state_checked};
     private boolean mCheckedState;
 

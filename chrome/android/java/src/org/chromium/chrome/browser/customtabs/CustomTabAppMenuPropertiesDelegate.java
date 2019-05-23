@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * App menu properties delegate for {@link CustomTabActivity}.
  */
-public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
+public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateImpl {
     private final static String CUSTOM_MENU_ITEM_ID_KEY = "CustomMenuItemId";
 
     private final @CustomTabsUiType int mUiType;
@@ -79,7 +79,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     }
 
     @Override
-    protected void prepareMenu(Menu menu) {
+    public void prepareMenu(Menu menu) {
         Tab currentTab = mActivityTabProvider.get();
         if (currentTab != null) {
             MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
@@ -219,7 +219,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     }
 
     @Override
-    protected @Nullable Bundle getBundleForMenuItem(MenuItem item) {
+    public @Nullable Bundle getBundleForMenuItem(MenuItem item) {
         if (!mItemToIndexMap.containsKey(item)) {
             return null;
         }
