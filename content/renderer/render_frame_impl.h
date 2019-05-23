@@ -1238,7 +1238,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info);
 
   // Commit a navigation that isn't handled by the browser (e.g., an empty
-  // document or an MHTML archive).
+  // document, about:srcdoc or an MHTML archive).
   void CommitSyncNavigation(std::unique_ptr<blink::WebNavigationInfo> info);
 
   // Commit navigation with |navigation_params| prepared.
@@ -1753,6 +1753,7 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 
   // Used by renderer initiated navigations not driven by the browser process:
+  // - navigation to about:blank.
   // - navigation to about:srcdoc.
   // - navigation using an MHTML archive.
   // TODO(arthursonzogni): Remove this. Everything should use the default code
