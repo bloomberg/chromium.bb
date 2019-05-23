@@ -233,15 +233,6 @@ id<GREYMatcher> UndoAccountConsistencyButton() {
 
 // Signs in to an account and then taps the Advanced link to go to settings.
 - (void)testSignInAndTapSettingsLink {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // TODO(crbug.com/963412): Update the test once opening the Sync and Google
-    // Services settings screen is correctly open when the user taps on
-    // the Settings link from the FRE.
-    EARL_GREY_TEST_DISABLED(
-        @"This test was disabled as the Sync and Google Services screen "
-         "is not correctly open when the user taps on the Settings links");
-  }
-
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);

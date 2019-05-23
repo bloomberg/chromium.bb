@@ -72,6 +72,11 @@ class ChromeBrowserState;
          presentingViewController:(UIViewController*)viewController
                        completion:(signin_ui::CompletionCallback)completion;
 
+// Presents the advanced sign-in settings screen.
+// * |presentingViewController| is the top presented view controller.
+- (void)showAdvancedSigninSettingsWithPresentingViewController:
+    (UIViewController*)viewController;
+
 // Cancels any current process. Calls the completion callback when done.
 - (void)cancel;
 

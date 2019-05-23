@@ -116,6 +116,12 @@
   [self.controller addAccountWithCompletion:[self callbackToClearState]];
 }
 
+- (void)showAdvancedSigninSettingsWithPresentingViewController:
+    (UIViewController*)viewController {
+  self.presentingViewController = viewController;
+  [self showAdvancedSigninSettings];
+}
+
 - (void)cancel {
   [self.controller cancel];
   [self.advancedSigninSettingsCoordinator abortWithDismiss:NO
@@ -248,19 +254,26 @@
 // Shows the accounts settings UI.
 - (void)showAccountsSettings {
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    DCHECK(!self.advancedSigninSettingsCoordinator);
-    self.advancedSigninSettingsCoordinator =
-        [[AdvancedSigninSettingsCoordinator alloc]
-            initWithBaseViewController:self.presentingViewController
-                          browserState:self.browserState];
-    self.advancedSigninSettingsCoordinator.delegate = self;
-    self.advancedSigninSettingsCoordinator.dispatcher = self.dispatcher;
-    [self.advancedSigninSettingsCoordinator start];
+    [self showAdvancedSigninSettings];
   } else {
     [self signinDoneWithSuccess:YES];
     [self.dispatcher
         showAccountsSettingsFromViewController:self.presentingViewController];
   }
+}
+
+// Shows the advanced sign-in settings UI.
+- (void)showAdvancedSigninSettings {
+  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
+  DCHECK(!self.advancedSigninSettingsCoordinator);
+  DCHECK(self.presentingViewController);
+  self.advancedSigninSettingsCoordinator =
+      [[AdvancedSigninSettingsCoordinator alloc]
+          initWithBaseViewController:self.presentingViewController
+                        browserState:self.browserState];
+  self.advancedSigninSettingsCoordinator.delegate = self;
+  self.advancedSigninSettingsCoordinator.dispatcher = self.dispatcher;
+  [self.advancedSigninSettingsCoordinator start];
 }
 
 // Called when the sign-in is done.

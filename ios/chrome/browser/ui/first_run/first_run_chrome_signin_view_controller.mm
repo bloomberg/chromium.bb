@@ -7,6 +7,7 @@
 #import "base/ios/block_types.h"
 #include "base/metrics/user_metrics.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -170,16 +171,22 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
   DCHECK_EQ(self, controller);
 
   // User is done with First Run after explicit sign-in accept.
-  // Save a reference to the presentingViewController since this view controller
-  // will be dismissed.
-  __weak UIViewController* baseViewController = self.presentingViewController;
-  __weak id<ApplicationCommands> weakDispatcher = self.dispatcher;
-  [self finishFirstRunAndDismissWithCompletion:^{
-    if (showAccountsSettings) {
-      [weakDispatcher
-          showAccountsSettingsFromViewController:baseViewController];
-    }
-  }];
+  ProceduralBlock completion = nil;
+  if (showAccountsSettings) {
+    // Save a reference to the presentingViewController since this view
+    // controller will be dismissed.
+    __weak UIViewController* baseViewController = self.presentingViewController;
+    __weak id<ApplicationCommands> dispatcher = self.dispatcher;
+    completion = ^{
+      if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+        [dispatcher
+            showAdvancedSigninSettingsFromViewController:baseViewController];
+      } else {
+        [dispatcher showAccountsSettingsFromViewController:baseViewController];
+      }
+    };
+  }
+  [self finishFirstRunAndDismissWithCompletion:completion];
 }
 
 #pragma mark ChromeSigninViewController

@@ -1603,6 +1603,17 @@ enum class EnterTabSwitcherSnapshotResult {
   }
 }
 
+- (void)showAdvancedSigninSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
+  self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
+      initWithBrowserState:_mainBrowserState
+                dispatcher:self.mainBVC.dispatcher];
+  [self.signinInteractionCoordinator
+      showAdvancedSigninSettingsWithPresentingViewController:
+          baseViewController];
+}
+
 // TODO(crbug.com/779791) : Remove settings commands from MainController.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
   if (!self.signinInteractionCoordinator) {

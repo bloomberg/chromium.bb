@@ -151,6 +151,14 @@ bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
   if (!syncSetupService)
     return false;
+
+  // Avoid showing the sync error inforbar when sync changes are still pending.
+  // This is particularely requires during first run when the advanced sign-in
+  // settings are being presented on the NTP before sync changes being
+  // committed.
+  if (syncSetupService->HasUncommittedChanges())
+    return false;
+
   SyncSetupService::SyncServiceState errorState =
       syncSetupService->GetSyncServiceState();
   if (IsTransientSyncError(errorState))
