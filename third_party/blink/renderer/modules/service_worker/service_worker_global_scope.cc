@@ -531,7 +531,8 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
 void ServiceWorkerGlobalScope::BindServiceWorkerHost(
     mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host) {
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->BindServiceWorkerHost(std::move(service_worker_host));
+      ->BindServiceWorkerHost(std::move(service_worker_host),
+                              GetTaskRunner(TaskType::kInternalIPC));
 }
 
 void ServiceWorkerGlobalScope::SetRegistration(

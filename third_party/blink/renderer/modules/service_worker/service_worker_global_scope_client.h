@@ -138,7 +138,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
                                     mojom::ServiceWorkerEventStatus);
 
   void BindServiceWorkerHost(
-      mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host);
+      mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void WillDestroyWorkerContext();
 

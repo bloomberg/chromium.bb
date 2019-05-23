@@ -296,10 +296,12 @@ void ServiceWorkerGlobalScopeClient::DidHandlePaymentRequestEvent(
 }
 
 void ServiceWorkerGlobalScopeClient::BindServiceWorkerHost(
-    mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host) {
+    mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   DCHECK(service_worker_host.is_valid());
   DCHECK(!service_worker_host_);
-  service_worker_host_.Bind(std::move(service_worker_host));
+  service_worker_host_.Bind(std::move(service_worker_host),
+                            std::move(task_runner));
 }
 
 void ServiceWorkerGlobalScopeClient::WillDestroyWorkerContext() {
