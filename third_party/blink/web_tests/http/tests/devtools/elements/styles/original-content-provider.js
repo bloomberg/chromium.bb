@@ -34,6 +34,7 @@ div {}
 </style>
 <div id="inspected"></div>
     `);
+  await ElementsTestRunner.selectNodeAndWaitForStylesPromise('inspected');
 
   TestRunner.addSniffer(SDK.CSSModel.prototype, '_originalContentRequestedForTest', onOriginalContentRequested, true);
   function onOriginalContentRequested(header) {
