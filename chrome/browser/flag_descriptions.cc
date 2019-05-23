@@ -2230,10 +2230,6 @@ const char kIdentityDiscName[] = "Identity Disc";
 const char kIdentityDiscDescription[] =
     "Enables Identity Disc, profile avatar icon button in toolbar.";
 
-const char kIncognitoStringsName[] = "Alternate incognito strings";
-const char kIncognitoStringsDescription[] =
-    "Show alternate incognito strings if enabled.";
-
 const char kInterestFeedContentSuggestionsDescription[] =
     "Use the interest feed to render content suggestions. Currently "
     "content "

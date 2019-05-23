@@ -3136,12 +3136,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSyncUSSBookmarksDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSBookmarks)},
 
-#if defined(OS_ANDROID)
-    {"incognito-strings", flag_descriptions::kIncognitoStringsName,
-     flag_descriptions::kIncognitoStringsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kIncognitoStrings)},
-#endif
-
     {"enable-lookalike-url-navigation-suggestions",
      flag_descriptions::kLookalikeUrlNavigationSuggestionsName,
      flag_descriptions::kLookalikeUrlNavigationSuggestionsDescription, kOsAll,

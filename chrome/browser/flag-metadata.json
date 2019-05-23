@@ -2113,11 +2113,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "incognito-strings",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "installable-ink-drop",
     "owners": [ "collinbaker", "pbos" ],
     "expiry_milestone": 77
