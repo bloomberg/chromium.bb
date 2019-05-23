@@ -66,7 +66,7 @@ class JavaChecker(object):
     # TODO(husky): We need some way of determining the "real" path to
     # a generated file -- i.e., where it would be in source control if
     # it weren't generated.
-    if d.startswith('out') or d in ('xcodebuild',):
+    if d.startswith('out') or d in ('xcodebuild', 'AndroidStudioDefault',):
       return True
     # Skip third-party directories.
     if d in ('third_party', 'ThirdParty'):
@@ -87,7 +87,8 @@ class JavaChecker(object):
     """Build a set of fully-qualified class affected by this patch.
 
     Prescan imported files and build classset to collect full class names
-    with package name. This includes both changed files as well as changed imports.
+    with package name. This includes both changed files as well as changed
+    imports.
 
     Args:
       added_imports : ((file_path, (import_line, import_line, ...), ...)
@@ -115,7 +116,8 @@ class JavaChecker(object):
     if full_class_name:
       if full_class_name in self._classmap:
         if self._verbose or full_class_name in added_classset:
-          if not any((re.match(i, filepath) for i in self._allow_multiple_definitions)):
+          if not any(re.match(i, filepath) for i in
+                     self._allow_multiple_definitions):
             print 'WARNING: multiple definitions of %s:' % full_class_name
             print '    ' + filepath
             print '    ' + self._classmap[full_class_name]
