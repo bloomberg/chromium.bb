@@ -479,7 +479,6 @@ void NewPasswordFormManager::PresaveGeneratedPassword(
   observed_form_ = form;
   PresaveGeneratedPasswordInternal(form, generated_password);
   votes_uploader_.set_generation_element(generation_element);
-  generation_element_ = generation_element;
 }
 
 bool NewPasswordFormManager::UpdateGeneratedPasswordOnUserInput(
@@ -497,7 +496,7 @@ bool NewPasswordFormManager::UpdateGeneratedPasswordOnUserInput(
     }
   }
   base::string16 generated_password = generation_state_->generated_password();
-  if (generation_element_ == field_identifier) {
+  if (votes_uploader_.get_generation_element() == field_identifier) {
     generated_password = field_value;
     form_data_changed = true;
   }
