@@ -232,7 +232,10 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
     slide_animation_->Show();
   }
 
-  void StopAnimation() { slide_animation_->Stop(); }
+  void StopAnimation() {
+    anchor_view_ = nullptr;
+    slide_animation_->Stop();
+  }
 
   bool IsAnimating() { return slide_animation_->is_animating(); }
 
@@ -251,10 +254,12 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
 
   TabHoverCardBubbleView* const bubble_delegate_;
   std::unique_ptr<gfx::SlideAnimation> slide_animation_;
-  views::View* anchor_view_;
+  views::View* anchor_view_ = nullptr;
   gfx::Rect starting_bubble_bounds_;
   gfx::Rect target_bubble_bounds_;
   gfx::Rect current_bubble_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetSlideAnimationDelegate);
 };
 
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
