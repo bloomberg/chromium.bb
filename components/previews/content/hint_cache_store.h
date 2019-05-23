@@ -18,7 +18,10 @@
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/prefs/pref_service.h"
 #include "components/previews/content/hint_update_data.h"
+
+class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
@@ -80,6 +83,8 @@ class HintCacheStore {
   // cannot be changed, but new types can be added to the end.
   // StoreEntryType should remain synchronized with the
   // HintCacheStoreEntryType in enums.xml.
+  // Also ensure to add to the OptimizationGuide.StoreEntryTypes histogram
+  // suffixes if adding a new one.
   enum class StoreEntryType {
     kEmpty = 0,
     kMetadata = 1,
@@ -90,9 +95,11 @@ class HintCacheStore {
 
   HintCacheStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
                  const base::FilePath& database_dir,
+                 PrefService* pref_service,
                  scoped_refptr<base::SequencedTaskRunner> store_task_runner);
   // For tests only.
-  explicit HintCacheStore(std::unique_ptr<StoreEntryProtoDatabase> database);
+  HintCacheStore(std::unique_ptr<StoreEntryProtoDatabase> database,
+                 PrefService* pref_service);
   ~HintCacheStore();
 
   // Initializes the hint cache store. If |purge_existing_data| is set to true,
@@ -295,6 +302,9 @@ class HintCacheStore {
 
   // Proto database used by the store.
   std::unique_ptr<StoreEntryProtoDatabase> database_;
+
+  // A reference to the PrefService for this profile. Not owned.
+  PrefService* pref_service_;
 
   // The current status of the store. It should only be updated through
   // UpdateStatus(), which validates status transitions and triggers

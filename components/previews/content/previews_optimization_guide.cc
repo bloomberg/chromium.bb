@@ -140,6 +140,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
       hint_cache_(std::make_unique<HintCache>(
           std::make_unique<HintCacheStore>(database_provider,
                                            profile_path,
+                                           pref_service,
                                            background_task_runner_))),
       previews_top_host_provider_(previews_top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),

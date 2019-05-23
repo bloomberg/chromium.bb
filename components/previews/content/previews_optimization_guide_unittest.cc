@@ -26,6 +26,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -277,6 +278,7 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
     // Registry pref for DataSaver with default off.
     pref_service_->registry()->RegisterBooleanPref(
         data_reduction_proxy::prefs::kDataSaverEnabled, false);
+    optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
 
     guide_ = std::make_unique<TestPreviewsOptimizationGuide>(
         optimization_guide_service_.get(),
