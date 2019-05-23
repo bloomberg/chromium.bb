@@ -4,7 +4,9 @@
 
 #include "chrome/browser/autofill/credit_card_accessory_controller_impl.h"
 
+#include <algorithm>
 #include <iterator>
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
