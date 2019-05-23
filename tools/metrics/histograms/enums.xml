@@ -14359,6 +14359,12 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Same as source"/>
 </enum>
 
+<enum name="DownloadResumptionRestartCountType">
+  <int value="0" label="Requested by server response"/>
+  <int value="1" label="Strong validators changed"/>
+  <int value="2" label="Missing strong validators"/>
+</enum>
+
 <enum name="DownloadSavePackageEvent">
   <int value="0" label="Started"/>
   <int value="1" label="Cancelled"/>

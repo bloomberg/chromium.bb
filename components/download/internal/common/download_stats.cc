@@ -1246,4 +1246,12 @@ void RecordDuplicateInProgressDownloadIdCount(int count) {
                               count, 1, 10, 11);
 }
 
+void RecordResumptionRestartReason(DownloadInterruptReason reason) {
+  base::UmaHistogramSparse("Download.ResumptionRestart.Reason", reason);
+}
+
+void RecordResumptionRestartCount(ResumptionRestartCountTypes type) {
+  base::UmaHistogramEnumeration("Download.ResumptionRestart.Counts", type);
+}
+
 }  // namespace download

@@ -219,6 +219,21 @@ enum class ParallelDownloadCreationEvent {
   COUNT,
 };
 
+// Reason for download to restart during resumption. These enum values are
+// persisted to logs, and should therefore never be renumbered nor removed.
+enum class ResumptionRestartCountTypes {
+  // The download is restarted due to server response.
+  kRequestedByServerCount = 0,
+
+  // Strong validator changes.
+  kStrongValidatorChangesCount = 1,
+
+  // No strong validators are present.
+  kMissingStrongValidatorsCount = 2,
+
+  kMaxValue = kMissingStrongValidatorsCount
+};
+
 // Increment one of the above counts.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCount(DownloadCountTypes type);
 
@@ -410,6 +425,17 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordInProgressDBCount(
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordDuplicateInProgressDownloadIdCount(
     int count);
+
+// Records the interrupt reason that causes download to restart.
+COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionRestartReason(
+    DownloadInterruptReason reason);
+
+// Records the interrupt reason that causes download to restart.
+COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionStrongValidators(
+    DownloadInterruptReason reason);
+
+COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionRestartCount(
+    ResumptionRestartCountTypes type);
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_STATS_H_

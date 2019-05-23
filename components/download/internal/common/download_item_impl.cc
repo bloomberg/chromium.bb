@@ -1177,8 +1177,17 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   // a full request rather than a partial. Full restarts clobber validators.
   if (etag_ != new_create_info.etag ||
       last_modified_time_ != new_create_info.last_modified) {
+    if (destination_info_.received_bytes > 0) {
+      RecordResumptionRestartCount(
+          ResumptionRestartCountTypes::kStrongValidatorChangesCount);
+    }
     received_slices_.clear();
     destination_info_.received_bytes = 0;
+  }
+
+  if (destination_info_.received_bytes > 0 && new_create_info.offset == 0) {
+    RecordResumptionRestartCount(
+        ResumptionRestartCountTypes::kRequestedByServerCount);
   }
 
   request_info_.url_chain.insert(request_info_.url_chain.end(), chain_iter,
@@ -2323,6 +2332,13 @@ void DownloadItemImpl::ResumeInterruptedDownload(
       mode == ResumeMode::USER_RESTART) {
     LOG_IF(ERROR, !GetFullPath().empty())
         << "Download full path should be empty before resumption";
+    if (destination_info_.received_bytes > 0) {
+      if (etag_.empty() && last_modified_time_.empty()) {
+        RecordResumptionRestartCount(
+            ResumptionRestartCountTypes::kMissingStrongValidatorsCount);
+      }
+      RecordResumptionRestartReason(last_reason_);
+    }
     destination_info_.received_bytes = 0;
     last_modified_time_.clear();
     etag_.clear();
