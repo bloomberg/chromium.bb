@@ -263,6 +263,18 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
   width: 88px;
 }
 
+/* During reorder background is white. Therefore use dark grey for
+ * title. */
+.reorder .md-title {
+  color: rgb(var(--GG800-rgb));
+}
+
+/* During reorder in dark mode background is dark. Therefore use light
+ * grey for title. */
+html[darkmode=true] .reorder .md-title {
+  color: rgb(var(--GG100-rgb));
+}
+
 .md-title span {
   line-height: var(--md-title-height);
 }
