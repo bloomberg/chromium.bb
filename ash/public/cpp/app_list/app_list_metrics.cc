@@ -19,6 +19,8 @@ const char kAppListSuggestionChipOpenTypeHistogramInClamshell[] =
     "Apps.AppListSuggestedChipOpenType.ClamshellMode";
 const char kAppListSuggestionChipOpenTypeHistogramInTablet[] =
     "Apps.AppListSuggestedChipOpenType.TabletMode";
+const char kAppListZeroStateSuggestionOpenTypeHistogram[] =
+    "Apps.AppListZeroStateSuggestionOpenType";
 
 }  // namespace
 
@@ -63,6 +65,11 @@ void RecordSearchResultOpenTypeHistogram(
       NOTREACHED();
       break;
   }
+}
+
+void RecordZeroStateSuggestionOpenTypeHistogram(SearchResultType type) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListZeroStateSuggestionOpenTypeHistogram, type,
+                            SEARCH_RESULT_TYPE_BOUNDARY);
 }
 
 }  // namespace app_list

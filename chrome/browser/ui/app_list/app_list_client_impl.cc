@@ -120,6 +120,10 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
   RecordSearchResultOpenTypeHistogram(
       launched_from, result->GetSearchResultType(), IsTabletMode());
 
+  if (!search_controller_->GetLastQueryLength() &&
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox)
+    RecordZeroStateSuggestionOpenTypeHistogram(result->GetSearchResultType());
+
   // OpenResult may cause |result| to be deleted.
   search_controller_->OpenResult(result, event_flags);
 }

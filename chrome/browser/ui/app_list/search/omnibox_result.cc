@@ -202,9 +202,11 @@ SearchResultType OmniboxResult::GetSearchResultType() const {
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
       return OMNIBOX_WEB_QUERY;
     case AutocompleteMatchType::SEARCH_HISTORY:
+      return OMNIBOX_SEARCH_HISTORY;
     case AutocompleteMatchType::SEARCH_SUGGEST:
+      return OMNIBOX_SEARCH_SUGGEST;
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
-      return OMNIBOX_HISTORY;
+      return OMNIBOX_SUGGEST_PERSONALIZED;
 
     case AutocompleteMatchType::HISTORY_KEYWORD:
     case AutocompleteMatchType::NAVSUGGEST:

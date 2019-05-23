@@ -164,6 +164,10 @@ SearchResultRanker* SearchController::GetNonAppSearchResultRanker() {
   return mixer_->GetNonAppSearchResultRanker();
 }
 
+int SearchController::GetLastQueryLength() const {
+  return last_query_.size();
+}
+
 void SearchController::Train(const std::string& id, RankingItemType type) {
   if (app_list_features::IsAppListLaunchRecordingEnabled()) {
     ChromeOSAppListLaunchEventProto::LaunchType launch_type;

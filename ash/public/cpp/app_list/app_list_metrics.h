@@ -51,7 +51,8 @@ enum SearchResultType {
   // A result which is a web query.
   OMNIBOX_WEB_QUERY,
   // A result which was a web query that was previously searched.
-  OMNIBOX_HISTORY,
+  // This should be deprecated after M76.
+  OMNIBOX_HISTORY_DEPRECATED,
   // An app result which is an installed playstore app.
   PLAY_STORE_APP,
   // An app result which is an app that was installed on another device.
@@ -70,6 +71,13 @@ enum SearchResultType {
   APP_DATA_RESULT_NOTE_DOCUMENT,
   // An omnibox result which is opened via the assistant.
   ASSISTANT_OMNIBOX_RESULT,
+  // A result from omnibox for the query that was previously searched.
+  OMNIBOX_SEARCH_HISTORY,
+  // A result from omnibox for query suggestion.
+  OMNIBOX_SEARCH_SUGGEST,
+  // A result from omnibox for the personalized suggestion.
+  // Currently, it is used for the user's recent query.
+  OMNIBOX_SUGGEST_PERSONALIZED,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };
@@ -78,6 +86,9 @@ ASH_PUBLIC_EXPORT void RecordSearchResultOpenTypeHistogram(
     ash::AppListLaunchedFrom launch_location,
     SearchResultType type,
     bool is_tablet_mode);
+
+ASH_PUBLIC_EXPORT void RecordZeroStateSuggestionOpenTypeHistogram(
+    SearchResultType type);
 
 }  // namespace app_list
 

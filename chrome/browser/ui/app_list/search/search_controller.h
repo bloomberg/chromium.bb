@@ -65,6 +65,9 @@ class SearchController {
   // other ranking.
   SearchResultRanker* GetNonAppSearchResultRanker();
 
+  // Gets the length of the most recent query.
+  int GetLastQueryLength() const;
+
  private:
   // Invoked when the search results are changed.
   void OnResultsChanged();

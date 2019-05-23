@@ -2156,7 +2156,7 @@ Unknown properties are collapsed to zero. -->
   <int value="13" label="Omnibox, Recently Visited Website"/>
   <int value="14" label="Omnibox, Recent Doc In Drive"/>
   <int value="15" label="Omnibox, Web Query"/>
-  <int value="16" label="Omnibox, History"/>
+  <int value="16" label="OMNIBOX_HISTORY_DEPRECATED"/>
   <int value="17" label="Arc++ App"/>
   <int value="18" label="Arc++ Reinstall App"/>
   <int value="19" label="Internal App"/>
@@ -2166,6 +2166,9 @@ Unknown properties are collapsed to zero. -->
   <int value="23" label="AppDataResult, Person From Contacts"/>
   <int value="24" label="AppDataResult, Note Document"/>
   <int value="25" label="Omnibox, Assistant"/>
+  <int value="26" label="Omnibox, Search History"/>
+  <int value="27" label="Omnibox, Search Suggest"/>
+  <int value="28" label="Omnibox, Personalzied Suggestion"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">
