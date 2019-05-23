@@ -78,8 +78,7 @@ class DeferredClientWrapper : public Client {
 
   void RunDeferredClosures(bool force_inflate);
   void DoRunDeferredClosures();
-  void InflateClient();
-  void DoInflateClient(Profile* profile);
+  void InflateClient(Profile* profile);
 
   std::unique_ptr<download::Client> wrapped_client_;
   std::vector<base::OnceClosure> deferred_closures_;

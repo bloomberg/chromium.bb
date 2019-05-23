@@ -29,8 +29,14 @@ DeferredClientWrapper::DeferredClientWrapper(DownloadClient client_id,
   client_id_ = client_id;
 #endif
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
-      key_, base::BindOnce(&DeferredClientWrapper::DoInflateClient,
+      key_, base::BindOnce(&DeferredClientWrapper::InflateClient,
                            weak_ptr_factory_.GetWeakPtr()));
+#if !defined(OS_ANDROID)
+  // On non-android platforms we can only be running in full browser mode. In
+  // full browser mode, FullBrowserTransitionManager synchronously calls the
+  // callback when it is registered.
+  DCHECK(wrapped_client_);
+#endif
 }
 
 DeferredClientWrapper::~DeferredClientWrapper() = default;
@@ -171,7 +177,18 @@ void DeferredClientWrapper::RunDeferredClosures(bool force_inflate) {
   if (wrapped_client_) {
     DoRunDeferredClosures();
   } else if (force_inflate) {
-    InflateClient();
+#if defined(OS_ANDROID)
+    // The constructor registers InflateClient as a callback with
+    // FullBrowserTransitionManager on Profile creation. We just need to trigger
+    // loading full browser. Once full browser is loaded and  profile is
+    // created, FullBrowserTransitionManager will call InflateClient.
+    stats::LogDownloadClientInflatedFullBrowser(client_id_);
+    android_startup::LoadFullBrowser();
+#else
+    // For platforms that do not implement reduced mode (i.e. non-android), the
+    // wrapped client should have been inflated in the constructor.
+    NOTREACHED();
+#endif
   }
 }
 
@@ -183,22 +200,7 @@ void DeferredClientWrapper::DoRunDeferredClosures() {
   deferred_closures_.clear();
 }
 
-void DeferredClientWrapper::InflateClient() {
-  if (g_browser_process) {
-    Profile* profile =
-        g_browser_process->profile_manager()->GetProfileByPath(key_->GetPath());
-    DoInflateClient(profile);
-  } else {
-#if defined(OS_ANDROID)
-    stats::LogDownloadClientInflatedFullBrowser(client_id_);
-    android_startup::LoadFullBrowser();
-#else
-    NOTREACHED();
-#endif
-  }
-}
-
-void DeferredClientWrapper::DoInflateClient(Profile* profile) {
+void DeferredClientWrapper::InflateClient(Profile* profile) {
   DCHECK(profile);
   DCHECK(client_factory_);
   wrapped_client_ = std::move(client_factory_).Run(profile);
