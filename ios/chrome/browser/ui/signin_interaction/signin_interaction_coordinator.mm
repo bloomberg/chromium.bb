@@ -118,12 +118,16 @@
 
 - (void)cancel {
   [self.controller cancel];
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:NO];
+  [self.advancedSigninSettingsCoordinator abortWithDismiss:NO
+                                                  animated:YES
+                                                completion:nil];
 }
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES];
+  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES
+                                                  animated:YES
+                                                completion:nil];
 }
 
 - (BOOL)isActive {

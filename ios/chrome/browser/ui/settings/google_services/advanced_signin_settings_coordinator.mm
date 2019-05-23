@@ -87,18 +87,28 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
                  completion:nil];
 }
 
-- (void)abortWithDismiss:(BOOL)dismiss {
+- (void)abortWithDismiss:(BOOL)dismiss
+                animated:(BOOL)animated
+              completion:(ProceduralBlock)completion {
   if (!self.advancedSigninSettingsNavigationController) {
+    if (completion) {
+      completion();
+    }
     return;
   }
   DCHECK_EQ(self.advancedSigninSettingsNavigationController,
             self.baseViewController.presentedViewController);
   if (dismiss) {
     [self dismissViewControllerAndFinishWithResult:
-              AdvancedSigninSettingsCoordinatorResultInterrupted];
+              AdvancedSigninSettingsCoordinatorResultInterrupted
+                                          animated:animated
+                                        completion:completion];
   } else {
     [self
         finishedWithResult:AdvancedSigninSettingsCoordinatorResultInterrupted];
+    if (completion) {
+      completion();
+    }
   }
 }
 
@@ -212,7 +222,9 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   DCHECK_EQ(self.advancedSigninSettingsNavigationController,
             self.baseViewController.presentedViewController);
   [self dismissViewControllerAndFinishWithResult:
-            AdvancedSyncSettingsCoordinatorResultConfirm];
+            AdvancedSyncSettingsCoordinatorResultConfirm
+                                        animated:YES
+                                      completion:nil];
 }
 
 // Called when a button of |self.cancelConfirmationAlertCoordinator| is pressed.
@@ -222,7 +234,9 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   self.cancelConfirmationAlertCoordinator = nil;
   if (cancelSync) {
     [self dismissViewControllerAndFinishWithResult:
-              AdvancedSigninSettingsCoordinatorResultCancel];
+              AdvancedSigninSettingsCoordinatorResultCancel
+                                          animated:YES
+                                        completion:nil];
   } else {
     base::RecordAction(base::UserMetricsAction(
         "Signin_Signin_CancelCancelAdvancedSyncSettings"));
@@ -232,14 +246,20 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
 // Dismisses the current view controller with animation, and calls
 // -[self finishedWithResult:] with |result|.
 - (void)dismissViewControllerAndFinishWithResult:
-    (AdvancedSigninSettingsCoordinatorResult)result {
+            (AdvancedSigninSettingsCoordinatorResult)result
+                                        animated:(BOOL)animated
+                                      completion:(ProceduralBlock)completion {
   DCHECK_EQ(self.advancedSigninSettingsNavigationController,
             self.baseViewController.presentedViewController);
-  [self.baseViewController
-      dismissViewControllerAnimated:YES
-                         completion:^{
-                           [self finishedWithResult:result];
-                         }];
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock dismissCompletion = ^() {
+    [weakSelf finishedWithResult:result];
+    if (completion) {
+      completion();
+    }
+  };
+  [self.baseViewController dismissViewControllerAnimated:animated
+                                              completion:dismissCompletion];
 }
 
 @end
