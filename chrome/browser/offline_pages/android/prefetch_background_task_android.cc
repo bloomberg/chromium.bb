@@ -8,9 +8,10 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
-#include "chrome/browser/profiles/profile_key.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
@@ -29,11 +30,11 @@ static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& gcm_token) {
-  ProfileKey* profile_key = android::GetMainProfileKey();
-  DCHECK(profile_key);
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  DCHECK(profile);
 
   PrefetchService* prefetch_service =
-      PrefetchServiceFactory::GetForKey(profile_key);
+      PrefetchServiceFactory::GetForKey(profile->GetProfileKey());
   if (!prefetch_service)
     return false;
 
