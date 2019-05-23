@@ -48,7 +48,6 @@ const char kHashUppercase[] =
     "842841A4C75A55AD050D686F4EA5F77E83AE059877FE9B6946AA63D3D057ED32";
 const char kHash2[] =
     "02f06421ae27144aacdc598aebcd345a5e2e634405e8578300173628fe1574bd";
-const char kLicenseKey[] = "LICENSE_KEY";
 // File size set in test_download_service.
 const int kDownloadedPluginVmImageSizeInMb = 123456789u / (1024 * 1024);
 
@@ -85,9 +84,8 @@ class PluginVmImageManagerTest : public testing::Test {
   }
 
  protected:
-  chromeos::MockUserManager user_manager_;
-  chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  std::unique_ptr<PluginVmTestHelper> plugin_vm_test_helper_;
   std::unique_ptr<TestingProfile> profile_;
   PluginVmImageManager* manager_;
   download::test::TestDownloadService* download_service_;
@@ -100,6 +98,10 @@ class PluginVmImageManagerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(profiles_dir_.CreateUniqueTempDir());
     CreateProfile();
+    plugin_vm_test_helper_ =
+        std::make_unique<PluginVmTestHelper>(profile_.get());
+    plugin_vm_test_helper_->AllowPluginVm();
+    // Sets new PluginVmImage pref for this test.
     SetPluginVmImagePref(kUrl, kHash);
 
     manager_ = PluginVmImageManagerFactory::GetForProfile(profile_.get());
@@ -113,30 +115,12 @@ class PluginVmImageManagerTest : public testing::Test {
 
     fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
 
-    SetPluginVmDevicePolicies();
-    SetUserWithAffiliation();
-
     histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   void TearDown() override {
     profile_.reset();
     observer_.reset();
-  }
-
-  void SetPluginVmDevicePolicies() {
-    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
-    settings_helper_.SetBoolean(chromeos::kPluginVmAllowed, true);
-    settings_helper_.SetString(chromeos::kPluginVmLicenseKey, kLicenseKey);
-  }
-
-  void SetUserWithAffiliation() {
-    const AccountId account_id(
-        AccountId::FromUserEmailGaiaId(profile_->GetProfileUserName(), "id"));
-    user_manager_.AddUserWithAffiliationAndType(
-        account_id, true, user_manager::USER_TYPE_REGULAR);
-    chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
-        user_manager_.GetActiveUser());
   }
 
   void SetPluginVmImagePref(std::string url, std::string hash) {
@@ -322,7 +306,8 @@ TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, CannotStartDownloadIfPluginVmGetsDisabled) {
-  settings_helper_.SetBoolean(chromeos::kPluginVmAllowed, false);
+  profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
+      chromeos::kPluginVmAllowed, false);
   EXPECT_CALL(*observer_, OnDownloadFailed());
   ProcessImageUntilImporting();
 }

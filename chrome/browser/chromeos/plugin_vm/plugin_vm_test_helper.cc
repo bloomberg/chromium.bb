@@ -9,15 +9,26 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace plugin_vm {
 
 namespace {
+
 const char kDiskImageImportCommandUuid[] = "3922722bd7394acf85bf4d5a330d4a47";
+const char kPluginVmLicenseKey[] = "LICENSE_KEY";
+const char kPluginVmImageHash[] =
+    "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32";
+const char kDomain[] = "example.com";
+const char kDeviceId[] = "device_id";
+const char kPluginVmImageUrl[] = "https://example.com/plugin_vm_image";
+
 }  // namespace
 
 void SetupConciergeForSuccessfulDiskImageImport(
@@ -66,15 +77,13 @@ void PluginVmTestHelper::SetPolicyRequirementsToAllowPluginVm() {
   testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
       chromeos::kPluginVmAllowed, true);
   testing_profile_->ScopedCrosSettingsTestHelper()->SetString(
-      chromeos::kPluginVmLicenseKey, "LICENSE_KEY");
+      chromeos::kPluginVmLicenseKey, kPluginVmLicenseKey);
 
-  testing_profile_->GetPrefs()->Set(plugin_vm::prefs::kPluginVmImage,
-                                    *base::JSONReader::ReadDeprecated(R"(
-    {
-        "url": "https://example.com/plugin_vm_image",
-        "hash": "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32"
-    }
-  )"));
+  DictionaryPrefUpdate update(testing_profile_->GetPrefs(),
+                              plugin_vm::prefs::kPluginVmImage);
+  base::DictionaryValue* plugin_vm_image = update.Get();
+  plugin_vm_image->SetKey("url", base::Value(kPluginVmImageUrl));
+  plugin_vm_image->SetKey("hash", base::Value(kPluginVmImageHash));
 }
 
 void PluginVmTestHelper::SetUserRequirementsToAllowPluginVm() {
@@ -87,10 +96,35 @@ void PluginVmTestHelper::SetUserRequirementsToAllowPluginVm() {
       user_manager_.GetActiveUser());
 }
 
+void PluginVmTestHelper::EnablePluginVmFeature() {
+  scoped_feature_list_.InitAndEnableFeature(features::kPluginVm);
+}
+
+void PluginVmTestHelper::EnableDevMode() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kSystemDevMode);
+}
+
+void PluginVmTestHelper::EnterpriseEnrollDevice() {
+  testing_profile_->ScopedCrosSettingsTestHelper()
+      ->InstallAttributes()
+      ->SetCloudManaged(kDomain, kDeviceId);
+}
+
 void PluginVmTestHelper::AllowPluginVm() {
   ASSERT_FALSE(IsPluginVmAllowedForProfile(testing_profile_));
-  SetPolicyRequirementsToAllowPluginVm();
   SetUserRequirementsToAllowPluginVm();
+  EnablePluginVmFeature();
+  EnterpriseEnrollDevice();
+  SetPolicyRequirementsToAllowPluginVm();
+  ASSERT_TRUE(IsPluginVmAllowedForProfile(testing_profile_));
+}
+
+void PluginVmTestHelper::AllowPluginVmForManualTesting() {
+  ASSERT_FALSE(IsPluginVmAllowedForProfile(testing_profile_));
+  SetUserRequirementsToAllowPluginVm();
+  EnablePluginVmFeature();
+  EnableDevMode();
   ASSERT_TRUE(IsPluginVmAllowedForProfile(testing_profile_));
 }
 

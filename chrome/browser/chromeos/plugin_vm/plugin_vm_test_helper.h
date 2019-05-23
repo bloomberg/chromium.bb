@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_TEST_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_TEST_HELPER_H_
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 
@@ -23,11 +24,19 @@ class PluginVmTestHelper {
 
   void SetPolicyRequirementsToAllowPluginVm();
   void SetUserRequirementsToAllowPluginVm();
+  void EnablePluginVmFeature();
+  void EnableDevMode();
+  void EnterpriseEnrollDevice();
+
   void AllowPluginVm();
+  // Sets the conditions required by PluginVm to be allowed when device is not
+  // enterprise enrolled so that manual testing of PluginVm is easier.
+  void AllowPluginVmForManualTesting();
 
  private:
   TestingProfile* testing_profile_;
   chromeos::MockUserManager user_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmTestHelper);
 };

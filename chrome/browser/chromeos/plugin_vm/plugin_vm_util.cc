@@ -7,22 +7,54 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/chrome_features.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
 
 namespace plugin_vm {
 
+// For PluginVm to be allowed:
+// * Profile should be eligible.
+// * PluginVm feature should be enabled.
+// If device is not enterprise enrolled:
+//     * Device should be in a dev mode.
+// If device is enterprise enrolled:
+//     * User should be affiliated.
+//     * All necessary policies should be set (PluginVmAllowed, PluginVmImage
+//       and PluginVmLicenseKey).
+//
+// TODO(okalitova, aoldemeier): PluginVm should be disabled in case of
+// non-managed devices once it is launched. Currently this conditions are used
+// for making manual tests easier.
 bool IsPluginVmAllowedForProfile(const Profile* profile) {
   // Check that the profile is eligible.
   if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
       profile->IsOffTheRecord() ||
       chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
       chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+    return false;
+  }
+
+  // Check that PluginVm feature is enabled.
+  if (!base::FeatureList::IsEnabled(features::kPluginVm))
+    return false;
+
+  // TODO(okalitova, aoldemeier): Remove once PluginVm is ready to be launched.
+  // Check for alternative condition for manual testing, i.e. the device is in
+  // developer mode and the device is not enterprise-enrolled.
+  if (!chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kSystemDevMode)) {
+      return true;
+    }
     return false;
   }
 

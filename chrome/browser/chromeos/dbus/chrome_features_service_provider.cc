@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -145,10 +146,10 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
 void ChromeFeaturesServiceProvider::IsPluginVmEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  // TODO(dtor): extend the check to include device capabilities
-  // and device/user policies.
-  SendResponse(method_call, response_sender,
-               base::FeatureList::IsEnabled(features::kPluginVm));
+  Profile* profile = GetSenderProfile(method_call, response_sender);
+  SendResponse(
+      method_call, response_sender,
+      profile ? plugin_vm::IsPluginVmAllowedForProfile(profile) : false);
 }
 
 void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
