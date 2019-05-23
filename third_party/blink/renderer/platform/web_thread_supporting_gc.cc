@@ -33,6 +33,11 @@ WebThreadSupportingGC::~WebThreadSupportingGC() {
   thread_.reset();
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WebThreadSupportingGC::GetTaskRunner() const {
+  return thread_->GetTaskRunner();
+}
+
 void WebThreadSupportingGC::InitializeOnThread() {
   DCHECK(thread_->IsCurrentThread());
   ThreadState::AttachCurrentThread();

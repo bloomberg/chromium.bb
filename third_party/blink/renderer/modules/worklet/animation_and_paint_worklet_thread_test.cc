@@ -56,7 +56,8 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
   void CheckWorkletCanExecuteScript(WorkerThread* thread) {
     std::unique_ptr<base::WaitableEvent> wait_event =
         std::make_unique<base::WaitableEvent>();
-    thread->GetWorkerBackingThread().BackingThread().PostTask(
+    PostCrossThreadTask(
+        *thread->GetWorkerBackingThread().BackingThread().GetTaskRunner(),
         FROM_HERE,
         CrossThreadBindOnce(
             &AnimationAndPaintWorkletThreadTest::ExecuteScriptInWorklet,

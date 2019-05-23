@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -145,8 +146,8 @@ class WorkerThreadForTest : public WorkerThread {
 
   void WaitForInit() {
     base::WaitableEvent completion_event;
-    GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
         CrossThreadBindOnce(&base::WaitableEvent::Signal,
                             CrossThreadUnretained(&completion_event)));
     completion_event.Wait();

@@ -71,7 +71,8 @@ class AudioWorkletThreadTest : public PageTestBase {
   // Attempts to run some simple script for |thread|.
   void CheckWorkletCanExecuteScript(WorkerThread* thread) {
     base::WaitableEvent wait_event;
-    thread->GetWorkerBackingThread().BackingThread().PostTask(
+    PostCrossThreadTask(
+        *thread->GetWorkerBackingThread().BackingThread().GetTaskRunner(),
         FROM_HERE,
         CrossThreadBindOnce(&AudioWorkletThreadTest::ExecuteScriptInWorklet,
                             CrossThreadUnretained(this),

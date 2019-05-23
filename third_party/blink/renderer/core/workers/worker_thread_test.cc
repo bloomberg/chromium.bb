@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_test_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -502,7 +503,8 @@ TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
   test::EnterRunLoop();
 
   base::WaitableEvent waitable_event;
-  worker_thread_->GetWorkerBackingThread().BackingThread().PostTask(
+  PostCrossThreadTask(
+      *worker_thread_->GetWorkerBackingThread().BackingThread().GetTaskRunner(),
       FROM_HERE,
       CrossThreadBindOnce(&VerifyParentAndChildAreTerminated,
                           CrossThreadUnretained(worker_thread_.get()),

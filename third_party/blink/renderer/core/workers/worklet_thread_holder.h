@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
@@ -57,8 +58,8 @@ class WorkletThreadHolder {
 
   void Initialize(std::unique_ptr<WorkerBackingThread> backing_thread) {
     thread_ = std::move(backing_thread);
-    thread_->BackingThread().PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *thread_->BackingThread().GetTaskRunner(), FROM_HERE,
         CrossThreadBindOnce(&WorkletThreadHolder::InitializeOnWorkletThread,
                             CrossThreadUnretained(this)));
   }
@@ -72,8 +73,8 @@ class WorkletThreadHolder {
   void ShutdownAndWait() {
     DCHECK(IsMainThread());
     base::WaitableEvent waitable_event;
-    thread_->BackingThread().PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *thread_->BackingThread().GetTaskRunner(), FROM_HERE,
         CrossThreadBindOnce(&WorkletThreadHolder::ShutdownOnWorkletThread,
                             CrossThreadUnretained(this),
                             CrossThreadUnretained(&waitable_event)));

@@ -162,8 +162,8 @@ void WorkerThread::Start(
   // Synchronously initialize the per-global-scope scheduler to prevent someone
   // from posting a task to the thread before the scheduler is ready.
   base::WaitableEvent waitable_event;
-  GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
       CrossThreadBindOnce(&WorkerThread::InitializeSchedulerOnWorkerThread,
                           CrossThreadUnretained(this),
                           CrossThreadUnretained(&waitable_event)));
@@ -172,8 +172,8 @@ void WorkerThread::Start(
   inspector_task_runner_ =
       InspectorTaskRunner::Create(GetTaskRunner(TaskType::kInternalInspector));
 
-  GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
       CrossThreadBindOnce(
           &WorkerThread::InitializeOnWorkerThread, CrossThreadUnretained(this),
           WTF::Passed(std::move(global_scope_creation_params)),
@@ -238,9 +238,10 @@ void WorkerThread::Resume() {
   if (IsCurrentThread()) {
     ResumeOnWorkerThread();
   } else {
-    GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE, CrossThreadBindOnce(&WorkerThread::ResumeOnWorkerThread,
-                                       CrossThreadUnretained(this)));
+    PostCrossThreadTask(
+        *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(&WorkerThread::ResumeOnWorkerThread,
+                            CrossThreadUnretained(this)));
   }
 }
 
@@ -260,12 +261,14 @@ void WorkerThread::Terminate() {
 
   inspector_task_runner_->Dispose();
 
-  GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE,
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetWorkerBackingThread().BackingThread().GetTaskRunner();
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
       CrossThreadBindOnce(&WorkerThread::PrepareForShutdownOnWorkerThread,
                           CrossThreadUnretained(this)));
-  GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
       CrossThreadBindOnce(&WorkerThread::PerformShutdownOnWorkerThread,
                           CrossThreadUnretained(this)));
 }
@@ -741,10 +744,11 @@ void WorkerThread::PauseOrFreeze(mojom::FrameLifecycleState state) {
       isolate->RequestInterrupt(&PauseOrFreezeInsideV8InterruptOnWorkerThread,
                                 interrupt_data);
     }
-    GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE, CrossThreadBindOnce(
-                       &WorkerThread::PauseOrFreezeInsidePostTaskOnWorkerThread,
-                       CrossThreadUnretained(interrupt_data)));
+    PostCrossThreadTask(
+        *GetWorkerBackingThread().BackingThread().GetTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(
+            &WorkerThread::PauseOrFreezeInsidePostTaskOnWorkerThread,
+            CrossThreadUnretained(interrupt_data)));
   }
 }
 

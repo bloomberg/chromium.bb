@@ -30,10 +30,11 @@ class CrossThreadStyleValueTest : public testing::Test {
 
   void ShutDownThread() {
     base::WaitableEvent waitable_event;
-    thread_->PostTask(
-        FROM_HERE, CrossThreadBindOnce(&CrossThreadStyleValueTest::ShutDown,
-                                       CrossThreadUnretained(this),
-                                       CrossThreadUnretained(&waitable_event)));
+    PostCrossThreadTask(
+        *thread_->GetTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(&CrossThreadStyleValueTest::ShutDown,
+                            CrossThreadUnretained(this),
+                            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
@@ -81,8 +82,8 @@ TEST_F(CrossThreadStyleValueTest, PassUnsupportedValueCrossThread) {
   thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
-  thread_->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBindOnce(&CrossThreadStyleValueTest::CheckUnsupportedValue,
                           CrossThreadUnretained(this),
                           CrossThreadUnretained(&waitable_event),
@@ -112,8 +113,8 @@ TEST_F(CrossThreadStyleValueTest, PassKeywordValueCrossThread) {
   thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
-  thread_->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBindOnce(&CrossThreadStyleValueTest::CheckKeywordValue,
                           CrossThreadUnretained(this),
                           CrossThreadUnretained(&waitable_event),
@@ -144,11 +145,12 @@ TEST_F(CrossThreadStyleValueTest, PassUnitValueCrossThread) {
   thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
-  thread_->PostTask(
-      FROM_HERE, CrossThreadBindOnce(&CrossThreadStyleValueTest::CheckUnitValue,
-                                     CrossThreadUnretained(this),
-                                     CrossThreadUnretained(&waitable_event),
-                                     WTF::Passed(std::move(value))));
+  PostCrossThreadTask(
+      *thread_->GetTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(&CrossThreadStyleValueTest::CheckUnitValue,
+                          CrossThreadUnretained(this),
+                          CrossThreadUnretained(&waitable_event),
+                          WTF::Passed(std::move(value))));
   waitable_event.Wait();
 
   ShutDownThread();
