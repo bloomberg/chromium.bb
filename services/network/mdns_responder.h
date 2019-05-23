@@ -198,6 +198,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MdnsResponderManager {
   void OnMdnsQueryReceived(const net::DnsQuery& query,
                            uint16_t recv_socket_handler_id);
   void OnSocketHandlerReadError(uint16_t socket_handler_id, int result);
+  bool IsNonFatalError(int result);
 
   std::unique_ptr<net::MDnsSocketFactory> owned_socket_factory_;
   net::MDnsSocketFactory* socket_factory_;
