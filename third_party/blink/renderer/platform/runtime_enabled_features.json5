@@ -577,6 +577,7 @@
     // metric. See also: http://bit.ly/fcp_plus_plus
     {
       name: "FirstContentfulPaintPlusPlus",
+      status: "stable",
     },
     {
       name: "FocuslessSpatialNavigation",
