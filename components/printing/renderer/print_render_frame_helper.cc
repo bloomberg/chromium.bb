@@ -1367,7 +1367,7 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   while (!print_preview_context_.IsFinalPageRendered()) {
     int page_number = print_preview_context_.GetNextPageNumber();
     DCHECK_GE(page_number, 0);
-    if (!RenderPreviewPage(page_number, print_params))
+    if (!RenderPreviewPage(page_number))
       return false;
 
     if (CheckForCancel())
@@ -1394,9 +1394,8 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   return true;
 }
 
-bool PrintRenderFrameHelper::RenderPreviewPage(
-    int page_number,
-    const PrintMsg_Print_Params& print_params) {
+bool PrintRenderFrameHelper::RenderPreviewPage(int page_number) {
+  const PrintMsg_Print_Params& print_params = print_pages_params_->params;
   MetafileSkia* initial_render_metafile = print_preview_context_.metafile();
   base::TimeTicks begin_time = base::TimeTicks::Now();
   double scale_factor = GetScaleFactor(print_params.scale_factor,

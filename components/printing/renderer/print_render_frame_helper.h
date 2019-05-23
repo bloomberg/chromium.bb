@@ -225,8 +225,7 @@ class PrintRenderFrameHelper
 
   // Renders a print preview page. |page_number| is 0-based.
   // Returns true if print preview should continue, false on failure.
-  bool RenderPreviewPage(int page_number,
-                         const PrintMsg_Print_Params& print_params);
+  bool RenderPreviewPage(int page_number);
 
   // Finalize the print ready preview document.
   bool FinalizePrintReadyDocument();
