@@ -41,6 +41,7 @@ class GamepadBuilder {
   void AddButton(const ButtonData& data);
   void AddAxis(double value);
   void AddPlaceholderButton();
+  void RemovePlaceholderButton();
 
  protected:
   void AddAxes(const ButtonData& data);

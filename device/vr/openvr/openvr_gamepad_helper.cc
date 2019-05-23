@@ -244,7 +244,7 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
  public:
   enum class AxesRequirement {
     kOptional = 0,
-    kRequired = 1,
+    kRequireBoth = 1,
   };
 
   OpenVRGamepadBuilder(vr::IVRSystem* vr_system,
@@ -264,13 +264,13 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
 
   ~OpenVRGamepadBuilder() override = default;
 
-  bool TryAddAxesButton(
+  bool TryAddAxesOrTriggerButton(
       vr::EVRButtonId button_id,
       AxesRequirement requirement = AxesRequirement::kOptional) {
     if (!IsInAxesData(button_id))
       return false;
 
-    bool require_axes = (requirement == AxesRequirement::kRequired);
+    bool require_axes = (requirement == AxesRequirement::kRequireBoth);
     if (require_axes && !axes_data_[button_id].has_both_axes)
       return false;
 
@@ -280,13 +280,13 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
     return true;
   }
 
-  bool TryAddNextUnusedAxesButton() {
+  bool TryAddNextUnusedButtonWithAxes() {
     for (const auto& axes_data_pair : axes_data_) {
       vr::EVRButtonId button_id = axes_data_pair.first;
       if (IsUsed(button_id))
         continue;
 
-      if (TryAddAxesButton(button_id, AxesRequirement::kRequired))
+      if (TryAddAxesOrTriggerButton(button_id, AxesRequirement::kRequireBoth))
         return true;
     }
 
@@ -305,11 +305,17 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
   }
 
   // This will add any remaining unused values from axes_data to the gamepad.
-  void AddRemainingAxes() {
+  // Returns a bool indicating whether any additional axes were added.
+  bool AddRemainingTriggersAndAxes() {
+    bool added_axes = false;
     for (const auto& axes_data_pair : axes_data_) {
-      if (!IsUsed(axes_data_pair.first))
+      if (!IsUsed(axes_data_pair.first)) {
+        added_axes = true;
         AddButton(axes_data_pair.second);
+      }
     }
+
+    return added_axes;
   }
 
  private:
@@ -365,30 +371,57 @@ base::Optional<Gamepad> OpenVRGamepadHelper::GetXRGamepad(
   OpenVRGamepadBuilder builder(vr_system, controller_id, controller_state,
                                handedness);
 
-  if (!builder.TryAddAxesButton(vr::k_EButton_SteamVR_Trigger))
+  if (!builder.TryAddAxesOrTriggerButton(vr::k_EButton_SteamVR_Trigger))
     return base::nullopt;
 
-  if (!builder.TryAddNextUnusedAxesButton())
+  if (!builder.TryAddNextUnusedButtonWithAxes())
     return base::nullopt;
 
-  if (!builder.TryAddButton(vr::k_EButton_Grip))
+  bool added_placeholder_grip = false;
+  if (!builder.TryAddButton(vr::k_EButton_Grip)) {
+    added_placeholder_grip = true;
     builder.AddPlaceholderButton();
+  }
 
   // If we can't find any secondary button with an x and y axis, add a fake
   // button.  Note that we're not worried about ensuring that the axes data gets
   // added, because if there were any other axes to add, we would've added them.
-  if (!builder.TryAddNextUnusedAxesButton())
+  bool added_placeholder_axes = false;
+  if (!builder.TryAddNextUnusedButtonWithAxes()) {
+    added_placeholder_axes = true;
     builder.AddPlaceholderButton();
+  }
 
   // Now that all of the xr-standard reserved buttons have been filled in, we
   // add the rest of the buttons in order of decreasing importance.
   // First add regular buttons
+  bool added_optional_buttons = false;
   for (const auto& button : kWebXRButtonOrder) {
-    builder.TryAddButton(button);
+    added_optional_buttons =
+        builder.TryAddButton(button) || added_optional_buttons;
   }
 
   // Finally, add any remaining axis buttons (triggers/josysticks/touchpads)
-  builder.AddRemainingAxes();
+  bool added_optional_axes = builder.AddRemainingTriggersAndAxes();
+
+  // If we didn't add any optional buttons, we need to remove our placeholder
+  // buttons.
+  if (!(added_optional_buttons || added_optional_axes)) {
+    // If we didn't add any optional buttons, see if we need to remove the most
+    // recent placeholder (the secondary axes).
+    // Note that if we added a placeholder axes, the only optional axes that
+    // should have been added are triggers, and so we don't need to worry about
+    // the order
+    if (added_placeholder_axes) {
+      builder.RemovePlaceholderButton();
+
+      // Only if the axes button was a placeholder can we remove the grip
+      // if it was also a placeholder.
+      if (added_placeholder_grip) {
+        builder.RemovePlaceholderButton();
+      }
+    }
+  }
 
   return builder.GetGamepad();
 }

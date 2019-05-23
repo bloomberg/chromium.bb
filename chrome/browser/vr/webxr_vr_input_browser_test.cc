@@ -441,6 +441,16 @@ void TestGamepadMinimumDataImpl(WebXrVrBrowserTestBase* t) {
       t->GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
   t->EnterSessionWithUserGestureOrFail();
 
+  // We only actually connect the data for the two buttons, but WMR expects
+  // the WMR controller (which has all of the required and optional buttons)
+  // and so adds dummy/placeholder buttons regardless of what data we send up.
+  std::string button_count = "2";
+  if (t->GetRuntimeType() == XrBrowserTestBase::RuntimeType::RUNTIME_WMR)
+    button_count = "4";
+
+  t->PollJavaScriptBooleanOrFail("isButtonCountEqualTo(" + button_count + ")",
+                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
+
   // Press the trigger and set the axis to a non-zero amount, so we can ensure
   // we aren't getting just default gamepad data.
   my_mock.TogglePrimaryTrigger(controller_index);
@@ -478,8 +488,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWMR, TestGamepadMinimumData) {
 void TestGamepadCompleteDataImpl(WebXrVrBrowserTestBase* t) {
   WebXrControllerInputMock my_mock;
 
-  // Create a controller that supports all reserved buttons.  Note that per
-  // third_party/openvr/src/headers/openvr.h, SteamVR_Trigger is Axis1.
+  // Create a controller that supports all reserved buttons.
   uint64_t supported_buttons =
       device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
       device::XrButtonMaskFromId(device::XrButtonId::kAxisPrimary) |
@@ -518,6 +527,10 @@ void TestGamepadCompleteDataImpl(WebXrVrBrowserTestBase* t) {
   // Controller should meet the requirements for the 'xr-standard' mapping.
   t->PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
                                  WebVrBrowserTestBase::kPollTimeoutShort);
+
+  // Controller should have all required and optional xr-standard buttons
+  t->PollJavaScriptBooleanOrFail("isButtonCountEqualTo(4)",
+                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
 
   // The secondary set of axes should be set appropriately.
   t->PollJavaScriptBooleanOrFail("areAxesValuesEqualTo(1, 0.25, -0.25)",
@@ -583,6 +596,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadReservedData) {
   // pressed, and our "extra" button should be index 4 and should be pressed.
   PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
                               kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonCountEqualTo(5)", kPollTimeoutShort);
   PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(0, true)",
                               kPollTimeoutShort);
   PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(1, true)",
@@ -593,6 +607,44 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadReservedData) {
                               kPollTimeoutShort);
   PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(4, true)",
                               kPollTimeoutShort);
+
+  RunJavaScriptOrFail("done()");
+  EndTest();
+}
+
+// Ensure that if a gamepad has a grip, but not any extra buttons or a secondary
+// axis, that no trailing placeholder button is added.  This is a slight
+// variation on TestGamepadMinimalData, but won't re-test whether or not buttons
+// get sent up.  Note that since WMR always builds the WMR controller which
+// supports all required and optional buttons specified by the xr-standard
+// mapping, this test is OpenVR-only.
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadOptionalData) {
+  WebXrControllerInputMock my_mock;
+
+  // Create a controller that supports the trigger, primary axis, and grip
+  uint64_t supported_buttons =
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisPrimary) |
+      device::XrButtonMaskFromId(device::XrButtonId::kGrip);
+
+  std::map<device::XrButtonId, unsigned int> axis_types = {
+      {device::XrButtonId::kAxisPrimary, GetPrimaryAxisType()},
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
+  };
+
+  my_mock.CreateAndConnectController(
+      device::ControllerRole::kControllerRoleRight, axis_types,
+      supported_buttons);
+
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  EnterSessionWithUserGestureOrFail();
+
+  // There should be enough buttons for an xr-standard mapping, and it should
+  // have one optional button, but not the other.
+  PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonCountEqualTo(3)", kPollTimeoutShort);
 
   RunJavaScriptOrFail("done()");
   EndTest();

@@ -118,6 +118,18 @@ void GamepadBuilder::AddPlaceholderButton() {
   AddButton(GamepadButton());
 }
 
+void GamepadBuilder::RemovePlaceholderButton() {
+  // Since this is a member array, it actually is full of default constructed
+  // buttons, so all we have to do to remove a button is decrement the length
+  // variable.  However, we should check before we do so that we actually have
+  // a length and that there's not any data that's been set in the alleged
+  // placeholder button.
+  DCHECK_GT(gamepad_.buttons_length, 0u);
+  GamepadButton button = gamepad_.buttons[gamepad_.buttons_length - 1];
+  DCHECK(!button.pressed && !button.touched && button.value == 0);
+  gamepad_.buttons_length--;
+}
+
 double GamepadBuilder::ApplyAxisDeadzoneToValue(double value) const {
   return std::fabs(value) < axis_deadzone_ ? 0 : value;
 }
