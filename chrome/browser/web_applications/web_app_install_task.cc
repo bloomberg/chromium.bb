@@ -139,11 +139,6 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
 
   std::vector<GURL> icon_urls =
       GetValidIconUrlsToDownload(*web_application_info, /*data=*/nullptr);
-  if (icon_urls.empty()) {
-    OnIconsRetrieved(std::move(web_application_info), is_locally_installed,
-                     IconsMap{});
-    return;
-  }
 
   // Skip downloading the page favicons as everything in is the URL list.
   data_retriever_->GetIcons(

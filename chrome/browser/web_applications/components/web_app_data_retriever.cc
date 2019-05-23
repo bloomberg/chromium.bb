@@ -96,8 +96,6 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
                                    bool skip_page_favicons,
                                    WebappInstallSource install_source,
                                    GetIconsCallback callback) {
-  DCHECK(!icon_urls.empty());
-
   const char* https_status_code_class_histogram_name =
       install_source == WebappInstallSource::SYNC
           ? "WebApp.Icon.HttpStatusCodeClassOnSync"

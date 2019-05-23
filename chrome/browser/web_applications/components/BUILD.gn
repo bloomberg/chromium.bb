@@ -83,6 +83,7 @@ source_set("components") {
     "//components/keyed_service/content",
     "//components/pref_registry",
     "//content/public/browser",
+    "//extensions/common:common_constants",
     "//skia",
   ]
 }

@@ -906,4 +906,37 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
   run_loop.Run();
 }
 
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
+  SetInstallFinalizerForTesting();
+
+  const GURL url{"https://example.com/path"};
+  CreateDefaultDataToRetrieve(url);
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromManifestWithFallback(
+      web_contents(), /*force_shortcut_app=*/true,
+      WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(TestAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccess, code);
+
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+            // Make sure that icons have been generated for all sub sizes.
+            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
+
+            for (const WebApplicationInfo::IconInfo& icon :
+                 final_web_app_info->icons) {
+              EXPECT_FALSE(icon.data.drawsNothing());
+              EXPECT_TRUE(icon.url.is_empty());
+            }
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
 }  // namespace web_app
