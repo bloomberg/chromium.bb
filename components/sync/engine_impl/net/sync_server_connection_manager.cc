@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -22,14 +24,16 @@ SyncBridgedConnection::SyncBridgedConnection(
     CancelationSignal* cancelation_signal)
     : Connection(scm),
       factory_(factory),
-      cancelation_signal_(cancelation_signal) {
-  post_provider_ = factory_->Create();
+      cancelation_signal_(cancelation_signal),
+      post_provider_(factory_->Create()) {
+  DCHECK(scm);
+  DCHECK(factory);
+  DCHECK(cancelation_signal);
+  DCHECK(post_provider_);
 }
 
 SyncBridgedConnection::~SyncBridgedConnection() {
-  DCHECK(post_provider_);
   factory_->Destroy(post_provider_);
-  post_provider_ = nullptr;
 }
 
 bool SyncBridgedConnection::Init(const char* path,
@@ -103,12 +107,13 @@ SyncServerConnectionManager::SyncServerConnectionManager(
     const std::string& server,
     int port,
     bool use_ssl,
-    HttpPostProviderFactory* factory,
+    std::unique_ptr<HttpPostProviderFactory> factory,
     CancelationSignal* cancelation_signal)
     : ServerConnectionManager(server, port, use_ssl, cancelation_signal),
-      post_provider_factory_(factory),
+      post_provider_factory_(std::move(factory)),
       cancelation_signal_(cancelation_signal) {
   DCHECK(post_provider_factory_);
+  DCHECK(cancelation_signal_);
 }
 
 SyncServerConnectionManager::~SyncServerConnectionManager() = default;

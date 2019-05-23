@@ -384,8 +384,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
     connection_manager_ = std::make_unique<SyncServerConnectionManager>(
         args->service_url.host() + args->service_url.path(),
         args->service_url.EffectiveIntPort(),
-        args->service_url.SchemeIsCryptographic(), args->post_factory.release(),
-        args->cancelation_signal);
+        args->service_url.SchemeIsCryptographic(),
+        std::move(args->post_factory), args->cancelation_signal);
   }
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);

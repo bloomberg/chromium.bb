@@ -24,6 +24,7 @@ class HttpPostProviderInterface;
 class SyncBridgedConnection : public ServerConnectionManager::Connection,
                               public CancelationObserver {
  public:
+  // All pointers must not be null and must outlive this object.
   SyncBridgedConnection(ServerConnectionManager* scm,
                         HttpPostProviderFactory* factory,
                         CancelationSignal* cancelation_signal);
@@ -40,13 +41,13 @@ class SyncBridgedConnection : public ServerConnectionManager::Connection,
  private:
   // Pointer to the factory we use for creating HttpPostProviders. We do not
   // own |factory_|.
-  HttpPostProviderFactory* factory_;
+  HttpPostProviderFactory* const factory_;
 
   // Cancelation signal is signalled when engine shuts down. Current blocking
   // operation should be aborted.
-  CancelationSignal* cancelation_signal_;
+  CancelationSignal* const cancelation_signal_;
 
-  HttpPostProviderInterface* post_provider_;
+  HttpPostProviderInterface* const post_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBridgedConnection);
 };
@@ -55,14 +56,16 @@ class SyncBridgedConnection : public ServerConnectionManager::Connection,
 // instance of the HttpPostProviderFactory class.
 class SyncServerConnectionManager : public ServerConnectionManager {
  public:
-  // Takes ownership of factory.
+  // |factory| and |cancelation_signal| must not be null, and the latter must
+  // outlive this object.
   SyncServerConnectionManager(const std::string& server,
                               int port,
                               bool use_ssl,
-                              HttpPostProviderFactory* factory,
+                              std::unique_ptr<HttpPostProviderFactory> factory,
                               CancelationSignal* cancelation_signal);
   ~SyncServerConnectionManager() override;
 
+ protected:
   // ServerConnectionManager overrides.
   std::unique_ptr<Connection> MakeConnection() override;
 
@@ -79,7 +82,7 @@ class SyncServerConnectionManager : public ServerConnectionManager {
 
   // Cancelation signal is signalled when engine shuts down. Current blocking
   // operation should be aborted.
-  CancelationSignal* cancelation_signal_;
+  CancelationSignal* const cancelation_signal_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncServerConnectionManager);
 };

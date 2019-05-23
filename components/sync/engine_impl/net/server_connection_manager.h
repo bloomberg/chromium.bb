@@ -179,10 +179,6 @@ class ServerConnectionManager {
 
   const std::string client_id() const { return client_id_; }
 
-  // Factory method to create an Connection object we can use for
-  // communication with the server.
-  virtual std::unique_ptr<Connection> MakeConnection();
-
   void set_client_id(const std::string& client_id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(client_id_.empty());
@@ -203,6 +199,10 @@ class ServerConnectionManager {
   // changed.
   void SetServerResponse(const HttpResponse& server_response);
 
+  // Factory method to create an Connection object we can use for communication
+  // with the server. The returned object must not outlive |*this|.
+  virtual std::unique_ptr<Connection> MakeConnection();
+
   // NOTE: Tests rely on this protected function being virtual.
   //
   // Internal PostBuffer base function.
@@ -213,7 +213,8 @@ class ServerConnectionManager {
   void ClearAccessToken();
 
   // Helper to check terminated flags and build a Connection object. If this
-  // ServerConnectionManager has been terminated, this will return null.
+  // ServerConnectionManager has been terminated, this will return null. The
+  // returned object must not outlive |*this|.
   std::unique_ptr<Connection> MakeActiveConnection();
 
  private:
