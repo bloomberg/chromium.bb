@@ -31,6 +31,7 @@
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "content/browser/webauth/authenticator_common.h"
+#include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
@@ -49,8 +50,8 @@
 #include "device/fido/fido_test_data.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/mock_fido_device.h"
-#include "device/fido/scoped_virtual_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
+#include "device/fido/virtual_fido_device_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -343,9 +344,26 @@ std::vector<CableAuthenticationPtr> GetTestCableExtension() {
 
 }  // namespace
 
-class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
+class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
  public:
-  AuthenticatorImplTest() {}
+  AuthenticatorTestBase() { ResetVirtualDevice(); }
+  ~AuthenticatorTestBase() override {}
+
+  void ResetVirtualDevice() {
+    auto virtual_device_factory =
+        std::make_unique<device::test::VirtualFidoDeviceFactory>();
+    virtual_device_factory_ = virtual_device_factory.get();
+    AuthenticatorEnvironmentImpl::GetInstance()
+        ->ReplaceDefaultDiscoveryFactoryForTesting(
+            std::move(virtual_device_factory));
+  }
+
+ protected:
+  device::test::VirtualFidoDeviceFactory* virtual_device_factory_;
+};
+
+class AuthenticatorImplTest : public AuthenticatorTestBase {
+ public:
   ~AuthenticatorImplTest() override {}
 
  protected:
@@ -504,7 +522,6 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
-    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
     auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());
     auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
@@ -530,7 +547,6 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
 // parameters contain a supported algorithm.
 TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   SimulateNavigation(GURL(kTestOrigin1));
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
@@ -553,7 +569,6 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
 // verification is required for U2F devices.
 TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   SimulateNavigation(GURL(kTestOrigin1));
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
@@ -577,7 +592,6 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
 // key is requested on create().
 TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   SimulateNavigation(GURL(kTestOrigin1));
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
@@ -663,6 +677,11 @@ TEST_F(AuthenticatorImplTest, TestSerializedSignClientData) {
 }
 
 TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
+  // The VirtualFidoAuthenticator simulates a tap immediately after it gets the
+  // request. Replace by the real discovery that will wait until timeout.
+  AuthenticatorEnvironmentImpl::GetInstance()
+      ->ReplaceDefaultDiscoveryFactoryForTesting(
+          std::make_unique<device::FidoDiscoveryFactory>());
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
@@ -722,7 +741,6 @@ constexpr OriginClaimedAuthorityPair kValidAppIdCases[] = {
 // Verify behavior for various combinations of origins and RP IDs.
 TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
   TestServiceManagerContext smc;
-  device::test::ScopedVirtualFidoDevice virtual_device;
 
   for (const auto& test_case : kValidAppIdCases) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
@@ -765,9 +783,8 @@ TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = std::string(kTestOrigin1);
 
-    device::test::ScopedVirtualFidoDevice virtual_device;
     // Inject a registration for the URL (which is a U2F AppID).
-    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0]->id, kTestOrigin1));
 
     options->appid = kTestOrigin1;
@@ -783,6 +800,7 @@ TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
   }
 
   {
+    ResetVirtualDevice();
     OverrideLastCommittedOrigin(
         main_rfh(), url::Origin::Create(GURL(kTestExtensionOrigin)));
     // Next, verify that other extensions cannot bypass the origin checks.
@@ -790,9 +808,8 @@ TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = std::string(kTestOrigin1);
 
-    device::test::ScopedVirtualFidoDevice virtual_device;
     // Inject a registration for the URL (which is a U2F AppID).
-    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0]->id, kTestOrigin1));
 
     options->appid = kTestOrigin1;
@@ -814,15 +831,14 @@ TEST_F(AuthenticatorImplTest, CryptoTokenU2fOnly) {
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
 
-  // TODO(martinkr): ScopedVirtualFidoDevice does not offer devices that
+  // TODO(martinkr): VirtualFidoDeviceFactory does not offer devices that
   // support both U2F and CTAP yet; we should test those.
   for (const bool u2f_authenticator : {true, false}) {
     SCOPED_TRACE(u2f_authenticator ? "U2F" : "CTAP");
     OverrideLastCommittedOrigin(main_rfh(),
                                 url::Origin::Create(GURL(kCryptotokenOrigin)));
 
-    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
-    scoped_virtual_device.SetSupportedProtocol(
+    virtual_device_factory_->SetSupportedProtocol(
         u2f_authenticator ? device::ProtocolVersion::kU2f
                           : device::ProtocolVersion::kCtap2);
 
@@ -856,7 +872,7 @@ TEST_F(AuthenticatorImplTest, CryptotokenUsbOnly) {
 
   for (const bool is_cryptotoken_request : {false, true}) {
     // caBLE and platform discoveries cannot be instantiated through
-    // ScopedVirtualFidoDevice, so we don't test them here.
+    // VirtualFidoDeviceFactory, so we don't test them here.
     for (const device::FidoTransportProtocol transport :
          {device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
           device::FidoTransportProtocol::kBluetoothLowEnergy,
@@ -870,10 +886,11 @@ TEST_F(AuthenticatorImplTest, CryptotokenUsbOnly) {
           url::Origin::Create(GURL(is_cryptotoken_request ? kCryptotokenOrigin
                                                           : kTestOrigin1)));
 
-      device::test::ScopedVirtualFidoDevice device;
-      device.SetSupportedProtocol(device::ProtocolVersion::kU2f);
-      device.SetTransport(transport);
-      device.mutable_state()->transport = transport;
+      ResetVirtualDevice();
+      virtual_device_factory_->SetSupportedProtocol(
+          device::ProtocolVersion::kU2f);
+      virtual_device_factory_->SetTransport(transport);
+      virtual_device_factory_->mutable_state()->transport = transport;
 
       PublicKeyCredentialCreationOptionsPtr options =
           GetTestPublicKeyCredentialCreationOptions();
@@ -903,15 +920,14 @@ TEST_F(AuthenticatorImplTest, AttestationPermitted) {
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
 
-  // TODO(martinkr): ScopedVirtualFidoDevice does not offer devices that
+  // TODO(martinkr): VirtualFidoDeviceFactory does not offer devices that
   // support both U2F and CTAP yet; we should test those.
   for (const bool u2f_authenticator : {true, false}) {
     SCOPED_TRACE(u2f_authenticator ? "U2F" : "CTAP");
     OverrideLastCommittedOrigin(main_rfh(),
                                 url::Origin::Create(GURL(kCryptotokenOrigin)));
 
-    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
-    scoped_virtual_device.SetSupportedProtocol(
+    virtual_device_factory_->SetSupportedProtocol(
         u2f_authenticator ? device::ProtocolVersion::kU2f
                           : device::ProtocolVersion::kCtap2);
 
@@ -943,8 +959,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     // requested.
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
-    device::test::ScopedVirtualFidoDevice virtual_device;
-    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0]->id, kTestRelyingPartyId));
 
     TestGetAssertionCallback callback_receiver;
@@ -959,10 +974,10 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
   {
     // Second, test that the appid extension is echoed, but is false, when appid
     // is requested but not used.
+    ResetVirtualDevice();
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
-    device::test::ScopedVirtualFidoDevice virtual_device;
-    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0]->id, kTestRelyingPartyId));
 
     // This AppID won't be used because the RP ID will be tried (successfully)
@@ -981,11 +996,11 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
   {
     // Lastly, when used, the appid extension result should be "true".
+    ResetVirtualDevice();
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
-    device::test::ScopedVirtualFidoDevice virtual_device;
     // Inject a registration for the URL (which is a U2F AppID).
-    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0]->id, kTestOrigin1));
 
     options->appid = kTestOrigin1;
@@ -1002,19 +1017,19 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
   {
     // AppID should still work when the authenticator supports credProtect.
+    ResetVirtualDevice();
     device::VirtualCtap2Device::Config config;
     config.u2f_support = true;
     config.pin_support = true;
     config.resident_key_support = true;
     config.cred_protect_support = true;
 
-    device::test::ScopedVirtualFidoDevice virtual_device;
-    virtual_device.SetCtap2Config(config);
+    virtual_device_factory_->SetCtap2Config(config);
 
     // Inject a registration for the URL (which is a U2F AppID).
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
-    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0]->id, kTestOrigin1));
 
     options->appid = kTestOrigin1;
@@ -1031,6 +1046,11 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 }
 
 TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
+  // The VirtualFidoAuthenticator simulates a tap immediately after it gets the
+  // request. Replace by the real discovery that will wait until timeout.
+  AuthenticatorEnvironmentImpl::GetInstance()
+      ->ReplaceDefaultDiscoveryFactoryForTesting(
+          std::make_unique<device::FidoDiscoveryFactory>());
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
@@ -1049,7 +1069,6 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
 }
 
 TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   TestServiceManagerContext service_manager_context;
 
   // 255 is the maximum size of a U2F credential ID. We also test one greater
@@ -1070,7 +1089,7 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
 
     const bool should_be_valid = size < 256;
     if (should_be_valid) {
-      ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
+      ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
           credential->id, kTestRelyingPartyId));
     }
 
@@ -1134,10 +1153,10 @@ TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
   SimulateNavigation(GURL(kTestOrigin1));
 
   for (bool is_cable_device : {false, true}) {
-    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+    ResetVirtualDevice();
     device::VirtualCtap2Device::Config config;
     config.reject_silent_authentication_requests = true;
-    scoped_virtual_device.SetCtap2Config(config);
+    virtual_device_factory_->SetCtap2Config(config);
 
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
@@ -1145,7 +1164,7 @@ TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
     options->cable_authentication_data = GetTestCableExtension();
 
     if (is_cable_device) {
-      scoped_virtual_device.SetTransport(
+      virtual_device_factory_->SetTransport(
           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
       for (auto& cred : options->allow_credentials) {
         cred->transports.clear();
@@ -1153,7 +1172,7 @@ TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
       }
     }
 
-    ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0]->id, kTestRelyingPartyId));
 
     TestGetAssertionCallback callback_receiver;
@@ -1183,10 +1202,9 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionU2fDeviceBackwardsCompatibility) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  device::test::ScopedVirtualFidoDevice virtual_device;
   // Inject credential ID to the virtual device so that successful sign in is
   // possible.
-  ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->allow_credentials[0]->id, kTestRelyingPartyId));
 
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
@@ -1206,7 +1224,6 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  device::test::ScopedVirtualFidoDevice virtual_device;
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
   // Trigger timer.
@@ -1218,7 +1235,6 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
 }
 
 TEST_F(AuthenticatorImplTest, MakeCredentialAlreadyRegistered) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   TestServiceManagerContext service_manager_context;
 
   SimulateNavigation(GURL(kTestOrigin1));
@@ -1228,7 +1244,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialAlreadyRegistered) {
 
   // Exclude the one already registered credential.
   options->exclude_credentials = GetTestCredentials();
-  ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->exclude_credentials[0]->id, kTestRelyingPartyId));
 
   TestMakeCredentialCallback callback_receiver;
@@ -1241,7 +1257,6 @@ TEST_F(AuthenticatorImplTest, MakeCredentialAlreadyRegistered) {
 }
 
 TEST_F(AuthenticatorImplTest, MakeCredentialPendingRequest) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   TestServiceManagerContext service_manager_context;
 
   SimulateNavigation(GURL(kTestOrigin1));
@@ -1270,7 +1285,6 @@ TEST_F(AuthenticatorImplTest, MakeCredentialPendingRequest) {
 }
 
 TEST_F(AuthenticatorImplTest, GetAssertionPendingRequest) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   TestServiceManagerContext service_manager_context;
 
   SimulateNavigation(GURL(kTestOrigin1));
@@ -1298,7 +1312,6 @@ TEST_F(AuthenticatorImplTest, GetAssertionPendingRequest) {
 }
 
 TEST_F(AuthenticatorImplTest, NavigationDuringOperation) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   TestServiceManagerContext service_manager_context;
 
   SimulateNavigation(GURL(kTestOrigin1));
@@ -1315,7 +1328,7 @@ TEST_F(AuthenticatorImplTest, NavigationDuringOperation) {
 
   // Delete the |AuthenticatorImpl| during the registration operation to
   // simulate a navigation while waiting for the user to press the token.
-  scoped_virtual_device.mutable_state()->simulate_press_callback =
+  virtual_device_factory_->mutable_state()->simulate_press_callback =
       base::BindRepeating(
           [](std::unique_ptr<AuthenticatorImpl>* ptr) {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1331,10 +1344,9 @@ TEST_F(AuthenticatorImplTest, NavigationDuringOperation) {
 }
 
 TEST_F(AuthenticatorImplTest, InvalidResponse) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   TestServiceManagerContext service_manager_context;
 
-  scoped_virtual_device.mutable_state()->simulate_invalid_response = true;
+  virtual_device_factory_->mutable_state()->simulate_invalid_response = true;
   SimulateNavigation(GURL(kTestOrigin1));
 
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
@@ -1379,14 +1391,13 @@ TEST_F(AuthenticatorImplTest, Ctap2AssertionWithUnknownCredential) {
                  << "return_immediate_invalid_credential_error="
                  << return_immediate_invalid_credential_error);
 
-    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
     device::VirtualCtap2Device::Config config;
     config.return_immediate_invalid_credential_error =
         return_immediate_invalid_credential_error;
-    scoped_virtual_device.SetCtap2Config(config);
+    virtual_device_factory_->SetCtap2Config(config);
 
     bool pressed = false;
-    scoped_virtual_device.mutable_state()->simulate_press_callback =
+    virtual_device_factory_->mutable_state()->simulate_press_callback =
         base::BindRepeating([](bool* flag) { *flag = true; }, &pressed);
 
     TestGetAssertionCallback callback_receiver;
@@ -1405,13 +1416,12 @@ TEST_F(AuthenticatorImplTest, Ctap2AssertionWithUnknownCredential) {
 TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
   TestServiceManagerContext service_manager_context;
 
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   device::VirtualCtap2Device::Config config;
   config.return_attested_cred_data_in_get_assertion_response = true;
-  scoped_virtual_device.SetCtap2Config(config);
+  virtual_device_factory_->SetCtap2Config(config);
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
-  ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->allow_credentials[0]->id, kTestRelyingPartyId));
 
   SimulateNavigation(GURL(kTestOrigin1));
@@ -1680,7 +1690,6 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
 
  protected:
   TestAuthenticatorContentBrowserClient test_client_;
-  device::test::ScopedVirtualFidoDevice virtual_device_;
 
  private:
   static const char* AttestationConveyancePreferenceToString(
@@ -1860,10 +1869,10 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
   };
 
-  virtual_device_.mutable_state()->attestation_cert_common_name =
+  virtual_device_factory_->mutable_state()->attestation_cert_common_name =
       kStandardCommonName;
-  virtual_device_.mutable_state()->individual_attestation_cert_common_name =
-      kIndividualCommonName;
+  virtual_device_factory_->mutable_state()
+      ->individual_attestation_cert_common_name = kIndividualCommonName;
   NavigateAndCommit(GURL("https://example.com"));
 
   RunTestCases(kTests);
@@ -1917,9 +1926,10 @@ TEST_F(AuthenticatorContentBrowserClientTest,
       },
   };
 
-  virtual_device_.mutable_state()->attestation_cert_common_name = kCommonName;
-  virtual_device_.mutable_state()->individual_attestation_cert_common_name =
+  virtual_device_factory_->mutable_state()->attestation_cert_common_name =
       kCommonName;
+  virtual_device_factory_->mutable_state()
+      ->individual_attestation_cert_common_name = kCommonName;
   NavigateAndCommit(GURL("https://example.com"));
 
   RunTestCases(kTests);
@@ -1930,11 +1940,13 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 // behavior of the Touch ID platform authenticator.
 TEST_F(AuthenticatorContentBrowserClientTest,
        PlatformAuthenticatorAttestation) {
-  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
-  virtual_device_.mutable_state()->transport =
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+  virtual_device_factory_->mutable_state()->transport =
       device::FidoTransportProtocol::kInternal;
-  virtual_device_.mutable_state()->self_attestation = true;
-  virtual_device_.mutable_state()->non_zero_aaguid_with_self_attestation = true;
+  virtual_device_factory_->mutable_state()->self_attestation = true;
+  virtual_device_factory_->mutable_state()
+      ->non_zero_aaguid_with_self_attestation = true;
   NavigateAndCommit(GURL("https://example.com"));
 
   const std::vector<TestCase> kTests = {
@@ -1977,8 +1989,9 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
-  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
-  virtual_device_.mutable_state()->self_attestation = true;
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+  virtual_device_factory_->mutable_state()->self_attestation = true;
   NavigateAndCommit(GURL("https://example.com"));
 
   const std::vector<TestCase> kTests = {
@@ -2019,9 +2032,11 @@ TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
 
 TEST_F(AuthenticatorContentBrowserClientTest,
        Ctap2SelfAttestationNonZeroAaguid) {
-  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
-  virtual_device_.mutable_state()->self_attestation = true;
-  virtual_device_.mutable_state()->non_zero_aaguid_with_self_attestation = true;
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+  virtual_device_factory_->mutable_state()->self_attestation = true;
+  virtual_device_factory_->mutable_state()
+      ->non_zero_aaguid_with_self_attestation = true;
   NavigateAndCommit(GURL("https://example.com"));
 
   const std::vector<TestCase> kTests = {
@@ -2110,7 +2125,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
     credential->id.resize(16);
     credential->transports = {AuthenticatorTransport::USB};
 
-    ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         credential->id, kTestRelyingPartyId));
     options->allow_credentials.emplace_back(std::move(credential));
 
@@ -2239,7 +2254,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   OverrideLastCommittedOrigin(main_rfh(),
                               url::Origin::Create(GURL(kCryptotokenOrigin)));
 
-  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kU2f);
+  virtual_device_factory_->SetSupportedProtocol(device::ProtocolVersion::kU2f);
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
   // Despite the direct attestation conveyance preference, the request delegate
@@ -2378,8 +2393,11 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillRepeatedly(::testing::Return(true));
 
-  device::test::ScopedFakeFidoDiscoveryFactory discovery_factory;
-  auto* fake_ble_discovery = discovery_factory.ForgeNextBleDiscovery();
+  auto discovery_factory =
+      std::make_unique<device::test::FakeFidoDiscoveryFactory>();
+  auto* fake_ble_discovery = discovery_factory->ForgeNextBleDiscovery();
+  AuthenticatorEnvironmentImpl::GetInstance()
+      ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery_factory));
 
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
@@ -2425,6 +2443,11 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
 }
 
 TEST_F(AuthenticatorImplRequestDelegateTest, FailureReasonForTimeout) {
+  // The VirtualFidoAuthenticator simulates a tap immediately after it gets the
+  // request. Replace by the real discovery that will wait until timeout.
+  AuthenticatorEnvironmentImpl::GetInstance()
+      ->ReplaceDefaultDiscoveryFactoryForTesting(
+          std::make_unique<device::FidoDiscoveryFactory>());
   SimulateNavigation(GURL(kTestOrigin1));
 
   FailureReasonCallbackReceiver failure_reason_receiver;
@@ -2454,7 +2477,6 @@ TEST_F(AuthenticatorImplRequestDelegateTest, FailureReasonForTimeout) {
 
 TEST_F(AuthenticatorImplRequestDelegateTest,
        FailureReasonForDuplicateRegistration) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   SimulateNavigation(GURL(kTestOrigin1));
 
   FailureReasonCallbackReceiver failure_reason_receiver;
@@ -2469,7 +2491,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
   options->exclude_credentials = GetTestCredentials();
-  ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->exclude_credentials[0]->id, kTestRelyingPartyId));
 
   TestMakeCredentialCallback callback_receiver;
@@ -2488,7 +2510,6 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
 
 TEST_F(AuthenticatorImplRequestDelegateTest,
        FailureReasonForMissingRegistration) {
-  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   SimulateNavigation(GURL(kTestOrigin1));
 
   FailureReasonCallbackReceiver failure_reason_receiver;
@@ -2521,8 +2542,7 @@ TEST_F(AuthenticatorImplTest, Transports) {
        {device::ProtocolVersion::kU2f, device::ProtocolVersion::kCtap2}) {
     SCOPED_TRACE(static_cast<int>(protocol));
 
-    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
-    scoped_virtual_device.SetSupportedProtocol(protocol);
+    virtual_device_factory_->SetSupportedProtocol(protocol);
 
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialCreationOptionsPtr options =
@@ -2550,8 +2570,8 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
   for (const bool include_extension : {false, true}) {
     SCOPED_TRACE(include_extension);
 
-    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
-    scoped_virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
+    virtual_device_factory_->SetSupportedProtocol(
+        device::ProtocolVersion::kCtap2);
 
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialCreationOptionsPtr options =
@@ -2607,16 +2627,16 @@ TEST_F(AuthenticatorImplTest, MakeCredentialWithLargeExcludeList) {
     SCOPED_TRACE(::testing::Message()
                  << "has_excluded_credential=" << has_excluded_credential);
 
-    device::test::ScopedVirtualFidoDevice virtual_device;
+    ResetVirtualDevice();
     device::VirtualCtap2Device::Config config;
     config.reject_large_allow_and_exclude_lists = true;
-    virtual_device.SetCtap2Config(config);
+    virtual_device_factory_->SetCtap2Config(config);
 
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
     options->exclude_credentials = GetTestCredentials(/*num_credentials=*/10);
     if (has_excluded_credential) {
-      ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+      ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
           options->exclude_credentials.back()->id, kTestRelyingPartyId));
     }
     TestMakeCredentialCallback callback_receiver;
@@ -2640,10 +2660,10 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
     SCOPED_TRACE(::testing::Message()
                  << "has_allowed_credential=" << has_allowed_credential);
 
-    device::test::ScopedVirtualFidoDevice virtual_device;
+    ResetVirtualDevice();
     device::VirtualCtap2Device::Config config;
     config.reject_large_allow_and_exclude_lists = true;
-    virtual_device.SetCtap2Config(config);
+    virtual_device_factory_->SetCtap2Config(config);
 
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
 
@@ -2651,7 +2671,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
         GetTestPublicKeyCredentialRequestOptions();
     options->allow_credentials = GetTestCredentials(/*num_credentials=*/10);
     if (has_allowed_credential) {
-      ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+      ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
           options->allow_credentials.back()->id, kTestRelyingPartyId));
     }
 
@@ -2724,8 +2744,6 @@ class UVAuthenticatorImplTest : public AuthenticatorImplTest {
             callback.value()->authenticator_data);
     return auth_data->obtained_user_verification();
   }
-
-  device::test::ScopedVirtualFidoDevice virtual_device_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UVAuthenticatorImplTest);
@@ -2806,7 +2824,7 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
     old_client_ = SetBrowserClientForTesting(&test_client_);
     device::VirtualCtap2Device::Config config;
     config.pin_support = true;
-    virtual_device_.SetCtap2Config(config);
+    virtual_device_factory_->SetCtap2Config(config);
     NavigateAndCommit(GURL(kTestOrigin1));
   }
 
@@ -2832,29 +2850,29 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
       case 0:
         // No support.
         config.pin_support = false;
-        virtual_device_.mutable_state()->pin = "";
-        virtual_device_.mutable_state()->retries = 0;
+        virtual_device_factory_->mutable_state()->pin = "";
+        virtual_device_factory_->mutable_state()->retries = 0;
         break;
 
       case 1:
         // PIN supported, but no PIN set.
         config.pin_support = true;
-        virtual_device_.mutable_state()->pin = "";
-        virtual_device_.mutable_state()->retries = 0;
+        virtual_device_factory_->mutable_state()->pin = "";
+        virtual_device_factory_->mutable_state()->retries = 0;
         break;
 
       case 2:
         // PIN set.
         config.pin_support = true;
-        virtual_device_.mutable_state()->pin = kTestPIN;
-        virtual_device_.mutable_state()->retries = 8;
+        virtual_device_factory_->mutable_state()->pin = kTestPIN;
+        virtual_device_factory_->mutable_state()->retries = 8;
         break;
 
       default:
         NOTREACHED();
     }
 
-    virtual_device_.SetCtap2Config(config);
+    virtual_device_factory_->SetCtap2Config(config);
   }
 
  private:
@@ -2958,14 +2976,14 @@ TEST_F(PINAuthenticatorImplTest, MakeCredential) {
 
           case kNoPIN:
             EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-            EXPECT_EQ("", virtual_device_.mutable_state()->pin);
+            EXPECT_EQ("", virtual_device_factory_->mutable_state()->pin);
             EXPECT_FALSE(HasUV(callback_receiver));
             break;
 
           case kSetPIN:
           case kUsePIN:
             EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-            EXPECT_EQ(kTestPIN, virtual_device_.mutable_state()->pin);
+            EXPECT_EQ(kTestPIN, virtual_device_factory_->mutable_state()->pin);
             EXPECT_TRUE(HasUV(callback_receiver));
             break;
 
@@ -2979,8 +2997,8 @@ TEST_F(PINAuthenticatorImplTest, MakeCredential) {
 
 TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
   TestServiceManagerContext smc;
-  virtual_device_.mutable_state()->pin = kTestPIN;
-  virtual_device_.mutable_state()->retries = 8;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->retries = 8;
 
   test_client_.expected = {{8, "wrong"}, {7, "wrong"}, {6, "wrong"}};
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -2989,8 +3007,8 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
                                 callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_EQ(5, virtual_device_.mutable_state()->retries);
-  EXPECT_TRUE(virtual_device_.mutable_state()->soft_locked);
+  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->retries);
+  EXPECT_TRUE(virtual_device_factory_->mutable_state()->soft_locked);
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kSoftPINBlock,
             *test_client_.failure_reason);
@@ -2998,8 +3016,8 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
 
 TEST_F(PINAuthenticatorImplTest, MakeCredentialHardLock) {
   TestServiceManagerContext smc;
-  virtual_device_.mutable_state()->pin = kTestPIN;
-  virtual_device_.mutable_state()->retries = 1;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->retries = 1;
 
   test_client_.expected = {{1, "wrong"}};
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -3008,7 +3026,7 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialHardLock) {
                                 callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_EQ(0, virtual_device_.mutable_state()->retries);
+  EXPECT_EQ(0, virtual_device_factory_->mutable_state()->retries);
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
             *test_client_.failure_reason);
@@ -3041,7 +3059,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertion) {
   // clang-format on
 
   PublicKeyCredentialRequestOptionsPtr dummy_options = get_credential_options();
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       dummy_options->allow_credentials[0]->id, kTestRelyingPartyId));
 
   for (bool ui_support : {false, true}) {
@@ -3092,7 +3110,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertion) {
 
           case kUsePIN:
             EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-            EXPECT_EQ(kTestPIN, virtual_device_.mutable_state()->pin);
+            EXPECT_EQ(kTestPIN, virtual_device_factory_->mutable_state()->pin);
             EXPECT_TRUE(HasUV(callback_receiver));
             break;
 
@@ -3106,11 +3124,11 @@ TEST_F(PINAuthenticatorImplTest, GetAssertion) {
 
 TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
   TestServiceManagerContext smc;
-  virtual_device_.mutable_state()->pin = kTestPIN;
-  virtual_device_.mutable_state()->retries = 8;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->retries = 8;
 
   PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->allow_credentials[0]->id, kTestRelyingPartyId));
 
   test_client_.expected = {{8, "wrong"}, {7, "wrong"}, {6, "wrong"}};
@@ -3119,8 +3137,8 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_EQ(5, virtual_device_.mutable_state()->retries);
-  EXPECT_TRUE(virtual_device_.mutable_state()->soft_locked);
+  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->retries);
+  EXPECT_TRUE(virtual_device_factory_->mutable_state()->soft_locked);
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kSoftPINBlock,
             *test_client_.failure_reason);
@@ -3128,11 +3146,11 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
 
 TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
   TestServiceManagerContext smc;
-  virtual_device_.mutable_state()->pin = kTestPIN;
-  virtual_device_.mutable_state()->retries = 1;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->retries = 1;
 
   PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->allow_credentials[0]->id, kTestRelyingPartyId));
 
   test_client_.expected = {{1, "wrong"}};
@@ -3141,7 +3159,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_EQ(0, virtual_device_.mutable_state()->retries);
+  EXPECT_EQ(0, virtual_device_factory_->mutable_state()->retries);
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
             *test_client_.failure_reason);
@@ -3156,7 +3174,7 @@ class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {
     device::VirtualCtap2Device::Config config;
     config.internal_uv_support = true;
     config.u2f_support = true;
-    virtual_device_.SetCtap2Config(config);
+    virtual_device_factory_->SetCtap2Config(config);
     NavigateAndCommit(GURL(kTestOrigin1));
   }
 
@@ -3171,7 +3189,7 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredential) {
   for (const auto fingerprints_enrolled : {false, true}) {
     SCOPED_TRACE(::testing::Message()
                  << "fingerprints_enrolled=" << fingerprints_enrolled);
-    virtual_device_.mutable_state()->fingerprints_enrolled =
+    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
         fingerprints_enrolled;
 
     for (const auto uv :
@@ -3217,7 +3235,7 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialCryptotoken) {
   for (const auto fingerprints_enrolled : {false, true}) {
     SCOPED_TRACE(::testing::Message()
                  << "fingerprints_enrolled=" << fingerprints_enrolled);
-    virtual_device_.mutable_state()->fingerprints_enrolled =
+    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
         fingerprints_enrolled;
     TestMakeCredentialCallback callback_receiver;
     authenticator->MakeCredential(
@@ -3229,7 +3247,7 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialCryptotoken) {
     EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
     // The credential should have been created over U2F.
     for (const auto& registration :
-         virtual_device_.mutable_state()->registrations) {
+         virtual_device_factory_->mutable_state()->registrations) {
       EXPECT_TRUE(registration.second.is_u2f);
     }
   }
@@ -3238,13 +3256,13 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialCryptotoken) {
 TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
   TestServiceManagerContext smc;
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       get_credential_options()->allow_credentials[0]->id, kTestRelyingPartyId));
 
   for (const auto fingerprints_enrolled : {false, true}) {
     SCOPED_TRACE(::testing::Message()
                  << "fingerprints_enrolled=" << fingerprints_enrolled);
-    virtual_device_.mutable_state()->fingerprints_enrolled =
+    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
         fingerprints_enrolled;
 
     for (auto uv : {blink::mojom::UserVerificationRequirement::DISCOURAGED,
@@ -3287,13 +3305,13 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertionCryptotoken) {
   url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   OverrideLastCommittedOrigin(main_rfh(),
                               url::Origin::Create(GURL(kCryptotokenOrigin)));
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       get_credential_options()->allow_credentials[0]->id, kTestRelyingPartyId));
 
   for (const auto fingerprints_enrolled : {false, true}) {
     SCOPED_TRACE(::testing::Message()
                  << "fingerprints_enrolled=" << fingerprints_enrolled);
-    virtual_device_.mutable_state()->fingerprints_enrolled =
+    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
         fingerprints_enrolled;
     TestGetAssertionCallback callback_receiver;
     authenticator->GetAssertion(
@@ -3421,9 +3439,9 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
     device::VirtualCtap2Device::Config config;
     config.pin_support = true;
     config.resident_key_support = true;
-    virtual_device_.SetCtap2Config(config);
-    virtual_device_.mutable_state()->pin = kTestPIN;
-    virtual_device_.mutable_state()->retries = 8;
+    virtual_device_factory_->SetCtap2Config(config);
+    virtual_device_factory_->mutable_state()->pin = kTestPIN;
+    virtual_device_factory_->mutable_state()->retries = 8;
     NavigateAndCommit(GURL(kTestOrigin1));
   }
 
@@ -3469,8 +3487,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredential) {
       device::VirtualCtap2Device::Config config;
       config.resident_key_support = true;
       config.internal_uv_support = true;
-      virtual_device_.SetCtap2Config(config);
-      virtual_device_.mutable_state()->fingerprints_enrolled = true;
+      virtual_device_factory_->SetCtap2Config(config);
+      virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
     }
 
     TestMakeCredentialCallback callback_receiver;
@@ -3481,9 +3499,10 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredential) {
 
     EXPECT_TRUE(test_client_.might_create_resident_credential);
     EXPECT_TRUE(HasUV(callback_receiver));
-    ASSERT_EQ(1u, virtual_device_.mutable_state()->registrations.size());
+    ASSERT_EQ(1u,
+              virtual_device_factory_->mutable_state()->registrations.size());
     const device::VirtualFidoDevice::RegistrationData& registration =
-        virtual_device_.mutable_state()->registrations.begin()->second;
+        virtual_device_factory_->mutable_state()->registrations.begin()->second;
     EXPECT_TRUE(registration.is_resident);
     ASSERT_TRUE(registration.user.has_value());
     const auto options = make_credential_options();
@@ -3502,11 +3521,11 @@ TEST_F(ResidentKeyAuthenticatorImplTest, StorageFull) {
   config.resident_key_support = true;
   config.internal_uv_support = true;
   config.resident_credential_storage = 1;
-  virtual_device_.SetCtap2Config(config);
-  virtual_device_.mutable_state()->fingerprints_enrolled = true;
+  virtual_device_factory_->SetCtap2Config(config);
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
 
   // Add a resident key to fill the authenticator.
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
       /*user_id=*/{{1, 1, 1, 1}}, "test@example.com", "Test User"));
 
@@ -3522,7 +3541,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, StorageFull) {
 }
 
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
       /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
 
@@ -3539,10 +3558,10 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
 }
 
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionMulti) {
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
       /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 2}}, kTestRelyingPartyId,
       /*user_id=*/{{5, 6, 7, 8}}, "test2@example.com", "Test User 2"));
 
@@ -3565,10 +3584,10 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionUVDiscouraged) {
   config.resident_key_support = true;
   config.internal_uv_support = true;
   config.u2f_support = true;
-  virtual_device_.SetCtap2Config(config);
-  virtual_device_.mutable_state()->fingerprints_enrolled = true;
+  virtual_device_factory_->SetCtap2Config(config);
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
 
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
       /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
 
@@ -3674,8 +3693,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
     config.pin_support = true;
     config.resident_key_support = true;
     config.cred_protect_support = test.supported_by_authenticator;
-    virtual_device_.SetCtap2Config(config);
-    virtual_device_.mutable_state()->registrations.clear();
+    virtual_device_factory_->SetCtap2Config(config);
+    virtual_device_factory_->mutable_state()->registrations.clear();
 
     SCOPED_TRACE(::testing::Message() << "uv=" << test.uv);
     SCOPED_TRACE(::testing::Message() << "enforce=" << test.enforce);
@@ -3701,9 +3720,10 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
     switch (test.expected_outcome) {
       case kOk: {
         EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-        ASSERT_EQ(1u, virtual_device_.mutable_state()->registrations.size());
+        ASSERT_EQ(
+            1u, virtual_device_factory_->mutable_state()->registrations.size());
         const base::Optional<device::CredProtect> result =
-            virtual_device_.mutable_state()
+            virtual_device_factory_->mutable_state()
                 ->registrations.begin()
                 ->second.protection;
 
@@ -3747,12 +3767,13 @@ TEST_F(ResidentKeyAuthenticatorImplTest, ProtectedNonResidentCreds) {
   config.pin_support = true;
   config.resident_key_support = true;
   config.cred_protect_support = true;
-  virtual_device_.SetCtap2Config(config);
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+  virtual_device_factory_->SetCtap2Config(config);
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId));
-  ASSERT_EQ(1u, virtual_device_.mutable_state()->registrations.size());
-  virtual_device_.mutable_state()->registrations.begin()->second.protection =
-      device::CredProtect::kUVRequired;
+  ASSERT_EQ(1u, virtual_device_factory_->mutable_state()->registrations.size());
+  virtual_device_factory_->mutable_state()
+      ->registrations.begin()
+      ->second.protection = device::CredProtect::kUVRequired;
 
   TestServiceManagerContext smc;
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -3777,8 +3798,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WithAppIDExtension) {
   config.pin_support = true;
   config.resident_key_support = true;
   config.cred_protect_support = true;
-  virtual_device_.SetCtap2Config(config);
-  ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
+  virtual_device_factory_->SetCtap2Config(config);
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
       /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
 
@@ -3838,8 +3859,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
 }
 #endif  // defined(OS_WIN)
 
-class InternalAuthenticatorImplTest
-    : public content::RenderViewHostTestHarness {
+class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
  public:
   InternalAuthenticatorImplTest() = default;
 
@@ -3944,7 +3964,7 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
         GetTestPublicKeyCredentialCreationOptions();
     options->relying_party->id = test_case.claimed_authority;
 
-    device::test::ScopedVirtualFidoDevice virtual_device;
+    ResetVirtualDevice();
     TestMakeCredentialCallback callback_receiver;
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
@@ -3997,8 +4017,8 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = test_case.claimed_authority;
 
-    device::test::ScopedVirtualFidoDevice virtual_device;
-    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+    ResetVirtualDevice();
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0]->id, test_case.claimed_authority));
     TestGetAssertionCallback callback_receiver;
     authenticator->GetAssertion(std::move(options),

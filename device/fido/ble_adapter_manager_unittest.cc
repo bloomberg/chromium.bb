@@ -15,6 +15,7 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,8 +63,9 @@ class MockObserver : public FidoRequestHandlerBase::Observer {
 
 class FakeFidoRequestHandlerBase : public FidoRequestHandlerBase {
  public:
-  explicit FakeFidoRequestHandlerBase(MockObserver* observer)
-      : FidoRequestHandlerBase(nullptr, {}) {
+  FakeFidoRequestHandlerBase(MockObserver* observer,
+                             FidoDiscoveryFactory* fido_discovery_factory)
+      : FidoRequestHandlerBase(nullptr, fido_discovery_factory, {}) {
     set_observer(observer);
   }
 
@@ -133,8 +135,12 @@ class FidoBleAdapterManagerTest : public ::testing::Test {
       base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
   std::unique_ptr<MockObserver> mock_observer_ =
       std::make_unique<MockObserver>();
+  std::unique_ptr<FidoDiscoveryFactory> fido_discovery_factory_ =
+      std::make_unique<FidoDiscoveryFactory>();
   std::unique_ptr<FakeFidoRequestHandlerBase> fake_request_handler_ =
-      std::make_unique<FakeFidoRequestHandlerBase>(mock_observer_.get());
+      std::make_unique<FakeFidoRequestHandlerBase>(
+          mock_observer_.get(),
+          fido_discovery_factory_.get());
 };
 
 TEST_F(FidoBleAdapterManagerTest, AdapaterNotPresent) {

@@ -105,8 +105,8 @@
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
+#include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
-#include "content/browser/webauth/scoped_virtual_authenticator_environment.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -5977,9 +5977,9 @@ void RenderFrameHostImpl::GetAuthenticator(
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableWebAuthTestingAPI)) {
-      ScopedVirtualAuthenticatorEnvironment::GetInstance();
+      AuthenticatorEnvironmentImpl::GetInstance()
+          ->EnableVirtualAuthenticatorFor(this);
     }
-
     BindAuthenticatorRequest(std::move(request));
   }
 #else
@@ -5999,9 +5999,10 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableWebAuthTestingAPI)) {
-      auto* environment_singleton =
-          ScopedVirtualAuthenticatorEnvironment::GetInstance();
-      environment_singleton->AddBinding(std::move(request));
+      auto* environment_singleton = AuthenticatorEnvironmentImpl::GetInstance();
+      environment_singleton->EnableVirtualAuthenticatorFor(this);
+      environment_singleton->AddVirtualAuthenticatorBinding(this,
+                                                            std::move(request));
     }
   }
 #endif  // !defined(OS_ANDROID)

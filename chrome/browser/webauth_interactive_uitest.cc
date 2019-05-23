@@ -13,9 +13,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/public/browser/authenticator_environment.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_service_manager_context.h"
-#include "device/fido/scoped_virtual_fido_device.h"
+#include "device/fido/virtual_fido_device_factory.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,7 +83,12 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, Focus) {
   ui_test_utils::NavigateToURL(browser(),
                                GetHttpsURL("www.example.com", "/title1.html"));
 
-  device::test::ScopedVirtualFidoDevice virtual_device;
+  auto owned_virtual_device_factory =
+      std::make_unique<device::test::VirtualFidoDeviceFactory>();
+  auto* virtual_device_factory = owned_virtual_device_factory.get();
+  content::AuthenticatorEnvironment::GetInstance()
+      ->ReplaceDefaultDiscoveryFactoryForTesting(
+          std::move(owned_virtual_device_factory));
 
   constexpr char kRegisterTemplate[] =
       "navigator.credentials.create({publicKey: {"
@@ -126,15 +132,16 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, Focus) {
   // pages to be able to start a request, open a trusted site in a new
   // tab/window, and have the user believe that they are interacting with that
   // trusted site.
-  virtual_device.mutable_state()->simulate_press_callback = base::BindRepeating(
-      [](Browser* browser) { chrome::NewTab(browser); }, browser());
+  virtual_device_factory->mutable_state()->simulate_press_callback =
+      base::BindRepeating([](Browser* browser) { chrome::NewTab(browser); },
+                          browser());
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(initial_web_contents,
                                                      register_script, &result));
   EXPECT_THAT(result, ::testing::HasSubstr(kFocusErrorSubstring));
 
   // Close the tab and the action should succeed again.
   chrome::CloseTab(browser());
-  virtual_device.mutable_state()->simulate_press_callback.Reset();
+  virtual_device_factory->mutable_state()->simulate_press_callback.Reset();
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(initial_web_contents,
                                                      register_script, &result));
   EXPECT_EQ(result, "OK");
@@ -168,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, Focus) {
   EXPECT_EQ(result, "OK");
 
   // Requesting "direct" attestation will trigger a permissions prompt.
-  virtual_device.mutable_state()->simulate_press_callback =
+  virtual_device_factory->mutable_state()->simulate_press_callback =
       base::BindLambdaForTesting([&]() {
         dialog_model_ =
             AuthenticatorRequestScheduler::GetRequestDelegateForTest(

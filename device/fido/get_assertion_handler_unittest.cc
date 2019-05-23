@@ -25,9 +25,9 @@
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/make_credential_task.h"
 #include "device/fido/mock_fido_device.h"
-#include "device/fido/scoped_virtual_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_command_constructor.h"
+#include "device/fido/virtual_fido_device_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,7 +52,7 @@ using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
 using testing::_;
 
 // FidoGetAssertionHandlerTest allows testing GetAssertionRequestHandler against
-// MockFidoDevices injected via a ScopedFakeFidoDiscoveryFactory.
+// MockFidoDevices injected via a FakeFidoDiscoveryFactory.
 class FidoGetAssertionHandlerTest : public ::testing::Test {
  public:
   FidoGetAssertionHandlerTest() {
@@ -62,10 +62,10 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   }
 
   void ForgeDiscoveries() {
-    discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
-    ble_discovery_ = scoped_fake_discovery_factory_.ForgeNextBleDiscovery();
-    cable_discovery_ = scoped_fake_discovery_factory_.ForgeNextCableDiscovery();
-    nfc_discovery_ = scoped_fake_discovery_factory_.ForgeNextNfcDiscovery();
+    discovery_ = fake_discovery_factory_->ForgeNextHidDiscovery();
+    ble_discovery_ = fake_discovery_factory_->ForgeNextBleDiscovery();
+    cable_discovery_ = fake_discovery_factory_->ForgeNextCableDiscovery();
+    nfc_discovery_ = fake_discovery_factory_->ForgeNextNfcDiscovery();
   }
 
   CtapGetAssertionRequest CreateTestRequestWithCableExtension() {
@@ -99,7 +99,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     ForgeDiscoveries();
 
     auto handler = std::make_unique<GetAssertionRequestHandler>(
-        nullptr /* connector */, supported_transports_, std::move(request),
+        nullptr /* connector */, fake_discovery_factory_.get(),
+        supported_transports_, std::move(request),
         get_assertion_cb_.callback());
     handler->SetPlatformAuthenticatorOrMarkUnavailable(
         CreatePlatformAuthenticator());
@@ -178,7 +179,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
-  test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
+  std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
+      std::make_unique<test::FakeFidoDiscoveryFactory>();
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
   test::FakeFidoDiscovery* cable_discovery_;
@@ -769,9 +771,9 @@ TEST_F(FidoGetAssertionHandlerTest, DeviceFailsImmediately) {
 TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
   base::test::ScopedTaskEnvironment scoped_task_environment{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
-  device::test::ScopedVirtualFidoDevice virtual_device;
-  virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
-  ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+  device::test::VirtualFidoDeviceFactory virtual_device_factory;
+  virtual_device_factory.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
+  ASSERT_TRUE(virtual_device_factory.mutable_state()->InjectRegistration(
       fido_parsing_utils::Materialize(test_data::kTestGetAssertionCredentialId),
       test_data::kRelyingPartyId));
 
@@ -788,7 +790,7 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
 
   TestGetAssertionRequestCallback cb;
   auto request_handler = std::make_unique<GetAssertionRequestHandler>(
-      nullptr /* connector */,
+      nullptr /* connector */, &virtual_device_factory,
       base::flat_set<FidoTransportProtocol>(
           {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
       std::move(request), cb.callback());
@@ -852,8 +854,9 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     fake_hid_manager.AddFidoHidDevice("guid");
 
     TestGetAssertionRequestCallback cb;
+    FidoDiscoveryFactory fido_discovery_factory;
     auto handler = std::make_unique<GetAssertionRequestHandler>(
-        fake_hid_manager.service_manager_connector(),
+        fake_hid_manager.service_manager_connector(), &fido_discovery_factory,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         CtapGetAssertionRequest(test_data::kRelyingPartyId,

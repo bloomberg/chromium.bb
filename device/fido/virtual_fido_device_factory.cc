@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/scoped_virtual_fido_device.h"
+#include "device/fido/virtual_fido_device_factory.h"
 
 #include <utility>
 
@@ -57,31 +57,31 @@ class VirtualFidoDeviceDiscovery
   DISALLOW_COPY_AND_ASSIGN(VirtualFidoDeviceDiscovery);
 };
 
-ScopedVirtualFidoDevice::ScopedVirtualFidoDevice()
+VirtualFidoDeviceFactory::VirtualFidoDeviceFactory()
     : state_(new VirtualFidoDevice::State) {}
-ScopedVirtualFidoDevice::~ScopedVirtualFidoDevice() = default;
+VirtualFidoDeviceFactory::~VirtualFidoDeviceFactory() = default;
 
-void ScopedVirtualFidoDevice::SetSupportedProtocol(
+void VirtualFidoDeviceFactory::SetSupportedProtocol(
     ProtocolVersion supported_protocol) {
   supported_protocol_ = supported_protocol;
 }
 
-void ScopedVirtualFidoDevice::SetTransport(FidoTransportProtocol transport) {
+void VirtualFidoDeviceFactory::SetTransport(FidoTransportProtocol transport) {
   transport_ = transport;
   state_->transport = transport;
 }
 
-void ScopedVirtualFidoDevice::SetCtap2Config(
+void VirtualFidoDeviceFactory::SetCtap2Config(
     const VirtualCtap2Device::Config& config) {
   supported_protocol_ = ProtocolVersion::kCtap2;
   ctap2_config_ = config;
 }
 
-VirtualFidoDevice::State* ScopedVirtualFidoDevice::mutable_state() {
+VirtualFidoDevice::State* VirtualFidoDeviceFactory::mutable_state() {
   return state_.get();
 }
 
-std::unique_ptr<FidoDiscoveryBase> ScopedVirtualFidoDevice::CreateFidoDiscovery(
+std::unique_ptr<FidoDiscoveryBase> VirtualFidoDeviceFactory::Create(
     FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
   if (transport != transport_) {
@@ -89,6 +89,12 @@ std::unique_ptr<FidoDiscoveryBase> ScopedVirtualFidoDevice::CreateFidoDiscovery(
   }
   return std::make_unique<VirtualFidoDeviceDiscovery>(
       transport_, state_, supported_protocol_, ctap2_config_);
+}
+
+std::unique_ptr<FidoDiscoveryBase> VirtualFidoDeviceFactory::CreateCable(
+    std::vector<CableDiscoveryData> cable_data) {
+  return Create(FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+                nullptr);
 }
 
 }  // namespace test

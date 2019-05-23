@@ -31,6 +31,7 @@ namespace device {
 
 class BleAdapterManager;
 class FidoAuthenticator;
+class FidoDiscoveryFactory;
 
 struct COMPONENT_EXPORT(DEVICE_FIDO) PlatformAuthenticatorInfo {
   PlatformAuthenticatorInfo(std::unique_ptr<FidoAuthenticator> authenticator,
@@ -166,6 +167,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // relying party.
   FidoRequestHandlerBase(
       service_manager::Connector* connector,
+      FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& available_transports);
   ~FidoRequestHandlerBase() override;
 
@@ -249,6 +251,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void AuthenticatorPairingModeChanged(FidoDiscoveryBase* discovery,
                                        const std::string& device_id,
                                        bool is_in_pairing_mode) override;
+
+  FidoDiscoveryFactory* fido_discovery_factory_;
 
  private:
   friend class FidoRequestHandlerTest;

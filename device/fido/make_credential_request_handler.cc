@@ -143,12 +143,14 @@ void ReportMakeCredentialRequestTransport(FidoAuthenticator* authenticator) {
 
 MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     service_manager::Connector* connector,
+    FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
     CompletionCallback completion_callback)
     : FidoRequestHandler(
           connector,
+          fido_discovery_factory,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
               GetTransportsAllowedByRP(authenticator_selection_criteria)),

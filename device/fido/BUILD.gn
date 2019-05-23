@@ -304,9 +304,9 @@ source_set("test_support") {
   sources = [
     "fake_fido_discovery.cc",
     "fake_fido_discovery.h",
-    "scoped_virtual_fido_device.cc",
-    "scoped_virtual_fido_device.h",
     "test_callback_receiver.h",
+    "virtual_fido_device_factory.cc",
+    "virtual_fido_device_factory.h",
   ]
   deps = [
     "//base",

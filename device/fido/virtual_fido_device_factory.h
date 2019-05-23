@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_SCOPED_VIRTUAL_FIDO_DEVICE_H_
-#define DEVICE_FIDO_SCOPED_VIRTUAL_FIDO_DEVICE_H_
+#ifndef DEVICE_FIDO_VIRTUAL_FIDO_DEVICE_FACTORY_H_
+#define DEVICE_FIDO_VIRTUAL_FIDO_DEVICE_FACTORY_H_
 
 #include <memory>
 
@@ -17,17 +17,14 @@
 namespace device {
 namespace test {
 
-// Creating a |ScopedVirtualFidoDevice| causes normal device discovery to be
-// hijacked while the object is in scope. Instead a |VirtualFidoDevice| will
-// always be discovered. This object pretends to be a HID device.
-class ScopedVirtualFidoDevice
-    : public ::device::internal::ScopedFidoDiscoveryFactory {
+// A |FidoDiscoveryFactory| that always returns |VirtualFidoDevice|s.
+class VirtualFidoDeviceFactory : public device::FidoDiscoveryFactory {
  public:
-  ScopedVirtualFidoDevice();
-  ~ScopedVirtualFidoDevice() override;
+  VirtualFidoDeviceFactory();
+  ~VirtualFidoDeviceFactory() override;
 
   // Sets the FidoTransportProtocol of the FidoDiscovery to be instantiated by
-  // this ScopedVirtualFidoDevice. The default is
+  // this VirtualFidoDeviceFactory. The default is
   // FidoTransportProtocol::kUsbHumanInterfaceDevice.
   //
   // The FidoTransportProtocol of the device instantiated by the FidoDiscovery
@@ -41,9 +38,13 @@ class ScopedVirtualFidoDevice
   VirtualFidoDevice::State* mutable_state();
 
  protected:
-  std::unique_ptr<FidoDiscoveryBase> CreateFidoDiscovery(
+  // device::FidoDiscoveryFactory:
+  std::unique_ptr<FidoDiscoveryBase> Create(
       FidoTransportProtocol transport,
       ::service_manager::Connector* connector) override;
+  // Instantiates a FidoDiscovery for caBLE.
+  std::unique_ptr<FidoDiscoveryBase> CreateCable(
+      std::vector<CableDiscoveryData> cable_data) override;
 
  private:
   ProtocolVersion supported_protocol_ = ProtocolVersion::kU2f;
@@ -51,10 +52,10 @@ class ScopedVirtualFidoDevice
       FidoTransportProtocol::kUsbHumanInterfaceDevice;
   VirtualCtap2Device::Config ctap2_config_;
   scoped_refptr<VirtualFidoDevice::State> state_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedVirtualFidoDevice);
+  DISALLOW_COPY_AND_ASSIGN(VirtualFidoDeviceFactory);
 };
 
 }  // namespace test
 }  // namespace device
 
-#endif  // DEVICE_FIDO_SCOPED_VIRTUAL_FIDO_DEVICE_H_
+#endif  // DEVICE_FIDO_VIRTUAL_FIDO_DEVICE_FACTORY_H_

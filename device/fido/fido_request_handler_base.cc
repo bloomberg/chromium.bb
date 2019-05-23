@@ -61,8 +61,11 @@ FidoRequestHandlerBase::Observer::~Observer() = default;
 
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
+    FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& available_transports)
-    : connector_(connector), weak_factory_(this) {
+    : fido_discovery_factory_(fido_discovery_factory),
+      connector_(connector),
+      weak_factory_(this) {
 #if defined(OS_WIN)
   InitDiscoveriesWin(available_transports);
 #else
@@ -103,7 +106,7 @@ void FidoRequestHandlerBase::InitDiscoveries(
       continue;
     }
 
-    auto discovery = FidoDiscoveryFactory::Create(transport, connector_);
+    auto discovery = fido_discovery_factory_->Create(transport, connector_);
     if (discovery == nullptr) {
       // This can occur in tests when a ScopedVirtualU2fDevice is in effect and
       // HID transports are not configured.
@@ -140,7 +143,8 @@ void FidoRequestHandlerBase::InitDiscoveriesWin(
   // Try to instantiate the discovery for proxying requests to the native
   // Windows WebAuthn API; or fall back to using the regular device transport
   // discoveries if the API is unavailable.
-  auto discovery = FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery();
+  auto discovery =
+      fido_discovery_factory_->MaybeCreateWinWebAuthnApiDiscovery();
   if (!discovery) {
     InitDiscoveries(available_transports);
     return;

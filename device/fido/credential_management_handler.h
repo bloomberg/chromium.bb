@@ -26,6 +26,7 @@ class Connector;
 namespace device {
 
 class FidoAuthenticator;
+class FidoDiscoveryFactory;
 
 // CredentialManagementHandler implements the authenticatorCredentialManagement
 // protocol.
@@ -49,6 +50,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
 
   CredentialManagementHandler(
       service_manager::Connector* connector,
+      FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       ReadyCallback ready_callback,
       GetPINCallback get_pin_callback,

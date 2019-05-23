@@ -27,6 +27,7 @@ class Connector;
 namespace device {
 
 class FidoAuthenticator;
+class FidoDiscoveryFactory;
 class AuthenticatorMakeCredentialResponse;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
@@ -34,6 +35,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
  public:
   MakeCredentialRequestHandler(
       service_manager::Connector* connector,
+      FidoDiscoveryFactory* fido_discovery_factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapMakeCredentialRequest request_parameter,
       AuthenticatorSelectionCriteria authenticator_criteria,

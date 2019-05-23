@@ -19,6 +19,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_type_converters.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -762,7 +763,10 @@ void AuthenticatorCommon::MakeCredential(
   }
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      connector_, transports, std::move(ctap_request),
+      connector_,
+      AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
+          render_frame_host_),
+      transports, std::move(ctap_request),
       std::move(authenticator_selection_criteria),
       base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
@@ -906,7 +910,10 @@ void AuthenticatorCommon::GetAssertion(
       CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
           ctap_request);
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      connector_, transports, std::move(ctap_request),
+      connector_,
+      AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
+          render_frame_host_),
+      transports, std::move(ctap_request),
       base::BindOnce(&AuthenticatorCommon::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
 

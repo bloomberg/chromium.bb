@@ -11,14 +11,12 @@
 #include "device/fido/credential_management.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
-#include "device/fido/scoped_virtual_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
+#include "device/fido/virtual_fido_device_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 namespace {
-
-using test::ScopedVirtualFidoDevice;
 
 constexpr char kPIN[] = "1234";
 constexpr uint8_t kCredentialID[] = {0xa, 0xa, 0xa, 0xa, 0xa, 0xa, 0xa, 0xa,
@@ -33,7 +31,7 @@ class CredentialManagementHandlerTest : public ::testing::Test {
  protected:
   std::unique_ptr<CredentialManagementHandler> MakeHandler() {
     auto handler = std::make_unique<CredentialManagementHandler>(
-        /*connector=*/nullptr,
+        /*connector=*/nullptr, &virtual_device_factory_,
         base::flat_set<FidoTransportProtocol>{
             FidoTransportProtocol::kUsbHumanInterfaceDevice},
         ready_callback_.callback(),
@@ -58,20 +56,20 @@ class CredentialManagementHandlerTest : public ::testing::Test {
       get_credentials_callback_;
   test::ValueCallbackReceiver<CtapDeviceResponseCode> delete_callback_;
   test::ValueCallbackReceiver<FidoReturnCode> finished_callback_;
+  test::VirtualFidoDeviceFactory virtual_device_factory_;
 };
 
 TEST_F(CredentialManagementHandlerTest, Test) {
-  ScopedVirtualFidoDevice virtual_device;
   VirtualCtap2Device::Config ctap_config;
   ctap_config.pin_support = true;
   ctap_config.resident_key_support = true;
   ctap_config.credential_management_support = true;
   ctap_config.resident_credential_storage = 100;
-  virtual_device.SetCtap2Config(ctap_config);
-  virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
-  virtual_device.mutable_state()->pin = kPIN;
-  virtual_device.mutable_state()->retries = 8;
-  ASSERT_TRUE(virtual_device.mutable_state()->InjectResidentKey(
+  virtual_device_factory_.SetCtap2Config(ctap_config);
+  virtual_device_factory_.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
+  virtual_device_factory_.mutable_state()->pin = kPIN;
+  virtual_device_factory_.mutable_state()->retries = 8;
+  ASSERT_TRUE(virtual_device_factory_.mutable_state()->InjectResidentKey(
       kCredentialID, kRPID, kUserID, kUserName, kUserDisplayName));
 
   auto handler = MakeHandler();
@@ -95,7 +93,7 @@ TEST_F(CredentialManagementHandlerTest, Test) {
 
   delete_callback_.WaitForCallback();
   ASSERT_EQ(CtapDeviceResponseCode::kSuccess, delete_callback_.value());
-  EXPECT_EQ(virtual_device.mutable_state()->registrations.size(), 0u);
+  EXPECT_EQ(virtual_device_factory_.mutable_state()->registrations.size(), 0u);
   EXPECT_FALSE(finished_callback_.was_called());
 }
 

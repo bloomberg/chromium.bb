@@ -194,11 +194,13 @@ void ReportGetAssertionResponseTransport(FidoAuthenticator* authenticator) {
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
     service_manager::Connector* connector,
+    FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
     CompletionCallback completion_callback)
     : FidoRequestHandler(
           connector,
+          fido_discovery_factory,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
               GetTransportsAllowedAndConfiguredByRP(request)),
@@ -213,7 +215,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     DCHECK(request_.cable_extension);
     auto discovery =
-        FidoDiscoveryFactory::CreateCable(*request_.cable_extension);
+        fido_discovery_factory_->CreateCable(*request_.cable_extension);
     discovery->set_observer(this);
     discoveries().push_back(std::move(discovery));
   }

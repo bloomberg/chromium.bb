@@ -2507,16 +2507,18 @@ jumbo_source_set("browser") {
       # Most webauth code is non-Android
       "webauth/authenticator_common.cc",
       "webauth/authenticator_common.h",
+      "webauth/authenticator_environment_impl.cc",
+      "webauth/authenticator_environment_impl.h",
       "webauth/authenticator_impl.cc",
       "webauth/authenticator_impl.h",
       "webauth/authenticator_type_converters.cc",
       "webauth/authenticator_type_converters.h",
-      "webauth/scoped_virtual_authenticator_environment.cc",
-      "webauth/scoped_virtual_authenticator_environment.h",
       "webauth/virtual_authenticator.cc",
       "webauth/virtual_authenticator.h",
       "webauth/virtual_discovery.cc",
       "webauth/virtual_discovery.h",
+      "webauth/virtual_fido_discovery_factory.cc",
+      "webauth/virtual_fido_discovery_factory.h",
     ]
 
     deps += [ "//third_party/flac" ]
