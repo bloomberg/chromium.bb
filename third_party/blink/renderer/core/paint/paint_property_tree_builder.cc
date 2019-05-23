@@ -993,6 +993,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           }
           layer->UpdateCompositorFilterOperationsForBackdropFilter(
               state.backdrop_filter, &state.backdrop_filter_bounds);
+          layer->ClearBackdropFilterOnEffectNodeDirty();
         }
       }
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||

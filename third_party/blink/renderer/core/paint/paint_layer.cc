@@ -167,6 +167,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       has_non_contained_absolute_position_descendant_(false),
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
+      backdrop_filter_on_effect_node_dirty_(false),
       is_under_svg_hidden_container_(false),
       descendant_has_direct_or_scrolling_compositing_reason_(false),
       needs_compositing_reasons_update_(
@@ -3065,6 +3066,15 @@ void PaintLayer::UpdateFilters(const ComputedStyle* old_style,
     old_style->Filter().RemoveClient(*ResourceInfo());
 }
 
+void PaintLayer::UpdateBackdropFilters(const ComputedStyle* old_style,
+                                       const ComputedStyle& new_style) {
+  if (!backdrop_filter_on_effect_node_dirty_) {
+    backdrop_filter_on_effect_node_dirty_ =
+        old_style ? !old_style->BackdropFilterDataEquivalent(new_style)
+                  : new_style.HasBackdropFilter();
+  }
+}
+
 void PaintLayer::UpdateClipPath(const ComputedStyle* old_style,
                                 const ComputedStyle& new_style) {
   ClipPathOperation* new_clip = new_style.ClipPath();
@@ -3213,6 +3223,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
   UpdateTransform(old_style, new_style);
   UpdateFilters(old_style, new_style);
+  UpdateBackdropFilters(old_style, new_style);
   UpdateClipPath(old_style, new_style);
 
   if (!NeedsRepaint()) {
@@ -3292,8 +3303,10 @@ void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
   }
   FloatRect reference_box = BackdropFilterReferenceBox();
   *backdrop_filter_bounds = BackdropFilterBounds(reference_box);
-  if (operations.IsEmpty() || reference_box != operations.ReferenceBox())
+  if (operations.IsEmpty() || backdrop_filter_on_effect_node_dirty_ ||
+      reference_box != operations.ReferenceBox()) {
     operations = CreateCompositorFilterOperationsForBackdropFilter();
+  }
 }
 
 CompositorFilterOperations

@@ -616,12 +616,21 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // |backdrop_filter_bounds| is an out param from both of these functions, and
   // it represents the clipping bounds for the filtered backdrop image only.
   // This rect lives in the local transform space of the containing
-  // EffectPaintPropertyNode.
+  // EffectPaintPropertyNode. If the input CompositorFilterOperation is not
+  // empty, it will be populated only if |backdrop_filter_on_effect_node_dirty_|
+  // is true or the reference box has changed. Otherwise it will be populated
+  // unconditionally.
   void UpdateCompositorFilterOperationsForBackdropFilter(
       CompositorFilterOperations& operations,
       base::Optional<gfx::RRectF>* backdrop_filter_bounds) const;
   CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter()
       const;
+  void SetBackdropFilterOnEffectNodeDirty() {
+    backdrop_filter_on_effect_node_dirty_ = true;
+  }
+  void ClearBackdropFilterOnEffectNodeDirty() {
+    backdrop_filter_on_effect_node_dirty_ = false;
+  }
 
   void SetIsUnderSVGHiddenContainer(bool value) {
     is_under_svg_hidden_container_ = value;
@@ -654,6 +663,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void UpdateFilterReferenceBox();
   void UpdateFilters(const ComputedStyle* old_style,
                      const ComputedStyle& new_style);
+  void UpdateBackdropFilters(const ComputedStyle* old_style,
+                             const ComputedStyle& new_style);
   void UpdateClipPath(const ComputedStyle* old_style,
                       const ComputedStyle& new_style);
 
@@ -1311,10 +1322,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned self_painting_status_changed_ : 1;
 
-  // It's set to true when filter style or filter resource changes, indicating
-  // that we need to update the filter field of the effect paint property node.
-  // It's cleared when the effect paint property node is updated.
+  // These are set to true when filter style or filter resource changes,
+  // indicating that we need to update the filter (or backdrop_filter) field of
+  // the effect paint property node. They are cleared when the effect paint
+  // property node is updated.
   unsigned filter_on_effect_node_dirty_ : 1;
+  unsigned backdrop_filter_on_effect_node_dirty_ : 1;
 
   // True if the current subtree is underneath a LayoutSVGHiddenContainer
   // ancestor.
