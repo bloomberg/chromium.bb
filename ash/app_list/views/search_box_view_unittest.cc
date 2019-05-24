@@ -224,7 +224,7 @@ TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchBoxGoogle) {
   SetSearchEngineIsGoogle(true);
   SetSearchBoxActive(false, ui::ET_UNKNOWN);
   const gfx::ImageSkia expected_icon =
-      gfx::CreateVectorIcon(kGoogleBlackIcon, search_box::kSearchIconSize,
+      gfx::CreateVectorIcon(kGoogleBlackIcon, search_box::kIconSize,
                             search_box::kDefaultSearchboxColor);
   view()->ModelChanged();
 
@@ -240,7 +240,7 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineGoogle) {
   SetSearchEngineIsGoogle(true);
   SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   const gfx::ImageSkia expected_icon =
-      gfx::CreateVectorIcon(kGoogleColorIcon, search_box::kSearchIconSize,
+      gfx::CreateVectorIcon(kGoogleColorIcon, search_box::kIconSize,
                             search_box::kDefaultSearchboxColor);
   view()->ModelChanged();
 
@@ -255,9 +255,9 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineGoogle) {
 TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchEngineNotGoogle) {
   SetSearchEngineIsGoogle(false);
   SetSearchBoxActive(false, ui::ET_UNKNOWN);
-  const gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
-      kSearchEngineNotGoogleIcon, search_box::kSearchIconSize,
-      search_box::kDefaultSearchboxColor);
+  const gfx::ImageSkia expected_icon =
+      gfx::CreateVectorIcon(kSearchEngineNotGoogleIcon, search_box::kIconSize,
+                            search_box::kDefaultSearchboxColor);
   view()->ModelChanged();
 
   const gfx::ImageSkia actual_icon =
@@ -271,9 +271,9 @@ TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchEngineNotGoogle) {
 TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineNotGoogle) {
   SetSearchEngineIsGoogle(false);
   SetSearchBoxActive(true, ui::ET_UNKNOWN);
-  const gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
-      kSearchEngineNotGoogleIcon, search_box::kSearchIconSize,
-      search_box::kDefaultSearchboxColor);
+  const gfx::ImageSkia expected_icon =
+      gfx::CreateVectorIcon(kSearchEngineNotGoogleIcon, search_box::kIconSize,
+                            search_box::kDefaultSearchboxColor);
   view()->ModelChanged();
 
   const gfx::ImageSkia actual_icon =

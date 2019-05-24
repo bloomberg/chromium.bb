@@ -66,8 +66,6 @@ constexpr int kSearchBoxFocusRingPadding = 4;
 
 constexpr SkColor kSearchBoxFocusRingColor = gfx::kGoogleBlue300;
 
-constexpr int kAssistantIconSize = 24;
-constexpr int kCloseIconSize = 24;
 constexpr int kSearchBoxFocusRingCornerRadius = 28;
 
 // Range of the fraction of app list from collapsed to peeking that search box
@@ -181,8 +179,8 @@ void SearchBoxView::UpdateSearchIcon() {
   const gfx::VectorIcon& icon = search_model_->search_engine_is_google()
                                     ? google_icon
                                     : kSearchEngineNotGoogleIcon;
-  SetSearchIconImage(gfx::CreateVectorIcon(icon, search_box::kSearchIconSize,
-                                           search_box_color()));
+  SetSearchIconImage(
+      gfx::CreateVectorIcon(icon, search_box::kIconSize, search_box_color()));
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
@@ -216,9 +214,10 @@ int SearchBoxView::GetFocusRingSpacing() {
 
 void SearchBoxView::SetupCloseButton() {
   views::ImageButton* close = close_button();
-  close->SetImage(views::ImageButton::STATE_NORMAL,
-                  gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseIconSize,
-                                        search_box_color()));
+  close->SetImage(
+      views::ImageButton::STATE_NORMAL,
+      gfx::CreateVectorIcon(views::kIcCloseIcon, search_box::kIconSize,
+                            gfx::kGoogleGrey700));
   close->SetVisible(false);
   base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_CLEAR_SEARCHBOX));
@@ -327,8 +326,11 @@ void SearchBoxView::UpdateLayout(double progress,
   const int horizontal_spacing = gfx::Tween::LinearIntValueBetween(
       progress, GetBoxLayoutPaddingForState(current_state),
       GetBoxLayoutPaddingForState(target_state));
+  const int horizontal_right_padding =
+      horizontal_spacing -
+      (search_box::kButtonSizeDip - search_box::kIconSize) / 2;
   box_layout()->set_inside_border_insets(
-      gfx::Insets(0, horizontal_spacing, 0, 0));
+      gfx::Insets(0, horizontal_spacing, 0, horizontal_right_padding));
   box_layout()->set_between_child_spacing(horizontal_spacing);
   if (show_assistant_button()) {
     assistant_button()->layer()->SetOpacity(gfx::Tween::LinearIntValueBetween(
@@ -452,10 +454,6 @@ void SearchBoxView::OnWallpaperProminentColorsReceived(
   SetSearchBoxColor(
       prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)]);
   UpdateSearchIcon();
-  close_button()->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseIconSize,
-                            search_box_color()));
   search_box()->set_placeholder_text_color(search_box_color());
   UpdateBackgroundColor(search_box::kSearchBoxBackgroundDefault);
   SchedulePaint();
@@ -747,7 +745,7 @@ void SearchBoxView::SetupAssistantButton() {
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(
           embedded_assistant ? ash::kAssistantMicIcon : ash::kAssistantIcon,
-          kAssistantIconSize, search_box_color()));
+          search_box::kIconSize, gfx::kGoogleGrey700));
   base::string16 assistant_button_label(l10n_util::GetStringUTF16(
       embedded_assistant ? IDS_APP_LIST_START_ASSISTANT_VOICE_QUERY
                          : IDS_APP_LIST_START_ASSISTANT));

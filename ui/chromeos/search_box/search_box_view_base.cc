@@ -39,8 +39,6 @@ namespace {
 
 constexpr int kInnerPadding = 16;
 
-constexpr int kButtonSizeDip = 48;
-
 // Preferred width of search box.
 constexpr int kSearchBoxPreferredWidth = 544;
 
@@ -282,7 +280,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
 
   // An invisible space view to align |search_box_| to center.
   search_box_right_space_ = new views::View();
-  search_box_right_space_->SetPreferredSize(gfx::Size(kSearchIconSize, 0));
+  search_box_right_space_->SetPreferredSize(gfx::Size(kIconSize, 0));
   content_container_->AddChildView(search_box_right_space_);
 
   assistant_button_ = new SearchBoxImageButton(this);
