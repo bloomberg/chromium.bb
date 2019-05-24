@@ -44,6 +44,7 @@ source_set("test_support") {
   sources = [
     "grpc_async_test_server.cc",
     "grpc_async_test_server.h",
+    "grpc_test_server.h",
     "grpc_test_util.cc",
     "grpc_test_util.h",
   ]

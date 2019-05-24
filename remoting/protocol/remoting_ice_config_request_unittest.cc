@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "remoting/base/grpc_support/grpc_test_server.h"
 #include "remoting/proto/remoting/v1/network_traversal_service.grpc.pb.h"
 #include "remoting/protocol/ice_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,11 +37,7 @@ class MockNetworkTraversalService final
 class RemotingIceConfigRequestTest : public testing::Test {
  public:
   RemotingIceConfigRequestTest() {
-    grpc::ServerBuilder builder;
-    builder.RegisterService(&mock_service_);
-    server_ = builder.BuildAndStart();
-    request_.SetGrpcChannelForTest(
-        server_->InProcessChannel(grpc::ChannelArguments()));
+    request_.SetGrpcChannelForTest(test_server_.CreateInProcessChannel());
   }
 
  protected:
@@ -60,12 +57,11 @@ class RemotingIceConfigRequestTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   RemotingIceConfigRequest request_;
-  MockNetworkTraversalService mock_service_;
-  std::unique_ptr<grpc::Server> server_;
+  test::GrpcTestServer<MockNetworkTraversalService> test_server_;
 };
 
 TEST_F(RemotingIceConfigRequestTest, SuccessfulRequest) {
-  EXPECT_CALL(mock_service_, GetIceConfig(_, _, _))
+  EXPECT_CALL(*test_server_, GetIceConfig(_, _, _))
       .WillOnce(Invoke([](grpc::ServerContext* context,
                           const apis::v1::GetIceConfigRequest* request,
                           apis::v1::GetIceConfigResponse* response) {
@@ -94,7 +90,7 @@ TEST_F(RemotingIceConfigRequestTest, SuccessfulRequest) {
 }
 
 TEST_F(RemotingIceConfigRequestTest, FailedRequest) {
-  EXPECT_CALL(mock_service_, GetIceConfig(_, _, _))
+  EXPECT_CALL(*test_server_, GetIceConfig(_, _, _))
       .WillOnce(Invoke([](grpc::ServerContext* context,
                           const apis::v1::GetIceConfigRequest* request,
                           apis::v1::GetIceConfigResponse* response) {

@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "remoting/base/grpc_support/grpc_channel.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/proto/remoting/v1/directory_messages.pb.h"
 #include "remoting/signaling/muxing_signal_strategy.h"
@@ -91,7 +92,9 @@ class HeartbeatSender final : public SignalStrategy::Listener {
  private:
   class HeartbeatClient;
 
-  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, SetInterval);
+  friend class HeartbeatSenderTest;
+
+  void SetGrpcChannelForTest(GrpcChannelSharedPtr channel);
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
@@ -110,7 +113,7 @@ class HeartbeatSender final : public SignalStrategy::Listener {
 
   // Helper methods used by DoSendStanza() to generate heartbeat stanzas.
   apis::v1::HeartbeatRequest CreateHeartbeatRequest();
-  std::string CreateSignature();
+  std::string CreateSignature(const std::string& signaling_id);
 
   base::OnceClosure on_heartbeat_successful_callback_;
   base::OnceClosure on_unknown_host_id_error_;

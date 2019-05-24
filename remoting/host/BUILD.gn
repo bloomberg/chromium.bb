@@ -483,6 +483,7 @@ source_set("unit_tests") {
     "desktop_session_agent_unittest.cc",
     "gcd_rest_client_unittest.cc",
     "gcd_state_updater_unittest.cc",
+    "heartbeat_sender_unittest.cc",
     "host_attributes_unittest.cc",
     "host_change_notification_listener_unittest.cc",
     "host_config_unittest.cc",
@@ -538,6 +539,7 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/grpc:grpcpp",
   ]
 
   if (is_linux && !is_chromeos) {

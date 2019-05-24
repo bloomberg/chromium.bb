@@ -56,6 +56,7 @@ class HeartbeatSender::HeartbeatClient final {
   void Heartbeat(const apis::v1::HeartbeatRequest& request,
                  HeartbeatResponseCallback callback);
   void CancelPendingRequests();
+  void SetChannelForTest(GrpcChannelSharedPtr channel);
 
  private:
   using DirectoryService = apis::v1::RemotingDirectoryService;
@@ -102,6 +103,11 @@ void HeartbeatSender::HeartbeatClient::CancelPendingRequests() {
   executor_.CancelPendingRequests();
 }
 
+void HeartbeatSender::HeartbeatClient::SetChannelForTest(
+    GrpcChannelSharedPtr channel) {
+  directory_ = DirectoryService::NewStub(channel);
+}
+
 // end of HeartbeatSender::HeartbeatClient
 
 HeartbeatSender::HeartbeatSender(
@@ -141,20 +147,18 @@ void HeartbeatSender::SetHostOfflineReason(
   host_offline_reason_timeout_timer_.Start(
       FROM_HERE, timeout, this, &HeartbeatSender::OnHostOfflineReasonTimeout);
   if (signal_strategy_->GetState() == SignalStrategy::State::CONNECTED) {
-    // Drop refresh timer and pending heartbeat (which doesn't have the offline
-    // reason) and send a new heartbeat immediately with the offline reason.
-    client_->CancelPendingRequests();
-    heartbeat_timer_.AbandonAndStop();
-
     SendHeartbeat();
   }
+}
+
+void HeartbeatSender::SetGrpcChannelForTest(GrpcChannelSharedPtr channel) {
+  client_->SetChannelForTest(channel);
 }
 
 void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (state) {
     case SignalStrategy::State::CONNECTED:
-      heartbeat_timer_.AbandonAndStop();
       SendHeartbeat();
       break;
     case SignalStrategy::State::DISCONNECTED:
@@ -200,6 +204,11 @@ void HeartbeatSender::SendHeartbeat() {
         << "Not sending heartbeat because all strategies are disconnected.";
     return;
   }
+
+  // Drop previous heartbeat and timer so that it doesn't interfere with the
+  // current one.
+  client_->CancelPendingRequests();
+  heartbeat_timer_.AbandonAndStop();
 
   client_->Heartbeat(
       CreateHeartbeatRequest(),
@@ -280,22 +289,29 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   apis::v1::HeartbeatRequest heartbeat;
+  std::string signaling_id;
   if (signal_strategy_->ftl_signal_strategy()->GetState() ==
       SignalStrategy::State::CONNECTED) {
     heartbeat.set_tachyon_id(
         signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid());
+    signaling_id =
+        signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid();
   }
   if (signal_strategy_->xmpp_signal_strategy()->GetState() ==
       SignalStrategy::State::CONNECTED) {
     heartbeat.set_jabber_id(
         signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid());
+    if (signaling_id.empty()) {
+      signaling_id =
+          signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid();
+    }
   }
   heartbeat.set_host_id(host_id_);
   heartbeat.set_sequence_id(sequence_id_);
   if (!host_offline_reason_.empty()) {
     heartbeat.set_host_offline_reason(host_offline_reason_);
   }
-  heartbeat.set_signature(CreateSignature());
+  heartbeat.set_signature(CreateSignature(signaling_id));
   // Append host version.
   heartbeat.set_host_version(STRINGIZE(VERSION));
   // If we have not recorded a heartbeat success, continue sending host OS info.
@@ -308,16 +324,9 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
   return heartbeat;
 }
 
-std::string HeartbeatSender::CreateSignature() {
+std::string HeartbeatSender::CreateSignature(const std::string& signaling_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(yuweih): Rename JID to something FTL specific.
-  std::string jid =
-      signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid();
-  if (jid.empty()) {
-    jid = signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid();
-  }
-  std::string message = jid + ' ' + base::NumberToString(sequence_id_);
+  std::string message = signaling_id + ' ' + base::NumberToString(sequence_id_);
   return host_key_pair_->SignMessage(message);
 }
 
