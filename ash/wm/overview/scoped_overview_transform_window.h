@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -23,6 +22,7 @@
 
 namespace aura {
 class Window;
+enum class EventTargetingPolicy;
 }
 
 namespace ui {
@@ -194,7 +194,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // For the duration of this object |window_| event targeting policy will be
   // sent to NONE. Store the original so we can change it back when destroying
   // this object.
-  ws::mojom::EventTargetingPolicy original_event_targeting_policy_;
+  aura::EventTargetingPolicy original_event_targeting_policy_;
 
   // Specifies how the window is laid out in the grid.
   GridWindowFillMode type_ = GridWindowFillMode::kNormal;

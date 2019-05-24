@@ -25,7 +25,6 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -106,7 +105,7 @@ Window::Window(WindowDelegate* delegate, client::WindowType type)
     : type_(type),
       delegate_(delegate),
       event_targeting_policy_(
-          ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS),
+          aura::EventTargetingPolicy::kTargetAndDescendants),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as the workspace code).
@@ -568,16 +567,14 @@ bool Window::HasObserver(const WindowObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
-void Window::SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy) {
+void Window::SetEventTargetingPolicy(EventTargetingPolicy policy) {
 #if DCHECK_IS_ON()
   const bool old_window_accepts_events =
-      (event_targeting_policy_ ==
-       ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
-      (event_targeting_policy_ ==
-       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+      (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||
+      (event_targeting_policy_ == EventTargetingPolicy::kTargetAndDescendants);
   const bool new_window_accepts_events =
-      (policy == ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
-      (policy == ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+      (policy == EventTargetingPolicy::kTargetOnly) ||
+      (policy == EventTargetingPolicy::kTargetAndDescendants);
   if (new_window_accepts_events != old_window_accepts_events)
     DCHECK(!created_layer_tree_frame_sink_);
 #endif
@@ -586,7 +583,7 @@ void Window::SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy) {
     return;
 
   event_targeting_policy_ = policy;
-  layer()->SetAcceptEvents(policy != ws::mojom::EventTargetingPolicy::NONE);
+  layer()->SetAcceptEvents(policy != EventTargetingPolicy::kNone);
 }
 
 bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) const {
@@ -614,8 +611,7 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& local_point) {
        it != rend; ++it) {
     Window* child = *it;
 
-    if (child->event_targeting_policy_ ==
-        ws::mojom::EventTargetingPolicy::NONE) {
+    if (child->event_targeting_policy_ == EventTargetingPolicy::kNone) {
       continue;
     }
 
@@ -636,17 +632,17 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& local_point) {
       continue;
 
     switch (child->event_targeting_policy_) {
-      case ws::mojom::EventTargetingPolicy::TARGET_ONLY:
+      case EventTargetingPolicy::kTargetOnly:
         if (child->delegate_)
           return child;
         break;
-      case ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS:
+      case EventTargetingPolicy::kTargetAndDescendants:
         return match;
-      case ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY:
+      case EventTargetingPolicy::kDescendantsOnly:
         if (match != child)
           return match;
         break;
-      case ws::mojom::EventTargetingPolicy::NONE:
+      case EventTargetingPolicy::kNone:
         NOTREACHED();  // This case is handled early on.
     }
   }
@@ -1171,10 +1167,8 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   params.enable_surface_synchronization = true;
   params.client_name = kExo;
   bool root_accepts_events =
-      (event_targeting_policy_ ==
-       ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
-      (event_targeting_policy_ ==
-       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+      (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||
+      (event_targeting_policy_ == EventTargetingPolicy::kTargetAndDescendants);
   if (features::IsVizHitTestingDrawQuadEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(

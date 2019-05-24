@@ -13,8 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -246,9 +244,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   else
     SetBounds(window_bounds);
   window_->SetEventTargetingPolicy(
-      params.accept_events
-          ? ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
-          : ws::mojom::EventTargetingPolicy::NONE);
+      params.accept_events ? aura::EventTargetingPolicy::kTargetAndDescendants
+                           : aura::EventTargetingPolicy::kNone);
   DCHECK(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)
     tooltip_manager_ = std::make_unique<views::TooltipManagerAura>(GetWidget());

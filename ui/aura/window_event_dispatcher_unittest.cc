@@ -18,7 +18,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
@@ -1217,7 +1216,7 @@ TEST_F(WindowEventDispatcherTest,
   recorder.Reset();
 
   // Set window to ignore events.
-  window->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+  window->SetEventTargetingPolicy(EventTargetingPolicy::kNone);
 
   // Update the window bounds so that cursor is back inside the window.
   // This should not trigger a synthetic event.
@@ -1228,8 +1227,7 @@ TEST_F(WindowEventDispatcherTest,
   recorder.Reset();
 
   // Set window to accept events but invisible.
-  window->SetEventTargetingPolicy(
-      ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  window->SetEventTargetingPolicy(EventTargetingPolicy::kTargetAndDescendants);
   window->Hide();
   recorder.Reset();
 

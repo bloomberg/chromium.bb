@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"

@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"
@@ -689,8 +688,8 @@ void WindowEventDispatcher::OnWindowBoundsChanged(
     synthesize_mouse_move_ = false;
   }
 
-  if (window->IsVisible() && window->event_targeting_policy() !=
-                                 ws::mojom::EventTargetingPolicy::NONE) {
+  if (window->IsVisible() &&
+      window->event_targeting_policy() != EventTargetingPolicy::kNone) {
     gfx::Rect old_bounds_in_root = old_bounds, new_bounds_in_root = new_bounds;
     Window::ConvertRectToTarget(window->parent(), host_->window(),
                                 &old_bounds_in_root);

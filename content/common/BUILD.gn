@@ -496,13 +496,6 @@ mojom("mojo_bindings") {
     "widget.mojom",
   ]
 
-  if (is_mac) {
-    sources += [
-      "render_widget_host_ns_view.mojom",
-      "sandbox_support_mac.mojom",
-    ]
-  }
-
   enabled_features = []
   if (enable_ipc_logging) {
     enabled_features += [ "ipc_logging" ]
@@ -541,6 +534,14 @@ mojom("mojo_bindings") {
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
+
+  if (is_mac) {
+    sources += [
+      "render_widget_host_ns_view.mojom",
+      "sandbox_support_mac.mojom",
+    ]
+    public_deps += [ "//ui/display/mojo:interfaces" ]
+  }
 
   overridden_deps = [ "//third_party/blink/public/mojom:mojom_core" ]
   component_deps = [ "//third_party/blink/public/common" ]

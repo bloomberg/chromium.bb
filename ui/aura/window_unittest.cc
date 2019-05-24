@@ -18,7 +18,6 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "cc/trees/layer_tree_frame_sink.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -1581,38 +1580,34 @@ TEST_F(WindowTest, EventTargetingPolicy) {
       &d121, 121, gfx::Rect(150, 150, 50, 50), w12.get()));
 
   EXPECT_EQ(w121.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
-  w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::TARGET_ONLY);
+  w12->SetEventTargetingPolicy(EventTargetingPolicy::kTargetOnly);
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   EXPECT_TRUE(w12.get()->layer()->accept_events());
-  w12->SetEventTargetingPolicy(
-      ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  w12->SetEventTargetingPolicy(EventTargetingPolicy::kTargetAndDescendants);
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
   EXPECT_TRUE(w12.get()->layer()->accept_events());
-  w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+  w12->SetEventTargetingPolicy(EventTargetingPolicy::kNone);
   EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
   EXPECT_FALSE(w12.get()->layer()->accept_events());
 
-  w12->SetEventTargetingPolicy(
-      ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  w12->SetEventTargetingPolicy(EventTargetingPolicy::kTargetAndDescendants);
 
   EXPECT_EQ(w121.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
-  w121->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+  w121->SetEventTargetingPolicy(EventTargetingPolicy::kNone);
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   EXPECT_FALSE(w121.get()->layer()->accept_events());
-  w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+  w12->SetEventTargetingPolicy(EventTargetingPolicy::kNone);
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   EXPECT_FALSE(w12.get()->layer()->accept_events());
-  w111->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+  w111->SetEventTargetingPolicy(EventTargetingPolicy::kNone);
   EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   EXPECT_FALSE(w111.get()->layer()->accept_events());
 
-  w11->SetEventTargetingPolicy(
-      ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+  w11->SetEventTargetingPolicy(EventTargetingPolicy::kDescendantsOnly);
   EXPECT_EQ(nullptr, w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   EXPECT_TRUE(w11.get()->layer()->accept_events());
 
-  w111->SetEventTargetingPolicy(
-      ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  w111->SetEventTargetingPolicy(EventTargetingPolicy::kTargetAndDescendants);
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   EXPECT_TRUE(w111.get()->layer()->accept_events());
 }

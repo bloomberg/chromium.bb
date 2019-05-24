@@ -85,7 +85,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"

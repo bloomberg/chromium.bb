@@ -60,12 +60,6 @@ namespace viz {
 class ParentLocalSurfaceIdAllocator;
 }
 
-namespace ws {
-namespace mojom {
-enum class EventTargetingPolicy;
-}
-}
-
 namespace aura {
 
 class LayoutManager;
@@ -82,6 +76,21 @@ using WindowProperty = ui::ClassProperty<T>;
 namespace test {
 class WindowTestApi;
 }
+
+enum class EventTargetingPolicy {
+  // The target is a valid target for events, but none of its descendants are
+  // considered.
+  kTargetOnly,
+
+  // The target and its descendants are possible targets. This is the default.
+  kTargetAndDescendants,
+
+  // The target is not a valid target, but its descendants are possible targets.
+  kDescendantsOnly,
+
+  // Neither the target nor its descendants are valid targets.
+  kNone
+};
 
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
@@ -323,8 +332,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void RemoveObserver(WindowObserver* observer);
   bool HasObserver(const WindowObserver* observer) const;
 
-  void SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy);
-  ws::mojom::EventTargetingPolicy event_targeting_policy() const {
+  void SetEventTargetingPolicy(EventTargetingPolicy policy);
+  EventTargetingPolicy event_targeting_policy() const {
     return event_targeting_policy_;
   }
 
@@ -672,7 +681,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   std::vector<gfx::Rect> opaque_regions_for_occlusion_;
 
   // Makes the window pass all events through to any windows behind it.
-  ws::mojom::EventTargetingPolicy event_targeting_policy_;
+  EventTargetingPolicy event_targeting_policy_;
 
   base::ReentrantObserverList<WindowObserver, true> observers_;
 

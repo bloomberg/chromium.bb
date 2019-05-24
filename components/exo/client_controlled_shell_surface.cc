@@ -36,7 +36,6 @@
 #include "base/trace_event/traced_value.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -241,7 +240,7 @@ class EventTargetingBlocker : aura::WindowObserver {
   void Register(aura::Window* window) {
     window->AddObserver(this);
     auto policy = window->event_targeting_policy();
-    window->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+    window->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
     policy_map_.emplace(window, policy);
     for (auto* child : window->children())
       Register(child);
@@ -262,7 +261,7 @@ class EventTargetingBlocker : aura::WindowObserver {
     window->RemoveObserver(this);
   }
 
-  std::map<aura::Window*, ws::mojom::EventTargetingPolicy> policy_map_;
+  std::map<aura::Window*, aura::EventTargetingPolicy> policy_map_;
   aura::Window* window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(EventTargetingBlocker);

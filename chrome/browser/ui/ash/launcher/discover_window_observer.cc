@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"

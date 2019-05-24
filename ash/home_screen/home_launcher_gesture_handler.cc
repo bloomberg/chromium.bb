@@ -29,7 +29,6 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -188,7 +187,7 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   explicit ScopedWindowModifier(aura::Window* window) : window_(window) {
     DCHECK(window_);
     original_event_targeting_policy_ = window_->event_targeting_policy();
-    window_->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+    window_->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
   }
   ~ScopedWindowModifier() override {
     for (const auto& descendant : transient_descendants_values_)
@@ -274,9 +273,9 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   std::map<aura::Window*, WindowValues> transient_descendants_values_;
 
   // For the duration of this object |window_| event targeting policy will be
-  // sent to NONE. Store the original so we can change it back when destroying
+  // sent to kNone. Store the original so we can change it back when destroying
   // this object.
-  ws::mojom::EventTargetingPolicy original_event_targeting_policy_;
+  aura::EventTargetingPolicy original_event_targeting_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowModifier);
 };

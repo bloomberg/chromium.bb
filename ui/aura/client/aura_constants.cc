@@ -4,7 +4,6 @@
 
 #include "ui/aura/client/aura_constants.h"
 
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/base/class_property.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -20,7 +19,6 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, gfx::Size*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, gfx::SizeF*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, std::string*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, ui::WindowShowState)
-DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, ws::mojom::WindowType)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, void*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, SkColor)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, int32_t)
@@ -82,9 +80,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTitleShownKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kTopViewInset, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kWindowIconKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kWindowCornerRadiusKey, -1)
-DEFINE_UI_CLASS_PROPERTY_KEY(ws::mojom::WindowType,
-                             kWindowTypeKey,
-                             ws::mojom::WindowType::UNKNOWN)
 
 }  // namespace client
 }  // namespace aura

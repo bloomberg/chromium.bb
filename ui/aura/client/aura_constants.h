@@ -172,9 +172,6 @@ AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
 // Default is -1, meaning "unspecified". 0 Ensures corners are square.
 AURA_EXPORT extern const WindowProperty<int>* const kWindowCornerRadiusKey;
 
-AURA_EXPORT extern const WindowProperty<ws::mojom::WindowType>* const
-    kWindowTypeKey;
-
 // Alphabetical sort.
 
 }  // namespace client

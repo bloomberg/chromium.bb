@@ -13,7 +13,6 @@
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -89,7 +88,7 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name)
   // The host window is a container of surface tree. It doesn't handle pointer
   // events.
   host_window_->SetEventTargetingPolicy(
-      ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+      aura::EventTargetingPolicy::kDescendantsOnly);
   host_window_->SetEventTargeter(std::make_unique<CustomWindowTargeter>(this));
   layer_tree_frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
       this, host_window_->CreateLayerTreeFrameSink());

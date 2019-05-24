@@ -178,7 +178,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       weak_ptr_factory_(this) {
   type_ = GetWindowDimensionsType(window);
   original_event_targeting_policy_ = window_->event_targeting_policy();
-  window_->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+  window_->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
   window_->SetProperty(kIsShowingInOverviewKey, true);
 
   // Hide transient children which have been specified to be hidden in overview

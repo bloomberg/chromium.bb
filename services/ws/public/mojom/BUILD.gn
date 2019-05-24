@@ -8,8 +8,6 @@ import("//testing/test.gni")
 mojom("mojom") {
   sources = [
     "gpu.mojom",
-    "window_manager.mojom",
-    "window_tree_constants.mojom",
   ]
 
   import_dirs = [
@@ -22,14 +20,7 @@ mojom("mojom") {
     "//gpu/ipc/common:interfaces",
     "//media/mojo/interfaces",
     "//mojo/public/mojom/base",
-    "//services/viz/public/interfaces",
-    "//skia/public/interfaces",
-    "//ui/base/ime/mojo",
-    "//ui/base/mojo",
-    "//ui/display/mojo:interfaces",
-    "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/image/mojo:interfaces",
     "//ui/gfx/mojo",
     "//ui/platform_window/mojo:interfaces",
   ]

@@ -29,7 +29,6 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
@@ -899,7 +898,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   window->AddChild(host_window());
   // Works for both mash and non-mash. https://crbug.com/839521
   window->SetEventTargetingPolicy(
-      ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+      aura::EventTargetingPolicy::kTargetAndDescendants);
   InstallCustomWindowTargeter();
   SetShellApplicationId(window, application_id_);
   SetShellStartupId(window, startup_id_);
