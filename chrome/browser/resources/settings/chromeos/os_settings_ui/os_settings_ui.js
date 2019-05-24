@@ -46,6 +46,12 @@ Polymer({
     },
 
     /**
+     * Whether settings is in the narrow state (side nav hidden). Controlled by
+     * a binding in the cr-toolbar element.
+     */
+    isNarrow: Boolean,
+
+    /**
      * @private {!PageVisibility}
      */
     pageVisibility_: {type: Object, value: settings.pageVisibility},
