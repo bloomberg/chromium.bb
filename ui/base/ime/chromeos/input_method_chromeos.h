@@ -50,8 +50,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   InputMethodKeyboardController* GetInputMethodKeyboardController() override;
 
   // Overridden from InputMethodBase:
-  void OnFocus() override;
-  void OnBlur() override;
   void OnWillChangeFocusedClient(TextInputClient* focused_before,
                                  TextInputClient* focused) override;
   void OnDidChangeFocusedClient(TextInputClient* focused_before,
@@ -79,7 +77,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   void ResetContext();
 
  private:
-  class MojoHelper;
   class PendingKeyEvent;
   friend TestableInputMethodChromeOS;
 
@@ -203,8 +200,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   // Indicates whether currently is handling a physical key event.
   // This is used in CommitText/UpdateCompositionText/etc.
   bool handling_key_event_;
-
-  std::unique_ptr<MojoHelper> mojo_helper_;
 
   // Used for making callbacks.
   base::WeakPtrFactory<InputMethodChromeOS> weak_ptr_factory_;
