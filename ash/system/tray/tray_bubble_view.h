@@ -99,7 +99,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     base::Optional<int> corner_radius;
     base::Optional<gfx::Insets> insets;
     bool has_shadow = true;
-    bool use_native_theme = true;
   };
 
   explicit TrayBubbleView(const InitParams& init_params);

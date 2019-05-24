@@ -26,8 +26,6 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
                 ->GetSystemNotificationAppName()) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  SetNativeTheme(ui::NativeThemeDarkAura::instance());
-
   // Since we own these, we don't want Views to destroy them when their parent
   // is destroyed.
   control_buttons_view_->set_owned_by_client();
