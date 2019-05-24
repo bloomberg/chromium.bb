@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_ID_REGISTRY_H_
-#define CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_ID_REGISTRY_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_FRAME_TREE_NODE_ID_REGISTRY_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_FRAME_TREE_NODE_ID_REGISTRY_H_
 
 #include <map>
 
@@ -52,4 +52,4 @@ class FrameTreeNodeIdRegistry {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_ID_REGISTRY_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_FRAME_TREE_NODE_ID_REGISTRY_H_

@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/frame_tree_node_id_registry.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/net/url_request_user_data.h"
