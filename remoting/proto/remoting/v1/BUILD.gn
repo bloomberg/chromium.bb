@@ -65,3 +65,11 @@ cc_grpc_library("remote_support_host_grpc_library") {
     ":host_info_proto",
   ]
 }
+
+cc_grpc_library("telemetry_grpc_library") {
+  sources = [
+    "generic_log_entry.proto",
+    "telemetry_messages.proto",
+    "telemetry_service.proto",
+  ]
+}
