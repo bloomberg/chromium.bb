@@ -205,6 +205,8 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
                                           jint res_type,
                                           jint res_id,
                                           const JavaRef<jobject>& bitmap,
+                                          jint width,
+                                          jint height,
                                           jlong native_resource) {
   DCHECK_GE(res_type, ANDROID_RESOURCE_TYPE_FIRST);
   DCHECK_LE(res_type, ANDROID_RESOURCE_TYPE_LAST);
@@ -222,7 +224,7 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
   resource->SetUIResource(
       cc::ScopedUIResource::Create(ui_resource_manager_,
                                    cc::UIResourceBitmap(skbitmap)),
-      jbitmap.size());
+      gfx::Size(width, height));
 }
 
 void ResourceManagerImpl::RemoveResource(

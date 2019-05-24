@@ -137,6 +137,7 @@ public class ResourceManager implements ResourceLoaderCallback {
         if (mNativeResourceManagerPtr == 0) return;
 
         nativeOnResourceReady(mNativeResourceManagerPtr, resType, resId, resource.getBitmap(),
+                resource.getBitmapSize().width(), resource.getBitmapSize().height(),
                 resource.createNativeResource());
     }
 
@@ -193,7 +194,7 @@ public class ResourceManager implements ResourceLoaderCallback {
     }
 
     private native void nativeOnResourceReady(long nativeResourceManagerImpl, int resType,
-            int resId, Bitmap bitmap, long nativeResource);
+            int resId, Bitmap bitmap, int width, int height, long nativeResource);
     private native void nativeRemoveResource(long nativeResourceManagerImpl, int resType,
             int resId);
     private native void nativeClearTintedResourceCache(long nativeResourceManagerImpl);

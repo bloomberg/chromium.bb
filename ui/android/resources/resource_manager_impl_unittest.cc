@@ -55,7 +55,7 @@ class TestResourceManagerImpl : public ResourceManagerImpl {
     small_bitmap.setImmutable();
 
     OnResourceReady(nullptr, nullptr, res_type, res_id,
-                    gfx::ConvertToJavaBitmap(&small_bitmap),
+                    gfx::ConvertToJavaBitmap(&small_bitmap), 1, 1,
                     reinterpret_cast<intptr_t>(new Resource()));
   }
 
