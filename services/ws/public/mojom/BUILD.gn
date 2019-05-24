@@ -31,7 +31,6 @@ mojom("mojom") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/image/mojo:interfaces",
     "//ui/gfx/mojo",
-    "//ui/platform_window/mojo:interfaces",
   ]
 
   if (is_chromeos) {
