@@ -10,6 +10,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -105,6 +106,15 @@ class BASE_EXPORT WritableSharedMemoryRegion {
     DCHECK(IsValid());
     return handle_.GetGUID();
   }
+
+#if defined(OS_WIN)
+  // On Windows it is necessary in rare cases to take a writable handle from a
+  // region that will be converted to read-only. On this platform it is a safe
+  // operation, as the handle returned from this method will remain writable
+  // after the region is converted to read-only. However, it breaks chromium's
+  // WritableSharedMemoryRegion semantics and so should be use with care.
+  HANDLE UnsafeGetPlatformHandle() const { return handle_.GetPlatformHandle(); }
+#endif
 
  private:
   friend class SharedMemoryHooks;
