@@ -4,7 +4,9 @@
 
 #include "chrome/browser/autofill/credit_card_accessory_controller_impl.h"
 
+#include <algorithm>
 #include <iterator>
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -28,7 +30,7 @@ void AddField(const base::string16& data, UserInfo* user_info) {
                                        /*selectable=*/true));
 }
 
-UserInfo Translate(const CreditCard* data) {
+UserInfo TranslateCard(const CreditCard* data) {
   DCHECK(data);
 
   UserInfo user_info;
@@ -63,7 +65,7 @@ void CreditCardAccessoryControllerImpl::RefreshSuggestionsForField() {
   const std::vector<CreditCard*> suggestions = GetSuggestions();
   std::vector<UserInfo> info_to_add;
   std::transform(suggestions.begin(), suggestions.end(),
-                 std::back_inserter(info_to_add), &Translate);
+                 std::back_inserter(info_to_add), &TranslateCard);
 
   // TODO(crbug.com/902425): Add "Manage payment methods" footer command
   std::vector<FooterCommand> footer_commands;

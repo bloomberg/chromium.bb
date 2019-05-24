@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/password_accessory_controller_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -41,8 +42,9 @@ using FillingSource = ManualFillingController::FillingSource;
 
 namespace {
 
-autofill::UserInfo Translate(bool current_field_is_password,
-                             const PasswordAccessorySuggestion& data) {
+autofill::UserInfo TranslateCredentials(
+    bool current_field_is_password,
+    const PasswordAccessorySuggestion& data) {
   UserInfo user_info;
 
   user_info.add_field(UserInfo::Field(
@@ -198,7 +200,7 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     info_to_add.resize(suggestions.size());
     std::transform(suggestions.begin(), suggestions.end(), info_to_add.begin(),
                    [is_password_field](const auto& x) {
-                     return Translate(is_password_field, x);
+                     return TranslateCredentials(is_password_field, x);
                    });
   }
 
