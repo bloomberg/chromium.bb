@@ -105,7 +105,7 @@ const base::Feature kOffMainThreadServiceWorkerScriptFetch{
 // Enable off-the-main-thread shared worker script fetch.
 // (https://crbug.com/924041)
 const base::Feature kOffMainThreadSharedWorkerScriptFetch{
-    "OffMainThreadSharedWorkerScriptFetch", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OffMainThreadSharedWorkerScriptFetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Onion souping for all DOMStorage. https://crbug.com/781870
 const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
@@ -286,11 +286,6 @@ const base::Feature kScrollbarInjectScrollGestures{
 bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
   // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
   // (NetworkService).
-  DCHECK(!base::FeatureList::IsEnabled(
-             features::kOffMainThreadSharedWorkerScriptFetch) ||
-         base::FeatureList::IsEnabled(network::features::kNetworkService))
-      << "OffMainThreadSharedWorkerScriptFetch is enabled but NetworkService "
-      << "isn't. OffMainThreadSharedWorkerScriptFetch requires NetworkService.";
   return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
          base::FeatureList::IsEnabled(
              features::kOffMainThreadSharedWorkerScriptFetch);

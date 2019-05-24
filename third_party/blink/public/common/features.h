@@ -36,8 +36,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kOffMainThreadDedicatedWorkerScriptFetch;
 BLINK_COMMON_EXPORT extern const base::Feature
     kOffMainThreadServiceWorkerScriptFetch;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kOffMainThreadSharedWorkerScriptFetch;
 BLINK_COMMON_EXPORT extern const base::Feature kOnionSoupDOMStorage;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
