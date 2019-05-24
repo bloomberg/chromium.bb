@@ -23,10 +23,12 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
@@ -39,8 +41,10 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -835,7 +839,63 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   ValidateNoOrigin(4U);
 }
 
+TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
+  const std::string google("https://www.google.com");
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  ASSERT_TRUE(profile()->CreateHistoryService(/* delete_file= */ true,
+                                              /* no_db= */ false));
+  auto* history_service = HistoryServiceFactory::GetForProfile(
+      profile(), ServiceAccessType::EXPLICIT_ACCESS);
+  history_service->AddPage(GURL(google), base::Time::Now(),
+                           history::SOURCE_BROWSED);
+  base::RunLoop origin_queried_waiter;
+  history_service->set_origin_queried_closure_for_testing(
+      origin_queried_waiter.QuitClosure());
+
+  {
+    base::ListValue set_notification_origin_args;
+    set_notification_origin_args.AppendString(google);
+    set_notification_origin_args.AppendString(google);
+    set_notification_origin_args.AppendString(kNotifications);
+    set_notification_origin_args.AppendString(
+        content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW));
+    set_notification_origin_args.AppendBoolean(false /* incognito */);
+    handler()->HandleSetCategoryPermissionForPattern(
+        &set_notification_origin_args);
+  }
+
+  {
+    base::ListValue set_notification_origin_args;
+    set_notification_origin_args.AppendString(google);
+    set_notification_origin_args.AppendString(google);
+    set_notification_origin_args.AppendString(kNotifications);
+    set_notification_origin_args.AppendString(
+        content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+    set_notification_origin_args.AppendBoolean(false /* incognito */);
+    handler()->HandleSetCategoryPermissionForPattern(
+        &set_notification_origin_args);
+  }
+
+  origin_queried_waiter.Run();
+
+  auto entries = ukm_recorder.GetEntriesByName("Permission");
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries.front();
+
+  ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(google));
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
+            static_cast<int64_t>(PermissionSourceUI::SITE_SETTINGS));
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
+            static_cast<int64_t>(
+                ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
+            static_cast<int64_t>(PermissionAction::REVOKED));
+}
+
 TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
+  ASSERT_TRUE(profile()->CreateHistoryService(/* delete_file= */ true,
+                                              /* no_db= */ false));
+
   // Use a non-default port to verify the display name does not strip this off.
   const std::string google("https://www.google.com:183");
   ContentSettingSourceSetter source_setter(profile(),

@@ -529,6 +529,10 @@ class HistoryService : public KeyedService {
     backend_task_runner_ = std::move(task_runner);
   }
 
+  void set_origin_queried_closure_for_testing(base::OnceClosure closure) {
+    origin_queried_closure_for_testing_ = std::move(closure);
+  }
+
  protected:
   // These are not currently used, hopefully we can do something in the future
   // to ensure that the most important things happen first.
@@ -865,6 +869,8 @@ class HistoryService : public KeyedService {
       favicon_changed_callback_list_;
 
   std::unique_ptr<DeleteDirectiveHandler> delete_directive_handler_;
+
+  base::OnceClosure origin_queried_closure_for_testing_;
 
   // All vended weak pointers are invalidated in Cleanup().
   base::WeakPtrFactory<HistoryService> weak_ptr_factory_;

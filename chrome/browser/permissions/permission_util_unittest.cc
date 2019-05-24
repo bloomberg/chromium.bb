@@ -18,6 +18,10 @@ class PermissionUtilTest : public testing::Test {
 
 TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
   TestingProfile profile;
+  ASSERT_TRUE(profile.CreateHistoryService(
+      /* delete_file= */ true,
+      /* no_db= */ false));
+
   // TODO(tsergeant): Add more comprehensive tests of PermissionUmaUtil.
   base::HistogramTester histograms;
   HostContentSettingsMap* map =

@@ -17,6 +17,8 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom-forward.h"
 #include "url/gurl.h"
 
+class PermissionUmaUtil;
+
 namespace autofill {
 class TestAutofillClient;
 }  // namespace autofill
@@ -76,6 +78,7 @@ class METRICS_EXPORT UkmRecorder {
   friend autofill::TestAutofillClient;
   friend blink::Document;
   friend metrics::UkmRecorderInterface;
+  friend PermissionUmaUtil;
 
   // Associates the SourceId with a URL. Most UKM recording code should prefer
   // to use a shared SourceId that is already associated with a URL, rather

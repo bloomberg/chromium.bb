@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
@@ -118,6 +119,27 @@ void RecordEngagementMetric(const std::vector<PermissionRequest*>& requests,
       site_engagement_service->GetScore(requests[0]->GetOrigin());
 
   base::UmaHistogramPercentage(name, engagement_score);
+}
+
+void RecordPermissionActionUkm(PermissionAction action,
+                               PermissionRequestGestureType gesture_type,
+                               ContentSettingsType permission,
+                               int dismiss_count,
+                               int ignore_count,
+                               PermissionSourceUI source_ui,
+                               base::Optional<ukm::SourceId> source_id) {
+  // Only record the permission change if the origin is in the history.
+  if (!source_id.has_value())
+    return;
+
+  ukm::builders::Permission(source_id.value())
+      .SetAction(static_cast<int64_t>(action))
+      .SetGesture(static_cast<int64_t>(gesture_type))
+      .SetPermissionType(permission)
+      .SetPriorDismissals(std::min(kPriorCountCap, dismiss_count))
+      .SetPriorIgnores(std::min(kPriorCountCap, ignore_count))
+      .SetSource(static_cast<int64_t>(source_ui))
+      .Record(ukm::UkmRecorder::Get());
 }
 
 }  // anonymous namespace
@@ -345,14 +367,16 @@ void PermissionUmaUtil::RecordPermissionAction(
   if (web_contents) {
     ukm::SourceId source_id =
         ukm::GetSourceIdForWebContentsDocument(web_contents);
-    ukm::builders::Permission(source_id)
-        .SetAction(static_cast<int64_t>(action))
-        .SetGesture(static_cast<int64_t>(gesture_type))
-        .SetPermissionType(permission)
-        .SetPriorDismissals(std::min(kPriorCountCap, dismiss_count))
-        .SetPriorIgnores(std::min(kPriorCountCap, ignore_count))
-        .SetSource(static_cast<int64_t>(source_ui))
-        .Record(ukm::UkmRecorder::Get());
+    RecordPermissionActionUkm(action, gesture_type, permission, dismiss_count,
+                              ignore_count, source_ui, source_id);
+  } else {
+    // We only record a permission change if the origin is in the user's
+    // history.
+    ukm::UkmBackgroundRecorderFactory::GetForProfile(profile)
+        ->GetBackgroundSourceIdIfAllowed(
+            url::Origin::Create(requesting_origin),
+            base::BindOnce(&RecordPermissionActionUkm, action, gesture_type,
+                           permission, dismiss_count, ignore_count, source_ui));
   }
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);

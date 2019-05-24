@@ -87,9 +87,12 @@ void RunWithQueryURLResult(HistoryService::QueryURLCallback callback,
 }
 
 void RunWithVisibleVisitCountToHostResult(
+    base::OnceClosure origin_queried_closure,
     const HistoryService::GetVisibleVisitCountToHostCallback& callback,
     const VisibleVisitCountToHostResult* result) {
   callback.Run(result->success, result->count, result->first_visit);
+  if (origin_queried_closure)
+    std::move(origin_queried_closure).Run();
 }
 
 // Callback from WebHistoryService::ExpireWebHistory().
@@ -861,7 +864,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetVisibleVisitCountToHost,
                      history_backend_, url, base::Unretained(result)),
-      base::BindOnce(&RunWithVisibleVisitCountToHostResult, callback,
+      base::BindOnce(&RunWithVisibleVisitCountToHostResult,
+                     std::move(origin_queried_closure_for_testing_), callback,
                      base::Owned(result)));
 }
 

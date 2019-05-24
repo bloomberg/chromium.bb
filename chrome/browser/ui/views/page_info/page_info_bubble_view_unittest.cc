@@ -9,6 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -20,7 +22,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/navigation_simulator.h"
@@ -245,6 +249,49 @@ class FlashContentSettingsChangeWaiter : public content_settings::Observer {
 // Each permission selector row is like this: [icon] [label] [selector]
 constexpr size_t kViewsPerPermissionRow = 3;
 
+TEST_F(PageInfoBubbleViewTest, NotificationPermissionRevokeUkm) {
+  GURL origin_url = GURL(kUrl).GetOrigin();
+  TestingProfile* profile =
+      static_cast<TestingProfile*>(web_contents_helper_.profile());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  ASSERT_TRUE(profile->CreateHistoryService(
+      /* delete_file= */ true,
+      /* no_db= */ false));
+  auto* history_service = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  history_service->AddPage(origin_url, base::Time::Now(),
+                           history::SOURCE_BROWSED);
+  base::RunLoop origin_queried_waiter;
+  history_service->set_origin_queried_closure_for_testing(
+      origin_queried_waiter.QuitClosure());
+
+  PermissionInfoList list(1);
+  list.back().type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+  list.back().source = content_settings::SETTING_SOURCE_USER;
+  list.back().is_incognito = false;
+
+  list.back().setting = CONTENT_SETTING_ALLOW;
+  api_->SetPermissionInfo(list);
+
+  list.back().setting = CONTENT_SETTING_BLOCK;
+  api_->SetPermissionInfo(list);
+
+  origin_queried_waiter.Run();
+
+  auto entries = ukm_recorder.GetEntriesByName("Permission");
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries.front();
+
+  ukm_recorder.ExpectEntrySourceHasUrl(entry, origin_url);
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
+            static_cast<int64_t>(PermissionSourceUI::OIB));
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
+            static_cast<int64_t>(
+                ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
+            static_cast<int64_t>(PermissionAction::REVOKED));
+}
+
 // Test UI construction and reconstruction via
 // PageInfoBubbleView::SetPermissionInfo().
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
@@ -253,6 +300,12 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   // "set", so there is always one option checked in the resulting MenuModel.
   // This test creates settings that are left at their defaults, leading to zero
   // checked options, and checks that the text on the MenuButtons is right.
+
+  TestingProfile* profile =
+      static_cast<TestingProfile*>(web_contents_helper_.profile());
+  ASSERT_TRUE(profile->CreateHistoryService(
+      /* delete_file= */ true,
+      /* no_db= */ false));
 
   PermissionInfoList list(1);
   list.back().type = CONTENT_SETTINGS_TYPE_GEOLOCATION;

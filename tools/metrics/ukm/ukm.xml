@@ -5701,9 +5701,9 @@ be describing additional metrics about the same event.
 <event name="Permission">
   <owner>timloh@chromium.org</owner>
   <summary>
-    Metrics for when a user's permission actions. Currently we only log when a
-    permission prompt is resolved. Grouped (microphone+camera) permission
-    prompts are reported separately.
+    Metrics for a user's permission actions, logged when a permission prompt is
+    resolved or when a permission is revoked. Grouped (microphone+camera)
+    permission prompts are reported separately.
   </summary>
   <metric name="Action">
     <summary>
