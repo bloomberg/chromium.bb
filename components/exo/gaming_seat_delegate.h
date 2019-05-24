@@ -6,7 +6,7 @@
 #define COMPONENTS_EXO_GAMING_SEAT_DELEGATE_H_
 
 namespace ui {
-struct InputDevice;
+struct GamepadDevice;
 }  // namespace ui
 
 namespace exo {
@@ -27,7 +27,7 @@ class GamingSeatDelegate {
 
   // When a new gamepad is connected, gaming seat call this to get the
   // gamepad delegate.
-  virtual GamepadDelegate* GamepadAdded(const ui::InputDevice& device) = 0;
+  virtual GamepadDelegate* GamepadAdded(const ui::GamepadDevice& device) = 0;
 
  protected:
   virtual ~GamingSeatDelegate() {}

@@ -168,5 +168,28 @@
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
     </event>
+
+    <event name="axis_added">
+      <description summary="an axis is added">
+        Adds an axis to the gamepad. Only called when the gamepad was created by
+        gamepad_added_with_device_info. The values are compatible with
+        input_absinfo.
+      </description>
+      <arg name="index" type="uint" summary="An index of the axis" />
+      <arg name="min_value" type="int" summary="minimum value of the axis" />
+      <arg name="max_value" type="int" summary="maximum value of the axis" />
+      <arg name="flat" type="int" summary="input within this value are ignored" />
+      <arg name="fuzz" type="int" summary="used to filter noise" />
+      <arg name="resolution" type="int" summary="resolution of input in units per millimeter, or units per radian for rotational axes." />
+    </event>
+
+    <event name="activated">
+      <description summary="Gamepad activated">
+        Activates the gamepad i.e. the gamepad will be visible to applications
+        after this event is fired. All axis_added events should be sent before
+        this event. Only called when the gamepad was created by
+        gamepad_added_with_device_info.
+      </description>
+    </event>
   </interface>
 </protocol>

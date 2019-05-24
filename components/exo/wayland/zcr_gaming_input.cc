@@ -14,7 +14,7 @@
 #include "components/exo/gaming_seat.h"
 #include "components/exo/gaming_seat_delegate.h"
 #include "components/exo/wayland/server_util.h"
-#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/gamepad_device.h"
 
 namespace exo {
 namespace wayland {
@@ -73,9 +73,18 @@ class WaylandGamepadDelegate : public GamepadDelegate {
     if (!gamepad_resource_) {
       return;
     }
-    // TODO(tetsui): Send raw axis index when kRawGamepadInfoFeature is enabled.
-    zcr_gamepad_v2_send_axis(gamepad_resource_, NowInMilliseconds(), axis,
-                             wl_fixed_from_double(value));
+    // There are two types of axis events: Web Gamepad remapped and raw. When
+    // |axis| is not WG_ABS_COUNT, it's Web Gamepad remapped. ExoRawGamepadInfo
+    // expects raw events to be forawrded, so we should discard remapped ones.
+    // TODO(tetsui): Remove this when Web Gamepad mapping in Ozone is removed.
+    if (base::FeatureList::IsEnabled(kRawGamepadInfoFeature) &&
+        axis != ui::WG_ABS_COUNT) {
+      return;
+    }
+    zcr_gamepad_v2_send_axis(
+        gamepad_resource_, NowInMilliseconds(),
+        base::FeatureList::IsEnabled(kRawGamepadInfoFeature) ? raw_axis : axis,
+        wl_fixed_from_double(value));
   }
   void OnButton(int button,
                 int raw_button,
@@ -136,7 +145,7 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
            wl_resource_get_client(surface_resource) ==
                wl_resource_get_client(gaming_seat_resource_);
   }
-  GamepadDelegate* GamepadAdded(const ui::InputDevice& device) override {
+  GamepadDelegate* GamepadAdded(const ui::GamepadDevice& device) override {
     wl_resource* gamepad_resource =
         wl_resource_create(wl_resource_get_client(gaming_seat_resource_),
                            &zcr_gamepad_v2_interface,
@@ -155,7 +164,13 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
           GetGamepadBusType(device.type), device.vendor_id, device.product_id,
           device.version);
 
-      // TODO(tetsui): Send joystick motion range.
+      for (size_t i = 0; i < device.axes.size(); ++i) {
+        const auto& axis = device.axes[i];
+        zcr_gamepad_v2_send_axis_added(gamepad_resource, i, axis.min_value,
+                                       axis.max_value, axis.flat, axis.fuzz,
+                                       axis.resolution);
+      }
+      zcr_gamepad_v2_send_activated(gamepad_resource);
     } else {
       zcr_gaming_seat_v2_send_gamepad_added(gaming_seat_resource_,
                                             gamepad_resource);

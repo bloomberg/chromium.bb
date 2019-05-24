@@ -25,7 +25,7 @@ namespace {
 class MockGamingSeatDelegate : public GamingSeatDelegate {
  public:
   MOCK_CONST_METHOD1(CanAcceptGamepadEventsForSurface, bool(Surface*));
-  MOCK_METHOD1(GamepadAdded, GamepadDelegate*(const ui::InputDevice&));
+  MOCK_METHOD1(GamepadAdded, GamepadDelegate*(const ui::GamepadDevice&));
   MOCK_METHOD0(Die, void());
   void OnGamingSeatDestroying(GamingSeat*) override { delete this; }
   ~MockGamingSeatDelegate() { Die(); }
