@@ -32,6 +32,7 @@ class AddressAccessoryControllerImpl
 
   // AccessoryController:
   void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
+  void OnOptionSelected(AccessoryAction selected_action) override;
 
   // AddressAccessoryController:
   void RefreshSuggestions() override;

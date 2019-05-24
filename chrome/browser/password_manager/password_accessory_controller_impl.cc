@@ -167,19 +167,19 @@ void PasswordAccessoryControllerImpl::OnFilledIntoFocusedField(
 }
 
 void PasswordAccessoryControllerImpl::OnOptionSelected(
-    const base::string16& selected_option) const {
-  // TODO(crbug.com/905669): This shouldn't rely on the selection name and
-  // metrics::AccessoryAction shouldn't be password-specific.
-  if (selected_option ==
-      l10n_util::GetStringUTF16(
-          IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK)) {
-    UMA_HISTOGRAM_ENUMERATION("KeyboardAccessory.AccessoryActionSelected",
-                              metrics::AccessoryAction::MANAGE_PASSWORDS,
-                              metrics::AccessoryAction::COUNT);
+    autofill::AccessoryAction selected_action) {
+  if (selected_action == autofill::AccessoryAction::MANAGE_PASSWORDS) {
     chrome::android::PreferencesLauncher::ShowPasswordSettings(
         web_contents_,
         password_manager::ManagePasswordsReferrer::kPasswordsAccessorySheet);
+    return;
   }
+  if (selected_action == autofill::AccessoryAction::GENERATE_PASSWORD_MANUAL) {
+    // TODO(https://crbug.com/835234): Invoke manual generation.
+    return;
+  }
+  NOTREACHED() << "Unhandled selected action: "
+               << static_cast<int>(selected_action);
 }
 
 void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
@@ -207,19 +207,22 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
   if (is_password_field && is_manual_generation_available) {
     base::string16 generate_password_title = l10n_util::GetStringUTF16(
         IDS_PASSWORD_MANAGER_ACCESSORY_GENERATE_PASSWORD_BUTTON_TITLE);
-    footer_commands_to_add.push_back(FooterCommand(generate_password_title));
+    footer_commands_to_add.push_back(
+        FooterCommand(generate_password_title,
+                      autofill::AccessoryAction::GENERATE_PASSWORD_MANUAL));
   }
 
   base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
-  footer_commands_to_add.push_back(FooterCommand(manage_passwords_title));
+  footer_commands_to_add.push_back(FooterCommand(
+      manage_passwords_title, autofill::AccessoryAction::MANAGE_PASSWORDS));
 
   bool has_suggestions = !info_to_add.empty();
 
   GetManualFillingController()->RefreshSuggestionsForField(
       focused_field_type,
       autofill::CreateAccessorySheetData(
-          autofill::FallbackSheetType::PASSWORD,
+          autofill::AccessoryTabType::PASSWORDS,
           GetTitle(has_suggestions, GetFocusedFrameOrigin()),
           std::move(info_to_add), std::move(footer_commands_to_add)));
 

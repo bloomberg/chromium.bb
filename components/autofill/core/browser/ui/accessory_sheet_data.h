@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 
 namespace autofill {
 
@@ -74,7 +75,7 @@ std::ostream& operator<<(std::ostream& out, const UserInfo& user_info);
 // Represents a command below the suggestions, such as "Manage password...".
 class FooterCommand {
  public:
-  explicit FooterCommand(base::string16 display_text);
+  FooterCommand(base::string16 display_text, autofill::AccessoryAction action);
   FooterCommand(const FooterCommand& footer_command);
   FooterCommand(FooterCommand&& footer_command);
 
@@ -85,23 +86,20 @@ class FooterCommand {
 
   const base::string16& display_text() const { return display_text_; }
 
+  autofill::AccessoryAction accessory_action() const {
+    return accessory_action_;
+  }
+
   bool operator==(const FooterCommand& fc) const;
 
  private:
   base::string16 display_text_;
+  autofill::AccessoryAction accessory_action_;
 };
 
 std::ostream& operator<<(std::ostream& out, const FooterCommand& fc);
 
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.keyboard_accessory
-enum class FallbackSheetType {
-  // Indicates the data type to which an AccessorySheetData object corresponds.
-  PASSWORD,
-  CREDIT_CARD,
-  ADDRESS
-};
-
-std::ostream& operator<<(std::ostream& out, const FallbackSheetType& type);
+std::ostream& operator<<(std::ostream& out, const AccessoryTabType& type);
 
 // Represents the contents of a bottom sheet tab below the keyboard accessory,
 // which can correspond to passwords, credit cards, or profiles data.
@@ -109,8 +107,7 @@ class AccessorySheetData {
  public:
   class Builder;
 
-  explicit AccessorySheetData(FallbackSheetType sheet_type,
-                              base::string16 title);
+  AccessorySheetData(AccessoryTabType sheet_type, base::string16 title);
   AccessorySheetData(const AccessorySheetData& data);
   AccessorySheetData(AccessorySheetData&& data);
 
@@ -120,7 +117,7 @@ class AccessorySheetData {
   AccessorySheetData& operator=(AccessorySheetData&& data);
 
   const base::string16& title() const { return title_; }
-  FallbackSheetType get_sheet_type() const { return sheet_type_; }
+  AccessoryTabType get_sheet_type() const { return sheet_type_; }
 
   void add_user_info(UserInfo user_info) {
     user_info_list_.emplace_back(std::move(user_info));
@@ -143,7 +140,7 @@ class AccessorySheetData {
   bool operator==(const AccessorySheetData& data) const;
 
  private:
-  FallbackSheetType sheet_type_;
+  AccessoryTabType sheet_type_;
   base::string16 title_;
   std::vector<UserInfo> user_info_list_;
   std::vector<FooterCommand> footer_commands_;
@@ -166,7 +163,7 @@ std::ostream& operator<<(std::ostream& out, const AccessorySheetData& data);
 //       .Build();
 class AccessorySheetData::Builder {
  public:
-  Builder(FallbackSheetType type, base::string16 title);
+  Builder(AccessoryTabType type, base::string16 title);
   ~Builder();
 
   // Adds a new UserInfo object to |accessory_sheet_data_|.
@@ -188,8 +185,10 @@ class AccessorySheetData::Builder {
                        bool selectable) &;
 
   // Appends a new footer command to |accessory_sheet_data_|.
-  Builder&& AppendFooterCommand(base::string16 display_text) &&;
-  Builder& AppendFooterCommand(base::string16 display_text) &;
+  Builder&& AppendFooterCommand(base::string16 display_text,
+                                autofill::AccessoryAction action) &&;
+  Builder& AppendFooterCommand(base::string16 display_text,
+                               autofill::AccessoryAction action) &;
 
   // This class returns the constructed AccessorySheetData object. Since this
   // would render the builder unusable, it's required to destroy the object

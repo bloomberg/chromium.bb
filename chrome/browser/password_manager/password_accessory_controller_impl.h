@@ -60,6 +60,7 @@ class PasswordAccessoryControllerImpl
 
   // AccessoryController:
   void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
+  void OnOptionSelected(autofill::AccessoryAction selected_action) override;
 
   // PasswordAccessoryController:
   void SavePasswordsForOrigin(
@@ -75,7 +76,6 @@ class PasswordAccessoryControllerImpl
   void GetFavicon(
       int desired_size_in_pixel,
       base::OnceCallback<void(const gfx::Image&)> icon_callback) override;
-  void OnOptionSelected(const base::string16& selected_option) const override;
 
   // Like |CreateForWebContents|, it creates the controller and attaches it to
   // the given |web_contents|. Additionally, it allows inject a manual filling

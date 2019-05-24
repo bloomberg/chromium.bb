@@ -43,7 +43,8 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));
   MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
-  MOCK_CONST_METHOD1(OnOptionSelected, void(const base::string16&));
+  MOCK_METHOD1(OnOptionSelected,
+               void(autofill::AccessoryAction selected_action));
 };
 
 class MockPasswordGenerationController : public PasswordGenerationController {
@@ -84,7 +85,7 @@ class MockPasswordAccessoryView : public ManualFillingViewInterface {
 autofill::AccessorySheetData dummy_accessory_sheet_data() {
   constexpr char kExampleAccessorySheetDataTitle[] = "Example title";
   return autofill::AccessorySheetData(
-      autofill::FallbackSheetType::CREDIT_CARD,
+      autofill::AccessoryTabType::CREDIT_CARDS,
       base::ASCIIToUTF16(kExampleAccessorySheetDataTitle));
 }
 

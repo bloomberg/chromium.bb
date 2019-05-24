@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
-import org.chromium.chrome.browser.keyboard_accessory.FallbackSheetType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -259,7 +258,7 @@ public class KeyboardAccessoryData {
      */
     public final static class AccessorySheetData {
         private final String mTitle;
-        private final @FallbackSheetType int mSheetType;
+        private final @AccessoryTabType int mSheetType;
         private final List<UserInfo> mUserInfoList = new ArrayList<>();
         private final List<FooterCommand> mFooterCommands = new ArrayList<>();
 
@@ -267,12 +266,12 @@ public class KeyboardAccessoryData {
          * Creates the AccessorySheetData object.
          * @param title The title of accessory sheet tab.
          */
-        public AccessorySheetData(@FallbackSheetType int sheetType, String title) {
+        public AccessorySheetData(@AccessoryTabType int sheetType, String title) {
             mSheetType = sheetType;
             mTitle = title;
         }
 
-        public @FallbackSheetType int getSheetType() {
+        public @AccessoryTabType int getSheetType() {
             return mSheetType;
         }
 

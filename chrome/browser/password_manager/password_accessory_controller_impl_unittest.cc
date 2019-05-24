@@ -31,7 +31,7 @@
 
 namespace {
 using autofill::AccessorySheetData;
-using autofill::FallbackSheetType;
+using autofill::AccessoryTabType;
 using autofill::FillingStatus;
 using autofill::FooterCommand;
 using autofill::PasswordForm;
@@ -104,8 +104,9 @@ base::string16 generate_password_str() {
 // footer.
 AccessorySheetData::Builder PasswordAccessorySheetDataBuilder(
     const base::string16& title) {
-  return AccessorySheetData::Builder(FallbackSheetType::PASSWORD, title)
-      .AppendFooterCommand(manage_passwords_str());
+  return AccessorySheetData::Builder(AccessoryTabType::PASSWORDS, title)
+      .AppendFooterCommand(manage_passwords_str(),
+                           autofill::AccessoryAction::MANAGE_PASSWORDS);
 }
 
 }  // namespace
@@ -650,10 +651,13 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
 TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
   controller()->SavePasswordsForOrigin({},
                                        url::Origin::Create(GURL(kExampleSite)));
-  AccessorySheetData::Builder data_builder(FallbackSheetType::PASSWORD,
+  AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
                                            passwords_empty_str(kExampleDomain));
-  data_builder.AppendFooterCommand(generate_password_str())
-      .AppendFooterCommand(manage_passwords_str());
+  data_builder
+      .AppendFooterCommand(generate_password_str(),
+                           autofill::AccessoryAction::GENERATE_PASSWORD_MANUAL)
+      .AppendFooterCommand(manage_passwords_str(),
+                           autofill::AccessoryAction::MANAGE_PASSWORDS);
   EXPECT_CALL(
       mock_manual_filling_controller_,
       RefreshSuggestionsForField(FocusedFieldType::kFillablePasswordField,

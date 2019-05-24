@@ -47,8 +47,9 @@ base::string16 manage_addresses_str() {
 // Creates a AccessorySheetData::Builder with a "Manage Addresses" footer.
 AccessorySheetData::Builder AddressAccessorySheetDataBuilder(
     const base::string16& title) {
-  return AccessorySheetData::Builder(FallbackSheetType::ADDRESS, title)
-      .AppendFooterCommand(manage_addresses_str());
+  return AccessorySheetData::Builder(AccessoryTabType::ADDRESSES, title)
+      .AppendFooterCommand(manage_addresses_str(),
+                           AccessoryAction::MANAGE_ADDRESSES);
 }
 
 }  // namespace
@@ -90,7 +91,7 @@ TEST_F(AddressAccessoryControllerTest, RefreshSuggestionsCallsUI) {
   AutofillProfile canadian = test::GetFullValidProfileForCanada();
   personal_data_manager_.AddProfile(canadian);
 
-  autofill::AccessorySheetData result(autofill::FallbackSheetType::PASSWORD,
+  autofill::AccessorySheetData result(autofill::AccessoryTabType::PASSWORDS,
                                       base::string16());
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(
@@ -127,7 +128,7 @@ TEST_F(AddressAccessoryControllerTest, RefreshSuggestionsCallsUI) {
 }
 
 TEST_F(AddressAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
-  autofill::AccessorySheetData result(autofill::FallbackSheetType::PASSWORD,
+  autofill::AccessorySheetData result(autofill::AccessoryTabType::PASSWORDS,
                                       base::string16());
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(

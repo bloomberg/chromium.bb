@@ -187,6 +187,7 @@ jumbo_static_library("browser") {
     "sync_utils.h",
     "ui/accessory_sheet_data.cc",
     "ui/accessory_sheet_data.h",
+    "ui/accessory_sheet_enums.h",
     "ui/address_combobox_model.cc",
     "ui/address_combobox_model.h",
     "ui/address_contact_form_label_formatter.cc",

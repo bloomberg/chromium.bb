@@ -66,8 +66,9 @@ std::ostream& operator<<(std::ostream& os, const UserInfo& user_info) {
   return os << "]";
 }
 
-FooterCommand::FooterCommand(base::string16 display_text)
-    : display_text_(std::move(display_text)) {}
+FooterCommand::FooterCommand(base::string16 display_text,
+                             autofill::AccessoryAction action)
+    : display_text_(std::move(display_text)), accessory_action_(action) {}
 
 FooterCommand::FooterCommand(const FooterCommand& footer_command) = default;
 
@@ -82,26 +83,32 @@ FooterCommand& FooterCommand::operator=(FooterCommand&& footer_command) =
     default;
 
 bool FooterCommand::operator==(const FooterCommand& fc) const {
-  return display_text_ == fc.display_text_;
+  return display_text_ == fc.display_text_ &&
+         accessory_action_ == fc.accessory_action_;
 }
 
 std::ostream& operator<<(std::ostream& os, const FooterCommand& fc) {
-  return os << "(display text: \"" << fc.display_text() << "\")";
+  return os << "(display text: \"" << fc.display_text() << "\", "
+            << "action: " << static_cast<int>(fc.accessory_action()) << ")";
 }
 
-std::ostream& operator<<(std::ostream& os, const FallbackSheetType& type) {
+std::ostream& operator<<(std::ostream& os, const AccessoryTabType& type) {
   switch (type) {
-    case FallbackSheetType::PASSWORD:
+    case AccessoryTabType::PASSWORDS:
       return os << "Passwords sheet";
-    case FallbackSheetType::CREDIT_CARD:
+    case AccessoryTabType::CREDIT_CARDS:
       return os << "Payments sheet";
-    case FallbackSheetType::ADDRESS:
+    case AccessoryTabType::ADDRESSES:
       return os << "Address sheet";
+    case AccessoryTabType::ALL:
+      return os << "All sheets";
+    case AccessoryTabType::COUNT:
+      return os << "Invalid sheet";
   }
   return os;
 }
 
-AccessorySheetData::AccessorySheetData(FallbackSheetType sheet_type,
+AccessorySheetData::AccessorySheetData(AccessoryTabType sheet_type,
                                        base::string16 title)
     : sheet_type_(sheet_type), title_(std::move(title)) {}
 
@@ -137,7 +144,7 @@ std::ostream& operator<<(std::ostream& os, const AccessorySheetData& data) {
   return os << "]";
 }
 
-AccessorySheetData::Builder::Builder(FallbackSheetType type,
+AccessorySheetData::Builder::Builder(AccessoryTabType type,
                                      base::string16 title)
     : accessory_sheet_data_(type, std::move(title)) {}
 
@@ -163,7 +170,8 @@ AccessorySheetData::Builder& AccessorySheetData::Builder::AppendSimpleField(
     base::string16 text) & {
   base::string16 display_text = text;
   base::string16 a11y_description = std::move(text);
-  return AppendField(display_text, a11y_description, false, true);
+  return AppendField(std::move(display_text), std::move(a11y_description),
+                     false, true);
 }
 
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendField(
@@ -189,15 +197,17 @@ AccessorySheetData::Builder& AccessorySheetData::Builder::AppendField(
 }
 
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendFooterCommand(
-    base::string16 display_text) && {
+    base::string16 display_text,
+    autofill::AccessoryAction action) && {
   // Calls AppendFooterCommand(...)& since |this| is an lvalue.
-  return std::move(AppendFooterCommand(std::move(display_text)));
+  return std::move(AppendFooterCommand(std::move(display_text), action));
 }
 
 AccessorySheetData::Builder& AccessorySheetData::Builder::AppendFooterCommand(
-    base::string16 display_text) & {
+    base::string16 display_text,
+    autofill::AccessoryAction action) & {
   accessory_sheet_data_.add_footer_command(
-      FooterCommand(std::move(display_text)));
+      FooterCommand(std::move(display_text), action));
   return *this;
 }
 

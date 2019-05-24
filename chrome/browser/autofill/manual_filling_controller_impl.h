@@ -33,7 +33,8 @@ class ManualFillingControllerImpl
   void Hide(FillingSource source) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
-  void OnOptionSelected(const base::string16& selected_option) const override;
+  void OnOptionSelected(
+      autofill::AccessoryAction selected_action) const override;
   void OnGenerationRequested() override;
   void GetFavicon(
       int desired_size_in_pixel,

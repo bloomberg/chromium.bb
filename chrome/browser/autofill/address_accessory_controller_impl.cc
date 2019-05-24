@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_utils.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -69,8 +70,9 @@ std::vector<UserInfo> UserInfosForProfiles(
 }
 
 std::vector<FooterCommand> CreateManageAddressesFooter() {
-  return {FooterCommand(l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_ADDRESS_SHEET_ALL_ADDRESSES_LINK))};
+  return {FooterCommand(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SHEET_ALL_ADDRESSES_LINK),
+      AccessoryAction::MANAGE_ADDRESSES)};
 }
 
 }  // namespace
@@ -115,6 +117,17 @@ void AddressAccessoryControllerImpl::OnFillingTriggered(
   driver->RendererShouldFillFieldWithValue(selection.display_text());
 }
 
+void AddressAccessoryControllerImpl::OnOptionSelected(
+    AccessoryAction selected_action) {
+  if (selected_action == AccessoryAction::MANAGE_ADDRESSES) {
+    chrome::android::PreferencesLauncher::ShowAutofillProfileSettings(
+        web_contents_);
+    return;
+  }
+  NOTREACHED() << "Unhandled selected action: "
+               << static_cast<int>(selected_action);
+}
+
 void AddressAccessoryControllerImpl::RefreshSuggestions() {
   std::vector<AutofillProfile*> profiles = GetProfiles();
   base::string16 title_or_empty_message;
@@ -124,7 +137,7 @@ void AddressAccessoryControllerImpl::RefreshSuggestions() {
   GetManualFillingController()->RefreshSuggestionsForField(
       mojom::FocusedFieldType::kFillableTextField,
       autofill::CreateAccessorySheetData(
-          autofill::FallbackSheetType::ADDRESS, title_or_empty_message,
+          autofill::AccessoryTabType::ADDRESSES, title_or_empty_message,
           UserInfosForProfiles(profiles), CreateManageAddressesFooter()));
 }
 

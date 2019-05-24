@@ -24,8 +24,12 @@ namespace {
 
 AccessorySheetData::Builder CreditCardAccessorySheetDataBuilder() {
   return AccessorySheetData::Builder(
-      FallbackSheetType::CREDIT_CARD,
-      l10n_util::GetStringUTF16(IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE));
+             AccessoryTabType::CREDIT_CARDS,
+             l10n_util::GetStringUTF16(
+                 IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE))
+      .AppendFooterCommand(
+          l10n_util::GetStringUTF16(IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE),
+          AccessoryAction::MANAGE_CREDIT_CARDS);
 }
 
 }  // namespace
@@ -59,7 +63,7 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestionsForField) {
   autofill::CreditCard card = test::GetCreditCard();
   data_manager_.AddCreditCard(card);
 
-  autofill::AccessorySheetData result(autofill::FallbackSheetType::PASSWORD,
+  autofill::AccessorySheetData result(autofill::AccessoryTabType::PASSWORDS,
                                       base::string16());
 
   EXPECT_CALL(mock_mf_controller_,

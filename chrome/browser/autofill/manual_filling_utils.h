@@ -14,7 +14,7 @@ namespace autofill {
 // Creates an AccessorySheetData defining the data to be shown in the filling
 // UI.
 AccessorySheetData CreateAccessorySheetData(
-    FallbackSheetType type,
+    AccessoryTabType type,
     base::string16 title,
     std::vector<UserInfo> user_info,
     std::vector<FooterCommand> footer_commands);

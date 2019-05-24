@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "content/public/browser/web_contents.h"
 
+using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
 using autofill::mojom::FocusedFieldType;
 
@@ -105,9 +106,30 @@ void ManualFillingControllerImpl::OnFillingTriggered(
 }
 
 void ManualFillingControllerImpl::OnOptionSelected(
-    const base::string16& selected_option) const {
-  DCHECK(pwd_controller_);
-  pwd_controller_->OnOptionSelected(selected_option);
+    AccessoryAction selected_action) const {
+  UMA_HISTOGRAM_ENUMERATION("KeyboardAccessory.AccessoryActionSelected",
+                            selected_action, AccessoryAction::COUNT);
+  switch (selected_action) {
+    case AccessoryAction::GENERATE_PASSWORD_MANUAL:
+    case AccessoryAction::MANAGE_PASSWORDS:
+      DCHECK(pwd_controller_);
+      pwd_controller_->OnOptionSelected(selected_action);
+      return;
+    case AccessoryAction::MANAGE_ADDRESSES:
+      // TODO(crbug.com/962548): Call address controller.
+      return;
+    case AccessoryAction::MANAGE_CREDIT_CARDS:
+      // TODO(crbug.com/902425): Call credit card controller.
+      return;
+    case AccessoryAction::AUTOFILL_SUGGESTION:
+    case AccessoryAction::COUNT:
+    case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
+      NOTREACHED() << "Invalid action requested by options: "
+                   << static_cast<int>(selected_action);
+      return;
+  }
+  NOTREACHED() << "Unhandled action selected: "
+               << static_cast<int>(selected_action);
 }
 
 void ManualFillingControllerImpl::OnGenerationRequested() {

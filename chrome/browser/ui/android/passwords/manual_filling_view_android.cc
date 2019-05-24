@@ -21,6 +21,7 @@
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -120,9 +121,9 @@ void ManualFillingViewAndroid::OnFillingTriggered(
 void ManualFillingViewAndroid::OnOptionSelected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<_jstring*>& selectedOption) {
+    jint selectedAction) {
   controller_->OnOptionSelected(
-      base::android::ConvertJavaStringToUTF16(selectedOption));
+      static_cast<autofill::AccessoryAction>(selectedAction));
 }
 
 void ManualFillingViewAndroid::OnGenerationRequested(
@@ -166,7 +167,8 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
   for (const FooterCommand& footer_command : tab_data.footer_commands()) {
     Java_ManualFillingComponentBridge_addFooterCommandToAccessorySheetData(
         env, java_object_, j_tab_data,
-        ConvertUTF16ToJavaString(env, footer_command.display_text()));
+        ConvertUTF16ToJavaString(env, footer_command.display_text()),
+        static_cast<int>(footer_command.accessory_action()));
   }
   return j_tab_data;
 }

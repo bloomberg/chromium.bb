@@ -21,6 +21,9 @@ class AccessoryController {
   // in the content area.
   virtual void OnFillingTriggered(
       const autofill::UserInfo::Field& selection) = 0;
+
+  // Triggered when a user selects an option.
+  virtual void OnOptionSelected(autofill::AccessoryAction selected_action) = 0;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_ACCESSORY_CONTROLLER_H_

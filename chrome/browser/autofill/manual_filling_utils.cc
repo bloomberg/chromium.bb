@@ -10,7 +10,7 @@
 namespace autofill {
 
 AccessorySheetData CreateAccessorySheetData(
-    FallbackSheetType type,
+    AccessoryTabType type,
     base::string16 title,
     std::vector<UserInfo> user_info,
     std::vector<FooterCommand> footer_commands) {

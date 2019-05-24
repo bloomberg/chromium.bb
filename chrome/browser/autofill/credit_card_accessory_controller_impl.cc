@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -61,20 +62,32 @@ CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
 CreditCardAccessoryControllerImpl::~CreditCardAccessoryControllerImpl() =
     default;
 
+void CreditCardAccessoryControllerImpl::OnOptionSelected(
+    AccessoryAction selected_action) {
+  if (selected_action == AccessoryAction::MANAGE_CREDIT_CARDS) {
+    chrome::android::PreferencesLauncher::ShowAutofillCreditCardSettings(
+        web_contents_);
+    return;
+  }
+  NOTREACHED() << "Unhandled selected action: "
+               << static_cast<int>(selected_action);
+}
+
 void CreditCardAccessoryControllerImpl::RefreshSuggestionsForField() {
   const std::vector<CreditCard*> suggestions = GetSuggestions();
   std::vector<UserInfo> info_to_add;
   std::transform(suggestions.begin(), suggestions.end(),
                  std::back_inserter(info_to_add), &TranslateCard);
 
-  // TODO(crbug.com/902425): Add "Manage payment methods" footer command
-  std::vector<FooterCommand> footer_commands;
+  const std::vector<FooterCommand> footer_commands = {FooterCommand(
+      l10n_util::GetStringUTF16(IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE),
+      AccessoryAction::MANAGE_CREDIT_CARDS)};
 
   bool has_suggestions = !info_to_add.empty();
   GetManualFillingController()->RefreshSuggestionsForField(
       mojom::FocusedFieldType::kFillableTextField,
       autofill::CreateAccessorySheetData(
-          FallbackSheetType::CREDIT_CARD, GetTitle(has_suggestions),
+          AccessoryTabType::CREDIT_CARDS, GetTitle(has_suggestions),
           std::move(info_to_add), std::move(footer_commands)));
 }
 

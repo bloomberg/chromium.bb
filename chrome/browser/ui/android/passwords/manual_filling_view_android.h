@@ -45,10 +45,9 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
       const base::android::JavaParamRef<jobject>& obj,
       jboolean isPassword,
       const base::android::JavaParamRef<jobject>& j_user_info_field);
-  void OnOptionSelected(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<_jstring*>& selectedOption);
+  void OnOptionSelected(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jint selectedAction);
   void OnGenerationRequested(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
 

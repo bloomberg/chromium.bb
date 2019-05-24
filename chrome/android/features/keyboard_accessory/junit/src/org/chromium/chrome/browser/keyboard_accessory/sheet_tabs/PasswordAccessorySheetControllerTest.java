@@ -38,7 +38,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
-import org.chromium.chrome.browser.keyboard_accessory.FallbackSheetType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
@@ -100,13 +99,13 @@ public class PasswordAccessorySheetControllerTest {
 
         // If the coordinator receives a set of initial items, the model should report an insertion.
         testProvider.notifyObservers(
-                new AccessorySheetData(FallbackSheetType.PASSWORD, "Passwords"));
+                new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords"));
         verify(mMockItemListObserver).onItemRangeInserted(mSheetDataPieces, 0, 1);
         assertThat(mSheetDataPieces.size(), is(1));
 
         // If the coordinator receives a new set of items, the model should report a change.
         testProvider.notifyObservers(
-                new AccessorySheetData(FallbackSheetType.PASSWORD, "Other Passwords"));
+                new AccessorySheetData(AccessoryTabType.PASSWORDS, "Other Passwords"));
         verify(mMockItemListObserver).onItemRangeChanged(mSheetDataPieces, 0, 1, null);
         assertThat(mSheetDataPieces.size(), is(1));
 
@@ -125,7 +124,7 @@ public class PasswordAccessorySheetControllerTest {
         setAutofillFeature(false);
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(FallbackSheetType.PASSWORD, "Passwords for this site");
+                new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords for this site");
         testData.getUserInfoList().add(new UserInfo(null));
         testData.getUserInfoList().get(0).addField(new UserInfoField("Name", "Name", false, null));
         testData.getUserInfoList().get(0).addField(
@@ -149,7 +148,7 @@ public class PasswordAccessorySheetControllerTest {
         setAutofillFeature(true);
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(FallbackSheetType.PASSWORD, "No passwords for this");
+                new AccessorySheetData(AccessoryTabType.PASSWORDS, "No passwords for this");
         mCoordinator.registerDataProvider(testProvider);
 
         // Providing only FooterCommands and no User Info shows the title as empty state:
@@ -195,7 +194,7 @@ public class PasswordAccessorySheetControllerTest {
 
         // If the tab is shown without interactive item, log "0" samples.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(FallbackSheetType.PASSWORD, "No passwords!");
+                new AccessorySheetData(AccessoryTabType.PASSWORDS, "No passwords!");
         accessorySheetData.getFooterCommands().add(new FooterCommand("Manage all passwords", null));
         accessorySheetData.getFooterCommands().add(new FooterCommand("Generate password", null));
         testProvider.notifyObservers(accessorySheetData);

@@ -92,13 +92,6 @@ class PasswordAccessoryController
       int desired_size_in_pixel,
       base::OnceCallback<void(const gfx::Image&)> icon_callback) = 0;
 
-  // Called by the UI code because a user triggered the |selected_option|,
-  // such as "Manage passwords..."
-  // TODO(crbug.com/905669): Replace the string param with an enum to indicate
-  // the selected option.
-  virtual void OnOptionSelected(
-      const base::string16& selected_option) const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryController);
 };

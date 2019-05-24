@@ -35,7 +35,6 @@ import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
-import org.chromium.chrome.browser.keyboard_accessory.FallbackSheetType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
@@ -97,13 +96,13 @@ public class AddressAccessorySheetControllerTest {
 
         // If the coordinator receives a set of initial items, the model should report an insertion.
         testProvider.notifyObservers(
-                new AccessorySheetData(FallbackSheetType.ADDRESS, "Addresses"));
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses"));
         verify(mMockItemListObserver).onItemRangeInserted(mSheetDataPieces, 0, 1);
         assertThat(mSheetDataPieces.size(), is(1));
 
         // If the coordinator receives a new set of items, the model should report a change.
         testProvider.notifyObservers(
-                new AccessorySheetData(FallbackSheetType.ADDRESS, "Other Addresses"));
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Other Addresses"));
         verify(mMockItemListObserver).onItemRangeChanged(mSheetDataPieces, 0, 1, null);
         assertThat(mSheetDataPieces.size(), is(1));
 
@@ -121,7 +120,7 @@ public class AddressAccessorySheetControllerTest {
     public void testSplitsTabDataToList() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(FallbackSheetType.ADDRESS, "Addresses for this site");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site");
         testData.getUserInfoList().add(new UserInfo(null));
         testData.getUserInfoList().get(0).addField(new UserInfoField("Name", "Name", false, null));
         testData.getUserInfoList().get(0).addField(
@@ -139,7 +138,7 @@ public class AddressAccessorySheetControllerTest {
     public void testUsesTitleElementForEmptyState() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(FallbackSheetType.ADDRESS, "No addresses");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses");
         mCoordinator.registerDataProvider(testProvider);
 
         testProvider.notifyObservers(testData);
@@ -171,7 +170,7 @@ public class AddressAccessorySheetControllerTest {
 
         // If the tab is shown without interactive item, log "0" samples.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(FallbackSheetType.ADDRESS, "No addresses!");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses!");
         testProvider.notifyObservers(accessorySheetData);
         mCoordinator.onTabShown();
 

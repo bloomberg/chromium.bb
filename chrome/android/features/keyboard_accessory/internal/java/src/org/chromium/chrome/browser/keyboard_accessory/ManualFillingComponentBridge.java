@@ -103,7 +103,7 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
-    private static Object createAccessorySheetData(@FallbackSheetType int type, String title) {
+    private static Object createAccessorySheetData(@AccessoryTabType int type, String title) {
         return new AccessorySheetData(type, title);
     }
 
@@ -134,12 +134,12 @@ class ManualFillingComponentBridge {
 
     @CalledByNative
     private void addFooterCommandToAccessorySheetData(
-            Object objAccessorySheetData, String displayText) {
+            Object objAccessorySheetData, String displayText, int accessoryAction) {
         ((AccessorySheetData) objAccessorySheetData)
                 .getFooterCommands()
                 .add(new FooterCommand(displayText, (footerCommand) -> {
                     assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
-                    nativeOnOptionSelected(mNativeView, footerCommand.getDisplayText());
+                    nativeOnOptionSelected(mNativeView, accessoryAction);
                 }));
     }
 
@@ -164,7 +164,7 @@ class ManualFillingComponentBridge {
     private native void nativeOnFillingTriggered(
             long nativeManualFillingViewAndroid, boolean isObfuscated, UserInfoField userInfoField);
     private native void nativeOnOptionSelected(
-            long nativeManualFillingViewAndroid, String selectedOption);
+            long nativeManualFillingViewAndroid, int accessoryAction);
     private native void nativeOnGenerationRequested(long nativeManualFillingViewAndroid);
 
     private static native void nativeCachePasswordSheetDataForTesting(

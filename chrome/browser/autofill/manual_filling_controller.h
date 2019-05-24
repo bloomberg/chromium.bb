@@ -94,12 +94,10 @@ class ManualFillingController {
   virtual void OnFillingTriggered(
       const autofill::UserInfo::Field& selection) = 0;
 
-  // Called by the UI code because a user triggered the |selected_option|,
-  // such as "Manage passwords..."
-  // TODO(crbug.com/905669): Replace the string param with an enum to indicate
-  // the selected option.
+  // Called by the UI code because a user triggered the |selected_action|,
+  // such as "Manage passwords...".
   virtual void OnOptionSelected(
-      const base::string16& selected_option) const = 0;
+      autofill::AccessoryAction selected_action) const = 0;
 
   // Called by the UI code to signal that the user requested password
   // generation. This should prompt a modal dialog with the generated password.

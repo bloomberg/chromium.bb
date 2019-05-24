@@ -839,6 +839,9 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Automatic password generation"/>
   <int value="1" label="'Manage all passwords' link"/>
   <int value="2" label="Autofill suggestion"/>
+  <int value="3" label="'Manage all credit cards' link"/>
+  <int value="4" label="'Manage all addresses' link"/>
+  <int value="5" label="Manual password generation"/>
 </enum>
 
 <enum name="AccessoryBarContents">

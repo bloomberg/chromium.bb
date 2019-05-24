@@ -27,6 +27,7 @@ class CreditCardAccessoryControllerImpl : public CreditCardAccessoryController {
   // AccessoryController:
   // TODO(crbug.com/902425): Implement filling logic.
   void OnFillingTriggered(const UserInfo::Field& selection) override {}
+  void OnOptionSelected(AccessoryAction selected_action) override;
 
   // CreditCardAccessoryController:
   void RefreshSuggestionsForField() override;
