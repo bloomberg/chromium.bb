@@ -317,12 +317,12 @@ void JankTracker::NotifyPrePaintFinished() {
 
   if (use_sweep_line) {
     if (!region_experimental_.IsEmpty()) {
-      SetLayoutShiftRects(region_experimental_.GetRects());
+      SetLayoutShiftRects(region_experimental_.GetRects(), 1);
     }
     region_experimental_.Reset();
   } else {
-    if (region_.IsEmpty()) {
-      SetLayoutShiftRects(region_.Rects());
+    if (!region_.IsEmpty()) {
+      SetLayoutShiftRects(region_.Rects(), granularity_scale);
     }
     region_ = Region();
   }
@@ -381,16 +381,20 @@ std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
 }
 
 std::vector<gfx::Rect> JankTracker::ConvertIntRectsToGfxRects(
-    const Vector<IntRect>& int_rects) {
+    const Vector<IntRect>& int_rects,
+    double granularity_scale) {
   std::vector<gfx::Rect> rects;
   for (const IntRect& rect : int_rects) {
-    gfx::Rect r = gfx::Rect(rect.X(), rect.Y(), rect.Width(), rect.Height());
+    gfx::Rect r = gfx::Rect(
+        rect.X() / granularity_scale, rect.Y() / granularity_scale,
+        rect.Width() / granularity_scale, rect.Height() / granularity_scale);
     rects.emplace_back(r);
   }
   return rects;
 }
 
-void JankTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
+void JankTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
+                                      double granularity_scale) {
   // Store the layout shift rects in the HUD layer.
   GraphicsLayer* root_graphics_layer =
       frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();
@@ -404,7 +408,8 @@ void JankTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
     if (!cc_layer->layer_tree_host()->GetDebugState().show_layout_shift_regions)
       return;
     if (cc_layer->layer_tree_host()->hud_layer()) {
-      std::vector<gfx::Rect> rects = ConvertIntRectsToGfxRects(int_rects);
+      std::vector<gfx::Rect> rects =
+          ConvertIntRectsToGfxRects(int_rects, granularity_scale);
       cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(rects);
       cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();
     }
