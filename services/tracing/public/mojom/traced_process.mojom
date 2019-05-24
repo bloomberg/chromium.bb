@@ -20,7 +20,7 @@ struct ConnectToTracingRequest {
 // and pass it pointers to the interfaces within the tracing service
 // that the other services should register themselves with.
 interface TracedProcess {
-  ConnectToTracingService(ConnectToTracingRequest request);
+  ConnectToTracingService(ConnectToTracingRequest request) => ();
 };
 
 

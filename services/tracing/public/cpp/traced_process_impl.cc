@@ -45,6 +45,7 @@ void TracedProcessImpl::OnTracedProcessRequest(
     return;
   }
 
+  DETACH_FROM_SEQUENCE(sequence_checker_);
   binding_.Bind(std::move(request));
 }
 
@@ -73,8 +74,13 @@ void TracedProcessImpl::UnregisterAgent(BaseAgent* agent) {
 }
 
 void TracedProcessImpl::ConnectToTracingService(
-    mojom::ConnectToTracingRequestPtr request) {
+    mojom::ConnectToTracingRequestPtr request,
+    ConnectToTracingServiceCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Acknowledge this message so the tracing service knows it was dispatched in
+  // this process.
+  std::move(callback).Run();
 
   // Tracing requires a running ThreadPool; disable tracing
   // for processes without it.

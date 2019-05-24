@@ -204,21 +204,14 @@ MockProducerHost::MockProducerHost(
     : producer_name_(producer_name),
       datasource_registered_callback_(
           std::move(datasource_registered_callback)) {
-  auto on_mojo_connected_callback =
-      [](MockProducerClient* producer_client,
-         const std::string& data_source_name, MockProducerHost* producer_host,
-         perfetto::TracingService* service,
-         mojom::ProducerClientPtr producer_client_pipe,
-         mojom::ProducerHostRequest producer_host_pipe) {
-        producer_host->OnMessagepipesReadyCallback(
-            service, std::move(producer_client_pipe),
-            std::move(producer_host_pipe));
-        producer_client->SetupDataSource(data_source_name);
-      };
-
-  producer_client->CreateMojoMessagepipes(base::BindOnce(
-      on_mojo_connected_callback, base::Unretained(producer_client),
-      data_source_name, base::Unretained(this), base::Unretained(service)));
+  mojom::ProducerClientPtr client;
+  mojom::ProducerHostPtrInfo host_info;
+  auto client_request = mojo::MakeRequest(&client);
+  Initialize(std::move(client), service, producer_name_);
+  binding_.Bind(mojo::MakeRequest(&host_info));
+  producer_client->BindClientAndHostPipesForTesting(std::move(client_request),
+                                                    std::move(host_info));
+  producer_client->SetupDataSource(data_source_name);
 }
 
 MockProducerHost::~MockProducerHost() = default;
@@ -249,15 +242,6 @@ void MockProducerHost::OnCommit(
   std::string proto_string;
   CHECK(proto.SerializeToString(&proto_string));
   all_host_commit_data_requests_ += proto_string;
-}
-
-void MockProducerHost::OnMessagepipesReadyCallback(
-    perfetto::TracingService* perfetto_service,
-    mojom::ProducerClientPtr producer_client_pipe,
-    mojom::ProducerHostRequest producer_host_pipe) {
-  Initialize(std::move(producer_client_pipe), perfetto_service, producer_name_);
-  binding_ = std::make_unique<mojo::Binding<mojom::ProducerHost>>(
-      this, std::move(producer_host_pipe));
 }
 
 MockProducer::MockProducer(const std::string& producer_name,

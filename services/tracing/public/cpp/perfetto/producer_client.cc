@@ -30,38 +30,35 @@ ProducerClient::~ProducerClient() {
 }
 
 void ProducerClient::Connect(mojom::PerfettoServicePtr perfetto_service) {
-  CreateMojoMessagepipes(base::BindOnce(
-      [](mojom::PerfettoServicePtr perfetto_service,
-         mojom::ProducerClientPtr producer_client_pipe,
-         mojom::ProducerHostRequest producer_host_pipe) {
-        perfetto_service->ConnectToProducerHost(std::move(producer_client_pipe),
-                                                std::move(producer_host_pipe));
-      },
-      std::move(perfetto_service)));
-}
-
-void ProducerClient::CreateMojoMessagepipes(
-    MessagepipesReadyCallback callback) {
-  auto origin_task_runner = base::SequencedTaskRunnerHandle::Get();
-  DCHECK(origin_task_runner);
-  mojom::ProducerClientPtr producer_client;
+  mojom::ProducerClientPtr client;
+  auto client_request = mojo::MakeRequest(&client);
+  mojom::ProducerHostPtrInfo host_info;
+  perfetto_service->ConnectToProducerHost(std::move(client),
+                                          mojo::MakeRequest(&host_info));
   task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ProducerClient::CreateMojoMessagepipesOnSequence,
-                     base::Unretained(this), origin_task_runner,
-                     std::move(callback), mojo::MakeRequest(&producer_client),
-                     std::move(producer_client)));
+      base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
+                     base::Unretained(this), std::move(client_request),
+                     std::move(host_info)));
+}
+
+void ProducerClient::BindClientAndHostPipesForTesting(
+    mojom::ProducerClientRequest producer_client_request,
+    mojom::ProducerHostPtrInfo producer_host_info) {
+  task_runner()->GetOrCreateTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
+                     base::Unretained(this), std::move(producer_client_request),
+                     std::move(producer_host_info)));
 }
 
 // The Mojo binding should run on the same sequence as the one we get
 // callbacks from Perfetto on, to avoid additional PostTasks.
-void ProducerClient::CreateMojoMessagepipesOnSequence(
-    scoped_refptr<base::SequencedTaskRunner> origin_task_runner,
-    MessagepipesReadyCallback callback,
+void ProducerClient::BindClientAndHostPipesOnSequence(
     mojom::ProducerClientRequest producer_client_request,
-    mojom::ProducerClientPtr producer_client) {
+    mojom::ProducerHostPtrInfo producer_host_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!binding_ || !binding_->is_bound());
+  CHECK(!binding_ || !binding_->is_bound());
 
   binding_ = std::make_unique<mojo::Binding<mojom::ProducerClient>>(
       this, std::move(producer_client_request));
@@ -71,9 +68,7 @@ void ProducerClient::CreateMojoMessagepipesOnSequence(
       },
       base::Unretained(this)));
 
-  origin_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(producer_client),
-                                mojo::MakeRequest(&producer_host_)));
+  producer_host_.Bind(std::move(producer_host_info));
 
   // TODO(oysteine) We register the data sources in reverse as a temporary
   // workaround to make sure that the TraceEventDataSource is registered

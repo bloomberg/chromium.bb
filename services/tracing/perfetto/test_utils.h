@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
@@ -133,11 +134,6 @@ class MockProducerHost : public ProducerHost {
 
   void OnCommit(const perfetto::CommitDataRequest& commit_data_request);
 
-  void OnMessagepipesReadyCallback(
-      perfetto::TracingService* perfetto_service,
-      mojom::ProducerClientPtr producer_client_pipe,
-      mojom::ProducerHostRequest producer_host_pipe);
-
   const std::string& all_host_commit_data_requests() const {
     return all_host_commit_data_requests_;
   }
@@ -146,7 +142,7 @@ class MockProducerHost : public ProducerHost {
   const std::string producer_name_;
   base::OnceClosure datasource_registered_callback_;
   std::string all_host_commit_data_requests_;
-  std::unique_ptr<mojo::Binding<mojom::ProducerHost>> binding_;
+  mojo::Binding<mojom::ProducerHost> binding_{this};
 };
 
 class MockProducer {

@@ -45,15 +45,6 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   void Connect(mojom::PerfettoServicePtr perfetto_service);
 
-  // Create the messagepipes that'll be used to connect
-  // to the service-side ProducerHost, on the correct
-  // sequence. The callback will be called on same sequence
-  // as CreateMojoMessagepipes() got called on.
-  using MessagepipesReadyCallback =
-      base::OnceCallback<void(mojom::ProducerClientPtr,
-                              mojom::ProducerHostRequest)>;
-  void CreateMojoMessagepipes(MessagepipesReadyCallback);
-
   void set_in_process_shmem_arbiter(perfetto::SharedMemoryArbiter* arbiter) {
     DCHECK(!in_process_arbiter_);
     in_process_arbiter_ = arbiter;
@@ -94,6 +85,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   size_t shared_buffer_page_size_kb() const override;
   perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
 
+  void BindClientAndHostPipesForTesting(mojom::ProducerClientRequest,
+                                        mojom::ProducerHostPtrInfo);
+
  protected:
   perfetto::SharedMemoryArbiter* GetSharedMemoryArbiter() override;
 
@@ -101,14 +95,8 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   friend class base::NoDestructor<ProducerClient>;
 
   void CommitDataOnSequence(const perfetto::CommitDataRequest& request);
-
-  // The callback will be run on the |origin_task_runner|, meaning
-  // the same sequence as CreateMojoMessagePipes() got called on.
-  void CreateMojoMessagepipesOnSequence(
-      scoped_refptr<base::SequencedTaskRunner> origin_task_runner,
-      MessagepipesReadyCallback,
-      mojom::ProducerClientRequest,
-      mojom::ProducerClientPtr);
+  void BindClientAndHostPipesOnSequence(mojom::ProducerClientRequest,
+                                        mojom::ProducerHostPtrInfo);
 
   std::unique_ptr<mojo::Binding<mojom::ProducerClient>> binding_;
   mojom::ProducerHostPtr producer_host_;
