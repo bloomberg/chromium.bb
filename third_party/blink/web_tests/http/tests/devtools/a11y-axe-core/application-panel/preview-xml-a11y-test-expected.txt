@@ -1,0 +1,55 @@
+Tests accessibility in the preview view for XML files using the axe-core linter.
+
+Initial state:
+Application
+  Manifest (selected)
+  Service Workers
+  Clear storage
+Storage
+  Local Storage
+    http://127.0.0.1:8000
+  Session Storage
+    http://127.0.0.1:8000
+  IndexedDB
+  Web SQL
+  Cookies
+    http://127.0.0.1:8000
+Cache
+  Cache Storage
+  Application Cache
+Background Services
+  Background Fetch
+  Background Sync
+Frames
+  top
+visible view: unknown
+
+Running: testXMLView
+Revealed xml-with-stylesheet.xml:
+Application
+  Manifest
+  Service Workers
+  Clear storage
+Storage
+  Local Storage
+    http://127.0.0.1:8000
+  Session Storage
+    http://127.0.0.1:8000
+  IndexedDB
+  Web SQL
+  Cookies
+    http://127.0.0.1:8000
+Cache
+  Cache Storage
+  Application Cache
+Background Services
+  Background Fetch
+  Background Sync
+Frames
+  top
+    inspected-page.html
+    xml-with-stylesheet.xml (selected)
+visible view: xml
+aXe violations: []
+
+

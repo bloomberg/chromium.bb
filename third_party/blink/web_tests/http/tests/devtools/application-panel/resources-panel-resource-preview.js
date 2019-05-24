@@ -19,59 +19,13 @@
       }
     `);
   await TestRunner.addScriptTag('../resources/json-value.js');
+  await TestRunner.addScriptTag('./resources-panel-resource-preview.js');
 
-  function dump(node, prefix) {
-    for (var child of node.children()) {
-      TestRunner.addResult(prefix + child.listItemElement.textContent + (child.selected ? ' (selected)' : ''));
-      dump(child, prefix + '  ');
-    }
-  }
-
-  function dumpCurrentState(label) {
-    var types = new Map([
-      [SourceFrame.ResourceSourceFrame, 'source'], [SourceFrame.ImageView, 'image'], [SourceFrame.JSONView, 'json']
-    ]);
-
-    var view = UI.panels.resources;
-    TestRunner.addResult(label);
-    dump(view._sidebar._sidebarTree.rootElement(), '');
-    var visibleView = view.visibleView;
-    if (visibleView instanceof UI.SearchableView)
-      visibleView = visibleView.children()[0];
-    var typeLabel = 'unknown';
-    for (var type of types) {
-      if (!(visibleView instanceof type[0]))
-        continue;
-      typeLabel = type[1];
-      break;
-    }
-    console.log('visible view: ' + typeLabel);
-  }
-
-  async function revealResourceWithDisplayName(name) {
-    var target = SDK.targetManager.mainTarget();
-    var model = target.model(SDK.ResourceTreeModel);
-    var resource = null;
-    for (var r of model.mainFrame.resources()) {
-      if (r.displayName !== name)
-        continue;
-      resource = r;
-      break;
-    }
-
-    if (!r) {
-      TestRunner.addResult(name + ' was not found');
-      return;
-    }
-    await Common.Revealer.reveal(r);
-    dumpCurrentState('Revealed ' + name + ':');
-  }
-
-  UI.viewManager.showView('resources');
-  dumpCurrentState('Initial state:');
-  await revealResourceWithDisplayName('json-value.js');
-  await revealResourceWithDisplayName('image.png');
-  await revealResourceWithDisplayName('resources-panel-resource-preview.js');
+  await UI.viewManager.showView('resources');
+  ApplicationTestRunner.dumpCurrentState('Initial state:');
+  await ApplicationTestRunner.revealResourceWithDisplayName('json-value.js');
+  await ApplicationTestRunner.revealResourceWithDisplayName('image.png');
+  await ApplicationTestRunner.revealResourceWithDisplayName('resources-panel-resource-preview.js');
 
   TestRunner.completeTest();
 })();
