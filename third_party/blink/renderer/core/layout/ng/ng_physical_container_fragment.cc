@@ -67,7 +67,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
     const LayoutBoxModelObject* containing_block) const {
-  for (const auto& child : Children()) {
+  for (const auto& child : PostLayoutChildren()) {
     // Outlines of out-of-flow positioned descendants are handled in
     // NGPhysicalBoxFragment::AddSelfOutlineRects().
     if (child->IsOutOfFlowPositioned())
@@ -83,16 +83,6 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
         if (child_layout_object->IsElementContinuation() ||
             child_layout_block_flow->IsAnonymousBlockContinuation())
           continue;
-        if (child_layout_block_flow->IsRelayoutBoundary()) {
-          const NGPhysicalBoxFragment* maybe_new_child_fragment =
-              child_layout_block_flow->CurrentFragment();
-          if (maybe_new_child_fragment) {
-            AddOutlineRectsForDescendant(
-                {maybe_new_child_fragment, child.Offset()}, outline_rects,
-                additional_offset, outline_type, containing_block);
-            continue;
-          }
-        }
       }
     }
     AddOutlineRectsForDescendant(child, outline_rects, additional_offset,

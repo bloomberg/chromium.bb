@@ -206,6 +206,14 @@ class CORE_EXPORT NGPhysicalFragment
     return !IsLineBox() ? &layout_object_ : nullptr;
   }
 
+  // Returns the latest generation of the post-layout fragment. Returns
+  // |nullptr| if |this| is the one.
+  //
+  // When subtree relayout occurs at the relayout boundary, its containing block
+  // may keep the reference to old generations of this fragment. Callers can
+  // check if there were newer generations.
+  const NGPhysicalFragment* PostLayout() const;
+
   // Scrollable overflow. including contents, in the local coordinate.
   PhysicalRect ScrollableOverflow() const;
 

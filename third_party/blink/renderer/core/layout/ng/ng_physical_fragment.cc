@@ -347,6 +347,19 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   return container->IsLayoutNGMixin() || container->IsLayoutNGFlexibleBox();
 }
 
+const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
+  if (IsBox() && !IsInlineBox()) {
+    if (const auto* block = DynamicTo<LayoutBlockFlow>(GetLayoutObject())) {
+      if (block->IsRelayoutBoundary()) {
+        const NGPhysicalFragment* new_fragment = block->CurrentFragment();
+        if (new_fragment && new_fragment != this)
+          return new_fragment;
+      }
+    }
+  }
+  return nullptr;
+}
+
 #if DCHECK_IS_ON()
 void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
   if (!GetLayoutObject())

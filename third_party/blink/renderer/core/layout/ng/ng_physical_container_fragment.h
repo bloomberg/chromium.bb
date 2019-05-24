@@ -20,30 +20,98 @@ enum class NGOutlineType;
 
 class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
  public:
-  class ChildLinkList {
+  class ChildLinkListBase {
    public:
-    ChildLinkList(wtf_size_t count, const NGLink* buffer)
+    ChildLinkListBase(wtf_size_t count, const NGLink* buffer)
         : count_(count), buffer_(buffer) {}
 
     wtf_size_t size() const { return count_; }
+    bool IsEmpty() const { return count_ == 0; }
+
+   protected:
+    wtf_size_t count_;
+    const NGLink* buffer_;
+  };
+
+  class ChildLinkList : public ChildLinkListBase {
+   public:
+    using ChildLinkListBase::ChildLinkListBase;
+
     const NGLink& operator[](wtf_size_t idx) const { return buffer_[idx]; }
     const NGLink& front() const { return buffer_[0]; }
     const NGLink& back() const { return buffer_[count_ - 1]; }
 
     const NGLink* begin() const { return buffer_; }
     const NGLink* end() const { return begin() + count_; }
+  };
 
-    bool IsEmpty() const { return count_ == 0; }
+  // Same as |ChildLinkList|, except that each |NGLink| has the latest
+  // generation of post-layout. See |NGPhysicalFragment::UpdatedFragment()| for
+  // more details.
+  class PostLayoutChildLinkList : public ChildLinkListBase {
+   public:
+    using ChildLinkListBase::ChildLinkListBase;
 
-   private:
-    wtf_size_t count_;
-    const NGLink* buffer_;
+    class ConstIterator {
+      STACK_ALLOCATED();
+
+     public:
+      ConstIterator(const NGLink* current) : current_(current) {}
+
+      const NGLink& operator*() const { return *PostLayoutOrCurrent(); }
+      const NGLink* operator->() const { return PostLayoutOrCurrent(); }
+
+      ConstIterator& operator++() {
+        ++current_;
+        return *this;
+      }
+      bool operator==(const ConstIterator& other) const {
+        return current_ == other.current_;
+      }
+      bool operator!=(const ConstIterator& other) const {
+        return current_ != other.current_;
+      }
+
+     private:
+      const NGLink* PostLayoutOrCurrent() const {
+        post_layout_.fragment = current_->fragment->PostLayout();
+        if (!post_layout_.fragment)
+          return current_;
+        post_layout_.offset = current_->offset;
+        return &post_layout_;
+      }
+
+      const NGLink* current_;
+      mutable NGLink post_layout_;
+    };
+    using const_iterator = ConstIterator;
+
+    const_iterator begin() const { return const_iterator(buffer_); }
+    const_iterator end() const { return const_iterator(buffer_ + count_); }
+
+    const NGLink operator[](wtf_size_t idx) const {
+      CHECK_LT(idx, count_);
+      return buffer_[idx].PostLayout();
+    }
+    const NGLink front() const { return (*this)[0]; }
+    const NGLink back() const { return (*this)[count_ - 1]; }
   };
 
   ~NGPhysicalContainerFragment();
 
+  // Returns the children of |this|.
+  //
+  // Note, children in this collection maybe old generations. Items in this
+  // collection are safe, but their children (grandchildren of |this|) maybe
+  // from deleted nodes or LayoutObjects. Also see |PostLayoutChildren()|.
   ChildLinkList Children() const {
     return ChildLinkList(num_children_, buffer_);
+  }
+
+  // Similar to |Children()| but all children are the latest generation of
+  // post-layout, and therefore all descendants are safe.
+  PostLayoutChildLinkList PostLayoutChildren() const {
+    return PostLayoutChildLinkList(num_children_, buffer_);
   }
 
   bool HasFloatingDescendants() const { return has_floating_descendants_; }
