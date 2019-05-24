@@ -10,7 +10,8 @@
 struct TabSizeInfo;
 
 // Contains the data necessary to determine the bounds of a tab even while
-// it's in the middle of animating between states.  Immutable.
+// it's in the middle of animating between states.  Immutable (except for
+// replacement via assignment).
 class TabAnimationState {
  public:
   enum class TabOpenness { kOpen, kClosed };
@@ -37,6 +38,10 @@ class TabAnimationState {
                                        TabAnimationState origin,
                                        TabAnimationState target);
 
+  TabAnimationState WithOpenness(TabOpenness open) const;
+  TabAnimationState WithPinnedness(TabPinnedness pinned) const;
+  TabAnimationState WithActiveness(TabActiveness active) const;
+
   // The smallest width this tab should ever have.
   float GetMinimumWidth(TabSizeInfo tab_size_info) const;
 
@@ -51,7 +56,12 @@ class TabAnimationState {
 
   int GetLeadingEdgeOffset(std::vector<int> tab_widths, int my_index) const;
 
+  bool IsFullyClosed() const;
+
  private:
+  friend class TabAnimationTest;
+  friend class TabStripAnimatorTest;
+
   TabAnimationState(float openness,
                     float pinnedness,
                     float activeness,
@@ -67,19 +77,19 @@ class TabAnimationState {
 
   // The degree to which the tab is open. 1 if it is, 0 if it is not, and in
   // between if it's in the process of animating between open and closed.
-  const float openness_;
+  float openness_;
 
   // The degree to which the tab is pinned. 1 if it is, 0 if it is not, and in
   // between if it's in the process of animating between pinned and unpinned.
-  const float pinnedness_;
+  float pinnedness_;
 
   // The degree to which the tab is active. 1 if it is, 0 if it is not, and in
   // between if it's in the process of animating between active and inactive.
-  const float activeness_;
+  float activeness_;
 
   // The offset, in number of tab slots, of the tab's bounds relative to the
   // space dedicated for it in the tabstrip.
-  const float normalized_leading_edge_x_;
+  float normalized_leading_edge_x_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_ANIMATION_STATE_H_

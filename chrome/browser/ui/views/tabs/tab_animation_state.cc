@@ -21,13 +21,31 @@ TabAnimationState TabAnimationState::Interpolate(float value,
                                                  TabAnimationState origin,
                                                  TabAnimationState target) {
   return TabAnimationState(
-      gfx::Tween::FloatValueBetween(value, origin.normalized_leading_edge_x_,
-                                    target.normalized_leading_edge_x_),
       gfx::Tween::FloatValueBetween(value, origin.openness_, target.openness_),
       gfx::Tween::FloatValueBetween(value, origin.pinnedness_,
                                     target.pinnedness_),
       gfx::Tween::FloatValueBetween(value, origin.activeness_,
-                                    target.activeness_));
+                                    target.activeness_),
+      gfx::Tween::FloatValueBetween(value, origin.normalized_leading_edge_x_,
+                                    target.normalized_leading_edge_x_));
+}
+
+TabAnimationState TabAnimationState::WithOpenness(TabOpenness open) const {
+  return TabAnimationState(open == TabOpenness::kOpen ? 1 : 0, pinnedness_,
+                           activeness_, normalized_leading_edge_x_);
+}
+
+TabAnimationState TabAnimationState::WithPinnedness(
+    TabPinnedness pinned) const {
+  return TabAnimationState(openness_, pinned == TabPinnedness::kPinned ? 1 : 0,
+                           activeness_, normalized_leading_edge_x_);
+}
+
+TabAnimationState TabAnimationState::WithActiveness(
+    TabActiveness active) const {
+  return TabAnimationState(openness_, pinnedness_,
+                           active == TabActiveness::kActive ? 1 : 0,
+                           normalized_leading_edge_x_);
 }
 
 float TabAnimationState::GetMinimumWidth(TabSizeInfo tab_size_info) const {
@@ -69,4 +87,8 @@ int TabAnimationState::GetLeadingEdgeOffset(std::vector<int> tab_widths,
   // tabs.
   NOTIMPLEMENTED();
   return 0;
+}
+
+bool TabAnimationState::IsFullyClosed() const {
+  return openness_ == 0.0f;
 }
