@@ -1272,7 +1272,7 @@ TEST_F(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
                    << only_new_parser);
       base::test::ScopedFeatureList scoped_feature_list;
       if (only_new_parser) {
-        TurnOnOnlyNewParser(&scoped_feature_list);
+        TurnOnOnlyNewPassword(&scoped_feature_list);
         EXPECT_CALL(*store_, GetLogins(_, _))
             .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
       } else {
