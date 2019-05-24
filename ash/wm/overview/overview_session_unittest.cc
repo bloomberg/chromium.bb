@@ -1042,6 +1042,30 @@ TEST_F(OverviewSessionTest, ActivateDraggedWindowNotCancelOverview) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+// Tests that activate a non-dragged window during window drag will not cancel
+// overview mode.
+TEST_F(OverviewSessionTest, ActivateAnotherWindowDuringDragNotCancelOverview) {
+  UpdateDisplay("800x600");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  window1->SetProperty(aura::client::kAppType,
+                       static_cast<int>(AppType::BROWSER));
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  EXPECT_FALSE(InOverviewSession());
+
+  // Start drag on |window1|.
+  ::wm::ActivateWindow(window1.get());
+  std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
+      window1.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH));
+  EXPECT_TRUE(InOverviewSession());
+
+  // Activate |window2| should not cancel overview mode.
+  ::wm::ActivateWindow(window2.get());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->is_dragged());
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+  EXPECT_TRUE(InOverviewSession());
+}
+
 // Tests that exiting overview mode without selecting a window restores focus
 // to the previously focused window.
 TEST_F(OverviewSessionTest, CancelRestoresFocus) {
