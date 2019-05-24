@@ -3410,10 +3410,12 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   if (tpl_frame->is_valid == 0) return cm->base_qindex;
 
-  if (cpi->common.show_frame) return cm->base_qindex;
-
-  if (cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index] <
-      cpi->twopass.gf_group.pyramid_height)
+#define MAX_PYR_LEVEL_FROMTOP_DELTAQ 0
+  const int pyr_lev_from_top =
+      cpi->twopass.gf_group.pyramid_height -
+      cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index];
+  if (pyr_lev_from_top > MAX_PYR_LEVEL_FROMTOP_DELTAQ ||
+      cpi->twopass.gf_group.pyramid_height <= MAX_PYR_LEVEL_FROMTOP_DELTAQ + 1)
     return cm->base_qindex;
 
   if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return cm->base_qindex;
@@ -3446,7 +3448,8 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
     beta = (mc_saved + 100.0) / (mc_saved_base + 100.0);
   }
   offset = (7 * av1_get_deltaq_offset(cpi, cm->base_qindex, beta)) / 8;
-  // printf("beta %g, offset %d\n", beta, offset);
+  // printf("[%d/%d]: beta %g offset %d\n", pyr_lev_from_top,
+  //        cpi->twopass.gf_group.pyramid_height, beta, offset);
 
   aom_clear_system_state();
 
