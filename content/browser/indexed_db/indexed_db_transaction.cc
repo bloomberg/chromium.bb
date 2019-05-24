@@ -302,25 +302,6 @@ void IndexedDBTransaction::EnsureBackingStoreTransactionBegun() {
   }
 }
 
-class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
- public:
-  explicit BlobWriteCallbackImpl(
-      base::WeakPtr<IndexedDBTransaction> transaction)
-      : transaction_(std::move(transaction)) {}
-
-  leveldb::Status Run(IndexedDBBackingStore::BlobWriteResult result) override {
-    if (!transaction_)
-      return leveldb::Status::OK();
-    return transaction_->BlobWriteComplete(result);
-  }
-
- protected:
-  ~BlobWriteCallbackImpl() override {}
-
- private:
-  base::WeakPtr<IndexedDBTransaction> transaction_;
-};
-
 leveldb::Status IndexedDBTransaction::BlobWriteComplete(
     IndexedDBBackingStore::BlobWriteResult result) {
   IDB_TRACE("IndexedDBTransaction::BlobWriteComplete");
@@ -393,11 +374,16 @@ leveldb::Status IndexedDBTransaction::Commit() {
   if (!used_) {
     s = CommitPhaseTwo();
   } else {
-    scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback(
-        new BlobWriteCallbackImpl(ptr_factory_.GetWeakPtr()));
     // CommitPhaseOne will call the callback synchronously if there are no blobs
     // to write.
-    s = transaction_->CommitPhaseOne(callback);
+    s = transaction_->CommitPhaseOne(base::BindOnce(
+        [](base::WeakPtr<IndexedDBTransaction> transaction,
+           IndexedDBBackingStore::BlobWriteResult result) {
+          if (!transaction)
+            return leveldb::Status::OK();
+          return transaction->BlobWriteComplete(result);
+        },
+        ptr_factory_.GetWeakPtr()));
   }
 
   return s;

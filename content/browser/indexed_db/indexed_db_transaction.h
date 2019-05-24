@@ -29,7 +29,6 @@
 
 namespace content {
 
-class BlobWriteCallbackImpl;
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
 
@@ -160,7 +159,6 @@ class CONTENT_EXPORT IndexedDBTransaction {
   virtual base::TimeDelta GetInactivityTimeout() const;
 
  private:
-  friend class BlobWriteCallbackImpl;
   friend class IndexedDBClassFactory;
   friend class IndexedDBConnection;
   friend class base::RefCounted<IndexedDBTransaction>;

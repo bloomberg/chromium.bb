@@ -102,16 +102,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   enum class BlobWriteResult { FAILURE_ASYNC, SUCCESS_ASYNC, SUCCESS_SYNC };
 
-  class BlobWriteCallback : public base::RefCounted<BlobWriteCallback> {
-   public:
-    // TODO(dmurph): Make all calls to this method async after measuring
-    // performance.
-    virtual leveldb::Status Run(BlobWriteResult result) = 0;
-
-   protected:
-    friend class base::RefCounted<BlobWriteCallback>;
-    virtual ~BlobWriteCallback() {}
-  };
+  using BlobWriteCallback = base::OnceCallback<leveldb::Status(
+      IndexedDBBackingStore::BlobWriteResult result)>;
 
   class BlobChangeRecord {
    public:
@@ -147,7 +139,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // files should be cleaned up.
     // The callback will be called eventually on success or failure, or
     // immediately if phase one is complete due to lack of any blobs to write.
-    virtual leveldb::Status CommitPhaseOne(scoped_refptr<BlobWriteCallback>);
+    virtual leveldb::Status CommitPhaseOne(BlobWriteCallback callback);
 
     // CommitPhaseTwo is called once the blob files (if any) have been written
     // to disk, and commits the actual transaction to the backing store,
@@ -242,7 +234,6 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     typedef std::vector<WriteDescriptor> WriteDescriptorVec;
 
    private:
-    class BlobWriteCallbackWrapper;
 
     // Called by CommitPhaseOne: Identifies the blob entries to write and adds
     // them to the primary blob journal directly (i.e. not as part of the
@@ -262,7 +253,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // eventually on success or failure.
     void WriteNewBlobs(BlobEntryKeyValuePairVec* new_blob_entries,
                        WriteDescriptorVec* new_files_to_write,
-                       scoped_refptr<BlobWriteCallback> callback);
+                       BlobWriteCallback callback);
 
     // Called by CommitPhaseTwo: Partition blob references in blobs_to_remove_
     // into live (active references) and dead (no references).
