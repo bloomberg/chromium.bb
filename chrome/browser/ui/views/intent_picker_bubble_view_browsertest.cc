@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
 class IntentPickerBubbleViewBrowserTest
@@ -36,6 +37,15 @@ class IntentPickerBubbleViewBrowserTest
     TestTabActionDoesNotOpenAppWindow(
         url, base::BindOnce(&ClickLinkAndWait, web_contents, url,
                             LinkTarget::SELF, GetParam()));
+  }
+
+  // Inserts an iframe in the main frame of |web_contents|.
+  bool InsertIFrame(content::WebContents* web_contents) {
+    return content::ExecuteScript(
+        web_contents,
+        "let iframe = document.createElement('iframe');"
+        "iframe.id = 'iframe';"
+        "document.body.appendChild(iframe);");
   }
 
  private:
@@ -200,6 +210,41 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
 
   chrome::SelectNextTab(browser());
   EXPECT_FALSE(intent_picker_view->GetVisible());
+}
+
+// Tests that the navigation in iframe doesn't affect intent picker icon
+IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
+                       IframeNavigationDoesNotAffectIntentPicker) {
+  InstallTestBookmarkApp();
+
+  const GURL in_scope_url =
+      https_server().GetURL(GetAppUrlHost(), GetInScopeUrlPath());
+  const GURL out_of_scope_url =
+      https_server().GetURL(GetAppUrlHost(), GetOutOfScopeUrlPath());
+
+  PageActionIconView* intent_picker_view =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar_button_provider()
+          ->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+
+  OpenNewTab(out_of_scope_url);
+  content::WebContents* initial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(InsertIFrame(initial_tab));
+
+  EXPECT_TRUE(
+      content::NavigateIframeToURL(initial_tab, "iframe", in_scope_url));
+  EXPECT_FALSE(intent_picker_view->GetVisible());
+
+  OpenNewTab(in_scope_url);
+  content::WebContents* new_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(InsertIFrame(new_tab));
+
+  EXPECT_TRUE(
+      content::NavigateIframeToURL(initial_tab, "iframe", out_of_scope_url));
+  EXPECT_TRUE(intent_picker_view->GetVisible());
 }
 
 INSTANTIATE_TEST_SUITE_P(
