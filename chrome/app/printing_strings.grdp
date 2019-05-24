@@ -10,11 +10,11 @@
     </message>
   </if>
 
-  <!-- Print Preview -->
   <message name="IDS_PRINT_INVALID_PRINTER_SETTINGS" desc="Message to display when selected printer is not reachable or its settings are invalid.">
-    The selected printer is not available or not installed correctly. <ph name="BR">&lt;br&gt;</ph> Check your printer or try selecting another printer.
+    The selected printer is not available or not installed correctly. Check your printer or try selecting another printer.
   </message>
 
+  <!-- Print Preview -->
   <if expr="enable_print_preview">
     <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
       Print
@@ -24,6 +24,9 @@
     </message>
     <message name="IDS_PRINT_PREVIEW_FAILED" desc="Message to display when print preview fails.">
       Print preview failed.
+    </message>
+    <message name="IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS" desc="Message to display when selected printer is not reachable or its settings are invalid. Identical to IDS_PRINT_INVALID_PRINTER_SETTINGS, but includes a line break.">
+      The selected printer is not available or not installed correctly. <ph name="BR">&lt;br&gt;</ph> Check your printer or try selecting another printer.
     </message>
     <message name="IDS_PRINT_PREVIEW_UNSUPPORTED_CLOUD_PRINTER" desc="Message to display when an unsupported cloud printer is selected.">
       The selected Google Cloud Print device is no longer supported. <ph name="BR">&lt;br&gt;</ph> Try setting up the printer in your computer's system settings.
