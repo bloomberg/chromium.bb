@@ -118,6 +118,10 @@ SCALE_FACTOR_OVERRIDES = {
       "comment": "NVIDIA Shield",
       "device_type": "sb_na_wf",
       "scale_factor": 1.226
+    },
+    {
+      "device_type": "Pixel 2",
+      "scale_factor": 1.1067
     }
   ]
 }
