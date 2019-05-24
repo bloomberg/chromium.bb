@@ -163,13 +163,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // repositioned.
   void RemoveItem(OverviewItem* overview_item);
 
-  // Adds a drop target that visually appears to be revealed as |dragged_item|
-  // is dragged off of it.
-  void AddDropTargetForDraggingFromOverview(OverviewItem* dragged_item);
-
-  // Removes the drop target from the grid containing |dragged_item|.
-  void RemoveDropTargetForDraggingFromOverview(OverviewItem* dragged_item);
-
   void InitiateDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void CompleteDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
@@ -302,9 +295,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
  private:
   friend class OverviewSessionTest;
-
-  // Retrieves the window grid containing |item|.
-  OverviewGrid* GetGridWithOverviewItem(OverviewItem* item);
 
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);

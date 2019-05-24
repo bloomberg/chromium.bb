@@ -192,7 +192,7 @@ void OverviewWindowDragController::StartNormalDragMode(
   original_scaled_size_ = item_->target_bounds().size();
 
   if (should_allow_split_view_) {
-    overview_session_->AddDropTargetForDraggingFromOverview(item_);
+    item_->overview_grid()->AddDropTargetForDraggingFromOverview(item_);
     overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
                                                : IndicatorState::kCannotSnap,
@@ -254,7 +254,7 @@ void OverviewWindowDragController::ResetGesture() {
   if (current_drag_behavior_ == DragBehavior::kNormalDrag) {
     Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
     item_->DestroyPhantomsForDragging();
-    overview_session_->RemoveDropTargetForDraggingFromOverview(item_);
+    item_->overview_grid()->RemoveDropTarget();
     overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         IndicatorState::kNone, gfx::Point());
   }

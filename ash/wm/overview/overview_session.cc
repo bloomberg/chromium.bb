@@ -505,21 +505,10 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
       restore_focus_window_ = nullptr;
   }
 
-  GetGridWithOverviewItem(overview_item)->RemoveItem(overview_item);
+  overview_item->overview_grid()->RemoveItem(overview_item);
   --num_items_;
 
   MaybeCreateAndPositionNoWindowsWidget();
-}
-
-void OverviewSession::AddDropTargetForDraggingFromOverview(
-    OverviewItem* dragged_item) {
-  GetGridWithOverviewItem(dragged_item)
-      ->AddDropTargetForDraggingFromOverview(dragged_item);
-}
-
-void OverviewSession::RemoveDropTargetForDraggingFromOverview(
-    OverviewItem* dragged_item) {
-  GetGridWithOverviewItem(dragged_item)->RemoveDropTarget();
 }
 
 void OverviewSession::InitiateDrag(OverviewItem* item,
@@ -967,11 +956,6 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
   }
   PositionWindows(/*animate=*/false);
   MaybeCreateAndPositionNoWindowsWidget();
-}
-
-OverviewGrid* OverviewSession::GetGridWithOverviewItem(OverviewItem* item) {
-  DCHECK(GetGridWithRootWindow(item->GetWindow()->GetRootWindow()));
-  return GetGridWithRootWindow(item->GetWindow()->GetRootWindow());
 }
 
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {
