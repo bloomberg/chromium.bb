@@ -493,70 +493,70 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
 }
 #endif
 
-static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
-                            MACROBLOCK *x, MACROBLOCKD *xd, int plane_from,
-                            int plane_to, int mi_row, int mi_col,
-                            int *out_rate_sum, int64_t *out_dist_sum,
-                            int *skip_txfm_sb, int64_t *skip_sse_sb,
-                            int *plane_rate, int64_t *plane_sse,
-                            int64_t *plane_dist) {
+static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+                                 MACROBLOCKD *const xd, unsigned int var,
+                                 unsigned int sse) {
+  TX_SIZE tx_size;
+  if (cpi->common.tx_mode == TX_MODE_SELECT) {
+    if (sse > (var << 2))
+      tx_size = AOMMIN(max_txsize_lookup[bsize],
+                       tx_mode_to_biggest_tx_size[cpi->common.tx_mode]);
+    else
+      tx_size = TX_8X8;
+
+    if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ &&
+        cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id))
+      tx_size = TX_8X8;
+    else if (tx_size > TX_16X16)
+      tx_size = TX_16X16;
+  } else {
+    tx_size = AOMMIN(max_txsize_lookup[bsize],
+                     tx_mode_to_biggest_tx_size[cpi->common.tx_mode]);
+  }
+  if (bsize > BLOCK_32X32) tx_size = TX_16X16;
+  return AOMMIN(tx_size, TX_16X16);
+}
+
+static void model_rd_for_sb_y(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+                              MACROBLOCK *x, MACROBLOCKD *xd, int *out_rate_sum,
+                              int64_t *out_dist_sum, int *skip_txfm_sb,
+                              int64_t *skip_sse_sb, unsigned int *var_y,
+                              unsigned int *sse_y) {
   // Note our transform coeffs are 8 times an orthogonal transform.
   // Hence quantizer step is also 8 times. To get effective quantizer
   // we need to divide by 8 before sending to modeling function.
-  (void)mi_row;
-  (void)mi_col;
   const int ref = xd->mi[0]->ref_frame[0];
 
-  int64_t rate_sum = 0;
-  int64_t dist_sum = 0;
-  int64_t total_sse = 0;
   assert(bsize < BLOCK_SIZES_ALL);
 
-  for (int plane = plane_from; plane <= plane_to; ++plane) {
-    struct macroblock_plane *const p = &x->plane[plane];
-    struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
-    const int bw = block_size_wide[plane_bsize];
-    const int bh = block_size_high[plane_bsize];
-    int64_t sse;
-    int rate;
-    int64_t dist;
+  struct macroblock_plane *const p = &x->plane[0];
+  struct macroblockd_plane *const pd = &xd->plane[0];
+  unsigned int sse;
+  int rate;
+  int64_t dist;
 
-    if (x->skip_chroma_rd && plane) continue;
+  unsigned int var = cpi->fn_ptr[bsize].vf(p->src.buf, p->src.stride,
+                                           pd->dst.buf, pd->dst.stride, &sse);
+  xd->mi[0]->tx_size = calculate_tx_size(cpi, bsize, xd, var, sse);
 
-    if (is_cur_buf_hbd(xd)) {
-      sse = aom_highbd_sse(p->src.buf, p->src.stride, pd->dst.buf,
-                           pd->dst.stride, bw, bh);
-    } else {
-      sse = aom_sse(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride, bw,
-                    bh);
-    }
-    sse = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
 #if _TMP_USE_CURVFIT_
-    model_rd_with_curvfit(cpi, x, plane_bsize, plane, sse, bw * bh, &rate,
-                          &dist);
+  model_rd_with_curvfit(cpi, x, plane_bsize, plane, sse, bw * bh, &rate, &dist);
 #else
-    (void)cpi;
-    rate = INT_MAX;  // this will be overwritten later with block_yrd
-    dist = INT_MAX;
+  (void)cpi;
+  rate = INT_MAX;  // this will be overwritten later with block_yrd
+  dist = INT_MAX;
 #endif
-    if (plane == 0) x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
+  *var_y = var;
+  *sse_y = sse;
+  x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
 
-    total_sse += sse;
-    rate_sum += rate;
-    dist_sum += dist;
-    if (plane_rate) plane_rate[plane] = rate;
-    if (plane_sse) plane_sse[plane] = sse;
-    if (plane_dist) plane_dist[plane] = dist;
-    assert(rate_sum >= 0);
-  }
+  assert(rate >= 0);
 
-  if (skip_txfm_sb) *skip_txfm_sb = rate_sum == 0;
-  if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
-  rate_sum = AOMMIN(rate_sum, INT_MAX);
-  *out_rate_sum = (int)rate_sum;
-  *out_dist_sum = dist_sum;
+  if (skip_txfm_sb) *skip_txfm_sb = rate == 0;
+  if (skip_sse_sb) *skip_sse_sb = sse << 4;
+  rate = AOMMIN(rate, INT_MAX);
+  *out_rate_sum = (int)rate;
+  *out_dist_sum = dist;
 }
 
 static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
@@ -881,7 +881,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                     AOM_LAST3_FLAG, AOM_GOLD_FLAG };
   RD_STATS this_rdc, best_rdc;
   // var_y and sse_y are saved to be used in skipping checking
-  int64_t sse_y = UINT_MAX;
+  unsigned int sse_y = UINT_MAX;
+  unsigned int var_y = UINT_MAX;
   const int *const rd_threshes = cpi->rd.threshes[mi->segment_id][bsize];
   const int *const rd_thresh_freq_fact = tile_data->thresh_freq_fact[bsize];
 
@@ -1195,9 +1196,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     // TODO(kyslov) For large partition blocks, extra testing needs to be done
 
-    model_rd_for_sb(cpi, bsize, x, xd, AOM_PLANE_Y, AOM_PLANE_Y, mi_row, mi_col,
-                    &this_rdc.rate, &this_rdc.dist, &this_rdc.skip, NULL, NULL,
-                    &sse_y, NULL);
+    model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
+                      &this_rdc.skip, NULL, &var_y, &sse_y);
 
     if (sse_y < best_sse_sofar) best_sse_sofar = sse_y;
 
@@ -1273,6 +1273,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->mode = best_pickmode.best_mode;
   mi->interp_filters = av1_broadcast_interp_filter(best_filter);
   mi->tx_size = best_pickmode.best_tx_size;
+  memset(mi->inter_tx_size, mi->tx_size, sizeof(mi->inter_tx_size));
   mi->ref_frame[0] = best_pickmode.best_ref_frame;
   mi->mv[0].as_int =
       frame_mv[best_pickmode.best_mode][best_pickmode.best_ref_frame].as_int;
