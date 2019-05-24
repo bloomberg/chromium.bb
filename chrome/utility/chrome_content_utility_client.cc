@@ -21,8 +21,6 @@
 #include "components/mirroring/mojom/constants.mojom.h"
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
-#include "components/services/heap_profiling/heap_profiling_service.h"
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/services/patch/patch_service.h"
 #include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
@@ -131,19 +129,12 @@ void RunServiceAsyncThenTerminateProcess(
       base::BindOnce([] { content::UtilityThread::Get()->ReleaseProcess(); }));
 }
 
-std::unique_ptr<service_manager::Service> CreateHeapProfilingService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<heap_profiling::HeapProfilingService>(
-      std::move(request));
-}
-
 #if !defined(OS_ANDROID)
 std::unique_ptr<service_manager::Service> CreateProxyResolverService(
     service_manager::mojom::ServiceRequest request) {
   return std::make_unique<proxy_resolver::ProxyResolverService>(
       std::move(request));
 }
-#endif
 
 using ServiceFactory =
     base::OnceCallback<std::unique_ptr<service_manager::Service>()>;
@@ -161,6 +152,7 @@ void RunServiceOnIOThread(ServiceFactory factory) {
           },
           std::move(factory), std::move(terminate_process)));
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -230,12 +222,6 @@ bool ChromeContentUtilityClient::HandleServiceRequest(
     }
 
     return false;
-  }
-
-  if (service_name == heap_profiling::mojom::kServiceName) {
-    RunServiceOnIOThread(
-        base::BindOnce(&CreateHeapProfilingService, std::move(request)));
-    return true;
   }
 
 #if !defined(OS_ANDROID)
