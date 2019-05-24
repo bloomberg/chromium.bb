@@ -88,6 +88,9 @@ PTReleaseMemoryProc g_release_memory_proc = nullptr;
 PTCloseProviderProc g_close_provider_proc = nullptr;
 StartXpsPrintJobProc g_start_xps_print_job_proc = nullptr;
 
+typedef std::string (*GetDisplayNameFunc)(const std::string& printer_name);
+GetDisplayNameFunc g_get_display_name_func = nullptr;
+
 HRESULT StreamFromPrintTicket(const std::string& print_ticket,
                               IStream** stream) {
   DCHECK(stream);
@@ -325,6 +328,12 @@ HRESULT XPSPrintModule::StartXpsPrintJob(
       printer_name, job_name, output_file_name, progress_event,
       completion_event, printable_pages_on, printable_pages_on_count,
       xps_print_job, document_stream, print_ticket_stream);
+}
+
+void SetGetDisplayNameFunction(GetDisplayNameFunc get_display_name_func) {
+  DCHECK(get_display_name_func);
+  DCHECK(!g_get_display_name_func);
+  g_get_display_name_func = get_display_name_func;
 }
 
 bool InitBasicPrinterInfo(HANDLE printer, PrinterBasicInfo* printer_info) {

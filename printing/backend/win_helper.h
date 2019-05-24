@@ -151,6 +151,10 @@ class PRINTING_EXPORT XPSPrintModule {
   static bool InitImpl();
 };
 
+// Sets the function that gets friendly names for network printers.
+PRINTING_EXPORT void SetGetDisplayNameFunction(
+    std::string (*get_display_name_func)(const std::string& printer_name));
+
 PRINTING_EXPORT bool InitBasicPrinterInfo(HANDLE printer,
                                           PrinterBasicInfo* printer_info);
 

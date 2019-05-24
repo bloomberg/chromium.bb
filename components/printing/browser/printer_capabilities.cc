@@ -95,6 +95,8 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
 }
 
+}  // namespace
+
 #if defined(OS_WIN)
 std::string GetUserFriendlyName(const std::string& printer_name) {
   // |printer_name| may be a UNC path like \\printserver\printername.
@@ -115,8 +117,6 @@ std::string GetUserFriendlyName(const std::string& printer_name) {
       base::UTF8ToUTF16(tokens[1]), base::UTF8ToUTF16(tokens[0]));
 }
 #endif
-
-}  // namespace
 
 std::pair<std::string, std::string> GetPrinterNameAndDescription(
     const PrinterBasicInfo& printer) {

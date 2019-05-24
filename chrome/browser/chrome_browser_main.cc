@@ -298,6 +298,11 @@
 #include "printing/printed_document.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
+#include "components/printing/browser/printer_capabilities.h"
+#include "printing/backend/win_helper.h"
+#endif
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -1659,6 +1664,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       printing::PrintedDocument::SetDebugDumpPath(path);
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
+  printing::SetGetDisplayNameFunction(&printing::GetUserFriendlyName);
+#endif
 
   HandleTestParameters(parsed_command_line());
   browser_process_->metrics_service()->RecordBreakpadHasDebugger(

@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "printing/backend/print_backend.h"
 
 namespace printing {
@@ -18,6 +19,10 @@ namespace printing {
 struct PrinterBasicInfo;
 
 extern const char kPrinter[];
+
+#if defined(OS_WIN)
+std::string GetUserFriendlyName(const std::string& printer_name);
+#endif
 
 // Extracts the printer display name and description from the
 // appropriate fields in |printer| for the platform.
