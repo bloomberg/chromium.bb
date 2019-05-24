@@ -69,6 +69,13 @@ constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
 // The color of the focus ring within a folder.
 constexpr SkColor kFolderGridFocusRingColor = gfx::kGoogleBlue600;
 
+// The color of an item selected via right-click context menu.
+constexpr SkColor kContextSelection = SkColorSetA(gfx::kGoogleGrey100, 31);
+
+// The color of an item selected via right-click context menu in a folder.
+constexpr SkColor kContextSelectionFolder =
+    SkColorSetA(gfx::kGoogleGrey900, 21);
+
 // The width of the focus ring within a folder.
 constexpr int kFocusRingWidth = 2;
 
@@ -541,7 +548,8 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
       flags.setStrokeWidth(kFocusRingWidth);
     } else {
       // If a context menu is open, we should instead use a grey selection.
-      flags.setColor(SkColorSetA(gfx::kGoogleGrey100, 31));
+      flags.setColor(apps_grid_view_->is_in_folder() ? kContextSelectionFolder
+                                                     : kContextSelection);
       flags.setStyle(cc::PaintFlags::kFill_Style);
     }
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
