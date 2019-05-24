@@ -608,14 +608,7 @@ bool ChromeContentRendererClient::MaybeCreateMimeHandlerView(
       render_frame->GetRoutingID(), original_url,
       render_frame->GetWebFrame()->Top()->GetSecurityOrigin(), mime_type,
       &plugin_info);
-  // TODO(ekaramad): Not continuing here due to a disallowed status should take
-  // us to CreatePlugin. See if more in depths investigation of |status| is
-  // necessary here (see https://crbug.com/965747). For now, returning false
-  // should take us to CreatePlugin after HTMLPlugInElement which is called
-  // through HTMLPlugInElement::LoadPlugin code path.
-  if ((plugin_info->status != chrome::mojom::PluginStatus::kAllowed &&
-       plugin_info->status !=
-           chrome::mojom::PluginStatus::kPlayImportantContent) ||
+  if (plugin_info->status == chrome::mojom::PluginStatus::kNotFound ||
       !ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
           plugin_element, original_url, plugin_info->actual_mime_type,
           plugin_info->plugin)) {
