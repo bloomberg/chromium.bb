@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/debug/crash_logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -36,6 +35,33 @@ ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
   if (!version)
     return ServiceWorkerVersionInfo();
   return version->GetInfo();
+}
+
+void CrashBecauseIsController(
+    scoped_refptr<ServiceWorkerVersion> activating_version,
+    scoped_refptr<ServiceWorkerVersion> exiting_version,
+    ServiceWorkerProviderHost* provider_host) {
+  std::string debug_log = base::StringPrintf(
+      "sw:%d/ex_regid:%" PRId64 "/ac_regid:%" PRId64 "/pr_id:%d/ca:%d",
+      activating_version->skip_waiting(), exiting_version->registration_id(),
+      activating_version->registration_id(), provider_host->provider_id(),
+      provider_host->IsSetControllerRegistrationAllowed());
+  DEBUG_ALIAS_FOR_CSTR(debug_log_copy, debug_log.c_str(), 128);
+  CHECK(false) << "A controllee has a controller which became redundant.";
+}
+
+void CrashBecauseHasControllee(
+    scoped_refptr<ServiceWorkerVersion> activating_version,
+    scoped_refptr<ServiceWorkerVersion> exiting_version) {
+  std::string debug_log = base::StringPrintf(
+      "sw:%d/ex_regid:%" PRId64 "/ac_regid:%" PRId64 "/cl_ids:",
+      activating_version->skip_waiting(), exiting_version->registration_id(),
+      activating_version->registration_id());
+  for (auto& pair : exiting_version->controllee_map()) {
+    debug_log += pair.second->client_uuid() + ",";
+  }
+  DEBUG_ALIAS_FOR_CSTR(debug_log_copy, debug_log.c_str(), 1024);
+  CHECK(false) << "Redundant service worker has controllee(s).";
 }
 
 }  // namespace
@@ -442,11 +468,6 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   // TODO(crbug.com/951571): Remove this instrumentation logic once the bug is
   // debugged.
   if (exiting_version.get()) {
-    int skip_waiting = activating_version->skip_waiting();
-    static auto* key = base::debug::AllocateCrashKeyString(
-        "swv_skip_waiting", base::debug::CrashKeySize::Size32);
-    base::debug::ScopedCrashKeyString(key, base::NumberToString(skip_waiting));
-    CHECK(!exiting_version->HasControllee());
     for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
              context_->GetClientProviderHostIterator(
                  scope_.GetOrigin(), false /* include_reserved_clients */);
@@ -459,7 +480,14 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
       ServiceWorkerVersion* controller = host->controller();
       if (!controller)
         continue;
-      CHECK(controller != exiting_version);
+      if (controller == exiting_version) {
+        CrashBecauseIsController(activating_version, exiting_version, host);
+        return;
+      }
+    }
+    if (exiting_version->HasControllee()) {
+      CrashBecauseHasControllee(activating_version, exiting_version);
+      return;
     }
   }
 
