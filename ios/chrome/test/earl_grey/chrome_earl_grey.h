@@ -106,6 +106,21 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - Sync Utilities
 
+// Clears the autofill profile for the given |GUID|.
+- (void)clearAutofillProfileWithGUID:(const std::string&)GUID;
+
+// Injects an autofill profile into the fake sync server with |GUID| and
+// |full_name|.
+- (void)injectAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID
+                                  autofillProfileName:
+                                      (const std::string&)fullName;
+
+// Returns YES if there is an autofilll profile with the corresponding |GUID|
+// and |full_name|.
+- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)GUID
+                     autofillProfileName:(const std::string&)fullName
+    WARN_UNUSED_RESULT;
+
 // Sets up a fake sync server to be used by the ProfileSyncService.
 - (void)setUpFakeSyncServer;
 
@@ -279,27 +294,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
                                       timeout:(NSTimeInterval)timeout
     WARN_UNUSED_RESULT;
 
-// Clears the autofill profile for the given |GUID|.
-- (void)clearAutofillProfileWithGUID:(const std::string&)GUID;
-
 // Gets the number of entities of the given |type|.
 - (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type WARN_UNUSED_RESULT;
 
 // Injects a bookmark into the fake sync server with |URL| and |title|.
 - (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
                                 bookmarkTitle:(const std::string&)title;
-
-// Injects an autofill profile into the fake sync server with |GUID| and
-// |full_name|.
-- (void)injectAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID
-                                  autofillProfileName:
-                                      (const std::string&)fullName;
-
-// Returns YES if there is an autofilll profile with the corresponding |GUID|
-// and |full_name|.
-- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)GUID
-                     autofillProfileName:(const std::string&)fullName
-    WARN_UNUSED_RESULT;
 
 // Adds typed URL into HistoryService.
 - (void)addTypedURL:(const GURL&)URL;

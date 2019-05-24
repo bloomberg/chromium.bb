@@ -111,6 +111,25 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
++ (void)clearAutofillProfileWithGUID:(NSString*)GUID {
+  std::string utfGUID = base::SysNSStringToUTF8(GUID);
+  chrome_test_util::ClearAutofillProfile(utfGUID);
+}
+
++ (void)injectAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID
+                                  autofillProfileName:(NSString*)fullName {
+  std::string utfGUID = base::SysNSStringToUTF8(GUID);
+  std::string utfFullName = base::SysNSStringToUTF8(fullName);
+  chrome_test_util::InjectAutofillProfileOnFakeSyncServer(utfGUID, utfFullName);
+}
+
++ (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
+                     autofillProfileName:(NSString*)fullName {
+  std::string utfGUID = base::SysNSStringToUTF8(GUID);
+  std::string utfFullName = base::SysNSStringToUTF8(fullName);
+  return chrome_test_util::IsAutofillProfilePresent(utfGUID, utfFullName);
+}
+
 + (void)setUpFakeSyncServer {
   chrome_test_util::SetUpFakeSyncServer();
 }

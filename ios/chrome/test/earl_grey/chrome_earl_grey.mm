@@ -203,6 +203,30 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 #pragma mark - Sync Utilities
 
+- (void)clearAutofillProfileWithGUID:(const std::string&)GUID {
+  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
+  [ChromeEarlGreyAppInterface clearAutofillProfileWithGUID:nsGUID];
+}
+
+- (void)injectAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID
+                                  autofillProfileName:
+                                      (const std::string&)fullName {
+  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
+  NSString* nsFullName = base::SysUTF8ToNSString(fullName);
+  [ChromeEarlGreyAppInterface
+      injectAutofillProfileOnFakeSyncServerWithGUID:nsGUID
+                                autofillProfileName:nsFullName];
+}
+
+- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)GUID
+                     autofillProfileName:(const std::string&)fullName {
+  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
+  NSString* nsFullName = base::SysUTF8ToNSString(fullName);
+  return
+      [ChromeEarlGreyAppInterface isAutofillProfilePresentWithGUID:nsGUID
+                                               autofillProfileName:nsFullName];
+}
+
 - (void)setUpFakeSyncServer {
   [ChromeEarlGreyAppInterface setUpFakeSyncServer];
 }
@@ -533,10 +557,6 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-- (void)clearAutofillProfileWithGUID:(const std::string&)GUID {
-  chrome_test_util::ClearAutofillProfile(GUID);
-}
-
 - (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
   return chrome_test_util::GetNumberOfSyncEntities(type);
 }
@@ -544,17 +564,6 @@ id ExecuteJavaScript(NSString* javascript,
 - (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
                                 bookmarkTitle:(const std::string&)title {
   chrome_test_util::InjectBookmarkOnFakeSyncServer(URL, title);
-}
-
-- (void)injectAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID
-                                  autofillProfileName:
-                                      (const std::string&)fullName {
-  chrome_test_util::InjectAutofillProfileOnFakeSyncServer(GUID, fullName);
-}
-
-- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)GUID
-                     autofillProfileName:(const std::string&)fullName {
-  return chrome_test_util::IsAutofillProfilePresent(GUID, fullName);
 }
 
 - (void)addTypedURL:(const GURL&)URL {

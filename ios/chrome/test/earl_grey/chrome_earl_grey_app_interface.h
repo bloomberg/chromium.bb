@@ -76,6 +76,19 @@
 // success, or else an NSError indicating why the operation failed.
 + (NSError*)signOutAndClearAccounts;
 
+// Clears the autofill profile for the given |GUID|.
++ (void)clearAutofillProfileWithGUID:(NSString*)GUID;
+
+// Injects an autofill profile into the fake sync server with |GUID| and
+// |full_name|.
++ (void)injectAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID
+                                  autofillProfileName:(NSString*)fullName;
+
+// Returns YES if there is an autofilll profile with the corresponding |GUID|
+// and |full_name|.
++ (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
+                     autofillProfileName:(NSString*)fullName;
+
 // Sets up a fake sync server to be used by the ProfileSyncService.
 + (void)setUpFakeSyncServer;
 
