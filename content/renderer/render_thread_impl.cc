@@ -770,7 +770,7 @@ void RenderThreadImpl::Init() {
 
   audio_output_ipc_factory_.emplace(GetIOTaskRunner());
 
-  registry->AddInterface(base::Bind(&SharedWorkerFactoryImpl::Create),
+  registry->AddInterface(base::BindRepeating(&SharedWorkerFactoryImpl::Create),
                          base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
@@ -784,7 +784,8 @@ void RenderThreadImpl::Init() {
         std::make_unique<service_manager::BinderRegistryWithArgs<
             const service_manager::BindSourceInfo&>>();
     registry_with_source_info->AddInterface(
-        base::Bind(&CreateFrameFactory), base::ThreadTaskRunnerHandle::Get());
+        base::BindRepeating(&CreateFrameFactory),
+        base::ThreadTaskRunnerHandle::Get());
     GetServiceManagerConnection()->AddConnectionFilter(
         std::make_unique<SimpleConnectionFilterWithSourceInfo>(
             std::move(registry_with_source_info)));
@@ -794,9 +795,8 @@ void RenderThreadImpl::Init() {
 
   StartServiceManagerConnection();
 
-  GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&RenderThreadImpl::OnRendererInterfaceRequest,
-                 base::Unretained(this)));
+  GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
+      &RenderThreadImpl::OnRendererInterfaceRequest, base::Unretained(this)));
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -892,10 +892,11 @@ void RenderThreadImpl::Init() {
   }
 #endif
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
-      base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),
-      base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,
-                 base::Unretained(this))));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      base::BindRepeating(&RenderThreadImpl::OnMemoryPressure,
+                          base::Unretained(this)),
+      base::BindRepeating(&RenderThreadImpl::OnSyncMemoryPressure,
+                          base::Unretained(this)));
 
   int num_raster_threads = 0;
   std::string string_value =
@@ -1254,7 +1255,8 @@ void RenderThreadImpl::RegisterExtension(
   WebScriptController::RegisterExtension(std::move(extension));
 }
 
-int RenderThreadImpl::PostTaskToAllWebWorkers(const base::Closure& closure) {
+int RenderThreadImpl::PostTaskToAllWebWorkers(
+    const base::RepeatingClosure& closure) {
   return WorkerThreadRegistry::Instance()->PostTaskToAllThreads(closure);
 }
 

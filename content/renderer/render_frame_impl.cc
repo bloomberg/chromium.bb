@@ -1816,9 +1816,10 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       mhtml_file_writer_binding_(this),
       navigation_client_impl_(nullptr),
       has_accessed_initial_document_(false),
-      media_factory_(this,
-                     base::Bind(&RenderFrameImpl::RequestOverlayRoutingToken,
-                                base::Unretained(this))),
+      media_factory_(
+          this,
+          base::BindRepeating(&RenderFrameImpl::RequestOverlayRoutingToken,
+                              base::Unretained(this))),
       input_target_client_impl_(this),
       devtools_frame_token_(params.devtools_frame_token),
       weak_factory_(this) {
@@ -6697,8 +6698,8 @@ void RenderFrameImpl::OnMixedContentFound(
 void RenderFrameImpl::OnSetOverlayRoutingToken(
     const base::UnguessableToken& token) {
   overlay_routing_token_ = token;
-  for (const auto& cb : pending_routing_token_callbacks_)
-    cb.Run(overlay_routing_token_.value());
+  for (auto& cb : pending_routing_token_callbacks_)
+    std::move(cb).Run(overlay_routing_token_.value());
   pending_routing_token_callbacks_.clear();
 }
 
@@ -7278,15 +7279,15 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
 #endif  // ENABLE_PLUGINS
 
 void RenderFrameImpl::RegisterMojoInterfaces() {
-  GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
+  GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindAutoplayConfiguration, weak_factory_.GetWeakPtr()));
 
-  GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
+  GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindFrameBindingsControl, weak_factory_.GetWeakPtr()));
 
   GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&RenderFrameImpl::BindFrameNavigationControl,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&RenderFrameImpl::BindFrameNavigationControl,
+                          weak_factory_.GetWeakPtr()));
 
   if (IsPerNavigationMojoInterfaceEnabled()) {
     GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
@@ -7296,26 +7297,26 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindFullscreen, weak_factory_.GetWeakPtr()));
 
-  registry_.AddInterface(base::Bind(&FrameInputHandlerImpl::CreateMojoService,
-                                    weak_factory_.GetWeakPtr()));
+  registry_.AddInterface(base::BindRepeating(
+      &FrameInputHandlerImpl::CreateMojoService, weak_factory_.GetWeakPtr()));
 
   registry_.AddInterface(
-      base::Bind(&InputTargetClientImpl::BindToRequest,
-                 base::Unretained(&input_target_client_impl_)));
+      base::BindRepeating(&InputTargetClientImpl::BindToRequest,
+                          base::Unretained(&input_target_client_impl_)));
 
-  registry_.AddInterface(
-      base::Bind(&RenderFrameImpl::BindWidget, weak_factory_.GetWeakPtr()));
+  registry_.AddInterface(base::BindRepeating(&RenderFrameImpl::BindWidget,
+                                             weak_factory_.GetWeakPtr()));
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
 
   if (!frame_->Parent()) {
     // Only main frame have ImageDownloader service.
-    registry_.AddInterface(base::Bind(&ImageDownloaderImpl::CreateMojoService,
-                                      base::Unretained(this)));
+    registry_.AddInterface(base::BindRepeating(
+        &ImageDownloaderImpl::CreateMojoService, base::Unretained(this)));
 
     // Host zoom is per-page, so only added on the main frame.
-    GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
+    GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
         &RenderFrameImpl::OnHostZoomClientRequest, weak_factory_.GetWeakPtr()));
   }
 }

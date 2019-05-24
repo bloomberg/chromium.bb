@@ -508,8 +508,8 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsLater) {
   ASSERT_FALSE(overlay_routing_token_.has_value());
 
   frame()->RequestOverlayRoutingToken(
-      base::Bind(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
-                 base::Unretained(this)));
+      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
+                     base::Unretained(this)));
   ASSERT_FALSE(overlay_routing_token_.has_value());
 
   // The host should receive a request for it sent to the frame.
@@ -538,8 +538,8 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
   // returning or posts a message.
   base::RunLoop().RunUntilIdle();
   frame()->RequestOverlayRoutingToken(
-      base::Bind(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
-                 base::Unretained(this)));
+      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
+                     base::Unretained(this)));
   ASSERT_TRUE(overlay_routing_token_.has_value());
   ASSERT_EQ(overlay_routing_token_.value(), token);
 
