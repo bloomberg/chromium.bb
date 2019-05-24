@@ -40,8 +40,6 @@
 
 #if defined(OS_MACOSX)
 #include <Accelerate/Accelerate.h>
-#elif defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
-#include <dl/sp/api/omxSP.h>
 #elif defined(WTF_USE_WEBAUDIO_FFMPEG)
 struct RDFTContext;
 #elif defined(WTF_USE_WEBAUDIO_PFFFT)
