@@ -452,13 +452,6 @@ const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
 
 #endif  // OS_CHROMEOS
 
-const FeatureEntry::Choice kV8CacheOptionsChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceDisabled, switches::kV8CacheOptions,
-     "none"},
-    {flag_descriptions::kV8CacheOptionsCode, switches::kV8CacheOptions, "code"},
-};
-
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kCrosRegionsModeChoices[] = {
     {flag_descriptions::kCrosRegionsModeDefault, "", ""},
@@ -1777,9 +1770,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAcceleratedMjpegDecodeDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedMjpegDecode)},
 #endif  // OS_CHROMEOS
-    {"v8-cache-options", flag_descriptions::kV8CacheOptionsName,
-     flag_descriptions::kV8CacheOptionsDescription, kOsAll,
-     MULTI_VALUE_TYPE(kV8CacheOptionsChoices)},
     {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
      flag_descriptions::kSystemKeyboardLockDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemKeyboardLock)},

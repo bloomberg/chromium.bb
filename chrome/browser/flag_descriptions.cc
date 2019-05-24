@@ -1870,11 +1870,6 @@ const char kUserActivationV2Description[] =
     "Enable simple user activation for APIs that are otherwise controlled by "
     "user gesture tokens.";
 
-const char kV8CacheOptionsName[] = "V8 caching mode.";
-const char kV8CacheOptionsDescription[] =
-    "Caching mode for the V8 JavaScript engine.";
-const char kV8CacheOptionsCode[] = "Cache V8 compiler data.";
-
 const char kV8VmFutureName[] = "Future V8 VM features";
 const char kV8VmFutureDescription[] =
     "This enables upcoming and experimental V8 VM features. "

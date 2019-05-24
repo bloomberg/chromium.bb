@@ -2949,11 +2949,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "v8-cache-options",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "views-cast-dialog",
     "owners": [ "//chrome/browser/media/router/OWNERS" ],
     "expiry_milestone": 76

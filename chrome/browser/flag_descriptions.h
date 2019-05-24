@@ -1109,11 +1109,6 @@ extern const char kUsePdfCompositorServiceDescription[];
 extern const char kUserActivationV2Name[];
 extern const char kUserActivationV2Description[];
 
-extern const char kV8CacheOptionsName[];
-extern const char kV8CacheOptionsDescription[];
-extern const char kV8CacheOptionsParse[];
-extern const char kV8CacheOptionsCode[];
-
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
 
