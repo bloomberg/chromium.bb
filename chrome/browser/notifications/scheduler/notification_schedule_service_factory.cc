@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/notification_schedule_service_factory.h"
+#include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
 
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/notifications/notification_background_task_scheduler_impl.h"
+#include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_impl.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/schedule_service_factory_helper.h"
