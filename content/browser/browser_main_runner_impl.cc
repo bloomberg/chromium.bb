@@ -181,7 +181,8 @@ void BrowserMainRunnerImpl::Shutdown() {
   main_loop_->PreShutdown();
 
   // Finalize the startup tracing session if it is still active.
-  TracingControllerImpl::GetInstance()->FinalizeStartupTracingIfNeeded();
+  if (TracingControllerImpl::GetInstance())
+    TracingControllerImpl::GetInstance()->FinalizeStartupTracingIfNeeded();
 
   {
     // The trace event has to stay between profiler creation and destruction.
