@@ -45,7 +45,10 @@
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace offline_pages {
 
@@ -107,6 +110,14 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
 
   auto prefetch_dispatcher =
       std::make_unique<PrefetchDispatcherImpl>(profile_key->GetPrefs());
+
+  // Starts the network service if it hasn't yet. This is because when network
+  // service is enabled in the reduced mode, it only starts upon request.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    service_manager::Connector* connector =
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    content::GetNetworkServiceFromConnector(connector);
+  }
 
   auto* system_network_context_manager =
       SystemNetworkContextManager::GetInstance();

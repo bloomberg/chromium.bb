@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import android.content.Context;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,7 +41,8 @@ import java.util.concurrent.TimeUnit;
 /** Unit tests for {@link PrefetchBackgroundTask}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=OfflinePagesPrefetching"})
+        "enable-features=OfflinePagesPrefetching,NetworkService,AllowStartingServiceManagerOnly,"
+                + "InterestFeedContentSuggestions"})
 public class PrefetchBackgroundTaskTest {
     private static final double BACKOFF_JITTER_FACTOR = 0.33;
     private static final int SEMAPHORE_TIMEOUT_MS = 5000;
@@ -182,11 +184,20 @@ public class PrefetchBackgroundTaskTest {
     @Before
     public void setUp() throws Exception {
         ServicificationBackgroundService.launchChromeInBackground(true /*serviceManagerOnlyMode*/);
+        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mScheduler = new TestBackgroundTaskScheduler();
             BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);
         });
         OfflineTestUtil.setPrefetchingEnabledByServer(true);
+
+        PrefetchBackgroundTask.alwaysSupportServiceManagerOnlyForTesting();
+    }
+
+    @After
+    public void tearDown() {
+        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
     }
 
     private void scheduleTask(int additionalDelaySeconds) {
