@@ -63,6 +63,12 @@ class TouchSelectionControllerClientManagerAndroid
       const viz::FrameSinkId& frame_sink_id,
       const std::vector<viz::AggregatedHitTestRegion>& hit_test_data) override;
 
+  bool has_active_selection() const {
+    return manager_selection_start_.type() !=
+               gfx::SelectionBound::Type::EMPTY ||
+           manager_selection_end_.type() != gfx::SelectionBound::Type::EMPTY;
+  }
+
  private:
   // Neither of the following pointers are owned, and both are assumed to
   // outlive this object.

@@ -27,6 +27,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/base/completion_event.h"
 #include "components/viz/common/features.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -114,6 +115,24 @@ class ScopedEvent {
  private:
   base::WaitableEvent* event_;
 };
+
+void AddGLSurfaceRefOnGpuThread(gl::GLSurface* surface) {
+  surface->AddRef();
+}
+
+void ReleaseGLSurfaceOnGpuThread(gl::GLSurface* surface,
+                                 cc::CompletionEvent* event) {
+  surface->Release();
+  event->Signal();
+}
+
+void ReleaseGLSurfaceOnClientThread(gl::GLSurface* surface,
+                                    CommandBufferTaskExecutor* task_executor) {
+  cc::CompletionEvent event;
+  task_executor->ScheduleOutOfOrderTask(base::BindOnce(
+      &ReleaseGLSurfaceOnGpuThread, base::Unretained(surface), &event));
+  event.Wait();
+}
 
 }  // namespace
 
@@ -317,6 +336,19 @@ int InProcessCommandBuffer::GetRasterDecoderIdForTest() const {
 gpu::SharedImageInterface* InProcessCommandBuffer::GetSharedImageInterface()
     const {
   return shared_image_interface_.get();
+}
+
+base::ScopedClosureRunner InProcessCommandBuffer::GetCacheBackBufferCb() {
+  // It is safe to use base::Unretained for |surface_| here since the we use a
+  // synchronous task to create and destroy it from the client thread.
+  task_executor_->ScheduleOutOfOrderTask(base::BindOnce(
+      &AddGLSurfaceRefOnGpuThread, base::Unretained(surface_.get())));
+
+  // Also safe to use base::Unretained for |task_executor_| since the caller is
+  // supposed to guarentee that it outlives the callback.
+  return base::ScopedClosureRunner(base::BindOnce(
+      &ReleaseGLSurfaceOnClientThread, base::Unretained(surface_.get()),
+      base::Unretained(task_executor_)));
 }
 
 bool InProcessCommandBuffer::MakeCurrent() {

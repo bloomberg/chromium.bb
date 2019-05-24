@@ -128,6 +128,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const FrameSinkId& root_frame_sink_id,
       const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue)
       override;
+  void CacheBackBuffer(uint32_t cache_id,
+                       const FrameSinkId& root_frame_sink_id) override;
+  void EvictBackBuffer(uint32_t cache_id,
+                       EvictBackBufferCallback callback) override;
 
   // SurfaceObserver implementation.
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
@@ -314,6 +318,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   base::flat_set<std::unique_ptr<FrameSinkVideoCapturerImpl>,
                  base::UniquePtrComparator>
       video_capturers_;
+
+  base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
 
   THREAD_CHECKER(thread_checker_);
 

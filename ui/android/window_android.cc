@@ -182,6 +182,26 @@ WindowAndroid::ScopedOnBeginFrame::~ScopedOnBeginFrame() {
     std::move(callback).Run();
 }
 
+WindowAndroid::ScopedSelectionHandles::ScopedSelectionHandles(
+    WindowAndroid* window)
+    : window_(window) {
+  if (++window_->selection_handles_active_count_ == 1) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_WindowAndroid_onSelectionHandlesStateChanged(
+        env, window_->GetJavaObject(), true /* active */);
+  }
+}
+
+WindowAndroid::ScopedSelectionHandles::~ScopedSelectionHandles() {
+  DCHECK_GT(window_->selection_handles_active_count_, 0);
+
+  if (--window_->selection_handles_active_count_ == 0) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_WindowAndroid_onSelectionHandlesStateChanged(
+        env, window_->GetJavaObject(), false /* active */);
+  }
+}
+
 // static
 WindowAndroid* WindowAndroid::FromJavaWindowAndroid(
     const JavaParamRef<jobject>& jwindow_android) {

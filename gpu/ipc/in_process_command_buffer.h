@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
@@ -195,6 +196,14 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   }
 
   gpu::SharedImageInterface* GetSharedImageInterface() const;
+
+  // Provides a callback that can be used to preserve the back buffer for the
+  // GLSurface associated with the command buffer, even after the command buffer
+  // has been destroyed. The back buffer is evicted once the callback is
+  // dispatched.
+  // Note that the caller is responsible for ensuring that the |task_executor|
+  // and |surface_handle| provided in Initialize outlive this callback.
+  base::ScopedClosureRunner GetCacheBackBufferCb();
 
  private:
   class SharedImageInterface;

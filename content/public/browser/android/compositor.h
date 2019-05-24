@@ -89,6 +89,14 @@ class CONTENT_EXPORT Compositor {
   // Returns the resource manager associated with the compositor.
   virtual ui::ResourceManager& GetResourceManager() = 0;
 
+  // Caches the back buffer associated with the current surface, if any. The
+  // client is responsible for evicting this cache entry before destroying the
+  // associated window.
+  virtual void CacheBackBufferForCurrentSurface() = 0;
+
+  // Evicts the cache entry created from the cached call above.
+  virtual void EvictCachedBackBuffer() = 0;
+
  protected:
   Compositor() {}
 };

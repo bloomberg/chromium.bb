@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 #include "ui/android/window_android_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/android/event_handler_android.h"
@@ -430,6 +431,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetTextHandlesHiddenForStylus(bool hide_handles);
   void SetTextHandlesHiddenInternal();
 
+  void OnUpdateScopedSelectionHandles();
+
   // The begin frame source being observed.  Null if none.
   viz::BeginFrameSource* begin_frame_source_;
   viz::BeginFrameArgs last_begin_frame_args_;
@@ -491,6 +494,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // may be representing out-of-process iframes).
   std::unique_ptr<TouchSelectionControllerClientManagerAndroid>
       touch_selection_controller_client_manager_;
+  // Notifies the WindowAndroid when the page has active selection handles.
+  std::unique_ptr<ui::WindowAndroid::ScopedSelectionHandles>
+      scoped_selection_handles_;
 
   // Bounds to use if we have no backing WebContents.
   gfx::Rect default_bounds_;

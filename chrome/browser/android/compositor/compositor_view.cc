@@ -297,4 +297,16 @@ void CompositorView::SetCompositorWindow(
   compositor_->SetRootWindow(wa);
 }
 
+void CompositorView::CacheBackBufferForCurrentSurface(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& object) {
+  compositor_->CacheBackBufferForCurrentSurface();
+}
+
+void CompositorView::EvictCachedBackBuffer(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& object) {
+  compositor_->EvictCachedBackBuffer();
+}
+
 }  // namespace android

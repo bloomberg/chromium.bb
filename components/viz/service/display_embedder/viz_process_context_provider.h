@@ -79,6 +79,8 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   // glCopyTexImage2D() on the default framebuffer.
   uint32_t GetCopyTextureInternalFormat();
 
+  base::ScopedClosureRunner GetCacheBackBufferCb();
+
  private:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
   ~VizProcessContextProvider() override;

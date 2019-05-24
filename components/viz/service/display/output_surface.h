@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -165,6 +166,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // compositor.
   virtual void SetDisplayTransformHint(gfx::OverlayTransform transform) = 0;
   virtual gfx::OverlayTransform GetDisplayTransform() = 0;
+
+  virtual base::ScopedClosureRunner GetCacheBackBufferCb();
 
   // If set to true, the OutputSurface must deliver
   // OutputSurfaceclient::DidSwapWithSize notifications to its client.

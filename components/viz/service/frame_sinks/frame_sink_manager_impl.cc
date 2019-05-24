@@ -76,7 +76,9 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
 
   // All mojom::CompositorFrameSinks and BeginFrameSources should be deleted by
   // this point.
-  DCHECK(sink_map_.empty() && root_sink_map_.empty());
+  DCHECK(sink_map_.empty());
+  DCHECK(root_sink_map_.empty());
+  DCHECK(cached_back_buffers_.empty());
   DCHECK(registered_sources_.empty());
 
   surface_manager_.RemoveObserver(this);
@@ -106,6 +108,10 @@ void FrameSinkManagerImpl::SetLocalClient(
 void FrameSinkManagerImpl::ForceShutdown() {
   if (binding_.is_bound())
     binding_.Close();
+
+  for (auto& it : cached_back_buffers_)
+    it.second.RunAndReset();
+  cached_back_buffers_.clear();
 
   sink_map_.clear();
   root_sink_map_.clear();
@@ -607,6 +613,27 @@ base::TimeDelta FrameSinkManagerImpl::GetPreferredFrameIntervalForFrameSinkId(
     return BeginFrameArgs::MinInterval();
 
   return it->second.preferred_frame_interval;
+}
+
+void FrameSinkManagerImpl::CacheBackBuffer(
+    uint32_t cache_id,
+    const FrameSinkId& root_frame_sink_id) {
+  auto it = root_sink_map_.find(root_frame_sink_id);
+
+  DCHECK(it != root_sink_map_.end());
+  DCHECK(cached_back_buffers_.find(cache_id) == cached_back_buffers_.end());
+
+  cached_back_buffers_[cache_id] = it->second->GetCacheBackBufferCb();
+}
+
+void FrameSinkManagerImpl::EvictBackBuffer(uint32_t cache_id,
+                                           EvictBackBufferCallback callback) {
+  auto it = cached_back_buffers_.find(cache_id);
+  DCHECK(it != cached_back_buffers_.end());
+
+  it->second.RunAndReset();
+  cached_back_buffers_.erase(it);
+  std::move(callback).Run();
 }
 
 }  // namespace viz

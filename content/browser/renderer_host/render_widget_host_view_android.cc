@@ -1341,6 +1341,7 @@ void RenderWidgetHostViewAndroid::UpdateTouchSelectionController(
   DCHECK(touch_selection_controller_client_manager_);
   touch_selection_controller_client_manager_->UpdateClientSelectionBounds(
       selection.start, selection.end, this, nullptr);
+  OnUpdateScopedSelectionHandles();
 
   // Set parameters for adaptive handle orientation.
   gfx::SizeF viewport_size(scrollable_viewport_size_dip);
@@ -1532,6 +1533,8 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   if (compositor) {
     delegated_frame_host_->AttachToCompositor(compositor);
   }
+
+  OnUpdateScopedSelectionHandles();
 }
 
 void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
@@ -1547,6 +1550,7 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
   is_window_activity_started_ = true;
   is_window_visible_ = true;
   observing_root_window_ = false;
+  OnUpdateScopedSelectionHandles();
   SendBeginFramePaused();
   view_.GetWindowAndroid()->RemoveObserver(this);
   if (!using_browser_compositor_)
@@ -2502,6 +2506,20 @@ void RenderWidgetHostViewAndroid::WasEvicted() {
         local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
   } else {
     local_surface_id_allocator_.Invalidate();
+  }
+}
+
+void RenderWidgetHostViewAndroid::OnUpdateScopedSelectionHandles() {
+  if (!observing_root_window_ ||
+      !touch_selection_controller_client_manager_->has_active_selection()) {
+    scoped_selection_handles_.reset();
+    return;
+  }
+
+  if (!scoped_selection_handles_) {
+    scoped_selection_handles_ =
+        std::make_unique<ui::WindowAndroid::ScopedSelectionHandles>(
+            view_.GetWindowAndroid());
   }
 }
 

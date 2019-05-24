@@ -309,4 +309,8 @@ bool VizProcessContextProvider::OnMemoryDump(
   return true;
 }
 
+base::ScopedClosureRunner VizProcessContextProvider::GetCacheBackBufferCb() {
+  return command_buffer_->GetCacheBackBufferCb();
+}
+
 }  // namespace viz

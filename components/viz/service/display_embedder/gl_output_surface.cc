@@ -238,4 +238,8 @@ gfx::Rect GLOutputSurface::ApplyDisplayInverse(const gfx::Rect& input) {
       display_inverse, input);
 }
 
+base::ScopedClosureRunner GLOutputSurface::GetCacheBackBufferCb() {
+  return viz_context_provider_->GetCacheBackBufferCb();
+}
+
 }  // namespace viz

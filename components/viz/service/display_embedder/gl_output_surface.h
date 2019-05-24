@@ -51,6 +51,7 @@ class GLOutputSurface : public OutputSurface {
   void SetGpuVSyncEnabled(bool enabled) override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
+  base::ScopedClosureRunner GetCacheBackBufferCb() override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }

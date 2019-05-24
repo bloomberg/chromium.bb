@@ -52,7 +52,9 @@ GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
       gpu_task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
-GLSurfaceEGLSurfaceControl::~GLSurfaceEGLSurfaceControl() = default;
+GLSurfaceEGLSurfaceControl::~GLSurfaceEGLSurfaceControl() {
+  Destroy();
+}
 
 int GLSurfaceEGLSurfaceControl::GetBufferCount() const {
   // Triple buffering to match framework's BufferQueue.
@@ -62,6 +64,12 @@ int GLSurfaceEGLSurfaceControl::GetBufferCount() const {
 bool GLSurfaceEGLSurfaceControl::Initialize(GLSurfaceFormat format) {
   format_ = format;
   return true;
+}
+
+void GLSurfaceEGLSurfaceControl::PrepareToDestroy(bool have_context) {
+  // Drop all transaction callbacks since its not possible to make the context
+  // current after this point.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void GLSurfaceEGLSurfaceControl::Destroy() {

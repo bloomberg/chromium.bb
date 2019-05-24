@@ -917,4 +917,8 @@ void Display::SetDisplayTransformHint(gfx::OverlayTransform transform) {
   output_surface_->SetDisplayTransformHint(transform);
 }
 
+base::ScopedClosureRunner Display::GetCacheBackBufferCb() {
+  return output_surface_->GetCacheBackBufferCb();
+}
+
 }  // namespace viz

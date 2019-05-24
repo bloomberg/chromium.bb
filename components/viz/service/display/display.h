@@ -152,6 +152,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void SetSupportedFrameIntervals(std::vector<base::TimeDelta> intervals);
   void SetDisplayTransformHint(gfx::OverlayTransform transform);
 
+  base::ScopedClosureRunner GetCacheBackBufferCb();
+
  private:
   // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
   // solution that unblocks us until SharedImages are threadsafe in WebView.

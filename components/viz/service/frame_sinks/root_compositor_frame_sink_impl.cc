@@ -335,6 +335,10 @@ void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
                                               render_passes);
 }
 
+base::ScopedClosureRunner RootCompositorFrameSinkImpl::GetCacheBackBufferCb() {
+  return display_->GetCacheBackBufferCb();
+}
+
 void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
 #if defined(OS_MACOSX)

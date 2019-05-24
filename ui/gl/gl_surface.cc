@@ -272,6 +272,10 @@ bool GLSurface::ExtensionsContain(const char* c_extensions, const char* name) {
 
 GLSurfaceAdapter::GLSurfaceAdapter(GLSurface* surface) : surface_(surface) {}
 
+void GLSurfaceAdapter::PrepareToDestroy(bool have_context) {
+  surface_->PrepareToDestroy(have_context);
+}
+
 bool GLSurfaceAdapter::Initialize(GLSurfaceFormat format) {
   return surface_->Initialize(format);
 }

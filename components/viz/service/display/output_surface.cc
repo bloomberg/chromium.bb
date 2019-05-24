@@ -55,6 +55,10 @@ void OutputSurface::SetNeedsSwapSizeNotifications(
   DCHECK(!needs_swap_size_notifications);
 }
 
+base::ScopedClosureRunner OutputSurface::GetCacheBackBufferCb() {
+  return base::ScopedClosureRunner();
+}
+
 void OutputSurface::SetGpuVSyncCallback(GpuVSyncCallback callback) {
   NOTREACHED();
 }

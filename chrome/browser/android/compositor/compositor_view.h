@@ -87,6 +87,12 @@ class CompositorView : public content::CompositorClient,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       const base::android::JavaParamRef<jobject>& window_android);
+  void CacheBackBufferForCurrentSurface(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object);
+  void EvictCachedBackBuffer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object);
 
   // CompositorClient implementation:
   void RecreateSurface() override;

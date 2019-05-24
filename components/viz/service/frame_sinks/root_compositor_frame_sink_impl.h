@@ -83,6 +83,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       uint64_t submit_time,
       SubmitCompositorFrameSyncCallback callback) override;
 
+  base::ScopedClosureRunner GetCacheBackBufferCb();
+
  private:
   RootCompositorFrameSinkImpl(
       FrameSinkManagerImpl* frame_sink_manager,

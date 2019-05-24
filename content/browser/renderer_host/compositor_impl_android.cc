@@ -571,6 +571,20 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
   CompositorImpl* compositor_;
 };
 
+class CompositorImpl::ScopedCachedBackBuffer {
+ public:
+  ScopedCachedBackBuffer(const viz::FrameSinkId& root_sink_id) {
+    cache_id_ =
+        GetHostFrameSinkManager()->CacheBackBufferForRootSink(root_sink_id);
+  }
+  ~ScopedCachedBackBuffer() {
+    GetHostFrameSinkManager()->EvictCachedBackBuffer(cache_id_);
+  }
+
+ private:
+  uint32_t cache_id_;
+};
+
 // static
 Compositor* Compositor::Create(CompositorClient* client,
                                gfx::NativeWindow root_window) {
@@ -1327,6 +1341,17 @@ void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
 
 void CompositorImpl::OnFirstSurfaceActivation(const viz::SurfaceInfo& info) {
   NOTREACHED();
+}
+
+void CompositorImpl::CacheBackBufferForCurrentSurface() {
+  if (window_ && display_private_) {
+    cached_back_buffer_ =
+        std::make_unique<ScopedCachedBackBuffer>(frame_sink_id_);
+  }
+}
+
+void CompositorImpl::EvictCachedBackBuffer() {
+  cached_back_buffer_.reset();
 }
 
 }  // namespace content
