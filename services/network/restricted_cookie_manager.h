@@ -42,6 +42,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                           const url::Origin& origin);
   ~RestrictedCookieManager() override;
 
+  const CookieSettings* cookie_settings() const { return cookie_settings_; }
+
   void GetAllForUrl(const GURL& url,
                     const GURL& site_for_cookies,
                     mojom::CookieManagerGetOptionsPtr options,

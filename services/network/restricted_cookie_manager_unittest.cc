@@ -436,6 +436,23 @@ TEST_F(RestrictedCookieManagerTest, ChangeDispatch) {
   EXPECT_EQ("cookie-value", listener.observed_changes()[0].cookie.Value());
 }
 
+TEST_F(RestrictedCookieManagerTest, ChangeSettings) {
+  network::mojom::CookieChangeListenerPtr listener_ptr;
+  network::mojom::CookieChangeListenerRequest request =
+      mojo::MakeRequest(&listener_ptr);
+  sync_service_->AddChangeListener(GURL("http://example.com/test/"),
+                                   GURL("http://notexample.com"),
+                                   std::move(listener_ptr));
+  TestCookieChangeListener listener(std::move(request));
+
+  ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
+
+  cookie_settings_.set_block_third_party_cookies(true);
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+  base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
+}
+
 TEST_F(RestrictedCookieManagerTest, AddChangeListenerFromWrongOrigin) {
   network::mojom::CookieChangeListenerPtr bad_listener_ptr;
   network::mojom::CookieChangeListenerRequest bad_request =
