@@ -22,7 +22,7 @@ Background Services
   Background Sync
 Frames
   top
-visible view: unknown
+log: visible view: unknown
 Revealed json-value.js:
 Application
   Manifest
@@ -49,9 +49,8 @@ Frames
       image.png
     Scripts
       json-value.js (selected)
-      resources-panel-resource-preview.js
     inspected-page.html
-visible view: json
+log: visible view: json
 Revealed image.png:
 Application
   Manifest
@@ -78,9 +77,8 @@ Frames
       image.png (selected)
     Scripts
       json-value.js
-      resources-panel-resource-preview.js
     inspected-page.html
-visible view: image
+log: visible view: image
 Revealed resources-panel-resource-preview.js:
 Application
   Manifest
@@ -106,8 +104,7 @@ Frames
     Images
       image.png
     Scripts
-      json-value.js
-      resources-panel-resource-preview.js (selected)
+      json-value.js (selected)
     inspected-page.html
-visible view: source
+log: visible view: json
 
