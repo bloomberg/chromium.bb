@@ -170,6 +170,8 @@ jumbo_component("gfx") {
     "utf16_indexing.h",
     "vsync_provider.cc",
     "vsync_provider.h",
+    "win/crash_id_helper.cc",
+    "win/crash_id_helper.h",
     "win/direct_write.cc",
     "win/direct_write.h",
     "win/hwnd_util.cc",
@@ -331,6 +333,7 @@ jumbo_component("gfx") {
       "setupapi.lib",
       "dwrite.lib",
     ]
+    deps += [ "//components/crash/core/common" ]
   } else {
     sources -= [
       "gdi_util.cc",
@@ -780,6 +783,7 @@ test("gfx_unittests") {
       "path_win_unittest.cc",
       "platform_font_win_unittest.cc",
       "system_fonts_win_unittest.cc",
+      "win/crash_id_helper_unittest.cc",
       "win/direct_write_unittest.cc",
       "win/text_analysis_source_unittest.cc",
     ]

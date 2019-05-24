@@ -18,6 +18,23 @@
 namespace views {
 namespace test {
 
+using DesktopWindowTreeHostWinTest = DesktopWidgetTest;
+
+TEST_F(DesktopWindowTreeHostWinTest, DebuggingId) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.name = "test-debugging-id";
+  widget.Init(params);
+  DesktopWindowTreeHostWin* desktop_window_tree_host =
+      static_cast<DesktopWindowTreeHostWin*>(
+          widget.GetNativeWindow()->GetHost());
+  EXPECT_EQ(params.name,
+            DesktopWindowTreeHostWinTestApi(desktop_window_tree_host)
+                .GetHwndMessageHandler()
+                ->debugging_id());
+}
+
 class DesktopWindowTreeHostWinAccessibilityObjectTest
     : public DesktopWidgetTest {
  public:

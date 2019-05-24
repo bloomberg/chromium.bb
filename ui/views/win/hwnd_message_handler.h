@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -82,7 +83,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                                         public ui::InputMethodObserver,
                                         public ui::WindowEventTarget {
  public:
-  explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
+  // See WindowImpl for details on |debugging_id|.
+  HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
+                     const std::string& debugging_id);
   ~HWNDMessageHandler() override;
 
   void Init(HWND parent, const gfx::Rect& bounds);

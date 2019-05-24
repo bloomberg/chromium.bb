@@ -15,6 +15,7 @@ class AXSystemCaretWin;
 namespace views {
 
 class DesktopWindowTreeHostWin;
+class HWNDMessageHandler;
 
 namespace test {
 
@@ -27,6 +28,8 @@ class DesktopWindowTreeHostWinTestApi {
   ui::AXSystemCaretWin* GetAXSystemCaret();
   gfx::NativeViewAccessible GetNativeViewAccessible();
 
+  HWNDMessageHandler* GetHwndMessageHandler();
+
  private:
   DesktopWindowTreeHostWin* host_;
 
@@ -34,7 +37,6 @@ class DesktopWindowTreeHostWinTestApi {
 };
 
 }  // namespace test
-
 }  // namespace views
 
 #endif  // UI_VIEWS_TEST_DESKTOP_WINDOW_TREE_HOST_WIN_TEST_API_H_

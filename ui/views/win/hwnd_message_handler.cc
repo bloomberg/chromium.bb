@@ -373,8 +373,10 @@ base::LazyInstance<HWNDMessageHandler::FullscreenWindowMonitorMap>::
 
 long HWNDMessageHandler::last_touch_or_pen_message_time_ = 0;
 
-HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
-    : delegate_(delegate),
+HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
+                                       const std::string& debugging_id)
+    : WindowImpl(debugging_id),
+      delegate_(delegate),
       fullscreen_handler_(new FullscreenHandler),
       waiting_for_close_now_(false),
       use_system_default_icon_(false),

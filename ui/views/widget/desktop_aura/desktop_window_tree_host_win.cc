@@ -83,7 +83,9 @@ bool DesktopWindowTreeHostWin::is_cursor_visible_ = true;
 DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
-    : message_handler_(new HWNDMessageHandler(this)),
+    : message_handler_(new HWNDMessageHandler(
+          this,
+          native_widget_delegate->AsWidget()->GetName())),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
       drag_drop_client_(nullptr),
