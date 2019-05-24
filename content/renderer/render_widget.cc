@@ -109,7 +109,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -2764,16 +2763,6 @@ void RenderWidget::DidOverscroll(
   input_handler_->DidOverscrollFromBlink(
       overscroll_delta, accumulated_overscroll, position, velocity,
       layer_tree_view_->layer_tree_host()->overscroll_behavior());
-}
-
-void RenderWidget::InjectGestureScrollEvent(
-    blink::WebGestureDevice device,
-    const blink::WebFloatSize& delta,
-    ui::input_types::ScrollGranularity granularity,
-    cc::ElementId scrollable_area_element_id,
-    blink::WebInputEvent::Type injected_type) {
-  input_handler_->InjectGestureScrollEvent(
-      device, delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 void RenderWidget::SetOverscrollBehavior(

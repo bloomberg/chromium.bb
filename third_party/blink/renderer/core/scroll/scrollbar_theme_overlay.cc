@@ -283,8 +283,4 @@ int ScrollbarThemeOverlay::MinimumThumbLength(const Scrollbar& scrollbar) {
       .width;
 }
 
-bool ScrollbarThemeOverlay::AllowsHitTest() const {
-  return allow_hit_test_ != kDisallowHitTest;
-}
-
 }  // namespace blink

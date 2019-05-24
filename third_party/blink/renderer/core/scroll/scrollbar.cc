@@ -26,8 +26,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 
 #include <algorithm>
-#include "base/feature_list.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
@@ -66,8 +64,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
                     &Scrollbar::AutoscrollTimerFired),
       elastic_overscroll_(0),
       track_needs_repaint_(true),
-      thumb_needs_repaint_(true),
-      injected_gesture_scroll_begin_(false) {
+      thumb_needs_repaint_(true) {
   theme_.RegisterScrollbar(*this);
 
   // FIXME: This is ugly and would not be necessary if we fix cross-platform
@@ -197,22 +194,25 @@ void Scrollbar::AutoscrollPressedPart(TimeDelta delay) {
     return;
   }
 
-  // Handle the arrows and track by injecting a scroll update.
-  if (base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures)) {
-    InjectScrollGesture(WebInputEvent::kGestureScrollUpdate);
-  } else {
-    scrollable_area_->UserScroll(
-        PressedPartScrollGranularity(),
-        ToScrollDelta(PressedPartScrollDirectionPhysical(), 1));
-  }
+  // Handle the arrows and track.
+  bool did_scroll =
+      scrollable_area_
+          ->UserScroll(PressedPartScrollGranularity(),
+                       ToScrollDelta(PressedPartScrollDirectionPhysical(), 1))
+          .DidScroll();
 
   // Always start timer when user press on button since scrollable area maybe
   // infinite scrolling.
   if (pressed_part_ == kBackButtonStartPart ||
       pressed_part_ == kForwardButtonStartPart ||
       pressed_part_ == kBackButtonEndPart ||
-      pressed_part_ == kForwardButtonEndPart ||
-      pressed_part_ == kBackTrackPart || pressed_part_ == kForwardTrackPart) {
+      pressed_part_ == kForwardButtonEndPart) {
+    StartTimerIfNeeded(delay);
+    return;
+  }
+
+  if ((pressed_part_ == kBackTrackPart || pressed_part_ == kForwardTrackPart) &&
+      did_scroll) {
     StartTimerIfNeeded(delay);
     return;
   }
@@ -500,9 +500,6 @@ void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
       SetHoveredPart(kNoPart);
       scrollable_area_->MouseExitedScrollbar(*this);
     }
-
-    if (base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures))
-      InjectScrollGesture(WebInputEvent::kGestureScrollEnd);
   }
 }
 
@@ -516,10 +513,6 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
   int pressed_pos = Orientation() == kHorizontalScrollbar
                         ? ConvertFromRootFrame(position).X()
                         : ConvertFromRootFrame(position).Y();
-
-  if (base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures) &&
-      scrollable_area_ && pressed_part_ != kNoPart)
-    InjectScrollGesture(WebInputEvent::kGestureScrollBegin);
 
   if ((pressed_part_ == kBackTrackPart || pressed_part_ == kForwardTrackPart) &&
       GetTheme().ShouldCenterOnThumb(*this, evt)) {
@@ -545,61 +538,6 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
   pressed_pos_ = pressed_pos;
 
   AutoscrollPressedPart(GetTheme().InitialAutoscrollTimerDelay());
-}
-
-void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type) {
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures));
-  DCHECK(scrollable_area_);
-
-  if (gesture_type == WebInputEvent::Type::kGestureScrollEnd &&
-      !injected_gesture_scroll_begin_)
-    return;
-
-  // Don't inject a GSB/GSU if the expressed delta won't actually scroll. If
-  // we do send the GSB, a scroll chain will be set up that excludes the node
-  // associated with this scrollbar/ScrollableArea because this ScrollableArea
-  // can't scroll in the specified direction. Due to the way the gesture bubbles
-  // up the scroll chain, this will apply the scroll updates to a different
-  // node.
-  // Note that we don't apply the restriction to GSE since we want to send
-  // that regardless in order to complete the gesture sequence.
-  ScrollOffset delta = ToScrollDelta(PressedPartScrollDirectionPhysical(), 1);
-  if ((gesture_type == WebInputEvent::Type::kGestureScrollUpdate ||
-       gesture_type == WebInputEvent::Type::kGestureScrollBegin) &&
-      !DeltaWillScroll(delta))
-    return;
-
-  if (gesture_type == WebInputEvent::Type::kGestureScrollUpdate &&
-      !injected_gesture_scroll_begin_) {
-    // If we're injecting a scroll update, but haven't yet injected a scroll
-    // begin, do so now. This can happen in the following scenario:
-    // - on mouse down the delta computed won't actually scroll (therefore
-    //   GSB/GSU not injected).
-    // - node/scrollable area changes size such that its scroll offset is no
-    //   longer at the end.
-    // - autoscroll timer fires and we inject a scroll update.
-    InjectScrollGesture(WebInputEvent::Type::kGestureScrollBegin);
-  }
-
-  ScrollGranularity granularity = PressedPartScrollGranularity();
-  scrollable_area_->InjectGestureScrollEvent(WebGestureDevice::kScrollbar,
-                                             delta, granularity, gesture_type);
-
-  if (gesture_type == WebInputEvent::Type::kGestureScrollBegin) {
-    injected_gesture_scroll_begin_ = true;
-  } else if (gesture_type == WebInputEvent::Type::kGestureScrollEnd) {
-    injected_gesture_scroll_begin_ = false;
-  }
-}
-
-bool Scrollbar::DeltaWillScroll(ScrollOffset delta) const {
-  ScrollOffset current_offset = scrollable_area_->GetScrollOffset();
-  ScrollOffset target_offset =
-      current_offset + ScrollOffset(delta.Width(), delta.Height());
-  ScrollOffset clamped_offset =
-      scrollable_area_->ClampScrollOffset(target_offset);
-  return clamped_offset != current_offset;
 }
 
 void Scrollbar::SetScrollbarsHiddenIfOverlay(bool hidden) {

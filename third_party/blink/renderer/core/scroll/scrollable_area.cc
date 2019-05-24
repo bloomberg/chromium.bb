@@ -780,18 +780,4 @@ void ScrollableArea::Trace(blink::Visitor* visitor) {
   visitor->Trace(programmatic_scroll_animator_);
 }
 
-void ScrollableArea::InjectGestureScrollEvent(
-    WebGestureDevice device,
-    ScrollOffset delta,
-    ScrollGranularity granularity,
-    WebInputEvent::Type gesture_type) const {
-  // All ScrollableArea's have a layout box, except for the VisualViewport.
-  // We shouldn't be injecting scrolls for the visual viewport scrollbar, since
-  // it is not hit-testable.
-  DCHECK(GetLayoutBox());
-  GetChromeClient()->InjectGestureScrollEvent(
-      *GetLayoutBox()->GetFrame(), device, delta, granularity,
-      GetCompositorElementId(), gesture_type);
-}
-
 }  // namespace blink

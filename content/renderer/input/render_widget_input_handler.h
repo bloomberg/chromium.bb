@@ -16,7 +16,6 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/blink/did_overscroll_params.h"
-#include "ui/events/types/scroll_types.h"
 
 namespace blink {
 struct WebFloatPoint;
@@ -24,7 +23,6 @@ struct WebFloatSize;
 }  // namespace blink
 
 namespace cc {
-struct ElementId;
 struct OverscrollBehavior;
 }
 
@@ -68,12 +66,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
                               const blink::WebFloatSize& velocity,
                               const cc::OverscrollBehavior& behavior);
 
-  void InjectGestureScrollEvent(blink::WebGestureDevice device,
-                                const blink::WebFloatSize& delta,
-                                ui::input_types::ScrollGranularity granularity,
-                                cc::ElementId scrollable_area_element_id,
-                                blink::WebInputEvent::Type injected_type);
-
   bool handling_input_event() const { return handling_input_event_; }
   void set_handling_input_event(bool handling_input_event) {
     handling_input_event_ = handling_input_event;
@@ -88,14 +80,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   bool DidChangeCursor(const WebCursor& cursor);
 
  private:
-  struct InjectScrollGestureParams {
-    blink::WebGestureDevice device;
-    gfx::Vector2dF scroll_delta;
-    ui::input_types::ScrollGranularity granularity;
-    cc::ElementId scrollable_area_element_id;
-    blink::WebInputEvent::Type type;
-  };
-
   blink::WebInputEventResult HandleTouchEvent(
       const blink::WebCoalescedInputEvent& coalesced_event);
 
@@ -117,12 +101,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   std::unique_ptr<ui::DidOverscrollParams>* handling_event_overscroll_;
 
   base::Optional<cc::TouchAction> handling_touch_action_;
-
-  // Used to hold a sequence of parameters corresponding to scroll gesture
-  // events that should be injected once the current input event is done
-  // being processed.
-  std::unique_ptr<std::vector<InjectScrollGestureParams>>*
-      handling_injected_scroll_params_;
 
   // Type of the input event we are currently handling.
   blink::WebInputEvent::Type handling_event_type_;

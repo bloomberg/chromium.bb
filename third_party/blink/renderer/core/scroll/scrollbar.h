@@ -199,7 +199,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   void StartTimerIfNeeded(TimeDelta delay);
   void StopTimerIfNeeded();
   void AutoscrollPressedPart(TimeDelta delay);
-  void InjectScrollGesture(WebInputEvent::Type gesture_type);
   ScrollDirectionPhysical PressedPartScrollDirectionPhysical();
   ScrollGranularity PressedPartScrollGranularity();
 
@@ -231,12 +230,10 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   float ScrollableAreaCurrentPos() const;
   float ScrollableAreaTargetPos() const;
   bool ThumbWillBeUnderMouse() const;
-  bool DeltaWillScroll(ScrollOffset delta) const;
 
   int theme_scrollbar_thickness_;
   bool track_needs_repaint_;
   bool thumb_needs_repaint_;
-  bool injected_gesture_scroll_begin_;
   IntRect visual_rect_;
   IntRect frame_rect_;
 };
