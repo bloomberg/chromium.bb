@@ -90,10 +90,10 @@ class ChromeContentRendererClient
   void RenderViewCreated(content::RenderView* render_view) override;
   SkBitmap* GetSadPluginBitmap() override;
   SkBitmap* GetSadWebViewBitmap() override;
-  bool MaybeCreateMimeHandlerView(content::RenderFrame* render_frame,
-                                  const blink::WebElement& plugin_element,
-                                  const GURL& original_url,
-                                  const std::string& mime_type) override;
+  bool IsPluginHandledExternally(content::RenderFrame* render_frame,
+                                 const blink::WebElement& plugin_element,
+                                 const GURL& original_url,
+                                 const std::string& mime_type) override;
   v8::Local<v8::Object> GetScriptableObject(
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate) override;

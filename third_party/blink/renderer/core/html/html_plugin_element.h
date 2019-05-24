@@ -204,7 +204,7 @@ class CORE_EXPORT HTMLPlugInElement
     kImage,
     kFrame,
     kPlugin,
-    kMimeHandlerViewPlugin,
+    kExternalPlugin,
   };
   ObjectContentType GetObjectContentType() const;
 

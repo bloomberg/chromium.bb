@@ -1194,14 +1194,14 @@ void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
   web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
-bool LocalFrameClientImpl::MaybeCreateMimeHandlerView(
+bool LocalFrameClientImpl::IsPluginHandledExternally(
     HTMLPlugInElement& plugin_element,
     const KURL& resource_url,
     const String& suggesed_mime_type) {
   if (!RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled())
     return false;
 
-  return web_frame_->Client()->MaybeCreateMimeHandlerView(
+  return web_frame_->Client()->IsPluginHandledExternally(
       &plugin_element, resource_url, suggesed_mime_type);
 }
 

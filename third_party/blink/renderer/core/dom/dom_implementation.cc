@@ -256,7 +256,7 @@ Document* DOMImplementation::createDocument(const String& type,
   }
 
   if (RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled() &&
-      plugin_data && plugin_data->IsMimeHandlerViewMimeType(type)) {
+      plugin_data && plugin_data->IsExternalPluginMimeType(type)) {
     // Plugins handled by MimeHandlerView do not create a PluginDocument. They
     // are rendered inside cross-process frames and the notion of a PluginView
     // (which is associated with PluginDocument) is irrelevant here.

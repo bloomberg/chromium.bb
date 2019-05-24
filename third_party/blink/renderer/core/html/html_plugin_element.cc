@@ -179,8 +179,8 @@ bool HTMLPlugInElement::RequestObjectInternal(
 
   ObjectContentType object_type = GetObjectContentType();
   bool handled_externally =
-      object_type == ObjectContentType::kMimeHandlerViewPlugin &&
-      GetDocument().GetFrame()->Client()->MaybeCreateMimeHandlerView(
+      object_type == ObjectContentType::kExternalPlugin &&
+      GetDocument().GetFrame()->Client()->IsPluginHandledExternally(
           *this, completed_url,
           service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
                                   : service_type_);
@@ -425,15 +425,13 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
     if (plugin) {
       plugin_wrapper_.Reset(isolate, plugin->ScriptableObject(isolate));
     } else {
-      // It is important to check for |handled_externally_| after calling
-      // PluginEmbeddedContentView(). Note that calling
-      // PluginEmbeddedContentView() leads to synchronously updating style and
-      // running post layout tasks, which ends up updating the plugin. It is
-      // after updating the plugin that we know whether or not the plugin is
-      // handled externally by a MimeHandlerView. To check for
-      // |handled_externally_| sooner is wrong since it is possible for JS to
-      // call int PluginWrapper() before the plugin has gone through the update
-      // phase (and wrongly assume it is not handled by MimeHandlerView). (see
+      // This step is intended for plugins with external handlers. This should
+      // checked after after calling PluginEmbeddedContentView(). Note that
+      // calling PluginEmbeddedContentView() leads to synchronously updating
+      // style and running post layout tasks, which ends up updating the plugin.
+      // It is after updating the plugin that we know whether or not the plugin
+      // is handled externally. Also note that it is possible to call
+      // PluginWrapper before the plugin has gone through the update phase(see
       // https://crbug.com/946709).
       plugin_wrapper_.Reset(
           isolate, frame->Client()->GetScriptableObject(*this, isolate));
@@ -578,9 +576,9 @@ HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType()
   bool plugin_supports_mime_type =
       plugin_data && plugin_data->SupportsMimeType(mime_type);
   if (plugin_supports_mime_type &&
-      plugin_data->IsMimeHandlerViewMimeType(mime_type) &&
+      plugin_data->IsExternalPluginMimeType(mime_type) &&
       RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()) {
-    return ObjectContentType::kMimeHandlerViewPlugin;
+    return ObjectContentType::kExternalPlugin;
   }
 
   if (MIMETypeRegistry::IsSupportedImageMIMEType(mime_type)) {

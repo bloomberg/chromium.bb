@@ -58,7 +58,7 @@ void PluginRegistryImpl::GetPluginsComplete(
   PluginServiceFilter* filter = PluginServiceImpl::GetInstance()->GetFilter();
   std::vector<blink::mojom::PluginInfoPtr> plugins;
   base::flat_set<std::string> mime_handler_view_mime_types =
-      GetContentClient()->browser()->GetMimeHandlerViewMimeTypes(
+      GetContentClient()->browser()->GetPluginMimeTypesWithExternalHandlers(
           resource_context_);
 
   const int child_process_id = -1;
@@ -76,15 +76,15 @@ void PluginRegistryImpl::GetPluginsComplete(
       plugin_blink->description = plugin.desc;
       plugin_blink->filename = plugin.path.BaseName();
       plugin_blink->background_color = plugin.background_color;
-      plugin_blink->may_use_mime_handler_view = false;
+      plugin_blink->may_use_external_handler = false;
       for (const auto& mime_type : plugin.mime_types) {
         auto mime_type_blink = blink::mojom::PluginMimeType::New();
         mime_type_blink->mime_type = mime_type.mime_type;
         mime_type_blink->description = mime_type.description;
         mime_type_blink->file_extensions = mime_type.file_extensions;
         plugin_blink->mime_types.push_back(std::move(mime_type_blink));
-        if (!plugin_blink->may_use_mime_handler_view) {
-          plugin_blink->may_use_mime_handler_view = base::ContainsKey(
+        if (!plugin_blink->may_use_external_handler) {
+          plugin_blink->may_use_external_handler = base::ContainsKey(
               mime_handler_view_mime_types, mime_type.mime_type);
         }
       }

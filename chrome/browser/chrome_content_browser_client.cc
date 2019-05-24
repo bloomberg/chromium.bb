@@ -5791,7 +5791,7 @@ ChromeContentBrowserClient::GetWideColorGamutHeuristic() const {
 #endif
 
 base::flat_set<std::string>
-ChromeContentBrowserClient::GetMimeHandlerViewMimeTypes(
+ChromeContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
     content::ResourceContext* resource_context) {
   base::flat_set<std::string> mime_types;
 #if BUILDFLAG(ENABLE_PLUGINS)

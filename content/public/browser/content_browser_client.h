@@ -1556,8 +1556,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual WideColorGamutHeuristic GetWideColorGamutHeuristic() const;
 #endif
 
-  // Obtains the list of MIME types that are handled by a MimeHandlerView.
-  virtual base::flat_set<std::string> GetMimeHandlerViewMimeTypes(
+  // Obtains the list of MIME types that are for plugins with external handlers.
+  virtual base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(
       ResourceContext* resource_context);
 
   // Possibly augment |download_policy| based on the status of |frame_host| as

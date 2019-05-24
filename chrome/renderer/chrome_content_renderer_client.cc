@@ -589,7 +589,7 @@ SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
                                    .ToSkBitmap());
 }
 
-bool ChromeContentRendererClient::MaybeCreateMimeHandlerView(
+bool ChromeContentRendererClient::IsPluginHandledExternally(
     content::RenderFrame* render_frame,
     const blink::WebElement& plugin_element,
     const GURL& original_url,

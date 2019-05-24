@@ -12729,12 +12729,12 @@ TEST_F(WebFrameTest, MediaQueriesInLocalFrameInsideRemote) {
   helper.Reset();
 }
 
-class MimeHandlerViewDocumentTest
+class ExternallyHandledPluginDocumentTest
     : public WebFrameTest,
       public testing::WithParamInterface<
           bool /* mime_handler_view_in_cross_process_frame */> {};
 
-TEST_P(MimeHandlerViewDocumentTest, DocumentType) {
+TEST_P(ExternallyHandledPluginDocumentTest, DocumentType) {
   bool cross_process = GetParam();
   RuntimeEnabledFeatures::SetMimeHandlerViewInCrossProcessFrameEnabled(
       cross_process);
@@ -12750,5 +12750,7 @@ TEST_P(MimeHandlerViewDocumentTest, DocumentType) {
   EXPECT_NE(cross_process, document->IsPluginDocument());
 }
 
-INSTANTIATE_TEST_SUITE_P(P, MimeHandlerViewDocumentTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(P,
+                         ExternallyHandledPluginDocumentTest,
+                         testing::Bool());
 }  // namespace blink

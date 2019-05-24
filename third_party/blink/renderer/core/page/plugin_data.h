@@ -76,7 +76,7 @@ class CORE_EXPORT PluginInfo final
   const String& Filename() const { return filename_; }
   const String& Description() const { return description_; }
   Color BackgroundColor() const { return background_color_; }
-  bool MayUseMimeHandlerView() const { return may_use_mime_handler_view_; }
+  bool MayUseExternalHandler() const { return may_use_external_handler_; }
 
  private:
   friend class MimeClassInfo;
@@ -86,7 +86,7 @@ class CORE_EXPORT PluginInfo final
   String filename_;
   String description_;
   Color background_color_;
-  bool may_use_mime_handler_view_;
+  bool may_use_external_handler_;
   HeapVector<Member<MimeClassInfo>> mimes_;
 };
 
@@ -105,7 +105,7 @@ class CORE_EXPORT PluginData final
 
   bool SupportsMimeType(const String& mime_type) const;
   Color PluginBackgroundColorForMimeType(const String& mime_type) const;
-  bool IsMimeHandlerViewMimeType(const String& mime_type) const;
+  bool IsExternalPluginMimeType(const String& mime_type) const;
 
   // refreshBrowserSidePluginCache doesn't update existent instances of
   // PluginData.

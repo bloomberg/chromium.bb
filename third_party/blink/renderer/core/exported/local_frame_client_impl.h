@@ -304,9 +304,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void FrameRectsChanged(const IntRect&) override;
 
-  bool MaybeCreateMimeHandlerView(HTMLPlugInElement&,
-                                  const KURL&,
-                                  const String&) override;
+  bool IsPluginHandledExternally(HTMLPlugInElement&,
+                                 const KURL&,
+                                 const String&) override;
   v8::Local<v8::Object> GetScriptableObject(HTMLPlugInElement&,
                                             v8::Isolate*) override;
 

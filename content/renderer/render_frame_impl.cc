@@ -3963,13 +3963,13 @@ void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
 // blink::WebLocalFrameClient implementation
 // ----------------------------------------
 
-bool RenderFrameImpl::MaybeCreateMimeHandlerView(
+bool RenderFrameImpl::IsPluginHandledExternally(
     const blink::WebElement& plugin_element,
     const blink::WebURL& url,
     const blink::WebString& suggested_mime_type) {
   DCHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
 #if BUILDFLAG(ENABLE_PLUGINS)
-  return GetContentClient()->renderer()->MaybeCreateMimeHandlerView(
+  return GetContentClient()->renderer()->IsPluginHandledExternally(
       this, plugin_element, GURL(url), suggested_mime_type.Utf8());
 #else
   return false;

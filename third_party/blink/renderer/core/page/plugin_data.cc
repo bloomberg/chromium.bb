@@ -49,12 +49,12 @@ PluginInfo::PluginInfo(const String& name,
                        const String& filename,
                        const String& description,
                        Color background_color,
-                       bool may_use_mime_handler_view)
+                       bool may_use_external_handler)
     : name_(name),
       filename_(filename),
       description_(description),
       background_color_(background_color),
-      may_use_mime_handler_view_(may_use_mime_handler_view) {}
+      may_use_external_handler_(may_use_external_handler) {}
 
 void PluginInfo::AddMimeType(MimeClassInfo* info) {
   mimes_.push_back(info);
@@ -106,7 +106,7 @@ void PluginData::UpdatePluginList(const SecurityOrigin* main_frame_origin) {
     auto* plugin_info = MakeGarbageCollected<PluginInfo>(
         plugin->name, FilePathToWebString(plugin->filename),
         plugin->description, plugin->background_color,
-        plugin->may_use_mime_handler_view);
+        plugin->may_use_external_handler);
     plugins_.push_back(plugin_info);
     for (const auto& mime : plugin->mime_types) {
       auto* mime_info = MakeGarbageCollected<MimeClassInfo>(
@@ -154,10 +154,10 @@ Color PluginData::PluginBackgroundColorForMimeType(
   return Color();
 }
 
-bool PluginData::IsMimeHandlerViewMimeType(const String& mime_type) const {
+bool PluginData::IsExternalPluginMimeType(const String& mime_type) const {
   for (const MimeClassInfo* info : mimes_) {
     if (info->type_ == mime_type)
-      return info->Plugin()->MayUseMimeHandlerView();
+      return info->Plugin()->MayUseExternalHandler();
   }
   return false;
 }

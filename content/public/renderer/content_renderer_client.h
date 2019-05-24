@@ -87,17 +87,17 @@ class CONTENT_EXPORT ContentRendererClient {
   // none.
   virtual SkBitmap* GetSadWebViewBitmap();
 
-  // Returns true if the embedder renders the contents of the |plugin_element|
-  // in a cross-process frame using MimeHandlerView.
-  virtual bool MaybeCreateMimeHandlerView(
+  // Returns true if the embedder renders the contents of the |plugin_element|,
+  // using external handlers, in a cross-process frame.
+  virtual bool IsPluginHandledExternally(
       RenderFrame* embedder_frame,
       const blink::WebElement& plugin_element,
       const GURL& original_url,
       const std::string& original_mime_type);
 
   // Returns a scriptable object which implements custom javascript API for the
-  // given element. This is used for MimeHandlerView in providing API such as
-  // |postMessage| for <embed> and <object>.
+  // given element. This is used for external plugin handlers for providing
+  // custom API such as|postMessage| for <embed> and <object>.
   virtual v8::Local<v8::Object> GetScriptableObject(
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate);
