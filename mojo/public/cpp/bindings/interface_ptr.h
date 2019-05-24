@@ -53,7 +53,11 @@ class InterfacePtr {
     internal_state_.Swap(&other.internal_state_);
   }
 
-  explicit InterfacePtr(PtrInfoType&& info) noexcept { Bind(std::move(info)); }
+  explicit InterfacePtr(
+      PtrInfoType&& info,
+      scoped_refptr<base::SequencedTaskRunner> runner = nullptr) noexcept {
+    Bind(std::move(info), std::move(runner));
+  }
 
   // Takes over the binding of another InterfacePtr, and closes any message pipe
   // already bound to this pointer.
