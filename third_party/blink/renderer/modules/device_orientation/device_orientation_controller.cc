@@ -115,7 +115,7 @@ void DeviceOrientationController::RegisterWithDispatcher() {
 
 void DeviceOrientationController::UnregisterWithDispatcher() {
   if (orientation_event_pump_)
-    orientation_event_pump_->RemoveController(this);
+    orientation_event_pump_->RemoveController();
 }
 
 Event* DeviceOrientationController::LastEvent() const {
@@ -166,7 +166,7 @@ void DeviceOrientationController::RegisterWithOrientationEventPump(
         MakeGarbageCollected<DeviceOrientationEventPump>(task_runner, absolute);
   }
   // TODO(crbug.com/850619): Ensure a valid frame is passed.
-  orientation_event_pump_->AddController(this, frame);
+  orientation_event_pump_->SetController(this);
 }
 
 // static
