@@ -6,7 +6,6 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
-import("//third_party/protobuf/proto_library.gni")
 import("//ui/gl/features.gni")
 
 config("gpu_implementation") {
@@ -195,68 +194,6 @@ jumbo_static_library("test_support") {
     "//ui/gl:gl_unittest_utils",
     "//ui/gl:test_support",
   ]
-}
-
-if (!is_android && !is_fuchsia) {
-  proto_library("gl_lpm_fuzzer_proto") {
-    sources = [
-      "command_buffer/tests/lpm/gl_lpm_fuzzer.proto",
-    ]
-  }
-
-  static_library("gl_lpm_shader_to_string") {
-    sources = [
-      "command_buffer/tests/lpm/gl_lpm_shader_to_string.cc",
-      "command_buffer/tests/lpm/gl_lpm_shader_to_string.h",
-    ]
-
-    deps = [
-      ":gl_lpm_fuzzer_proto",
-      "//base:base",
-    ]
-  }
-
-  test("gl_lpm_shader_to_string_unittest") {
-    sources = [
-      "command_buffer/tests/lpm/gl_lpm_shader_to_string_unittest.cc",
-    ]
-
-    deps = [
-      ":gl_lpm_shader_to_string",
-      "//base/test:run_all_unittests",
-      "//testing/gtest",
-      "//third_party/protobuf:protobuf_full",
-    ]
-  }
-
-  fuzzer_test("gl_lpm_fuzzer") {
-    sources = [
-      "command_buffer/tests/gl_manager.cc",
-      "command_buffer/tests/gl_manager.h",
-      "command_buffer/tests/gl_test_utils.cc",
-      "command_buffer/tests/gl_test_utils.h",
-      "command_buffer/tests/lpm/gl_lpm_fuzzer.cc",
-    ]
-
-    defines = [ "GL_GLEXT_PROTOTYPES" ]
-
-    deps = [
-      ":gl_lpm_fuzzer_proto",
-      ":gl_lpm_shader_to_string",
-      ":gles2",
-      ":test_support",
-      "//gpu/command_buffer/client:gles2_c_lib",
-      "//gpu/command_buffer/client:gles2_implementation",
-      "//gpu/command_buffer/common:gles2_utils",
-      "//gpu/ipc:gl_in_process_context",
-      "//gpu/ipc/service:service",
-      "//testing/gtest:gtest",
-      "//third_party/libprotobuf-mutator",
-      "//ui/gfx:gfx",
-      "//ui/gl:gl",
-      "//ui/gl/init:init",
-    ]
-  }
 }
 
 test("gl_tests") {
