@@ -204,6 +204,12 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     }
 
     @Override
+    public void onNativeLibraryReady() {
+        super.onNativeLibraryReady();
+        mLocationBar.onNativeLibraryReady();
+    }
+
+    @Override
     void setCloseButtonImageResource(Drawable drawable) {
         mCloseButton.setVisibility(drawable != null ? View.VISIBLE : View.GONE);
         mCloseButton.setImageDrawable(drawable);
@@ -578,7 +584,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     private class LocationBarImpl implements LocationBar {
         @Override
         public void onNativeLibraryReady() {
-            CustomTabToolbar.this.onNativeLibraryReady();
             mSecurityButton.setOnClickListener(v -> {
                 Tab currentTab = getToolbarDataProvider().getTab();
                 if (currentTab == null || currentTab.getWebContents() == null) return;
