@@ -285,6 +285,10 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   // hide the hovercard on press, touch, and keyboard events.
   SetCanActivate(false);
 
+  // Set so that the tab hover card is not focus traversable when keyboard
+  // navigating through the tab strip.
+  set_focus_traversable_from_anchor_view(false);
+
   title_label_ =
       new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
                        views::style::STYLE_PRIMARY);

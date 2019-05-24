@@ -434,7 +434,7 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
     OnAnchorBoundsChanged();
   }
 
-  if (anchor_view) {
+  if (anchor_view && focus_traversable_from_anchor_view_) {
     // Make sure that focus can move into here from the anchor view (but not
     // out, focus will cycle inside the dialog once it gets here).
     anchor_view->SetProperty(kAnchoredDialogKey, this);

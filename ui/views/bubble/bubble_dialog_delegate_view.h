@@ -111,6 +111,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   bool adjust_if_offscreen() const { return adjust_if_offscreen_; }
   void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
 
+  void set_focus_traversable_from_anchor_view(bool focusable) {
+    focus_traversable_from_anchor_view_ = focusable;
+  }
+
   void set_highlight_button_when_shown(bool highlight) {
     highlight_button_when_shown_ = highlight;
   }
@@ -246,6 +250,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // Parent native window of the bubble.
   gfx::NativeView parent_window_;
+
+  // If true, focus can navigate to the bubble from the anchor view. This takes
+  // effect only when SetAnchorView is called.
+  bool focus_traversable_from_anchor_view_ = true;
 
 #if defined(OS_MACOSX)
   // Special handler for close_on_deactivate() on Mac. Window (de)activation is
