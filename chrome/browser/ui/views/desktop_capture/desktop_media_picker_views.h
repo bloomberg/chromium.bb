@@ -42,10 +42,9 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   // views::TabbedPaneListener:
   void TabSelectedAt(int index) override;
 
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
   // views::DialogDelegateView:
+  gfx::Size CalculatePreferredSize() const override;
+  const char* GetClassName() const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
@@ -72,7 +71,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 
   views::Checkbox* audio_share_checkbox_;
 
-  views::TabbedPane* pane_;
+  views::TabbedPane* tabbed_pane_;
   std::vector<std::unique_ptr<DesktopMediaListController>> list_controllers_;
   std::vector<content::DesktopMediaID::Type> source_types_;
 

@@ -73,7 +73,10 @@ void DesktopMediaPickerViewsTestApi::SelectTabForSourceType(
   const auto i =
       std::find(source_types.cbegin(), source_types.cend(), source_type);
   DCHECK(i != source_types.cend());
-  picker_->dialog_->pane_->SelectTabAt(std::distance(source_types.cbegin(), i));
+  if (picker_->dialog_->tabbed_pane_) {
+    picker_->dialog_->tabbed_pane_->SelectTabAt(
+        std::distance(source_types.cbegin(), i));
+  }
 }
 
 base::Optional<int> DesktopMediaPickerViewsTestApi::GetSelectedSourceId()

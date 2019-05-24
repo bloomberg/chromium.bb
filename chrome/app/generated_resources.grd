@@ -8741,6 +8741,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE" desc="Title for the window picker dialog shown when desktop capture is requested by an app.">
         Share your screen
       </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE_SCREEN_ONLY" desc="Title for the window picker dialog shown when desktop capture of the entire screen is requested by an app.">
+        Share your entire screen
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE_WINDOW_ONLY" desc="Title for the window picker dialog shown when desktop capture of an application window is requested by an app.">
+        Share an application window
+      </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_TEXT" desc="Text for the window picker dialog shown when desktop capture is requested by an app to be used by the app itself.">
         <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> wants to share the contents of your screen. Choose what you'd like to share.
       </message>
