@@ -460,7 +460,7 @@ if (enable_extensions) {
       "//extensions/browser",
       "//extensions/strings",
       "//ipc",
-      "//services/device/public/cpp/test:test_support",
+      "//services/device/public/cpp:test_support",
       "//testing/gmock",
       "//testing/gtest",
       "//ui/base",

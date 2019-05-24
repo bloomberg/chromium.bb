@@ -249,7 +249,7 @@ source_set("tests") {
       ":usb_test_gadget",
       "//device/base",
       "//net:test_support",
-      "//services/device/public/cpp/test:test_support",
+      "//services/device/public/cpp:test_support",
       "//services/device/public/cpp/usb",
       "//services/device/public/mojom",
       "//services/device/usb",

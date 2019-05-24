@@ -160,7 +160,7 @@ source_set("tests") {
     deps += [
       "//chromeos/dbus",
       "//libassistant/shared/public",
-      "//services/device/public/cpp/test:test_support",
+      "//services/device/public/cpp:test_support",
     ]
   }
 }

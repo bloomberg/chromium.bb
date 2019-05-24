@@ -376,7 +376,7 @@ source_set("unit_tests") {
     "//content/test:test_support",
     "//device/bluetooth",
     "//mojo/public/cpp/system:system",
-    "//services/device/public/cpp/test:test_support",
+    "//services/device/public/cpp:test_support",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",

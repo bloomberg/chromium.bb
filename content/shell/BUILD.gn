@@ -323,7 +323,7 @@ jumbo_static_library("content_shell_lib") {
     "//net:test_support",
     "//ppapi/buildflags",
     "//sandbox",
-    "//services/device/public/cpp/test:test_support",
+    "//services/device/public/cpp:test_support",
     "//services/device/public/mojom",
     "//services/network/public/cpp",
     "//services/service_manager/embedder:embedder_result_codes",

@@ -416,7 +416,7 @@ jumbo_source_set("unit_tests") {
     ":modules",
     ":modules_testing",
     "//net:quic_test_tools",
-    "//services/device/public/cpp/test:test_support",
+    "//services/device/public/cpp:test_support",
     "//services/viz/public/interfaces:interfaces_blink",
     "//skia",
     "//testing/gmock",
