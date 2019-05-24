@@ -21,16 +21,24 @@ cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the options of Camera view.
- * @param {cca.ResolutionEventBroker} resolBroker
+ * @param {cca.views.camera.PhotoResolPreferrer} photoResolPreferrer
+ * @param {cca.views.camera.VideoResolPreferrer} videoResolPreferrer
  * @param {function()} doSwitchDevice Callback to trigger device switching.
  * @constructor
  */
-cca.views.camera.Options = function(resolBroker, doSwitchDevice) {
+cca.views.camera.Options = function(
+    photoResolPreferrer, videoResolPreferrer, doSwitchDevice) {
   /**
-   * @type {cca.ResolutionEventBroker}
+   * @type {cca.views.camera.PhotoResolPreferrer}
    * @private
    */
-  this.resolBroker_ = resolBroker;
+  this.photoResolPreferrer_ = photoResolPreferrer;
+
+  /**
+   * @type {cca.views.camera.VideoResolPreferrer}
+   * @private
+   */
+  this.videoResolPreferrer_ = videoResolPreferrer;
 
   /**
    * @type {function()}
@@ -131,13 +139,6 @@ cca.views.camera.Options.FRONT_CAMERA_LABEL = 'Front Camera';
  * @const
  */
 cca.views.camera.Options.BACK_CAMERA_LABEL = 'Back Camera';
-
-/**
- * Label of external facing camera from MediaDeviceInfo.
- * @type {string}
- * @const
- */
-cca.views.camera.Options.EXTERNAL_CAMERA_LABEL = 'External Camera';
 
 /**
  * Switches to the next available camera device.
@@ -300,15 +301,19 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
         case cca.views.camera.Options.BACK_CAMERA_LABEL:
           backSetting = setting;
           break;
-        case cca.views.camera.Options.EXTERNAL_CAMERA_LABEL:
-          externalSettings.push(setting);
-          break;
         default:
-          console.error(`Ignore device of unknown label: ${label}`);
+          // TODO(inker): Use private API to get camera facing information.
+          externalSettings.push(setting);
       }
     });
-    this.resolBroker_.notifyUpdateDeviceResolutions(
-        frontSetting, backSetting, externalSettings);
+    this.photoResolPreferrer_.updateResolutions(
+        frontSetting && [frontSetting[0], frontSetting[1]],
+        backSetting && [backSetting[0], backSetting[1]],
+        externalSettings.map(([deviceId, photoRs]) => [deviceId, photoRs]));
+    this.videoResolPreferrer_.updateResolutions(
+        frontSetting && [frontSetting[0], frontSetting[2]],
+        backSetting && [backSetting[0], backSetting[2]],
+        externalSettings.map(([deviceId, , videoRs]) => [deviceId, videoRs]));
   });
 };
 

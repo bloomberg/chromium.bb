@@ -165,6 +165,7 @@ copy("chrome_camera_app_js_views_camera") {
     "src/js/views/camera/options.js",
     "src/js/views/camera/preview.js",
     "src/js/views/camera/recordtime.js",
+    "src/js/views/camera/resolution_preference.js",
     "src/js/views/camera/timertick.js",
   ]
 

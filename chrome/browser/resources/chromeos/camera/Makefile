@@ -137,6 +137,7 @@ RESOURCES = \
 	src/js/views/camera/options.js \
 	src/js/views/camera/preview.js \
 	src/js/views/camera/recordtime.js \
+	src/js/views/camera/resolution_preference.js \
 	src/js/views/camera/timertick.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \

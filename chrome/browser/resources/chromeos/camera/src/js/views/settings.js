@@ -114,29 +114,25 @@ cca.views.ResolutionSettings = function(resolBroker) {
     'settings-front-photores': () => {
       const element = document.querySelector('#settings-front-photores');
       if (element.classList.contains('multi-option')) {
-        this.openPhotoResSettings_(
-            this.frontSetting_[0], this.frontSetting_[1], element);
+        this.openPhotoResSettings_(this.frontPhotoSetting_, element);
       }
     },
     'settings-front-videores': () => {
       const element = document.querySelector('#settings-front-videores');
       if (element.classList.contains('multi-option')) {
-        this.openVideoResSettings_(
-            this.frontSetting_[0], this.frontSetting_[2], element);
+        this.openVideoResSettings_(this.frontVideoSetting_, element);
       }
     },
     'settings-back-photores': () => {
       const element = document.querySelector('#settings-back-photores');
       if (element.classList.contains('multi-option')) {
-        this.openPhotoResSettings_(
-            this.backSetting_[0], this.backSetting_[1], element);
+        this.openPhotoResSettings_(this.backPhotoSetting_, element);
       }
     },
     'settings-back-videores': () => {
       const element = document.querySelector('#settings-back-videores');
       if (element.classList.contains('multi-option')) {
-        this.openVideoResSettings_(
-            this.backSetting_[0], this.backSetting_[2], element);
+        this.openVideoResSettings_(this.backVideoSetting_, element);
       }
     },
   });
@@ -205,34 +201,81 @@ cca.views.ResolutionSettings = function(resolBroker) {
       document.querySelector('#extcam-resolution-item-template');
 
   /**
-   * Device id and resolutions of front camera. Null for no front camera.
+   * Device id and photo resolutions of front camera. Null if no front camera.
    * @type {?DeviceIdResols}
    * @private
    */
-  this.frontSetting_ = null;
+  this.frontPhotoSetting_ = null;
 
   /**
-   * Device id and resolutions of back camera. Null for no back camera.
+   * Device id and video resolutions of front camera. Null if no front camera.
    * @type {?DeviceIdResols}
    * @private
    */
-  this.backSetting_ = null;
+  this.frontVideoSetting_ = null;
 
   /**
-   * Device id and resolutions of external cameras.
+   * Device id and photo resolutions of back camera. Null if no back camera.
+   * @type {?DeviceIdResols}
+   * @private
+   */
+  this.backPhotoSetting_ = null;
+
+  /**
+   * Device id and video resolutions of back camera. Null if no back camera.
+   * @type {?DeviceIdResols}
+   * @private
+   */
+  this.backVideoSetting_ = null;
+
+  /**
+   * Device id and photo resolutions of external cameras.
    * @type {Array<DeviceIdResols>}
    * @private
    */
-  this.externalSettings_ = [];
+  this.externalPhotoSettings_ = [];
+
+  /**
+   * Device id and video resolutions of external cameras.
+   * @type {Array<DeviceIdResols>}
+   * @private
+   */
+  this.externalVideoSettings_ = [];
+
+  /**
+   * Device id of currently opened resolution setting view.
+   * @type {?string}
+   * @private
+   */
+  this.openedSettingDeviceId_ = null;
 
   // End of properties, seal the object.
   Object.seal(this);
 
-  this.resolBroker_.addUpdateDeviceResolutionsListener(
-      this.updateResolutions.bind(this));
-  this.resolBroker_.addPhotoResolChangeListener(
+  this.resolBroker_.addPhotoResolChangeListener((front, back, externals) => {
+    // Filter out resolutions of megapixels < 0.1 i.e. megapixels 0.0
+    const zeroMPFilter = (s) => {
+      s = [...s];
+      s.splice(3, 1, s[3].filter(([w, h]) => w * h >= 100000));
+      return s;
+    };
+    this.frontPhotoSetting_ = zeroMPFilter(front);
+    this.backPhotoSetting_ = zeroMPFilter(back);
+    this.externalPhotoSettings_ = externals.map(zeroMPFilter);
+    this.updateResolutions_();
+  });
+
+  this.resolBroker_.addVideoResolChangeListener((front, back, externals) => {
+    this.frontVideoSetting_ = front;
+    this.backVideoSetting_ = back;
+    this.externalVideoSettings_ = externals;
+    this.updateResolutions_();
+  });
+
+
+  this.resolBroker_.addPhotoPrefResolChangeListener(
       this.updateSelectedPhotoResolution_.bind(this));
-  this.resolBroker_.addVideoResolChangeListener(
+  this.resolBroker_.addVideoPrefResolChangeListener(
       this.updateSelectedVideoResolution_.bind(this));
 };
 
@@ -248,7 +291,13 @@ cca.views.ResolutionSettings.prototype = {
  * @private
  */
 cca.views.ResolutionSettings.prototype.photoOptTextTempl_ = function(w, h) {
-  return `${Math.round(w * h / 100000) / 10} megapixels (${w}:${h})`;
+  const gcd = (a, b) => (a <= 0 ? b : gcd(b % a, a));
+  if (h * w >= 100000) {
+    return `${Math.round(w * h / 100000) / 10} megapixels (${w}:${h})`;
+  } else {
+    const d = gcd(w, h);
+    return `(${w / d}:${h / d}) ${w} x ${h}px`;
+  }
 };
 
 /**
@@ -263,51 +312,68 @@ cca.views.ResolutionSettings.prototype.videoOptTextTempl_ = function(w, h) {
 };
 
 /**
- * Updates resolutions of front, back camera and external cameras.
- * @param {?DeviceIdResols} frontSetting Resolutions of front camera.
- * @param {?DeviceIdResols} backSetting Resolutions of back camera.
- * @param {Array<DeviceIdResols>} externalSettings Resolutions of external
- *     cameras.
+ * Finds resolution setting of target device id.
+ * @param {string} deviceId
+ * @return {?DeviceIdResols}
+ * @private
  */
-cca.views.ResolutionSettings.prototype.updateResolutions = function(
-    frontSetting, backSetting, externalSettings) {
-  const checkMulti = (item, resolutions, optTextTempl) => {
-    // Filter out resolutions of megapixels < 0.1 i.e. megapixels 0.0
-    resolutions = resolutions.filter(([w, h]) => w * h >= 100000);
+cca.views.ResolutionSettings.prototype.getDeviceSetting_ = function(deviceId) {
+  if (this.frontPhotoSetting_ && this.frontPhotoSetting_[0] === deviceId) {
+    return [this.frontPhotoSetting_, this.frontVideoSetting_];
+  }
+  if (this.backPhotoSetting_ && this.backPhotoSetting_[0] === deviceId) {
+    return [this.backPhotoSetting_, this.backVideoSetting_];
+  }
+  const idx = this.externalPhotoSettings_.findIndex(([id]) => id === deviceId);
+  return idx == -1 ?
+      null :
+      [this.externalPhotoSettings_[idx], this.externalVideoSettings_[idx]];
+};
+
+/**
+ * Updates resolution information of front, back camera and external cameras.
+ * @private
+ */
+cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
+  // Since photo/video resolutions may be updated independently and updating
+  // setting menu requires both information, check if their device ids are
+  // matched before update.
+  const compareId = (setting, setting2) =>
+      (setting && setting[0]) === (setting2 && setting2[0]);
+  if (!compareId(this.frontPhotoSetting_, this.frontVideoSetting_) ||
+      !compareId(this.backPhotoItem_, this.backVideoItem_) ||
+      this.externalPhotoSettings_.length !=
+          this.externalVideoSettings_.length ||
+      this.externalPhotoSettings_.some(
+          (s, index) => !compareId(s, this.externalVideoSettings_[index]))) {
+    return;
+  }
+
+  const prepItem = (item, [id, w, h, resolutions], optTextTempl) => {
+    item.dataset.deviceId = id;
     item.classList.toggle('multi-option', resolutions.length > 1);
-    if (resolutions.length == 1) {
-      const [w, h] = resolutions;
-      item.dataset.sWidth = w;
-      item.dataset.sHeight = h;
-      item.querySelector('.description>span').textContent = optTextTempl(w, h);
-    }
+    item.querySelector('.description>span').textContent = optTextTempl(w, h);
   };
 
   // Update front camera setting
-  this.frontSetting_ = frontSetting;
-  cca.state.set('has-front-camera', this.frontSetting_);
-  if (this.frontSetting_) {
-    const [deviceId, photoRs, videoRs] = this.frontSetting_;
-    this.frontPhotoItem_.dataset.deviceId =
-        this.frontVideoItem_.dataset.deviceId = deviceId;
-    checkMulti(this.frontPhotoItem_, photoRs, this.photoOptTextTempl_);
-    checkMulti(this.frontVideoItem_, videoRs, this.videoOptTextTempl_);
+  cca.state.set('has-front-camera', !!this.frontPhotoSetting_);
+  if (this.frontPhotoSetting_) {
+    prepItem(
+        this.frontPhotoItem_, this.frontPhotoSetting_, this.photoOptTextTempl_);
+    prepItem(
+        this.frontVideoItem_, this.frontVideoSetting_, this.videoOptTextTempl_);
   }
 
   // Update back camera setting
-  this.backSetting_ = backSetting;
-  cca.state.set('has-back-camera', this.backSetting_);
-  if (this.backSetting_) {
-    const [deviceId, photoRs, videoRs] = this.backSetting_;
-    this.backPhotoItem_.dataset.deviceId =
-        this.backVideoItem_.dataset.deviceId = deviceId;
-    checkMulti(this.backPhotoItem_, photoRs, this.photoOptTextTempl_);
-    checkMulti(this.backVideoItem_, videoRs, this.videoOptTextTempl_);
+  cca.state.set('has-back-camera', !!this.backPhotoSetting_);
+  if (this.backPhotoSetting_) {
+    prepItem(
+        this.backPhotoItem_, this.backPhotoSetting_, this.photoOptTextTempl_);
+    prepItem(
+        this.backVideoItem_, this.backVideoSetting_, this.videoOptTextTempl_);
   }
 
   // Update external camera settings
-  this.externalSettings_ = externalSettings;
-
   // To prevent losing focus on item already exist before update, locate
   // focused item in both previous and current list, pop out all items in
   // previous list except those having same deviceId as focused one and
@@ -315,7 +381,8 @@ cca.views.ResolutionSettings.prototype.updateResolutions = function(
   const prevFocus =
       this.resMenu_.querySelector('.menu-item.external-camera:focus');
   const prevFId = prevFocus && prevFocus.dataset.deviceId;
-  const focusIdx = externalSettings.findIndex(([id]) => id === prevFId);
+  const focusIdx =
+      this.externalPhotoSettings_.findIndex(([id]) => id === prevFId);
   const fTitle =
       this.resMenu_.querySelector(`.menu-item[data-device-id="${prevFId}"]`);
   const focusedId = focusIdx === -1 ? null : prevFId;
@@ -325,34 +392,45 @@ cca.views.ResolutionSettings.prototype.updateResolutions = function(
           (element) => element.dataset.deviceId !== focusedId &&
               element.parentNode.removeChild(element));
 
-  externalSettings.forEach(([deviceId, photoRs, videoRs], index) => {
-    if (deviceId === focusedId) {
-      return;
-    }
-    const extItem = document.importNode(this.extcamItemTempl_.content, true);
-    const [titleItem, photoItem, videoItem] =
-        extItem.querySelectorAll('.menu-item');
-    titleItem.dataset.deviceId = photoItem.dataset.deviceId =
-        videoItem.dataset.deviceId = deviceId;
-    checkMulti(photoItem, photoRs, this.photoOptTextTempl_);
-    checkMulti(videoItem, videoRs, this.videoOptTextTempl_);
+  this.externalPhotoSettings_.forEach((photoSetting, index) => {
+    const deviceId = photoSetting[0];
+    const videoSetting = this.externalVideoSettings_[index];
+    if (deviceId !== focusedId) {
+      const extItem = document.importNode(this.extcamItemTempl_.content, true);
+      var [titleItem, photoItem, videoItem] =
+          extItem.querySelectorAll('.menu-item');
 
-    photoItem.addEventListener('click', () => {
-      if (photoItem.classList.contains('multi-option')) {
-        this.openPhotoResSettings_(deviceId, photoRs, photoItem);
+      photoItem.addEventListener('click', () => {
+        if (photoItem.classList.contains('multi-option')) {
+          this.openPhotoResSettings_(photoSetting, photoItem);
+        }
+      });
+      videoItem.addEventListener('click', () => {
+        if (videoItem.classList.contains('multi-option')) {
+          this.openVideoResSettings_(videoSetting, videoItem);
+        }
+      });
+      if (index < focusIdx) {
+        this.resMenu_.insertBefore(extItem, fTitle);
+      } else {
+        this.resMenu_.appendChild(extItem);
       }
-    });
-    videoItem.addEventListener('click', () => {
-      if (videoItem.classList.contains('multi-option')) {
-        this.openVideoResSettings_(deviceId, videoRs, videoItem);
-      }
-    });
-    if (index < focusIdx) {
-      this.resMenu_.insertBefore(extItem, fTitle);
     } else {
-      this.resMenu_.appendChild(extItem);
+      titleItem = fTitle;
+      photoItem = fTitle.nextElementSibling;
+      videoItem = photoItem.nextElementSibling;
     }
+    titleItem.dataset.deviceId = deviceId;
+    prepItem(photoItem, photoSetting, this.photoOptTextTempl_);
+    prepItem(videoItem, videoSetting, this.videoOptTextTempl_);
   });
+  if ((cca.state.get('photoresolutionsettings') ||
+       cca.state.get('videoresolutionsettings')) &&
+      !this.getDeviceSetting_(this.openedSettingDeviceId_)) {
+    cca.nav.close(
+        cca.state.get('photoresolutionsettings') ? 'photoresolutionsettings' :
+                                                   'videoresolutionsettings');
+  }
 };
 
 /**
@@ -364,15 +442,23 @@ cca.views.ResolutionSettings.prototype.updateResolutions = function(
  */
 cca.views.ResolutionSettings.prototype.updateSelectedPhotoResolution_ =
     function(deviceId, width, height) {
-  const [photoItem] = this.resMenu_.querySelectorAll(
-      `.resol-item[data-device-id="${deviceId}"]`);
-  photoItem.dataset.sWidth = width;
-  photoItem.dataset.sHeight = height;
+  const [photoSetting] = this.getDeviceSetting_(deviceId);
+  photoSetting[1] = width;
+  photoSetting[2] = height;
+  if (this.frontPhotoSetting_ && deviceId === this.frontPhotoSetting_[0]) {
+    var photoItem = this.frontPhotoItem_;
+  } else if (this.backPhotoSetting_ && deviceId === this.backPhotoSetting_[0]) {
+    photoItem = this.backPhotoItem_;
+  } else {
+    photoItem = this.resMenu_.querySelectorAll(
+        `.menu-item[data-device-id="${deviceId}"]`)[1];
+  }
   photoItem.querySelector('.description>span').textContent =
       this.photoOptTextTempl_(width, height);
 
   // Update setting option if it's opened.
-  if (cca.state.get('photoresolutionsettings')) {
+  if (cca.state.get('photoresolutionsettings') &&
+      this.openedSettingDeviceId_ === deviceId) {
     this.photoResMenu_
         .querySelector(`input[data-width="${width}"][data-height="${height}"]`)
         .checked = true;
@@ -388,15 +474,23 @@ cca.views.ResolutionSettings.prototype.updateSelectedPhotoResolution_ =
  */
 cca.views.ResolutionSettings.prototype.updateSelectedVideoResolution_ =
     function(deviceId, width, height) {
-  const [, videoItem] = this.resMenu_.querySelectorAll(
-      `.resol-item[data-device-id="${deviceId}"]`);
-  videoItem.dataset.sWidth = width;
-  videoItem.dataset.sHeight = height;
+  const [, videoSetting] = this.getDeviceSetting_(deviceId);
+  videoSetting[1] = width;
+  videoSetting[2] = height;
+  if (this.frontVideoSetting_ && deviceId === this.frontVideoSetting_[0]) {
+    var videoItem = this.frontVideoItem_;
+  } else if (this.backVideoSetting_ && deviceId === this.backVideoSetting_[0]) {
+    videoItem = this.backVideoItem_;
+  } else {
+    videoItem = this.resMenu_.querySelectorAll(
+        `.menu-item[data-device-id="${deviceId}"]`)[2];
+  }
   videoItem.querySelector('.description>span').textContent =
       this.videoOptTextTempl_(width, height);
 
   // Update setting option if it's opened.
-  if (cca.state.get('videoresolutionsettings')) {
+  if (cca.state.get('videoresolutionsettings') &&
+      this.openedSettingDeviceId_ === deviceId) {
     this.videoResMenu_
         .querySelector(`input[data-width="${width}"][data-height="${height}"]`)
         .checked = true;
@@ -405,37 +499,37 @@ cca.views.ResolutionSettings.prototype.updateSelectedVideoResolution_ =
 
 /**
  * Opens photo resolution setting view.
- * @param {string} deviceId Device id of the opened view.
- * @param {ResolList} resolutions Resolutions to be shown in opened view.
- * @param {HTMLElement} resolItem Dom element from upper layer holding the
- *     selected resolution width, height.
+ * @param {DeviceIdResols} setting Photo resolution setting.
+ * @param {HTMLElement} resolItem Dom element from upper layer menu item showing
+ *     title of the selected resolution.
  * @private
  */
 cca.views.ResolutionSettings.prototype.openPhotoResSettings_ = function(
-    deviceId, resolutions, resolItem) {
+    setting, resolItem) {
+  const [deviceId, width, height, resolutions] = setting;
+  this.openedSettingDeviceId_ = deviceId;
   this.updateMenu_(
       resolItem, this.photoResMenu_, this.photoOptTextTempl_,
-      (w, h) => this.resolBroker_.requestChangePhotoResol(deviceId, w, h),
-      resolutions, parseInt(resolItem.dataset.sWidth),
-      parseInt(resolItem.dataset.sHeight));
+      (w, h) => this.resolBroker_.requestChangePhotoPrefResol(deviceId, w, h),
+      resolutions, width, height);
   this.openSubSettings('photoresolutionsettings');
 };
 
 /**
  * Opens video resolution setting view.
- * @param {string} deviceId Device id of the opened view.
- * @param {ResolList} resolutions Resolutions to be shown in opened view.
- * @param {HTMLElement} resolItem Dom element from upper layer holding the
- *     selected resolution width, height.
+ * @param {DeviceIdResols} setting Video resolution setting.
+ * @param {HTMLElement} resolItem Dom element from upper layer menu item showing
+ *     title of the selected resolution.
  * @private
  */
 cca.views.ResolutionSettings.prototype.openVideoResSettings_ = function(
-    deviceId, resolutions, resolItem) {
+    setting, resolItem) {
+  const [deviceId, width, height, resolutions] = setting;
+  this.openedSettingDeviceId_ = deviceId;
   this.updateMenu_(
       resolItem, this.videoResMenu_, this.videoOptTextTempl_,
-      (w, h) => this.resolBroker_.requestChangeVideoResol(deviceId, w, h),
-      resolutions, parseInt(resolItem.dataset.sWidth),
-      parseInt(resolItem.dataset.sHeight));
+      (w, h) => this.resolBroker_.requestChangeVideoPrefResol(deviceId, w, h),
+      resolutions, width, height);
   this.openSubSettings('videoresolutionsettings');
 };
 
@@ -458,11 +552,6 @@ cca.views.ResolutionSettings.prototype.updateMenu_ = function(
     resolItem, menu, optTextTempl, onChange, resolutions, selectedWidth,
     selectedHeight) {
   const captionText = resolItem.querySelector('.description>span');
-  const updateSelection = (w, h) => {
-    resolItem.dataset.sWidth = w;
-    resolItem.dataset.sHeight = h;
-    captionText.textContent = optTextTempl(w, h);
-  };
   captionText.textContent = '';
   menu.querySelectorAll('.menu-item')
       .forEach((element) => element.parentNode.removeChild(element));
@@ -476,7 +565,7 @@ cca.views.ResolutionSettings.prototype.updateMenu_ = function(
     inputElement.dataset.width = w;
     inputElement.dataset.height = h;
     if (w == selectedWidth && h == selectedHeight) {
-      updateSelection(w, h);
+      captionText.textContent = optTextTempl(w, h);
       inputElement.checked = true;
     }
     inputElement.addEventListener('click', (event) => {
@@ -486,7 +575,7 @@ cca.views.ResolutionSettings.prototype.updateMenu_ = function(
     });
     inputElement.addEventListener('change', (event) => {
       if (inputElement.checked) {
-        updateSelection(w, h);
+        captionText.textContent = optTextTempl(w, h);
         onChange(w, h);
       }
     });

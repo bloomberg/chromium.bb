@@ -31,6 +31,20 @@ cca.views.Camera = function(model, resolBroker) {
   this.model_ = model;
 
   /**
+   * @type {cca.views.camera.PhotoResolPreferrer}
+   * @private
+   */
+  this.photoResolPreferrer_ = new cca.views.camera.PhotoResolPreferrer(
+      resolBroker, this.stop_.bind(this));
+
+  /**
+   * @type {cca.views.camera.VideoResolPreferrer}
+   * @private
+   */
+  this.videoResolPreferrer_ = new cca.views.camera.VideoResolPreferrer(
+      resolBroker, this.stop_.bind(this));
+
+  /**
    * Layout handler for the camera view.
    * @type {cca.views.camera.Layout}
    * @private
@@ -49,8 +63,9 @@ cca.views.Camera = function(model, resolBroker) {
    * @type {cca.views.camera.Options}
    * @private
    */
-  this.options_ =
-      new cca.views.camera.Options(resolBroker, this.stop_.bind(this));
+  this.options_ = new cca.views.camera.Options(
+      this.photoResolPreferrer_, this.videoResolPreferrer_,
+      this.stop_.bind(this));
 
   /**
    * Modes for the camera.
@@ -58,8 +73,8 @@ cca.views.Camera = function(model, resolBroker) {
    * @private
    */
   this.modes_ = new cca.views.camera.Modes(
-      resolBroker, this.stop_.bind(this), this.stop_.bind(this),
-      async (blob, isMotionPicture, filename) => {
+      this.photoResolPreferrer_, this.videoResolPreferrer_,
+      this.stop_.bind(this), async (blob, isMotionPicture, filename) => {
         if (blob) {
           cca.metrics.log(
               cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins);
@@ -225,10 +240,9 @@ cca.views.Camera.prototype.stop_ = function() {
 cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
   let supportedModes = null;
   for (const mode of this.modes_.getModeCandidates()) {
-    const [photoRs, videoRs] =
-        await this.options_.getDeviceResolutions(deviceId);
+    const previewRs = (await this.options_.getDeviceResolutions(deviceId))[1];
     for (const [[width, height], previewCandidates] of this.modes_
-             .getResolutionCandidates(mode, deviceId, photoRs, videoRs)) {
+             .getResolutionCandidates(mode, deviceId, previewRs)) {
       for (const constraints of previewCandidates) {
         try {
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
