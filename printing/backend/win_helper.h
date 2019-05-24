@@ -39,30 +39,19 @@ class PrinterHandleTraits {
     return ::ClosePrinter(handle) != FALSE;
   }
 
-  static bool IsHandleValid(HANDLE handle) { return handle != NULL; }
+  static bool IsHandleValid(HANDLE handle) { return !!handle; }
 
-  static HANDLE NullHandle() { return NULL; }
+  static HANDLE NullHandle() { return nullptr; }
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterHandleTraits);
 };
 
-class ScopedPrinterHandle
+class PRINTING_EXPORT ScopedPrinterHandle
     : public base::win::GenericScopedHandle<PrinterHandleTraits,
                                             base::win::DummyVerifierTraits> {
  public:
-  bool OpenPrinter(const wchar_t* printer) {
-    HANDLE temp_handle;
-    // ::OpenPrinter may return error but assign some value into handle.
-    if (::OpenPrinter(const_cast<LPTSTR>(printer), &temp_handle, NULL)) {
-      Set(temp_handle);
-    }
-    return IsValid();
-  }
-
- private:
-  using Base = base::win::GenericScopedHandle<PrinterHandleTraits,
-                                              base::win::DummyVerifierTraits>;
+  bool OpenPrinter(const wchar_t* printer);
 };
 
 class PrinterChangeHandleTraits {
@@ -74,9 +63,9 @@ class PrinterChangeHandleTraits {
     return true;
   }
 
-  static bool IsHandleValid(HANDLE handle) { return handle != NULL; }
+  static bool IsHandleValid(HANDLE handle) { return !!handle; }
 
-  static HANDLE NullHandle() { return NULL; }
+  static HANDLE NullHandle() { return nullptr; }
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterChangeHandleTraits);

@@ -129,6 +129,15 @@ const char kXpsTicketMonochrome[] = "Monochrome";
 
 namespace printing {
 
+bool ScopedPrinterHandle::OpenPrinter(const wchar_t* printer) {
+  HANDLE temp_handle;
+  // ::OpenPrinter may return error but assign some value into handle.
+  if (::OpenPrinter(const_cast<LPTSTR>(printer), &temp_handle, nullptr)) {
+    Set(temp_handle);
+  }
+  return IsValid();
+}
+
 bool XPSModule::Init() {
   static bool initialized = InitImpl();
   return initialized;
