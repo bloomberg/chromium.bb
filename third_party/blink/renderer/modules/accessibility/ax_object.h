@@ -473,6 +473,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return kExpandedUndefined;
   }
   virtual bool IsFocused() const { return false; }
+  // aria-grabbed is deprecated in WAI-ARIA 1.1.
+  virtual AccessibilityGrabbedState IsGrabbed() const {
+    return kGrabbedStateUndefined;
+  }
   virtual bool IsHovered() const { return false; }
   virtual bool IsLinked() const { return false; }
   virtual bool IsLoaded() const { return false; }
@@ -708,7 +712,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool HasGlobalARIAAttribute() const;
   bool SupportsARIAExpanded() const;
   virtual bool SupportsARIADragging() const { return false; }
-  virtual bool SupportsARIADropping() const { return false; }
+  virtual void Dropeffects(Vector<ax::mojom::Dropeffect>& dropeffects) const {}
   virtual bool SupportsARIAFlowTo() const { return false; }
   virtual bool SupportsARIAOwns() const { return false; }
   bool SupportsRangeValue() const;

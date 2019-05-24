@@ -5614,7 +5614,6 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
       properties, ax::mojom::BoolAttribute::kLiveAtomic, "atomic");
   BoolAttributeToUIAAriaProperty(properties, ax::mojom::BoolAttribute::kBusy,
                                  "busy");
-  HtmlAttributeToUIAAriaProperty(properties, "aria-channel", "channel");
 
   switch (data.GetCheckedState()) {
     case ax::mojom::CheckedState::kNone:
@@ -5677,9 +5676,14 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
       break;
   }
 
-  HtmlAttributeToUIAAriaProperty(properties, "aria-dropeffect", "dropeffect");
+  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kDropeffect)) {
+    properties.push_back(L"dropeffect=" +
+                         base::UTF8ToUTF16(data.DropeffectBitfieldToString()));
+  }
   StateToUIAAriaProperty(properties, ax::mojom::State::kExpanded, "expanded");
-  HtmlAttributeToUIAAriaProperty(properties, "aria-grabbed", "grabbed");
+  BoolAttributeToUIAAriaProperty(properties, ax::mojom::BoolAttribute::kGrabbed,
+                                 "grabbed");
 
   // TODO(crbug.com/865101) Use
   // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
@@ -5733,7 +5737,6 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
       properties, ax::mojom::BoolAttribute::kSelected, "selected");
   IntAttributeToUIAAriaProperty(properties, ax::mojom::IntAttribute::kSetSize,
                                 "setsize");
-  HtmlAttributeToUIAAriaProperty(properties, "aria-secret", "secret");
 
   int32_t sort_direction;
   if (IsTableHeader(data.role) &&
@@ -5756,8 +5759,6 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
         break;
     }
   }
-
-  HtmlAttributeToUIAAriaProperty(properties, "aria-tabindex", "tabindex");
 
   if (IsRangeValueSupported(data)) {
     FloatAttributeToUIAAriaProperty(

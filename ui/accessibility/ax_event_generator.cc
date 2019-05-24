@@ -273,6 +273,9 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kCheckedState:
       AddEvent(node, Event::CHECKED_STATE_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kDropeffect:
+      AddEvent(node, Event::DROPEFFECT_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kHasPopup:
       AddEvent(node, Event::HASPOPUP_CHANGED);
       break;
@@ -364,6 +367,9 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
       // Fire an 'invalidated' event when aria-busy becomes false
       if (!new_value)
         AddEvent(node, Event::LAYOUT_INVALIDATED);
+      break;
+    case ax::mojom::BoolAttribute::kGrabbed:
+      AddEvent(node, Event::GRABBED_CHANGED);
       break;
     case ax::mojom::BoolAttribute::kLiveAtomic:
       AddEvent(node, Event::ATOMIC_CHANGED);

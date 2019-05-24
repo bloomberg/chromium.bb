@@ -220,6 +220,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
       break;
     }
+    // aria-dropeffect is deprecated in WAI-ARIA 1.1.
+    case ui::AXEventGenerator::Event::DROPEFFECT_CHANGED:
+      aria_properties_events_.insert(node);
+      break;
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
       FireUiaPropertyChangedEvent(UIA_IsEnabledPropertyId, node);
       aria_properties_events_.insert(node);
@@ -230,6 +234,8 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
       FireUiaPropertyChangedEvent(UIA_FlowsToPropertyId, node);
       break;
+    // aria-grabbed is deprecated in WAI-ARIA 1.1.
+    case ui::AXEventGenerator::Event::GRABBED_CHANGED:
     case ui::AXEventGenerator::Event::HASPOPUP_CHANGED:
       aria_properties_events_.insert(node);
       break;

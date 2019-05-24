@@ -157,6 +157,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kAriaRowCount:
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
+    case ax::mojom::IntAttribute::kDropeffect:
       return false;
   }
 
@@ -626,6 +627,11 @@ bool AXNodeData::HasTextStyle(ax::mojom::TextStyle text_style_enum) const {
   return IsFlagSet(style, static_cast<uint32_t>(text_style_enum));
 }
 
+bool AXNodeData::HasDropeffect(ax::mojom::Dropeffect dropeffect_enum) const {
+  int32_t dropeffect = GetIntAttribute(ax::mojom::IntAttribute::kDropeffect);
+  return IsFlagSet(dropeffect, static_cast<uint32_t>(dropeffect_enum));
+}
+
 ax::mojom::State AXNodeData::AddState(ax::mojom::State state_enum) {
   DCHECK_GT(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kNone));
@@ -706,6 +712,18 @@ void AXNodeData::AddTextStyle(ax::mojom::TextStyle text_style_enum) {
   style = ModifyFlag(style, static_cast<uint32_t>(text_style_enum), true);
   RemoveIntAttribute(ax::mojom::IntAttribute::kTextStyle);
   AddIntAttribute(ax::mojom::IntAttribute::kTextStyle, style);
+}
+
+void AXNodeData::AddDropeffect(ax::mojom::Dropeffect dropeffect_enum) {
+  DCHECK_GE(static_cast<int>(dropeffect_enum),
+            static_cast<int>(ax::mojom::Dropeffect::kMinValue));
+  DCHECK_LE(static_cast<int>(dropeffect_enum),
+            static_cast<int>(ax::mojom::Dropeffect::kMaxValue));
+  int32_t dropeffect = GetIntAttribute(ax::mojom::IntAttribute::kDropeffect);
+  dropeffect =
+      ModifyFlag(dropeffect, static_cast<uint32_t>(dropeffect_enum), true);
+  RemoveIntAttribute(ax::mojom::IntAttribute::kDropeffect);
+  AddIntAttribute(ax::mojom::IntAttribute::kDropeffect, dropeffect);
 }
 
 ax::mojom::CheckedState AXNodeData::GetCheckedState() const {
@@ -1235,6 +1253,9 @@ std::string AXNodeData::ToString() const {
                   ui::ToString(static_cast<ax::mojom::ImageAnnotationStatus>(
                       int_attribute.second));
         break;
+      case ax::mojom::IntAttribute::kDropeffect:
+        result += " dropeffect=" + value;
+        break;
       case ax::mojom::IntAttribute::kNone:
         break;
     }
@@ -1396,6 +1417,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::BoolAttribute::kSupportsTextLocation:
         result += " supports_text_location=" + value;
         break;
+      case ax::mojom::BoolAttribute::kGrabbed:
+        result += " grabbed=" + value;
+        break;
       case ax::mojom::BoolAttribute::kNone:
         break;
     }
@@ -1499,6 +1523,24 @@ std::string AXNodeData::ToString() const {
     result += " child_ids=" + IntVectorToString(child_ids);
 
   return result;
+}
+
+std::string AXNodeData::DropeffectBitfieldToString() const {
+  if (!HasIntAttribute(ax::mojom::IntAttribute::kDropeffect))
+    return "";
+
+  std::string str;
+  for (int dropeffect_idx = static_cast<int>(ax::mojom::Dropeffect::kMinValue);
+       dropeffect_idx <= static_cast<int>(ax::mojom::Dropeffect::kMaxValue);
+       ++dropeffect_idx) {
+    ax::mojom::Dropeffect dropeffect_enum =
+        static_cast<ax::mojom::Dropeffect>(dropeffect_idx);
+    if (HasDropeffect(dropeffect_enum))
+      str += " " + std::string(ui::ToString(dropeffect_enum));
+  }
+
+  // Removing leading space in final string.
+  return str.substr(1);
 }
 
 }  // namespace ui

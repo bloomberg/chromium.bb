@@ -62,6 +62,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
         event_name = "DOCUMENT_TITLE_CHANGED";
         break;
+      case AXEventGenerator::Event::DROPEFFECT_CHANGED:
+        event_name = "DROPEFFECT_CHANGED";
+        break;
       case AXEventGenerator::Event::ENABLED_CHANGED:
         event_name = "ENABLED_CHANGED";
         break;
@@ -73,6 +76,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
         break;
       case AXEventGenerator::Event::FLOW_TO_CHANGED:
         event_name = "FLOW_TO_CHANGED";
+        break;
+      case AXEventGenerator::Event::GRABBED_CHANGED:
+        event_name = "GRABBED_CHANGED";
         break;
       case AXEventGenerator::Event::HASPOPUP_CHANGED:
         event_name = "HASPOPUP_CHANGED";
@@ -1287,6 +1293,36 @@ TEST(AXEventGeneratorTest, AtomicChanged) {
   update.nodes[0].AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic, true);
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ("ATOMIC_CHANGED on 1", DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, DropeffectChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+
+  AXTree tree(initial_state);
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+
+  update.nodes[0].AddDropeffect(ax::mojom::Dropeffect::kCopy);
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("DROPEFFECT_CHANGED on 1", DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, GrabbedChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+
+  AXTree tree(initial_state);
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+
+  update.nodes[0].AddBoolAttribute(ax::mojom::BoolAttribute::kGrabbed, true);
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("GRABBED_CHANGED on 1", DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, HasPopupChanged) {

@@ -153,6 +153,10 @@ AX_EXPORT const char* ToString(ax::mojom::ImageAnnotationStatus status);
 AX_EXPORT ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
     const char* status);
 
+// ax::mojom::Dropeffect
+AX_EXPORT const char* ToString(ax::mojom::Dropeffect dropeffect);
+AX_EXPORT ax::mojom::Dropeffect ParseDropeffect(const char* dropeffect);
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ENUM_UTIL_H_

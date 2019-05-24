@@ -1019,16 +1019,15 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   }
 
   // Expose dropeffect attribute.
-  std::string drop_effect;
-  if (GetData().GetHtmlAttribute("aria-dropeffect", &drop_effect)) {
-    AddAttributeToList("dropeffect", drop_effect, attributes);
+  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
+  if (GetData().HasIntAttribute(ax::mojom::IntAttribute::kDropeffect)) {
+    std::string dropeffect = GetData().DropeffectBitfieldToString();
+    AddAttributeToList("dropeffect", dropeffect, attributes);
   }
 
   // Expose grabbed attribute.
-  std::string grabbed;
-  if (GetData().GetHtmlAttribute("aria-grabbed", &grabbed)) {
-    AddAttributeToList("grabbed", grabbed, attributes);
-  }
+  // aria-grabbed is deprecated in WAI-ARIA 1.1.
+  AddAttributeToList(ax::mojom::BoolAttribute::kGrabbed, "grabbed", attributes);
 
   // Expose class attribute.
   std::string class_attr;

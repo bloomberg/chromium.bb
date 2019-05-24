@@ -28,6 +28,12 @@ enum AccessibilityExpanded {
   kExpandedExpanded,
 };
 
+enum AccessibilityGrabbedState {
+  kGrabbedStateUndefined = 0,
+  kGrabbedStateFalse,
+  kGrabbedStateTrue,
+};
+
 enum AccessibilitySelectedState {
   kSelectedStateUndefined = 0,
   kSelectedStateFalse,

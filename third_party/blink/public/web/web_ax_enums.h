@@ -42,6 +42,14 @@ enum WebAXExpanded {
   kWebAXExpandedExpanded
 };
 
+// Grabbed State.
+// These values must match blink::AccessibilityGrabbedState values.
+enum WebAXGrabbedState {
+  kWebAXGrabbedStateUndefined = 0,
+  kWebAXGrabbedStateFalse,
+  kWebAXGrabbedStateTrue
+};
+
 // Selected State.
 // These values must match blink::AccessibilitySelectedState values.
 enum WebAXSelectedState {

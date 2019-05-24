@@ -1106,6 +1106,15 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     dst->AddStringAttribute(ax::mojom::StringAttribute::kImageDataUrl,
                             src.ImageDataUrl(max_image_data_size_).Utf8());
   }
+
+  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
+  WebVector<ax::mojom::Dropeffect> src_dropeffects;
+  src.Dropeffects(src_dropeffects);
+  if (!src_dropeffects.empty()) {
+    for (auto&& dropeffect : src_dropeffects) {
+      dst->AddDropeffect(dropeffect);
+    }
+  }
 }
 
 blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {

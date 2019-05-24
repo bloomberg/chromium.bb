@@ -209,4 +209,8 @@ TEST(AXEnumUtilTest, ImageAnnotationStatus) {
       ParseImageAnnotationStatus);
 }
 
+TEST(AXEnumUtilTest, Dropeffect) {
+  TestEnumStringConversion<ax::mojom::Dropeffect>(ParseDropeffect);
+}
+
 }  // namespace ui

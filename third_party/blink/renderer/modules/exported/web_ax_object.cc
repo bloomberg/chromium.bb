@@ -317,6 +317,13 @@ bool WebAXObject::IsFocused() const {
   return private_->IsFocused();
 }
 
+WebAXGrabbedState WebAXObject::IsGrabbed() const {
+  if (IsDetached())
+    return kWebAXGrabbedStateUndefined;
+
+  return static_cast<WebAXGrabbedState>(private_->IsGrabbed());
+}
+
 bool WebAXObject::IsHovered() const {
   if (IsDetached())
     return false;
@@ -1485,6 +1492,21 @@ void WebAXObject::SetScrollOffset(const WebPoint& offset) const {
     return;
 
   private_->SetScrollOffset(offset);
+}
+
+void WebAXObject::Dropeffects(
+    WebVector<ax::mojom::Dropeffect>& dropeffects) const {
+  if (IsDetached())
+    return;
+  Vector<ax::mojom::Dropeffect> enum_dropeffects;
+  private_->Dropeffects(enum_dropeffects);
+  WebVector<ax::mojom::Dropeffect> web_dropeffects(enum_dropeffects.size());
+
+  for (wtf_size_t i = 0; i < enum_dropeffects.size(); ++i) {
+    web_dropeffects[i] = enum_dropeffects[i];
+  }
+
+  dropeffects.Swap(web_dropeffects);
 }
 
 void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,

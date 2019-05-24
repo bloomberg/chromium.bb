@@ -131,6 +131,7 @@ class WebAXObject {
   BLINK_EXPORT bool IsDefault() const;
   BLINK_EXPORT WebAXExpanded IsExpanded() const;
   BLINK_EXPORT bool IsFocused() const;
+  BLINK_EXPORT WebAXGrabbedState IsGrabbed() const;
   BLINK_EXPORT bool IsHovered() const;
   BLINK_EXPORT bool IsLinked() const;
   BLINK_EXPORT bool IsLoaded() const;
@@ -341,6 +342,10 @@ class WebAXObject {
   BLINK_EXPORT WebPoint MinimumScrollOffset() const;
   BLINK_EXPORT WebPoint MaximumScrollOffset() const;
   BLINK_EXPORT void SetScrollOffset(const WebPoint&) const;
+
+  // aria-dropeffect is deprecated in WAI-ARIA 1.1
+  BLINK_EXPORT void Dropeffects(
+      WebVector<ax::mojom::Dropeffect>& dropeffects) const;
 
   // Every object's bounding box is returned relative to a
   // container object (which is guaranteed to be an ancestor) and
