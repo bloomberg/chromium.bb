@@ -432,25 +432,6 @@ group("telemetry_gpu_integration_test_scripts_only") {
   ]
 }
 
-static_library("browser_tests_runner") {
-  testonly = true
-  sources = []
-
-  deps = [
-    ":test_support",
-  ]
-
-  if (is_chromeos) {
-    sources += [ "base/browser_tests_main_chromeos.cc" ]
-  } else {
-    sources += [ "base/browser_tests_main.cc" ]
-  }
-
-  if (is_win) {
-    deps += [ "//chrome/installer/util:strings" ]
-  }
-}
-
 if (is_win) {
   source_set("credential_provider_test_utils") {
     testonly = true
@@ -464,135 +445,146 @@ if (is_win) {
   }
 }
 
-test("browser_tests") {
-  sources = [
-    # TODO(jbudorick): Move tests here from other lists as Android support is
-    # implemented. See crbug.com/611756
-  ]
+if (!is_android) {
+  static_library("browser_tests_runner") {
+    testonly = true
+    sources = []
 
-  configs += [ "//build/config:precompiled_headers" ]
-
-  deps = [
-    ":browser_tests_runner",
-    ":test_support",
-    "//base",
-    "//chrome/browser/profiling_host:profiling_browsertests",
-    "//components/cbor",
-    "//components/nacl/common:buildflags",
-    "//components/spellcheck:buildflags",
-    "//components/sync:test_support_model",
-    "//extensions/buildflags",
-    "//media:media_buildflags",
-    "//net:test_support",
-    "//ppapi/buildflags",
-    "//printing/buildflags",
-    "//rlz/buildflags",
-    "//third_party/blink/public:buildflags",
-  ]
-
-  data_deps = [
-    "//testing/buildbot/filters:browser_tests_filters",
-    "//tools/media_engagement_preload:generator",
-  ]
-
-  data = []
-
-  defines = [
-    "HAS_OUT_OF_PROC_TEST_RUNNER",
-    "CHROME_VERSION_MAJOR=" + chrome_version_major,
-  ]
-
-  if (is_win) {
-    data += [ "$root_out_dir/chrome_200_percent.pak" ]
-    deps += [ "//chrome/app:chrome_dll_resources" ]
-  }
-  if (is_chromeos) {
-    data += [
-      # TODO(GYP): figure out which of these things are
-      # actually needed and also which should be pulled in via
-      # data or data_deps and through which dependencies.
-      "//chrome/browser/chromeos/login/test/https_forwarder.py",
-      "//chrome/browser/resources/chromeos/wallpaper_manager/",
-      "//chrome/browser/resources/chromeos/zip_archiver/",
-      "//google_apis/test/",
-      "//chrome/browser/resources/chromeos/zip_archiver/test/",
-      "//chromeos/test/data/",
-      "//ui/file_manager/base/",
-      "//ui/file_manager/file_manager/",
-      "//ui/file_manager/gallery/",
-      "//ui/file_manager/image_loader/",
-      "//ui/file_manager/integration_tests/",
-      "//ui/file_manager/video_player",
-      "//third_party/polymer/v1_0/components-chromium/",
-      "$root_gen_dir/ui/file_manager/file_manager/",
-      "$root_out_dir/chromevox_test_data/",
-      "$root_out_dir/content_shell.pak",
-      "$root_out_dir/resources/chromeos/",
+    deps = [
+      ":test_support",
     ]
 
-    data_deps += [
-      "//chrome",
-      "//ash/keyboard/ui:resources",
-      "//ui/file_manager:unit_test_data",
-    ]
-
-    if (use_dbus) {
-      deps += [ "//dbus:test_support" ]
+    if (is_chromeos) {
+      sources += [ "base/browser_tests_main_chromeos.cc" ]
+    } else {
+      sources += [ "base/browser_tests_main.cc" ]
     }
 
-    if (enable_nacl) {
-      data_deps += [
-        "//components/nacl/loader:nacl_helper",
-        "//ppapi/native_client:irt",
+    if (is_win) {
+      deps += [ "//chrome/installer/util:strings" ]
+    }
+  }
+
+  test("browser_tests") {
+    sources = [
+      # TODO(jbudorick): Move tests here from other lists as Android support is
+      # implemented. See crbug.com/611756
+    ]
+
+    configs += [ "//build/config:precompiled_headers" ]
+
+    deps = [
+      ":browser_tests_runner",
+      ":test_support",
+      "//base",
+      "//chrome/browser/profiling_host:profiling_browsertests",
+      "//components/cbor",
+      "//components/nacl/common:buildflags",
+      "//components/spellcheck:buildflags",
+      "//components/sync:test_support_model",
+      "//extensions/buildflags",
+      "//media:media_buildflags",
+      "//net:test_support",
+      "//ppapi/buildflags",
+      "//printing/buildflags",
+      "//rlz/buildflags",
+      "//third_party/blink/public:buildflags",
+    ]
+
+    data_deps = [
+      "//testing/buildbot/filters:browser_tests_filters",
+      "//tools/media_engagement_preload:generator",
+    ]
+
+    data = []
+
+    defines = [
+      "HAS_OUT_OF_PROC_TEST_RUNNER",
+      "CHROME_VERSION_MAJOR=" + chrome_version_major,
+    ]
+
+    if (is_win) {
+      data += [ "$root_out_dir/chrome_200_percent.pak" ]
+      deps += [ "//chrome/app:chrome_dll_resources" ]
+    }
+    if (is_chromeos) {
+      data += [
+        # TODO(GYP): figure out which of these things are
+        # actually needed and also which should be pulled in via
+        # data or data_deps and through which dependencies.
+        "//chrome/browser/chromeos/login/test/https_forwarder.py",
+        "//chrome/browser/resources/chromeos/wallpaper_manager/",
+        "//chrome/browser/resources/chromeos/zip_archiver/",
+        "//google_apis/test/",
+        "//chrome/browser/resources/chromeos/zip_archiver/test/",
+        "//chromeos/test/data/",
+        "//ui/file_manager/base/",
+        "//ui/file_manager/file_manager/",
+        "//ui/file_manager/gallery/",
+        "//ui/file_manager/image_loader/",
+        "//ui/file_manager/integration_tests/",
+        "//ui/file_manager/video_player",
+        "//third_party/polymer/v1_0/components-chromium/",
+        "$root_gen_dir/ui/file_manager/file_manager/",
+        "$root_out_dir/chromevox_test_data/",
+        "$root_out_dir/content_shell.pak",
+        "$root_out_dir/resources/chromeos/",
       ]
 
-      if (enable_nacl_nonsfi) {
-        data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
+      data_deps += [
+        "//chrome",
+        "//ash/keyboard/ui:resources",
+        "//ui/file_manager:unit_test_data",
+      ]
+
+      if (use_dbus) {
+        deps += [ "//dbus:test_support" ]
       }
+
+      if (enable_nacl) {
+        data_deps += [
+          "//components/nacl/loader:nacl_helper",
+          "//ppapi/native_client:irt",
+        ]
+
+        if (enable_nacl_nonsfi) {
+          data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
+        }
+      }
+
+      deps += [
+        "//ash:test_support",
+        "//ash/keyboard/ui:test_support",
+        "//ash/public/interfaces:test_interfaces",
+        "//chrome/browser/chromeos:arc_test_support",
+        "//chrome/browser/chromeos:test_support",
+        "//chrome/browser/media/router:test_support",
+        "//chrome/browser/resources/chromeos/chromevox:browser_tests",
+        "//chrome/browser/resources/chromeos/login:browser_tests",
+        "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
+        "//chrome/browser/resources/chromeos/switch_access:browser_tests",
+        "//chrome/services/file_util/public/cpp:browser_tests",
+        "//chromeos:test_support",
+        "//chromeos/components/drivefs:test_support",
+        "//chromeos/dbus:test_support",
+        "//chromeos/dbus/session_manager",
+        "//components/arc:arc_test_support",
+        "//components/exo:test_support",
+        "//components/prefs",
+        "//components/user_manager:test_support",
+        "//content/public/common:feature_h264_with_openh264_ffmpeg",
+        "//mojo/core/embedder",
+        "//services/audio/public/cpp:test_support",
+        "//services/identity/public/cpp",
+        "//services/network/public/mojom",
+        "//services/preferences/public/cpp",
+        "//services/preferences/public/mojom",
+        "//services/service_manager/public/cpp",
+        "//services/ws/public/cpp/input_devices:test_support",
+        "//url",
+      ]
     }
 
-    deps += [
-      "//ash:test_support",
-      "//ash/keyboard/ui:test_support",
-      "//ash/public/interfaces:test_interfaces",
-      "//chrome/browser/chromeos:arc_test_support",
-      "//chrome/browser/chromeos:test_support",
-      "//chrome/browser/media/router:test_support",
-      "//chrome/browser/resources/chromeos/chromevox:browser_tests",
-      "//chrome/browser/resources/chromeos/login:browser_tests",
-      "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
-      "//chrome/browser/resources/chromeos/switch_access:browser_tests",
-      "//chrome/services/file_util/public/cpp:browser_tests",
-      "//chromeos:test_support",
-      "//chromeos/components/drivefs:test_support",
-      "//chromeos/dbus:test_support",
-      "//chromeos/dbus/session_manager",
-      "//components/arc:arc_test_support",
-      "//components/exo:test_support",
-      "//components/prefs",
-      "//components/user_manager:test_support",
-      "//content/public/common:feature_h264_with_openh264_ffmpeg",
-      "//mojo/core/embedder",
-      "//services/audio/public/cpp:test_support",
-      "//services/identity/public/cpp",
-      "//services/network/public/mojom",
-      "//services/preferences/public/cpp",
-      "//services/preferences/public/mojom",
-      "//services/service_manager/public/cpp",
-      "//services/ws/public/cpp/input_devices:test_support",
-      "//url",
-    ]
-  }
-
-  # TODO(jbudorick): In progress. See crbug.com/611756
-  if (is_android) {
-    deps += [
-      "//chrome/android:app_hooks_java",
-      "//chrome/android:chrome_java",
-      "//components/module_installer/android:module_installer_stub_java",
-      "//v8:v8_external_startup_data_assets",
-    ]
-  } else {  # Not Android.
     sources += [
       # The list of sources which is only used by chrome browser tests on
       # desktop platforms.
@@ -2402,7 +2394,7 @@ test("browser_tests") {
       sources += [ "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc" ]
     }
 
-    if (!is_android && !is_mac) {
+    if (!is_mac) {
       data_deps += [ "//chrome/browser/resources/media/mei_preload:component" ]
     }
 
@@ -5472,14 +5464,16 @@ test("chrome_app_unittests") {
   }
 }
 
-# Everything needed to build/copy to run the performance_browser_tests isolate.
-# See: //testing/buildbot/gn_isolate_map.pyl
-group("performance_browser_tests") {
-  testonly = true
-  data_deps = [
-    ":browser_tests",
-    "//testing:run_perf_test",
-  ]
+if (!is_android) {
+  # Everything needed to build/copy to run the performance_browser_tests isolate.
+  # See: //testing/buildbot/gn_isolate_map.pyl
+  group("performance_browser_tests") {
+    testonly = true
+    data_deps = [
+      ":browser_tests",
+      "//testing:run_perf_test",
+    ]
+  }
 }
 
 if (!is_android && !is_fuchsia) {
