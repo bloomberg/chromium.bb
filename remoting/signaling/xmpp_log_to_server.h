@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_LOG_TO_SERVER_H_
-#define REMOTING_SIGNALING_LOG_TO_SERVER_H_
+#ifndef REMOTING_SIGNALING_XMPP_LOG_TO_SERVER_H_
+#define REMOTING_SIGNALING_XMPP_LOG_TO_SERVER_H_
 
 #include <map>
 #include <string>
@@ -22,19 +22,20 @@ namespace remoting {
 
 class IqSender;
 
-// LogToServer sends log entries to a server.
+// XmppLogToServer sends log entries to a server.
 // The contents of the log entries are described in server_log_entry.cc.
 // They do not contain any personally identifiable information.
-class LogToServer : public SignalStrategy::Listener {
+class XmppLogToServer : public SignalStrategy::Listener {
  public:
-  LogToServer(ServerLogEntry::Mode mode,
-              SignalStrategy* signal_strategy,
-              const std::string& directory_bot_jid);
-  ~LogToServer() override;
+  XmppLogToServer(ServerLogEntry::Mode mode,
+                  SignalStrategy* signal_strategy,
+                  const std::string& directory_bot_jid);
+  ~XmppLogToServer() override;
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(
+      const jingle_xmpp::XmlElement* stanza) override;
 
   void Log(const ServerLogEntry& entry);
 
@@ -52,9 +53,9 @@ class LogToServer : public SignalStrategy::Listener {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(LogToServer);
+  DISALLOW_COPY_AND_ASSIGN(XmppLogToServer);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_LOG_TO_SERVER_H_
+#endif  // REMOTING_SIGNALING_XMPP_LOG_TO_SERVER_H_

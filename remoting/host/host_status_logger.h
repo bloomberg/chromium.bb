@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/protocol/transport.h"
-#include "remoting/signaling/log_to_server.h"
+#include "remoting/signaling/xmpp_log_to_server.h"
 
 namespace remoting {
 
@@ -44,7 +44,7 @@ class HostStatusLogger : public HostStatusObserver {
   void SetSignalingStateForTest(SignalStrategy::State state);
 
  private:
-  LogToServer log_to_server_;
+  XmppLogToServer xmpp_log_to_server_;
 
   scoped_refptr<HostStatusMonitor> monitor_;
 
