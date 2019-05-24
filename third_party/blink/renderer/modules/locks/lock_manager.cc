@@ -226,8 +226,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   }
 
   if (!service_.get()) {
-    if (auto* provider = context->GetInterfaceProvider())
-      provider->GetInterface(mojo::MakeRequest(&service_));
+    if (auto* provider = context->GetInterfaceProvider()) {
+      provider->GetInterface(mojo::MakeRequest(
+          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    }
     if (!service_.get()) {
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();
@@ -343,8 +345,10 @@ ScriptPromise LockManager::query(ScriptState* script_state,
   }
 
   if (!service_.get()) {
-    if (auto* provider = context->GetInterfaceProvider())
-      provider->GetInterface(mojo::MakeRequest(&service_));
+    if (auto* provider = context->GetInterfaceProvider()) {
+      provider->GetInterface(mojo::MakeRequest(
+          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    }
     if (!service_.get()) {
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();
