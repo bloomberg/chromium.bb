@@ -116,14 +116,16 @@ void MediaGalleriesDialogViews::InitChildViews() {
   // Message text.
   const int vertical_padding =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
-  views::Label* subtext = new views::Label(controller_->GetSubtext());
+  auto subtext = std::make_unique<views::Label>(controller_->GetSubtext());
   subtext->SetMultiLine(true);
   subtext->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // Get the height here rather than inline because the order of evaluation for
+  // parameters may differ between platforms.
+  const int subtext_height = subtext->GetHeightForWidth(dialog_content_width);
   layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
-  layout->AddView(
-      subtext, 1, 1,
-      views::GridLayout::FILL, views::GridLayout::LEADING,
-      dialog_content_width, subtext->GetHeightForWidth(dialog_content_width));
+  layout->AddView(subtext.release(), 1, 1, views::GridLayout::FILL,
+                  views::GridLayout::LEADING, dialog_content_width,
+                  subtext_height);
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_padding);
 
   // Scrollable area for checkboxes.
@@ -143,17 +145,16 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
     // Header and separator line.
     if (!section_headers[i].empty() && !entries.empty()) {
-      views::Separator* separator = new views::Separator();
-      scroll_container->AddChildView(separator);
+      scroll_container->AddChildView(std::make_unique<views::Separator>());
 
-      views::Label* header = new views::Label(section_headers[i]);
+      auto header = std::make_unique<views::Label>(section_headers[i]);
       header->SetMultiLine(true);
       header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       header->SetBorder(views::CreateEmptyBorder(
           vertical_padding,
           provider->GetInsetsMetric(views::INSETS_DIALOG).left(),
           vertical_padding, 0));
-      scroll_container->AddChildView(header);
+      scroll_container->AddChildView(std::move(header));
     }
 
     // Checkboxes.
@@ -168,11 +169,11 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
   // Add the scrollable area to the outer dialog view. It will squeeze against
   // the title/subtitle and buttons to occupy all available space in the dialog.
-  auto* scroll_view = views::ScrollView::CreateScrollViewWithBorder();
+  auto scroll_view = views::ScrollView::CreateScrollViewWithBorder();
   scroll_view->SetContents(std::move(scroll_container));
   layout->StartRowWithPadding(1.0, column_set_id, views::GridLayout::kFixedSize,
                               vertical_padding);
-  layout->AddView(scroll_view, 1.0, 1.0, views::GridLayout::FILL,
+  layout->AddView(scroll_view.release(), 1.0, 1.0, views::GridLayout::FILL,
                   views::GridLayout::FILL, dialog_content_width,
                   kScrollAreaHeight);
 }

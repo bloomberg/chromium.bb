@@ -115,7 +115,7 @@ TreeView::~TreeView() {
 // static
 std::unique_ptr<ScrollView> TreeView::CreateScrollViewWithTree(
     std::unique_ptr<TreeView> tree) {
-  auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
+  auto scroll_view = ScrollView::CreateScrollViewWithBorder();
   scroll_view->SetContents(std::move(tree));
   return scroll_view;
 }

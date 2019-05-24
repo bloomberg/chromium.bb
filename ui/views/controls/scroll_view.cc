@@ -224,8 +224,8 @@ ScrollView::~ScrollView() {
 }
 
 // static
-ScrollView* ScrollView::CreateScrollViewWithBorder() {
-  auto* scroll_view = new ScrollView();
+std::unique_ptr<ScrollView> ScrollView::CreateScrollViewWithBorder() {
+  auto scroll_view = std::make_unique<ScrollView>();
   scroll_view->AddBorder();
   return scroll_view;
 }

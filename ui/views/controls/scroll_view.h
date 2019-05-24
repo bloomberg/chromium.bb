@@ -50,7 +50,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   ~ScrollView() override;
 
   // Creates a ScrollView with a theme specific border.
-  static ScrollView* CreateScrollViewWithBorder();
+  static std::unique_ptr<ScrollView> CreateScrollViewWithBorder();
 
   // Returns the ScrollView for which |contents| is its contents, or null if
   // |contents| is not in a ScrollView.

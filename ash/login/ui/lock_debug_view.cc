@@ -740,8 +740,10 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   UpdatePerUserActionContainer();
 
-  auto make_scroll = [](views::View* content, int height) -> views::View* {
-    views::ScrollView* scroll = views::ScrollView::CreateScrollViewWithBorder();
+  auto make_scroll = [](views::View* content,
+                        int height) -> std::unique_ptr<views::View> {
+    std::unique_ptr<views::ScrollView> scroll =
+        views::ScrollView::CreateScrollViewWithBorder();
     scroll->SetPreferredSize(gfx::Size(600, height));
     scroll->SetContents(base::WrapUnique(content));
     scroll->SetBackgroundColor(SK_ColorTRANSPARENT);

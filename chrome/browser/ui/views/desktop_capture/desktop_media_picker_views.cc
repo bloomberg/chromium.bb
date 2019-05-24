@@ -103,7 +103,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             2,   // selection_border_thickness
             5);  // focus_rectangle_inset
 
-        views::ScrollView* screen_scroll_view =
+        std::unique_ptr<views::ScrollView> screen_scroll_view =
             views::ScrollView::CreateScrollViewWithBorder();
         base::string16 screen_title_text = l10n_util::GetStringUTF16(
             IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN);
@@ -118,7 +118,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             kGenericScreenStyle.item_size.height() * 2);
         screen_scroll_view->set_hide_horizontal_scrollbar(true);
 
-        pane_->AddTab(screen_title_text, screen_scroll_view);
+        pane_->AddTab(screen_title_text, screen_scroll_view.release());
         pane_->set_listener(this);
         break;
       }
@@ -135,7 +135,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             2,                                     // selection_border_thickness
             5);                                    // focus_rectangle_inset
 
-        views::ScrollView* window_scroll_view =
+        std::unique_ptr<views::ScrollView> window_scroll_view =
             views::ScrollView::CreateScrollViewWithBorder();
         base::string16 window_title_text = l10n_util::GetStringUTF16(
             IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_WINDOW);
@@ -149,7 +149,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
                                          kWindowStyle.item_size.height() * 2);
         window_scroll_view->set_hide_horizontal_scrollbar(true);
 
-        pane_->AddTab(window_title_text, window_scroll_view);
+        pane_->AddTab(window_title_text, window_scroll_view.release());
         pane_->set_listener(this);
         break;
       }

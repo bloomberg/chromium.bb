@@ -170,7 +170,7 @@ TableView::~TableView() {
 // static
 std::unique_ptr<ScrollView> TableView::CreateScrollViewWithTable(
     std::unique_ptr<TableView> table) {
-  auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
+  auto scroll_view = ScrollView::CreateScrollViewWithBorder();
   auto* table_ptr = table.get();
   scroll_view->SetContents(std::move(table));
   table_ptr->CreateHeaderIfNecessary(scroll_view.get());
