@@ -110,8 +110,11 @@ void SetIndividualRuntimeFeatures(
   if (command_line.HasSwitch(switches::kDisableFileSystem))
     WebRuntimeFeatures::EnableFileSystem(false);
 
-  if (!command_line.HasSwitch(switches::kDisableYUVImageDecoding))
-    WebRuntimeFeatures::EnableDecodeToYUV(true);
+  if (!command_line.HasSwitch(switches::kDisableYUVImageDecoding) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kDecodeLossyWebPImagesToYUV)) {
+    WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(true);
+  }
 
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
   if (command_line.HasSwitch(switches::kEnableWebGL2ComputeContext)) {

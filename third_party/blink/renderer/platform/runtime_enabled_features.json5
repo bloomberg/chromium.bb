@@ -431,8 +431,8 @@
       status: "stable",
     },
     {
-      name: "DecodeToYUV",
-      status: "experimental",
+      name: "DecodeLossyWebPImagesToYUV",
+      status: "test",
     },
     {
       name: "DesktopCaptureDisableLocalEchoControl",

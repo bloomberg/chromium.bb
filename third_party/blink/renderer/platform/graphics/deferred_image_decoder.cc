@@ -417,9 +417,10 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
         metadata_decoder_->FrameIsReceivedAtIndex(last_frame);
   }
 
-  can_yuv_decode_ = RuntimeEnabledFeatures::DecodeToYUVEnabled() &&
-                    metadata_decoder_->CanDecodeToYUV() && all_data_received_ &&
-                    !frame_generator_->IsMultiFrame();
+  can_yuv_decode_ =
+      RuntimeEnabledFeatures::DecodeLossyWebPImagesToYUVEnabled() &&
+      metadata_decoder_->CanDecodeToYUV() && all_data_received_ &&
+      !frame_generator_->IsMultiFrame();
 
   // If we've received all of the data, then we can reset the metadata decoder,
   // since everything we care about should now be stored in |frame_data_|.

@@ -160,8 +160,8 @@ void WebRuntimeFeatures::EnableDatabase(bool enable) {
   RuntimeEnabledFeatures::SetDatabaseEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableDecodeToYUV(bool enable) {
-  RuntimeEnabledFeatures::SetDecodeToYUVEnabled(enable);
+void WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(bool enable) {
+  RuntimeEnabledFeatures::SetDecodeLossyWebPImagesToYUVEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableFallbackCursorMode(bool enable) {

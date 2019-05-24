@@ -30,8 +30,8 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 
@@ -222,8 +222,7 @@ bool WEBPImageDecoder::CanAllowYUVDecodingForWebP() {
     return false;
   // Should have been updated with a recent call to UpdateDemuxer().
   WebPBitstreamFeatures features;
-  if (base::FeatureList::IsEnabled(
-          blink::features::kDecodeLossyWebPImagesToYUV) &&
+  if (RuntimeEnabledFeatures::DecodeLossyWebPImagesToYUVEnabled() &&
       (demux_state_ == WEBP_DEMUX_PARSED_HEADER ||
        demux_state_ == WEBP_DEMUX_DONE) &&
       WebPGetFeatures(consolidated_data_->bytes(), consolidated_data_->size(),
