@@ -200,6 +200,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.cancelInfobarItem.buttonTextColor =
         UIColorFromRGB(kCancelButtonTextColorBlue);
     self.cancelInfobarItem.buttonBackgroundColor = [UIColor clearColor];
+    self.cancelInfobarItem.boldButtonText = NO;
     [model addItem:self.cancelInfobarItem
         toSectionWithIdentifier:SectionIdentifierContent];
   }
@@ -222,6 +223,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                  addTarget:self
                     action:@selector(saveCredentialsButtonWasPressed:)
           forControlEvents:UIControlEventTouchUpInside];
+      tableViewTextButtonCell.separatorInset =
+          UIEdgeInsetsMake(0, 0, 0, self.tableView.bounds.size.width);
       break;
     }
     case ItemTypeCancel: {

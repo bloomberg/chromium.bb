@@ -50,6 +50,7 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
     self.cellClass = [TableViewTextButtonCell class];
     _enabled = YES;
     _textAlignment = kDefaultTextAlignment;
+    _boldButtonText = YES;
   }
   return self;
 }
@@ -59,11 +60,15 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
   [super configureCell:tableCell withStyler:styler];
   TableViewTextButtonCell* cell =
       base::mac::ObjCCastStrict<TableViewTextButtonCell>(tableCell);
+  [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+
   cell.textLabel.text = self.text;
   [cell enableItemSpacing:[self.text length]];
   [cell disableButtonIntrinsicWidth:self.disableButtonIntrinsicWidth];
   cell.textLabel.textAlignment = self.textAlignment;
+
   [cell.button setTitle:self.buttonText forState:UIControlStateNormal];
+  [cell disableButtonIntrinsicWidth:self.disableButtonIntrinsicWidth];
   if (self.buttonTextColor) {
     [cell.button setTitleColor:self.buttonTextColor
                       forState:UIControlStateNormal];
@@ -72,11 +77,14 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
   cell.button.backgroundColor = self.buttonBackgroundColor
                                     ? self.buttonBackgroundColor
                                     : UIColorFromRGB(kBlueHexColor);
-  [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
   cell.button.enabled = self.enabled;
   if (!self.enabled) {
     cell.button.backgroundColor = [cell.button.backgroundColor
         colorWithAlphaComponent:kDisabledButtonAlpha];
+  }
+  if (!self.boldButtonText) {
+    [cell.button.titleLabel
+        setFont:[UIFont systemFontOfSize:kButtonTitleFontSize]];
   }
 }
 
@@ -107,7 +115,7 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
     self.textLabel.textColor = UIColorFromRGB(kGrayHexColor);
 
     // Create button.
-    self.button = [[UIButton alloc] init];
+    self.button = [UIButton buttonWithType:UIButtonTypeSystem];
     [self.button setTitleColor:UIColorFromRGB(kDefaultButtonTitleColor)
                       forState:UIControlStateNormal];
     self.button.translatesAutoresizingMaskIntoConstraints = NO;
