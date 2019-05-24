@@ -16,7 +16,8 @@
 #include "ash/system/network/network_state_list_detailed_view.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "base/memory/weak_ptr.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
 namespace views {
 class Separator;
@@ -27,6 +28,7 @@ namespace ash {
 class HoverHighlightView;
 class TrayInfoLabel;
 class TriView;
+class TrayNetworkStateModel;
 
 namespace tray {
 class NetworkSectionHeaderView;
@@ -49,10 +51,6 @@ class NetworkListView : public NetworkStateListDetailedView,
   const char* GetClassName() const override;
 
  private:
-  void BindCrosNetworkConfig();
-  void OnGetDeviceStateList(
-      std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
-          devices);
   void OnGetNetworkStateList(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           networks);
@@ -131,8 +129,7 @@ class NetworkListView : public NetworkStateListDetailedView,
   // otherwise false.
   bool NeedUpdateViewForNetwork(const NetworkInfo& info) const;
 
-  chromeos::network_config::mojom::DeviceStateType GetDeviceState(
-      chromeos::network_config::mojom::NetworkType type) const;
+  TrayNetworkStateModel* model_;
 
   bool needs_relayout_ = false;
 
@@ -145,14 +142,10 @@ class NetworkListView : public NetworkStateListDetailedView,
   views::Separator* wifi_separator_view_ = nullptr;
   TriView* connection_warning_ = nullptr;
 
-  chromeos::network_config::mojom::CrosNetworkConfigPtr
-      cros_network_config_ptr_;
-
-  base::flat_map<chromeos::network_config::mojom::NetworkType,
-                 chromeos::network_config::mojom::DeviceStateType>
-      device_states_;
   bool vpn_connected_ = false;
   bool wifi_has_networks_ = false;
+  bool tether_has_networks_ = false;
+  bool mobile_has_networks_ = false;
 
   // An owned list of network info.
   std::vector<std::unique_ptr<NetworkInfo>> network_list_;
@@ -167,6 +160,8 @@ class NetworkListView : public NetworkStateListDetailedView,
   // Save a map of network guids to their infos against current |network_list_|.
   using NetworkInfoMap = std::map<std::string, std::unique_ptr<NetworkInfo>>;
   NetworkInfoMap last_network_info_map_;
+
+  base::WeakPtrFactory<NetworkListView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkListView);
 };

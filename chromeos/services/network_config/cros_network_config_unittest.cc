@@ -230,7 +230,7 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
         mojom::DeviceStateProperties* cellular = devices[2].get();
         EXPECT_EQ(mojom::NetworkType::kCellular, cellular->type);
         EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->state);
-        EXPECT_TRUE(cellular->sim_present);
+        EXPECT_FALSE(cellular->sim_absent);
         ASSERT_TRUE(cellular->sim_lock_status);
         EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
         EXPECT_EQ(shill::kSIMLockPin, cellular->sim_lock_status->lock_type);

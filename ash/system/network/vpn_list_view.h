@@ -11,7 +11,8 @@
 #include "ash/system/network/network_state_list_detailed_view.h"
 #include "ash/system/network/vpn_list.h"
 #include "base/macros.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "base/memory/weak_ptr.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
 class PrefRegistrySimple;
 
@@ -20,6 +21,9 @@ class View;
 }
 
 namespace ash {
+
+class TrayNetworkStateModel;
+
 namespace tray {
 
 // A list of VPN providers and networks that shows VPN providers and networks in
@@ -52,9 +56,7 @@ class VPNListView : public NetworkStateListDetailedView,
   // VpnList::Observer:
   void OnVPNProvidersChanged() override;
 
-  chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config() {
-    return cros_network_config_ptr_.get();
-  }
+  TrayNetworkStateModel* model() { return model_; }
 
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -65,7 +67,6 @@ class VPNListView : public NetworkStateListDetailedView,
  private:
   using NetworkStateList =
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>;
-  void BindCrosNetworkConfig();
   void OnGetNetworkStateList(NetworkStateList networks);
 
   // Adds a network to the list.
@@ -94,8 +95,7 @@ class VPNListView : public NetworkStateListDetailedView,
   // Adds all available VPN providers and networks to the list.
   void AddProvidersAndNetworks(const NetworkStateList& networks);
 
-  chromeos::network_config::mojom::CrosNetworkConfigPtr
-      cros_network_config_ptr_;
+  TrayNetworkStateModel* model_;
 
   // A mapping from each VPN provider's list entry to the provider.
   std::map<const views::View* const, VPNProvider> provider_view_map_;
@@ -106,6 +106,8 @@ class VPNListView : public NetworkStateListDetailedView,
   // Whether the list is currently empty (i.e., the next entry added will become
   // the topmost entry).
   bool list_empty_ = true;
+
+  base::WeakPtrFactory<VPNListView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VPNListView);
 };

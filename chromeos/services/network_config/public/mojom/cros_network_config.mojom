@@ -110,6 +110,8 @@ struct CaptivePortalProvider {
 
 // The SIM card lock status for Cellular networks.
 struct SIMLockStatus {
+  // True when a SIM is required and not present.
+  bool sim_absent = false;
   // The status of SIM lock. Possible values are 'sim-pin', 'sim-puk' or empty.
   string lock_type;
   // Whether SIM lock is enabled.
@@ -125,10 +127,6 @@ struct CellularStateProperties {
   string network_technology;
   // True when in a roaming state and the provider is not always roaming.
   bool roaming = false;
-  // True while performing a scan for cellular netowkrs.
-  bool scanning = false;
-  // True when a SIM is required and not present.
-  bool sim_absent = false;
   // The signal strength of the cellular connection.
   int32 signal_strength;
 };
@@ -202,12 +200,12 @@ struct NetworkStateProperties {
 };
 
 struct DeviceStateProperties {
-  // Set if the device is enabled. True if the device is currently scanning.
+  // Set if the device is currently scanning.
   bool scanning = false;
-  // The SIM lock status if Type = Cellular and SIMPresent = True.
+  // The SIM lock status if Type = Cellular and a SIM is present.
   SIMLockStatus? sim_lock_status;
-  // Set to the SIM present state if the device type is Cellular.
-  bool sim_present = false;
+  // True when a SIM is required and not present.
+  bool sim_absent = false;
   DeviceStateType state;
   NetworkType type;
   // Whether or not any managed networks are available.

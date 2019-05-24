@@ -18,6 +18,7 @@
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -191,6 +192,8 @@ class VPNListNetworkEntry : public HoverHighlightView,
 
   views::LabelButton* disconnect_button_ = nullptr;
 
+  base::WeakPtrFactory<VPNListNetworkEntry> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(VPNListNetworkEntry);
 };
 
@@ -205,13 +208,9 @@ VPNListNetworkEntry::~VPNListNetworkEntry() {
 }
 
 void VPNListNetworkEntry::NetworkIconChanged() {
-  chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config =
-      owner_->cros_network_config();
-  if (!cros_network_config)
-    return;
-  cros_network_config->GetNetworkState(
+  owner_->model()->cros_network_config()->GetNetworkState(
       guid_, base::BindOnce(&VPNListNetworkEntry::OnGetNetworkState,
-                            base::Unretained(this)));
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VPNListNetworkEntry::ButtonPressed(Button* sender,
@@ -270,9 +269,9 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 }  // namespace
 
 VPNListView::VPNListView(DetailedViewDelegate* delegate, LoginStatus login)
-    : NetworkStateListDetailedView(delegate, LIST_TYPE_VPN, login) {
+    : NetworkStateListDetailedView(delegate, LIST_TYPE_VPN, login),
+      model_(Shell::Get()->system_tray_model()->network_state_model()) {
   Shell::Get()->vpn_list()->AddObserver(this);
-  BindCrosNetworkConfig();
 }
 
 VPNListView::~VPNListView() {
@@ -280,12 +279,11 @@ VPNListView::~VPNListView() {
 }
 
 void VPNListView::UpdateNetworkList() {
-  DCHECK(cros_network_config_ptr_);
-  cros_network_config_ptr_->GetNetworkStateList(
+  model_->cros_network_config()->GetNetworkStateList(
       NetworkFilter::New(FilterType::kVisible, NetworkType::kVPN,
                          chromeos::network_config::mojom::kNoLimit),
       base::BindOnce(&VPNListView::OnGetNetworkStateList,
-                     base::Unretained(this)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VPNListView::OnGetNetworkStateList(NetworkStateList networks) {
@@ -370,21 +368,6 @@ void VPNListView::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 const char* VPNListView::GetClassName() const {
   return "VPNListView";
-}
-
-void VPNListView::BindCrosNetworkConfig() {
-  // Ensure binding is reset in case this is called after a failure.
-  cros_network_config_ptr_.reset();
-
-  service_manager::Connector* connector = Shell::Get()->connector();
-  if (!connector)
-    return;
-  connector->BindInterface(chromeos::network_config::mojom::kServiceName,
-                           &cros_network_config_ptr_);
-
-  // If the connection is lost (e.g. due to a crash), attempt to rebind it.
-  cros_network_config_ptr_.set_connection_error_handler(base::BindOnce(
-      &VPNListView::BindCrosNetworkConfig, base::Unretained(this)));
 }
 
 void VPNListView::AddNetwork(const NetworkStateProperties* network) {

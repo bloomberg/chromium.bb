@@ -12,11 +12,13 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_info.h"
 #include "ash/system/network/network_section_header_view.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_info_label.h"
@@ -73,9 +75,8 @@ bool IsSecondaryUser() {
 
 NetworkListView::NetworkListView(DetailedViewDelegate* delegate,
                                  LoginStatus login)
-    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login) {
-  BindCrosNetworkConfig();
-}
+    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login),
+      model_(Shell::Get()->system_tray_model()->network_state_model()) {}
 
 NetworkListView::~NetworkListView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
@@ -83,9 +84,11 @@ NetworkListView::~NetworkListView() {
 
 void NetworkListView::UpdateNetworkList() {
   CHECK(scroll_content());
-  DCHECK(cros_network_config_ptr_);
-  cros_network_config_ptr_->GetDeviceStateList(base::BindOnce(
-      &NetworkListView::OnGetDeviceStateList, base::Unretained(this)));
+  model_->cros_network_config()->GetNetworkStateList(
+      NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
+                         chromeos::network_config::mojom::kNoLimit),
+      base::BindOnce(&NetworkListView::OnGetNetworkStateList,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool NetworkListView::IsNetworkEntry(views::View* view,
@@ -102,34 +105,6 @@ const char* NetworkListView::GetClassName() const {
   return "NetworkListView";
 }
 
-void NetworkListView::BindCrosNetworkConfig() {
-  // Ensure binding is reset in case this is called after a failure.
-  cros_network_config_ptr_.reset();
-
-  service_manager::Connector* connector = Shell::Get()->connector();
-  if (!connector)
-    return;
-  connector->BindInterface(chromeos::network_config::mojom::kServiceName,
-                           &cros_network_config_ptr_);
-
-  // If the connection is lost (e.g. due to a crash), attempt to rebind it.
-  cros_network_config_ptr_.set_connection_error_handler(base::BindOnce(
-      &NetworkListView::BindCrosNetworkConfig, base::Unretained(this)));
-}
-
-void NetworkListView::OnGetDeviceStateList(
-    std::vector<DeviceStatePropertiesPtr> devices) {
-  device_states_.clear();
-  for (auto& device : devices)
-    device_states_[device->type] = device->state;
-
-  cros_network_config_ptr_->GetNetworkStateList(
-      NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
-                         chromeos::network_config::mojom::kNoLimit),
-      base::BindOnce(&NetworkListView::OnGetNetworkStateList,
-                     base::Unretained(this)));
-}
-
 void NetworkListView::OnGetNetworkStateList(
     std::vector<NetworkStatePropertiesPtr> networks) {
   // |network_list_| contains all the info and is going to be cleared and
@@ -142,6 +117,8 @@ void NetworkListView::OnGetNetworkStateList(
   network_list_.clear();
   vpn_connected_ = false;
   wifi_has_networks_ = false;
+  mobile_has_networks_ = false;
+  tether_has_networks_ = false;
   for (auto& network : networks) {
     ConnectionStateType connection_state = network->connection_state;
     if (network->type == NetworkType::kVPN) {
@@ -154,12 +131,20 @@ void NetworkListView::OnGetNetworkStateList(
         network->cellular ? network->cellular->activation_state
                           : ActivationStateType::kUnknown;
     if (network->type == NetworkType::kCellular &&
-        GetDeviceState(NetworkType::kCellular) != DeviceStateType::kEnabled &&
+        model_->GetDeviceState(NetworkType::kCellular) !=
+            DeviceStateType::kEnabled &&
         activation_state == ActivationStateType::kNoService) {
       continue;
     }
     if (network->type == NetworkType::kWiFi)
       wifi_has_networks_ = true;
+    // Real (non 'default') Cellular networks are always connectable.
+    if (network->type == NetworkType::kCellular && network->connectable)
+      mobile_has_networks_ = true;
+    if (network->type == NetworkType::kTether) {
+      mobile_has_networks_ = true;
+      tether_has_networks_ = true;
+    }
 
     auto info = std::make_unique<NetworkInfo>(network->guid);
     info->label = network_icon::GetLabelForNetworkList(network.get());
@@ -271,7 +256,8 @@ NetworkListView::UpdateNetworkListEntries() {
     std::unique_ptr<std::set<std::string>> new_cellular_guids =
         UpdateNetworkChildren(NetworkType::kMobile, index);
     int mobile_status_message =
-        mobile_header_view_->UpdateToggleAndGetStatusMessage();
+        mobile_header_view_->UpdateToggleAndGetStatusMessage(
+            mobile_has_networks_, tether_has_networks_);
     // |mobile_status_message| may be zero. Passing zero to UpdateInfoLabel
     // clears the label.
     UpdateInfoLabel(mobile_status_message, index, &mobile_status_message_);
@@ -285,7 +271,7 @@ NetworkListView::UpdateNetworkListEntries() {
     wifi_header_view_ = new WifiSectionHeaderView();
 
   bool wifi_enabled =
-      GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
+      model_->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
   index = UpdateNetworkSectionHeader(NetworkType::kWiFi, wifi_enabled, index,
                                      wifi_header_view_, &wifi_separator_view_);
 
@@ -323,10 +309,12 @@ NetworkListView::UpdateNetworkListEntries() {
 
 bool NetworkListView::ShouldMobileDataSectionBeShown() {
   // The section should always be shown if Cellular networks are available.
-  if (GetDeviceState(NetworkType::kCellular) != DeviceStateType::kUnavailable)
+  if (model_->GetDeviceState(NetworkType::kCellular) !=
+      DeviceStateType::kUnavailable) {
     return true;
+  }
 
-  DeviceStateType tether_state = GetDeviceState(NetworkType::kTether);
+  DeviceStateType tether_state = model_->GetDeviceState(NetworkType::kTether);
   // Hide the section if both Cellular and Tether are UNAVAILABLE.
   if (tether_state == DeviceStateType::kUnavailable)
     return false;
@@ -566,13 +554,6 @@ TriView* NetworkListView::CreateConnectionWarning() {
   // Nothing to the right of the text.
   connection_warning->SetContainerVisible(TriView::Container::END, false);
   return connection_warning;
-}
-
-DeviceStateType NetworkListView::GetDeviceState(NetworkType type) const {
-  auto iter = device_states_.find(type);
-  if (iter == device_states_.end())
-    return DeviceStateType::kUnavailable;
-  return iter->second;
 }
 
 }  // namespace tray

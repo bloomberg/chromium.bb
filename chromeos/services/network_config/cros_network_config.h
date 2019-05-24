@@ -41,6 +41,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void DeviceListChanged() override;
   void ActiveNetworksChanged(
       const std::vector<const NetworkState*>& active_networks) override;
+  void ScanCompleted(const DeviceState* device) override;
   void OnShuttingDown() override;
 
  private:

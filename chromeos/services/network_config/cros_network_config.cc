@@ -118,8 +118,7 @@ mojom::DeviceStateType GetMojoDeviceStateType(
 }
 
 mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
-                                                    bool technology_enabled,
-                                                    const DeviceState* device) {
+                                                    bool technology_enabled) {
   mojom::NetworkType type = ShillTypeToMojo(network->type());
   if (type == mojom::NetworkType::kAll) {
     NET_LOG(ERROR) << "Unexpected network type: " << network->type()
@@ -161,10 +160,6 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
                                                 onc::kNetworkTechnologyTable);
       cellular->roaming = network->IndicateRoaming();
       cellular->signal_strength = network->signal_strength();
-      if (device) {
-        cellular->scanning = device->scanning();
-        cellular->sim_absent = device->IsSimAbsent();
-      }
       result->cellular = std::move(cellular);
       break;
     }
@@ -240,9 +235,8 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   result->state = technology_state;
   result->managed_network_available =
       !device->available_managed_network_path().empty();
-
+  result->sim_absent = device->IsSimAbsent();
   if (device->sim_present()) {
-    result->sim_present = true;
     auto sim_lock_status = mojom::SIMLockStatus::New();
     sim_lock_status->lock_type = device->sim_lock_type();
     sim_lock_status->lock_enabled = device->sim_lock_enabled();
@@ -422,6 +416,11 @@ void CrosNetworkConfig::ActiveNetworksChanged(
   });
 }
 
+void CrosNetworkConfig::ScanCompleted(const DeviceState* device) {
+  // Scanning state of device may have updated.
+  DeviceListChanged();
+}
+
 void CrosNetworkConfig::OnShuttingDown() {
   if (network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
@@ -433,9 +432,7 @@ mojom::NetworkStatePropertiesPtr CrosNetworkConfig::GetMojoNetworkState(
   bool technology_enabled = network->Matches(NetworkTypePattern::VPN()) ||
                             network_state_handler_->IsTechnologyEnabled(
                                 NetworkTypePattern::Primitive(network->type()));
-  return NetworkStateToMojo(
-      network, technology_enabled,
-      network_state_handler_->GetDeviceState(network->device_path()));
+  return NetworkStateToMojo(network, technology_enabled);
 }
 
 }  // namespace network_config

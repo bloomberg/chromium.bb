@@ -55,6 +55,10 @@ class ASH_EXPORT TrayNetworkStateModel
       chromeos::network_config::mojom::NetworkType type,
       bool enabled);
 
+  chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config() {
+    return cros_network_config_ptr_.get();
+  }
+
   const chromeos::network_config::mojom::NetworkStateProperties*
   default_network() const {
     return default_network_.get();
