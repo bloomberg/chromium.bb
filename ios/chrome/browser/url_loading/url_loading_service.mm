@@ -77,7 +77,7 @@ void UrlLoadingService::SetBrowser(Browser* browser) {
 }
 
 void UrlLoadingService::Load(const UrlLoadParams& params) {
-  // First apply any override load strategy.
+  // Apply any override load strategy and dispatch.
   switch (params.load_strategy) {
     case UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB: {
       UrlLoadParams fixed_params = params;
@@ -158,11 +158,18 @@ void UrlLoadingService::LoadUrlInCurrentTab(const UrlLoadParams& params) {
       prerenderService->CancelPrerender();
     }
     notifier_->TabFailedToLoadUrl(web_params.url, web_params.transition_type);
-    UrlLoadParams params =
-        UrlLoadParams::InNewTab(web_params.url, web_params.virtual_url);
-    params.web_params.referrer = web::Referrer();
-    params.append_to = kCurrentTab;
-    Load(params);
+
+    if (!current_web_state) {
+      UrlLoadParams fixed_params = params;
+      fixed_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      fixed_params.in_incognito = browser_state->IsOffTheRecord();
+      Load(fixed_params);
+    } else {
+      UrlLoadParams fixed_params = UrlLoadParams::InNewTab(web_params);
+      fixed_params.in_incognito = NO;
+      fixed_params.append_to = kCurrentTab;
+      Load(fixed_params);
+    }
     return;
   }
 

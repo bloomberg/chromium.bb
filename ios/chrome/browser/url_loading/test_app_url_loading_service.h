@@ -8,6 +8,10 @@
 #include "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 
+namespace ios {
+class ChromeBrowserState;
+}
+
 // Service used to manage url loading at application level.
 class TestAppUrlLoadingService : public AppUrlLoadingService {
  public:
@@ -16,9 +20,15 @@ class TestAppUrlLoadingService : public AppUrlLoadingService {
   // Opens a url based on |command| in a new tab.
   void LoadUrlInNewTab(const UrlLoadParams& params) override;
 
+  // Returns the current browser state.
+  ios::ChromeBrowserState* GetCurrentBrowserState() override;
+
   // These are the last parameters passed to |LoadUrlInNewTab|.
   UrlLoadParams last_params;
   int load_new_tab_call_count = 0;
+
+  // This can be set by the test.
+  ios::ChromeBrowserState* currentBrowserState;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_APP_URL_LOADING_SERVICE_H_

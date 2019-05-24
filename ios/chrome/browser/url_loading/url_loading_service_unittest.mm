@@ -37,22 +37,6 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ULSTestTabMock : OCMockComplexTypeHelper {
-  web::WebState* _webState;
-}
-
-@property(nonatomic, assign) web::WebState* webState;
-@end
-
-@implementation ULSTestTabMock
-- (web::WebState*)webState {
-  return _webState;
-}
-- (void)setWebState:(web::WebState*)webState {
-  _webState = webState;
-}
-@end
-
 @interface ULSTestTabModel : OCMockComplexTypeHelper
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
@@ -76,6 +60,41 @@
 
 - (WebStateList*)webStateList {
   return _webStateList.get();
+}
+
+- (Tab*)insertTabWithLoadParams:
+            (const web::NavigationManager::WebLoadParams&)loadParams
+                         opener:(Tab*)parentTab
+                    openedByDOM:(BOOL)openedByDOM
+                        atIndex:(NSUInteger)index
+                   inBackground:(BOOL)inBackground {
+  int insertionIndex = WebStateList::kInvalidIndex;
+  int insertionFlags = WebStateList::INSERT_NO_FLAGS;
+  if (index != TabModelConstants::kTabPositionAutomatically) {
+    DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
+    insertionIndex = static_cast<int>(index);
+    insertionFlags |= WebStateList::INSERT_FORCE_INDEX;
+  } else if (!ui::PageTransitionCoreTypeIs(loadParams.transition_type,
+                                           ui::PAGE_TRANSITION_LINK)) {
+    insertionIndex = _webStateList->count();
+    insertionFlags |= WebStateList::INSERT_FORCE_INDEX;
+  }
+
+  if (!inBackground) {
+    insertionFlags |= WebStateList::INSERT_ACTIVATE;
+  }
+
+  web::WebState::CreateParams createParams(self.browserState);
+  createParams.created_with_opener = openedByDOM;
+
+  std::unique_ptr<web::WebState> webState = web::WebState::Create(createParams);
+  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+
+  _webStateList->InsertWebState(insertionIndex, std::move(webState),
+                                insertionFlags,
+                                WebStateOpener(parentTab.webState));
+
+  return nil;
 }
 @end
 
@@ -114,54 +133,39 @@ class URLLoadingServiceTest : public BlockCleanupTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
 
-    // Set up mock TabModel and Tab.
-    id tabModel = [[ULSTestTabModel alloc] init];
-    [tabModel setBrowserState:chrome_browser_state_.get()];
-
-    // Enable web usage for the mock TabModel's WebStateList.
-    WebStateListWebUsageEnabler* enabler =
-        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-            chrome_browser_state_.get());
-    enabler->SetWebStateList([tabModel webStateList]);
-    enabler->SetWebUsageEnabled(true);
-
-    tabModel_ = tabModel;
-
-    // Stub methods for TabModel.
-    NSUInteger tabCount = 1;
-    [[[tabModel stub] andReturnValue:OCMOCK_VALUE(tabCount)] count];
-    id currentTab = [[ULSTestTabMock alloc]
-        initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]];
-    [[[tabModel stub] andReturn:currentTab] currentTab];
-    [[[tabModel stub] andReturn:currentTab] tabAtIndex:0];
-    [[tabModel stub] addObserver:[OCMArg any]];
-    [[tabModel stub] removeObserver:[OCMArg any]];
-    [[tabModel stub] saveSessionImmediately:NO];
-    [[tabModel stub] setCurrentTab:[OCMArg any]];
-    [[tabModel stub] closeAllTabs];
-    tab_ = currentTab;
-
-    web::WebState::CreateParams params(chrome_browser_state_.get());
-    std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
-    webState_.reset(static_cast<web::WebState*>(webState.release()));
-    [currentTab setWebState:webState_.get()];
-
-    browser_ = new TestBrowser(chrome_browser_state_.get(), tabModel);
-
     app_service_ = new TestAppUrlLoadingService();
-
+    app_service_->currentBrowserState = chrome_browser_state_.get();
     url_loading_delegate_ = [[URLLoadingServiceTestDelegate alloc] init];
+
+    id tabModel = CreateTestTabModel(chrome_browser_state_.get());
+    tab_model_ = tabModel;
+    browser_ = new TestBrowser(chrome_browser_state_.get(), tabModel);
     service_ = UrlLoadingServiceFactory::GetForBrowserState(
         chrome_browser_state_.get());
     service_->SetDelegate(url_loading_delegate_);
     service_->SetBrowser(browser_);
     service_->SetAppService(app_service_);
+
+    ios::ChromeBrowserState* otr_browser_state =
+        chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
+
+    id otrTabModel = CreateTestTabModel(otr_browser_state);
+    otr_tab_model_ = otrTabModel;
+    otr_browser_ = new TestBrowser(otr_browser_state, otrTabModel);
+    otr_service_ =
+        UrlLoadingServiceFactory::GetForBrowserState(otr_browser_state);
+    otr_service_->SetDelegate(url_loading_delegate_);
+    otr_service_->SetBrowser(otr_browser_);
+    otr_service_->SetAppService(app_service_);
   }
 
   void TearDown() override {
     // Cleanup to avoid debugger crash in non empty observer lists.
-    WebStateList* web_state_list = tabModel_.webStateList;
+    WebStateList* web_state_list = tab_model_.webStateList;
     web_state_list->CloseAllWebStates(
+        WebStateList::ClosingFlags::CLOSE_NO_FLAGS);
+    WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
+    otr_web_state_list->CloseAllWebStates(
         WebStateList::ClosingFlags::CLOSE_NO_FLAGS);
 
     BlockCleanupTest::TearDown();
@@ -176,20 +180,36 @@ class URLLoadingServiceTest : public BlockCleanupTest {
     return web_state;
   }
 
+  id CreateTestTabModel(ios::ChromeBrowserState* browser_state) {
+    id tabModel = [[ULSTestTabModel alloc] init];
+    [tabModel setBrowserState:browser_state];
+
+    // Enable web usage for the mock TabModel's WebStateList.
+    WebStateListWebUsageEnabler* enabler =
+        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
+            browser_state);
+    enabler->SetWebStateList([tabModel webStateList]);
+    enabler->SetWebUsageEnabled(false);
+
+    return tabModel;
+  }
+
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<web::WebState> webState_;
-  Tab* tab_;
-  TabModel* tabModel_;
-  Browser* browser_;
   URLLoadingServiceTestDelegate* url_loading_delegate_;
-  UrlLoadingService* service_;
   TestAppUrlLoadingService* app_service_;
+  TabModel* tab_model_;
+  Browser* browser_;
+  UrlLoadingService* service_;
+  TabModel* otr_tab_model_;
+  Browser* otr_browser_;
+  UrlLoadingService* otr_service_;
 };
 
 TEST_F(URLLoadingServiceTest, TestSwitchToTab) {
-  WebStateList* web_state_list = tabModel_.webStateList;
+  WebStateList* web_state_list = tab_model_.webStateList;
   ASSERT_EQ(0, web_state_list->count());
 
   std::unique_ptr<web::TestWebState> web_state = CreateTestWebState();
@@ -220,7 +240,7 @@ TEST_F(URLLoadingServiceTest, TestSwitchToTab) {
 // Tests that switch to open tab from the NTP close it if it doesn't have
 // navigation history.
 TEST_F(URLLoadingServiceTest, TestSwitchToTabFromNTP) {
-  WebStateList* web_state_list = tabModel_.webStateList;
+  WebStateList* web_state_list = tab_model_.webStateList;
   ASSERT_EQ(0, web_state_list->count());
 
   std::unique_ptr<web::TestWebState> web_state = CreateTestWebState();
@@ -252,7 +272,7 @@ TEST_F(URLLoadingServiceTest, TestSwitchToTabFromNTP) {
 // Tests that trying to switch to a closed tab open from the NTP opens it in the
 // NTP.
 TEST_F(URLLoadingServiceTest, TestSwitchToClosedTab) {
-  WebStateList* web_state_list = tabModel_.webStateList;
+  WebStateList* web_state_list = tab_model_.webStateList;
   ASSERT_EQ(0, web_state_list->count());
 
   std::unique_ptr<web::TestWebState> web_state = CreateTestWebState();
@@ -272,6 +292,193 @@ TEST_F(URLLoadingServiceTest, TestSwitchToClosedTab) {
   EXPECT_EQ(0, app_service_->load_new_tab_call_count);
 }
 
-// TODO(crbug.com/907527): add tests for current tab and new tab.
+// Tests open a new url in the NTP or the current tab.
+TEST_F(URLLoadingServiceTest, TestOpenInCurrentTab) {
+  WebStateList* web_state_list = tab_model_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+
+  // Set a new tab, so we can open in it.
+  GURL newtab("chrome://newtab");
+  service_->Load(
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(newtab)));
+  EXPECT_EQ(1, web_state_list->count());
+
+  // Test opening this url over NTP.
+  GURL url1("http://test/1");
+  service_->Load(
+      UrlLoadParams::InCurrentTab(web::NavigationManager::WebLoadParams(url1)));
+
+  // We won't to wait for the navigation item to be committed, let's just
+  // make sure it is at least pending.
+  EXPECT_EQ(url1, web_state_list->GetActiveWebState()
+                      ->GetNavigationManager()
+                      ->GetPendingItem()
+                      ->GetOriginalRequestURL());
+  // And that a new tab wasn't created.
+  EXPECT_EQ(1, web_state_list->count());
+
+  // Check that we had no app level redirection.
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+}
+
+// Tests opening a url in a new tab.
+TEST_F(URLLoadingServiceTest, TestOpenInNewTab) {
+  WebStateList* web_state_list = tab_model_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+
+  // Set a new tab.
+  GURL newtab("chrome://newtab");
+  service_->Load(
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(newtab)));
+  EXPECT_EQ(1, web_state_list->count());
+
+  // Open another one.
+  GURL url("http://test/2");
+  service_->Load(
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(url)));
+  EXPECT_EQ(2, web_state_list->count());
+
+  // Check that we had no app level redirection.
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+}
+
+// Tests open a new url in the current incognito tab.
+TEST_F(URLLoadingServiceTest, TestOpenInCurrentIncognitoTab) {
+  WebStateList* web_state_list = tab_model_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+  WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
+  ASSERT_EQ(0, otr_web_state_list->count());
+
+  // Make app level to be otr.
+  ios::ChromeBrowserState* otr_browser_state =
+      chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
+  app_service_->currentBrowserState = otr_browser_state;
+
+  // Set a new tab.
+  GURL newtab("chrome://newtab");
+  UrlLoadParams new_tab_params =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(newtab));
+  new_tab_params.in_incognito = YES;
+  otr_service_->Load(new_tab_params);
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(1, otr_web_state_list->count());
+
+  // Open otr request with otr service.
+  GURL url1("http://test/1");
+  UrlLoadParams params1 =
+      UrlLoadParams::InCurrentTab(web::NavigationManager::WebLoadParams(url1));
+  params1.in_incognito = YES;
+  otr_service_->Load(params1);
+
+  // We won't to wait for the navigation item to be committed, let's just
+  // make sure it is at least pending.
+
+  EXPECT_EQ(url1, otr_web_state_list->GetActiveWebState()
+                      ->GetNavigationManager()
+                      ->GetPendingItem()
+                      ->GetOriginalRequestURL());
+
+  // And that a new tab wasn't created.
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(1, otr_web_state_list->count());
+
+  // Check that we had no app level redirection.
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+}
+
+// Tests opening a url in a new incognito tab.
+TEST_F(URLLoadingServiceTest, TestOpenInNewIncognitoTab) {
+  WebStateList* web_state_list = tab_model_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+  WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
+  ASSERT_EQ(0, otr_web_state_list->count());
+
+  ios::ChromeBrowserState* otr_browser_state =
+      chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
+  app_service_->currentBrowserState = otr_browser_state;
+
+  GURL url1("http://test/1");
+  UrlLoadParams params1 =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(url1));
+  params1.in_incognito = YES;
+  otr_service_->Load(params1);
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(1, otr_web_state_list->count());
+
+  GURL url2("http://test/2");
+  UrlLoadParams params2 =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(url2));
+  params2.in_incognito = YES;
+  otr_service_->Load(params2);
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(2, otr_web_state_list->count());
+
+  // Check if we had any app level redirection.
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
+}
+
+// Test opening a normal url in new tab with incognito service.
+TEST_F(URLLoadingServiceTest, TestOpenNormalInNewTabWithIncognitoService) {
+  WebStateList* web_state_list = tab_model_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+  WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
+  ASSERT_EQ(0, otr_web_state_list->count());
+
+  ios::ChromeBrowserState* otr_browser_state =
+      chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
+  app_service_->currentBrowserState = otr_browser_state;
+
+  // Send to right service.
+  GURL url1("http://test/1");
+  UrlLoadParams params1 =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(url1));
+  params1.in_incognito = YES;
+  otr_service_->Load(params1);
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(1, otr_web_state_list->count());
+
+  // Send to wrong service.
+  GURL url2("http://test/2");
+  UrlLoadParams params2 =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(url2));
+  params2.in_incognito = NO;
+  otr_service_->Load(params2);
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(1, otr_web_state_list->count());
+
+  // Check that had one app level redirection.
+  EXPECT_EQ(1, app_service_->load_new_tab_call_count);
+}
+
+// Test opening an incognito url in new tab with normal service.
+TEST_F(URLLoadingServiceTest, TestOpenIncognitoInNewTabWithNormalService) {
+  WebStateList* web_state_list = tab_model_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+  WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
+  ASSERT_EQ(0, otr_web_state_list->count());
+
+  app_service_->currentBrowserState = chrome_browser_state_.get();
+
+  // Send to wrong service.
+  GURL url1("http://test/1");
+  UrlLoadParams params1 =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(url1));
+  params1.in_incognito = YES;
+  service_->Load(params1);
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(0, otr_web_state_list->count());
+
+  // Send to right service.
+  GURL url2("http://test/2");
+  UrlLoadParams params2 =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(url2));
+  params2.in_incognito = NO;
+  service_->Load(params2);
+  EXPECT_EQ(1, web_state_list->count());
+  EXPECT_EQ(0, otr_web_state_list->count());
+
+  // Check that we had one app level redirection.
+  EXPECT_EQ(1, app_service_->load_new_tab_call_count);
+}
 
 }  // namespace
