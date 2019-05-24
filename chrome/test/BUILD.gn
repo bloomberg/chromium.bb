@@ -1057,6 +1057,8 @@ if (!is_android) {
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.cc",
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.h",
       "../browser/ui/webui/chrome_url_data_manager_browsertest.cc",
+      "../browser/ui/webui/chromeos/account_migration_welcome_ui_test.cc",
+      "../browser/ui/webui/chromeos/account_migration_welcome_ui_test.h",
       "../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest-inl.h",
       "../browser/ui/webui/chromeos/machine_learning/machine_learning_internals_browsertest.cc",
       "../browser/ui/webui/chromeos/machine_learning/machine_learning_internals_browsertest.h",

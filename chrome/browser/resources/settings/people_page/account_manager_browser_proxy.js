@@ -42,9 +42,16 @@ cr.define('settings', function() {
     /**
      * Triggers the re-authentication flow for the account pointed to by
      * |account_email|.
-     * @param {!string} account_email
+     * @param {string} account_email
      */
     reauthenticateAccount(account_email) {}
+
+    /**
+     * Triggers the migration dialog for the account pointed to by
+     * |account_email|.
+     * @param {string} account_email
+     */
+    migrateAccount(account_email) {}
 
     /**
      * Removes |account| from Account Manager.
@@ -75,6 +82,11 @@ cr.define('settings', function() {
     /** @override */
     reauthenticateAccount(account_email) {
       chrome.send('reauthenticateAccount', [account_email]);
+    }
+
+    /** @override */
+    migrateAccount(account_email) {
+      chrome.send('migrateAccount', [account_email]);
     }
 
     /** @override */

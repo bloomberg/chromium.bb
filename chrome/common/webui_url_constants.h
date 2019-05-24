@@ -189,6 +189,8 @@ extern const char kChromeUIWebApksHost[];
 // IsSystemWebUIHost().
 extern const char kChromeUIAccountManagerWelcomeHost[];
 extern const char kChromeUIAccountManagerWelcomeURL[];
+extern const char kChromeUIAccountMigrationWelcomeHost[];
+extern const char kChromeUIAccountMigrationWelcomeURL[];
 extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIAddSupervisionHost[];
 extern const char kChromeUIAddSupervisionURL[];

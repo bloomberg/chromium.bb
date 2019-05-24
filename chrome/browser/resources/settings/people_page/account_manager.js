@@ -138,7 +138,11 @@ Polymer({
    * @private
    */
   onReauthenticationTap_: function(event) {
-    this.browserProxy_.reauthenticateAccount(event.model.item.email);
+    if (event.model.item.unmigrated) {
+      this.browserProxy_.migrateAccount(event.model.item.email);
+    } else {
+      this.browserProxy_.reauthenticateAccount(event.model.item.email);
+    }
   },
 
   /**

@@ -40,8 +40,8 @@ AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
                                   IDS_ACCOUNT_MANAGER_WELCOME_BUTTON);
 
   // Add required resources.
-  html_source->AddResourcePath("account_manager_welcome.css",
-                               IDR_ACCOUNT_MANAGER_WELCOME_CSS);
+  html_source->AddResourcePath("account_manager_shared.css",
+                               IDR_ACCOUNT_MANAGER_SHARED_CSS);
   html_source->AddResourcePath("account_manager_welcome.js",
                                IDR_ACCOUNT_MANAGER_WELCOME_JS);
 #if defined(GOOGLE_CHROME_BUILD)

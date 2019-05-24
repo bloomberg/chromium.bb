@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 The Chromium Authors. All rights reserved.
+/* Copyright 2019 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
@@ -47,7 +47,7 @@ a {
   margin-top: 60px;
 }
 
-#ok-button {
+.primary-button {
   background-color: var(--google-blue-600);
   bottom: 0;
   color: white;
@@ -55,7 +55,18 @@ a {
   right: 0;
 }
 
-html[dir='rtl'] #ok-button {
+.cancel-button {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+}
+
+html[dir='rtl'] .cancel-button {
+  left: auto;
+  right: 0;
+}
+
+html[dir='rtl'] .primary-button {
   left: 0;
   right: auto;
 }
