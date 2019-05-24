@@ -38,13 +38,6 @@ source_set("gpu_host") {
     "//services/ws/public/mojom",
   ]
 
-  if (is_chromeos) {
-    sources += [
-      "arc_gpu_client.cc",
-      "arc_gpu_client.h",
-    ]
-  }
-
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi" ]
   }

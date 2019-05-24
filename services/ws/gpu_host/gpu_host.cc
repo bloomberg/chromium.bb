@@ -179,14 +179,6 @@ void GpuHost::Add(mojom::GpuRequest request) {
   gpu_clients_.push_back(std::move(client));
 }
 
-#if defined(OS_CHROMEOS)
-void GpuHost::AddArcGpu(mojom::ArcGpuRequest request) {
-  arc_gpu_bindings_.AddBinding(
-      std::make_unique<ArcGpuClient>(gpu_host_impl_->gpu_service()),
-      std::move(request));
-}
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(USE_OZONE)
 void GpuHost::BindOzoneGpuInterface(
     const std::string& interface_name,

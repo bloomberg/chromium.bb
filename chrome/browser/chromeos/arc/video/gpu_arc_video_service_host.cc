@@ -29,7 +29,6 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/arc_gpu.mojom.h"
 
 namespace arc {
 
