@@ -883,16 +883,10 @@ public class WebappActivity extends SingleTabActivity {
     /** Inits the splash screen */
     protected void initSplash() {
         // Splash screen is shown after preInflationStartup() is run and the delegate is set.
-        if (mWebappInfo.isSplashProvidedByWebApk()) {
-            mSplashController.setConfig(new ProvidedByWebApkSplashDelegate(mWebappInfo),
-                    true /* isWindowInitiallyTranslucent */, 0 /* splashHideAnimationDurationMs */);
-        } else {
-            mSplashController.setConfig(
-                    new SameActivityWebappSplashDelegate(
-                            this, getLifecycleDispatcher(), mTabObserverRegistrar, mWebappInfo),
-                    false /* isWindowInitiallyTranslucent */,
-                    SameActivityWebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
-        }
+        boolean isWindowInitiallyTranslucent = mWebappInfo.isSplashProvidedByWebApk();
+        mSplashController.setConfig(new WebappSplashDelegate(this, getLifecycleDispatcher(),
+                                            mTabObserverRegistrar, mWebappInfo),
+                isWindowInitiallyTranslucent, WebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
     }
 
     /** Sets the screen orientation. */

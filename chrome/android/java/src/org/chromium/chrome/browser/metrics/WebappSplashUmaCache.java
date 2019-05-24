@@ -13,10 +13,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Used by SameActivityWebappSplashDelegate to cache webapp splash screen UMA values. Records UMA
+ * Used by {@link WebappSplashDelegate} to cache webapp splash screen UMA values. Records UMA
  * when {@link #commitMetrics()} is called.
  */
-public class SameActivityWebappUmaCache {
+public class WebappSplashUmaCache {
     // SplashColorStatus defined in tools/metrics/histograms/enums.xml.
     // NUM_ENTRIES is intentionally included into @IntDef.
     @IntDef({SplashColorStatus.DEFAULT, SplashColorStatus.CUSTOM, SplashColorStatus.NUM_ENTRIES})
