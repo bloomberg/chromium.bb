@@ -514,6 +514,12 @@
       origin_trial_feature_name: "ExperimentalIsInputPending",
       status: "experimental"
     },
+    // Enables a DOM-exposed interface to profile client JS.
+    // https://github.com/WICG/js-self-profiling
+    {
+      name: "ExperimentalJSProfiler",
+      status: "experimental"
+    },
     // Enables a set of features intended to help improve web developer
     // productivity, by restricting the use of potentially problematic web-
     // platform behaviors, as well as adding new high-level APIs for common

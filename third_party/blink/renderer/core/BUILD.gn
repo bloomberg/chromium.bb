@@ -2182,6 +2182,7 @@ jumbo_source_set("unit_tests") {
     "timing/performance_observer_test.cc",
     "timing/performance_resource_timing_test.cc",
     "timing/performance_test.cc",
+    "timing/profiler_group_test.cc",
     "timing/time_clamper_test.cc",
     "timing/window_performance_test.cc",
     "trustedtypes/trusted_types_util_test.cc",

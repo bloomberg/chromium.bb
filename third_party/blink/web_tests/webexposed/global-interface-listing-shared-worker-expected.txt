@@ -1007,6 +1007,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method request
 [Worker]     method requestAll
 [Worker]     method revoke
+[Worker] interface Profiler
+[Worker]     attribute @@toStringTag
+[Worker]     getter sampleInterval
+[Worker]     getter stopped
+[Worker]     method constructor
+[Worker]     method stop
 [Worker] interface ProgressEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter lengthComputable

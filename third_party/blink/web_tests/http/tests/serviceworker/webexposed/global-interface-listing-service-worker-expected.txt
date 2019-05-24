@@ -1087,6 +1087,12 @@ interface Permissions
     method request
     method requestAll
     method revoke
+interface Profiler
+    attribute @@toStringTag
+    getter sampleInterval
+    getter stopped
+    method constructor
+    method stop
 interface PromiseRejectionEvent : Event
     attribute @@toStringTag
     getter promise

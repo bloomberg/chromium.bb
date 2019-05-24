@@ -101,6 +101,16 @@ class PLATFORM_EXPORT V8PerIsolateData {
     virtual ~Data() = default;
   };
 
+  // Pointers to core/ objects that are garbage collected. Receives callback
+  // when V8PerIsolateData will be destroyed.
+  class PLATFORM_EXPORT GarbageCollectedData
+      : public GarbageCollectedFinalized<GarbageCollectedData> {
+   public:
+    virtual ~GarbageCollectedData() = default;
+    virtual void WillBeDestroyed() {}
+    virtual void Trace(blink::Visitor*) {}
+  };
+
   static v8::Isolate* Initialize(scoped_refptr<base::SingleThreadTaskRunner>,
                                  V8ContextSnapshotMode);
 
@@ -197,6 +207,9 @@ class PLATFORM_EXPORT V8PerIsolateData {
   void SetThreadDebugger(std::unique_ptr<Data>);
   Data* ThreadDebugger();
 
+  void SetProfilerGroup(V8PerIsolateData::GarbageCollectedData*);
+  V8PerIsolateData::GarbageCollectedData* ProfilerGroup();
+
   using ActiveScriptWrappableSet =
       HeapHashSet<WeakMember<ActiveScriptWrappableBase>>;
   void AddActiveScriptWrappable(ActiveScriptWrappableBase*);
@@ -277,6 +290,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
   Vector<base::OnceClosure> end_of_scope_tasks_;
   std::unique_ptr<Data> thread_debugger_;
+  Persistent<GarbageCollectedData> profiler_group_;
 
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
