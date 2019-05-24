@@ -46,9 +46,14 @@
       }
 
       .error-badge {
+        background: url(chrome://resources/images/error_badge.svg)
+            center / cover no-repeat;
+        display: block;
+        height: 20px;
         left: 60%;
         position: relative;
         top: 60%;
+        width: 20px;
       }
 
       :host-context([dir='rtl']) .error-badge {
@@ -92,8 +97,7 @@
           <div class="profile-icon"
               style="background-image: [[getIconImageSet_(item.pic)]]">
             <template is="dom-if" if="[[!item.isSignedIn]]">
-              <img class="error-badge"
-                  src="chrome://resources/images/error_badge.svg">
+              <span class="error-badge"></span>
             </template>
           </div>
 
