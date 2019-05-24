@@ -38,7 +38,6 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/browser/shell_login_dialog.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
@@ -460,15 +459,9 @@ std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
     LoginAuthRequiredCallback auth_required_callback) {
   if (!login_request_callback_.is_null()) {
     std::move(login_request_callback_).Run();
-    return nullptr;
   }
 
-#if !defined(OS_MACOSX)
-  // TODO: implement ShellLoginDialog for other platforms, drop this #if
   return nullptr;
-#else
-  return ShellLoginDialog::Create(auth_info, std::move(auth_required_callback));
-#endif
 }
 
 std::string ShellContentBrowserClient::GetUserAgent() const {

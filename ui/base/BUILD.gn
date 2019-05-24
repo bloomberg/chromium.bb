@@ -109,8 +109,6 @@ jumbo_component("base") {
     "cocoa/focus_window_set.mm",
     "cocoa/menu_controller.h",
     "cocoa/menu_controller.mm",
-    "cocoa/nib_loading.h",
-    "cocoa/nib_loading.mm",
     "cocoa/ns_view_ids.h",
     "cocoa/ns_view_ids.mm",
     "cocoa/quartz_util.h",
