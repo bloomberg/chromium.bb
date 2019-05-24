@@ -41,6 +41,10 @@ const base::Feature kNetworkQualityEstimator{"NetworkQualityEstimator",
 const base::Feature kSplitCacheByTopFrameOrigin{
     "SplitCacheByTopFrameOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPartitionConnectionsByNetworkIsolationKey{
+    "PartitionConnectionsByNetworkIsolationKey",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kTLS13KeyUpdate{"TLS13KeyUpdate",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 

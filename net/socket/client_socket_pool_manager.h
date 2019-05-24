@@ -29,6 +29,7 @@ namespace net {
 class ClientSocketHandle;
 class HostPortPair;
 class NetLogWithSource;
+class NetworkIsolationKey;
 class ProxyInfo;
 class ProxyServer;
 
@@ -105,6 +106,7 @@ int InitSocketHandleForHttpRequest(
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
+    const NetworkIsolationKey& network_isolation_key,
     const SocketTag& socket_tag,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
@@ -130,6 +132,7 @@ int InitSocketHandleForWebSocketRequest(
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
     CompletionOnceCallback callback,

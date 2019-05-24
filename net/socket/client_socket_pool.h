@@ -15,6 +15,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/dns/host_resolver.h"
@@ -109,9 +110,12 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   class NET_EXPORT GroupId {
    public:
     GroupId();
+    // TODO(mmenke): Remove default |network_isolation_key| value (only used by
+    // tests).
     GroupId(const HostPortPair& destination,
             SocketType socket_type,
-            PrivacyMode privacy_mode);
+            PrivacyMode privacy_mode,
+            NetworkIsolationKey network_isolation_key = NetworkIsolationKey());
     GroupId(const GroupId& group_id);
 
     ~GroupId();
@@ -125,19 +129,25 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
     PrivacyMode privacy_mode() const { return privacy_mode_; }
 
+    const NetworkIsolationKey& network_isolation_key() {
+      return network_isolation_key_;
+    }
+
     // Returns the group ID as a string, for logging.
     std::string ToString() const;
 
     bool operator==(const GroupId& other) const {
-      return std::tie(destination_, socket_type_, privacy_mode_) ==
+      return std::tie(destination_, socket_type_, privacy_mode_,
+                      network_isolation_key_) ==
              std::tie(other.destination_, other.socket_type_,
-                      other.privacy_mode_);
+                      other.privacy_mode_, other.network_isolation_key_);
     }
 
     bool operator<(const GroupId& other) const {
-      return std::tie(destination_, socket_type_, privacy_mode_) <
+      return std::tie(destination_, socket_type_, privacy_mode_,
+                      network_isolation_key_) <
              std::tie(other.destination_, other.socket_type_,
-                      other.privacy_mode_);
+                      other.privacy_mode_, other.network_isolation_key_);
     }
 
    private:
@@ -148,6 +158,9 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
     // If this request is for a privacy mode / uncredentialed connection.
     PrivacyMode privacy_mode_;
+
+    // Used to separate requests made in different contexts.
+    NetworkIsolationKey network_isolation_key_;
   };
 
   // Parameters that, in combination with GroupId, proxy, websocket information,

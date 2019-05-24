@@ -67,7 +67,8 @@ ClientSocketPool::GroupId CreateGroupId(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
     const ProxyInfo& proxy_info,
-    PrivacyMode privacy_mode) {
+    PrivacyMode privacy_mode,
+    const NetworkIsolationKey& network_isolation_key) {
   // Build the string used to uniquely identify connections of this type.
   // Determine the host and port to connect to.
   DCHECK(!endpoint.IsEmpty());
@@ -77,7 +78,8 @@ ClientSocketPool::GroupId CreateGroupId(
   if (group_type == ClientSocketPoolManager::SSL_GROUP)
     socket_type = ClientSocketPool::SocketType::kSsl;
 
-  return ClientSocketPool::GroupId(endpoint, socket_type, privacy_mode);
+  return ClientSocketPool::GroupId(endpoint, socket_type, privacy_mode,
+                                   network_isolation_key);
 }
 
 // TODO(https://crbug.com/921369) In order to resolve longstanding issues
@@ -107,6 +109,7 @@ int InitSocketPoolHelper(
     const SSLConfig& ssl_config_for_proxy,
     bool is_for_websockets,
     PrivacyMode privacy_mode,
+    const NetworkIsolationKey& network_isolation_key,
     const SocketTag& socket_tag,
     const NetLogWithSource& net_log,
     int num_preconnect_streams,
@@ -124,7 +127,8 @@ int InitSocketPoolHelper(
   }
 
   ClientSocketPool::GroupId connection_group =
-      CreateGroupId(group_type, origin_host_port, proxy_info, privacy_mode);
+      CreateGroupId(group_type, origin_host_port, proxy_info, privacy_mode,
+                    network_isolation_key);
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       CreateSocketParams(connection_group, proxy_info.proxy_server(),
                          ssl_config_for_origin, ssl_config_for_proxy);
@@ -237,6 +241,7 @@ int InitSocketHandleForHttpRequest(
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
+    const NetworkIsolationKey& network_isolation_key,
     const SocketTag& socket_tag,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
@@ -246,9 +251,10 @@ int InitSocketHandleForHttpRequest(
   return InitSocketPoolHelper(
       group_type, endpoint, request_load_flags, request_priority, session,
       proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
-      false /* is_for_websockets */, privacy_mode, socket_tag, net_log, 0,
-      socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      std::move(callback), proxy_auth_callback);
+      false /* is_for_websockets */, privacy_mode, network_isolation_key,
+      socket_tag, net_log, 0, socket_handle,
+      HttpNetworkSession::NORMAL_SOCKET_POOL, std::move(callback),
+      proxy_auth_callback);
 }
 
 int InitSocketHandleForWebSocketRequest(
@@ -261,6 +267,7 @@ int InitSocketHandleForWebSocketRequest(
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
     CompletionOnceCallback callback,
@@ -273,9 +280,10 @@ int InitSocketHandleForWebSocketRequest(
   return InitSocketPoolHelper(
       group_type, endpoint, request_load_flags, request_priority, session,
       proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
-      true /* is_for_websockets */, privacy_mode, SocketTag(), net_log, 0,
-      socket_handle, HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
-      std::move(callback), proxy_auth_callback);
+      true /* is_for_websockets */, privacy_mode, network_isolation_key,
+      SocketTag(), net_log, 0, socket_handle,
+      HttpNetworkSession::WEBSOCKET_SOCKET_POOL, std::move(callback),
+      proxy_auth_callback);
 }
 
 int PreconnectSocketsForHttpRequest(
@@ -293,12 +301,16 @@ int PreconnectSocketsForHttpRequest(
   // QUIC proxies are currently not supported through this method.
   DCHECK(!proxy_info.is_quic());
 
+  // TODO(https://crbug.com/966896): Get this field from the caller.
+  NetworkIsolationKey network_isolation_key;
+
   return InitSocketPoolHelper(
       group_type, endpoint, request_load_flags, request_priority, session,
       proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
-      false /* force_tunnel */, privacy_mode, SocketTag(), net_log,
-      num_preconnect_streams, nullptr, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback());
+      false /* force_tunnel */, privacy_mode, network_isolation_key,
+      SocketTag(), net_log, num_preconnect_streams, nullptr,
+      HttpNetworkSession::NORMAL_SOCKET_POOL, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback());
 }
 
 }  // namespace net

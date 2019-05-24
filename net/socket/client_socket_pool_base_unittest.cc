@@ -22,12 +22,15 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -78,9 +81,10 @@ ClientSocketPool::GroupId TestGroupId(
     int port = 80,
     ClientSocketPool::SocketType socket_type =
         ClientSocketPool::SocketType::kHttp,
-    PrivacyMode privacy_mode = PrivacyMode::PRIVACY_MODE_DISABLED) {
+    PrivacyMode privacy_mode = PrivacyMode::PRIVACY_MODE_DISABLED,
+    NetworkIsolationKey network_isolation_key = NetworkIsolationKey()) {
   return ClientSocketPool::GroupId(HostPortPair(host, port), socket_type,
-                                   privacy_mode);
+                                   privacy_mode, network_isolation_key);
 }
 
 // Make sure |handle| sets load times correctly when it has been assigned a
@@ -782,6 +786,10 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
 
 // Make sure different groups do not share sockets.
 TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
   CreatePool(1000 /* max_sockets */, 2 /* max_sockets_per_group */);
 
   const HostPortPair kHostPortPairs[] = {
@@ -798,6 +806,11 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
   const PrivacyMode kPrivacyModes[] = {PrivacyMode::PRIVACY_MODE_DISABLED,
                                        PrivacyMode::PRIVACY_MODE_ENABLED};
 
+  const NetworkIsolationKey kNetworkIsolationKeys[] = {
+      NetworkIsolationKey(url::Origin::Create(GURL("http://a.test/"))),
+      NetworkIsolationKey(url::Origin::Create(GURL("http://b.test/"))),
+  };
+
   int total_idle_sockets = 0;
 
   // Walk through each GroupId, making sure that requesting a socket for one
@@ -808,55 +821,58 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
       SCOPED_TRACE(static_cast<int>(socket_type));
       for (const auto& privacy_mode : kPrivacyModes) {
         SCOPED_TRACE(privacy_mode);
+        for (const auto& network_isolation_key : kNetworkIsolationKeys) {
+          SCOPED_TRACE(network_isolation_key.ToString());
 
-        connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+          connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
 
-        ClientSocketPool::GroupId group_id(host_port_pair, socket_type,
-                                           privacy_mode);
+          ClientSocketPool::GroupId group_id(
+              host_port_pair, socket_type, privacy_mode, network_isolation_key);
 
-        EXPECT_FALSE(pool_->HasGroupForTesting(group_id));
+          EXPECT_FALSE(pool_->HasGroupForTesting(group_id));
 
-        TestCompletionCallback callback;
-        ClientSocketHandle handle;
+          TestCompletionCallback callback;
+          ClientSocketHandle handle;
 
-        // Since the group is empty, requesting a socket should not complete
-        // synchronously.
-        EXPECT_THAT(
-            handle.Init(group_id, params_, base::nullopt, DEFAULT_PRIORITY,
-                        SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-                        callback.callback(),
-                        ClientSocketPool::ProxyAuthCallback(), pool_.get(),
-                        NetLogWithSource()),
-            IsError(ERR_IO_PENDING));
-        EXPECT_TRUE(pool_->HasGroupForTesting(group_id));
-        EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
+          // Since the group is empty, requesting a socket should not complete
+          // synchronously.
+          EXPECT_THAT(
+              handle.Init(group_id, params_, base::nullopt, DEFAULT_PRIORITY,
+                          SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                          callback.callback(),
+                          ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                          NetLogWithSource()),
+              IsError(ERR_IO_PENDING));
+          EXPECT_TRUE(pool_->HasGroupForTesting(group_id));
+          EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
 
-        EXPECT_THAT(callback.WaitForResult(), IsOk());
-        EXPECT_TRUE(handle.socket());
-        EXPECT_TRUE(pool_->HasGroupForTesting(group_id));
-        EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
+          EXPECT_THAT(callback.WaitForResult(), IsOk());
+          EXPECT_TRUE(handle.socket());
+          EXPECT_TRUE(pool_->HasGroupForTesting(group_id));
+          EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
 
-        // Return socket to pool.
-        handle.Reset();
-        EXPECT_EQ(total_idle_sockets + 1, pool_->IdleSocketCount());
+          // Return socket to pool.
+          handle.Reset();
+          EXPECT_EQ(total_idle_sockets + 1, pool_->IdleSocketCount());
 
-        // Requesting a socket again should return the same socket as before, so
-        // should complete synchronously.
-        EXPECT_THAT(
-            handle.Init(group_id, params_, base::nullopt, DEFAULT_PRIORITY,
-                        SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-                        callback.callback(),
-                        ClientSocketPool::ProxyAuthCallback(), pool_.get(),
-                        NetLogWithSource()),
-            IsOk());
-        EXPECT_TRUE(handle.socket());
-        EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
+          // Requesting a socket again should return the same socket as before,
+          // so should complete synchronously.
+          EXPECT_THAT(
+              handle.Init(group_id, params_, base::nullopt, DEFAULT_PRIORITY,
+                          SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                          callback.callback(),
+                          ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                          NetLogWithSource()),
+              IsOk());
+          EXPECT_TRUE(handle.socket());
+          EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
 
-        // Return socket to pool again.
-        handle.Reset();
-        EXPECT_EQ(total_idle_sockets + 1, pool_->IdleSocketCount());
+          // Return socket to pool again.
+          handle.Reset();
+          EXPECT_EQ(total_idle_sockets + 1, pool_->IdleSocketCount());
 
-        ++total_idle_sockets;
+          ++total_idle_sockets;
+        }
       }
     }
   }

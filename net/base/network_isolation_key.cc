@@ -29,6 +29,12 @@ std::string NetworkIsolationKey::ToString() const {
   return std::string();
 }
 
+std::string NetworkIsolationKey::ToDebugString() const {
+  if (!top_frame_origin_)
+    return "null";
+  return top_frame_origin_->GetDebugString();
+}
+
 bool NetworkIsolationKey::IsFullyPopulated() const {
   return top_frame_origin_.has_value();
 }

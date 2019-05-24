@@ -30,6 +30,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -40,6 +41,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
@@ -20737,6 +20739,158 @@ TEST_F(HttpNetworkTransactionTest, ClientCertSocketReuse) {
                                               NetLogWithSource())),
               IsOk());
   EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
+}
+
+// Test for kPartitionConnectionsByNetworkIsolationKey. Runs 3 requests in
+// sequence with two different NetworkIsolationKeys, the first and last have the
+// same key, the second a different one. Checks that the requests are
+// partitioned across sockets as expected.
+TEST_F(HttpNetworkTransactionTest, NetworkIsolation) {
+  NetworkIsolationKey network_isolation_key1(
+      url::Origin::Create(GURL("http://origin1/")));
+  NetworkIsolationKey network_isolation_key2(
+      url::Origin::Create(GURL("http://origin2/")));
+
+  for (bool partition_connections : {false, true}) {
+    SCOPED_TRACE(partition_connections);
+
+    base::test::ScopedFeatureList feature_list;
+    if (partition_connections) {
+      feature_list.InitAndEnableFeature(
+          features::kPartitionConnectionsByNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
+          features::kPartitionConnectionsByNetworkIsolationKey);
+    }
+
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+    // Reads and writes for the unpartitioned case, where only one socket is
+    // used.
+
+    const MockWrite kUnpartitionedWrites[] = {
+        MockWrite("GET /1 HTTP/1.1\r\n"
+                  "Host: foo.test\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+        MockWrite("GET /2 HTTP/1.1\r\n"
+                  "Host: foo.test\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+        MockWrite("GET /3 HTTP/1.1\r\n"
+                  "Host: foo.test\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
+
+    const MockRead kUnpartitionedReads[] = {
+        MockRead("HTTP/1.1 200 OK\r\n"
+                 "Connection: keep-alive\r\n"
+                 "Content-Length: 1\r\n\r\n"
+                 "1"),
+        MockRead("HTTP/1.1 200 OK\r\n"
+                 "Connection: keep-alive\r\n"
+                 "Content-Length: 1\r\n\r\n"
+                 "2"),
+        MockRead("HTTP/1.1 200 OK\r\n"
+                 "Connection: keep-alive\r\n"
+                 "Content-Length: 1\r\n\r\n"
+                 "3"),
+    };
+
+    StaticSocketDataProvider unpartitioned_data(kUnpartitionedReads,
+                                                kUnpartitionedWrites);
+
+    // Reads and writes for the partitioned case, where two sockets are used.
+
+    const MockWrite kPartitionedWrites1[] = {
+        MockWrite("GET /1 HTTP/1.1\r\n"
+                  "Host: foo.test\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+        MockWrite("GET /3 HTTP/1.1\r\n"
+                  "Host: foo.test\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
+
+    const MockRead kPartitionedReads1[] = {
+        MockRead("HTTP/1.1 200 OK\r\n"
+                 "Connection: keep-alive\r\n"
+                 "Content-Length: 1\r\n\r\n"
+                 "1"),
+        MockRead("HTTP/1.1 200 OK\r\n"
+                 "Connection: keep-alive\r\n"
+                 "Content-Length: 1\r\n\r\n"
+                 "3"),
+    };
+
+    const MockWrite kPartitionedWrites2[] = {
+        MockWrite("GET /2 HTTP/1.1\r\n"
+                  "Host: foo.test\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
+
+    const MockRead kPartitionedReads2[] = {
+        MockRead("HTTP/1.1 200 OK\r\n"
+                 "Connection: keep-alive\r\n"
+                 "Content-Length: 1\r\n\r\n"
+                 "2"),
+    };
+
+    StaticSocketDataProvider partitioned_data1(kPartitionedReads1,
+                                               kPartitionedWrites1);
+    StaticSocketDataProvider partitioned_data2(kPartitionedReads2,
+                                               kPartitionedWrites2);
+
+    if (partition_connections) {
+      session_deps_.socket_factory->AddSocketDataProvider(&partitioned_data1);
+      session_deps_.socket_factory->AddSocketDataProvider(&partitioned_data2);
+    } else {
+      session_deps_.socket_factory->AddSocketDataProvider(&unpartitioned_data);
+    }
+
+    TestCompletionCallback callback;
+    HttpRequestInfo request1;
+    request1.method = "GET";
+    request1.url = GURL("http://foo.test/1");
+    request1.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+    request1.network_isolation_key = network_isolation_key1;
+    auto trans1 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                           session.get());
+    int rv = trans1->Start(&request1, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
+    std::string response_data1;
+    EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
+    EXPECT_EQ("1", response_data1);
+    trans1.reset();
+
+    HttpRequestInfo request2;
+    request2.method = "GET";
+    request2.url = GURL("http://foo.test/2");
+    request2.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+    request2.network_isolation_key = network_isolation_key2;
+    auto trans2 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                           session.get());
+    rv = trans2->Start(&request2, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
+    std::string response_data2;
+    EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
+    EXPECT_EQ("2", response_data2);
+    trans2.reset();
+
+    HttpRequestInfo request3;
+    request3.method = "GET";
+    request3.url = GURL("http://foo.test/3");
+    request3.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+    request3.network_isolation_key = network_isolation_key1;
+    auto trans3 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                           session.get());
+    rv = trans3->Start(&request3, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
+    std::string response_data3;
+    EXPECT_THAT(ReadTransaction(trans3.get(), &response_data3), IsOk());
+    EXPECT_EQ("3", response_data3);
+    trans3.reset();
+  }
 }
 
 }  // namespace net

@@ -44,6 +44,11 @@ NET_EXPORT extern const base::Feature kNetworkQualityEstimator;
 // Splits cache entries by the request's top frame's origin if one is available.
 NET_EXPORT extern const base::Feature kSplitCacheByTopFrameOrigin;
 
+// Partitions connections based on the NetworkIsolationKey associated with a
+// request.
+NET_EXPORT extern const base::Feature
+    kPartitionConnectionsByNetworkIsolationKey;
+
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
 // disabled by default because we discovered incompatibilities with some

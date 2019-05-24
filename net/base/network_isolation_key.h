@@ -31,11 +31,23 @@ class NET_EXPORT NetworkIsolationKey {
       const NetworkIsolationKey& network_isolation_key);
   NetworkIsolationKey& operator=(NetworkIsolationKey&& network_isolation_key);
 
+  bool operator==(const NetworkIsolationKey& other) const {
+    return top_frame_origin_ == other.top_frame_origin_;
+  }
+
+  bool operator<(const NetworkIsolationKey& other) const {
+    return top_frame_origin_ < other.top_frame_origin_;
+  }
+
   // TODO(shivanisha): Use feature flags in the below methods to determine which
   // parts of the key are being used based on the enabled experiment.
 
   // Returns the string representation of the key.
   std::string ToString() const;
+
+  // Returns string for debugging. Difference from ToString() is that transient
+  // entries may be distinguishable from each other.
+  std::string ToDebugString() const;
 
   // Returns true if all parts of the key are non-empty.
   bool IsFullyPopulated() const;

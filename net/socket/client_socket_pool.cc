@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "net/base/features.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
@@ -68,10 +70,16 @@ ClientSocketPool::GroupId::GroupId()
 
 ClientSocketPool::GroupId::GroupId(const HostPortPair& destination,
                                    SocketType socket_type,
-                                   PrivacyMode privacy_mode)
+                                   PrivacyMode privacy_mode,
+                                   NetworkIsolationKey network_isolation_key)
     : destination_(destination),
       socket_type_(socket_type),
-      privacy_mode_(privacy_mode) {}
+      privacy_mode_(privacy_mode),
+      network_isolation_key_(
+          base::FeatureList::IsEnabled(
+              features::kPartitionConnectionsByNetworkIsolationKey)
+              ? network_isolation_key
+              : NetworkIsolationKey()) {}
 
 ClientSocketPool::GroupId::GroupId(const GroupId& group_id) = default;
 
@@ -95,6 +103,14 @@ std::string ClientSocketPool::GroupId::ToString() const {
   }
   if (privacy_mode_)
     result = "pm/" + result;
+
+  if (base::FeatureList::IsEnabled(
+          features::kPartitionConnectionsByNetworkIsolationKey)) {
+    result += " <";
+    result += network_isolation_key_.ToDebugString();
+    result += ">";
+  }
+
   return result;
 }
 
