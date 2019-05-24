@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
 namespace chromeos {
@@ -30,7 +31,14 @@ SupervisionOnboardingScreenHandler::~SupervisionOnboardingScreenHandler() {
 
 void SupervisionOnboardingScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  // TODO(ltenorio): Add the strings for the back/next buttons here.
+  builder->Add("supervisionOnboardingWaitMessage",
+               IDS_SUPERVISION_ONBOARDING_WAIT_MESSAGE);
+  builder->Add("supervisionOnboardingNextButtonLabel",
+               IDS_SUPERVISION_ONBOARDING_NEXT_BUTTON);
+  builder->Add("supervisionOnboardingSkipButtonLabel",
+               IDS_SUPERVISION_ONBOARDING_SKIP_BUTTON);
+  builder->Add("supervisionOnboardingBackButtonLabel",
+               IDS_SUPERVISION_ONBOARDING_BACK_BUTTON);
 }
 
 void SupervisionOnboardingScreenHandler::Bind(

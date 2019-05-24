@@ -196,8 +196,8 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
     screen_waiter.Wait();
 
     test::OobeJS()
-        .CreateVisibilityWaiter(true,
-                                {"supervision-onboarding", "contentWebview"})
+        .CreateVisibilityWaiter(
+            true, {"supervision-onboarding", "supervision-onboarding-content"})
         ->Wait();
   }
 
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, NextButtonExitsScreen) {
   WaitForScreen();
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 
-  ClickButton("next-button");
+  ClickButton("supervision-onboarding-next-button");
   WaitForScreenExit();
 }
 
@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, BackButtonExitsScreen) {
   WaitForScreen();
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 
-  ClickButton("back-button");
+  ClickButton("supervision-onboarding-back-button");
   WaitForScreenExit();
 }
 
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, SkipButtonExitsScreen) {
   WaitForScreen();
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 
-  ClickButton("skip-button");
+  ClickButton("supervision-onboarding-skip-button");
   WaitForScreenExit();
 }
 

@@ -89,7 +89,8 @@
       }
 
       const header = responseEvent.responseHeaders.find(
-          h => h.name == this.page_.customHeaderName);
+          h => h.name.toUpperCase() ==
+              this.page_.customHeaderName.toUpperCase());
       this.customHeaderValue_ = header ? header.value : null;
 
       return {};
@@ -126,15 +127,18 @@
       this.pendingLoadPageCallback_({
         customHeaderValue: this.customHeaderValue_,
       });
-
-      this.webview_.hidden = false;
     }
   }
 
   Polymer({
     is: 'supervision-onboarding',
 
-    behaviors: [LoginScreenBehavior],
+    behaviors: [LoginScreenBehavior, OobeDialogHostBehavior],
+
+    properties: {
+      /** True if the webview loaded the page. */
+      pageLoaded_: {type: Boolean, value: false},
+    },
 
     /** Overridden from LoginScreenBehavior. */
     EXTERNAL_API: [
@@ -154,15 +158,22 @@
     webviewLoader_: null,
 
     setupMojo: function() {
-      this.webviewLoader_ = new WebviewLoader(this.$.contentWebview);
+      this.webviewLoader_ =
+          new WebviewLoader(this.$.supervisionOnboardingWebview);
 
       this.controller_ =
           chromeos.supervision.mojom.OnboardingController.getProxy();
 
       this.hostCallbackRouter_ =
           new chromeos.supervision.mojom.OnboardingWebviewHostCallbackRouter();
-      this.hostCallbackRouter_.loadPage.addListener(
-          this.webviewLoader_.loadPage.bind(this.webviewLoader_));
+
+      this.hostCallbackRouter_.loadPage.addListener(p => {
+        this.pageLoaded_ = false;
+        return this.webviewLoader_.loadPage(p).then(response => {
+          this.pageLoaded_ = true;
+          return response;
+        });
+      });
       this.hostCallbackRouter_.exitFlow.addListener(this.exitFlow_.bind(this));
 
       this.controller_.bindWebviewHost(this.hostCallbackRouter_.createProxy());

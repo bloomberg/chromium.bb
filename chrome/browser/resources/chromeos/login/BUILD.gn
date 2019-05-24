@@ -163,6 +163,7 @@ js_library("multidevice_setup_first_run") {
 js_library("supervision_onboarding") {
   deps = [
     ":login_screen_behavior",
+    ":oobe_dialog_host_behavior",
     "//chrome/browser/chromeos/supervision/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:cr",
   ]
