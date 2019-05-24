@@ -423,6 +423,13 @@ class ManualPromiseResolver {
       RejectPolicy reject_policy = RejectPolicy::kMustCatchRejection)
       : promise_(SequencedTaskRunnerHandle::Get(), from_here, reject_policy) {}
 
+  ~ManualPromiseResolver() {
+    // If the promise wasn't resolved or rejected, then cancel it to make sure
+    // we don't leak memory.
+    if (!promise_.abstract_promise_->IsSettled())
+      promise_.abstract_promise_->OnCanceled();
+  }
+
   template <typename... Args>
   void Resolve(Args&&... arg) noexcept {
     DCHECK(!promise_.abstract_promise_->IsResolved());

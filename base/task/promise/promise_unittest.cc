@@ -57,6 +57,18 @@ class MockObject {
 
 struct DummyError {};
 
+struct Cancelable {
+  Cancelable() : weak_ptr_factory(this) {}
+
+  void LogTask(std::vector<std::string>* log, std::string value) {
+    log->push_back(value);
+  }
+
+  void NopTask() {}
+
+  WeakPtrFactory<Cancelable> weak_ptr_factory;
+};
+
 }  // namespace
 
 class PromiseTest : public testing::Test {
@@ -322,6 +334,45 @@ TEST_F(PromiseTest, ThenAndCatchOnCurrentReturnTypes) {
       ManualPromiseResolver<A, B>(FROM_HERE).promise().ThenOnCurrent(
           FROM_HERE, BindOnce([]() -> PromiseResult<C, D> { return C{}; }),
           BindOnce([]() -> PromiseResult<C, D> { return C{}; }));
+}
+
+TEST_F(PromiseTest, UnsettledManualPromiseResolverCancelsChain) {
+  bool delete_flag = false;
+  Promise<void> p2;
+
+  {
+    ManualPromiseResolver<int> p1(FROM_HERE);
+    p2 = p1.promise().ThenOnCurrent(
+        FROM_HERE, BindOnce([](scoped_refptr<ObjectToDelete> v) {},
+                            MakeRefCounted<ObjectToDelete>(&delete_flag)));
+  }
+
+  EXPECT_TRUE(delete_flag);
+  EXPECT_TRUE(p2.IsCancelledForTesting());
+}
+
+TEST_F(PromiseTest, CancellationSpottedByExecute) {
+  bool delete_flag = false;
+  Promise<void> p3;
+
+  {
+    Cancelable cancelable;
+    ManualPromiseResolver<void> p1(FROM_HERE);
+    Promise<void> p2 = p1.promise().ThenOnCurrent(
+        FROM_HERE, BindOnce(&Cancelable::NopTask,
+                            cancelable.weak_ptr_factory.GetWeakPtr()));
+
+    p1.Resolve();
+    cancelable.weak_ptr_factory.InvalidateWeakPtrs();
+
+    p3 = p2.ThenOnCurrent(
+        FROM_HERE, BindOnce([](scoped_refptr<ObjectToDelete> v) {},
+                            MakeRefCounted<ObjectToDelete>(&delete_flag)));
+  }
+
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(delete_flag);
+  EXPECT_TRUE(p3.IsCancelledForTesting());
 }
 
 TEST_F(PromiseTest, RejectAndReReject) {
@@ -1201,20 +1252,6 @@ TEST_F(PromiseTest, RejectFinallySkipsThens) {
   p.Resolve();
   run_loop.Run();
 }
-
-namespace {
-struct Cancelable {
-  Cancelable() : weak_ptr_factory(this) {}
-
-  void LogTask(std::vector<std::string>* log, std::string value) {
-    log->push_back(value);
-  }
-
-  void NopTask() {}
-
-  WeakPtrFactory<Cancelable> weak_ptr_factory;
-};
-}  // namespace
 
 TEST_F(PromiseTest, CancelViaWeakPtr) {
   std::vector<std::string> log;

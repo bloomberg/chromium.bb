@@ -234,8 +234,10 @@ AbstractPromise::GetPrerequisitePolicy() {
 }
 
 void AbstractPromise::Execute() {
-  if (IsCanceled())
+  if (IsCanceled()) {
+    OnCanceled();
     return;
+  }
 
 #if DCHECK_IS_ON()
   // Clear |must_catch_ancestor_that_could_reject_| if we can catch it.
