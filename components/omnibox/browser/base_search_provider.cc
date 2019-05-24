@@ -179,8 +179,8 @@ AutocompleteMatch BaseSearchProvider::CreateOnDeviceSearchSuggestion(
       /*subtype_identifier=*/271, /*from_keyword_provider=*/false, relevance,
       /*relevance_from_server=*/false,
       base::CollapseWhitespace(input.text(), false));
-  // On device providers are synchronous.
-  suggest_result.set_received_after_last_keystroke(false);
+  // On device providers are asynchronous.
+  suggest_result.set_received_after_last_keystroke(true);
   return CreateSearchSuggestion(
       autocomplete_provider, input, /*in_keyword_mode=*/false, suggest_result,
       template_url, search_terms_data, accepted_suggestion,
