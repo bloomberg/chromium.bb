@@ -87,6 +87,11 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 const base::Feature kBlockCredentialedSubresources{
     "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether Bundled HTTP Exchanges is enabled.
+// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
+const base::Feature kBundledHTTPExchanges{"BundledHTTPExchanges",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables code caching for inline scripts.
 const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

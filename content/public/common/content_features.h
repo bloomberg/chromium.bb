@@ -32,6 +32,7 @@ CONTENT_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
 CONTENT_EXPORT extern const base::Feature kBlinkHeapUnifiedGCScheduling;
 CONTENT_EXPORT extern const base::Feature kBloatedRendererDetection;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
+CONTENT_EXPORT extern const base::Feature kBundledHTTPExchanges;
 CONTENT_EXPORT extern const base::Feature kCacheInlineScriptCode;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueFixedPosition;
