@@ -342,8 +342,12 @@ void InputHandlerProxy::DispatchSingleInputEvent(
           std::make_unique<MomentumScrollJankTracker>();
       break;
     case blink::WebGestureEvent::kGestureScrollUpdate:
-      momentum_scroll_jank_tracker_->OnDispatchedInputEvent(
-          event_with_callback.get(), now);
+      // It's possible to get a scroll update without a begin. Ignore these
+      // cases.
+      if (momentum_scroll_jank_tracker_) {
+        momentum_scroll_jank_tracker_->OnDispatchedInputEvent(
+            event_with_callback.get(), now);
+      }
       break;
     case blink::WebGestureEvent::kGestureScrollEnd:
       momentum_scroll_jank_tracker_.reset();
