@@ -169,7 +169,9 @@ class TabStripTest : public ChromeViewsTestBase,
     return tab_strip_->FindTabForEvent(point);
   }
 
-  void DoLayout() { tab_strip_->DoLayout(); }
+  void CompleteAnimationAndLayout() {
+    tab_strip_->CompleteAnimationAndLayout();
+  }
 
   void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
 
@@ -443,7 +445,7 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
 
   // Switch to stacked layout mode and force a layout to ensure tabs stack.
   tab_strip_->SetStackedLayout(true);
-  DoLayout();
+  CompleteAnimationAndLayout();
 
   gfx::Point p;
   for (int y : {0, tab_strip_->height() / 2, tab_strip_->height() - 1}) {
@@ -604,7 +606,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   tab_strip_->CloseTab(tab2, CLOSE_TAB_FROM_TOUCH);
   tab2 = nullptr;
   ASSERT_TRUE(tab3->IsActive());
-  DoLayout();
+  CompleteAnimationAndLayout();
   EXPECT_FALSE(tab0->showing_close_button_);
   EXPECT_FALSE(tab1->showing_close_button_);
   EXPECT_TRUE(tab3->showing_close_button_);
@@ -749,7 +751,7 @@ TEST_P(TabStripTest, NewTabButtonStaysVisible) {
   for (int i = 0; i < 100; ++i)
     controller_->AddTab(i, (i == 0));
 
-  DoLayout();
+  CompleteAnimationAndLayout();
 
   EXPECT_LE(tab_strip_->new_tab_button_bounds().right(), kTabStripWidth);
 }
@@ -808,6 +810,7 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
     const int last_inactive_width = GetInactiveTabWidth();
     tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
                          CLOSE_TAB_FROM_MOUSE);
+    CompleteAnimationAndLayout();
     EXPECT_GE(GetInactiveTabWidth(), last_inactive_width);
   }
 }
@@ -901,7 +904,7 @@ TEST_P(TabStripTest, NewTabButtonInkDrop) {
     tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
         views::InkDropState::ACTION_TRIGGERED);
     controller_->AddTab(i, true /* is_active */);
-    DoLayout();
+    CompleteAnimationAndLayout();
     tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
         views::InkDropState::HIDDEN);
   }

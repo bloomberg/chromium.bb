@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_animator.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
@@ -276,21 +278,7 @@ TabStrip::RemoveTabDelegate::RemoveTabDelegate(TabStrip* tab_strip, Tab* tab)
 
 void TabStrip::RemoveTabDelegate::AnimationEnded(
     const gfx::Animation* animation) {
-  DCHECK(tab()->closing());
-  tab_strip()->RemoveAndDeleteTab(tab());
-
-  // Send the Container a message to simulate a mouse moved event at the current
-  // mouse position. This tickles the Tab the mouse is currently over to show
-  // the "hot" state of the close button.  Note that this is not required (and
-  // indeed may crash!) for removes spawned by non-mouse closes and
-  // drag-detaches.
-  if (!tab_strip()->GetDragContext()->IsDragSessionActive() &&
-      tab_strip()->ShouldHighlightCloseButtonAfterRemove()) {
-    // The widget can apparently be null during shutdown.
-    views::Widget* widget = tab_strip()->GetWidget();
-    if (widget)
-      widget->SynthesizeMouseMoveEvent();
-  }
+  tab_strip()->OnTabCloseAnimationCompleted(tab());
 }
 
 void TabStrip::RemoveTabDelegate::AnimationCanceled(
@@ -592,7 +580,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     DCHECK_EQ(GetTabCount(), int{initial_positions.size()});
     SetIdealBoundsFromPositions(initial_positions);
     tab_strip_->touch_layout_->DragActiveTab(delta);
-    tab_strip_->DoLayout();
+    tab_strip_->CompleteAnimationAndLayout();
   }
 
   std::vector<gfx::Rect> CalculateBoundsForDraggedTabs(
@@ -712,7 +700,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
   // Forces the entire tabstrip to lay out.
   void ForceLayout() override {
     tab_strip_->InvalidateLayout();
-    tab_strip_->DoLayout();
+    tab_strip_->CompleteAnimationAndLayout();
   }
 
  private:
@@ -820,6 +808,9 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
 TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
     : controller_(std::move(controller)),
       layout_helper_(std::make_unique<TabStripLayoutHelper>()),
+      animator_(std::make_unique<TabStripAnimator>(
+          base::BindRepeating(&TabStrip::LayoutToCurrentBounds,
+                              base::Unretained(this)))),
       drag_context_(std::make_unique<TabDragContextImpl>(this)) {
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
@@ -1003,10 +994,22 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
 
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
-  if (tab_count() > 1 && GetWidget() && GetWidget()->IsVisible())
+  TabAnimationState::TabActiveness activeness =
+      is_active ? TabAnimationState::TabActiveness::kActive
+                : TabAnimationState::TabActiveness::kInactive;
+  TabAnimationState::TabPinnedness pinnedness =
+      pinned ? TabAnimationState::TabPinnedness::kPinned
+             : TabAnimationState::TabPinnedness::kUnpinned;
+  animator_->InsertTabAtNoAnimation(
+      model_index,
+      base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
+                     base::Unretained(this), base::Unretained(tab)),
+      activeness, pinnedness);
+  if (tab_count() > 1 && GetWidget() && GetWidget()->IsVisible()) {
     StartInsertTabAnimation(model_index);
-  else
-    DoLayout();
+  } else {
+    CompleteAnimationAndLayout();
+  }
 
   SwapLayoutIfNecessary();
   UpdateAccessibleTabIndices();
@@ -1051,6 +1054,11 @@ void TabStrip::MoveTab(int from_model_index,
   }
   selected_tabs_.Move(from_model_index, to_model_index, /*length=*/1);
 
+  animator_->MoveTabNoAnimation(from_model_index, to_model_index);
+  animator_->SetPinnednessNoAnimation(
+      to_model_index, data.pinned
+                          ? TabAnimationState::TabPinnedness::kPinned
+                          : TabAnimationState::TabPinnedness::kUnpinned);
   StartMoveTabAnimation();
   if (TabDragController::IsAttachedTo(GetDragContext()) &&
       (last_tab != GetLastVisibleTab() || last_tab->dragging())) {
@@ -1113,6 +1121,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
                              UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
+  animator_->RemoveTabNoAnimation(model_index);
   UpdateIdealBounds();
   AnimateToIdealBounds();
 
@@ -1186,10 +1195,14 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
       int start_x = UpdateIdealBoundsForPinnedTabs(&pinned_tab_count);
       touch_layout_->SetXAndPinnedCount(start_x, pinned_tab_count);
     }
+
+    animator_->SetPinnednessNoAnimation(
+        model_index, data.pinned ? TabAnimationState::TabPinnedness::kPinned
+                                 : TabAnimationState::TabPinnedness::kUnpinned);
     if (GetWidget() && GetWidget()->IsVisible())
       StartPinnedTabAnimation();
     else
-      DoLayout();
+      CompleteAnimationAndLayout();
   }
   SwapLayoutIfNecessary();
 }
@@ -1281,6 +1294,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       tab_at(selected_tabs_.active())->ActiveStateChanged();
     if (new_selection.active() >= 0)
       tab_at(new_selection.active())->ActiveStateChanged();
+    animator_->SetActiveTab(selected_tabs_.active(), new_selection.active());
   }
 
   if (touch_layout_) {
@@ -1309,7 +1323,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       // As in the animating case above, the selection change will have
       // affected the desired bounds of the tabs, but since we're not animating
       // we can just snap to the new bounds.
-      DoLayout();
+      CompleteAnimationAndLayout();
     }
   }
 
@@ -1371,7 +1385,7 @@ int TabStrip::GetPinnedTabCount() const {
 }
 
 bool TabStrip::IsAnimating() const {
-  return bounds_animator_.IsAnimating();
+  return bounds_animator_.IsAnimating() || animator_->IsAnimating();
 }
 
 void TabStrip::StopAnimating(bool layout) {
@@ -1379,9 +1393,10 @@ void TabStrip::StopAnimating(bool layout) {
     return;
 
   bounds_animator_.Cancel();
+  animator_->CompleteAnimations();
 
   if (layout)
-    DoLayout();
+    CompleteAnimationAndLayout();
 }
 
 const ui::ListSelectionModel& TabStrip::GetSelectionModel() const {
@@ -1782,7 +1797,7 @@ void TabStrip::Layout() {
     return;
   if (drag_context_->IsDragSessionActive())
     return;
-  DoLayout();
+  CompleteAnimationAndLayout();
 }
 
 bool TabStrip::OnMouseWheel(const ui::MouseWheelEvent& event) {
@@ -2148,25 +2163,41 @@ bool TabStrip::TitlebarBackgroundIsTransparent() const {
   return GetWidget()->ShouldWindowContentsBeTransparent();
 }
 
-void TabStrip::DoLayout() {
-  last_layout_size_ = size();
-
-  StopAnimating(false);
-
-  SwapLayoutIfNecessary();
-
-  if (touch_layout_)
-    touch_layout_->SetWidth(GetTabAreaWidth());
+void TabStrip::CompleteAnimationAndLayout() {
+  animator_->CompleteAnimations();
+  LayoutToCurrentBounds();
 
   UpdateIdealBounds();
+}
 
-  views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
+void TabStrip::LayoutToCurrentBounds() {
+  last_layout_size_ = size();
+
+  bounds_animator_.Cancel();
+
+  SwapLayoutIfNecessary();
+  if (touch_layout_) {
+    touch_layout_->SetWidth(GetTabAreaWidth());
+    UpdateIdealBounds();
+
+    views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
+    bounds_animator_.StopAnimatingView(new_tab_button_);
+  } else {
+    const int available_width = (available_width_for_tabs_ < 0)
+                                    ? GetTabAreaWidth()
+                                    : available_width_for_tabs_;
+
+    int trailing_x = layout_helper_->LayoutTabs(
+        &tabs_, animator_->GetCurrentTabStates(), available_width);
+
+    new_tab_button_bounds_.set_origin(
+        gfx::Point(trailing_x + TabToNewTabButtonSpacing(), 0));
+  }
+  new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
+
   SetTabVisibility();
 
   SchedulePaint();
-
-  bounds_animator_.StopAnimatingView(new_tab_button_);
-  new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
 }
 
 void TabStrip::SetTabVisibility() {
@@ -2240,12 +2271,27 @@ void TabStrip::RemoveTabFromViewModel(int index) {
     closing_tab->ActiveStateChanged();
 }
 
-void TabStrip::RemoveAndDeleteTab(Tab* tab) {
+void TabStrip::OnTabCloseAnimationCompleted(Tab* tab) {
+  DCHECK(tab->closing());
+
   std::unique_ptr<Tab> deleter(tab);
   FindClosingTabResult res(FindClosingTab(tab));
   res.first->second.erase(res.second);
   if (res.first->second.empty())
     tabs_closing_map_.erase(res.first);
+
+  // Send the Container a message to simulate a mouse moved event at the current
+  // mouse position. This tickles the Tab the mouse is currently over to show
+  // the "hot" state of the close button.  Note that this is not required (and
+  // indeed may crash!) for removes spawned by non-mouse closes and
+  // drag-detaches.
+  if (!GetDragContext()->IsDragSessionActive() &&
+      ShouldHighlightCloseButtonAfterRemove()) {
+    // The widget can apparently be null during shutdown.
+    views::Widget* widget = GetWidget();
+    if (widget)
+      widget->SynthesizeMouseMoveEvent();
+  }
 }
 
 void TabStrip::UpdateTabsClosingMap(int index, int delta) {
