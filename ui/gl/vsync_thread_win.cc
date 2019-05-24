@@ -80,11 +80,12 @@ void VSyncThreadWin::WaitForVSync() {
     window_output_ = DXGIOutputFromMonitor(monitor, d3d11_device_);
   }
 
-  MONITORINFOEX monitor_info;
-  monitor_info.cbSize = sizeof(MONITORINFOEX);
   base::TimeDelta interval = base::TimeDelta::FromSecondsD(1.0 / 60);
-  if (GetMonitorInfo(monitor, &monitor_info)) {
-    DEVMODE display_info;
+
+  MONITORINFOEX monitor_info = {};
+  monitor_info.cbSize = sizeof(MONITORINFOEX);
+  if (monitor && GetMonitorInfo(monitor, &monitor_info)) {
+    DEVMODE display_info = {};
     display_info.dmSize = sizeof(DEVMODE);
     display_info.dmDriverExtra = 0;
     if (EnumDisplaySettings(monitor_info.szDevice, ENUM_CURRENT_SETTINGS,
@@ -95,11 +96,23 @@ void VSyncThreadWin::WaitForVSync() {
     }
   }
 
+  base::TimeTicks wait_for_vblank_start_time = base::TimeTicks::Now();
   bool wait_for_vblank_succeeded =
       window_output_ && SUCCEEDED(window_output_->WaitForVBlank());
 
-  if (!wait_for_vblank_succeeded)
+  // WaitForVBlank returns very early instead of waiting until vblank when the
+  // monitor goes to sleep.  We use 1ms as a threshold for the duration of
+  // WaitForVBlank and fallback to Sleep() if it returns before that.  This
+  // could happen during normal operation for the first call after the vsync
+  // callback is enabled, but it shouldn't happen often.
+  const auto kVBlankIntervalThreshold = base::TimeDelta::FromMilliseconds(1);
+  base::TimeDelta wait_for_vblank_elapsed_time =
+      base::TimeTicks::Now() - wait_for_vblank_start_time;
+
+  if (!wait_for_vblank_succeeded ||
+      wait_for_vblank_elapsed_time < kVBlankIntervalThreshold) {
     Sleep(static_cast<DWORD>(interval.InMillisecondsRoundedUp()));
+  }
 
   base::AutoLock auto_lock(lock_);
   DCHECK(started_);
