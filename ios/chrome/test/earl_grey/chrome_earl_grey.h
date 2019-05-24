@@ -85,6 +85,18 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)waitForPageToFinishLoading;
 
+// Waits for there to be |count| number of non-incognito tabs within a timeout,
+// or a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForMainTabCount:(NSUInteger)count;
+
+// Waits for there to be |count| number of incognito tabs within a timeout, or a
+// GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForIncognitoTabCount:(NSUInteger)count;
+
 #pragma mark - Settings Utilities
 
 // Sets value for content setting.
@@ -189,16 +201,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // If the condition is not met within a timeout returns an NSError indicating
 // why the operation failed, otherwise nil.
 - (NSError*)waitForErrorPage WARN_UNUSED_RESULT;
-
-// Waits for there to be |count| number of non-incognito tabs.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)waitForMainTabCount:(NSUInteger)count WARN_UNUSED_RESULT;
-
-// Waits for there to be |count| number of incognito tabs.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)waitForIncognitoTabCount:(NSUInteger)count WARN_UNUSED_RESULT;
 
 // Waits for the matcher to return an element that is sufficiently visible.
 - (NSError*)waitForSufficientlyVisibleElementWithMatcher:

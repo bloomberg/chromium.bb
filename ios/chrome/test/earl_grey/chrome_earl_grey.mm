@@ -155,6 +155,45 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [self loadURL:URL waitForCompletion:YES];
 }
 
+- (NSError*)waitForMainTabCount:(NSUInteger)count {
+  NSString* errorString = [NSString
+      stringWithFormat:@"Failed waiting for main tab count to become %" PRIuNS,
+                       count];
+
+  // Allow the UI to become idle, in case any tabs are being opened or closed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  GREYCondition* tabCountCheck = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    return [ChromeEarlGreyAppInterface mainTabCount] == count;
+                  }];
+  bool tabCountEqual = [tabCountCheck waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(tabCountEqual, errorString);
+
+  return nil;
+}
+
+- (NSError*)waitForIncognitoTabCount:(NSUInteger)count {
+  NSString* errorString = [NSString
+      stringWithFormat:
+          @"Failed waiting for incognito tab count to become %" PRIuNS, count];
+
+  // Allow the UI to become idle, in case any tabs are being opened or closed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  GREYCondition* tabCountCheck = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    return
+                        [ChromeEarlGreyAppInterface incognitoTabCount] == count;
+                  }];
+  bool tabCountEqual = [tabCountCheck waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(tabCountEqual, errorString);
+
+  return nil;
+}
+
 #pragma mark - Settings Utilities
 
 - (NSError*)setContentSettings:(ContentSetting)setting {
@@ -295,40 +334,6 @@ id ExecuteJavaScript(NSString* javascript,
       stringWithFormat:@"Failed, there was a static html view containing %@",
                        text];
   EG_TEST_HELPER_ASSERT_TRUE(noStaticView, errorDescription);
-
-  return nil;
-}
-
-- (NSError*)waitForMainTabCount:(NSUInteger)count {
-  // Allow the UI to become idle, in case any tabs are being opened or closed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return [self mainTabCount] == count;
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"Failed waiting for main tab "
-                                   @"count to become %" PRIuNS,
-                                   count]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForIncognitoTabCount:(NSUInteger)count {
-  // Allow the UI to become idle, in case any tabs are being opened or closed.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return [self incognitoTabCount] == count;
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"Failed waiting for incognito tab "
-                                   @"count to become %" PRIuNS,
-                                   count]);
-  }
 
   return nil;
 }

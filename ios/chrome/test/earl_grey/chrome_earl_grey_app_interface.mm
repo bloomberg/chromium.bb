@@ -90,6 +90,14 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   [BrowserCommandDispatcherForMainBVC() goForward];
 }
 
++ (NSUInteger)mainTabCount {
+  return chrome_test_util::GetMainTabCount();
+}
+
++ (NSUInteger)incognitoTabCount {
+  return chrome_test_util::GetIncognitoTabCount();
+}
+
 + (void)setContentSettings:(ContentSetting)setting {
   chrome_test_util::SetContentSettingsBlockPopups(setting);
 }

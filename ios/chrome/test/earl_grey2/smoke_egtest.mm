@@ -119,13 +119,21 @@
 
 // Tests tab open/close-related converted helpers in chrome_earl_grey.h.
 - (void)testTabOpeningAndClosing {
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
+  [ChromeEarlGrey closeAllIncognitoTabs];
+
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
+
   [ChromeEarlGrey closeAllTabsInCurrentMode];
   [ChromeEarlGrey closeAllIncognitoTabs];
+  [ChromeEarlGrey waitForMainTabCount:0];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+
   [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey closeCurrentTab];
 }
 
 // Tests bookmark converted helpers in chrome_earl_grey.h.

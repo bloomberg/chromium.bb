@@ -62,6 +62,12 @@
 // Navigates forward to the next page without waiting for the page to load.
 + (void)startGoingForward;
 
+// Returns the number of open non-incognito tabs.
++ (NSUInteger)mainTabCount;
+
+// Returns the number of open incognito tabs.
++ (NSUInteger)incognitoTabCount;
+
 // Sets value for content setting.
 + (void)setContentSettings:(ContentSetting)setting;
 
