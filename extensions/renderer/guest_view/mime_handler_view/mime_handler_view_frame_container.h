@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_FRAME_CONTAINER_H_
 #define EXTENSIONS_RENDERER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_FRAME_CONTAINER_H_
 
+#include "components/guest_view/common/guest_view_constants.h"
 #include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
 #include "third_party/blink/public/web/web_element.h"
 
@@ -84,7 +85,7 @@ class MimeHandlerViewFrameContainer : public PostMessageSupport::Delegate {
   const std::string mime_type_;
   // The |element_instance_id| of the MimeHandlerViewGuest associated with this
   // frame container. This is updated in DidLoad().
-  int32_t element_instance_id_;
+  int32_t element_instance_id_ = guest_view::kInstanceIDNone;
   // The routing ID of the content frame (frame or proxy) and guest frame
   // (proxy) which will be confirmed by the browser. Used to validate the
   // destination for postMessage.
