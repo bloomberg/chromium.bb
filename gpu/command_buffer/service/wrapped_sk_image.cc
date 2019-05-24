@@ -46,8 +46,8 @@ class WrappedSkImage : public SharedImageBacking {
   }
 
   void Destroy() override {
-    DCHECK(!!surface_);
-    surface_.reset();
+    DCHECK(backend_texture_.isValid());
+    context_state_->gr_context()->deleteBackendTexture(backend_texture_);
   }
 
   bool IsCleared() const override { return cleared_; }
@@ -71,38 +71,24 @@ class WrappedSkImage : public SharedImageBacking {
     pmd->AddOwnershipEdge(client_guid, service_guid, importance);
   }
 
+  SkColorType GetSkColorType() {
+    return viz::ResourceFormatToClosestSkColorType(
+        /*gpu_compositing=*/true, format());
+  }
+
   sk_sp<SkSurface> GetSkSurface(int final_msaa_count,
                                 const SkSurfaceProps& surface_props) {
     if (context_state_->context_lost())
       return nullptr;
     DCHECK(context_state_->IsCurrent(nullptr));
-    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
-        /*gpu_compositing=*/true, format());
 
     return SkSurface::MakeFromBackendTexture(
-        context_state_->gr_context(), promise_texture_->backendTexture(),
-        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
+        context_state_->gr_context(), backend_texture_,
+        kTopLeft_GrSurfaceOrigin, final_msaa_count, GetSkColorType(),
         color_space().ToSkColorSpace(), &surface_props);
   }
 
   sk_sp<SkPromiseImageTexture> promise_texture() { return promise_texture_; }
-
-  // TODO(backer): Check if we can remove this once Skia gives us an API to
-  // explicitly allocate GPU memory and we can remove surface_.
-  void ApplyUnbindWorkaround() {
-    if (!context_state_->GrContextIsGL())
-      return;
-
-    // This seems like https://crbug.com/457027 because it only affects Adreno
-    // 4XX and happens just before a glDeleteFramebuffer (triggered by
-    // ~SkSurface). Unfortunately, it does not seem to be enough to just clear
-    // the FBO attachments (which Skia does downstream). The other workaround
-    // listed in https://crbug.com/457027 is a glFlush() and it does work.
-    if (context_state_->feature_info()
-            ->workarounds()
-            .unbind_attachments_on_bound_render_fbo_delete)
-      gl::g_current_gl_context->glFlushFn();
-  }
 
  protected:
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
@@ -138,14 +124,32 @@ class WrappedSkImage : public SharedImageBacking {
 
     context_state_->set_need_context_state_reset(true);
 
-    surface_ = SkSurface::MakeRenderTarget(context_state_->gr_context(),
-                                           SkBudgeted::kNo, info);
-    if (!surface_)
+    backend_texture_ = context_state_->gr_context()->createBackendTexture(
+        size().width(), size().height(), GetSkColorType(), GrMipMapped::kNo,
+        GrRenderable::kYes);
+
+    if (!backend_texture_.isValid())
       return false;
 
 #if DCHECK_IS_ON()
-    auto* canvas = surface_->getCanvas();
-    canvas->clear(SK_ColorGREEN);
+    bool need_temporary_surface = true;
+#else
+    bool need_temporary_surface = !data.empty();
+#endif
+
+    sk_sp<SkSurface> surface =
+        need_temporary_surface
+            ? SkSurface::MakeFromBackendTexture(
+                  context_state_->gr_context(), backend_texture_,
+                  kTopLeft_GrSurfaceOrigin, /*sampleCnt=*/0, GetSkColorType(),
+                  color_space().ToSkColorSpace(), /*surfaceProps=*/nullptr)
+            : nullptr;
+
+#if DCHECK_IS_ON()
+    {
+      auto* canvas = surface->getCanvas();
+      canvas->clear(SK_ColorGREEN);
+    }
 #endif
 
     if (!data.empty()) {
@@ -154,25 +158,21 @@ class WrappedSkImage : public SharedImageBacking {
                                 info.minRowBytes())) {
         return false;
       }
-      surface_->writePixels(bitmap, /*dstX=*/0, /*dstY=*/0);
+      surface->writePixels(bitmap, /*dstX=*/0, /*dstY=*/0);
     }
 
-    auto gr_texture =
-        surface_->getBackendTexture(SkSurface::kFlushWrite_BackendHandleAccess);
-    if (!gr_texture.isValid())
-      return false;
-    promise_texture_ = SkPromiseImageTexture::Make(gr_texture);
+    promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
 
-    switch (gr_texture.backend()) {
+    switch (backend_texture_.backend()) {
       case GrBackendApi::kOpenGL: {
         GrGLTextureInfo tex_info;
-        if (gr_texture.getGLTextureInfo(&tex_info))
+        if (backend_texture_.getGLTextureInfo(&tex_info))
           tracing_id_ = tex_info.fID;
         break;
       }
       case GrBackendApi::kVulkan: {
         GrVkImageInfo image_info;
-        if (gr_texture.getVkImageInfo(&image_info))
+        if (backend_texture_.getVkImageInfo(&image_info))
           tracing_id_ = reinterpret_cast<uint64_t>(image_info.fImage);
         break;
       }
@@ -185,7 +185,7 @@ class WrappedSkImage : public SharedImageBacking {
 
   SharedContextState* const context_state_;
 
-  sk_sp<SkSurface> surface_;
+  GrBackendTexture backend_texture_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
 
   bool cleared_ = false;
@@ -218,7 +218,6 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
     DCHECK_EQ(surface.get(), write_surface_);
     DCHECK(surface->unique());
-    wrapped_sk_image()->ApplyUnbindWorkaround();
     write_surface_ = nullptr;
   }
 
