@@ -731,11 +731,8 @@ class InputApi(object):
     return 'TBR' in self.change.tags or self.change.TBRsFromDescription()
 
   def RunTests(self, tests_mix, parallel=True):
-    # RunTests doesn't actually run tests. It adds them to a ThreadPool that
-    # will run all tests once all PRESUBMIT files are processed.
     tests = []
     msgs = []
-    parallel = parallel and self.parallel
     for t in tests_mix:
       if isinstance(t, OutputApi.PresubmitResult) and t:
         msgs.append(t)
@@ -747,7 +744,11 @@ class InputApi(object):
         if not t.kwargs.get('cwd'):
           t.kwargs['cwd'] = self.PresubmitLocalPath()
     self.thread_pool.AddTests(tests, parallel)
-    if not parallel:
+    # When self.parallel is True (i.e. --parallel is passed as an option)
+    # RunTests doesn't actually run tests. It adds them to a ThreadPool that
+    # will run all tests once all PRESUBMIT files are processed.
+    # Otherwise, it will run them and return the results.
+    if not self.parallel:
       msgs.extend(self.thread_pool.RunAsync())
     return msgs
 
