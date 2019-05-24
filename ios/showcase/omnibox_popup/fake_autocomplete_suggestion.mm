@@ -513,4 +513,22 @@ NSAttributedString* calculatorText() {
   return suggestion;
 }
 
++ (instancetype)richEntitySuggestion {
+  FakeAutocompleteSuggestion* suggestion =
+      [[FakeAutocompleteSuggestion alloc] init];
+  suggestion.text = textString(@"Avengers : Endgame");
+  suggestion.detailText = detailTextString(@"Film (2019)");
+  // The image currently doesn't display because there is no fake
+  // Image Retriever, but leaving this here in case this is ever necessary.
+  GURL imageURL = GURL("https://encrypted-tbn0.gstatic.com/"
+                       "images?q=tbn:ANd9GcRl35jshKCRWt76yUSKh5r0_"
+                       "BRbWuSU1uZOCGnzq95nJ8yXUg913LciCgz-s3reyfACsrAAYg");
+  suggestion.icon =
+      [[SimpleOmniboxIcon alloc] initWithIconType:OmniboxIconTypeImage
+                               suggestionIconType:SEARCH
+                                         isAnswer:NO
+                                         imageURL:imageURL];
+  return suggestion;
+}
+
 @end

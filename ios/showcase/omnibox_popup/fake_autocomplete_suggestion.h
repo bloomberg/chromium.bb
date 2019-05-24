@@ -74,6 +74,9 @@
 // Suggestion for calculator.
 + (instancetype)calculatorSuggestion;
 
+// Suggestion for a rich entity (entity with image).
++ (instancetype)richEntitySuggestion;
+
 @end
 
 #endif  // IOS_SHOWCASE_OMNIBOX_POPUP_FAKE_AUTOCOMPLETE_SUGGESTION_H_
