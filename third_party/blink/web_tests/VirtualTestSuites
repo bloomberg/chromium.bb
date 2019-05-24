@@ -502,6 +502,11 @@
              "--disable-smooth-scrolling"]
   },
   {
+    "prefix": "main_thread_scrollbar_gestures",
+    "base": "fast/scrolling/scrollbars",
+    "args": ["--enable-features=ScrollbarInjectScrollGestures"]
+  },
+  {
     "prefix": "fractional_scrolling_threaded",
     "base": "fast/scrolling",
     "args": ["--enable-blink-features=FractionalScrollOffsets", "--enable-threaded-compositing"]

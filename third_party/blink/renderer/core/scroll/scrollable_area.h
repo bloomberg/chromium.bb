@@ -411,6 +411,13 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   float ScrollStep(ScrollGranularity, ScrollbarOrientation) const;
 
+  // Injects a gesture scroll event based on the given parameters,
+  // targeted at this scrollable area.
+  void InjectGestureScrollEvent(WebGestureDevice device,
+                                ScrollOffset delta,
+                                ScrollGranularity granularity,
+                                WebInputEvent::Type gesture_type) const;
+
  protected:
   // Deduces the ScrollBehavior based on the element style and the parameter set
   // by programmatic scroll into either instant or smooth scroll.

@@ -57,6 +57,7 @@
 #undef CreateWindow
 
 namespace cc {
+struct ElementId;
 class Layer;
 struct OverscrollBehavior;
 }
@@ -98,6 +99,8 @@ struct ViewportDescription;
 struct WebCursorInfo;
 struct WebScreenInfo;
 struct WebWindowFeatures;
+
+using CompositorElementId = cc::ElementId;
 
 class CORE_EXPORT ChromeClient
     : public GarbageCollectedFinalized<ChromeClient> {
@@ -176,6 +179,23 @@ class CORE_EXPORT ChromeClient
                              const FloatSize& accumulated_overscroll,
                              const FloatPoint& position_in_viewport,
                              const FloatSize& velocity_in_viewport) = 0;
+
+  // Causes a gesture event of |injected_type| to be dispatched at a later
+  // point in time. |injected_type| is required to be one of
+  // GestureScroll{Begin,Update,End}. If the main thread is currently handling
+  // an input event, the gesture will be dispatched immediately after the
+  // current event is finished being processed.
+  // If there is no input event being handled, the gesture is queued up
+  // on the main thread's input event queue.
+  // The dispatched gesture will scroll the ScrollableArea identified by
+  // |scrollable_area_element_id| by the given delta+granularity.
+  virtual void InjectGestureScrollEvent(
+      LocalFrame& local_frame,
+      WebGestureDevice device,
+      const WebFloatSize& delta,
+      ScrollGranularity granularity,
+      CompositorElementId scrollable_area_element_id,
+      WebInputEvent::Type injected_type) {}
 
   // Set the browser's behavior when overscroll happens, e.g. whether to glow
   // or navigate. This may only be called for the main frame, and takes it as
