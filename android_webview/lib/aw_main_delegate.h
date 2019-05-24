@@ -26,6 +26,7 @@ namespace android_webview {
 class AwContentBrowserClient;
 class AwContentGpuClient;
 class AwContentRendererClient;
+class AwContentUtilityClient;
 
 // Android WebView implementation of ContentMainDelegate. The methods in
 // this class runs per process, (browser and renderer) so when making changes
@@ -49,6 +50,7 @@ class AwMainDelegate : public content::ContentMainDelegate {
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentGpuClient* CreateContentGpuClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
+  content::ContentUtilityClient* CreateContentUtilityClient() override;
 
   // Responsible for creating a feature list from the seed. This object must
   // exist for the lifetime of the process as it contains the FieldTrialList
@@ -59,6 +61,7 @@ class AwMainDelegate : public content::ContentMainDelegate {
   std::unique_ptr<AwContentBrowserClient> content_browser_client_;
   std::unique_ptr<AwContentGpuClient> content_gpu_client_;
   std::unique_ptr<AwContentRendererClient> content_renderer_client_;
+  std::unique_ptr<AwContentUtilityClient> content_utility_client_;
   std::unique_ptr<safe_browsing::SafeBrowsingApiHandler>
       safe_browsing_api_handler_;
 

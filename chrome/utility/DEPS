@@ -29,6 +29,8 @@ include_rules = [
   "+components/mirroring/mojom",
   "+components/mirroring/service",
   "+components/payments/content/utility",
+  "+components/services/heap_profiling/heap_profiling_service.h",
+  "+components/services/heap_profiling/public",
   "+components/services/patch",
   "+components/services/pdf_compositor/public/cpp",
   "+components/services/pdf_compositor/public/interfaces",
