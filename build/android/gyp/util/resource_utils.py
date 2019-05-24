@@ -21,8 +21,6 @@ _SOURCE_ROOT = os.path.abspath(
 sys.path.insert(1, os.path.join(_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
 
-_ROOT_R_JAVA_PACKAGE_PREFIX = 'gen'
-
 EMPTY_ANDROID_MANIFEST_PATH = os.path.join(
     _SOURCE_ROOT, 'build', 'android', 'AndroidManifest.xml')
 
@@ -331,7 +329,7 @@ class RJavaBuildOptions:
 
 
 def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
-                     extra_r_txt_files, rjava_build_options, srcjar_name):
+                     extra_r_txt_files, rjava_build_options, srcjar_out):
   """Create all R.java files for a set of packages and R.txt files.
 
   Args:
@@ -345,7 +343,7 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
       |and replaced by the values extracted from |main_r_txt_file|.
     rjava_build_options: An RJavaBuildOptions instance that controls how
       exactly the R.java file is generated.
-    srcjar_name: Name of desired output srcjar.
+    srcjar_out: Path of desired output srcjar.
   Raises:
     Exception if a package name appears several times in |extra_res_packages|
   """
@@ -369,11 +367,13 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
     all_resources[(entry.resource_type, entry.name)] = entry
     all_resources_by_type[entry.resource_type].append(entry)
 
-  # Creating the root R.java file. We use srcjar_name to provide unique package
+  # Creating the root R.java file. We use srcjar_out to provide unique package
   # names, since when one java target depends on 2 different targets (each with
   # resources), those 2 root resource packages have to be different from one
-  # another.
-  root_r_java_package = _ROOT_R_JAVA_PACKAGE_PREFIX + "." + srcjar_name
+  # another. We add an underscore before each subdirectory so that if a reserved
+  # keyword (for example, "public") is used as a directory name, it will not
+  # cause Java to complain.
+  root_r_java_package = re.sub('[^\w\.]', '', srcjar_out.replace('/', '._'))
   root_r_java_dir = os.path.join(srcjar_dir, *root_r_java_package.split('.'))
   build_utils.MakeDirectory(root_r_java_dir)
   root_r_java_path = os.path.join(root_r_java_dir, 'R.java')
@@ -510,7 +510,6 @@ def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options):
 package {{ package }};
 
 public final class R {
-    private static boolean sResourcesDidLoad;
     {% for resource_type in resource_types %}
     public static class {{ resource_type }} {
         {% for e in final_resources[resource_type] %}
@@ -526,6 +525,7 @@ public final class R {
     }
     {% endfor %}
     {% if has_on_resources_loaded %}
+    private static boolean sResourcesDidLoad;
     public static void onResourcesLoaded(int packageId) {
         if (sResourcesDidLoad) {
             return;
