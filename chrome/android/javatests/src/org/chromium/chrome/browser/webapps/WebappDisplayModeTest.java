@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
@@ -49,9 +48,8 @@ public class WebappDisplayModeTest {
     }
 
     @Test
-    //@SmallTest
-    //@Feature({"Webapps"})
-    @DisabledTest(message = "crbug.com/793133")
+    @SmallTest
+    @Feature({"Webapps"})
     public void testFullScreen() throws Exception {
         WebappActivity activity = startActivity(WebDisplayMode.FULLSCREEN);
 
@@ -60,9 +58,8 @@ public class WebappDisplayModeTest {
     }
 
     @Test
-    //@SmallTest
-    //@Feature({"Webapps"})
-    @DisabledTest(message = "crbug.com/793133")
+    @SmallTest
+    @Feature({"Webapps"})
     public void testMinimalUi() throws Exception {
         WebappActivity activity = startActivity(WebDisplayMode.MINIMAL_UI);
 
