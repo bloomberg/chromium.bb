@@ -1,18 +1,12 @@
 This is a testharness.js-based test.
 PASS idl_test setup
-FAIL WakeLock interface: existence and properties of interface object assert_equals: prototype of self's property "WakeLock" is not Function.prototype expected function "function () { [native code] }" but got function "function EventTarget() { [native code] }"
+PASS WakeLock interface: existence and properties of interface object
 PASS WakeLock interface object length
 PASS WakeLock interface object name
-FAIL WakeLock interface: existence and properties of interface prototype object assert_equals: prototype of WakeLock.prototype is not Object.prototype expected object "[object Object]" but got object "[object EventTarget]"
+PASS WakeLock interface: existence and properties of interface prototype object
 PASS WakeLock interface: existence and properties of interface prototype object's "constructor" property
 PASS WakeLock interface: existence and properties of interface prototype object's @@unscopables property
 FAIL WakeLock interface: operation requestPermission(WakeLockType) assert_own_property: interface object missing static operation expected property "requestPermission" missing
-FAIL WakeLock interface: operation request(WakeLockType, WakeLockRequestOptions) assert_own_property: interface object missing static operation expected property "request" missing
-FAIL WakeLock must be primary interface of new WakeLock("screen") assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL Stringification of new WakeLock("screen") assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL WakeLock interface: new WakeLock("screen") must inherit property "requestPermission(WakeLockType)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL WakeLock interface: calling requestPermission(WakeLockType) on new WakeLock("screen") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL WakeLock interface: new WakeLock("screen") must inherit property "request(WakeLockType, WakeLockRequestOptions)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
-FAIL WakeLock interface: calling request(WakeLockType, WakeLockRequestOptions) on new WakeLock("screen") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Illegal constructor"
+PASS WakeLock interface: operation request(WakeLockType, WakeLockRequestOptions)
 Harness: the test ran to completion.
 

@@ -62,8 +62,6 @@
     "SpeechSynthesis",
     "SpeechSynthesisUtterance",
     "VRDisplay",
-    "WakeLock",
-    "WakeLockRequest",
     "AudioContext",
     "AudioNode",
     "MIDIAccess",

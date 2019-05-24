@@ -44,12 +44,8 @@ public class WakeLockTest {
     }
 
     private void getWakeLock(String type) throws InterruptedException, TimeoutException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("navigator.getWakeLock('" + type + "').then(wake => {");
-        sb.append("  var request" + type + " = wake.createRequest();");
-        sb.append("});");
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                mActivityTestRule.getWebContents(), sb.toString());
+        final String code = "WakeLock.request('" + type + "');";
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(mActivityTestRule.getWebContents(), code);
     }
 
     @After

@@ -4947,7 +4947,6 @@ interface Navigator
     method getUserAgent
     method getUserMedia
     method getVRDisplays
-    method getWakeLock
     method javaEnabled
     method registerProtocolHandler
     method requestMIDIAccess
@@ -8147,17 +8146,9 @@ interface VisualViewport : EventTarget
     method constructor
     setter onresize
     setter onscroll
-interface WakeLock : EventTarget
+interface WakeLock
+    static method request
     attribute @@toStringTag
-    getter active
-    getter onactivechange
-    getter type
-    method constructor
-    method createRequest
-    setter onactivechange
-interface WakeLockRequest
-    attribute @@toStringTag
-    method cancel
     method constructor
 interface WaveShaperNode : AudioNode
     attribute @@toStringTag
