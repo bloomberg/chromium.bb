@@ -370,6 +370,9 @@ AwContentBrowserClient::GetNetworkContextParams() {
   // WebView does not support ftp yet.
   context_params->enable_ftp_url_support = false;
 
+  context_params->enable_brotli = base::FeatureList::IsEnabled(
+      android_webview::features::kWebViewBrotliSupport);
+
 #if DCHECK_IS_ON()
   g_created_network_context_params = true;
 #endif
