@@ -20,7 +20,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/http/http_status_code.h"
 #include "remoting/base/grpc_support/grpc_async_executor.h"
-#include "remoting/base/grpc_support/grpc_async_test_server.h"
+#include "remoting/base/grpc_test_support/grpc_async_test_server.h"
 #include "remoting/ios/facade/directory_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

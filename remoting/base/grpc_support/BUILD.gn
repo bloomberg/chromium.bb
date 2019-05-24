@@ -38,23 +38,6 @@ cc_grpc_library("unit_tests_grpc_library") {
   ]
 }
 
-source_set("test_support") {
-  testonly = true
-
-  sources = [
-    "grpc_async_test_server.cc",
-    "grpc_async_test_server.h",
-    "grpc_test_server.h",
-    "grpc_test_util.cc",
-    "grpc_test_util.h",
-  ]
-
-  deps = [
-    "//base",
-    "//third_party/grpc:grpcpp",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
 
@@ -64,8 +47,8 @@ source_set("unit_tests") {
   ]
   deps = [
     ":grpc_support",
-    ":test_support",
     ":unit_tests_grpc_library",
+    "//remoting/base/grpc_test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

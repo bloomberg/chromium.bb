@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_GRPC_SUPPORT_GRPC_TEST_SERVER_H_
-#define REMOTING_BASE_GRPC_SUPPORT_GRPC_TEST_SERVER_H_
+#ifndef REMOTING_BASE_GRPC_TEST_SUPPORT_GRPC_TEST_SERVER_H_
+#define REMOTING_BASE_GRPC_TEST_SUPPORT_GRPC_TEST_SERVER_H_
 
 #include <memory>
 #include <utility>
@@ -67,4 +67,4 @@ class GrpcTestServer final {
 }  // namespace test
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_GRPC_SUPPORT_GRPC_TEST_SERVER_H_
+#endif  // REMOTING_BASE_GRPC_TEST_SUPPORT_GRPC_TEST_SERVER_H_

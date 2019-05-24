@@ -17,7 +17,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "remoting/base/fake_oauth_token_getter.h"
-#include "remoting/base/grpc_support/grpc_test_server.h"
+#include "remoting/base/grpc_test_support/grpc_test_server.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/test_rsa_key_pair.h"
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"

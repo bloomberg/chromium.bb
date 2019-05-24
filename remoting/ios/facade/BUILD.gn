@@ -50,7 +50,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":facade",
-    "//remoting/base/grpc_support:test_support",
+    "//remoting/base/grpc_test_support",
     "//remoting/proto/remoting/v1:directory_grpc_library",
     "//testing/gmock",
     "//testing/gtest",

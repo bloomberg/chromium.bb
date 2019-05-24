@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
-#include "remoting/base/grpc_support/grpc_test_server.h"
+#include "remoting/base/grpc_test_support/grpc_test_server.h"
 #include "remoting/proto/remoting/v1/network_traversal_service.grpc.pb.h"
 #include "remoting/protocol/ice_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
