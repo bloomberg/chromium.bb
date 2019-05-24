@@ -96,6 +96,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
       base::i18n::TextDirection text_direction,
       const std::vector<Suggestion>& suggestions,
       bool /*unused_autoselect_first_suggestion*/,
+      PopupType popup_type,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,

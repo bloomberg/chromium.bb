@@ -1205,6 +1205,7 @@ class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
         base::i18n::TextDirection text_direction,
         const std::vector<autofill::Suggestion>& suggestions,
         bool autoselect_first_suggestion,
+        autofill::PopupType popup_type,
         base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override {
       element_bounds_ = element_bounds;
       popup_shown_ = true;

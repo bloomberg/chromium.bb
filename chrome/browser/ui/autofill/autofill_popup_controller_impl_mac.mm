@@ -55,8 +55,10 @@ AutofillPopupControllerImplMac::~AutofillPopupControllerImplMac() {}
 
 void AutofillPopupControllerImplMac::Show(
     const std::vector<autofill::Suggestion>& suggestions,
-    bool autoselect_first_suggestion) {
-  AutofillPopupControllerImpl::Show(suggestions, autoselect_first_suggestion);
+    bool autoselect_first_suggestion,
+    PopupType popup_type) {
+  AutofillPopupControllerImpl::Show(suggestions, autoselect_first_suggestion,
+                                    popup_type);
 
   if (suggestions.empty() || !is_credit_card_popup_)
     return;

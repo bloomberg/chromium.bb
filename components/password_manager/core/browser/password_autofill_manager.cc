@@ -310,7 +310,8 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   metrics_util::LogPasswordDropdownShown(
       metrics_util::PasswordDropdownState::kStandard);
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
-                                      false, weak_ptr_factory_.GetWeakPtr());
+                                      false, autofill::PopupType::kPasswords,
+                                      weak_ptr_factory_.GetWeakPtr());
 }
 
 bool PasswordAutofillManager::MaybeShowPasswordSuggestions(
@@ -357,7 +358,8 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
   metrics_util::LogPasswordDropdownShown(
       metrics_util::PasswordDropdownState::kStandardGenerate);
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
-                                      false, weak_ptr_factory_.GetWeakPtr());
+                                      false, autofill::PopupType::kPasswords,
+                                      weak_ptr_factory_.GetWeakPtr());
   return true;
 }
 

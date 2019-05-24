@@ -73,6 +73,9 @@ class ManualFillingController {
   // when the keyboard becomes visible.
   virtual void ShowWhenKeyboardIsVisible(FillingSource source) = 0;
 
+  // Requests to show the touch to fill sheet.
+  virtual void ShowTouchToFillSheet() = 0;
+
   // Requests to hide the accessory. This hides both the accessory sheet
   // (if open) and the accessory bar.
   virtual void Hide(FillingSource source) = 0;

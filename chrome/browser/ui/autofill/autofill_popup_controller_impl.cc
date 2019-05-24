@@ -27,7 +27,9 @@
 #include "ui/gfx/text_utils.h"
 
 #if defined(OS_ANDROID)
+#include "base/feature_list.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 using FillingSource = ManualFillingController::FillingSource;
 #endif
@@ -82,7 +84,8 @@ AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
 
 void AutofillPopupControllerImpl::Show(
     const std::vector<autofill::Suggestion>& suggestions,
-    bool autoselect_first_suggestion) {
+    bool autoselect_first_suggestion,
+    PopupType popup_type) {
   SetValues(suggestions);
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());
@@ -117,6 +120,13 @@ void AutofillPopupControllerImpl::Show(
 
   if (just_created) {
 #if defined(OS_ANDROID)
+    if (popup_type == PopupType::kPasswords &&
+        base::FeatureList::IsEnabled(
+            password_manager::features::kTouchToFillAndroid)) {
+      ManualFillingController::GetOrCreate(web_contents_)
+          ->ShowTouchToFillSheet();
+    }
+
     ManualFillingController::GetOrCreate(web_contents_)
         ->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
 #endif

@@ -30,6 +30,7 @@ class ManualFillingControllerImpl
       const autofill::AccessorySheetData& accessory_sheet_data) override;
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
   void ShowWhenKeyboardIsVisible(FillingSource source) override;
+  void ShowTouchToFillSheet() override;
   void Hide(FillingSource source) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;

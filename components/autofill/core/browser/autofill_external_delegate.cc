@@ -141,7 +141,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (query_field_.is_focusable) {
     manager_->client()->ShowAutofillPopup(
         element_bounds_, query_field_.text_direction, suggestions,
-        autoselect_first_suggestion, GetWeakPtr());
+        autoselect_first_suggestion, popup_type_, GetWeakPtr());
   }
 }
 

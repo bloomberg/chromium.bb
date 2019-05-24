@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -50,7 +51,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Shows the popup, or updates the existing popup with the given values.
   virtual void Show(const std::vector<autofill::Suggestion>& suggestions,
-                    bool autoselect_first_suggestion);
+                    bool autoselect_first_suggestion,
+                    PopupType popup_type);
 
   // Updates the data list values currently shown with the popup.
   virtual void UpdateDataListValues(const std::vector<base::string16>& values,

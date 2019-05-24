@@ -167,6 +167,7 @@ class ObservingAutofillClient
       base::i18n::TextDirection text_direction,
       const std::vector<autofill::Suggestion>& suggestions,
       bool autoselect_first_suggestion,
+      autofill::PopupType popup_type,
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override {
     if (run_loop_)
       run_loop_->Quit();

@@ -87,6 +87,12 @@ void ManualFillingControllerImpl::ShowWhenKeyboardIsVisible(
   view_->ShowWhenKeyboardIsVisible();
 }
 
+void ManualFillingControllerImpl::ShowTouchToFillSheet() {
+  // TODO(crbug.com/957532): Implement this method and the required Java
+  // changes.
+  NOTIMPLEMENTED();
+}
+
 void ManualFillingControllerImpl::Hide(FillingSource source) {
   if (source == FillingSource::AUTOFILL &&
       !base::FeatureList::IsEnabled(

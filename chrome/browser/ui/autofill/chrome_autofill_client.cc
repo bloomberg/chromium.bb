@@ -396,6 +396,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
     base::i18n::TextDirection text_direction,
     const std::vector<autofill::Suggestion>& suggestions,
     bool autoselect_first_suggestion,
+    PopupType popup_type,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area = web_contents()->GetContainerBounds();
@@ -411,7 +412,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
                                                element_bounds_in_screen_space,
                                                text_direction);
 
-  popup_controller_->Show(suggestions, autoselect_first_suggestion);
+  popup_controller_->Show(suggestions, autoselect_first_suggestion, popup_type);
 }
 
 void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
