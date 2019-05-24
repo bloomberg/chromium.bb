@@ -14,13 +14,15 @@ namespace android_webview {
 // Delegate interface to handle the events that render process was gone.
 class AwRenderProcessGoneDelegate {
  public:
+  enum class RenderProcessGoneResult { kHandled, kUnhandled, kException };
   // Returns the AwRenderProcessGoneDelegate instance associated with
   // the given |web_contents|.
   static AwRenderProcessGoneDelegate* FromWebContents(
       content::WebContents* web_contents);
 
   // Notify if render process crashed or was killed.
-  virtual bool OnRenderProcessGone(int child_process_id, bool crashed) = 0;
+  virtual RenderProcessGoneResult OnRenderProcessGone(int child_process_id,
+                                                      bool crashed) = 0;
 
  protected:
   AwRenderProcessGoneDelegate() {}

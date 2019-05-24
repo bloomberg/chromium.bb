@@ -1493,15 +1493,23 @@ void AwContents::RendererResponsive(
                                        aw_render_process->GetJavaObject());
 }
 
-bool AwContents::OnRenderProcessGone(int child_process_id, bool crashed) {
+AwContents::RenderProcessGoneResult AwContents::OnRenderProcessGone(
+    int child_process_id,
+    bool crashed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
-    return false;
+    return RenderProcessGoneResult::kHandled;
 
-  return Java_AwContents_onRenderProcessGone(env, obj, child_process_id,
-                                             crashed);
+  bool result =
+      Java_AwContents_onRenderProcessGone(env, obj, child_process_id, crashed);
+
+  if (HasException(env))
+    return RenderProcessGoneResult::kException;
+
+  return result ? RenderProcessGoneResult::kHandled
+                : RenderProcessGoneResult::kUnhandled;
 }
 
 }  // namespace android_webview

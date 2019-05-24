@@ -61,6 +61,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
@@ -1371,7 +1372,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     @VisibleForTesting
-    @CalledByNative
+    @CalledByNativeUnchecked
     protected boolean onRenderProcessGone(int childProcessID, boolean crashed) {
         if (isDestroyed(NO_WARN)) return true;
         return mContentsClient.onRenderProcessGone(new AwRenderProcessGoneDetail(
