@@ -17,39 +17,40 @@ namespace performance_manager {
 // should be sent if/when the tab using it gets loaded.
 class SiteDataWriter {
  public:
-  ~SiteDataWriter();
+  virtual ~SiteDataWriter();
 
   // Records tab load/unload events.
-  void NotifySiteLoaded();
-  void NotifySiteUnloaded();
+  virtual void NotifySiteLoaded();
+  virtual void NotifySiteUnloaded();
 
   // Records visibility change events.
-  void NotifySiteVisibilityChanged(
+  virtual void NotifySiteVisibilityChanged(
       performance_manager::TabVisibility visibility);
 
   // Records feature usage.
-  void NotifyUpdatesFaviconInBackground();
-  void NotifyUpdatesTitleInBackground();
-  void NotifyUsesAudioInBackground();
-  void NotifyUsesNotificationsInBackground();
+  virtual void NotifyUpdatesFaviconInBackground();
+  virtual void NotifyUpdatesTitleInBackground();
+  virtual void NotifyUsesAudioInBackground();
+  virtual void NotifyUsesNotificationsInBackground();
 
   // Records performance measurements.
-  void NotifyLoadTimePerformanceMeasurement(
+  virtual void NotifyLoadTimePerformanceMeasurement(
       base::TimeDelta load_duration,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate);
 
   internal::SiteDataImpl* impl_for_testing() const { return impl_.get(); }
 
- private:
+ protected:
   friend class SiteDataWriterTest;
   friend class SiteDataStore;
 
-  // Private constructor, these objects are meant to be created by a site data
+  // Protected constructor, these objects are meant to be created by a site data
   // store.
   SiteDataWriter(scoped_refptr<internal::SiteDataImpl> impl,
                  performance_manager::TabVisibility tab_visibility);
 
+ private:
   // The SiteDataImpl object we delegate to.
   const scoped_refptr<internal::SiteDataImpl> impl_;
 
@@ -57,7 +58,7 @@ class SiteDataWriter {
   performance_manager::TabVisibility tab_visibility_;
 
   // Indicates if the tab using this writer is loaded.
-  bool is_loaded_;
+  bool is_loaded_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

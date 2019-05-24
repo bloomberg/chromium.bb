@@ -91,9 +91,7 @@ void SiteDataWriter::NotifyLoadTimePerformanceMeasurement(
 SiteDataWriter::SiteDataWriter(
     scoped_refptr<internal::SiteDataImpl> impl,
     performance_manager::TabVisibility tab_visibility)
-    : impl_(std::move(impl)),
-      tab_visibility_(tab_visibility),
-      is_loaded_(false) {
+    : impl_(std::move(impl)), tab_visibility_(tab_visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
