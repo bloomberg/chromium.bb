@@ -19,12 +19,13 @@ import java.util.Date;
  */
 public class PickerBitmap implements Comparable<PickerBitmap> {
     // The possible types of tiles involved in the viewer.
-    @IntDef({TileTypes.PICTURE, TileTypes.CAMERA, TileTypes.GALLERY})
+    @IntDef({TileTypes.PICTURE, TileTypes.CAMERA, TileTypes.GALLERY, TileTypes.VIDEO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TileTypes {
         int PICTURE = 0;
         int CAMERA = 1;
         int GALLERY = 2;
+        int VIDEO = 3;
     }
 
     // The URI of the bitmap to show.

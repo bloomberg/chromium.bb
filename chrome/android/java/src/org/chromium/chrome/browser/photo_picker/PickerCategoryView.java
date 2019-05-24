@@ -52,6 +52,20 @@ public class PickerCategoryView extends RelativeLayout
     private static final int ACTION_BROWSE = 3;
     private static final int ACTION_BOUNDARY = 4;
 
+    /**
+     * A container class for keeping track of the data we need to show a photo/video tile in the
+     * photo picker (the data we store in the cache).
+     */
+    static public class Thumbnail {
+        public Bitmap bitmap;
+        public String videoDuration;
+
+        Thumbnail(Bitmap bitmap, String videoDuration) {
+            this.bitmap = bitmap;
+            this.videoDuration = videoDuration;
+        }
+    }
+
     // The dialog that owns us.
     private PhotoPickerDialog mDialog;
 
@@ -88,13 +102,13 @@ public class PickerCategoryView extends RelativeLayout
     // The {@link SelectionDelegate} keeping track of which images are selected.
     private SelectionDelegate<PickerBitmap> mSelectionDelegate;
 
-    // A low-resolution cache for images, lazily created. Helpful for cache misses from the
+    // A low-resolution cache for thumbnails, lazily created. Helpful for cache misses from the
     // high-resolution cache to avoid showing gray squares (we show pixelated versions instead until
     // image can be loaded off disk, which is much less jarring).
-    private DiscardableReference<LruCache<String, Bitmap>> mLowResBitmaps;
+    private DiscardableReference<LruCache<String, Thumbnail>> mLowResThumbnails;
 
-    // A high-resolution cache for images, lazily created.
-    private DiscardableReference<LruCache<String, Bitmap>> mHighResBitmaps;
+    // A high-resolution cache for thumbnails, lazily created.
+    private DiscardableReference<LruCache<String, Thumbnail>> mHighResThumbnails;
 
     // The size of the low-res cache.
     private int mCacheSizeLarge;
@@ -118,7 +132,7 @@ public class PickerCategoryView extends RelativeLayout
     // A worker task for asynchronously enumerating files off the main thread.
     private FileEnumWorkerTask mWorkerTask;
 
-    // The timestap for the start of the enumeration of files on disk.
+    // The timestamp for the start of the enumeration of files on disk.
     private long mEnumStartTime;
 
     // Whether the connection to the service has been established.
@@ -303,20 +317,20 @@ public class PickerCategoryView extends RelativeLayout
         return mDecoderServiceHost;
     }
 
-    public LruCache<String, Bitmap> getLowResBitmaps() {
-        if (mLowResBitmaps == null || mLowResBitmaps.get() == null) {
-            mLowResBitmaps =
-                    mActivity.getReferencePool().put(new LruCache<String, Bitmap>(mCacheSizeSmall));
+    public LruCache<String, Thumbnail> getLowResThumbnails() {
+        if (mLowResThumbnails == null || mLowResThumbnails.get() == null) {
+            mLowResThumbnails = mActivity.getReferencePool().put(
+                    new LruCache<String, Thumbnail>(mCacheSizeSmall));
         }
-        return mLowResBitmaps.get();
+        return mLowResThumbnails.get();
     }
 
-    public LruCache<String, Bitmap> getHighResBitmaps() {
-        if (mHighResBitmaps == null || mHighResBitmaps.get() == null) {
-            mHighResBitmaps =
-                    mActivity.getReferencePool().put(new LruCache<String, Bitmap>(mCacheSizeLarge));
+    public LruCache<String, Thumbnail> getHighResThumbnails() {
+        if (mHighResThumbnails == null || mHighResThumbnails.get() == null) {
+            mHighResThumbnails = mActivity.getReferencePool().put(
+                    new LruCache<String, Thumbnail>(mCacheSizeLarge));
         }
-        return mHighResBitmaps.get();
+        return mHighResThumbnails.get();
     }
 
     public boolean isMultiSelectAllowed() {
@@ -372,7 +386,7 @@ public class PickerCategoryView extends RelativeLayout
 
         mEnumStartTime = SystemClock.elapsedRealtime();
         mWorkerTask = new FileEnumWorkerTask(mActivity.getWindowAndroid(), this,
-                new MimeTypeFilter(mMimeTypes, true), mActivity.getContentResolver());
+                new MimeTypeFilter(mMimeTypes, true), mMimeTypes, mActivity.getContentResolver());
         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 

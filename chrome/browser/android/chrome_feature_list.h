@@ -89,6 +89,7 @@ extern const base::Feature kNTPLaunchAfterInactivity;
 extern const base::Feature kOmniboxSpareRenderer;
 extern const base::Feature kOverlayNewLayout;
 extern const base::Feature kPayWithGoogleV1;
+extern const base::Feature kPhotoPickerVideoSupport;
 extern const base::Feature kProgressBarThrottleFeature;
 extern const base::Feature kPwaImprovedSplashScreen;
 extern const base::Feature kPwaPersistentNotification;

@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.MediaMetadataRetriever;
 import android.os.Build;
 
 import org.chromium.base.metrics.RecordHistogram;
@@ -70,6 +71,26 @@ class BitmapUtils {
     }
 
     /**
+     * Given a FileDescriptor, decodes the video and returns a bitmap of dimensions |size|x|size|.
+     * @param descriptor The FileDescriptor for the file to read.
+     * @param size The width and height of the bitmap to return.
+     * @return The resulting bitmap.
+     */
+    public static Bitmap decodeVideoFromFileDescriptor(
+            MediaMetadataRetriever retriever, FileDescriptor descriptor, int size) {
+        try {
+            retriever.setDataSource(descriptor);
+        } catch (RuntimeException exception) {
+            return null;
+        }
+
+        Bitmap bitmap = retriever.getFrameAtTime();
+        if (bitmap == null) return null;
+
+        return sizeBitmap(bitmap, size, descriptor);
+    }
+
+    /**
      * Calculates the sub-sampling factor {@link BitmapFactory#inSampleSize} option for a given
      * image dimensions, which will be used to create a bitmap of a pre-determined size (as small as
      * possible without either dimension shrinking below |minSize|.
@@ -95,7 +116,16 @@ class BitmapUtils {
     private static Bitmap ensureMinSize(Bitmap bitmap, int size) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-        if (width >= size && height >= size) return bitmap;
+        if (width == size && height == size) return bitmap;
+
+        if (width > size && height > size) {
+            // Both sides are larger than requested, which will lead to excessive amount of
+            // cropping. Shrink to a more manageable amount (shorter side becomes |size| in length).
+            float scale = (width < height) ? (float) width / size : (float) height / size;
+            width = Math.round(width / scale);
+            height = Math.round(height / scale);
+            return Bitmap.createScaledBitmap(bitmap, width, height, true);
+        }
 
         if (width < size) {
             float scale = (float) size / width;

@@ -152,6 +152,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kOmniboxSpareRenderer,
     &kOverlayNewLayout,
     &kPayWithGoogleV1,
+    &kPhotoPickerVideoSupport,
     &kProgressBarThrottleFeature,
     &kPwaImprovedSplashScreen,
     &kPwaPersistentNotification,
@@ -469,6 +470,11 @@ const base::Feature kOverlayNewLayout{"OverlayNewLayout",
 // TODO(rouslan): Remove this.
 const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// TODO(finnur): Before enabling by default, the issue of where decoding should
+// take place needs to be resolved.
+const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kProgressBarThrottleFeature{
     "ProgressBarThrottle", base::FEATURE_DISABLED_BY_DEFAULT};

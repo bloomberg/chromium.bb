@@ -246,7 +246,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         Activity activity = mWindowAndroid.getActivity().get();
 
         // Use the new photo picker, if available.
-        List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
+        List<String> imageMimeTypes = convertToSupportedPhotoPickerTypes(mFileTypes);
         if (shouldUsePhotoPicker()
                 && UiUtils.showPhotoPicker(activity, this, mAllowMultiple, imageMimeTypes)) {
             return;
@@ -308,26 +308,28 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
      *   4.) There is a valid Android Activity associated with the file request.
      */
     private boolean shouldUsePhotoPicker() {
-        List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
-        return !captureImage() && imageMimeTypes != null && UiUtils.shouldShowPhotoPicker()
+        List<String> mediaMimeTypes = convertToSupportedPhotoPickerTypes(mFileTypes);
+        return !captureImage() && mediaMimeTypes != null && UiUtils.shouldShowPhotoPicker()
                 && mWindowAndroid.getActivity().get() != null;
     }
 
     /**
-     * Converts a list of extensions and Mime types to a list of de-duped Mime types containing
-     * image types only. If the input list contains a non-image type, then null is returned.
+     * Converts a list of extensions and Mime types to a list of de-duped Mime types supported by
+     * the photo picker only. If the input list contains a unsupported type, then null is returned.
      * @param fileTypes the list of filetypes (extensions and Mime types) to convert.
-     * @return A de-duped list of Image Mime types only, or null if one or more non-image types were
-     *         given as input.
+     * @return A de-duped list of supported types only, or null if one or more unsupported types
+     *         were given as input.
      */
     @VisibleForTesting
-    public static List<String> convertToImageMimeTypes(List<String> fileTypes) {
+    public static List<String> convertToSupportedPhotoPickerTypes(List<String> fileTypes) {
         if (fileTypes.size() == 0) return null;
         List<String> mimeTypes = new ArrayList<>();
         for (String type : fileTypes) {
             String mimeType = ensureMimeType(type);
             if (!mimeType.startsWith("image/")) {
-                return null;
+                if (!UiUtils.photoPickerSupportsVideo() || !mimeType.startsWith("video/")) {
+                    return null;
+                }
             }
             if (!mimeTypes.contains(mimeType)) mimeTypes.add(mimeType);
         }
@@ -736,7 +738,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
     }
 
     private boolean eligibleForPhotoPicker() {
-        return convertToImageMimeTypes(mFileTypes) != null;
+        return convertToSupportedPhotoPickerTypes(mFileTypes) != null;
     }
 
     private void onFileSelected(

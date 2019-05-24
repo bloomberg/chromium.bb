@@ -12,6 +12,7 @@ import android.content.ServiceConnection;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
@@ -23,6 +24,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -36,7 +38,8 @@ import java.util.List;
 /**
  * A class to communicate with the {@link DecoderService}.
  */
-public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
+public class DecoderServiceHost
+        extends IDecoderServiceCallback.Stub implements DecodeVideoTask.VideoDecodingCallback {
     // A tag for logging error messages.
     private static final String TAG = "ImageDecoderHost";
 
@@ -51,6 +54,9 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
 
     // The number of out of memory failures during decoding, per batch.
     private int mFailedDecodesMemory;
+
+    // A worker task for asynchronously handling video decode requests.
+    private DecodeVideoTask mWorkerTask;
 
     // A callback to use for testing to see if decoder is ready.
     static ServiceReadyCallback sReadyCallbackForTesting;
@@ -92,8 +98,9 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
          * A function to define to receive a notification that an image has been decoded.
          * @param filePath The file path for the newly decoded image.
          * @param bitmap The results of the decoding (or placeholder image, if failed).
+         * @param videoDuration The time-length of the video (null if not a video).
          */
-        void imageDecodedCallback(String filePath, Bitmap bitmap);
+        void imageDecodedCallback(String filePath, Bitmap bitmap, String videoDuration);
     }
 
     /**
@@ -106,15 +113,21 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         // The requested size (width and height) of the bitmap, once decoded.
         public int mSize;
 
+        // The type of media being decoded.
+        @PickerBitmap.TileTypes
+        int mFileType;
+
         // The callback to use to communicate the results of the decoding.
         ImageDecodedCallback mCallback;
 
         // The timestamp for when the request was sent for decoding.
         long mTimestamp;
 
-        public DecoderServiceParams(Uri uri, int size, ImageDecodedCallback callback) {
+        public DecoderServiceParams(Uri uri, int size, @PickerBitmap.TileTypes int fileType,
+                ImageDecodedCallback callback) {
             mUri = uri;
             mSize = size;
+            mFileType = fileType;
             mCallback = callback;
         }
     }
@@ -171,11 +184,13 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
      * Accepts a request to decode a single image. Queues up the request and reports back
      * asynchronously on |callback|.
      * @param uri The URI of the file to decode.
+     * @param fileType The type of image being sent for decoding.
      * @param size The requested size (width and height) of the resulting bitmap.
      * @param callback The callback to use to communicate the decoding results.
      */
-    public void decodeImage(Uri uri, int size, ImageDecodedCallback callback) {
-        DecoderServiceParams params = new DecoderServiceParams(uri, size, callback);
+    public void decodeImage(Uri uri, @PickerBitmap.TileTypes int fileType, int size,
+            ImageDecodedCallback callback) {
+        DecoderServiceParams params = new DecoderServiceParams(uri, size, fileType, callback);
         mRequests.put(uri.getPath(), params);
         if (mRequests.size() == 1) dispatchNextDecodeImageRequest();
     }
@@ -187,7 +202,7 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         if (mRequests.entrySet().iterator().hasNext()) {
             DecoderServiceParams params = mRequests.entrySet().iterator().next().getValue();
             params.mTimestamp = SystemClock.elapsedRealtime();
-            dispatchDecodeImageRequest(params.mUri, params.mSize);
+            dispatchDecodeImageRequest(params.mUri, params.mFileType, params.mSize);
         } else {
             int totalRequests = mSuccessfulDecodes + mFailedDecodesRuntime + mFailedDecodesMemory;
             if (totalRequests > 0) {
@@ -206,6 +221,18 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         }
     }
 
+    /**
+     * A callback that receives the results of the video decoding.
+     * @param uri The uri of the decoded video.
+     * @param bitmap The thumbnail representing the decoded video.
+     * @param duration The video duration (a formatted human-readable string, for example "3:00").
+     */
+    @Override
+    public void videoDecodedCallback(Uri uri, Bitmap bitmap, String duration) {
+        // TODO(finnur): Add corresponding UMA for video decoding.
+        closeRequest(uri.getPath(), bitmap, duration, -1);
+    }
+
     @Override
     public void onDecodeImageDone(final Bundle payload) {
         // As per the Android documentation, AIDL callbacks can (and will) happen on any thread, so
@@ -221,7 +248,7 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
                         : null;
                 long decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
                 mSuccessfulDecodes++;
-                closeRequest(filePath, bitmap, decodeTime);
+                closeRequest(filePath, bitmap, null, decodeTime);
             } catch (RuntimeException e) {
                 mFailedDecodesRuntime++;
             } catch (OutOfMemoryError e) {
@@ -238,14 +265,15 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
      * @param bitmap The resulting decoded bitmap, or null if decoding fails.
      * @param decodeTime The length of time it took to decode the bitmap.
      */
-    public void closeRequest(String filePath, @Nullable Bitmap bitmap, long decodeTime) {
+    public void closeRequest(
+            String filePath, @Nullable Bitmap bitmap, String videoDuration, long decodeTime) {
         DecoderServiceParams params = getRequests().get(filePath);
         if (params != null) {
             long endRpcCall = SystemClock.elapsedRealtime();
             RecordHistogram.recordTimesHistogram(
                     "Android.PhotoPicker.RequestProcessTime", endRpcCall - params.mTimestamp);
 
-            params.mCallback.imageDecodedCallback(filePath, bitmap);
+            params.mCallback.imageDecodedCallback(filePath, bitmap, videoDuration);
 
             if (decodeTime != -1 && bitmap != null) {
                 RecordHistogram.recordTimesHistogram(
@@ -265,7 +293,17 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
      * @param uri The URI of the image on disk.
      * @param size The requested width and height of the resulting bitmap.
      */
-    private void dispatchDecodeImageRequest(Uri uri, int size) {
+    private void dispatchDecodeImageRequest(
+            Uri uri, @PickerBitmap.TileTypes int fileType, int size) {
+        if (fileType == PickerBitmap.TileTypes.VIDEO) {
+            // Videos are decoded by the system (on N+) using a restricted helper process, so
+            // there's no need to use our custom sandboxed process.
+            assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+            mWorkerTask = new DecodeVideoTask(this, mContentResolver, uri, size);
+            mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            return;
+        }
+
         // Obtain a file descriptor to send over to the sandboxed process.
         ParcelFileDescriptor pfd = null;
         Bundle bundle = new Bundle();
@@ -279,12 +317,12 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
                 afd = mContentResolver.openAssetFileDescriptor(uri, "r");
             } catch (FileNotFoundException e) {
                 Log.e(TAG, "Unable to obtain FileDescriptor: " + e);
-                closeRequest(uri.getPath(), null, -1);
+                closeRequest(uri.getPath(), null, null, -1);
                 return;
             }
             pfd = afd.getParcelFileDescriptor();
             if (pfd == null) {
-                closeRequest(uri.getPath(), null, -1);
+                closeRequest(uri.getPath(), null, null, -1);
                 return;
             }
         } finally {
@@ -300,10 +338,10 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
             pfd.close();
         } catch (RemoteException e) {
             Log.e(TAG, "Communications failed (Remote): " + e);
-            closeRequest(uri.getPath(), null, -1);
+            closeRequest(uri.getPath(), null, null, -1);
         } catch (IOException e) {
             Log.e(TAG, "Communications failed (IO): " + e);
-            closeRequest(uri.getPath(), null, -1);
+            closeRequest(uri.getPath(), null, null, -1);
         }
     }
 

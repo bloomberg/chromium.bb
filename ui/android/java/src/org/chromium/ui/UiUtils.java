@@ -129,6 +129,11 @@ public class UiUtils {
          * Called when the photo picker dialog has been dismissed.
          */
         void onPhotoPickerDismissed();
+
+        /**
+         * Returns whether video decoding support is supported in the photo picker.
+         */
+        boolean supportsVideos();
     }
 
     // ContactsPickerDelegate:
@@ -184,6 +189,15 @@ public class UiUtils {
      */
     public static boolean shouldShowPhotoPicker() {
         return sPhotoPickerDelegate != null;
+    }
+
+    /**
+     * Returns whether the photo picker supports showing videos.
+     */
+    public static boolean photoPickerSupportsVideo() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
+        if (!shouldShowPhotoPicker()) return false;
+        return sPhotoPickerDelegate.supportsVideos();
     }
 
     /**

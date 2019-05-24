@@ -235,6 +235,12 @@ public class ProcessInitializationHandler {
                 public void onPhotoPickerDismissed() {
                     mDialog = null;
                 }
+
+                @Override
+                public boolean supportsVideos() {
+                    return ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.PHOTO_PICKER_VIDEO_SUPPORT);
+                }
             });
         }
 
