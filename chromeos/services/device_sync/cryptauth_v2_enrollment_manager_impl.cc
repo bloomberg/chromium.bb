@@ -234,6 +234,18 @@ CryptAuthV2EnrollmentManagerImpl::~CryptAuthV2EnrollmentManagerImpl() {
 void CryptAuthV2EnrollmentManagerImpl::Start() {
   scheduler_->StartEnrollmentScheduling(
       scheduler_weak_ptr_factory_.GetWeakPtr());
+
+  // It is possible, though unlikely, that |scheduler_| has previously enrolled
+  // successfully but |key_registry_| no longer holds the enrolled keys, for
+  // example, if keys are deleted from the key registry or if the persisted key
+  // registry pref cannot be parsed due to an encoding change. In this case,
+  // force a re-enrollment.
+  if (scheduler_->GetLastSuccessfulEnrollmentTime() &&
+      (GetUserPublicKey().empty() || GetUserPrivateKey().empty())) {
+    ForceEnrollmentNow(
+        cryptauth::InvocationReason::INVOCATION_REASON_FAILURE_RECOVERY,
+        base::nullopt /* session_id */);
+  }
 }
 
 void CryptAuthV2EnrollmentManagerImpl::ForceEnrollmentNow(
@@ -248,6 +260,9 @@ bool CryptAuthV2EnrollmentManagerImpl::IsEnrollmentValid() const {
       scheduler_->GetLastSuccessfulEnrollmentTime();
 
   if (!last_successful_enrollment_time)
+    return false;
+
+  if (GetUserPublicKey().empty() || GetUserPrivateKey().empty())
     return false;
 
   return (clock_->Now() - *last_successful_enrollment_time) <

@@ -528,9 +528,13 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, ForcedEnrollment) {
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
        RetryAfterFailedPeriodicEnrollment_PreviouslyEnrolled) {
   CreateEnrollmentManager();
-  enrollment_manager()->Start();
 
   // The user has already enrolled.
+  CryptAuthKey user_key_pair_v2(
+      kFakeV2PublicKey, kFakeV2PrivateKey, CryptAuthKey::Status::kActive,
+      cryptauthv2::KeyType::P256, kCryptAuthFixedUserKeyPairHandle);
+  key_registry()->AddKey(CryptAuthKeyBundle::Name::kUserKeyPair,
+                         user_key_pair_v2);
   base::Time expected_last_enrollment_time = test_clock()->Now();
   fake_enrollment_scheduler()->set_last_successful_enrollment_time(
       expected_last_enrollment_time);
@@ -540,6 +544,9 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   fake_enrollment_scheduler()->set_time_to_next_enrollment_request(
       kFakeRefreshPeriod);
   EXPECT_TRUE(enrollment_manager()->IsEnrollmentValid());
+
+  enrollment_manager()->Start();
+
   EXPECT_EQ(kFakeRefreshPeriod, enrollment_manager()->GetTimeToNextAttempt());
 
   // Now, user is due for a refresh.
@@ -865,6 +872,35 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
 
   VerifyInvocationReasonHistogram(expected_invocation_reasons);
   VerifyEnrollmentResults(expected_enrollment_results);
+}
+
+TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
+       MissingUserKeyPairRecovery) {
+  CreateEnrollmentManager();
+
+  // The user has already enrolled according to the scheduler, but there is no
+  // user key pair because the key registry was corrupted, for instance.
+  fake_enrollment_scheduler()->set_last_successful_enrollment_time(
+      test_clock()->Now());
+  EXPECT_FALSE(enrollment_manager()->IsEnrollmentValid());
+
+  enrollment_manager()->Start();
+
+  cryptauthv2::ClientMetadata expected_client_metadata =
+      cryptauthv2::BuildClientMetadata(
+          0 /* retry_count */, cryptauthv2::ClientMetadata::FAILURE_RECOVERY,
+          base::nullopt /* session_id */);
+  CryptAuthEnrollmentResult expected_enrollment_result(
+      CryptAuthEnrollmentResult::ResultCode::kSuccessNewKeysEnrolled,
+      base::nullopt /* client_directive */);
+  CompleteGcmRegistration(true /* success */);
+  HandleGetClientAppMetadataRequest(true /* success */);
+  FinishEnrollmentAttempt(0u /* expected_enroller_instance_index */,
+                          expected_client_metadata, expected_enrollment_result);
+
+  VerifyInvocationReasonHistogram(
+      {expected_client_metadata.invocation_reason()});
+  VerifyEnrollmentResults({expected_enrollment_result});
 }
 
 }  // namespace device_sync

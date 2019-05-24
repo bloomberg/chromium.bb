@@ -75,10 +75,8 @@ cryptauthv2::ClientDirective BuildClientDirective(PrefService* pref_service) {
   DCHECK(pref_service);
   const base::Value* encoded_client_directive =
       pref_service->Get(prefs::kCryptAuthSchedulerClientDirective);
-  if (encoded_client_directive &&
-      encoded_client_directive->GetString() == kNoClientDirective) {
+  if (encoded_client_directive->GetString() == kNoClientDirective)
     return CreateDefaultClientDirective();
-  }
 
   base::Optional<cryptauthv2::ClientDirective> client_directive_from_pref =
       util::DecodeProtoMessageFromValueString<cryptauthv2::ClientDirective>(
@@ -164,8 +162,7 @@ CryptAuthSchedulerImpl::CryptAuthSchedulerImpl(
   // Queue up the most recently scheduled enrollment request if applicable.
   const base::Value* client_metadata_from_pref = pref_service_->Get(
       prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata);
-  if (client_metadata_from_pref &&
-      client_metadata_from_pref->GetString() != kNoClientMetadata) {
+  if (client_metadata_from_pref->GetString() != kNoClientMetadata) {
     pending_enrollment_request_ =
         util::DecodeProtoMessageFromValueString<cryptauthv2::ClientMetadata>(
             client_metadata_from_pref);
