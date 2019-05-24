@@ -32,6 +32,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 
@@ -74,6 +75,8 @@ class BookmarkContextMenuTest : public testing::Test {
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 
     AddTestData();
+    // CutCopyPasteNode executes IDC_COPY and IDC_CUT commands.
+    ui::TestClipboard::CreateForCurrentThread();
   }
 
   void TearDown() override {

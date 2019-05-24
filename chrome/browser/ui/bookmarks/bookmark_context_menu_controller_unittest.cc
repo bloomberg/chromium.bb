@@ -27,6 +27,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkModel;
@@ -58,6 +59,8 @@ class BookmarkContextMenuControllerTest : public testing::Test {
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
     AddTestData(model_);
+    // CutCopyPasteNode executes IDC_CUT and IDC_COPY commands.
+    ui::TestClipboard::CreateForCurrentThread();
   }
 
   void TearDown() override {
