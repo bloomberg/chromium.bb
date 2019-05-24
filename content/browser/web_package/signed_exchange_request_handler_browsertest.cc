@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/cfi_buildflags.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -467,7 +468,15 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
       PrefetchIsEnabled() ? 2 : 1);
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, BadMICE) {
+#if defined(OS_ANDROID) &&                                      \
+    (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
+     BUILDFLAG(CFI_ENFORCEMENT_TRAP) || BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC))
+// https://crbug.com/966820. Fails pretty often on Android CFI.
+#define MAYBE_BadMICE DISABLED_BadMICE
+#else
+#define MAYBE_BadMICE BadMICE
+#endif
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, MAYBE_BadMICE) {
   InstallMockCertChainInterceptor();
   InstallMockCert();
 
