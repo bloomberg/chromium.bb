@@ -10,6 +10,7 @@
 
 #include "components/exo/pointer.h"
 #include "components/exo/wayland/server_util.h"
+#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
 namespace exo {
