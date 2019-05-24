@@ -74,7 +74,6 @@
 #include "third_party/blink/renderer/modules/storage/dom_window_storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
-#include "third_party/blink/renderer/modules/time_zone_monitor/time_zone_monitor_client.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
@@ -121,12 +120,6 @@ void ModulesInitializer::Initialize() {
   DraggedIsolatedFileSystem::Init(
       DraggedIsolatedFileSystemImpl::PrepareForDataObject);
   CSSPaintImageGenerator::Init(CSSPaintImageGeneratorImpl::Create);
-  // Some unit tests may have no message loop ready, so we can't initialize the
-  // mojo stuff here. They can initialize those mojo stuff they're interested in
-  // later after they got a message loop ready.
-  if (CanInitializeMojo()) {
-    TimeZoneMonitorClient::Init();
-  }
 
   CoreInitializer::Initialize();
 

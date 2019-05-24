@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/timezone/timezone_controller.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/core/xml_names.h"
@@ -148,6 +149,8 @@ void CoreInitializer::Initialize() {
   V8ThrowDOMException::Init();
 
   BindingSecurity::Init();
+
+  TimeZoneController::Init();
 }
 
 }  // namespace blink
