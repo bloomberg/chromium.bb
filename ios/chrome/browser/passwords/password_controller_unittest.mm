@@ -1260,7 +1260,7 @@ TEST_F(PasswordControllerTest, TouchendAsSubmissionIndicator) {
     // code better to allow proper unit-testing.
     EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
     const char kExpectedMessage[] =
-        "Message: \"PasswordManager::ProvisionallySavePassword\"\n";
+        "Message: \"PasswordManager::ProvisionallySaveForm\"\n";
     EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage));
     EXPECT_CALL(log_manager,
                 LogSavePasswordProgress(testing::Ne(kExpectedMessage)))

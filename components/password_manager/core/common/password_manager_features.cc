@@ -52,12 +52,12 @@ const base::Feature kNewPasswordFormParsing = {
 // Enables new password form parsing mechanism for saving passwords, details in
 // https://goo.gl/QodPH1
 const base::Feature kNewPasswordFormParsingForSaving = {
-    "new-password-form-parsing-for-saving", base::FEATURE_DISABLED_BY_DEFAULT};
+    "new-password-form-parsing-for-saving", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables new password form parsing mechanism for saving passwords and disables
 // the old parser, details in https://goo.gl/QodPH1
 const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls the ability to import passwords from Chrome's settings page.
 const base::Feature kPasswordImport = {"PasswordImport",

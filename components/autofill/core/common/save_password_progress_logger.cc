@@ -272,6 +272,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "|frame| is not the main frame";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME:
       return "provisionally_saved_forms_[form_frame]";
+    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_FORM_METHOD:
+      return "PasswordManager::ProvisionallySaveForm";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_METHOD:
       return "PasswordManager::ProvisionallySavePassword";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM:
