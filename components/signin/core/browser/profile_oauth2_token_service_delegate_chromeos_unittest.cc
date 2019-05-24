@@ -83,7 +83,7 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
     is_inside_batch_ = false;
   }
 
-  void OnRefreshTokenAvailable(const std::string& account_id) override {
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override {
     if (!is_inside_batch_)
       StartBatchChanges();
 
@@ -106,7 +106,7 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
 
   void OnRefreshTokensLoaded() override { refresh_tokens_loaded_ = true; }
 
-  void OnRefreshTokenRevoked(const std::string& account_id) override {
+  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override {
     if (!is_inside_batch_)
       StartBatchChanges();
 
@@ -115,7 +115,7 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
     batch_change_records_.rbegin()->emplace_back(account_id);
   }
 
-  void OnAuthErrorChanged(const std::string& account_id,
+  void OnAuthErrorChanged(const CoreAccountId& account_id,
                           const GoogleServiceAuthError& auth_error) override {
     last_err_account_id_ = account_id;
     last_err_ = auth_error;

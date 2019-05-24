@@ -106,10 +106,10 @@ class OAuth2TokenService {
     // pending request can easily occur on Android, where refresh tokens are
     // held by the OS and are thus often available on startup even before
     // OnRefreshTokenAvailable() is called.
-    virtual void OnRefreshTokenAvailable(const std::string& account_id) {}
+    virtual void OnRefreshTokenAvailable(const CoreAccountId& account_id) {}
     // Called whenever the login-scoped refresh token becomes unavailable for
     // account |account_id|.
-    virtual void OnRefreshTokenRevoked(const std::string& account_id) {}
+    virtual void OnRefreshTokenRevoked(const CoreAccountId& account_id) {}
     // Called after all refresh tokens are loaded during OAuth2TokenService
     // startup.
     virtual void OnRefreshTokensLoaded() {}
@@ -118,7 +118,7 @@ class OAuth2TokenService {
     // Called when the authentication error state for |account_id| has changed.
     // Note: It is always called after |OnRefreshTokenAvailable| when refresh
     // token is updated. It is not called when the refresh token is revoked.
-    virtual void OnAuthErrorChanged(const std::string& account_id,
+    virtual void OnAuthErrorChanged(const CoreAccountId& account_id,
                                     const GoogleServiceAuthError& auth_error) {}
 
    protected:

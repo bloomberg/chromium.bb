@@ -56,7 +56,7 @@ class RetryingTestingOAuth2TokenServiceConsumer
 class FakeOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
  public:
   MOCK_METHOD2(OnAuthErrorChanged,
-               void(const std::string&, const GoogleServiceAuthError&));
+               void(const CoreAccountId&, const GoogleServiceAuthError&));
 };
 
 class TestOAuth2TokenService : public OAuth2TokenService {
@@ -135,7 +135,7 @@ class OAuth2TokenServiceTest : public testing::Test {
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
   FakeOAuth2TokenServiceDelegate* delegate_ptr_ = nullptr;  // Not owned.
   std::unique_ptr<TestOAuth2TokenService> oauth2_service_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   TestingOAuth2TokenServiceConsumer consumer_;
 };
 
