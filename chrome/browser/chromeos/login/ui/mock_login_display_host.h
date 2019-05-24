@@ -56,7 +56,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
                     const base::Optional<AccountId>& prefilled_account));
   MOCK_METHOD0(HideOobeDialog, void());
   MOCK_METHOD2(UpdateOobeDialogSize, void(int width, int height));
-  MOCK_METHOD1(UpdateOobeDialogState, void(ash::mojom::OobeDialogState state));
+  MOCK_METHOD1(UpdateOobeDialogState, void(ash::OobeDialogState state));
   MOCK_METHOD0(GetUsers, const user_manager::UserList(void));
 
   MOCK_METHOD1(CompleteLogin, void(const UserContext&));

@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/login/ui/lock_contents_view.h"
+
 #include <memory>
 #include <string>
 #include <unordered_set>
 #include <utility>
 
 #include "ash/detachable_base/detachable_base_pairing_status.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/fake_login_detachable_base_model.h"
-#include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
@@ -2332,8 +2334,7 @@ TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogOpen) {
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   EXPECT_CALL(*client, FocusOobeDialog()).Times(1);
 
-  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
-      mojom::OobeDialogState::GAIA_SIGNIN);
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::GAIA_SIGNIN);
   lock->OnFocusLeavingSystemTray(false /* reverse */);
   Shell::Get()->login_screen_controller()->FlushForTesting();
 }
@@ -2349,8 +2350,7 @@ TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogClosed) {
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   EXPECT_CALL(*client, FocusOobeDialog()).Times(0);
 
-  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
-      mojom::OobeDialogState::HIDDEN);
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::HIDDEN);
   lock->OnFocusLeavingSystemTray(false /* reverse */);
   Shell::Get()->login_screen_controller()->FlushForTesting();
 }
@@ -2373,8 +2373,7 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
   AccountId list_user =
       list_user_view->current_user().basic_user_info.account_id;
 
-  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
-      mojom::OobeDialogState::GAIA_SIGNIN);
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::GAIA_SIGNIN);
 
   // Send event to swap users.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -2388,8 +2387,7 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
             list_user_view->current_user().basic_user_info.account_id);
 
   // Hide OOBE dialog.
-  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
-      mojom::OobeDialogState::HIDDEN);
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::HIDDEN);
 
   // Attempt swap again.
   generator->MoveMouseTo(list_user_view->GetBoundsInScreen().CenterPoint());

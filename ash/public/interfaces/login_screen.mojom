@@ -9,45 +9,6 @@ import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
-// State of the Oobe UI dialog, which is used to update the visibility of login
-// shelf buttons.
-// This comes from SIGNIN_UI_STATE defined in display_manager.js, with an
-// additional value HIDDEN to indicate the visibility of the oobe ui dialog.
-enum OobeDialogState {
-  // Showing other screen, which does not impact the visibility of login shelf
-  // buttons.
-  NONE = 0,
-
-  // Showing gaia signin screen.
-  GAIA_SIGNIN = 1,
-
-  // 2 is unused to keep in sync with display_manager.js
-
-  // Showing wrong hardware identification screen.
-  WRONG_HWID_WARNING = 3,
-
-  // Showing supervised user creation screen.
-  SUPERVISED_USER_CREATION_FLOW = 4,
-
-  // Showing SAML password confirmation screen.
-  SAML_PASSWORD_CONFIRM = 5,
-
-  // Showing password changed screen.
-  PASSWORD_CHANGED = 6,
-
-  // Showing device enrollment screen.
-  ENROLLMENT = 7,
-
-  // Showing error screen.
-  ERROR = 8,
-
-  // Showing sync consent screen.
-  SYNC_CONSENT = 9,
-
-  // Oobe UI dialog is currently hidden.
-  HIDDEN = 10,
-};
-
 // Reason why the auth is disabled. This is used to personalize the UI.
 enum AuthDisabledReason {
   // Auth is disabled because the device is locked by a time limit override.
@@ -149,11 +110,6 @@ interface LoginScreen {
   DisableAuthForUser(signin.mojom.AccountId account_id,
                       AuthDisabledData auth_disabled_data);
 
-  // Called when focus is reported to be leaving a lock screen app window.
-  // Requests focus to be handed off to the next suitable widget.
-  // |reverse|:   Whether the tab order is reversed.
-  HandleFocusLeavingLockScreenApps(bool reverse);
-
   // Called when new system information is available.
   // |show_if_hidden|: If true, the system information should be displayed to
   //                   the user if it is currently hidden. If false, the system
@@ -181,11 +137,6 @@ interface LoginScreen {
 
   // Display a toast describing the latest kiosk app launch error.
   ShowKioskAppError(string message);
-
-  // Called when the dialog hosting oobe has changed state. The oobe dialog
-  // provides support for any part of login that is implemented in JS/HTML, such
-  // as add user or powerwash.
-  NotifyOobeDialogState(OobeDialogState state);
 
   // Sets whether users can be added from the login screen.
   SetAddUserButtonEnabled(bool enable);

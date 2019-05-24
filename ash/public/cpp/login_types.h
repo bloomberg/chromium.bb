@@ -12,6 +12,45 @@
 
 namespace ash {
 
+// State of the Oobe UI dialog, which is used to update the visibility of login
+// shelf buttons.
+// This comes from SIGNIN_UI_STATE defined in display_manager.js, with an
+// additional value HIDDEN to indicate the visibility of the oobe ui dialog.
+enum class OobeDialogState {
+  // Showing other screen, which does not impact the visibility of login shelf
+  // buttons.
+  NONE = 0,
+
+  // Showing gaia signin screen.
+  GAIA_SIGNIN = 1,
+
+  // 2 is unused to keep in sync with display_manager.js
+
+  // Showing wrong hardware identification screen.
+  WRONG_HWID_WARNING = 3,
+
+  // Showing supervised user creation screen.
+  SUPERVISED_USER_CREATION_FLOW = 4,
+
+  // Showing SAML password confirmation screen.
+  SAML_PASSWORD_CONFIRM = 5,
+
+  // Showing password changed screen.
+  PASSWORD_CHANGED = 6,
+
+  // Showing device enrollment screen.
+  ENROLLMENT = 7,
+
+  // Showing error screen.
+  ERROR = 8,
+
+  // Showing sync consent screen.
+  SYNC_CONSENT = 9,
+
+  // Oobe UI dialog is currently hidden.
+  HIDDEN = 10,
+};
+
 // Supported multi-profile user behavior values.
 // Keep in sync with the enum in chromeos_user_pod_row.js and user_pod_row.js
 // TODO(estade): change all the enums to use kCamelCase.
@@ -188,8 +227,8 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
   // True if this user is the device owner.
   bool is_device_owner = false;
 
-  // The initial fingerprint state. There are other mojom methods (ie,
-  // login_screen.mojom::SetFingerprintState) which update the current state.
+  // The initial fingerprint state. There are other methods (ie,
+  // LoginScreenModel::SetFingerprintState) which update the current state.
   FingerprintState fingerprint_state = FingerprintState::UNAVAILABLE;
 
   // True if multi-profiles sign in is allowed for this user.

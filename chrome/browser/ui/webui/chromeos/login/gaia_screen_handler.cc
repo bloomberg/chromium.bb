@@ -929,8 +929,7 @@ void GaiaScreenHandler::HandleGetIsSamlUserPasswordless(
 
 void GaiaScreenHandler::HandleUpdateSigninUIState(int state) {
   if (LoginDisplayHost::default_host()) {
-    auto dialog_state = static_cast<ash::mojom::OobeDialogState>(state);
-    DCHECK(ash::mojom::IsKnownEnumValue(dialog_state));
+    auto dialog_state = static_cast<ash::OobeDialogState>(state);
     LoginDisplayHost::default_host()->UpdateOobeDialogState(dialog_state);
   }
 }

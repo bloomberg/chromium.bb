@@ -14,6 +14,7 @@ class AccountId;
 namespace ash {
 
 enum class FingerprintState;
+enum class OobeDialogState;
 struct EasyUnlockIconOptions;
 struct InputMethodItem;
 struct LocaleItem;
@@ -58,6 +59,16 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
       const AccountId& account_id,
       const std::string& locale,
       const std::vector<InputMethodItem>& keyboard_layouts) = 0;
+
+  // Called when focus is reported to be leaving a lock screen app window.
+  // Requests focus to be handed off to the next suitable widget.
+  // |reverse|:   Whether the tab order is reversed.
+  virtual void HandleFocusLeavingLockScreenApps(bool reverse) = 0;
+
+  // Called when the dialog hosting oobe has changed state. The oobe dialog
+  // provides support for any part of login that is implemented in JS/HTML, such
+  // as add user or powerwash.
+  virtual void NotifyOobeDialogState(OobeDialogState state) = 0;
 
  protected:
   virtual ~LoginScreenModel();

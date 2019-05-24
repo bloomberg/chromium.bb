@@ -13,8 +13,6 @@
 #include "ash/ash_export.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_controller_observer.h"
-#include "ash/login/login_screen_controller.h"
-#include "ash/login/login_screen_controller_observer.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
@@ -64,7 +62,6 @@ enum class TrayActionState;
 // at a time.
 class ASH_EXPORT LockContentsView
     : public NonAccessibleView,
-      public LoginScreenControllerObserver,
       public LoginDataDispatcher::Observer,
       public SystemTrayFocusObserver,
       public display::DisplayObserver,
@@ -136,10 +133,6 @@ class ASH_EXPORT LockContentsView
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
-  // LoginScreenController::Observer:
-  void OnFocusLeavingLockScreenApps(bool reverse) override;
-  void OnOobeDialogStateChanged(mojom::OobeDialogState state) override;
-
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(const std::vector<LoginUserInfo>& users) override;
   void OnUserAvatarChanged(const AccountId& account_id,
@@ -181,6 +174,8 @@ class ASH_EXPORT LockContentsView
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
   void OnSetShowParentAccessDialog(bool show) override;
+  void OnFocusLeavingLockScreenApps(bool reverse) override;
+  void OnOobeDialogStateChanged(OobeDialogState state) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;

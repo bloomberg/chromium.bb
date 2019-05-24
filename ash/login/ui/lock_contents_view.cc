@@ -386,7 +386,6 @@ LockContentsView::LockContentsView(
 
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
-  Shell::Get()->login_screen_controller()->AddObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
 
@@ -455,7 +454,6 @@ LockContentsView::LockContentsView(
 LockContentsView::~LockContentsView() {
   Shell::Get()->accelerator_controller()->UnregisterAll(this);
   data_dispatcher_->RemoveObserver(this);
-  Shell::Get()->login_screen_controller()->RemoveObserver(this);
   keyboard::KeyboardController::Get()->RemoveObserver(this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 
@@ -1095,8 +1093,8 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
     FocusFirstOrLastFocusableChild(this, reverse);
 }
 
-void LockContentsView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
-  oobe_dialog_visible_ = state != mojom::OobeDialogState::HIDDEN;
+void LockContentsView::OnOobeDialogStateChanged(OobeDialogState state) {
+  oobe_dialog_visible_ = state != OobeDialogState::HIDDEN;
 
   // Deactivate the lock screen widget while the dialog is visible to
   // prevent lock screen from grabbing focus and hiding the OOBE dialog.
@@ -1107,7 +1105,7 @@ void LockContentsView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
   // effect.
   set_can_process_events_within_subtree(!oobe_dialog_visible_);
 
-  if (state == mojom::OobeDialogState::HIDDEN && primary_big_view_)
+  if (state == OobeDialogState::HIDDEN && primary_big_view_)
     primary_big_view_->RequestFocus();
 }
 

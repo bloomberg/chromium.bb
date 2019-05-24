@@ -13,7 +13,6 @@ namespace ash {
 
 class DetachableBaseHandler;
 enum class DetachableBasePairingStatus;
-class LoginDataDispatcher;
 struct UserInfo;
 
 // Wrapper around ash::DetachableBaseHandler used by login UI. Exposed as an
@@ -29,8 +28,7 @@ class ASH_EXPORT LoginDetachableBaseModel {
   virtual ~LoginDetachableBaseModel() = default;
 
   static std::unique_ptr<LoginDetachableBaseModel> Create(
-      DetachableBaseHandler* detachable_base_handler,
-      LoginDataDispatcher* login_data_dispatcher);
+      DetachableBaseHandler* detachable_base_handler);
 
   // Returns the current detachable base pairing status.
   virtual DetachableBasePairingStatus GetPairingStatus() = 0;

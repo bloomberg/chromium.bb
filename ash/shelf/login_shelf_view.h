@@ -11,9 +11,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
-#include "ash/login/login_screen_controller_observer.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/shutdown_controller.h"
 #include "ash/system/locale/locale_update_controller.h"
@@ -34,22 +34,17 @@ namespace ash {
 
 class LockScreenActionBackgroundController;
 enum class LockScreenActionBackgroundState;
-class LoginScreenController;
 class TrayAction;
 
 class KioskAppsButton;
 
 // LoginShelfView contains the shelf buttons visible outside of an active user
 // session. ShelfView and LoginShelfView should never be shown together.
-// This view is attached as a LoginDataDispatcher::Observer when the
-// LockScreen is instantiated in kLogin mode. It cannot attach itself because it
-// does not know when the Login is instantiated.
 class ASH_EXPORT LoginShelfView : public views::View,
                                   public views::ButtonListener,
                                   public TrayActionObserver,
                                   public LockScreenActionBackgroundObserver,
                                   public ShutdownController::Observer,
-                                  public LoginScreenControllerObserver,
                                   public LoginDataDispatcher::Observer,
                                   public LocaleChangeObserver {
  public:
@@ -88,7 +83,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
           launch_app);
 
   // Sets the state of the login dialog.
-  void SetLoginDialogState(mojom::OobeDialogState state);
+  void SetLoginDialogState(OobeDialogState state);
 
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
@@ -143,11 +138,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // ShutdownController::Observer:
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
-  // LoginScreenControllerObserver:
-  void OnOobeDialogStateChanged(mojom::OobeDialogState state) override;
-
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(const std::vector<LoginUserInfo>& users) override;
+  void OnOobeDialogStateChanged(OobeDialogState state) override;
 
   // LocaleChangeObserver:
   void OnLocaleChanged() override;
@@ -166,7 +159,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Updates the total bounds of all buttons.
   void UpdateButtonUnionBounds();
 
-  mojom::OobeDialogState dialog_state_ = mojom::OobeDialogState::HIDDEN;
+  OobeDialogState dialog_state_ = OobeDialogState::HIDDEN;
   bool allow_guest_ = true;
   bool allow_guest_in_oobe_ = false;
   bool show_parent_access_ = false;
@@ -176,20 +169,20 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   LockScreenActionBackgroundController* lock_screen_action_background_;
 
-  ScopedObserver<TrayAction, TrayActionObserver> tray_action_observer_;
+  ScopedObserver<TrayAction, TrayActionObserver> tray_action_observer_{this};
 
   ScopedObserver<LockScreenActionBackgroundController,
                  LockScreenActionBackgroundObserver>
-      lock_screen_action_background_observer_;
+      lock_screen_action_background_observer_{this};
 
   ScopedObserver<ShutdownController, ShutdownController::Observer>
-      shutdown_controller_observer_;
-
-  ScopedObserver<LoginScreenController, LoginScreenControllerObserver>
-      login_screen_controller_observer_;
+      shutdown_controller_observer_{this};
 
   ScopedObserver<LocaleUpdateController, LocaleChangeObserver>
       locale_change_observer_{this};
+
+  ScopedObserver<LoginDataDispatcher, LoginDataDispatcher::Observer>
+      login_data_dispatcher_observer_{this};
 
   // The kiosk app button will only be created for the primary display's login
   // shelf.

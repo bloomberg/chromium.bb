@@ -541,8 +541,7 @@ class LockDebugView::DebugLoginDetachableBaseModel
  public:
   static constexpr int kNullBaseId = -1;
 
-  explicit DebugLoginDetachableBaseModel(LoginDataDispatcher* data_dispatcher)
-      : data_dispatcher_(data_dispatcher) {}
+  DebugLoginDetachableBaseModel() = default;
   ~DebugLoginDetachableBaseModel() override = default;
 
   bool debugging_pairing_state() const { return pairing_status_.has_value(); }
@@ -595,7 +594,10 @@ class LockDebugView::DebugLoginDetachableBaseModel
       base_id_ = kNullBaseId;
     }
 
-    data_dispatcher_->SetDetachableBasePairingStatus(pairing_status);
+    Shell::Get()
+        ->login_screen_controller()
+        ->data_dispatcher()
+        ->SetDetachableBasePairingStatus(pairing_status);
   }
 
   // Marks the paired base (as seen by the model) as the user's last used base.
@@ -606,7 +608,10 @@ class LockDebugView::DebugLoginDetachableBaseModel
     DCHECK_GE(base_id_, 0);
 
     last_used_bases_[account_id] = base_id_;
-    data_dispatcher_->SetDetachableBasePairingStatus(*pairing_status_);
+    Shell::Get()
+        ->login_screen_controller()
+        ->data_dispatcher()
+        ->SetDetachableBasePairingStatus(*pairing_status_);
   }
 
   // Clears all in-memory pairing state.
@@ -615,8 +620,10 @@ class LockDebugView::DebugLoginDetachableBaseModel
     base_id_ = kNullBaseId;
     last_used_bases_.clear();
 
-    data_dispatcher_->SetDetachableBasePairingStatus(
-        DetachableBasePairingStatus::kNone);
+    Shell::Get()
+        ->login_screen_controller()
+        ->data_dispatcher()
+        ->SetDetachableBasePairingStatus(DetachableBasePairingStatus::kNone);
   }
 
   // LoginDetachableBaseModel:
@@ -642,8 +649,6 @@ class LockDebugView::DebugLoginDetachableBaseModel
   }
 
  private:
-  LoginDataDispatcher* data_dispatcher_;
-
   // In-memory detachable base pairing state.
   base::Optional<DetachableBasePairingStatus> pairing_status_;
   int base_id_ = kNullBaseId;
@@ -655,11 +660,10 @@ class LockDebugView::DebugLoginDetachableBaseModel
 };
 
 LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
-                             LockScreen::ScreenType screen_type,
-                             LoginDataDispatcher* data_dispatcher)
+                             LockScreen::ScreenType screen_type)
     : debug_data_dispatcher_(std::make_unique<DebugDataDispatcherTransformer>(
           initial_note_action_state,
-          data_dispatcher,
+          Shell::Get()->login_screen_controller()->data_dispatcher(),
           base::BindRepeating(
               &LockDebugView::UpdatePerUserActionContainerAndLayout,
               base::Unretained(this)))),
@@ -668,7 +672,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
 
   auto debug_detachable_base_model =
-      std::make_unique<DebugLoginDetachableBaseModel>(data_dispatcher);
+      std::make_unique<DebugLoginDetachableBaseModel>();
   debug_detachable_base_model_ = debug_detachable_base_model.get();
 
   lock_ = new LockContentsView(initial_note_action_state, screen_type,

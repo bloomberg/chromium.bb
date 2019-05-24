@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -268,7 +270,7 @@ void OobeUIDialogDelegate::SetShouldDisplayCaptivePortal(bool should_display) {
 
 void OobeUIDialogDelegate::Show() {
   dialog_widget_->Show();
-  SetState(ash::mojom::OobeDialogState::GAIA_SIGNIN);
+  SetState(ash::OobeDialogState::GAIA_SIGNIN);
 
   if (should_display_captive_portal_)
     GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
@@ -288,7 +290,7 @@ void OobeUIDialogDelegate::Hide() {
   if (!dialog_widget_)
     return;
   dialog_widget_->Hide();
-  SetState(ash::mojom::OobeDialogState::HIDDEN);
+  SetState(ash::OobeDialogState::HIDDEN);
 }
 
 void OobeUIDialogDelegate::Close() {
@@ -300,19 +302,17 @@ void OobeUIDialogDelegate::Close() {
   dialog_widget_->Close();
 }
 
-void OobeUIDialogDelegate::SetState(ash::mojom::OobeDialogState state) {
+void OobeUIDialogDelegate::SetState(ash::OobeDialogState state) {
   if (!dialog_widget_ || state_ == state)
     return;
 
-  // Gaia WebUI is preloaded, so it's possible that WebUI send certain state
+  // Gaia WebUI is preloaded, so it's possible for WebUI to send state updates
   // while the widget is not visible. Defer the state update until Show().
-  if (!dialog_widget_->IsVisible() &&
-      state != ash::mojom::OobeDialogState::HIDDEN) {
+  if (!dialog_widget_->IsVisible() && state != ash::OobeDialogState::HIDDEN)
     return;
-  }
 
   state_ = state;
-  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogState(state_);
+  ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state_);
 }
 
 void OobeUIDialogDelegate::UpdateSizeAndPosition(int width, int height) {

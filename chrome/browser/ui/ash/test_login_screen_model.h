@@ -29,6 +29,8 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
       const AccountId& account_id,
       const std::string& locale,
       const std::vector<ash::InputMethodItem>& keyboard_layouts) override;
+  void HandleFocusLeavingLockScreenApps(bool reverse) override;
+  void NotifyOobeDialogState(ash::OobeDialogState state) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestLoginScreenModel);

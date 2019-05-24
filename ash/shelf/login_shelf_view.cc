@@ -380,11 +380,7 @@ LoginShelfView::TestUiUpdateDelegate::~TestUiUpdateDelegate() = default;
 
 LoginShelfView::LoginShelfView(
     LockScreenActionBackgroundController* lock_screen_action_background)
-    : lock_screen_action_background_(lock_screen_action_background),
-      tray_action_observer_(this),
-      lock_screen_action_background_observer_(this),
-      shutdown_controller_observer_(this),
-      login_screen_controller_observer_(this) {
+    : lock_screen_action_background_(lock_screen_action_background) {
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the lock screen or status area. This view should otherwise not
   // be focusable.
@@ -418,9 +414,9 @@ LoginShelfView::LoginShelfView(
   tray_action_observer_.Add(Shell::Get()->tray_action());
   shutdown_controller_observer_.Add(Shell::Get()->shutdown_controller());
   lock_screen_action_background_observer_.Add(lock_screen_action_background);
-  login_screen_controller_observer_.Add(
-      Shell::Get()->login_screen_controller());
   locale_change_observer_.Add(Shell::Get()->locale_update_controller());
+  login_data_dispatcher_observer_.Add(
+      Shell::Get()->login_screen_controller()->data_dispatcher());
   UpdateUi();
 }
 
@@ -543,7 +539,7 @@ void LoginShelfView::SetKioskApps(
   UpdateUi();
 }
 
-void LoginShelfView::SetLoginDialogState(mojom::OobeDialogState state) {
+void LoginShelfView::SetLoginDialogState(OobeDialogState state) {
   dialog_state_ = state;
   UpdateUi();
 }
@@ -585,13 +581,13 @@ void LoginShelfView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
   UpdateUi();
 }
 
-void LoginShelfView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
-  SetLoginDialogState(state);
-}
-
 void LoginShelfView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   login_screen_has_users_ = !users.empty();
   UpdateUi();
+}
+
+void LoginShelfView::OnOobeDialogStateChanged(OobeDialogState state) {
+  SetLoginDialogState(state);
 }
 
 void LoginShelfView::OnLocaleChanged() {
@@ -653,7 +649,7 @@ void LoginShelfView::UpdateUi() {
   GetViewByID(kParentAccess)->SetVisible(is_locked && show_parent_access_);
 
   bool is_login_primary = (session_state == SessionState::LOGIN_PRIMARY);
-  bool dialog_visible = dialog_state_ != mojom::OobeDialogState::HIDDEN;
+  bool dialog_visible = dialog_state_ != OobeDialogState::HIDDEN;
   bool is_oobe = (session_state == SessionState::OOBE);
 
   bool user_session_started =
@@ -671,14 +667,13 @@ void LoginShelfView::UpdateUi() {
   // 5. No users sessions have started. Button is hidden from all post login
   // screens like sync consent, etc.
   GetViewByID(kBrowseAsGuest)
-      ->SetVisible(
-          (is_login_primary || (is_oobe && allow_guest_in_oobe_)) &&
-          allow_guest_ &&
-          dialog_state_ != mojom::OobeDialogState::WRONG_HWID_WARNING &&
-          dialog_state_ != mojom::OobeDialogState::SAML_PASSWORD_CONFIRM &&
-          (dialog_state_ != mojom::OobeDialogState::GAIA_SIGNIN ||
-           !login_screen_has_users_) &&
-          !user_session_started);
+      ->SetVisible((is_login_primary || (is_oobe && allow_guest_in_oobe_)) &&
+                   allow_guest_ &&
+                   dialog_state_ != OobeDialogState::WRONG_HWID_WARNING &&
+                   dialog_state_ != OobeDialogState::SAML_PASSWORD_CONFIRM &&
+                   (dialog_state_ != OobeDialogState::GAIA_SIGNIN ||
+                    !login_screen_has_users_) &&
+                   !user_session_started);
 
   // Show add user button when it's in login screen and Oobe UI dialog is not
   // visible. The button should not appear if the device is not connected to a
@@ -690,8 +685,7 @@ void LoginShelfView::UpdateUi() {
   // 3. Oobe UI dialog is not visible or is currently showing gaia signin
   // screen.
   kiosk_apps_button_->SetVisible(
-      (!dialog_visible ||
-       dialog_state_ == mojom::OobeDialogState::GAIA_SIGNIN) &&
+      (!dialog_visible || dialog_state_ == OobeDialogState::GAIA_SIGNIN) &&
       kiosk_apps_button_->HasApps() && (is_login_primary || is_oobe));
 
   UpdateButtonColors(is_oobe);

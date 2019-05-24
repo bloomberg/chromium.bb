@@ -168,8 +168,10 @@ void LoginScreenClient::FocusLockScreenApps(bool reverse) {
   // If delegate is not set, or it fails to handle focus request, call
   // |HandleFocusLeavingLockScreenApps| so the lock screen mojo service can
   // give focus to the next window in the tab order.
-  if (!delegate_ || !delegate_->HandleFocusLockScreenApps(reverse))
-    login_screen_->HandleFocusLeavingLockScreenApps(reverse);
+  if (!delegate_ || !delegate_->HandleFocusLockScreenApps(reverse)) {
+    ash::LoginScreen::Get()->GetModel()->HandleFocusLeavingLockScreenApps(
+        reverse);
+  }
 }
 
 void LoginScreenClient::FocusOobeDialog() {

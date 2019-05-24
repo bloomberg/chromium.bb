@@ -131,6 +131,13 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
 
     // Called when parent access code input dialog visibility should change.
     virtual void OnSetShowParentAccessDialog(bool show);
+
+    // Called when focus is leaving a lock screen app window due to tabbing.
+    // |reverse| - whether the tab order is reversed.
+    virtual void OnFocusLeavingLockScreenApps(bool reverse);
+
+    // Called when the state of the OOBE dialog is changed.
+    virtual void OnOobeDialogStateChanged(OobeDialogState state);
   };
 
   LoginDataDispatcher();
@@ -182,6 +189,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void SetDetachableBasePairingStatus(
       DetachableBasePairingStatus pairing_status);
   void SetShowParentAccessDialog(bool show);
+  void HandleFocusLeavingLockScreenApps(bool reverse) override;
+  void NotifyOobeDialogState(OobeDialogState state) override;
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;

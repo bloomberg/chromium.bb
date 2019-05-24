@@ -50,7 +50,6 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
   void DisableAuthForUser(
       const AccountId& account_id,
       ash::mojom::AuthDisabledDataPtr auth_disabled_data) override;
-  void HandleFocusLeavingLockScreenApps(bool reverse) override;
   void SetSystemInfo(bool show_if_hidden,
                      const std::string& os_version_label_text,
                      const std::string& enterprise_info_text,
@@ -61,7 +60,6 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
   void SetPublicSessionShowFullManagementDisclosure(
       bool show_full_management_disclosure) override;
   void ShowKioskAppError(const std::string& message) override;
-  void NotifyOobeDialogState(ash::mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;
   void SetShutdownButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;

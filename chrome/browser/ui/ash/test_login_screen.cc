@@ -68,8 +68,6 @@ void TestLoginScreen::DisableAuthForUser(
     const AccountId& account_id,
     ash::mojom::AuthDisabledDataPtr auth_disabled_data) {}
 
-void TestLoginScreen::HandleFocusLeavingLockScreenApps(bool reverse) {}
-
 void TestLoginScreen::SetSystemInfo(bool show_if_hidden,
                                     const std::string& os_version_label_text,
                                     const std::string& enterprise_info_text,
@@ -87,9 +85,6 @@ void TestLoginScreen::SetPublicSessionShowFullManagementDisclosure(
     bool show_full_management_disclosure) {}
 
 void TestLoginScreen::ShowKioskAppError(const std::string& message) {}
-
-void TestLoginScreen::NotifyOobeDialogState(ash::mojom::OobeDialogState state) {
-}
 
 void TestLoginScreen::SetAddUserButtonEnabled(bool enable) {}
 

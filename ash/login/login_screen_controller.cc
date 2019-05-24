@@ -292,22 +292,12 @@ void LoginScreenController::ShowFeedback() {
   login_screen_client_->ShowFeedback();
 }
 
-void LoginScreenController::AddObserver(
-    LoginScreenControllerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void LoginScreenController::RemoveObserver(
-    LoginScreenControllerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void LoginScreenController::FlushForTesting() {
   login_screen_client_.FlushForTesting();
 }
 
 LoginScreenModel* LoginScreenController::GetModel() {
-  return DataDispatcher();
+  return &login_data_dispatcher_;
 }
 
 void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
@@ -345,13 +335,11 @@ void LoginScreenController::ShowErrorMessage(int32_t login_attempts,
 }
 
 void LoginScreenController::ShowWarningBanner(const base::string16& message) {
-  if (DataDispatcher())
-    DataDispatcher()->ShowWarningBanner(message);
+  login_data_dispatcher_.ShowWarningBanner(message);
 }
 
 void LoginScreenController::HideWarningBanner() {
-  if (DataDispatcher())
-    DataDispatcher()->HideWarningBanner();
+  login_data_dispatcher_.HideWarningBanner();
 }
 
 void LoginScreenController::ClearErrors() {
@@ -363,10 +351,10 @@ void LoginScreenController::SetAuthType(
     proximity_auth::mojom::AuthType auth_type,
     const base::string16& initial_value) {
   if (auth_type == proximity_auth::mojom::AuthType::USER_CLICK) {
-    DataDispatcher()->SetTapToUnlockEnabledForUser(account_id,
-                                                   true /*enabled*/);
+    login_data_dispatcher_.SetTapToUnlockEnabledForUser(account_id,
+                                                        true /*enabled*/);
   } else if (auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN) {
-    DataDispatcher()->SetForceOnlineSignInForUser(account_id);
+    login_data_dispatcher_.SetForceOnlineSignInForUser(account_id);
   } else {
     NOTIMPLEMENTED();
   }
@@ -376,34 +364,24 @@ void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
                                                  bool is_enabled) {
   // Chrome will update pin pod state every time user tries to authenticate.
   // LockScreen is destroyed in the case of authentication success.
-  if (DataDispatcher())
-    DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
+  login_data_dispatcher_.SetPinEnabledForUser(account_id, is_enabled);
 }
 
 void LoginScreenController::NotifyFingerprintAuthResult(
     const AccountId& account_id,
     bool successful) {
-  if (DataDispatcher())
-    DataDispatcher()->NotifyFingerprintAuthResult(account_id, successful);
+  login_data_dispatcher_.NotifyFingerprintAuthResult(account_id, successful);
 }
 
 void LoginScreenController::EnableAuthForUser(const AccountId& account_id) {
-  if (DataDispatcher())
-    DataDispatcher()->EnableAuthForUser(account_id);
+  login_data_dispatcher_.EnableAuthForUser(account_id);
 }
 
 void LoginScreenController::DisableAuthForUser(
     const AccountId& account_id,
     ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
-  if (DataDispatcher()) {
-    DataDispatcher()->DisableAuthForUser(account_id,
-                                         std::move(auth_disabled_data));
-  }
-}
-
-void LoginScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
-  for (auto& observer : observers_)
-    observer.OnFocusLeavingLockScreenApps(reverse);
+  login_data_dispatcher_.DisableAuthForUser(account_id,
+                                            std::move(auth_disabled_data));
 }
 
 void LoginScreenController::SetSystemInfo(
@@ -411,10 +389,8 @@ void LoginScreenController::SetSystemInfo(
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {
-  if (DataDispatcher()) {
-    DataDispatcher()->SetSystemInfo(show_if_hidden, os_version_label_text,
-                                    enterprise_info_text, bluetooth_name);
-  }
+  login_data_dispatcher_.SetSystemInfo(show_if_hidden, os_version_label_text,
+                                       enterprise_info_text, bluetooth_name);
 }
 
 void LoginScreenController::IsReadyForPassword(
@@ -425,16 +401,13 @@ void LoginScreenController::IsReadyForPassword(
 void LoginScreenController::SetPublicSessionDisplayName(
     const AccountId& account_id,
     const std::string& display_name) {
-  if (DataDispatcher())
-    DataDispatcher()->SetPublicSessionDisplayName(account_id, display_name);
+  login_data_dispatcher_.SetPublicSessionDisplayName(account_id, display_name);
 }
 
 void LoginScreenController::SetPublicSessionShowFullManagementDisclosure(
     bool is_full_management_disclosure_needed) {
-  if (DataDispatcher()) {
-    DataDispatcher()->SetPublicSessionShowFullManagementDisclosure(
-        is_full_management_disclosure_needed);
-  }
+  login_data_dispatcher_.SetPublicSessionShowFullManagementDisclosure(
+      is_full_management_disclosure_needed);
 }
 
 void LoginScreenController::ShowKioskAppError(const std::string& message) {
@@ -443,12 +416,6 @@ void LoginScreenController::ShowKioskAppError(const std::string& message) {
       base::Optional<base::string16>(base::string16()) /*dismiss_text*/,
       true /*visible_on_lock_screen*/);
   Shell::Get()->toast_manager()->Show(toast_data);
-}
-
-void LoginScreenController::NotifyOobeDialogState(
-    mojom::OobeDialogState state) {
-  for (auto& observer : observers_)
-    observer.OnOobeDialogStateChanged(state);
 }
 
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
@@ -473,8 +440,7 @@ void LoginScreenController::SetShowParentAccessButton(bool show) {
 }
 
 void LoginScreenController::SetShowParentAccessDialog(bool show) {
-  if (DataDispatcher())
-    DataDispatcher()->SetShowParentAccessDialog(show);
+  login_data_dispatcher_.SetShowParentAccessDialog(show);
 }
 
 void LoginScreenController::FocusLoginShelf(bool reverse) {
@@ -549,12 +515,6 @@ void LoginScreenController::OnParentAccessValidationComplete(
     OnParentAccessValidation callback,
     bool success) {
   std::move(callback).Run(base::make_optional<bool>(success));
-}
-
-LoginDataDispatcher* LoginScreenController::DataDispatcher() const {
-  if (!ash::LockScreen::HasInstance())
-    return nullptr;
-  return ash::LockScreen::Get()->data_dispatcher();
 }
 
 void LoginScreenController::OnShow() {

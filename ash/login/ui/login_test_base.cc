@@ -151,8 +151,9 @@ void LoginTestBase::AddChildUsers(size_t num_users) {
 }
 
 LoginDataDispatcher* LoginTestBase::DataDispatcher() {
-  return LockScreen::HasInstance() ? LockScreen::Get()->data_dispatcher()
-                                   : &data_dispatcher_;
+  return LockScreen::HasInstance()
+             ? Shell::Get()->login_screen_controller()->data_dispatcher()
+             : &data_dispatcher_;
 }
 
 void LoginTestBase::TearDown() {

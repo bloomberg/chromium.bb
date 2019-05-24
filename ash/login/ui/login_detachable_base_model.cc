@@ -7,8 +7,10 @@
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_observer.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "ash/shell.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 
@@ -19,10 +21,9 @@ namespace {
 class LoginDetachableBaseModelImpl : public LoginDetachableBaseModel,
                                      public DetachableBaseObserver {
  public:
-  LoginDetachableBaseModelImpl(DetachableBaseHandler* detachable_base_handler,
-                               LoginDataDispatcher* login_data_dispatcher)
-      : detachable_base_handler_(detachable_base_handler),
-        login_data_dispatcher_(login_data_dispatcher) {
+  explicit LoginDetachableBaseModelImpl(
+      DetachableBaseHandler* detachable_base_handler)
+      : detachable_base_handler_(detachable_base_handler) {
     detachable_base_observer_.Add(detachable_base_handler);
   }
 
@@ -42,7 +43,10 @@ class LoginDetachableBaseModelImpl : public LoginDetachableBaseModel,
   // DetachableBaseObserver:
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override {
-    login_data_dispatcher_->SetDetachableBasePairingStatus(pairing_status);
+    Shell::Get()
+        ->login_screen_controller()
+        ->data_dispatcher()
+        ->SetDetachableBasePairingStatus(pairing_status);
   }
   void OnDetachableBaseRequiresUpdateChanged(bool requires_update) override {}
 
@@ -50,7 +54,6 @@ class LoginDetachableBaseModelImpl : public LoginDetachableBaseModel,
   DetachableBaseHandler* detachable_base_handler_;
   ScopedObserver<DetachableBaseHandler, DetachableBaseObserver>
       detachable_base_observer_{this};
-  LoginDataDispatcher* login_data_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDetachableBaseModelImpl);
 };
@@ -59,10 +62,9 @@ class LoginDetachableBaseModelImpl : public LoginDetachableBaseModel,
 
 // static
 std::unique_ptr<LoginDetachableBaseModel> LoginDetachableBaseModel::Create(
-    DetachableBaseHandler* detachable_base_handler,
-    LoginDataDispatcher* login_data_dispatcher) {
-  return std::make_unique<LoginDetachableBaseModelImpl>(detachable_base_handler,
-                                                        login_data_dispatcher);
+    DetachableBaseHandler* detachable_base_handler) {
+  return std::make_unique<LoginDetachableBaseModelImpl>(
+      detachable_base_handler);
 }
 
 }  // namespace ash

@@ -81,7 +81,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
       const base::Optional<AccountId>& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogSize(int width, int height) override;
-  void UpdateOobeDialogState(ash::mojom::OobeDialogState state) override;
+  void UpdateOobeDialogState(ash::OobeDialogState state) override;
   const user_manager::UserList GetUsers() override;
   void ShowFeedback() override;
   void ShowResetScreen() override;

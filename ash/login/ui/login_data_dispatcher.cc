@@ -83,6 +83,12 @@ void LoginDataDispatcher::Observer::OnDetachableBasePairingStatusChanged(
 
 void LoginDataDispatcher::Observer::OnSetShowParentAccessDialog(bool show) {}
 
+void LoginDataDispatcher::Observer::OnFocusLeavingLockScreenApps(bool reverse) {
+}
+
+void LoginDataDispatcher::Observer::OnOobeDialogStateChanged(
+    OobeDialogState state) {}
+
 LoginDataDispatcher::LoginDataDispatcher() = default;
 
 LoginDataDispatcher::~LoginDataDispatcher() = default;
@@ -227,6 +233,16 @@ void LoginDataDispatcher::SetDetachableBasePairingStatus(
 void LoginDataDispatcher::SetShowParentAccessDialog(bool show) {
   for (auto& observer : observers_)
     observer.OnSetShowParentAccessDialog(show);
+}
+
+void LoginDataDispatcher::HandleFocusLeavingLockScreenApps(bool reverse) {
+  for (auto& observer : observers_)
+    observer.OnFocusLeavingLockScreenApps(reverse);
+}
+
+void LoginDataDispatcher::NotifyOobeDialogState(OobeDialogState state) {
+  for (auto& observer : observers_)
+    observer.OnOobeDialogStateChanged(state);
 }
 
 }  // namespace ash

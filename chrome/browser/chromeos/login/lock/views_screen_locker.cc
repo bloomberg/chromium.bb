@@ -291,7 +291,7 @@ void ViewsScreenLocker::UnregisterLockScreenAppFocusHandler() {
 }
 
 void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
-  LoginScreenClient::Get()->login_screen()->HandleFocusLeavingLockScreenApps(
+  ash::LoginScreen::Get()->GetModel()->HandleFocusLeavingLockScreenApps(
       reverse);
 }
 

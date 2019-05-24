@@ -372,8 +372,6 @@ component("ash") {
     "lock_screen_action/lock_screen_note_launcher.h",
     "login/login_screen_controller.cc",
     "login/login_screen_controller.h",
-    "login/login_screen_controller_observer.cc",
-    "login/login_screen_controller_observer.h",
     "login/ui/animated_rounded_image_view.cc",
     "login/ui/animated_rounded_image_view.h",
     "login/ui/animation_frame.h",

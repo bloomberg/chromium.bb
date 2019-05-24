@@ -25,3 +25,5 @@ void TestLoginScreenModel::SetPublicSessionKeyboardLayouts(
     const AccountId& account_id,
     const std::string& locale,
     const std::vector<ash::InputMethodItem>& keyboard_layouts) {}
+void TestLoginScreenModel::HandleFocusLeavingLockScreenApps(bool reverse) {}
+void TestLoginScreenModel::NotifyOobeDialogState(ash::OobeDialogState state) {}

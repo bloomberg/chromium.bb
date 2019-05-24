@@ -8,13 +8,12 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/login/login_screen_controller_observer.h"
+#include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -22,7 +21,6 @@ class PrefRegistrySimple;
 
 namespace ash {
 
-class LoginDataDispatcher;
 class SystemTrayNotifier;
 
 // LoginScreenController implements mojom::LoginScreen and wraps the
@@ -103,10 +101,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void FocusOobeDialog();
   void NotifyUserActivity();
 
-  // Add or remove an observer.
-  void AddObserver(LoginScreenControllerObserver* observer);
-  void RemoveObserver(LoginScreenControllerObserver* observer);
-
   // Enable or disable authentication for the debug overlay.
   enum class ForceFailAuth { kOff, kImmediate, kDelayed };
   void set_force_fail_auth_for_debug_overlay(ForceFailAuth force_fail) {
@@ -138,7 +132,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void DisableAuthForUser(
       const AccountId& account_id,
       ash::mojom::AuthDisabledDataPtr auth_disabled_data) override;
-  void HandleFocusLeavingLockScreenApps(bool reverse) override;
   void SetSystemInfo(bool show_if_hidden,
                      const std::string& os_version_label_text,
                      const std::string& enterprise_info_text,
@@ -149,7 +142,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void SetPublicSessionShowFullManagementDisclosure(
       bool is_full_management_disclosure_needed) override;
   void ShowKioskAppError(const std::string& message) override;
-  void NotifyOobeDialogState(mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;
   void SetShutdownButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
@@ -171,19 +163,20 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
     return authentication_stage_;
   }
 
+  LoginDataDispatcher* data_dispatcher() { return &login_data_dispatcher_; }
+
  private:
   void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);
   void OnParentAccessValidationComplete(OnParentAccessValidation callback,
                                         bool success);
-
-  // Returns the active data dispatcher or nullptr if there is no lock screen.
-  LoginDataDispatcher* DataDispatcher() const;
 
   // Common code that is called when the login/lock screen is shown.
   void OnShow();
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
+
+  LoginDataDispatcher login_data_dispatcher_;
 
   // Client interface in chrome browser. May be null in tests.
   mojom::LoginScreenClientPtr login_screen_client_;
@@ -194,8 +187,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   AuthenticationStage authentication_stage_ = AuthenticationStage::kIdle;
 
   SystemTrayNotifier* system_tray_notifier_;
-
-  base::ObserverList<LoginScreenControllerObserver>::Unchecked observers_;
 
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;

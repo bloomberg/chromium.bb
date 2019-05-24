@@ -281,7 +281,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
   // Initially, focus should be with the lock screen app - when the app loses
   // focus (notified via mojo interface), shelf should get the focus next.
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
-  controller->HandleFocusLeavingLockScreenApps(false /*reverse*/);
+  DataDispatcher()->HandleFocusLeavingLockScreenApps(false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 
   // Reversing focus should bring focus back to the lock screen app.
@@ -293,7 +293,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
 
   // Have the app tab out in reverse tab order - in this case, the status area
   // should get the focus.
-  controller->HandleFocusLeavingLockScreenApps(true /*reverse*/);
+  DataDispatcher()->HandleFocusLeavingLockScreenApps(true /*reverse*/);
   EXPECT_TRUE(VerifyFocused(status_area));
 
   // Tabbing out of the status area (in default order) should focus the lock
@@ -306,7 +306,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
 
   // Tab out of the lock screen app once more - the shelf should get the focus
   // again.
-  controller->HandleFocusLeavingLockScreenApps(false /*reverse*/);
+  DataDispatcher()->HandleFocusLeavingLockScreenApps(false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 }
 
@@ -335,8 +335,7 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
 
   // Tab out of the lock screen app - shelf should get the focus.
-  Shell::Get()->login_screen_controller()->HandleFocusLeavingLockScreenApps(
-      false /*reverse*/);
+  DataDispatcher()->HandleFocusLeavingLockScreenApps(false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 
   // Move the lock screen note taking to available state (which happens when the
