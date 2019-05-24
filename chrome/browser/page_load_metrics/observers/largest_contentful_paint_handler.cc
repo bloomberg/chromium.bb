@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
+
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -76,6 +77,28 @@ TimingInfo::TimingInfo(
     : time_(time), size_(size), type_(type) {}
 
 TimingInfo::TimingInfo(const TimingInfo& other) = default;
+
+std::unique_ptr<base::trace_event::TracedValue> TimingInfo::DataAsTraceValue()
+    const {
+  std::unique_ptr<base::trace_event::TracedValue> data =
+      std::make_unique<base::trace_event::TracedValue>();
+  data->SetInteger("durationInMilliseconds", time_.value().InMilliseconds());
+  data->SetInteger("size", size_);
+  data->SetString("type", TypeInString());
+  return data;
+}
+
+std::string TimingInfo::TypeInString() const {
+  switch (Type()) {
+    case page_load_metrics::PageLoadMetricsObserver::LargestContentType::kText:
+      return "text";
+    case page_load_metrics::PageLoadMetricsObserver::LargestContentType::kImage:
+      return "image";
+    default:
+      NOTREACHED();
+      return "NOT_REACHED";
+  }
+}
 
 // static
 void LargestContentfulPaintHandler::SetTestMode(bool enabled) {

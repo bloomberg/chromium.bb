@@ -9,7 +9,9 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/trace_event_analyzer.h"
 #include "base/time/time.h"
+#include "base/trace_event/traced_value.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
@@ -411,6 +413,47 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestTextPaint) {
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
         kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, LargestContentPaint_Trace) {
+  using trace_analyzer::Query;
+  trace_analyzer::Start("*");
+  {
+    page_load_metrics::mojom::PageLoadTiming timing;
+    page_load_metrics::InitPageLoadTimingForTest(&timing);
+    timing.navigation_start = base::Time::FromDoubleT(1);
+    timing.paint_timing->largest_text_paint =
+        base::TimeDelta::FromMilliseconds(600);
+    timing.paint_timing->largest_text_paint_size = 1000;
+    PopulateRequiredTimingFields(&timing);
+
+    NavigateAndCommit(GURL(kTestUrl1));
+    SimulateTimingUpdate(timing);
+
+    // Simulate closing the tab.
+    DeleteContents();
+  }
+  auto analyzer = trace_analyzer::Stop();
+  trace_analyzer::TraceEventVector events;
+  Query q =
+      Query::EventNameIs("NavStartToLargestContentfulPaint::AllFrames::UKM");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ("loading", events[0]->category);
+  EXPECT_TRUE(events[0]->HasArg("data"));
+  std::unique_ptr<base::Value> arg;
+  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
+  base::DictionaryValue* arg_dict;
+  EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
+  int time;
+  EXPECT_TRUE(arg_dict->GetInteger("durationInMilliseconds", &time));
+  EXPECT_EQ(600, time);
+  int size;
+  EXPECT_TRUE(arg_dict->GetInteger("size", &size));
+  EXPECT_EQ(1000, size);
+  std::string type;
+  EXPECT_TRUE(arg_dict->GetString("type", &type));
+  EXPECT_EQ("text", type);
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LargestContentPaint_OnlyText) {

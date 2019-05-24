@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
@@ -306,6 +307,9 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
   if (!paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
+    TRACE_EVENT_INSTANT1(
+        "loading", "NavStartToLargestContentfulPaint::AllFrames::UKM",
+        TRACE_EVENT_SCOPE_THREAD, "data", paint.DataAsTraceValue());
     builder
         .SetExperimental_PaintTiming_NavigationToLargestContentPaintAllFrames(
             paint.Time().value().InMilliseconds());

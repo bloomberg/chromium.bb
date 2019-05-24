@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/trace_event/traced_value.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
@@ -40,12 +41,16 @@ class TimingInfo {
     return !time_;
   }
 
+  std::unique_ptr<base::trace_event::TracedValue> DataAsTraceValue() const;
+
  private:
   TimingInfo() = delete;
+  std::string TypeInString() const;
   // This is only for DCHECK. We will never need the inconsistent state.
   bool HasConsistentTimeAndSize() const {
     return (time_ && size_) || (!time_ && !size_);
   }
+  // This uses mainthread navigation start as origin.
   base::Optional<base::TimeDelta> time_;
   uint64_t size_;
   page_load_metrics::PageLoadMetricsObserver::LargestContentType type_;
