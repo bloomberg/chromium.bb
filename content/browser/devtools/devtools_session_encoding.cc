@@ -37,9 +37,7 @@ class ContentShellPlatform : public Platform {
 };
 }  // namespace
 bool EnableInternalDevToolsBinaryProtocol() {
-  static bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableInternalDevToolsBinaryProtocol);
-  return !disabled;
+  return false;
 }
 
 // TODO(johannes): Push error handling to client code after devtools_session.cc
