@@ -446,7 +446,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   // results.
   int previous_score = -1;
   for (size_t i = 0; i < num_results; i++) {
-    if (matches->size() >= AutocompleteProvider::kMaxMatches) {
+    if (matches->size() >= provider_max_matches_) {
       break;
     }
     const base::DictionaryValue* result = nullptr;

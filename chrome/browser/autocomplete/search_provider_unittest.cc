@@ -1016,7 +1016,7 @@ TEST_F(SearchProviderTest, DontCrowdOutSingleWords) {
   AutocompleteMatch wyt_match;
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("fi"),
                                                       &wyt_match));
-  ASSERT_EQ(AutocompleteProvider::kMaxMatches + 1, provider_->matches().size());
+  ASSERT_EQ(provider_->provider_max_matches() + 1, provider_->matches().size());
   AutocompleteMatch term_match;
   EXPECT_TRUE(FindMatchWithDestination(term_url, &term_match));
   EXPECT_GT(term_match.relevance, wyt_match.relevance);

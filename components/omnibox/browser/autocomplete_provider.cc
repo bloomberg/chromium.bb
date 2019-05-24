@@ -22,18 +22,16 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/history_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/scored_history_match.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/url_formatter/url_fixer.h"
 #include "url/gurl.h"
 
-// static
-const size_t AutocompleteProvider::kMaxMatches = 3;
-
 AutocompleteProvider::AutocompleteProvider(Type type)
-    : done_(true),
-      type_(type) {
-}
+    : provider_max_matches_(OmniboxFieldTrial::GetProviderMaxMatches(type)),
+      done_(true),
+      type_(type) {}
 
 // static
 const char* AutocompleteProvider::TypeToString(Type type) {

@@ -751,16 +751,16 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
       if (params->cancel_flag.IsSet())
         return;  // Canceled in the middle of a query, give up.
 
-      // We only need kMaxMatches results in the end, but before we get there we
-      // need to promote lower-quality matches that are prefixes of higher-
-      // quality matches, and remove lower-quality redirects.  So we ask for
-      // more results than we need, of every prefix type, in hopes this will
+      // We only need provider_max_matches_ results in the end, but before we
+      // get there we need to promote lower-quality matches that are prefixes of
+      // higher- quality matches, and remove lower-quality redirects.  So we ask
+      // for more results than we need, of every prefix type, in hopes this will
       // give us far more than enough to work with.  CullRedirects() will then
-      // reduce the list to the best kMaxMatches results.
+      // reduce the list to the best provider_max_matches_ results.
       std::string prefixed_input =
           base::UTF16ToUTF8(i->prefix + params->input.text());
-      db->AutocompleteForPrefix(prefixed_input, kMaxMatches * 2, !backend,
-                                &url_matches);
+      db->AutocompleteForPrefix(prefixed_input, provider_max_matches_ * 2,
+                                !backend, &url_matches);
       for (history::URLRows::const_iterator j(url_matches.begin());
            j != url_matches.end(); ++j) {
         const GURL& row_url = j->url();
@@ -854,11 +854,11 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   }
 
   const size_t max_results =
-      kMaxMatches + (params->exact_suggestion_is_in_history ? 1 : 0);
+      provider_max_matches_ + (params->exact_suggestion_is_in_history ? 1 : 0);
   if (backend) {
     // Remove redirects and trim list to size.  We want to provide up to
-    // kMaxMatches results plus the What You Typed result, if it was added to
-    // params->matches above.
+    // provider_max_matches_ results plus the What You Typed result, if it was
+    // added to params->matches above.
     CullRedirects(backend, &params->matches, max_results);
   } else if (params->matches.size() > max_results) {
     // Simply trim the list to size.

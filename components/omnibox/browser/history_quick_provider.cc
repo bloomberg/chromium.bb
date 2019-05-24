@@ -79,7 +79,7 @@ void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
   ScoredHistoryMatches matches = in_memory_url_index_->HistoryItemsForTerms(
       autocomplete_input_.text(), autocomplete_input_.cursor_position(),
-      AutocompleteProvider::kMaxMatches);
+      provider_max_matches_);
   if (matches.empty())
     return;
 

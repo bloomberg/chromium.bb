@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 namespace base {
@@ -231,6 +232,14 @@ bool SearchHistoryDisable(
 void GetDemotionsByType(
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     DemotionMultipliers* demotions_by_type);
+
+// ---------------------------------------------------------
+// For the UIMaxAutocompleteMatchesByProvider experiment that's part of the
+// bundled omnibox field trial.
+
+// If the user is in an experiment group that specifies the max results for a
+// particular provider, returns the limit. Otherwise returns the default limit.
+size_t GetProviderMaxMatches(AutocompleteProvider::Type provider);
 
 // ---------------------------------------------------------
 // For the HistoryURL provider new scoring experiment that is part of the
@@ -480,6 +489,7 @@ extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
 
 // Parameter names used by UI experiments.
 extern const char kUIMaxAutocompleteMatchesParam[];
+extern const char kUIMaxAutocompleteMatchesByProviderParam[];
 extern const char kUIVerticalMarginParam[];
 
 // Parameter name and values used by the Simplify HTTPS experiment.

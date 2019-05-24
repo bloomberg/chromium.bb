@@ -327,8 +327,9 @@ void HistoryQuickProviderTest::RunTestWithCursor(
 
   ac_matches_ = provider_->matches();
 
-  // We should have gotten back at most AutocompleteProvider::kMaxMatches.
-  EXPECT_LE(ac_matches_.size(), AutocompleteProvider::kMaxMatches);
+  // We should have gotten back at most
+  // AutocompleteProvider::provider_max_matches().
+  EXPECT_LE(ac_matches_.size(), provider_->provider_max_matches());
 
   // If the number of expected and actual matches aren't equal then we need
   // test no further, but let's do anyway so that we know which URLs failed.

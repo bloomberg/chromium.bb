@@ -203,7 +203,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   // Remove duplicates.  This is important because it's common to have multiple
   // shortcuts pointing to the same URL, e.g., ma, mai, and mail all pointing
   // to mail.google.com, so typing "m" will return them all.  If we then simply
-  // clamp to kMaxMatches and let the SortAndDedupMatches take care of
+  // clamp to provider_max_matches_ and let the SortAndDedupMatches take care of
   // collapsing the duplicates, we'll effectively only be returning one match,
   // instead of several possibilities.
   //
@@ -217,7 +217,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   std::partial_sort(
       shortcut_matches.begin(),
       shortcut_matches.begin() +
-          std::min(AutocompleteProvider::kMaxMatches, shortcut_matches.size()),
+          std::min(provider_max_matches_, shortcut_matches.size()),
       shortcut_matches.end(),
       [](const ShortcutMatch& elem1, const ShortcutMatch& elem2) {
         // Ensure a stable sort by sorting equal-relevance matches
@@ -226,10 +226,9 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
                    ? elem1.contents < elem2.contents
                    : elem1.relevance > elem2.relevance;
       });
-  if (shortcut_matches.size() > AutocompleteProvider::kMaxMatches) {
-    shortcut_matches.erase(
-        shortcut_matches.begin() + AutocompleteProvider::kMaxMatches,
-        shortcut_matches.end());
+  if (shortcut_matches.size() > provider_max_matches_) {
+    shortcut_matches.erase(shortcut_matches.begin() + provider_max_matches_,
+                           shortcut_matches.end());
   }
   // Create and initialize autocomplete matches from shortcut matches.
   // Also guarantee that all relevance scores are decreasing (but do not assign

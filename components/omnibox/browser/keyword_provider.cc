@@ -361,7 +361,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   } else {
     for (TemplateURLService::TURLsAndMeaningfulLengths::const_iterator i(
              matches.begin());
-         (i != matches.end()) && (matches_.size() < kMaxMatches); ++i) {
+         (i != matches.end()) && (matches_.size() < provider_max_matches_);
+         ++i) {
       // Skip keywords that we've already added.  It's possible we may have
       // retrieved the same keyword twice.  For example, the keyword
       // "abc.abc.com" may be retrieved for the input "abc" from the full
