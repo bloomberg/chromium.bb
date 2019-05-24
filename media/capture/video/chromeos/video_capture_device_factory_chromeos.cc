@@ -113,8 +113,7 @@ void VideoCaptureDeviceFactoryChromeOS::OnGotCameraInfo(
     const std::string& device_id,
     int32_t result,
     cros::mojom::CameraInfoPtr camera_info) {
-  reprocess_manager_->UpdateStaticMetadata(
-      device_id, std::move(camera_info->static_camera_characteristics));
+  reprocess_manager_->UpdateCameraInfo(device_id, std::move(camera_info));
 }
 
 void VideoCaptureDeviceFactoryChromeOS::BindCrosImageCaptureRequest(

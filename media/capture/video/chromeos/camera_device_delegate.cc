@@ -429,11 +429,11 @@ void CameraDeviceDelegate::OnGotCameraInfo(
         FROM_HERE, "Failed to get camera info");
     return;
   }
+
+  reprocess_manager_->UpdateCameraInfo(device_descriptor_.device_id,
+                                       camera_info);
   SortCameraMetadata(&camera_info->static_camera_characteristics);
   static_metadata_ = std::move(camera_info->static_camera_characteristics);
-
-  reprocess_manager_->UpdateStaticMetadata(device_descriptor_.device_id,
-                                           static_metadata_);
 
   const cros::mojom::CameraMetadataEntryPtr* sensor_orientation =
       GetMetadataEntry(

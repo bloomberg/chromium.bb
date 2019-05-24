@@ -23,12 +23,11 @@ void CrosImageCaptureImpl::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void CrosImageCaptureImpl::GetStaticMetadata(
-    const std::string& device_id,
-    GetStaticMetadataCallback callback) {
-  reprocess_manager_->GetStaticMetadata(
+void CrosImageCaptureImpl::GetCameraInfo(const std::string& device_id,
+                                         GetCameraInfoCallback callback) {
+  reprocess_manager_->GetCameraInfo(
       device_id, media::BindToCurrentLoop(base::BindOnce(
-                     &CrosImageCaptureImpl::OnGotStaticMetadata,
+                     &CrosImageCaptureImpl::OnGotCameraInfo,
                      base::Unretained(this), std::move(callback))));
 }
 
@@ -40,10 +39,10 @@ void CrosImageCaptureImpl::SetReprocessOption(
       device_id, effect, media::BindToCurrentLoop(std::move(callback)));
 }
 
-void CrosImageCaptureImpl::OnGotStaticMetadata(
-    GetStaticMetadataCallback callback,
-    cros::mojom::CameraMetadataPtr static_metadata) {
-  std::move(callback).Run(std::move(static_metadata));
+void CrosImageCaptureImpl::OnGotCameraInfo(
+    GetCameraInfoCallback callback,
+    cros::mojom::CameraInfoPtr camera_info) {
+  std::move(callback).Run(std::move(camera_info));
 }
 
 }  // namespace media

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "media/capture/video/chromeos/mojo/camera_metadata.mojom.h"
+#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "media/capture/video/chromeos/reprocess_manager.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -23,15 +23,15 @@ class CrosImageCaptureImpl : public cros::mojom::CrosImageCapture {
 
   // cros::mojom::CrosImageCapture implementations.
 
-  void GetStaticMetadata(const std::string& device_id,
-                         GetStaticMetadataCallback callback) override;
+  void GetCameraInfo(const std::string& device_id,
+                     GetCameraInfoCallback callback) override;
   void SetReprocessOption(const std::string& device_id,
                           cros::mojom::Effect effect,
                           SetReprocessOptionCallback callback) override;
 
  private:
-  void OnGotStaticMetadata(GetStaticMetadataCallback callback,
-                           cros::mojom::CameraMetadataPtr static_metadata);
+  void OnGotCameraInfo(GetCameraInfoCallback callback,
+                       cros::mojom::CameraInfoPtr camera_info);
 
   ReprocessManager* reprocess_manager_;  // weak
 

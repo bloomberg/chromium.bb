@@ -129,9 +129,10 @@ cca.mojo.ImageCapture.prototype.getPhotoCapabilities = function() {
   return Promise
       .all([
         this.capture_.getPhotoCapabilities(),
-        this.mojoCapture_.getStaticMetadata(this.deviceId_),
+        this.mojoCapture_.getCameraInfo(this.deviceId_),
       ])
-      .then(([capabilities, {staticMetadata}]) => {
+      .then(([capabilities, {cameraInfo}]) => {
+        const staticMetadata = cameraInfo.staticCameraCharacteristics;
         let supportedEffects = [cros.mojom.Effect.NO_EFFECT];
         if (cca.mojo.getMetadataData_(staticMetadata, portraitModeTag).length >
             0) {
@@ -188,7 +189,8 @@ cca.mojo.getPhotoResolutions = function(deviceId) {
   const numElementPerEntry = 4;
 
   const mojoCapture = cros.mojom.CrosImageCapture.getProxy();
-  return mojoCapture.getStaticMetadata(deviceId).then(({staticMetadata}) => {
+  return mojoCapture.getCameraInfo(deviceId).then(({cameraInfo}) => {
+    const staticMetadata = cameraInfo.staticCameraCharacteristics;
     const streamConfigs = cca.mojo.getMetadataData_(
         staticMetadata,
         cros.mojom.CameraMetadataTag
@@ -235,7 +237,8 @@ cca.mojo.getVideoConfigs = function(deviceId) {
   const numElementPerEntry = 4;
 
   var mojoCapture = cros.mojom.CrosImageCapture.getProxy();
-  return mojoCapture.getStaticMetadata(deviceId).then(({staticMetadata}) => {
+  return mojoCapture.getCameraInfo(deviceId).then(({cameraInfo}) => {
+    const staticMetadata = cameraInfo.staticCameraCharacteristics;
     const minFrameDurationConfigs = cca.mojo.getMetadataData_(
         staticMetadata,
         cros.mojom.CameraMetadataTag
@@ -262,5 +265,18 @@ cca.mojo.getVideoConfigs = function(deviceId) {
       }
     }
     return supportedConfigs;
+  });
+};
+
+/**
+ * Gets camera facing for given device.
+ * @param {string} deviceId The renderer-facing device Id of the target camera
+ *   which could be retrieved from MediaDeviceInfo.deviceId.
+ * @return {Promise<cros.mojom.CameraFacing>} Promise of device facing.
+ */
+cca.mojo.getCameraFacing = function(deviceId) {
+  var mojoCapture = cros.mojom.CrosImageCapture.getProxy();
+  return mojoCapture.getCameraInfo(deviceId).then(({cameraInfo}) => {
+    return cameraInfo.facing;
   });
 };

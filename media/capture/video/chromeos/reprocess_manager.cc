@@ -44,7 +44,7 @@ int ReprocessManager::GetReprocessReturnCode(
   return kReprocessSuccess;
 }
 
-ReprocessManager::ReprocessManager(UpdateStaticMetadataCallback callback)
+ReprocessManager::ReprocessManager(UpdateCameraInfoCallback callback)
     : sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE})),
       impl(new ReprocessManager::ReprocessManagerImpl(std::move(callback))) {}
@@ -86,28 +86,28 @@ void ReprocessManager::FlushReprocessOptions(const std::string& device_id) {
           base::Unretained(impl.get()), device_id));
 }
 
-void ReprocessManager::GetStaticMetadata(const std::string& device_id,
-                                         GetStaticMetadataCallback callback) {
+void ReprocessManager::GetCameraInfo(const std::string& device_id,
+                                     GetCameraInfoCallback callback) {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::GetStaticMetadata,
+      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::GetCameraInfo,
                      base::Unretained(impl.get()), device_id,
                      std::move(callback)));
 }
 
-void ReprocessManager::UpdateStaticMetadata(
+void ReprocessManager::UpdateCameraInfo(
     const std::string& device_id,
-    const cros::mojom::CameraMetadataPtr& metadata) {
+    const cros::mojom::CameraInfoPtr& camera_info) {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &ReprocessManager::ReprocessManagerImpl::UpdateStaticMetadata,
-          base::Unretained(impl.get()), device_id, metadata.Clone()));
+      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::UpdateCameraInfo,
+                     base::Unretained(impl.get()), device_id,
+                     camera_info.Clone()));
 }
 
 ReprocessManager::ReprocessManagerImpl::ReprocessManagerImpl(
-    UpdateStaticMetadataCallback callback)
-    : update_static_metadata_callback_(std::move(callback)) {}
+    UpdateCameraInfoCallback callback)
+    : update_camera_info_callback_(std::move(callback)) {}
 
 ReprocessManager::ReprocessManagerImpl::~ReprocessManagerImpl() = default;
 
@@ -162,27 +162,25 @@ void ReprocessManager::ReprocessManagerImpl::FlushReprocessOptions(
   reprocess_task_queue_map_[device_id].swap(empty_queue);
 }
 
-void ReprocessManager::ReprocessManagerImpl::GetStaticMetadata(
+void ReprocessManager::ReprocessManagerImpl::GetCameraInfo(
     const std::string& device_id,
-    GetStaticMetadataCallback callback) {
-  if (static_metadata_map_[device_id]) {
-    std::move(callback).Run(static_metadata_map_[device_id].Clone());
+    GetCameraInfoCallback callback) {
+  if (camera_info_map_[device_id]) {
+    std::move(callback).Run(camera_info_map_[device_id].Clone());
   } else {
-    get_static_metadata_callback_queue_map_[device_id].push(
-        std::move(callback));
-    update_static_metadata_callback_.Run(device_id);
+    get_camera_info_callback_queue_map_[device_id].push(std::move(callback));
+    update_camera_info_callback_.Run(device_id);
   }
 }
 
-void ReprocessManager::ReprocessManagerImpl::UpdateStaticMetadata(
+void ReprocessManager::ReprocessManagerImpl::UpdateCameraInfo(
     const std::string& device_id,
-    cros::mojom::CameraMetadataPtr metadata) {
-  static_metadata_map_[device_id] = std::move(metadata);
+    cros::mojom::CameraInfoPtr camera_info) {
+  camera_info_map_[device_id] = std::move(camera_info);
 
-  auto& callback_queue = get_static_metadata_callback_queue_map_[device_id];
+  auto& callback_queue = get_camera_info_callback_queue_map_[device_id];
   while (!callback_queue.empty()) {
-    std::move(callback_queue.front())
-        .Run(static_metadata_map_[device_id].Clone());
+    std::move(callback_queue.front()).Run(camera_info_map_[device_id].Clone());
     callback_queue.pop();
   }
 }

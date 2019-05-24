@@ -23,11 +23,11 @@ RendererFacingCrosImageCapture::RendererFacingCrosImageCapture(
 
 RendererFacingCrosImageCapture::~RendererFacingCrosImageCapture() = default;
 
-void RendererFacingCrosImageCapture::GetStaticMetadataWithRealId(
-    GetStaticMetadataCallback callback,
+void RendererFacingCrosImageCapture::GetCameraInfoWithRealId(
+    GetCameraInfoCallback callback,
     const base::Optional<std::string>& device_id) {
   DCHECK(device_id.has_value());
-  cros_image_capture_->GetStaticMetadata(*device_id, std::move(callback));
+  cros_image_capture_->GetCameraInfo(*device_id, std::move(callback));
 }
 
 void RendererFacingCrosImageCapture::SetReprocessOptionWithRealId(
@@ -39,14 +39,13 @@ void RendererFacingCrosImageCapture::SetReprocessOptionWithRealId(
                                           std::move(callback));
 }
 
-void RendererFacingCrosImageCapture::GetStaticMetadata(
+void RendererFacingCrosImageCapture::GetCameraInfo(
     const std::string& source_id,
-    GetStaticMetadataCallback callback) {
+    GetCameraInfoCallback callback) {
   mapping_callback_.Run(
-      source_id,
-      media::BindToCurrentLoop(base::BindOnce(
-          &RendererFacingCrosImageCapture::GetStaticMetadataWithRealId,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
+      source_id, media::BindToCurrentLoop(base::BindOnce(
+                     &RendererFacingCrosImageCapture::GetCameraInfoWithRealId,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void RendererFacingCrosImageCapture::SetReprocessOption(
