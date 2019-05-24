@@ -51,4 +51,41 @@ TEST_F(EventTargetTest, PreventDefaultCalled) {
       kDocumentLevelTouchPreventDefaultCalled, 1);
 }
 
+TEST_F(EventTargetTest, UseCountPassiveTouchEventListener) {
+  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(),
+                                     WebFeature::kPassiveTouchEventListener));
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
+      "window.addEventListener('touchstart', function() {}, {passive: true});");
+  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
+                                    WebFeature::kPassiveTouchEventListener));
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kNonPassiveTouchEventListener));
+}
+
+TEST_F(EventTargetTest, UseCountNonPassiveTouchEventListener) {
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kNonPassiveTouchEventListener));
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
+      "window.addEventListener('touchstart', function() {}, {passive: "
+      "false});");
+  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
+                                    WebFeature::kNonPassiveTouchEventListener));
+  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(),
+                                     WebFeature::kPassiveTouchEventListener));
+}
+
+TEST_F(EventTargetTest, UseCountPassiveTouchEventListenerPassiveNotSpecified) {
+  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(),
+                                     WebFeature::kPassiveTouchEventListener));
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
+      "window.addEventListener('touchstart', function() {});");
+  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
+                                    WebFeature::kPassiveTouchEventListener));
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kNonPassiveTouchEventListener));
+}
+
 }  // namespace blink

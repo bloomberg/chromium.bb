@@ -442,6 +442,19 @@ bool EventTarget::AddEventListenerInternal(
   if (!listener)
     return false;
 
+  if (event_type == event_type_names::kTouchcancel ||
+      event_type == event_type_names::kTouchend ||
+      event_type == event_type_names::kTouchmove ||
+      event_type == event_type_names::kTouchstart) {
+    if (options->passive()) {
+      UseCounter::Count(*(ExecutingWindow()->document()),
+                        WebFeature::kPassiveTouchEventListener);
+    } else {
+      UseCounter::Count(*(ExecutingWindow()->document()),
+                        WebFeature::kNonPassiveTouchEventListener);
+    }
+  }
+
   V8DOMActivityLogger* activity_logger =
       V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
   if (activity_logger) {

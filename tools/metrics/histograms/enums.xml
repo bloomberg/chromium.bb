@@ -23314,6 +23314,8 @@ Called by update_net_error_codes.py.-->
   <int value="2900" label="TwoValuedOverflow"/>
   <int value="2901" label="TextFragmentAnchor"/>
   <int value="2902" label="TextFragmentAnchorMatchFound"/>
+  <int value="2903" label="NonPassiveTouchEventListener"/>
+  <int value="2904" label="PassiveTouchEventListener"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
