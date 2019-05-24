@@ -224,11 +224,8 @@ enum StorageLocation {
   // Subdirectory under /home/root/<id>/crosvm.
   STORAGE_CRYPTOHOME_ROOT = 0;
 
-  // The user's Downloads directory, under /home/user/<id>/Downloads.
-  STORAGE_CRYPTOHOME_DOWNLOADS = 1;
-
   // Subdirectory under /home/root/<id>/pvm.
-  STORAGE_CRYPTOHOME_PLUGINVM = 2;
+  STORAGE_CRYPTOHOME_PLUGINVM = 1;
 }
 
 enum DiskImageStatus {
