@@ -8,12 +8,12 @@
 
 namespace autofill {
 
-UserInfo::Field::Field(const base::string16& display_text,
-                       const base::string16& a11y_description,
+UserInfo::Field::Field(base::string16 display_text,
+                       base::string16 a11y_description,
                        bool is_obfuscated,
                        bool selectable)
-    : display_text_(display_text),
-      a11y_description_(a11y_description),
+    : display_text_(std::move(display_text)),
+      a11y_description_(std::move(a11y_description)),
       is_obfuscated_(is_obfuscated),
       selectable_(selectable) {}
 
@@ -66,8 +66,8 @@ std::ostream& operator<<(std::ostream& os, const UserInfo& user_info) {
   return os << "]";
 }
 
-FooterCommand::FooterCommand(const base::string16& display_text)
-    : display_text_(display_text) {}
+FooterCommand::FooterCommand(base::string16 display_text)
+    : display_text_(std::move(display_text)) {}
 
 FooterCommand::FooterCommand(const FooterCommand& footer_command) = default;
 
@@ -102,8 +102,8 @@ std::ostream& operator<<(std::ostream& os, const FallbackSheetType& type) {
 }
 
 AccessorySheetData::AccessorySheetData(FallbackSheetType sheet_type,
-                                       const base::string16& title)
-    : sheet_type_(sheet_type), title_(title) {}
+                                       base::string16 title)
+    : sheet_type_(sheet_type), title_(std::move(title)) {}
 
 AccessorySheetData::AccessorySheetData(const AccessorySheetData& data) =
     default;
@@ -138,8 +138,8 @@ std::ostream& operator<<(std::ostream& os, const AccessorySheetData& data) {
 }
 
 AccessorySheetData::Builder::Builder(FallbackSheetType type,
-                                     const base::string16& title)
-    : accessory_sheet_data_(type, title) {}
+                                     base::string16 title)
+    : accessory_sheet_data_(type, std::move(title)) {}
 
 AccessorySheetData::Builder::~Builder() = default;
 
@@ -154,46 +154,50 @@ AccessorySheetData::Builder& AccessorySheetData::Builder::AddUserInfo() & {
 }
 
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendSimpleField(
-    const base::string16& text) && {
+    base::string16 text) && {
   // Calls AppendSimpleField(...)& since |this| is an lvalue.
-  return std::move(AppendSimpleField(text));
+  return std::move(AppendSimpleField(std::move(text)));
 }
 
 AccessorySheetData::Builder& AccessorySheetData::Builder::AppendSimpleField(
-    const base::string16& text) & {
-  return AppendField(text, text, false, true);
+    base::string16 text) & {
+  base::string16 display_text = text;
+  base::string16 a11y_description = std::move(text);
+  return AppendField(display_text, a11y_description, false, true);
 }
 
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendField(
-    const base::string16& display_text,
-    const base::string16& a11y_description,
+    base::string16 display_text,
+    base::string16 a11y_description,
     bool is_obfuscated,
     bool selectable) && {
   // Calls AppendField(...)& since |this| is an lvalue.
-  return std::move(
-      AppendField(display_text, a11y_description, is_obfuscated, selectable));
+  return std::move(AppendField(std::move(display_text),
+                               std::move(a11y_description), is_obfuscated,
+                               selectable));
 }
 
 AccessorySheetData::Builder& AccessorySheetData::Builder::AppendField(
-    const base::string16& display_text,
-    const base::string16& a11y_description,
+    base::string16 display_text,
+    base::string16 a11y_description,
     bool is_obfuscated,
     bool selectable) & {
   accessory_sheet_data_.mutable_user_info_list().back().add_field(
-      UserInfo::Field(display_text, a11y_description, is_obfuscated,
-                      selectable));
+      UserInfo::Field(std::move(display_text), std::move(a11y_description),
+                      is_obfuscated, selectable));
   return *this;
 }
 
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendFooterCommand(
-    const base::string16& display_text) && {
+    base::string16 display_text) && {
   // Calls AppendFooterCommand(...)& since |this| is an lvalue.
-  return std::move(AppendFooterCommand(display_text));
+  return std::move(AppendFooterCommand(std::move(display_text)));
 }
 
 AccessorySheetData::Builder& AccessorySheetData::Builder::AppendFooterCommand(
-    const base::string16& display_text) & {
-  accessory_sheet_data_.add_footer_command(FooterCommand(display_text));
+    base::string16 display_text) & {
+  accessory_sheet_data_.add_footer_command(
+      FooterCommand(std::move(display_text)));
   return *this;
 }
 

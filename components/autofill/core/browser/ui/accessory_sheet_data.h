@@ -20,8 +20,8 @@ class UserInfo {
   // number.
   class Field {
    public:
-    Field(const base::string16& display_text,
-          const base::string16& a11y_description,
+    Field(base::string16 display_text,
+          base::string16 a11y_description,
           bool is_obfuscated,
           bool selectable);
     Field(const Field& field);
@@ -74,7 +74,7 @@ std::ostream& operator<<(std::ostream& out, const UserInfo& user_info);
 // Represents a command below the suggestions, such as "Manage password...".
 class FooterCommand {
  public:
-  explicit FooterCommand(const base::string16& display_text);
+  explicit FooterCommand(base::string16 display_text);
   FooterCommand(const FooterCommand& footer_command);
   FooterCommand(FooterCommand&& footer_command);
 
@@ -110,7 +110,7 @@ class AccessorySheetData {
   class Builder;
 
   explicit AccessorySheetData(FallbackSheetType sheet_type,
-                              const base::string16& title);
+                              base::string16 title);
   AccessorySheetData(const AccessorySheetData& data);
   AccessorySheetData(AccessorySheetData&& data);
 
@@ -166,7 +166,7 @@ std::ostream& operator<<(std::ostream& out, const AccessorySheetData& data);
 //       .Build();
 class AccessorySheetData::Builder {
  public:
-  Builder(FallbackSheetType type, const base::string16& title);
+  Builder(FallbackSheetType type, base::string16 title);
   ~Builder();
 
   // Adds a new UserInfo object to |accessory_sheet_data_|.
@@ -174,22 +174,22 @@ class AccessorySheetData::Builder {
   Builder& AddUserInfo() &;
 
   // Appends a selectable, non-obfuscated field to the last UserInfo object.
-  Builder&& AppendSimpleField(const base::string16& text) &&;
-  Builder& AppendSimpleField(const base::string16& text) &;
+  Builder&& AppendSimpleField(base::string16 text) &&;
+  Builder& AppendSimpleField(base::string16 text) &;
 
   // Appends a field to the last UserInfo object.
-  Builder&& AppendField(const base::string16& display_text,
-                        const base::string16& a11y_description,
+  Builder&& AppendField(base::string16 display_text,
+                        base::string16 a11y_description,
                         bool is_obfuscated,
                         bool selectable) &&;
-  Builder& AppendField(const base::string16& display_text,
-                       const base::string16& a11y_description,
+  Builder& AppendField(base::string16 display_text,
+                       base::string16 a11y_description,
                        bool is_obfuscated,
                        bool selectable) &;
 
   // Appends a new footer command to |accessory_sheet_data_|.
-  Builder&& AppendFooterCommand(const base::string16& display_text) &&;
-  Builder& AppendFooterCommand(const base::string16& display_text) &;
+  Builder&& AppendFooterCommand(base::string16 display_text) &&;
+  Builder& AppendFooterCommand(base::string16 display_text) &;
 
   // This class returns the constructed AccessorySheetData object. Since this
   // would render the builder unusable, it's required to destroy the object
