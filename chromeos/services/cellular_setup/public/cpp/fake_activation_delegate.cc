@@ -18,6 +18,10 @@ mojom::ActivationDelegatePtr FakeActivationDelegate::GenerateInterfacePtr() {
   return interface_ptr;
 }
 
+void FakeActivationDelegate::DisconnectBindings() {
+  bindings_.CloseAllBindings();
+}
+
 void FakeActivationDelegate::OnActivationStarted(
     mojom::CellularMetadataPtr cellular_metadata) {
   cellular_metadata_list_.push_back(std::move(cellular_metadata));

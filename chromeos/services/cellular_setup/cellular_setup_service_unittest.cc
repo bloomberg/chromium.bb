@@ -31,6 +31,7 @@ using CarrierPortalHandlerPair =
 
 const char kTestCellularNetworkGuid[] = "testCellularNetworkGuid";
 const char kTestPaymentUrl[] = "testPaymentUrl";
+const char kTestPaymentPostData[] = "testPaymentPostData";
 const char kTestCarrier[] = "testCarrier";
 const char kTestMeid[] = "testMeid";
 const char kTestImei[] = "testImei";
@@ -130,7 +131,8 @@ class CellularSetupServiceTest : public testing::Test {
     size_t num_elements_before_call = cellular_metadata_list.size();
 
     GetLastActivationDelegate()->OnActivationStarted(
-        mojom::CellularMetadata::New(GURL(kTestPaymentUrl), kTestCarrier,
+        mojom::CellularMetadata::New(GURL(kTestPaymentUrl),
+                                     kTestPaymentPostData, kTestCarrier,
                                      kTestMeid, kTestImei, kTestMdn));
     GetLastActivationDelegate().FlushForTesting();
 
@@ -222,8 +224,9 @@ TEST_F(CellularSetupServiceTest, StartActivation_Success) {
   SendCarrierPortalStatusUpdate(
       mojom::CarrierPortalStatus::kPortalLoadedAndUserCompletedPayment, &pair);
 
-  NotifyLastDelegateThatActivationFinished(mojom::ActivationResult::kSuccess,
-                                           fake_activation_delegate.get());
+  NotifyLastDelegateThatActivationFinished(
+      mojom::ActivationResult::kSuccessfullyStartedActivation,
+      fake_activation_delegate.get());
 }
 
 TEST_F(CellularSetupServiceTest, StartActivation_PortalFailsToLoad) {
@@ -256,23 +259,6 @@ TEST_F(CellularSetupServiceTest, StartActivation_ErrorDuringPayment) {
 
   NotifyLastDelegateThatActivationFinished(
       mojom::ActivationResult::kFailedToActivate,
-      fake_activation_delegate.get());
-}
-
-TEST_F(CellularSetupServiceTest, StartActivation_TimedOut) {
-  auto fake_activation_delegate = std::make_unique<FakeActivationDelegate>();
-
-  CarrierPortalHandlerPair pair = CallStartActivation(
-      kTestCellularNetworkGuid, fake_activation_delegate.get());
-  NotifyLastDelegateThatActivationStarted(fake_activation_delegate.get());
-
-  SendCarrierPortalStatusUpdate(
-      mojom::CarrierPortalStatus::kPortalLoadedWithoutPaidUser, &pair);
-  SendCarrierPortalStatusUpdate(
-      mojom::CarrierPortalStatus::kPortalLoadedAndUserCompletedPayment, &pair);
-
-  NotifyLastDelegateThatActivationFinished(
-      mojom::ActivationResult::kTimedOutActivating,
       fake_activation_delegate.get());
 }
 
