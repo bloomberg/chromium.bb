@@ -76,42 +76,42 @@ bool MapKeyCodeForScroll(int key_code,
   switch (key_code) {
     case VKEY_LEFT:
       *scroll_direction = kScrollLeftIgnoringWritingMode;
-      *scroll_granularity = kScrollByLine;
+      *scroll_granularity = ScrollGranularity::kScrollByLine;
       *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
       break;
     case VKEY_RIGHT:
       *scroll_direction = kScrollRightIgnoringWritingMode;
-      *scroll_granularity = kScrollByLine;
+      *scroll_granularity = ScrollGranularity::kScrollByLine;
       *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
       break;
     case VKEY_UP:
       *scroll_direction = kScrollUpIgnoringWritingMode;
-      *scroll_granularity = kScrollByLine;
+      *scroll_granularity = ScrollGranularity::kScrollByLine;
       *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
       break;
     case VKEY_DOWN:
       *scroll_direction = kScrollDownIgnoringWritingMode;
-      *scroll_granularity = kScrollByLine;
+      *scroll_granularity = ScrollGranularity::kScrollByLine;
       *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
       break;
     case VKEY_HOME:
       *scroll_direction = kScrollUpIgnoringWritingMode;
-      *scroll_granularity = kScrollByDocument;
+      *scroll_granularity = ScrollGranularity::kScrollByDocument;
       *scroll_use_uma = WebFeature::kScrollByKeyboardHomeEndKeys;
       break;
     case VKEY_END:
       *scroll_direction = kScrollDownIgnoringWritingMode;
-      *scroll_granularity = kScrollByDocument;
+      *scroll_granularity = ScrollGranularity::kScrollByDocument;
       *scroll_use_uma = WebFeature::kScrollByKeyboardHomeEndKeys;
       break;
     case VKEY_PRIOR:  // page up
       *scroll_direction = kScrollUpIgnoringWritingMode;
-      *scroll_granularity = kScrollByPage;
+      *scroll_granularity = ScrollGranularity::kScrollByPage;
       *scroll_use_uma = WebFeature::kScrollByKeyboardPageUpDownKeys;
       break;
     case VKEY_NEXT:  // page down
       *scroll_direction = kScrollDownIgnoringWritingMode;
-      *scroll_granularity = kScrollByPage;
+      *scroll_granularity = ScrollGranularity::kScrollByPage;
       *scroll_use_uma = WebFeature::kScrollByKeyboardPageUpDownKeys;
       break;
     default:
@@ -375,7 +375,8 @@ void KeyboardEventManager::DefaultSpaceEventHandler(
 
   // TODO(bokan): enable scroll customization in this case. See
   // crbug.com/410974.
-  if (scroll_manager_->LogicalScroll(direction, kScrollByPage, nullptr,
+  if (scroll_manager_->LogicalScroll(direction,
+                                     ScrollGranularity::kScrollByPage, nullptr,
                                      possible_focused_node)) {
     UseCounter::Count(frame_->GetDocument(),
                       WebFeature::kScrollByKeyboardSpacebarKey);

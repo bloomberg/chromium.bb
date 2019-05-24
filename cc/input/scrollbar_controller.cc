@@ -40,11 +40,13 @@ InputHandlerPointerResult ScrollbarController::HandleMouseDown(
   previous_pointer_position_ = position_in_widget;
   scrollbar_scroll_is_active_ = true;
   if (thumb_drag_in_progress_) {
-    scroll_result.scroll_units = ScrollUnitType::kPrecisePixel;
+    scroll_result.scroll_units =
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   } else {
     // TODO(arakeri): This needs to be updated to kLine once cc implements
     // handling it. crbug.com/959441
-    scroll_result.scroll_units = ScrollUnitType::kPixel;
+    scroll_result.scroll_units =
+        ui::input_types::ScrollGranularity::kScrollByPixel;
   }
 
   return scroll_result;
@@ -130,7 +132,8 @@ InputHandlerPointerResult ScrollbarController::HandleMouseMove(
   previous_pointer_position_ = position_in_widget;
   // Thumb drags have more granularity and are purely dependent on the pointer
   // movement. Hence we use kPrecisePixel when dragging the thumb.
-  scroll_result.scroll_units = ScrollUnitType::kPrecisePixel;
+  scroll_result.scroll_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
 
   return scroll_result;
 }

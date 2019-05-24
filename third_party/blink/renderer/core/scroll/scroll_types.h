@@ -46,7 +46,7 @@ inline ScrollOffset ToScrollOffset(const FloatPoint& p) {
 }
 
 using ScrollDirection = WebScrollDirection;
-using ScrollGranularity = WebScrollGranularity;
+using ui::input_types::ScrollGranularity;
 
 enum ScrollDirectionPhysical {
   kScrollUp,

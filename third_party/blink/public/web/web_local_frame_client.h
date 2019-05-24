@@ -75,6 +75,7 @@
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/events/types/scroll_types.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {
@@ -719,7 +720,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // will be continued in the parent process.
   virtual void BubbleLogicalScrollInParentFrame(
       WebScrollDirection direction,
-      WebScrollGranularity granularity) {}
+      ui::input_types::ScrollGranularity granularity) {}
 
   // MediaStream -----------------------------------------------------
 

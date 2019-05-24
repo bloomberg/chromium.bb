@@ -75,6 +75,7 @@
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -150,9 +151,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::WasActivatedOption,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
                               blink::kFirstScrollDirection,
                               blink::kLastScrollDirection)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollGranularity,
-                              blink::kFirstScrollGranularity,
-                              blink::kLastScrollGranularity)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(
+    ui::input_types::ScrollGranularity,
+    ui::input_types::ScrollGranularity::kFirstScrollGranularity,
+    ui::input_types::ScrollGranularity::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
                           blink::mojom::FeaturePolicyDisposition::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
@@ -1082,7 +1084,7 @@ IPC_MESSAGE_ROUTED2(FrameMsg_ScrollRectToVisible,
 // a logical scroll.
 IPC_MESSAGE_ROUTED2(FrameMsg_BubbleLogicalScroll,
                     blink::WebScrollDirection /* direction */,
-                    blink::WebScrollGranularity /* granularity */)
+                    ui::input_types::ScrollGranularity /* granularity */)
 
 // Tells the renderer to perform the given action on the media player location
 // at the given point in the view coordinate space.
@@ -1608,7 +1610,7 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_ScrollRectToVisibleInParentFrame,
 // process.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_BubbleLogicalScrollInParentFrame,
                     blink::WebScrollDirection /* direction */,
-                    blink::WebScrollGranularity /* granularity */)
+                    ui::input_types::ScrollGranularity /* granularity */)
 
 // Sent to notify that a frame called |window.focus()|.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)

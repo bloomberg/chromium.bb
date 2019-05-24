@@ -17,6 +17,7 @@
 #include "cc/input/touch_action.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
+#include "ui/events/types/scroll_types.h"
 
 namespace gfx {
 class Point;
@@ -34,14 +35,6 @@ namespace cc {
 class ScrollElasticityHelper;
 
 enum PointerResultType { kUnhandled = 0, kScrollbarScroll };
-enum ScrollUnitType {
-  kUnknown = 0,
-  kPrecisePixel,
-  kPixel,
-  kPage,
-  kLine,
-  kDocument
-};
 
 struct CC_EXPORT InputHandlerPointerResult {
   InputHandlerPointerResult();
@@ -50,7 +43,7 @@ struct CC_EXPORT InputHandlerPointerResult {
   PointerResultType type;
 
   // Tells what scroll_units should be used.
-  ScrollUnitType scroll_units;
+  ui::input_types::ScrollGranularity scroll_units;
 
   // If the input handler processed the event as a scrollbar scroll, it will
   // return a gfx::ScrollOffset that produces the necessary scroll. However,

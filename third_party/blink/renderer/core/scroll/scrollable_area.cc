@@ -139,14 +139,14 @@ ScrollbarOrientation ScrollableArea::ScrollbarOrientationFromDirection(
 float ScrollableArea::ScrollStep(ScrollGranularity granularity,
                                  ScrollbarOrientation orientation) const {
   switch (granularity) {
-    case kScrollByLine:
+    case ScrollGranularity::kScrollByLine:
       return LineStep(orientation);
-    case kScrollByPage:
+    case ScrollGranularity::kScrollByPage:
       return PageStep(orientation);
-    case kScrollByDocument:
+    case ScrollGranularity::kScrollByDocument:
       return DocumentStep(orientation);
-    case kScrollByPixel:
-    case kScrollByPrecisePixel:
+    case ScrollGranularity::kScrollByPixel:
+    case ScrollGranularity::kScrollByPrecisePixel:
       return PixelStep(orientation);
     default:
       NOTREACHED();

@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
+#include "ui/events/types/scroll_types.h"
 
 namespace blink {
 
@@ -85,8 +86,8 @@ class WebGestureEvent : public WebInputEvent {
       // Initial motion that triggered the scroll.
       float delta_x_hint;
       float delta_y_hint;
-      // Default initialized to WebScrollGranularity::kScrollByPrecisePixel.
-      WebScrollGranularity delta_hint_units;
+      // Default initialized to kScrollByPrecisePixel.
+      ui::input_types::ScrollGranularity delta_hint_units;
       // If true, this event will skip hit testing to find a scroll
       // target and instead just scroll the viewport.
       bool target_viewport;
@@ -113,14 +114,14 @@ class WebGestureEvent : public WebInputEvent {
       float velocity_x;
       float velocity_y;
       InertialPhaseState inertial_phase;
-      // Default initialized to WebScrollGranularity::kScrollByPrecisePixel.
-      WebScrollGranularity delta_units;
+      // Default initialized to kScrollByPrecisePixel.
+      ui::input_types::ScrollGranularity delta_units;
     } scroll_update;
 
     struct {
       // The original delta units the ScrollBegin and ScrollUpdates
       // were sent as.
-      WebScrollGranularity delta_units;
+      ui::input_types::ScrollGranularity delta_units;
       // The state of inertial phase scrolling. OSX has unique phases for normal
       // and momentum scroll events. Should always be kUnknownMomentumPhase for
       // touch based input as it generates GestureFlingStart instead.
@@ -221,7 +222,7 @@ class WebGestureEvent : public WebInputEvent {
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT float DeltaXInRootFrame() const;
   BLINK_PLATFORM_EXPORT float DeltaYInRootFrame() const;
-  BLINK_PLATFORM_EXPORT WebScrollGranularity DeltaUnits() const;
+  BLINK_PLATFORM_EXPORT ui::input_types::ScrollGranularity DeltaUnits() const;
   BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
   BLINK_PLATFORM_EXPORT InertialPhaseState InertialPhase() const;
   BLINK_PLATFORM_EXPORT bool Synthetic() const;

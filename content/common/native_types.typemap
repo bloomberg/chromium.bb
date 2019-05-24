@@ -90,5 +90,5 @@ type_mappings = [
   "content.mojom.WebCursor=content::WebCursor",
   "content.mojom.WebPopupType=blink::WebPopupType",
   "content.mojom.WebPreferences=content::WebPreferences",
-  "content.mojom.WebScrollGranularity=blink::WebScrollGranularity",
+  "content.mojom.ScrollGranularity=ui::input_types::ScrollGranularity",
 ]

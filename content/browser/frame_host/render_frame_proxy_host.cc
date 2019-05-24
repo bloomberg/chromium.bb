@@ -255,7 +255,7 @@ void RenderFrameProxyHost::ScrollRectToVisible(
 
 void RenderFrameProxyHost::BubbleLogicalScroll(
     blink::WebScrollDirection direction,
-    blink::WebScrollGranularity granularity) {
+    ui::input_types::ScrollGranularity granularity) {
   Send(new FrameMsg_BubbleLogicalScroll(routing_id_, direction, granularity));
 }
 

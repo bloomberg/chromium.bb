@@ -121,7 +121,7 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
         SyntheticWebGestureEventBuilder::BuildScrollBegin(
             distance.x(), -distance.y(), blink::WebGestureDevice::kTouchpad, 1);
     event.data.scroll_begin.delta_hint_units =
-        blink::WebScrollGranularity::kScrollByPixel;
+        ui::input_types::ScrollGranularity::kScrollByPixel;
     GetWidgetHost()->ForwardGestureEvent(event);
 
     const uint32_t kNumWheelScrolls = 2;
@@ -141,7 +141,7 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
               distance.x(), -distance.y(), 0,
               blink::WebGestureDevice::kTouchpad);
       event2.data.scroll_update.delta_units =
-          blink::WebScrollGranularity::kScrollByPixel;
+          ui::input_types::ScrollGranularity::kScrollByPixel;
       GetWidgetHost()->ForwardGestureEvent(event2);
 
       while (visual_state_callback_count_ <= i) {

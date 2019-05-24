@@ -786,17 +786,13 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       gesture.data.scroll_begin.pointer_count = details.touch_points();
       gesture.data.scroll_begin.delta_x_hint = details.scroll_x_hint();
       gesture.data.scroll_begin.delta_y_hint = details.scroll_y_hint();
-      gesture.data.scroll_begin.delta_hint_units =
-          static_cast<blink::WebScrollGranularity>(
-              details.scroll_begin_units());
+      gesture.data.scroll_begin.delta_hint_units = details.scroll_begin_units();
       break;
     case ET_GESTURE_SCROLL_UPDATE:
       gesture.SetType(WebInputEvent::kGestureScrollUpdate);
       gesture.data.scroll_update.delta_x = details.scroll_x();
       gesture.data.scroll_update.delta_y = details.scroll_y();
-      gesture.data.scroll_update.delta_units =
-          static_cast<blink::WebScrollGranularity>(
-              details.scroll_update_units());
+      gesture.data.scroll_update.delta_units = details.scroll_update_units();
       break;
     case ET_GESTURE_SCROLL_END:
       gesture.SetType(WebInputEvent::kGestureScrollEnd);
@@ -911,18 +907,18 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     switch (gesture_event->GetType()) {
       case blink::WebInputEvent::kGestureScrollUpdate:
         if (gesture_event->data.scroll_update.delta_units ==
-                blink::WebScrollGranularity::kScrollByPixel ||
+                ui::input_types::ScrollGranularity::kScrollByPixel ||
             gesture_event->data.scroll_update.delta_units ==
-                blink::WebScrollGranularity::kScrollByPrecisePixel) {
+                ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {
           gesture_event->data.scroll_update.delta_x *= scale;
           gesture_event->data.scroll_update.delta_y *= scale;
         }
         break;
       case blink::WebInputEvent::kGestureScrollBegin:
         if (gesture_event->data.scroll_begin.delta_hint_units ==
-                blink::WebScrollGranularity::kScrollByPixel ||
+                ui::input_types::ScrollGranularity::kScrollByPixel ||
             gesture_event->data.scroll_begin.delta_hint_units ==
-                blink::WebScrollGranularity::kScrollByPrecisePixel) {
+                ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {
           gesture_event->data.scroll_begin.delta_x_hint *= scale;
           gesture_event->data.scroll_begin.delta_y_hint *= scale;
         }

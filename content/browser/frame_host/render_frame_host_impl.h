@@ -1141,7 +1141,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::WebScrollIntoViewParams& params);
   void OnBubbleLogicalScrollInParentFrame(
       blink::WebScrollDirection direction,
-      blink::WebScrollGranularity granularity);
+      ui::input_types::ScrollGranularity granularity);
   void OnFrameDidCallFocus();
   void OnRenderFallbackContentInParentProcess();
   void OnTransferUserActivationFrom(int32_t source_routing_id);

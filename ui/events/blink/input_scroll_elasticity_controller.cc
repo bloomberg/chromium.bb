@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "cc/input/input_handler.h"
+#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 // InputScrollElasticityController is based on
@@ -171,7 +172,7 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
           gesture_event.data.scroll_begin.inertial_phase ==
               blink::WebGestureEvent::InertialPhaseState::kNonMomentum &&
           gesture_event.data.scroll_begin.delta_hint_units ==
-              blink::WebScrollGranularity::kScrollByPrecisePixel;
+              ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
       ObserveRealScrollBegin(enter_momentum, leave_momentum);
       break;
     }

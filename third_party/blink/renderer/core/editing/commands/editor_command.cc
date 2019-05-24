@@ -752,48 +752,48 @@ static bool ExecuteScrollPageBackward(LocalFrame& frame,
                                       Event*,
                                       EditorCommandSource,
                                       const String&) {
-  return frame.GetEventHandler().BubblingScroll(kScrollBlockDirectionBackward,
-                                                kScrollByPage);
+  return frame.GetEventHandler().BubblingScroll(
+      kScrollBlockDirectionBackward, ScrollGranularity::kScrollByPage);
 }
 
 static bool ExecuteScrollPageForward(LocalFrame& frame,
                                      Event*,
                                      EditorCommandSource,
                                      const String&) {
-  return frame.GetEventHandler().BubblingScroll(kScrollBlockDirectionForward,
-                                                kScrollByPage);
+  return frame.GetEventHandler().BubblingScroll(
+      kScrollBlockDirectionForward, ScrollGranularity::kScrollByPage);
 }
 
 static bool ExecuteScrollLineUp(LocalFrame& frame,
                                 Event*,
                                 EditorCommandSource,
                                 const String&) {
-  return frame.GetEventHandler().BubblingScroll(kScrollUpIgnoringWritingMode,
-                                                kScrollByLine);
+  return frame.GetEventHandler().BubblingScroll(
+      kScrollUpIgnoringWritingMode, ScrollGranularity::kScrollByLine);
 }
 
 static bool ExecuteScrollLineDown(LocalFrame& frame,
                                   Event*,
                                   EditorCommandSource,
                                   const String&) {
-  return frame.GetEventHandler().BubblingScroll(kScrollDownIgnoringWritingMode,
-                                                kScrollByLine);
+  return frame.GetEventHandler().BubblingScroll(
+      kScrollDownIgnoringWritingMode, ScrollGranularity::kScrollByLine);
 }
 
 static bool ExecuteScrollToBeginningOfDocument(LocalFrame& frame,
                                                Event*,
                                                EditorCommandSource,
                                                const String&) {
-  return frame.GetEventHandler().BubblingScroll(kScrollBlockDirectionBackward,
-                                                kScrollByDocument);
+  return frame.GetEventHandler().BubblingScroll(
+      kScrollBlockDirectionBackward, ScrollGranularity::kScrollByDocument);
 }
 
 static bool ExecuteScrollToEndOfDocument(LocalFrame& frame,
                                          Event*,
                                          EditorCommandSource,
                                          const String&) {
-  return frame.GetEventHandler().BubblingScroll(kScrollBlockDirectionForward,
-                                                kScrollByDocument);
+  return frame.GetEventHandler().BubblingScroll(
+      kScrollBlockDirectionForward, ScrollGranularity::kScrollByDocument);
 }
 
 static bool ExecuteSelectAll(LocalFrame& frame,
@@ -1859,13 +1859,15 @@ bool Editor::ExecuteCommand(const String& command_name, const String& value) {
   // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit
   // for editable nodes.
   DCHECK(GetFrame().GetDocument()->IsActive());
-  if (!CanEdit() && command_name == "moveToBeginningOfDocument")
+  if (!CanEdit() && command_name == "moveToBeginningOfDocument") {
     return GetFrame().GetEventHandler().BubblingScroll(
-        kScrollUpIgnoringWritingMode, kScrollByDocument);
+        kScrollUpIgnoringWritingMode, ScrollGranularity::kScrollByDocument);
+  }
 
-  if (!CanEdit() && command_name == "moveToEndOfDocument")
+  if (!CanEdit() && command_name == "moveToEndOfDocument") {
     return GetFrame().GetEventHandler().BubblingScroll(
-        kScrollDownIgnoringWritingMode, kScrollByDocument);
+        kScrollDownIgnoringWritingMode, ScrollGranularity::kScrollByDocument);
+  }
 
   if (command_name == "ToggleSpellPanel") {
     // TODO(editing-dev): Use of UpdateStyleAndLayout

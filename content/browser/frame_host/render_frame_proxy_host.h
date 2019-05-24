@@ -133,7 +133,7 @@ class RenderFrameProxyHost
   // Continues to bubble a logical scroll from the frame's process. Bubbling
   // continues from the frame owner element in the parent process.
   void BubbleLogicalScroll(blink::WebScrollDirection direction,
-                           blink::WebScrollGranularity granularity);
+                           ui::input_types::ScrollGranularity granularity);
 
   void set_render_frame_proxy_created(bool created) {
     render_frame_proxy_created_ = created;

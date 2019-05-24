@@ -86,8 +86,9 @@ TEST(BlinkEventUtilTest, NonPaginatedScrollBeginEvent) {
 }
 
 TEST(BlinkEventUtilTest, PaginatedScrollBeginEvent) {
-  ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_BEGIN, 1, 1,
-                                  ui::GestureEventDetails::ScrollUnits::PAGE);
+  ui::GestureEventDetails details(
+      ui::ET_GESTURE_SCROLL_BEGIN, 1, 1,
+      ui::input_types::ScrollGranularity::kScrollByPage);
   details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   auto event =
       CreateWebGestureEvent(details, base::TimeTicks(), gfx::PointF(1.f, 1.f),
@@ -117,8 +118,9 @@ TEST(BlinkEventUtilTest, NonPaginatedScrollUpdateEvent) {
 }
 
 TEST(BlinkEventUtilTest, PaginatedScrollUpdateEvent) {
-  ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE, 1, 1,
-                                  ui::GestureEventDetails::ScrollUnits::PAGE);
+  ui::GestureEventDetails details(
+      ui::ET_GESTURE_SCROLL_UPDATE, 1, 1,
+      ui::input_types::ScrollGranularity::kScrollByPage);
   details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   auto event =
       CreateWebGestureEvent(details, base::TimeTicks(), gfx::PointF(1.f, 1.f),
@@ -138,15 +140,15 @@ TEST(BlinkEventUtilTest, LineAndDocumentScrollEvents) {
       ui::ET_GESTURE_SCROLL_UPDATE,
   };
 
-  static const ui::GestureEventDetails::ScrollUnits units[] = {
-      ui::GestureEventDetails::ScrollUnits::LINE,
-      ui::GestureEventDetails::ScrollUnits::DOCUMENT,
+  static const ui::input_types::ScrollGranularity units[] = {
+      ui::input_types::ScrollGranularity::kScrollByLine,
+      ui::input_types::ScrollGranularity::kScrollByDocument,
   };
 
   for (size_t i = 0; i < base::size(types); i++) {
     ui::EventType type = types[i];
     for (size_t j = 0; j < base::size(units); j++) {
-      ui::GestureEventDetails::ScrollUnits unit = units[j];
+      ui::input_types::ScrollGranularity unit = units[j];
       ui::GestureEventDetails details(type, 1, 1, unit);
       details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
       auto event = CreateWebGestureEvent(details, base::TimeTicks(),

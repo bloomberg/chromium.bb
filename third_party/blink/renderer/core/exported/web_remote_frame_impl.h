@@ -92,7 +92,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void ScrollRectToVisible(const WebRect&,
                            const WebScrollIntoViewParams&) override;
   void BubbleLogicalScroll(WebScrollDirection direction,
-                           WebScrollGranularity granularity) override;
+                           ScrollGranularity granularity) override;
   void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) override;
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;

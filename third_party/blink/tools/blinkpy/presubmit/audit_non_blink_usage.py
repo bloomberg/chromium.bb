@@ -276,6 +276,7 @@ _CONFIG = [
             'cc::SnapStrictness',
             'gfx::RectToSkRect',
             'gfx::ScrollOffset',
+            'ui::input_types::ScrollGranularity',
 
             # Standalone utility libraries that only depend on //base
             'skia::.+',

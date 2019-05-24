@@ -3546,7 +3546,7 @@ void RenderFrameHostImpl::OnScrollRectToVisibleInParentFrame(
 
 void RenderFrameHostImpl::OnBubbleLogicalScrollInParentFrame(
     blink::WebScrollDirection direction,
-    blink::WebScrollGranularity granularity) {
+    ui::input_types::ScrollGranularity granularity) {
   if (!is_active())
     return;
 

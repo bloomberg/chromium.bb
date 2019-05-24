@@ -425,7 +425,7 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
 }
 
 void WebRemoteFrameImpl::BubbleLogicalScroll(WebScrollDirection direction,
-                                             WebScrollGranularity granularity) {
+                                             ScrollGranularity granularity) {
   Frame* parent_frame = GetFrame()->Tree().Parent();
   DCHECK(parent_frame);
   DCHECK(parent_frame->IsLocalFrame());

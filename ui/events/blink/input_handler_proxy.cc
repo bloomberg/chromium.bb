@@ -114,25 +114,6 @@ cc::InputHandler::ScrollInputType GestureScrollInputType(
   return cc::InputHandler::SCROLL_INPUT_UNKNOWN;
 }
 
-blink::WebScrollGranularity GestureScrollGranularity(
-    cc::ScrollUnitType cc_scroll_units) {
-  switch (cc_scroll_units) {
-    case cc::ScrollUnitType::kPixel:
-      return blink::WebScrollGranularity::kScrollByPixel;
-    case cc::ScrollUnitType::kPage:
-      return blink::WebScrollGranularity::kScrollByPage;
-    case cc::ScrollUnitType::kLine:
-      return blink::WebScrollGranularity::kScrollByLine;
-    case cc::ScrollUnitType::kDocument:
-      return blink::WebScrollGranularity::kScrollByDocument;
-    case cc::ScrollUnitType::kPrecisePixel:
-    case cc::ScrollUnitType::kUnknown:
-      // If the type is not set, always assume precise pixels.
-      return blink::WebScrollGranularity::kScrollByPrecisePixel;
-      break;
-  }
-}
-
 cc::SnapFlingController::GestureScrollType GestureScrollEventType(
     WebInputEvent::Type web_event_type) {
   switch (web_event_type) {
@@ -426,8 +407,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
   std::unique_ptr<WebGestureEvent> synthetic_gesture_event =
       std::make_unique<WebGestureEvent>(type, WebInputEvent::kNoModifiers, now,
                                         blink::WebGestureDevice::kScrollbar);
-  blink::WebScrollGranularity granularity =
-      GestureScrollGranularity(pointer_result.scroll_units);
+  ui::input_types::ScrollGranularity granularity = pointer_result.scroll_units;
   if (type == WebInputEvent::Type::kGestureScrollBegin) {
     // GestureEvent(s) expect the scroll delta to be flipped. The reason being
     // that gesture events scroll deltas are interpreted as the finger's delta
@@ -798,15 +778,16 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   cc::InputHandler::ScrollStatus scroll_status;
   if (gesture_event.data.scroll_begin.delta_hint_units ==
-      blink::WebScrollGranularity::kScrollByPage) {
+      ui::input_types::ScrollGranularity::kScrollByPage) {
     scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
     scroll_status.main_thread_scrolling_reasons =
         cc::MainThreadScrollingReason::kContinuingMainThreadScroll;
   } else if (gesture_event.data.scroll_begin.target_viewport) {
     scroll_status = input_handler_->RootScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()));
-  } else if (ShouldAnimate(gesture_event.data.scroll_begin.delta_hint_units !=
-                           blink::WebScrollGranularity::kScrollByPixel)) {
+  } else if (ShouldAnimate(
+                 gesture_event.data.scroll_begin.delta_hint_units !=
+                 ui::input_types::ScrollGranularity::kScrollByPixel)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
     scroll_status = input_handler_->ScrollAnimatedBegin(&scroll_state);
   } else {
@@ -875,7 +856,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   gfx::PointF scroll_point(gesture_event.PositionInWidget());
 
   if (ShouldAnimate(gesture_event.data.scroll_update.delta_units !=
-                    blink::WebScrollGranularity::kScrollByPixel)) {
+                    ui::input_types::ScrollGranularity::kScrollByPixel)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
     base::TimeTicks event_time = gesture_event.TimeStamp();
     base::TimeDelta delay = base::TimeTicks::Now() - event_time;

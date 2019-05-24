@@ -735,7 +735,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
 
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
   gesture_.data.scroll_begin.delta_hint_units =
-      blink::WebScrollGranularity::kScrollByPage;
+      ui::input_types::ScrollGranularity::kScrollByPage;
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));
 
@@ -744,7 +744,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
   gesture_.SetType(WebInputEvent::kGestureScrollUpdate);
   gesture_.data.scroll_update.delta_y = 1;
   gesture_.data.scroll_update.delta_units =
-      blink::WebScrollGranularity::kScrollByPage;
+      ui::input_types::ScrollGranularity::kScrollByPage;
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));
 
@@ -771,7 +771,7 @@ TEST_P(InputHandlerProxyTest, DISABLED_GestureScrollByCoarsePixels) {
 
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
   gesture_.data.scroll_begin.delta_hint_units =
-      blink::WebScrollGranularity::kScrollByPixel;
+      ui::input_types::ScrollGranularity::kScrollByPixel;
   EXPECT_CALL(mock_input_handler_, ScrollAnimatedBegin(_))
       .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_,
@@ -779,7 +779,7 @@ TEST_P(InputHandlerProxyTest, DISABLED_GestureScrollByCoarsePixels) {
 
   gesture_.SetType(WebInputEvent::kGestureScrollUpdate);
   gesture_.data.scroll_update.delta_units =
-      blink::WebScrollGranularity::kScrollByPixel;
+      ui::input_types::ScrollGranularity::kScrollByPixel;
 
   EXPECT_CALL(mock_input_handler_, ScrollAnimated(_, _, _))
       .WillOnce(testing::Return(kImplThreadScrollState));

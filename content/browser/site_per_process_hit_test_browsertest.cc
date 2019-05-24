@@ -1347,7 +1347,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_begin.unique_touch_event_id = 2;
     gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-        blink::WebScrollGranularity::kScrollByPrecisePixel;
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
     gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
     gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f * scale_factor;
     gesture_scroll_begin.SetPositionInWidget(touch_start_point);
@@ -1359,7 +1359,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_update.unique_touch_event_id = 2;
     gesture_scroll_update.data.scroll_update.delta_units =
-        blink::WebScrollGranularity::kScrollByPrecisePixel;
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
     gesture_scroll_update.data.scroll_update.delta_x = 0.f;
     gesture_scroll_update.data.scroll_update.delta_y = -5.f * scale_factor;
     gesture_scroll_update.SetPositionInWidget(touch_start_point);
@@ -1417,7 +1417,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_end.unique_touch_event_id = 3;
     gesture_scroll_end.data.scroll_end.delta_units =
-        blink::WebScrollGranularity::kScrollByPrecisePixel;
+        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
     gesture_scroll_end.SetPositionInWidget(touch_move_point);
 
     InputEventAckWaiter await_scroll_end_in_child(
@@ -2253,7 +2253,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.unique_touch_event_id = 1;
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      blink::WebScrollGranularity::kScrollByPrecisePixel;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0.f;
 #if defined(USE_AURA)
@@ -2278,7 +2278,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_update.unique_touch_event_id = 1;
   gesture_scroll_update.data.scroll_update.delta_units =
-      blink::WebScrollGranularity::kScrollByPrecisePixel;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_update.data.scroll_update.delta_x = 0.f;
   gesture_scroll_update.data.scroll_update.delta_y = 0.f;
 #if defined(USE_AURA)
@@ -2319,7 +2319,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_end.unique_touch_event_id = 1;
   gesture_scroll_end.data.scroll_end.delta_units =
-      blink::WebScrollGranularity::kScrollByPrecisePixel;
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   mock_overscroll_observer->Reset();
   router->RouteGestureEvent(rwhv_root, &gesture_scroll_end,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));

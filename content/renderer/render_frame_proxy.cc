@@ -609,7 +609,7 @@ void RenderFrameProxy::OnScrollRectToVisible(
 
 void RenderFrameProxy::OnBubbleLogicalScroll(
     blink::WebScrollDirection direction,
-    blink::WebScrollGranularity granularity) {
+    ui::input_types::ScrollGranularity granularity) {
   web_frame_->BubbleLogicalScroll(direction, granularity);
 }
 

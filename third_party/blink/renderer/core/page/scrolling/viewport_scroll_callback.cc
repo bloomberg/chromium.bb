@@ -35,7 +35,8 @@ void ViewportScrollCallback::Trace(blink::Visitor* visitor) {
 bool ViewportScrollCallback::ShouldScrollBrowserControls(
     const ScrollOffset& delta,
     ScrollGranularity granularity) const {
-  if (granularity != kScrollByPixel && granularity != kScrollByPrecisePixel)
+  if (granularity != ScrollGranularity::kScrollByPixel &&
+      granularity != ScrollGranularity::kScrollByPrecisePixel)
     return false;
 
   if (!root_frame_viewport_)

@@ -257,8 +257,8 @@ ScrollGranularity Scrollbar::PressedPartScrollGranularity() {
       pressed_part_ == kBackButtonEndPart ||
       pressed_part_ == kForwardButtonStartPart ||
       pressed_part_ == kForwardButtonEndPart)
-    return kScrollByLine;
-  return kScrollByPage;
+    return ScrollGranularity::kScrollByLine;
+  return ScrollGranularity::kScrollByPage;
 }
 
 void Scrollbar::MoveThumb(int pos, bool dragging_document) {
