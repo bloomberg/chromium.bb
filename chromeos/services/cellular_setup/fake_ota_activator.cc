@@ -18,5 +18,3 @@ FakeOtaActivator::~FakeOtaActivator() = default;
 }  // namespace cellular_setup
 
 }  // namespace chromeos
-
-#endif  // CHROMEOS_SERVICES_CELLULAR_SETUP_FAKE_OTA_ACTIVATOR_H_

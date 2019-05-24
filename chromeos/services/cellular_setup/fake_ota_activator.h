@@ -18,7 +18,7 @@ namespace cellular_setup {
 class FakeOtaActivator : public OtaActivator, public FakeCarrierPortalHandler {
  public:
   explicit FakeOtaActivator(base::OnceClosure on_finished_callback);
-  ~FakeOtaActivator();
+  ~FakeOtaActivator() override;
 
   using OtaActivator::InvokeOnFinishedCallback;
 
