@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.task.AsyncTask;
 
 /**
  * VisibleNetworksTracker keeps track of the visible networks.
@@ -26,8 +25,7 @@ class VisibleNetworksTracker {
     private static VisibleNetworks sVisibleNetworks;
     private static long sVisibleNetworksTime = Long.MAX_VALUE;
 
-    @Nullable
-    private static AsyncTask<Void> sOngoingRefresh;
+    private static boolean sOngoingRefresh;
 
     private static VisibleNetworks sVisibleNetworksForTesting;
     private static boolean sUseVisibleNetworksForTesting;
@@ -63,31 +61,13 @@ class VisibleNetworksTracker {
      */
     static void refreshVisibleNetworks(final Context context) {
         ThreadUtils.assertOnUiThread();
-        if (isValidCachedVisibleNetworks() || sOngoingRefresh != null) {
+        if (isValidCachedVisibleNetworks() || sOngoingRefresh) {
             return;
         }
 
-        // TODO(crbug.com/955560): Cleanup this section to avoid wrapping a function that now
-        // accepts a callback in an AsyncTask.
-        sOngoingRefresh = new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                try {
-                    // Include all visible wifis and cells.
-                    PlatformNetworksManager.computeVisibleNetworks(
-                            context, VisibleNetworksTracker::setCachedVisibleNetworks);
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to get the visible networks. Error: ", e.toString());
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void v) {
-                sOngoingRefresh = null;
-            }
-        };
-        sOngoingRefresh.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        sOngoingRefresh = true;
+        PlatformNetworksManager.computeVisibleNetworks(
+                context, VisibleNetworksTracker::setCachedVisibleNetworks);
     }
 
     @Nullable
@@ -115,6 +95,7 @@ class VisibleNetworksTracker {
 
     private static void setCachedVisibleNetworks(VisibleNetworks visibleNetworks) {
         ThreadUtils.assertOnUiThread();
+        sOngoingRefresh = false;
         sVisibleNetworks = visibleNetworks;
         sVisibleNetworksTime = SystemClock.elapsedRealtime();
     }
