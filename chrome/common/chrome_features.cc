@@ -612,7 +612,7 @@ const base::Feature kAppManagement{"AppManagement",
 // from a secure page
 const base::Feature kTreatUnsafeDownloadsAsActive{
     "TreatUnsafeDownloadsAsActive", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kTreatUnsafeDownloadsAsActiveParamName[] = "MimeTypeList";
+const char kTreatUnsafeDownloadsAsActiveParamName[] = "ExtensionList";
 
 #if defined(OS_CHROMEOS)
 // Enables or disables usage time state notifier for supervised accounts on

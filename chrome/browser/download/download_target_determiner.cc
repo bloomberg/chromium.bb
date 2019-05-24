@@ -332,7 +332,7 @@ void DownloadTargetDeterminer::CheckIfDownloadBlockedDone(bool should_block) {
 
   if (should_block) {
     ScheduleCallbackAndDeleteSelf(
-        download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+        download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     return;
   }
 

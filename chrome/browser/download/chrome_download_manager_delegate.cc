@@ -36,6 +36,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_target_determiner.h"
+#include "chrome/browser/download/mixed_content_download_blocking.h"
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -788,9 +789,8 @@ void ChromeDownloadManagerDelegate::ShouldBlockDownload(
     download::DownloadItem* download,
     const base::FilePath& virtual_path,
     const ShouldBlockDownloadCallback& callback) {
-  // TODO(https://crbug.com/960819): Block insecure downloads in secure contexts
-  // as mixed content.
-  callback.Run(false);
+  DCHECK(download);
+  callback.Run(ShouldBlockFileAsMixedContent(virtual_path, *download));
 }
 
 void ChromeDownloadManagerDelegate::NotifyExtensions(
