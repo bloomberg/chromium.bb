@@ -175,6 +175,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
 
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
+  EGLSurface offscreen_surface_;
+
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_;
 };

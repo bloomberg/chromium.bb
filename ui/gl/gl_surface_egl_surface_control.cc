@@ -15,6 +15,7 @@
 #include "cc/base/math_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
+#include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "ui/gl/gl_utils.h"
@@ -63,6 +64,28 @@ int GLSurfaceEGLSurfaceControl::GetBufferCount() const {
 
 bool GLSurfaceEGLSurfaceControl::Initialize(GLSurfaceFormat format) {
   format_ = format;
+
+  // Surfaceless is always disabled on Android so we create a 1x1 pbuffer
+  // surface.
+  if (!offscreen_surface_) {
+    EGLDisplay display = GetDisplay();
+    if (!display) {
+      LOG(ERROR) << "Trying to create surface with invalid display.";
+      return false;
+    }
+
+    EGLint pbuffer_attribs[] = {
+        EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE,
+    };
+    offscreen_surface_ =
+        eglCreatePbufferSurface(display, GetConfig(), pbuffer_attribs);
+    if (!offscreen_surface_) {
+      LOG(ERROR) << "eglCreatePbufferSurface failed with error "
+                 << ui::GetLastEGLErrorString();
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -76,6 +99,14 @@ void GLSurfaceEGLSurfaceControl::Destroy() {
   pending_transaction_.reset();
   surface_list_.clear();
   root_surface_.reset();
+
+  if (offscreen_surface_) {
+    if (!eglDestroySurface(GetDisplay(), offscreen_surface_)) {
+      LOG(ERROR) << "eglDestroySurface failed with error "
+                 << ui::GetLastEGLErrorString();
+    }
+    offscreen_surface_ = nullptr;
+  }
 }
 
 bool GLSurfaceEGLSurfaceControl::Resize(const gfx::Size& size,
@@ -311,7 +342,7 @@ bool GLSurfaceEGLSurfaceControl::IsSurfaceless() const {
 }
 
 void* GLSurfaceEGLSurfaceControl::GetHandle() {
-  return nullptr;
+  return offscreen_surface_;
 }
 
 bool GLSurfaceEGLSurfaceControl::SupportsPostSubBuffer() {
