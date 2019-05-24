@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.complex_tasks.TaskTabHelper;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
+import org.chromium.chrome.browser.dom_distiller.TabDistillabilityProvider;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -32,6 +33,7 @@ public final class TabHelpers {
      */
     static void initTabHelpers(Tab tab, Tab parentTab, @TabCreationState Integer creationState) {
         if (creationState != null) TabUma.create(tab, creationState);
+        TabDistillabilityProvider.createForTab(tab);
         TabThemeColorHelper.createForTab(tab);
         InterceptNavigationDelegateImpl.createForTab(tab);
         ContextualSearchTabHelper.createForTab(tab);
