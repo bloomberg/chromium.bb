@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/string_number_conversions.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -16,6 +17,15 @@
 namespace extensions {
 
 namespace {
+
+uint16_t GetEffectivePort(const std::string& port_string) {
+  int port_int = 0;
+  bool success = base::StringToInt(port_string, &port_int);
+  // The URLPattern should verify that |port| is a number or "*", so conversion
+  // should never fail.
+  DCHECK(success) << port_string;
+  return port_int;
+}
 
 void AddURLPatternSetToList(
     const URLPatternSet& pattern_set,
@@ -36,13 +46,22 @@ void AddURLPatternSetToList(
     for (const char* const scheme : kSchemes) {
       if (!pattern.MatchesScheme(scheme))
         continue;
-      // TODO(crbug.com/936900): Specify the port argument.
-      list->push_back(network::mojom::CorsOriginPattern::New(
-          scheme, pattern.host(), /*port=*/0,
+      network::mojom::CorsDomainMatchMode domain_match_mode =
           pattern.match_subdomains()
               ? network::mojom::CorsDomainMatchMode::kAllowSubdomains
-              : network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
-          network::mojom::CorsPortMatchMode::kAllowAnyPort, priority));
+              : network::mojom::CorsDomainMatchMode::kDisallowSubdomains;
+      network::mojom::CorsPortMatchMode port_match_mode =
+          (pattern.port() == "*")
+              ? network::mojom::CorsPortMatchMode::kAllowAnyPort
+              : network::mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort;
+      uint16_t port =
+          (port_match_mode ==
+           network::mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort)
+              ? GetEffectivePort(pattern.port())
+              : 0u;
+      list->push_back(network::mojom::CorsOriginPattern::New(
+          scheme, pattern.host(), port, domain_match_mode, port_match_mode,
+          priority));
     }
   }
 }
@@ -86,7 +105,6 @@ CreateCorsOriginAccessBlockList(const Extension& extension) {
       network::mojom::CorsOriginAccessMatchPriority::kLowPriority);
 
   GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
-  // TODO(crbug.com/936900): Specify the port argument.
   block_list.push_back(network::mojom::CorsOriginPattern::New(
       webstore_launch_url.scheme(), webstore_launch_url.host(), /*port=*/0,
       network::mojom::CorsDomainMatchMode::kAllowSubdomains,

@@ -2056,8 +2056,11 @@ void TestRunner::AddOriginAccessAllowListEntry(
 
   blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
       url, blink::WebString::FromUTF8(destination_protocol),
-      blink::WebString::FromUTF8(destination_host),
-      allow_destination_subdomains,
+      blink::WebString::FromUTF8(destination_host), /*destination_port=*/0,
+      allow_destination_subdomains
+          ? network::mojom::CorsDomainMatchMode::kAllowSubdomains
+          : network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
       network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 }
 

@@ -1227,23 +1227,17 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
   ExtensionsClient::Get()->AddOriginAccessPermissions(
       extension, IsExtensionActive(extension.id()), &allow_list);
   for (const auto& entry : allow_list) {
-    // TODO(crbug.com/936900): Use port information.
     WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
-        WebString::FromUTF8(entry->domain),
-        entry->domain_match_mode ==
-            network::mojom::CorsDomainMatchMode::kAllowSubdomains,
-        entry->priority);
+        WebString::FromUTF8(entry->domain), entry->port,
+        entry->domain_match_mode, entry->port_match_mode, entry->priority);
   }
 
   for (const auto& entry : CreateCorsOriginAccessBlockList(extension)) {
-    // TODO(crbug.com/936900): Use port information.
     WebSecurityPolicy::AddOriginAccessBlockListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
-        WebString::FromUTF8(entry->domain),
-        entry->domain_match_mode ==
-            network::mojom::CorsDomainMatchMode::kAllowSubdomains,
-        entry->priority);
+        WebString::FromUTF8(entry->domain), entry->port,
+        entry->domain_match_mode, entry->port_match_mode, entry->priority);
   }
 }
 

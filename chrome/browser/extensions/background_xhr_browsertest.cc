@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
@@ -425,6 +426,39 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateIndividualXHR) {
   // The blocklist of example.com overrides allowlist of public.example.com.
   EXPECT_FALSE(CanFetch(extension, example_url));
   EXPECT_FALSE(CanFetch(extension, public_example_url));
+}
+
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, XHRAnyPortPermission) {
+  const Extension* extension = LoadXhrExtension("http://example.com:*/*");
+
+  GURL permitted_url_to_fetch =
+      embedded_test_server()->GetURL("example.com", "/simple.html");
+
+  EXPECT_TRUE(CanFetch(extension, permitted_url_to_fetch));
+}
+
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest,
+                       XHRPortSpecificPermissionAllow) {
+  const Extension* extension = LoadXhrExtension(
+      "http://example.com:" +
+      base::NumberToString(embedded_test_server()->port()) + "/*");
+
+  GURL permitted_url_to_fetch =
+      embedded_test_server()->GetURL("example.com", "/simple.html");
+
+  EXPECT_TRUE(CanFetch(extension, permitted_url_to_fetch));
+}
+
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest,
+                       XHRPortSpecificPermissionBlock) {
+  const Extension* extension = LoadXhrExtension(
+      "http://example.com:" +
+      base::NumberToString(embedded_test_server()->port() + 1) + "/*");
+
+  GURL not_permitted_url_to_fetch =
+      embedded_test_server()->GetURL("example.com", "/simple.html");
+
+  EXPECT_FALSE(CanFetch(extension, not_permitted_url_to_fetch));
 }
 
 INSTANTIATE_TEST_SUITE_P(WithoutAny,

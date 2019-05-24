@@ -74,18 +74,21 @@ class PLATFORM_EXPORT SecurityPolicy {
                                    const KURL&,
                                    const String& referrer);
 
-  // TODO(crbug.com/936900): Update to take the port.
   static void AddOriginAccessAllowListEntry(
       const SecurityOrigin& source_origin,
       const String& destination_protocol,
       const String& destination_domain,
-      bool allow_destination_subdomains,
+      const uint16_t port,
+      const network::mojom::CorsDomainMatchMode domain_match_mode,
+      const network::mojom::CorsPortMatchMode port_match_mode,
       const network::mojom::CorsOriginAccessMatchPriority priority);
   static void AddOriginAccessBlockListEntry(
       const SecurityOrigin& source_origin,
       const String& destination_protocol,
       const String& destination_domain,
-      bool allow_destination_subdomains,
+      const uint16_t port,
+      const network::mojom::CorsDomainMatchMode domain_match_mode,
+      const network::mojom::CorsPortMatchMode port_match_mode,
       const network::mojom::CorsOriginAccessMatchPriority priority);
   static void ClearOriginAccessListForOrigin(
       const SecurityOrigin& source_origin);

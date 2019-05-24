@@ -87,7 +87,7 @@ class OriginAccessListTest : public testing::Test {
   }
   void SetBlockListEntry(const std::string& protocol,
                          const std::string& host,
-                         const uint16_t port,
+                         const int16_t port,
                          const mojom::CorsDomainMatchMode domain_match_mode,
                          const mojom::CorsPortMatchMode port_match_mode) {
     std::vector<mojom::CorsOriginPatternPtr> patterns;
