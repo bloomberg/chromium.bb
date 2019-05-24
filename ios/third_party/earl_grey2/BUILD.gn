@@ -28,6 +28,8 @@ source_set("common_lib") {
   visibility = [ ":*" ]
 
   sources = [
+    "src/CommonLib/Additions/NSFileManager+GREYCommon.h",
+    "src/CommonLib/Additions/NSFileManager+GREYCommon.m",
     "src/CommonLib/Additions/NSObject+GREYCommon.h",
     "src/CommonLib/Additions/NSObject+GREYCommon.m",
     "src/CommonLib/Additions/NSString+GREYCommon.h",
@@ -104,7 +106,7 @@ source_set("ui_lib_shared_headers") {
 
   sources = [
     "src/UILib/GREYElementHierarchy.h",
-    "src/UILib/GREYScreenshotUtil.h",
+    "src/UILib/GREYScreenshotter.h",
     "src/UILib/GREYVisibilityChecker.h",
   ]
 }
@@ -120,7 +122,8 @@ source_set("ui_lib") {
     "src/UILib/Additions/NSObject+GREYUI.h",
     "src/UILib/Additions/NSObject+GREYUI.m",
     "src/UILib/GREYElementHierarchy.m",
-    "src/UILib/GREYScreenshotUtil.m",
+    "src/UILib/GREYScreenshotter+Internal.h",
+    "src/UILib/GREYScreenshotter.m",
     "src/UILib/GREYVisibilityChecker+Internal.h",
     "src/UILib/GREYVisibilityChecker.m",
     "src/UILib/Provider/GREYDataEnumerator.h",
@@ -286,6 +289,7 @@ ios_framework_bundle("app_framework") {
     "src/AppFramework/DistantObject/GREYHostBackgroundDistantObject+GREYApp.m",
     "src/AppFramework/DistantObject/GREYHostBackgroundDistantObject.m",
     "src/AppFramework/DistantObject/GREYTestStub.m",
+    "src/AppFramework/Error/GREYAppError.h",
     "src/AppFramework/Error/GREYAppFailureHandler.h",
     "src/AppFramework/Error/GREYAppFailureHandler.m",
     "src/AppFramework/Error/GREYFailureScreenshotter.m",
@@ -396,6 +400,8 @@ source_set("test_lib") {
     "src/TestLib/EarlGreyImpl/EarlGrey.m",
     "src/TestLib/EarlGreyImpl/EarlGreyImpl+XCUIApplication.h",
     "src/TestLib/EarlGreyImpl/EarlGreyImpl+XCUIApplication.m",
+    "src/TestLib/EarlGreyImpl/GREYElementInteractionErrorHandler.h",
+    "src/TestLib/EarlGreyImpl/GREYElementInteractionErrorHandler.m",
     "src/TestLib/EarlGreyImpl/GREYElementInteractionProxy.h",
     "src/TestLib/EarlGreyImpl/GREYElementInteractionProxy.m",
     "src/TestLib/EarlGreyImpl/XCUIApplication+GREYTest.h",
@@ -404,6 +410,8 @@ source_set("test_lib") {
     "src/TestLib/Exception/GREYDefaultFailureHandler.m",
     "src/TestLib/Exception/GREYFailureFormatter.h",
     "src/TestLib/Exception/GREYFailureFormatter.m",
+    "src/TestLib/Exception/GREYFailureScreenshotSaver.h",
+    "src/TestLib/Exception/GREYFailureScreenshotSaver.m",
     "src/TestLib/XCTestCase/GREYTestCaseInvocation.h",
     "src/TestLib/XCTestCase/GREYTestCaseInvocation.m",
     "src/TestLib/XCTestCase/XCTestCase+GREYTest.h",
@@ -411,7 +419,7 @@ source_set("test_lib") {
     "src/TestLib/XCTestCase/XCUIApplication+GREYEnvironment.h",
     "src/TestLib/XCTestCase/XCUIApplication+GREYEnvironment.m",
     "src/UILib/GREYElementHierarchyStub.m",
-    "src/UILib/GREYScreenshotUtilStub.m",
+    "src/UILib/GREYScreenshotterStub.m",
     "src/UILib/GREYVisibilityCheckerStub.m",
   ]
 

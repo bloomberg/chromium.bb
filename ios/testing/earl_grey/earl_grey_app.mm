@@ -9,7 +9,7 @@
 #endif
 
 #if defined(CHROME_EARL_GREY_1)
-void grey_execute_sync_on_main_thread(void (^block)(void)) {
+void grey_dispatch_sync_on_main_thread(void (^block)(void)) {
   block();
 }
 #endif
