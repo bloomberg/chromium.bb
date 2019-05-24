@@ -313,7 +313,7 @@ select {
   border: 1px solid var(--link-color);
   color: var(--link-color);
   font-size: .8125rem;
-  height: 26px;
+  height: 1.625rem;
   letter-spacing: .01em;
   max-width: 150px;
   text-align-last: center;
