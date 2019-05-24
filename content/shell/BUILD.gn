@@ -663,7 +663,6 @@ if (is_mac) {
   mac_xib_bundle_data("content_shell_framework_xibs") {
     sources = [
       "app/English.lproj/HttpAuth.xib",
-      "app/English.lproj/MainMenu.xib",
     ]
     output_path = "{{bundle_resources_dir}}/English.lproj"
   }
