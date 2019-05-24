@@ -75,6 +75,24 @@ Because the "test" is actually a Python wrapper script, you may need to prepend
 `python` to the front of the command on Windows if Python file association is
 not set up on your machine.
 
+## Running A Test Multiple Times With Different Runtimes
+
+The macros provided by
+[`//chrome/browser/vr/test/multi_class_browser_test.h`][multi class macros]
+provide a shorthand method for running a test multiple times with different
+classes/runtimes. This is effectively the same as declaring some implementation
+function that takes a reference to some base class shared by all the subclasses
+you want to run the test with, then having each test call that implementation.
+
+These macros help cut down on boilerplate code, but if you need either:
+
+1. Class-specific setup before running the implementation
+2. Different test logic in the implementation depending on the provided class
+
+You should consider using the standard IN_PROC_BROWSER_TEST_F macros instead.
+
+[multi class macros]: https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/vr/test/multi_class_browser_test.h
+
 ## Controller and Head Input
 
 The XR browser tests provide a way to plumb controller and headset data (e.g.

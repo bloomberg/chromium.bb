@@ -5,6 +5,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
+#include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webvr_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
@@ -764,7 +765,12 @@ std::string TransformToColMajorString(gfx::Transform& t) {
   return array_string;
 }
 
-void TestHeadPosesUpdateImpl(WebXrVrBrowserTestBase* t) {
+// Test that head pose changes are properly reflected in the viewer pose
+// provided by WebXR.
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrBrowserTestStandard,
+                                    WebXrVrBrowserTestWMR,
+                                    WebXrVrBrowserTestBase,
+                                    TestHeadPosesUpdate) {
   WebXrHeadPoseMock my_mock;
 
   t->LoadUrlAndAwaitInitialization(
@@ -786,18 +792,6 @@ void TestHeadPosesUpdateImpl(WebXrVrBrowserTestBase* t) {
                          TransformToColMajorString(pose) + ")");
   t->WaitOnJavaScriptStep();
   t->AssertNoJavaScriptErrors();
-}
-
-// Test that head pose changes in OpenVR are properly reflected in the viewer
-// pose provided by WebXR.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestHeadPosesUpdate) {
-  TestHeadPosesUpdateImpl(this);
-}
-
-// Tests that head pose changes in WMR are properly reflected in the viewer pose
-// provided by WebXR.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWMR, TestHeadPosesUpdate) {
-  TestHeadPosesUpdateImpl(this);
 }
 
 }  // namespace vr
