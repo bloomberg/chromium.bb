@@ -16,6 +16,12 @@ crbug.com/933880 external/wpt/FileAPI/url/url-with-xhr.any.html [ Failure ]
 
 crbug.com/950412 [ Linux Debug ] http/tests/inspector-protocol/network/request-interception-request-id.js [ Failure ]
 
+# Sheriff: These tests fail on Linux Tests (dbg) (1):
+crbug.com/966907 [ Linux Debug ] external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
+crbug.com/966907 [ Linux Debug ] external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
+crbug.com/966907 [ Linux Debug ] external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
+crbug.com/966907 [ Linux Debug ] external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
+
 # This passes in content_shell but not in chrome with network service disabled,
 # because content_shell does not add the about: handler. With network service
 # enabled this fails in both content_shell and chrome.
