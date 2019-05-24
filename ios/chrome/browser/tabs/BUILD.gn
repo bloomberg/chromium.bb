@@ -44,8 +44,6 @@ source_set("tabs_internal") {
     "tab_model.mm",
     "tab_model_closing_web_state_observer.h",
     "tab_model_closing_web_state_observer.mm",
-    "tab_model_favicon_driver_observer.h",
-    "tab_model_favicon_driver_observer.mm",
     "tab_model_list.mm",
     "tab_model_observers.h",
     "tab_model_observers.mm",
@@ -150,7 +148,6 @@ source_set("tabs_internal") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "tab_model_favicon_driver_observer_unittest.mm",
     "tab_model_list_unittest.mm",
     "tab_model_unittest.mm",
     "tab_title_util_unittest.mm",
@@ -162,7 +159,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",
-    "//components/favicon/ios",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/search_engines",
@@ -200,7 +196,6 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",
-    "//ui/gfx",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

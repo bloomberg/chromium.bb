@@ -45,6 +45,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_favicon_driver_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -160,6 +161,7 @@ UIColor* BackgroundColor() {
                                   TabStripViewLayoutDelegate,
                                   TabViewDelegate,
                                   WebStateListObserving,
+                                  WebStateFaviconDriverObserver,
                                   UIGestureRecognizerDelegate,
                                   UIScrollViewDelegate> {
   TabModel* _tabModel;
@@ -236,6 +238,11 @@ UIColor* BackgroundColor() {
 
   // Bridges C++ WebStateListObserver methods to this TabStripController.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+
+  // Bridges FaviconDriverObservers methods to this TabStripController, and
+  // maintains a FaviconObserver for each all webstates.
+  std::unique_ptr<WebStateListFaviconDriverObserver>
+      _webStateListFaviconObserver;
 
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _buttonNewTabInteraction;
 }
@@ -399,6 +406,9 @@ UIColor* BackgroundColor() {
     [_tabModel addObserver:self];
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _tabModel.webStateList->AddObserver(_webStateListObserver.get());
+    _webStateListFaviconObserver =
+        std::make_unique<WebStateListFaviconDriverObserver>(
+            _tabModel.webStateList, self);
     _style = style;
     _dispatcher = dispatcher;
 
@@ -963,15 +973,6 @@ UIColor* BackgroundColor() {
   NSUInteger index = [self indexForModelIndex:modelIndex];
   TabView* view = [_tabArray objectAtIndex:index];
   [view setTitle:tab_util::GetTabTitle(webState)];
-  [view setFavicon:nil];
-
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(webState);
-  if (faviconDriver && faviconDriver->FaviconIsValid()) {
-    gfx::Image favicon = faviconDriver->GetFavicon();
-    if (!favicon.IsEmpty())
-      [view setFavicon:favicon.ToUIImage()];
-  }
 
   if (webState->IsLoading() && !IsVisibleURLNewTabPage(webState))
     [view startProgressSpinner];
@@ -1076,14 +1077,31 @@ UIColor* BackgroundColor() {
   [self updateTabCount];
 }
 
-// Observer method, WebState replaced in |webStateList|.
-- (void)webStateList:(WebStateList*)webStateList
-    didReplaceWebState:(web::WebState*)oldWebState
-          withWebState:(web::WebState*)newWebState
-               atIndex:(int)atIndex {
-  // TabViews do not hold references to their parent Tabs, so it's safe to treat
-  // this as a tab change rather than a tab replace.
-  [self updateTabViewForWebState:newWebState];
+#pragma mark -
+#pragma mark WebStateFaviconDriverObserver
+
+// Observer method. |webState| got a favicon update.
+- (void)faviconDriver:(favicon::FaviconDriver*)driver
+    didUpdateFaviconForWebState:(web::WebState*)webState {
+  if (!driver)
+    return;
+
+  int modelIndex = _tabModel.webStateList->GetIndexOfWebState(webState);
+  if (modelIndex == WebStateList::kInvalidIndex) {
+    DCHECK(false) << "Received FavIcon update notification for webState that is"
+                     " not in the WebStateList";
+    return;
+  }
+
+  NSUInteger index = [self indexForModelIndex:modelIndex];
+  TabView* view = [_tabArray objectAtIndex:index];
+  [view setFavicon:nil];
+
+  if (driver->FaviconIsValid()) {
+    gfx::Image favicon = driver->GetFavicon();
+    if (!favicon.IsEmpty())
+      [view setFavicon:favicon.ToUIImage()];
+  }
 }
 
 #pragma mark -

@@ -11,6 +11,8 @@ source_set("web_state_list") {
     "web_state_list.h",
     "web_state_list.mm",
     "web_state_list_delegate.h",
+    "web_state_list_favicon_driver_observer.h",
+    "web_state_list_favicon_driver_observer.mm",
     "web_state_list_metrics_observer.h",
     "web_state_list_metrics_observer.mm",
     "web_state_list_observer.h",
@@ -26,6 +28,8 @@ source_set("web_state_list") {
   ]
   deps = [
     "//base",
+    "//components/favicon/core",
+    "//components/favicon/ios",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/web",
   ]
@@ -51,6 +55,7 @@ source_set("unit_tests") {
   sources = [
     "active_web_state_observation_forwarder_unittest.mm",
     "all_web_state_observation_forwarder_unittest.mm",
+    "web_state_list_favicon_driver_observer_unittest.mm",
     "web_state_list_order_controller_unittest.mm",
     "web_state_list_serialization_unittest.mm",
     "web_state_list_unittest.mm",
@@ -60,11 +65,16 @@ source_set("unit_tests") {
     ":test_support",
     ":web_state_list",
     "//base",
+    "//components/favicon/ios",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/sessions:serialisation",
+    "//ios/chrome/browser/web",
     "//ios/web",
+    "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net",
     "//testing/gtest",
+    "//ui/gfx",
     "//url",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
