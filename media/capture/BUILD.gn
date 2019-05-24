@@ -328,6 +328,20 @@ source_set("test_support") {
   testonly = true
 }
 
+if (is_chromeos) {
+  source_set("chromeos_test_utils") {
+    sources = [
+      "video/chromeos/local_gpu_memory_buffer_manager.cc",
+    ]
+
+    deps = [
+      "//base",
+      "//build/config/linux/libdrm",
+      "//third_party/minigbm",
+    ]
+  }
+}
+
 test("capture_unittests") {
   sources = [
     "content/animated_content_sampler_unittest.cc",
@@ -403,7 +417,6 @@ test("capture_unittests") {
       "video/chromeos/camera_device_delegate_unittest.cc",
       "video/chromeos/camera_hal_delegate_unittest.cc",
       "video/chromeos/camera_hal_dispatcher_impl_unittest.cc",
-      "video/chromeos/local_gpu_memory_buffer_manager.cc",
       "video/chromeos/mock_camera_module.cc",
       "video/chromeos/mock_camera_module.h",
       "video/chromeos/mock_vendor_tag_ops.cc",
@@ -413,6 +426,7 @@ test("capture_unittests") {
       "video/chromeos/request_manager_unittest.cc",
     ]
     deps += [
+      ":chromeos_test_utils",
       "//build/config/linux/libdrm",
       "//chromeos/dbus/power",
       "//media/capture/video/chromeos/mojo:cros_camera",

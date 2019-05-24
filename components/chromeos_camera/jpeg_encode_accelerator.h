@@ -105,21 +105,22 @@ class JpegEncodeAccelerator {
                       media::BitstreamBuffer output_buffer) = 0;
 
   // Encodes the given |video_frame| that contains a YUV image. Client will
-  // receive the encoded result in Client::VideoFrameReady() callback with the
-  // corresponding |output_buffer.id()|, or receive
-  // Client::NotifyError() callback.
+  // receive the encoded result in Client::VideoFrameReady() callback, or
+  // receive Client::NotifyError() callback.
   // Parameters:
   //  |input_frame| contains the YUV image to be encoded.
   //  |output_frame| is used to represent the output Dma-buf layout.
   //  |quality| of JPEG image. The range is from 1~100. High value means high
   //  quality.
+  //  |task_id| is an identifier started from zero that passed from the client
+  //  side. Could be used to identify different encode tasks.
   //  |exif_buffer| contains Exif data to be inserted into JPEG image. If it's
   //  nullptr, the JFIF APP0 segment will be inserted.
   virtual void EncodeWithDmaBuf(scoped_refptr<media::VideoFrame> input_frame,
                                 scoped_refptr<media::VideoFrame> output_frame,
                                 int quality,
-                                int32_t buffer_id,
-                                const media::BitstreamBuffer* exif_buffer) = 0;
+                                int32_t task_id,
+                                media::BitstreamBuffer* exif_buffer) = 0;
 };
 
 }  // namespace chromeos_camera

@@ -107,19 +107,19 @@ MojoJpegEncodeAcceleratorService::~MojoJpegEncodeAcceleratorService() {
 }
 
 void MojoJpegEncodeAcceleratorService::VideoFrameReady(
-    int32_t bitstream_buffer_id,
+    int32_t task_id,
     size_t encoded_picture_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NotifyEncodeStatus(
-      bitstream_buffer_id, encoded_picture_size,
+      task_id, encoded_picture_size,
       ::chromeos_camera::JpegEncodeAccelerator::Status::ENCODE_OK);
 }
 
 void MojoJpegEncodeAcceleratorService::NotifyError(
-    int32_t bitstream_buffer_id,
+    int32_t task_id,
     ::chromeos_camera::JpegEncodeAccelerator::Status error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NotifyEncodeStatus(bitstream_buffer_id, 0, error);
+  NotifyEncodeStatus(task_id, 0, error);
 }
 
 void MojoJpegEncodeAcceleratorService::Initialize(InitializeCallback callback) {
@@ -151,7 +151,7 @@ void MojoJpegEncodeAcceleratorService::Initialize(InitializeCallback callback) {
 }
 
 void MojoJpegEncodeAcceleratorService::EncodeWithFD(
-    int32_t buffer_id,
+    int32_t task_id,
     mojo::ScopedHandle input_handle,
     uint32_t input_buffer_size,
     int32_t coded_size_width,
@@ -169,7 +169,7 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
 
   if (coded_size_width <= 0 || coded_size_height <= 0) {
     std::move(callback).Run(
-        buffer_id, 0,
+        task_id, 0,
         ::chromeos_camera::JpegEncodeAccelerator::Status::INVALID_ARGUMENT);
     return;
   }
@@ -177,7 +177,7 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
   result = mojo::UnwrapPlatformFile(std::move(input_handle), &input_fd);
   if (result != MOJO_RESULT_OK) {
     std::move(callback).Run(
-        buffer_id, 0,
+        task_id, 0,
         ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
@@ -185,7 +185,7 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
   result = mojo::UnwrapPlatformFile(std::move(exif_handle), &exif_fd);
   if (result != MOJO_RESULT_OK) {
     std::move(callback).Run(
-        buffer_id, 0,
+        task_id, 0,
         ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
@@ -193,7 +193,7 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
   result = mojo::UnwrapPlatformFile(std::move(output_handle), &output_fd);
   if (result != MOJO_RESULT_OK) {
     std::move(callback).Run(
-        buffer_id, 0,
+        task_id, 0,
         ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
@@ -209,33 +209,33 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
       base::FileDescriptor(output_fd, true), output_buffer_size, output_guid);
 
   media::BitstreamBuffer output_buffer(
-      buffer_id, output_shm_handle, false /* read_only */, output_buffer_size);
+      task_id, output_shm_handle, false /* read_only */, output_buffer_size);
   std::unique_ptr<media::BitstreamBuffer> exif_buffer;
   if (exif_buffer_size > 0) {
     exif_buffer = std::make_unique<media::BitstreamBuffer>(
-        buffer_id, exif_shm_handle, false /* read_only */, exif_buffer_size);
+        task_id, exif_shm_handle, false /* read_only */, exif_buffer_size);
   }
   gfx::Size coded_size(coded_size_width, coded_size_height);
 
-  if (encode_cb_map_.find(buffer_id) != encode_cb_map_.end()) {
-    mojo::ReportBadMessage("buffer_id is already registered in encode_cb_map_");
+  if (encode_cb_map_.find(task_id) != encode_cb_map_.end()) {
+    mojo::ReportBadMessage("task_id is already registered in encode_cb_map_");
     return;
   }
   auto wrapped_callback = base::BindOnce(
-      [](int32_t buffer_id, EncodeWithFDCallback callback,
+      [](int32_t task_id, EncodeWithFDCallback callback,
          uint32_t encoded_picture_size,
          ::chromeos_camera::JpegEncodeAccelerator::Status error) {
-        std::move(callback).Run(buffer_id, encoded_picture_size, error);
+        std::move(callback).Run(task_id, encoded_picture_size, error);
       },
-      buffer_id, std::move(callback));
-  encode_cb_map_.emplace(buffer_id, std::move(wrapped_callback));
+      task_id, std::move(callback));
+  encode_cb_map_.emplace(task_id, std::move(wrapped_callback));
 
   auto input_shm = std::make_unique<base::SharedMemory>(input_shm_handle, true);
   if (!input_shm->Map(input_buffer_size)) {
     DLOG(ERROR) << "Could not map input shared memory for buffer id "
-                << buffer_id;
+                << task_id;
     NotifyEncodeStatus(
-        buffer_id, 0,
+        task_id, 0,
         ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
@@ -253,9 +253,9 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
           0,                         // data_offset
           base::TimeDelta());        // timestamp
   if (!frame.get()) {
-    LOG(ERROR) << "Could not create VideoFrame for buffer id " << buffer_id;
+    LOG(ERROR) << "Could not create VideoFrame for buffer id " << task_id;
     NotifyEncodeStatus(
-        buffer_id, 0,
+        task_id, 0,
         ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
@@ -270,7 +270,7 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
 }
 
 void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
-    int32_t buffer_id,
+    int32_t task_id,
     uint32_t input_format,
     std::vector<chromeos_camera::mojom::DmaBufPlanePtr> input_planes,
     std::vector<chromeos_camera::mojom::DmaBufPlanePtr> output_planes,
@@ -285,8 +285,8 @@ void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
         0, ::chromeos_camera::JpegEncodeAccelerator::Status::INVALID_ARGUMENT);
     return;
   }
-  if (encode_cb_map_.find(buffer_id) != encode_cb_map_.end()) {
-    mojo::ReportBadMessage("buffer_id is already registered in encode_cb_map_");
+  if (encode_cb_map_.find(task_id) != encode_cb_map_.end()) {
+    mojo::ReportBadMessage("task_id is already registered in encode_cb_map_");
     return;
   }
 
@@ -319,23 +319,25 @@ void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
                                            exif_buffer_size, exif_guid);
   std::unique_ptr<media::BitstreamBuffer> exif_buffer;
   if (exif_buffer_size > 0) {
+    // Currently we use our zero-based |task_id| as id of |exif_buffer| to track
+    // the encode task process from both Chrome OS and Chrome side.
     exif_buffer = std::make_unique<media::BitstreamBuffer>(
-        buffer_id, exif_shm_handle, false /* read_only */, exif_buffer_size);
+        task_id, exif_shm_handle, false /* read_only */, exif_buffer_size);
   }
-  encode_cb_map_.emplace(buffer_id, std::move(callback));
+  encode_cb_map_.emplace(task_id, std::move(callback));
 
   DCHECK(accelerator_);
   accelerator_->EncodeWithDmaBuf(input_video_frame, output_video_frame,
-                                 kJpegQuality, buffer_id, exif_buffer.get());
+                                 kJpegQuality, task_id, exif_buffer.get());
 }
 
 void MojoJpegEncodeAcceleratorService::NotifyEncodeStatus(
-    int32_t bitstream_buffer_id,
+    int32_t task_id,
     size_t encoded_picture_size,
     ::chromeos_camera::JpegEncodeAccelerator::Status error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  auto iter = encode_cb_map_.find(bitstream_buffer_id);
+  auto iter = encode_cb_map_.find(task_id);
   DCHECK(iter != encode_cb_map_.end());
   EncodeWithDmaBufCallback encode_cb = std::move(iter->second);
   encode_cb_map_.erase(iter);

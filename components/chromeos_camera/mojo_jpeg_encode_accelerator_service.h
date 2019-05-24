@@ -30,9 +30,9 @@ class MojoJpegEncodeAcceleratorService
   ~MojoJpegEncodeAcceleratorService() override;
 
   // JpegEncodeAccelerator::Client implementation.
-  void VideoFrameReady(int32_t buffer_id, size_t encoded_picture_size) override;
+  void VideoFrameReady(int32_t task_id, size_t encoded_picture_size) override;
   void NotifyError(
-      int32_t buffer_id,
+      int32_t task_id,
       ::chromeos_camera::JpegEncodeAccelerator::Status status) override;
 
  private:
@@ -48,7 +48,7 @@ class MojoJpegEncodeAcceleratorService
   void Initialize(InitializeCallback callback) override;
 
   // TODO(wtlee): To be deprecated. (crbug.com/944705)
-  void EncodeWithFD(int32_t buffer_id,
+  void EncodeWithFD(int32_t task_id,
                     mojo::ScopedHandle input_fd,
                     uint32_t input_buffer_size,
                     int32_t coded_size_width,
@@ -60,7 +60,7 @@ class MojoJpegEncodeAcceleratorService
                     EncodeWithFDCallback callback) override;
 
   void EncodeWithDmaBuf(
-      int32_t buffer_id,
+      int32_t task_id,
       uint32_t input_format,
       std::vector<chromeos_camera::mojom::DmaBufPlanePtr> input_planes,
       std::vector<chromeos_camera::mojom::DmaBufPlanePtr> output_planes,
@@ -71,14 +71,14 @@ class MojoJpegEncodeAcceleratorService
       EncodeWithDmaBufCallback callback) override;
 
   void NotifyEncodeStatus(
-      int32_t bitstream_buffer_id,
+      int32_t task_id,
       size_t encoded_picture_size,
       ::chromeos_camera::JpegEncodeAccelerator::Status status);
 
   const std::vector<GpuJpegEncodeAcceleratorFactory::CreateAcceleratorCB>
       accelerator_factory_functions_;
 
-  // A map from bitstream_buffer_id to EncodeCallback.
+  // A map from task_id to EncodeCallback.
   EncodeCallbackMap encode_cb_map_;
 
   std::unique_ptr<::chromeos_camera::JpegEncodeAccelerator> accelerator_;

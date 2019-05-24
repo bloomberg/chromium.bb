@@ -140,6 +140,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Returns the list of VAImageFormats supported by the driver.
   static const std::vector<VAImageFormat>& GetSupportedImageFormatsForTesting();
 
+  static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
+
   // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
   // |va_format|, each of size |size| and initializes |va_context_id_| with
   // |format| and |size|. Returns true when successful, with the created IDs in

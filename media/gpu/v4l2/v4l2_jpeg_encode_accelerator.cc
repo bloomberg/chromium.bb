@@ -1039,8 +1039,8 @@ void V4L2JpegEncodeAccelerator::EncodeWithDmaBuf(
     scoped_refptr<VideoFrame> input_frame,
     scoped_refptr<VideoFrame> output_frame,
     int quality,
-    int32_t buffer_id,
-    const BitstreamBuffer* exif_buffer) {
+    int32_t task_id,
+    BitstreamBuffer* exif_buffer) {
   NOTIMPLEMENTED();
 }
 

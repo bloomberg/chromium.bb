@@ -74,12 +74,15 @@ source_set("vaapi") {
   deps = [
     ":libva_stubs",
     "//base",
+    "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//media",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
+    "//media/gpu/linux",
     "//mojo/public/cpp/bindings",
     "//third_party/libyuv",
+    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 

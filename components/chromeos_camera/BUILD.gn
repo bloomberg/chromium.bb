@@ -142,6 +142,7 @@ if (use_v4l2_codec || use_vaapi) {
       "//base",
       "//base/test:test_support",
       "//media:test_support",
+      "//media/capture:chromeos_test_utils",
       "//media/gpu:buildflags",
       "//media/gpu/test:helpers",
       "//media/parsers",

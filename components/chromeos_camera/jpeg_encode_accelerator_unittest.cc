@@ -26,6 +26,7 @@
 #include "components/chromeos_camera/gpu_jpeg_encode_accelerator_factory.h"
 #include "components/chromeos_camera/jpeg_encode_accelerator.h"
 #include "media/base/test_data_util.h"
+#include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/parsers/jpeg_parser.h"
@@ -80,6 +81,31 @@ enum class ClientState {
   ENCODE_PASS,
   ERROR,
 };
+
+scoped_refptr<media::VideoFrame> GetVideoFrameFromGpuMemoryBuffer(
+    gfx::GpuMemoryBuffer* buffer,
+    gfx::Size size,
+    media::VideoPixelFormat format) {
+  auto buffer_handle = buffer->CloneHandle().native_pixmap_handle;
+
+  size_t num_planes = media::VideoFrame::NumPlanes(format);
+  std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<size_t> buffer_sizes(num_planes);
+  std::vector<base::ScopedFD> fds(num_planes);
+  for (size_t i = 0; i < num_planes; i++) {
+    auto& plane = buffer_handle.planes[i];
+    fds[i] = std::move(plane.fd);
+    planes[i].stride = plane.stride;
+    planes[i].offset = plane.offset;
+    buffer_sizes[i] = plane.size;
+  }
+
+  gfx::Rect visible_rect(size);
+  auto layout = media::VideoFrameLayout::CreateWithPlanes(
+      format, size, std::move(planes), std::move(buffer_sizes));
+  return media::VideoFrame::WrapExternalDmabufs(
+      *layout, visible_rect, size, std::move(fds), base::TimeDelta());
+}
 
 class JpegEncodeAcceleratorTestEnvironment : public ::testing::Environment {
  public:
@@ -247,6 +273,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   void CreateJpegEncoder();
   void DestroyJpegEncoder();
   void StartEncode(int32_t bitstream_buffer_id);
+  void StartEncodeDmaBuf(int32_t bitstream_buffer_id);
 
   // JpegEncodeAccelerator::Client implementation.
   void VideoFrameReady(int32_t buffer_id, size_t encoded_picture_size) override;
@@ -305,6 +332,9 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   // Mapped memory of output buffer from software encoder.
   std::unique_ptr<base::SharedMemory> sw_out_shm_;
 
+  // Used to create Gpu memory buffer for DMA-buf encoding tests.
+  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(JpegClient);
 };
 
@@ -314,7 +344,8 @@ JpegClient::JpegClient(const std::vector<TestImage*>& test_aligned_images,
     : test_aligned_images_(test_aligned_images),
       test_images_(test_images),
       state_(ClientState::CREATED),
-      note_(note) {}
+      note_(note),
+      gpu_memory_buffer_manager_(new media::LocalGpuMemoryBufferManager()) {}
 
 JpegClient::~JpegClient() {}
 
@@ -576,6 +607,34 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
                    std::move(encoded_buffer_));
 }
 
+void JpegClient::StartEncodeDmaBuf(int32_t bitstream_buffer_id) {
+  TestImage* test_image = GetTestImage(bitstream_buffer_id);
+  test_image->output_size =
+      encoder_->GetMaxCodedBufferSize(test_image->visible_size);
+
+  auto input_buffer = gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
+      test_image->visible_size, gfx::BufferFormat::YUV_420_BIPLANAR,
+      gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE, gpu::kNullSurfaceHandle);
+  ASSERT_EQ(input_buffer->Map(), true);
+  memcpy(input_buffer->memory(0), test_image->image_data.data(),
+         test_image->image_data.size());
+  auto input_frame = GetVideoFrameFromGpuMemoryBuffer(
+      input_buffer.get(), test_image->visible_size, media::PIXEL_FORMAT_NV12);
+  LOG_ASSERT(input_frame.get());
+
+  auto output_buffer = gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
+      test_image->visible_size, gfx::BufferFormat::R_8,
+      gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
+  ASSERT_EQ(output_buffer->Map(), true);
+  auto output_frame = GetVideoFrameFromGpuMemoryBuffer(
+      output_buffer.get(), test_image->visible_size, media::PIXEL_FORMAT_MJPEG);
+  LOG_ASSERT(output_frame.get());
+
+  buffer_id_to_start_time_[bitstream_buffer_id] = base::TimeTicks::Now();
+  encoder_->EncodeWithDmaBuf(input_frame, output_frame, kJpegDefaultQuality,
+                             bitstream_buffer_id, nullptr);
+}
+
 class JpegEncodeAcceleratorTest : public ::testing::Test {
  protected:
   JpegEncodeAcceleratorTest() {}
@@ -628,6 +687,14 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
     }
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      encoder_thread.task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&JpegClient::StartEncodeDmaBuf,
+                                    base::Unretained(clients[i].get()), index));
+    }
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
+    }
   }
 
   for (size_t index = 0; index < test_images_.size(); index++) {
@@ -636,6 +703,24 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
             << ",width:" << test_images_[index]->visible_size.width();
     VLOG(3) << buffer_id
             << ",height:" << test_images_[index]->visible_size.height();
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      encoder_thread.task_runner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&JpegClient::StartEncode,
+                         base::Unretained(clients[i].get()), buffer_id));
+    }
+
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+// For unaligned images, V4L2 may not be able to encode them.
+#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
+      ClientState status = notes[i]->Wait();
+      ASSERT_TRUE(status == ClientState::ENCODE_PASS ||
+                  status == ClientState::ERROR);
+#else
+      ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
+#endif
+    }
+
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       encoder_thread.task_runner()->PostTask(
           FROM_HERE,

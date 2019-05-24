@@ -48,21 +48,21 @@ class MEDIA_GPU_EXPORT VaapiJpegEncodeAccelerator
   void EncodeWithDmaBuf(scoped_refptr<VideoFrame> input_frame,
                         scoped_refptr<VideoFrame> output_frame,
                         int quality,
-                        int32_t buffer_id,
-                        const BitstreamBuffer* exif_buffer) override;
+                        int32_t task_id,
+                        BitstreamBuffer* exif_buffer) override;
 
  private:
   // An input video frame and the corresponding output buffer awaiting
   // consumption, provided by the client.
   struct EncodeRequest {
-    EncodeRequest(int32_t buffer_id,
+    EncodeRequest(int32_t task_id,
                   scoped_refptr<VideoFrame> video_frame,
                   std::unique_ptr<UnalignedSharedMemory> exif_shm,
                   std::unique_ptr<UnalignedSharedMemory> output_shm,
                   int quality);
     ~EncodeRequest();
 
-    int32_t buffer_id;
+    int32_t task_id;
     scoped_refptr<VideoFrame> video_frame;
     std::unique_ptr<UnalignedSharedMemory> exif_shm;
     std::unique_ptr<UnalignedSharedMemory> output_shm;
@@ -77,9 +77,9 @@ class MEDIA_GPU_EXPORT VaapiJpegEncodeAccelerator
 
   // Notifies the client that an error has occurred and encoding cannot
   // continue.
-  void NotifyError(int32_t buffer_id, Status status);
+  void NotifyError(int32_t task_id, Status status);
 
-  void VideoFrameReady(int32_t buffer_id, size_t encoded_picture_size);
+  void VideoFrameReady(int32_t task_id, size_t encoded_picture_size);
 
   // ChildThread's task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
