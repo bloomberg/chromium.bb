@@ -380,6 +380,7 @@ class BBJSONGenerator(object):
     add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
     add_conditional_args('linux_args', self.is_linux)
     add_conditional_args('android_args', self.is_android)
+    add_conditional_args('chromeos_args', self.is_chromeos)
 
     for key in additional_arg_keys or []:
       args.extend(generated_test.pop(key, []))

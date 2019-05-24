@@ -3526,6 +3526,14 @@
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
         ],
+        'chromeos_args': [
+          # If we're testing on CrOS, assume we're running on VMs. So point
+          # telemetry to the default SSH port of the VM. Note that this won't
+          # work for hardware tests.
+          # TODO(bpastene): Make this work for hardware tests.
+          '--remote=127.0.0.1',
+          '--remote-ssh-port=9222',
+        ],
         'swarming': {
           'shards': 2,
         },
@@ -4761,6 +4769,10 @@
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
+    ],
+
+    'gpu_chromeos_telemetry_tests': [
+      'gpu_webgl_conformance_telemetry_tests',
     ],
 
     'gpu_common_telemetry_tests': [
