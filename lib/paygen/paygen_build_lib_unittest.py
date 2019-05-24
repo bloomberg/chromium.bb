@@ -55,14 +55,15 @@ class PaygenJsonTests(BasePaygenBuildLibTest):
   """Test cases that require mocking paygen.json fetching."""
 
   def testGetPaygenJsonCaching(self):
+    expected_paygen_size = 1078
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1356)
+    self.assertEqual(len(result), expected_paygen_size)
     self.mockGetJson.assert_called_once()
 
     # Validate caching, by proving we don't refetch.
     self.mockGetJson.reset_mock()
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1356)
+    self.assertEqual(len(result), expected_paygen_size)
     self.mockGetJson.assert_not_called()
 
   def testGetPaygenJsonBoard(self):
@@ -108,7 +109,7 @@ class PaygenJsonTests(BasePaygenBuildLibTest):
   def testValidateBoardConfig(self):
     """Test ValidateBoardConfig."""
     # Test a known board works.
-    paygen_build_lib.ValidateBoardConfig('x86-mario')
+    paygen_build_lib.ValidateBoardConfig('chell')
 
     # Test a known variant board works.
     paygen_build_lib.ValidateBoardConfig('auron-yuna')
