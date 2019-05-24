@@ -207,12 +207,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // that belongs to an inner WebContents.
   bool IsMainFrameForInnerDelegate();
 
-  // Returns the RenderWidgetHost of the outer WebContents (if any) that can be
-  // used to fetch the last keyboard event.
-  // TODO(lazyboy): This can be removed once input events are sent directly to
-  // remote frames.
-  RenderWidgetHostImpl* GetOuterRenderWidgetHostForKeyboardInput();
-
   // If this is a RenderFrameHostManager for a main frame, this method returns
   // the FrameTreeNode for the frame in the outer WebContents (if any) that
   // contains the inner WebContents.

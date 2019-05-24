@@ -181,20 +181,6 @@ bool RenderFrameHostManager::IsMainFrameForInnerDelegate() {
              FrameTreeNode::kFrameTreeNodeInvalidId;
 }
 
-RenderWidgetHostImpl*
-RenderFrameHostManager::GetOuterRenderWidgetHostForKeyboardInput() {
-  if (!IsMainFrameForInnerDelegate())
-    return nullptr;
-
-  FrameTreeNode* outer_contents_frame_tree_node =
-      FrameTreeNode::GloballyFindByID(
-          delegate_->GetOuterDelegateFrameTreeNodeId());
-  return outer_contents_frame_tree_node->parent()
-      ->current_frame_host()
-      ->render_view_host()
-      ->GetWidget();
-}
-
 FrameTreeNode* RenderFrameHostManager::GetOuterDelegateNode() {
   int outer_contents_frame_tree_node_id =
       delegate_->GetOuterDelegateFrameTreeNodeId();
