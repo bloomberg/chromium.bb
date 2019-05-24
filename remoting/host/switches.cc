@@ -36,4 +36,6 @@ const char kOutputSwitchName[] = "output";
 
 const char kMojoPipeToken[] = "mojo-pipe-token";
 
+const char kUpgradeTokenSwitchName[] = "upgrade-token";
+
 }  // namespace remoting

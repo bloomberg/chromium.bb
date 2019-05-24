@@ -58,6 +58,9 @@ extern const char kOutputSwitchName[];
 // processes.
 extern const char kMojoPipeToken[];
 
+// Switch to upgrade the host config with a new refresh token.
+extern const char kUpgradeTokenSwitchName[];
+
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_SWITCHES_H_
