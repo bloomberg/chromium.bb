@@ -17,6 +17,7 @@
 #include "base/thread_annotations.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/image_decode_accelerator_worker.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -30,6 +31,7 @@ class Message;
 
 namespace gpu {
 class GpuChannel;
+class ImageFactory;
 class SyncPointClientState;
 
 // Processes incoming image decode requests from renderers: it schedules the
@@ -46,7 +48,7 @@ class SyncPointClientState;
 // An object of this class is meant to be used in
 // both the IO thread (for receiving decode requests) and the main thread (for
 // processing completed decodes).
-class ImageDecodeAcceleratorStub
+class GPU_IPC_SERVICE_EXPORT ImageDecodeAcceleratorStub
     : public base::RefCountedThreadSafe<ImageDecodeAcceleratorStub> {
  public:
   // TODO(andrescj): right now, we only accept one worker to be used for JPEG
@@ -62,6 +64,8 @@ class ImageDecodeAcceleratorStub
   // Called on the main thread to indicate that |channel_| should no longer be
   // used.
   void Shutdown();
+
+  void SetImageFactoryForTesting(ImageFactory* image_factory);
 
  private:
   friend class base::RefCountedThreadSafe<ImageDecodeAcceleratorStub>;
@@ -101,6 +105,8 @@ class ImageDecodeAcceleratorStub
       pending_completed_decodes_ GUARDED_BY(lock_);
   bool destroying_channel_ GUARDED_BY(lock_) = false;
   uint64_t last_release_count_ GUARDED_BY(lock_) = 0;
+
+  ImageFactory* external_image_factory_for_testing_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

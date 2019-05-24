@@ -467,8 +467,13 @@ test("gpu_unittests") {
     "ipc/service/gpu_channel_test_common.cc",
     "ipc/service/gpu_channel_test_common.h",
     "ipc/service/gpu_channel_unittest.cc",
-    "ipc/service/image_decode_accelerator_stub_unittest.cc",
   ]
+
+  if (is_chromeos) {
+    # Image decode acceleration with hardware is only supported in Chrome OS.
+    # The intention is to run this test in the linux-chromeos build.
+    sources += [ "ipc/service/image_decode_accelerator_stub_unittest.cc" ]
+  }
 
   if (use_dawn) {
     sources += [ "command_buffer/service/webgpu_decoder_unittest.cc" ]

@@ -482,6 +482,7 @@ class CommandBufferSetup {
 
       shared_image_factory_.reset();
       shared_image_manager_.reset();
+      context_state_->MakeCurrent(nullptr);
       context_state_.reset();
     }
 

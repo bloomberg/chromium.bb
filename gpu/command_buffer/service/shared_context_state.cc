@@ -75,8 +75,24 @@ SharedContextState::SharedContextState(
 }
 
 SharedContextState::~SharedContextState() {
-  if (gr_context_)
-    gr_context_->abandonContext();
+  // Delete the transfer cache first: that way, destruction callbacks for image
+  // entries can use *|this| to make the context current and do GPU clean up.
+  // The context should be current so that texture deletes that result from
+  // destroying the cache happen in the right context (unless the context is
+  // lost in which case we don't delete the textures).
+  DCHECK(IsCurrent(nullptr) || context_lost_);
+  transfer_cache_.reset();
+
+  // We should have the last ref on this GrContext to ensure we're not holding
+  // onto any skia objects using this context. Note that some tests don't run
+  // InitializeGrContext(), so |owned_gr_context_| is not expected to be
+  // initialized.
+  DCHECK(!owned_gr_context_ || owned_gr_context_->unique());
+
+  // Delete the GrContext. This will either do cleanup if the context is
+  // current, or the GrContext was already abandoned if the GLContext was lost.
+  owned_gr_context_.reset();
+
   if (context_->IsCurrent(nullptr))
     context_->ReleaseCurrent(nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
@@ -225,6 +241,7 @@ bool SharedContextState::MakeCurrent(gl::GLSurface* surface) {
 }
 
 void SharedContextState::MarkContextLost() {
+  DCHECK(GrContextIsGL());
   if (!context_lost_) {
     scoped_refptr<SharedContextState> prevent_last_ref_drop = this;
     context_lost_ = true;
@@ -242,6 +259,8 @@ void SharedContextState::MarkContextLost() {
 bool SharedContextState::IsCurrent(gl::GLSurface* surface) {
   if (!GrContextIsGL())
     return true;
+  if (context_lost_)
+    return false;
   return context_->IsCurrent(surface);
 }
 

@@ -814,6 +814,8 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   gl_share_group_ = nullptr;
   context_group_ = nullptr;
   task_sequence_ = nullptr;
+  if (context_state_)
+    context_state_->MakeCurrent(nullptr);
   context_state_ = nullptr;
   return true;
 }

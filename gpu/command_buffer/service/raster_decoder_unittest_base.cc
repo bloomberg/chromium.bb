@@ -278,6 +278,8 @@ void RasterDecoderTestBase::ResetDecoder() {
   for (auto& image : shared_images_)
     image->OnContextLost();
   shared_images_.clear();
+  context_->GLContextStub::MakeCurrent(surface_.get());
+  shared_context_state_.reset();
   ::gl::MockGLInterface::SetGLInterface(nullptr);
   gl_.reset();
   gl::init::ShutdownGL(false);

@@ -289,6 +289,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
     context_state_->InitializeGL(GpuPreferences(), feature_info);
   }
   void TearDown() override {
+    context_state_->MakeCurrent(nullptr);
     context_state_ = nullptr;
     gl::init::ShutdownGL(false);
   }

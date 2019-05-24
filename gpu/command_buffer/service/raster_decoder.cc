@@ -689,10 +689,7 @@ RasterDecoderImpl::RasterDecoderImpl(
   DCHECK(shared_context_state_);
 }
 
-RasterDecoderImpl::~RasterDecoderImpl() {
-  if (supports_oop_raster_)
-    transfer_cache()->DeleteAllEntriesForDecoder(raster_decoder_id_);
-}
+RasterDecoderImpl::~RasterDecoderImpl() = default;
 
 base::WeakPtr<DecoderContext> RasterDecoderImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -765,6 +762,10 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   DCHECK(!have_context || shared_context_state_->context()->IsCurrent(nullptr));
 
   if (have_context) {
+    if (supports_oop_raster_) {
+      transfer_cache()->DeleteAllEntriesForDecoder(raster_decoder_id_);
+    }
+
     if (copy_tex_image_blit_.get()) {
       copy_tex_image_blit_->Destroy();
       copy_tex_image_blit_.reset();
