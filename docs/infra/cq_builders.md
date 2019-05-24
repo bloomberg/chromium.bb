@@ -34,7 +34,7 @@ These builders must pass before a CL may land.
 
 * [chromeos-amd64-generic-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-amd64-generic-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-amd64-generic-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-amd64-generic-rel))
 
-* [chromeos-daisy-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-daisy-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-daisy-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-daisy-rel))
+* [chromeos-arm-generic-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-arm-generic-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-arm-generic-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-arm-generic-rel))
 
 * [chromium_presubmit](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromium_presubmit) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromium_presubmit)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromium_presubmit))
 
