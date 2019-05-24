@@ -83,6 +83,9 @@ message Account {
   // Whether the account is managed by policy.
   optional bool is_managed = 5;
 
+  // Whether there's a password stored on disk for this account.
+  optional bool password_was_remembered = 6;
+
   // TODO(https://crbug.com/952239): Set additional properties.
 }
 
@@ -144,6 +147,10 @@ message SetConfigResponse {
 message AcquireKerberosTgtRequest {
   // Principal name of the account to acquire a ticket for (user@REALM.COM).
   optional string principal_name = 1;
+
+  // Whether the daemon should remember the password (passed separately in a
+  // file descriptor).
+  optional bool remember_password = 2;
 }
 
 message AcquireKerberosTgtResponse {
