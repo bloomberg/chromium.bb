@@ -1445,7 +1445,8 @@ class SiteIsolationForPasswordSitesBrowserTest
                      expected_entry) != synthetic_trials.end();
   }
 
-  const std::string kSyntheticTrialName = "SiteIsolationActive";
+  const std::string kSiteIsolationSyntheticTrialName = "SiteIsolationActive";
+  const std::string kOOPIFSyntheticTrialName = "OutOfProcessIframesActive";
   const std::string kSyntheticTrialGroup = "Enabled";
 
  protected:
@@ -1548,24 +1549,31 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
           web_contents);
   recorder->EnableSiteIsolationSyntheticTrialForTesting();
 
-  EXPECT_FALSE(HasSyntheticTrial(kSyntheticTrialName));
+  EXPECT_FALSE(HasSyntheticTrial(kSiteIsolationSyntheticTrialName));
+  EXPECT_FALSE(HasSyntheticTrial(kOOPIFSyntheticTrialName));
 
   // Browse to a page with some iframes without involving any isolated origins.
   GURL unisolated_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c(a))"));
   ui_test_utils::NavigateToURL(browser(), unisolated_url);
-  EXPECT_FALSE(HasSyntheticTrial(kSyntheticTrialName));
+  EXPECT_FALSE(HasSyntheticTrial(kSiteIsolationSyntheticTrialName));
 
   // Now browse to an isolated origin.
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated1.com", "/title1.html"));
   ui_test_utils::NavigateToURL(browser(), isolated_url);
-  EXPECT_TRUE(
-      IsInSyntheticTrialGroup(kSyntheticTrialName, kSyntheticTrialGroup));
+  EXPECT_TRUE(IsInSyntheticTrialGroup(kSiteIsolationSyntheticTrialName,
+                                      kSyntheticTrialGroup));
+
+  // The OOPIF synthetic trial shouldn't be activated, since the isolated
+  // oriign page doesn't have any OOPIFs.
+  EXPECT_FALSE(
+      IsInSyntheticTrialGroup(kOOPIFSyntheticTrialName, kSyntheticTrialGroup));
 }
 
-// This test checks that the synthetic field trial is activated properly after
-// a navigation to an isolated origin commits in a subframe.
+// This test checks that the synthetic field trials for both site isolation and
+// encountering OOPIFs are activated properly after a navigation to an isolated
+// origin commits in a subframe.
 IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
                        SyntheticTrialFromSubframe) {
   content::WebContents* web_contents =
@@ -1576,14 +1584,17 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
           web_contents);
   recorder->EnableSiteIsolationSyntheticTrialForTesting();
 
-  EXPECT_FALSE(HasSyntheticTrial(kSyntheticTrialName));
+  EXPECT_FALSE(HasSyntheticTrial(kSiteIsolationSyntheticTrialName));
+  EXPECT_FALSE(HasSyntheticTrial(kOOPIFSyntheticTrialName));
 
   // Browse to a page with an isolated origin on one of the iframes.
   GURL isolated_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c,isolated2,d)"));
   ui_test_utils::NavigateToURL(browser(), isolated_url);
+  EXPECT_TRUE(IsInSyntheticTrialGroup(kSiteIsolationSyntheticTrialName,
+                                      kSyntheticTrialGroup));
   EXPECT_TRUE(
-      IsInSyntheticTrialGroup(kSyntheticTrialName, kSyntheticTrialGroup));
+      IsInSyntheticTrialGroup(kOOPIFSyntheticTrialName, kSyntheticTrialGroup));
 }
 
 // Verifies that persistent isolated sites survive restarts.  Part 1.
