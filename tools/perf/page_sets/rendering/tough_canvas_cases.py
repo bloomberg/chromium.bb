@@ -167,7 +167,8 @@ class CanvasFontCyclerPage(ToughCanvasPage):
 class CanvasAnimationNoClearPage(ToughCanvasPage):
   BASE_NAME = 'canvas_animation_no_clear'
   URL = 'file://../tough_canvas_cases/canvas-animation-no-clear.html'
-  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP,
+    story_tags.REPRESENTATIVE_MOBILE]
 
 
 class CanvasToBlobPage(ToughCanvasPage):
@@ -188,7 +189,8 @@ class CanvasArcPage(ToughCanvasPage):
 class CanvasLinesPage(ToughCanvasPage):
   BASE_NAME = 'canvas_lines'
   URL = 'file://../tough_canvas_cases/rendering_throughput/canvas_lines.html'
-  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP,
+    story_tags.REPRESENTATIVE_MOBILE]
 
 
 class PutGetImageDataPage(ToughCanvasPage):

@@ -196,6 +196,7 @@ class CssTransitionsTriggeredUpdatingClassPage(ToughAnimationPage):
   BASE_NAME = 'css_transitions_triggered_updating_class'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_transitions_staggered_triggering_by_updating_class.html?N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class CssTransitionsTriggeredInlineStylePage(ToughAnimationPage):
@@ -214,6 +215,7 @@ class CssAnimationsManyKeyframesPage(ToughAnimationPage):
   BASE_NAME = 'css_animations_many_keyframes'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_animations_many_keyframes.html?N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class CssAnimationsSimultaneousNewElementPage(ToughAnimationPage):
@@ -241,6 +243,7 @@ class CssAnimationsSimultaneousUpdatingClassPage(ToughAnimationPage):
   BASE_NAME = 'css_animations_simultaneous_updating_class'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_animations_simultaneous_by_updating_class.html?N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class CssAnimationsSimultaneousInlineStylePage(ToughAnimationPage):
@@ -314,6 +317,7 @@ class CssAnimationsTriggeredStyleElementPage(ToughAnimationPage):
   BASE_NAME = 'css_animations_triggered_style_element'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_animations_staggered_triggering_by_inserting_style_element.html?N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class CssAnimationsTriggeredUpdatingClassPage(ToughAnimationPage):
@@ -584,6 +588,7 @@ class MicrosoftPerformancePage(ToughAnimationPage):
   """Why: Login page is slow because of ineffecient transform operations."""
   BASE_NAME = 'microsoft_performance'
   URL = 'http://ie.microsoft.com/testdrive/performance/robohornetpro/'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
   NEED_MEASUREMENT_READY = False
 
 

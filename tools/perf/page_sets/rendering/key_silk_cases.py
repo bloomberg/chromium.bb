@@ -335,6 +335,7 @@ class Page16(KeySilkPage):
 
   BASE_NAME = 'swipe_action'
   URL = 'file://../key_silk_cases/inbox_app.html?swipe_to_dismiss'
+  TAGS = KeySilkPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
   def SwipeToDismiss(self, action_runner):
     with action_runner.CreateGestureInteraction('SwipeAction'):
@@ -642,6 +643,7 @@ class SilkFinance(KeySilkPage):
 
   BASE_NAME = 'silk_finance'
   URL = 'file://../key_silk_cases/silk_finance.html'
+  TAGS = KeySilkPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
   def PerformPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('animation_interaction'):

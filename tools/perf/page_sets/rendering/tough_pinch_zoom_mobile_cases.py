@@ -88,6 +88,7 @@ class CnnPinchZoomMobile2018Page(ToughPinchZoomMobilePage):
   BASE_NAME = 'cnn_mobile_pinch'
   YEAR = '2018'
   URL = 'http://www.cnn.com/travel/article/airbus-a330-900-neo-tours-us-airports/index.html'
+  TAGS = ToughPinchZoomMobilePage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class EBayPinchZoomMobile2018Page(ToughPinchZoomMobilePage):

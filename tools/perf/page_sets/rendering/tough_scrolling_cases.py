@@ -134,6 +134,7 @@ class ScrollingTextRaster10000Page(ToughFastScrollingPage):
   BASE_NAME = 'text_constant_full_page_raster_10000_pixels_per_second'
   URL = 'file://../tough_scrolling_cases/text_constant_full_page_raster.html'
   SPEED_IN_PIXELS_PER_SECOND = 10000
+  TAGS = ToughFastScrollingPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class ScrollingTextRaster20000Page(ToughFastScrollingPage):
@@ -182,6 +183,7 @@ class ScrollingCanvas20000Page(ToughFastScrollingPage):
   BASE_NAME = 'canvas_20000_pixels_per_second'
   URL = 'file://../tough_scrolling_cases/canvas.html'
   SPEED_IN_PIXELS_PER_SECOND = 20000
+  TAGS = ToughFastScrollingPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class ScrollingCanvas40000Page(ToughFastScrollingPage):

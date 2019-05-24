@@ -47,8 +47,12 @@ POLYMER = Tag(
     'polymer', 'Polymer stories')
 REPAINT_DESKTOP = Tag(
     'repaint_desktop', 'Repaint desktop stories')
+# Representative story_tags are the cluster representatives of benchamrks
+# Documentation: https://goto.google.com/chrome-benchmark-clustering
 REPRESENTATIVE_MAC_DESKTOP = Tag(
     'representative_mac_desktop', 'Rendering desktop representatives for mac')
+REPRESENTATIVE_MOBILE = Tag(
+    'representative_mobile', 'Rendering mobile representatives')
 REPRESENTATIVE_WIN_DESKTOP = Tag(
     'representative_win_desktop',
     'Rendering desktop representatives for windows')

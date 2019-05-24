@@ -42,6 +42,7 @@ class BackgroundColorAnimationWithGradientPage(ToughTextureUploadPage):
 class SmallTextureUploadsPage(ToughTextureUploadPage):
   BASE_NAME = 'small_texture_uploads'
   URL = 'file://../tough_texture_upload_cases/small_texture_uploads.html'
+  TAGS = ToughTextureUploadPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class MediumTextureUploadsPage(ToughTextureUploadPage):

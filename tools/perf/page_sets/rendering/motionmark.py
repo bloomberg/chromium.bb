@@ -67,6 +67,7 @@ class MotionMarkPage(rendering_story.RenderingStory):
 class MotionmarkAnimMultiply175(MotionMarkPage):
   BASE_NAME = 'motionmark_anim_multiply_175'
   URL = MotionMarkPage.GetUrl('Animometer', 'Multiply', 175)
+  TAGS = MotionMarkPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 # Why: MotionMark Animometer case """
@@ -122,6 +123,7 @@ class MotionmarkHTMLCSSBouncingGradientCircles250(MotionMarkPage):
 class MotionmarkHTMLCSSBouncingBlendCircles25(MotionMarkPage):
   BASE_NAME = 'motionmark_html_css_bouncing_blend_circles_25'
   URL = MotionMarkPage.GetUrl('HTML suite', 'CSS bouncing blend circles', 25)
+  TAGS = MotionMarkPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 # Why: MotionMark HTML case """
