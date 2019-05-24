@@ -46,7 +46,11 @@ class ExtractHistogramsTest(unittest.TestCase):
  <histogram name="Test.Histogram" units="things">
   <owner> Please list the metric's owners. Add more owner tags as needed.
   </owner>
-  <summary> This is a summary </summary>
+  <summary>
+    <!-- Comments are fine -->
+    This is a summary
+    <!-- Comments are fine -->
+  </summary>
  </histogram>
 </histograms>
 </histogram-configuration>

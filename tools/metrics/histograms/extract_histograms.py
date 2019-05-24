@@ -79,7 +79,8 @@ class Error(Exception):
 def _JoinChildNodes(tag):
   """Join child nodes into a single text.
 
-  Applicable to leafs like 'summary' and 'detail'.
+  Applicable to leafs like 'summary' and 'detail'. Removes any comment in the
+  node.
 
   Args:
     tag: parent node
@@ -87,7 +88,9 @@ def _JoinChildNodes(tag):
   Returns:
     a string with concatenated nodes' text representation.
   """
-  return ''.join(c.toxml() for c in tag.childNodes).strip()
+  return ''.join(c.toxml()
+                 for c in tag.childNodes
+                 if c.nodeType != xml.dom.minidom.Node.COMMENT_NODE).strip()
 
 
 def _NormalizeString(s):
