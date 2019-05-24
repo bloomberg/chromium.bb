@@ -73,6 +73,11 @@ bool MdTextButton::GetProminent() const {
 void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
   bg_color_override_ = color;
   UpdateColors();
+  OnPropertyChanged(&bg_color_override_, kPropertyEffectsNone);
+}
+
+base::Optional<SkColor> MdTextButton::GetBgColorOverride() const {
+  return bg_color_override_;
 }
 
 void MdTextButton::SetCornerRadius(float radius) {
@@ -294,6 +299,7 @@ BEGIN_METADATA(MdTextButton)
 METADATA_PARENT_CLASS(LabelButton)
 ADD_PROPERTY_METADATA(MdTextButton, bool, Prominent)
 ADD_PROPERTY_METADATA(MdTextButton, float, CornerRadius)
+ADD_PROPERTY_METADATA(MdTextButton, base::Optional<SkColor>, BgColorOverride)
 END_METADATA()
 
 }  // namespace views

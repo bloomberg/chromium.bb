@@ -15,12 +15,17 @@
 namespace views {
 namespace metadata {
 
+const base::string16& GetNullOptStr() {
+  static const base::NoDestructor<base::string16> kNullOptStr(
+      base::ASCIIToUTF16("<Empty>"));
+  return *kNullOptStr;
+}
+
 /***** String Conversions *****/
 
-#define CONVERT_NUMBER_TO_STRING(T)                   \
-  template <>                                         \
-  base::string16 ConvertToString<T>(T source_value) { \
-    return base::NumberToString16(source_value);      \
+#define CONVERT_NUMBER_TO_STRING(T)                           \
+  base::string16 TypeConverter<T>::ToString(T source_value) { \
+    return base::NumberToString16(source_value);              \
   }
 
 CONVERT_NUMBER_TO_STRING(int8_t)
@@ -34,30 +39,26 @@ CONVERT_NUMBER_TO_STRING(uint64_t)
 CONVERT_NUMBER_TO_STRING(float)
 CONVERT_NUMBER_TO_STRING(double)
 
-template <>
-base::string16 ConvertToString<bool>(bool source_value) {
+base::string16 TypeConverter<bool>::ToString(bool source_value) {
   return base::ASCIIToUTF16(source_value ? "true" : "false");
 }
 
-template <>
-base::string16 ConvertToString<gfx::Size>(const gfx::Size& source_value) {
+base::string16 TypeConverter<gfx::Size>::ToString(
+    const gfx::Size& source_value) {
   return base::ASCIIToUTF16(base::StringPrintf("{%i, %i}", source_value.width(),
                                                source_value.height()));
 }
 
-template <>
-base::string16 ConvertToString<base::string16>(
+base::string16 TypeConverter<base::string16>::ToString(
     const base::string16& source_value) {
   return source_value;
 }
 
-template <>
-base::string16 ConvertToString<const char*>(const char* source_value) {
+base::string16 TypeConverter<const char*>::ToString(const char* source_value) {
   return base::UTF8ToUTF16(source_value);
 }
 
-template <>
-base::Optional<int8_t> ConvertFromString<int8_t>(
+base::Optional<int8_t> TypeConverter<int8_t>::FromString(
     const base::string16& source_value) {
   int32_t ret = 0;
   if (base::StringToInt(source_value, &ret) &&
@@ -67,8 +68,7 @@ base::Optional<int8_t> ConvertFromString<int8_t>(
   return base::nullopt;
 }
 
-template <>
-base::Optional<int16_t> ConvertFromString<int16_t>(
+base::Optional<int16_t> TypeConverter<int16_t>::FromString(
     const base::string16& source_value) {
   int32_t ret = 0;
   if (base::StringToInt(source_value, &ret) &&
@@ -78,24 +78,21 @@ base::Optional<int16_t> ConvertFromString<int16_t>(
   return base::nullopt;
 }
 
-template <>
-base::Optional<int32_t> ConvertFromString<int32_t>(
+base::Optional<int32_t> TypeConverter<int32_t>::FromString(
     const base::string16& source_value) {
   int value;
   return base::StringToInt(source_value, &value) ? base::make_optional(value)
                                                  : base::nullopt;
 }
 
-template <>
-base::Optional<int64_t> ConvertFromString<int64_t>(
+base::Optional<int64_t> TypeConverter<int64_t>::FromString(
     const base::string16& source_value) {
   int64_t value;
   return base::StringToInt64(source_value, &value) ? base::make_optional(value)
                                                    : base::nullopt;
 }
 
-template <>
-base::Optional<uint8_t> ConvertFromString<uint8_t>(
+base::Optional<uint8_t> TypeConverter<uint8_t>::FromString(
     const base::string16& source_value) {
   uint32_t ret = 0;
   if (base::StringToUint(source_value, &ret) &&
@@ -105,8 +102,7 @@ base::Optional<uint8_t> ConvertFromString<uint8_t>(
   return base::nullopt;
 }
 
-template <>
-base::Optional<uint16_t> ConvertFromString<uint16_t>(
+base::Optional<uint16_t> TypeConverter<uint16_t>::FromString(
     const base::string16& source_value) {
   uint32_t ret = 0;
   if (base::StringToUint(source_value, &ret) &&
@@ -116,32 +112,29 @@ base::Optional<uint16_t> ConvertFromString<uint16_t>(
   return base::nullopt;
 }
 
-template <>
-base::Optional<uint32_t> ConvertFromString<uint32_t>(
+base::Optional<uint32_t> TypeConverter<uint32_t>::FromString(
     const base::string16& source_value) {
   unsigned int value;
   return base::StringToUint(source_value, &value) ? base::make_optional(value)
                                                   : base::nullopt;
 }
 
-template <>
-base::Optional<uint64_t> ConvertFromString<uint64_t>(
+base::Optional<uint64_t> TypeConverter<uint64_t>::FromString(
     const base::string16& source_value) {
   uint64_t value;
   return base::StringToUint64(source_value, &value) ? base::make_optional(value)
                                                     : base::nullopt;
 }
 
-template <>
-base::Optional<float> ConvertFromString<float>(
+base::Optional<float> TypeConverter<float>::FromString(
     const base::string16& source_value) {
-  if (base::Optional<double> temp = ConvertFromString<double>(source_value))
+  if (base::Optional<double> temp =
+          TypeConverter<double>::FromString(source_value))
     return static_cast<float>(temp.value());
   return base::nullopt;
 }
 
-template <>
-base::Optional<double> ConvertFromString<double>(
+base::Optional<double> TypeConverter<double>::FromString(
     const base::string16& source_value) {
   double value;
   return base::StringToDouble(base::UTF16ToUTF8(source_value), &value)
@@ -149,8 +142,7 @@ base::Optional<double> ConvertFromString<double>(
              : base::nullopt;
 }
 
-template <>
-base::Optional<bool> ConvertFromString<bool>(
+base::Optional<bool> TypeConverter<bool>::FromString(
     const base::string16& source_value) {
   const bool is_true = source_value == base::ASCIIToUTF16("true");
   if (is_true || source_value == base::ASCIIToUTF16("false"))
@@ -158,8 +150,7 @@ base::Optional<bool> ConvertFromString<bool>(
   return base::nullopt;
 }
 
-template <>
-base::Optional<gfx::Size> ConvertFromString<gfx::Size>(
+base::Optional<gfx::Size> TypeConverter<gfx::Size>::FromString(
     const base::string16& source_value) {
   const auto values =
       base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,}"),
@@ -172,8 +163,7 @@ base::Optional<gfx::Size> ConvertFromString<gfx::Size>(
   return base::nullopt;
 }
 
-template <>
-base::Optional<base::string16> ConvertFromString<base::string16>(
+base::Optional<base::string16> TypeConverter<base::string16>::FromString(
     const base::string16& source_value) {
   return source_value;
 }

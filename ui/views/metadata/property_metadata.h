@@ -31,7 +31,7 @@ class ClassPropertyReadOnlyMetaData : public MemberMetaDataBase {
   ~ClassPropertyReadOnlyMetaData() override = default;
 
   base::string16 GetValueAsString(void* obj) const override {
-    return ConvertToString<TValue>((static_cast<TClass*>(obj)->*Get)());
+    return TypeConverter<TValue>::ToString((static_cast<TClass*>(obj)->*Get)());
   }
 
   PropertyFlags GetPropertyFlags() const override {
@@ -59,7 +59,8 @@ class ClassPropertyMetaData
   ~ClassPropertyMetaData() override = default;
 
   void SetValueAsString(void* obj, const base::string16& new_value) override {
-    if (base::Optional<TValue> result = ConvertFromString<TValue>(new_value))
+    if (base::Optional<TValue> result =
+            TypeConverter<TValue>::FromString(new_value))
       (static_cast<TClass*>(obj)->*Set)(result.value());
   }
 
