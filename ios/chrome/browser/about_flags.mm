@@ -197,6 +197,24 @@ const FeatureEntry::FeatureVariation kDetectMainThreadFreezeVariations[] = {
     {"9s", kDetectMainThreadFreezeTimeout9s,
      base::size(kDetectMainThreadFreezeTimeout9s), nullptr}};
 
+const FeatureEntry::FeatureParam
+    kAutofillUseMobileLabelDisambiguationShowAll[] = {
+        {autofill::features::kAutofillUseMobileLabelDisambiguationParameterName,
+         autofill::features::
+             kAutofillUseMobileLabelDisambiguationParameterShowAll}};
+const FeatureEntry::FeatureParam
+    kAutofillUseMobileLabelDisambiguationShowOne[] = {
+        {autofill::features::kAutofillUseMobileLabelDisambiguationParameterName,
+         autofill::features::
+             kAutofillUseMobileLabelDisambiguationParameterShowOne}};
+
+const FeatureEntry::FeatureVariation
+    kAutofillUseMobileLabelDisambiguationVariations[] = {
+        {"(show all)", kAutofillUseMobileLabelDisambiguationShowAll,
+         base::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
+        {"(show one)", kAutofillUseMobileLabelDisambiguationShowOne,
+         base::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -554,8 +572,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
      flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUseMobileLabelDisambiguation)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         autofill::features::kAutofillUseMobileLabelDisambiguation,
+         kAutofillUseMobileLabelDisambiguationVariations,
+         "AutofillUseMobileLabelDisambiguation")},
     {"enable-autofill-prune-suggestions",
      flag_descriptions::kAutofillPruneSuggestionsName,
      flag_descriptions::kAutofillPruneSuggestionsDescription, flags_ui::kOsIos,

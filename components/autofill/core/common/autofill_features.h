@@ -68,6 +68,9 @@ extern const base::Feature kAutofillRefreshStyleAndroid;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 extern const base::Feature kAutofillUseMobileLabelDisambiguation;
+extern const char kAutofillUseMobileLabelDisambiguationParameterName[];
+extern const char kAutofillUseMobileLabelDisambiguationParameterShowOne[];
+extern const char kAutofillUseMobileLabelDisambiguationParameterShowAll[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 // Returns whether the Autofill credit card assist infobar should be shown.

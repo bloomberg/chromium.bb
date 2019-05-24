@@ -221,6 +221,9 @@ const base::Feature kAutofillRefreshStyleAndroid{
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const base::Feature kAutofillUseMobileLabelDisambiguation{
     "AutofillUseMobileLabelDisambiguation", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kAutofillUseMobileLabelDisambiguationParameterName[] = "variant";
+const char kAutofillUseMobileLabelDisambiguationParameterShowAll[] = "show-all";
+const char kAutofillUseMobileLabelDisambiguationParameterShowOne[] = "show-one";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 bool IsAutofillCreditCardAssistEnabled() {

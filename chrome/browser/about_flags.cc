@@ -953,6 +953,26 @@ const FeatureEntry::FeatureVariation kVizHitTestVariations[] = {
     {"SurfaceLayer", kVizHitTestSurfaceLayerEnabled,
      base::size(kVizHitTestSurfaceLayerEnabled), nullptr}};
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam
+    kAutofillUseMobileLabelDisambiguationShowAll[] = {
+        {autofill::features::kAutofillUseMobileLabelDisambiguationParameterName,
+         autofill::features::
+             kAutofillUseMobileLabelDisambiguationParameterShowAll}};
+const FeatureEntry::FeatureParam
+    kAutofillUseMobileLabelDisambiguationShowOne[] = {
+        {autofill::features::kAutofillUseMobileLabelDisambiguationParameterName,
+         autofill::features::
+             kAutofillUseMobileLabelDisambiguationParameterShowOne}};
+
+const FeatureEntry::FeatureVariation
+    kAutofillUseMobileLabelDisambiguationVariations[] = {
+        {"(show all)", kAutofillUseMobileLabelDisambiguationShowAll,
+         base::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
+        {"(show one)", kAutofillUseMobileLabelDisambiguationShowOne,
+         base::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
+#endif  // defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -962,7 +982,7 @@ const FeatureEntry::FeatureVariation kVizHitTestVariations[] = {
 // . SINGLE_VALUE: entry is either on or off. Use the SINGLE_VALUE_TYPE
 //   macro for this type supplying the command line to the macro.
 // . MULTI_VALUE: a list of choices, the first of which should correspond to a
-//   deactivated state for this lab (i.e. no command line option).  To specify
+//   deactivated state for this lab (i.e. no command line option). To specify
 //   this type of entry use the macro MULTI_VALUE_TYPE supplying it the
 //   array of choices.
 // See the documentation of FeatureEntry for details on the fields.
@@ -970,10 +990,10 @@ const FeatureEntry::FeatureVariation kVizHitTestVariations[] = {
 // Usage of about:flags is logged on startup via the "Launch.FlagsAtStartup"
 // UMA histogram. This histogram shows the number of startups with a given flag
 // enabled. If you'd like to see user counts instead, make sure to switch to
-// to "count users" view on the dashboard. When adding new entries, the enum
+// "count users" view on the dashboard. When adding new entries, the enum
 // "LoginCustomFlags" must be updated in histograms/enums.xml. See note in
-// enums.xml and don't forget to run AboutFlagsHistogramTest unit test
-// to calculate and verify checksum.
+// enums.xml and don't forget to run AboutFlagsHistogramTest unit test to
+// calculate and verify checksum.
 //
 // When adding a new choice, add it to the end of the list.
 const FeatureEntry kFeatureEntries[] = {
@@ -1901,9 +1921,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"set-market-url-for-testing",
      flag_descriptions::kSetMarketUrlForTestingName,
      flag_descriptions::kSetMarketUrlForTestingDescription, kOsAndroid,
-     SINGLE_VALUE_TYPE_AND_VALUE(
-         switches::kMarketUrlForTesting,
-         "https://play.google.com/store/apps/details?id=com.android.chrome")},
+     SINGLE_VALUE_TYPE_AND_VALUE(switches::kMarketUrlForTesting,
+                                 "https://play.google.com/store/apps/"
+                                 "details?id=com.android.chrome")},
 #endif  // OS_ANDROID
     {"enforce-tls13-downgrade", flag_descriptions::kEnforceTLS13DowngradeName,
      flag_descriptions::kEnforceTLS13DowngradeDescription, kOsAll,
@@ -2353,8 +2373,8 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kSpeculativeServiceWorkerStartOnQueryInput)},
 
-    // NOTE: This feature is generic and marked kOsAll but is used only in CrOS
-    // for AndroidMessagesIntegration feature.
+    // NOTE: This feature is generic and marked kOsAll but is used only in
+    // CrOS for AndroidMessagesIntegration feature.
     {"enable-service-worker-long-running-message",
      flag_descriptions::kServiceWorkerLongRunningMessageName,
      flag_descriptions::kServiceWorkerLongRunningMessageDescription, kOsAll,
@@ -3697,8 +3717,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
      flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUseMobileLabelDisambiguation)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         autofill::features::kAutofillUseMobileLabelDisambiguation,
+         kAutofillUseMobileLabelDisambiguationVariations,
+         "AutofillUseMobileLabelDisambiguation")},
 #endif  // defined(OS_ANDROID)
 
     {"autofill-prune-suggestions",
