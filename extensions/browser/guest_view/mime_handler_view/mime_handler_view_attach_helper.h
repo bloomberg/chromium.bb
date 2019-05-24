@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "extensions/common/mojo/guest_view.mojom.h"
 
@@ -69,16 +70,6 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
                                 int32_t element_instance_id,
                                 bool is_full_page_plugin);
 
-  // Called when MimeHandlerViewGuest is about to be destroyed due to its
-  // embedder frame going away. This is specifically relevant during attaching;
-  // from the time the GuestView starts the attach process
-  // (AttachToOuterWebContents) to when the inner WebContents of GuestView
-  // attaches to the outer WebContents, there is a gap where the embedder
-  // RenderFrameHost (parent frame to the outer contents frame) can go away.
-  // MimeHandlerViewAttachHelper should be notified to remove the guest from
-  // |pending_guests_|.
-  void GuestEmbedderFrameGone(int32_t element_instance_id);
-
  private:
   // Called after the content layer finishes preparing a frame for attaching to
   // the embedder WebContents. If |plugin_rfh| is nullptr then attaching is not
@@ -101,7 +92,13 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
 
   MimeHandlerViewAttachHelper(content::RenderProcessHost* render_process_host);
 
-  base::flat_map<int32_t, MimeHandlerViewGuest*> pending_guests_;
+  // From the time the MimeHandlerViewGuest starts the attach process
+  // (AttachToOuterWebContents) to when the inner WebContents of GuestView
+  // attaches to the outer WebContents, there is a gap where the embedder
+  // RenderFrameHost (parent frame to the outer contents frame) can go away.
+  // Therefore, we keep a weak pointer to the GuestViews here (see
+  // https://crbug.com/959572).
+  base::flat_map<int32_t, base::WeakPtr<MimeHandlerViewGuest>> pending_guests_;
 
   content::RenderProcessHost* const render_process_host_;
 

@@ -109,6 +109,8 @@ class MimeHandlerViewGuest
   // parent frame of the embedder frame (for post message).
   bool maybe_has_frame_container() const { return maybe_has_frame_container_; }
 
+  base::WeakPtr<MimeHandlerViewGuest> GetWeakPtr();
+
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
   ~MimeHandlerViewGuest() override;
@@ -196,6 +198,8 @@ class MimeHandlerViewGuest
   // embedder's parent frame to facilitate postMessage.
   bool maybe_has_frame_container_ = false;
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
+
+  base::WeakPtrFactory<MimeHandlerViewGuest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

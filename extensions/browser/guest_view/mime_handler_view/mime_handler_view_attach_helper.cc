@@ -126,17 +126,10 @@ void MimeHandlerViewAttachHelper::AttachToOuterWebContents(
     int32_t element_instance_id,
     bool is_full_page_plugin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  pending_guests_[element_instance_id] = guest_view;
+  pending_guests_[element_instance_id] = guest_view->GetWeakPtr();
   outer_contents_frame->PrepareForInnerWebContentsAttach(base::BindOnce(
       &MimeHandlerViewAttachHelper::ResumeAttachOrDestroy,
       weak_factory_.GetWeakPtr(), element_instance_id, is_full_page_plugin));
-}
-
-void MimeHandlerViewAttachHelper::GuestEmbedderFrameGone(
-    int32_t element_instance_id) {
-  auto it = pending_guests_.find(element_instance_id);
-  if (it != pending_guests_.end())
-    pending_guests_.erase(it);
 }
 
 // static
@@ -163,7 +156,9 @@ void MimeHandlerViewAttachHelper::ResumeAttachOrDestroy(
     bool is_full_page_plugin,
     content::RenderFrameHost* plugin_rfh) {
   DCHECK(!plugin_rfh || (plugin_rfh->GetProcess() == render_process_host_));
-  auto* guest_view = pending_guests_[element_instance_id];
+  auto guest_view = pending_guests_[element_instance_id];
+  if (!guest_view)
+    return;
   pending_guests_.erase(element_instance_id);
   if (!plugin_rfh) {
     mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager;

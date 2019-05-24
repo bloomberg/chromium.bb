@@ -105,7 +105,8 @@ MimeHandlerViewGuest::MimeHandlerViewGuest(WebContents* owner_web_contents)
           ExtensionsAPIClient::Get()->CreateMimeHandlerViewGuestDelegate(this)),
       embedder_frame_process_id_(content::ChildProcessHost::kInvalidUniqueID),
       embedder_frame_routing_id_(MSG_ROUTING_NONE),
-      embedder_widget_routing_id_(MSG_ROUTING_NONE) {}
+      embedder_widget_routing_id_(MSG_ROUTING_NONE),
+      weak_factory_(this) {}
 
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
   // Before attaching is complete, the instance ID is not valid.
@@ -372,8 +373,6 @@ void MimeHandlerViewGuest::OnRenderFrameHostDeleted(int process_id,
                                                     int routing_id) {
   if (process_id == embedder_frame_process_id_ &&
       routing_id == embedder_frame_routing_id_) {
-    MimeHandlerViewAttachHelper::Get(embedder_frame_process_id_)
-        ->GuestEmbedderFrameGone(element_instance_id());
     Destroy(/*also_delete=*/true);
   }
 }
@@ -487,6 +486,10 @@ void MimeHandlerViewGuest::FuseBeforeUnloadControl(
 content::RenderFrameHost* MimeHandlerViewGuest::GetEmbedderFrame() const {
   return content::RenderFrameHost::FromID(embedder_frame_process_id_,
                                           embedder_frame_routing_id_);
+}
+
+base::WeakPtr<MimeHandlerViewGuest> MimeHandlerViewGuest::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace extensions
