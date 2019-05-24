@@ -173,6 +173,32 @@ class MediaPipelineBackend {
       uint64_t dropped_frames;  // Reported as webkitDroppedFrames.
     };
 
+    // FrameDisplayInfoDelegate methods must be called on the main CMA thread.
+    class FrameDisplayInfoDelegate {
+     public:
+      // Called when the screen is refreshed with a valid frame. If no valid
+      // frame is available at the time a screen refresh is due and
+      // implementation decides to make up a frame to display or repeat
+      // previously displayed frames, such methods shall not be called. It
+      // notifies FrameDisplayInfoDelegate about the frame that's displayed on
+      // the screen.
+      // For this API to work properly, the pts fields in CastDecoderBuffer must
+      // be unique.
+      virtual void OnFrameDisplayed(
+          int64_t push_time,     // Time when the frame is pushed to backend,
+                                 // in microseconds, relative to
+                                 // CLOCK_MONOTONIC or CLOCK_MONOTONIC_RAW.
+          int64_t display_time,  // Time when the frame is displayed on screen,
+                                 // in microseconds, relative to
+                                 // CLOCK_MONOTONIC or CLOCK_MONOTONIC_RAW.
+          int64_t pts  // The |timestamp| within the CastDecoderBuffer that's
+                       // pushed to backend, in microseconds.
+          ) = 0;
+
+     protected:
+      virtual ~FrameDisplayInfoDelegate() = default;
+    };
+
     // Provides the video configuration. Called once with the configuration for
     // the primary stream before the backend is initialized, and the
     // configuration may contain a pointer to additional configuration for a
@@ -186,6 +212,14 @@ class MediaPipelineBackend {
     // Returns the playback statistics since last call to backend Start.  Only
     // called when playing or paused.
     virtual void GetStatistics(Statistics* statistics) = 0;
+
+    // Register |frame_display_info_delegate| on |video_decoder| to receive
+    // OnFrameDisplayed.
+    // TODO(guohuideng): make this a virtual method on VideoDecoder at next API
+    // update.
+    CHROMECAST_EXPORT static void SetFrameDisplayInfoDelegate(
+        FrameDisplayInfoDelegate* frame_display_info_delegate,
+        VideoDecoder* video_decoder) __attribute__((weak));
 
    protected:
     ~VideoDecoder() override {}
