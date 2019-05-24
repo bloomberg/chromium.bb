@@ -7,7 +7,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/network/network_list.h"
+#include "ash/system/network/network_list_view.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 
 namespace ash {
