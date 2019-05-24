@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
@@ -1282,7 +1283,8 @@ TEST_F(ServiceWorkerVersionTest,
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* is_parent_frame_secure */,
-          base::NullCallback(), &provider_info);
+          FrameTreeNode::kFrameTreeNodeInvalidId, base::NullCallback(),
+          &provider_info);
   remote_endpoint.BindForWindow(std::move(provider_info));
   host->UpdateUrls(registration_->scope(), registration_->scope());
   host->SetControllerRegistration(registration_,

@@ -17,6 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/frame_host/frame_tree_node_id_registry.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/renderer_interface_binders.h"
@@ -29,7 +30,6 @@
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/browser/web_contents/web_contents_getter_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -163,6 +163,7 @@ base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
+    int frame_tree_node_id,
     WebContentsGetter web_contents_getter,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info) {
   DCHECK(context);
@@ -170,6 +171,7 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
   (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType::kForWindow, are_ancestors_secure,
+      frame_tree_node_id,
       mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
       std::move(client_ptr_info), context));
   host->web_contents_getter_ = std::move(web_contents_getter);
@@ -190,7 +192,7 @@ ServiceWorkerProviderHost::PreCreateForController(
   (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
-      true /* is_parent_frame_secure */,
+      true /* is_parent_frame_secure */, FrameTreeNode::kFrameTreeNodeInvalidId,
       mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
       std::move(client_ptr_info), context));
   host->running_hosted_version_ = std::move(version);
@@ -210,7 +212,7 @@ ServiceWorkerProviderHost::PreCreateForSharedWorker(
   (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-      true /* is_parent_frame_secure */,
+      true /* is_parent_frame_secure */, FrameTreeNode::kFrameTreeNodeInvalidId,
       mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
       std::move(client_ptr_info), context));
   host->SetRenderProcessId(process_id);
@@ -234,6 +236,7 @@ void ServiceWorkerProviderHost::RegisterToContextCore(
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     blink::mojom::ServiceWorkerProviderType type,
     bool is_parent_frame_secure,
+    int frame_tree_node_id,
     blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
     blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
     base::WeakPtr<ServiceWorkerContextCore> context)
@@ -245,6 +248,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       render_thread_id_(kDocumentMainThreadId),
       frame_id_(MSG_ROUTING_NONE),
       is_parent_frame_secure_(is_parent_frame_secure),
+      frame_tree_node_id_(frame_tree_node_id),
       context_(context),
       binding_(this),
       interface_provider_binding_(this) {
@@ -272,7 +276,7 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   if (controller_)
     controller_->RemoveControllee(client_uuid_);
   if (fetch_request_window_id_)
-    WebContentsGetterRegistry::GetInstance()->Remove(fetch_request_window_id_);
+    FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
 
   // Remove |this| as an observer of ServiceWorkerRegistrations.
   // TODO(falken): Use ScopedObserver instead of this explicit call.
@@ -401,10 +405,10 @@ void ServiceWorkerProviderHost::UpdateUrls(const GURL& url,
     // may no longer be the potential controller of this frame and shouldn't
     // have the power to display SSL dialogs for it.
     if (type_ == blink::mojom::ServiceWorkerProviderType::kForWindow) {
-      auto* registry = WebContentsGetterRegistry::GetInstance();
+      auto* registry = FrameTreeNodeIdRegistry::GetInstance();
       registry->Remove(fetch_request_window_id_);
       fetch_request_window_id_ = base::UnguessableToken::Create();
-      registry->Add(fetch_request_window_id_, web_contents_getter());
+      registry->Add(fetch_request_window_id_, frame_tree_node_id_);
     }
   }
 

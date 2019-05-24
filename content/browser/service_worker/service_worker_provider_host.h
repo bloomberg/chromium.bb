@@ -114,8 +114,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // ServiceWorkerProviderContext will later be created in the renderer, should
   // the navigation succeed. |are_ancestors_secure| should be true for main
   // frames. Otherwise it is true iff all ancestor frames of this frame have a
-  // secure origin. |web_contents_getter| indicates the tab where the navigation
-  // is occurring.
+  // secure origin. |frame_tree_node_id| is FrameTreeNode
+  // id. |web_contents_getter| indicates the tab where the navigation is
+  // occurring.
   //
   // The returned host stays alive as long as the filled |out_provider_info|
   // stays alive (namely, as long as |out_provider_info->host_ptr_info| stays
@@ -124,6 +125,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
+      int frame_tree_node_id,
       WebContentsGetter web_contents_getter,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info);
 
@@ -462,6 +464,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType type,
       bool is_parent_frame_secure,
+      int frame_tree_node_id,
       blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
       blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
       base::WeakPtr<ServiceWorkerContextCore> context);
@@ -625,8 +628,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // change its value.
   bool is_parent_frame_secure_;
 
+  // FrameTreeNode id if this is a service worker window client.
+  // Otherwise, |FrameTreeNode::kFrameTreeNodeInvalidId|.
+  const int frame_tree_node_id_;
+
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs.
+  // TODO(hayato): Remove |web_contents_getter_| since we can create
+  // WebContentsGetter from |frame_tree_node_id_|.
   WebContentsGetter web_contents_getter_;
 
   // For service worker clients. See comments for the getter functions.

@@ -11,12 +11,12 @@
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/frame_tree_node_id_registry.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl_private_key_impl.h"
-#include "content/browser/web_contents/web_contents_getter_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -325,7 +325,13 @@ void HandleFileUploadRequest(
 
 base::RepeatingCallback<WebContents*(void)> GetWebContentsFromRegistry(
     const base::UnguessableToken& window_id) {
-  return WebContentsGetterRegistry::GetInstance()->Get(window_id);
+  int frame_tree_node_id =
+      FrameTreeNodeIdRegistry::GetInstance()->Get(window_id);
+  if (frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId) {
+    return base::NullCallback();
+  }
+  return base::BindRepeating(&WebContents::FromFrameTreeNodeId,
+                             frame_tree_node_id);
 }
 
 WebContents* GetWebContents(int process_id, int routing_id) {

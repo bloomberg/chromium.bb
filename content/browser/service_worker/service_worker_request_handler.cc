@@ -65,7 +65,8 @@ ServiceWorkerRequestHandler::CreateForNavigation(
   // Initialize the SWProviderHost.
   *out_provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
       context->AsWeakPtr(), request_info.are_ancestors_secure,
-      std::move(web_contents_getter), &provider_info);
+      request_info.frame_tree_node_id, std::move(web_contents_getter),
+      &provider_info);
   navigation_handle_core->OnCreatedProviderHost(*out_provider_host,
                                                 std::move(provider_info));
 

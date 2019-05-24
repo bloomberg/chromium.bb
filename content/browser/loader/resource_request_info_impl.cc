@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/frame_tree_node_id_registry.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/web_contents/web_contents_getter_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/net/url_request_user_data.h"
@@ -194,10 +194,12 @@ ResourceRequestInfo::WebContentsGetter
 ResourceRequestInfoImpl::GetWebContentsGetterForRequest() {
   // If we have a window id, try to use that.
   if (fetch_window_id_) {
-    ResourceRequestInfo::WebContentsGetter getter =
-        WebContentsGetterRegistry::GetInstance()->Get(fetch_window_id_);
-    if (getter)
-      return getter;
+    int frame_tree_node_id =
+        FrameTreeNodeIdRegistry::GetInstance()->Get(fetch_window_id_);
+    if (frame_tree_node_id != FrameTreeNode::kFrameTreeNodeInvalidId) {
+      return base::BindRepeating(&WebContents::FromFrameTreeNodeId,
+                                 frame_tree_node_id);
+    }
   }
 
   // Navigation requests are created with a valid FrameTreeNode ID and invalid

@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
@@ -1855,7 +1856,8 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
   base::WeakPtr<ServiceWorkerProviderHost> reserved_client =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          {} /* web_contents_getter */, &provider_info);
+          FrameTreeNode::kFrameTreeNodeInvalidId, {} /* web_contents_getter */,
+          &provider_info);
   reserved_client->UpdateUrls(in_scope, in_scope);
 
   // Make an out-scope client.
