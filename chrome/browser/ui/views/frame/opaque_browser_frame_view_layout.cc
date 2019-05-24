@@ -298,6 +298,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
   int size = delegate_->GetIconSize();
   bool should_show_icon = delegate_->ShouldShowWindowIcon() && window_icon_;
   bool should_show_title = delegate_->ShouldShowWindowTitle() && window_title_;
+  int icon_y = 0;
 
   if (should_show_icon || should_show_title || hosted_app_button_container_) {
     use_hidden_icon_location = false;
@@ -319,7 +320,10 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     const int icon_height =
         unavailable_px_at_top + size + kContentEdgeShadowThickness;
     const int y = unavailable_px_at_top + (available_height - icon_height) / 2;
+    icon_y = y;
 
+    if (hosted_app_button_container_)
+      available_space_leading_x_ = y - kIconLeftSpacing;
     window_icon_bounds_ =
         gfx::Rect(available_space_leading_x_ + kIconLeftSpacing, y, size, size);
     available_space_leading_x_ += size + kIconLeftSpacing;
@@ -341,12 +345,15 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     if (should_show_title) {
       window_title_->SetText(delegate_->GetWindowTitle());
 
-      int text_width =
-          std::max(0, available_space_trailing_x_ - kCaptionSpacing -
-                          available_space_leading_x_ - kIconTitleSpacing);
-      window_title_->SetBounds(available_space_leading_x_ + kIconTitleSpacing,
-                               window_icon_bounds_.y(), text_width,
-                               window_icon_bounds_.height());
+      // Extra space between icon and title.
+      int extra_space =
+          hosted_app_button_container_ ? icon_y - kIconTitleSpacing : 0;
+      int text_width = std::max(
+          0, available_space_trailing_x_ - kCaptionSpacing -
+                 available_space_leading_x_ - kIconTitleSpacing - extra_space);
+      window_title_->SetBounds(
+          available_space_leading_x_ + kIconTitleSpacing + extra_space,
+          window_icon_bounds_.y(), text_width, window_icon_bounds_.height());
       available_space_leading_x_ += text_width + kIconTitleSpacing;
     }
   }
