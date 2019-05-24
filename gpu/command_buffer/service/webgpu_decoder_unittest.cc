@@ -39,7 +39,7 @@ class WebGPUDecoderTest : public ::testing::Test {
         GpuPreferences(), GpuDriverBugWorkarounds(), GpuFeatureInfo(),
         /*context_state=*/nullptr, /*mailbox_manager=*/nullptr,
         &shared_image_manager_, /*image_factory=*/nullptr, /*tracker=*/nullptr,
-        /*is_using_skia_renderer=*/false, /*use_gl=*/false);
+        /*enable_wrapped_sk_image=*/false);
   }
 
   void TearDown() override {

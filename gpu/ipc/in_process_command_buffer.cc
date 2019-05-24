@@ -1391,12 +1391,15 @@ void InProcessCommandBuffer::LazyCreateSharedImageFactory() {
   if (shared_image_factory_)
     return;
 
+  // We need WrappedSkImage to support creating a SharedImage with pixel data
+  // when GL is unavailable. This is used in various unit tests.
+  const bool enable_wrapped_sk_image =
+      context_state_ && !context_state_->GrContextIsGL();
   shared_image_factory_ = std::make_unique<SharedImageFactory>(
       GetGpuPreferences(), context_group_->feature_info()->workarounds(),
       GetGpuFeatureInfo(), context_state_.get(),
       context_group_->mailbox_manager(), task_executor_->shared_image_manager(),
-      image_factory_, nullptr, features::IsUsingSkiaRenderer(),
-      context_ != nullptr);
+      image_factory_, nullptr, enable_wrapped_sk_image);
 }
 
 void InProcessCommandBuffer::CreateSharedImageOnGpuThread(

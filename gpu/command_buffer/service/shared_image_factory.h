@@ -51,8 +51,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                      SharedImageManager* manager,
                      ImageFactory* image_factory,
                      MemoryTracker* tracker,
-                     bool is_using_skia_renderer,
-                     bool use_gl_);
+                     bool enable_wrapped_sk_image);
   ~SharedImageFactory();
 
   bool CreateSharedImage(const Mailbox& mailbox,

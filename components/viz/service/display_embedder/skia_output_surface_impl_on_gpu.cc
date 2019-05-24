@@ -273,7 +273,6 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
       gpu::SharedContextState* context_state,
       gpu::MailboxManager* mailbox_manager,
       gpu::SharedImageManager* shared_image_manager,
-      bool use_gl,
       scoped_refptr<gpu::SyncPointClientState> sync_point_client_state)
       : shared_image_manager_(shared_image_manager),
         shared_image_factory_(gpu_preferences,
@@ -284,8 +283,7 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
                               shared_image_manager,
                               nullptr /* image_factory */,
                               nullptr /* memory_tracker */,
-                              true /* is_using_skia_renderer */,
-                              use_gl),
+                              true /* is_using_skia_renderer */),
         sync_point_client_state_(sync_point_client_state) {}
 
   ~DirectContextProviderDelegateImpl() override {
@@ -746,7 +744,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
           gpu_preferences_, channel_manager->gpu_driver_bug_workarounds(),
           channel_manager->gpu_feature_info(), context_state_.get(),
           mailbox_manager_, gpu_service_->shared_image_manager(),
-          !is_using_vulkan(), CreateSyncPointClientState(gpu_service_));
+          CreateSyncPointClientState(gpu_service_));
       context_provider_ = base::MakeRefCounted<DirectContextProvider>(
           context_state_->context(), gl_surface_, supports_alpha_,
           gpu_preferences_, feature_info_.get(), std::move(client));

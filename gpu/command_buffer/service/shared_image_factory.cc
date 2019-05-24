@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 #include "gpu/config/gpu_preferences.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/trace_util.h"
 
 #if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
@@ -67,13 +68,13 @@ SharedImageFactory::SharedImageFactory(
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
     MemoryTracker* memory_tracker,
-    bool is_using_skia_renderer,
-    bool use_gl)
+    bool enable_wrapped_sk_image)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
       using_vulkan_(context_state && context_state->GrContextIsVulkan()),
       using_metal_(context_state && context_state->GrContextIsMetal()) {
+  bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (use_gl) {
     gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
         gpu_preferences, workarounds, gpu_feature_info, image_factory);
@@ -98,10 +99,7 @@ SharedImageFactory::SharedImageFactory(
   // Others
   DCHECK(!using_vulkan_);
 #endif
-  // Certain test suites may enable UseSkiaRenderer feature flag, but never
-  // create a SkiaRenderer. In this case context_state is nullptr and we should
-  // not create a WrappedSkImageFactory.
-  if (is_using_skia_renderer && context_state) {
+  if (enable_wrapped_sk_image && context_state) {
     wrapped_sk_image_factory_ =
         std::make_unique<raster::WrappedSkImageFactory>(context_state);
   }
