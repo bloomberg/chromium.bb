@@ -1027,7 +1027,8 @@ TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
     matches[i].type = match_types[i];
 
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kOmniboxGroupSuggestionsByType);
+  feature_list.InitAndEnableFeature(
+      omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
 
   AutocompleteInput input(base::ASCIIToUTF16("a"),
                           metrics::OmniboxEventProto::OTHER,

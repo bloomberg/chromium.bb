@@ -69,10 +69,10 @@ const base::Feature kSimplifyHttpsIndicator{"SimplifyHttpsIndicator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This feature is used to have final suggestions within the Omnibox grouped
-// by type. i.e. search types are first, followed by all others, except for
-// the default match which is unchanged in position.
-const base::Feature kOmniboxGroupSuggestionsByType{
-    "OmniboxGroupSuggestionsByType", base::FEATURE_DISABLED_BY_DEFAULT};
+// by major type. i.e. search types are first, followed by all others,
+// except for the default match which is unchanged in position.
+const base::Feature kOmniboxGroupSuggestionsBySearchVsUrl{
+    "OmniboxGroupSuggestionsBySearchVsUrl", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to enable local entity suggestions. Similar to rich entities but
 // but location specific. E.g., typing 'starbucks near' could display the local

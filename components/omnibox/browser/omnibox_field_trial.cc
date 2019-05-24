@@ -672,7 +672,8 @@ bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
 }
 
 bool OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxGroupSuggestionsByType);
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
