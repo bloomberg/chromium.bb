@@ -28,7 +28,7 @@ class BaseTestCase(SuperMoxTestBase):
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     try:
       fn(*args, **kwargs)
-    except scm.gclient_utils.Error, e:
+    except scm.gclient_utils.Error as e:
       self.assertEquals(e.args[0], msg)
     else:
       self.fail('%s not raised' % msg)

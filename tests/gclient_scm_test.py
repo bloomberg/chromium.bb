@@ -50,7 +50,7 @@ class GCBaseTestCase(object):
     """Like unittest's assertRaises() but checks for Gclient.Error."""
     try:
       fn(*args, **kwargs)
-    except gclient_scm.gclient_utils.Error, e:
+    except gclient_scm.gclient_utils.Error as e:
       self.assertEquals(e.args[0], msg)
     else:
       self.fail('%s not raised' % msg)

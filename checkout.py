@@ -292,9 +292,9 @@ class GitCheckout(CheckoutBase):
         if verbose:
           print(p.filename)
           print(align_stdout(stdout))
-      except OSError, e:
+      except OSError as e:
         errors.append((p, '%s%s' % (align_stdout(stdout), e)))
-      except subprocess.CalledProcessError, e:
+      except subprocess.CalledProcessError as e:
         errors.append((p,
             'While running %s;\n%s%s' % (
               ' '.join(e.cmd),

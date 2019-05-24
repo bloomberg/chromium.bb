@@ -62,7 +62,7 @@ class Watchlists(object):
       contents = watchlists_file.read()
       watchlists_file.close()
       return contents
-    except IOError, e:
+    except IOError as e:
       logging.error("Cannot read %s: %s" % (self._GetRulesFilePath(), e))
       return ''
 
@@ -75,7 +75,7 @@ class Watchlists(object):
     watchlists_data = None
     try:
       watchlists_data = eval(contents, {'__builtins__': None}, None)
-    except SyntaxError, e:
+    except SyntaxError as e:
       logging.error("Cannot parse %s. %s" % (self._GetRulesFilePath(), e))
       return
 

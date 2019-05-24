@@ -920,7 +920,7 @@ def CheckChangeOnCommit(input_api, output_api):
     try:
       presubmit.main(['--root', self.fake_root_dir])
       self.fail()
-    except SystemExit, e:
+    except SystemExit as e:
       self.assertEquals(2, e.code)
 
 

@@ -57,7 +57,7 @@ def main():
             stdin=input_file)
       with open(fpath, 'wb') as output_file:
         output_file.write(output)
-  except clang_format.NotFoundError, e:
+  except clang_format.NotFoundError as e:
     print(e)
     print('Failed to find clang-format. Falling-back on standard 3-way merge')
 

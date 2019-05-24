@@ -416,7 +416,7 @@ class PatchTestFail(unittest.TestCase):
     try:
       patch.FilePatchDiff('foo', RAW.PATCH, [])
       self.fail()
-    except patch.UnsupportedPatchFormat, e:
+    except patch.UnsupportedPatchFormat as e:
       self.assertEquals(
           "Can't process patch for file foo.\nUnexpected diff: chrome/file.cc.",
           str(e))

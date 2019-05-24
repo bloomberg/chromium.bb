@@ -167,7 +167,7 @@ class Rietveld(object):
 
       try:
         diff = self.get_file_diff(issue, patchset, state['id'])
-      except urllib2.HTTPError, e:
+      except urllib2.HTTPError as e:
         if e.code == 404:
           raise patch.UnsupportedPatchFormat(
               filename, 'File doesn\'t have a diff.')
@@ -433,7 +433,7 @@ class Rietveld(object):
         try:
           logging.debug('%s' % request_path)
           return self.rpc_server.Send(request_path, **kwargs)
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
           if retry >= (self._maxtries - 1):
             raise
           flake_codes = {500, 502, 503}
@@ -441,7 +441,7 @@ class Rietveld(object):
             flake_codes.add(404)
           if e.code not in flake_codes:
             raise
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
           if retry >= (self._maxtries - 1):
             raise
 
@@ -468,7 +468,7 @@ class Rietveld(object):
             logging.error('Caught urllib2.URLError %s which wasn\'t deemed '
                           'transient', e.reason)
             raise
-        except socket.error, e:
+        except socket.error as e:
           if retry >= (self._maxtries - 1):
             raise
           if not 'timed out' in str(e):

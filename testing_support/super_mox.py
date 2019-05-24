@@ -140,7 +140,7 @@ class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):
       if hasattr(parent, item):
         try:
           self.mox.StubOutWithMock(parent, item)
-        except TypeError, e:
+        except TypeError as e:
           raise TypeError(
               'Couldn\'t mock %s in %s: %s' % (item, parent.__name__, e))
 

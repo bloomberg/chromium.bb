@@ -377,7 +377,7 @@ class MyActivity(object):
       return list(gerrit_util.GenerateAllChanges(instance['url'], req,
           o_params=['MESSAGES', 'LABELS', 'DETAILED_ACCOUNTS',
                     'CURRENT_REVISION', 'CURRENT_COMMIT']))
-    except gerrit_util.GerritError, e:
+    except gerrit_util.GerritError as e:
       error_message = 'Looking up %r: %s' % (instance['url'], e)
       if error_message not in self.access_errors:
         self.access_errors.add(error_message)

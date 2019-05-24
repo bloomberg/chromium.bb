@@ -318,7 +318,7 @@ class OwnersDatabaseTest(_BaseTestCase):
     try:
       self.db().reviewers_for(['ipc/ipc_message_utils.h'], None)
       self.fail()  # pragma: no cover
-    except owners.SyntaxErrorInOwnersFile, e:
+    except owners.SyntaxErrorInOwnersFile as e:
       self.assertTrue(str(e).startswith('/ipc/OWNERS:1'))
 
   def assert_syntax_error(self, owners_file_contents):
@@ -328,7 +328,7 @@ class OwnersDatabaseTest(_BaseTestCase):
     try:
       db.reviewers_for(['foo/DEPS'], None)
       self.fail()  # pragma: no cover
-    except owners.SyntaxErrorInOwnersFile, e:
+    except owners.SyntaxErrorInOwnersFile as e:
       self.assertTrue(str(e).startswith('/foo/OWNERS:1'))
 
   def test_syntax_error__unknown_token(self):

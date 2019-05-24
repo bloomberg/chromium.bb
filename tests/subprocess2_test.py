@@ -254,7 +254,7 @@ class RegressionTest(BaseTestCase):
         subp.check_output(
             e + ['--fail', '--stdout'], universal_newlines=un)
         self.fail()
-      except subp.CalledProcessError, exception:
+      except subp.CalledProcessError as exception:
         self._check_exception(subp, exception, c('A\nBB\nCCC\n'), None, 64)
     self._run_test(fn)
 
@@ -266,7 +266,7 @@ class RegressionTest(BaseTestCase):
         subp.check_output(
             e + ['--fail', '--stderr'], universal_newlines=un)
         self.fail()
-      except subp.CalledProcessError, exception:
+      except subp.CalledProcessError as exception:
         self._check_exception(subp, exception, c(''), None, 64)
     self._run_test(fn)
 
@@ -280,7 +280,7 @@ class RegressionTest(BaseTestCase):
             stderr=subp.PIPE,
             universal_newlines=un)
         self.fail()
-      except subp.CalledProcessError, exception:
+      except subp.CalledProcessError as exception:
         self._check_exception(subp, exception, '', c('a\nbb\nccc\n'), 64)
     self._run_test(fn)
 
@@ -294,7 +294,7 @@ class RegressionTest(BaseTestCase):
             stderr=subp.STDOUT,
             universal_newlines=un)
         self.fail()
-      except subp.CalledProcessError, exception:
+      except subp.CalledProcessError as exception:
         self._check_exception(subp, exception, c('a\nbb\nccc\n'), None, 64)
     self._run_test(fn)
 
@@ -303,7 +303,7 @@ class RegressionTest(BaseTestCase):
       try:
         subp.check_call(self.exe + ['--fail', '--stderr'])
         self.fail()
-      except subp.CalledProcessError, exception:
+      except subp.CalledProcessError as exception:
         self._check_exception(subp, exception, None, None, 64)
 
   def test_redirect_stderr_to_stdout_pipe(self):
@@ -515,7 +515,7 @@ class S2Test(BaseTestCase):
             stderr=stderr.append,
             universal_newlines=un)
         self.fail()
-      except subprocess2.CalledProcessError, exception:
+      except subprocess2.CalledProcessError as exception:
         self._check_exception(exception, '', None, 64)
         self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
     self._run_test(fn)

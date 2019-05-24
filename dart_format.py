@@ -43,7 +43,7 @@ def FindDartFmtToolInChromiumTree():
 def main(args):
   try:
     tool = FindDartFmtToolInChromiumTree()
-  except NotFoundError, e:
+  except NotFoundError as e:
     print(e, file=sys.stderr)
     sys.exit(1)
 
