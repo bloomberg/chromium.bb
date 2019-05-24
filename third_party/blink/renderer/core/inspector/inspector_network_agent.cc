@@ -572,6 +572,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
 
   response_object->setFromDiskCache(response.WasCached());
   response_object->setFromServiceWorker(response.WasFetchedViaServiceWorker());
+  response_object->setFromPrefetchCache(response.WasInPrefetchCache());
   if (response.GetResourceLoadTiming())
     response_object->setTiming(
         BuildObjectForTiming(*response.GetResourceLoadTiming()));

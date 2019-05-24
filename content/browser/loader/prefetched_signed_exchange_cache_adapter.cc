@@ -47,8 +47,10 @@ void PrefetchedSignedExchangeCacheAdapter::OnReceiveRedirect(
 
 void PrefetchedSignedExchangeCacheAdapter::OnReceiveInnerResponse(
     const network::ResourceResponseHead& response) {
-  cached_exchange_->SetInnerResponse(
-      std::make_unique<network::ResourceResponseHead>(response));
+  std::unique_ptr<network::ResourceResponseHead> inner_response =
+      std::make_unique<network::ResourceResponseHead>(response);
+  inner_response->was_in_prefetch_cache = true;
+  cached_exchange_->SetInnerResponse(std::move(inner_response));
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnStartLoadingResponseBody(

@@ -1611,6 +1611,7 @@ std::unique_ptr<Network::Response> BuildResponse(
                                 info.load_timing.request_start_time)
           .Build();
   response->SetFromServiceWorker(info.was_fetched_via_service_worker);
+  response->SetFromPrefetchCache(info.was_in_prefetch_cache);
   network::HttpRawRequestResponseInfo* raw_info =
       info.raw_request_response_info.get();
   if (raw_info) {

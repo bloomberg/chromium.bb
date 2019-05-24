@@ -63,6 +63,7 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.did_mime_sniff = head.did_mime_sniff;
   new_response->head.is_signed_exchange_inner_response =
       head.is_signed_exchange_inner_response;
+  new_response->head.was_in_prefetch_cache = head.was_in_prefetch_cache;
   new_response->head.intercepted_by_plugin = head.intercepted_by_plugin;
   new_response->head.is_legacy_tls_version = head.is_legacy_tls_version;
   return new_response;

@@ -287,6 +287,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetEncodedDataLength(int64_t);
 
   BLINK_PLATFORM_EXPORT void SetIsSignedExchangeInnerResponse(bool);
+  BLINK_PLATFORM_EXPORT void SetWasInPrefetchCache(bool);
 
 #if INSIDE_BLINK
  protected:

@@ -385,6 +385,10 @@ void WebURLResponse::SetIsSignedExchangeInnerResponse(
       is_signed_exchange_inner_response);
 }
 
+void WebURLResponse::SetWasInPrefetchCache(bool was_in_prefetch_cache) {
+  resource_response_->SetWasInPrefetchCache(was_in_prefetch_cache);
+}
+
 WebString WebURLResponse::AlpnNegotiatedProtocol() const {
   return resource_response_->AlpnNegotiatedProtocol();
 }

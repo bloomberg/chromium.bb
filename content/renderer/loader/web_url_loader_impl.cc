@@ -1123,6 +1123,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetRequestId(request_id);
   response->SetIsSignedExchangeInnerResponse(
       info.is_signed_exchange_inner_response);
+  response->SetWasInPrefetchCache(info.was_in_prefetch_cache);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 
