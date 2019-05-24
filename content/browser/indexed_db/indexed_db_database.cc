@@ -587,7 +587,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
           base::BindRepeating(&IndexedDBDatabase::VersionChangeIgnored,
                               weak_factory_.GetWeakPtr()),
           base::BindOnce(&IndexedDBDatabase::ConnectionClosed,
-                         connection_close_weak_factory_.GetWeakPtr()),
+                         weak_factory_.GetWeakPtr()),
           error_callback_, database_callbacks);
   connections_.insert(connection.get());
   backing_store_->GrantChildProcessPermissions(child_process_id);
@@ -600,6 +600,8 @@ void IndexedDBDatabase::VersionChangeIgnored() {
 }
 
 void IndexedDBDatabase::ConnectionClosed(IndexedDBConnection* connection) {
+  if (force_closing_)
+    return;
   DCHECK(connections_.count(connection));
   DCHECK(connection->IsConnected());
   DCHECK(connection->transactions().empty());
@@ -2027,7 +2029,8 @@ void IndexedDBDatabase::ProcessRequestQueueAndMaybeRelease() {
 }
 
 void IndexedDBDatabase::MaybeReleaseDatabase() {
-  if (!active_request_ && pending_requests_.empty() && connections_.empty())
+  if (!active_request_ && pending_requests_.empty() && connections_.empty() &&
+      !force_closing_)
     std::move(destroy_me_).Run();
 }
 
@@ -2074,6 +2077,7 @@ void IndexedDBDatabase::ScheduleDeleteDatabase(
 }
 
 void IndexedDBDatabase::ForceClose() {
+  force_closing_ = true;
   // Remove all pending requests that don't want to execute during force close
   // (open requests).
   base::queue<std::unique_ptr<ConnectionRequest>> requests_to_still_run;
@@ -2088,12 +2092,14 @@ void IndexedDBDatabase::ForceClose() {
   if (!requests_to_still_run.empty())
     pending_requests_ = std::move(requests_to_still_run);
 
-  // Clear the weak pointers used to bind ConnectionClosed to prevent re-entry.
-  connection_close_weak_factory_.InvalidateWeakPtrs();
-  for (IndexedDBConnection* connection : connections_) {
+  // Since |force_closing_| is true, there are no re-entry modifications to
+  // this list by ConnectionClosed().
+  while (!connections_.empty()) {
+    IndexedDBConnection* connection = *connections_.begin();
     connection->CloseAndReportForceClose();
+    connections_.erase(connection);
   }
-  connections_.clear();
+  force_closing_ = false;
 
   // OnConnectionClosed usually synchronously calls RequestComplete.
   if (active_request_)

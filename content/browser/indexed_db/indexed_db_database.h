@@ -401,6 +401,12 @@ class CONTENT_EXPORT IndexedDBDatabase {
 
   list_set<IndexedDBConnection*> connections_;
 
+  // During ForceClose(), the internal state can be inconsistent during cleanup,
+  // specifically for ConnectionClosed() and MaybeReleaseDatabase(). Keeping
+  // track of whether the code is currently in the ForceClose() method helps
+  // ensure that the state stays consistent.
+  bool force_closing_ = false;
+
   // This holds the first open or delete request that is currently being
   // processed. The request has already broadcast OnVersionChange if
   // necessary.
@@ -416,12 +422,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // synchronously.
   bool processing_pending_requests_ = false;
 
-  // |connection_close_weak_factory_| is specifically used for binding the
-  // ConnectionClosed callback with connections. This lets us invalidate all
-  // connection callbacks during operations like ForceClose to prevent re-entry.
-  base::WeakPtrFactory<IndexedDBDatabase> connection_close_weak_factory_{this};
-  // |weak_factory_| is used for all non-ConnectionClosed callback uses. It is
-  // only invalidated when the object is destroyed.
+  // |weak_factory_| is used for all callback uses.
   base::WeakPtrFactory<IndexedDBDatabase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabase);

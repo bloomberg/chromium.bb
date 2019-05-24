@@ -381,6 +381,55 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
   EXPECT_FALSE(db_);
 }
 
+TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
+  // Verify that pending connection requests are handled correctly during a
+  // ForceClose.
+  auto request1 = base::MakeRefCounted<MockIndexedDBCallbacks>();
+  auto callbacks1 = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
+  const int64_t transaction_id1 = 1;
+  auto create_transaction_callback1 =
+      base::BindOnce(&CreateAndBindTransactionPlaceholder);
+  std::unique_ptr<IndexedDBPendingConnection> connection =
+      std::make_unique<IndexedDBPendingConnection>(
+          request1, callbacks1, kFakeChildProcessId, transaction_id1,
+          IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+          std::move(create_transaction_callback1));
+  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+                              std::move(connection));
+
+  EXPECT_EQ(db_->ConnectionCount(), 1UL);
+  EXPECT_EQ(db_->ActiveOpenDeleteCount(), 0UL);
+  EXPECT_EQ(db_->PendingOpenDeleteCount(), 0UL);
+
+  auto request2 = base::MakeRefCounted<MockIndexedDBCallbacks>(false);
+  auto callbacks2 = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
+  const int64_t transaction_id2 = 2;
+  auto create_transaction_callback2 =
+      base::BindOnce(&CreateAndBindTransactionPlaceholder);
+  std::unique_ptr<IndexedDBPendingConnection> connection2(
+      std::make_unique<IndexedDBPendingConnection>(
+          request1, callbacks1, kFakeChildProcessId, transaction_id2, 3,
+          std::move(create_transaction_callback2)));
+  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+                              std::move(connection2));
+
+  bool deleted = false;
+  auto request3 = base::MakeRefCounted<MockCallbacks>();
+  db_->ScheduleDeleteDatabase(
+      IndexedDBOriginStateHandle(), request3,
+      base::BindLambdaForTesting([&]() { deleted = true; }));
+  EXPECT_FALSE(deleted);
+
+  EXPECT_EQ(db_->ConnectionCount(), 1UL);
+  EXPECT_EQ(db_->ActiveOpenDeleteCount(), 1UL);
+  EXPECT_EQ(db_->PendingOpenDeleteCount(), 1UL);
+
+  db_->ForceClose();
+
+  EXPECT_TRUE(deleted);
+  EXPECT_FALSE(db_);
+}
+
 leveldb::Status DummyOperation(IndexedDBTransaction* transaction) {
   return leveldb::Status::OK();
 }
