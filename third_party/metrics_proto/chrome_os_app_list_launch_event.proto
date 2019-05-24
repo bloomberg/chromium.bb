@@ -8,8 +8,6 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-import "system_profile.proto";
-
 // Provides information about the launch of an item (such as an app or a file)
 // from the ChromeOS launcher. One event is recorded for every launch
 // originating from any launcher UI component, and this is the only circumstance
