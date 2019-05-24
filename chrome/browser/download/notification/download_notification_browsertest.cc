@@ -109,13 +109,13 @@ class SlowDownloadInterceptor {
   static const char* kErrorDownloadUrl;
 
   SlowDownloadInterceptor()
-      : interceptor_(base::BindRepeating(&SlowDownloadInterceptor::OnIntercept,
-                                         base::Unretained(this))),
-        handlers_(
+      : handlers_(
             {{kKnownSizeUrl, &SlowDownloadInterceptor::HandleKnownSize},
              {kUnknownSizeUrl, &SlowDownloadInterceptor::HandleUnknownSize},
              {kFinishDownloadUrl, &SlowDownloadInterceptor::HandleFinish},
-             {kErrorDownloadUrl, &SlowDownloadInterceptor::HandleError}}) {}
+             {kErrorDownloadUrl, &SlowDownloadInterceptor::HandleError}}),
+        interceptor_(base::BindRepeating(&SlowDownloadInterceptor::OnIntercept,
+                                         base::Unretained(this))) {}
 
  private:
   using Handler = void (SlowDownloadInterceptor::*)(
@@ -230,10 +230,10 @@ class SlowDownloadInterceptor {
     params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
   }
 
-  content::URLLoaderInterceptor interceptor_;
   const std::map<std::string, Handler> handlers_;
   base::Lock lock_;
   std::vector<PendingRequest*> pending_requests_ GUARDED_BY(lock_);
+  content::URLLoaderInterceptor interceptor_;
 };
 
 const char* SlowDownloadInterceptor::kUnknownSizeUrl =
