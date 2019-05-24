@@ -75,7 +75,7 @@ class MockPrintingContextWin : public PrintingContextSystemDialogWin {
 
     base::string16 printer_name = PrintingContextTest::GetDefaultPrinter();
     ScopedPrinterHandle printer;
-    if (!printer.OpenPrinter(printer_name.c_str()))
+    if (!printer.OpenPrinterWithName(printer_name.c_str()))
       return E_FAIL;
 
     const DEVMODE* dev_mode = nullptr;

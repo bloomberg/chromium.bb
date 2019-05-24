@@ -7,7 +7,6 @@
 
 #include <objidl.h>
 #include <prntvpt.h>
-#include <winspool.h>
 
 // Important to include wincrypt_shim.h before xpsprint.h since
 // xpsprint.h includes <wincrypt.h> (xpsprint.h -> msopc.h ->
@@ -31,13 +30,11 @@ namespace printing {
 
 struct PRINTING_EXPORT PrinterBasicInfo;
 
-class PrinterHandleTraits {
+class PRINTING_EXPORT PrinterHandleTraits {
  public:
   using Handle = HANDLE;
 
-  static bool CloseHandle(HANDLE handle) {
-    return ::ClosePrinter(handle) != FALSE;
-  }
+  static bool CloseHandle(HANDLE handle);
 
   static bool IsHandleValid(HANDLE handle) { return !!handle; }
 
@@ -51,17 +48,14 @@ class PRINTING_EXPORT ScopedPrinterHandle
     : public base::win::GenericScopedHandle<PrinterHandleTraits,
                                             base::win::DummyVerifierTraits> {
  public:
-  bool OpenPrinter(const wchar_t* printer);
+  bool OpenPrinterWithName(const wchar_t* printer);
 };
 
-class PrinterChangeHandleTraits {
+class PRINTING_EXPORT PrinterChangeHandleTraits {
  public:
   using Handle = HANDLE;
 
-  static bool CloseHandle(HANDLE handle) {
-    ::FindClosePrinterChangeNotification(handle);
-    return true;
-  }
+  static bool CloseHandle(HANDLE handle);
 
   static bool IsHandleValid(HANDLE handle) { return !!handle; }
 

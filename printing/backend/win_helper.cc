@@ -129,7 +129,18 @@ const char kXpsTicketMonochrome[] = "Monochrome";
 
 namespace printing {
 
-bool ScopedPrinterHandle::OpenPrinter(const wchar_t* printer) {
+// static
+bool PrinterHandleTraits::CloseHandle(HANDLE handle) {
+  return ::ClosePrinter(handle) != FALSE;
+}
+
+// static
+bool PrinterChangeHandleTraits::CloseHandle(HANDLE handle) {
+  ::FindClosePrinterChangeNotification(handle);
+  return true;
+}
+
+bool ScopedPrinterHandle::OpenPrinterWithName(const wchar_t* printer) {
   HANDLE temp_handle;
   // ::OpenPrinter may return error but assign some value into handle.
   if (::OpenPrinter(const_cast<LPTSTR>(printer), &temp_handle, nullptr)) {
@@ -393,7 +404,7 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
   }
 
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(printer_name.c_str()))
+  if (!printer.OpenPrinterWithName(printer_name.c_str()))
     return dev_mode;
 
   Microsoft::WRL::ComPtr<IStream> pt_stream;

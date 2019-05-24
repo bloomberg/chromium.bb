@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/print_system.h"
 
+#include <windows.h>
+#include <winspool.h>
 #include <wrl/client.h>
 
 #include <memory>
@@ -68,7 +70,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
     delegate_ = delegate;
     // An empty printer name means watch the current server, we need to pass
-    // nullptr to OpenPrinter().
+    // nullptr to OpenPrinterWithName().
     LPTSTR printer_name_to_use = nullptr;
     std::wstring printer_name_wide;
     if (!printer_name.empty()) {
@@ -76,7 +78,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
       printer_name_to_use = const_cast<LPTSTR>(printer_name_wide.c_str());
     }
     bool ret = false;
-    if (printer_.OpenPrinter(printer_name_to_use)) {
+    if (printer_.OpenPrinterWithName(printer_name_to_use)) {
       printer_change_.Set(FindFirstPrinterChangeNotification(
           printer_.Get(), PRINTER_CHANGE_PRINTER | PRINTER_CHANGE_JOB, 0,
           nullptr));
@@ -758,7 +760,7 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
   DCHECK(job_details);
   printing::ScopedPrinterHandle printer_handle;
   std::wstring printer_name_wide = base::UTF8ToWide(printer_name);
-  printer_handle.OpenPrinter(printer_name_wide.c_str());
+  printer_handle.OpenPrinterWithName(printer_name_wide.c_str());
   DCHECK(printer_handle.IsValid());
   bool ret = false;
   if (printer_handle.IsValid()) {

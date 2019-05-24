@@ -4,6 +4,9 @@
 
 #include "printing/printing_context_win.h"
 
+#include <windows.h>
+#include <winspool.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -69,7 +72,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
       base::UTF8ToWide(backend->GetDefaultPrinterName());
   if (!default_printer.empty()) {
     ScopedPrinterHandle printer;
-    if (printer.OpenPrinter(default_printer.c_str())) {
+    if (printer.OpenPrinterWithName(default_printer.c_str())) {
       std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
           CreateDevMode(printer.Get(), nullptr);
       if (InitializeSettings(default_printer, dev_mode.get()) == OK)
@@ -97,7 +100,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
       const PRINTER_INFO_2* info_2_end = info_2 + count_returned;
       for (; info_2 < info_2_end; ++info_2) {
         ScopedPrinterHandle printer;
-        if (!printer.OpenPrinter(info_2->pPrinterName))
+        if (!printer.OpenPrinterWithName(info_2->pPrinterName))
           continue;
         std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
             CreateDevMode(printer.Get(), nullptr);
@@ -149,7 +152,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   DCHECK(!external_preview) << "Not implemented";
 
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(settings_.device_name().c_str()))
+  if (!printer.OpenPrinterWithName(settings_.device_name().c_str()))
     return OnError();
 
   // Make printer changes local to Chrome.
@@ -235,7 +238,7 @@ PrintingContext::Result PrintingContextWin::InitWithSettingsForTest(
 
   // TODO(maruel): settings_.ToDEVMODE()
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(settings_.device_name().c_str()))
+  if (!printer.OpenPrinterWithName(settings_.device_name().c_str()))
     return FAILED;
 
   std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
