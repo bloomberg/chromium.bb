@@ -45,6 +45,10 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_MACOSX)
+#include "components/os_crypt/os_crypt_switches.h"
+#endif
+
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
@@ -377,6 +381,7 @@ bool UtilityProcessHost::StartProcess() {
       service_manager::switches::kNoSandbox,
 #if defined(OS_MACOSX)
       service_manager::switches::kEnableSandboxLogging,
+      os_crypt::switches::kUseMockKeychain,
 #endif
       switches::kDisableTestCerts,
       switches::kEnableLogging,
