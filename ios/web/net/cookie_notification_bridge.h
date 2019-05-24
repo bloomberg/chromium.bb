@@ -12,8 +12,8 @@
 namespace web {
 
 // CookieNotificationBridge listens to
-// NSHTTPCookieManagerCookiesChangedNotification on the main thread and re-sends
-// it to the cookie store on the IO thread.
+// NSHTTPCookieManagerCookiesChangedNotification on the posting thread and
+// re-sends it to the cookie store on the IO thread.
 class CookieNotificationBridge {
  public:
   CookieNotificationBridge();
