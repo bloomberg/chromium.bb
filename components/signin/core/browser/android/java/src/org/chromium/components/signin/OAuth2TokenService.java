@@ -348,7 +348,12 @@ public final class OAuth2TokenService
     }
 
     @CalledByNative
-    private static void saveStoredAccounts(String[] accounts) {
+    /**
+     * Called by native to save the account IDs that have associated OAuth2 refresh tokens.
+     * This is called during updateAccountList to sync with getSystemAccountNames.
+     * @param accounts IDs to save.
+     */
+    private static void setAccounts(String[] accounts) {
         Set<String> set = new HashSet<>(Arrays.asList(accounts));
         ContextUtils.getAppSharedPreferences()
                 .edit()

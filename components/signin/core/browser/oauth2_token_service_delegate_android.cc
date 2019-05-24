@@ -150,16 +150,14 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
   if (account_tracker_service_->GetMigrationState() ==
       AccountTrackerService::MIGRATION_IN_PROGRESS) {
     std::vector<std::string> accounts = GetAccounts();
-    std::vector<std::string> accounts_id;
+    std::vector<CoreAccountId> accounts_id;
     for (auto account_name : accounts) {
       AccountInfo account_info =
           account_tracker_service_->FindAccountInfoByEmail(account_name);
       DCHECK(!account_info.gaia.empty());
       accounts_id.push_back(account_info.gaia);
     }
-    ScopedJavaLocalRef<jobjectArray> java_accounts(
-        base::android::ToJavaArrayOfStrings(env, accounts_id));
-    Java_OAuth2TokenService_saveStoredAccounts(env, java_accounts);
+    SetAccounts(accounts_id);
   }
 
   if (!disable_interaction_with_system_accounts_) {
@@ -244,6 +242,36 @@ OAuth2TokenServiceDelegateAndroid::GetSystemAccountNames() {
   return account_names;
 }
 
+std::vector<CoreAccountId>
+OAuth2TokenServiceDelegateAndroid::GetSystemAccounts() {
+  std::vector<CoreAccountId> ids;
+  for (const std::string& name : GetSystemAccountNames()) {
+    CoreAccountId id(MapAccountNameToAccountId(name));
+    if (!id.empty())
+      ids.push_back(std::move(id));
+  }
+  return ids;
+}
+
+std::vector<CoreAccountId>
+OAuth2TokenServiceDelegateAndroid::GetValidAccounts() {
+  std::vector<CoreAccountId> ids;
+  for (const std::string& id : GetAccounts()) {
+    if (ValidateAccountId(id))
+      ids.emplace_back(id);
+  }
+  return ids;
+}
+
+void OAuth2TokenServiceDelegateAndroid::SetAccounts(
+    const std::vector<CoreAccountId>& accounts) {
+  JNIEnv* env = AttachCurrentThread();
+  std::vector<std::string> str_ids(accounts.begin(), accounts.end());
+  ScopedJavaLocalRef<jobjectArray> java_accounts(
+      base::android::ToJavaArrayOfStrings(env, str_ids));
+  Java_OAuth2TokenService_setAccounts(env, java_accounts);
+}
+
 OAuth2AccessTokenFetcher*
 OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
     const std::string& account_id,
@@ -284,52 +312,33 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
   // Clear any auth errors so that client can retry to get access tokens.
   errors_.clear();
 
-  UpdateAccountList(MapAccountNameToAccountId(signed_in_account_name));
+  UpdateAccountList(MapAccountNameToAccountId(signed_in_account_name),
+                    GetValidAccounts(), GetSystemAccounts());
 }
 
 void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
-    const std::string& signed_in_account_id) {
-  std::vector<std::string> curr_ids;
-  for (const std::string& curr_name : GetSystemAccountNames()) {
-    std::string curr_id(MapAccountNameToAccountId(curr_name));
-    if (!curr_id.empty())
-      curr_ids.push_back(curr_id);
-  }
-
-  std::vector<std::string> prev_ids;
-  for (const std::string& prev_id : GetAccounts()) {
-    if (ValidateAccountId(prev_id))
-      prev_ids.push_back(prev_id);
-  }
-
+    const CoreAccountId& signed_in_account_id,
+    const std::vector<CoreAccountId>& prev_ids,
+    const std::vector<CoreAccountId>& curr_ids) {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
            << " sigined_in_account_id=" << signed_in_account_id
            << " prev_ids=" << prev_ids.size()
            << " curr_ids=" << curr_ids.size();
 
-  std::vector<std::string> refreshed_ids;
-  std::vector<std::string> revoked_ids;
+  std::vector<CoreAccountId> refreshed_ids;
+  std::vector<CoreAccountId> revoked_ids;
   bool keep_accounts = UpdateAccountList(
       signed_in_account_id, prev_ids, curr_ids, &refreshed_ids, &revoked_ids);
 
   ScopedBatchChange batch(this);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobjectArray> java_accounts;
-  if (keep_accounts) {
-    java_accounts = base::android::ToJavaArrayOfStrings(env, curr_ids);
-  } else {
-    DCHECK(!base::FeatureList::IsEnabled(signin::kMiceFeature));
-    java_accounts =
-        base::android::ToJavaArrayOfStrings(env, std::vector<std::string>());
-  }
 
   // Save the current accounts in the token service before calling
   // FireRefreshToken* methods.
-  Java_OAuth2TokenService_saveStoredAccounts(env, java_accounts);
+  SetAccounts(keep_accounts ? curr_ids : std::vector<CoreAccountId>());
 
-  for (const std::string& refreshed_id : refreshed_ids)
+  for (const CoreAccountId& refreshed_id : refreshed_ids)
     FireRefreshTokenAvailable(refreshed_id);
-  for (const std::string& revoked_id : revoked_ids)
+  for (const CoreAccountId& revoked_id : revoked_ids)
     FireRefreshTokenRevoked(revoked_id);
   if (fire_refresh_token_loaded_ == RT_WAIT_FOR_VALIDATION) {
     fire_refresh_token_loaded_ = RT_LOADED;
@@ -338,7 +347,7 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
     fire_refresh_token_loaded_ = RT_HAS_BEEN_VALIDATED;
   }
 
-  // Clear accounts no longer exist on device from AccountTrackerService.
+  // Clear accounts that no longer exist on device from AccountTrackerService.
   std::vector<AccountInfo> accounts_info =
       account_tracker_service_->GetAccounts();
   for (const AccountInfo& info : accounts_info) {
@@ -361,16 +370,16 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
 }
 
 bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
-    const std::string& signed_in_id,
-    const std::vector<std::string>& prev_ids,
-    const std::vector<std::string>& curr_ids,
-    std::vector<std::string>* refreshed_ids,
-    std::vector<std::string>* revoked_ids) {
+    const CoreAccountId& signed_in_id,
+    const std::vector<CoreAccountId>& prev_ids,
+    const std::vector<CoreAccountId>& curr_ids,
+    std::vector<CoreAccountId>* refreshed_ids,
+    std::vector<CoreAccountId>* revoked_ids) {
   bool keep_accounts = base::FeatureList::IsEnabled(signin::kMiceFeature) ||
                        base::ContainsValue(curr_ids, signed_in_id);
   if (keep_accounts) {
     // Revoke token for ids that have been removed from the device.
-    for (const std::string& prev_id : prev_ids) {
+    for (const CoreAccountId& prev_id : prev_ids) {
       if (prev_id == signed_in_id)
         continue;
       if (!base::ContainsValue(curr_ids, prev_id)) {
@@ -386,7 +395,7 @@ bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
                << "refreshed=" << signed_in_id;
       refreshed_ids->push_back(signed_in_id);
     }
-    for (const std::string& curr_id : curr_ids) {
+    for (const CoreAccountId& curr_id : curr_ids) {
       if (curr_id == signed_in_id)
         continue;
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
@@ -400,7 +409,7 @@ bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
                << "revoked=" << signed_in_id;
       revoked_ids->push_back(signed_in_id);
     }
-    for (const std::string& prev_id : prev_ids) {
+    for (const CoreAccountId& prev_id : prev_ids) {
       if (prev_id == signed_in_id)
         continue;
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
@@ -469,10 +478,7 @@ void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
 
   // Clear accounts in the token service before calling
   // |FireRefreshTokenRevoked|.
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobjectArray> java_accounts(
-      base::android::ToJavaArrayOfStrings(env, std::vector<std::string>()));
-  Java_OAuth2TokenService_saveStoredAccounts(env, java_accounts);
+  SetAccounts(std::vector<CoreAccountId>());
 
   for (const std::string& account : accounts_to_revoke)
     FireRefreshTokenRevoked(account);
@@ -499,17 +505,18 @@ void OAuth2TokenServiceDelegateAndroid::ReloadAccountsFromSystem(
     const std::string& primary_account_id) {
   // UpdateAccountList() effectively synchronizes the accounts in the Token
   // Service with those present at the system level.
-  UpdateAccountList(primary_account_id);
+  UpdateAccountList(primary_account_id, GetValidAccounts(),
+                    GetSystemAccounts());
 }
 
 std::string OAuth2TokenServiceDelegateAndroid::MapAccountIdToAccountName(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return account_tracker_service_->GetAccountInfo(account_id).email;
 }
 
-std::string OAuth2TokenServiceDelegateAndroid::MapAccountNameToAccountId(
+CoreAccountId OAuth2TokenServiceDelegateAndroid::MapAccountNameToAccountId(
     const std::string& account_name) const {
-  std::string account_id =
+  CoreAccountId account_id =
       account_tracker_service_->FindAccountInfoByEmail(account_name).account_id;
   DCHECK(!account_id.empty() || account_name.empty())
       << "Can't find account id, account_name=" << account_name;
