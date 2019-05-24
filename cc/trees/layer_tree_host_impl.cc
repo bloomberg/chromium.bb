@@ -9,10 +9,7 @@
 
 #include <algorithm>
 #include <limits>
-#include <map>
-#include <set>
-#include <unordered_map>
-#include <utility>
+#include <list>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -82,6 +79,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/presentation_time_callback_buffer.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scroll_node.h"
@@ -1798,38 +1796,22 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
   client_->DidReceiveCompositorFrameAckOnImplThread();
 }
 
-LayerTreeHostImpl::FrameTokenInfo::FrameTokenInfo(
-    uint32_t token,
-    base::TimeTicks cc_frame_time,
-    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks)
-    : token(token),
-      cc_frame_time(cc_frame_time),
-      callbacks(std::move(callbacks)) {}
-
-LayerTreeHostImpl::FrameTokenInfo::FrameTokenInfo(FrameTokenInfo&&) = default;
-LayerTreeHostImpl::FrameTokenInfo::~FrameTokenInfo() = default;
-
 void LayerTreeHostImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
-  std::vector<LayerTreeHost::PresentationTimeCallback> all_callbacks;
-  while (!frame_token_infos_.empty()) {
-    auto info = frame_token_infos_.begin();
-    if (viz::FrameTokenGT(info->token, frame_token))
-      break;
+  PresentationTimeCallbackBuffer::PendingCallbacks activated =
+      presentation_time_callbacks_.PopPendingCallbacks(frame_token);
 
-    // Update compositor frame latency and smoothness stats only for frames
-    // that caused on-screen damage.
-    if (info->token == frame_token)
-      frame_metrics_.AddFrameDisplayed(info->cc_frame_time, feedback.timestamp);
-
-    std::copy(std::make_move_iterator(info->callbacks.begin()),
-              std::make_move_iterator(info->callbacks.end()),
-              std::back_inserter(all_callbacks));
-    frame_token_infos_.erase(info);
+  // Update compositor frame latency and smoothness stats only for frames
+  // that caused on-screen damage.
+  if (!activated.frame_time.is_null()) {
+    frame_metrics_.AddFrameDisplayed(activated.frame_time, feedback.timestamp);
   }
+
+  // Send all the main-thread callbacks to the client in one batch. The client
+  // is in charge of posting them to the main thread.
   client_->DidPresentCompositorFrameOnImplThread(
-      frame_token, std::move(all_callbacks), feedback);
+      frame_token, std::move(activated.main_thread_callbacks), feedback);
 }
 
 void LayerTreeHostImpl::DidNotNeedBeginFrame() {
@@ -1929,11 +1911,10 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.content_source_id = active_tree_->content_source_id();
 
   if (active_tree_->has_presentation_callbacks()) {
-    frame_token_infos_.emplace_back(metadata.frame_token,
-                                    CurrentBeginFrameArgs().frame_time,
-                                    active_tree_->TakePresentationCallbacks());
-
-    DCHECK_LE(frame_token_infos_.size(), 25u);
+    presentation_time_callbacks_.RegisterMainThreadPresentationCallbacks(
+        metadata.frame_token, active_tree_->TakePresentationCallbacks());
+    presentation_time_callbacks_.RegisterFrameTime(
+        metadata.frame_token, CurrentBeginFrameArgs().frame_time);
   }
 
   if (GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {

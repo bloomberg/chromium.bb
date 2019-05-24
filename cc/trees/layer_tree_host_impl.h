@@ -7,15 +7,13 @@
 
 #include <stddef.h>
 
-#include <bitset>
 #include <memory>
 #include <set>
-#include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -43,6 +41,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/managed_memory_policy.h"
 #include "cc/trees/mutator_host_client.h"
+#include "cc/trees/presentation_time_callback_buffer.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/task_runner_provider.h"
 #include "cc/trees/ukm_manager.h"
@@ -1159,30 +1158,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  // Stores information needed once we get a response for a particular
-  // presentation token.
-  struct FrameTokenInfo {
-    FrameTokenInfo(
-        uint32_t token,
-        base::TimeTicks cc_frame_time,
-        std::vector<LayerTreeHost::PresentationTimeCallback> callbacks);
-    FrameTokenInfo(const FrameTokenInfo&) = delete;
-    FrameTokenInfo(FrameTokenInfo&&);
-    ~FrameTokenInfo();
-
-    FrameTokenInfo& operator=(const FrameTokenInfo&) = delete;
-    FrameTokenInfo& operator=(FrameTokenInfo&&) = default;
-
-    uint32_t token;
-
-    // The compositor frame time used to produce the frame.
-    base::TimeTicks cc_frame_time;
-
-    // The callbacks to send back to the main thread.
-    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks;
-  };
-
-  base::circular_deque<FrameTokenInfo> frame_token_infos_;
+  PresentationTimeCallbackBuffer presentation_time_callbacks_;
   ui::FrameMetrics frame_metrics_;
   ui::SkippedFrameTracker skipped_frame_tracker_;
   bool is_animating_for_snap_;
