@@ -39,6 +39,7 @@ config("skia_config") {
   }
 
   defines = [
+    "SK_GL",
     "SK_HAS_PNG_LIBRARY",
     "SK_HAS_WEBP_LIBRARY",
     "SK_USER_CONFIG_HEADER=\"../../skia/config/SkUserConfig.h\"",
@@ -55,10 +56,7 @@ config("skia_config") {
   }
 
   if (is_component_build) {
-    defines += [
-      "SKIA_DLL",
-      "GR_GL_IGNORE_ES3_MSAA=0",
-    ]
+    defines += [ "SKIA_DLL" ]
     if (is_win) {
       defines += [ "SKCMS_API=__declspec(dllexport)" ]
     } else {
