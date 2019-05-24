@@ -335,8 +335,8 @@ static void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[], int q,
     threshold_base = scale_part_thresh_sumdiff(
         threshold_base, cpi->oxcf.speed, cm->width, cm->height, content_state);
 
-    thresholds[0] = threshold_base;
-    thresholds[1] = threshold_base << 1;
+    thresholds[0] = threshold_base >> 1;
+    thresholds[1] = threshold_base;
     thresholds[3] = threshold_base << cpi->oxcf.speed;
     if (cm->width >= 1280 && cm->height >= 720)
       thresholds[3] = thresholds[3] << 1;
