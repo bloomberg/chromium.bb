@@ -6,6 +6,10 @@
         {
             "app": "ios_chrome_smoke_eg2tests",
             "host": "ios_chrome_eg2_test_app_host"
+        },
+        {
+            "app": "ios_web_shell_eg2tests",
+            "host": "ios_web_shell_test_app_host"
         }
     ]
 }
