@@ -26,9 +26,9 @@
     'chromium': {
       'android-archive-rel': 'android_without_codecs_release_bot_minimal_symbols',
       'android-archive-dbg': 'android_without_codecs_debug_bot',
-      'linux-archive-rel': 'release_bot',
+      'linux-archive-rel': 'release_bot_minimal_symbols',
       'linux-archive-dbg': 'debug_bot',
-      'mac-archive-rel': 'release_bot_mac_strip',
+      'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-dbg': 'debug_bot',
       'win32-archive-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
       'win32-archive-dbg': 'debug_bot_x86',
@@ -494,8 +494,8 @@
       'Android N5 Swarm': 'android_release_bot_minimal_symbols',
       'Android N5X Swarm': 'android_release_bot_minimal_symbols_arm64',
       'ChromeOS Swarm': 'cros_chrome_sdk',
-      'Linux Swarm': 'release_bot',
-      'Mac Swarm': 'release_bot_mac_strip',
+      'Linux Swarm': 'release_bot_minimal_symbols',
+      'Mac Swarm': 'release_bot_mac_strip_minimal_symbols',
       'Windows Swarm': 'release_bot_minimal_symbols',
     },
 
@@ -1760,6 +1760,10 @@
       'release_bot', 'mac_strip',
     ],
 
+    'release_bot_mac_strip_minimal_symbols': [
+      'release_bot', 'mac_strip', 'minimal_symbols',
+    ],
+
     'release_bot_v8_debug': [
       'release_bot', 'v8_enable_debugging_features',
     ],
@@ -1771,8 +1775,13 @@
     # compiler.gni implicitly sets symbol_level=1 on Windows if goma is enabled,
     # if MSVC is used.  Explicitly set it here so that it's set consistently for
     # both MSVC and clang.
-    'release_bot_minimal_symbols': [ 'release_bot', 'minimal_symbols' ],
-    'release_bot_x86_minimal_symbols': [ 'release_bot', 'x86', 'minimal_symbols' ],
+    'release_bot_minimal_symbols': [
+      'release_bot', 'minimal_symbols',
+    ],
+
+    'release_bot_x86_minimal_symbols': [
+      'release_bot', 'x86', 'minimal_symbols',
+    ],
 
     'release_bot_minimal_symbols_enable_archive_compression': [
       'release_bot', 'minimal_symbols', 'enable_archive_compression'
