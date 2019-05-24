@@ -598,6 +598,14 @@ Adapter::AdapterDecision Adapter::CanAdjustBrightness(base::TimeTicks now) {
 void Adapter::AdjustBrightness(BrightnessChangeCause cause,
                                double log_als_avg) {
   const double brightness = GetBrightnessBasedOnAmbientLogLux(log_als_avg);
+  if (current_brightness_ &&
+      std::abs(brightness - *current_brightness_) < kTol) {
+    VLOG(1) << "Model brightness change canceled: "
+            << "brightness="
+            << base::StringPrintf("%.4f", *current_brightness_) + "%->"
+            << base::StringPrintf("%.4f", brightness) << "%";
+    return;
+  }
 
   power_manager::SetBacklightBrightnessRequest request;
   request.set_percent(brightness);
