@@ -18,7 +18,6 @@ configure_file(
 configure_file(
 	input: 'weston-bindings.man',
 	output: 'weston-bindings.7',
-	install: true,
 	install_dir: join_paths(dir_man, 'man7'),
 	configuration: man_conf
 )
