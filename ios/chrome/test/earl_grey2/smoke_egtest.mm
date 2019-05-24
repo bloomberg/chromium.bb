@@ -11,8 +11,8 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
-#import "ios/testing/earl_grey/base_earl_grey_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -22,10 +22,10 @@
 
 // Test case to verify that EarlGrey tests can be launched and perform basic
 // UI interactions.
-@interface Eg2TestCase : BaseEarlGreyTestCase
+@interface SmokeTestCase : ChromeTestCase
 @end
 
-@implementation Eg2TestCase
+@implementation SmokeTestCase
 
 // Tests that a tab can be opened.
 - (void)testOpenTab {
@@ -126,7 +126,6 @@
   [ChromeEarlGrey closeAllIncognitoTabs];
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey closeCurrentTab];
-  [ChromeEarlGrey openNewTab];
 }
 
 // Tests bookmark converted helpers in chrome_earl_grey.h.

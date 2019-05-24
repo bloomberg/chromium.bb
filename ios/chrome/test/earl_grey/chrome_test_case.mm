@@ -144,6 +144,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 // Overrides testInvocations so the set of tests run can be modified, as
 // necessary.
 + (NSArray*)testInvocations {
+#if defined(CHROME_EARL_GREY_1)
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:grey_systemAlertViewShown()]
       assertWithMatcher:grey_nil()
@@ -161,8 +162,9 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
         [NSInvocation invocationWithMethodSignature:signature];
     systemAlertTest.selector = @selector(failAllTestsDueToSystemAlertVisible);
     return @[ systemAlertTest ];
-#endif
+#endif  // !TARGET_IPHONE_SIMULATOR
   }
+#endif  // defined(CHROME_EARL_GREY_1)
 
   // Return specific list of tests based on the target.
   NSString* targetName = [NSBundle mainBundle].infoDictionary[@"CFBundleName"];
@@ -177,11 +179,22 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   }
 }
 
+#if defined(CHROME_EARL_GREY_1)
++ (void)setUp {
+  [super setUp];
+  [ChromeTestCase setUpHelper];
+}
+#elif defined(CHROME_EARL_GREY_2)
++ (void)setUpForTestCase {
+  [super setUpForTestCase];
+  [ChromeTestCase setUpHelper];
+}
+#endif  // CHROME_EARL_GREY_2
+
 // Set up called once for the class, to dismiss anything displayed on startup
 // and revert browser settings to default. It also starts the HTTP server and
 // enables mock authentication.
-+ (void)setUp {
-  [super setUp];
++ (void)setUpHelper {
   [[self class] startHTTPServer];
   [[self class] enableMockAuthentication];
 
