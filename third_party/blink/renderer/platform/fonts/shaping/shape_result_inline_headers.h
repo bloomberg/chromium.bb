@@ -51,7 +51,7 @@ struct HarfBuzzRunGlyphData {
   static constexpr unsigned kMaxCharacterIndex = (1 << kCharacterIndexBits) - 1;
   static constexpr unsigned kMaxGlyphs = 1 << kCharacterIndexBits;
 
-  uint16_t glyph;
+  unsigned glyph : 16;
   unsigned character_index : kCharacterIndexBits;
   unsigned safe_to_break_before : 1;
 

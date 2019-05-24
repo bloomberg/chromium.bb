@@ -55,8 +55,8 @@ constexpr unsigned HarfBuzzRunGlyphData::kMaxCharacterIndex;
 constexpr unsigned HarfBuzzRunGlyphData::kMaxGlyphs;
 
 struct SameSizeAsHarfBuzzRunGlyphData {
-  uint16_t unsigned_int16;
-  unsigned bit_fields : 2;
+  unsigned glyph : 16;
+  unsigned char_index_and_bit_field : 16;
   float advance;
   FloatSize offset;
 };
