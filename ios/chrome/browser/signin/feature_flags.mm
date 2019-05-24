@@ -20,7 +20,8 @@ const base::Feature kIdentityDisc{"IdentityDisc",
 
 bool IsIdentityDiscFeatureEnabled() {
   // Checks feature flag and any dependencies. Display of Identity Disc depends
-  // on Unified Consent feature.
-  return base::FeatureList::IsEnabled(kIdentityDisc) &&
-         unified_consent::IsUnifiedConsentFeatureEnabled();
+  // on Unified Consent feature. Must check dominant flag (unified consent)
+  // before checking subordinate flag (identity disc).
+  return unified_consent::IsUnifiedConsentFeatureEnabled() &&
+         base::FeatureList::IsEnabled(kIdentityDisc);
 }
