@@ -218,6 +218,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
   size_t size() const;
   void SetSize(size_t size);
 
+  bool IsLargeObject() const;
+
   bool IsWrapperHeaderMarked() const;
   void MarkWrapperHeader();
   void UnmarkWrapperHeader();
@@ -755,6 +757,7 @@ class PLATFORM_EXPORT BaseArena {
 
   virtual void VerifyObjectStartBitmap() {}
   virtual void VerifyMarking() {}
+  virtual void ResetAllocationPointForTesting() {}
 
  protected:
   bool SweepingCompleted() const { return !first_unswept_page_; }
@@ -819,6 +822,9 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   void VerifyObjectStartBitmap() override;
   void VerifyMarking() override;
+  void ResetAllocationPointForTesting() override {
+    SetAllocationPoint(nullptr, 0);
+  }
 
   Address CurrentAllocationPoint() const { return current_allocation_point_; }
 
@@ -869,6 +875,7 @@ class LargeObjectArena final : public BaseArena {
 #if DCHECK_IS_ON()
   bool IsConsistentForGC() override { return true; }
 #endif
+
  private:
   Address DoAllocateLargeObjectPage(size_t, size_t gc_info_index);
   Address LazySweepPages(size_t, size_t gc_info_index) override;
@@ -927,6 +934,10 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   CheckHeader();
   encoded_ = static_cast<uint32_t>(size) | (encoded_ & ~kHeaderSizeMask);
+}
+
+NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsLargeObject() const {
+  return (encoded_ & kHeaderSizeMask) == kLargeObjectSizeInHeader;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsInConstruction() const {

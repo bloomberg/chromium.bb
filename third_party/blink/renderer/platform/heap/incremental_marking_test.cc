@@ -1566,14 +1566,15 @@ class IncrementalMarkingTestDriver {
     }
   }
 
-  void FinishGC() {
+  void FinishGC(bool complete_sweep = true) {
     CHECK(thread_state_->IsIncrementalMarking());
     FinishSteps(BlinkGC::StackState::kNoHeapPointersOnStack);
     CHECK_EQ(ThreadState::kIncrementalMarkingFinalizeScheduled,
              thread_state_->GetGCState());
     thread_state_->RunScheduledGC(BlinkGC::StackState::kNoHeapPointersOnStack);
     CHECK(!thread_state_->IsIncrementalMarking());
-    thread_state_->CompleteSweep();
+    if (complete_sweep)
+      thread_state_->CompleteSweep();
   }
 
   size_t GetHeapCompactLastFixupCount() {
@@ -1929,6 +1930,8 @@ class EagerlySweptWithVectorWithInlineStorage
   HeapVector<HeapVector<Member<Object>>, 2> nested_;
 };
 
+}  // namespace
+
 TEST(IncrementalMarkingTest,
      InPayloadWriteBarrierInEagerlyFinalizedRegistersInvalidSlotForCompaction) {
   // Regression test: https://crbug.com/918064
@@ -1950,7 +1953,35 @@ TEST(IncrementalMarkingTest,
   driver.FinishGC();
 }
 
-}  // namespace
+TEST(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
+  // Regression test: https://crbug.com/966456
+  //
+  // Test ensures that backing expansion does not crash in trying to adjust
+  // marked bytes when the page is actually about to be swept and marking is not
+  // in progress.
+
+  using Container = HeapVector<Member<Object>>;
+  Persistent<Container> holder(MakeGarbageCollected<Container>());
+  holder->push_back(MakeGarbageCollected<Object>());
+  holder->Grow(16);
+  ThreadState::Current()->Heap().ResetAllocationPointForTesting();
+  // Slowly shrink down the backing, only adjusting capacity without performing
+  // free as the resulting memory block is too small for a free list entry.
+  for (int i = 15; i > 0; i--) {
+    holder->Shrink(i);
+    holder->ShrinkToFit();
+  }
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  driver.FinishSteps();
+  // The object is marked at this point.
+  CHECK(HeapObjectHeader::FromPayload(holder.Get())->IsMarked());
+  driver.FinishGC(false);
+  // The object is still marked as sweeping did not make any progress.
+  CHECK(HeapObjectHeader::FromPayload(holder.Get())->IsMarked());
+  // Re-grow to some size within the initial payload size (capacity=16).
+  holder->Grow(8);
+}
 
 }  // namespace incremental_marking_test
 }  // namespace blink

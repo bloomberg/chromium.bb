@@ -92,7 +92,9 @@ void MarkingVisitor::WriteBarrierSlow(void* value) {
 
   // Mark and push trace callback.
   header->Mark();
-  thread_state->CurrentVisitor()->marking_worklist_.Push(
+  MarkingVisitor* visitor = thread_state->CurrentVisitor();
+  visitor->AccountMarkedBytes(header);
+  visitor->marking_worklist_.Push(
       {header->Payload(),
        GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace});
 }
@@ -180,6 +182,14 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
     if (maybe_ptr)
       Heap().CheckAndMarkPointer(this, maybe_ptr);
   }
+}
+
+void MarkingVisitor::AdjustMarkedBytes(HeapObjectHeader* header,
+                                       size_t old_size) {
+  DCHECK(header->IsMarked());
+  // Currently, only expansion of an object is supported during marking.
+  DCHECK_GE(header->size(), old_size);
+  marked_bytes_ += header->size() - old_size;
 }
 
 }  // namespace blink

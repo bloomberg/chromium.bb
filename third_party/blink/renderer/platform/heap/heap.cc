@@ -99,11 +99,6 @@ void ThreadHeap::DecreaseAllocatedObjectSize(size_t bytes) {
   ProcessHeap::DecreaseTotalAllocatedObjectSize(bytes);
 }
 
-void ThreadHeap::IncreaseMarkedObjectSize(size_t bytes) {
-  stats_collector()->IncreaseMarkedObjectSize(bytes);
-  ProcessHeap::IncreaseTotalMarkedObjectSize(bytes);
-}
-
 void ThreadHeap::IncreaseAllocatedSpace(size_t bytes) {
   stats_collector()->IncreaseAllocatedSpace(bytes);
   ProcessHeap::IncreaseTotalAllocatedSpace(bytes);
@@ -351,6 +346,11 @@ size_t ThreadHeap::ObjectPayloadSizeForTesting() {
   thread_state_->SetGCPhase(ThreadState::GCPhase::kSweeping);
   thread_state_->SetGCPhase(ThreadState::GCPhase::kNone);
   return object_payload_size;
+}
+
+void ThreadHeap::ResetAllocationPointForTesting() {
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
+    arenas_[i]->ResetAllocationPointForTesting();
 }
 
 BasePage* ThreadHeap::LookupPageForAddress(Address address) {

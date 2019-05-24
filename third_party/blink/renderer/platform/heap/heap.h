@@ -274,6 +274,7 @@ class PLATFORM_EXPORT ThreadHeap {
   Address CheckAndMarkPointer(MarkingVisitor*, Address);
 
   size_t ObjectPayloadSizeForTesting();
+  void ResetAllocationPointForTesting();
 
   AddressCache* address_cache() const { return address_cache_.get(); }
 
@@ -373,7 +374,6 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void IncreaseAllocatedObjectSize(size_t);
   void DecreaseAllocatedObjectSize(size_t);
-  void IncreaseMarkedObjectSize(size_t);
   void IncreaseAllocatedSpace(size_t);
   void DecreaseAllocatedSpace(size_t);
 

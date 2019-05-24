@@ -9,11 +9,6 @@
 
 namespace blink {
 
-void ThreadHeapStatsCollector::IncreaseMarkedObjectSize(size_t bytes) {
-  DCHECK(is_started_);
-  current_.marked_bytes += bytes;
-}
-
 void ThreadHeapStatsCollector::IncreaseCompactionFreedSize(size_t bytes) {
   DCHECK(is_started_);
   current_.compaction_freed_bytes += bytes;
@@ -62,7 +57,8 @@ void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
   current_.reason = reason;
 }
 
-void ThreadHeapStatsCollector::NotifyMarkingCompleted() {
+void ThreadHeapStatsCollector::NotifyMarkingCompleted(size_t marked_bytes) {
+  current_.marked_bytes = marked_bytes;
   current_.object_size_in_bytes_before_sweeping = object_size_in_bytes();
   current_.allocated_space_in_bytes_before_sweeping = allocated_space_bytes();
   current_.partition_alloc_bytes_before_sweeping =
