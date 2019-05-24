@@ -590,11 +590,11 @@ void MapperLogitechDInput(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperAnalogGamepad(const Gamepad& input, Gamepad* mapped) {
-  enum AnalogGamepadButtons {
-    ANALOG_GAMEPAD_BUTTON_EXTRA = BUTTON_INDEX_COUNT,
-    ANALOG_GAMEPAD_BUTTON_EXTRA2,
-    ANALOG_GAMEPAD_BUTTON_COUNT
+void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
+  enum StadiaGamepadButtons {
+    STADIA_GAMEPAD_BUTTON_EXTRA = BUTTON_INDEX_COUNT,
+    STADIA_GAMEPAD_BUTTON_EXTRA2,
+    STADIA_GAMEPAD_BUTTON_COUNT
   };
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[5]);
@@ -609,9 +609,9 @@ void MapperAnalogGamepad(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
       AxisPositiveAsButton(input.axes[6]);
   mapped->buttons[BUTTON_INDEX_META] = input.buttons[7];
-  mapped->buttons[ANALOG_GAMEPAD_BUTTON_EXTRA] = input.buttons[11];
-  mapped->buttons[ANALOG_GAMEPAD_BUTTON_EXTRA2] = input.buttons[12];
-  mapped->buttons_length = ANALOG_GAMEPAD_BUTTON_COUNT;
+  mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA] = input.buttons[11];
+  mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA2] = input.buttons[12];
+  mapped->buttons_length = STADIA_GAMEPAD_BUTTON_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -674,15 +674,6 @@ void MapperBoomN64Psx(const Gamepad& input, Gamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[2];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = -input.axes[3];
   mapped->buttons_length = BUTTON_INDEX_COUNT - 1;  // no meta
-  mapped->axes_length = AXIS_INDEX_COUNT;
-}
-
-void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
-  const size_t kStadiaControllerExtraButtons = 2;
-  *mapped = input;
-  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[4]);
-  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[5]);
-  mapped->buttons_length = BUTTON_INDEX_COUNT + kStadiaControllerExtraButtons;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -784,8 +775,8 @@ constexpr struct MappingData {
     {GamepadId::kVendor2836Product0001, MapperOUYA},
     // boom PSX+N64 USB Converter
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
-    // Analog game controller
-    {GamepadId::kPrototypeVendorProduct9401, MapperAnalogGamepad},
+    // Stadia Controller prototype
+    {GamepadId::kPrototypeVendorProduct9401, MapperStadiaController},
 };
 
 }  // namespace
