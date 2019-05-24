@@ -1131,6 +1131,14 @@
     "label": "//gpu:gpu_unittests",
     "type": "windowed_test_launcher",
   },
+  "grit_python_unittests": {
+    "args": [
+      "../../tools/grit/grit/test_suite_all.py",
+    ],
+    "label": "//tools/grit:grit_python_unittests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
+  },
   "gurl_fuzzer": {
     "label": "//url:gurl_fuzzer",
     "type": "fuzzer",

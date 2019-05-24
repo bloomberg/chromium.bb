@@ -25,3 +25,14 @@ action("grit_sources") {
     rebase_path(depfile, root_build_dir),
   ]
 }
+
+group("grit_python_unittests") {
+  testonly = true
+
+  data = [
+    "//testing/scripts/common.py",
+    "//testing/scripts/run_isolated_script_test.py",
+    "//testing/xvfb.py",
+    "//tools/grit/",
+  ]
+}
