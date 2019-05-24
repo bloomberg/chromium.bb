@@ -37,10 +37,9 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
   // Note: Can be called on any thread. The |permission_status_cb| will always
   // be fired on the thread where these methods are called.
   void HasPermission(Type type,
-                     const PermissionStatusCB& permission_status_cb) override;
-  void RequestPermission(
-      Type type,
-      const PermissionStatusCB& permission_status_cb) override;
+                     PermissionStatusCB permission_status_cb) override;
+  void RequestPermission(Type type,
+                         PermissionStatusCB permission_status_cb) override;
   bool IsEncryptedMediaEnabled() override;
 
  private:
@@ -49,7 +48,7 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
 
   // Register PermissionStatusCBs. Returns |request_id| that can be used to make
   // PermissionService calls.
-  uint32_t RegisterCallback(const PermissionStatusCB& permission_status_cb);
+  uint32_t RegisterCallback(PermissionStatusCB permission_status_cb);
 
   // Ensure there is a connection to the permission service and return it.
   blink::mojom::PermissionService* GetPermissionService();

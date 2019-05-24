@@ -46,7 +46,7 @@ class FetcherDelegate {
 
   virtual ~FetcherDelegate() {}
 
-  ResourceFetcher::Callback NewCallback() {
+  ResourceFetcher::StartCallback NewCallback() {
     return base::BindOnce(&FetcherDelegate::OnURLFetchComplete,
                           base::Unretained(this));
   }
@@ -58,7 +58,7 @@ class FetcherDelegate {
     completed_ = true;
     timer_.Stop();
     if (!timed_out_)
-      quit_task_.Run();
+      std::move(quit_task_).Run();
   }
 
   bool completed() const { return completed_; }
@@ -84,7 +84,7 @@ class FetcherDelegate {
 
     timed_out_ = true;
     if (!completed_)
-      quit_task_.Run();
+      std::move(quit_task_).Run();
     FAIL() << "fetch timed out";
   }
 
@@ -96,7 +96,7 @@ class FetcherDelegate {
   bool timed_out_;
   WebURLResponse response_;
   std::string data_;
-  base::Closure quit_task_;
+  base::OnceClosure quit_task_;
 };
 
 FetcherDelegate* FetcherDelegate::instance_ = nullptr;

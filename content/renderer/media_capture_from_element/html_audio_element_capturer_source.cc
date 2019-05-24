@@ -63,7 +63,7 @@ void HtmlAudioElementCapturerSource::SetAudioCallback() {
   if (audio_source_ && is_started_) {
     // base:Unretained() is safe here since EnsureSourceIsStopped() guarantees
     // no more calls to OnAudioBus().
-    audio_source_->SetCopyAudioCallback(base::Bind(
+    audio_source_->SetCopyAudioCallback(base::BindRepeating(
         &HtmlAudioElementCapturerSource::OnAudioBus, base::Unretained(this)));
   }
 }

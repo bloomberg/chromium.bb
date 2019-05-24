@@ -52,7 +52,7 @@ std::unique_ptr<ResourceFetcher> ResourceFetcher::Create(const GURL& url) {
 class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
  public:
   ClientImpl(ResourceFetcherImpl* parent,
-             Callback callback,
+             StartCallback callback,
              size_t maximum_download_size,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : parent_(parent),
@@ -66,7 +66,7 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
         callback_(std::move(callback)) {}
 
   ~ClientImpl() override {
-    callback_ = Callback();
+    callback_.Reset();
     Cancel();
   }
 
@@ -250,7 +250,7 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
   blink::WebURLResponse response_;
 
   // Callback when we're done.
-  Callback callback_;
+  StartCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientImpl);
 };
@@ -297,7 +297,7 @@ void ResourceFetcherImpl::Start(
     blink::mojom::RequestContextType request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
-    Callback callback,
+    StartCallback callback,
     size_t maximum_download_size) {
   DCHECK(!client_);
   DCHECK(frame);

@@ -27,12 +27,12 @@ P2PAsyncAddressResolver::~P2PAsyncAddressResolver() {
 }
 
 void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
-                                    const DoneCallback& done_callback) {
+                                    DoneCallback done_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(STATE_CREATED, state_);
 
   state_ = STATE_SENT;
-  done_callback_ = done_callback;
+  done_callback_ = std::move(done_callback);
   bool enable_mdns =
       base::FeatureList::IsEnabled(features::kWebRtcHideLocalIpsWithMdns);
   dispatcher_->GetP2PSocketManager()->get()->GetHostAddress(

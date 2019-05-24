@@ -107,40 +107,37 @@ class MockMediaPermission : public media::MediaPermission {
   MockMediaPermission() {}
   ~MockMediaPermission() override {}
 
-  void RequestPermission(
-      Type type,
-      const PermissionStatusCB& permission_status_cb) override {
+  void RequestPermission(Type type,
+                         PermissionStatusCB permission_status_cb) override {
     NOTIMPLEMENTED();
   }
 
   void HasPermission(Type type,
-                     const PermissionStatusCB& permission_status_cb) override {
+                     PermissionStatusCB permission_status_cb) override {
     if (type == MediaPermission::AUDIO_CAPTURE) {
       DCHECK(mic_callback_.is_null());
-      mic_callback_ = permission_status_cb;
+      mic_callback_ = std::move(permission_status_cb);
     } else {
       DCHECK(type == MediaPermission::VIDEO_CAPTURE);
       DCHECK(camera_callback_.is_null());
-      camera_callback_ = permission_status_cb;
+      camera_callback_ = std::move(permission_status_cb);
     }
   }
 
   bool IsEncryptedMediaEnabled() override { return true; }
 
   void SetMicPermission(bool granted) {
-    if (mic_callback_.is_null())
+    if (!mic_callback_)
       return;
 
-    mic_callback_.Run(granted);
-    mic_callback_ = PermissionStatusCB();
+    std::move(mic_callback_).Run(granted);
   }
 
   void SetCameraPermission(bool granted) {
-    if (camera_callback_.is_null())
+    if (!camera_callback_)
       return;
 
-    camera_callback_.Run(granted);
-    camera_callback_ = PermissionStatusCB();
+    std::move(camera_callback_).Run(granted);
   }
 
  private:

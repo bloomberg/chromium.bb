@@ -37,7 +37,7 @@ class ResourceFetcherImpl : public ResourceFetcher {
              blink::mojom::RequestContextType request_context,
              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
-             Callback callback,
+             StartCallback callback,
              size_t maximum_download_size) override;
   void SetTimeout(const base::TimeDelta& timeout) override;
 

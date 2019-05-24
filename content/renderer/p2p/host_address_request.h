@@ -26,12 +26,11 @@ class P2PSocketDispatcher;
 class P2PAsyncAddressResolver
     : public base::RefCountedThreadSafe<P2PAsyncAddressResolver> {
  public:
-  typedef base::Callback<void(const net::IPAddressList&)> DoneCallback;
+  using DoneCallback = base::OnceCallback<void(const net::IPAddressList&)>;
 
   P2PAsyncAddressResolver(P2PSocketDispatcher* dispatcher);
   // Start address resolve process.
-  void Start(const rtc::SocketAddress& addr,
-             const DoneCallback& done_callback);
+  void Start(const rtc::SocketAddress& addr, DoneCallback done_callback);
   // Clients must unregister before exiting for cleanup.
   void Cancel();
 

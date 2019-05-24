@@ -36,11 +36,6 @@ static const int kAudioTrackSamplesPerBuffer =
     kAudioTrackSampleRate * kBufferDurationMs /
     base::Time::kMillisecondsPerSecond;
 
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
-
-//
 class MockMediaStreamAudioSink final : public blink::WebMediaStreamAudioSink {
  public:
   MockMediaStreamAudioSink() : blink::WebMediaStreamAudioSink() {}
@@ -141,7 +136,7 @@ TEST_F(HTMLAudioElementCapturerSourceTest, CaptureAudio) {
   InSequence s;
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
 
   MockMediaStreamAudioSink sink;
   track()->AddSink(&sink);
@@ -153,7 +148,7 @@ TEST_F(HTMLAudioElementCapturerSourceTest, CaptureAudio) {
                             kAudioTrackSamplesPerBuffer)),
              _))
       .Times(1)
-      .WillOnce(RunClosure(std::move(quit_closure)));
+      .WillOnce([&](const auto&, auto) { std::move(quit_closure).Run(); });
 
   std::unique_ptr<media::AudioBus> bus = media::AudioBus::Create(
       kNumChannelsForTest, kAudioTrackSamplesPerBuffer);

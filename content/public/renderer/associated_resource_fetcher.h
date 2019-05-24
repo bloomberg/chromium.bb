@@ -31,9 +31,9 @@ class CONTENT_EXPORT AssociatedResourceFetcher {
   // successfully or not.  If there is a failure, response and data will both be
   // empty.  |response| and |data| are both valid until the URLFetcher instance
   // is destroyed.
-  typedef base::Callback<void(const blink::WebURLResponse& response,
-                              const std::string& data)>
-      Callback;
+  using StartCallback =
+      base::OnceCallback<void(const blink::WebURLResponse& response,
+                              const std::string& data)>;
 
   // Creates a AssociatedResourceFetcher for the specified resource.  Caller
   // takes
@@ -63,7 +63,7 @@ class CONTENT_EXPORT AssociatedResourceFetcher {
       blink::mojom::RequestContextType request_context,
       network::mojom::FetchRequestMode fetch_request_mode,
       network::mojom::FetchCredentialsMode fetch_credentials_mode,
-      const Callback& callback) = 0;
+      StartCallback callback) = 0;
 
   // Manually cancel the request.
   virtual void Cancel() = 0;

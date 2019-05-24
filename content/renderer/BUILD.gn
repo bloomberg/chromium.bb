@@ -116,8 +116,6 @@ target(link_target_type, "renderer") {
     "image_downloader/image_downloader_base.h",
     "image_downloader/image_downloader_impl.cc",
     "image_downloader/image_downloader_impl.h",
-    "image_downloader/single_image_downloader.cc",
-    "image_downloader/single_image_downloader.h",
     "ime_event_guard.cc",
     "ime_event_guard.h",
     "in_process_renderer_thread.cc",

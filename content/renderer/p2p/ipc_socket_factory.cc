@@ -663,9 +663,9 @@ void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr) {
   // GetResolvedAddress.
   addr_ = addr;
 
-  resolver_->Start(addr, base::Bind(
-      &AsyncAddressResolverImpl::OnAddressResolved,
-      base::Unretained(this)));
+  resolver_->Start(addr,
+                   base::BindOnce(&AsyncAddressResolverImpl::OnAddressResolved,
+                                  base::Unretained(this)));
 }
 
 bool AsyncAddressResolverImpl::GetResolvedAddress(
