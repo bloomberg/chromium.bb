@@ -352,9 +352,9 @@ class GerritTestCase(unittest.TestCase):
           return
 
       # If we get here, the gerrit process is still alive.  Send the process
-      # SIGKILL for good measure.
+      # SIGTERM for good measure.
       try:
-        os.kill(gerrit_instance.gerrit_pid, signal.SIGKILL)
+        os.kill(gerrit_instance.gerrit_pid, signal.SIGTERM)
       except OSError:
         if e.errno == errno.ESRCH:
           # os.kill raised an error because the process doesn't exist.  Maybe
