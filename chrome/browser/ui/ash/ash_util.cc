@@ -6,10 +6,8 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "base/macros.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/common/service_manager_connection.h"
-#include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -29,14 +27,6 @@ int GetSystemModalDialogContainerId() {
                  session_manager::SessionState::ACTIVE
              ? ash::kShellWindowId_SystemModalContainer
              : ash::kShellWindowId_LockSystemModalContainer;
-}
-
-views::Widget::InitParams GetFramelessInitParams() {
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
-  params.shadow_elevation = ::wm::kShadowElevationActiveWindow;
-  return params;
 }
 
 service_manager::Connector* GetServiceManagerConnector() {

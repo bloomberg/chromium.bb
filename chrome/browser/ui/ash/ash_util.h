@@ -31,9 +31,6 @@ void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
 // lock screen.
 int GetSystemModalDialogContainerId();
 
-// Returns InitParams for a frameless window with no shadow.
-views::Widget::InitParams GetFramelessInitParams();
-
 // Returns the connector from ServiceManagerConnection::GetForProcess().
 // May be null in unit tests.
 service_manager::Connector* GetServiceManagerConnector();

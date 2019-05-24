@@ -49,10 +49,6 @@ void MultiDeviceSetupDialog::Show() {
     return;
 
   current_instance_ = new MultiDeviceSetupDialog();
-
-  // TODO(hansberry): This should pass ash_util::GetFramelessInitParams() for
-  // extra_params. Currently however, that prevents the dialog from presenting
-  // in full screen if tablet mode is enabled. See https://crbug.com/888629.
   chrome::ShowWebDialog(nullptr /* parent */,
                         ProfileManager::GetActiveUserProfile(),
                         current_instance_);
