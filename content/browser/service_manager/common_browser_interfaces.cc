@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
@@ -24,7 +23,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/connection_filter.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -47,19 +45,10 @@ class ConnectionFilterImpl : public ConnectionFilter {
   ConnectionFilterImpl() {
 #if defined(OS_WIN)
     registry_.AddInterface(base::BindRepeating(&FontCacheDispatcher::Create));
-
-    auto dwrite_font_proxy_task_runner =
+    registry_.AddInterface(
+        base::BindRepeating(&DWriteFontProxyImpl::Create),
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::USER_BLOCKING, base::MayBlock()});
-    registry_.AddInterface(base::BindRepeating(&DWriteFontProxyImpl::Create),
-                           dwrite_font_proxy_task_runner);
-
-    if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
-      content::DWriteFontLookupTableBuilder::GetInstance()
-          ->SetCallbackTaskRunner(dwrite_font_proxy_task_runner);
-      content::DWriteFontLookupTableBuilder::GetInstance()
-          ->SchedulePrepareFontUniqueNameTableIfNeeded();
-    }
+            {base::TaskPriority::USER_BLOCKING, base::MayBlock()}));
 #elif defined(OS_MACOSX)
     registry_.AddInterface(
         base::BindRepeating(&SandboxSupportMacImpl::BindRequest,

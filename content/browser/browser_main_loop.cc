@@ -1420,6 +1420,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
           switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
     GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion();
   }
+
+  if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
+    content::DWriteFontLookupTableBuilder::GetInstance()
+        ->SchedulePrepareFontUniqueNameTableIfNeeded();
+  }
 #endif
 
   if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {

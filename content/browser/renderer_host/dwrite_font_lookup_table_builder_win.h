@@ -17,10 +17,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/optional.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -45,13 +43,6 @@ namespace content {
 class CONTENT_EXPORT DWriteFontLookupTableBuilder {
  public:
   static DWriteFontLookupTableBuilder* GetInstance();
-
-  // Configure the task runner that will be used for posting tasks to when
-  // executing Mojo result callbacks that were passed from DWriteFontProxyImpl.
-  void SetCallbackTaskRunner(
-      scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
-    callback_task_runner_ = callback_task_runner;
-  }
 
   // Retrieve the prepared memory region if it is available.
   // EnsureFontUniqueNameTable() must be checked before.
@@ -200,7 +191,6 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   bool caching_enabled_ = true;
   base::Optional<base::WaitableEvent> hang_event_for_testing_;
   base::CancelableOnceCallback<void()> timeout_callback_;
-  scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DWriteFontLookupTableBuilder);
 };
