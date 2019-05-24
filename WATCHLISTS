@@ -1794,6 +1794,11 @@
     'wake_lock': {
       'filepath': 'wake_lock',
     },
+    'wallpapers': {
+      'filepath': 'ash/public/interfaces/wallpaper.mojom'\
+                  '|ash/wallpaper/'\
+                  '|chrome/browser/resources/chromeos/wallpaper_manager/',
+    },
     'web_applications': {
       'filepath': 'chrome/browser/web_applications'\
                   '|chrome/browser/ui/web_applications',
@@ -2632,6 +2637,10 @@
     'vulkan': ['cblume+vulkan@chromium.org'],
     'wake_lock': ['mattreynolds+watch@chromium.org',
                   'raphael.kubo.da.costa@intel.com'],
+    'wallpapers': ['hsuregan+watch@chromium.org',
+                   'jhawkins+watch@chromium.org',
+                   'jordynass+watch@chromium.org',
+                   'maybelle+watch@chromium.org'],
     'web_applications': ['dominickn+watch-web_applications@chromium.org',
                          'ericwilligers+watch-bmo@chromium.org',
                          'loyso+watch@chromium.org',
