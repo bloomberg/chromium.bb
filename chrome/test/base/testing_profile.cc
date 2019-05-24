@@ -710,10 +710,8 @@ std::string TestingProfile::GetProfileUserName() const {
 }
 
 Profile::ProfileType TestingProfile::GetProfileType() const {
-  if (guest_session_)
-    return GUEST_PROFILE;
   if (original_profile_)
-    return INCOGNITO_PROFILE;
+    return guest_session_ ? GUEST_PROFILE : INCOGNITO_PROFILE;
   return REGULAR_PROFILE;
 }
 
