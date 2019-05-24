@@ -224,13 +224,17 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
 
   Browser* browser = browser_view()->browser();
 
-  const int header_height = frame_header_->GetHeaderHeight();
-
+  int header_height = frame_header_->GetHeaderHeight();
+  if (hosted_app_button_container()) {
+    header_height =
+        std::max(header_height,
+                 hosted_app_button_container()->GetPreferredSize().height());
+  }
   if (browser_view()->IsTabStripVisible())
     return header_height - browser_view()->GetTabStripHeight();
 
   return UsePackagedAppHeaderStyle(browser)
-             ? frame_header_->GetHeaderHeight()
+             ? header_height
              : caption_button_container_->bounds().bottom();
 }
 
