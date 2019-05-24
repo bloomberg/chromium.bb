@@ -93,24 +93,45 @@ void CacheStorageContextImpl::SetBlobParametersForCache(
 
 void CacheStorageContextImpl::GetAllOriginsInfo(
     CacheStorageContext::GetUsageInfoCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Can be called on any sequence.
 
-  if (!cache_manager_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback), std::vector<StorageUsageInfo>()));
-    return;
-  }
+  callback = base::BindOnce(
+      [](scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
+         GetUsageInfoCallback inner,
+         const std::vector<StorageUsageInfo>& entries) {
+        reply_task_runner->PostTask(FROM_HERE,
+                                    base::BindOnce(std::move(inner), entries));
+      },
+      base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 
-  cache_manager_->GetAllOriginsUsage(CacheStorageOwner::kCacheAPI,
-                                     std::move(callback));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<CacheStorageContextImpl> context,
+             GetUsageInfoCallback callback) {
+            if (!context->cache_manager()) {
+              std::move(callback).Run(std::vector<StorageUsageInfo>());
+              return;
+            }
+            context->cache_manager()->GetAllOriginsUsage(
+                CacheStorageOwner::kCacheAPI, std::move(callback));
+          },
+          base::RetainedRef(this), std::move(callback)));
 }
 
 void CacheStorageContextImpl::DeleteForOrigin(const GURL& origin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (cache_manager_)
-    cache_manager_->DeleteOriginData(url::Origin::Create(origin),
-                                     CacheStorageOwner::kCacheAPI);
+  // Can be called on any sequence.
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(
+                             [](scoped_refptr<CacheStorageContextImpl> context,
+                                const GURL& origin) {
+                               if (!context->cache_manager())
+                                 return;
+                               context->cache_manager()->DeleteOriginData(
+                                   url::Origin::Create(origin),
+                                   CacheStorageOwner::kCacheAPI);
+                             },
+                             base::RetainedRef(this), origin));
 }
 
 void CacheStorageContextImpl::AddObserver(
