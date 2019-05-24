@@ -3743,7 +3743,13 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
           &cb, &skipped_auto_height_containing_block);
 
   DCHECK(cb);
-  cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
+
+  // If the container of the descendant is a replaced element (a VIDEO, for
+  // instance), |cb| (which uses ContainingBlock()) may actually not be in the
+  // containing block chain for the descendant.
+  const LayoutObject* container = Container();
+  if (!container->IsLayoutReplaced())
+    cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
 
   if (available_height == -1)
     return available_height;
