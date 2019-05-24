@@ -18,7 +18,9 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
     @Override
     public void onCreate() {
         super.onCreate();
-        TrustedWebActivityService.setVerifiedProvider(this, "org.chromium.chrome.tests");
+
+        TrustedWebActivityService.setVerifiedProviderSynchronouslyForTesting(this,
+                "org.chromium.chrome.tests");
     }
 
     @Override
