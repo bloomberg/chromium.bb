@@ -11845,6 +11845,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileNewTabOpenedTabStrip">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    Users tapped '+' button on the tab strip, causing a new tab to be created in
+    the group.
+  </description>
+</action>
+
 <action name="MobileNTP.Interests.Click">
   <owner>knn@chromium.org</owner>
   <description>
@@ -22106,6 +22115,16 @@ should be able to be added at any place in this file.
   <suffix name="SystemDefault"
       label="Users selected system default theme preference."/>
   <affected-action name="Android.DarkTheme.Preference"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="GridTabSwitcher"
+      label="Users swipe to close a tab in grid layout TabSwitcher."/>
+  <suffix name="TabGridDialog"
+      label="Users swipe to close a tab in tab grid dialog."/>
+  <suffix name="TabGridSheet"
+      label="Users swipe to close a tab in tab group bottom sheet."/>
+  <affected-action name="MobileStackViewSwipeCloseTab"/>
 </action-suffix>
 
 </actions>
