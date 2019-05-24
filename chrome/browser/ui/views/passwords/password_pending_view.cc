@@ -410,6 +410,9 @@ void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
 
 void PasswordPendingView::ReplaceWithPromo() {
   RemoveAllChildViews(true);
+  username_dropdown_ = nullptr;
+  password_dropdown_ = nullptr;
+  password_view_button_ = nullptr;
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
