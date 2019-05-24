@@ -140,7 +140,7 @@ public abstract class SelectableItemViewBase<E>
 
     // OnClickListener implementation.
     @Override
-    public final void onClick(View view) {
+    public void onClick(View view) {
         assert view == this;
 
         if (!mSelectOnLongClick) {

@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.support.v7.widget.GridLayoutManager;
@@ -17,8 +18,12 @@ import android.util.DisplayMetrics;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.MediaController;
 import android.widget.RelativeLayout;
+import android.widget.VideoView;
 
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
 import org.chromium.base.VisibleForTesting;
@@ -144,6 +149,12 @@ public class PickerCategoryView extends RelativeLayout
     // A list of files to use for testing (instead of reading files on disk).
     private static List<PickerBitmap> sTestFiles;
 
+    // The video preview view.
+    private VideoView mVideoView;
+
+    // The media controls to show with the video (play/pause, etc).
+    private MediaController mMediaController;
+
     /**
      * @param context The context to use.
      * @param multiSelectionAllowed Whether to allow the user to select more than one image.
@@ -174,6 +185,7 @@ public class PickerCategoryView extends RelativeLayout
         toolbar.setNavigationOnClickListener(this);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);
+        mVideoView = findViewById(R.id.video_player);
 
         calculateGridMetrics();
 
@@ -219,6 +231,52 @@ public class PickerCategoryView extends RelativeLayout
             mDecoderServiceHost.unbind(mActivity);
             mDecoderServiceHost = null;
         }
+    }
+
+    /**
+     * Start playback of a video in an overlay above the photo picker.
+     * @param uri The uri of the video to start playing.
+     */
+    public void playVideo(Uri uri) {
+        findViewById(R.id.playback_container).setVisibility(View.VISIBLE);
+        findViewById(R.id.close).setOnClickListener(this);
+
+        mMediaController = new MediaController(mActivity, false) {
+            @Override
+            public void hide() {
+                // Making sure the controls never hide prevents the seekbar from no longer updating
+                // in the middle of playing a video.
+                this.show();
+            }
+        };
+        mVideoView.setMediaController(mMediaController);
+        mVideoView.setVisibility(View.VISIBLE);
+        mVideoView.setVideoURI(uri);
+
+        mVideoView.setOnPreparedListener((MediaPlayer mp) -> {
+            mp.setOnVideoSizeChangedListener((MediaPlayer player, int width, int height) -> {
+                // To get the media controls to show up in a dialog, the view needs to be
+                // re-parented.
+                ((ViewGroup) mMediaController.getParent()).removeView(mMediaController);
+                ((FrameLayout) findViewById(R.id.controls_wrapper)).addView(mMediaController);
+                mMediaController.setVisibility(View.VISIBLE);
+
+                mMediaController.setAnchorView(mVideoView);
+                mMediaController.setEnabled(true);
+                mMediaController.show(0);
+            });
+
+            mVideoView.start();
+        });
+    }
+
+    private void stopVideo() {
+        findViewById(R.id.playback_container).setVisibility(View.GONE);
+        mVideoView.stopPlayback();
+        mVideoView.setMediaController(null);
+        // The MediaController needs a little bit of time to go away fully. Hide it in the meantime.
+        mMediaController.setVisibility(View.GONE);
+        mMediaController = null;
     }
 
     /**
@@ -282,8 +340,11 @@ public class PickerCategoryView extends RelativeLayout
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.done) {
+        int id = view.getId();
+        if (id == R.id.done) {
             notifyPhotosSelected();
+        } else if (id == R.id.close) {
+            stopVideo();
         } else {
             executeAction(PhotoPickerListener.PhotoPickerAction.CANCEL, null, ACTION_CANCEL);
         }

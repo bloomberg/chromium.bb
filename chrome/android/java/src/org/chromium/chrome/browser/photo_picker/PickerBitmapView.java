@@ -59,6 +59,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     // For video tiles, this lists the duration of the video. Blank for other types.
     private TextView mVideoDuration;
 
+    // The Play button in the bottom right corner. Only shown for videos.
+    private ImageView mPlayButton;
+
     // The little shader in the top left corner (provides backdrop for selection ring on
     // unfavorable image backgrounds).
     private ImageView mScrim;
@@ -102,7 +105,11 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mSpecialTile = findViewById(R.id.special_tile);
         mSpecialTileIcon = (ImageView) findViewById(R.id.special_tile_icon);
         mSpecialTileLabel = (TextView) findViewById(R.id.special_tile_label);
+
+        // Specific UI controls for video support.
         mVideoDuration = (TextView) findViewById(R.id.video_duration);
+        mPlayButton = findViewById(R.id.play_video);
+        mPlayButton.setOnClickListener(this);
     }
 
     @Override
@@ -114,6 +121,15 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         int width = mCategoryView.getImageSize();
         int height = mCategoryView.getImageSize();
         setMeasuredDimension(width, height);
+    }
+
+    @Override
+    public final void onClick(View view) {
+        if (view == mPlayButton) {
+            mCategoryView.playVideo(mBitmapDetails.getUri());
+        } else {
+            super.onClick(view);
+        }
     }
 
     @Override
@@ -398,6 +414,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
                 && mCategoryView.isMultiSelectAllowed();
         mUnselectedView.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
         mScrim.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
+        mPlayButton.setVisibility(
+                mImageLoaded && mBitmapDetails.type() == PickerBitmap.TileTypes.VIDEO ? View.VISIBLE
+                                                                                      : View.GONE);
     }
 
     private boolean isGalleryTile() {
