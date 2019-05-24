@@ -52,7 +52,7 @@ class FakeRelaunchNotificationController
   using RelaunchNotificationController::kRelaunchGracePeriod;
 
  private:
-  void DoNotifyRelaunchRecommended() override {
+  void DoNotifyRelaunchRecommended(bool /*past_deadline*/) override {
     delegate_->NotifyRelaunchRecommended();
   }
 

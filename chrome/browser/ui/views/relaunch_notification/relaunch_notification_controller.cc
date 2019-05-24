@@ -188,8 +188,10 @@ void RelaunchNotificationController::ShowRelaunchNotification(
 
   if (last_notification_style_ == NotificationStyle::kRecommended) {
     // Show the dialog if there has been a level change.
-    if (level != last_level_)
-      NotifyRelaunchRecommended();
+    if (level != last_level_) {
+      NotifyRelaunchRecommended(level ==
+                                UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
+    }
 
     // If this is the final showing (the one at the "high" level), start the
     // timer to reshow the bubble at each "elevated to high" interval.
@@ -271,18 +273,20 @@ void RelaunchNotificationController::StartReshowTimer() {
 
 void RelaunchNotificationController::OnReshowRelaunchRecommended() {
   DCHECK_EQ(last_notification_style_, NotificationStyle::kRecommended);
-  NotifyRelaunchRecommended();
+  NotifyRelaunchRecommended(true);
   StartReshowTimer();
 }
 
-void RelaunchNotificationController::NotifyRelaunchRecommended() {
+void RelaunchNotificationController::NotifyRelaunchRecommended(
+    bool past_deadline) {
   last_relaunch_notification_time_ = clock_->Now();
-  DoNotifyRelaunchRecommended();
+  DoNotifyRelaunchRecommended(past_deadline);
 }
 
-void RelaunchNotificationController::DoNotifyRelaunchRecommended() {
+void RelaunchNotificationController::DoNotifyRelaunchRecommended(
+    bool past_deadline) {
   platform_impl_.NotifyRelaunchRecommended(
-      upgrade_detector_->upgrade_detected_time());
+      upgrade_detector_->upgrade_detected_time(), past_deadline);
 }
 
 void RelaunchNotificationController::NotifyRelaunchRequired() {

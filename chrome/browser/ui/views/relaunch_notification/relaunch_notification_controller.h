@@ -118,8 +118,9 @@ class RelaunchNotificationController : public UpgradeObserver {
       base::Time high_deadline);
 
   // Update |last_relaunch_notification_time_| before calling
-  // DoNotifyRelaunchRecommended.
-  void NotifyRelaunchRecommended();
+  // DoNotifyRelaunchRecommended. |past_deadline| reflects whether the
+  // Recommended deadline was already passed or not.
+  void NotifyRelaunchRecommended(bool past_deadline);
 
   // Provide deadline to DoNotifyRelaunchRequired.
   virtual void NotifyRelaunchRequired();
@@ -128,7 +129,9 @@ class RelaunchNotificationController : public UpgradeObserver {
   // notifications, are virtual for the sake of testing.
 
   // Shows the relaunch recommended notification if it is not already open.
-  virtual void DoNotifyRelaunchRecommended();
+  // |past_deadline| reflects whether the Recommended deadline was already
+  // passed or not.
+  virtual void DoNotifyRelaunchRecommended(bool past_deadline);
 
   // Shows the relaunch required notification if it is not already open.
   virtual void DoNotifyRelaunchRequired(base::Time deadline);

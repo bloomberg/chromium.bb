@@ -52,7 +52,8 @@ RelaunchNotificationControllerPlatformImpl::
     RelaunchNotificationControllerPlatformImpl() = default;
 
 void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRecommended(
-    base::Time detection_time) {
+    base::Time detection_time,
+    bool /*past_deadline*/) {
   // Nothing to do if the bubble is visible.
   if (widget_)
     return;
