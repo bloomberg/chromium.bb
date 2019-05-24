@@ -483,7 +483,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       // all the way to the root of the fragmentation context without finding
       // any such container, we have no valid class A break point, and if a
       // forced break was requested, none will be inserted.
-      if (!child.IsInline())
+      if (!child.IsInline() && ConstraintSpace().HasBlockFragmentation())
         container_builder_.SetInitialBreakBefore(child.Style().BreakBefore());
 
       bool abort;
@@ -681,6 +681,11 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
     DCHECK(!container_builder_.BfcBlockOffset());
     DCHECK(container_builder_.AdjoiningFloatTypes());
   }
+
+  // If we're not participating in a fragmentation context, no block
+  // fragmentation related fields should have been set.
+  if (!ConstraintSpace().HasBlockFragmentation())
+    container_builder_.CheckNoBlockFragmentation();
 #endif
 
   PropagateBaselinesFromChildren();

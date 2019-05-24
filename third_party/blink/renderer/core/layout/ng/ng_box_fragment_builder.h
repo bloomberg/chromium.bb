@@ -228,6 +228,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void ComputeInlineContainerFragments(
       InlineContainingBlockMap* inline_containing_block_map);
 
+#if DCHECK_IS_ON()
+  // If we don't participate in a fragmentation context, this method can check
+  // that all block fragmentation related fields have their initial value.
+  void CheckNoBlockFragmentation() const;
+#endif
+
  private:
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
