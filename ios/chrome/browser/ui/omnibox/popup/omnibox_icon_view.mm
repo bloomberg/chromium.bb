@@ -145,4 +145,8 @@
   self.backgroundImageView.tintColor = omniboxIcon.backgroundImageTintColor;
 }
 
+- (UIImage*)mainImage {
+  return self.mainImageView.image;
+}
+
 @end
