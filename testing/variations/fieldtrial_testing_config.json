@@ -396,6 +396,25 @@
             ]
         }
     ],
+    "AndroidInlineUpdateFlowStudy": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_WithNotification",
+                    "params": {
+                        "update_notification_interval_days": "21",
+                        "update_notification_state": "true"
+                    },
+                    "enable_features": [
+                        "InlineUpdateFlow"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidMediaProcessPriority": [
         {
             "platforms": [
