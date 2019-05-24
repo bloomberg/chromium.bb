@@ -90,6 +90,8 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   void RemoveKeyframeModel(int keyframe_model_id) override;
 
+  void ReleasePendingTreeLock() { has_pending_tree_lock_ = false; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WorkletAnimationTest,
                            NonImplInstanceDoesNotTickKeyframe);
@@ -167,6 +169,12 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // Last current time used for updating. We use this to skip updating if
   // current time has not changed since last update.
   base::Optional<base::TimeDelta> last_current_time_;
+
+  // To ensure that 'time' progresses forward for scroll animations, we guard
+  // against allowing active tree mutations while the pending tree has a
+  // lock in the worklet. The lock is established when updating the input state
+  // for the pending tree and release on pending tree activation.
+  bool has_pending_tree_lock_;
 
   State state_;
 

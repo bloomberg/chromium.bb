@@ -12,10 +12,12 @@
 #include "cc/trees/property_tree.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
-using ::testing::_;
+using ::testing::Unused;
 
 namespace cc {
 
@@ -424,6 +426,63 @@ TEST_F(WorkletAnimationTest, SkipUnchangedAnimations) {
   input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->updated_animations.size(), 0u);
   EXPECT_EQ(input->removed_animations.size(), 1u);
+}
+
+base::Optional<base::TimeTicks> FakeIncreasingScrollTimelineTime(Unused,
+                                                                 Unused) {
+  static base::TimeTicks current_time;
+  current_time += base::TimeDelta::FromSecondsD(0.1);
+  return current_time;
+}
+
+// This test verifies that worklet animation gets skipped properly if a pending
+// mutation cycle is holding a lock on the worklet.
+TEST_F(WorkletAnimationTest, SkipLockedAnimations) {
+  auto scroll_timeline = std::make_unique<MockScrollTimeline>();
+  EXPECT_CALL(*scroll_timeline, IsActive(_, _)).WillRepeatedly(Return(true));
+  EXPECT_CALL(*scroll_timeline, CurrentTime(_, _))
+      .WillRepeatedly(Invoke(FakeIncreasingScrollTimelineTime));
+  scoped_refptr<WorkletAnimation> worklet_animation =
+      WorkletAnimation::Create(worklet_animation_id_, "test_name", 1,
+                               std::move(scroll_timeline), nullptr, nullptr);
+
+  ScrollTree scroll_tree;
+  std::unique_ptr<MutatorInputState> state =
+      std::make_unique<MutatorInputState>();
+
+  base::TimeTicks time;
+  worklet_animation->UpdateInputState(state.get(), time, scroll_tree, true);
+  std::unique_ptr<AnimationWorkletInput> input =
+      state->TakeWorkletState(worklet_animation_id_.worklet_id);
+  EXPECT_EQ(input->added_and_updated_animations.size(), 1u);
+  EXPECT_EQ(input->updated_animations.size(), 0u);
+
+  state.reset(new MutatorInputState());
+  // Different scroll time causes the input state to be updated.
+  worklet_animation->UpdateInputState(state.get(), time, scroll_tree, true);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
+  EXPECT_EQ(input->updated_animations.size(), 1u);
+
+  state.reset(new MutatorInputState());
+  // Different scroll time causes the input state to be updated. Pending
+  // mutation will grab a lock.
+  worklet_animation->UpdateInputState(state.get(), time, scroll_tree, false);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
+  EXPECT_EQ(input->updated_animations.size(), 1u);
+
+  state.reset(new MutatorInputState());
+  // Pending lock has not been released.
+  worklet_animation->UpdateInputState(state.get(), time, scroll_tree, true);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
+  EXPECT_FALSE(input);
+
+  worklet_animation->ReleasePendingTreeLock();
+
+  state.reset(new MutatorInputState());
+  // Pending lock has been released.
+  worklet_animation->UpdateInputState(state.get(), time, scroll_tree, true);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
+  EXPECT_EQ(input->updated_animations.size(), 1u);
 }
 
 }  // namespace

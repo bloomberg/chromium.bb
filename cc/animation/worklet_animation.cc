@@ -52,6 +52,7 @@ WorkletAnimation::WorkletAnimation(
       local_time_(base::nullopt),
       start_time_(base::nullopt),
       last_current_time_(base::nullopt),
+      has_pending_tree_lock_(false),
       state_(State::PENDING),
       is_impl_instance_(is_controlling_instance) {}
 
@@ -120,6 +121,9 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
   if (!start_time_.has_value() && is_timeline_active)
     start_time_ = scroll_timeline_ ? base::TimeTicks() : monotonic_time;
 
+  if (is_active_tree && has_pending_tree_lock_)
+    return;
+
   // Skip running worklet animations with unchanged input time and reuse
   // their value from the previous animation call.
   if (!NeedsUpdate(monotonic_time, scroll_tree, is_active_tree))
@@ -140,6 +144,10 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
   if (!current_time)
     return;
   last_current_time_ = current_time;
+
+  // Prevent active tree mutations from queuing up until pending tree is
+  // activated to preserve flow of time for scroll timelines.
+  has_pending_tree_lock_ = !is_active_tree && scroll_timeline_;
 
   switch (state_) {
     case State::PENDING:
@@ -254,6 +262,7 @@ void WorkletAnimation::UpdateScrollTimeline(
 void WorkletAnimation::PromoteScrollTimelinePendingToActive() {
   if (scroll_timeline_)
     scroll_timeline_->PromoteScrollTimelinePendingToActive();
+  ReleasePendingTreeLock();
 }
 
 void WorkletAnimation::RemoveKeyframeModel(int keyframe_model_id) {
