@@ -100,6 +100,7 @@ source_set("internal") {
     "//ios/public/provider/chrome/browser/ui",
     "//ios/web",
     "//ios/web/common",
+    "//ios/web/public/security",
     "//ui/gfx/geometry",
   ]
 }
@@ -147,6 +148,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/web_state_list:test_support",
     "//ios/web/common",
     "//ios/web/public",
+    "//ios/web/public/security",
     "//ios/web/public/test/fakes",
     "//testing/gmock",
     "//testing/gtest",
