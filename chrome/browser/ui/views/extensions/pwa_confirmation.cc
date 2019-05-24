@@ -128,7 +128,7 @@ base::string16 PWAConfirmation::GetDialogButtonLabel(ui::DialogButton button) {
 
 views::View* PWAConfirmation::GetInitiallyFocusedView(
     views::DialogDelegateView* dialog) {
-  return dialog->GetDialogClientView()->cancel_button();
+  return nullptr;
 }
 
 void PWAConfirmation::Accept() {
