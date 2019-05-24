@@ -265,6 +265,21 @@ class EvaluateConditionTest(unittest.TestCase):
             '(inside \'false_var_str and true_var\')',
         str(cm.exception))
 
+  def test_tuple_presence(self):
+    self.assertTrue(gclient_eval.EvaluateCondition(
+      'foo in ("bar", "baz")', {'foo': 'bar'}))
+    self.assertFalse(gclient_eval.EvaluateCondition(
+      'foo in ("bar", "baz")', {'foo': 'not_bar'}))
+
+  def test_unsupported_tuple_operation(self):
+    with self.assertRaises(ValueError) as cm:
+      gclient_eval.EvaluateCondition('foo == ("bar", "baz")', {'foo': 'bar'})
+    self.assertIn('unexpected AST node', str(cm.exception))
+
+    with self.assertRaises(ValueError) as cm:
+      gclient_eval.EvaluateCondition('(foo,) == "bar"', {'foo': 'bar'})
+    self.assertIn('unexpected AST node', str(cm.exception))
+
 
 class VarTest(unittest.TestCase):
   def assert_adds_var(self, before, after):
