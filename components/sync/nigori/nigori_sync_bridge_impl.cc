@@ -253,6 +253,45 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
 void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // |passphrase| should be a valid one already (verified by the UI part, using
+  // pending keys exposed by OnPassphraseRequired()).
+  DCHECK(!passphrase.empty());
+  DCHECK(cryptographer_.has_pending_keys());
+  // has_pending_keys() should mean it's an explicit passphrase user.
+  DCHECK(passphrase_type_ == NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE ||
+         passphrase_type_ == NigoriSpecifics::CUSTOM_PASSPHRASE);
+
+  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), passphrase};
+  // The line below should set given |passphrase| as default key and cause
+  // decryption of pending keys.
+  if (!cryptographer_.AddKey(key_params)) {
+    processor_->ReportError(ModelError(
+        FROM_HERE, "Failed to add decryption passphrase to cryptographer."));
+    return;
+  }
+  if (cryptographer_.has_pending_keys()) {
+    // TODO(crbug.com/922900): old implementation assumes that pending keys
+    // encryption key may change in between of OnPassphraseRequired() and
+    // SetDecryptionPassphrase() calls, verify whether it's really possible.
+    // Hypothetical cases are transition from FROZEN_IMPLICIT_PASSPHRASE to
+    // CUSTOM_PASSPHRASE and changing of passphrase due to conflict resolution.
+    processor_->ReportError(ModelError(
+        FROM_HERE,
+        "Failed to decrypt pending keys with provided explicit passphrase."));
+    return;
+  }
+  for (auto& observer : observers_) {
+    observer.OnCryptographerStateChanged(&cryptographer_);
+  }
+  for (auto& observer : observers_) {
+    observer.OnPassphraseAccepted();
+  }
+  // TODO(crbug.com/922900): persist |passphrase| in corresponding storage.
+  // TODO(crbug.com/922900): support SCRYPT key derivation method and
+  // corresponding migration code.
+  // TODO(crbug.com/922900): we may need to rewrite encryption_keybag in Nigori
+  // node in case we have some keys in |cryptographer_| which is not stored in
+  // encryption_keybag yet.
   NOTIMPLEMENTED();
 }
 
@@ -437,6 +476,20 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(&cryptographer_);
   }
+  if (cryptographer_.has_pending_keys()) {
+    // Update with keystore Nigori shouldn't reach this point, since it should
+    // report model error if it has pending keys.
+    DCHECK(passphrase_type_ == NigoriSpecifics::CUSTOM_PASSPHRASE ||
+           passphrase_type_ == NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE);
+    for (auto& observer : observers_) {
+      // TODO(crbug.com/922900): pass correct key_derivation_params once SCRYPT
+      // support is added.
+      observer.OnPassphraseRequired(
+          /*reason=*/REASON_DECRYPTION,
+          /*key_derivation_params=*/KeyDerivationParams::CreateForPbkdf2(),
+          /*pending_keys=*/cryptographer_.GetPendingKeys());
+    }
+  }
   return base::nullopt;
 }
 
@@ -469,11 +522,24 @@ NigoriSyncBridgeImpl::UpdateCryptographerFromKeystoreNigori(
 }
 
 void NigoriSyncBridgeImpl::UpdateCryptographerFromExplicitPassphraseNigori(
-    const sync_pb::EncryptedData& keybag) {
+    const sync_pb::EncryptedData& encryption_keybag) {
   // TODO(crbug.com/922900): support the case when client knows passphrase.
   NOTIMPLEMENTED();
-  DCHECK(!keybag.blob().empty());
-  cryptographer_.SetPendingKeys(keybag);
+  DCHECK(!encryption_keybag.blob().empty());
+  if (!cryptographer_.CanDecrypt(encryption_keybag)) {
+    // This will lead to OnPassphraseRequired() call later.
+    cryptographer_.SetPendingKeys(encryption_keybag);
+    return;
+  }
+  // |cryptographer_| can already have explicit passphrase, in that case it
+  // should be able to decrypt |encryption_keybag|. We need to take keys from
+  // |encryption_keybag| since some other client can write old keys to
+  // |encryption_keybag| and could encrypt some data with them.
+  // TODO(crbug.com/922900): find and document at least one real case
+  // corresponding to the sentence above.
+  // TODO(crbug.com/922900): we may also need to rewrite Nigori with keys
+  // currently stored in cryptographer, in case it doesn't have them already.
+  cryptographer_.InstallKeys(encryption_keybag);
 }
 
 std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {

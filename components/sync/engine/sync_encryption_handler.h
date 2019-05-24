@@ -150,14 +150,15 @@ class SyncEncryptionHandler {
   // Notifies observers of the result of the operation via OnPassphraseAccepted
   // or OnPassphraseRequired, updates the nigori node, and does re-encryption as
   // appropriate. If an explicit password has been set previously, we drop
-  // subsequent requests to set a passphrase.
+  // subsequent requests to set a passphrase. |passphrase| shouldn't be empty.
   virtual void SetEncryptionPassphrase(const std::string& passphrase) = 0;
 
   // Provides a passphrase for decrypting the user's existing sync data.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
   // or OnPassphraseRequired, updates the nigori node, and does re-encryption as
   // appropriate if there is a previously cached encryption passphrase. It is an
-  // error to call this when we don't have pending keys.
+  // error to call this when we don't have pending keys. |passphrase| shouldn't
+  // be empty.
   virtual void SetDecryptionPassphrase(const std::string& passphrase) = 0;
 
   // Enables encryption of all datatypes.

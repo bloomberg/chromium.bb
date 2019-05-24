@@ -77,6 +77,12 @@ MATCHER_P(CanDecryptWith, key_params, "") {
   return decrypted == unencrypted;
 }
 
+MATCHER_P(EncryptedDataEq, expected, "") {
+  const sync_pb::EncryptedData& given = arg;
+  return given.key_name() == expected.key_name() &&
+         given.blob() == expected.blob();
+}
+
 KeyParams Pbkdf2KeyParams(std::string key) {
   return {KeyDerivationParams::CreateForPbkdf2(), std::move(key)};
 }
@@ -125,7 +131,8 @@ class MockObserver : public SyncEncryptionHandler::Observer {
 class NigoriSyncBridgeImplTest : public testing::Test {
  protected:
   NigoriSyncBridgeImplTest() {
-    auto processor = std::make_unique<MockNigoriLocalChangeProcessor>();
+    auto processor =
+        std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
     processor_ = processor.get();
     bridge_ = std::make_unique<NigoriSyncBridgeImpl>(std::move(processor),
                                                      &encryptor_);
@@ -174,12 +181,24 @@ class NigoriSyncBridgeImplTest : public testing::Test {
     return specifics;
   }
 
+  // Builds NigoriSpecifics with following fields:
+  // 1. encryption_keybag contains keys derived from |passphrase_key_params|
+  // and |*old_key_params| (if |old_key_params| isn't nullopt). Encrypted with
+  // key derived from |passphrase_key_params|.
+  // 2. custom_passphrase_time is current time.
+  // 3. passphrase_type is CUSTOM_PASSPHRASE.
+  // 4. encrypt_everything is true.
+  // 5. Other fields are default.
   sync_pb::NigoriSpecifics BuildCustomPassphraseNigoriSpecifics(
-      const KeyParams& key_params) {
+      const KeyParams& passphrase_key_params,
+      const base::Optional<KeyParams>& old_key_params = base::nullopt) {
     sync_pb::NigoriSpecifics specifics;
 
     Cryptographer cryptographer(&encryptor_);
-    cryptographer.AddKey(key_params);
+    cryptographer.AddKey(passphrase_key_params);
+    if (old_key_params) {
+      cryptographer.AddNonDefaultKey(*old_key_params);
+    }
     EXPECT_TRUE(cryptographer.GetKeys(specifics.mutable_encryption_keybag()));
 
     specifics.set_custom_passphrase_time(TimeToProtoTime(base::Time::Now()));
@@ -194,7 +213,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   FakeEncryptor encryptor_;
   std::unique_ptr<NigoriSyncBridgeImpl> bridge_;
   // Ownership transferred to |bridge_|.
-  MockNigoriLocalChangeProcessor* processor_;
+  testing::NiceMock<MockNigoriLocalChangeProcessor>* processor_;
   testing::NiceMock<MockObserver> observer_;
 };
 
@@ -399,6 +418,39 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldFailOnUnknownPassprase) {
   EXPECT_CALL(*processor(), Put(_)).Times(0);
   EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Ne(base::nullopt));
+}
+
+// Tests decryption logic for explicit passphrase. In order to check that we're
+// able to decrypt the data encrypted with old key (i.e. keystore keys or old
+// GAIA passphrase) we add one extra key to the encryption keybag.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldDecryptWithCustomPassphraseAndUpdateDefaultKey) {
+  const KeyParams kOldKeyParams = Pbkdf2KeyParams("old_key");
+  const KeyParams kPassphraseKeyParams = Pbkdf2KeyParams("passphrase");
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() =
+      BuildCustomPassphraseNigoriSpecifics(kPassphraseKeyParams, kOldKeyParams);
+
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
+
+  EXPECT_CALL(
+      *observer(),
+      OnPassphraseRequired(
+          /*reason=*/REASON_DECRYPTION,
+          /*key_derivation_params=*/KeyDerivationParams::CreateForPbkdf2(),
+          /*pending_keys=*/
+          EncryptedDataEq(entity_data.specifics.nigori().encryption_keybag())));
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
+  bridge()->SetDecryptionPassphrase(kPassphraseKeyParams.password);
+
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kOldKeyParams));
+  EXPECT_THAT(cryptographer, CanDecryptWith(kPassphraseKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kPassphraseKeyParams));
 }
 
 }  // namespace
