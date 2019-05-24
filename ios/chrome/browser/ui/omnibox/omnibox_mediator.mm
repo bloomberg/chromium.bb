@@ -34,6 +34,10 @@ const CGFloat kOmniboxIconSize = 16;
 // The latest URL used to fetch the default search engine favicon.
 @property(nonatomic, assign) const TemplateURL* latestDefaultSearchEngine;
 
+// The favicon for the current default search engine. Cached to prevent
+// needing to load it each time.
+@property(nonatomic, strong) UIImage* currentDefaultSearchEngineFavicon;
+
 @end
 
 @implementation OmniboxMediator {
@@ -79,6 +83,7 @@ const CGFloat kOmniboxIconSize = 16;
 - (void)searchEngineChanged {
   self.searchEngineSupportsSearchByImage =
       search_engines::SupportsSearchByImage(self.templateURLService);
+  self.currentDefaultSearchEngineFavicon = nil;
   [self updateConsumerEmptyTextImage];
 }
 
@@ -98,27 +103,15 @@ const CGFloat kOmniboxIconSize = 16;
     if (base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon) &&
         AutocompleteMatch::IsSearchType(matchType)) {
       // Show Default Search Engine favicon.
-      // Remember what is the Default Search Engine provider that the icon is
-      // for, in case the user changes Default Search Engine while this is being
-      // loaded.
-      const TemplateURL* defaultSearchEngine =
-          _templateURLService->GetDefaultSearchProvider();
-      self.latestDefaultSearchEngine = defaultSearchEngine;
+      __weak __typeof(self) weakSelf = self;
       [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
-        if (weakSelf.latestDefaultSearchEngine == defaultSearchEngine) {
-          [weakSelf.consumer updateAutocompleteIcon:image];
-        }
+        [weakSelf.consumer updateAutocompleteIcon:image];
       }];
     } else {
       // Show favicon.
-      // Remember which favicon is loaded in case we start loading a new one
-      // before this one completes.
-      self.latestFaviconURL = faviconURL;
       [self loadFaviconByPageURL:faviconURL
                       completion:^(UIImage* image) {
-                        if (weakSelf.latestFaviconURL == faviconURL) {
-                          [weakSelf.consumer updateAutocompleteIcon:image];
-                        }
+                        [weakSelf.consumer updateAutocompleteIcon:image];
                       }];
     }
   }
@@ -134,17 +127,21 @@ const CGFloat kOmniboxIconSize = 16;
   // Can't load favicons without a favicon loader.
   DCHECK(self.faviconLoader);
 
+  // Remember which favicon is loaded in case we start loading a new one
+  // before this one completes.
+  self.latestFaviconURL = pageURL;
+  __weak __typeof(self) weakSelf = self;
   auto handleFaviconResult = ^void(FaviconAttributes* faviconCacheResult) {
-    if (faviconCacheResult.faviconImage &&
-        !faviconCacheResult.usesDefaultImage) {
-      if (completion) {
-        completion(faviconCacheResult.faviconImage);
-      }
+    if (weakSelf.latestFaviconURL != pageURL ||
+        !faviconCacheResult.faviconImage ||
+        faviconCacheResult.usesDefaultImage) {
+      return;
+    }
+    if (completion) {
+      completion(faviconCacheResult.faviconImage);
     }
   };
 
-  // Remember the last request URL to avoid showing favicons for past requests.
-  self.latestFaviconURL = pageURL;
   // Download the favicon.
   // The code below mimics that in OmniboxPopupMediator.
   FaviconAttributes* faviconCacheResult = self.faviconLoader->FaviconForPageUrl(
@@ -161,13 +158,35 @@ const CGFloat kOmniboxIconSize = 16;
 // thread.
 - (void)loadDefaultSearchEngineFaviconWithCompletion:
     (void (^)(UIImage* image))completion {
+  // If default search engine image is currently loaded, just use it.
+  if (self.currentDefaultSearchEngineFavicon) {
+    if (completion) {
+      completion(self.currentDefaultSearchEngineFavicon);
+    }
+  }
   // Can't load favicons without a favicon loader.
   DCHECK(self.faviconLoader);
   DCHECK(base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon));
 
   const TemplateURL* defaultProvider =
-      _templateURLService->GetDefaultSearchProvider();
+      self.templateURLService->GetDefaultSearchProvider();
 
+  __weak __typeof(self) weakSelf = self;
+  self.latestDefaultSearchEngine = defaultProvider;
+  auto handleFaviconResult = ^void(FaviconAttributes* faviconCacheResult) {
+    if (weakSelf.latestDefaultSearchEngine != defaultProvider ||
+        !faviconCacheResult.faviconImage ||
+        faviconCacheResult.usesDefaultImage) {
+      return;
+    }
+    UIImage* favicon = faviconCacheResult.faviconImage;
+    weakSelf.currentDefaultSearchEngineFavicon = favicon;
+    if (completion) {
+      completion(favicon);
+    }
+  };
+
+  FaviconAttributes* faviconCacheResult;
   // Prepopulated search engines don't have a favicon URL, so the favicon is
   // loaded with an empty query search page URL.
   if (defaultProvider->prepopulate_id() != 0) {
@@ -177,24 +196,16 @@ const CGFloat kOmniboxIconSize = 16;
     std::string emptyPageUrl = defaultProvider->url_ref().ReplaceSearchTerms(
         TemplateURLRef::SearchTermsArgs(base::string16()),
         _templateURLService->search_terms_data());
-    [self loadFaviconByPageURL:GURL(emptyPageUrl) completion:completion];
-    return;
+    faviconCacheResult = self.faviconLoader->FaviconForPageUrl(
+        GURL(emptyPageUrl), kOmniboxIconSize, kOmniboxIconSize,
+        /*fallback_to_google_server=*/YES, handleFaviconResult);
+  } else {
+    // Download the favicon.
+    // The code below mimics that in OmniboxPopupMediator.
+    faviconCacheResult = self.faviconLoader->FaviconForIconUrl(
+        defaultProvider->favicon_url(), kOmniboxIconSize, kOmniboxIconSize,
+        handleFaviconResult);
   }
-
-  auto handleFaviconResult = ^void(FaviconAttributes* faviconCacheResult) {
-    if (faviconCacheResult.faviconImage &&
-        !faviconCacheResult.usesDefaultImage) {
-      if (completion) {
-        completion(faviconCacheResult.faviconImage);
-      }
-    }
-  };
-
-  // Download the favicon.
-  // The code below mimics that in OmniboxPopupMediator.
-  FaviconAttributes* faviconCacheResult = self.faviconLoader->FaviconForIconUrl(
-      defaultProvider->favicon_url(), kOmniboxIconSize, kOmniboxIconSize,
-      handleFaviconResult);
   handleFaviconResult(faviconCacheResult);
 }
 
@@ -208,14 +219,9 @@ const CGFloat kOmniboxIconSize = 16;
     // Remember what is the Default Search Engine provider that the icon is
     // for, in case the user changes Default Search Engine while this is being
     // loaded.
-    __weak OmniboxMediator* weakSelf = self;
-    const TemplateURL* defaultSearchEngine =
-        _templateURLService->GetDefaultSearchProvider();
-    self.latestDefaultSearchEngine = defaultSearchEngine;
+    __weak __typeof(self) weakSelf = self;
     [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
-      if (weakSelf.latestDefaultSearchEngine == defaultSearchEngine) {
-        [weakSelf.consumer setEmptyTextLeadingImage:image];
-      }
+      [weakSelf.consumer setEmptyTextLeadingImage:image];
     }];
   }
 }
