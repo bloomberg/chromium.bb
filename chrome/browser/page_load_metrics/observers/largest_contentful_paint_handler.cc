@@ -16,8 +16,9 @@ static bool g_disable_subframe_navigation_start_offset = false;
 
 namespace {
 
-const TimingInfo& MergeTimingsBySizeAndTime(const TimingInfo& timing1,
-                                            const TimingInfo& timing2) {
+const ContentfulPaintTimingInfo& MergeTimingsBySizeAndTime(
+    const ContentfulPaintTimingInfo& timing1,
+    const ContentfulPaintTimingInfo& timing2) {
   // When both are empty, just return either.
   if (timing1.IsEmpty() && timing2.IsEmpty())
     return timing1;
@@ -39,19 +40,19 @@ const TimingInfo& MergeTimingsBySizeAndTime(const TimingInfo& timing1,
 }
 
 void MergeForSubframesWithAdjustedTime(
-    TimingInfo* inout_timing,
+    ContentfulPaintTimingInfo* inout_timing,
     const base::Optional<base::TimeDelta>& candidate_new_time,
     const uint64_t& candidate_new_size) {
   DCHECK(inout_timing);
-  const TimingInfo new_candidate(candidate_new_time, candidate_new_size,
-                                 inout_timing->Type());
-  const TimingInfo& merged_candidate =
+  const ContentfulPaintTimingInfo new_candidate(
+      candidate_new_time, candidate_new_size, inout_timing->Type());
+  const ContentfulPaintTimingInfo& merged_candidate =
       MergeTimingsBySizeAndTime(new_candidate, *inout_timing);
   inout_timing->Reset(merged_candidate.Time(), merged_candidate.Size());
 }
 
 void MergeForSubframes(
-    TimingInfo* inout_timing,
+    ContentfulPaintTimingInfo* inout_timing,
     const base::Optional<base::TimeDelta>& candidate_new_time,
     const uint64_t& candidate_new_size,
     base::TimeDelta navigation_start_offset) {
@@ -68,18 +69,20 @@ bool IsSubframe(content::RenderFrameHost* subframe_rfh) {
 
 }  // namespace
 
-TimingInfo::TimingInfo(PageLoadMetricsObserver::LargestContentType type)
+ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
+    PageLoadMetricsObserver::LargestContentType type)
     : time_(base::Optional<base::TimeDelta>()), size_(0), type_(type) {}
-TimingInfo::TimingInfo(
+ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
     const base::Optional<base::TimeDelta>& time,
     const uint64_t& size,
     const page_load_metrics::PageLoadMetricsObserver::LargestContentType type)
     : time_(time), size_(size), type_(type) {}
 
-TimingInfo::TimingInfo(const TimingInfo& other) = default;
+ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
+    const ContentfulPaintTimingInfo& other) = default;
 
-std::unique_ptr<base::trace_event::TracedValue> TimingInfo::DataAsTraceValue()
-    const {
+std::unique_ptr<base::trace_event::TracedValue>
+ContentfulPaintTimingInfo::DataAsTraceValue() const {
   std::unique_ptr<base::trace_event::TracedValue> data =
       std::make_unique<base::trace_event::TracedValue>();
   data->SetInteger("durationInMilliseconds", time_.value().InMilliseconds());
@@ -88,7 +91,7 @@ std::unique_ptr<base::trace_event::TracedValue> TimingInfo::DataAsTraceValue()
   return data;
 }
 
-std::string TimingInfo::TypeInString() const {
+std::string ContentfulPaintTimingInfo::TypeInString() const {
   switch (Type()) {
     case page_load_metrics::PageLoadMetricsObserver::LargestContentType::kText:
       return "text";
@@ -105,18 +108,18 @@ void LargestContentfulPaintHandler::SetTestMode(bool enabled) {
   g_disable_subframe_navigation_start_offset = enabled;
 }
 
-void TimingInfo::Reset(const base::Optional<base::TimeDelta>& time,
-                       const uint64_t& size) {
+void ContentfulPaintTimingInfo::Reset(
+    const base::Optional<base::TimeDelta>& time,
+    const uint64_t& size) {
   size_ = size;
   time_ = time;
-  DCHECK(HasConsistentTimeAndSize());
 }
 
 ContentfulPaint::ContentfulPaint()
     : text_(PageLoadMetricsObserver::LargestContentType::kText),
       image_(PageLoadMetricsObserver::LargestContentType::kImage) {}
 
-const TimingInfo& ContentfulPaint::MergeTextAndImageTiming() {
+const ContentfulPaintTimingInfo& ContentfulPaint::MergeTextAndImageTiming() {
   return MergeTimingsBySizeAndTime(text_, image_);
 }
 
@@ -144,10 +147,11 @@ void LargestContentfulPaintHandler::RecordTiming(
   RecordSubframeTiming(timing, navigation_start_offset);
 }
 
-const TimingInfo& LargestContentfulPaintHandler::MergeMainFrameAndSubframes() {
-  const TimingInfo& main_frame_timing =
+const ContentfulPaintTimingInfo&
+LargestContentfulPaintHandler::MergeMainFrameAndSubframes() {
+  const ContentfulPaintTimingInfo& main_frame_timing =
       main_frame_contentful_paint_.MergeTextAndImageTiming();
-  const TimingInfo& subframe_timing =
+  const ContentfulPaintTimingInfo& subframe_timing =
       subframe_contentful_paint_.MergeTextAndImageTiming();
   return MergeTimingsBySizeAndTime(main_frame_timing, subframe_timing);
 }

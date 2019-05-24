@@ -303,7 +303,7 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetExperimental_PaintTiming_NavigationToLargestContentPaint(
         largest_content_paint_time.value().InMilliseconds());
   }
-  const page_load_metrics::TimingInfo& paint =
+  const page_load_metrics::ContentfulPaintTimingInfo& paint =
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
   if (!paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
