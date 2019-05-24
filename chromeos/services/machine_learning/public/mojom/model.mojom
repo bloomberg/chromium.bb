@@ -17,12 +17,15 @@ module chromeos.machine_learning.mojom;
 //       between Chromium and Chrome OS versions of this file.
 import "chromeos/services/machine_learning/public/mojom/graph_executor.mojom";
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// ModelIds prefixed with UNSUPPORTED_ are no longer supported. Attempts to load
+// them will produce an error.
 enum ModelId {
-  UNKNOWN = 0,
+  UNSUPPORTED_UNKNOWN = 0,
   TEST_MODEL = 1,
-  SMART_DIM = 2,
-  // Remove kMax and use builtin kMaxValue after Mojo uprev (crbug.com/909719).
-  kMax = SMART_DIM,
+  SMART_DIM_20181115 = 2,
+  SMART_DIM_20190221 = 3,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

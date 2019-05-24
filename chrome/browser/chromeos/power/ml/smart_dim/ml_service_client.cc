@@ -130,7 +130,7 @@ void MlServiceClientImpl::ExecuteCallback(
 void MlServiceClientImpl::InitMlServiceHandlesIfNeeded() {
   if (!model_) {
     // Load the model.
-    ModelSpecPtr spec = ModelSpec::New(ModelId::SMART_DIM);
+    ModelSpecPtr spec = ModelSpec::New(ModelId::SMART_DIM_20181115);
     chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
         std::move(spec), mojo::MakeRequest(&model_),
         base::BindOnce(&MlServiceClientImpl::LoadModelCallback,
