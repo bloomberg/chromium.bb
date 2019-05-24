@@ -476,6 +476,9 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::ApplyCMAAEffectTexture(
     }
     glBindImageTextureEXT(1, dest_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY,
                           GL_RGBA8);
+    // TODO(samans): Investigate why there is an error. https://crbug.com/938597
+    GLenum error = glGetError();
+    DLOG_IF(ERROR, error != GL_NO_ERROR) << "GL ERROR: " << error;
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, working_color_texture_);
