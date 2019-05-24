@@ -240,7 +240,7 @@ void OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
 }
 
 void OriginTrialContext::InitializePendingFeatures() {
-  if (!enabled_features_.size())
+  if (!enabled_features_.size() && !navigation_activated_features_.size())
     return;
   auto* document = DynamicTo<Document>(GetSupplementable());
   if (!document)
@@ -279,8 +279,10 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   if (!RuntimeEnabledFeatures::OriginTrialsEnabled())
     return false;
 
-  if (enabled_features_.Contains(feature))
+  if (enabled_features_.Contains(feature) ||
+      navigation_activated_features_.Contains(feature)) {
     return true;
+  }
 
   // HTML imports do not have a browsing context, see:
   //  - Spec: https://w3c.github.io/webcomponents/spec/imports/#terminology
