@@ -224,12 +224,12 @@ void LocationBarView::Init() {
             autofill::features::kAutofillEnableToolbarStatusChip)) {
       params.types_enabled.push_back(PageActionIconType::kManagePasswords);
     }
-    params.types_enabled.push_back(PageActionIconType::kFind);
     params.types_enabled.push_back(PageActionIconType::kIntentPicker);
-    params.types_enabled.push_back(PageActionIconType::kTranslate);
-    params.types_enabled.push_back(PageActionIconType::kZoom);
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsOmniboxInstall))
       params.types_enabled.push_back(PageActionIconType::kPwaInstall);
+    params.types_enabled.push_back(PageActionIconType::kFind);
+    params.types_enabled.push_back(PageActionIconType::kTranslate);
+    params.types_enabled.push_back(PageActionIconType::kZoom);
     if (send_tab_to_self::IsSendingEnabled())
       params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
   }
