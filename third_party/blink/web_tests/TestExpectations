@@ -5715,7 +5715,3 @@ crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pa
 
 # Sheriff 2019-05-21
 crbug.com/965134 [ Linux ] virtual/mouseevent_fractional/fast/events/pointerevents/multi-touch-events.html [ Failure ]
-
-# Temporarily allow failing to unblock third_party/webrtc from rolling.
-crbug.com/webrtc/10453 external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Pass Failure ]
-crbug.com/webrtc/10453 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Pass Failure ]

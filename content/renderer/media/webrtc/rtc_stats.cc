@@ -35,6 +35,9 @@ class RTCStatsWhitelist {
     whitelisted_stats_types_.insert(webrtc::RTCRTPStreamStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCInboundRTPStreamStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCOutboundRTPStreamStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCMediaSourceStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCAudioSourceStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCVideoSourceStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCTransportStats::kType);
   }
 
