@@ -70,6 +70,8 @@ source_set("popup_ui") {
     "omnibox_popup_view_controller.mm",
     "self_sizing_table_view.h",
     "self_sizing_table_view.mm",
+    "simple_omnibox_icon.h",
+    "simple_omnibox_icon.mm",
   ]
   deps = [
     "resources:omnibox_popup_tab_match",
@@ -82,10 +84,13 @@ source_set("popup_ui") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
+    "//ios/chrome/browser/ui/omnibox:omnibox_suggestion_icon_util",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui_util",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/images",
     "//ui/base",
     "//url",
   ]
@@ -108,8 +113,6 @@ source_set("popup_internal") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/util",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/images",
     "//ios/third_party/material_components_ios",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

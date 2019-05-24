@@ -9,38 +9,9 @@
 
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/security_state/core/security_state.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_suggestion_icon_util.h"
 
 #pragma mark - Suggestion icons.
-
-// All available icons for autocomplete suggestions in the popup.
-enum OmniboxSuggestionIconType {
-  BOOKMARK = 0,
-  CALCULATOR,
-  DEFAULT_FAVICON,
-  HISTORY,
-  SEARCH,
-  CONVERSION,
-  DICTIONARY,
-  STOCK,
-  SUNRISE,
-  LOCAL_TIME,
-  WHEN_IS,
-  TRANSLATION,
-  // The FALLBACK_ANSWER icon is used for all answers that don't have special
-  // icons above.
-  FALLBACK_ANSWER,
-  OMNIBOX_SUGGESTION_ICON_TYPE_COUNT,
-};
-
-// Returns the asset name (to be used in -[UIImage imageNamed:]).
-NSString* GetOmniboxSuggestionIconTypeAssetName(OmniboxSuggestionIconType icon);
-
-// Returns the new asset name (to be used in -[UIImage imageNamed:]).
-NSString* GetOmniboxNewSuggestionIconTypeAssetName(
-    OmniboxSuggestionIconType icon);
-
-// Returns the asset with "always template" rendering mode.
-UIImage* GetOmniboxSuggestionIcon(OmniboxSuggestionIconType icon);
 
 // Converts |type| to the appropriate icon type for this match type to show in
 // the omnibox.

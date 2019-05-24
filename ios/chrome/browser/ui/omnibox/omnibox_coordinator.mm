@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,8 +65,8 @@
   self.viewController =
       [[OmniboxViewController alloc] initWithIncognito:isIncognito];
 
-  self.viewController.defaultLeadingImage =
-      GetOmniboxSuggestionIcon(DEFAULT_FAVICON);
+  self.viewController.defaultLeadingImage = GetOmniboxSuggestionIcon(
+      DEFAULT_FAVICON, base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
   self.viewController.dispatcher =
       static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>>(
           self.dispatcher);

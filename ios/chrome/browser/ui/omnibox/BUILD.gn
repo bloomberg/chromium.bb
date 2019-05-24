@@ -26,12 +26,16 @@ source_set("omnibox_popup_shared") {
   ]
 }
 
-source_set("omnibox_util") {
+# This util file must be separate from the below
+# omnibox_util file because it is used in showcase. This
+# means that its dependencies should be limited, avoiding
+# components code.
+source_set("omnibox_suggestion_icon_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   sources = [
-    "omnibox_util.h",
-    "omnibox_util.mm",
+    "omnibox_suggestion_icon_util.h",
+    "omnibox_suggestion_icon_util.mm",
   ]
   deps = [
     "resources:answer_calculator",
@@ -45,8 +49,28 @@ source_set("omnibox_util") {
     "resources:background_solid",
     "resources:background_stroke",
     "resources:favicon_fallback",
+    "resources:omnibox_completion_bookmark",
+    "resources:omnibox_completion_calculator",
+    "resources:omnibox_completion_default_favicon",
+    "resources:omnibox_completion_history",
+    "resources:omnibox_completion_search",
+    "resources:search",
+    "//base",
+  ]
+}
+
+# See the comment above on omnibox_suggestion_icon_util
+# for why these two targets are separated.
+source_set("omnibox_util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
+    "omnibox_util.h",
+    "omnibox_util.mm",
+  ]
+  deps = [
+    ":omnibox_suggestion_icon_util",
     "resources:omnibox_background",
-    "resources:omnibox_clear_icon",
     "resources:omnibox_completion_bookmark",
     "resources:omnibox_completion_calculator",
     "resources:omnibox_completion_default_favicon",
@@ -91,6 +115,7 @@ source_set("omnibox_internal") {
     ":omnibox",
     ":omnibox_popup_shared",
     ":omnibox_util",
+    "resources:omnibox_clear_icon",
     "resources:omnibox_transparent_background",
     "//base",
     "//components/favicon/ios",

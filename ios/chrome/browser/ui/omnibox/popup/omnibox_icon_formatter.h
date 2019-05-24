@@ -7,19 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon.h"
+#import "ios/chrome/browser/ui/omnibox/popup/simple_omnibox_icon.h"
 
 struct AutocompleteMatch;
 
-@interface OmniboxIconFormatter : NSObject <OmniboxIcon>
+@interface OmniboxIconFormatter : SimpleOmniboxIcon
 
-- (instancetype)initWithMatch:(const AutocompleteMatch&)match
-    NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
-
-// Whether the default search engine is Google impacts which icon is used in
-// some cases
-@property(nonatomic, assign) BOOL defaultSearchEngineIsGoogle;
+- (instancetype)initWithMatch:(const AutocompleteMatch&)match;
 
 @end
 

@@ -15,101 +15,6 @@
 
 #pragma mark - Suggestion icons.
 
-NSString* GetOmniboxSuggestionIconTypeAssetName(
-    OmniboxSuggestionIconType iconType) {
-  switch (iconType) {
-    case BOOKMARK:
-      return @"omnibox_completion_bookmark";
-    case CALCULATOR:
-      return @"omnibox_completion_calculator";
-    case DEFAULT_FAVICON:
-      return @"omnibox_completion_default_favicon";
-    case HISTORY:
-      return @"omnibox_completion_history";
-    case SEARCH:
-      return @"omnibox_completion_search";
-    // These icons should only be used with new omnibox design through
-    // GetOmniboxNewSuggestionIconTypeAssetName()
-    case CONVERSION:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case DICTIONARY:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case STOCK:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case SUNRISE:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case LOCAL_TIME:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case WHEN_IS:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case TRANSLATION:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case FALLBACK_ANSWER:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-  }
-}
-
-NSString* GetOmniboxNewSuggestionIconTypeAssetName(
-    OmniboxSuggestionIconType iconType) {
-  // checking if the "New omnibox popup" flag is being enabled
-  DCHECK(base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
-
-  //(base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
-  switch (iconType) {
-    case BOOKMARK:
-      return @"omnibox_completion_bookmark";
-    case CALCULATOR:
-      return @"answer_calculator";
-    case DEFAULT_FAVICON:
-      return @"favicon_fallback";
-    case HISTORY:
-      return @"omnibox_completion_history";
-    case SEARCH:
-      return @"search";
-    case CONVERSION:
-      return @"answer_conversion";
-    case DICTIONARY:
-      return @"answer_dictionary";
-    case STOCK:
-      return @"answer_stock";
-    case SUNRISE:
-      return @"answer_sunrise";
-    case LOCAL_TIME:
-      return @"answer_local_time";
-    case WHEN_IS:
-      return @"answer_when_is";
-    case TRANSLATION:
-      return @"answer_translation";
-    case FALLBACK_ANSWER:
-      return @"search";
-    case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
-      NOTREACHED();
-      return @"favicon_fallback";
-  }
-}
-
-UIImage* GetOmniboxSuggestionIcon(OmniboxSuggestionIconType iconType) {
-  NSString* imageName = nil;
-  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
-    imageName = GetOmniboxNewSuggestionIconTypeAssetName(iconType);
-  } else {
-    imageName = GetOmniboxSuggestionIconTypeAssetName(iconType);
-  }
-  return [[UIImage imageNamed:imageName]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-}
-
 OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     AutocompleteMatchType::Type type,
     bool is_starred) {
@@ -162,7 +67,8 @@ UIImage* GetOmniboxSuggestionIconForAutocompleteMatchType(
     bool is_starred) {
   OmniboxSuggestionIconType iconType =
       GetOmniboxSuggestionIconTypeForAutocompleteMatchType(type, is_starred);
-  return GetOmniboxSuggestionIcon(iconType);
+  return GetOmniboxSuggestionIcon(
+      iconType, base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
 }
 
 #pragma mark - Security icons.

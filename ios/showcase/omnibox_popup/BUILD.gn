@@ -14,6 +14,7 @@ source_set("omnibox_popup") {
     "sc_omnibox_popup_mediator.mm",
   ]
   deps = [
+    "//ios/chrome/browser/ui/omnibox:omnibox_suggestion_icon_util",
     "//ios/chrome/browser/ui/omnibox/popup:popup_ui",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/util",
