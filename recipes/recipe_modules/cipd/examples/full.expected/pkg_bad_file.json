@@ -303,12 +303,12 @@
       "    self.files.append(self._rel_path(file_path))",
       "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/cipd/api.py\", line 81, in _rel_path",
       "    (path, self.package_root))",
-      "ValueError: path Path('start_dir', 'a','path','to','file.py') is not the package root Path('start_dir', 'some_subdir') and not a child thereof"
+      "ValueError: path Path([START_DIR], 'a', 'path', 'to', 'file.py') is not the package root Path([START_DIR], 'some_subdir') and not a child thereof"
     ]
   },
   {
     "failure": {
-      "humanReason": "Uncaught Exception: ValueError(\"path Path('start_dir', 'a','path','to','file.py') is not the package root Path('start_dir', 'some_subdir') and not a child thereof\",)"
+      "humanReason": "Uncaught Exception: ValueError(\"path Path([START_DIR], 'a', 'path', 'to', 'file.py') is not the package root Path([START_DIR], 'some_subdir') and not a child thereof\",)"
     },
     "name": "$result"
   }
