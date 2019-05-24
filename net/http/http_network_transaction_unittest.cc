@@ -20893,4 +20893,220 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolation) {
   }
 }
 
+TEST_F(HttpNetworkTransactionTest, NetworkIsolationH2) {
+  NetworkIsolationKey network_isolation_key1(
+      url::Origin::Create(GURL("http://origin1/")));
+  NetworkIsolationKey network_isolation_key2(
+      url::Origin::Create(GURL("http://origin2/")));
+
+  // Whether to use an H2 proxy. When false, uses HTTPS H2 requests without a
+  // proxy, when true, uses HTTP requests over an H2 proxy. It's unnecessary to
+  // test tunneled HTTPS over an H2 proxy, since that path sets up H2 sessions
+  // the same way as the HTTP over H2 proxy case.
+  for (bool use_proxy : {false, true}) {
+    SCOPED_TRACE(use_proxy);
+    if (use_proxy) {
+      session_deps_.proxy_resolution_service =
+          ProxyResolutionService::CreateFixedFromPacResult(
+              "HTTPS proxy:443", TRAFFIC_ANNOTATION_FOR_TESTS);
+    } else {
+      session_deps_.proxy_resolution_service =
+          ProxyResolutionService::CreateDirect();
+    }
+    const char* url1 = nullptr;
+    const char* url2 = nullptr;
+    const char* url3 = nullptr;
+    if (use_proxy) {
+      url1 = "http://foo.test/1";
+      url2 = "http://foo.test/2";
+      url3 = "http://foo.test/3";
+    } else {
+      url1 = "https://foo.test/1";
+      url2 = "https://foo.test/2";
+      url3 = "https://foo.test/3";
+    }
+
+    for (bool partition_connections : {false, true}) {
+      SCOPED_TRACE(partition_connections);
+
+      base::test::ScopedFeatureList feature_list;
+      if (partition_connections) {
+        feature_list.InitAndEnableFeature(
+            features::kPartitionConnectionsByNetworkIsolationKey);
+      } else {
+        feature_list.InitAndDisableFeature(
+            features::kPartitionConnectionsByNetworkIsolationKey);
+      }
+
+      std::unique_ptr<HttpNetworkSession> session(
+          CreateSession(&session_deps_));
+
+      // Reads and writes for the unpartitioned case, where only one socket is
+      // used.
+
+      SpdyTestUtil spdy_util;
+      spdy::SpdySerializedFrame unpartitioned_req1(
+          spdy_util.ConstructSpdyGet(url1, 1, LOWEST));
+      spdy::SpdySerializedFrame unpartitioned_response1(
+          spdy_util.ConstructSpdyGetReply(nullptr, 0, 1));
+      spdy::SpdySerializedFrame unpartitioned_body1(
+          spdy_util.ConstructSpdyDataFrame(1, "1", true));
+      spdy_util.UpdateWithStreamDestruction(1);
+
+      spdy::SpdySerializedFrame unpartitioned_req2(
+          spdy_util.ConstructSpdyGet(url2, 3, LOWEST));
+      spdy::SpdySerializedFrame unpartitioned_response2(
+          spdy_util.ConstructSpdyGetReply(nullptr, 0, 3));
+      spdy::SpdySerializedFrame unpartitioned_body2(
+          spdy_util.ConstructSpdyDataFrame(3, "2", true));
+      spdy_util.UpdateWithStreamDestruction(3);
+
+      spdy::SpdySerializedFrame unpartitioned_req3(
+          spdy_util.ConstructSpdyGet(url3, 5, LOWEST));
+      spdy::SpdySerializedFrame unpartitioned_response3(
+          spdy_util.ConstructSpdyGetReply(nullptr, 0, 5));
+      spdy::SpdySerializedFrame unpartitioned_body3(
+          spdy_util.ConstructSpdyDataFrame(5, "3", true));
+
+      const MockWrite kUnpartitionedWrites[] = {
+          CreateMockWrite(unpartitioned_req1, 0),
+          CreateMockWrite(unpartitioned_req2, 3),
+          CreateMockWrite(unpartitioned_req3, 6),
+      };
+
+      const MockRead kUnpartitionedReads[] = {
+          CreateMockRead(unpartitioned_response1, 1),
+          CreateMockRead(unpartitioned_body1, 2),
+          CreateMockRead(unpartitioned_response2, 4),
+          CreateMockRead(unpartitioned_body2, 5),
+          CreateMockRead(unpartitioned_response3, 7),
+          CreateMockRead(unpartitioned_body3, 8),
+          MockRead(SYNCHRONOUS, ERR_IO_PENDING, 9),
+      };
+
+      SequencedSocketData unpartitioned_data(kUnpartitionedReads,
+                                             kUnpartitionedWrites);
+
+      // Reads and writes for the partitioned case, where two sockets are used.
+
+      SpdyTestUtil spdy_util2;
+      spdy::SpdySerializedFrame partitioned_req1(
+          spdy_util2.ConstructSpdyGet(url1, 1, LOWEST));
+      spdy::SpdySerializedFrame partitioned_response1(
+          spdy_util2.ConstructSpdyGetReply(nullptr, 0, 1));
+      spdy::SpdySerializedFrame partitioned_body1(
+          spdy_util2.ConstructSpdyDataFrame(1, "1", true));
+      spdy_util2.UpdateWithStreamDestruction(1);
+
+      spdy::SpdySerializedFrame partitioned_req3(
+          spdy_util2.ConstructSpdyGet(url3, 3, LOWEST));
+      spdy::SpdySerializedFrame partitioned_response3(
+          spdy_util2.ConstructSpdyGetReply(nullptr, 0, 3));
+      spdy::SpdySerializedFrame partitioned_body3(
+          spdy_util2.ConstructSpdyDataFrame(3, "3", true));
+
+      const MockWrite kPartitionedWrites1[] = {
+          CreateMockWrite(partitioned_req1, 0),
+          CreateMockWrite(partitioned_req3, 3),
+      };
+
+      const MockRead kPartitionedReads1[] = {
+          CreateMockRead(partitioned_response1, 1),
+          CreateMockRead(partitioned_body1, 2),
+          CreateMockRead(partitioned_response3, 4),
+          CreateMockRead(partitioned_body3, 5),
+          MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
+      };
+
+      SpdyTestUtil spdy_util3;
+      spdy::SpdySerializedFrame partitioned_req2(
+          spdy_util3.ConstructSpdyGet(url2, 1, LOWEST));
+      spdy::SpdySerializedFrame partitioned_response2(
+          spdy_util3.ConstructSpdyGetReply(nullptr, 0, 1));
+      spdy::SpdySerializedFrame partitioned_body2(
+          spdy_util3.ConstructSpdyDataFrame(1, "2", true));
+
+      const MockWrite kPartitionedWrites2[] = {
+          CreateMockWrite(partitioned_req2, 0),
+      };
+
+      const MockRead kPartitionedReads2[] = {
+          CreateMockRead(partitioned_response2, 1),
+          CreateMockRead(partitioned_body2, 2),
+          MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3),
+      };
+
+      SequencedSocketData partitioned_data1(kPartitionedReads1,
+                                            kPartitionedWrites1);
+      SequencedSocketData partitioned_data2(kPartitionedReads2,
+                                            kPartitionedWrites2);
+
+      // No need to segment SSLDataProviders by whether or not partitioning is
+      // enabled.
+      SSLSocketDataProvider ssl_data1(ASYNC, OK);
+      ssl_data1.next_proto = kProtoHTTP2;
+      SSLSocketDataProvider ssl_data2(ASYNC, OK);
+      ssl_data2.next_proto = kProtoHTTP2;
+
+      if (partition_connections) {
+        session_deps_.socket_factory->AddSocketDataProvider(&partitioned_data1);
+        session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
+        session_deps_.socket_factory->AddSocketDataProvider(&partitioned_data2);
+        session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data2);
+      } else {
+        session_deps_.socket_factory->AddSocketDataProvider(
+            &unpartitioned_data);
+        session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
+      }
+
+      TestCompletionCallback callback;
+      HttpRequestInfo request1;
+      request1.method = "GET";
+      request1.url = GURL(url1);
+      request1.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+      request1.network_isolation_key = network_isolation_key1;
+      auto trans1 =
+          std::make_unique<HttpNetworkTransaction>(LOWEST, session.get());
+      int rv =
+          trans1->Start(&request1, callback.callback(), NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+      std::string response_data1;
+      EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
+      EXPECT_EQ("1", response_data1);
+      trans1.reset();
+
+      HttpRequestInfo request2;
+      request2.method = "GET";
+      request2.url = GURL(url2);
+      request2.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+      request2.network_isolation_key = network_isolation_key2;
+      auto trans2 =
+          std::make_unique<HttpNetworkTransaction>(LOWEST, session.get());
+      rv = trans2->Start(&request2, callback.callback(), NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+      std::string response_data2;
+      EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
+      EXPECT_EQ("2", response_data2);
+      trans2.reset();
+
+      HttpRequestInfo request3;
+      request3.method = "GET";
+      request3.url = GURL(url3);
+      request3.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+      request3.network_isolation_key = network_isolation_key1;
+      auto trans3 =
+          std::make_unique<HttpNetworkTransaction>(LOWEST, session.get());
+      rv = trans3->Start(&request3, callback.callback(), NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+      std::string response_data3;
+      EXPECT_THAT(ReadTransaction(trans3.get(), &response_data3), IsOk());
+      EXPECT_EQ("3", response_data3);
+      trans3.reset();
+    }
+  }
+}
+
 }  // namespace net

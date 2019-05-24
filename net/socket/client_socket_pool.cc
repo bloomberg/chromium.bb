@@ -168,14 +168,16 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
         &OnHostResolution, common_connect_job_params->spdy_session_pool,
         SpdySessionKey(group_id.destination(), proxy_server,
                        group_id.privacy_mode(),
-                       SpdySessionKey::IsProxySession::kFalse, socket_tag),
+                       SpdySessionKey::IsProxySession::kFalse, socket_tag,
+                       group_id.network_isolation_key()),
         is_for_websockets);
   } else if (proxy_server.is_https()) {
     resolution_callback = base::BindRepeating(
         &OnHostResolution, common_connect_job_params->spdy_session_pool,
         SpdySessionKey(proxy_server.host_port_pair(), ProxyServer::Direct(),
                        group_id.privacy_mode(),
-                       SpdySessionKey::IsProxySession::kTrue, socket_tag),
+                       SpdySessionKey::IsProxySession::kTrue, socket_tag,
+                       group_id.network_isolation_key()),
         is_for_websockets);
   }
 
@@ -184,7 +186,8 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
       socket_params->ssl_config_for_origin(),
       socket_params->ssl_config_for_proxy(), is_for_websockets,
       group_id.privacy_mode(), resolution_callback, request_priority,
-      socket_tag, common_connect_job_params, delegate);
+      socket_tag, group_id.network_isolation_key(), common_connect_job_params,
+      delegate);
 }
 
 }  // namespace net

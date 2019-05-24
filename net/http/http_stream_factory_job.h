@@ -334,11 +334,13 @@ class HttpStreamFactory::Job
                               bool using_ssl);
 
   // Called in Job constructor. Use |spdy_session_key_| after construction.
-  static SpdySessionKey GetSpdySessionKey(bool spdy_session_direct,
-                                          const ProxyServer& proxy_server,
-                                          const GURL& origin_url,
-                                          PrivacyMode privacy_mode,
-                                          const SocketTag& socket_tag);
+  static SpdySessionKey GetSpdySessionKey(
+      bool spdy_session_direct,
+      const ProxyServer& proxy_server,
+      const GURL& origin_url,
+      PrivacyMode privacy_mode,
+      const SocketTag& socket_tag,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Returns true if the current request can use an existing spdy session.
   bool CanUseExistingSpdySession() const;

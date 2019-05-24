@@ -110,6 +110,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
     const OnHostResolutionCallback& resolution_callback,
     RequestPriority request_priority,
     SocketTag socket_tag,
+    const NetworkIsolationKey& network_isolation_key,
     const CommonConnectJobParams* common_connect_job_params,
     ConnectJob::Delegate* delegate) {
   scoped_refptr<HttpProxySocketParams> http_proxy_params;
@@ -135,7 +136,8 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
       http_proxy_params = base::MakeRefCounted<HttpProxySocketParams>(
           std::move(proxy_tcp_params), std::move(ssl_params),
           proxy_server.is_quic(), endpoint, proxy_server.is_trusted_proxy(),
-          force_tunnel || using_ssl, *proxy_annotation_tag);
+          force_tunnel || using_ssl, *proxy_annotation_tag,
+          network_isolation_key);
     } else {
       DCHECK(proxy_server.is_socks());
       socks_params = base::MakeRefCounted<SOCKSSocketParams>(

@@ -38,6 +38,7 @@ class HttpResponseInfo;
 class HttpUserAgentSettings;
 class NetLog;
 class NetLogWithSource;
+class NetworkIsolationKey;
 class NetworkQualityEstimator;
 struct NetworkTrafficAnnotationTag;
 class ProxyDelegate;
@@ -188,6 +189,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
       const OnHostResolutionCallback& resolution_callback,
       RequestPriority request_priority,
       SocketTag socket_tag,
+      const NetworkIsolationKey& network_isolation_key,
       const CommonConnectJobParams* common_connect_job_params,
       ConnectJob::Delegate* delegate);
 

@@ -6,6 +6,7 @@
 #define NET_SPDY_SPDY_SESSION_KEY_H_
 
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/socket/socket_tag.h"
@@ -26,11 +27,16 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
     kTrue,
   };
   SpdySessionKey();
-  SpdySessionKey(const HostPortPair& host_port_pair,
-                 const ProxyServer& proxy_server,
-                 PrivacyMode privacy_mode,
-                 IsProxySession is_proxy_session,
-                 const SocketTag& socket_tag);
+
+  // TODO(mmenke): Remove default |network_isolation_key| value (only used by
+  // tests).
+  SpdySessionKey(
+      const HostPortPair& host_port_pair,
+      const ProxyServer& proxy_server,
+      PrivacyMode privacy_mode,
+      IsProxySession is_proxy_session,
+      const SocketTag& socket_tag,
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
 
   SpdySessionKey(const SpdySessionKey& other);
 
@@ -63,6 +69,10 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
 
   const SocketTag& socket_tag() const { return socket_tag_; }
 
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
+
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
@@ -72,6 +82,8 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
   PrivacyMode privacy_mode_ = PRIVACY_MODE_DISABLED;
   IsProxySession is_proxy_session_;
   SocketTag socket_tag_;
+  // Used to separate requests made in different contexts.
+  NetworkIsolationKey network_isolation_key_;
 };
 
 }  // namespace net

@@ -17,6 +17,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
@@ -282,13 +283,18 @@ int ProxyResolvingClientSocket::DoInitConnection() {
           : base::Optional<net::NetworkTrafficAnnotationTag>(
                 proxy_info_.traffic_annotation());
 
-  // Now that the proxy is resolved, create and start a ConnectJob.
+  // Now that the proxy is resolved, create and start a ConnectJob. Using an
+  // empty NetworkIsolationKey means that tunnels over H2 or QUIC proxies will
+  // be shared, which may result in privacy leaks, depending on the nature of
+  // the consumer.
+  //
+  // TODO(mmenke): Investigate that.
   connect_job_ = net::ConnectJob::CreateConnectJob(
       use_tls_, net::HostPortPair::FromURL(url_), proxy_info_.proxy_server(),
       proxy_annotation_tag, &ssl_config_, &ssl_config_, true /* force_tunnel */,
       net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
-      net::MAXIMUM_PRIORITY, net::SocketTag(), common_connect_job_params_,
-      this);
+      net::MAXIMUM_PRIORITY, net::SocketTag(), net::NetworkIsolationKey(),
+      common_connect_job_params_, this);
   return connect_job_->Connect();
 }
 

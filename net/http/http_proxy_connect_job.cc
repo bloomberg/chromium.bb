@@ -136,13 +136,15 @@ HttpProxySocketParams::HttpProxySocketParams(
     const HostPortPair& endpoint,
     bool is_trusted_proxy,
     bool tunnel,
-    const NetworkTrafficAnnotationTag traffic_annotation)
+    const NetworkTrafficAnnotationTag traffic_annotation,
+    const NetworkIsolationKey& network_isolation_key)
     : transport_params_(std::move(transport_params)),
       ssl_params_(std::move(ssl_params)),
       is_quic_(is_quic),
       endpoint_(endpoint),
       is_trusted_proxy_(is_trusted_proxy),
       tunnel_(tunnel),
+      network_isolation_key_(network_isolation_key),
       traffic_annotation_(traffic_annotation) {
   // This is either a connection to an HTTP proxy or an SSL/QUIC proxy.
   DCHECK(transport_params_ || ssl_params_);
@@ -460,12 +462,8 @@ int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
 int HttpProxyConnectJob::DoSSLConnect() {
   DCHECK(params_->ssl_params());
   if (params_->tunnel()) {
-    SpdySessionKey key(
-        params_->ssl_params()->GetDirectConnectionParams()->destination(),
-        ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-        SpdySessionKey::IsProxySession::kTrue, socket_tag());
     if (common_connect_job_params()->spdy_session_pool->FindAvailableSession(
-            key, /* enable_ip_based_pooling = */ false,
+            CreateSpdySessionKey(), /* enable_ip_based_pooling = */ false,
             /* is_websocket = */ false, net_log())) {
       using_spdy_ = true;
       next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
@@ -587,10 +585,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   // longer to timeout than it should.
   ResetTimer(kHttpProxyConnectJobTunnelTimeout);
 
-  SpdySessionKey key(
-      params_->ssl_params()->GetDirectConnectionParams()->destination(),
-      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-      SpdySessionKey::IsProxySession::kTrue, socket_tag());
+  SpdySessionKey key = CreateSpdySessionKey();
   base::WeakPtr<SpdySession> spdy_session =
       common_connect_job_params()->spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ false,
@@ -818,6 +813,14 @@ std::string HttpProxyConnectJob::GetUserAgent() const {
   if (!http_user_agent_settings())
     return std::string();
   return http_user_agent_settings()->GetUserAgent();
+}
+
+SpdySessionKey HttpProxyConnectJob::CreateSpdySessionKey() const {
+  return SpdySessionKey(
+      params_->ssl_params()->GetDirectConnectionParams()->destination(),
+      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+      SpdySessionKey::IsProxySession::kTrue, socket_tag(),
+      params_->network_isolation_key());
 }
 
 }  // namespace net
