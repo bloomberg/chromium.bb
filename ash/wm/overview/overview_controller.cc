@@ -433,7 +433,7 @@ void OverviewController::ResetPauser() {
 }
 
 bool OverviewController::IsSelecting() const {
-  return overview_session_ != nullptr;
+  return overview_session_ && !overview_session_->is_shutting_down();
 }
 
 bool OverviewController::IsCompletingShutdownAnimations() {
@@ -595,6 +595,7 @@ void OverviewController::OnSelectionEnded() {
   start_animations_.clear();
 
   auto* overview_session = overview_session_.release();
+  overview_session->set_is_shutting_down(true);
   // Do not show mask and show during overview shutdown.
   overview_session->UpdateMaskAndShadow();
 
@@ -633,14 +634,14 @@ void OverviewController::RemoveAndDestroyExitAnimationObserver(
 void OverviewController::OnWindowActivating(ActivationReason reason,
                                             aura::Window* gained_active,
                                             aura::Window* lost_active) {
-  if (overview_session_)
+  if (IsSelecting())
     overview_session_->OnWindowActivating(reason, gained_active, lost_active);
 }
 
 void OverviewController::OnAttemptToReactivateWindow(
     aura::Window* request_active,
     aura::Window* actual_active) {
-  if (overview_session_) {
+  if (IsSelecting()) {
     overview_session_->OnWindowActivating(
         ::wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
         request_active, actual_active);

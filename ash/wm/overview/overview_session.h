@@ -256,6 +256,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   OverviewDelegate* delegate() { return delegate_; }
 
+  bool is_shutting_down() const { return is_shutting_down_; }
+  void set_is_shutting_down(bool is_shutting_down) {
+    is_shutting_down_ = is_shutting_down;
+  }
+
   SplitViewDragIndicators* split_view_drag_indicators() {
     return split_view_drag_indicators_.get();
   }
@@ -333,6 +338,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // used to prevent handling the resulting expected activation. This is
   // initially true until this is initialized.
   bool ignore_activations_ = true;
+
+  // True when overview mode is exiting.
+  bool is_shutting_down_ = false;
 
   // List of all the window overview grids, one for each root window.
   std::vector<std::unique_ptr<OverviewGrid>> grid_list_;
