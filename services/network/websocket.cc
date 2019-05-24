@@ -147,7 +147,7 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   impl_->handshake_succeeded_ = true;
   impl_->pending_connection_tracker_.OnCompleteHandshake();
 
-  impl_->handshake_client_->OnAddChannelResponse(selected_protocol, extensions);
+  impl_->client_->OnAddChannelResponse(selected_protocol, extensions);
 }
 
 void WebSocket::WebSocketEventHandler::OnDataFrame(
@@ -238,7 +238,7 @@ void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
   headers_text.append("\r\n");
   request_to_pass->headers_text = std::move(headers_text);
 
-  impl_->handshake_client_->OnStartOpeningHandshake(std::move(request_to_pass));
+  impl_->client_->OnStartOpeningHandshake(std::move(request_to_pass));
 }
 
 void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
@@ -272,8 +272,7 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   headers_text.append("\r\n");
   response_to_pass->headers_text = headers_text;
 
-  impl_->handshake_client_->OnFinishOpeningHandshake(
-      std::move(response_to_pass));
+  impl_->client_->OnFinishOpeningHandshake(std::move(response_to_pass));
 }
 
 void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
@@ -361,7 +360,6 @@ void WebSocket::AddChannelRequest(
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
-    mojom::WebSocketHandshakeClientPtr handshake_client,
     mojom::WebSocketClientPtr client) {
   DVLOG(3) << "WebSocket::AddChannelRequest @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
@@ -374,7 +372,6 @@ void WebSocket::AddChannelRequest(
     return;
   }
 
-  handshake_client_ = std::move(handshake_client);
   client_ = std::move(client);
 
   DCHECK(!channel_);
@@ -449,9 +446,8 @@ void WebSocket::StartClosingHandshake(uint16_t code,
   if (!channel_) {
     // WebSocketChannel is not yet created due to the delay introduced by
     // per-renderer WebSocket throttling.
-    if (client_) {
+    if (client_)
       client_->OnDropChannel(false, net::kWebSocketErrorAbnormalClosure, "");
-    }
     return;
   }
 

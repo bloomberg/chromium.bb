@@ -36,7 +36,7 @@ namespace extensions {
 class WebRequestProxyingWebSocket
     : public WebRequestAPI::Proxy,
       public network::mojom::WebSocket,
-      public network::mojom::WebSocketHandshakeClient,
+      public network::mojom::WebSocketClient,
       public network::mojom::AuthenticationHandler,
       public network::mojom::TrustedHeaderClient {
  public:
@@ -61,7 +61,6 @@ class WebRequestProxyingWebSocket
       const std::vector<std::string>& requested_protocols,
       const GURL& site_for_cookies,
       std::vector<network::mojom::HttpHeaderPtr> additional_headers,
-      network::mojom::WebSocketHandshakeClientPtr handshake_client,
       network::mojom::WebSocketClientPtr client) override;
   void SendFrame(bool fin,
                  network::mojom::WebSocketMessageType type,
@@ -69,13 +68,22 @@ class WebRequestProxyingWebSocket
   void SendFlowControl(int64_t quota) override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
-  // mojom::WebSocketHandShakeClient methods:
+  // mojom::WebSocketClient methods:
+  void OnFailChannel(const std::string& reason) override;
   void OnStartOpeningHandshake(
       network::mojom::WebSocketHandshakeRequestPtr request) override;
   void OnFinishOpeningHandshake(
       network::mojom::WebSocketHandshakeResponsePtr response) override;
   void OnAddChannelResponse(const std::string& selected_protocol,
                             const std::string& extensions) override;
+  void OnDataFrame(bool fin,
+                   network::mojom::WebSocketMessageType type,
+                   const std::vector<uint8_t>& data) override;
+  void OnFlowControl(int64_t quota) override;
+  void OnDropChannel(bool was_clean,
+                     uint16_t code,
+                     const std::string& reason) override;
+  void OnClosingHandshake() override;
 
   // mojom::AuthenticationHandler method:
   void OnAuthRequired(const net::AuthChallengeInfo& auth_info,
@@ -126,10 +134,9 @@ class WebRequestProxyingWebSocket
   InfoMap* const info_map_;
   scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator_;
   network::mojom::WebSocketPtr proxied_socket_;
-  network::mojom::WebSocketHandshakeClientPtr forwarding_handshake_client_;
   network::mojom::WebSocketClientPtr forwarding_client_;
   mojo::Binding<network::mojom::WebSocket> binding_as_websocket_;
-  mojo::Binding<network::mojom::WebSocketHandshakeClient> binding_as_client_;
+  mojo::Binding<network::mojom::WebSocketClient> binding_as_client_;
   mojo::Binding<network::mojom::AuthenticationHandler> binding_as_auth_handler_;
   mojo::Binding<network::mojom::TrustedHeaderClient> binding_as_header_client_;
 

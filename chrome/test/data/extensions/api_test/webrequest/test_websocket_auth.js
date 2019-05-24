@@ -80,7 +80,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               ip: '127.0.0.1',
               fromCache: false,
-              error: 'net::ERR_FAILED',
+              error: 'net::ERR_ABORTED',
               initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
@@ -169,7 +169,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               ip: '127.0.0.1',
               fromCache: false,
-              error: 'net::ERR_FAILED',
+              error: 'net::ERR_ABORTED',
               initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
@@ -257,7 +257,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               ip: '127.0.0.1',
               fromCache: false,
-              error: 'net::ERR_FAILED',
+              error: 'net::ERR_ABORTED',
               initiator: getDomain(initiators.WEB_INITIATED)
             }
           },

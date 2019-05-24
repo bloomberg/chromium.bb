@@ -38,10 +38,8 @@
 
 namespace blink {
 
-class WebSocketHandleImpl
-    : public WebSocketHandle,
-      public network::mojom::blink::WebSocketHandshakeClient,
-      public network::mojom::blink::WebSocketClient {
+class WebSocketHandleImpl : public WebSocketHandle,
+                            public network::mojom::blink::WebSocketClient {
  public:
   WebSocketHandleImpl();
   ~WebSocketHandleImpl() override;
@@ -59,17 +57,16 @@ class WebSocketHandleImpl
 
  private:
   void Disconnect();
-  void OnConnectionError(uint32_t custom_reason,
-                         const std::string& description);
+  void OnConnectionError();
 
-  // network::mojom::blink::WebSocketHandshakeClient methods:
+  // network::mojom::blink::WebSocketClient methods:
+  void OnFailChannel(const String& reason) override;
   void OnStartOpeningHandshake(
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
   void OnFinishOpeningHandshake(
       network::mojom::blink::WebSocketHandshakeResponsePtr) override;
   void OnAddChannelResponse(const String& selected_protocol,
                             const String& extensions) override;
-  // network::mojom::blink::WebSocketClient methods:
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,
                    const Vector<uint8_t>& data) override;
@@ -78,13 +75,10 @@ class WebSocketHandleImpl
                      uint16_t code,
                      const String& reason) override;
   void OnClosingHandshake() override;
-  void OnFailChannel(const String& reason) override;
 
   WebSocketHandleClient* client_;
 
   network::mojom::blink::WebSocketPtr websocket_;
-  mojo::Binding<network::mojom::blink::WebSocketHandshakeClient>
-      handshake_client_binding_;
   mojo::Binding<network::mojom::blink::WebSocketClient> client_binding_;
 };
 
