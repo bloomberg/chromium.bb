@@ -380,14 +380,12 @@ static void setup_frame(AV1_COMP *cpi) {
 static void enc_setup_mi(AV1_COMMON *cm) {
   int i;
   int mi_rows_sb_aligned = calc_mi_size(cm->mi_rows);
-  cm->mi = cm->mip;
-  memset(cm->mip, 0, cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mip));
-  cm->prev_mi = cm->prev_mip;
+  memset(cm->mi, 0, cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mi));
   // Clear top border row
-  memset(cm->prev_mip, 0, sizeof(*cm->prev_mip) * cm->mi_stride);
+  memset(cm->prev_mi, 0, sizeof(*cm->prev_mi) * cm->mi_stride);
   // Clear left border column
   for (i = 0; i < mi_rows_sb_aligned; ++i)
-    memset(&cm->prev_mip[i * cm->mi_stride], 0, sizeof(*cm->prev_mip));
+    memset(&cm->prev_mi[i * cm->mi_stride], 0, sizeof(*cm->prev_mi));
   cm->mi_grid_visible = cm->mi_grid_base;
   cm->prev_mi_grid_visible = cm->prev_mi_grid_base;
 
@@ -396,10 +394,10 @@ static void enc_setup_mi(AV1_COMMON *cm) {
 }
 
 static int enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
-  cm->mip = aom_calloc(mi_size, sizeof(*cm->mip));
-  if (!cm->mip) return 1;
-  cm->prev_mip = aom_calloc(mi_size, sizeof(*cm->prev_mip));
-  if (!cm->prev_mip) return 1;
+  cm->mi = aom_calloc(mi_size, sizeof(*cm->mi));
+  if (!cm->mi) return 1;
+  cm->prev_mi = aom_calloc(mi_size, sizeof(*cm->prev_mi));
+  if (!cm->prev_mi) return 1;
   cm->mi_alloc_size = mi_size;
 
   cm->mi_grid_base =
@@ -413,10 +411,10 @@ static int enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
 }
 
 static void enc_free_mi(AV1_COMMON *cm) {
-  aom_free(cm->mip);
-  cm->mip = NULL;
-  aom_free(cm->prev_mip);
-  cm->prev_mip = NULL;
+  aom_free(cm->mi);
+  cm->mi = NULL;
+  aom_free(cm->prev_mi);
+  cm->prev_mi = NULL;
   aom_free(cm->mi_grid_base);
   cm->mi_grid_base = NULL;
   aom_free(cm->prev_mi_grid_base);
@@ -425,16 +423,13 @@ static void enc_free_mi(AV1_COMMON *cm) {
 }
 
 static void swap_mi_and_prev_mi(AV1_COMMON *cm) {
-  // Current mip will be the prev_mip for the next frame.
+  // Current mi will be the prev_mi for the next frame.
   MB_MODE_INFO **temp_base = cm->prev_mi_grid_base;
-  MB_MODE_INFO *temp = cm->prev_mip;
-  cm->prev_mip = cm->mip;
-  cm->mip = temp;
+  MB_MODE_INFO *temp = cm->prev_mi;
+  cm->prev_mi = cm->mi;
+  cm->mi = temp;
 
   // Update the upper left visible macroblock ptrs.
-  cm->mi = cm->mip;
-  cm->prev_mi = cm->prev_mip;
-
   cm->prev_mi_grid_base = cm->mi_grid_base;
   cm->mi_grid_base = temp_base;
   cm->mi_grid_visible = cm->mi_grid_base;

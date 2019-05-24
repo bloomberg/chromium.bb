@@ -46,15 +46,14 @@ static void initialize_dec(void) {
 }
 
 static void dec_setup_mi(AV1_COMMON *cm) {
-  cm->mi = cm->mip;
   cm->mi_grid_visible = cm->mi_grid_base;
   memset(cm->mi_grid_base, 0,
          cm->mi_stride * cm->mi_rows * sizeof(*cm->mi_grid_base));
 }
 
 static int dec_alloc_mi(AV1_COMMON *cm, int mi_size) {
-  cm->mip = aom_calloc(mi_size, sizeof(*cm->mip));
-  if (!cm->mip) return 1;
+  cm->mi = aom_calloc(mi_size, sizeof(*cm->mi));
+  if (!cm->mi) return 1;
   cm->mi_alloc_size = mi_size;
   cm->mi_grid_base =
       (MB_MODE_INFO **)aom_calloc(mi_size, sizeof(MB_MODE_INFO *));
@@ -63,8 +62,8 @@ static int dec_alloc_mi(AV1_COMMON *cm, int mi_size) {
 }
 
 static void dec_free_mi(AV1_COMMON *cm) {
-  aom_free(cm->mip);
-  cm->mip = NULL;
+  aom_free(cm->mi);
+  cm->mi = NULL;
   aom_free(cm->mi_grid_base);
   cm->mi_grid_base = NULL;
   cm->mi_alloc_size = 0;

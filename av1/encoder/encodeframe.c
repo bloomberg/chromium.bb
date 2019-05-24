@@ -4572,10 +4572,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   memcpy(cm->cur_frame->ref_deltas, cm->lf.ref_deltas, REF_FRAMES);
   memcpy(cm->cur_frame->mode_deltas, cm->lf.mode_deltas, MAX_MODE_LF_DELTAS);
 
-  // Special case: set prev_mi to NULL when the previous mode info
-  // context cannot be used.
-  cm->prev_mi = cm->allow_ref_frame_mvs ? cm->prev_mip : NULL;
-
   x->txb_split_count = 0;
 #if CONFIG_SPEED_STATS
   x->tx_search_count = 0;
