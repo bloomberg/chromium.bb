@@ -203,8 +203,12 @@ enum class TaskType : unsigned char {
   // Task used for ContentCapture.
   kInternalContentCapture = 61,
 
-  // Task used for Navigations.
-  kInternalNavigation = 63,
+  // Navigation tasks and tasks which have to run in order with them, including
+  // legacy IPCs and channel associated interfaces.
+  // Note that the ordering between tasks related to different frames is not
+  // always guaranteed - tasks belonging to different frames can be reordered
+  // when one of the frames is frozen.
+  kInternalNavigationAssociated = 63,
 
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.

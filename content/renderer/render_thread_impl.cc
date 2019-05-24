@@ -1069,6 +1069,10 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
   if (!frame)
     return;
 
+  GetChannel()->AddListenerTaskRunner(
+      routing_id,
+      frame->GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
+
   scoped_refptr<PendingFrameCreate> create(it->second);
   frame->BindFrame(it->second->browser_info(), it->second->TakeFrameRequest());
   pending_frame_creates_.erase(it);
@@ -1076,6 +1080,7 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
 
 void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
   ChildThreadImpl::GetRouter()->RemoveRoute(routing_id);
+  GetChannel()->RemoveListenerTaskRunner(routing_id);
 }
 
 void RenderThreadImpl::RegisterPendingFrameCreate(

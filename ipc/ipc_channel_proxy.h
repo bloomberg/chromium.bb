@@ -263,7 +263,7 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
     }
 
     scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner() {
-      return listener_task_runner_;
+      return default_listener_task_runner_;
     }
 
     // Dispatches a message on the listener thread.
@@ -271,6 +271,18 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
 
     // Sends |message| from appropriate thread.
     void Send(Message* message, const char* debug_name);
+
+    // Adds |task_runner| for the task to be executed later.
+    void AddListenerTaskRunner(
+        int32_t routing_id,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+    // Removes task runner for |routing_id|.
+    void RemoveListenerTaskRunner(int32_t routing_id);
+
+    // Called on the IPC::Channel thread.
+    // Returns the task runner associated with |routing_id|.
+    base::SingleThreadTaskRunner* GetTaskRunner(int32_t routing_id);
 
    protected:
     friend class base::RefCountedThreadSafe<Context>;
@@ -336,7 +348,13 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
         const std::string& name,
         const GenericAssociatedInterfaceFactory& factory);
 
-    scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;
+    base::Lock listener_thread_task_runners_lock_;
+    // Map of routing_id and listener's thread task runner.
+    std::map<int32_t, scoped_refptr<base::SingleThreadTaskRunner>>
+        listener_thread_task_runners_
+            GUARDED_BY(listener_thread_task_runners_lock_);
+
+    scoped_refptr<base::SingleThreadTaskRunner> default_listener_task_runner_;
     Listener* listener_;
 
     // List of filters.  This is only accessed on the IPC thread.

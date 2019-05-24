@@ -470,7 +470,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
     // Navigation IPCs do not run using virtual time to avoid hanging.
-    case TaskType::kInternalNavigation:
+    case TaskType::kInternalNavigationAssociated:
       return DoesNotUseVirtualTimeTaskQueueTraits();
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
