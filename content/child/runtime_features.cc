@@ -518,6 +518,11 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableFeatureFromString(
         "AudioWorkletRealtimeThread", true);
   }
+
+  if (!base::FeatureList::IsEnabled(
+          features::kPauseExecutionContextOnBackgroundFreeze)) {
+    WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(false);
+  }
 }
 
 }  // namespace

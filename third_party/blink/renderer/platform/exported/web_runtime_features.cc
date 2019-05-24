@@ -693,4 +693,10 @@ void WebRuntimeFeatures::EnableDisplayLocking(bool enable) {
   RuntimeEnabledFeatures::SetDisplayLockingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(
+    bool enable) {
+  RuntimeEnabledFeatures::SetPauseExecutionContextOnBackgroundFreezeEnabled(
+      enable);
+}
+
 }  // namespace blink

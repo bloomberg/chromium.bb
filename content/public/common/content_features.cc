@@ -315,6 +315,11 @@ const base::Feature kPassiveEventListenersDueToFling{
 const base::Feature kPaymentRequestHasEnrolledInstrument = {
     "PaymentRequestHasEnrolledInstrument", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether ExecutionContext is paused (and workers) on background freeze.
+const base::Feature kPauseExecutionContextOnBackgroundFreeze = {
+    "PauseExecutionContextOnBackgroundFreeze",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Whether PDF files should be rendered in diffent processes based on origin.
 const base::Feature kPdfIsolation = {"PdfIsolation",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

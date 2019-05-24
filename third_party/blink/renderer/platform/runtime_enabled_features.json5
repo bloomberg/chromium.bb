@@ -1074,6 +1074,10 @@
       name: "PassPaintVisualRectToCompositor",
     },
     {
+      name: "PauseExecutionContextOnBackgroundFreeze",
+      status: "experimental",
+    },
+    {
       name: "PaymentApp",
       status: "experimental",
     },

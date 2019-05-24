@@ -245,6 +245,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableStaleWhileRevalidate(bool);
   BLINK_PLATFORM_EXPORT static void EnableSmsReceiver(bool);
   BLINK_PLATFORM_EXPORT static void EnableDisplayLocking(bool);
+  BLINK_PLATFORM_EXPORT static void
+  EnablePauseExecutionContextOnBackgroundFreeze(bool);
 
  private:
   WebRuntimeFeatures();
