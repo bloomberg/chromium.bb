@@ -64,6 +64,10 @@ class ExtensionAction {
     return action_type_;
   }
 
+  extensions::ActionInfo::DefaultState default_state() const {
+    return default_state_;
+  }
+
   // Set the url which the popup will load when the user clicks this action's
   // icon.  Setting an empty URL will disable the popup for a given tab.
   void SetPopupUrl(int tab_id, const GURL& url);
@@ -251,6 +255,8 @@ class ExtensionAction {
   const std::string extension_name_;
 
   const extensions::ActionInfo::Type action_type_;
+  // The default state of the action.
+  const extensions::ActionInfo::DefaultState default_state_;
 
   // Each of these data items can have both a global state (stored with the key
   // kDefaultTabId), or tab-specific state (stored with the tab_id as the key).

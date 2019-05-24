@@ -484,11 +484,8 @@ void ParameterizedShowActionDeclarativeContentApiTest::TestShowAction(
   // (for visibility reasons).
   ASSERT_TRUE(action);
 
-  // Ensure browser actions are hidden (so that the ShowAction() rule has an
-  // effect).
-  bool has_browser_action =
-      action_type && *action_type == ActionInfo::TYPE_BROWSER;
-  if (has_browser_action)
+  // Ensure actions are hidden (so that the ShowAction() rule has an effect).
+  if (action->default_state() == ActionInfo::STATE_DISABLED)
     action->SetIsVisible(ExtensionAction::kDefaultTabId, false);
 
   const char kScript[] =
@@ -514,12 +511,11 @@ void ParameterizedShowActionDeclarativeContentApiTest::TestShowAction(
   const int tab_id = SessionTabHelper::IdForTab(tab).id();
   EXPECT_TRUE(action->GetIsVisible(tab_id));
 
-  // Even an extension with no specified action with have a (synthesized) page
-  // action. Only browser action extensions are expected to not have a page
-  // action.
-  bool expect_page_action = !has_browser_action;
-  EXPECT_EQ(expect_page_action, action->action_type() == ActionInfo::TYPE_PAGE);
-  EXPECT_EQ(expect_page_action ? 1u : 0u,
+  // If an extension had no action specified in the manifest, it will get a
+  // synthesized page action.
+  ActionInfo::Type expected_type = action_type.value_or(ActionInfo::TYPE_PAGE);
+  EXPECT_EQ(expected_type, action->action_type());
+  EXPECT_EQ(expected_type == ActionInfo::TYPE_PAGE ? 1u : 0u,
             extension_action_test_util::GetVisiblePageActionCount(tab));
 }
 
@@ -538,12 +534,10 @@ IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
   TestShowAction(ActionInfo::TYPE_BROWSER);
 }
 
-// TODO(https://crbug.com/893373): Enable this when ExtensionActionManager knows
-// about ActionInfo::Type::TYPE_ACTION.
-// IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
-//                        ActionInManifest) {
-//   TestShowAction(ActionInfo::TYPE_ACTION);
-// }
+IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
+                       ActionInManifest) {
+  TestShowAction(ActionInfo::TYPE_ACTION);
+}
 
 // Tests that rules from manifest are added and evaluated properly.
 IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
