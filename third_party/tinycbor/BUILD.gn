@@ -16,12 +16,6 @@ source_set("tinycbor") {
     "src/src/utf8_p.h",
   ]
 
-  config_path = "//build/config"
-  if (build_with_chromium) {
-    config_path += "/gcc"
-  }
-  configs -= [ "$config_path:symbol_visibility_hidden" ]
-  configs += [ "$config_path:symbol_visibility_default" ]
   configs += [ "../../build:allow_build_from_embedder" ]
 
   defines = [ "WITHOUT_OPEN_MEMSTREAM" ]
