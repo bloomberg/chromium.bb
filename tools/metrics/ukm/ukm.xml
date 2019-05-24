@@ -4998,6 +4998,12 @@ be describing additional metrics about the same event.
       tools/metrics/histograms/enum.xml.
     </summary>
   </metric>
+  <metric name="MainFrameResource.NavigationStartToReceiveHeadersStart">
+    <summary>
+      The duration from the start of the navigation to the start of the response
+      headers being received. In ms.
+    </summary>
+  </metric>
   <metric name="MainFrameResource.NavigationStartToRequestStart">
     <summary>
       The duration from the start of the navigation to the start of the main

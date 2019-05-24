@@ -520,6 +520,15 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
         navigation_start_to_request_start.InMilliseconds());
   }
 
+  if (!main_frame_timing_->receive_headers_start.is_null() &&
+      !GetDelegate()->GetNavigationStart().is_null()) {
+    base::TimeDelta navigation_start_to_receive_headers_start =
+        main_frame_timing_->receive_headers_start -
+        GetDelegate()->GetNavigationStart();
+    builder->SetMainFrameResource_NavigationStartToReceiveHeadersStart(
+        navigation_start_to_receive_headers_start.InMilliseconds());
+  }
+
   if (connection_info_.has_value()) {
     page_load_metrics::NetworkProtocol protocol =
         page_load_metrics::GetNetworkProtocol(*connection_info_);
