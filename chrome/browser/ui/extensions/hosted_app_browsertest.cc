@@ -1614,10 +1614,18 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShouldShowToolbarForSystemApp) {
   NavigateAndCheckForToolbar(app_browser_, app_url, false);
 }
 
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(NDEBUG)
+// https://crbug.com/966834. Flaky on Linux/Chrome OS debug bots.
+#define MAYBE_ShouldNotShowToolbarForSystemWebAppInChrome \
+  DISABLED_ShouldNotShowToolbarForSystemWebAppInChrome
+#else
+#define MAYBE_ShouldNotShowToolbarForSystemWebAppInChrome \
+  ShouldNotShowToolbarForSystemWebAppInChrome
+#endif
 // Check the toolbar is not shown for system web apps for pages on the chrome://
 // scheme.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       ShouldNotShowToolbarForSystemWebAppInChrome) {
+                       MAYBE_ShouldNotShowToolbarForSystemWebAppInChrome) {
   const GURL app_url(chrome::kChromeUISettingsURL);
 
   SetupSystemAppWithURL(app_url);
