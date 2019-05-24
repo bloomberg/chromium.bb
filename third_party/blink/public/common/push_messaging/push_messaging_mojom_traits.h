@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_PUSH_MESSAGING_PUSH_MESSAGING_MOJOM_TRAITS_H_
 
 #include <stddef.h>
+#include <vector>
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
-#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 namespace mojo {
 
@@ -21,9 +21,10 @@ struct BLINK_COMMON_EXPORT
   static bool user_visible_only(const blink::WebPushSubscriptionOptions& r) {
     return r.user_visible_only;
   }
-  static const std::string& application_server_key(
+  static const std::vector<uint8_t> application_server_key(
       const blink::WebPushSubscriptionOptions& r) {
-    return r.application_server_key;
+    return std::vector<uint8_t>(r.application_server_key.begin(),
+                                r.application_server_key.end());
   }
   static bool Read(blink::mojom::PushSubscriptionOptionsDataView data,
                    blink::WebPushSubscriptionOptions* out);

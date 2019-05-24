@@ -4,6 +4,8 @@
 
 #include "third_party/blink/public/common/push_messaging/push_messaging_mojom_traits.h"
 
+#include <string>
+
 namespace mojo {
 
 // PushErrorType
@@ -53,9 +55,15 @@ bool StructTraits<blink::mojom::PushSubscriptionOptionsDataView,
     Read(blink::mojom::PushSubscriptionOptionsDataView data,
          blink::WebPushSubscriptionOptions* out) {
   out->user_visible_only = data.user_visible_only();
-  if (!data.ReadApplicationServerKey(&out->application_server_key)) {
+
+  std::vector<uint8_t> application_server_key_vector;
+  if (!data.ReadApplicationServerKey(&application_server_key_vector)) {
     return false;
   }
+
+  out->application_server_key =
+      std::string(application_server_key_vector.begin(),
+                  application_server_key_vector.end());
   return true;
 }
 
