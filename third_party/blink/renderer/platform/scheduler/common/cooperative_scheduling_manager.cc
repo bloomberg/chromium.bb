@@ -68,7 +68,7 @@ void CooperativeSchedulingManager::SafepointSlow() {
 void CooperativeSchedulingManager::RunNestedLoop() {
   TRACE_EVENT0("renderer.scheduler",
                "CooperativeSchedulingManager::RunNestedLoop");
-  base::AutoReset<bool>(&running_nested_loop_, true);
+  base::AutoReset<bool> nested_loop_scope(&running_nested_loop_, true);
   wait_until_ = WTF::CurrentTimeTicks() + kNestedLoopMinimumInterval;
 
   // TODO(keishi): Ask scheduler to run high priority tasks from different
