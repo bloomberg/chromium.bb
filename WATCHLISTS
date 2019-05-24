@@ -921,6 +921,12 @@
       'filepath': 'third_party/blink/renderer/platform/feature_policy/|' \
                   'third_party/blink/renderer/bindings/core/v8/origin_trial_features',
     },
+    'feedback': {
+      'filepath': 'chrome/browser/extensions/api/feedback_private/|' \
+                  'chrome/browser/feedback/|' \
+                  'components/feedback/|' \
+                  'extensions/browser/api/feedback_private/'
+    },
     'fileapi': {
       'filepath': 'file_system/|' \
                   'fileapi/'
@@ -1004,6 +1010,9 @@
                   'extensions/common/mojo/guest_view.mojom|'\
                   'extensions/common/api/*view*.json|'\
                   'extensions/renderer/guest_view',
+    },
+    'hats': {
+      'filepath': 'chrome/browser/chromeos/hats/',
     },
     'headless': {
       'filepath': 'headless/'
@@ -2301,6 +2310,7 @@
     'feature_policy': ['loonybear@chromium.org',
                        'iclelland+watch@chromium.org',
                        'jmedley+watch@chromium.org'],
+    'feedback': ['jkardatzke+watch@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',
                 'nhiroki@chromium.org',
                 'tzik@chromium.org'],
@@ -2329,6 +2339,7 @@
     'guest_view': ['ekaramad@chromium.org',
                    'mcnee@chromium.org',
                    'wjmaclean@chromium.org'],
+    'hats': ['jkardatzke+watch@chromium.org'],
     'headless': ['headless-reviews@chromium.org'],
     'history_ui': ['dbeam+watch-history-ui@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
