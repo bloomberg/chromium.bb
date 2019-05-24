@@ -18,12 +18,6 @@ namespace syncer {
 
 const char kNigoriTag[] = "google_chrome_nigori";
 
-// We name a particular Nigori instance (ie. a triplet consisting of a hostname,
-// a username, and a password) by calling Permute on this string. Since the
-// output of Permute is always the same for a given triplet, clients will always
-// assign the same name to a particular triplet.
-const char kNigoriKeyName[] = "nigori-key";
-
 KeyParams::KeyParams(KeyDerivationParams derivation_params,
                      const std::string& password)
     : derivation_params(derivation_params), password(password) {}

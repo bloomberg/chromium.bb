@@ -21,6 +21,9 @@ namespace syncer {
 
 class Nigori;
 
+// TODO(crbug.com/922900): inline kNigoriKeyName into Nigori::Permute().
+extern const char kNigoriKeyName[];
+
 class KeyDerivationParams {
  public:
   static KeyDerivationParams CreateForPbkdf2();

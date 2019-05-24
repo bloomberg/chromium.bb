@@ -73,6 +73,10 @@ class LoopbackServer {
     }
   }
 
+  const std::vector<std::string>& GetKeystoreKeysForTesting() const {
+    return keystore_keys_;
+  }
+
  private:
   // Allow the FakeServer decorator to inspect the internals of this class.
   friend class fake_server::FakeServer;
