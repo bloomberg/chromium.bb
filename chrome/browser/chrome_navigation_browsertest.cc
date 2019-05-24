@@ -1371,6 +1371,35 @@ IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
   ASSERT_EQ(GURL("about:blank"), main_contents->GetLastCommittedURL());
 }
 
+// Tests that a main frame hosting pdf does not get skipped because of history
+// manipulation intervention (crbug.com/965434).
+IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
+                       PDFDoNotSkipOnBackForward) {
+  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ui_test_utils::NavigateToURL(browser(), pdf_url);
+
+  GURL url(embedded_test_server()->GetURL("/title2.html"));
+
+  // Navigate to a new document from the renderer without a user gesture.
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(main_contents);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      main_contents, "location = '" + url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(url, main_contents->GetLastCommittedURL());
+
+  // Even though pdf_url initiated a navigation without a user gesture, it will
+  // not be skipped since it is a pdf.
+  // Going back should be allowed and should navigate to pdf_url.
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BACK));
+
+  ASSERT_TRUE(chrome::CanGoBack(browser()));
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(main_contents);
+  ASSERT_EQ(pdf_url, main_contents->GetLastCommittedURL());
+}
+
 // This test class turns on the mode where sites where the user enters a
 // password are dynamically added to the list of sites requiring a dedicated
 // process.  It also disables strict site isolation so that the effects of
