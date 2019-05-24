@@ -816,28 +816,33 @@ class TestLogListener : public fuchsia::logger::testing::LogListener_TestBase {
     loop.Run();
   }
 
-  bool DidReceiveString(base::StringPiece message) {
-    if (log_messages_.find(message.as_string()) != std::string::npos) {
-      return true;
+  bool DidReceiveString(base::StringPiece message,
+                        fuchsia::logger::LogMessage* logged_message) {
+    for (const auto& log_message : log_messages_) {
+      if (log_message.msg.find(message.as_string()) != std::string::npos) {
+        *logged_message = log_message;
+        return true;
+      }
     }
     return false;
   }
 
   // LogListener implementation.
-  void LogMany(std::vector<fuchsia::logger::LogMessage> log) override {
-    for (const auto& current_message : log) {
-      log_messages_.append(current_message.msg);
-      log_messages_.append("\n");
-    }
+  void LogMany(std::vector<fuchsia::logger::LogMessage> messages) override {
+    log_messages_.insert(log_messages_.end(),
+                         std::make_move_iterator(messages.begin()),
+                         std::make_move_iterator(messages.end()));
   }
 
   void Done() override { std::move(dump_logs_done_quit_closure_).Run(); }
 
-  void NotImplemented_(const std::string& name) override {}
+  void NotImplemented_(const std::string& name) override {
+    NOTIMPLEMENTED() << name;
+  }
 
  private:
   fuchsia::logger::LogListenerPtr log_listener_;
-  std::string log_messages_;
+  std::vector<fuchsia::logger::LogMessage> log_messages_;
   base::OnceClosure dump_logs_done_quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLogListener);
@@ -850,6 +855,8 @@ TEST_F(LoggingTest, FuchsiaSystemLogging) {
 
   TestLogListener listener;
   fidl::Binding<fuchsia::logger::LogListener> binding(&listener);
+
+  fuchsia::logger::LogMessage logged_message;
   do {
     std::unique_ptr<fuchsia::logger::LogFilterOptions> options =
         std::make_unique<fuchsia::logger::LogFilterOptions>();
@@ -859,7 +866,15 @@ TEST_F(LoggingTest, FuchsiaSystemLogging) {
             ->ConnectToService<fuchsia::logger::Log>();
     logger->DumpLogs(binding.NewBinding(), std::move(options));
     listener.RunUntilDone();
-  } while (!listener.DidReceiveString(kLogMessage));
+  } while (!listener.DidReceiveString(kLogMessage, &logged_message));
+
+  EXPECT_EQ(logged_message.severity,
+            static_cast<int32_t>(fuchsia::logger::LogLevelFilter::ERROR));
+  ASSERT_EQ(logged_message.tags.size(), 1u);
+  EXPECT_EQ(logged_message.tags[0], base::CommandLine::ForCurrentProcess()
+                                        ->GetProgram()
+                                        .BaseName()
+                                        .AsUTF8Unsafe());
 }
 
 TEST_F(LoggingTest, FuchsiaLogging) {

@@ -438,6 +438,20 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 
   g_logging_destination = settings.logging_dest;
 
+#if defined(OS_FUCHSIA)
+  if (g_logging_destination & LOG_TO_SYSTEM_DEBUG_LOG) {
+    fx_logger_config_t config;
+    config.min_severity = FX_LOG_INFO;
+    config.console_fd = -1;
+    config.log_service_channel = ZX_HANDLE_INVALID;
+    std::string log_tag = command_line->GetProgram().BaseName().AsUTF8Unsafe();
+    const char* log_tag_data = log_tag.data();
+    config.tags = &log_tag_data;
+    config.num_tags = 1;
+    fx_log_init_with_config(&config);
+  }
+#endif
+
   // ignore file options unless logging to file is set.
   if ((g_logging_destination & LOG_TO_FILE) == 0)
     return true;
@@ -445,9 +459,6 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   LoggingLock::Init(settings.lock_log, settings.log_file);
   LoggingLock logging_lock;
-#endif
-#if defined(OS_FUCHSIA)
-  fx_log_init();
 #endif
 
   // Calling InitLogging twice or after some log call has already opened the
@@ -818,7 +829,7 @@ LogMessage::~LogMessage() {
 #endif
 #elif defined(OS_FUCHSIA)
     fx_log_severity_t severity = FX_LOG_INFO;
-    switch (severity) {
+    switch (severity_) {
       case LOG_INFO:
         severity = FX_LOG_INFO;
         break;
@@ -829,16 +840,17 @@ LogMessage::~LogMessage() {
         severity = FX_LOG_ERROR;
         break;
       case LOG_FATAL:
-        severity = FX_LOG_FATAL;
+        // Don't use FX_LOG_FATAL, otherwise fx_logger_log() will abort().
+        severity = FX_LOG_ERROR;
         break;
     }
 
     fx_logger_t* logger = fx_log_get_logger();
     if (logger) {
-      base::FilePath path;
-      base::PathService::Get(base::FILE_EXE, &path);
-      fx_logger_log(logger, severity, path.BaseName().value().c_str(),
-                    str_newline.c_str());
+      // Temporarily pop the trailing newline, since fx_logger will add one.
+      str_newline.pop_back();
+      fx_logger_log(logger, severity, nullptr, str_newline.c_str());
+      str_newline.push_back('\n');
     }
 #endif  // OS_FUCHSIA
   }
