@@ -87,6 +87,8 @@ builder.
   Path regular expressions:
     * [`//components/cronet/.+`](https://cs.chromium.org/chromium/src/components/cronet/)
     * [`//components/grpc_support/.+`](https://cs.chromium.org/chromium/src/components/grpc_support/)
+    * [`//build/android/.+`](https://cs.chromium.org/chromium/src/build/android/)
+    * [`//build/config/android/.+`](https://cs.chromium.org/chromium/src/build/config/android/)
 
 * [android_compile_x64_dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android_compile_x64_dbg) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/android_compile_x64_dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android_compile_x64_dbg))
 
