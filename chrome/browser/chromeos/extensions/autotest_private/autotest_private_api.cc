@@ -1435,7 +1435,7 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   assistant_->AddAssistantInteractionSubscriber(std::move(ptr));
 
   // Start text interaction with Assistant server.
-  assistant_->StartTextInteraction(params->query, true);
+  assistant_->StartTextInteraction(params->query, /*allow_tts*/ false);
 
   // Set up a delayed timer to wait for the query response and hold a reference
   // to |this| to avoid being destructed. Also make sure we stop and respond
