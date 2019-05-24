@@ -183,6 +183,11 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
     return true;
   }
 
+  if (IsForSystemWebApp()) {
+    DCHECK_EQ(last_committed_url.scheme_piece(), content::kChromeUIScheme);
+    return false;
+  }
+
   // Page URLs that are not within scope
   // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
   // corresponding to |launch_url| show the toolbar.
