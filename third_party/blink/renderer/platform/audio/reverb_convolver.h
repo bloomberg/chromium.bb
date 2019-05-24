@@ -58,7 +58,8 @@ class PLATFORM_EXPORT ReverbConvolver {
                   size_t render_slice_size,
                   size_t max_fft_size,
                   size_t convolver_render_phase,
-                  bool use_background_threads);
+                  bool use_background_threads,
+                  float scale);
   ~ReverbConvolver();
 
   void Process(const AudioChannel* source_channel,

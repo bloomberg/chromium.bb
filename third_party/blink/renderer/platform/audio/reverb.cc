@@ -97,26 +97,17 @@ Reverb::Reverb(AudioBus* impulse_response,
 
   if (normalize) {
     scale = CalculateNormalizationScale(impulse_response);
-
-    if (scale)
-      impulse_response->Scale(scale);
   }
 
   Initialize(impulse_response, render_slice_size, max_fft_size,
-             use_background_threads);
-
-  // Undo scaling since this shouldn't be a destructive operation on
-  // impulseResponse.
-  // FIXME: What about roundoff? Perhaps consider making a temporary scaled copy
-  // instead of scaling and unscaling in place.
-  if (normalize && scale)
-    impulse_response->Scale(1 / scale);
+             use_background_threads, scale);
 }
 
 void Reverb::Initialize(AudioBus* impulse_response_buffer,
                         size_t render_slice_size,
                         size_t max_fft_size,
-                        bool use_background_threads) {
+                        bool use_background_threads,
+                        float scale) {
   impulse_response_length_ = impulse_response_buffer->length();
   number_of_response_channels_ = impulse_response_buffer->NumberOfChannels();
 
@@ -133,7 +124,7 @@ void Reverb::Initialize(AudioBus* impulse_response_buffer,
     std::unique_ptr<ReverbConvolver> convolver =
         std::make_unique<ReverbConvolver>(channel, render_slice_size,
                                           max_fft_size, convolver_render_phase,
-                                          use_background_threads);
+                                          use_background_threads, scale);
     convolvers_.push_back(std::move(convolver));
 
     convolver_render_phase += render_slice_size;

@@ -94,6 +94,8 @@ class PLATFORM_EXPORT FFTFrame {
   void AddConstantGroupDelay(double sample_frame_delay);
   // multiplies ourself with frame : effectively operator*=()
   void Multiply(const FFTFrame&);
+  // Scale the FFT data by the given scaling factor
+  void ScaleFFT(float factor);
 
  private:
   void InterpolateFrequencyComponents(const FFTFrame& frame1,
