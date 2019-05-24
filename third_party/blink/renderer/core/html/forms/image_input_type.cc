@@ -101,8 +101,8 @@ void ImageInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl() || !GetElement().Form())
     return;
   click_location_ = ExtractClickLocation(event);
-  GetElement().Form()->PrepareForSubmission(
-      event, &GetElement());  // Event handlers can run.
+  // Event handlers can run.
+  GetElement().Form()->PrepareForSubmission(&event, &GetElement());
   event.SetDefaultHandled();
 }
 

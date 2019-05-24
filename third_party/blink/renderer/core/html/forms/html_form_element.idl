@@ -41,6 +41,7 @@
     [NotEnumerable] getter (RadioNodeList or Element) (DOMString name);
 
     [ImplementedAs=submitFromJavaScript] void submit();
+    [RaisesException] void requestSubmit(optional HTMLElement submitter);
     [CEReactions, CustomElementCallbacks] void reset();
     boolean checkValidity();
     boolean reportValidity();

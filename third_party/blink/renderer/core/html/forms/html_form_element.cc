@@ -212,7 +212,7 @@ void HTMLFormElement::SubmitImplicitly(Event& event,
     }
   }
   if (from_implicit_submission_trigger && submission_trigger_count == 1)
-    PrepareForSubmission(event, nullptr);
+    PrepareForSubmission(&event, nullptr);
 }
 
 bool HTMLFormElement::ValidateInteractively() {
@@ -258,7 +258,7 @@ bool HTMLFormElement::ValidateInteractively() {
 }
 
 void HTMLFormElement::PrepareForSubmission(
-    Event& event,
+    Event* event,
     HTMLFormControlElement* submit_button) {
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame || is_submitting_ || in_user_js_submit_event_)
@@ -327,7 +327,7 @@ void HTMLFormElement::PrepareForSubmission(
   }
   if (should_submit) {
     planned_navigation_ = nullptr;
-    Submit(&event, submit_button);
+    Submit(event, submit_button);
   }
   if (!planned_navigation_)
     return;
@@ -338,6 +338,39 @@ void HTMLFormElement::PrepareForSubmission(
 
 void HTMLFormElement::submitFromJavaScript() {
   Submit(nullptr, nullptr);
+}
+
+void HTMLFormElement::requestSubmit(ExceptionState& exception_state) {
+  requestSubmit(nullptr, exception_state);
+}
+
+// https://html.spec.whatwg.org/multipage/forms.html#dom-form-requestsubmit
+void HTMLFormElement::requestSubmit(HTMLElement* submitter,
+                                    ExceptionState& exception_state) {
+  HTMLFormControlElement* control = nullptr;
+  // 1. If submitter was given, then:
+  if (submitter) {
+    // 1.1. If submitter is not a submit button, then throw a TypeError.
+    control = ToHTMLFormControlElementOrNull(submitter);
+    // button[type] is a subset of input[type]. So it's ok to compare button's
+    // type and input_type_names.
+    if (!control || (control->type() != input_type_names::kSubmit &&
+                     control->type() != input_type_names::kImage)) {
+      exception_state.ThrowTypeError(
+          "The specified element is not a submit button.");
+      return;
+    }
+    // 1.2. If submitter's form owner is not this form element, then throw a
+    // "NotFoundError" DOMException.
+    if (control->formOwner() != this) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotFoundError,
+          "The specified element is not owned by this form element.");
+      return;
+    }
+  }
+  // 3. Submit this form element, from submitter.
+  PrepareForSubmission(nullptr, control);
 }
 
 void HTMLFormElement::SubmitDialog(FormSubmission* form_submission) {

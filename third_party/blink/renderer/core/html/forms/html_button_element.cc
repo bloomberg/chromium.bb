@@ -112,7 +112,7 @@ void HTMLButtonElement::DefaultEventHandler(Event& event) {
   if (event.type() == event_type_names::kDOMActivate &&
       !IsDisabledFormControl()) {
     if (Form() && type_ == SUBMIT) {
-      Form()->PrepareForSubmission(event, this);
+      Form()->PrepareForSubmission(&event, this);
       event.SetDefaultHandled();
     }
     if (Form() && type_ == RESET) {

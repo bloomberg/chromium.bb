@@ -74,8 +74,10 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void Disassociate(HTMLImageElement&);
   void DidAssociateByParser();
 
-  void PrepareForSubmission(Event&, HTMLFormControlElement* submit_button);
+  void PrepareForSubmission(Event*, HTMLFormControlElement* submit_button);
   void submitFromJavaScript();
+  void requestSubmit(ExceptionState& exception_state);
+  void requestSubmit(HTMLElement* submitter, ExceptionState& exception_state);
   void reset();
 
   void SubmitImplicitly(Event&, bool from_implicit_submission_trigger);
