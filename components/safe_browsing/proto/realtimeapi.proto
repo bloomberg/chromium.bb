@@ -39,16 +39,16 @@ message RTLookupResponse {
     enum ThreatType {
       // Unknown.
       THREAT_TYPE_UNSPECIFIED = 0;
-      // url leads to the 'unintentional' download of malware
-      DRIVE_BY_DOWNLOAD = 1;
-      // Malware download threat type.
-      MALWARE_DOWNLOAD = 2;
+      // URL leads to unintentional download of malware i.e. drive-by downloads.
+      WEB_MALWARE = 1;
       // Social engineering threat type for internal use.
       SOCIAL_ENGINEERING = 3;
       // Unwanted software threat type.
       UNWANTED_SOFTWARE = 4;
       // Unclear Billing threat type
       UNCLEAR_BILLING = 5;
+
+      reserved 2;
     }
     optional ThreatType threat_type = 1;
     // TTL of the verdict in seconds.
