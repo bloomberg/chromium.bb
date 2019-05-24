@@ -99,8 +99,21 @@ IndexedDBOriginState::~IndexedDBOriginState() {
 
 void IndexedDBOriginState::AbortAllTransactions(bool compact) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Because finishing all transactions could cause a database to be destructed
+  // (which would mutate the database_ map), save the keys beforehand and use
+  // those.
+  std::vector<base::string16> origins;
+  origins.reserve(databases_.size());
   for (const auto& pair : databases_) {
-    for (IndexedDBConnection* connection : pair.second->connections()) {
+    origins.push_back(pair.first);
+  }
+
+  for (const base::string16& origin : origins) {
+    auto it = databases_.find(origin);
+    if (it == databases_.end())
+      continue;
+    for (IndexedDBConnection* connection : it->second->connections()) {
       connection->FinishAllTransactions(
           IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
                                  "Aborting all transactions for the origin."));
