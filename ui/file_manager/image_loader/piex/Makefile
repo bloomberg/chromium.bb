@@ -16,7 +16,7 @@ PSRC = $(PIEX)/src/piex.cc \
        $(PIEX)/src/binary_parse/range_checked_byte_ptr.cc \
        $(PIEX)/src/binary_parse/cached_paged_byte_array.cc
 
-INCS = -I $(PIEX) -I .
+INCS = -I $(PIEX)
 WASM = -s WASM=1 -fno-exceptions -Wall -fsanitize=cfi -flto -fvisibility=hidden
 WOPT = -Os --llvm-opts 3 \
   -s STRICT=1 \
