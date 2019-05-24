@@ -71,6 +71,13 @@ crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.
 crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure Crash ]
 crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
 
+crbug.com/966488 fast/borders/border-radius-mask-canvas-border.html [ Failure ]
+crbug.com/966488 compositing/video/video-controls-squashing.html [ Failure ]
+crbug.com/966488 fast/borders/border-radius-mask-canvas.html [ Failure ]
+crbug.com/966488 fast/borders/border-radius-mask-video.html [ Failure ]
+crbug.com/966488 fast/borders/border-radius-mask-video-ratio.html [ Failure ]
+crbug.com/966488 fast/borders/border-radius-mask-video-shadow.html [ Failure ]
+
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
@@ -132,7 +139,6 @@ Bug(none) virtual/composite-after-paint/compositing/geometry/tall-page-composite
 Bug(none) virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-img.html [ Pass ]
 Bug(none) virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-simple-scaledY.html [ Pass ]
 Bug(none) virtual/composite-after-paint/compositing/iframes/iframe-in-composited-layer.html [ Pass ]
-Bug(none) virtual/composite-after-paint/compositing/images/direct-image-clip-path.html [ Pass ]
 Bug(none) virtual/composite-after-paint/compositing/masks/mask-of-clipped-layer.html [ Pass ]
 Bug(none) virtual/composite-after-paint/compositing/overflow/clip-rotate-opacity-fixed.html [ Pass ]
 Bug(none) virtual/composite-after-paint/compositing/overlap-blending/children-opacity-huge.html [ Pass ]

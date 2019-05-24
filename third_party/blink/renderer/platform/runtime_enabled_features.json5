@@ -534,6 +534,7 @@
     },
     {
       name: "FastBorderRadius",
+      status: "experimental",
     },
     {
       name: "FastFlatTreeTraversal",

@@ -244,7 +244,8 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableFeatureFromString(
       "FastBorderRadius",
-      base::FeatureList::IsEnabled(blink::features::kFastBorderRadius));
+      base::FeatureList::IsEnabled(blink::features::kFastBorderRadius) ||
+          enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
