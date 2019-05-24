@@ -211,16 +211,12 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
   ~WidgetSlideAnimationDelegate() override {}
 
   void AnimateToAnchorView(views::View* desired_anchor_view) {
+    DCHECK(!current_bubble_bounds_.IsEmpty());
     desired_anchor_view_ = desired_anchor_view;
     gfx::Rect anchor_bounds = desired_anchor_view->GetAnchorBoundsInScreen();
     anchor_bounds.Inset(bubble_delegate_->anchor_view_insets());
 
-    // If an animation is currently running we should start the next animation
-    // from where the previous left off.
-    if (slide_animation_->is_animating() && !current_bubble_bounds_.IsEmpty())
-      starting_bubble_bounds_ = current_bubble_bounds_;
-    else
-      starting_bubble_bounds_ = bubble_delegate_->GetBubbleBounds();
+    starting_bubble_bounds_ = current_bubble_bounds_;
 
     slide_animation_->Reset(0);
 
@@ -234,6 +230,10 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
   }
 
   void StopAnimation() { AnimationCanceled(slide_animation_.get()); }
+
+  void SetBounds() {
+    current_bubble_bounds_ = bubble_delegate_->GetBubbleBounds();
+  }
 
   bool IsAnimating() { return slide_animation_->is_animating(); }
 
@@ -378,10 +378,15 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
     return;
   }
 
-  if (widget_->IsVisible() && !disable_animations_for_testing_)
+  if (widget_->IsVisible() && !disable_animations_for_testing_) {
     slide_animation_delegate_->AnimateToAnchorView(tab);
-  else
+  } else {
     SetAnchorView(tab);
+    // Store the current bubble bounds now to be used when animating to a new
+    // view. We do this now since the anchor view is needed to get bubble
+    // bounds and could be deleting later when using the bounds to animate.
+    slide_animation_delegate_->SetBounds();
+  }
 
   if (!widget_->IsVisible()) {
     if (disable_animations_for_testing_ || show_immediately ||
