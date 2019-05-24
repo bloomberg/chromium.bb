@@ -418,7 +418,18 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectNoContentToMask) {
       &property_trees);
 }
 
-TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
+using LayerTreeHostLayerListPixelTestNonSkia = LayerTreeHostLayerListPixelTest;
+
+// TODO(crbug.com/948128): Enable this test for Skia.
+INSTANTIATE_TEST_SUITE_P(
+    PixelResourceTest,
+    LayerTreeHostLayerListPixelTestNonSkia,
+    ::testing::Combine(
+        ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),
+        ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
+                          Layer::LayerMaskType::MULTI_TEXTURE_MASK)));
+
+TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
   PropertyTrees property_trees;
   scoped_refptr<Layer> root_layer;
   InitializeForLayerListMode(&root_layer, &property_trees);
@@ -806,15 +817,22 @@ class CircleContentLayerClient : public ContentLayerClient {
 using LayerTreeHostMasksForBackdropFiltersPixelTest =
     ParameterizedPixelResourceTest;
 
+INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(
+    LayerTreeHostMasksForBackdropFiltersPixelTest);
+
+using LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia =
+    ParameterizedPixelResourceTest;
+
+// TODO(crbug.com/948128): Enable these tests for Skia.
 INSTANTIATE_TEST_SUITE_P(
     PixelResourceTest,
-    LayerTreeHostMasksForBackdropFiltersPixelTest,
+    LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
     ::testing::Combine(
         ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),
         ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
                           Layer::LayerMaskType::MULTI_TEXTURE_MASK)));
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
        MaskOfLayerWithBackdropFilter) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(100, 100), SK_ColorWHITE);
@@ -939,16 +957,24 @@ class StaticPictureLayer : private ContentLayerClient, public PictureLayer {
   scoped_refptr<DisplayItemList> display_list_;
 };
 
+constexpr uint32_t kUseAntialiasing = 1 << 0;
+constexpr uint32_t kForceShaders = 1 << 1;
+
+struct MaskTestConfig {
+  PixelResourceTestCase test_case;
+  uint32_t flags;
+};
+
 class LayerTreeHostMaskAsBlendingPixelTest
     : public LayerTreeHostPixelResourceTest,
-      public ::testing::WithParamInterface<int> {
+      public ::testing::WithParamInterface<MaskTestConfig> {
  public:
   LayerTreeHostMaskAsBlendingPixelTest()
       : LayerTreeHostPixelResourceTest(
-            GetParam() ? ZERO_COPY : SOFTWARE,
+            GetParam().test_case,
             Layer::LayerMaskType::SINGLE_TEXTURE_MASK),
-        use_antialiasing_(GetParam() == 2 || GetParam() == 4),
-        force_shaders_(GetParam() == 3 || GetParam() == 4) {
+        use_antialiasing_(GetParam().flags & kUseAntialiasing),
+        force_shaders_(GetParam().flags & kForceShaders) {
     float percentage_pixels_small_error = 0.f;
     float percentage_pixels_error = 0.f;
     float average_error_allowed_in_bad_pixels = 0.f;
@@ -1067,15 +1093,18 @@ class LayerTreeHostMaskAsBlendingPixelTest
   bool force_shaders_;
 };
 
+// TODO(crbug.com/948128): Enable these tests for Skia.
+MaskTestConfig const kTestConfigs[] = {
+    MaskTestConfig{SOFTWARE, 0},
+    MaskTestConfig{ZERO_COPY, 0},
+    MaskTestConfig{ZERO_COPY, kUseAntialiasing},
+    MaskTestConfig{ZERO_COPY, kForceShaders},
+    MaskTestConfig{ZERO_COPY, kUseAntialiasing | kForceShaders},
+};
+
 INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostMaskAsBlendingPixelTest,
-                         ::testing::Range(0, 5));
-// Instantiate 5 test modes of the following:
-// 0: SOFTWARE (golden sample)
-// 1: GL
-// 2: GL + AA
-// 3: GL + Forced Shaders
-// 4: GL + Forced Shaders + AA
+                         ::testing::ValuesIn(kTestConfigs));
 
 TEST_P(LayerTreeHostMaskAsBlendingPixelTest, PixelAlignedNoop) {
   // This test verifies the degenerate case of a no-op mask doesn't affect
@@ -1268,7 +1297,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   RunPixelResourceTest(root, image_name);
 }
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
        MaskOfLayerWithBackdropFilterAndBlend) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(128, 128), SK_ColorWHITE);
