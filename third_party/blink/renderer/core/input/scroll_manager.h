@@ -153,6 +153,8 @@ class CORE_EXPORT ScrollManager
 
   Member<Node> scroll_gesture_handling_node_;
 
+  Member<Node> last_logical_scrolled_node_;
+
   bool last_gesture_scroll_over_embedded_content_view_;
 
   // The most recent Node to scroll natively during this scroll
