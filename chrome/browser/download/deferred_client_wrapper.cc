@@ -27,7 +27,9 @@ DeferredClientWrapper::DeferredClientWrapper(DownloadClient client_id,
       weak_ptr_factory_(this) {
 #if defined(OS_ANDROID)
   client_id_ = client_id;
+  full_browser_requested_ = false;
 #endif
+
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
       key_, base::BindOnce(&DeferredClientWrapper::InflateClient,
                            weak_ptr_factory_.GetWeakPtr()));
@@ -182,8 +184,7 @@ void DeferredClientWrapper::RunDeferredClosures(bool force_inflate) {
     // FullBrowserTransitionManager on Profile creation. We just need to trigger
     // loading full browser. Once full browser is loaded and  profile is
     // created, FullBrowserTransitionManager will call InflateClient.
-    stats::LogDownloadClientInflatedFullBrowser(client_id_);
-    android_startup::LoadFullBrowser();
+    LaunchFullBrowser();
 #else
     // For platforms that do not implement reduced mode (i.e. non-android), the
     // wrapped client should have been inflated in the constructor.
@@ -206,5 +207,15 @@ void DeferredClientWrapper::InflateClient(Profile* profile) {
   wrapped_client_ = std::move(client_factory_).Run(profile);
   DoRunDeferredClosures();
 }
+
+#if defined(OS_ANDROID)
+void DeferredClientWrapper::LaunchFullBrowser() {
+  if (full_browser_requested_)
+    return;
+  full_browser_requested_ = true;
+  stats::LogDownloadClientInflatedFullBrowser(client_id_);
+  android_startup::LoadFullBrowser();
+}
+#endif
 
 }  // namespace download

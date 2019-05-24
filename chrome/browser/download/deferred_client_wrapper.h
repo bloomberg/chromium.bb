@@ -91,6 +91,8 @@ class DeferredClientWrapper : public Client {
   // only on Android so it is ifdefed out on other platforms to prevent the
   // compiler from complaining that it is unused.
   DownloadClient client_id_;
+  bool full_browser_requested_;
+  void LaunchFullBrowser();
 #endif
 
   base::WeakPtrFactory<DeferredClientWrapper> weak_ptr_factory_;
