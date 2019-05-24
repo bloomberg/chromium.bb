@@ -277,9 +277,21 @@ bool DefinitelyNewFormattingContext(const Node& node,
   if (node.GetDocument().documentElement() == &node)
     return true;
   if (const Element* element = ToElementOrNull(&node)) {
-    if (IsHTMLImageElement(element) || element->IsFormControlElement() ||
-        element->IsMediaElement() || element->IsFrameOwnerElement())
+    // Replaced elements are considered to create a new formatting context, in
+    // the sense that they can't possibly have children that participate in the
+    // same formatting context as their parent.
+    if (IsHTMLObjectElement(element)) {
+      // OBJECT elements are special, though. If they use fallback content, they
+      // act as regular elements, and we can't claim that they establish a
+      // formatting context, just based on element type, since children may very
+      // well participate in the same formatting context as the parent of the
+      // OBJECT.
+      if (!element->ChildrenCanHaveStyle())
+        return true;
+    } else if (IsHTMLImageElement(element) || element->IsFormControlElement() ||
+               element->IsMediaElement() || element->IsFrameOwnerElement()) {
       return true;
+    }
   }
   if (const Node* parent = LayoutTreeBuilderTraversal::LayoutParent(node))
     return parent->ComputedStyleRef().IsDisplayFlexibleOrGridBox();
