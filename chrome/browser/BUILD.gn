@@ -2743,6 +2743,7 @@ jumbo_split_static_library("browser") {
       "//services/proxy_resolver:lib",
       "//third_party/android_opengl/etc1",
       "//third_party/android_sdk:cpu_features",
+      "//third_party/crashpad/crashpad/client:client",
       "//third_party/libaddressinput:util",
       "//third_party/libphonenumber",
       "//third_party/smhasher:murmurhash2",
