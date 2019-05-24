@@ -208,6 +208,7 @@ void Adapter::OnUserBrightnessChangeRequested() {
     decision_at_first_recent_user_brightness_request_ =
         CanAdjustBrightness(now);
     first_recent_user_brightness_request_time_ = now;
+    model_iteration_count_at_user_brightness_change_ = model_.iteration_count;
   }
 
   if (params_.user_adjustment_effect != UserAdjustmentEffect::kContinueAuto) {
@@ -383,6 +384,15 @@ void Adapter::InitParams(const ModelConfig& model_config) {
   params_.user_adjustment_effect =
       static_cast<UserAdjustmentEffect>(user_adjustment_effect_as_int);
 
+  params_.min_model_iteration_count = base::GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "min_model_iteration_count",
+      params_.min_model_iteration_count);
+  if (params_.min_model_iteration_count <= 0) {
+    LogParameterError(ParameterError::kAdapterError);
+    enabled_by_model_configs_ = false;
+    return;
+  }
+
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.UserAdjustmentEffect",
                             params_.user_adjustment_effect);
 }
@@ -510,6 +520,13 @@ Adapter::AdapterDecision Adapter::CanAdjustBrightness(base::TimeTicks now) {
     return decision;
   }
 
+  if (params_.model_curve == ModelCurve::kPersonal &&
+      model_.iteration_count < params_.min_model_iteration_count) {
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kWaitingForTrainedPersonalCurve;
+    return decision;
+  }
+
   // Wait until we've had enough ALS data to calc avg.
   if (now - als_init_time_ < params_.auto_brightness_als_horizon) {
     decision.no_brightness_change_cause =
@@ -602,6 +619,12 @@ void Adapter::AdjustBrightness(BrightnessChangeCause cause,
 
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.BrightnessChange.Cause",
                             cause);
+
+  if (params_.model_curve == ModelCurve::kPersonal) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "AutoScreenBrightness.BrightnessChange.ModelIteration",
+        model_.iteration_count);
+  }
 
   WriteLogMessages(log_als_avg, brightness, cause);
   model_brightness_change_counter_++;
@@ -763,6 +786,13 @@ void Adapter::LogAdapterDecision(
 
     base::UmaHistogramCounts1000(histogram_prefix + "Unknown.AlsStd",
                                  logged_stddev);
+  }
+
+  // Log model iteration count.
+  if (params_.model_curve == ModelCurve::kPersonal) {
+    base::UmaHistogramCounts1000(
+        histogram_prefix + "ModelIteration",
+        model_iteration_count_at_user_brightness_change_);
   }
 }
 

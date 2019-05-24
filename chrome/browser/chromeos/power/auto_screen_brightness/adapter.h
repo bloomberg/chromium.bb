@@ -86,7 +86,7 @@ class Adapter : public AlsReader::Observer,
     double darkening_log_lux_threshold = 0.6;
     double stabilization_threshold = 0.15;
 
-    ModelCurve model_curve = ModelCurve::kLatest;
+    ModelCurve model_curve = ModelCurve::kPersonal;
 
     // Average ambient value is calculated over the past
     // |auto_brightness_als_horizon|. This is only used for brightness update,
@@ -98,6 +98,10 @@ class Adapter : public AlsReader::Observer,
         UserAdjustmentEffect::kDisableAuto;
 
     std::string metrics_key;
+
+    // If |model_curve| is |kPersonal| then we only use a personal curve if the
+    // the model has been trained at least |min_model_iteration_count|.
+    int min_model_iteration_count = 1;
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -143,7 +147,10 @@ class Adapter : public AlsReader::Observer,
     kMinimalAlsChange = 7,
     // Adapter should only use personal curves but none is available.
     kMissingPersonalCurve = 8,
-    kMaxValue = kMissingPersonalCurve
+    // Adapter should only use a personal curve that has been trained for a min
+    // number of iterations.
+    kWaitingForTrainedPersonalCurve = 9,
+    kMaxValue = kWaitingForTrainedPersonalCurve
   };
 
   struct AdapterDecision {
@@ -358,6 +365,8 @@ class Adapter : public AlsReader::Observer,
   base::Optional<base::TimeTicks> first_recent_user_brightness_request_time_;
   base::Optional<AdapterDecision>
       decision_at_first_recent_user_brightness_request_;
+
+  int model_iteration_count_at_user_brightness_change_ = 0;
 
   // The thresholds are calculated from the |average_log_ambient_lux_|.
   // They are only updated when brightness is changed (either by user or model).

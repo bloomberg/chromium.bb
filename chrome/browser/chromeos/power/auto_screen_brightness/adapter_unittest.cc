@@ -922,9 +922,77 @@ TEST_F(AdapterTest, UsePersonalCurve) {
                        adapter_->GetCurrentAvgLogAlsForTesting().value()));
 }
 
+TEST_F(AdapterTest, UsePersonalCurveAfter3) {
+  std::map<std::string, std::string> params = default_params_;
+  params["model_curve"] = "1";
+  params["min_model_iteration_count"] = "3";
+
+  // Init modeller with only a global curve.
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       Model(global_curve_, base::nullopt, 0), GetTestModelConfig(), params);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+
+  // Sufficient ALS data has come in but no brightness change is triggered
+  // because there is no personal curve.
+  ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+
+  // Personal curve is received, it does not lead to any immediate brightness
+  // change.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_modeller_.ReportModelTrained(*personal_curve_);
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+
+  // Another ALS comes in, which does not trigger a brightness change.
+  ReportAls(20);
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+
+  // Another training is done.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_modeller_.ReportModelTrained(*personal_curve_);
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+
+  // Another ALS comes in, which does not trigger a brightness change.
+  ReportAls(30);
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+
+  // Another training is done.
+  const base::Optional<MonotoneCubicSpline> personal_curve_2 =
+      MonotoneCubicSpline::CreateMonotoneCubicSpline({-4, 12, 20},
+                                                     {30, 60, 100});
+  DCHECK(personal_curve_2);
+
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_modeller_.ReportModelTrained(*personal_curve_2);
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+
+  // Another ALS comes in, which triggers a brightness change.
+  ReportAls(40);
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  EXPECT_EQ(test_observer_.GetCause(),
+            power_manager::BacklightBrightnessChange_Cause_MODEL);
+
+  CheckAvgLog({7, 8, 20, 30, 40},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // Brightness is changed according to the personal curve.
+  EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
+                   personal_curve_2->Interpolate(
+                       adapter_->GetCurrentAvgLogAlsForTesting().value()));
+}
+
 TEST_F(AdapterTest, UseGlobalCurve) {
   std::map<std::string, std::string> params = default_params_;
   params["model_curve"] = "0";
+  // This param has no effect.
+  params["min_model_iteration_count"] = "3";
 
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        Model(global_curve_, personal_curve_, 0), GetTestModelConfig(), params);
