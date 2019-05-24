@@ -248,7 +248,7 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
   std::unique_ptr<Task> get_operation_task = std::make_unique<GetOperationTask>(
       service_->GetPrefetchStore(),
       service_->GetPrefetchNetworkRequestFactory(),
-      base::BindOnce(
+      base::BindRepeating(
           &PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest,
           GetWeakPtr(), "GetOperationRequest"));
   task_queue_.AddTask(std::move(get_operation_task));
@@ -258,7 +258,7 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
           this, service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
           service_->GetCachedGCMToken(),
           service_->GetPrefetchNetworkRequestFactory(),
-          base::BindOnce(
+          base::BindRepeating(
               &PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest,
               GetWeakPtr(), "GeneratePageBundleRequest"));
   task_queue_.AddTask(std::move(generate_page_bundle_task));
