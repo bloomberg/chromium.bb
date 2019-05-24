@@ -137,7 +137,7 @@ void AccessTokenFetcher::StartAccessTokenRequest() {
 }
 
 void AccessTokenFetcher::OnRefreshTokenAvailable(
-    const CoreAccountId& account_id) {
+    const std::string& account_id) {
   DCHECK_EQ(Mode::kWaitUntilRefreshTokenAvailable, mode_);
 
   if (!IsRefreshTokenAvailable())

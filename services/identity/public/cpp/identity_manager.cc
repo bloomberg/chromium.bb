@@ -508,16 +508,16 @@ void IdentityManager::AuthenticatedAccountCleared() {
   primary_account_.reset();
 }
 
-void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
+void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
   CoreAccountInfo account_info =
-      GetAccountInfoForAccountWithRefreshToken(account_id);
+      GetAccountInfoForAccountWithRefreshToken(CoreAccountId(account_id));
 
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenUpdatedForAccount(account_info);
   }
 }
 
-void IdentityManager::OnRefreshTokenRevoked(const CoreAccountId& account_id) {
+void IdentityManager::OnRefreshTokenRevoked(const std::string& account_id) {
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenRemovedForAccount(account_id);
   }
@@ -534,10 +534,10 @@ void IdentityManager::OnEndBatchChanges() {
 }
 
 void IdentityManager::OnAuthErrorChanged(
-    const CoreAccountId& account_id,
+    const std::string& account_id,
     const GoogleServiceAuthError& auth_error) {
   CoreAccountInfo account_info =
-      GetAccountInfoForAccountWithRefreshToken(account_id);
+      GetAccountInfoForAccountWithRefreshToken(CoreAccountId(account_id));
 
   for (auto& observer : observer_list_)
     observer.OnErrorStateOfRefreshTokenUpdatedForAccount(account_info,

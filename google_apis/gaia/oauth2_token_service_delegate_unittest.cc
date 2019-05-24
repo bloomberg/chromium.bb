@@ -24,7 +24,7 @@ TEST(OAuth2TokenServiceDelegateTest, InvalidateTokensForMultilogin) {
   class TokenServiceObserver : public OAuth2TokenService::Observer {
    public:
     MOCK_METHOD2(OnAuthErrorChanged,
-                 void(const CoreAccountId&, const GoogleServiceAuthError&));
+                 void(const std::string&, const GoogleServiceAuthError&));
   };
 
   FakeOAuth2TokenServiceDelegate delegate;

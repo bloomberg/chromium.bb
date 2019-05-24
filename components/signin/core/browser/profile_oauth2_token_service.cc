@@ -143,7 +143,7 @@ void ProfileOAuth2TokenService::ExtractCredentials(
 #endif
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
-    const CoreAccountId& account_id) {
+    const std::string& account_id) {
   // Check if the newly-updated token is valid (invalid tokens are inserted when
   // the user signs out on the web with DICE enabled).
   bool is_valid = true;
@@ -168,7 +168,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
-    const CoreAccountId& account_id) {
+    const std::string& account_id) {
   // If this was the last token, recreate the device ID.
   RecreateDeviceIdIfNeeded();
 
