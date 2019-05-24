@@ -28,7 +28,8 @@ PluginResponseInterceptorURLLoaderThrottle::
         int frame_tree_node_id)
     : resource_context_(resource_context),
       resource_type_(resource_type),
-      frame_tree_node_id_(frame_tree_node_id) {}
+      frame_tree_node_id_(frame_tree_node_id),
+      weak_factory_(this) {}
 
 PluginResponseInterceptorURLLoaderThrottle::
     ~PluginResponseInterceptorURLLoaderThrottle() = default;
@@ -78,7 +79,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
           &payload, &data_pipe_size,
           base::BindOnce(
               &PluginResponseInterceptorURLLoaderThrottle::ResumeLoad,
-              base::Unretained(this)));
+              weak_factory_.GetWeakPtr()));
 
   mojo::DataPipe data_pipe(data_pipe_size);
   uint32_t len = static_cast<uint32_t>(payload.size());
