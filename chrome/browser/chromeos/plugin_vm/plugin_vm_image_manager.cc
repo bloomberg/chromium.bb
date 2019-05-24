@@ -192,7 +192,6 @@ void PluginVmImageManager::OnConciergeAvailable(bool success) {
 }
 
 base::Optional<base::ScopedFD> PluginVmImageManager::PrepareFD() {
-  // TODO(aoldemeier): do we need to close this?
   base::File file(downloaded_plugin_vm_image_archive_,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
@@ -239,7 +238,7 @@ void PluginVmImageManager::OnImportDiskImage(
 
   vm_tools::concierge::ImportDiskImageResponse response = reply.value();
 
-  // TODO(aoldemeier, okalitova): handle cases where this jumps straight to
+  // TODO(https://crbug.com/966397): handle cases where this jumps straight to
   // completed?
   if (response.status() !=
       vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS) {
@@ -253,7 +252,7 @@ void PluginVmImageManager::OnImportDiskImage(
   import_start_tick_ = base::TimeTicks::Now();
   current_import_command_uuid_ = response.command_uuid();
   // Image in progress. Waiting for progress signals...
-  // TODO(aoldemeier, okalitova): think about adding a timeout here,
+  // TODO(https://crbug.com/966398): think about adding a timeout here,
   //   i.e. what happens if concierge dies and does not report any signal
   //   back, not even an error signal. Right now, the user would see
   //   the "Configuring Plugin VM" screen forever. Maybe that's OK
@@ -418,7 +417,7 @@ download::DownloadParams PluginVmImageManager::GetDownloadParams(
   params.guid = base::GenerateGUID();
   params.callback = base::BindRepeating(&PluginVmImageManager::OnStartDownload,
                                         weak_ptr_factory_.GetWeakPtr());
-  // TODO(okalitova): Create annotation.
+  // TODO(https://crbug.com/966399): Create annotation.
   params.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET);
 
