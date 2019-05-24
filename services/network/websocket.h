@@ -84,6 +84,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
                          const std::vector<std::string>& requested_protocols,
                          const GURL& site_for_cookies,
                          std::vector<mojom::HttpHeaderPtr> additional_headers,
+                         mojom::WebSocketHandshakeClientPtr handshake_client,
                          mojom::WebSocketClientPtr client) override;
   void SendFrame(bool fin,
                  mojom::WebSocketMessageType type,
@@ -156,6 +157,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   std::unique_ptr<Delegate> delegate_;
   mojo::Binding<mojom::WebSocket> binding_;
 
+  mojom::WebSocketHandshakeClientPtr handshake_client_;
   mojom::WebSocketClientPtr client_;
   mojom::AuthenticationHandlerPtr auth_handler_;
   mojom::TrustedHeaderClientPtr header_client_;

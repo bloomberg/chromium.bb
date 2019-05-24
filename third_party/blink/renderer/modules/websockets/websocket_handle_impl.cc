@@ -22,7 +22,7 @@ const uint16_t kAbnormalShutdownOpCode = 1006;
 }  // namespace
 
 WebSocketHandleImpl::WebSocketHandleImpl()
-    : client_(nullptr), client_binding_(this) {
+    : client_(nullptr), handshake_client_binding_(this), client_binding_(this) {
   NETWORK_DVLOG(1) << this << " created";
 }
 
@@ -52,19 +52,23 @@ void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
   DCHECK(client);
   client_ = client;
 
-  network::mojom::blink::WebSocketClientPtr client_proxy;
+  network::mojom::blink::WebSocketHandshakeClientPtr handshake_client_proxy;
   Vector<network::mojom::blink::HttpHeaderPtr> additional_headers;
   if (!user_agent_override.IsNull()) {
     additional_headers.push_back(network::mojom::blink::HttpHeader::New(
         http_names::kUserAgent, user_agent_override));
   }
+  handshake_client_binding_.Bind(
+      mojo::MakeRequest(&handshake_client_proxy, task_runner), task_runner);
+  network::mojom::blink::WebSocketClientPtr client_proxy;
   client_binding_.Bind(mojo::MakeRequest(&client_proxy, task_runner),
                        task_runner);
-  client_binding_.set_connection_error_handler(WTF::Bind(
+  client_binding_.set_connection_error_with_reason_handler(WTF::Bind(
       &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
-  websocket_->AddChannelRequest(url, protocols, site_for_cookies,
-                                std::move(additional_headers),
-                                std::move(client_proxy));
+
+  websocket_->AddChannelRequest(
+      url, protocols, site_for_cookies, std::move(additional_headers),
+      std::move(handshake_client_proxy), std::move(client_proxy));
 }
 
 void WebSocketHandleImpl::Send(bool fin,
@@ -121,9 +125,16 @@ void WebSocketHandleImpl::Disconnect() {
   client_ = nullptr;
 }
 
-void WebSocketHandleImpl::OnConnectionError() {
+void WebSocketHandleImpl::OnConnectionError(uint32_t custom_reason,
+                                            const std::string& description) {
   // Our connection to the WebSocket was dropped. This could be due to
   // exceeding the maximum number of concurrent websockets from this process.
+  // This handler is sufficient to detect all mojo connection errors, as
+  // any error will result in the data connection being dropped.
+  // By detecting the errors on this channel, we ensure that any FailChannel
+  // messages from the network service will be processed first.
+  NETWORK_DVLOG(1) << " OnConnectionError( reason: " << custom_reason
+                   << ", description:" << description;
   OnFailChannel("Unknown reason");
 }
 

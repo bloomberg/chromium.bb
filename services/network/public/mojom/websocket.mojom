@@ -49,9 +49,7 @@ interface AuthenticationHandler {
                  IPEndPoint remote_endpoint) => (AuthCredentials? credentials);
 };
 
-interface WebSocketClient {
-  OnFailChannel(string reason);
-
+interface WebSocketHandshakeClient {
   // Notify the renderer that the browser has started an opening handshake.
   OnStartOpeningHandshake(WebSocketHandshakeRequest request);
 
@@ -65,7 +63,9 @@ interface WebSocketClient {
   // the server selected, or empty if no sub-protocol was selected.
   // |extensions| is the list of extensions negotiated for the connection.
   OnAddChannelResponse(string selected_protocol, string extensions);
+};
 
+interface WebSocketClient {
   // Receive a non-control frame from the remote server.
   // - |fin| indicates that this frame is the last in the current message.
   // - |type| is the type of the message. On the first frame of a message, it
@@ -104,6 +104,8 @@ interface WebSocketClient {
   // Notify the renderer that a closing handshake has been initiated by the
   // server, so that it can set the Javascript readyState to CLOSING.
   OnClosingHandshake();
+
+  OnFailChannel(string reason);
 };
 
 interface WebSocket {
@@ -123,6 +125,7 @@ interface WebSocket {
                     array<string> requested_protocols,
                     url.mojom.Url first_party_for_cookies,
                     array<HttpHeader> additional_headers,
+                    WebSocketHandshakeClient handshake_client,
                     WebSocketClient client);
 
   // Send a non-control frame to the remote server.
