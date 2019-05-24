@@ -120,9 +120,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/347538
     "race:sctp_timer_start\n"
 
-    // http://crbug.com/348511
-    "race:webrtc::acm1::AudioCodingModuleImpl::PlayoutData10Ms\n"
-
     // http://crbug.com/348982
     "race:cricket::P2PTransportChannel::OnConnectionDestroyed\n"
     "race:cricket::P2PTransportChannel::AddConnection\n"
