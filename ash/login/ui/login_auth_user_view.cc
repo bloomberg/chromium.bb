@@ -596,45 +596,52 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   DCHECK_NE(user.basic_user_info.type, user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
   // Build child views.
-  user_view_ = new LoginUserView(
+  auto user_view = std::make_unique<LoginUserView>(
       LoginDisplayStyle::kLarge, true /*show_dropdown*/, false /*show_domain*/,
       base::BindRepeating(&LoginAuthUserView::OnUserViewTap,
                           base::Unretained(this)),
       callbacks.on_remove_warning_shown, callbacks.on_remove);
+  user_view_ = user_view.get();
 
-  password_view_ = new LoginPasswordView();
-  password_view_->SetPaintToLayer();  // Needed for opacity animation.
-  password_view_->layer()->SetFillsBoundsOpaquely(false);
-  password_view_->UpdateForUser(user);
+  auto password_view = std::make_unique<LoginPasswordView>();
+  password_view_ = password_view.get();
+  password_view->SetPaintToLayer();  // Needed for opacity animation.
+  password_view->layer()->SetFillsBoundsOpaquely(false);
+  password_view->UpdateForUser(user);
 
-  pin_view_ =
-      new LoginPinView(LoginPinView::Style::kAlphanumeric,
-                       base::BindRepeating(&LoginPasswordView::InsertNumber,
-                                           base::Unretained(password_view_)),
-                       base::BindRepeating(&LoginPasswordView::Backspace,
-                                           base::Unretained(password_view_)));
+  auto pin_view = std::make_unique<LoginPinView>(
+      LoginPinView::Style::kAlphanumeric,
+      base::BindRepeating(&LoginPasswordView::InsertNumber,
+                          base::Unretained(password_view.get())),
+      base::BindRepeating(&LoginPasswordView::Backspace,
+                          base::Unretained(password_view.get())));
+  pin_view_ = pin_view.get();
   DCHECK(pin_view_->layer());
 
-  padding_below_password_view_ = new NonAccessibleView();
-  padding_below_password_view_->SetPreferredSize(gfx::Size(
+  auto padding_below_password_view = std::make_unique<NonAccessibleView>();
+  padding_below_password_view->SetPreferredSize(gfx::Size(
       kNonEmptyWidthDp, kDistanceBetweenPasswordFieldAndPinKeyboardDp));
+  padding_below_password_view_ = padding_below_password_view.get();
 
-  // Initialization of |password_view_| is deferred because it needs the
-  // |pin_view_| pointer.
-  password_view_->Init(
+  // Initialization of |password_view| is deferred because it needs the
+  // |pin_view| pointer.
+  password_view->Init(
       base::Bind(&LoginAuthUserView::OnAuthSubmit, base::Unretained(this)),
       base::Bind(&LoginPinView::OnPasswordTextChanged,
-                 base::Unretained(pin_view_)),
+                 base::Unretained(pin_view.get())),
       callbacks.on_easy_unlock_icon_hovered,
       callbacks.on_easy_unlock_icon_tapped);
 
-  online_sign_in_message_ = new views::LabelButton(
+  auto online_sign_in_message = std::make_unique<views::LabelButton>(
       this, base::UTF8ToUTF16(user.basic_user_info.display_name));
+  online_sign_in_message_ = online_sign_in_message.get();
   DecorateOnlineSignInMessage(online_sign_in_message_);
 
-  disabled_auth_message_ = new DisabledAuthMessageView();
+  auto disabled_auth_message = std::make_unique<DisabledAuthMessageView>();
+  disabled_auth_message_ = disabled_auth_message.get();
 
-  fingerprint_view_ = new FingerprintView();
+  auto fingerprint_view = std::make_unique<FingerprintView>();
+  fingerprint_view_ = fingerprint_view.get();
 
   // TODO(jdufault): Implement real UI.
   external_binary_auth_button_ =
@@ -652,38 +659,50 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   // Wrap the password view with a fill layout so that it always consumes space,
   // ie, when the password view is hidden the wrapped view will still consume
   // the same amount of space. This prevents the user view from shrinking.
-  auto* wrapped_password_view = new NonAccessibleView();
+  auto wrapped_password_view = std::make_unique<NonAccessibleView>();
   wrapped_password_view->SetLayoutManager(
       std::make_unique<views::FillLayout>());
-  wrapped_password_view->AddChildView(password_view_);
-  auto* wrapped_online_sign_in_message_view =
-      login_views_utils::WrapViewForPreferredSize(online_sign_in_message_);
-  auto* wrapped_disabled_auth_message_view =
-      login_views_utils::WrapViewForPreferredSize(disabled_auth_message_);
-  auto* wrapped_user_view =
-      login_views_utils::WrapViewForPreferredSize(user_view_);
-  auto* wrapped_pin_view =
-      login_views_utils::WrapViewForPreferredSize(pin_view_);
-  auto* wrapped_fingerprint_view =
-      login_views_utils::WrapViewForPreferredSize(fingerprint_view_);
-  auto* wrapped_external_binary_view =
-      login_views_utils::WrapViewForPreferredSize(external_binary_auth_button_);
-  auto* wrapped_external_binary_enrollment_view =
+  wrapped_password_view->AddChildView(std::move(password_view));
+  auto wrapped_online_sign_in_message_view =
       login_views_utils::WrapViewForPreferredSize(
-          external_binary_enrollment_button_);
-  auto* wrapped_padding_below_password_view =
-      login_views_utils::WrapViewForPreferredSize(padding_below_password_view_);
+          std::move(online_sign_in_message));
+  auto wrapped_disabled_auth_message_view =
+      login_views_utils::WrapViewForPreferredSize(
+          std::move(disabled_auth_message));
+  auto wrapped_user_view =
+      login_views_utils::WrapViewForPreferredSize(std::move(user_view));
+  auto wrapped_pin_view =
+      login_views_utils::WrapViewForPreferredSize(std::move(pin_view));
+  auto wrapped_fingerprint_view =
+      login_views_utils::WrapViewForPreferredSize(std::move(fingerprint_view));
+  auto wrapped_external_binary_view =
+      login_views_utils::WrapViewForPreferredSize(
+          base::WrapUnique(external_binary_auth_button_));
+  auto wrapped_external_binary_enrollment_view =
+      login_views_utils::WrapViewForPreferredSize(
+          base::WrapUnique(external_binary_enrollment_button_));
+  auto wrapped_padding_below_password_view =
+      login_views_utils::WrapViewForPreferredSize(
+          std::move(padding_below_password_view));
 
   // Add views in tabbing order; they are rendered in a different order below.
-  AddChildView(wrapped_password_view);
-  AddChildView(wrapped_online_sign_in_message_view);
-  AddChildView(wrapped_disabled_auth_message_view);
-  AddChildView(wrapped_pin_view);
-  AddChildView(wrapped_fingerprint_view);
-  AddChildView(wrapped_external_binary_view);
-  AddChildView(wrapped_external_binary_enrollment_view);
-  AddChildView(wrapped_user_view);
-  AddChildView(wrapped_padding_below_password_view);
+  views::View* wrapped_password_view_ptr =
+      AddChildView(std::move(wrapped_password_view));
+  views::View* wrapped_online_sign_in_message_view_ptr =
+      AddChildView(std::move(wrapped_online_sign_in_message_view));
+  views::View* wrapped_disabled_auth_message_view_ptr =
+      AddChildView(std::move(wrapped_disabled_auth_message_view));
+  views::View* wrapped_pin_view_ptr = AddChildView(std::move(wrapped_pin_view));
+  views::View* wrapped_fingerprint_view_ptr =
+      AddChildView(std::move(wrapped_fingerprint_view));
+  views::View* wrapped_external_binary_view_ptr =
+      AddChildView(std::move(wrapped_external_binary_view));
+  views::View* wrapped_external_binary_enrollment_view_ptr =
+      AddChildView(std::move(wrapped_external_binary_enrollment_view));
+  views::View* wrapped_user_view_ptr =
+      AddChildView(std::move(wrapped_user_view));
+  views::View* wrapped_padding_below_password_view_ptr =
+      AddChildView(std::move(wrapped_padding_below_password_view));
 
   // Use views::GridLayout instead of views::BoxLayout because views::BoxLayout
   // lays out children according to the view->children order.
@@ -703,16 +722,16 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
 
   // Add views in rendering order.
   add_padding(kDistanceFromTopOfBigUserViewToUserIconDp);
-  add_view(wrapped_user_view);
+  add_view(wrapped_user_view_ptr);
   add_padding(kDistanceBetweenUserViewAndPasswordDp);
-  add_view(wrapped_password_view);
-  add_view(wrapped_online_sign_in_message_view);
-  add_view(wrapped_disabled_auth_message_view);
-  add_view(wrapped_padding_below_password_view);
-  add_view(wrapped_pin_view);
-  add_view(wrapped_fingerprint_view);
-  add_view(wrapped_external_binary_view);
-  add_view(wrapped_external_binary_enrollment_view);
+  add_view(wrapped_password_view_ptr);
+  add_view(wrapped_online_sign_in_message_view_ptr);
+  add_view(wrapped_disabled_auth_message_view_ptr);
+  add_view(wrapped_padding_below_password_view_ptr);
+  add_view(wrapped_pin_view_ptr);
+  add_view(wrapped_fingerprint_view_ptr);
+  add_view(wrapped_external_binary_view_ptr);
+  add_view(wrapped_external_binary_enrollment_view_ptr);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.

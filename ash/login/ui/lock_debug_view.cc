@@ -1121,13 +1121,16 @@ views::LabelButton* LockDebugView::AddButton(const std::string& text,
                                              int id,
                                              views::View* container) {
   // Creates a button with |text| that cannot be focused.
-  auto* button = views::MdTextButton::CreateSecondaryUiButton(
-                     this, base::ASCIIToUTF16(text))
-                     .release();
+  std::unique_ptr<views::LabelButton> button =
+      views::MdTextButton::CreateSecondaryUiButton(this,
+                                                   base::ASCIIToUTF16(text));
   button->SetID(id);
   button->SetFocusBehavior(views::View::FocusBehavior::NEVER);
-  container->AddChildView(login_views_utils::WrapViewForPreferredSize(button));
-  return button;
+
+  views::LabelButton* view = button.get();
+  container->AddChildView(
+      login_views_utils::WrapViewForPreferredSize(std::move(button)));
+  return view;
 }
 
 }  // namespace ash

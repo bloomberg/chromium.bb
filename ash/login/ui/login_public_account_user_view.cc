@@ -68,22 +68,24 @@ LoginPublicAccountUserView::LoginPublicAccountUserView(
   DCHECK(callbacks.on_tap);
   DCHECK(callbacks.on_public_account_tapped);
 
-  user_view_ = new LoginUserView(
+  auto user_view = std::make_unique<LoginUserView>(
       LoginDisplayStyle::kLarge, false /*show_dropdown*/, true /*show_domain*/,
       base::BindRepeating(&LoginPublicAccountUserView::OnUserViewTap,
                           base::Unretained(this)),
       base::RepeatingClosure(), base::RepeatingClosure());
-  arrow_button_ = new ArrowButtonView(this, kArrowButtonSizeDp);
-  arrow_button_->SetBackgroundColor(kArrowButtonBackground);
-  arrow_button_->SetFocusPainter(nullptr);
+  auto arrow_button =
+      std::make_unique<ArrowButtonView>(this, kArrowButtonSizeDp);
+  arrow_button->SetBackgroundColor(kArrowButtonBackground);
+  arrow_button->SetFocusPainter(nullptr);
 
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // build layout for public account.
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  views::View* wrapped_user_view =
-      login_views_utils::WrapViewForPreferredSize(user_view_);
+  user_view_ = user_view.get();
+  auto wrapped_user_view =
+      login_views_utils::WrapViewForPreferredSize(std::move(user_view));
 
   auto add_padding = [&](int amount) {
     auto* padding = new NonAccessibleView();
@@ -92,9 +94,9 @@ LoginPublicAccountUserView::LoginPublicAccountUserView(
   };
 
   add_padding(kDistanceFromTopOfBigUserViewToUserIconDp);
-  AddChildView(wrapped_user_view);
+  AddChildView(std::move(wrapped_user_view));
   add_padding(kDistanceFromUserViewToArrowButton);
-  AddChildView(arrow_button_);
+  arrow_button_ = AddChildView(std::move(arrow_button));
   add_padding(kDistanceFromArrowButtonToBigUserViewBottom);
 
   // Update authentication UI.
