@@ -385,17 +385,6 @@ ShelfView::~ShelfView() {
 void ShelfView::Init() {
   model_->AddObserver(this);
 
-  // Add the background view behind the app list and back buttons first, so
-  // that other views will appear above it.
-  back_and_app_list_background_ = new views::View();
-  back_and_app_list_background_->set_can_process_events_within_subtree(false);
-  back_and_app_list_background_->SetBackground(
-      CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
-          kShelfControlPermanentHighlightBackground,
-          ShelfConstants::control_border_radius())));
-  ConfigureChildView(back_and_app_list_background_);
-  AddChildView(back_and_app_list_background_);
-
   const ShelfItems& items(model_->items());
   for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
     views::View* child = CreateViewForItem(*i);
@@ -917,6 +906,12 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
   }
 }
 
+// static
+void ShelfView::ConfigureChildView(views::View* view) {
+  view->SetPaintToLayer();
+  view->layer()->SetFillsBoundsOpaquely(false);
+}
+
 void ShelfView::CalculateIdealBounds() {
   DCHECK(model_->item_count() == view_model_->view_size());
 
@@ -1065,26 +1060,39 @@ void ShelfView::CalculateIdealBounds() {
   }
 }
 
-void ShelfView::LayoutAppListAndBackButtonHighlight() {
-  // Don't show anything if this is the overflow menu.
-  if (is_overflow_mode()) {
-    back_and_app_list_background_->SetVisible(false);
-    return;
+views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
+  views::View* view = nullptr;
+  switch (item.type) {
+    case TYPE_PINNED_APP:
+    case TYPE_BROWSER_SHORTCUT:
+    case TYPE_APP:
+    case TYPE_DIALOG: {
+      ShelfAppButton* button = new ShelfAppButton(this);
+      button->SetImage(item.image);
+      button->ReflectItemStatus(item);
+      view = button;
+      break;
+    }
+
+    case TYPE_APP_LIST: {
+      view = new AppListButton(this, shelf_);
+      break;
+    }
+
+    case TYPE_BACK_BUTTON: {
+      view = new BackButton(this);
+      break;
+    }
+
+    case TYPE_UNDEFINED:
+      return nullptr;
   }
-  const int button_spacing = ShelfConstants::button_spacing();
-  // "Secondary" as in "orthogonal to the shelf primary axis".
-  const int control_secondary_padding =
-      (ShelfConstants::shelf_size() - kShelfControlSize) / 2;
-  const int back_and_app_list_background_size =
-      kShelfControlSize +
-      (IsTabletModeEnabled() ? kShelfControlSize + button_spacing : 0);
-  back_and_app_list_background_->SetBounds(
-      shelf_->PrimaryAxisValue(button_spacing, control_secondary_padding),
-      shelf_->PrimaryAxisValue(control_secondary_padding, button_spacing),
-      shelf_->PrimaryAxisValue(back_and_app_list_background_size,
-                               kShelfControlSize),
-      shelf_->PrimaryAxisValue(kShelfControlSize,
-                               back_and_app_list_background_size));
+
+  if (item.type != TYPE_BACK_BUTTON)
+    view->set_context_menu_controller(this);
+
+  ConfigureChildView(view);
+  return view;
 }
 
 void ShelfView::DestroyDragIconProxy() {
@@ -1462,41 +1470,6 @@ void ShelfView::AnimateToIdealBounds() {
   LayoutAppListAndBackButtonHighlight();
   LayoutOverflowButton();
   UpdateVisibleShelfItemBoundsUnion();
-}
-
-views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
-  views::View* view = nullptr;
-  switch (item.type) {
-    case TYPE_PINNED_APP:
-    case TYPE_BROWSER_SHORTCUT:
-    case TYPE_APP:
-    case TYPE_DIALOG: {
-      ShelfAppButton* button = new ShelfAppButton(this);
-      button->SetImage(item.image);
-      button->ReflectItemStatus(item);
-      view = button;
-      break;
-    }
-
-    case TYPE_APP_LIST: {
-      view = new AppListButton(this, shelf_);
-      break;
-    }
-
-    case TYPE_BACK_BUTTON: {
-      view = new BackButton(this);
-      break;
-    }
-
-    case TYPE_UNDEFINED:
-      return nullptr;
-  }
-
-  if (item.type != TYPE_BACK_BUTTON)
-    view->set_context_menu_controller(this);
-
-  ConfigureChildView(view);
-  return view;
 }
 
 void ShelfView::FadeIn(views::View* view) {
@@ -1918,11 +1891,6 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
   return std::pair<int, int>(min_index, max_index);
 }
 
-void ShelfView::ConfigureChildView(views::View* view) {
-  view->SetPaintToLayer();
-  view->layer()->SetFillsBoundsOpaquely(false);
-}
-
 void ShelfView::ToggleOverflowBubble() {
   if (IsShowingOverflowBubble()) {
     overflow_bubble_->Hide();
@@ -1932,6 +1900,7 @@ void ShelfView::ToggleOverflowBubble() {
   if (!overflow_bubble_)
     overflow_bubble_.reset(new OverflowBubble(shelf_));
 
+  // TODO(agawronska): Move this to DefaultShelfView.
   ShelfView* overflow_view = new ShelfView(model_, shelf_, shelf_widget_);
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();

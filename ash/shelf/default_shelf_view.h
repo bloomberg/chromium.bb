@@ -9,6 +9,10 @@
 #include "ash/shelf/shelf_view.h"
 #include "base/macros.h"
 
+namespace views {
+class View;
+}  // namespace views
+
 namespace ash {
 
 class Shelf;
@@ -23,7 +27,16 @@ class ASH_EXPORT DefaultShelfView : public ShelfView {
   DefaultShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget);
   ~DefaultShelfView() override;
 
+  // All ShelfView overrides are public to keep them together.
+  // ShelfView:
+  void Init() override;
+  void LayoutAppListAndBackButtonHighlight() override;
+
  private:
+  // A view to draw a background behind the app list and back buttons.
+  // Owned by the view hierarchy.
+  views::View* back_and_app_list_background_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(DefaultShelfView);
 };
 

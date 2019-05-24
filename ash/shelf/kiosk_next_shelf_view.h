@@ -9,9 +9,14 @@
 #include "ash/shelf/shelf_view.h"
 #include "base/macros.h"
 
+namespace views {
+class View;
+}  // namespace views
+
 namespace ash {
 
 class Shelf;
+struct ShelfItem;
 class ShelfModel;
 class ShelfWidget;
 
@@ -28,14 +33,13 @@ class ASH_EXPORT KioskNextShelfView : public ShelfView {
                      ShelfWidget* shelf_widget);
   ~KioskNextShelfView() override;
 
+  // All ShelfView overrides are public to keep them together.
   // ShelfView:
   void Init() override;
+  void CalculateIdealBounds() override;
+  views::View* CreateViewForItem(const ShelfItem& item) override;
 
  private:
-  // ShelfView:
-  void CalculateIdealBounds() override;
-  void LayoutAppListAndBackButtonHighlight() override;
-
   DISALLOW_COPY_AND_ASSIGN(KioskNextShelfView);
 };
 

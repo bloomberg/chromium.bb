@@ -4,7 +4,12 @@
 
 #include "ash/shelf/kiosk_next_shelf_view.h"
 
+#include <memory>
+
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/shelf/app_list_button.h"
+#include "ash/shelf/back_button.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -13,6 +18,13 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -20,6 +32,62 @@
 namespace ash {
 
 namespace {
+
+// Kiosk Next back button with permanent round rectangle background.
+class KioskNextBackButton : public BackButton {
+ public:
+  explicit KioskNextBackButton(ShelfView* shelf_view)
+      : BackButton(shelf_view) {}
+  ~KioskNextBackButton() override = default;
+
+ private:
+  // views::BackButton:
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    PaintBackground(canvas, GetContentsBounds());
+    BackButton::PaintButtonContents(canvas);
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return std::make_unique<views::RoundRectInkDropMask>(
+        size(), gfx::InsetsF(), kKioskNextShelfControlWidthDp / 2);
+  }
+
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return std::make_unique<views::FloodFillInkDropRipple>(
+        size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
+        GetInkDropBaseColor(), ink_drop_visible_opacity());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextBackButton);
+};
+
+// Kiosk Next home button with permanent round rectangle background.
+class KioskNextHomeButton : public AppListButton {
+ public:
+  KioskNextHomeButton(ShelfView* shelf_view, Shelf* shelf)
+      : AppListButton(shelf_view, shelf) {}
+  ~KioskNextHomeButton() override = default;
+
+ private:
+  // views::AppListButton:
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    PaintBackground(canvas, GetContentsBounds());
+    AppListButton::PaintButtonContents(canvas);
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return std::make_unique<views::RoundRectInkDropMask>(
+        size(), gfx::InsetsF(), kKioskNextShelfControlWidthDp / 2);
+  }
+
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return std::make_unique<views::FloodFillInkDropRipple>(
+        size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
+        GetInkDropBaseColor(), ink_drop_visible_opacity());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextHomeButton);
+};
 
 bool IsTabletModeEnabled() {
   return Shell::Get()
@@ -62,28 +130,45 @@ void KioskNextShelfView::Init() {
 void KioskNextShelfView::CalculateIdealBounds() {
   DCHECK(shelf()->IsHorizontalAlignment());
   DCHECK_EQ(2, model()->item_count());
+  DCHECK_GE(kShelfSize, kKioskNextShelfControlHeightDp);
 
+  // TODO(https://crbug.com/965690): Button spacing might be relative to shelf
+  // width. Reevaluate this piece once visual spec is available.
+  const int control_buttons_spacing =
+      IsCurrentScreenOrientationLandscape()
+          ? kKioskNextShelfControlSpacingLandscapeDp
+          : kKioskNextShelfControlSpacingPortraitDp;
   const int total_shelf_width =
       shelf_widget()->GetWindowBoundsInScreen().width();
-  int x = total_shelf_width / 2 - kShelfControlSize -
-          ShelfConstants::button_spacing() / 2;
+  int x = total_shelf_width / 2 - kKioskNextShelfControlWidthDp -
+          control_buttons_spacing / 2;
+  int y = (kShelfSize - kKioskNextShelfControlHeightDp) / 2;
   for (int i = 0; i < view_model()->view_size(); ++i) {
     view_model()->set_ideal_bounds(
-        i, gfx::Rect(x, 0, kShelfControlSize, kShelfButtonSize));
-    x += (kShelfControlSize + ShelfConstants::button_spacing());
+        i, gfx::Rect(x, y, kKioskNextShelfControlWidthDp,
+                     kKioskNextShelfControlHeightDp));
+    x += (kKioskNextShelfControlWidthDp + control_buttons_spacing);
   }
 }
 
-void KioskNextShelfView::LayoutAppListAndBackButtonHighlight() {
-  const int total_shelf_width =
-      shelf_widget()->GetWindowBoundsInScreen().width();
-  const int x = total_shelf_width / 2 - kShelfControlSize -
-                ShelfConstants::button_spacing() / 2;
-  const int y = (ShelfConstants::shelf_size() - kShelfControlSize) / 2;
-  const int back_and_app_list_background_size =
-      2 * kShelfControlSize + ShelfConstants::button_spacing();
-  back_and_app_list_background()->SetBounds(
-      x, y, back_and_app_list_background_size, kShelfControlSize);
+views::View* KioskNextShelfView::CreateViewForItem(const ShelfItem& item) {
+  DCHECK(item.type == TYPE_BACK_BUTTON || item.type == TYPE_APP_LIST);
+
+  if (item.type == TYPE_BACK_BUTTON) {
+    auto* view = new KioskNextBackButton(this);
+    ConfigureChildView(view);
+    return view;
+  }
+
+  if (item.type == TYPE_APP_LIST) {
+    auto* view = new KioskNextHomeButton(this, shelf());
+    view->set_context_menu_controller(this);
+    ConfigureChildView(view);
+    return view;
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace ash

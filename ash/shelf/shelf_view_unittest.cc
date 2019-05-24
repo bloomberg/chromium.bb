@@ -11,6 +11,8 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/display/screen_orientation_controller.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
@@ -71,6 +73,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -1829,6 +1832,10 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   generator.MoveMouseTo(end_point);
   test_api_for_secondary_shelf_view.RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(test_api_for_secondary_shelf_view.IsRippedOffFromShelf());
+
+  // Release the button to prevent crash in test destructor (releasing the
+  // button triggers animating shelf to ideal bounds during shell destruction).
+  generator.ReleaseLeftButton();
 }
 
 // Checks various drag and drop operations from OverflowBubble to Shelf, and
@@ -3981,34 +3988,63 @@ TEST_F(KioskNextShelfViewTest, AppButtonHidden) {
   EXPECT_EQ(1, shelf_view_->last_visible_index());
 }
 
-// Control buttons (back/home) should be centered in Kiosk Next mode.
+// Tests that control buttons (back/home) are positioned correctly in Kiosk Next
+// mode. They should be centered, but exact position depends on the screen
+// orientation.
 TEST_F(KioskNextShelfViewTest, ControlButtonsCentered) {
+  // Setup internal display, otherwise setting display rotation will not take
+  // any effect.
+  const int64_t display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId internal_display(display_manager,
+                                                             display_id);
+
+  ScreenOrientationControllerTestApi screen_orientation_test_api(
+      Shell::Get()->screen_orientation_controller());
+
   LogInKioskNextUserInternal();
 
-  // Get shelf bounds from the widget - buttons should be centered relatively to
-  // the whole shelf area (consisting of shelf view and status area).
-  const gfx::Rect shelf_bounds = GetPrimaryShelf()
-                                     ->GetShelfViewForTesting()
-                                     ->GetWidget()
-                                     ->GetWindowBoundsInScreen();
+  auto test_controls_bounds = [&](display::Display::Rotation rotation,
+                                  bool is_landscape) {
+    SCOPED_TRACE(base::StringPrintf("Rotation: %d", rotation));
 
-  // Switch to local shelf coordinates - buttons bounds are checked in relation
-  // to shelf.
-  gfx::Rect expected_button_area_bounds = gfx::Rect(shelf_bounds.size());
-  const gfx::Size expected_button_area_size =
-      gfx::Size(2 * kShelfControlSize + ShelfConstants::button_spacing(),
-                ShelfConstants::shelf_size());
-  expected_button_area_bounds.ClampToCenteredSize(expected_button_area_size);
+    screen_orientation_test_api.SetDisplayRotation(
+        rotation, display::Display::RotationSource::ACTIVE);
 
-  const gfx::Rect back_button_bounds = test_api_->GetIdealBoundsByIndex(0);
-  EXPECT_FALSE(back_button_bounds.IsEmpty());
-  EXPECT_TRUE(expected_button_area_bounds.Contains(back_button_bounds));
+    // Get shelf bounds from the widget - buttons should be centered
+    // relatively to the whole shelf area (consisting of shelf view and
+    // status area).
+    const gfx::Rect shelf_bounds = GetPrimaryShelf()
+                                       ->GetShelfViewForTesting()
+                                       ->GetWidget()
+                                       ->GetWindowBoundsInScreen();
 
-  const gfx::Rect home_button_bounds = test_api_->GetIdealBoundsByIndex(1);
-  EXPECT_FALSE(home_button_bounds.IsEmpty());
-  EXPECT_TRUE(expected_button_area_bounds.Contains(home_button_bounds));
+    // Switch to local shelf coordinates - buttons bounds are checked in
+    // relation to shelf.
+    gfx::Rect expected_button_area_bounds = gfx::Rect(shelf_bounds.size());
+    const gfx::Size expected_button_area_size =
+        gfx::Size(2 * kKioskNextShelfControlWidthDp +
+                      (is_landscape ? kKioskNextShelfControlSpacingLandscapeDp
+                                    : kKioskNextShelfControlSpacingPortraitDp),
+                  ShelfConstants::shelf_size());
+    expected_button_area_bounds.ClampToCenteredSize(expected_button_area_size);
 
-  EXPECT_FALSE(back_button_bounds.Intersects(home_button_bounds));
+    const gfx::Rect back_button_bounds = test_api_->GetIdealBoundsByIndex(0);
+    EXPECT_FALSE(back_button_bounds.IsEmpty());
+    EXPECT_TRUE(expected_button_area_bounds.Contains(back_button_bounds));
+
+    const gfx::Rect home_button_bounds = test_api_->GetIdealBoundsByIndex(1);
+    EXPECT_FALSE(home_button_bounds.IsEmpty());
+    EXPECT_TRUE(expected_button_area_bounds.Contains(home_button_bounds));
+
+    EXPECT_FALSE(back_button_bounds.Intersects(home_button_bounds));
+  };
+
+  test_controls_bounds(display::Display::ROTATE_0, true /*is_landscape*/);
+  test_controls_bounds(display::Display::ROTATE_90, false /*is_landscape*/);
+  test_controls_bounds(display::Display::ROTATE_180, true /*is_landscape*/);
+  test_controls_bounds(display::Display::ROTATE_270, false /*is_landscape*/);
 }
 
 }  // namespace ash

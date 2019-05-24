@@ -129,6 +129,8 @@ class ASH_EXPORT ShelfView : public views::View,
   Shelf* shelf() const { return shelf_; }
   ShelfModel* model() const { return model_; }
 
+  // Initializes shelf view elements.
+  // When overriding subclasses should call parent implementation.
   virtual void Init();
 
   // Returns the ideal bounds of the specified item, or an empty rect if id
@@ -328,19 +330,29 @@ class ASH_EXPORT ShelfView : public views::View,
   views::ViewModel* view_model() { return view_model_.get(); }
 
  protected:
-  // Calculates the ideal bounds. The bounds of each button corresponding to an
-  // item in the model is set in |view_model_|.
+  // Common setup done for all children views.
+  static void ConfigureChildView(views::View* view);
+
+  // Calculates the ideal bounds of shelf elements.
+  // The bounds of each button corresponding to an item in the model is set in
+  // |view_model_|.
   virtual void CalculateIdealBounds();
 
-  virtual void LayoutAppListAndBackButtonHighlight();
+  // Creates the view used to represent given shelf |item|.
+  // Returns unowned pointer (view is owned by the view hierarchy).
+  // TODO(agawronska): This method could be pure virtual and implemented by
+  // succlasses, but creation of the overflow shelf has first be moved to
+  // DefaultShelfView.
+  virtual views::View* CreateViewForItem(const ShelfItem& item);
+
+  // Lays out control buttons background.
+  // Child classes should implement this method if control buttons background
+  // requires adjustment when shelf view layout changes.
+  virtual void LayoutAppListAndBackButtonHighlight() {}
 
   views::Separator* separator() { return separator_; }
 
   OverflowButton* overflow_button() { return overflow_button_; }
-
-  views::View* back_and_app_list_background() {
-    return back_and_app_list_background_;
-  }
 
   void set_first_visible_index(int index) { first_visible_index_ = index; }
   void set_last_visible_index(int index) { last_visible_index_ = index; }
@@ -373,7 +385,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Update all button's visibility in overflow.
   void UpdateAllButtonsVisibilityInOverflowMode();
 
-
   // Returns the size that's actually available for app icons. Size occupied
   // by the app list button and back button plus all appropriate margins is
   // not available for app icons.
@@ -391,9 +402,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Animates the bounds of each view to its ideal bounds.
   void AnimateToIdealBounds();
-
-  // Creates the view used to represent |item|.
-  views::View* CreateViewForItem(const ShelfItem& item);
 
   // Fades |view| from an opacity of 0 to 1. This is when adding a new item.
   void FadeIn(views::View* view);
@@ -446,9 +454,6 @@ class ASH_EXPORT ShelfView : public views::View,
   //    to overflow button.
   //  * In the overflow mode, returns only bubble's bounds.
   gfx::Rect GetBoundsForDragInsertInScreen();
-
-  // Common setup done for all children.
-  void ConfigureChildView(views::View* view);
 
   // Toggles the overflow menu.
   void ToggleOverflowBubble();
@@ -689,10 +694,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // The union of all visible shelf item bounds. Used for showing tooltips in
   // a continuous manner.
   gfx::Rect visible_shelf_item_bounds_union_;
-
-  // A view to draw a background behind the app list and back buttons.
-  // Owned by the view hierarchy.
-  views::View* back_and_app_list_background_ = nullptr;
 
   // A view used to make accessibility announcements (changes in the shelf's
   // alignment or auto-hide state).
