@@ -50,12 +50,14 @@ public class AssistantPaymentRequestContactDetailsSection
     }
 
     @Override
-    protected void createOrEditItem(@Nullable View oldFullView, @Nullable AutofillContact oldItem) {
+    protected void createOrEditItem(@Nullable AutofillContact oldItem) {
         if (mEditor != null) {
-            mIgnoreProfileChangeNotifications = true;
-            mEditor.edit(oldItem,
-                    editedOption -> onItemCreatedOrEdited(oldItem, oldFullView, editedOption));
-            mIgnoreProfileChangeNotifications = false;
+            mEditor.edit(oldItem, newItem -> {
+                assert (newItem != null && newItem.isComplete());
+                mIgnoreProfileChangeNotifications = true;
+                addOrUpdateItem(newItem, true);
+                mIgnoreProfileChangeNotifications = false;
+            }, cancel -> {});
         }
     }
 
@@ -144,7 +146,8 @@ public class AssistantPaymentRequestContactDetailsSection
     }
 
     @Override
-    protected void onItemAddedOrUpdated(AutofillContact contact) {
+    protected void addOrUpdateItem(AutofillContact contact, boolean select) {
+        super.addOrUpdateItem(contact, select);
         addAutocompleteInformationToEditor(contact);
     }
 

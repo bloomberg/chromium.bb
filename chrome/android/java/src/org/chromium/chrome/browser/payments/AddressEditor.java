@@ -139,6 +139,15 @@ public class AddressEditor
     }
 
     /**
+     * Allows calling |edit| with a single callback used for both 'done' and 'cancel'.
+     * @see #edit(AutofillAddress, Callback, Callback)
+     */
+    public void edit(
+            @Nullable final AutofillAddress toEdit, final Callback<AutofillAddress> callback) {
+        edit(toEdit, callback, callback);
+    }
+
+    /**
      * Builds and shows an editor model with the following fields.
      *
      * [ country dropdown   ] <----- country dropdown is always present.
@@ -150,9 +159,10 @@ public class AddressEditor
      * [ phone number field ] <----- phone is always present and required.
      */
     @Override
-    public void edit(
-            @Nullable final AutofillAddress toEdit, final Callback<AutofillAddress> callback) {
-        super.edit(toEdit, callback);
+    public void edit(@Nullable final AutofillAddress toEdit,
+            final Callback<AutofillAddress> doneCallback,
+            final Callback<AutofillAddress> cancelCallback) {
+        super.edit(toEdit, doneCallback, cancelCallback);
 
         if (mAutofillProfileBridge == null) mAutofillProfileBridge = new AutofillProfileBridge();
 
@@ -275,7 +285,7 @@ public class AddressEditor
             // ever called when Cancel has already occurred.
             mAdminAreasLoaded = true;
             PersonalDataManager.getInstance().cancelPendingGetSubKeys();
-            callback.onResult(toEdit);
+            cancelCallback.onResult(toEdit);
         });
 
         // If the user clicks [Done], save changes on disk, mark the address "complete," and send it
@@ -285,7 +295,7 @@ public class AddressEditor
             PersonalDataManager.getInstance().cancelPendingGetSubKeys();
             commitChanges(mProfile);
             address.completeAddress(mProfile);
-            callback.onResult(address);
+            doneCallback.onResult(address);
         });
 
         loadAdminAreasForCountry(mCountryField.getValue().toString());

@@ -108,9 +108,9 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         titleAddButtonLabelView.setText(titleAddButton);
 
         mTitleAddButton = mSectionExpander.findViewById(R.id.section_title_add_button);
-        mTitleAddButton.setOnClickListener(unusedView -> createOrEditItem(null, null));
+        mTitleAddButton.setOnClickListener(unusedView -> createOrEditItem(null));
 
-        mItemsView.setOnAddButtonClickedListener(() -> createOrEditItem(null, null));
+        mItemsView.setOnAddButtonClickedListener(() -> createOrEditItem(null));
         parent.addView(mSectionExpander,
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -182,6 +182,12 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         return items;
     }
 
+    /**
+     * Adds a new item to the list, or updates an item in-place if it is already in the list.
+     *
+     * @param option The item to add or update.
+     * @param select Whether to select the new/updated item or not.
+     */
     void addOrUpdateItem(@Nullable T option, boolean select) {
         if (option == null) {
             return;
@@ -204,7 +210,6 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         } else {
             updateSummaryView(mSummaryView, item.mOption);
         }
-        onItemAddedOrUpdated(option);
 
         if (select) {
             mIgnoreItemSelectedNotifications = true;
@@ -219,7 +224,7 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         updatePaddings();
     }
 
-    void updatePaddings() {
+    private void updatePaddings() {
         if (isEmpty()) {
             // Section is empty, i.e., the title is the bottom-most widget.
             mSectionExpander.setTitlePadding(mTopPadding, mBottomPadding);
@@ -273,19 +278,18 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
                 // radiobutton to not render properly.
                 mSectionExpander.post(() -> mSectionExpander.setExpanded(false));
             } else {
-                createOrEditItem(item.mFullView, item.mOption);
+                createOrEditItem(item.mOption);
             }
-        }, () -> createOrEditItem(item.mFullView, item.mOption));
+        }, () -> createOrEditItem(item.mOption));
         updateVisibility();
     }
 
     /**
      * Asks the subclass to edit an item or create a new one (if |oldItem| is null). Subclasses
-     * should call |onItemCreatedOrEdited| when they are done.
-     * @param oldFullView The view associated with |oldItem|.
+     * should call |addOrUpdateItem| when they are done.
      * @param oldItem The item to be edited (null if a new item should be created).
      */
-    protected abstract void createOrEditItem(@Nullable View oldFullView, @Nullable T oldItem);
+    protected abstract void createOrEditItem(@Nullable T oldItem);
 
     /**
      * Asks the subclass to update the contents of |fullView|, which was previously created by
@@ -299,38 +303,10 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
     protected abstract void updateSummaryView(View summaryView, T option);
 
     /**
-     * An item was added to the list or updated in place. Subclasses may react to this event. A
-     * common use case is for subclasses to add the information of the new profile to the
-     * autocomplete fields of their editor.
-     */
-    protected abstract void onItemAddedOrUpdated(T option);
-
-    /**
      * For convenience. Hides |view| if it is empty.
      */
     void hideIfEmpty(TextView view) {
         view.setVisibility(view.length() == 0 ? View.GONE : View.VISIBLE);
-    }
-
-    /**
-     * An old item was edited or a new item was created.
-     *
-     * @param oldItem The item that was edited. null to indicate that a new item was created.
-     * @param oldFullView The view associated with |oldItem|. Null if |oldItem| is null.
-     * @param newItem The new or edited item. Cancelling an 'edit' flow will yield the old item.
-     */
-    void onItemCreatedOrEdited(
-            @Nullable T oldItem, @Nullable View oldFullView, @Nullable T newItem) {
-        if (newItem == null) {
-            // User cancelled 'add' flow.
-            return;
-        } else if (!newItem.isComplete()) {
-            // User cancelled 'edit' flow.
-            return;
-            // TODO(crbug.com/806868) add special case for cancelling edit of incomplete item
-        } else {
-            addOrUpdateItem(newItem, /*select = */ true);
-        }
     }
 
     private boolean isEmpty() {

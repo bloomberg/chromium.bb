@@ -42,13 +42,15 @@ public class AssistantPaymentRequestShippingAddressSection
     }
 
     @Override
-    protected void createOrEditItem(@Nullable View oldFullView, @Nullable AutofillAddress oldItem) {
+    protected void createOrEditItem(@Nullable AutofillAddress oldItem) {
         if (mEditor == null) {
             return;
         }
         mIgnoreProfileChangeNotifications = true;
-        mEditor.edit(
-                oldItem, editedOption -> onItemCreatedOrEdited(oldItem, oldFullView, editedOption));
+        mEditor.edit(oldItem, newItem -> {
+            assert (newItem != null && newItem.isComplete());
+            addOrUpdateItem(newItem, true);
+        }, cancel -> {});
         mIgnoreProfileChangeNotifications = false;
     }
 
@@ -113,8 +115,13 @@ public class AssistantPaymentRequestShippingAddressSection
     }
 
     @Override
-    protected void onItemAddedOrUpdated(AutofillAddress address) {
+    protected void addOrUpdateItem(AutofillAddress address, boolean select) {
+        super.addOrUpdateItem(address, select);
+
         // Update autocomplete information in the editor.
+        if (mEditor == null) {
+            return;
+        }
         mEditor.addPhoneNumberIfValid(address.getProfile().getPhoneNumber());
     }
 }

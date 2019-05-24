@@ -26,6 +26,7 @@ import java.util.List;
 public class AssistantPaymentRequestPaymentMethodSection
         extends AssistantPaymentRequestSection<AutofillPaymentInstrument> {
     private CardEditor mEditor;
+    private boolean mIgnorePaymentMethodsChangeNotifications;
 
     AssistantPaymentRequestPaymentMethodSection(Context context, ViewGroup parent) {
         super(context, parent, R.layout.autofill_assistant_payment_method_summary,
@@ -42,13 +43,16 @@ public class AssistantPaymentRequestPaymentMethodSection
     }
 
     @Override
-    protected void createOrEditItem(
-            @Nullable View oldFullView, @Nullable AutofillPaymentInstrument oldItem) {
+    protected void createOrEditItem(@Nullable AutofillPaymentInstrument oldItem) {
         if (mEditor == null) {
             return;
         }
-        mEditor.edit(
-                oldItem, editedOption -> onItemCreatedOrEdited(oldItem, oldFullView, editedOption));
+        mEditor.edit(oldItem, newItem -> {
+            assert (newItem != null && newItem.isComplete());
+            mIgnorePaymentMethodsChangeNotifications = true;
+            addOrUpdateItem(newItem, true);
+            mIgnorePaymentMethodsChangeNotifications = false;
+        }, cancel -> {});
     }
 
     @Override
@@ -93,11 +97,6 @@ public class AssistantPaymentRequestPaymentMethodSection
         methodIncompleteView.setVisibility(method.isComplete() ? View.GONE : View.VISIBLE);
     }
 
-    @Override
-    protected void onItemAddedOrUpdated(AutofillPaymentInstrument method) {
-        // Nothing to do
-    }
-
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
         for (PersonalDataManager.AutofillProfile profile : profiles) {
             // TODO(crbug.com/806868): replace suggested billing addresses (remove if necessary).
@@ -110,6 +109,9 @@ public class AssistantPaymentRequestPaymentMethodSection
      * the new/changed set of payment methods, while keeping the selected item if possible.
      */
     void onAvailablePaymentMethodsChanged(List<AutofillPaymentInstrument> paymentMethods) {
+        if (mIgnorePaymentMethodsChangeNotifications) {
+            return;
+        }
         AutofillPaymentInstrument previouslySelectedMethod = mSelectedOption;
         int selectedMethodIndex = -1;
         for (int i = 0; i < paymentMethods.size(); i++) {
