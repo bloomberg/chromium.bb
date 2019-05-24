@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -92,8 +91,6 @@ class AutoclickTest : public AshTestBase {
   ~AutoclickTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalAccessibilityAutoclick);
     AshTestBase::SetUp();
     Shell::Get()->AddPreTargetHandler(&mouse_event_capturer_);
     GetAutoclickController()->SetAutoclickDelay(base::TimeDelta());

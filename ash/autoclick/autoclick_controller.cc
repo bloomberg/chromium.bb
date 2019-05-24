@@ -16,11 +16,9 @@
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -106,12 +104,8 @@ void AutoclickController::SetEnabled(bool enabled,
     // Only create the bubble controller when needed. Most users will not enable
     // automatic clicks, so there's no need to use these unless the feature
     // is on.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalAccessibilityAutoclick)) {
-      menu_bubble_controller_ =
-          std::make_unique<AutoclickMenuBubbleController>();
-      menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
-    }
+    menu_bubble_controller_ = std::make_unique<AutoclickMenuBubbleController>();
+    menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
     enabled_ = enabled;
   } else {
     if (show_confirmation_dialog) {
@@ -388,14 +382,7 @@ void AutoclickController::UpdateRingWidget(const gfx::Point& point_in_screen) {
 }
 
 void AutoclickController::UpdateRingSize() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalAccessibilityAutoclick)) {
-    return;
-  }
-  // In V2, size doesn't need two inputs.
-  // TODO(katie): Re-write this function to take one parameter when fully
-  // upgrading to V2.
-  autoclick_ring_handler_->SetSize(movement_threshold_, movement_threshold_);
+  autoclick_ring_handler_->SetSize(movement_threshold_);
 }
 
 bool AutoclickController::DragInProgress() const {

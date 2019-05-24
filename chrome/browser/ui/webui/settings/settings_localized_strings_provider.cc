@@ -340,10 +340,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityFeatures));
 
   html_source->AddBoolean(
-      "showExperimentalAccessibilityAutoclick",
-      cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityAutoclick));
-
-  html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccess",
       cmd.HasSwitch(::switches::kEnableExperimentalAccessibilitySwitchAccess));
 #endif

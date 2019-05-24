@@ -109,14 +109,6 @@ Polymer({
       },
     },
 
-    showExperimentalAutoclick_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean(
-            'showExperimentalAccessibilityAutoclick');
-      },
-    },
-
     showExperimentalSwitchAccess_: {
       type: Boolean,
       value: function() {
