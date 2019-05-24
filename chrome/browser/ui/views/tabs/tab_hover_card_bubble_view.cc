@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -362,6 +363,18 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
       base::TimeDelta::FromMilliseconds(500);
   base::TimeDelta elapsed_time =
       base::TimeTicks::Now() - last_visible_timestamp_;
+  constexpr base::TimeDelta kMaxHoverCardReshowTimeDelta =
+      base::TimeDelta::FromSeconds(5);
+  if ((!widget_->IsVisible() || IsFadingOut()) &&
+      elapsed_time <= kMaxHoverCardReshowTimeDelta) {
+    constexpr base::TimeDelta kMinHoverCardReshowTimeDelta =
+        base::TimeDelta::FromMilliseconds(1);
+    constexpr int kHoverCardHistogramBucketCount = 50;
+    UMA_HISTOGRAM_CUSTOM_TIMES("TabHoverCards.TimeSinceLastVisible",
+                               elapsed_time, kMinHoverCardReshowTimeDelta,
+                               kMaxHoverCardReshowTimeDelta,
+                               kHoverCardHistogramBucketCount);
+  }
   bool show_immediately = !last_visible_timestamp_.is_null() &&
                           elapsed_time <= kShowWithoutDelayTimeBuffer;
 
