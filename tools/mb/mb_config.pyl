@@ -25,19 +25,19 @@
     # to have proprietary codecs enabled.
     'chromium': {
       'android-archive-rel': 'android_without_codecs_release_bot_minimal_symbols',
-      'android-archive-dbg': 'android_without_codecs_debug_bot_minimal_symbols',
+      'android-archive-dbg': 'android_without_codecs_debug_bot',
       'linux-archive-rel': 'release_bot',
       'linux-archive-dbg': 'debug_bot',
       'mac-archive-rel': 'release_bot_mac_strip',
       'mac-archive-dbg': 'debug_bot',
       'win32-archive-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
-      'win32-archive-dbg': 'debug_bot_x86_minimal_symbols',
+      'win32-archive-dbg': 'debug_bot_x86',
       'win-archive-rel': 'release_bot_minimal_symbols_enable_archive_compression',
-      'win-archive-dbg': 'debug_bot_minimal_symbols',
+      'win-archive-dbg': 'debug_bot',
     },
 
     'chromium.android': {
-      'Android ASAN (dbg)': 'android_clang_asan_debug_bot_minimal_symbols',
+      'Android ASAN (dbg)': 'android_clang_asan_debug_bot',
       'Android arm Builder (dbg)': 'android_debug_static_bot',
       'Android arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
       'Android x64 Builder (dbg)': 'android_debug_static_bot_x64',
@@ -234,12 +234,12 @@
       'Mac Goma Latest Client (clobber)': 'release_bot_mac_strip',
       'Mac Goma Latest Client LocalOutputCache': 'release_bot_mac_strip',
 
-      'Win7 Builder (dbg) Goma Canary': 'debug_trybot_x86_minimal_symbols',
-      'Win7 Builder (dbg) Goma Latest Client': 'debug_trybot_x86_minimal_symbols',
+      'Win7 Builder (dbg) Goma Canary': 'debug_trybot_x86',
+      'Win7 Builder (dbg) Goma Latest Client': 'debug_trybot_x86',
       'Win7 Builder Goma Canary': 'release_bot_x86_minimal_symbols',
       'Win7 Builder Goma Latest Client': 'release_bot_x86_minimal_symbols',
-      'Win Builder (dbg) Goma Canary': 'debug_bot_x86_minimal_symbols',
-      'Win Builder (dbg) Goma Latest Client': 'debug_bot_x86_minimal_symbols',
+      'Win Builder (dbg) Goma Canary': 'debug_bot_x86',
+      'Win Builder (dbg) Goma Latest Client': 'debug_bot_x86',
       'Win Builder Goma Canary': 'release_bot_x86_minimal_symbols',
       'Win Builder Goma Latest Client': 'release_bot_x86_minimal_symbols',
       'Win cl.exe Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_no_clang',
@@ -325,8 +325,8 @@
       'Chromium Win Goma RBE Staging (clobber)': 'release_bot_x86_minimal_symbols',
       'Chromium Win Goma RBE Prod': 'release_bot_x86_minimal_symbols',
       'Chromium Win Goma RBE Prod (clobber)': 'release_bot_x86_minimal_symbols',
-      'Chromium Win Goma RBE Prod (dbg)': 'debug_bot_x86_minimal_symbols',
-      'Chromium Win Goma RBE Prod (dbg) (clobber)': 'debug_bot_x86_minimal_symbols',
+      'Chromium Win Goma RBE Prod (dbg)': 'debug_bot_x86',
+      'Chromium Win Goma RBE Prod (dbg) (clobber)': 'debug_bot_x86',
 
       'Chromium Android ARM 32-bit Goma RBE ToT': 'android_release_bot_minimal_symbols',
       'Chromium Android ARM 32-bit Goma RBE ToT (ATS)': 'android_release_bot_minimal_symbols',
@@ -352,7 +352,7 @@
       'GPU Linux Builder': 'gpu_tests_release_trybot',
       'GPU Linux Builder (dbg)': 'gpu_tests_debug_trybot',
       'GPU Win Builder': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
-      'GPU Win Builder (dbg)': 'gpu_tests_debug_trybot_x86_minimal_symbols',
+      'GPU Win Builder (dbg)': 'gpu_tests_debug_trybot_x86',
       'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
     },
 
@@ -469,7 +469,7 @@
       'WebKit Linux Trusty ASAN': 'asan_lsan_release_bot',
       'WebKit Linux Trusty Leak': 'release_bot',
       'WebKit Linux Trusty MSAN': 'msan_release_bot',
-      'android-asan': 'android_clang_asan_debug_bot_minimal_symbols_arm64',
+      'android-asan': 'android_clang_asan_debug_bot_arm64',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
     },
 
@@ -561,16 +561,16 @@
       'WebRTC Chromium FYI Mac Builder': 'gpu_tests_release_bot',
       'WebRTC Chromium FYI Mac Builder (dbg)': 'debug_bot',
       'WebRTC Chromium FYI Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
-      'WebRTC Chromium FYI Win Builder (dbg)': 'debug_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
+      'WebRTC Chromium FYI Win Builder (dbg)': 'debug_bot_x86_no_com_init_hooks_with_codecs',
     },
 
     'chromium.win': {
       # Windows bots take too long to link w/ full symbols and time out.
       'Win Builder': 'gpu_tests_release_bot_x86_minimal_symbols',
-      'Win Builder (dbg)': 'gpu_tests_debug_bot_x86_minimal_symbols',
+      'Win Builder (dbg)': 'gpu_tests_debug_bot_x86',
       'win-jumbo-rel': 'jumbo_large_chunks_release_bot_minimal_symbols',
       'Win x64 Builder': 'gpu_tests_release_bot_minimal_symbols',
-      'Win x64 Builder (dbg)': 'gpu_tests_debug_bot_minimal_symbols',
+      'Win x64 Builder (dbg)': 'gpu_tests_debug_bot',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
     },
 
@@ -578,7 +578,7 @@
       'Linux Canary': 'debug_bot',
       'Linux Dev': 'debug_bot',
       'Mac Dev': 'debug_bot',
-      'Windows Dev': 'debug_bot_minimal_symbols',
+      'Windows Dev': 'debug_bot',
     },
 
     # Manually triggered internal builders running on LUCI.
@@ -820,7 +820,7 @@
       'gpu-fyi-try-win10-nvidia-dqp': 'deqp_release_trybot_x86',
       'gpu-fyi-try-win10-nvidia-exp': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win10-nvidia-rel': 'gpu_fyi_tests_release_trybot_x86',
-      'gpu-try-win10-nvidia-dbg': 'gpu_tests_debug_trybot_x86_minimal_symbols',
+      'gpu-try-win10-nvidia-dbg': 'gpu_tests_debug_trybot_x86',
       'win7_chromium_rel_loc_exp': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_trybot',
       'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_whitelisting',
@@ -832,9 +832,9 @@
       'win7-rel': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
-      'win_chromium_compile_dbg_ng': 'gpu_tests_debug_trybot_x86_minimal_symbols',
+      'win_chromium_compile_dbg_ng': 'gpu_tests_debug_trybot_x86',
       'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols_resource_whitelisting',
-      'win_chromium_dbg_ng': 'gpu_tests_debug_trybot_x86_minimal_symbols',
+      'win_chromium_dbg_ng': 'gpu_tests_debug_trybot_x86',
       'win_chromium_x64_rel_ng': 'gpu_tests_release_trybot_minimal_symbols',
       'win_mojo': 'release_trybot_x86',
       'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_x86',
@@ -891,13 +891,12 @@
       'android', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
     ],
 
-    'android_clang_asan_debug_bot_minimal_symbols': [
-      'android', 'clang', 'asan', 'debug_bot', 'minimal_symbols',
-      'strip_debug_info',
+    'android_clang_asan_debug_bot': [
+      'android', 'clang', 'asan', 'debug_bot', 'strip_debug_info',
     ],
 
-    'android_clang_asan_debug_bot_minimal_symbols_arm64': [
-      'android', 'clang', 'asan', 'debug_bot', 'minimal_symbols', 'arm64',
+    'android_clang_asan_debug_bot_arm64': [
+      'android', 'clang', 'asan', 'debug_bot', 'arm64',
     ],
 
     'android_clang_asan_debug_trybot_compile_only': [
@@ -1087,8 +1086,8 @@
       'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
     ],
 
-    'android_without_codecs_debug_bot_minimal_symbols': [
-      'android_without_codecs', 'debug_bot', 'minimal_symbols',
+    'android_without_codecs_debug_bot': [
+      'android_without_codecs', 'debug_bot',
     ],
 
     'android_without_codecs_release_bot_minimal_symbols': [
@@ -1401,14 +1400,12 @@
       'debug_bot', 'fuchsia',
     ],
 
-    # compiler.gni implicitly sets symbol_level=1 on Windows if goma is enabled,
-    # if MSVC is used.  Explicitly set it here so that it's set consistently for
-    # both MSVC and clang.
-    'debug_bot_minimal_symbols': [ 'debug_bot', 'minimal_symbols' ],
-    'debug_bot_x86_minimal_symbols': [ 'debug_bot', 'x86', 'minimal_symbols' ],
+    'debug_bot_x86': [
+      'debug_bot', 'x86',
+    ],
 
-    'debug_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
-      'debug_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
+    'debug_bot_x86_no_com_init_hooks_with_codecs': [
+      'debug_bot', 'x86', 'no_com_init_hooks', 'chrome_with_codecs'
     ],
 
     'libfuzzer_asan_debug_bot_v8_arm64': [
@@ -1432,10 +1429,6 @@
     ],
 
     'debug_trybot_x86': [
-      'debug_trybot', 'x86',
-    ],
-
-    'debug_trybot_x86_minimal_symbols': [
       'debug_trybot', 'x86',
     ],
 
@@ -1521,16 +1514,8 @@
       'gpu_tests', 'debug_bot',
     ],
 
-    'gpu_tests_debug_bot_minimal_symbols': [
-      'gpu_tests', 'debug_bot', 'minimal_symbols',
-    ],
-
     'gpu_tests_debug_bot_x86': [
       'gpu_tests', 'debug_bot', 'x86',
-    ],
-
-    'gpu_tests_debug_bot_x86_minimal_symbols': [
-      'gpu_tests', 'debug_bot', 'x86', 'minimal_symbols',
     ],
 
     'gpu_tests_debug_trybot': [
@@ -1541,8 +1526,8 @@
       'gpu_tests', 'debug_trybot', 'x86',
     ],
 
-    'gpu_tests_debug_trybot_x86_minimal_symbols': [
-      'gpu_tests', 'debug_trybot', 'x86', 'minimal_symbols',
+    'gpu_tests_debug_trybot_x86': [
+      'gpu_tests', 'debug_trybot', 'x86',
     ],
 
     'gpu_tests_release_bot_minimal_symbols': [
