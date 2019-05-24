@@ -10,10 +10,15 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/send_tab_to_self/target_device_info.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/copy_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
@@ -66,11 +71,13 @@ NSString* const kActivityServicesSnackbarCategory =
 // share to the sharing activities.
 - (NSArray*)activityItemsForData:(ShareToData*)data;
 // Returns an array of UIActivity objects that can handle the given |data|.
-- (NSArray*)applicationActivitiesForData:(ShareToData*)data
-                              dispatcher:(id<BrowserCommands>)dispatcher
-                           bookmarkModel:
-                               (bookmarks::BookmarkModel*)bookmarkModel
-                        canSendTabToSelf:(BOOL)canSendTabToSelf;
+- (NSArray*)
+    applicationActivitiesForData:(ShareToData*)data
+                      dispatcher:(id<BrowserCommands>)dispatcher
+                   bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                canSendTabToSelf:(BOOL)canSendTabToSelf
+              sendTabToSelfModel:
+                  (send_tab_to_self::SendTabToSelfModel*)sendTabToSelfModel;
 // Processes |extensionItems| returned from App Extension invocation returning
 // the |activityType|. Calls shareDelegate_ with the processed returned items
 // and |result| of activity. Returns whether caller should reset UI.
@@ -150,19 +157,25 @@ NSString* const kActivityServicesSnackbarCategory =
 
   BOOL canSendTabToSelf =
       send_tab_to_self::ShouldOfferFeature(browserState, data.shareURL);
+
+  send_tab_to_self::SendTabToSelfModel* sendTabToSelfModel =
+      SendTabToSelfSyncServiceFactory::GetForBrowserState(browserState)
+          ->GetSendTabToSelfModel();
+
   DCHECK(!activityViewController_);
   activityViewController_ = [[UIActivityViewController alloc]
       initWithActivityItems:[self activityItemsForData:data]
-      applicationActivities:[self
-                                applicationActivitiesForData:data
-                                                  dispatcher:dispatcher
-                                               bookmarkModel:bookmarkModel
-                                            canSendTabToSelf:canSendTabToSelf]];
+      applicationActivities:
+          [self applicationActivitiesForData:data
+                                  dispatcher:dispatcher
+                               bookmarkModel:bookmarkModel
+                            canSendTabToSelf:canSendTabToSelf
+                          sendTabToSelfModel:sendTabToSelfModel]];
 
   // Reading List and Print activities refer to iOS' version of these.
-  // Chrome-specific implementations of these two activities are provided below
-  // in applicationActivitiesForData:dispatcher:bookmarkModel:
-  // The "Copy" action is also provided by chrome in order to change its icon.
+  // Chrome-specific implementations of these two activities are provided
+  // below in applicationActivitiesForData:dispatcher:bookmarkModel: The
+  // "Copy" action is also provided by chrome in order to change its icon.
   NSArray* excludedActivityTypes = @[
     UIActivityTypeAddToReadingList, UIActivityTypeCopyToPasteboard,
     UIActivityTypePrint, UIActivityTypeSaveToCameraRoll
@@ -252,20 +265,37 @@ NSString* const kActivityServicesSnackbarCategory =
   return activityItems;
 }
 
-- (NSArray*)applicationActivitiesForData:(ShareToData*)data
-                              dispatcher:(id<BrowserCommands>)dispatcher
-                           bookmarkModel:
-                               (bookmarks::BookmarkModel*)bookmarkModel
-                        canSendTabToSelf:(BOOL)canSendTabToSelf {
+- (NSArray*)
+    applicationActivitiesForData:(ShareToData*)data
+                      dispatcher:(id<BrowserCommands>)dispatcher
+                   bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                canSendTabToSelf:(BOOL)canSendTabToSelf
+              sendTabToSelfModel:
+                  (send_tab_to_self::SendTabToSelfModel*)sendTabToSelfModel {
   NSMutableArray* applicationActivities = [NSMutableArray array];
 
   [applicationActivities
       addObject:[[CopyActivity alloc] initWithURL:data.shareURL]];
 
   if (data.shareURL.SchemeIsHTTPOrHTTPS()) {
-    if (canSendTabToSelf) {
+    if (canSendTabToSelf && sendTabToSelfModel) {
+      std::map<std::string, send_tab_to_self::TargetDeviceInfo>
+          target_device_map =
+              sendTabToSelfModel->GetTargetDeviceNameToCacheInfoMap();
+      NSMutableDictionary* sendTabToSelfTargets =
+          [[NSMutableDictionary alloc] init];
+      for (auto const& iter : target_device_map) {
+        NSString* title = base::SysUTF8ToNSString(iter.first);
+        NSString* cache_guid = base::SysUTF8ToNSString(iter.second.cache_guid);
+        sendTabToSelfTargets[title] = cache_guid;
+      }
+
       SendTabToSelfActivity* sendTabToSelfActivity =
-          [[SendTabToSelfActivity alloc] initWithDispatcher:dispatcher];
+          [[SendTabToSelfActivity alloc]
+                initWithDispatcher:dispatcher
+              sendTabToSelfTargets:sendTabToSelfTargets
+                         presenter:presentationProvider_
+                             title:data.title];
       [applicationActivities addObject:sendTabToSelfActivity];
     }
 
