@@ -41,7 +41,7 @@ class MenuRunner;
 }
 
 class OmniboxResultView : public views::View,
-                          private gfx::AnimationDelegate,
+                          public gfx::AnimationDelegate,
                           public views::ButtonListener,
                           public views::ContextMenuController,
                           public ui::SimpleMenuModel::Delegate {
