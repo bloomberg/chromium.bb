@@ -21,6 +21,8 @@ namespace {
 
 using sync_pb::NigoriSpecifics;
 
+const char kNigoriNonUniqueName[] = "Nigori";
+
 // Attempts to decrypt |keystore_decryptor_token| with |keystore_keys|. Returns
 // serialized Nigori key if successful and base::nullopt otherwise.
 base::Optional<std::string> DecryptKeystoreDecryptor(
@@ -544,8 +546,32 @@ void NigoriSyncBridgeImpl::UpdateCryptographerFromExplicitPassphraseNigori(
 
 std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(cryptographer_.is_ready());
+  DCHECK_NE(passphrase_type_, NigoriSpecifics::UNKNOWN);
+
+  NigoriSpecifics specifics;
+  cryptographer_.GetKeys(specifics.mutable_encryption_keybag());
+  specifics.set_keybag_is_frozen(true);
+  specifics.set_encrypt_everything(encrypt_everything_);
+  specifics.set_passphrase_type(passphrase_type_);
+  if (passphrase_type_ == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+    cryptographer_.EncryptString(cryptographer_.GetDefaultNigoriKeyData(),
+                                 specifics.mutable_keystore_decryptor_token());
+  }
+  if (!keystore_migration_time_.is_null()) {
+    specifics.set_keystore_migration_time(
+        TimeToProtoTime(keystore_migration_time_));
+  }
+  if (!custom_passphrase_time_.is_null()) {
+    specifics.set_custom_passphrase_time(
+        TimeToProtoTime(custom_passphrase_time_));
+  }
+  // TODO(crbug.com/922900): add other fields support.
   NOTIMPLEMENTED();
-  return nullptr;
+  auto entity_data = std::make_unique<EntityData>();
+  *entity_data->specifics.mutable_nigori() = std::move(specifics);
+  entity_data->non_unique_name = kNigoriNonUniqueName;
+  return entity_data;
 }
 
 ConflictResolution NigoriSyncBridgeImpl::ResolveConflict(

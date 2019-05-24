@@ -321,8 +321,9 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kCurrentKeyParams));
 }
 
-// Tests that we build keystore Nigori, put it to processor and initialize
-// the cryptographer, when the default Nigori is received.
+// Tests that we build keystore Nigori, put it to processor, initialize the
+// cryptographer and expose a valid entity through GetData(), when the default
+// Nigori is received.
 TEST_F(NigoriSyncBridgeImplTest,
        ShouldPutAndMakeCryptographerReadyOnDefaultNigori) {
   const std::string kRawKeystoreKey = "raw_keystore_key";
@@ -338,6 +339,7 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_CALL(*processor(), Put(HasKeystoreNigori()));
   EXPECT_THAT(bridge()->MergeSyncData(std::move(default_entity_data)),
               Eq(base::nullopt));
+  EXPECT_THAT(bridge()->GetData(), HasKeystoreNigori());
 
   const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
