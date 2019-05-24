@@ -17,10 +17,10 @@
     <style include="settings-shared">
       :host {
         background-color: var(--cr-card-background-color);
-        bottom: 0;
+        box-sizing: border-box;
         display: block;
         left: 0;
-        min-height: fit-content;
+        min-height: calc(100vh - var(--cr-toolbar-height));
         padding-bottom: 60px;
         position: absolute;
         right: 0;
