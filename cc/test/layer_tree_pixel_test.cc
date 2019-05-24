@@ -84,7 +84,7 @@ std::unique_ptr<viz::SkiaOutputSurface>
 LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
   // Set up the SkiaOutputSurfaceImpl.
   auto output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-      viz::TestGpuServiceHolder::GetSingleton()->gpu_service(),
+      viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
       gpu::kNullSurfaceHandle, viz::RendererSettings());
   return output_surface;
 }

@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
@@ -23,6 +25,7 @@
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -32,16 +35,68 @@
 
 namespace viz {
 
-// static
-TestGpuServiceHolder* TestGpuServiceHolder::GetSingleton() {
-  return base::Singleton<TestGpuServiceHolder>::get();
+namespace {
+
+base::Lock& GetLock() {
+  static base::NoDestructor<base::Lock> lock;
+  return *lock;
 }
 
-TestGpuServiceHolder::TestGpuServiceHolder()
-    : TestGpuServiceHolder(gpu::gles2::ParseGpuPreferences(
-                               base::CommandLine::ForCurrentProcess()),
-                           !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                               switches::kUseGpuInTests)) {}
+// We expect |GetLock()| to be acquired before accessing this variable.
+TestGpuServiceHolder* g_holder = nullptr;
+
+class InstanceResetter : public testing::EmptyTestEventListener {
+ public:
+  InstanceResetter() = default;
+  ~InstanceResetter() override = default;
+
+  void OnTestEnd(const testing::TestInfo& test_info) override {
+    base::AutoLock locked(GetLock());
+    if (g_holder) {
+      delete g_holder;
+      g_holder = nullptr;
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InstanceResetter);
+};
+
+}  // namespace
+
+// static
+TestGpuServiceHolder* TestGpuServiceHolder::GetInstance() {
+  base::AutoLock locked(GetLock());
+
+  // Make sure all TestGpuServiceHolders are deleted at process exit.
+  static bool registered_cleanup = false;
+  if (!registered_cleanup) {
+    registered_cleanup = true;
+    base::AtExitManager::RegisterTask(base::BindOnce([]() {
+      if (g_holder)
+        delete g_holder;
+    }));
+  }
+
+  if (!g_holder) {
+    g_holder = new TestGpuServiceHolder(
+        gpu::gles2::ParseGpuPreferences(base::CommandLine::ForCurrentProcess()),
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kUseGpuInTests));
+  }
+  return g_holder;
+}
+
+// static
+void TestGpuServiceHolder::DestroyInstanceAfterEachTest() {
+  static bool registered_listener = false;
+  if (!registered_listener) {
+    registered_listener = true;
+    testing::TestEventListeners& listeners =
+        testing::UnitTest::GetInstance()->listeners();
+    listeners.Append(new InstanceResetter);
+  }
+}
 
 TestGpuServiceHolder::TestGpuServiceHolder(
     const gpu::GpuPreferences& gpu_preferences,

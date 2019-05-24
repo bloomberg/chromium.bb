@@ -52,7 +52,7 @@ std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext(
 
   auto context = std::make_unique<gpu::GLInProcessContext>();
   auto result = context->Initialize(
-      viz::TestGpuServiceHolder::GetSingleton()->task_executor(), nullptr,
+      viz::TestGpuServiceHolder::GetInstance()->task_executor(), nullptr,
       is_offscreen, gpu::kNullSurfaceHandle, attribs, gpu::SharedMemoryLimits(),
       gpu_memory_buffer_manager, image_factory, std::move(task_runner));
 
@@ -97,7 +97,7 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     attribs.enable_gles2_interface = false;
 
     raster_context_ = std::make_unique<gpu::RasterInProcessContext>();
-    auto* holder = viz::TestGpuServiceHolder::GetSingleton();
+    auto* holder = viz::TestGpuServiceHolder::GetInstance();
     auto result = raster_context_->Initialize(
         holder->task_executor(), attribs, gpu::SharedMemoryLimits(),
         &gpu_memory_buffer_manager_, &image_factory_,

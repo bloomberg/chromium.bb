@@ -62,7 +62,7 @@ class GLHelperTest : public testing::Test {
 
     context_ = std::make_unique<gpu::GLInProcessContext>();
     auto result = context_->Initialize(
-        TestGpuServiceHolder::GetSingleton()->task_executor(),
+        TestGpuServiceHolder::GetInstance()->task_executor(),
         nullptr,                 /* surface */
         true,                    /* offscreen */
         gpu::kNullSurfaceHandle, /* window */

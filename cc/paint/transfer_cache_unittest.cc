@@ -48,7 +48,7 @@ class TransferCacheTest : public testing::Test {
 
     context_ = std::make_unique<gpu::RasterInProcessContext>();
     auto result = context_->Initialize(
-        viz::TestGpuServiceHolder::GetSingleton()->task_executor(), attribs,
+        viz::TestGpuServiceHolder::GetInstance()->task_executor(), attribs,
         gpu::SharedMemoryLimits(), &gpu_memory_buffer_manager_, &image_factory_,
         /*gpu_channel_manager_delegate=*/nullptr, nullptr, nullptr);
 

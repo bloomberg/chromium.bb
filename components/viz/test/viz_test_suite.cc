@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "components/viz/test/paths.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace viz {
@@ -19,6 +20,7 @@ VizTestSuite::~VizTestSuite() = default;
 void VizTestSuite::Initialize() {
   base::TestSuite::Initialize();
   gl::GLSurfaceTestSupport::InitializeOneOff();
+  TestGpuServiceHolder::DestroyInstanceAfterEachTest();
   Paths::RegisterPathProvider();
 
   message_loop_ = std::make_unique<base::MessageLoop>();

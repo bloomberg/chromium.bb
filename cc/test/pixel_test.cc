@@ -273,7 +273,7 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
 
 void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
   // Set up the GPU service.
-  gpu_service_holder_ = viz::TestGpuServiceHolder::GetSingleton();
+  gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();
 
   // Set up the skia renderer.
   output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(

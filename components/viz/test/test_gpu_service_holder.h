@@ -33,17 +33,22 @@ class GpuServiceImpl;
 // implementation and should only be used in tests.
 class TestGpuServiceHolder {
  public:
-  // Gets a singleton suitable for most tests. The use of a singleton allows
-  // easy sharing of the GpuServiceImpl by different clients (e.g. to
-  // share SharedImages via a common SharedImageManager).
+  // Exposes a singleton to allow easy sharing of the GpuServiceImpl by
+  // different clients (e.g. to share SharedImages via a common
+  // SharedImageManager).
+  //
+  // The instance will parse GpuPreferences from the command line when it is
+  // first created (e.g. to allow entire test suite with --enable-vulkan).
   //
   // If specific feature flags or GpuPreferences are needed for a specific test,
   // a separate instance of this class can be created.
-  //
-  // The singleton will parse GpuPreferences from the command line when this
-  // class is first created (e.g. to allow entire test suite with
-  // --enable-vulkan).
-  static TestGpuServiceHolder* GetSingleton();
+  static TestGpuServiceHolder* GetInstance();
+
+  // Calling this method ensures that GetInstance() is destroyed after each
+  // gtest completes -- it only applies to gtest because it uses gtest hooks. A
+  // subsequent call to GetInstance() will create a new instance. Safe to call
+  // more than once.
+  static void DestroyInstanceAfterEachTest();
 
   TestGpuServiceHolder(const gpu::GpuPreferences& preferences,
                        bool use_swiftshader_for_vulkan);
@@ -71,8 +76,6 @@ class TestGpuServiceHolder {
 
  private:
   friend struct base::DefaultSingletonTraits<TestGpuServiceHolder>;
-
-  TestGpuServiceHolder();
 
   void InitializeOnGpuThread(const gpu::GpuPreferences& preferences,
                              bool use_swiftshader_for_vulkan,

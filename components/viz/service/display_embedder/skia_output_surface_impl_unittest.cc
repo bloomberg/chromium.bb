@@ -96,7 +96,7 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
   const char disable_features[] = "";
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitFromCommandLine(enable_features, disable_features);
-  gpu_service_holder_ = TestGpuServiceHolder::GetSingleton();
+  gpu_service_holder_ = TestGpuServiceHolder::GetInstance();
 
   // Set up the SkiaOutputSurfaceImpl.
   gpu::SurfaceHandle surface_handle_ = gpu::kNullSurfaceHandle;
