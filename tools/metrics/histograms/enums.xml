@@ -6493,6 +6493,13 @@ Unknown properties are collapsed to zero. -->
   <int value="11" label="kNetworkErrorLogging"/>
 </enum>
 
+<enum name="BrowsingInstancePluralityVisibilityState">
+  <int value="0" label="Single visible page"/>
+  <int value="1" label="Single non-visible page"/>
+  <int value="2" label="Multiple pages, at least one of which is visible"/>
+  <int value="3" label="Multiple pages, all of which are non-visible"/>
+</enum>
+
 <enum name="BubbleDismissalReason">
   <int value="0" label="The timer dismissed the bubble."/>
   <int value="1" label="A tap inside the bubble caused dismissal."/>
@@ -24824,6 +24831,16 @@ Called by update_net_error_codes.py.-->
       label="Only permitted for framebusting, user gesture, ad frame"/>
   <int value="6" label="Allowed navigation, no user gesture, ad frame"/>
   <int value="7" label="Allowed navigation, user gesture, ad frame"/>
+</enum>
+
+<enum name="FrameSiteInstanceProcessRelationship">
+  <summary>
+    Used to describe the relationship between frames hosted in a process,
+    indicating whether or not there are any frames in the process that share the
+    same SiteInstance.
+  </summary>
+  <int value="0" label="All frames have distinct SiteInstances"/>
+  <int value="1" label="Some frames have the same SiteInstance"/>
 </enum>
 
 <enum name="FtpDataConnectionError">

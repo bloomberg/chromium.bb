@@ -19,6 +19,7 @@
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/performance_manager/observers/working_set_trimmer_win.h"
 #include "content/public/common/service_manager_connection.h"
@@ -265,6 +266,7 @@ void PerformanceManager::OnStartImpl(
   RegisterObserver(std::make_unique<MetricsCollector>());
   RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
   RegisterObserver(std::make_unique<FrozenFrameAggregator>());
+  RegisterObserver(std::make_unique<IsolationContextMetrics>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))

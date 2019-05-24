@@ -180,11 +180,17 @@ std::vector<FrameNodeImpl*> PageNodeImpl::GetFrameNodes() const {
 
 FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Return an arbitrary node from the main frame nodes set.
-  // TODO(siggi): Make sure to preferentially return the active main frame node.
   if (main_frame_nodes_.empty())
     return nullptr;
 
+  // Return the current frame node if there is one. Iterating over this set is
+  // fine because it is almost always of length 1 or 2.
+  for (auto* frame : main_frame_nodes_) {
+    if (frame->is_current())
+      return frame;
+  }
+
+  // Otherwise, return any old main frame node.
   return *main_frame_nodes_.begin();
 }
 

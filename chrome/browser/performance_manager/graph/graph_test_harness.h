@@ -138,6 +138,10 @@ class GraphTestHarness : public ::testing::Test {
   GraphTestHarness();
   ~GraphTestHarness() override;
 
+  // Optional constructor for directly configuring the ScopedTaskEnvironment.
+  template <class... ArgTypes>
+  explicit GraphTestHarness(ArgTypes... args) : task_env_(args...) {}
+
   template <class NodeClass, typename... Args>
   TestNodeWrapper<NodeClass> CreateNode(Args&&... args) {
     return TestNodeWrapper<NodeClass>::Create(graph(),

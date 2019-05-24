@@ -118,7 +118,9 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
   std::vector<FrameNodeImpl*> GetFrameNodes() const;
 
-  // Returns the main frame node or nullptr if this page has no main frame.
+  // Returns the current main frame node (if there is one), otherwise returns
+  // any of the potentially multiple main frames that currently exist. If there
+  // are no main frames at the moment, returns nullptr.
   FrameNodeImpl* GetMainFrameNode() const;
 
   // Accessors.

@@ -64,23 +64,18 @@ namespace performance_manager {
 //         // in the ProcessNodeImpl.
 //         public NodeAttachedDataInternalOnNodeType<ProcessNodeImpl> {};
 //
-//   // For each node type that is supported a matching constructor must be
-//   // available.
-//   explicit Foo(const PageNodeImpl* page_node);
-//   explicit Foo(const FrameNodeImpl* frame_node);
-//   explicit Foo(const ProcessNodeImpl* process_node);
 //   ~Foo() override;
-//
 //
 //  private:
 //   // Make the impl our friend so it can access the constructor and any
 //   // storage providers.
 //   friend class ::performance_manager::NodeAttachedDataImpl<DataType>;
 //
-//   // A default constructor must be provided. It should be protected or
-//   // private so that only the NodeAttachedDataImpl<Foo> can access it.
-//   Foo();
-//   ...
+//   // For each node type that is supported a matching constructor must be
+//   // available.
+//   explicit Foo(const PageNodeImpl* page_node);
+//   explicit Foo(const FrameNodeImpl* frame_node);
+//   explicit Foo(const ProcessNodeImpl* process_node);
 //
 //   // Provides access to the std::unique_ptr storage in frame nodes.
 //   // See NodeAttachedDataOwnedByNodeType<>.
@@ -268,7 +263,7 @@ NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::GetOrCreate(
     const NodeType* node) {
   if (auto* data = Get(node))
     return data;
-  std::unique_ptr<DataType> data = std::make_unique<DataType>(node);
+  std::unique_ptr<DataType> data = base::WrapUnique(new DataType(node));
   DataType* raw_data = data.get();
   NodeAttachedDataMapHelper::AttachInMap(node, std::move(data));
   return raw_data;
@@ -305,7 +300,7 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataOwnedByNodeType<
   std::unique_ptr<NodeAttachedData>* storage =
       DataType::GetUniquePtrStorage(const_cast<NodeType*>(node));
   if (!storage->get())
-    *storage = std::make_unique<DataType>(node);
+    *storage = base::WrapUnique(new DataType(node));
   DCHECK_EQ(DataType::UserDataKey(), storage->get()->GetKey());
   return static_cast<DataType*>(storage->get());
 }
