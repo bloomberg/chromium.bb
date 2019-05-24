@@ -827,6 +827,10 @@ bool ScrollsWithRootFrame(LayoutObject* object) {
   DCHECK(object);
   DCHECK(object->GetFrame());
 
+  // TODO(bokan): Speculative fix for https://crbug.com/964293.
+  if (!object || !object->GetNode())
+    return true;
+
   const LocalFrame& frame = *object->GetFrame();
 
   // If we're in an iframe document, we need to determine if the containing
