@@ -60,15 +60,13 @@ namespace {
 
 constexpr int kMaxNumForegroundThreads = 4;
 
-struct ThreadPoolImplTestParams {
-  ThreadPoolImplTestParams(const TaskTraits& traits,
-                           TaskSourceExecutionMode execution_mode,
-                           test::PoolType pool_type)
-      : traits(traits), execution_mode(execution_mode), pool_type(pool_type) {}
+struct TraitsExecutionModePair {
+  TraitsExecutionModePair(const TaskTraits& traits,
+                          TaskSourceExecutionMode execution_mode)
+      : traits(traits), execution_mode(execution_mode) {}
 
   TaskTraits traits;
   TaskSourceExecutionMode execution_mode;
-  test::PoolType pool_type;
 };
 
 #if DCHECK_IS_ON()
@@ -220,43 +218,32 @@ class ThreadPostingTasks : public SimpleThread {
   DISALLOW_COPY_AND_ASSIGN(ThreadPostingTasks);
 };
 
-// Returns a vector with a ThreadPoolImplTestParams for each valid
-// combination of {PoolType, ExecutionMode, TaskPriority, MayBlock()}.
-std::vector<ThreadPoolImplTestParams> GetThreadPoolImplTestParams() {
-  std::vector<ThreadPoolImplTestParams> params;
+// Returns a vector with a TraitsExecutionModePair for each valid combination of
+// {ExecutionMode, TaskPriority, MayBlock()}.
+std::vector<TraitsExecutionModePair> GetTraitsExecutionModePair() {
+  std::vector<TraitsExecutionModePair> params;
 
   const TaskSourceExecutionMode execution_modes[] = {
       TaskSourceExecutionMode::kParallel, TaskSourceExecutionMode::kSequenced,
       TaskSourceExecutionMode::kSingleThread};
 
-  const test::PoolType pool_types[] = {
-    test::PoolType::GENERIC,
-#if HAS_NATIVE_THREAD_POOL()
-    test::PoolType::NATIVE,
-#endif
-  };
-
-  for (test::PoolType pool_type : pool_types) {
-    for (TaskSourceExecutionMode execution_mode : execution_modes) {
-      for (size_t priority_index = static_cast<size_t>(TaskPriority::LOWEST);
-           priority_index <= static_cast<size_t>(TaskPriority::HIGHEST);
-           ++priority_index) {
-        const TaskPriority priority = static_cast<TaskPriority>(priority_index);
-        params.push_back(
-            ThreadPoolImplTestParams({priority}, execution_mode, pool_type));
-        params.push_back(ThreadPoolImplTestParams({priority, MayBlock()},
-                                                  execution_mode, pool_type));
-      }
+  for (TaskSourceExecutionMode execution_mode : execution_modes) {
+    for (size_t priority_index = static_cast<size_t>(TaskPriority::LOWEST);
+         priority_index <= static_cast<size_t>(TaskPriority::HIGHEST);
+         ++priority_index) {
+      const TaskPriority priority = static_cast<TaskPriority>(priority_index);
+      params.push_back(TraitsExecutionModePair({priority}, execution_mode));
+      params.push_back(
+          TraitsExecutionModePair({priority, MayBlock()}, execution_mode));
     }
   }
 
   return params;
 }
 
-class ThreadPoolImplTest
-    : public testing::TestWithParam<ThreadPoolImplTestParams> {
+class ThreadPoolImplTestBase : public testing::Test {
  protected:
-  ThreadPoolImplTest() : thread_pool_("Test") {}
+  ThreadPoolImplTestBase() : thread_pool_("Test") {}
 
   void EnableAllTasksUserBlocking() {
     should_enable_all_tasks_user_blocking_ = true;
@@ -287,6 +274,8 @@ class ThreadPoolImplTest
     did_tear_down_ = true;
   }
 
+  virtual test::PoolType GetPoolType() const = 0;
+
   ThreadPoolImpl thread_pool_;
 
  private:
@@ -297,7 +286,7 @@ class ThreadPoolImplTest
       features.push_back(kAllTasksUserBlocking);
 
 #if HAS_NATIVE_THREAD_POOL()
-    if (GetParam().pool_type == test::PoolType::NATIVE)
+    if (GetPoolType() == test::PoolType::NATIVE)
       features.push_back(kUseNativeThreadPool);
 #endif
 
@@ -310,7 +299,37 @@ class ThreadPoolImplTest
   bool did_tear_down_ = false;
   bool should_enable_all_tasks_user_blocking_ = false;
 
+  DISALLOW_COPY_AND_ASSIGN(ThreadPoolImplTestBase);
+};
+
+class ThreadPoolImplTest : public ThreadPoolImplTestBase,
+                           public testing::WithParamInterface<test::PoolType> {
+ public:
+  ThreadPoolImplTest() = default;
+
+  test::PoolType GetPoolType() const override { return GetParam(); }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ThreadPoolImplTest);
+};
+
+class ThreadPoolImplTestAllTraitsExecutionModes
+    : public ThreadPoolImplTestBase,
+      public testing::WithParamInterface<
+          std::tuple<test::PoolType, TraitsExecutionModePair>> {
+ public:
+  ThreadPoolImplTestAllTraitsExecutionModes() = default;
+
+  test::PoolType GetPoolType() const override {
+    return std::get<0>(GetParam());
+  }
+  TaskTraits GetTraits() const { return std::get<1>(GetParam()).traits; }
+  TaskSourceExecutionMode GetExecutionMode() const {
+    return std::get<1>(GetParam()).execution_mode;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ThreadPoolImplTestAllTraitsExecutionModes);
 };
 
 }  // namespace
@@ -318,13 +337,14 @@ class ThreadPoolImplTest
 // Verifies that a Task posted via PostDelayedTaskWithTraits with parameterized
 // TaskTraits and no delay runs on a thread with the expected priority and I/O
 // restrictions. The ExecutionMode parameter is ignored by this test.
-TEST_P(ThreadPoolImplTest, PostDelayedTaskWithTraitsNoDelay) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes,
+       PostDelayedTaskWithTraitsNoDelay) {
   StartThreadPool();
   WaitableEvent task_ran;
   thread_pool_.PostDelayedTaskWithTraits(
-      FROM_HERE, GetParam().traits,
-      BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetParam().traits,
-               GetParam().pool_type, Unretained(&task_ran)),
+      FROM_HERE, GetTraits(),
+      BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetTraits(), GetPoolType(),
+               Unretained(&task_ran)),
       TimeDelta());
   task_ran.Wait();
 }
@@ -333,14 +353,14 @@ TEST_P(ThreadPoolImplTest, PostDelayedTaskWithTraitsNoDelay) {
 // TaskTraits and a non-zero delay runs on a thread with the expected priority
 // and I/O restrictions after the delay expires. The ExecutionMode parameter is
 // ignored by this test.
-TEST_P(ThreadPoolImplTest, PostDelayedTaskWithTraitsWithDelay) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes,
+       PostDelayedTaskWithTraitsWithDelay) {
   StartThreadPool();
   WaitableEvent task_ran;
   thread_pool_.PostDelayedTaskWithTraits(
-      FROM_HERE, GetParam().traits,
-      BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
-               GetParam().pool_type,
-               TimeTicks::Now() + TestTimeouts::tiny_timeout(),
+      FROM_HERE, GetTraits(),
+      BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetTraits(),
+               GetPoolType(), TimeTicks::Now() + TestTimeouts::tiny_timeout(),
                Unretained(&task_ran)),
       TestTimeouts::tiny_timeout());
   task_ran.Wait();
@@ -349,19 +369,19 @@ TEST_P(ThreadPoolImplTest, PostDelayedTaskWithTraitsWithDelay) {
 // Verifies that Tasks posted via a TaskRunner with parameterized TaskTraits and
 // ExecutionMode run on a thread with the expected priority and I/O restrictions
 // and respect the characteristics of their ExecutionMode.
-TEST_P(ThreadPoolImplTest, PostTasksViaTaskRunner) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, PostTasksViaTaskRunner) {
   StartThreadPool();
   test::TestTaskFactory factory(
-      CreateTaskRunnerWithTraitsAndExecutionMode(
-          &thread_pool_, GetParam().traits, GetParam().execution_mode),
-      GetParam().execution_mode);
+      CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetTraits(),
+                                                 GetExecutionMode()),
+      GetExecutionMode());
   EXPECT_FALSE(factory.task_runner()->RunsTasksInCurrentSequence());
 
   const size_t kNumTasksPerTest = 150;
   for (size_t i = 0; i < kNumTasksPerTest; ++i) {
-    factory.PostTask(test::TestTaskFactory::PostNestedTask::NO,
-                     BindOnce(&VerifyTaskEnvironment, GetParam().traits,
-                              GetParam().pool_type));
+    factory.PostTask(
+        test::TestTaskFactory::PostNestedTask::NO,
+        BindOnce(&VerifyTaskEnvironment, GetTraits(), GetPoolType()));
   }
 
   factory.WaitForAllTasksToRun();
@@ -369,12 +389,13 @@ TEST_P(ThreadPoolImplTest, PostTasksViaTaskRunner) {
 
 // Verifies that a task posted via PostDelayedTaskWithTraits without a delay
 // doesn't run before Start() is called.
-TEST_P(ThreadPoolImplTest, PostDelayedTaskWithTraitsNoDelayBeforeStart) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes,
+       PostDelayedTaskWithTraitsNoDelayBeforeStart) {
   WaitableEvent task_running;
   thread_pool_.PostDelayedTaskWithTraits(
-      FROM_HERE, GetParam().traits,
-      BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetParam().traits,
-               GetParam().pool_type, Unretained(&task_running)),
+      FROM_HERE, GetTraits(),
+      BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetTraits(), GetPoolType(),
+               Unretained(&task_running)),
       TimeDelta());
 
   // Wait a little bit to make sure that the task doesn't run before Start().
@@ -390,13 +411,13 @@ TEST_P(ThreadPoolImplTest, PostDelayedTaskWithTraitsNoDelayBeforeStart) {
 
 // Verifies that a task posted via PostDelayedTaskWithTraits with a delay
 // doesn't run before Start() is called.
-TEST_P(ThreadPoolImplTest, PostDelayedTaskWithTraitsWithDelayBeforeStart) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes,
+       PostDelayedTaskWithTraitsWithDelayBeforeStart) {
   WaitableEvent task_running;
   thread_pool_.PostDelayedTaskWithTraits(
-      FROM_HERE, GetParam().traits,
-      BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
-               GetParam().pool_type,
-               TimeTicks::Now() + TestTimeouts::tiny_timeout(),
+      FROM_HERE, GetTraits(),
+      BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetTraits(),
+               GetPoolType(), TimeTicks::Now() + TestTimeouts::tiny_timeout(),
                Unretained(&task_running)),
       TestTimeouts::tiny_timeout());
 
@@ -413,13 +434,14 @@ TEST_P(ThreadPoolImplTest, PostDelayedTaskWithTraitsWithDelayBeforeStart) {
 
 // Verifies that a task posted via a TaskRunner doesn't run before Start() is
 // called.
-TEST_P(ThreadPoolImplTest, PostTaskViaTaskRunnerBeforeStart) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes,
+       PostTaskViaTaskRunnerBeforeStart) {
   WaitableEvent task_running;
-  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetParam().traits,
-                                             GetParam().execution_mode)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
-                                     GetParam().traits, GetParam().pool_type,
-                                     Unretained(&task_running)));
+  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetTraits(),
+                                             GetExecutionMode())
+      ->PostTask(FROM_HERE,
+                 BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetTraits(),
+                          GetPoolType(), Unretained(&task_running)));
 
   // Wait a little bit to make sure that the task doesn't run before Start().
   // Note: This test won't catch a case where the task runs just after the check
@@ -437,18 +459,19 @@ TEST_P(ThreadPoolImplTest, PostTaskViaTaskRunnerBeforeStart) {
 // Verify that all tasks posted to a TaskRunner after Start() run in a
 // USER_BLOCKING environment when the AllTasksUserBlocking variation param of
 // the BrowserScheduler experiment is true.
-TEST_P(ThreadPoolImplTest, AllTasksAreUserBlockingTaskRunner) {
-  TaskTraits user_blocking_traits = GetParam().traits;
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes,
+       AllTasksAreUserBlockingTaskRunner) {
+  TaskTraits user_blocking_traits = GetTraits();
   user_blocking_traits.UpdatePriority(TaskPriority::USER_BLOCKING);
 
   EnableAllTasksUserBlocking();
   StartThreadPool();
 
   WaitableEvent task_running;
-  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetParam().traits,
-                                             GetParam().execution_mode)
+  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetTraits(),
+                                             GetExecutionMode())
       ->PostTask(FROM_HERE, BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
-                                     user_blocking_traits, GetParam().pool_type,
+                                     user_blocking_traits, GetPoolType(),
                                      Unretained(&task_running)));
   task_running.Wait();
 }
@@ -456,8 +479,8 @@ TEST_P(ThreadPoolImplTest, AllTasksAreUserBlockingTaskRunner) {
 // Verify that all tasks posted via PostDelayedTaskWithTraits() after Start()
 // run in a USER_BLOCKING environment when the AllTasksUserBlocking variation
 // param of the BrowserScheduler experiment is true.
-TEST_P(ThreadPoolImplTest, AllTasksAreUserBlocking) {
-  TaskTraits user_blocking_traits = GetParam().traits;
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, AllTasksAreUserBlocking) {
+  TaskTraits user_blocking_traits = GetTraits();
   user_blocking_traits.UpdatePriority(TaskPriority::USER_BLOCKING);
 
   EnableAllTasksUserBlocking();
@@ -466,21 +489,21 @@ TEST_P(ThreadPoolImplTest, AllTasksAreUserBlocking) {
   WaitableEvent task_running;
   // Ignore |params.execution_mode| in this test.
   thread_pool_.PostDelayedTaskWithTraits(
-      FROM_HERE, GetParam().traits,
+      FROM_HERE, GetTraits(),
       BindOnce(&VerifyTaskEnvironmentAndSignalEvent, user_blocking_traits,
-               GetParam().pool_type, Unretained(&task_running)),
+               GetPoolType(), Unretained(&task_running)),
       TimeDelta());
   task_running.Wait();
 }
 
 // Verifies that FlushAsyncForTesting() calls back correctly for all trait and
 // execution mode pairs.
-TEST_P(ThreadPoolImplTest, FlushAsyncForTestingSimple) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, FlushAsyncForTestingSimple) {
   StartThreadPool();
 
   WaitableEvent unblock_task;
   CreateTaskRunnerWithTraitsAndExecutionMode(
-      &thread_pool_, GetParam().traits, GetParam().execution_mode,
+      &thread_pool_, GetTraits(), GetExecutionMode(),
       SingleThreadTaskRunnerThreadMode::DEDICATED)
       ->PostTask(FROM_HERE, BindOnce(&test::WaitWithoutBlockingObserver,
                                      Unretained(&unblock_task)));
@@ -497,15 +520,15 @@ TEST_P(ThreadPoolImplTest, FlushAsyncForTestingSimple) {
 }
 
 // Verifies that tasks only run when allowed by SetCanRun().
-TEST_P(ThreadPoolImplTest, SetCanRun) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRun) {
   StartThreadPool();
 
   AtomicFlag can_run;
   WaitableEvent did_run;
   thread_pool_.SetCanRun(false);
 
-  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetParam().traits,
-                                             GetParam().execution_mode)
+  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetTraits(),
+                                             GetExecutionMode())
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    EXPECT_TRUE(can_run.IsSet());
                    did_run.Signal();
@@ -519,15 +542,15 @@ TEST_P(ThreadPoolImplTest, SetCanRun) {
 }
 
 // Verifies that a call to SetCanRun(false) before Start() is honored.
-TEST_P(ThreadPoolImplTest, SetCanRunBeforeStart) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRunBeforeStart) {
   thread_pool_.SetCanRun(false);
   StartThreadPool();
 
   AtomicFlag can_run;
   WaitableEvent did_run;
 
-  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetParam().traits,
-                                             GetParam().execution_mode)
+  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetTraits(),
+                                             GetExecutionMode())
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    EXPECT_TRUE(can_run.IsSet());
                    did_run.Signal();
@@ -542,21 +565,20 @@ TEST_P(ThreadPoolImplTest, SetCanRunBeforeStart) {
 
 // Verifies that BEST_EFFORT tasks only run when allowed by
 // SetCanRunBestEffort().
-TEST_P(ThreadPoolImplTest, SetCanRunBestEffort) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRunBestEffort) {
   StartThreadPool();
 
   AtomicFlag can_run;
   WaitableEvent did_run;
   thread_pool_.SetCanRunBestEffort(false);
 
-  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetParam().traits,
-                                             GetParam().execution_mode)
-      ->PostTask(
-          FROM_HERE, BindLambdaForTesting([&]() {
-            if (GetParam().traits.priority() == TaskPriority::BEST_EFFORT)
-              EXPECT_TRUE(can_run.IsSet());
-            did_run.Signal();
-          }));
+  CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetTraits(),
+                                             GetExecutionMode())
+      ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                   if (GetTraits().priority() == TaskPriority::BEST_EFFORT)
+                     EXPECT_TRUE(can_run.IsSet());
+                   did_run.Signal();
+                 }));
 
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
 
@@ -569,12 +591,12 @@ TEST_P(ThreadPoolImplTest, SetCanRunBestEffort) {
 // TaskTraits and ExecutionModes. Verifies that each Task runs on a thread with
 // the expected priority and I/O restrictions and respects the characteristics
 // of its ExecutionMode.
-TEST_P(ThreadPoolImplTest, MultipleThreadPoolImplTestParams) {
+TEST_P(ThreadPoolImplTest, MultipleTraitsExecutionModePair) {
   StartThreadPool();
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
-  for (const auto& test_params : GetThreadPoolImplTestParams()) {
+  for (const auto& test_params : GetTraitsExecutionModePair()) {
     threads_posting_tasks.push_back(std::make_unique<ThreadPostingTasks>(
-        &thread_pool_, test_params.traits, GetParam().pool_type,
+        &thread_pool_, test_params.traits, GetPoolType(),
         test_params.execution_mode));
     threads_posting_tasks.back()->Start();
   }
@@ -590,7 +612,7 @@ TEST_P(ThreadPoolImplTest,
   StartThreadPool();
 
 #if HAS_NATIVE_THREAD_POOL()
-  if (GetParam().pool_type == test::PoolType::NATIVE)
+  if (GetPoolType() == test::PoolType::NATIVE)
     return;
 #endif
 
@@ -913,7 +935,7 @@ TEST_P(ThreadPoolImplTest, WorkerThreadObserver) {
   // native thread pools. We still start the ThreadPool in this case since
   // JoinForTesting is always called on TearDown, and DCHECKs that all thread
   // groups are started.
-  if (GetParam().pool_type == test::PoolType::NATIVE) {
+  if (GetPoolType() == test::PoolType::NATIVE) {
     StartThreadPool();
     return;
   }
@@ -1027,7 +1049,7 @@ class MustBeDestroyed {
 }  // namespace
 
 // Regression test for https://crbug.com/945087.
-TEST_P(ThreadPoolImplTest, NoLeakWhenPostingNestedTask) {
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, NoLeakWhenPostingNestedTask) {
   StartThreadPool();
 
   SequenceLocalStorageSlot<std::unique_ptr<MustBeDestroyed>> sls;
@@ -1036,7 +1058,7 @@ TEST_P(ThreadPoolImplTest, NoLeakWhenPostingNestedTask) {
   auto must_be_destroyed = std::make_unique<MustBeDestroyed>(&was_destroyed);
 
   auto task_runner = CreateTaskRunnerWithTraitsAndExecutionMode(
-      &thread_pool_, GetParam().traits, GetParam().execution_mode);
+      &thread_pool_, GetTraits(), GetExecutionMode());
 
   task_runner->PostTask(FROM_HERE, BindLambdaForTesting([&] {
                           sls.Set(std::move(must_be_destroyed));
@@ -1125,13 +1147,13 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceNotScheduled) {
     task_runner_and_events->task_runner->PostTask(
         FROM_HERE,
         BindOnce(&VerifyOrderAndTaskEnvironmentAndSignalEvent,
-                 task_runner_and_events->updated_priority, GetParam().pool_type,
+                 task_runner_and_events->updated_priority, GetPoolType(),
                  // Native pools ignore the maximum number of threads per pool
                  // and therefore don't guarantee that tasks run in priority
                  // order (see comment at beginning of test).
                  Unretained(
 #if HAS_NATIVE_THREAD_POOL()
-                     GetParam().pool_type == test::PoolType::NATIVE
+                     GetPoolType() == test::PoolType::NATIVE
                          ? nullptr
                          :
 #endif
@@ -1185,7 +1207,7 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceScheduled) {
         FROM_HERE,
         BindOnce(&VerifyOrderAndTaskEnvironmentAndSignalEvent,
                  TaskTraits(task_runner_and_events->updated_priority),
-                 GetParam().pool_type,
+                 GetPoolType(),
                  Unretained(task_runner_and_events->expected_previous_event),
                  Unretained(&task_runner_and_events->task_ran)));
   }
@@ -1201,7 +1223,23 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceScheduled) {
 
 INSTANTIATE_TEST_SUITE_P(,
                          ThreadPoolImplTest,
-                         ::testing::ValuesIn(GetThreadPoolImplTestParams()));
+                         ::testing::Values(test::PoolType::GENERIC
+#if HAS_NATIVE_THREAD_POOL()
+                                           ,
+                                           test::PoolType::NATIVE
+#endif
+                                           ));
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ThreadPoolImplTestAllTraitsExecutionModes,
+    ::testing::Combine(::testing::Values(test::PoolType::GENERIC
+#if HAS_NATIVE_THREAD_POOL()
+                                         ,
+                                         test::PoolType::NATIVE
+#endif
+                                         ),
+                       ::testing::ValuesIn(GetTraitsExecutionModePair())));
 
 }  // namespace internal
 }  // namespace base
