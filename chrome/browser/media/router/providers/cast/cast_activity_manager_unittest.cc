@@ -20,7 +20,8 @@
 #include "base/values.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
-#include "chrome/browser/media/router/providers/cast/mock_cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/mock_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/test_util.h"
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
@@ -79,8 +80,8 @@ base::Value MakeReceiverStatus(const std::string& app_id,
       })");
 }
 
-using MockCastActivityRecordCallback =
-    base::RepeatingCallback<void(MockCastActivityRecord*)>;
+using MockActivityRecordCallback =
+    base::RepeatingCallback<void(MockActivityRecord*)>;
 
 }  // namespace
 
@@ -88,7 +89,7 @@ using MockCastActivityRecordCallback =
 // be closed by a leave_session message, and the URL used to create the test
 // session.
 class CastActivityManagerTest : public testing::Test,
-                                public CastActivityRecordFactory {
+                                public CastActivityRecordFactoryForTest {
  public:
   CastActivityManagerTest()
       : socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
@@ -130,10 +131,10 @@ class CastActivityManagerTest : public testing::Test,
     CastActivityManager::SetActitivyRecordFactoryForTest(nullptr);
   }
 
-  std::unique_ptr<CastActivityRecord> MakeCastActivityRecord(
+  std::unique_ptr<ActivityRecord> MakeCastActivityRecord(
       const MediaRoute& route,
       const std::string& app_id) override {
-    auto activity = std::make_unique<MockCastActivityRecord>(route, app_id);
+    auto activity = std::make_unique<MockActivityRecord>(route, app_id);
     auto* activity_ptr = activity.get();
     std::string route_id = route.media_route_id();
     ON_CALL(*activity, SendStopSessionMessageToReceiver)
@@ -183,7 +184,7 @@ class CastActivityManagerTest : public testing::Test,
     ASSERT_TRUE(source);
 
     activity_record_callback_ =
-        base::BindLambdaForTesting([this](MockCastActivityRecord* activity) {
+        base::BindLambdaForTesting([this](MockActivityRecord* activity) {
           // TODO(jrw): Check parameters.
           EXPECT_CALL(*activity, AddClient);
           EXPECT_CALL(*activity, SendMessageToClient).RetiresOnSaturation();
@@ -317,8 +318,8 @@ class CastActivityManagerTest : public testing::Test,
   MockCastAppDiscoveryService app_discovery_service_;
   std::unique_ptr<CastActivityManager> manager_;
   std::unique_ptr<CastSessionTracker> session_tracker_;
-  std::vector<MockCastActivityRecord*> activities_;
-  MockCastActivityRecordCallback activity_record_callback_ = base::DoNothing();
+  std::vector<MockActivityRecord*> activities_;
+  MockActivityRecordCallback activity_record_callback_ = base::DoNothing();
   const url::Origin origin_ = url::Origin::Create(GURL(kOrigin));
   const MediaSource::Id route_query_ = "theRouteQuery";
   base::Optional<MediaRoute> updated_route_;
@@ -435,30 +436,12 @@ TEST_F(CastActivityManagerTest, TerminateSessionBeforeLaunchResponse) {
 TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
   LaunchSession();
 
-  // TODO(jrw): Check message param.
-  EXPECT_CALL(*activities_[0], SendMessageToClient("theClientId", _));
-
   // Destination ID matches client ID.
   cast_channel::CastMessage message = cast_channel::CreateCastMessage(
       "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
       "sourceId", "theClientId");
-  manager_->OnAppMessage(kChannelId, message);
-}
 
-TEST_F(CastActivityManagerTest, AppMessageFromReceiverAllDestinations) {
-  LaunchSession();
-
-  activities_[0]->AddFakeClient("fakeClient1");
-  activities_[0]->AddFakeClient("fakeClient2");
-
-  // TODO(jrw): Check message params.
-  EXPECT_CALL(*activities_[0], SendMessageToClient("fakeClient1", _));
-  EXPECT_CALL(*activities_[0], SendMessageToClient("fakeClient2", _));
-
-  // Matches all destinations.
-  cast_channel::CastMessage message = cast_channel::CreateCastMessage(
-      "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
-      "sourceId", "*");
+  EXPECT_CALL(*activities_[0], OnAppMessage(IsCastChannelMessage(message)));
   manager_->OnAppMessage(kChannelId, message);
 }
 

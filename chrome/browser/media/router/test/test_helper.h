@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/issues_observer.h"
@@ -225,9 +226,8 @@ std::unique_ptr<DialInternalMessage> ParseDialInternalMessage(
 
 #endif  // !defined(OS_ANDROID)
 
-// Matcher for blink::mojom::PresentationConnectionMessagePtr arguments.
-// TODO(jrw): Rename to something like IsPresentationConnectionMessage.
-MATCHER_P(IsCastMessage, json, "") {
+// Matcher for PresentationConnectionMessagePtr arguments.
+MATCHER_P(IsPresentationConnectionMessage, json, "") {
   return arg->is_message() && base::test::IsJsonMatcher(json).MatchAndExplain(
                                   arg->get_message(), result_listener);
 }

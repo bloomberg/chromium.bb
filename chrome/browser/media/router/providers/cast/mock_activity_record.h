@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_CAST_ACTIVITY_RECORD_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_CAST_ACTIVITY_RECORD_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_ACTIVITY_RECORD_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_ACTIVITY_RECORD_H_
 
 #include <string>
 
@@ -14,10 +14,10 @@
 
 namespace media_router {
 
-class MockCastActivityRecord : public CastActivityRecord {
+class MockActivityRecord : public ActivityRecord {
  public:
-  MockCastActivityRecord(const MediaRoute& route, const std::string& app_id);
-  ~MockCastActivityRecord() override;
+  MockActivityRecord(const MediaRoute& route, const std::string& app_id);
+  ~MockActivityRecord() override;
 
   void set_session_id(const std::string& new_id) {
     if (!session_id_)
@@ -62,8 +62,9 @@ class MockCastActivityRecord : public CastActivityRecord {
       ClosePresentationConnections,
       void(blink::mojom::PresentationConnectionCloseReason close_reason));
   MOCK_METHOD0(TerminatePresentationConnections, void());
+  MOCK_METHOD1(OnAppMessage, void(const cast_channel::CastMessage& message));
 };
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_CAST_ACTIVITY_RECORD_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_MOCK_ACTIVITY_RECORD_H_

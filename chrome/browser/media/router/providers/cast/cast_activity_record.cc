@@ -18,15 +18,25 @@ using blink::mojom::PresentationConnectionMessagePtr;
 
 namespace media_router {
 
-CastActivityRecord::CastActivityRecord(const MediaRoute& route,
-                                       const std::string& app_id)
-    : ActivityRecord(route, app_id) {}
+CastActivityRecord::CastActivityRecord(
+    const MediaRoute& route,
+    const std::string& app_id,
+    MediaSinkServiceBase* media_sink_service,
+    cast_channel::CastMessageHandler* message_handler,
+    CastSessionTracker* session_tracker,
+    DataDecoder* data_decoder,
+    CastActivityManagerBase* owner)
+    : ActivityRecord(route,
+                     app_id,
+                     message_handler,
+                     session_tracker,
+                     data_decoder),
+      media_sink_service_(media_sink_service),
+      activity_manager_(owner) {}
 
 CastActivityRecord::~CastActivityRecord() = default;
 
-CastActivityRecordImpl::~CastActivityRecordImpl() = default;
-
-mojom::RoutePresentationConnectionPtr CastActivityRecordImpl::AddClient(
+mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
     const CastMediaSource& source,
     const url::Origin& origin,
     int tab_id) {
@@ -47,7 +57,7 @@ mojom::RoutePresentationConnectionPtr CastActivityRecordImpl::AddClient(
   return presentation_connection;
 }
 
-void CastActivityRecordImpl::RemoveClient(const std::string& client_id) {
+void CastActivityRecord::RemoveClient(const std::string& client_id) {
   // Don't erase by key here as the |client_id| may be referring to the
   // client being deleted.
   auto it = connected_clients_.find(client_id);
@@ -55,24 +65,19 @@ void CastActivityRecordImpl::RemoveClient(const std::string& client_id) {
     connected_clients_.erase(it);
 }
 
-void CastActivityRecordImpl::SetOrUpdateSession(const CastSession& session,
-                                                const MediaSinkInternal& sink,
-                                                const std::string& hash_token) {
-  DVLOG(2) << "CastActivityRecordImpl::SetOrUpdateSession old session_id = "
-           << session_id_.value_or("<missing>")
-           << ", new session_id = " << session.session_id();
-  if (!session_id_) {
-    session_id_ = session.session_id();
-  } else {
-    DCHECK_EQ(*session_id_, session.session_id());
+void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
+                                            const MediaSinkInternal& sink,
+                                            const std::string& hash_token) {
+  bool had_session_id = session_id_.has_value();
+  ActivityRecord::SetOrUpdateSession(session, sink, hash_token);
+  if (had_session_id) {
     for (auto& client : connected_clients_)
       client.second->SendMessageToClient(
           CreateUpdateSessionMessage(session, client.first, sink, hash_token));
   }
-  route_.set_description(session.GetRouteDescription());
 }
 
-cast_channel::Result CastActivityRecordImpl::SendAppMessageToReceiver(
+cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
     const CastInternalMessage& cast_message) {
   CastSessionClient* client = GetClient(cast_message.client_id());
   const CastSession* session = GetSession();
@@ -104,7 +109,7 @@ cast_channel::Result CastActivityRecordImpl::SendAppMessageToReceiver(
           cast_message.client_id(), session->transport_id()));
 }
 
-base::Optional<int> CastActivityRecordImpl::SendMediaRequestToReceiver(
+base::Optional<int> CastActivityRecord::SendMediaRequestToReceiver(
     const CastInternalMessage& cast_message) {
   CastSession* session = GetSession();
   if (!session)
@@ -114,7 +119,7 @@ base::Optional<int> CastActivityRecordImpl::SendMediaRequestToReceiver(
       cast_message.client_id(), session->transport_id());
 }
 
-void CastActivityRecordImpl::SendSetVolumeRequestToReceiver(
+void CastActivityRecord::SendSetVolumeRequestToReceiver(
     const CastInternalMessage& cast_message,
     cast_channel::ResultCallback callback) {
   message_handler_->SendSetVolumeRequest(
@@ -123,7 +128,7 @@ void CastActivityRecordImpl::SendSetVolumeRequestToReceiver(
 }
 
 // TODO(jrw): Revise the name of this method.
-void CastActivityRecordImpl::SendStopSessionMessageToReceiver(
+void CastActivityRecord::SendStopSessionMessageToReceiver(
     const base::Optional<std::string>& client_id,
     const std::string& hash_token,
     mojom::MediaRouteProvider::TerminateRouteCallback callback) {
@@ -144,7 +149,7 @@ void CastActivityRecordImpl::SendStopSessionMessageToReceiver(
                                                     std::move(callback)));
 }
 
-void CastActivityRecordImpl::HandleLeaveSession(const std::string& client_id) {
+void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
   auto client_it = connected_clients_.find(client_id);
   CHECK(client_it != connected_clients_.end());
   auto& client = *client_it->second;
@@ -163,7 +168,7 @@ void CastActivityRecordImpl::HandleLeaveSession(const std::string& client_id) {
   }
 }
 
-void CastActivityRecordImpl::SendMessageToClient(
+void CastActivityRecord::SendMessageToClient(
     const std::string& client_id,
     PresentationConnectionMessagePtr message) {
   auto it = connected_clients_.find(client_id);
@@ -175,51 +180,44 @@ void CastActivityRecordImpl::SendMessageToClient(
   it->second->SendMessageToClient(std::move(message));
 }
 
-void CastActivityRecordImpl::SendMediaStatusToClients(
+void CastActivityRecord::SendMediaStatusToClients(
     const base::Value& media_status,
     base::Optional<int> request_id) {
   for (auto& client : connected_clients())
     client.second->SendMediaStatusToClient(media_status, request_id);
 }
 
-void CastActivityRecordImpl::ClosePresentationConnections(
+void CastActivityRecord::ClosePresentationConnections(
     PresentationConnectionCloseReason close_reason) {
   for (auto& client : connected_clients_)
     client.second->CloseConnection(close_reason);
 }
 
-void CastActivityRecordImpl::TerminatePresentationConnections() {
+void CastActivityRecord::TerminatePresentationConnections() {
   for (auto& client : connected_clients_)
     client.second->TerminateConnection();
 }
 
-CastActivityRecordImpl::CastActivityRecordImpl(
-    const MediaRoute& route,
-    const std::string& app_id,
-    MediaSinkServiceBase* media_sink_service,
-    cast_channel::CastMessageHandler* message_handler,
-    CastSessionTracker* session_tracker,
-    DataDecoder* data_decoder,
-    CastActivityManagerBase* owner)
-    : CastActivityRecord(route, app_id),
-      media_sink_service_(media_sink_service),
-      message_handler_(message_handler),
-      session_tracker_(session_tracker),
-      data_decoder_(data_decoder),
-      activity_manager_(owner) {}
-
-CastSession* CastActivityRecordImpl::GetSession() {
-  DCHECK(session_id_);
-  CastSession* session = session_tracker_->GetSessionById(*session_id_);
-  if (!session) {
-    // TODO(crbug.com/905002): Add UMA metrics for this and other error
-    // conditions.
-    LOG(ERROR) << "Session not found: " << session_id_.value_or("<missing>");
+void CastActivityRecord::OnAppMessage(
+    const cast_channel::CastMessage& message) {
+  if (!session_id_) {
+    DVLOG(2) << "No session associated with activity!";
+    return;
   }
-  return session;
+
+  const std::string& client_id = message.destination_id();
+  if (client_id == "*") {
+    for (const auto& client : connected_clients()) {
+      SendMessageToClient(
+          client.first, CreateAppMessage(*session_id_, client.first, message));
+    }
+  } else {
+    SendMessageToClient(client_id,
+                        CreateAppMessage(*session_id_, client_id, message));
+  }
 }
 
-int CastActivityRecordImpl::GetCastChannelId() {
+int CastActivityRecord::GetCastChannelId() {
   const MediaSinkInternal* sink = media_sink_service_->GetSinkByRoute(route_);
   if (!sink) {
     // TODO(crbug.com/905002): Add UMA metrics for this and other error
@@ -230,7 +228,7 @@ int CastActivityRecordImpl::GetCastChannelId() {
   return sink->cast_data().cast_channel_id;
 }
 
-CastSessionClientFactoryForTest*
-    CastActivityRecordImpl::client_factory_for_test_ = nullptr;
+CastSessionClientFactoryForTest* CastActivityRecord::client_factory_for_test_ =
+    nullptr;
 
 }  // namespace media_router

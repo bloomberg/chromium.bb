@@ -42,7 +42,7 @@ CastSessionClientImpl::CastSessionClientImpl(const std::string& client_id,
                                              int tab_id,
                                              AutoJoinPolicy auto_join_policy,
                                              DataDecoder* data_decoder,
-                                             CastActivityRecord* activity)
+                                             ActivityRecord* activity)
     : CastSessionClient(client_id, origin, tab_id),
       auto_join_policy_(auto_join_policy),
       data_decoder_(data_decoder),

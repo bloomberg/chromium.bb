@@ -300,7 +300,7 @@ TEST(CastInternalMessageUtilTest, CreateReceiverActionCastMessage) {
 
   auto message =
       CreateReceiverActionCastMessage(client_id, sink, kReceiverIdToken);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
      "clientId": "clientId",
      "message": {
         "action": "cast",
@@ -325,7 +325,7 @@ TEST(CastInternalMessageUtilTest, CreateReceiverActionStopMessage) {
 
   auto message =
       CreateReceiverActionStopMessage(client_id, sink, kReceiverIdToken);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
      "clientId": "clientId",
      "message": {
         "action": "stop",
@@ -354,7 +354,7 @@ TEST(CastInternalMessageUtilTest, CreateNewSessionMessage) {
 
   auto message =
       CreateNewSessionMessage(*session, client_id, sink, kReceiverIdToken);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
    "clientId": "clientId",
    "message": {
       "appId": "ABCDEFGH",
@@ -394,7 +394,7 @@ TEST(CastInternalMessageUtilTest, CreateUpdateSessionMessage) {
 
   auto message =
       CreateUpdateSessionMessage(*session, client_id, sink, kReceiverIdToken);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
    "clientId": "clientId",
    "message": {
       "appId": "ABCDEFGH",
@@ -429,7 +429,7 @@ TEST(CastInternalMessageUtilTest, CreateAppMessageAck) {
   int sequence_number = 12345;
 
   auto message = CreateAppMessageAck(client_id, sequence_number);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
    "clientId": "clientId",
    "message": null,
    "sequenceNumber": 12345,
@@ -447,7 +447,7 @@ TEST(CastInternalMessageUtilTest, CreateAppMessage) {
       "urn:x-cast:com.google.foo", message_body, "sourceId", "destinationId");
 
   auto message = CreateAppMessage(session_id, client_id, cast_message);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
    "clientId": "clientId",
    "message": {
       "message": "{\"foo\":\"bar\"}",
@@ -464,7 +464,7 @@ TEST(CastInternalMessageUtilTest, CreateV2Message) {
   message_body.SetKey("foo", base::Value("bar"));
 
   auto message = CreateV2Message("client_id", message_body, 12345);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
    "clientId": "client_id",
    "message": {"foo": "bar"},
    "sequenceNumber": 12345,

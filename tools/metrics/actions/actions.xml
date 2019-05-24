@@ -11000,6 +11000,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MediaRouter.CastStreaming.Session.End">
+  <owner>miu@google.com</owner>
+  <description>User ended a Cast Streaming session.</description>
+</action>
+
 <action name="MediaRouter_Icon_Click">
   <owner>apacible@chromium.org</owner>
   <description>

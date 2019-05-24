@@ -42,6 +42,37 @@ MATCHER_P(IsCastInternalMessage, json, "") {
   }
 }
 
+// Similar to Pointee, but works for instances of mojo::StructPtr, etc.
+MATCHER_P(StructPtrTo, expected, "") {
+  return arg && testing::Matches(expected)(*arg);
+}
+
+// Matcher for cast_channel::CastMessage arguments.
+MATCHER_P(IsCastChannelMessage, expected, "") {
+  if (arg.has_source_id() != expected.has_source_id() ||
+      arg.has_destination_id() != expected.has_destination_id() ||
+      arg.has_namespace_() != expected.has_namespace_() ||
+      arg.has_payload_utf8() != expected.has_payload_utf8() ||
+      arg.has_payload_binary() != expected.has_payload_binary() ||
+      arg.has_protocol_version() != expected.has_protocol_version() ||
+      arg.has_payload_type() != expected.has_payload_type() ||
+      (arg.has_source_id() && arg.source_id() != expected.source_id()) ||
+      (arg.has_destination_id() &&
+       arg.destination_id() != expected.destination_id()) ||
+      (arg.has_namespace_() && arg.namespace_() != expected.namespace_()) ||
+      (arg.has_payload_utf8() &&
+       arg.payload_utf8() != expected.payload_utf8()) ||
+      (arg.has_payload_binary() &&
+       arg.payload_binary() != expected.payload_binary()) ||
+      (arg.has_protocol_version() &&
+       arg.protocol_version() != expected.protocol_version()) ||
+      (arg.has_payload_type() &&
+       arg.payload_type() != expected.payload_type())) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_TEST_UTIL_H_

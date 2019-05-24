@@ -4,6 +4,7 @@
 
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/containers/flat_map.h"
@@ -313,30 +314,35 @@ CastAppInfo::~CastAppInfo() = default;
 CastAppInfo::CastAppInfo(const CastAppInfo& other) = default;
 
 // static
-std::unique_ptr<CastMediaSource> CastMediaSource::FromMediaSourceId(
-    const MediaSource::Id& source_id) {
-  MediaSource source(source_id);
+std::unique_ptr<CastMediaSource> CastMediaSource::FromMediaSource(
+    const MediaSource& source) {
   if (source.IsTabMirroringSource())
-    return CastMediaSourceForTabMirroring(source_id);
+    return CastMediaSourceForTabMirroring(source.id());
 
   if (source.IsDesktopMirroringSource())
-    return CastMediaSourceForDesktopMirroring(source_id);
+    return CastMediaSourceForDesktopMirroring(source.id());
 
   const GURL& url = source.url();
   if (!url.is_valid())
     return nullptr;
 
   if (url.SchemeIs(kCastPresentationUrlScheme)) {
-    return ParseCastUrl(source_id, url);
+    return ParseCastUrl(source.id(), url);
   } else if (IsLegacyCastPresentationUrl(url)) {
-    return ParseLegacyCastUrl(source_id, url);
+    return ParseLegacyCastUrl(source.id(), url);
   } else if (url.SchemeIsHTTPOrHTTPS()) {
     // Arbitrary https URLs are supported via 1-UA mode which uses tab
     // mirroring.
-    return CastMediaSourceForTabMirroring(source_id);
+    return CastMediaSourceForTabMirroring(source.id());
   }
 
   return nullptr;
+}
+
+// static
+std::unique_ptr<CastMediaSource> CastMediaSource::FromMediaSourceId(
+    const MediaSource::Id& source_id) {
+  return FromMediaSource(MediaSource(source_id));
 }
 
 // static

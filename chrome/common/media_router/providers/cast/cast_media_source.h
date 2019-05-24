@@ -120,6 +120,8 @@ bool IsAutoJoinAllowed(AutoJoinPolicy policy,
 class CastMediaSource {
  public:
   // Returns the parsed form of |source|, or nullptr if it cannot be parsed.
+  static std::unique_ptr<CastMediaSource> FromMediaSource(
+      const MediaSource& source);
   static std::unique_ptr<CastMediaSource> FromMediaSourceId(
       const MediaSource::Id& source);
 

@@ -18,7 +18,7 @@
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
-#include "chrome/browser/media/router/providers/cast/mock_cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/mock_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/test_util.h"
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
@@ -98,7 +98,7 @@ class CastSessionClientImplTest : public testing::Test {
   DataDecoder decoder_{connector_factory_.GetDefaultConnector()};
   url::Origin origin_;
   MediaRoute route_;
-  MockCastActivityRecord activity_{route_, "theAppId"};
+  MockActivityRecord activity_{route_, "theAppId"};
   std::unique_ptr<CastSessionClientImpl> client_ =
       std::make_unique<CastSessionClientImpl>("theClientId",
                                               origin_,
@@ -209,7 +209,7 @@ TEST_F(CastSessionClientImplTest, OnMediaStatusUpdatedWithPendingRequest) {
       })"));
   RunUntilIdle();
 
-  EXPECT_CALL(*mock_connection_, OnMessage(IsCastMessage(R"({
+  EXPECT_CALL(*mock_connection_, OnMessage(IsPresentationConnectionMessage(R"({
     "clientId": "theClientId",
     "message": {"foo": "bar"},
     "timeoutMillis": 0,
@@ -234,7 +234,7 @@ TEST_F(CastSessionClientImplTest, SendSetVolumeCommandToReceiver) {
         })"));
         std::move(callback).Run(cast_channel::Result::kOk);
       });
-  EXPECT_CALL(*mock_connection_, OnMessage(IsCastMessage(R"({
+  EXPECT_CALL(*mock_connection_, OnMessage(IsPresentationConnectionMessage(R"({
     "clientId": "theClientId",
     "message": null,
     "sequenceNumber": 123,

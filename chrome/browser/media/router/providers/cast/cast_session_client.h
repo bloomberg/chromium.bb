@@ -23,7 +23,7 @@
 
 namespace media_router {
 
-class CastActivityRecord;
+class ActivityRecord;
 class DataDecoder;
 
 // Represents a Cast SDK client connection to a Cast session. This class
@@ -117,7 +117,7 @@ class CastSessionClientImpl : public CastSessionClient,
                         int tab_id,
                         AutoJoinPolicy auto_join_policy,
                         DataDecoder* data_decoder,
-                        CastActivityRecord* activity);
+                        ActivityRecord* activity);
   ~CastSessionClientImpl() override;
 
   // CastSessionClient implementation
@@ -161,7 +161,7 @@ class CastSessionClientImpl : public CastSessionClient,
   const AutoJoinPolicy auto_join_policy_;
 
   DataDecoder* const data_decoder_;
-  CastActivityRecord* const activity_;
+  ActivityRecord* const activity_;
 
   // The maximum number of pending media requests, used to prevent memory leaks.
   // Normally the number of pending requests should be fairly small, but each

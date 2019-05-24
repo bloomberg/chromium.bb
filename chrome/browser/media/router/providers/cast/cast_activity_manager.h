@@ -15,8 +15,10 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
+#include "chrome/browser/media/router/providers/cast/activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
+#include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "url/origin.h"
@@ -27,8 +29,9 @@ class CastMessage;
 
 namespace media_router {
 
+class ActivityRecord;
 class CastActivityRecord;
-class CastActivityRecordFactory;
+class CastActivityRecordFactoryForTest;
 class CastSession;
 class DataDecoder;
 class MediaSinkServiceBase;
@@ -118,7 +121,7 @@ class CastActivityManager : public CastActivityManagerBase,
                             base::Optional<int> request_id) override;
 
   static void SetActitivyRecordFactoryForTest(
-      CastActivityRecordFactory* factory) {
+      CastActivityRecordFactoryForTest* factory) {
     activity_record_factory_ = factory;
   }
 
@@ -129,7 +132,7 @@ class CastActivityManager : public CastActivityManagerBase,
  private:
   friend class CastActivityManagerTest;
   using ActivityMap =
-      base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivityRecord>>;
+      base::flat_map<MediaRoute::Id, std::unique_ptr<ActivityRecord>>;
 
   // Bundle of parameters for DoLaunchSession().
   struct DoLaunchSessionParams {
@@ -173,6 +176,8 @@ class CastActivityManager : public CastActivityManagerBase,
       const base::Optional<std::string>& error_string,
       RouteRequestResult::ResultCode result);
 
+  void RemoveActivityByRouteId(const std::string& route_id);
+
   // Removes an activity, terminating any associated connections, then notifies
   // the media router that routes have been updated.
   void RemoveActivity(
@@ -203,14 +208,13 @@ class CastActivityManager : public CastActivityManagerBase,
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
       cast_channel::Result result);
 
-  CastActivityRecord* FindActivityForAutoJoin(
-      const CastMediaSource& cast_source,
-      const url::Origin& origin,
-      int tab_id);
-  bool CanJoinSession(const CastActivityRecord& activity,
+  ActivityRecord* FindActivityForAutoJoin(const CastMediaSource& cast_source,
+                                          const url::Origin& origin,
+                                          int tab_id);
+  bool CanJoinSession(const ActivityRecord& activity,
                       const CastMediaSource& cast_source,
                       bool incognito) const;
-  CastActivityRecord* FindActivityForSessionJoin(
+  ActivityRecord* FindActivityForSessionJoin(
       const CastMediaSource& cast_source,
       const std::string& presentation_id);
 
@@ -226,10 +230,15 @@ class CastActivityManager : public CastActivityManagerBase,
   ActivityMap::iterator FindActivityByChannelId(int channel_id);
   ActivityMap::iterator FindActivityBySink(const MediaSinkInternal& sink);
 
-  CastActivityRecord* AddActivityRecord(const MediaRoute& route,
+  ActivityRecord* AddCastActivityRecord(const MediaRoute& route,
                                         const std::string& app_id);
+  ActivityRecord* AddMirroringActivityRecord(
+      const MediaRoute& route,
+      const std::string& app_id,
+      int tab_id,
+      const CastSinkExtraData& cast_data);
 
-  static CastActivityRecordFactory* activity_record_factory_;
+  static CastActivityRecordFactoryForTest* activity_record_factory_;
 
   base::flat_set<MediaSource::Id> route_queries_;
   ActivityMap activities_;
