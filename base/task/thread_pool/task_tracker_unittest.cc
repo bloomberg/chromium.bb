@@ -77,22 +77,37 @@ class ThreadPostingAndRunningTask : public SimpleThread {
     WILL_POST_AND_RUN,
   };
 
+  // |action| must be either WILL_POST of WILL_POST_AND_RUN.
+  // |task| will be pushed to |sequence| and |sequence| will be registered. If
+  // |action| is WILL_POST_AND_RUN, a task from |sequence| will run.
   ThreadPostingAndRunningTask(TaskTracker* tracker,
                               scoped_refptr<Sequence> sequence,
                               Action action,
                               bool expect_post_succeeds,
-                              Task task = {})
+                              Task task)
       : SimpleThread("ThreadPostingAndRunningTask"),
         tracker_(tracker),
         task_(std::move(task)),
         sequence_(std::move(sequence)),
         action_(action),
         expect_post_succeeds_(expect_post_succeeds) {
-    if (!task_.task) {
-      EXPECT_NE(Action::WILL_POST, action_);
-      EXPECT_NE(Action::WILL_POST_AND_RUN, action_);
-    }
+    EXPECT_TRUE(task_.task);
+    EXPECT_TRUE(sequence_);
+    EXPECT_NE(Action::RUN, action_);
   }
+
+  // A task from |task_source| will run.
+  ThreadPostingAndRunningTask(TaskTracker* tracker,
+                              RegisteredTaskSource task_source)
+      : SimpleThread("ThreadPostingAndRunningTask"),
+        tracker_(tracker),
+        task_source_(std::move(task_source)),
+        action_(Action::RUN),
+        expect_post_succeeds_(false) {
+    EXPECT_TRUE(task_source_);
+  }
+
+  RegisteredTaskSource TakeTaskSource() { return std::move(task_source_); }
 
  private:
   void Run() override {
@@ -103,25 +118,26 @@ class ThreadPostingAndRunningTask : public SimpleThread {
       post_and_queue_succeeded =
           tracker_->WillPostTask(&task_, sequence_->shutdown_behavior());
       sequence_->BeginTransaction().PushTask(std::move(task_));
+      task_source_ = tracker_->WillQueueTaskSource(std::move(sequence_));
 
-      post_and_queue_succeeded &=
-          tracker_->WillQueueTaskSource(sequence_.get());
+      post_and_queue_succeeded &= !!task_source_;
 
       EXPECT_EQ(expect_post_succeeds_, post_and_queue_succeeded);
     }
     if (post_and_queue_succeeded &&
         (action_ == Action::RUN || action_ == Action::WILL_POST_AND_RUN)) {
-      EXPECT_TRUE(sequence_);
+      EXPECT_TRUE(task_source_);
 
       // Expect RunAndPopNextTask to return nullptr since |sequence| is empty
       // after popping a task from it.
-      EXPECT_FALSE(tracker_->RunAndPopNextTask(std::move(sequence_)));
+      EXPECT_FALSE(tracker_->RunAndPopNextTask(std::move(task_source_)));
     }
   }
 
   TaskTracker* const tracker_;
   Task task_;
   scoped_refptr<Sequence> sequence_;
+  RegisteredTaskSource task_source_;
   const Action action_;
   const bool expect_post_succeeds_;
 
@@ -154,15 +170,13 @@ class ThreadPoolTaskTrackerTest
         TimeDelta());
   }
 
-  scoped_refptr<Sequence> WillPostTaskAndQueueTaskSource(
+  RegisteredTaskSource WillPostTaskAndQueueTaskSource(
       Task task,
       const TaskTraits& traits) {
     if (!tracker_.WillPostTask(&task, traits.shutdown_behavior()))
       return nullptr;
     auto sequence = test::CreateSequenceWithTask(std::move(task), traits);
-    if (!tracker_.WillQueueTaskSource(sequence.get()))
-      return nullptr;
-    return sequence;
+    return tracker_.WillQueueTaskSource(std::move(sequence));
   }
 
   // Calls tracker_->CompleteShutdown() on a new thread and expects it to block.
@@ -299,9 +313,8 @@ TEST_P(ThreadPoolTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
   EXPECT_TRUE(sequence);
 
   // Create a thread to run the task. Wait until the task starts running.
-  ThreadPostingAndRunningTask thread_running_task(
-      &tracker_, std::move(sequence), ThreadPostingAndRunningTask::Action::RUN,
-      false);
+  ThreadPostingAndRunningTask thread_running_task(&tracker_,
+                                                  std::move(sequence));
   thread_running_task.Start();
   task_running.Wait();
 
@@ -325,10 +338,10 @@ TEST_P(ThreadPoolTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
     WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 }
 
-// Verify that a undelayed task whose sequence wasn't queued does not block
+// Verify that an undelayed task whose sequence wasn't queued does not block
 // shutdown, regardless of its shutdown behavior.
 TEST_P(ThreadPoolTaskTrackerTest, WillPostBeforeShutdownQueueDuringShutdown) {
-  // Simulate posting a delayed task.
+  // Simulate posting a undelayed task.
   Task task{CreateTask()};
   EXPECT_TRUE(tracker_.WillPostTask(&task, GetParam()));
   auto sequence = test::CreateSequenceWithTask(std::move(task), GetParam());
@@ -345,12 +358,14 @@ TEST_P(ThreadPoolTaskTrackerTest, WillPostBeforeShutdownQueueDuringShutdown) {
 
   const bool should_run = GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN;
   if (should_run) {
-    EXPECT_TRUE(tracker_.WillQueueTaskSource(sequence.get()));
-    tracker_.RunAndPopNextTask(std::move(sequence));
+    auto registered_task_source =
+        tracker_.WillQueueTaskSource(std::move(sequence));
+    EXPECT_TRUE(registered_task_source);
+    tracker_.RunAndPopNextTask(std::move(registered_task_source));
     EXPECT_EQ(1U, NumTasksExecuted());
     VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
   } else {
-    EXPECT_FALSE(tracker_.WillQueueTaskSource(sequence.get()));
+    EXPECT_FALSE(tracker_.WillQueueTaskSource(std::move(sequence)));
   }
 
   // Unblock shutdown by running the remaining BLOCK_SHUTDOWN task.
@@ -483,7 +498,7 @@ TEST_P(ThreadPoolTaskTrackerTest, SingletonAllowed) {
 
   // Running the task should fail iff the task isn't allowed to use singletons.
   if (can_use_singletons) {
-    tracker_.RunAndPopNextTask(std::move(sequence));
+    EXPECT_FALSE(tracker_.RunAndPopNextTask(std::move(sequence)));
   } else {
     EXPECT_DCHECK_DEATH({ tracker_.RunAndPopNextTask(std::move(sequence)); });
   }
@@ -877,6 +892,7 @@ TEST_P(ThreadPoolTaskTrackerTest, DoublePendingFlushAsyncForTestingFails) {
                Unretained(&called_back)));
   EXPECT_FALSE(called_back);
   EXPECT_DCHECK_DEATH({ tracker_.FlushAsyncForTesting(BindOnce([]() {})); });
+  undelayed_sequence.Unregister();
 }
 
 TEST_P(ThreadPoolTaskTrackerTest, PostTasksDoNotBlockShutdown) {
@@ -888,9 +904,9 @@ TEST_P(ThreadPoolTaskTrackerTest, PostTasksDoNotBlockShutdown) {
   test::ShutdownTaskTracker(&tracker_);
 }
 
-// Verify that running a delayed task does not block shutdown, regardless of its
-// shutdown behavior.
-TEST_P(ThreadPoolTaskTrackerTest, DelayedPostTasksDoNotBlockShutdown) {
+// Verify that a delayed task does not block shutdown once it's run, regardless
+// of its shutdown behavior.
+TEST_P(ThreadPoolTaskTrackerTest, DelayedRunTasks) {
   // Simulate posting a delayed task.
   Task delayed_task(FROM_HERE, DoNothing(), TimeDelta::FromDays(1));
   auto sequence =
@@ -989,43 +1005,46 @@ TEST_F(ThreadPoolTaskTrackerTest, LoadWillPostAndRunBeforeShutdown) {
 
 TEST_F(ThreadPoolTaskTrackerTest,
        LoadWillPostBeforeShutdownAndRunDuringShutdown) {
-  TaskTraits traits_continue_on_shutdown =
+  constexpr TaskTraits traits_continue_on_shutdown =
       TaskTraits(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN);
-  TaskTraits traits_skip_on_shutdown =
+  constexpr TaskTraits traits_skip_on_shutdown =
       TaskTraits(TaskShutdownBehavior::SKIP_ON_SHUTDOWN);
-  TaskTraits traits_block_shutdown =
+  constexpr TaskTraits traits_block_shutdown =
       TaskTraits(TaskShutdownBehavior::BLOCK_SHUTDOWN);
 
   // Post tasks asynchronously.
-  std::vector<scoped_refptr<Sequence>> sequences_continue_on_shutdown;
-  std::vector<scoped_refptr<Sequence>> sequences_skip_on_shutdown;
-  std::vector<scoped_refptr<Sequence>> sequences_block_shutdown;
-  for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
-    sequences_continue_on_shutdown.push_back(
-        MakeRefCounted<Sequence>(traits_continue_on_shutdown, nullptr,
-                                 TaskSourceExecutionMode::kParallel));
-    sequences_skip_on_shutdown.push_back(MakeRefCounted<Sequence>(
-        traits_skip_on_shutdown, nullptr, TaskSourceExecutionMode::kParallel));
-    sequences_block_shutdown.push_back(MakeRefCounted<Sequence>(
-        traits_block_shutdown, nullptr, TaskSourceExecutionMode::kParallel));
-  }
-
   std::vector<std::unique_ptr<ThreadPostingAndRunningTask>> post_threads;
-  for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
-    post_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
-        &tracker_, sequences_continue_on_shutdown[i],
-        ThreadPostingAndRunningTask::Action::WILL_POST, true, CreateTask()));
-    post_threads.back()->Start();
+  {
+    std::vector<scoped_refptr<Sequence>> sequences_continue_on_shutdown;
+    std::vector<scoped_refptr<Sequence>> sequences_skip_on_shutdown;
+    std::vector<scoped_refptr<Sequence>> sequences_block_shutdown;
+    for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
+      sequences_continue_on_shutdown.push_back(
+          MakeRefCounted<Sequence>(traits_continue_on_shutdown, nullptr,
+                                   TaskSourceExecutionMode::kParallel));
+      sequences_skip_on_shutdown.push_back(
+          MakeRefCounted<Sequence>(traits_skip_on_shutdown, nullptr,
+                                   TaskSourceExecutionMode::kParallel));
+      sequences_block_shutdown.push_back(MakeRefCounted<Sequence>(
+          traits_block_shutdown, nullptr, TaskSourceExecutionMode::kParallel));
+    }
 
-    post_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
-        &tracker_, sequences_skip_on_shutdown[i],
-        ThreadPostingAndRunningTask::Action::WILL_POST, true, CreateTask()));
-    post_threads.back()->Start();
+    for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
+      post_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
+          &tracker_, sequences_continue_on_shutdown[i],
+          ThreadPostingAndRunningTask::Action::WILL_POST, true, CreateTask()));
+      post_threads.back()->Start();
 
-    post_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
-        &tracker_, sequences_block_shutdown[i],
-        ThreadPostingAndRunningTask::Action::WILL_POST, true, CreateTask()));
-    post_threads.back()->Start();
+      post_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
+          &tracker_, sequences_skip_on_shutdown[i],
+          ThreadPostingAndRunningTask::Action::WILL_POST, true, CreateTask()));
+      post_threads.back()->Start();
+
+      post_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
+          &tracker_, sequences_block_shutdown[i],
+          ThreadPostingAndRunningTask::Action::WILL_POST, true, CreateTask()));
+      post_threads.back()->Start();
+    }
   }
 
   for (const auto& thread : post_threads)
@@ -1039,18 +1058,15 @@ TEST_F(ThreadPoolTaskTrackerTest,
   std::vector<std::unique_ptr<ThreadPostingAndRunningTask>> run_threads;
   for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
     run_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
-        &tracker_, std::move(sequences_continue_on_shutdown[i]),
-        ThreadPostingAndRunningTask::Action::RUN, false));
+        &tracker_, post_threads[i * 3]->TakeTaskSource()));
     run_threads.back()->Start();
 
     run_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
-        &tracker_, std::move(sequences_skip_on_shutdown[i]),
-        ThreadPostingAndRunningTask::Action::RUN, false));
+        &tracker_, post_threads[i * 3 + 1]->TakeTaskSource()));
     run_threads.back()->Start();
 
     run_threads.push_back(std::make_unique<ThreadPostingAndRunningTask>(
-        &tracker_, std::move(sequences_block_shutdown[i]),
-        ThreadPostingAndRunningTask::Action::RUN, false));
+        &tracker_, post_threads[i * 3 + 2]->TakeTaskSource()));
     run_threads.back()->Start();
   }
 
@@ -1133,7 +1149,8 @@ TEST_F(ThreadPoolTaskTrackerTest,
   scoped_refptr<Sequence> sequence =
       test::CreateSequenceWithTask(std::move(task_1), default_traits);
   sequence->BeginTransaction().PushTask(std::move(task_2));
-  EXPECT_EQ(sequence, test::QueueAndRunTaskSource(&tracker_, sequence));
+  EXPECT_EQ(sequence,
+            test::QueueAndRunTaskSource(&tracker_, sequence).Unregister());
 }
 
 namespace {

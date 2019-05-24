@@ -66,6 +66,11 @@ void ThreadGroupNative::Start(WorkerEnvironment worker_environment) {
 }
 
 void ThreadGroupNative::JoinForTesting() {
+  {
+    CheckedAutoLock auto_lock(lock_);
+    priority_queue_.EnableFlushTaskSourcesOnDestroyForTesting();
+  }
+
   JoinImpl();
 #if DCHECK_IS_ON()
   DCHECK(!join_for_testing_returned_);
@@ -74,7 +79,7 @@ void ThreadGroupNative::JoinForTesting() {
 }
 
 void ThreadGroupNative::RunNextTaskSourceImpl() {
-  scoped_refptr<TaskSource> task_source = GetWork();
+  RegisteredTaskSource task_source = GetWork();
 
   if (task_source) {
     BindToCurrentThread();
@@ -85,7 +90,8 @@ void ThreadGroupNative::RunNextTaskSourceImpl() {
       ScopedWorkersExecutor workers_executor(this);
       ScopedReenqueueExecutor reenqueue_executor;
       auto task_source_and_transaction =
-          TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
+          RegisteredTaskSourceAndTransaction::FromTaskSource(
+              std::move(task_source));
       CheckedAutoLock auto_lock(lock_);
       ReEnqueueTaskSourceLockRequired(&workers_executor, &reenqueue_executor,
                                       std::move(task_source_and_transaction));
@@ -93,7 +99,7 @@ void ThreadGroupNative::RunNextTaskSourceImpl() {
   }
 }
 
-scoped_refptr<TaskSource> ThreadGroupNative::GetWork() {
+RegisteredTaskSource ThreadGroupNative::GetWork() {
   CheckedAutoLock auto_lock(lock_);
   DCHECK_GT(num_pending_threadpool_work_, 0U);
   --num_pending_threadpool_work_;
@@ -116,7 +122,7 @@ void ThreadGroupNative::UpdateSortKey(
 }
 
 void ThreadGroupNative::PushTaskSourceAndWakeUpWorkers(
-    TaskSourceAndTransaction task_source_and_transaction) {
+    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
   ScopedWorkersExecutor executor(this);
   PushTaskSourceAndWakeUpWorkersImpl(&executor,
                                      std::move(task_source_and_transaction));

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -51,10 +52,12 @@ class BASE_EXPORT Sequence : public TaskSource {
     Transaction(Transaction&& other);
     ~Transaction();
 
-    // Returns true if the would need to be queued after receiving a new Task.
-    bool WillPushTask() const;
+    // Returns true if the sequence would need to be queued after receiving a
+    // new Task.
+    bool WillPushTask() const WARN_UNUSED_RESULT;
 
-    // Adds |task| in a new slot at the end of the Sequence.
+    // Adds |task| in a new slot at the end of the Sequence. This must only be
+    // called after invoking WillPushTask().
     void PushTask(Task task);
 
     Sequence* sequence() const { return static_cast<Sequence*>(task_source()); }
@@ -78,7 +81,7 @@ class BASE_EXPORT Sequence : public TaskSource {
 
   // Begins a Transaction. This method cannot be called on a thread which has an
   // active Sequence::Transaction.
-  Transaction BeginTransaction();
+  Transaction BeginTransaction() WARN_UNUSED_RESULT;
 
   ExecutionEnvironment GetExecutionEnvironment() override;
 
@@ -93,7 +96,7 @@ class BASE_EXPORT Sequence : public TaskSource {
   ~Sequence() override;
 
   // TaskSource:
-  Optional<Task> TakeTask() override;
+  Optional<Task> TakeTask() override WARN_UNUSED_RESULT;
   bool DidRunTask() override;
   SequenceSortKey GetSortKey() const override;
   void Clear() override;
@@ -107,22 +110,13 @@ class BASE_EXPORT Sequence : public TaskSource {
   // Queue of tasks to execute.
   base::queue<Task> queue_;
 
+  // True if a worker is currently running a Task from this Sequence.
   bool has_worker_ = false;
 
   // Holds data stored through the SequenceLocalStorageSlot API.
   SequenceLocalStorageMap sequence_local_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(Sequence);
-};
-
-struct BASE_EXPORT SequenceAndTransaction {
-  scoped_refptr<Sequence> sequence;
-  Sequence::Transaction transaction;
-  SequenceAndTransaction(scoped_refptr<Sequence> sequence_in,
-                         Sequence::Transaction transaction_in);
-  SequenceAndTransaction(SequenceAndTransaction&& other);
-  static SequenceAndTransaction FromSequence(scoped_refptr<Sequence> sequence);
-  ~SequenceAndTransaction();
 };
 
 }  // namespace internal

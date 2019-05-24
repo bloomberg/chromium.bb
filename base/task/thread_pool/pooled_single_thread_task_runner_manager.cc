@@ -100,21 +100,21 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
     PlatformThread::SetName(thread_name_);
   }
 
-  scoped_refptr<TaskSource> GetWork(WorkerThread* worker) override {
+  RegisteredTaskSource GetWork(WorkerThread* worker) override {
     CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
     auto task_source = GetWorkLockRequired(worker);
-    if (task_source == nullptr) {
+    if (!task_source) {
       // The worker will sleep after this returns nullptr.
       worker_awake_ = false;
     }
     return task_source;
   }
 
-  void DidRunTask(scoped_refptr<TaskSource> task_source) override {
+  void DidRunTask(RegisteredTaskSource task_source) override {
     if (task_source) {
-      EnqueueTaskSource(
-          TaskSourceAndTransaction::FromTaskSource(std::move(task_source)));
+      EnqueueTaskSource(RegisteredTaskSourceAndTransaction::FromTaskSource(
+          std::move(task_source)));
     }
   }
 
@@ -122,18 +122,22 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
 
   bool PostTaskNow(scoped_refptr<Sequence> sequence, Task task) {
     auto transaction = sequence->BeginTransaction();
+
+    // |task| will be pushed to |sequence|, and |sequence| will be queued
+    // to |priority_queue_| iff |sequence_should_be_queued| is true.
     const bool sequence_should_be_queued = transaction.WillPushTask();
-    if (sequence_should_be_queued &&
-        !task_tracker_->WillQueueTaskSource(sequence.get())) {
+    if (!sequence_should_be_queued) {
+      transaction.PushTask(std::move(task));
+      return true;
+    }
+    auto registered_task_source = task_tracker_->WillQueueTaskSource(sequence);
+    if (!registered_task_source)
       return false;
-    }
     transaction.PushTask(std::move(task));
-    if (sequence_should_be_queued) {
-      bool should_wakeup =
-          EnqueueTaskSource({std::move(sequence), std::move(transaction)});
-      if (should_wakeup)
-        worker_->WakeUp();
-    }
+    bool should_wakeup = EnqueueTaskSource(
+        {std::move(registered_task_source), std::move(transaction)});
+    if (should_wakeup)
+      worker_->WakeUp();
     return true;
   }
 
@@ -164,7 +168,7 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   }
 
  protected:
-  scoped_refptr<TaskSource> GetWorkLockRequired(WorkerThread* worker)
+  RegisteredTaskSource GetWorkLockRequired(WorkerThread* worker)
       EXCLUSIVE_LOCKS_REQUIRED(lock_) {
     if (!CanRunNextTaskSource()) {
       return nullptr;
@@ -183,10 +187,10 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   // Enqueues a task source in this single-threaded worker's priority queue.
   // Returns true iff the worker must wakeup, i.e. task source is allowed to run
   // and the worker was not awake.
-  bool EnqueueTaskSource(TaskSourceAndTransaction task_source_and_transaction) {
+  bool EnqueueTaskSource(
+      RegisteredTaskSourceAndTransaction task_source_and_transaction) {
     CheckedAutoLock auto_lock(lock_);
-    priority_queue_.Push(std::move(task_source_and_transaction.task_source),
-                         task_source_and_transaction.transaction.GetSortKey());
+    priority_queue_.Push(std::move(task_source_and_transaction));
     if (!worker_awake_ && CanRunNextTaskSource()) {
       worker_awake_ = true;
       return true;
@@ -235,7 +239,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     scoped_com_initializer_ = std::make_unique<win::ScopedCOMInitializer>();
   }
 
-  scoped_refptr<TaskSource> GetWork(WorkerThread* worker) override {
+  RegisteredTaskSource GetWork(WorkerThread* worker) override {
     // This scheme below allows us to cover the following scenarios:
     // * Only WorkerThreadDelegate::GetWork() has work:
     //   Always return the task source from GetWork().
@@ -266,7 +270,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     //      GetWork
     //      !! Getting work while |worker_awake_| is false !!
     worker_awake_ = true;
-    scoped_refptr<TaskSource> task_source;
+    RegisteredTaskSource task_source;
     if (get_work_first_) {
       task_source = WorkerThreadDelegate::GetWorkLockRequired(worker);
       if (task_source)
@@ -287,7 +291,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
       // WorkerThreadDelegate::GetWork().
       task_source = WorkerThreadDelegate::GetWorkLockRequired(worker);
     }
-    if (task_source == nullptr) {
+    if (!task_source) {
       // The worker will sleep after this returns nullptr.
       worker_awake_ = false;
     }
@@ -309,7 +313,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
   }
 
  private:
-  scoped_refptr<TaskSource> GetWorkFromWindowsMessageQueue() {
+  RegisteredTaskSource GetWorkFromWindowsMessageQueue() {
     MSG msg;
     if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE) {
       Task pump_message_task(FROM_HERE,
@@ -327,10 +331,12 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
         DCHECK(sequence_should_be_queued)
             << "GetWorkFromWindowsMessageQueue() does not expect "
                "queueing of pump tasks.";
-        if (!task_tracker_->WillQueueTaskSource(message_pump_sequence_.get()))
+        auto registered_task_source =
+            task_tracker_->WillQueueTaskSource(message_pump_sequence_);
+        if (!registered_task_source)
           return nullptr;
         transaction.PushTask(std::move(pump_message_task));
-        return message_pump_sequence_;
+        return registered_task_source;
       }
     }
     return nullptr;

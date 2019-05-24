@@ -72,48 +72,52 @@ TEST_F(PriorityQueueWithSequencesTest, PushPopPeek) {
 
   // Push |sequence_a| in the PriorityQueue. It becomes the sequence with the
   // highest priority.
-  pq.Push(sequence_a, sort_key_a);
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_a)));
   EXPECT_EQ(sort_key_a, pq.PeekSortKey());
   ExpectNumSequences(0U, 1U, 0U);
 
   // Push |sequence_b| in the PriorityQueue. It becomes the sequence with the
   // highest priority.
-  pq.Push(sequence_b, sort_key_b);
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_b)));
   EXPECT_EQ(sort_key_b, pq.PeekSortKey());
   ExpectNumSequences(0U, 1U, 1U);
 
   // Push |sequence_c| in the PriorityQueue. |sequence_b| is still the sequence
   // with the highest priority.
-  pq.Push(sequence_c, sort_key_c);
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_c)));
   EXPECT_EQ(sort_key_b, pq.PeekSortKey());
   ExpectNumSequences(0U, 1U, 2U);
 
   // Push |sequence_d| in the PriorityQueue. |sequence_b| is still the sequence
   // with the highest priority.
-  pq.Push(sequence_d, sort_key_d);
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_d)));
   EXPECT_EQ(sort_key_b, pq.PeekSortKey());
   ExpectNumSequences(1U, 1U, 2U);
 
   // Pop |sequence_b| from the PriorityQueue. |sequence_c| becomes the sequence
   // with the highest priority.
-  EXPECT_EQ(sequence_b, pq.PopTaskSource());
+  EXPECT_EQ(sequence_b, pq.PopTaskSource().Unregister());
   EXPECT_EQ(sort_key_c, pq.PeekSortKey());
   ExpectNumSequences(1U, 1U, 1U);
 
   // Pop |sequence_c| from the PriorityQueue. |sequence_a| becomes the sequence
   // with the highest priority.
-  EXPECT_EQ(sequence_c, pq.PopTaskSource());
+  EXPECT_EQ(sequence_c, pq.PopTaskSource().Unregister());
   EXPECT_EQ(sort_key_a, pq.PeekSortKey());
   ExpectNumSequences(1U, 1U, 0U);
 
   // Pop |sequence_a| from the PriorityQueue. |sequence_d| becomes the sequence
   // with the highest priority.
-  EXPECT_EQ(sequence_a, pq.PopTaskSource());
+  EXPECT_EQ(sequence_a, pq.PopTaskSource().Unregister());
   EXPECT_EQ(sort_key_d, pq.PeekSortKey());
   ExpectNumSequences(1U, 0U, 0U);
 
   // Pop |sequence_d| from the PriorityQueue. It is now empty.
-  EXPECT_EQ(sequence_d, pq.PopTaskSource());
+  EXPECT_EQ(sequence_d, pq.PopTaskSource().Unregister());
   EXPECT_TRUE(pq.IsEmpty());
   ExpectNumSequences(0U, 0U, 0U);
 }
@@ -123,43 +127,47 @@ TEST_F(PriorityQueueWithSequencesTest, RemoveSequence) {
 
   // Push all test Sequences into the PriorityQueue. |sequence_b|
   // will be the sequence with the highest priority.
-  pq.Push(sequence_a, sort_key_a);
-  pq.Push(sequence_b, sort_key_b);
-  pq.Push(sequence_c, sort_key_c);
-  pq.Push(sequence_d, sort_key_d);
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_a)));
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_b)));
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_c)));
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_d)));
   EXPECT_EQ(sort_key_b, pq.PeekSortKey());
   ExpectNumSequences(1U, 1U, 2U);
 
   // Remove |sequence_a| from the PriorityQueue. |sequence_b| is still the
   // sequence with the highest priority.
-  EXPECT_TRUE(pq.RemoveTaskSource(sequence_a));
+  EXPECT_TRUE(pq.RemoveTaskSource(sequence_a).Unregister());
   EXPECT_EQ(sort_key_b, pq.PeekSortKey());
   ExpectNumSequences(1U, 0U, 2U);
 
   // RemoveTaskSource() should return false if called on a sequence not in the
   // PriorityQueue.
-  EXPECT_FALSE(pq.RemoveTaskSource(sequence_a));
+  EXPECT_FALSE(pq.RemoveTaskSource(sequence_a).Unregister());
   ExpectNumSequences(1U, 0U, 2U);
 
   // Remove |sequence_b| from the PriorityQueue. |sequence_c| becomes the
   // sequence with the highest priority.
-  EXPECT_TRUE(pq.RemoveTaskSource(sequence_b));
+  EXPECT_TRUE(pq.RemoveTaskSource(sequence_b).Unregister());
   EXPECT_EQ(sort_key_c, pq.PeekSortKey());
   ExpectNumSequences(1U, 0U, 1U);
 
   // Remove |sequence_d| from the PriorityQueue. |sequence_c| is still the
   // sequence with the highest priority.
-  EXPECT_TRUE(pq.RemoveTaskSource(sequence_d));
+  EXPECT_TRUE(pq.RemoveTaskSource(sequence_d).Unregister());
   EXPECT_EQ(sort_key_c, pq.PeekSortKey());
   ExpectNumSequences(0U, 0U, 1U);
 
   // Remove |sequence_c| from the PriorityQueue, making it empty.
-  EXPECT_TRUE(pq.RemoveTaskSource(sequence_c));
+  EXPECT_TRUE(pq.RemoveTaskSource(sequence_c).Unregister());
   EXPECT_TRUE(pq.IsEmpty());
   ExpectNumSequences(0U, 0U, 0U);
 
   // Return false if RemoveTaskSource() is called on an empty PriorityQueue.
-  EXPECT_FALSE(pq.RemoveTaskSource(sequence_c));
+  EXPECT_FALSE(pq.RemoveTaskSource(sequence_c).Unregister());
   ExpectNumSequences(0U, 0U, 0U);
 }
 
@@ -168,10 +176,14 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
 
   // Push all test Sequences into the PriorityQueue. |sequence_b| becomes the
   // sequence with the highest priority.
-  pq.Push(sequence_a, sort_key_a);
-  pq.Push(sequence_b, sort_key_b);
-  pq.Push(sequence_c, sort_key_c);
-  pq.Push(sequence_d, sort_key_d);
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_a)));
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_b)));
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_c)));
+  pq.Push(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      RegisteredTaskSource::CreateForTesting(sequence_d)));
   EXPECT_EQ(sort_key_b, pq.PeekSortKey());
   ExpectNumSequences(1U, 1U, 2U);
 
@@ -203,7 +215,7 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
     // Note: |sequence_c| is popped for comparison as |sort_key_c| becomes
     // obsolete. |sequence_a| (USER_VISIBLE priority) becomes the sequence with
     // the highest priority.
-    EXPECT_EQ(sequence_c, pq.PopTaskSource());
+    EXPECT_EQ(sequence_c, pq.PopTaskSource().Unregister());
     EXPECT_EQ(sort_key_a, pq.PeekSortKey());
     ExpectNumSequences(2U, 1U, 0U);
   }
@@ -221,7 +233,7 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
 
     // Note: |sequence_d| is popped for comparison as |sort_key_d| becomes
     // obsolete.
-    EXPECT_EQ(sequence_d, pq.PopTaskSource());
+    EXPECT_EQ(sequence_d, pq.PopTaskSource().Unregister());
     // No-op if UpdateSortKey() is called on a Sequence not in the
     // PriorityQueue.
     EXPECT_EQ(sort_key_a, pq.PeekSortKey());
@@ -229,22 +241,17 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
   }
 
   {
-    auto sequence_d_and_transaction =
-        TaskSourceAndTransaction::FromTaskSource(sequence_d);
-
-    pq.UpdateSortKey(std::move(sequence_d_and_transaction));
+    pq.UpdateSortKey(TaskSourceAndTransaction::FromTaskSource(sequence_d));
     ExpectNumSequences(1U, 1U, 0U);
-    EXPECT_EQ(sequence_a, pq.PopTaskSource());
+    EXPECT_EQ(sequence_a, pq.PopTaskSource().Unregister());
     ExpectNumSequences(1U, 0U, 0U);
-    EXPECT_EQ(sequence_b, pq.PopTaskSource());
+    EXPECT_EQ(sequence_b, pq.PopTaskSource().Unregister());
     ExpectNumSequences(0U, 0U, 0U);
   }
 
   {
     // No-op if UpdateSortKey() is called on an empty PriorityQueue.
-    auto sequence_b_and_transaction =
-        TaskSourceAndTransaction::FromTaskSource(sequence_b);
-    pq.UpdateSortKey(std::move(sequence_b_and_transaction));
+    pq.UpdateSortKey(TaskSourceAndTransaction::FromTaskSource(sequence_b));
     EXPECT_TRUE(pq.IsEmpty());
     ExpectNumSequences(0U, 0U, 0U);
   }

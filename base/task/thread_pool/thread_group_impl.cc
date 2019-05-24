@@ -208,8 +208,8 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
   // WorkerThread::Delegate:
   WorkerThread::ThreadLabel GetThreadLabel() const override;
   void OnMainEntry(const WorkerThread* worker) override;
-  scoped_refptr<TaskSource> GetWork(WorkerThread* worker) override;
-  void DidRunTask(scoped_refptr<TaskSource> task_source) override;
+  RegisteredTaskSource GetWork(WorkerThread* worker) override;
+  void DidRunTask(RegisteredTaskSource task_source) override;
   TimeDelta GetSleepTimeout() override;
   void OnMainExit(WorkerThread* worker) override;
 
@@ -439,7 +439,7 @@ void ThreadGroupImpl::UpdateSortKey(
 }
 
 void ThreadGroupImpl::PushTaskSourceAndWakeUpWorkers(
-    TaskSourceAndTransaction task_source_and_transaction) {
+    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
   ScopedWorkersExecutor executor(this);
   PushTaskSourceAndWakeUpWorkersImpl(&executor,
                                      std::move(task_source_and_transaction));
@@ -581,7 +581,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
   SetBlockingObserverForCurrentThread(this);
 }
 
-scoped_refptr<TaskSource> ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(
+RegisteredTaskSource ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(
     WorkerThread* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(!worker_only().is_running_task);
@@ -638,7 +638,7 @@ scoped_refptr<TaskSource> ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(
 }
 
 void ThreadGroupImpl::WorkerThreadDelegateImpl::DidRunTask(
-    scoped_refptr<TaskSource> task_source) {
+    RegisteredTaskSource task_source) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
   DCHECK(read_worker().may_block_start_time.is_null());
@@ -649,10 +649,11 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::DidRunTask(
   // A transaction to the TaskSource to reenqueue, if any. Instantiated here as
   // |TaskSource::lock_| is a UniversalPredecessor and must always be acquired
   // prior to acquiring a second lock
-  Optional<TaskSourceAndTransaction> task_source_and_transaction;
+  Optional<RegisteredTaskSourceAndTransaction> task_source_and_transaction;
   if (task_source) {
     task_source_and_transaction.emplace(
-        TaskSourceAndTransaction::FromTaskSource(std::move(task_source)));
+        RegisteredTaskSourceAndTransaction::FromTaskSource(
+            std::move(task_source)));
   }
 
   ScopedWorkersExecutor workers_executor(outer_.get());

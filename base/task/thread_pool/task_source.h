@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -21,6 +22,8 @@
 
 namespace base {
 namespace internal {
+
+class TaskTracker;
 
 enum class TaskSourceExecutionMode {
   kParallel,
@@ -118,7 +121,7 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   // Begins a Transaction. This method cannot be called on a thread which has an
   // active TaskSource::Transaction.
-  Transaction BeginTransaction();
+  Transaction BeginTransaction() WARN_UNUSED_RESULT;
 
   virtual ExecutionEnvironment GetExecutionEnvironment() = 0;
 
@@ -181,16 +184,66 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   DISALLOW_COPY_AND_ASSIGN(TaskSource);
 };
 
-struct BASE_EXPORT TaskSourceAndTransaction {
-  scoped_refptr<TaskSource> task_source;
-  TaskSource::Transaction transaction;
-  TaskSourceAndTransaction(scoped_refptr<TaskSource> task_source_in,
-                           TaskSource::Transaction transaction_in);
-  TaskSourceAndTransaction(TaskSourceAndTransaction&& other);
-  static TaskSourceAndTransaction FromTaskSource(
-      scoped_refptr<TaskSource> task_source);
-  ~TaskSourceAndTransaction();
+// Wrapper around TaskSource to signify the intent to queue and run it. A
+// RegisteredTaskSource can only be created with TaskTracker.
+class BASE_EXPORT RegisteredTaskSource {
+ public:
+  RegisteredTaskSource();
+  RegisteredTaskSource(std::nullptr_t);
+  RegisteredTaskSource(RegisteredTaskSource&& other);
+  ~RegisteredTaskSource();
+
+  RegisteredTaskSource& operator=(RegisteredTaskSource&& other);
+
+  operator bool() const { return task_source_ != nullptr; }
+
+  TaskSource* operator->() const { return task_source_.get(); }
+  TaskSource* get() const { return task_source_.get(); }
+
+  static RegisteredTaskSource CreateForTesting(
+      scoped_refptr<TaskSource> task_source,
+      TaskTracker* task_tracker = nullptr);
+
+  scoped_refptr<TaskSource> Unregister();
+
+ private:
+  friend class TaskTracker;
+
+  RegisteredTaskSource(scoped_refptr<TaskSource> task_source,
+                       TaskTracker* task_tracker);
+
+  scoped_refptr<TaskSource> task_source_;
+  TaskTracker* task_tracker_;
+
+  DISALLOW_COPY_AND_ASSIGN(RegisteredTaskSource);
 };
+
+template <class T>
+struct BASE_EXPORT BasicTaskSourceAndTransaction {
+  T task_source;
+  TaskSource::Transaction transaction;
+
+  static BasicTaskSourceAndTransaction FromTaskSource(T task_source) {
+    auto transaction = task_source->BeginTransaction();
+    return BasicTaskSourceAndTransaction(std::move(task_source),
+                                         std::move(transaction));
+  }
+
+  BasicTaskSourceAndTransaction(T task_source_in,
+                                TaskSource::Transaction transaction_in)
+      : task_source(std::move(task_source_in)),
+        transaction(std::move(transaction_in)) {}
+  BasicTaskSourceAndTransaction(BasicTaskSourceAndTransaction&& other) =
+      default;
+  ~BasicTaskSourceAndTransaction() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(BasicTaskSourceAndTransaction);
+};
+
+using TaskSourceAndTransaction =
+    BasicTaskSourceAndTransaction<scoped_refptr<TaskSource>>;
+using RegisteredTaskSourceAndTransaction =
+    BasicTaskSourceAndTransaction<RegisteredTaskSource>;
 
 }  // namespace internal
 }  // namespace base

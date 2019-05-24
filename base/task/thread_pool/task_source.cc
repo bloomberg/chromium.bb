@@ -10,20 +10,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
+#include "base/task/thread_pool/task_tracker.h"
 
 namespace base {
 namespace internal {
-
-TaskSourceAndTransaction::TaskSourceAndTransaction(
-    scoped_refptr<TaskSource> task_source_in,
-    TaskSource::Transaction transaction_in)
-    : task_source(std::move(task_source_in)),
-      transaction(std::move(transaction_in)) {}
-
-TaskSourceAndTransaction::TaskSourceAndTransaction(
-    TaskSourceAndTransaction&& other) = default;
-
-TaskSourceAndTransaction::~TaskSourceAndTransaction() = default;
 
 TaskSource::Transaction::Transaction(TaskSource* task_source)
     : task_source_(task_source) {
@@ -87,14 +77,44 @@ TaskSource::Transaction TaskSource::BeginTransaction() {
   return Transaction(this);
 }
 
-// static
-TaskSourceAndTransaction TaskSourceAndTransaction::FromTaskSource(
-    scoped_refptr<TaskSource> task_source) {
-  DCHECK(task_source);
-  TaskSource::Transaction transaction(task_source->BeginTransaction());
-  return TaskSourceAndTransaction(std::move(task_source),
-                                  std::move(transaction));
+RegisteredTaskSource::RegisteredTaskSource() = default;
+
+RegisteredTaskSource::RegisteredTaskSource(std::nullptr_t)
+    : RegisteredTaskSource() {}
+
+RegisteredTaskSource::RegisteredTaskSource(RegisteredTaskSource&& other) =
+    default;
+
+RegisteredTaskSource::~RegisteredTaskSource() {
+  Unregister();
 }
+
+//  static
+RegisteredTaskSource RegisteredTaskSource::CreateForTesting(
+    scoped_refptr<TaskSource> task_source,
+    TaskTracker* task_tracker) {
+  return RegisteredTaskSource(std::move(task_source), task_tracker);
+}
+
+scoped_refptr<TaskSource> RegisteredTaskSource::Unregister() {
+  if (task_source_ && task_tracker_)
+    return task_tracker_->UnregisterTaskSource(std::move(task_source_));
+  return std::move(task_source_);
+}
+
+RegisteredTaskSource& RegisteredTaskSource::operator=(
+    RegisteredTaskSource&& other) {
+  Unregister();
+  task_source_ = std::move(other.task_source_);
+  task_tracker_ = other.task_tracker_;
+  other.task_tracker_ = nullptr;
+  return *this;
+}
+
+RegisteredTaskSource::RegisteredTaskSource(
+    scoped_refptr<TaskSource> task_source,
+    TaskTracker* task_tracker)
+    : task_source_(task_source), task_tracker_(task_tracker) {}
 
 }  // namespace internal
 }  // namespace base

@@ -27,12 +27,8 @@ class BASE_EXPORT PriorityQueue {
 
   PriorityQueue& operator=(PriorityQueue&& other);
 
-  // Inserts |task_source| in the PriorityQueue with |sequence_sort_key|. Note:
-  // |sequence_sort_key| is required as a parameter instead of being extracted
-  // from |task_source| in Push() to avoid this Transaction having a lock
-  // interdependency with |task_source|.
-  void Push(scoped_refptr<TaskSource> task_source,
-            const SequenceSortKey& sequence_sort_key);
+  // Inserts |task_source| in the PriorityQueue with |sequence_sort_key|.
+  void Push(RegisteredTaskSourceAndTransaction task_source_and_transaction);
 
   // Returns a reference to the SequenceSortKey representing the priority of
   // the highest pending task in this PriorityQueue. The reference becomes
@@ -42,12 +38,13 @@ class BASE_EXPORT PriorityQueue {
 
   // Removes and returns the highest priority TaskSource in this PriorityQueue.
   // Cannot be called on an empty PriorityQueue.
-  scoped_refptr<TaskSource> PopTaskSource();
+  RegisteredTaskSource PopTaskSource();
 
-  // Removes |task_source| from the PriorityQueue. Returns true if successful,
-  // or false if |task_source| is not currently in the PriorityQueue or the
-  // PriorityQueue is empty.
-  bool RemoveTaskSource(scoped_refptr<TaskSource> task_source);
+  // Removes |task_source| from the PriorityQueue. Returns a
+  // RegisteredTaskSource which evaluates to true if successful, or false if
+  // |task_source| is not currently in the PriorityQueue or the PriorityQueue is
+  // empty.
+  RegisteredTaskSource RemoveTaskSource(scoped_refptr<TaskSource> task_source);
 
   // Updates the sort key of the TaskSource in |task_source_and_transaction| to
   // match its current traits. No-ops if the TaskSource is not in the

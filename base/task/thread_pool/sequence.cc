@@ -16,17 +16,6 @@
 namespace base {
 namespace internal {
 
-SequenceAndTransaction::SequenceAndTransaction(
-    scoped_refptr<Sequence> sequence_in,
-    Sequence::Transaction transaction_in)
-    : sequence(std::move(sequence_in)),
-      transaction(std::move(transaction_in)) {}
-
-SequenceAndTransaction::SequenceAndTransaction(SequenceAndTransaction&& other) =
-    default;
-
-SequenceAndTransaction::~SequenceAndTransaction() = default;
-
 Sequence::Transaction::Transaction(Sequence* sequence)
     : TaskSource::Transaction(sequence) {}
 
@@ -128,14 +117,6 @@ Sequence::Transaction Sequence::BeginTransaction() {
 
 ExecutionEnvironment Sequence::GetExecutionEnvironment() {
   return {token_, &sequence_local_storage_};
-}
-
-// static
-SequenceAndTransaction SequenceAndTransaction::FromSequence(
-    scoped_refptr<Sequence> sequence) {
-  DCHECK(sequence);
-  Sequence::Transaction transaction(sequence->BeginTransaction());
-  return SequenceAndTransaction(std::move(sequence), std::move(transaction));
 }
 
 }  // namespace internal

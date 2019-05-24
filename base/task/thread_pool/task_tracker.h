@@ -46,7 +46,7 @@ enum class CanRunPolicy {
 };
 
 // TaskTracker enforces policies that determines whether:
-// - A task can be added to a task source (WillPostTask).
+// - A task can be pushed to a task source (WillPostTask).
 // - A task source can be queued (WillQueueTaskSource).
 // - Tasks for a given priority can run (CanRunPriority).
 // - The next task in a queued task source can run (RunAndPopNextTask).
@@ -92,16 +92,17 @@ class BASE_EXPORT TaskTracker {
   // tasks that are allowed to run by the new policy can be scheduled.
   void SetCanRunPolicy(CanRunPolicy can_run_policy);
 
-  // Informs this TaskTracker that |task| from a |shutdown_behavior| task source
-  // is about to be posted. Returns true if this operation is allowed (|task|
-  // should be posted if-and-only-if it is). This method may also modify
-  // metadata on |task| if desired.
+  // Informs this TaskTracker that |task| with |shutdown_behavior| is about to
+  // be posted to a task source. Returns true if this operation is allowed
+  // (|task| should be pushed into its task source if-and-only-if it is). This
+  // method may also modify metadata on |task| if desired.
   bool WillPostTask(Task* task, TaskShutdownBehavior shutdown_behavior);
 
   // Informs this TaskTracker that |task_source| is about to be queued. Returns
-  // true if this operation is allowed (|task_source| should be queued
-  // if-and-only-if it is).
-  bool WillQueueTaskSource(TaskSource* task_source);
+  // a RegisteredTaskSource that should be queued if-and-only-if it evaluates to
+  // true.
+  RegisteredTaskSource WillQueueTaskSource(
+      scoped_refptr<TaskSource> task_source);
 
   // Returns true if a task with |priority| can run under to the current policy.
   bool CanRunPriority(TaskPriority priority) const;
@@ -112,8 +113,7 @@ class BASE_EXPORT TaskTracker {
   // (which indicates that it should be reenqueued). WillPostTask() must have
   // allowed the task in front of |task_source| to be posted before this is
   // called.
-  scoped_refptr<TaskSource> RunAndPopNextTask(
-      scoped_refptr<TaskSource> task_source);
+  RegisteredTaskSource RunAndPopNextTask(RegisteredTaskSource task_source);
 
   // Returns true once shutdown has started (StartShutdown() was called).
   // Note: sequential consistency with the thread calling StartShutdown() isn't
@@ -172,6 +172,7 @@ class BASE_EXPORT TaskTracker {
   bool HasIncompleteTaskSourcesForTesting() const;
 
  private:
+  friend class RegisteredTaskSource;
   class State;
 
   void PerformShutdown();
@@ -190,11 +191,13 @@ class BASE_EXPORT TaskTracker {
   // RunTask(). Updates |num_items_blocking_shutdown_| if necessary.
   void AfterRunTask(TaskShutdownBehavior effective_shutdown_behavior);
 
-  // Called after the last task from |task_source| was run and it won't be
-  // reenqueued. Updates |num_items_blocking_shutdown_| if necessary.
-  void OnTaskSourceNotReEnqueued(TaskSource* task_source);
+  // Informs this TaskTracker that |task_source| won't be reenqueued and returns
+  // the underlying TaskSource. This is called before destroying a valid
+  // RegisteredTaskSource. Updates |num_items_blocking_shutdown_| if necessary.
+  scoped_refptr<TaskSource> UnregisterTaskSource(
+      scoped_refptr<TaskSource> task_source);
 
-  // Called when an items blocking shutdown finishes after shutdown has started.
+  // Called when an item blocking shutdown finishes after shutdown has started.
   void DecrementNumItemsBlockingShutdown();
 
   // Decrements the number of incomplete task sources and signals |flush_cv_|

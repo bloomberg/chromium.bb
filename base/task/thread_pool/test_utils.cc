@@ -143,13 +143,17 @@ void MockPooledTaskRunnerDelegate::PostTaskWithSequenceNow(
     scoped_refptr<Sequence> sequence) {
   auto transaction = sequence->BeginTransaction();
   const bool sequence_should_be_queued = transaction.WillPushTask();
-  if (sequence_should_be_queued &&
-      !task_tracker_->WillQueueTaskSource(sequence.get()))
-    return;
-  transaction.PushTask(std::move(task));
+  RegisteredTaskSource task_source;
   if (sequence_should_be_queued) {
+    task_source = task_tracker_->WillQueueTaskSource(sequence);
+    // We shouldn't push |task| if we're not allowed to queue |task_source|.
+    if (!task_source)
+      return;
+  }
+  transaction.PushTask(std::move(task));
+  if (task_source) {
     thread_group_->PushTaskSourceAndWakeUpWorkers(
-        {std::move(sequence), std::move(transaction)});
+        {std::move(task_source), std::move(transaction)});
   }
 }
 
@@ -165,22 +169,21 @@ bool MockPooledTaskRunnerDelegate::IsRunningPoolWithTraits(
 void MockPooledTaskRunnerDelegate::UpdatePriority(
     scoped_refptr<TaskSource> task_source,
     TaskPriority priority) {
-  auto task_source_and_transaction =
-      TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
-  task_source_and_transaction.transaction.UpdatePriority(priority);
-  thread_group_->UpdateSortKey(std::move(task_source_and_transaction));
+  auto transaction = task_source->BeginTransaction();
+  transaction.UpdatePriority(priority);
+  thread_group_->UpdateSortKey(
+      {std::move(task_source), std::move(transaction)});
 }
 
 void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
   thread_group_ = thread_group;
 }
 
-scoped_refptr<TaskSource> QueueAndRunTaskSource(
+RegisteredTaskSource QueueAndRunTaskSource(
     TaskTracker* task_tracker,
     scoped_refptr<TaskSource> task_source) {
-  if (!task_tracker->WillQueueTaskSource(task_source.get()))
-    return nullptr;
-  return task_tracker->RunAndPopNextTask(std::move(task_source));
+  return task_tracker->RunAndPopNextTask(
+      task_tracker->WillQueueTaskSource(std::move(task_source)));
 }
 
 void ShutdownTaskTracker(TaskTracker* task_tracker) {

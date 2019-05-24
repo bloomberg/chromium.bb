@@ -152,7 +152,7 @@ class TaskTracker::State {
   State() = default;
 
   // Sets a flag indicating that shutdown has started. Returns true if there are
-  // tasks blocking shutdown. Can only be called once.
+  // items blocking shutdown. Can only be called once.
   bool StartShutdown() {
     const auto new_value =
         subtle::NoBarrier_AtomicIncrement(&bits_, kShutdownHasStartedMask);
@@ -171,8 +171,8 @@ class TaskTracker::State {
     return subtle::NoBarrier_Load(&bits_) & kShutdownHasStartedMask;
   }
 
-  // Returns true if there are tasks blocking shutdown.
-  bool AreTasksBlockingShutdown() const {
+  // Returns true if there are items blocking shutdown.
+  bool AreItemsBlockingShutdown() const {
     const auto num_items_blocking_shutdown =
         subtle::NoBarrier_Load(&bits_) >> kNumItemsBlockingShutdownBitOffset;
     DCHECK_GE(num_items_blocking_shutdown, 0);
@@ -405,15 +405,16 @@ bool TaskTracker::WillPostTask(Task* task,
   return true;
 }
 
-bool TaskTracker::WillQueueTaskSource(TaskSource* task_source) {
+RegisteredTaskSource TaskTracker::WillQueueTaskSource(
+    scoped_refptr<TaskSource> task_source) {
   DCHECK(task_source);
 
   TaskShutdownBehavior shutdown_behavior = task_source->shutdown_behavior();
   if (!BeforeQueueTaskSource(shutdown_behavior))
-    return false;
+    return nullptr;
 
   num_incomplete_task_sources_.fetch_add(1, std::memory_order_relaxed);
-  return true;
+  return RegisteredTaskSource(std::move(task_source), this);
 }
 
 bool TaskTracker::CanRunPriority(TaskPriority priority) const {
@@ -430,8 +431,8 @@ bool TaskTracker::CanRunPriority(TaskPriority priority) const {
   return false;
 }
 
-scoped_refptr<TaskSource> TaskTracker::RunAndPopNextTask(
-    scoped_refptr<TaskSource> task_source) {
+RegisteredTaskSource TaskTracker::RunAndPopNextTask(
+    RegisteredTaskSource task_source) {
   DCHECK(task_source);
 
   // Run the next task in |task_source|.
@@ -462,13 +463,12 @@ scoped_refptr<TaskSource> TaskTracker::RunAndPopNextTask(
       AfterRunTask(effective_shutdown_behavior);
     }
 
-    // The task_source should be reenqueued iff requested by DidRunTask().
+    // |task_source| should be reenqueued iff requested by DidRunTask().
     if (task_source_must_be_queued) {
       return task_source;
     }
   }
 
-  OnTaskSourceNotReEnqueued(task_source.get());
   return nullptr;
 }
 
@@ -645,7 +645,7 @@ bool TaskTracker::BeforeRunTask(
     case TaskShutdownBehavior::BLOCK_SHUTDOWN: {
       // The number of tasks blocking shutdown has been incremented when the
       // task was posted.
-      DCHECK(state_->AreTasksBlockingShutdown());
+      DCHECK(state_->AreItemsBlockingShutdown());
 
       // Trying to run a BLOCK_SHUTDOWN task after shutdown has completed is
       // unexpected as it either shouldn't have been posted if shutdown
@@ -687,12 +687,15 @@ void TaskTracker::AfterRunTask(
   }
 }
 
-void TaskTracker::OnTaskSourceNotReEnqueued(TaskSource* task_source) {
+scoped_refptr<TaskSource> TaskTracker::UnregisterTaskSource(
+    scoped_refptr<TaskSource> task_source) {
+  DCHECK(task_source);
   if (task_source->shutdown_behavior() ==
       TaskShutdownBehavior::BLOCK_SHUTDOWN) {
     DecrementNumItemsBlockingShutdown();
   }
   DecrementNumIncompleteTaskSources();
+  return task_source;
 }
 
 void TaskTracker::DecrementNumItemsBlockingShutdown() {

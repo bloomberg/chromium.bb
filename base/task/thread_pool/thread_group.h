@@ -61,10 +61,11 @@ class BASE_EXPORT ThreadGroup {
   // Returns true if the thread group is registered in TLS.
   bool IsBoundToCurrentThread() const;
 
-  // Removes |task_source| from |priority_queue_|. Returns true if successful,
-  // or false if |task_source| is not currently in |priority_queue_|, such as
-  // when a worker is running a task from it.
-  bool RemoveTaskSource(scoped_refptr<TaskSource> task_source);
+  // Removes |task_source| from |priority_queue_|. Returns a
+  // RegisteredTaskSource that evaluats to true if successful, or false if
+  // |task_source| is not currently in |priority_queue_|, such as when a worker
+  // is running a task from it.
+  RegisteredTaskSource RemoveTaskSource(scoped_refptr<TaskSource> task_source);
 
   // Updates the position of the TaskSource in |task_source_and_transaction| in
   // this ThreadGroup's PriorityQueue based on the TaskSource's current traits.
@@ -80,7 +81,7 @@ class BASE_EXPORT ThreadGroup {
   // Implementations should instantiate a concrete ScopedWorkersExecutor and
   // invoke PushTaskSourceAndWakeUpWorkersImpl().
   virtual void PushTaskSourceAndWakeUpWorkers(
-      TaskSourceAndTransaction task_source_and_transaction) = 0;
+      RegisteredTaskSourceAndTransaction task_source_and_transaction) = 0;
 
   // Removes all task sources from this ThreadGroup's PriorityQueue and enqueues
   // them in another |destination_thread_group|. After this method is called,
@@ -131,16 +132,16 @@ class BASE_EXPORT ThreadGroup {
     ScopedReenqueueExecutor();
     ~ScopedReenqueueExecutor();
 
-    // A TaskSourceAndTransaction and the ThreadGroup in which it should be
-    // enqueued.
+    // A RegisteredTaskSourceAndTransaction and the ThreadGroup in which it
+    // should be enqueued.
     void SchedulePushTaskSourceAndWakeUpWorkers(
-        TaskSourceAndTransaction task_source_and_transaction,
+        RegisteredTaskSourceAndTransaction task_source_and_transaction,
         ThreadGroup* destination_thread_group);
 
    private:
-    // A TaskSourceAndTransaction and the thread group in which it should be
-    // enqueued.
-    Optional<TaskSourceAndTransaction> task_source_and_transaction_;
+    // A RegisteredTaskSourceAndTransaction and the thread group in which it
+    // should be enqueued.
+    Optional<RegisteredTaskSourceAndTransaction> task_source_and_transaction_;
     ThreadGroup* destination_thread_group_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReenqueueExecutor);
@@ -186,7 +187,7 @@ class BASE_EXPORT ThreadGroup {
   void ReEnqueueTaskSourceLockRequired(
       BaseScopedWorkersExecutor* workers_executor,
       ScopedReenqueueExecutor* reenqueue_executor,
-      TaskSourceAndTransaction task_source_and_transaction)
+      RegisteredTaskSourceAndTransaction task_source_and_transaction)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Must be invoked by implementations of the corresponding non-Impl() methods.
@@ -194,7 +195,7 @@ class BASE_EXPORT ThreadGroup {
                          TaskSourceAndTransaction task_source_and_transaction);
   void PushTaskSourceAndWakeUpWorkersImpl(
       BaseScopedWorkersExecutor* executor,
-      TaskSourceAndTransaction task_source_and_transaction);
+      RegisteredTaskSourceAndTransaction task_source_and_transaction);
 
   // Synchronizes accesses to all members of this class which are neither const,
   // atomic, nor immutable after start. Since this lock is a bottleneck to post

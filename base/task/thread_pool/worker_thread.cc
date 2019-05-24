@@ -305,7 +305,7 @@ void WorkerThread::RunWorker() {
     UpdateThreadPriority(GetDesiredThreadPriority());
 
     // Get the task source containing the next task to execute.
-    scoped_refptr<TaskSource> task_source = delegate_->GetWork(this);
+    RegisteredTaskSource task_source = delegate_->GetWork(this);
     if (!task_source) {
       // Exit immediately if GetWork() resulted in detaching this worker.
       if (ShouldExit())

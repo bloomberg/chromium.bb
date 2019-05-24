@@ -45,7 +45,7 @@ ThreadGroup::ScopedReenqueueExecutor::~ScopedReenqueueExecutor() {
 
 void ThreadGroup::ScopedReenqueueExecutor::
     SchedulePushTaskSourceAndWakeUpWorkers(
-        TaskSourceAndTransaction task_source_and_transaction,
+        RegisteredTaskSourceAndTransaction task_source_and_transaction,
         ThreadGroup* destination_thread_group) {
   DCHECK(destination_thread_group);
   DCHECK(!destination_thread_group_);
@@ -102,7 +102,8 @@ size_t ThreadGroup::GetNumQueuedCanRunForegroundTaskSources() const {
   return num_queued;
 }
 
-bool ThreadGroup::RemoveTaskSource(scoped_refptr<TaskSource> task_source) {
+RegisteredTaskSource ThreadGroup::RemoveTaskSource(
+    scoped_refptr<TaskSource> task_source) {
   CheckedAutoLock auto_lock(lock_);
   return priority_queue_.RemoveTaskSource(std::move(task_source));
 }
@@ -110,7 +111,7 @@ bool ThreadGroup::RemoveTaskSource(scoped_refptr<TaskSource> task_source) {
 void ThreadGroup::ReEnqueueTaskSourceLockRequired(
     BaseScopedWorkersExecutor* workers_executor,
     ScopedReenqueueExecutor* reenqueue_executor,
-    TaskSourceAndTransaction task_source_and_transaction) {
+    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
   // Decide in which thread group the TaskSource should be reenqueued.
   ThreadGroup* destination_thread_group = delegate_->GetThreadGroupForTraits(
       task_source_and_transaction.transaction.traits());
@@ -118,8 +119,7 @@ void ThreadGroup::ReEnqueueTaskSourceLockRequired(
   if (destination_thread_group == this) {
     // If the TaskSource should be reenqueued in the current thread group,
     // reenqueue it inside the scope of the lock.
-    priority_queue_.Push(std::move(task_source_and_transaction.task_source),
-                         task_source_and_transaction.transaction.GetSortKey());
+    priority_queue_.Push(std::move(task_source_and_transaction));
     EnsureEnoughWorkersLockRequired(workers_executor);
   } else {
     // Otherwise, schedule a reenqueue after releasing the lock.
@@ -138,11 +138,10 @@ void ThreadGroup::UpdateSortKeyImpl(
 
 void ThreadGroup::PushTaskSourceAndWakeUpWorkersImpl(
     BaseScopedWorkersExecutor* executor,
-    TaskSourceAndTransaction task_source_and_transaction) {
+    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
   CheckedAutoLock auto_lock(lock_);
   DCHECK(!replacement_thread_group_);
-  priority_queue_.Push(std::move(task_source_and_transaction.task_source),
-                       task_source_and_transaction.transaction.GetSortKey());
+  priority_queue_.Push(std::move(task_source_and_transaction));
   EnsureEnoughWorkersLockRequired(executor);
 }
 

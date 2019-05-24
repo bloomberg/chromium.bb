@@ -330,14 +330,18 @@ bool ThreadPoolImpl::PostTaskWithSequenceNow(Task task,
                                              scoped_refptr<Sequence> sequence) {
   auto transaction = sequence->BeginTransaction();
   const bool sequence_should_be_queued = transaction.WillPushTask();
-  if (sequence_should_be_queued &&
-      !task_tracker_->WillQueueTaskSource(sequence.get()))
-    return false;
-  transaction.PushTask(std::move(task));
+  RegisteredTaskSource task_source;
   if (sequence_should_be_queued) {
+    task_source = task_tracker_->WillQueueTaskSource(sequence);
+    // We shouldn't push |task| if we're not allowed to queue |task_source|.
+    if (!task_source)
+      return false;
+  }
+  transaction.PushTask(std::move(task));
+  if (task_source) {
     const TaskTraits traits = transaction.traits();
     GetThreadGroupForTraits(traits)->PushTaskSourceAndWakeUpWorkers(
-        {std::move(sequence), std::move(transaction)});
+        {std::move(task_source), std::move(transaction)});
   }
   return true;
 }
@@ -379,28 +383,28 @@ bool ThreadPoolImpl::IsRunningPoolWithTraits(const TaskTraits& traits) const {
 
 void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
                                     TaskPriority priority) {
-  auto task_source_and_transaction =
-      TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
+  auto transaction = task_source->BeginTransaction();
 
   ThreadGroup* const current_thread_group =
-      GetThreadGroupForTraits(task_source_and_transaction.transaction.traits());
-  task_source_and_transaction.transaction.UpdatePriority(priority);
+      GetThreadGroupForTraits(transaction.traits());
+  transaction.UpdatePriority(priority);
   ThreadGroup* const new_thread_group =
-      GetThreadGroupForTraits(task_source_and_transaction.transaction.traits());
+      GetThreadGroupForTraits(transaction.traits());
 
   if (new_thread_group == current_thread_group) {
     // |task_source|'s position needs to be updated within its current thread
     // group.
-    current_thread_group->UpdateSortKey(std::move(task_source_and_transaction));
+    current_thread_group->UpdateSortKey(
+        {std::move(task_source), std::move(transaction)});
   } else {
     // |task_source| is changing thread groups; remove it from its current
     // thread group and reenqueue it.
-    const bool task_source_was_found = current_thread_group->RemoveTaskSource(
-        task_source_and_transaction.task_source);
-    if (task_source_was_found) {
-      DCHECK(task_source_and_transaction.task_source);
+    auto registered_task_source =
+        current_thread_group->RemoveTaskSource(task_source);
+    if (registered_task_source) {
+      DCHECK(task_source);
       new_thread_group->PushTaskSourceAndWakeUpWorkers(
-          std::move(task_source_and_transaction));
+          {std::move(registered_task_source), std::move(transaction)});
     }
   }
 }

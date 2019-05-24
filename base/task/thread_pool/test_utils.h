@@ -108,7 +108,7 @@ scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
 
 void WaitWithoutBlockingObserver(WaitableEvent* event);
 
-scoped_refptr<TaskSource> QueueAndRunTaskSource(
+RegisteredTaskSource QueueAndRunTaskSource(
     TaskTracker* task_tracker,
     scoped_refptr<TaskSource> task_source);
 
