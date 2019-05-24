@@ -72,7 +72,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.5"
+              "revision": "version:1.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -215,7 +215,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.5"
+              "revision": "version:1.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -360,7 +360,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.5"
+              "revision": "version:1.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -504,7 +504,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.5"
+              "revision": "version:1.6"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
