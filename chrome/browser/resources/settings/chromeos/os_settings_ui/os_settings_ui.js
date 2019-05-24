@@ -33,10 +33,19 @@ Polymer({
     prefs: Object,
 
     /** @private */
-    advancedOpened_: {
+    advancedOpenedInMain_: {
       type: Boolean,
       value: false,
       notify: true,
+      observer: 'onAdvancedOpenedInMainChanged_',
+    },
+
+    /** @private */
+    advancedOpenedInMenu_: {
+      type: Boolean,
+      value: false,
+      notify: true,
+      observer: 'onAdvancedOpenedInMenuChanged_',
     },
 
     /** @private {boolean} */
@@ -308,4 +317,21 @@ Polymer({
       this.$.container.removeAttribute('tabindex');
     });
   },
+
+  /** @private */
+  onAdvancedOpenedInMainChanged_: function() {
+    // Only sync value when opening, not closing.
+    if (this.advancedOpenedInMain_) {
+      this.advancedOpenedInMenu_ = true;
+    }
+  },
+
+  /** @private */
+  onAdvancedOpenedInMenuChanged_: function() {
+    // Only sync value when opening, not closing.
+    if (this.advancedOpenedInMenu_) {
+      this.advancedOpenedInMain_ = true;
+    }
+  },
+
 });
