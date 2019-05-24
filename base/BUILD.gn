@@ -1576,7 +1576,11 @@ jumbo_component("base") {
   # a can of worms surrounding the nacl_io library.
   #
   # TODO(crbug.com/702997) Use only boringssl when NaCl is removed.
-  sources += [ "hash/md5.h" ]
+  sources += [
+    "hash/md5.h",
+    "hash/md5_constexpr.h",
+    "hash/md5_constexpr_internal.h",
+  ]
   if (is_nacl) {
     sources += [
       "hash/md5_nacl.cc",
@@ -2484,6 +2488,7 @@ test("base_unittests") {
     "gmock_unittest.cc",
     "guid_unittest.cc",
     "hash/hash_unittest.cc",
+    "hash/md5_constexpr_unittest.cc",
     "hash/md5_unittest.cc",
     "hash/sha1_unittest.cc",
     "i18n/break_iterator_unittest.cc",
