@@ -316,7 +316,7 @@ public class ChromeBrowserInitializer {
 
         tasks.add(() -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
-            delegate.finishNativeInitialization();
+            delegate.startNativeInitialization();
         });
 
         if (isAsync) {

@@ -54,6 +54,15 @@ public interface BrowserParts {
 
     /**
      * Called during {@link ChromeBrowserInitializer#handlePostNativeStartup(BrowserParts)}.
+     * Carry out remaining activity specific tasks for initialization, sub-classes may call
+     * finishNativeInitialization asynchronously.
+     */
+    default void startNativeInitialization() {
+        finishNativeInitialization();
+    }
+
+    /**
+     * Called during {@link ChromeBrowserInitializer#handlePostNativeStartup(BrowserParts)}.
      * Carry out remaining activity specific tasks for initialization
      */
     void finishNativeInitialization();
