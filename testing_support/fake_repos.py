@@ -108,7 +108,9 @@ def wait_for_port_to_bind(host, port, process):
     sock.close()
   # The process failed to bind. Kill it and dump its ouput.
   process.kill()
-  logging.error('%s' % process.communicate()[0])
+  stdout, stderr = process.communicate()
+  logging.debug('%s' % stdout)
+  logging.error('%s' % stderr)
   assert False, '%d is still not bound' % port
 
 
