@@ -104,6 +104,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -3320,12 +3321,16 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    // Permissions are broken with frame-based MimeHandlerView as it never goes
-    // through the same plugin checks when attaching an <embed>. Fix this asap.
-    // (https://crbug.com/963694).
+#if defined(OS_CHROMEOS)
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame() &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // The test times out when using the legacy loading code. This could be due
+    // to creating a MimeHandlerViewEmbedder after loading has started so the
+    // MHVE cannot lock onto the navigation process and create a MHVG in time.
+    // (https://crbug.com/949656).
     return;
   }
+#endif
   const char kTestMimeType[] = "application/pdf";
   const char kTestFileType[] = "pdf";
   content::WebPluginInfo plugin_info;
