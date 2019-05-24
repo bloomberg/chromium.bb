@@ -17,6 +17,7 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
+#include "components/safe_browsing/triggers/trigger_util.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -66,34 +67,6 @@ size_t GetSamplerFrequencyDenominator() {
     return kAdSamplerDefaultFrequency;
 
   return result;
-}
-
-bool DetectGoogleAd(content::RenderFrameHost* render_frame_host,
-                    const GURL& frame_url) {
-  // TODO(crbug.com/742397): This function is temporarily copied from
-  // c/b/page_load_metrics/observers/ads_page_load_metrics_observer.cc
-  // This code should be updated to use shared infrastructure when available.
-
-  // In case the navigation aborted, look up the RFH by the Frame Tree Node
-  // ID. It returns the committed frame host or the initial frame host for the
-  // frame if no committed host exists. Using a previous host is fine because
-  // once a frame has an ad we always consider it to have an ad.
-  // We use the unsafe method of FindFrameByFrameTreeNodeId because we're not
-  // concerned with which process the frame lives on (we only want to know if an
-  // ad could be present on the page right now).
-  if (render_frame_host) {
-    const std::string& frame_name = render_frame_host->GetFrameName();
-    if (base::StartsWith(frame_name, "google_ads_iframe",
-                         base::CompareCase::SENSITIVE) ||
-        base::StartsWith(frame_name, "google_ads_frame",
-                         base::CompareCase::SENSITIVE)) {
-      return true;
-    }
-  }
-
-  return frame_url.host_piece() == "tpc.googlesyndication.com" &&
-         base::StartsWith(frame_url.path_piece(), "/safeframe",
-                          base::CompareCase::SENSITIVE);
 }
 
 bool ShouldSampleAd(const size_t frequency_denominator) {

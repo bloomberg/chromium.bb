@@ -39,6 +39,17 @@ source_set("trigger_throttler") {
   ]
 }
 
+source_set("trigger_util") {
+  sources = [
+    "trigger_util.cc",
+    "trigger_util.h",
+  ]
+  deps = [
+    ":triggers",
+    "//content/public/browser",
+  ]
+}
+
 source_set("ad_sampler_trigger") {
   sources = [
     "ad_sampler_trigger.cc",
@@ -46,6 +57,7 @@ source_set("ad_sampler_trigger") {
   ]
   deps = [
     ":trigger_throttler",
+    ":trigger_util",
     ":triggers",
     "//base:base",
     "//components/safe_browsing:features",
