@@ -68,8 +68,12 @@ public class TrustedWebActivityPermissionStore {
 
     /** Creates a {@link TrustedWebActivityPermissionStore}. */
     public TrustedWebActivityPermissionStore() {
-        mPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
-                SHARED_PREFS_FILE, Context.MODE_PRIVATE);
+        // On some versions of Android, creating the Preferences object involves a disk read (to
+        // check if the Preferences directory exists, not even to read the actual Preferences).
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            mPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
+                    SHARED_PREFS_FILE, Context.MODE_PRIVATE);
+        }
     }
 
     /**
