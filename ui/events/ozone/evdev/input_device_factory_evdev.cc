@@ -476,10 +476,11 @@ void InputDeviceFactoryEvdev::NotifyTouchpadDevicesUpdated() {
 }
 
 void InputDeviceFactoryEvdev::NotifyGamepadDevicesUpdated() {
-  std::vector<InputDevice> gamepads;
+  std::vector<GamepadDevice> gamepads;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasGamepad()) {
-      gamepads.push_back(it->second->input_device());
+      gamepads.emplace_back(it->second->input_device(),
+                            it->second->GetGamepadAxes());
     }
   }
 

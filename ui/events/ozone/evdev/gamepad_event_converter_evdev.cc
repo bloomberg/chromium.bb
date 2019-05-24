@@ -130,6 +130,19 @@ GamepadEventConverterEvdev::GamepadEventConverterEvdev(
       axes_[code] = Axis(abs_info, mapped_type, mapped_code);
     }
   }
+
+  for (int code = 0; code < ABS_CNT; ++code) {
+    abs_info = devinfo.GetAbsInfoByCode(code);
+    if (devinfo.HasAbsEvent(code)) {
+      ui::GamepadDevice::Axis axis;
+      axis.min_value = abs_info.minimum;
+      axis.max_value = abs_info.maximum;
+      axis.flat = abs_info.flat;
+      axis.fuzz = abs_info.fuzz;
+      axis.resolution = abs_info.resolution;
+      raw_axes_.push_back(axis);
+    }
+  }
 }
 
 GamepadEventConverterEvdev::~GamepadEventConverterEvdev() {
@@ -164,6 +177,11 @@ void GamepadEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
 }
 void GamepadEventConverterEvdev::OnDisabled() {
   ResetGamepad();
+}
+
+std::vector<ui::GamepadDevice::Axis>
+GamepadEventConverterEvdev::GetGamepadAxes() const {
+  return raw_axes_;
 }
 
 void GamepadEventConverterEvdev::ProcessEvent(const input_event& evdev_ev) {

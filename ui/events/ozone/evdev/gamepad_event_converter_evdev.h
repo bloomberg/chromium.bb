@@ -39,6 +39,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
   void OnFileCanReadWithoutBlocking(int fd) override;
   bool HasGamepad() const override;
   void OnDisabled() override;
+  std::vector<ui::GamepadDevice::Axis> GetGamepadAxes() const override;
 
   // This function processes one input_event from evdev.
   void ProcessEvent(const struct input_event& input);
@@ -102,6 +103,8 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
   };
 
   Axis axes_[ABS_CNT];
+
+  std::vector<ui::GamepadDevice::Axis> raw_axes_;
 
   // These values keeps the state of previous hat.
   bool last_hat_left_press_;

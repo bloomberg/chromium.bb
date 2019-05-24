@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "ui/events/devices/gamepad_device.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/event.h"
@@ -182,7 +183,7 @@ class EVENTS_OZONE_EVDEV_EXPORT DeviceEventDispatcherEvdev {
   virtual void DispatchDeviceListsComplete() = 0;
   virtual void DispatchStylusStateChanged(StylusState stylus_state) = 0;
   virtual void DispatchGamepadDevicesUpdated(
-      const std::vector<InputDevice>& devices) = 0;
+      const std::vector<GamepadDevice>& devices) = 0;
   virtual void DispatchUncategorizedDevicesUpdated(
       const std::vector<InputDevice>& devices) = 0;
 };

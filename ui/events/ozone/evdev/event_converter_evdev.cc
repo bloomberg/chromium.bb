@@ -124,6 +124,12 @@ gfx::Size EventConverterEvdev::GetTouchscreenSize() const {
   return gfx::Size();
 }
 
+std::vector<ui::GamepadDevice::Axis> EventConverterEvdev::GetGamepadAxes()
+    const {
+  NOTREACHED();
+  return std::vector<ui::GamepadDevice::Axis>();
+}
+
 int EventConverterEvdev::GetTouchPoints() const {
   NOTREACHED();
   return 0;

@@ -63,7 +63,7 @@ void GamingSeat::OnWindowFocused(aura::Window* gained_focus,
 // ui::GamepadObserver overrides:
 
 void GamingSeat::OnGamepadDevicesUpdated() {
-  std::vector<ui::InputDevice> gamepad_devices =
+  std::vector<ui::GamepadDevice> gamepad_devices =
       ui::GamepadProviderOzone::GetInstance()->GetGamepadDevices();
 
   base::flat_map<int, GamepadDelegate*> new_gamepads;

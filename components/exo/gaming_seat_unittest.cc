@@ -55,10 +55,11 @@ class GamingSeatTest : public test::ExoTestBase {
   }
 
   void UpdateGamepadDevice(const std::vector<int>& gamepad_device_ids) {
-    std::vector<ui::InputDevice> gamepad_devices;
+    std::vector<ui::GamepadDevice> gamepad_devices;
     for (auto& id : gamepad_device_ids) {
-      gamepad_devices.push_back(ui::InputDevice(
-          id, ui::InputDeviceType::INPUT_DEVICE_USB, "gamepad"));
+      gamepad_devices.emplace_back(
+          ui::InputDevice(id, ui::InputDeviceType::INPUT_DEVICE_USB, "gamepad"),
+          std::vector<ui::GamepadDevice::Axis>());
     }
     ui::GamepadProviderOzone::GetInstance()->DispatchGamepadDevicesUpdated(
         gamepad_devices);

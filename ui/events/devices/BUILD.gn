@@ -17,6 +17,8 @@ jumbo_component("devices") {
     "device_util_linux.cc",
     "device_util_linux.h",
     "events_devices_export.h",
+    "gamepad_device.cc",
+    "gamepad_device.h",
     "input_device.cc",
     "input_device.h",
     "input_device_event_observer.h",

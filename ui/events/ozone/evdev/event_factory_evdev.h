@@ -89,7 +89,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   // Gamepad event and gamepad device event. These events are dispatched to
   // GamepadObserver through GamepadProviderOzone.
   void DispatchGamepadEvent(const GamepadEvent& event);
-  void DispatchGamepadDevicesUpdated(const std::vector<InputDevice>& devices);
+  void DispatchGamepadDevicesUpdated(const std::vector<GamepadDevice>& devices);
 
  protected:
   // DeviceEventObserver overrides:
