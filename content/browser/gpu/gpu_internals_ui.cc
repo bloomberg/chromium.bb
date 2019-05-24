@@ -383,6 +383,11 @@ std::unique_ptr<base::ListValue> getDisplayInfo() {
         base::NumberToString(display.depth_per_component())));
     display_info->Append(NewDescriptionValuePair(
         "Bits per pixel", base::NumberToString(display.color_depth())));
+    if (display.display_frequency()) {
+      display_info->Append(NewDescriptionValuePair(
+          "Refresh Rate in Hz",
+          base::NumberToString(display.display_frequency())));
+    }
   }
   return display_info;
 }

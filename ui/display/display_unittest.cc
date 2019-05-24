@@ -90,4 +90,14 @@ TEST(DisplayTest, DisplayHDRValues) {
   EXPECT_EQ(8, display.depth_per_component());
 }
 
+TEST(DisplayTest, DisplayFrequency) {
+  Display display(0, gfx::Rect(0, 0, 100, 100));
+
+  display.set_display_frequency(60);
+  EXPECT_EQ(60, display.display_frequency());
+
+  display.set_display_frequency(120);
+  EXPECT_EQ(120, display.display_frequency());
+}
+
 }  // namespace display

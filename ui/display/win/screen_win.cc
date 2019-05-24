@@ -152,6 +152,34 @@ float GetMonitorSDRWhiteLevel(HMONITOR monitor) {
   return ret;
 }
 
+void GetDisplaySettingsForDevice(const wchar_t* device_name,
+                                 Display::Rotation* rotation,
+                                 int* frequency) {
+  *rotation = Display::ROTATE_0;
+  *frequency = 0;
+  DEVMODE mode = {};
+  mode.dmSize = sizeof(mode);
+  if (::EnumDisplaySettings(device_name, ENUM_CURRENT_SETTINGS, &mode)) {
+    switch (mode.dmDisplayOrientation) {
+      case DMDO_DEFAULT:
+        *rotation = Display::ROTATE_0;
+        break;
+      case DMDO_90:
+        *rotation = Display::ROTATE_90;
+        break;
+      case DMDO_180:
+        *rotation = Display::ROTATE_180;
+        break;
+      case DMDO_270:
+        *rotation = Display::ROTATE_270;
+        break;
+      default:
+        NOTREACHED();
+    }
+    *frequency = mode.dmDisplayFrequency;
+  }
+}
+
 std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
     const DisplayInfo& ref_display_info,
     std::vector<DisplayInfo>* display_infos) {
@@ -179,6 +207,7 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_bounds(gfx::ScaleToEnclosingRect(display_info.screen_rect(),
                      1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
+  display.set_display_frequency(display_info.display_frequency());
   if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
       // It doesn't matter what HDR color space we set since UI compositor will
@@ -266,8 +295,7 @@ std::vector<Display> ScreenWinDisplaysToDisplays(
 }
 
 MONITORINFOEX MonitorInfoFromHMONITOR(HMONITOR monitor) {
-  MONITORINFOEX monitor_info;
-  ::ZeroMemory(&monitor_info, sizeof(monitor_info));
+  MONITORINFOEX monitor_info = {};
   monitor_info.cbSize = sizeof(monitor_info);
   ::GetMonitorInfo(monitor, &monitor_info);
   return monitor_info;
@@ -280,9 +308,15 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
   std::vector<DisplayInfo>* display_infos =
       reinterpret_cast<std::vector<DisplayInfo>*>(data);
   DCHECK(display_infos);
-  display_infos->push_back(DisplayInfo(MonitorInfoFromHMONITOR(monitor),
-                                       GetMonitorScaleFactor(monitor),
-                                       GetMonitorSDRWhiteLevel(monitor)));
+
+  Display::Rotation rotation;
+  int display_frequency;
+  MONITORINFOEX monitor_info = MonitorInfoFromHMONITOR(monitor);
+  GetDisplaySettingsForDevice(monitor_info.szDevice, &rotation,
+                              &display_frequency);
+  display_infos->push_back(DisplayInfo(
+      monitor_info, GetMonitorScaleFactor(monitor),
+      GetMonitorSDRWhiteLevel(monitor), rotation, display_frequency));
   return TRUE;
 }
 

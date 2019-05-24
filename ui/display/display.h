@@ -255,6 +255,12 @@ class DISPLAY_EXPORT Display final {
   bool is_monochrome() const { return is_monochrome_; }
   void set_is_monochrome(bool is_monochrome) { is_monochrome_ = is_monochrome; }
 
+  // The display frequency of the monitor.
+  int display_frequency() const { return display_frequency_; }
+  void set_display_frequency(int display_frequency) {
+    display_frequency_ = display_frequency;
+  }
+
   bool operator==(const Display& rhs) const;
   bool operator!=(const Display& rhs) const { return !(*this == rhs); }
 
@@ -279,6 +285,7 @@ class DISPLAY_EXPORT Display final {
   int color_depth_;
   int depth_per_component_;
   bool is_monochrome_ = false;
+  int display_frequency_ = 0;
 };
 
 }  // namespace display
