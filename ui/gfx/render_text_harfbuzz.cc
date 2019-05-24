@@ -1208,7 +1208,6 @@ RenderTextHarfBuzz::RenderTextHarfBuzz()
       update_display_run_list_(false),
       update_grapheme_iterator_(false),
       update_display_text_(false),
-      glyph_width_for_test_(0u),
       locale_(internal::GetApplicationLocale()) {
   set_truncate_length(kMaxTextLength);
 }
@@ -1217,7 +1216,7 @@ RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
 std::unique_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType()
     const {
-  return base::WrapUnique(new RenderTextHarfBuzz);
+  return std::make_unique<RenderTextHarfBuzz>();
 }
 
 bool RenderTextHarfBuzz::MultilineSupported() const {
@@ -2140,10 +2139,6 @@ bool RenderTextHarfBuzz::GetDecoratedTextForRange(
     }
   }
   return true;
-}
-
-void RenderTextHarfBuzz::SetGlyphWidthForTest(float test_width) {
-  glyph_width_for_test_ = test_width;
 }
 
 }  // namespace gfx

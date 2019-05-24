@@ -305,7 +305,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   const internal::TextRunList* GetRunList() const override;
   bool GetDecoratedTextForRange(const Range& range,
                                 DecoratedText* decorated_text) override;
-  void SetGlyphWidthForTest(float test_width) override;
 
   // Text run list for |layout_text_| and |display_text_|.
   // |display_run_list_| is created only when the text is elided.
@@ -323,9 +322,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // The total size of the layouted text.
   SizeF total_size_;
-
-  // Fixed width of glyphs. This should only be set in test environments.
-  float glyph_width_for_test_;
 
   // The process application locale used to configure text rendering.
   std::string locale_;

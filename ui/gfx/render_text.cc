@@ -385,6 +385,7 @@ std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(
   render_text->font_size_overrides_ = font_size_overrides_;
   render_text->colors_ = colors_;
   render_text->weights_ = weights_;
+  render_text->glyph_width_for_test_ = glyph_width_for_test_;
   return render_text;
 }
 
@@ -1220,9 +1221,12 @@ void RenderText::UpdateDisplayText(float text_width) {
     render_text->EnsureLayout();
 
     if (render_text->lines_.size() > max_lines_) {
-      size_t start_of_elision = render_text->lines_[max_lines_ - 1]
-                                    .segments.front()
-                                    .char_range.start();
+      // Find the start index of the line to be elided.
+      size_t start_of_elision = layout_text_.length();
+      for (const auto& segment : render_text->lines_[max_lines_ - 1].segments) {
+        uint32_t segment_start = segment.char_range.GetMin();
+        start_of_elision = std::min<size_t>(start_of_elision, segment_start);
+      }
       base::string16 text_to_elide = layout_text_.substr(start_of_elision);
       display_text_.assign(layout_text_.substr(0, start_of_elision) +
                            Elide(text_to_elide, 0,
@@ -1915,10 +1919,6 @@ internal::TextRunList* RenderText::GetRunList() {
 const internal::TextRunList* RenderText::GetRunList() const {
   NOTREACHED();
   return nullptr;
-}
-
-void RenderText::SetGlyphWidthForTest(float test_width) {
-  NOTREACHED();
 }
 
 }  // namespace gfx

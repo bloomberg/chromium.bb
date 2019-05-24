@@ -85,7 +85,7 @@ class RenderTextTestApi {
   // Callers must ensure that the underlying RenderText object is a
   // RenderTextHarfBuzz instance.
   void SetGlyphWidth(float test_width) {
-    render_text_->SetGlyphWidthForTest(test_width);
+    render_text_->set_glyph_width_for_test(test_width);
   }
 
   static gfx::Rect ExpandToBeVerticallySymmetric(

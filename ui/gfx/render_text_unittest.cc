@@ -40,6 +40,7 @@
 #include "ui/gfx/render_text_harfbuzz.h"
 #include "ui/gfx/render_text_test_api.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
 #if defined(OS_WIN)
@@ -992,7 +993,7 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
   expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
   const base::char16 elided_obscured_text[] = {
       RenderText::kPasswordReplacementChar,
-      RenderText::kPasswordReplacementChar, 0x2026, 0};
+      RenderText::kPasswordReplacementChar, kEllipsisUTF16[0], 0};
   expected_render_text->SetText(elided_obscured_text);
 
   RenderText* render_text = GetRenderText();
@@ -1029,7 +1030,6 @@ TEST_F(RenderTextTest, MultilineElide) {
   render_text->GetStringSize();
   EXPECT_EQ(input_text, render_text->GetDisplayText());
 
-  const base::char16 kEllipsisUTF16[] = {0x2026, 0};
   base::string16 actual_text;
   // Try widening the space gradually, one pixel at a time, trying
   // to trigger a failure in layout. There was an issue where, right at
@@ -1073,7 +1073,6 @@ TEST_F(RenderTextTest, MultilineElideWrap) {
 
   render_text->SetDisplayRect(Rect(30, 0));
 
-  const base::char16 kEllipsisUTF16[] = {0x2026, 0};
   base::string16 actual_text;
 
   // ELIDE_LONG_WORDS doesn't make sense in multiline, and triggers assertion
@@ -1129,6 +1128,24 @@ TEST_F(RenderTextTest, MultilineElideWrapStress) {
       EXPECT_LE(render_text->GetNumLines(), 3U);
     }
   }
+}
+
+TEST_F(RenderTextTest, MultilineElideRTL) {
+  RenderText* render_text = GetRenderText();
+  SetGlyphWidth(5);
+
+  base::string16 input_text(UTF8ToUTF16("זהו המסר של ההודעה"));
+  render_text->SetText(input_text);
+  render_text->SetCursorEnabled(false);
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(1);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetDisplayRect(Rect(45, 0));
+  render_text->GetStringSize();
+
+  EXPECT_EQ(render_text->GetDisplayText(),
+            input_text.substr(0, 8) + base::string16(kEllipsisUTF16));
+  EXPECT_EQ(render_text->GetNumLines(), 1U);
 }
 
 TEST_F(RenderTextTest, ElidedStyledTextRtl) {
@@ -1236,7 +1253,8 @@ TEST_F(RenderTextTest, TruncatedObscuredText) {
   render_text->SetObscured(true);
   render_text->SetText(UTF8ToUTF16("abcdef"));
   EXPECT_EQ(UTF8ToUTF16("abcdef"), render_text->text());
-  EXPECT_EQ(GetObscuredString(3, 2, 0x2026), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(3, 2, kEllipsisUTF16[0]),
+            render_text->GetDisplayText());
 }
 
 TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {

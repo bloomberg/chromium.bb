@@ -752,6 +752,9 @@ class GFX_EXPORT RenderText {
   void set_cached_cursor_x(int x) { cached_cursor_x_ = x; }
   base::Optional<int> cached_cursor_x() const { return cached_cursor_x_; }
 
+  // Fixed width of glyphs. This should only be set in test environments.
+  float glyph_width_for_test_ = 0;
+
  private:
   friend class test::RenderTextTestApi;
 
@@ -797,7 +800,7 @@ class GFX_EXPORT RenderText {
   // Specify the width of a glyph for test. The width of glyphs is very
   // platform-dependent and environment-dependent. Otherwise multiline text
   // will become really flaky.
-  virtual void SetGlyphWidthForTest(float test_width);
+  void set_glyph_width_for_test(float width) { glyph_width_for_test_ = width; }
 
   // Logical UTF-16 string data to be drawn.
   base::string16 text_;
