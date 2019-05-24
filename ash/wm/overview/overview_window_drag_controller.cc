@@ -190,9 +190,9 @@ void OverviewWindowDragController::StartNormalDragMode(
   item_->ScaleUpSelectedItem(
       OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW);
   original_scaled_size_ = item_->target_bounds().size();
+  item_->overview_grid()->AddDropTargetForDraggingFromOverview(item_);
 
   if (should_allow_split_view_) {
-    item_->overview_grid()->AddDropTargetForDraggingFromOverview(item_);
     overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
                                                : IndicatorState::kCannotSnap,
@@ -252,6 +252,8 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
 
 void OverviewWindowDragController::ResetGesture() {
   if (current_drag_behavior_ == DragBehavior::kNormalDrag) {
+    DCHECK(item_->overview_grid()->drop_target_widget());
+
     Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
     item_->DestroyPhantomsForDragging();
     item_->overview_grid()->RemoveDropTarget();
@@ -350,6 +352,8 @@ gfx::RectF OverviewWindowDragController::ContinueNormalDrag(
 
   if (should_allow_split_view_)
     UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
+  item_->overview_grid()->UpdateDropTargetBackgroundVisibility(
+      item_, location_in_screen);
 
   bounds.set_x(centerpoint.x() - bounds.width() / 2.f);
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
@@ -360,14 +364,14 @@ OverviewWindowDragController::DragResult
 OverviewWindowDragController::CompleteNormalDrag(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kNormalDrag);
+  DCHECK(item_->overview_grid()->drop_target_widget());
   Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
   item_->DestroyPhantomsForDragging();
+  item_->overview_grid()->RemoveDropTarget();
 
   const gfx::Point rounded_screen_point =
       gfx::ToRoundedPoint(location_in_screen);
   if (should_allow_split_view_) {
-    DCHECK(item_->overview_grid()->drop_target_widget());
-    item_->overview_grid()->RemoveDropTarget();
     // Update the split view divider bar stuatus if necessary. The divider bar
     // should be placed above the dragged window after drag ends. Note here the
     // passed parameters |snap_position_| and |location_in_screen| won't be used
@@ -441,8 +445,8 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
     snap_position_ = SplitViewController::NONE;
     indicator_state = IndicatorState::kCannotSnap;
   }
-  item_->overview_grid()->RearrangeDuringDrag(
-      item_->GetWindow(), location_in_screen, indicator_state);
+  item_->overview_grid()->RearrangeDuringDrag(item_->GetWindow(),
+                                              indicator_state);
   overview_session_->SetSplitViewDragIndicatorsIndicatorState(indicator_state,
                                                               gfx::Point());
 }
