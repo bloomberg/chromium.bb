@@ -18,8 +18,9 @@ exhausted or in other exceptional circumstances.
 
 ## Critical severity {#TOC-Critical-severity}
 
-Critical severity issues allow an attacker run arbitrary code on the underlying
-platform with the user's privileges.
+Critical severity issues allow an attacker to read or write arbitrary resources
+(including but not limited to the file system, registry, network, et c.) on the
+underlying platform, with the user's full privileges.
 
 They are normally assigned priority **Pri-0** and assigned to the current stable
 milestone (or earliest milestone affected). For critical severity bugs,
@@ -37,7 +38,9 @@ Example bugs:
 
 * Memory corruption in the browser process ([564501](https://crbug.com/564501)).
 * Exploit chains made up of multiple bugs that can lead to code execution
-outside of the sandbox ([416449](https://crbug.com/416449)).
+  outside of the sandbox ([416449](https://crbug.com/416449)).
+* A bug that enables web content to read local files
+  ([962500](https://crbug.com/962500)).
 
 Note that the individual bugs that make up the chain will have lower severity
 ratings.
