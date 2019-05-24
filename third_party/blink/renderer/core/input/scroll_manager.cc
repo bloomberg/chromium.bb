@@ -94,7 +94,6 @@ void ScrollManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(previous_gesture_scrolled_node_);
   visitor->Trace(scrollbar_handling_scroll_gesture_);
   visitor->Trace(resize_scrollable_area_);
-  visitor->Trace(last_logical_scrolled_node_);
 }
 
 void ScrollManager::ClearGestureScrollState() {
@@ -237,11 +236,6 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
   if (!node)
     node = mouse_press_node;
 
-  if ((!node || !node->GetLayoutObject()) &&
-      (last_logical_scrolled_node_ &&
-       last_logical_scrolled_node_->GetLayoutObject()))
-    node = last_logical_scrolled_node_;
-
   if ((!node || !node->GetLayoutObject()) && frame_->View() &&
       frame_->View()->GetLayoutView())
     node = frame_->View()->GetLayoutView()->GetNode();
@@ -325,10 +319,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     ScrollResult result = scrollable_area->UserScroll(
         granularity, ToScrollDelta(physical_direction, 1));
 
-    if (result.DidScroll()) {
-      last_logical_scrolled_node_ = scroll_chain_node;
+    if (result.DidScroll())
       return true;
-    }
   }
 
   return false;
