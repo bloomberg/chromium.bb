@@ -100,7 +100,7 @@ CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
                                            aura::Window* window,
                                            bool show_preview,
                                            views::ImageButton* close_button)
-    : Button(nullptr),
+    : views::Button(nullptr),
       event_delegate_(event_delegate),
       window_(window),
       close_button_(close_button) {
@@ -264,7 +264,6 @@ void CaptionContainerView::Layout() {
   if (preview_view_) {
     gfx::Rect preview_bounds = bounds;
     preview_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
-    preview_bounds.ClampToCenteredSize(preview_view_->CalculatePreferredSize());
     preview_view_->SetBoundsRect(preview_bounds);
   }
 
