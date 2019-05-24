@@ -13,25 +13,29 @@ namespace previews {
 // static
 std::unique_ptr<HintUpdateData> HintUpdateData::CreateComponentHintUpdateData(
     const base::Version& component_version) {
-  std::unique_ptr<HintUpdateData> update_data(
-      new HintUpdateData(base::Optional<base::Version>(component_version),
-                         base::Optional<base::Time>()));
+  std::unique_ptr<HintUpdateData> update_data(new HintUpdateData(
+      base::Optional<base::Version>(component_version),
+      base::Optional<base::Time>(), base::Optional<base::Time>()));
   return update_data;
 }
 
 // static
 std::unique_ptr<HintUpdateData> HintUpdateData::CreateFetchedHintUpdateData(
-    base::Time fetch_update_time) {
+    base::Time fetch_update_time,
+    base::Time expiry_time) {
   std::unique_ptr<HintUpdateData> update_data(
       new HintUpdateData(base::Optional<base::Version>(),
-                         base::Optional<base::Time>(fetch_update_time)));
+                         base::Optional<base::Time>(fetch_update_time),
+                         base::Optional<base::Time>(expiry_time)));
   return update_data;
 }
 
 HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
-                               base::Optional<base::Time> fetch_update_time)
+                               base::Optional<base::Time> fetch_update_time,
+                               base::Optional<base::Time> expiry_time)
     : component_version_(component_version),
       fetch_update_time_(fetch_update_time),
+      expiry_time_(expiry_time),
       entries_to_save_(std::make_unique<EntryVector>()) {
   DCHECK_NE(!component_version_, !fetch_update_time_);
 
@@ -79,6 +83,9 @@ void HintUpdateData::MoveHintIntoUpdateData(
     entry_proto.set_entry_type(static_cast<previews::proto::StoreEntryType>(
         HintCacheStore::StoreEntryType::kComponentHint));
   } else if (fetch_update_time()) {
+    DCHECK(expiry_time());
+    entry_proto.set_expiry_time_secs(
+        expiry_time_->ToDeltaSinceWindowsEpoch().InSeconds());
     entry_proto.set_entry_type(static_cast<previews::proto::StoreEntryType>(
         HintCacheStore::StoreEntryType::kFetchedHint));
   }

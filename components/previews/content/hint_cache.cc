@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "components/previews/content/hint_update_data.h"
+#include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -86,9 +87,10 @@ HintCache::MaybeCreateUpdateDataForComponentHints(
 }
 
 std::unique_ptr<HintUpdateData> HintCache::CreateUpdateDataForFetchedHints(
-    base::Time update_time) const {
+    base::Time update_time,
+    base::Time expiry_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return hint_store_->CreateUpdateDataForFetchedHints(update_time);
+  return hint_store_->CreateUpdateDataForFetchedHints(update_time, expiry_time);
 }
 
 void HintCache::UpdateComponentHints(
@@ -110,8 +112,15 @@ bool HintCache::UpdateFetchedHints(
         get_hints_response,
     base::Time update_time,
     base::OnceClosure callback) {
+  base::Time expiry_time = update_time;
+  if (get_hints_response->has_max_cache_duration()) {
+    expiry_time += base::TimeDelta().FromSeconds(
+        get_hints_response->max_cache_duration().seconds());
+  } else {
+    expiry_time += params::StoredFetchedHintsFreshnessDuration();
+  }
   std::unique_ptr<HintUpdateData> fetched_hints_update_data =
-      CreateUpdateDataForFetchedHints(update_time);
+      CreateUpdateDataForFetchedHints(update_time, expiry_time);
   if (ProcessGetHintsResponse(get_hints_response.get(),
                               fetched_hints_update_data.get())) {
     hint_store_->UpdateFetchedHints(std::move(fetched_hints_update_data),

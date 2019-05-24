@@ -86,6 +86,10 @@ size_t MaxInMemoryHostsInBlackList();
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();
 
+// The amount of time a fetched hint will be considered fresh enough
+// to be used and remain in the HintCacheStore.
+base::TimeDelta StoredFetchedHintsFreshnessDuration();
+
 // The number of recent navigations that were opted out of for a given host that
 // would trigger that host to be blacklisted.
 int PerHostBlackListOptOutThreshold();

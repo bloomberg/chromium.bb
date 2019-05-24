@@ -44,4 +44,7 @@ message StoreEntry {
   optional int64 update_time_secs = 3;
   // The type of entry stored.
   optional StoreEntryType entry_type = 4;
+  // Expiry time for this Hint entry (i.e., when hint is no longer usable).
+  // This is set on OnePlatform Hint entries.
+  optional int64 expiry_time_secs = 5;
 }

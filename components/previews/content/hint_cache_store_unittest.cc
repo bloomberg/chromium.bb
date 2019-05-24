@@ -19,6 +19,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/previews/content/hint_update_data.h"
 #include "components/previews/content/proto/hint_cache.pb.h"
+#include "components/previews/core/previews_experiments.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -1186,7 +1187,9 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyForFetchedHints) {
   InitializeStore(schema_state);
 
   std::unique_ptr<HintUpdateData> update_data =
-      hint_store()->CreateUpdateDataForFetchedHints(update_time);
+      hint_store()->CreateUpdateDataForFetchedHints(
+          update_time,
+          update_time + params::StoredFetchedHintsFreshnessDuration());
   ASSERT_TRUE(update_data);
   SeedFetchedUpdateData(update_data.get(), update_hint_count);
   UpdateFetchedHints(std::move(update_data));
@@ -1227,7 +1230,8 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyCheckFetchedBeforeComponentHints) {
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(update_time);
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+      update_time, update_time + params::StoredFetchedHintsFreshnessDuration());
 
   optimization_guide::proto::Hint hint;
   hint.set_key("domain2.org");
@@ -1283,7 +1287,8 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(update_time);
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+      update_time, update_time + base::TimeDelta().FromDays(7));
 
   optimization_guide::proto::Hint fetched_hint1;
   fetched_hint1.set_key("domain2.org");
@@ -1342,7 +1347,8 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
   host_suffix = "host.domain2.org";
   EXPECT_TRUE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
 
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(update_time);
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+      update_time, update_time + params::StoredFetchedHintsFreshnessDuration());
   optimization_guide::proto::Hint new_hint;
   new_hint.set_key("domain1.org");
   new_hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
@@ -1380,8 +1386,9 @@ TEST_F(HintCacheStoreTest, LoadingHintUpdatesPrefCorrectly) {
   UpdateComponentHints(std::move(update_data));
 
   // Also seed a fetched hint into the store.
-  update_data =
-      hint_store()->CreateUpdateDataForFetchedHints(base::Time().Now());
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+      base::Time().Now(),
+      base::Time().Now() + params::StoredFetchedHintsFreshnessDuration());
   optimization_guide::proto::Hint hint;
   hint.set_key("domain2.org");
   hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);

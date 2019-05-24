@@ -200,11 +200,12 @@ HintCacheStore::MaybeCreateUpdateDataForComponentHints(
 }
 
 std::unique_ptr<HintUpdateData> HintCacheStore::CreateUpdateDataForFetchedHints(
-    base::Time update_time) const {
+    base::Time update_time,
+    base::Time expiry_time) const {
   // Create and returns a HintUpdateData object. This object has has hints
   // from the GetHintsResponse moved into and organizes them in a format
   // usable by the store. The object will be store with UpdateFetchedData().
-  return HintUpdateData::CreateFetchedHintUpdateData(update_time);
+  return HintUpdateData::CreateFetchedHintUpdateData(update_time, expiry_time);
 }
 
 void HintCacheStore::UpdateComponentHints(
@@ -752,25 +753,34 @@ void HintCacheStore::OnLoadHint(
     entry.reset();
   }
 
-  // If the hint exists, release it into the Hint unique_ptr contained in the
-  // callback. This eliminates the need for any copies of the entry's hint.
-  if (entry && entry->has_hint()) {
-    std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(
-        entry->release_hint());
-    StoreEntryType store_entry_type =
-        static_cast<StoreEntryType>(entry->entry_type());
-    UMA_HISTOGRAM_ENUMERATION(
-        "Previews.OptimizationGuide.HintCache.HintType.Loaded",
-        store_entry_type);
-
-    IncrementHintLoadedCountsPrefForKey(
-        pref_service_, GetStringNameForStoreEntryType(store_entry_type));
-
-    std::move(callback).Run(entry_key, std::move(loaded_hint));
-  } else {
+  if (!entry || !entry->has_hint()) {
     std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(nullptr);
     std::move(callback).Run(entry_key, std::move(loaded_hint));
+    return;
   }
+
+  // Release the Hint into a Hint unique_ptr. This eliminates the need for any
+  // copies of the entry's hint.
+  std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(
+      entry->release_hint());
+
+  StoreEntryType store_entry_type =
+      static_cast<StoreEntryType>(entry->entry_type());
+  UMA_HISTOGRAM_ENUMERATION(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded", store_entry_type);
+
+  IncrementHintLoadedCountsPrefForKey(
+      pref_service_, GetStringNameForStoreEntryType(store_entry_type));
+
+  if (store_entry_type == StoreEntryType::kFetchedHint) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromSeconds(entry->expiry_time_secs())) -
+            base::Time::Now(),
+        base::TimeDelta::FromHours(1), base::TimeDelta::FromDays(15), 50);
+  }
+  std::move(callback).Run(entry_key, std::move(loaded_hint));
 }
 
 }  // namespace previews

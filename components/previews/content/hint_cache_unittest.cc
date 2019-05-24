@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/previews/content/hint_cache_store.h"
@@ -538,6 +539,75 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
       UpdateFetchedHints(std::move(get_hints_response), base::Time().Now()));
   EXPECT_FALSE(are_fetched_hints_updated());
 }
+
+TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
+  base::HistogramTester histogram_tester;
+  const int kMemoryCacheSize = 5;
+  const int kFetchedHintExpirationSecs = 60;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  // Default update time for empty hint cache store is base::Time().
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
+
+  std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+      get_hints_response =
+          std::make_unique<optimization_guide::proto::GetHintsResponse>();
+
+  // Set server-provided expiration time.
+  get_hints_response->mutable_max_cache_duration()->set_seconds(
+      kFetchedHintExpirationSecs);
+
+  optimization_guide::proto::Hint* hint = get_hints_response->add_hints();
+  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key("host.domain.org");
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("page pattern");
+
+  base::Time stored_time = base::Time().Now();
+  EXPECT_TRUE(UpdateFetchedHints(std::move(get_hints_response), stored_time));
+  EXPECT_TRUE(are_fetched_hints_updated());
+
+  // Next update time for hints should be updated.
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+
+  LoadHint("host.domain.org");
+  // HISTOGRAM TEST!
+  histogram_tester.ExpectTimeBucketCount(
+      "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
+      base::TimeDelta::FromSeconds(kFetchedHintExpirationSecs), 1);
+}
+
+TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
+  base::HistogramTester histogram_tester;
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  // Default update time for empty hint cache store is base::Time().
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
+
+  std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+      get_hints_response =
+          std::make_unique<optimization_guide::proto::GetHintsResponse>();
+
+  optimization_guide::proto::Hint* hint = get_hints_response->add_hints();
+  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key("host.domain.org");
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("page pattern");
+
+  base::Time stored_time = base::Time().Now();
+  EXPECT_TRUE(UpdateFetchedHints(std::move(get_hints_response), stored_time));
+  EXPECT_TRUE(are_fetched_hints_updated());
+
+  // Next update time for hints should be updated.
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+
+  LoadHint("host.domain.org");
+  histogram_tester.ExpectTimeBucketCount(
+      "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
+      params::StoredFetchedHintsFreshnessDuration(), 1);
+}
+
 }  // namespace
 
 }  // namespace previews

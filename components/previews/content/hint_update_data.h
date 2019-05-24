@@ -39,7 +39,8 @@ class HintUpdateData {
 
   // Creates an update data object for a fetched hint update.
   static std::unique_ptr<HintUpdateData> CreateFetchedHintUpdateData(
-      base::Time fetch_update_time);
+      base::Time fetch_update_time,
+      base::Time expiry_time);
 
   // Returns the component version of a component hint update.
   const base::Optional<base::Version> component_version() const {
@@ -51,6 +52,9 @@ class HintUpdateData {
     return fetch_update_time_;
   }
 
+  // Returns the expiry time for the hints in a fetched hint update.
+  const base::Optional<base::Time> expiry_time() const { return expiry_time_; }
+
   // Moves |hint| into this update data. After MoveHintIntoUpdateData() is
   // called, |hint| is no longer valid.
   void MoveHintIntoUpdateData(optimization_guide::proto::Hint&& hint);
@@ -60,13 +64,17 @@ class HintUpdateData {
 
  private:
   HintUpdateData(base::Optional<base::Version> component_version,
-                 base::Optional<base::Time> fetch_update_time);
+                 base::Optional<base::Time> fetch_update_time,
+                 base::Optional<base::Time> expiry_time);
 
   // The component version of the update data for a component update.
   base::Optional<base::Version> component_version_;
 
   // The time when hints in this update need to be updated for a fetch update.
   base::Optional<base::Time> fetch_update_time_;
+
+  // The time when hints in this update expire.
+  base::Optional<base::Time> expiry_time_;
 
   // The prefix to add to the key of every hint entry. It is set
   // during construction for appropriate type of update.

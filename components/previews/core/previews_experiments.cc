@@ -120,6 +120,12 @@ size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
       "max_hosts_for_optimization_guide_service_hints_fetch", 30);
 }
 
+base::TimeDelta StoredFetchedHintsFreshnessDuration() {
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      features::kOptimizationHintsFetching,
+      "max_store_duration_for_featured_hints_in_days", 7));
+}
+
 int PerHostBlackListOptOutThreshold() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial,
                             "per_host_opt_out_threshold", 2);
