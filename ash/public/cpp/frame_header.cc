@@ -238,6 +238,9 @@ void FrameHeader::SetCaptionButtonContainer(
       views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, kWindowControlLeftSnappedIcon);
   caption_button_container_->SetButtonImage(
       views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, kWindowControlRightSnappedIcon);
+
+  // Perform layout to ensure the container height is correct.
+  LayoutHeaderInternal();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

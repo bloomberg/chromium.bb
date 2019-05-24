@@ -55,6 +55,7 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
@@ -300,7 +301,10 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForClientView() const {
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  return client_bounds;
+  const int top_inset = GetTopInset(false);
+  return gfx::Rect(client_bounds.x(),
+                   std::max(0, client_bounds.y() - top_inset),
+                   client_bounds.width(), client_bounds.height() + top_inset);
 }
 
 int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {

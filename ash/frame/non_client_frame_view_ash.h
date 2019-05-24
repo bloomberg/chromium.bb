@@ -118,6 +118,12 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
 
   views::Widget* frame() { return frame_; }
 
+  // Methods for testing.
+  static void set_use_empty_minimum_size_for_test(
+      bool use_empty_minimum_size_for_test) {
+    use_empty_minimum_size_for_test_ = use_empty_minimum_size_for_test;
+  }
+
  protected:
   // Called when overview mode or split view state changed. If overview mode
   // and split view mode are both active at the same time, the header of the

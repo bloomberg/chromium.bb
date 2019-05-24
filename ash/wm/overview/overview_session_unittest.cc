@@ -18,6 +18,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
@@ -143,6 +144,8 @@ class OverviewSessionTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
+    NonClientFrameViewAsh::set_use_empty_minimum_size_for_test(true);
+
     aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
     shelf_view_test_api_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
@@ -158,6 +161,7 @@ class OverviewSessionTest : public AshTestBase {
         false);
     FpsCounter::SetForceReportZeroAnimationForTest(false);
     trace_names_.clear();
+    NonClientFrameViewAsh::set_use_empty_minimum_size_for_test(false);
     AshTestBase::TearDown();
   }
 
