@@ -139,11 +139,12 @@ void CallStackProfileBuilder::RecordMetadata() {
 
 void CallStackProfileBuilder::OnSampleCompleted(
     std::vector<base::Frame> frames) {
-  OnSampleCompleted(std::move(frames), 1);
+  OnSampleCompleted(std::move(frames), 1, 1);
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(std::vector<base::Frame> frames,
-                                                size_t weight) {
+                                                size_t weight,
+                                                size_t count) {
   // Write CallStackProfile::Stack protobuf message.
   CallStackProfile::Stack stack;
 
@@ -193,6 +194,8 @@ void CallStackProfileBuilder::OnSampleCompleted(std::vector<base::Frame> frames,
   stack_sample_proto->set_stack_index(stack_loc->second);
   if (weight != 1)
     stack_sample_proto->set_weight(weight);
+  if (count != 1)
+    stack_sample_proto->set_count(count);
   if (is_continued_work_)
     stack_sample_proto->set_continued_work(is_continued_work_);
 

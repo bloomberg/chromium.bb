@@ -87,7 +87,11 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
           module_cache.GetModuleForAddress(address);
       frames.emplace_back(address, module);
     }
-    profile_builder.OnSampleCompleted(std::move(frames), sample.total);
+    size_t count = std::max<size_t>(
+        static_cast<size_t>(
+            std::llround(static_cast<double>(sample.total) / sample.size)),
+        1);
+    profile_builder.OnSampleCompleted(std::move(frames), sample.total, count);
   }
 
   profile_builder.OnProfileCompleted(base::TimeDelta(), base::TimeDelta());

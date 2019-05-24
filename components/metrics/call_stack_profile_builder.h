@@ -62,8 +62,10 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
 
   ~CallStackProfileBuilder() override;
 
-  // The weight is used by the heap profiler only.
-  void OnSampleCompleted(std::vector<base::Frame> frames, size_t weight);
+  // Both weight and count are used by the heap profiler only.
+  void OnSampleCompleted(std::vector<base::Frame> frames,
+                         size_t weight,
+                         size_t count);
 
   // base::ProfileBuilder:
   base::ModuleCache* GetModuleCache() override;
