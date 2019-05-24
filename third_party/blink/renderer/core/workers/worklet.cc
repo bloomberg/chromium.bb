@@ -94,6 +94,15 @@ void Worklet::ContextDestroyed(ExecutionContext* execution_context) {
   module_responses_map_->Dispose();
   for (const auto& proxy : proxies_)
     proxy->TerminateWorkletGlobalScope();
+  for (auto iter = pending_tasks_set_.begin();
+       iter != pending_tasks_set_.end();) {
+    // Move the iterator forward before calling WorkletPendingTasks::Abort()
+    // because that modifies |pending_tasks_set_| and invalidates the iterator.
+    auto current = iter;
+    ++iter;
+    (*current)->Abort();
+  }
+  DCHECK(!HasPendingTasks());
 }
 
 bool Worklet::HasPendingTasks() const {

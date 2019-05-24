@@ -17,20 +17,53 @@ function with_iframe(url) {
     });
 }
 
-// This test should not be upstreamed to WPT because the spec does not define
+// These tests should not be upstreamed to WPT because the spec does not define
 // behavior in the case where addModule() is called from a detached frame.
-promise_test(t => {
-  const kFrameUrl = 'resources/blank.html';
-  const kScriptUrl = 'resources/empty-worklet-script.js';
 
-  return with_iframe(kFrameUrl)
-    .then(frame => {
-        let worklet = frame.contentWindow.CSS.paintWorklet;
-        frame.remove();
-        return worklet.addModule(kScriptUrl);
-      })
-    .then(() => assert_unreached('addModule() should fail.'))
-    .catch(e => assert_equals(e.name, 'InvalidStateError', e));
-}, 'addModule() on a detached iframe should be rejected.');
+promise_test(async t => {
+  const frame = await with_iframe('resources/blank.html');
+  const worklet = frame.contentWindow.CSS.layoutWorklet;
+  frame.remove();
+  await promise_rejects(
+      t, 'InvalidStateError',
+      worklet.addModule('resources/empty-worklet-script.js'));
+}, '[main thread worklet] addModule() on a detached iframe should be ' +
+   'rejected.');
+
+promise_test(async t => {
+  const frame = await with_iframe('resources/blank.html');
+  const worklet = frame.contentWindow.CSS.animationWorklet;
+  frame.remove();
+  await promise_rejects(
+      t, 'InvalidStateError',
+      worklet.addModule('resources/empty-worklet-script.js'));
+}, '[off main thread worklet] addModule() on a detached iframe should be ' +
+   'rejected.');
+
+promise_test(async t => {
+  const frame = await with_iframe('resources/blank.html');
+  const worklet = frame.contentWindow.CSS.layoutWorklet;
+  const promise = worklet.addModule('resources/empty-worklet-script.js');
+  frame.remove();
+
+  // Wait a moment to confirm that asynchronous addModule() operation on the
+  // detached iframe doesn't crash. We cannot wait for the promise returned by
+  // addModule() because it's never settled after context destruction.
+  await new Promise(resolve => setTimeout(resolve, 10));
+}, '[main thread worklet] detaching an iframe after addModule() should not ' +
+   'crash.');
+
+promise_test(async t => {
+  const frame = await with_iframe('resources/blank.html');
+  const worklet = frame.contentWindow.CSS.animationWorklet;
+  const promise = worklet.addModule('resources/empty-worklet-script.js');
+  frame.remove();
+
+  // Wait a moment to confirm that asynchronous addModule() operation on the
+  // detached iframe doesn't crash. We cannot wait for the promise returned by
+  // addModule() because it's never settled after context destruction.
+  await new Promise(resolve => setTimeout(resolve, 10));
+}, '[off main thread worklet] detaching an iframe after addModule() should ' +
+   'not crash.');
 
 </script>
