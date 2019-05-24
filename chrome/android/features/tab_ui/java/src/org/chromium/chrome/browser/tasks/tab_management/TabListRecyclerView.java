@@ -11,6 +11,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
@@ -25,7 +26,6 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  */
 class TabListRecyclerView extends RecyclerView {
     public static final long BASE_ANIMATION_DURATION_MS = 218;
-    private ViewResourceAdapter mDynamicView;
 
     /**
      * An interface to listen to visibility related changes on this {@link RecyclerView}.
@@ -57,6 +57,8 @@ class TabListRecyclerView extends RecyclerView {
     private ValueAnimator mFadeInAnimator;
     private ValueAnimator mFadeOutAnimator;
     private VisibilityListener mListener;
+    private ViewResourceAdapter mDynamicView;
+    private long mOriginalAddDuration;
 
     /**
      * Basic constructor to use during inflation from xml.
@@ -73,13 +75,22 @@ class TabListRecyclerView extends RecyclerView {
         mListener = listener;
     }
 
+    void prepareOverview() {
+        endAllAnimations();
+
+        // Make all the items show up immediately.
+        mOriginalAddDuration = getItemAnimator().getAddDuration();
+        getItemAnimator().setAddDuration(0);
+    }
+
     /**
      * Start showing the tab list.
      * @param animate Whether the visibility change should be animated.
      */
     void startShowing(boolean animate) {
+        assert mFadeOutAnimator == null;
         mListener.startedShowing(animate);
-        cancelAllAnimations();
+
         setAlpha(0);
         setVisibility(View.VISIBLE);
         mFadeInAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, 1);
@@ -89,7 +100,10 @@ class TabListRecyclerView extends RecyclerView {
         mFadeInAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                mFadeInAnimator = null;
                 mListener.finishedShowing();
+                // Restore the original value.
+                getItemAnimator().setAddDuration(mOriginalAddDuration);
 
                 if (mDynamicView != null)
                     mDynamicView.dropCachedBitmap();
@@ -137,14 +151,15 @@ class TabListRecyclerView extends RecyclerView {
      * @param animate Whether the visibility change should be animated.
      */
     void startHiding(boolean animate) {
+        endAllAnimations();
         mListener.startedHiding(animate);
-        cancelAllAnimations();
         mFadeOutAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, 0);
         mFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         mFadeOutAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
         mFadeOutAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
+                mFadeOutAnimator = null;
                 setVisibility(View.INVISIBLE);
                 mListener.finishedHiding();
             }
@@ -153,12 +168,33 @@ class TabListRecyclerView extends RecyclerView {
         if (!animate) mFadeOutAnimator.end();
     }
 
-    private void cancelAllAnimations() {
+    private void endAllAnimations() {
         if (mFadeInAnimator != null) {
-            mFadeInAnimator.cancel();
+            mFadeInAnimator.end();
         }
         if (mFadeOutAnimator != null) {
-            mFadeOutAnimator.cancel();
+            mFadeOutAnimator.end();
         }
+    }
+
+    /**
+     * @param currentTabIndex The the current tab's index in the model.
+     * @return The {@link Rect} of the thumbnail of the current tab, relative to the
+     *         {@link TabListRecyclerView} coordinates.
+     */
+    @Nullable
+    Rect getRectOfCurrentThumbnail(int currentTabIndex) {
+        TabGridViewHolder holder =
+                (TabGridViewHolder) findViewHolderForAdapterPosition(currentTabIndex);
+        if (holder == null) return null;
+
+        int[] loc = new int[2];
+        holder.thumbnail.getLocationInWindow(loc);
+        Rect rect = new Rect(loc[0], loc[1], loc[0] + holder.thumbnail.getWidth(),
+                loc[1] + holder.thumbnail.getHeight());
+        getLocationInWindow(loc);
+        rect.top -= loc[1];
+        rect.bottom -= loc[1];
+        return rect;
     }
 }

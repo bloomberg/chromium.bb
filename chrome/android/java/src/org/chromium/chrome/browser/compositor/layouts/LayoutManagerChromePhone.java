@@ -31,12 +31,11 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
      * @param host                A {@link LayoutManagerHost} instance.
-     * @param gridController A controller to delegate the tab switcher behavior. If it's NULL, VTS
-     *                       should be used, otherwise GTS should be used.
+     * @param gridTabSwitcher An interface to talk to the Grid Tab Switcher. If it's NULL, VTS
+     *                        should be used, otherwise GTS should be used.
      */
-    public LayoutManagerChromePhone(
-            LayoutManagerHost host, GridTabSwitcher.GridController gridController) {
-        super(host, true, gridController);
+    public LayoutManagerChromePhone(LayoutManagerHost host, GridTabSwitcher gridTabSwitcher) {
+        super(host, true, gridTabSwitcher);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
 

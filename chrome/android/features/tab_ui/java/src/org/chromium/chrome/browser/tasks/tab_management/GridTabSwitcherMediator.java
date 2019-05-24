@@ -174,13 +174,6 @@ class GridTabSwitcherMediator
 
     private void setVisibility(boolean isVisible) {
         if (isVisible) {
-            mResetHandler.resetWithTabList(
-                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter());
-            int initialPosition = Math.max(
-                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
-                            - INITIAL_SCROLL_INDEX_OFFSET,
-                    0);
-            mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
             RecordUserAction.record("MobileToolbarShowStackView");
         }
 
@@ -215,6 +208,16 @@ class GridTabSwitcherMediator
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
     }
 
+    public void prepareOverview() {
+        mResetHandler.resetWithTabList(
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter());
+        int initialPosition = Math.max(
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
+                        - INITIAL_SCROLL_INDEX_OFFSET,
+                0);
+        mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
+    }
+
     @Override
     public void showOverview(boolean animate) {
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
@@ -224,7 +227,6 @@ class GridTabSwitcherMediator
 
     @Override
     public void startedShowing(boolean isAnimating) {
-        setContentOverlayVisibility(false);
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeStartedShowing(true);
         }
@@ -235,6 +237,7 @@ class GridTabSwitcherMediator
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeFinishedShowing();
         }
+        setContentOverlayVisibility(false);
     }
 
     @Override
@@ -247,6 +250,7 @@ class GridTabSwitcherMediator
 
     @Override
     public void finishedHiding() {
+        // TODO(crbug.com/964406): see if we can lazily release it.
         mResetHandler.resetWithTabList(null);
         mContainerViewModel.set(INITIAL_SCROLL_INDEX, 0);
         for (OverviewModeObserver observer : mObservers) {

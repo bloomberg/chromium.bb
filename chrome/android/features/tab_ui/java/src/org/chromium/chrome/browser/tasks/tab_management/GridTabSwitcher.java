@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.graphics.Rect;
+import android.support.annotation.NonNull;
+
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 
@@ -29,4 +32,18 @@ public interface GridTabSwitcher {
      * @return The dynamic resource ID of the GridTabSwitcher RecyclerView.
      */
     int getResourceId();
+
+    /**
+     * Before calling {@link OverviewModeController#showOverview} to start showing the
+     * GridTabSwitcher {@link TabListRecyclerView}, call this to populate it without making it
+     * visible.
+     */
+    void prepareOverview();
+
+    /**
+     * @return The {@link Rect} of the thumbnail of the current tab, relative to the
+     *         GridTabSwitcher {@link TabListRecyclerView} coordinates.
+     */
+    @NonNull
+    Rect getThumbnailLocationOfCurrentTab();
 }

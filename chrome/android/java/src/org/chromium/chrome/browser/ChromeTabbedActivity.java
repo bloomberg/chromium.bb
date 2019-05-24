@@ -681,22 +681,21 @@ public class ChromeTabbedActivity
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.setupCompositorContent")) {
             CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
             if (isTablet()) {
-                mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder, null);
+                mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
             } else {
-                GridTabSwitcher.GridController gridController = null;
+                GridTabSwitcher gridTabSwitcher = null;
 
                 if (FeatureUtilities.isGridTabSwitcherEnabled()
                         || FeatureUtilities.isTabGroupsAndroidEnabled()) {
                     TabManagementDelegate tabManagementDelegate =
                             TabManagementModuleProvider.getDelegate();
                     if (tabManagementDelegate != null) {
-                        GridTabSwitcher gridTabSwitcher =
-                                tabManagementDelegate.createGridTabSwitcher(this);
-                        gridController = gridTabSwitcher.getGridController();
+                        gridTabSwitcher = tabManagementDelegate.createGridTabSwitcher(this);
                     }
                 }
 
-                mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, gridController);
+                mLayoutManager =
+                        new LayoutManagerChromePhone(compositorViewHolder, gridTabSwitcher);
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
 
@@ -1082,7 +1081,6 @@ public class ChromeTabbedActivity
             toggleOverview();
         }
     }
-
 
     private boolean isMainIntentFromLauncher(Intent intent) {
         return intent != null && TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN)

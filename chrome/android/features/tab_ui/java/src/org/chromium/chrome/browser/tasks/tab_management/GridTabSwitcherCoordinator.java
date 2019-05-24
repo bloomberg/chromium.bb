@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.support.annotation.NonNull;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -101,6 +103,18 @@ public class GridTabSwitcherCoordinator
     @Override
     public GridController getGridController() {
         return mMediator;
+    }
+
+    @Override
+    public void prepareOverview() {
+        mTabGridCoordinator.prepareOverview();
+        mMediator.prepareOverview();
+    }
+
+    @Override
+    @NonNull
+    public Rect getThumbnailLocationOfCurrentTab() {
+        return mTabGridCoordinator.getThumbnailLocationOfCurrentTab();
     }
 
     @Override

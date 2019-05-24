@@ -910,6 +910,19 @@ public class LayoutTab {
                 }
             };
 
+    public static final FloatProperty<LayoutTab> DECORATION_ALPHA =
+            new FloatProperty<LayoutTab>("DECORATION_ALPHA") {
+                @Override
+                public void setValue(LayoutTab layoutTab, float v) {
+                    layoutTab.setDecorationAlpha(v);
+                }
+
+                @Override
+                public Float get(LayoutTab layoutTab) {
+                    return layoutTab.getDecorationAlpha();
+                }
+            };
+
     public static final FloatProperty<LayoutTab> BORDER_SCALE =
             new FloatProperty<LayoutTab>("BORDER_SCALE") {
                 @Override

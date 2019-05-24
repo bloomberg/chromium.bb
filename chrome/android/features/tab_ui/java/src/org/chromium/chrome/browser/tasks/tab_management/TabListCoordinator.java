@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -50,8 +51,10 @@ public class TabListCoordinator implements Destroyable {
     static final int GRID_LAYOUT_SPAN_COUNT_LANDSCAPE = 3;
     private final SimpleRecyclerViewMcpBase mModelChangeProcessor;
     private final TabListMediator mMediator;
+    private final TabModelSelector mTabModelSelector;
     private final TabListRecyclerView mRecyclerView;
     private final @TabListMode int mMode;
+    private final Rect mThumbnailLocationOfCurrentTab = new Rect();
 
     /**
      * Construct a coordinator for UI that shows a list of tabs.
@@ -82,6 +85,7 @@ public class TabListCoordinator implements Destroyable {
             boolean attachToParent, @LayoutRes int layoutId, String componentName) {
         TabListModel tabListModel = new TabListModel();
         mMode = mode;
+        mTabModelSelector = tabModelSelector;
 
         RecyclerViewAdapter adapter;
         if (mMode == TabListMode.GRID) {
@@ -146,6 +150,26 @@ public class TabListCoordinator implements Destroyable {
             mMediator.registerOrientationListener(
                     (GridLayoutManager) mRecyclerView.getLayoutManager());
         }
+
+        if (closeRelatedTabs) {
+            // Only do this for Grid Tab Switcher.
+            // TODO(crbug.com/964406): unregister the listener when we don't need it.
+            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
+                    this::updateThumbnailLocation);
+        }
+    }
+
+    @NonNull
+    Rect getThumbnailLocationOfCurrentTab() {
+        // TODO(crbug.com/964406): calculate the location before the real one is ready.
+        return mThumbnailLocationOfCurrentTab;
+    }
+
+    private void updateThumbnailLocation() {
+        Rect rect = mRecyclerView.getRectOfCurrentThumbnail(
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index());
+        if (rect == null) return;
+        mThumbnailLocationOfCurrentTab.set(rect);
     }
 
     /**
@@ -167,6 +191,10 @@ public class TabListCoordinator implements Destroyable {
             TabGroupUtils.maybeShowIPH(
                     FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE, mRecyclerView);
         }
+    }
+
+    void prepareOverview() {
+        mRecyclerView.prepareOverview();
     }
 
     /**

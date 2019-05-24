@@ -4,33 +4,59 @@
 
 package org.chromium.chrome.browser.widget;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.content.Context;
+import android.graphics.Rect;
+import android.graphics.RectF;
 
+import org.chromium.base.Supplier;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
+import org.chromium.ui.resources.ResourceManager;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * A {@link Layout} that shows all tabs in one grid view.
  */
 public class GridTabSwitcherLayout
         extends Layout implements GridTabSwitcher.GridVisibilityObserver {
-    private SceneLayer mSceneLayer = new SceneLayer();
-    private GridTabSwitcher.GridController mGridController;
+    // Duration of the transition animation
+    private static final long ZOOMING_DURATION = 300;
+
+    // The transition animation from a tab to the tab switcher.
+    private AnimatorSet mTabToSwitcherAnimation;
+
+    private final TabListSceneLayer mSceneLayer = new TabListSceneLayer();
+    private final GridTabSwitcher mGridTabSwitcher;
+    private final GridTabSwitcher.GridController mGridController;
     // To force Toolbar finishes its animation when this Layout finished hiding.
     private final LayoutTab mDummyLayoutTab;
 
     public GridTabSwitcherLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, GridTabSwitcher.GridController gridController) {
+            LayoutRenderHost renderHost, GridTabSwitcher gridTabSwitcher) {
         super(context, updateHost, renderHost);
         mDummyLayoutTab = createLayoutTab(Tab.INVALID_TAB_ID, false, false, false);
         mDummyLayoutTab.setShowToolbar(true);
-        mGridController = gridController;
+        mGridTabSwitcher = gridTabSwitcher;
+        mGridController = gridTabSwitcher.getGridController();
         mGridController.addOverviewModeObserver(this);
     }
 
@@ -49,7 +75,27 @@ public class GridTabSwitcherLayout
     @Override
     public void show(long time, boolean animate) {
         super.show(time, animate);
-        mGridController.showOverview(animate);
+
+        boolean showShrinkingAnimation =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
+        mGridTabSwitcher.prepareOverview();
+
+        if (!showShrinkingAnimation) {
+            mGridController.showOverview(true);
+            return;
+        }
+
+        shrinkTab(mGridTabSwitcher::getThumbnailLocationOfCurrentTab);
+    }
+
+    @Override
+    protected void updateLayout(long time, long dt) {
+        super.updateLayout(time, dt);
+        if (mLayoutTabs == null) return;
+
+        assert mLayoutTabs.length == 1;
+        boolean needUpdate = mLayoutTabs[0].updateSnap(dt);
+        if (needUpdate) requestUpdate();
     }
 
     @Override
@@ -100,9 +146,78 @@ public class GridTabSwitcherLayout
 
     @Override
     public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+        // TODO(crbug.com/964406): implement zoom-in animation.
         startHiding(mTabModelSelector.getCurrentTabId(), false);
     }
 
     @Override
     public void onOverviewModeFinishedHiding() {}
+
+    @Override
+    protected void forceAnimationToFinish() {
+        super.forceAnimationToFinish();
+        if (mTabToSwitcherAnimation != null) {
+            if (mTabToSwitcherAnimation.isRunning()) mTabToSwitcherAnimation.end();
+        }
+    }
+
+    /**
+     * Animate shrinking a tab to a target {@link Rect} area.
+     * @param target The target {@link Rect} area.
+     */
+    private void shrinkTab(Supplier<Rect> target) {
+        LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
+                mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NEED_TITLE);
+
+        mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
+
+        forceAnimationToFinish();
+
+        CompositorAnimationHandler handler = getAnimationHandler();
+        Collection<Animator> animationList = new ArrayList<>(5);
+
+        // Step 1: zoom out the source tab
+        animationList.add(CompositorAnimator.ofFloatProperty(
+                handler, sourceLayoutTab, LayoutTab.SCALE, () -> 1f, () -> {
+                    return target.get().width() / (getWidth() * mDpToPx);
+                }, ZOOMING_DURATION));
+        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.X,
+                () -> 0f, () -> { return target.get().left / mDpToPx; }, ZOOMING_DURATION));
+        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.Y,
+                () -> 0f, () -> { return target.get().top / mDpToPx; }, ZOOMING_DURATION));
+        animationList.add(CompositorAnimator.ofFloatProperty(
+                handler, sourceLayoutTab, LayoutTab.DECORATION_ALPHA, 1f, 0f, ZOOMING_DURATION));
+        // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
+        // down, making the "create group" visible for a while.
+        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+                LayoutTab.MAX_CONTENT_HEIGHT, sourceLayoutTab.getUnclampedOriginalContentHeight(),
+                getWidth(), ZOOMING_DURATION, BakedBezierInterpolator.FADE_OUT_CURVE));
+
+        mTabToSwitcherAnimation = new AnimatorSet();
+        mTabToSwitcherAnimation.playTogether(animationList);
+        mTabToSwitcherAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mTabToSwitcherAnimation = null;
+                // Step 2: fade in the real GTS RecyclerView.
+                mGridController.showOverview(true);
+            }
+        });
+        mTabToSwitcherAnimation.start();
+    }
+
+    @Override
+    protected void updateSceneLayer(RectF viewport, RectF contentViewport,
+            LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
+            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
+        super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
+                resourceManager, fullscreenManager);
+        assert mSceneLayer != null;
+        // The content viewport is intentionally sent as both params below.
+        mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
+                layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+                        ? mGridTabSwitcher.getResourceId()
+                        : 0);
+    }
 }

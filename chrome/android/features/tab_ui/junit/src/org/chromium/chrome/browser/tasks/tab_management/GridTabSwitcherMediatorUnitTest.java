@@ -179,8 +179,6 @@ public class GridTabSwitcherMediatorUnitTest {
         initAndAssertAllProperties();
         mMediator.showOverview(true);
 
-        verify(mResetHandler).resetWithTabList(mTabModelFilter);
-
         assertThat(
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
@@ -199,8 +197,6 @@ public class GridTabSwitcherMediatorUnitTest {
                 .onPropertyChanged(mModel, TabListContainerProperties.IS_VISIBLE);
         inOrder.verify(mPropertyObserver)
                 .onPropertyChanged(mModel, TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES);
-
-        verify(mResetHandler).resetWithTabList(mTabModelFilter);
 
         assertThat(
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));

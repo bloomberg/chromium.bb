@@ -68,11 +68,11 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
     /**
      * Creates the {@link LayoutManagerChrome} instance.
      * @param host                 A {@link LayoutManagerHost} instance.
-     * @param gridController A controller to delegate the tab switcher behavior. If it's NULL, VTS
-     *                       should be used, otherwise GTS should be used.
+     * @param gridTabSwitcher An interface to talk to the Grid Tab Switcher. If it's NULL, VTS
+     *                        should be used, otherwise GTS should be used.
      */
     public LayoutManagerChrome(LayoutManagerHost host, boolean createOverviewLayout,
-            @Nullable GridTabSwitcher.GridController gridController) {
+            @Nullable GridTabSwitcher gridTabSwitcher) {
         super(host);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
@@ -86,9 +86,9 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
         mOverviewListLayout = new OverviewListLayout(context, this, renderHost);
         mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
         if (createOverviewLayout) {
-            if (gridController != null) {
+            if (gridTabSwitcher != null) {
                 mOverviewLayout =
-                        new GridTabSwitcherLayout(context, this, renderHost, gridController);
+                        new GridTabSwitcherLayout(context, this, renderHost, gridTabSwitcher);
             } else {
                 mOverviewLayout = new StackLayout(context, this, renderHost);
             }
