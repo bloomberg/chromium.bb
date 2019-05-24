@@ -209,9 +209,11 @@ the assessment? Be especially on the lookout for Highs that are really
 Criticals, and Lows that are really Mediums (make sure to account for process
 types and sandbox boundaries).
 
-**Note:** For V8 issues that weren't reported by ClusterFuzz, please add
+For V8 issues, it can be hard to identify the correct security severity. If
+you're not sure, please take your best guess, and add the
 `Security_Needs_Attention-Severity` label alongside the regular
-`Security_Severity-*` label.
+`Security_Severity-*` label. If you do this, the V8 team will check the
+severity later and change it if necessary.
 
 #### Step 3. [Label, label, label](security-labels.md).
 
