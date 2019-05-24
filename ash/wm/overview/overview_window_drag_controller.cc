@@ -441,8 +441,8 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
     snap_position_ = SplitViewController::NONE;
     indicator_state = IndicatorState::kCannotSnap;
   }
-  overview_session_->RearrangeDuringDrag(item_->GetWindow(), location_in_screen,
-                                         indicator_state);
+  item_->overview_grid()->RearrangeDuringDrag(
+      item_->GetWindow(), location_in_screen, indicator_state);
   overview_session_->SetSplitViewDragIndicatorsIndicatorState(indicator_state,
                                                               gfx::Point());
 }

@@ -126,13 +126,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Activates |item's| window.
   void SelectWindow(OverviewItem* item);
 
-  // Updates overview bounds and hides the drop target when a preview area is
-  // shown. Updates the appearance of the drop target to visually indicate when
-  // |dragged_window| is being dragged over it.
-  void RearrangeDuringDrag(aura::Window* dragged_window,
-                           const gfx::PointF& location_in_screen,
-                           IndicatorState indicator_state);
-
   // Called to show or hide the split view drag indicators. This will do
   // nothing if split view is not enabled. |event_location| is used to reparent
   // |split_view_drag_indicators_|'s widget, if necessary.

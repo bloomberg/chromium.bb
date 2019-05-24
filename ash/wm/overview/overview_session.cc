@@ -431,15 +431,6 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
   ::wm::ActivateWindow(window);
 }
 
-void OverviewSession::RearrangeDuringDrag(aura::Window* dragged_window,
-                                          const gfx::PointF& location_in_screen,
-                                          IndicatorState indicator_state) {
-  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    grid->RearrangeDuringDrag(dragged_window, location_in_screen,
-                              indicator_state);
-  }
-}
-
 void OverviewSession::SetSplitViewDragIndicatorsIndicatorState(
     IndicatorState indicator_state,
     const gfx::Point& event_location) {
