@@ -721,7 +721,6 @@ source_set("common") {
     ":generate_components_strings",
     ":native_jni",
     "//android_webview/browser/gfx:gfx",
-    "//android_webview/utility",
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/about_ui",
