@@ -14,6 +14,5 @@ jumbo_source_set("ios") {
     "//base",
     "//components/security_state/core/",
     "//ios/web/public/",
-    "//ios/web/public/security",
   ]
 }

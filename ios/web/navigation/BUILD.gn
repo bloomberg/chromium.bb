@@ -23,7 +23,6 @@ source_set("navigation") {
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/public/download",
-    "//ios/web/public/security",
     "//ios/web/web_state:session_certificate_policy_cache",
     "//ios/web/web_state:user_interaction",
     "//ios/web/web_state:web_state_impl_header",
@@ -78,7 +77,6 @@ source_set("core") {
     "//components/url_formatter:url_formatter",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
-    "//ios/web/public/security",
     "//ui/base",
   ]
 

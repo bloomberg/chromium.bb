@@ -42,7 +42,6 @@ source_set("browser") {
     "//google_apis",
     "//ios/web/common",
     "//ios/web/public",
-    "//ios/web/public/security",
     "//services/network/public/cpp",
     "//ui/gfx/geometry",
   ]

@@ -24,7 +24,6 @@ source_set("ui") {
     "//ios/web/net:net",
     "//ios/web/public",
     "//ios/web/public/download",
-    "//ios/web/public/security",
     "//ios/web/security",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state:error_translation_util",

@@ -92,7 +92,6 @@ source_set("payments") {
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web/common",
     "//ios/web/public",
-    "//ios/web/public/security",
     "//third_party/libaddressinput",
     "//third_party/libaddressinput:strings_grit",
     "//ui/base",

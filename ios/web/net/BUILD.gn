@@ -10,9 +10,6 @@ source_set("net") {
     "//ios/net",
     "//ios/web:core",
     "//ios/web/public",
-    "//ios/web/public/security",
-    "//ios/web/security",
-    "//net",
   ]
 
   sources = [

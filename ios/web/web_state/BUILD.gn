@@ -60,7 +60,6 @@ source_set("session_certificate_policy_cache") {
   deps = [
     "//base",
     "//ios/web/public",
-    "//ios/web/public/security",
   ]
 
   sources = [
