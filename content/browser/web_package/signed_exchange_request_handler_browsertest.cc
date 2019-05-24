@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -907,13 +908,17 @@ class SignedExchangeAcceptHeaderBrowserTest
 
   base::Optional<std::string> GetInterceptedAcceptHeader(
       const GURL& url) const {
+    base::AutoLock lock(url_accept_header_map_lock_);
     const auto it = url_accept_header_map_.find(url);
     if (it == url_accept_header_map_.end())
       return base::nullopt;
     return it->second;
   }
 
-  void ClearInterceptedAcceptHeaders() { url_accept_header_map_.clear(); }
+  void ClearInterceptedAcceptHeaders() {
+    base::AutoLock lock(url_accept_header_map_lock_);
+    url_accept_header_map_.clear();
+  }
 
   net::EmbeddedTestServer https_server_;
 
@@ -963,6 +968,8 @@ class SignedExchangeAcceptHeaderBrowserTest
     const auto it = request.headers.find(std::string(network::kAcceptHeader));
     if (it == request.headers.end())
       return;
+    // Note this method is called on the EmbeddedTestServer's background thread.
+    base::AutoLock lock(url_accept_header_map_lock_);
     url_accept_header_map_[request.base_url.Resolve(request.relative_url)] =
         it->second;
   }
@@ -970,6 +977,10 @@ class SignedExchangeAcceptHeaderBrowserTest
   base::test::ScopedFeatureList feature_list_;
   base::test::ScopedFeatureList feature_list_for_accept_header_;
 
+  // url_accept_header_map_ is accessed both on the main thread and on the
+  // EmbeddedTestServer's background thread via MonitorRequest(), so it must be
+  // locked.
+  mutable base::Lock url_accept_header_map_lock_;
   std::map<GURL, std::string> url_accept_header_map_;
 };
 

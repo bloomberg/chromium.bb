@@ -165,9 +165,13 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, PluginAcceptHeader) {
   net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTP);
   server.ServeFilesFromSourceDirectory("ppapi/tests");
+  base::Lock plugin_accept_header_lock;
   std::string plugin_accept_header;
   server.RegisterRequestMonitor(base::BindLambdaForTesting(
       [&](const net::test_server::HttpRequest& request) {
+        // Note this callback runs on the EmbeddedTestServer's background
+        // thread.
+        base::AutoLock lock(plugin_accept_header_lock);
         if (request.relative_url == "/test_url_loader_data/hello.txt") {
           auto it = request.headers.find("Accept");
           if (it != request.headers.end())
@@ -179,7 +183,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, PluginAcceptHeader) {
   RunTestURL(
       server.GetURL(BuildQuery("/test_case.html?", "URLLoader_BasicGET")));
 
-  ASSERT_EQ("*/*", plugin_accept_header);
+  {
+    base::AutoLock lock(plugin_accept_header_lock);
+    ASSERT_EQ("*/*", plugin_accept_header);
+  }
 
   // Since the server uses local variables.
   ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
