@@ -14,7 +14,7 @@ namespace chrome {
 
 // Please keep this file in the same order as the header.
 
-// Note: Add hosts to |kChromePaths| in browser_about_handler.cc to be listed by
+// Note: Add hosts to |kChromeHostURLs| at the bottom of this file to be listed by
 // chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
 
 const char kChromeUIAboutHost[] = "about";
@@ -455,6 +455,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIPasswordManagerInternalsHost,
     kChromeUIPolicyHost,
     kChromeUIPredictorsHost,
+    kChromeUIPrefsInternalsHost,
     kChromeUIQuotaInternalsHost,
     kChromeUISignInInternalsHost,
     kChromeUISiteEngagementHost,
