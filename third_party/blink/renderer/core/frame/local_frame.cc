@@ -1702,14 +1702,6 @@ void LocalFrame::UnpauseContext() {
 }
 
 void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
-  // If we have asked to be frozen we will only do this once the
-  // load event has fired.
-  if (GetDocument()->LoadEventStillNeeded()) {
-    pending_lifecycle_state_ = state;
-    return;
-  }
-  pending_lifecycle_state_ = base::nullopt;
-
   if (state == lifecycle_state_)
     return;
   bool is_frozen = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
@@ -1739,15 +1731,6 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
 void LocalFrame::MaybeLogAdClickNavigation() {
   if (HasTransientUserActivation() && IsAdSubframe())
     UseCounter::Count(GetDocument(), WebFeature::kAdClickNavigation);
-}
-
-void LocalFrame::DispatchDidHandleOnloadEvents() {
-  Client()->DispatchDidHandleOnloadEvents();
-
-  if (pending_lifecycle_state_) {
-    DCHECK(!GetDocument()->LoadEventStillNeeded());
-    SetLifecycleState(pending_lifecycle_state_.value());
-  }
 }
 
 }  // namespace blink

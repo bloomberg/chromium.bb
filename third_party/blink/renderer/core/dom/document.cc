@@ -3421,7 +3421,7 @@ void Document::ImplicitClose() {
     domWindow()->DocumentWasClosed();
 
   if (GetFrame()) {
-    GetFrame()->DispatchDidHandleOnloadEvents();
+    GetFrame()->Client()->DispatchDidHandleOnloadEvents();
     Loader()->GetApplicationCacheHost()->StopDeferringEvents();
   }
 
