@@ -30,7 +30,6 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorMac
   void SetSoftwareMirrorMode(bool enabled) override;
 
  private:
-  bool software_mirror_active_;
   const bool ca_layer_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorMac);

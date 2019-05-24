@@ -10,7 +10,7 @@ namespace viz {
 
 CompositorOverlayCandidateValidatorMac::CompositorOverlayCandidateValidatorMac(
     bool ca_layer_disabled)
-    : software_mirror_active_(false), ca_layer_disabled_(ca_layer_disabled) {}
+    : ca_layer_disabled_(ca_layer_disabled) {}
 
 CompositorOverlayCandidateValidatorMac::
     ~CompositorOverlayCandidateValidatorMac() {}
@@ -19,7 +19,7 @@ void CompositorOverlayCandidateValidatorMac::GetStrategies(
     OverlayProcessor::StrategyList* strategies) {}
 
 bool CompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {
-  return !ca_layer_disabled_ && !software_mirror_active_;
+  return !ca_layer_disabled_;
 }
 
 bool CompositorOverlayCandidateValidatorMac::AllowDCLayerOverlays() {
@@ -35,7 +35,7 @@ void CompositorOverlayCandidateValidatorMac::CheckOverlaySupport(
 
 void CompositorOverlayCandidateValidatorMac::SetSoftwareMirrorMode(
     bool enabled) {
-  software_mirror_active_ = enabled;
+  NOTREACHED();
 }
 
 }  // namespace viz
